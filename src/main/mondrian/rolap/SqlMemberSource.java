@@ -19,6 +19,8 @@ import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Properties;
+import java.io.*;
 
 /**
  * A <code>SqlMemberSource</code> reads members from a SQL database. Good idea
@@ -204,8 +206,13 @@ class SqlMemberSource implements MemberReader
 		}
 		hierarchy.addToFrom(sqlQuery);
 		// note: Postgres requires the alias 'as foo'
-		return "select count(*) from (" + sqlQuery.toString() + ") as foo";
-	}
+        //	return "select count(*) from (" + sqlQuery.toString() + ") as foo";
+        SqlQuery outerQuery = newQuery(
+                "while generating query to count members in level " + level);
+        outerQuery.addSelect("count(*)");
+        outerQuery.addFromQuery(sqlQuery.toString(), "foo");
+        return outerQuery.toString();
+    }
 
 	// implement MemberSource
 	public RolapMember[] getMembers()
