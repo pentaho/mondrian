@@ -2,12 +2,14 @@
 @rem This software is subject to the terms of the Common Public License
 @rem Agreement, available at the following URL:
 @rem http://www.opensource.org/licenses/cpl.html.
-@rem (C) Copyright 2001-2002 Kana Software, Inc. and others.
+@rem (C) Copyright 2001-2003 Kana Software, Inc. and others.
 @rem All Rights Reserved.
 @rem You must accept the terms of that agreement to use this software.
 
 @set SRCROOT=%~dp0
 @set HOME_DRIVE=Z
+@rem set JAVA_HOME=%HOME_DRIVE%:/j2sdk1.4.1_01
+@rem set PATH=%JAVA_HOME%/bin;%PATH%
 
 @set ANT_HOME=%HOME_DRIVE%:\jakarta-ant-1.5
 @if exist "%ANT_HOME%" goto x010
@@ -33,7 +35,7 @@
 @goto end
 :x050
 
-@set CLASSPATH=%SRCROOT%/classes;%SRCROOT%/lib/javacup.jar;%SRCROOT%/lib/boot.jar;%XALAN_HOME%/bin/xml-apis.jar;%XALAN_HOME%/bin/xercesImpl.jar
+@set CLASSPATH=%SRCROOT%/classes;%SRCROOT%/lib/javacup.jar;%SRCROOT%/lib/boot.jar;%XALAN_HOME%/bin/xml-apis.jar;%XALAN_HOME%/bin/xercesImpl.jar;%JUNIT_HOME%/junit.jar
 
 @rem To use Oracle, uncomment the next line and modify appropriately
 @rem set ORACLE_HOME=%HOME_DRIVE%:/oracle/ora81
@@ -48,6 +50,9 @@
 @rem To use MySQL, uncomment the next 2 lines and modify appropriately
 @rem set MYSQL_HOME=%HOME_DRIVE%:/MySQL
 @rem set CLASSPATH=%CLASSPATH%;%MYSQL_HOME%/lib/mm.mysql-2.0.4-bin.jar
+
+@rem To use Weblogic, uncomment the next line and modify appropriately.
+@rem set WEBLOGIC_HOME=%HOME_DRIVE%:/bea/wlserver6.1
 
 @%ANT_HOME%\bin\ant %1 %2 %3 %4 %5 %6 %7 %8 %9
 :end
