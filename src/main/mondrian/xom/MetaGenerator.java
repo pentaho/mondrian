@@ -1409,18 +1409,6 @@ public class MetaGenerator {
 									  MetaDef.Attribute attr)
 		throws XOMException
 	{
-		// Setup an array for attribute values if required
-		if(attr.values != null && attr.values.length > 0) {
-			out.print("\t\t\t\tString[] _" + getDeclaredName(attr.name)
-					  + "_values = {");
-			for(int i=0; i<attr.values.length; i++) {
-				out.print("\"" + attr.values[i] + "\"");
-				if(i < attr.values.length-1)
-					out.print(", ");
-			}
-			out.println("};");
-		}
-
 		out.print("\t\t\t\t" + getDeclaredName(attr.name) + " = ");
 		out.print("(" + attr.type + ")_parser.getAttribute(");
 		out.print("\"" + attr.name + "\", \"" + attr.type + "\", ");
@@ -1445,6 +1433,20 @@ public class MetaGenerator {
 										  MetaDef.Attribute attr)
 		throws XOMException
 	{
+        // Setup an array for attribute values if required
+        if(attr.values != null && attr.values.length > 0) {
+            out.println("\t\t/** Allowable values for {@link #"
+                    + getDeclaredName(attr.name) + "}. */");
+            out.print("\t\tpublic static final String[] _"
+                    + getDeclaredName(attr.name) + "_values = {");
+            for(int i=0; i<attr.values.length; i++) {
+                out.print("\"" + attr.values[i] + "\"");
+                if(i < attr.values.length-1)
+                    out.print(", ");
+            }
+            out.println("};");
+        }
+
 		// Generate the declaration, including a quick comment
 		out.print("\t\tpublic " + attr.type + " "
 				  + getDeclaredName(attr.name) + ";  /" + "/ ");
