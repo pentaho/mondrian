@@ -84,12 +84,6 @@ public class MDXQueryServlet extends HttpServlet {
 			mdxConnection = DriverManager.getConnection(connectString, getServletContext(), false);
 			Query q = mdxConnection.parseQuery(queryString);
 			Result result = mdxConnection.execute(q);
-/*
-            if (result.getAxes().length != 2) {
-                throw Util.newError("Can only handle queries with 2 axes; this query has " +
-                        result.getAxes().length + "axes");
-            }
-*/            
 			Position slicers[] = result.getSlicerAxis().positions;
 			html.append("<table class='resulttable' cellspacing=1 border=0>");
 			final String nl = System.getProperty("line.separator");
@@ -101,7 +95,6 @@ public class MDXQueryServlet extends HttpServlet {
 				rows = result.getAxes()[1].positions;
 
 			int columnWidth = columns[0].members.length;
-			//int columnWidth = columns.length == 1 ? 0 : columns[0].members.length;
 			int rowWidth = 0;
 			if( result.getAxes().length == 2 )
 					rowWidth = result.getAxes()[1].positions[0].members.length;
