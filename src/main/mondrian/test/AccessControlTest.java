@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2003 Julian Hyde
+// Copyright (C) 2003-2003 Julian Hyde <jhyde@users.sf.net>
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -14,7 +14,7 @@ package mondrian.test;
 import mondrian.olap.*;
 
 /**
- * A <code>AccessControlTest</code> contains unit-tests for access-control
+ * <code>AccessControlTest</code> is a set of unit-tests for access-control.
  *
  * @see Role
  *
@@ -151,8 +151,17 @@ public class AccessControlTest extends FoodMartTestCase {
 		Axis axis = executeAxis2(restrictedConnection, "[Customers].members");
 		assertEquals(122, axis.positions.length); // 13 states, 109 cities
 	}
+	/** Test that we only aggregate over SF, LA, even when called from functions. */
 	public void testGrantHierarchy9() {
-		// assert: only aggregate over SF, LA, even when called from functions
+		// Analysis services doesn't allow aggregation within calculated
+		// measures, so use the following query to generate the results:
+		//
+		//   with member [Store].[SF LA] as
+		//     'Aggregate({[USA].[CA].[San Francisco], [Store].[USA].[CA].[Los Angeles]})'
+		//   select {[Measures].[Unit Sales]} on columns,
+		//    {[Gender].children} on rows
+		//   from Sales
+		//   where ([Marital Status].[S], [Store].[SF LA])
 		Result result = execute(getRestrictedConnection(),
 				"with member [Measures].[California Unit Sales] as " +
 				" 'Aggregate({[Store].[USA].[CA].children}, [Measures].[Unit Sales])'" + nl +
@@ -167,8 +176,8 @@ public class AccessControlTest extends FoodMartTestCase {
 				"Axis #2:" + nl +
 				"{[Gender].[All Gender].[F]}" + nl +
 				"{[Gender].[All Gender].[M]}" + nl +
-				"Row #0: 7104.0" + nl +
-				"Row #1: 7055.0" + nl,
+				"Row #0: 6,636" + nl +
+				"Row #1: 7,329" + nl,
 				toString(result));
 	}
 	public void testGrantHierarchyA() {
