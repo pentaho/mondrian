@@ -167,7 +167,7 @@ public class Segment
         for (int i = 0; i < aggregation.columns.length; i++) {
             pw.print(", ");
             pw.print(aggregation.columns[i].expression.getGenericExpression());
-            Object[] constraints = axes[i].constraints;
+            ColumnConstraint[] constraints = axes[i].constraints;
             if (constraints == null) {
                 pw.print("=any");
             } else {
@@ -176,12 +176,7 @@ public class Segment
                     if (j > 0) {
                         pw.print(", ");
                     }
-                    Object o;
-                    if ( constraints[j] instanceof RolapMember)
-                        o = ((RolapMember) constraints[j]).getSqlKey();
-                    else
-                        o = constraints[j];
-                    pw.print(o);
+                    pw.print(constraints[j].getValue().toString());
                 }
                 pw.print("}");
             }
