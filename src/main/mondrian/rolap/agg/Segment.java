@@ -312,6 +312,7 @@ public class Segment implements CachePool.Cacheable
 		} finally {
 			try {
 				if (resultSet != null) {
+					resultSet.getStatement().close();
 					resultSet.close();
 				}
 			} catch (SQLException e) {
@@ -319,8 +320,6 @@ public class Segment implements CachePool.Cacheable
 			}
 		}
 	}
-
-
 }
 
 // End Segment.java

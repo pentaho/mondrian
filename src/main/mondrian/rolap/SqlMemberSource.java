@@ -140,6 +140,7 @@ class SqlMemberSource implements MemberReader
 		} finally {
 			try {
 				if (resultSet != null) {
+					resultSet.getStatement().close();
 					resultSet.close();
 				}
 			} catch (SQLException e) {
@@ -301,6 +302,7 @@ class SqlMemberSource implements MemberReader
 		} finally {
 			try {
 				if (resultSet != null) {
+					resultSet.getStatement().close();
 					resultSet.close();
 				}
 			} catch (SQLException e) {
@@ -453,6 +455,7 @@ class SqlMemberSource implements MemberReader
 		} finally {
 			try {
 				if (resultSet != null) {
+					resultSet.getStatement().close();
 					resultSet.close();
 				}
 			} catch (SQLException e) {
@@ -576,6 +579,7 @@ class SqlMemberSource implements MemberReader
 		} finally {
 			try {
 				if (resultSet != null) {
+					resultSet.getStatement().close();
 					resultSet.close();
 				}
 			} catch (SQLException e) {

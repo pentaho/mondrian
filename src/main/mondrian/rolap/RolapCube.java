@@ -436,6 +436,7 @@ class OldAvidCellReader implements CellReader
 		} finally {
 			try {
 				if (resultSet != null) {
+					resultSet.getStatement().close();
 					resultSet.close();
 				}
 			} catch (SQLException e) {

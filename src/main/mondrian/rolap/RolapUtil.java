@@ -136,17 +136,17 @@ public class RolapUtil {
 			return resultSet;
 		} catch (SQLException e) {
 			status = ", failed (" + e + ")";
-			throw (SQLException) e.fillInStackTrace();
-		} finally {
-			if (RolapUtil.debugOut != null) {
-				RolapUtil.debugOut.println(status);
-			}
 			try {
 				if (statement != null) {
 					statement.close();
 				}
-			} catch (SQLException e) {
+			} catch (SQLException e2) {
 				// ignore
+			}
+			throw (SQLException) e.fillInStackTrace();
+		} finally {
+			if (RolapUtil.debugOut != null) {
+				RolapUtil.debugOut.println(status);
 			}
 		}
 	}

@@ -98,6 +98,7 @@ public class RolapStar {
 		} finally {
 			try {
 				if (resultSet != null) {
+					resultSet.getStatement().close();
 					resultSet.close();
 				}
 			} catch (SQLException e) {
@@ -195,6 +196,7 @@ public class RolapStar {
 				} finally {
 					try {
 						if (resultSet != null) {
+							resultSet.getStatement().close();
 							resultSet.close();
 						}
 					} catch (SQLException e) {
