@@ -275,7 +275,8 @@ class ResultComparator {
     private void compareCell(int[] coord, String expectedValue, Cell cell) {
         if (expectedValue.equalsIgnoreCase("#Missing")) {
             if (!cell.isNull()) {
-                Assert.fail(getErrorMessage("Expected missing value at ", coord));
+                Assert.fail(getErrorMessage("Expected missing value but got " + cell.getValue()
+                		+ " at ", coord));
             }
         }
 
