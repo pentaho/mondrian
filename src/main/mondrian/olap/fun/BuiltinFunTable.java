@@ -18,19 +18,20 @@ import java.util.*;
 
 /**
  * <code>BuiltinFunTable</code> contains a list of all built-in MDX functions.
- * <p>
- * Note: Boolean expressions return either Boolean.TRUE or Boolean.FALSE or null. null
- * is returned, if the expression can not be evaluated because some values have not
- * been loaded from database yet.
  *
+ * <p>Note: Boolean expressions return {@link Boolean#TRUE},
+ * {@link Boolean#FALSE} or null. null is returned if the expression can not be
+ * evaluated because some values have not been loaded from database yet.</p>
  *
  * @author jhyde
  * @since 26 February, 2002
  * @version $Id$
  **/
 public class BuiltinFunTable extends FunTable {
-	/** Maps the upper-case name of a function plus its {@link Syntax} to an
-     * array of {@link Resolver}s for that name. **/
+	/**
+     * Maps the upper-case name of a function plus its {@link Syntax} to an
+     * array of {@link Resolver} objects for that name.
+     */
 	private HashMap mapNameToResolvers;
 
 	private static final Resolver[] emptyResolvers = new Resolver[0];
@@ -1390,7 +1391,26 @@ public class BuiltinFunTable extends FunTable {
 
 		if (false) define(new FunDefBase("DrilldownLevelBottom", "DrilldownLevelBottom(<Set>, <Count>[, [<Level>][, <Numeric Expression>]])", "Drills down the bottom N members of a set, at a specified level, to one level below.", "fx*"));
 		if (false) define(new FunDefBase("DrilldownLevelTop", "DrilldownLevelTop(<Set>, <Count>[, [<Level>][, <Numeric Expression>]])", "Drills down the top N members of a set, at a specified level, to one level below.", "fx*"));
-		if (false) define(new FunDefBase("DrilldownMember", "DrilldownMember(<Set1>, <Set2>[, RECURSIVE])", "Drills down the members in a set that are present in a second specified set.", "fx*"));
+
+        define(new MultiResolver(
+                "Hierarchize", "Hierarchize(<Set>[, POST])", "Orders the members of a set in a hierarchy.",
+                new String[] {"fxx", "fxxy"}) {
+            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+                String order = getLiteralArg(args, 1, "PRE", new String[] {"PRE", "POST"}, dummyFunDef);
+                final boolean post = order.equals("POST");
+                return new FunDefBase(dummyFunDef) {
+                    public Object evaluate(Evaluator evaluator, Exp[] args) {
+                        List members = (List) getArg(evaluator, args, 0);
+                        hierarchize(members, post);
+                        return members;
+                    }
+                };
+            }
+        });
+
+		defineReserved(DrilldownMemberFunDef.reservedNames);
+		define(new DrilldownMemberFunDef.Resolver());
+
 		if (false) define(new FunDefBase("DrilldownMemberBottom", "DrilldownMemberBottom(<Set1>, <Set2>, <Count>[, [<Numeric Expression>][, RECURSIVE]])", "Like DrilldownMember except that it includes only the bottom N children.", "fx*"));
 		if (false) define(new FunDefBase("DrilldownMemberTop", "DrilldownMemberTop(<Set1>, <Set2>, <Count>[, [<Numeric Expression>][, RECURSIVE]])", "Like DrilldownMember except that it includes only the top N children.", "fx*"));
 		if (false) define(new FunDefBase("DrillupLevel", "DrillupLevel(<Set>[, <Level>])", "Drills up the members of a set that are below a specified level.", "fx*"));
@@ -2587,8 +2607,8 @@ public class BuiltinFunTable extends FunTable {
 	}
 
     /**
-     * Get a read-only version of the name-to-resolvers map. Used by the testing
-     * framework
+     * Returns a read-only version of the name-to-resolvers map. Used by the
+     * testing framework.
      */
     protected static Map getNameToResolversMap() {
         return Collections.unmodifiableMap(((BuiltinFunTable)instance()).mapNameToResolvers);

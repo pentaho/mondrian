@@ -430,31 +430,96 @@ public class FunctionTest extends TestCase {
         Assert.assertEquals("Unit Sales", member.getName());
     }
 
-    public void testDrillDownLevel() throws Exception {
+    public void testDrilldownLevel() throws Exception {
         // Expect all children of USA
-        mTest.assertAxisReturns("DrillDownLevel({[Store].[USA]}, [Store].[Store Country])",
+        mTest.assertAxisReturns("DrilldownLevel({[Store].[USA]}, [Store].[Store Country])",
                 "[Store].[All Stores].[USA]" + nl +
                 "[Store].[All Stores].[USA].[CA]" + nl +
                 "[Store].[All Stores].[USA].[OR]" + nl +
                 "[Store].[All Stores].[USA].[WA]");
 
         // Expect same set, because [USA] is already drilled
-        mTest.assertAxisReturns("DrillDownLevel({[Store].[USA], [Store].[USA].[CA]}, [Store].[Store Country])",
+        mTest.assertAxisReturns("DrilldownLevel({[Store].[USA], [Store].[USA].[CA]}, [Store].[Store Country])",
                 "[Store].[All Stores].[USA]" + nl +
                 "[Store].[All Stores].[USA].[CA]");
 
         // Expect drill, because [USA] isn't already drilled. You can't
         // drill down on [CA] and get to [USA]
-        mTest.assertAxisReturns("DrillDownLevel({[Store].[USA].[CA],[Store].[USA]}, [Store].[Store Country])",
+        mTest.assertAxisReturns("DrilldownLevel({[Store].[USA].[CA],[Store].[USA]}, [Store].[Store Country])",
                 "[Store].[All Stores].[USA].[CA]" + nl +
                 "[Store].[All Stores].[USA]" + nl +
                 "[Store].[All Stores].[USA].[CA]" + nl +
                 "[Store].[All Stores].[USA].[OR]" + nl +
                 "[Store].[All Stores].[USA].[WA]");
 
-        mTest.assertThrows("select DrillDownLevel({[Store].[USA].[CA],[Store].[USA]}, , 0) on columns from [Sales]",
+        mTest.assertThrows("select DrilldownLevel({[Store].[USA].[CA],[Store].[USA]}, , 0) on columns from [Sales]",
                 "Syntax error");
     }
+
+
+    public void testDrilldownMember() throws Exception {
+        
+        // Expect all children of USA
+        mTest.assertAxisReturns("DrilldownMember({[Store].[USA]}, {[Store].[USA]})",
+                "[Store].[All Stores].[USA]" + nl +
+                "[Store].[All Stores].[USA].[CA]" + nl +
+                "[Store].[All Stores].[USA].[OR]" + nl +
+                "[Store].[All Stores].[USA].[WA]");
+                
+        // Expect all children of USA.CA and USA.OR        
+        mTest.assertAxisReturns("DrilldownMember({[Store].[USA].[CA], [Store].[USA].[OR]}, "+
+        	"{[Store].[USA].[CA], [Store].[USA].[OR], [Store].[USA].[WA]})",
+                "[Store].[All Stores].[USA].[CA]" + nl +
+                "[Store].[All Stores].[USA].[CA].[Alameda]" + nl +
+                "[Store].[All Stores].[USA].[CA].[Beverly Hills]" + nl +
+                "[Store].[All Stores].[USA].[CA].[Los Angeles]" + nl +
+                "[Store].[All Stores].[USA].[CA].[San Diego]" + nl +
+                "[Store].[All Stores].[USA].[CA].[San Francisco]" + nl +
+                "[Store].[All Stores].[USA].[OR]" + nl +
+                "[Store].[All Stores].[USA].[OR].[Portland]" + nl +
+                "[Store].[All Stores].[USA].[OR].[Salem]");
+
+        
+        // Second set is empty
+        mTest.assertAxisReturns("DrilldownMember({[Store].[USA]}, {})",
+                "[Store].[All Stores].[USA]");
+                
+        // Drill down a leaf member
+        mTest.assertAxisReturns("DrilldownMember({[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}, "+
+        "{[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]})",
+        		"[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]");
+                
+        // Complex case with option recursive
+        mTest.assertAxisReturns("DrilldownMember({[Store].[All Stores].[USA]}, "+
+        "{[Store].[All Stores].[USA], [Store].[All Stores].[USA].[CA], "+
+         "[Store].[All Stores].[USA].[CA].[San Diego], [Store].[All Stores].[USA].[WA]}, "+
+         "RECURSIVE)",
+        		"[Store].[All Stores].[USA]" + nl +
+                "[Store].[All Stores].[USA].[CA]" + nl +
+                "[Store].[All Stores].[USA].[CA].[Alameda]" + nl +
+                "[Store].[All Stores].[USA].[CA].[Beverly Hills]" + nl +
+                "[Store].[All Stores].[USA].[CA].[Los Angeles]" + nl +
+                "[Store].[All Stores].[USA].[CA].[San Diego]" + nl +
+                "[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]" + nl +
+                "[Store].[All Stores].[USA].[CA].[San Francisco]" + nl +
+                "[Store].[All Stores].[USA].[OR]" + nl +
+                "[Store].[All Stores].[USA].[WA]" + nl +
+                "[Store].[All Stores].[USA].[WA].[Bellingham]" + nl +
+                "[Store].[All Stores].[USA].[WA].[Bremerton]" + nl +
+                "[Store].[All Stores].[USA].[WA].[Seattle]" + nl +
+                "[Store].[All Stores].[USA].[WA].[Spokane]" + nl +
+                "[Store].[All Stores].[USA].[WA].[Tacoma]" + nl +
+                "[Store].[All Stores].[USA].[WA].[Walla Walla]" + nl +
+                "[Store].[All Stores].[USA].[WA].[Yakima]");
+  		
+        // Sets of tuples
+        mTest.assertAxisReturns("DrilldownMember({([Store Type].[Supermarket], [Store].[USA])}, {[Store].[USA]})",
+                "{[Store Type].[All Store Types].[Supermarket], [Store].[All Stores].[USA]}" + nl +
+                "{[Store Type].[All Store Types].[Supermarket], [Store].[All Stores].[USA].[CA]}" + nl +
+                "{[Store Type].[All Store Types].[Supermarket], [Store].[All Stores].[USA].[OR]}" + nl +
+                "{[Store Type].[All Store Types].[Supermarket], [Store].[All Stores].[USA].[WA]}");
+    }
+
 
     public void testFirstChildFirstInLevel() {
         Member member = mTest.executeAxis("[Time].[1997].[Q4].FirstChild");
