@@ -1392,22 +1392,6 @@ public class BuiltinFunTable extends FunTable {
 		if (false) define(new FunDefBase("DrilldownLevelBottom", "DrilldownLevelBottom(<Set>, <Count>[, [<Level>][, <Numeric Expression>]])", "Drills down the bottom N members of a set, at a specified level, to one level below.", "fx*"));
 		if (false) define(new FunDefBase("DrilldownLevelTop", "DrilldownLevelTop(<Set>, <Count>[, [<Level>][, <Numeric Expression>]])", "Drills down the top N members of a set, at a specified level, to one level below.", "fx*"));
 
-        define(new MultiResolver(
-                "Hierarchize", "Hierarchize(<Set>[, POST])", "Orders the members of a set in a hierarchy.",
-                new String[] {"fxx", "fxxy"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                String order = getLiteralArg(args, 1, "PRE", new String[] {"PRE", "POST"}, dummyFunDef);
-                final boolean post = order.equals("POST");
-                return new FunDefBase(dummyFunDef) {
-                    public Object evaluate(Evaluator evaluator, Exp[] args) {
-                        List members = (List) getArg(evaluator, args, 0);
-                        hierarchize(members, post);
-                        return members;
-                    }
-                };
-            }
-        });
-
 		defineReserved(DrilldownMemberFunDef.reservedNames);
 		define(new DrilldownMemberFunDef.Resolver());
 
