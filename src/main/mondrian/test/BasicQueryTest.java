@@ -1978,6 +1978,28 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"Row #3: 3,396" + nl);
 	}
 
+    public void testCountDistinct() {
+        runQueryCheckResult(
+                "select {[Measures].[Unit Sales], [Measures].[Customer Count]} on columns," + nl +
+                " {[Gender].members} on rows" + nl +
+                "from Sales",
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Unit Sales]}" + nl +
+                "{[Measures].[Customer Count]}" + nl +
+                "Axis #2:" + nl +
+                "{[Gender].[All Gender]}" + nl +
+                "{[Gender].[All Gender].[F]}" + nl +
+                "{[Gender].[All Gender].[M]}" + nl +
+                "Row #0: 266,773" + nl +
+                "Row #0: 5,581" + nl +
+                "Row #1: 131,558" + nl +
+                "Row #1: 2,755" + nl +
+                "Row #2: 135,215" + nl +
+                "Row #2: 2,826" + nl);
+    }
+
 	public void testMemberWithNullKey() {
 		Result result = runQuery(
 				"select {[Measures].[Unit Sales]} on columns," + nl +

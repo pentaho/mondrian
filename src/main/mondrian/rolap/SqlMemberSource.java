@@ -293,7 +293,6 @@ class SqlMemberSource implements MemberReader
 	{
 		SqlQuery sqlQuery = newQuery(
 			"while generating query to retrieve members of " + hierarchy);
-		sqlQuery.setDistinct(true);
 		RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
 		for (int i = 0; i < levels.length; i++) {
 			RolapLevel level = levels[i];
@@ -302,15 +301,21 @@ class SqlMemberSource implements MemberReader
 			}
 			MondrianDef.Expression exp = level.keyExp;
 			hierarchy.addToFrom(sqlQuery, exp, null);
-			sqlQuery.addSelect(exp.getExpression(sqlQuery));
+            String expString = exp.getExpression(sqlQuery);
+            sqlQuery.addSelect(expString);
+            sqlQuery.addGroupBy(expString);
 			exp = level.ordinalExp;
 			hierarchy.addToFrom(sqlQuery, exp, null);
-			sqlQuery.addOrderBy(exp.getExpression(sqlQuery));
+            expString = exp.getExpression(sqlQuery);
+			sqlQuery.addOrderBy(expString);
+            sqlQuery.addGroupBy(expString);
 			for (int j = 0; j < level.properties.length; j++) {
 				RolapProperty property = level.properties[j];
 				exp = property.exp;
 				hierarchy.addToFrom(sqlQuery, exp, null);
-				sqlQuery.addSelect(exp.getExpression(sqlQuery));
+                expString = exp.getExpression(sqlQuery);
+				sqlQuery.addSelect(expString);
+                sqlQuery.addGroupBy(expString);
 			}
 		}
 		return sqlQuery.toString();

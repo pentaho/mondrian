@@ -111,7 +111,7 @@ public class RolapStar {
 		Util.assertTrue(measure.table == factTable);
 		factTable.addToFrom(sqlQuery, true, true);
 		sqlQuery.addSelect(
-			measure.aggregator + "(" + measure.getExpression(sqlQuery) + ")");
+			measure.aggregator.getExpression(measure.getExpression(sqlQuery)));
 		// add constraining dimensions
 		for (int i = 0; i < columns.length; i++) {
 			Object value = values[i];
@@ -247,7 +247,7 @@ public class RolapStar {
 
 	public static class Measure extends Column
 	{
-		public String aggregator;
+		public RolapAggregator aggregator;
 	};
 
 	public static class Table

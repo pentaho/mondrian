@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// (C) Copyright 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -18,6 +18,7 @@ import mondrian.rolap.sql.SqlQuery;
 
 import java.util.*;
 import java.sql.SQLException;
+import java.sql.DatabaseMetaData;
 
 /**
  * <code>RolapAggregationManager</code> manages all {@link Aggregation}s
@@ -89,14 +90,56 @@ public class AggregationManager extends RolapAggregationManager {
 			// todo: optimize key sets; drop a constraint if more than x% of
 			// the members are requested; whether we should get just the cells
 			// requested or expand to a n-cube
+
+            // If the database cannot execute "count(distinct ...)", split the
+            // distinct aggregations out.
+            while (true) {
+                // Scan for a measure based upon a distinct aggregation.
+                RolapStar.Measure distinctMeasure = getFirstDistinctMeasure(measuresList);
+                if (distinctMeasure == null) {
+                    break;
+                }
+                final String expr = distinctMeasure.expression.getGenericExpression();
+                final ArrayList distinctMeasuresList = new ArrayList();
+                for (int i = 0; i < measuresList.size();) {
+                    RolapStar.Measure measure = (RolapStar.Measure)
+                            measuresList.get(i);
+                    if (measure.aggregator.distinct &&
+                            measure.expression.getGenericExpression().equals(
+                                    expr)) {
+                        measuresList.remove(i);
+                        distinctMeasuresList.add(distinctMeasure);
+                    } else {
+                        i++;
+                    }
+                }
+                RolapStar.Measure[] measures = (RolapStar.Measure[])
+                        distinctMeasuresList.toArray(new RolapStar.Measure[0]);
+                loadAggregation(measures, columns, constraintses, pinnedSegments);
+            }
 			RolapStar.Measure[] measures = (RolapStar.Measure[])
-					measuresList.toArray(
-							new RolapStar.Measure[measuresList.size()]);
+					measuresList.toArray(new RolapStar.Measure[0]);
 			loadAggregation(measures, columns, constraintses, pinnedSegments);
 		}
 	}
 
-	private synchronized void loadAggregation(
+    /**
+     * Returns the first measure based upon a distinct aggregation, or null if
+     * there is none.
+     * @param measuresList
+     * @return
+     */
+    private static RolapStar.Measure getFirstDistinctMeasure(ArrayList measuresList) {
+        for (int i = 0; i < measuresList.size(); i++) {
+            RolapStar.Measure measure = (RolapStar.Measure) measuresList.get(i);
+            if (measure.aggregator.distinct) {
+                return measure;
+            }
+        }
+        return null;
+    }
+
+    private synchronized void loadAggregation(
 		RolapStar.Measure[] measures, RolapStar.Column[] columns,
 		Object[][] constraintses, Collection pinnedSegments)
 	{
@@ -210,41 +253,97 @@ public class AggregationManager extends RolapAggregationManager {
 
 	private static String generateSQL(QuerySpec spec) {
 		RolapStar star = spec.getStar();
-		SqlQuery sqlQuery;
+        final DatabaseMetaData metaData;
 		try {
-			sqlQuery = new SqlQuery(
-				star.getJdbcConnection().getMetaData());
-		} catch (SQLException e) {
+            metaData = star.getJdbcConnection().getMetaData();
+        } catch (SQLException e) {
 			throw Util.getRes().newInternal("while loading segment", e);
 		}
-		// add constraining dimensions
-		RolapStar.Column[] columns = spec.getColumns();
-		int arity = columns.length;
-		for (int i = 0; i < arity; i++) {
-			RolapStar.Column column = columns[i];
-			RolapStar.Table table = column.table;
-			if (table.isFunky()) {
-				// this is a funky dimension -- ignore for now
-				continue;
-			}
-			table.addToFrom(sqlQuery, false, true);
-			String expr = column.getExpression(sqlQuery);
-			Object[] constraints = spec.getConstraints(i);
-			if (constraints != null) {
-				sqlQuery.addWhere(
-					expr + " in " + column.quoteValues(constraints));
-			}
-			sqlQuery.addSelect(expr);
-			sqlQuery.addGroupBy(expr);
-		}
-		// add measures
-		for (int i = 0, measureCount = spec.getMeasureCount(); i < measureCount; i++) {
-			RolapStar.Measure measure = spec.getMeasure(i);
-			Util.assertTrue(measure.table == star.factTable);
-			star.factTable.addToFrom(sqlQuery, false, true);
-			sqlQuery.addSelect(
-				measure.aggregator + "(" + measure.getExpression(sqlQuery) + ")");
-		}
+        // are there any distinct measures?
+        int distinctCount = 0;
+        for (int i = 0, measureCount = spec.getMeasureCount(); i < measureCount; i++) {
+            RolapStar.Measure measure = spec.getMeasure(i);
+            if (measure.aggregator.distinct) {
+                distinctCount++;
+            }
+        }
+        SqlQuery sqlQuery = new SqlQuery(metaData);
+        final boolean wrapInDistinct = distinctCount > 0 &&
+                        !sqlQuery.allowsCountDistinct();
+        if (wrapInDistinct) {
+            // Generate something like
+            //  select d0, d1, count(m0)
+            //  from (
+            //    select distinct x as d0, y as d1, z as m0
+            //    from t) as foo
+            //  group by d0, d1
+            final SqlQuery innerSqlQuery = sqlQuery;
+            innerSqlQuery.setDistinct(true);
+            final SqlQuery outerSqlQuery = new SqlQuery(metaData);
+            // add constraining dimensions
+            RolapStar.Column[] columns = spec.getColumns();
+            int arity = columns.length;
+            for (int i = 0; i < arity; i++) {
+                RolapStar.Column column = columns[i];
+                RolapStar.Table table = column.table;
+                if (table.isFunky()) {
+                    // this is a funky dimension -- ignore for now
+                    continue;
+                }
+                table.addToFrom(innerSqlQuery, false, true);
+                String expr = column.getExpression(innerSqlQuery);
+                Object[] constraints = spec.getConstraints(i);
+                if (constraints != null) {
+                    innerSqlQuery.addWhere(
+                        expr + " in " + column.quoteValues(constraints));
+                }
+                final String alias = "d" + i;
+                innerSqlQuery.addSelect(expr, alias);
+                outerSqlQuery.addSelect(alias);
+                outerSqlQuery.addGroupBy(alias);
+            }
+            for (int i = 0, measureCount = spec.getMeasureCount(); i < measureCount; i++) {
+                RolapStar.Measure measure = spec.getMeasure(i);
+                Util.assertTrue(measure.table == star.factTable);
+                star.factTable.addToFrom(innerSqlQuery, false, true);
+                final String alias = "m" + i;
+                innerSqlQuery.addSelect(measure.getExpression(outerSqlQuery), alias);
+                outerSqlQuery.addSelect(
+                    measure.aggregator.getNonDistinctAggregator().getExpression(
+                            alias));
+            }
+            outerSqlQuery.addFrom(innerSqlQuery, "foo", true);
+            sqlQuery = outerSqlQuery;
+        } else {
+            // add constraining dimensions
+            RolapStar.Column[] columns = spec.getColumns();
+            int arity = columns.length;
+            for (int i = 0; i < arity; i++) {
+                RolapStar.Column column = columns[i];
+                RolapStar.Table table = column.table;
+                if (table.isFunky()) {
+                    // this is a funky dimension -- ignore for now
+                    continue;
+                }
+                table.addToFrom(sqlQuery, false, true);
+                String expr = column.getExpression(sqlQuery);
+                Object[] constraints = spec.getConstraints(i);
+                if (constraints != null) {
+                    sqlQuery.addWhere(
+                        expr + " in " + column.quoteValues(constraints));
+                }
+                sqlQuery.addSelect(expr);
+                sqlQuery.addGroupBy(expr);
+            }
+            // add measures
+            for (int i = 0, measureCount = spec.getMeasureCount(); i < measureCount; i++) {
+                RolapStar.Measure measure = spec.getMeasure(i);
+                Util.assertTrue(measure.table == star.factTable);
+                star.factTable.addToFrom(sqlQuery, false, true);
+                sqlQuery.addSelect(
+                    measure.aggregator.getExpression(measure.getExpression(sqlQuery)));
+            }
+        }
 		String sql = sqlQuery.toString();
 		return sql;
 	}

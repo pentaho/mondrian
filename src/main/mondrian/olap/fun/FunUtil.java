@@ -566,8 +566,8 @@ public class FunUtil extends Util {
 		return new Double(asArray[median]);
 	}
 
-	static Object min(Evaluator evaluator, List members, ExpBase exp) {
-		SetWrapper sw = evaluateSet(evaluator, members, exp);
+	public static Object min(Evaluator evaluator, List members, Exp exp) {
+		SetWrapper sw = evaluateSet(evaluator, members, (ExpBase) exp);
 		if (sw.errorCount > 0) {
 			return new Double(Double.NaN);
 		} else if (sw.v.size() == 0) {
@@ -583,8 +583,8 @@ public class FunUtil extends Util {
 		}
 	}
 
-	static Object max(Evaluator evaluator, List members, ExpBase exp) {
-		SetWrapper sw = evaluateSet(evaluator, members, exp);
+	public static Object max(Evaluator evaluator, List members, Exp exp) {
+		SetWrapper sw = evaluateSet(evaluator, members, (ExpBase) exp);
 		if (sw.errorCount > 0) {
 			return new Double(Double.NaN);
 		} else if (sw.v.size() == 0) {
@@ -674,8 +674,8 @@ public class FunUtil extends Util {
 		}
 	}
 
-	static Object avg(Evaluator evaluator, List members, ExpBase exp) {
-		SetWrapper sw = evaluateSet(evaluator, members, exp);
+	public static Object avg(Evaluator evaluator, List members, Exp exp) {
+		SetWrapper sw = evaluateSet(evaluator, members, (ExpBase) exp);
 		if (sw.errorCount > 0) {
 			return new Double(Double.NaN);
 		} else if (sw.v.size() == 0) {
@@ -697,8 +697,8 @@ public class FunUtil extends Util {
 		return sum / sw.v.size();
 	}
 
-	static Object sum(Evaluator evaluator, List members, ExpBase exp) {
-		SetWrapper sw = evaluateSet(evaluator, members, exp);
+	public static Object sum(Evaluator evaluator, List members, Exp exp) {
+		SetWrapper sw = evaluateSet(evaluator, members, (ExpBase) exp);
 		if (sw.errorCount > 0) {
 			if (false) {
 				return new MondrianEvaluationException(
@@ -717,7 +717,7 @@ public class FunUtil extends Util {
 		}
 	}
 
-	static Object count(List members, boolean includeEmpty) {
+	public static Object count(List members, boolean includeEmpty) {
 		if (includeEmpty) {
 			return new Double(members.size());
 		} else {
@@ -729,23 +729,6 @@ public class FunUtil extends Util {
 				}
 			}
 			return new Double(retval);
-		}
-	}
-
-	static Object aggregate(
-			Evaluator evaluator, String aggregator, List members, ExpBase exp) {
-		if (aggregator.equals("sum")) {
-			return sum(evaluator, members, exp);
-		} else if (aggregator.equals("count")) {
-			return count(members, false);
-		} else if (aggregator.equals("avg")) {
-			return avg(evaluator, members, exp);
-		} else if (aggregator.equals("min")) {
-			return min(evaluator, members, exp);
-		} else if (aggregator.equals("max")) {
-			return max(evaluator, members, exp);
-		} else {
-			throw newEvalException(null, "Unknown aggregator '" + aggregator + "'");
 		}
 	}
 

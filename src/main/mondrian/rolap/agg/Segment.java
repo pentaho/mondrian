@@ -191,8 +191,9 @@ public class Segment implements CachePool.Cacheable
 	{
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
-		pw.print("Segment #" + id + " {measure=" + measure.aggregator +
-			"("	+ measure.expression.getGenericExpression() + ")");
+		pw.print("Segment #" + id + " {measure=" +
+                measure.aggregator.getExpression(
+                        measure.expression.getGenericExpression()));
 		for (int i = 0; i < aggregation.columns.length; i++) {
 			pw.print(", ");
 			pw.print(aggregation.columns[i].expression.getGenericExpression());
@@ -448,8 +449,6 @@ public class Segment implements CachePool.Cacheable
 			}
 		}
 	}
-
-	;
 
 	/**
 	 * Decides whether to use a sparse representation for this segment, using

@@ -223,8 +223,10 @@ public class RolapSchema implements Schema
 	}
 
 	/**
-	 * A pool is a collection of schemas. Call <code>Pool.instance.{@link #get
-	 * get(catalogName,jdbcConnectString)</code>.
+	 * A collection of schemas, identified by their connection properties
+     * (catalog name, JDBC URL, and so forth).
+     *
+     * <p>To lookup a schema, call <code>Pool.instance().{@link #get}</code>.
 	 */
 	static class Pool {
 		private static Pool pool = new Pool();

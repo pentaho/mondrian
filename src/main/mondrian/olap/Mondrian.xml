@@ -430,6 +430,7 @@ todo:
 			<Value>min</Value>
 			<Value>max</Value>
 			<Value>avg</Value>
+			<Value>distinct count</Value>
 		</Attribute>
 	</Element>
 

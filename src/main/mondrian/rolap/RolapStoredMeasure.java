@@ -11,9 +11,9 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.Util;
 import mondrian.olap.MondrianDef;
 import mondrian.olap.Property;
+import mondrian.olap.Util;
 
 /**
  * todo:
@@ -25,33 +25,24 @@ import mondrian.olap.Property;
 class RolapStoredMeasure extends RolapMeasure
 {
 	/** For SQL generator. Column which holds the value of the measure. */
-	MondrianDef.Expression expression;
+	final MondrianDef.Expression expression;
 	/** For SQL generator. Has values "SUM", "COUNT", etc. */
-	String aggregator;
+	final RolapAggregator aggregator;
 	final RolapCube cube;
 
 	RolapStoredMeasure(
 			RolapCube cube, RolapMember parentMember, RolapLevel level, String name,
 			String formatString, MondrianDef.Expression expression,
-			String aggregator) {
+			String aggregatorName) {
 		super(parentMember, level, name, formatString);
 		this.cube = cube;
 		this.expression = expression;
-		Util.assertTrue(aggregatorIsValid(aggregator));
-		this.aggregator = aggregator;
+        this.aggregator = (RolapAggregator)
+                RolapAggregator.enumeration.getValue(aggregatorName);
+        if (this.aggregator == null) {
+            throw Util.newError("Unknown aggregator '" + aggregatorName + "'");
+        }
 		setProperty(Property.PROPERTY_AGGREGATION_TYPE, aggregator);
-	}
-
-	private static final String[] aggregators = new String[] {
-		"sum", "count", "min", "max", "avg"
-	};
-	private static boolean aggregatorIsValid(String aggregator) {
-		for (int i = 0; i < aggregators.length; i++) {
-			if (aggregator.equals(aggregators[i])) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	RolapStoredMeasure(
@@ -67,6 +58,7 @@ class RolapStoredMeasure extends RolapMeasure
 	CellReader getCellReader() {
 		return cube.cellReader;
 	}
+
 }
 
 // End RolapStoredMeasure.java

@@ -18,6 +18,7 @@ import mondrian.olap.MondrianDef;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * <code>SqlQuery</code> allows us to build a <code>select</code>
@@ -72,6 +73,7 @@ public class SqlQuery
 		groupBy = new StringBuffer(),
 		having = new StringBuffer(),
 		orderBy = new StringBuffer();
+    private HashSet groupBySet = new HashSet();
 	int selectCount = 0,
 		fromCount = 0,
 		whereCount = 0,
@@ -80,7 +82,7 @@ public class SqlQuery
 		orderByCount = 0;
 	public ArrayList fromAliases = new ArrayList();
 
-	/**
+    /**
 	 * Creates a <code>SqlQuery</code>
 	 *
 	 * @param databaseMetaData used to determine which dialect of
@@ -210,6 +212,10 @@ public class SqlQuery
 	public boolean allowsCompoundCountDistinct() {
 		return isMySQL();
 	}
+    /** Whether "select count(distinct x) from t" is OK. **/
+    public boolean allowsCountDistinct() {
+        return !isAccess();
+    }
 
 	/**
 	 * Chooses the variant within an array of {@link
@@ -384,8 +390,11 @@ public class SqlQuery
 	}
 	public void addGroupBy(String expression)
 	{
-		groupBy.append(
-			(groupByCount++ == 0 ? " group by " : ", ") + expression);
+        // Only add it to the clause once.
+        if (groupBySet.add(expression)) {
+            groupBy.append(
+                (groupByCount++ == 0 ? " group by " : ", ") + expression);
+        }
 	}
 	public void addHaving(String expression)
 	{

@@ -515,7 +515,7 @@ public class BuiltinFunTable extends FunTable {
 
 			public void testDimensionHierarchy(FoodMartTestCase test) {
 				String s = test.executeExpr("[Time].Dimension.Name");
-        Assert.assertEquals("Time", s);
+                Assert.assertEquals("Time", s);
 			}
 		});
 
@@ -527,7 +527,7 @@ public class BuiltinFunTable extends FunTable {
 
 			public void testLevelDimension(FoodMartTestCase test) {
 				String s = test.executeExpr("[Time].[Year].Dimension");
-        Assert.assertEquals("[Time]", s);
+                Assert.assertEquals("[Time]", s);
 			}
 		});
 
@@ -540,7 +540,7 @@ public class BuiltinFunTable extends FunTable {
 			public void testMemberDimension(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"[Time].[1997].[Q2].Dimension");
-        Assert.assertEquals("[Time]", s);
+                Assert.assertEquals("[Time]", s);
 			}
 		});
 
@@ -558,7 +558,7 @@ public class BuiltinFunTable extends FunTable {
 
 			public void testDimensionsNumeric(FoodMartTestCase test) {
 				String s = test.executeExpr("Dimensions(2).Name");
-        Assert.assertEquals("Store", s);
+                Assert.assertEquals("Store", s);
 			}
 		});
 		define(new FunDefBase("Dimensions", "Dimensions(<String Expression>)", "Returns the dimension whose name is specified by a string.", "fdS") {
@@ -582,7 +582,7 @@ public class BuiltinFunTable extends FunTable {
 			public void testDimensionsString(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"Dimensions(\"Store\").UniqueName");
-        Assert.assertEquals("[Store]", s);
+                Assert.assertEquals("[Store]", s);
 			}
 		});
 
@@ -603,31 +603,31 @@ public class BuiltinFunTable extends FunTable {
 			public void testTime(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"[Time].[1997].[Q1].[1].Hierarchy");
-        Assert.assertEquals("[Time]", s);
+                Assert.assertEquals("[Time]", s);
 			}
 
 			public void testBasic9(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"[Gender].[All Gender].[F].Hierarchy");
-        Assert.assertEquals("[Gender]", s);
+                Assert.assertEquals("[Gender]", s);
 			}
 
 			public void testFirstInLevel9(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"[Education Level].[All Education Levels].[Bachelors Degree].Hierarchy");
-        Assert.assertEquals("[Education Level]", s);
+                Assert.assertEquals("[Education Level]", s);
 			}
 
 			public void testHierarchyAll(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"[Gender].[All Gender].Hierarchy");
-        Assert.assertEquals("[Gender]", s);
+                Assert.assertEquals("[Gender]", s);
 			}
 
 			public void testHierarchyNull(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"[Gender].[All Gender].Parent.Hierarchy");
-        Assert.assertEquals("[Gender]", s); // MSOLAP gives "#ERR"
+                Assert.assertEquals("[Gender]", s); // MSOLAP gives "#ERR"
 			}
 		});
 
@@ -642,7 +642,7 @@ public class BuiltinFunTable extends FunTable {
 			public void testMemberLevel(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"[Time].[1997].[Q1].[1].Level.UniqueName");
-        Assert.assertEquals("[Time].[Month]", s);
+                Assert.assertEquals("[Time].[Month]", s);
 			}
 		});
 
@@ -661,7 +661,7 @@ public class BuiltinFunTable extends FunTable {
 
 			public void testLevelsNumeric(FoodMartTestCase test) {
 				String s = test.executeExpr("[Time].Levels(2).Name");
-        Assert.assertEquals("Quarter", s);
+                Assert.assertEquals("Quarter", s);
 			}
 			public void testLevelsTooSmall(FoodMartTestCase test) {
 				test.assertExprThrows(
@@ -699,7 +699,7 @@ public class BuiltinFunTable extends FunTable {
 			public void testLevelsString(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"Levels(\"[Time].[Year]\").UniqueName");
-        Assert.assertEquals("[Time].[Year]", s);
+                Assert.assertEquals("[Time].[Year]", s);
 			}
 
 			public void testLevelsStringFail(FoodMartTestCase test) {
@@ -781,19 +781,19 @@ public class BuiltinFunTable extends FunTable {
 			public void testAncestor(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"Ancestor([Store].[USA].[CA].[Los Angeles],[Store Country])");
-        Assert.assertEquals("USA", member.getName());
+                Assert.assertEquals("USA", member.getName());
 			}
 
 			public void testAncestorHigher(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"Ancestor([Store].[USA],[Store].[Store City])");
-        Assert.assertNull(member); // MSOLAP returns null
+                Assert.assertNull(member); // MSOLAP returns null
 			}
 
 			public void testAncestorSameLevel(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"Ancestor([Store].[Canada],[Store].[Store Country])");
-        Assert.assertEquals("Canada", member.getName());
+                Assert.assertEquals("Canada", member.getName());
 			}
 
 			public void testAncestorWrongHierarchy(FoodMartTestCase test) {
@@ -807,7 +807,7 @@ public class BuiltinFunTable extends FunTable {
 			public void testAncestorAllLevel(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"Ancestor([Store].[USA].[CA],[Store].Levels(1))");
-        Assert.assertTrue(member.isAll());
+                Assert.assertTrue(member.isAll());
 			}
 		});
 
@@ -823,7 +823,7 @@ public class BuiltinFunTable extends FunTable {
 				// MSOLAP returns [1997].[Q4], because [Time].CurrentMember =
 				// [1997].
 				Member member = test.executeAxis("ClosingPeriod()");
-        Assert.assertEquals("[Time].[1997].[Q4]", member.getUniqueName());
+                Assert.assertEquals("[Time].[1997].[Q4]", member.getUniqueName());
 			}
 		});
 		define(new FunDefBase("ClosingPeriod", "ClosingPeriod([<Level>[, <Member>]])", "Returns the last sibling among the descendants of a member at a level.", "fml") {
@@ -837,7 +837,7 @@ public class BuiltinFunTable extends FunTable {
 			public void testClosingPeriodLevel(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"ClosingPeriod([Month])");
-        Assert.assertEquals("[Time].[1997].[Q4].[12]", member.getUniqueName());
+                Assert.assertEquals("[Time].[1997].[Q4].[12]", member.getUniqueName());
 			}
 			public void testClosingPeriodLevelNotInTimeFails(FoodMartTestCase test) {
 				test.assertAxisThrows(
@@ -871,12 +871,12 @@ public class BuiltinFunTable extends FunTable {
 			public void testClosingPeriod(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"ClosingPeriod([Month],[1997])");
-        Assert.assertEquals("[Time].[1997].[Q4].[12]", member.getUniqueName());
+                Assert.assertEquals("[Time].[1997].[Q4].[12]", member.getUniqueName());
 			}
 			public void testClosingPeriodBelow(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"ClosingPeriod([Quarter],[1997].[Q3].[8])");
-        Assert.assertNull(member);
+                Assert.assertNull(member);
 			}
 		});
 
@@ -921,20 +921,20 @@ public class BuiltinFunTable extends FunTable {
 			public void testCousin1(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"Cousin([1997].[Q4],[1998])");
-        Assert.assertEquals("[Time].[1998].[Q4]", member.getUniqueName());
+                Assert.assertEquals("[Time].[1998].[Q4]", member.getUniqueName());
 			}
 
 			public void testCousin2(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"Cousin([1997].[Q4].[12],[1998].[Q1])");
-        Assert.assertEquals("[Time].[1998].[Q1].[3]", member.getUniqueName());
+                Assert.assertEquals("[Time].[1998].[Q1].[3]", member.getUniqueName());
 			}
 
 			public void testCousinOverrun(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"Cousin([Customers].[USA].[CA].[San Jose], [Customers].[USA].[OR])");
 				// CA has more cities than OR
-        Assert.assertNull(member);
+                Assert.assertNull(member);
 			}
 
 			public void testCousinThreeDown(FoodMartTestCase test) {
@@ -944,19 +944,19 @@ public class BuiltinFunTable extends FunTable {
 				// of the 4th child (Berkeley)
 				// of the 1st child (CA)
 				// of USA
-        Assert.assertEquals("[Customers].[All Customers].[Mexico].[DF].[Tixapan].[Albert Clouse]", member.getUniqueName());
+                Assert.assertEquals("[Customers].[All Customers].[Mexico].[DF].[Tixapan].[Albert Clouse]", member.getUniqueName());
 			}
 
 			public void testCousinSameLevel(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"Cousin([Gender].[M], [Gender].[F])");
-        Assert.assertEquals("F", member.getName());
+                Assert.assertEquals("F", member.getName());
 			}
 
 			public void testCousinHigherLevel(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"Cousin([Time].[1997], [Time].[1998].[Q1])");
-        Assert.assertNull(member);
+                Assert.assertNull(member);
 			}
 
 			public void testCousinWrongHierarchy(FoodMartTestCase test) {
@@ -975,14 +975,14 @@ public class BuiltinFunTable extends FunTable {
 						"with member [Measures].[Foo] as '[Gender].CurrentMember.Name'" + nl +
 						"select {[Measures].[Foo]} on columns" + nl +
 						"from Sales where ([Gender].[F])");
-            Assert.assertEquals("F", result.getCell(new int[] {0}).getValue());
+                Assert.assertEquals("F", result.getCell(new int[] {0}).getValue());
 			}
 			public void testCurrentMemberFromDefaultMember(FoodMartTestCase test) {
 				Result result = test.runQuery(
 						"with member [Measures].[Foo] as '[Time].CurrentMember.Name'" + nl +
 						"select {[Measures].[Foo]} on columns" + nl +
 						"from Sales");
-        Assert.assertEquals("1997", result.getCell(new int[] {0}).getValue());
+                Assert.assertEquals("1997", result.getCell(new int[] {0}).getValue());
 			}
 			public void testCurrentMemberFromAxis(FoodMartTestCase test) {
 				Result result = test.runQuery(
@@ -990,7 +990,7 @@ public class BuiltinFunTable extends FunTable {
 						"select {[Measures].[Foo]} on columns," + nl +
 						" CrossJoin({[Gender].children}, {[Marital Status].children}) on rows" + nl +
 						"from Sales");
-        Assert.assertEquals("FM", result.getCell(new int[] {0,0}).getValue());
+                Assert.assertEquals("FM", result.getCell(new int[] {0,0}).getValue());
 			}
 			/**
 			 * When evaluating a calculated member, MSOLAP regards that
@@ -1003,7 +1003,7 @@ public class BuiltinFunTable extends FunTable {
 						"with member [Measures].[Foo] as '[Measures].CurrentMember.Name'" + nl +
 						"select {[Measures].[Foo]} on columns" + nl +
 						"from Sales");
-        Assert.assertEquals("Unit Sales", result.getCell(new int[] {0}).getValue());
+                Assert.assertEquals("Unit Sales", result.getCell(new int[] {0}).getValue());
 			}
 		});
 		define(new FunDefBase("DefaultMember", "<Dimension>.DefaultMember", "Returns the default member of a dimension.", "pmd") {
@@ -1015,7 +1015,7 @@ public class BuiltinFunTable extends FunTable {
 
 			public void testDimensionDefaultMember(FoodMartTestCase test) {
 				Member member = test.executeAxis("[Measures].DefaultMember");
-        Assert.assertEquals("Unit Sales", member.getName());
+                Assert.assertEquals("Unit Sales", member.getName());
 			}
 		});
 
@@ -1033,19 +1033,19 @@ public class BuiltinFunTable extends FunTable {
 			public void testFirstChildFirstInLevel(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"[Time].[1997].[Q4].FirstChild");
-        Assert.assertEquals("10", member.getName());
+                Assert.assertEquals("10", member.getName());
 			}
 
 			public void testFirstChildAll(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"[Gender].[All Gender].FirstChild");
-        Assert.assertEquals("F", member.getName());
+                Assert.assertEquals("F", member.getName());
 			}
 
 			public void testFirstChildOfChildless(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"[Gender].[All Gender].[F].FirstChild");
-				Assert.assertNull(member);
+                Assert.assertNull(member);
 			}
 		});
 
@@ -1068,19 +1068,19 @@ public class BuiltinFunTable extends FunTable {
 			public void testFirstSiblingFirstInLevel(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"[Gender].[F].FirstSibling");
-        Assert.assertEquals("F", member.getName());
+                Assert.assertEquals("F", member.getName());
 			}
 
 			public void testFirstSiblingLastInLevel(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"[Time].[1997].[Q4].FirstSibling");
-        Assert.assertEquals("Q1", member.getName());
+                Assert.assertEquals("Q1", member.getName());
 			}
 
 			public void testFirstSiblingAll(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"[Gender].[All Gender].FirstSibling");
-        Assert.assertTrue(member.isAll());
+                Assert.assertTrue(member.isAll());
 			}
 
 			public void testFirstSiblingRoot(FoodMartTestCase test) {
@@ -1088,13 +1088,13 @@ public class BuiltinFunTable extends FunTable {
 				// [Unit Sales] does not have a parent.
 				Member member = test.executeAxis(
 						"[Measures].[Store Sales].FirstSibling");
-        Assert.assertEquals("Unit Sales", member.getName());
+                Assert.assertEquals("Unit Sales", member.getName());
 			}
 
 			public void testFirstSiblingNull(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"[Gender].[F].FirstChild.FirstSibling");
-        Assert.assertNull(member);
+                Assert.assertNull(member);
 			}
 		});
 
@@ -1113,7 +1113,7 @@ public class BuiltinFunTable extends FunTable {
 					public void testLag(FoodMartTestCase test) {
 						Member member = test.executeAxis(
 								"[Time].[1997].[Q4].[12].Lag(4)");
-            Assert.assertEquals("8", member.getName());
+                        Assert.assertEquals("8", member.getName());
 					}
 
 					public void testLagFirstInLevel(FoodMartTestCase test) {
@@ -1207,7 +1207,7 @@ public class BuiltinFunTable extends FunTable {
 			public void testLastSiblingAll(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"[Gender].[All Gender].LastSibling");
-        Assert.assertTrue(member.isAll());
+                Assert.assertTrue(member.isAll());
 			}
 
 			public void testLastSiblingRoot(FoodMartTestCase test) {
@@ -1266,20 +1266,20 @@ public class BuiltinFunTable extends FunTable {
 			public void testBasic2(FoodMartTestCase test) {
 				Result result = test.runQuery(
 						"select {[Gender].[F].NextMember} ON COLUMNS from Sales");
-        Assert.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("M"));
+                Assert.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("M"));
 			}
 
 			public void testFirstInLevel2(FoodMartTestCase test) {
 				Result result = test.runQuery(
 						"select {[Gender].[M].NextMember} ON COLUMNS from Sales");
-        Assert.assertTrue(result.getAxes()[0].positions.length == 0);
+                Assert.assertTrue(result.getAxes()[0].positions.length == 0);
 			}
 
 			public void testAll2(FoodMartTestCase test) {
 				Result result = test.runQuery(
 						"select {[Gender].PrevMember} ON COLUMNS from Sales");
 				// previous to [Gender].[All] is null, so no members are returned
-        Assert.assertTrue(result.getAxes()[0].positions.length == 0);
+                Assert.assertTrue(result.getAxes()[0].positions.length == 0);
 			}
 		});
 
@@ -1300,20 +1300,20 @@ public class BuiltinFunTable extends FunTable {
 			public void testBasic5(FoodMartTestCase test) {
 				Result result = test.runQuery(
 						"select{ [Product].[All Products].[Drink].Parent} on columns from Sales");
-        Assert.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("All Products"));
+                Assert.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("All Products"));
 			}
 
 			public void testFirstInLevel5(FoodMartTestCase test) {
 				Result result = test.runQuery(
 						"select {[Time].[1997].[Q2].[4].Parent} on columns,{[Gender].[M]} on rows from Sales");
-        Assert.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("Q2"));
+                Assert.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("Q2"));
 			}
 
 			public void testAll5(FoodMartTestCase test) {
 				Result result = test.runQuery(
 						"select {[Time].[1997].[Q2].Parent} on columns,{[Gender].[M]} on rows from Sales");
 				// previous to [Gender].[All] is null, so no members are returned
-        Assert.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("1997"));
+                Assert.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("1997"));
 			}
 		});
 
@@ -1326,20 +1326,20 @@ public class BuiltinFunTable extends FunTable {
 			public void testBasic(FoodMartTestCase test) {
 				Result result = test.runQuery(
 						"select {[Gender].[M].PrevMember} ON COLUMNS from Sales");
-        Assert.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("F"));
+                Assert.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("F"));
 			}
 
 			public void testFirstInLevel(FoodMartTestCase test) {
 				Result result = test.runQuery(
 						"select {[Gender].[F].PrevMember} ON COLUMNS from Sales");
-        Assert.assertTrue(result.getAxes()[0].positions.length == 0);
+                Assert.assertTrue(result.getAxes()[0].positions.length == 0);
 			}
 
 			public void testAll(FoodMartTestCase test) {
 				Result result = test.runQuery(
 						"select {[Gender].PrevMember} ON COLUMNS from Sales");
 				// previous to [Gender].[All] is null, so no members are returned
-        Assert.assertTrue(result.getAxes()[0].positions.length == 0);
+                Assert.assertTrue(result.getAxes()[0].positions.length == 0);
 			}
 		});
 		if (false) define(new FunDefBase("ValidMeasure", "ValidMeasure(<Tuple>)", "Returns a valid measure in a virtual cube by forcing inapplicable dimensions to their top level.", "fm*"));
@@ -1351,12 +1351,15 @@ public class BuiltinFunTable extends FunTable {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						List members = (List) getArg(evaluator, args, 0);
 						ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
-						String aggregator = (String) evaluator.getProperty(Property.PROPERTY_AGGREGATION_TYPE);
-						String rollup = getRollup(aggregator);
+						Aggregator aggregator = (Aggregator) evaluator.getProperty(Property.PROPERTY_AGGREGATION_TYPE);
 						if (aggregator == null) {
 							throw newEvalException(null, "Could not find an aggregator in the current evaluation context");
 						}
-						return aggregate(evaluator.push(), rollup, members, exp);
+                        Aggregator rollup = aggregator.getRollup();
+                        if (rollup == null) {
+                            throw newEvalException(null, "Don't know how to rollup aggregator '" + aggregator + "'");
+                        }
+						return rollup.aggregate(evaluator.push(), members, exp);
 					}
 					public void testAggregate(FoodMartTestCase test) {
 						test.runQueryCheckResult(
@@ -1472,12 +1475,15 @@ public class BuiltinFunTable extends FunTable {
 						Hierarchy hierarchy = getHierarchyArg(evaluator, args, 0, true);
 						Member member = evaluator.getParent().getContext(hierarchy.getDimension());
 						List members = (List) member.getPropertyValue(Property.PROPERTY_CONTRIBUTING_CHILDREN);
-						String aggregator = (String) evaluator.getProperty(Property.PROPERTY_AGGREGATION_TYPE);
-						String rollup = getRollup(aggregator);
-						if (aggregator == null) {
-							throw newEvalException(null, "Could not find an aggregator in the current evaluation context");
-						}
-						return aggregate(evaluator.push(), rollup, members, valueFunCall);
+						Aggregator aggregator = (Aggregator) evaluator.getProperty(Property.PROPERTY_AGGREGATION_TYPE);
+                        if (aggregator == null) {
+                            throw newEvalException(null, "Could not find an aggregator in the current evaluation context");
+                        }
+						Aggregator rollup = aggregator.getRollup();
+                        if (rollup == null) {
+                            throw newEvalException(null, "Don't know how to rollup aggregator '" + aggregator + "'");
+                        }
+						return rollup.aggregate(evaluator.push(), members, valueFunCall);
 					}
 				}));
 		define(new FunkResolver(
@@ -1928,131 +1934,319 @@ public class BuiltinFunTable extends FunTable {
 				return Arrays.asList(children);
 			}
 		});
-		define(new FunDefBase("Crossjoin", "Crossjoin(<Set1>, <Set2>)", "Returns the cross product of two sets.", "fxxx") {
-			public Hierarchy getHierarchy(Exp[] args) {
-				// CROSSJOIN(<Set1>,<Set2>) has Hierarchy [Hie1] x [Hie2], which we
-				// can't represent, so we return null.
-				return null;
-			}
+		define(new MultiResolver(
+                "Crossjoin", "Crossjoin(<Set1>, <Set2>)", "Returns the cross product of two sets.",
+                new String[]{"fxxx"}) {
+            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+                return new CrossJoinFunDef(dummyFunDef);
+            }
+            public void testCrossjoinNested(FoodMartTestCase test) {
+                test.assertAxisReturns(
+                        "  CrossJoin(" + nl +
+                        "    CrossJoin(" + nl +
+                        "      [Gender].members," + nl +
+                        "      [Marital Status].members)," + nl +
+                        "   {[Store], [Store].children})",
 
-			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				List set0 = (List) getArg(evaluator, args, 0),
-						set1 = (List) getArg(evaluator, args, 1);
-				if (set0.isEmpty() || set1.isEmpty()) {
-					return Collections.EMPTY_LIST;
-				}
-				boolean neitherSideIsTuple = true;
-				int arity0 = 1,
-					arity1 = 1;
-				if (set0.get(0) instanceof Member[]) {
-					arity0 = ((Member[]) set0.get(0)).length;
-					neitherSideIsTuple = false;
-				}
-				if (set1.get(0) instanceof Member[]) {
-					arity1 = ((Member[]) set1.get(0)).length;
-					neitherSideIsTuple = false;
-				}
-				List result = new ArrayList();
-				if (neitherSideIsTuple) {
-					// Simpler routine if we know neither side contains tuples.
-					for (int i = 0, m = set0.size(); i < m; i++) {
-						Member o0 = (Member) set0.get(i);
-						for (int j = 0, n = set1.size(); j < n; j++) {
-							Member o1 = (Member) set1.get(j);
-							result.add(new Member[]{o0, o1});
-						}
-					}
-				} else {
-					// More complex routine if one or both sides are arrays
-					// (probably the product of nested CrossJoins).
-					Member[] row = new Member[arity0 + arity1];
-					for (int i = 0, m = set0.size(); i < m; i++) {
-						int x = 0;
-						Object o0 = set0.get(i);
-						if (o0 instanceof Member) {
-							row[x++] = (Member) o0;
-						} else {
-							assertTrue(o0 instanceof Member[]);
-							final Member[] members = (Member[]) o0;
-							for (int k = 0; k < members.length; k++) {
-								row[x++] = members[k];
-							}
-						}
-						for (int j = 0, n = set1.size(); j < n; j++) {
-							Object o1 = set1.get(j);
-							if (o1 instanceof Member) {
-								row[x++] = (Member) o1;
-							} else {
-								assertTrue(o1 instanceof Member[]);
-								final Member[] members = (Member[]) o1;
-								for (int k = 0; k < members.length; k++) {
-									row[x++] = members[k];
-								}
-							}
-							result.add(row.clone());
-							x = arity0;
-						}
-					}
-				}
-				return result;
-			}
-
-			public void testCrossjoinNested(FoodMartTestCase test) {
-				test.assertAxisReturns(
-						"  CrossJoin(" + nl +
-						"    CrossJoin(" + nl +
-						"      [Gender].members," + nl +
-						"      [Marital Status].members)," + nl +
-						"   {[Store], [Store].children})",
-
-						"{[Gender].[All Gender], [Marital Status].[All Marital Status], [Store].[All Stores]}" + nl +
-						"{[Gender].[All Gender], [Marital Status].[All Marital Status], [Store].[All Stores].[Canada]}" + nl +
-						"{[Gender].[All Gender], [Marital Status].[All Marital Status], [Store].[All Stores].[Mexico]}" + nl +
-						"{[Gender].[All Gender], [Marital Status].[All Marital Status], [Store].[All Stores].[USA]}" + nl +
-						"{[Gender].[All Gender], [Marital Status].[All Marital Status].[M], [Store].[All Stores]}" + nl +
-						"{[Gender].[All Gender], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[Canada]}" + nl +
-						"{[Gender].[All Gender], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[Mexico]}" + nl +
-						"{[Gender].[All Gender], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[USA]}" + nl +
-						"{[Gender].[All Gender], [Marital Status].[All Marital Status].[S], [Store].[All Stores]}" + nl +
-						"{[Gender].[All Gender], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Canada]}" + nl +
-						"{[Gender].[All Gender], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Mexico]}" + nl +
-						"{[Gender].[All Gender], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[USA]}" + nl +
-						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status], [Store].[All Stores]}" + nl +
-						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status], [Store].[All Stores].[Canada]}" + nl +
-						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status], [Store].[All Stores].[Mexico]}" + nl +
-						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status], [Store].[All Stores].[USA]}" + nl +
-						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M], [Store].[All Stores]}" + nl +
-						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[Canada]}" + nl +
-						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[Mexico]}" + nl +
-						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[USA]}" + nl +
-						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S], [Store].[All Stores]}" + nl +
-						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Canada]}" + nl +
-						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Mexico]}" + nl +
-						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[USA]}" + nl +
-						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status], [Store].[All Stores]}" + nl +
-						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status], [Store].[All Stores].[Canada]}" + nl +
-						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status], [Store].[All Stores].[Mexico]}" + nl +
-						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status], [Store].[All Stores].[USA]}" + nl +
-						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M], [Store].[All Stores]}" + nl +
-						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[Canada]}" + nl +
-						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[Mexico]}" + nl +
-						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[USA]}" + nl +
-						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores]}" + nl +
-						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Canada]}" + nl +
-						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Mexico]}" + nl +
-						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[USA]}");
-			}
-			public void testCrossjoinSingletonTuples(FoodMartTestCase test) {
-				test.assertAxisReturns("CrossJoin({([Gender].[M])}, {([Marital Status].[S])})",
-						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S]}");
-			}
-			public void testCrossjoinSingletonTuplesNested(FoodMartTestCase test) {
-				test.assertAxisReturns("CrossJoin({([Gender].[M])}, CrossJoin({([Marital Status].[S])}, [Store].children))",
-						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Canada]}" + nl +
-						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Mexico]}" + nl +
-						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[USA]}");
-			}
+                        "{[Gender].[All Gender], [Marital Status].[All Marital Status], [Store].[All Stores]}" + nl +
+                        "{[Gender].[All Gender], [Marital Status].[All Marital Status], [Store].[All Stores].[Canada]}" + nl +
+                        "{[Gender].[All Gender], [Marital Status].[All Marital Status], [Store].[All Stores].[Mexico]}" + nl +
+                        "{[Gender].[All Gender], [Marital Status].[All Marital Status], [Store].[All Stores].[USA]}" + nl +
+                        "{[Gender].[All Gender], [Marital Status].[All Marital Status].[M], [Store].[All Stores]}" + nl +
+                        "{[Gender].[All Gender], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[Canada]}" + nl +
+                        "{[Gender].[All Gender], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[Mexico]}" + nl +
+                        "{[Gender].[All Gender], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[USA]}" + nl +
+                        "{[Gender].[All Gender], [Marital Status].[All Marital Status].[S], [Store].[All Stores]}" + nl +
+                        "{[Gender].[All Gender], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Canada]}" + nl +
+                        "{[Gender].[All Gender], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Mexico]}" + nl +
+                        "{[Gender].[All Gender], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[USA]}" + nl +
+                        "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status], [Store].[All Stores]}" + nl +
+                        "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status], [Store].[All Stores].[Canada]}" + nl +
+                        "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status], [Store].[All Stores].[Mexico]}" + nl +
+                        "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status], [Store].[All Stores].[USA]}" + nl +
+                        "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M], [Store].[All Stores]}" + nl +
+                        "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[Canada]}" + nl +
+                        "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[Mexico]}" + nl +
+                        "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[USA]}" + nl +
+                        "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S], [Store].[All Stores]}" + nl +
+                        "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Canada]}" + nl +
+                        "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Mexico]}" + nl +
+                        "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[USA]}" + nl +
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status], [Store].[All Stores]}" + nl +
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status], [Store].[All Stores].[Canada]}" + nl +
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status], [Store].[All Stores].[Mexico]}" + nl +
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status], [Store].[All Stores].[USA]}" + nl +
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M], [Store].[All Stores]}" + nl +
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[Canada]}" + nl +
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[Mexico]}" + nl +
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[USA]}" + nl +
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores]}" + nl +
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Canada]}" + nl +
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Mexico]}" + nl +
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[USA]}");
+            }
+            public void testCrossjoinSingletonTuples(FoodMartTestCase test) {
+                test.assertAxisReturns("CrossJoin({([Gender].[M])}, {([Marital Status].[S])})",
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S]}");
+            }
+            public void testCrossjoinSingletonTuplesNested(FoodMartTestCase test) {
+                test.assertAxisReturns("CrossJoin({([Gender].[M])}, CrossJoin({([Marital Status].[S])}, [Store].children))",
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Canada]}" + nl +
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Mexico]}" + nl +
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[USA]}");
+            }
 		});
+        define(new MultiResolver(
+                "*", "<Set1> * <Set2>", "Returns the cross product of two sets.",
+                new String[]{"ixxx", "ixmx", "ixxm", "ixmm"}) {
+            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+                return new CrossJoinFunDef(dummyFunDef);
+            }
+            public void testCrossjoinAsterisk(FoodMartTestCase test) {
+                test.assertAxisReturns("{[Gender].[M]} * {[Marital Status].[S]}",
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S]}");
+            }
+            public void testCrossjoinAsteriskAssoc(FoodMartTestCase test) {
+                test.assertAxisReturns("Order({[Gender].Children} * {[Marital Status].Children} * {[Time].[1997].[Q2].Children}," +
+                        "[Measures].[Unit Sales])",
+                        "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M], [Time].[1997].[Q2].[4]}" + nl +
+                        "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M], [Time].[1997].[Q2].[6]}" + nl +
+                        "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M], [Time].[1997].[Q2].[5]}" + nl +
+                        "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S], [Time].[1997].[Q2].[4]}" + nl +
+                        "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S], [Time].[1997].[Q2].[5]}" + nl +
+                        "{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S], [Time].[1997].[Q2].[6]}" + nl +
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M], [Time].[1997].[Q2].[4]}" + nl +
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M], [Time].[1997].[Q2].[5]}" + nl +
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M], [Time].[1997].[Q2].[6]}" + nl +
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Time].[1997].[Q2].[6]}" + nl +
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Time].[1997].[Q2].[4]}" + nl +
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Time].[1997].[Q2].[5]}");
+            }
+            public void testCrossjoinAsteriskInsideBraces(FoodMartTestCase test) {
+                test.assertAxisReturns("{[Gender].[M] * [Marital Status].[S] * [Time].[1997].[Q2].Children}",
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Time].[1997].[Q2].[4]}" + nl +
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Time].[1997].[Q2].[5]}" + nl +
+                        "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Time].[1997].[Q2].[6]}");
+            }
+            public void testCrossjoinAsteriskQuery(FoodMartTestCase test) {
+                test.runQueryCheckResult(
+                        "SELECT {[Measures].members * [1997].children} ON COLUMNS," + nl +
+                        " {[Store].[USA].children * [Position].[All Position].children} DIMENSION PROPERTIES [Store].[Store SQFT] ON ROWS" + nl +
+                        "FROM [HR]",
+
+                        "Axis #0:" + nl +
+                        "{}" + nl +
+                        "Axis #1:" + nl +
+                        "{[Measures].[Org Salary], [Time].[1997].[Q1]}" + nl +
+                        "{[Measures].[Org Salary], [Time].[1997].[Q2]}" + nl +
+                        "{[Measures].[Org Salary], [Time].[1997].[Q3]}" + nl +
+                        "{[Measures].[Org Salary], [Time].[1997].[Q4]}" + nl +
+                        "{[Measures].[Count], [Time].[1997].[Q1]}" + nl +
+                        "{[Measures].[Count], [Time].[1997].[Q2]}" + nl +
+                        "{[Measures].[Count], [Time].[1997].[Q3]}" + nl +
+                        "{[Measures].[Count], [Time].[1997].[Q4]}" + nl +
+                        "{[Measures].[Number of Employees], [Time].[1997].[Q1]}" + nl +
+                        "{[Measures].[Number of Employees], [Time].[1997].[Q2]}" + nl +
+                        "{[Measures].[Number of Employees], [Time].[1997].[Q3]}" + nl +
+                        "{[Measures].[Number of Employees], [Time].[1997].[Q4]}" + nl +
+                        "Axis #2:" + nl +
+                        "{[Store].[All Stores].[USA].[CA], [Position].[All Position].[Middle Management]}" + nl +
+                        "{[Store].[All Stores].[USA].[CA], [Position].[All Position].[Senior Management]}" + nl +
+                        "{[Store].[All Stores].[USA].[CA], [Position].[All Position].[Store Full Time Staf]}" + nl +
+                        "{[Store].[All Stores].[USA].[CA], [Position].[All Position].[Store Management]}" + nl +
+                        "{[Store].[All Stores].[USA].[CA], [Position].[All Position].[Store Temp Staff]}" + nl +
+                        "{[Store].[All Stores].[USA].[OR], [Position].[All Position].[Middle Management]}" + nl +
+                        "{[Store].[All Stores].[USA].[OR], [Position].[All Position].[Senior Management]}" + nl +
+                        "{[Store].[All Stores].[USA].[OR], [Position].[All Position].[Store Full Time Staf]}" + nl +
+                        "{[Store].[All Stores].[USA].[OR], [Position].[All Position].[Store Management]}" + nl +
+                        "{[Store].[All Stores].[USA].[OR], [Position].[All Position].[Store Temp Staff]}" + nl +
+                        "{[Store].[All Stores].[USA].[WA], [Position].[All Position].[Middle Management]}" + nl +
+                        "{[Store].[All Stores].[USA].[WA], [Position].[All Position].[Senior Management]}" + nl +
+                        "{[Store].[All Stores].[USA].[WA], [Position].[All Position].[Store Full Time Staf]}" + nl +
+                        "{[Store].[All Stores].[USA].[WA], [Position].[All Position].[Store Management]}" + nl +
+                        "{[Store].[All Stores].[USA].[WA], [Position].[All Position].[Store Temp Staff]}" + nl +
+                        "Row #0: $275.40" + nl +
+                        "Row #0: $275.40" + nl +
+                        "Row #0: $275.40" + nl +
+                        "Row #0: $275.40" + nl +
+                        "Row #0: 27" + nl +
+                        "Row #0: 27" + nl +
+                        "Row #0: 27" + nl +
+                        "Row #0: 27" + nl +
+                        "Row #0: 27" + nl +
+                        "Row #0: 27" + nl +
+                        "Row #0: 27" + nl +
+                        "Row #0: 27" + nl +
+                        "Row #1: $837.00" + nl +
+                        "Row #1: $837.00" + nl +
+                        "Row #1: $837.00" + nl +
+                        "Row #1: $837.00" + nl +
+                        "Row #1: 24" + nl +
+                        "Row #1: 24" + nl +
+                        "Row #1: 24" + nl +
+                        "Row #1: 24" + nl +
+                        "Row #1: 24" + nl +
+                        "Row #1: 24" + nl +
+                        "Row #1: 24" + nl +
+                        "Row #1: 24" + nl +
+                        "Row #2: $1,728.45" + nl +
+                        "Row #2: $1,727.02" + nl +
+                        "Row #2: $1,727.72" + nl +
+                        "Row #2: $1,726.55" + nl +
+                        "Row #2: 357" + nl +
+                        "Row #2: 357" + nl +
+                        "Row #2: 357" + nl +
+                        "Row #2: 357" + nl +
+                        "Row #2: 357" + nl +
+                        "Row #2: 357" + nl +
+                        "Row #2: 357" + nl +
+                        "Row #2: 357" + nl +
+                        "Row #3: $473.04" + nl +
+                        "Row #3: $473.04" + nl +
+                        "Row #3: $473.04" + nl +
+                        "Row #3: $473.04" + nl +
+                        "Row #3: 51" + nl +
+                        "Row #3: 51" + nl +
+                        "Row #3: 51" + nl +
+                        "Row #3: 51" + nl +
+                        "Row #3: 51" + nl +
+                        "Row #3: 51" + nl +
+                        "Row #3: 51" + nl +
+                        "Row #3: 51" + nl +
+                        "Row #4: $401.35" + nl +
+                        "Row #4: $405.73" + nl +
+                        "Row #4: $400.61" + nl +
+                        "Row #4: $402.31" + nl +
+                        "Row #4: 120" + nl +
+                        "Row #4: 120" + nl +
+                        "Row #4: 120" + nl +
+                        "Row #4: 120" + nl +
+                        "Row #4: 120" + nl +
+                        "Row #4: 120" + nl +
+                        "Row #4: 120" + nl +
+                        "Row #4: 120" + nl +
+                        "Row #5: (null)" + nl +
+                        "Row #5: (null)" + nl +
+                        "Row #5: (null)" + nl +
+                        "Row #5: (null)" + nl +
+                        "Row #5: (null)" + nl +
+                        "Row #5: (null)" + nl +
+                        "Row #5: (null)" + nl +
+                        "Row #5: (null)" + nl +
+                        "Row #5: (null)" + nl +
+                        "Row #5: (null)" + nl +
+                        "Row #5: (null)" + nl +
+                        "Row #5: (null)" + nl +
+                        "Row #6: (null)" + nl +
+                        "Row #6: (null)" + nl +
+                        "Row #6: (null)" + nl +
+                        "Row #6: (null)" + nl +
+                        "Row #6: (null)" + nl +
+                        "Row #6: (null)" + nl +
+                        "Row #6: (null)" + nl +
+                        "Row #6: (null)" + nl +
+                        "Row #6: (null)" + nl +
+                        "Row #6: (null)" + nl +
+                        "Row #6: (null)" + nl +
+                        "Row #6: (null)" + nl +
+                        "Row #7: $1,343.62" + nl +
+                        "Row #7: $1,342.61" + nl +
+                        "Row #7: $1,342.57" + nl +
+                        "Row #7: $1,343.65" + nl +
+                        "Row #7: 279" + nl +
+                        "Row #7: 279" + nl +
+                        "Row #7: 279" + nl +
+                        "Row #7: 279" + nl +
+                        "Row #7: 279" + nl +
+                        "Row #7: 279" + nl +
+                        "Row #7: 279" + nl +
+                        "Row #7: 279" + nl +
+                        "Row #8: $286.74" + nl +
+                        "Row #8: $286.74" + nl +
+                        "Row #8: $286.74" + nl +
+                        "Row #8: $286.74" + nl +
+                        "Row #8: 30" + nl +
+                        "Row #8: 30" + nl +
+                        "Row #8: 30" + nl +
+                        "Row #8: 30" + nl +
+                        "Row #8: 30" + nl +
+                        "Row #8: 30" + nl +
+                        "Row #8: 30" + nl +
+                        "Row #8: 30" + nl +
+                        "Row #9: $333.20" + nl +
+                        "Row #9: $332.65" + nl +
+                        "Row #9: $331.28" + nl +
+                        "Row #9: $332.43" + nl +
+                        "Row #9: 99" + nl +
+                        "Row #9: 99" + nl +
+                        "Row #9: 99" + nl +
+                        "Row #9: 99" + nl +
+                        "Row #9: 99" + nl +
+                        "Row #9: 99" + nl +
+                        "Row #9: 99" + nl +
+                        "Row #9: 99" + nl +
+                        "Row #10: (null)" + nl +
+                        "Row #10: (null)" + nl +
+                        "Row #10: (null)" + nl +
+                        "Row #10: (null)" + nl +
+                        "Row #10: (null)" + nl +
+                        "Row #10: (null)" + nl +
+                        "Row #10: (null)" + nl +
+                        "Row #10: (null)" + nl +
+                        "Row #10: (null)" + nl +
+                        "Row #10: (null)" + nl +
+                        "Row #10: (null)" + nl +
+                        "Row #10: (null)" + nl +
+                        "Row #11: (null)" + nl +
+                        "Row #11: (null)" + nl +
+                        "Row #11: (null)" + nl +
+                        "Row #11: (null)" + nl +
+                        "Row #11: (null)" + nl +
+                        "Row #11: (null)" + nl +
+                        "Row #11: (null)" + nl +
+                        "Row #11: (null)" + nl +
+                        "Row #11: (null)" + nl +
+                        "Row #11: (null)" + nl +
+                        "Row #11: (null)" + nl +
+                        "Row #11: (null)" + nl +
+                        "Row #12: $2,768.60" + nl +
+                        "Row #12: $2,769.18" + nl +
+                        "Row #12: $2,766.78" + nl +
+                        "Row #12: $2,769.50" + nl +
+                        "Row #12: 579" + nl +
+                        "Row #12: 579" + nl +
+                        "Row #12: 579" + nl +
+                        "Row #12: 579" + nl +
+                        "Row #12: 579" + nl +
+                        "Row #12: 579" + nl +
+                        "Row #12: 579" + nl +
+                        "Row #12: 579" + nl +
+                        "Row #13: $736.29" + nl +
+                        "Row #13: $736.29" + nl +
+                        "Row #13: $736.29" + nl +
+                        "Row #13: $736.29" + nl +
+                        "Row #13: 81" + nl +
+                        "Row #13: 81" + nl +
+                        "Row #13: 81" + nl +
+                        "Row #13: 81" + nl +
+                        "Row #13: 81" + nl +
+                        "Row #13: 81" + nl +
+                        "Row #13: 81" + nl +
+                        "Row #13: 81" + nl +
+                        "Row #14: $674.70" + nl +
+                        "Row #14: $674.54" + nl +
+                        "Row #14: $676.25" + nl +
+                        "Row #14: $676.48" + nl +
+                        "Row #14: 201" + nl +
+                        "Row #14: 201" + nl +
+                        "Row #14: 201" + nl +
+                        "Row #14: 201" + nl +
+                        "Row #14: 201" + nl +
+                        "Row #14: 201" + nl +
+                        "Row #14: 201" + nl +
+                        "Row #14: 201" + nl);
+            }
+        });
 
 		defineReserved(DescendantsFlags.instance);
 		define(new MultiResolver(
@@ -2324,7 +2518,7 @@ public class BuiltinFunTable extends FunTable {
 						"from Sales" + nl +
 						"where ([Time].[1997].[Q1])");
 				Position[] rows = result.getAxes()[1].positions;
-        Assert.assertTrue(rows.length == 3);
+                Assert.assertTrue(rows.length == 3);
 				Assert.assertEquals("F", rows[0].members[0].getName());
 				Assert.assertEquals("WA", rows[0].members[1].getName());
 				Assert.assertEquals("M", rows[1].members[0].getName());
@@ -4257,19 +4451,6 @@ public class BuiltinFunTable extends FunTable {
 		});
 	}
 
-	/**
-	 * Returns the appropriate rollup operator for a given aggregation operator.
-	 * @pre aggregator != null
-	 * @post return != null
-	 */
-	private static String getRollup(String aggregator) {
-		if (aggregator.equals("count")) {
-			return "sum";
-		} else {
-			return aggregator;
-		}
-	}
-
 	private static boolean isConstantHierarchy(Exp typeArg) {
 		if (typeArg instanceof Hierarchy) {
 			// e.g. "[Time].[By Week]"
@@ -4400,6 +4581,91 @@ public class BuiltinFunTable extends FunTable {
 			return (value & BASC) == BASC;
 		}
 	}
+
+    private static class CrossJoinFunDef extends FunDefBase {
+        public CrossJoinFunDef(FunDef dummyFunDef) {
+            super(dummyFunDef);
+        }
+
+        public Hierarchy getHierarchy(Exp[] args) {
+            // CROSSJOIN(<Set1>,<Set2>) has Hierarchy [Hie1] x [Hie2], which we
+            // can't represent, so we return null.
+            return null;
+        }
+
+        public Object evaluate(Evaluator evaluator, Exp[] args) {
+            List set0 = getArgAsList(evaluator, args, 0);
+            List set1 = getArgAsList(evaluator, args, 1);
+            if (set0.isEmpty() || set1.isEmpty()) {
+                return Collections.EMPTY_LIST;
+            }
+            boolean neitherSideIsTuple = true;
+            int arity0 = 1,
+                arity1 = 1;
+            if (set0.get(0) instanceof Member[]) {
+                arity0 = ((Member[]) set0.get(0)).length;
+                neitherSideIsTuple = false;
+            }
+            if (set1.get(0) instanceof Member[]) {
+                arity1 = ((Member[]) set1.get(0)).length;
+                neitherSideIsTuple = false;
+            }
+            List result = new ArrayList();
+            if (neitherSideIsTuple) {
+                // Simpler routine if we know neither side contains tuples.
+                for (int i = 0, m = set0.size(); i < m; i++) {
+                    Member o0 = (Member) set0.get(i);
+                    for (int j = 0, n = set1.size(); j < n; j++) {
+                        Member o1 = (Member) set1.get(j);
+                        result.add(new Member[]{o0, o1});
+                    }
+                }
+            } else {
+                // More complex routine if one or both sides are arrays
+                // (probably the product of nested CrossJoins).
+                Member[] row = new Member[arity0 + arity1];
+                for (int i = 0, m = set0.size(); i < m; i++) {
+                    int x = 0;
+                    Object o0 = set0.get(i);
+                    if (o0 instanceof Member) {
+                        row[x++] = (Member) o0;
+                    } else {
+                        assertTrue(o0 instanceof Member[]);
+                        final Member[] members = (Member[]) o0;
+                        for (int k = 0; k < members.length; k++) {
+                            row[x++] = members[k];
+                        }
+                    }
+                    for (int j = 0, n = set1.size(); j < n; j++) {
+                        Object o1 = set1.get(j);
+                        if (o1 instanceof Member) {
+                            row[x++] = (Member) o1;
+                        } else {
+                            assertTrue(o1 instanceof Member[]);
+                            final Member[] members = (Member[]) o1;
+                            for (int k = 0; k < members.length; k++) {
+                                row[x++] = members[k];
+                            }
+                        }
+                        result.add(row.clone());
+                        x = arity0;
+                    }
+                }
+            }
+            return result;
+        }
+
+        private static List getArgAsList(Evaluator evaluator, Exp[] args, int index) {
+            final Object arg = getArg(evaluator, args, index);
+            if (arg instanceof List) {
+                return (List) arg;
+            } else {
+                List list = new ArrayList();
+                list.add(arg);
+                return list;
+            }
+        }
+    }
 }
 
 // End BuiltinFunTable.java

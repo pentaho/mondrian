@@ -1206,6 +1206,9 @@ property_list ::=
 		property
 	|	property COMMA property_list
 	;
+property ::=
+		compound_id
+	;
 // 
 // <cube_specification> ::= [<cube_name>] [, <cube_name>]
 // jhyde: In this implementation, you must supply EXACTLY one cube.
