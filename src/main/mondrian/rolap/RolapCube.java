@@ -214,6 +214,7 @@ class RolapCube extends CubeBase
 			measure.isNumeric = true;
 			storedMeasure.starMeasure = measure; // reverse mapping
 			star.factTable.columns.add(measure);
+            star.mapColumnToName.put(measure, storedMeasure.getName());
 		}
 		// create dimension tables
 		RolapDimension[] dimensions = (RolapDimension[]) this.getDimensions();

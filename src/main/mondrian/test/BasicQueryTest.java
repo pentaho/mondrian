@@ -460,7 +460,18 @@ public class BasicQueryTest extends FoodMartTestCase {
 				" {[Product].Children} on rows" + nl +
 				"from Sales");
 		String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL(false);
-		assertEquals("select `time_by_day`.`the_year` as `Year`, `product_class`.`product_family` as `Product Family`, sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales` from `time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997`, `product_class` as `product_class`, `product` as `product` where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` in (1997) and `sales_fact_1997`.`product_id` = `product`.`product_id` and `product`.`product_class_id` = `product_class`.`product_class_id` and `product_class`.`product_family` in ('Drink') group by `time_by_day`.`the_year`, `product_class`.`product_family`", sql);
+		assertEquals("select `time_by_day`.`the_year` as `Year`," +
+                " `product_class`.`product_family` as `Product Family`," +
+                " `sales_fact_1997`.`unit_sales` as `Unit Sales` " +
+                "from `time_by_day` as `time_by_day`," +
+                " `sales_fact_1997` as `sales_fact_1997`," +
+                " `product_class` as `product_class`," +
+                " `product` as `product` " +
+                "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`" +
+                " and `time_by_day`.`the_year` in (1997)" +
+                " and `sales_fact_1997`.`product_id` = `product`.`product_id`" +
+                " and `product`.`product_class_id` = `product_class`.`product_class_id`" +
+                " and `product_class`.`product_family` in ('Drink')", sql);
 		sql = result.getCell(new int[] {1, 1}).getDrillThroughSQL(false);
 		assertNull(sql); // because it is a calculated member
 	}
@@ -496,7 +507,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 " `customer`.`gender` as `Gender`," +
                 " `customer`.`marital_status` as `Marital Status`," +
                 " `customer`.`yearly_income` as `Yearly Income`," +
-                " `sales_fact_1997`.`unit_sales` " +
+                " `sales_fact_1997`.`unit_sales` as `Unit Sales` " +
                 "from `store` as `store`," +
                 " `sales_fact_1997` as `sales_fact_1997`," +
                 " `time_by_day` as `time_by_day`," +
@@ -1818,7 +1829,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "select {[Measures].[xxx]} ON columns," + nl +
                 " {[Product].[All Products].children} ON rows" + nl +
                 "from [Sales] where [Time].[1997]",
-                
+
                 "Axis #0:" + nl +
                 "{[Time].[1997]}" + nl +
                 "Axis #1:" + nl +
@@ -1830,6 +1841,26 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "Row #0: BBB48836.21" + nl +
                 "Row #1: AAA409035.59" + nl +
                 "Row #2: BBB107366.33" + nl);
+    }
+
+    /**
+     * Compound slicer causes {@link ClassCastException}
+     */
+    public void testBug761952() {
+        runQueryCheckResult(
+                "select {[Measures].[Unit Sales]} ON columns," + nl +
+                " {[Gender].Children} ON rows" + nl +
+                "from [Sales]" + nl +
+                "where ([Time].[1997], [Customers])",
+                "Axis #0:" + nl +
+                "{[Time].[1997], [Customers].[All Customers]}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Unit Sales]}" + nl +
+                "Axis #2:" + nl +
+                "{[Gender].[All Gender].[F]}" + nl +
+                "{[Gender].[All Gender].[M]}" + nl +
+                "Row #0: 131,558" + nl +
+                "Row #1: 135,215" + nl);
     }
 	/** Make sure that the "Store" cube is working. **/
 	public void testStoreCube() {

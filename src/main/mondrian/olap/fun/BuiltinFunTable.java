@@ -2098,7 +2098,7 @@ public class BuiltinFunTable extends FunTable {
                         "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Time].[1997].[Q2].[5]}" + nl +
                         "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Time].[1997].[Q2].[6]}");
             }
-            public void testCrossjoinAsteriskQuery(FoodMartTestCase test) {
+            public void testCrossJoinAsteriskQuery(FoodMartTestCase test) {
                 test.runQueryCheckResult(
                         "SELECT {[Measures].members * [1997].children} ON COLUMNS," + nl +
                         " {[Store].[USA].children * [Position].[All Position].children} DIMENSION PROPERTIES [Store].[Store SQFT] ON ROWS" + nl +
@@ -2143,10 +2143,10 @@ public class BuiltinFunTable extends FunTable {
                         "Row #0: 27" + nl +
                         "Row #0: 27" + nl +
                         "Row #0: 27" + nl +
-                        "Row #0: 27" + nl +
-                        "Row #0: 27" + nl +
-                        "Row #0: 27" + nl +
-                        "Row #0: 27" + nl +
+                        "Row #0: 9" + nl +
+                        "Row #0: 9" + nl +
+                        "Row #0: 9" + nl +
+                        "Row #0: 9" + nl +
                         "Row #1: $837.00" + nl +
                         "Row #1: $837.00" + nl +
                         "Row #1: $837.00" + nl +
@@ -2155,10 +2155,10 @@ public class BuiltinFunTable extends FunTable {
                         "Row #1: 24" + nl +
                         "Row #1: 24" + nl +
                         "Row #1: 24" + nl +
-                        "Row #1: 24" + nl +
-                        "Row #1: 24" + nl +
-                        "Row #1: 24" + nl +
-                        "Row #1: 24" + nl +
+                        "Row #1: 8" + nl +
+                        "Row #1: 8" + nl +
+                        "Row #1: 8" + nl +
+                        "Row #1: 8" + nl +
                         "Row #2: $1,728.45" + nl +
                         "Row #2: $1,727.02" + nl +
                         "Row #2: $1,727.72" + nl +
@@ -2167,10 +2167,10 @@ public class BuiltinFunTable extends FunTable {
                         "Row #2: 357" + nl +
                         "Row #2: 357" + nl +
                         "Row #2: 357" + nl +
-                        "Row #2: 357" + nl +
-                        "Row #2: 357" + nl +
-                        "Row #2: 357" + nl +
-                        "Row #2: 357" + nl +
+                        "Row #2: 119" + nl +
+                        "Row #2: 119" + nl +
+                        "Row #2: 119" + nl +
+                        "Row #2: 119" + nl +
                         "Row #3: $473.04" + nl +
                         "Row #3: $473.04" + nl +
                         "Row #3: $473.04" + nl +
@@ -2179,10 +2179,10 @@ public class BuiltinFunTable extends FunTable {
                         "Row #3: 51" + nl +
                         "Row #3: 51" + nl +
                         "Row #3: 51" + nl +
-                        "Row #3: 51" + nl +
-                        "Row #3: 51" + nl +
-                        "Row #3: 51" + nl +
-                        "Row #3: 51" + nl +
+                        "Row #3: 17" + nl +
+                        "Row #3: 17" + nl +
+                        "Row #3: 17" + nl +
+                        "Row #3: 17" + nl +
                         "Row #4: $401.35" + nl +
                         "Row #4: $405.73" + nl +
                         "Row #4: $400.61" + nl +
@@ -2191,10 +2191,10 @@ public class BuiltinFunTable extends FunTable {
                         "Row #4: 120" + nl +
                         "Row #4: 120" + nl +
                         "Row #4: 120" + nl +
-                        "Row #4: 120" + nl +
-                        "Row #4: 120" + nl +
-                        "Row #4: 120" + nl +
-                        "Row #4: 120" + nl +
+                        "Row #4: 40" + nl +
+                        "Row #4: 40" + nl +
+                        "Row #4: 40" + nl +
+                        "Row #4: 40" + nl +
                         "Row #5: (null)" + nl +
                         "Row #5: (null)" + nl +
                         "Row #5: (null)" + nl +
@@ -2227,10 +2227,10 @@ public class BuiltinFunTable extends FunTable {
                         "Row #7: 279" + nl +
                         "Row #7: 279" + nl +
                         "Row #7: 279" + nl +
-                        "Row #7: 279" + nl +
-                        "Row #7: 279" + nl +
-                        "Row #7: 279" + nl +
-                        "Row #7: 279" + nl +
+                        "Row #7: 93" + nl +
+                        "Row #7: 93" + nl +
+                        "Row #7: 93" + nl +
+                        "Row #7: 93" + nl +
                         "Row #8: $286.74" + nl +
                         "Row #8: $286.74" + nl +
                         "Row #8: $286.74" + nl +
@@ -2239,10 +2239,10 @@ public class BuiltinFunTable extends FunTable {
                         "Row #8: 30" + nl +
                         "Row #8: 30" + nl +
                         "Row #8: 30" + nl +
-                        "Row #8: 30" + nl +
-                        "Row #8: 30" + nl +
-                        "Row #8: 30" + nl +
-                        "Row #8: 30" + nl +
+                        "Row #8: 10" + nl +
+                        "Row #8: 10" + nl +
+                        "Row #8: 10" + nl +
+                        "Row #8: 10" + nl +
                         "Row #9: $333.20" + nl +
                         "Row #9: $332.65" + nl +
                         "Row #9: $331.28" + nl +
@@ -2251,10 +2251,10 @@ public class BuiltinFunTable extends FunTable {
                         "Row #9: 99" + nl +
                         "Row #9: 99" + nl +
                         "Row #9: 99" + nl +
-                        "Row #9: 99" + nl +
-                        "Row #9: 99" + nl +
-                        "Row #9: 99" + nl +
-                        "Row #9: 99" + nl +
+                        "Row #9: 33" + nl +
+                        "Row #9: 33" + nl +
+                        "Row #9: 33" + nl +
+                        "Row #9: 33" + nl +
                         "Row #10: (null)" + nl +
                         "Row #10: (null)" + nl +
                         "Row #10: (null)" + nl +
@@ -2287,10 +2287,10 @@ public class BuiltinFunTable extends FunTable {
                         "Row #12: 579" + nl +
                         "Row #12: 579" + nl +
                         "Row #12: 579" + nl +
-                        "Row #12: 579" + nl +
-                        "Row #12: 579" + nl +
-                        "Row #12: 579" + nl +
-                        "Row #12: 579" + nl +
+                        "Row #12: 193" + nl +
+                        "Row #12: 193" + nl +
+                        "Row #12: 193" + nl +
+                        "Row #12: 193" + nl +
                         "Row #13: $736.29" + nl +
                         "Row #13: $736.29" + nl +
                         "Row #13: $736.29" + nl +
@@ -2299,10 +2299,10 @@ public class BuiltinFunTable extends FunTable {
                         "Row #13: 81" + nl +
                         "Row #13: 81" + nl +
                         "Row #13: 81" + nl +
-                        "Row #13: 81" + nl +
-                        "Row #13: 81" + nl +
-                        "Row #13: 81" + nl +
-                        "Row #13: 81" + nl +
+                        "Row #13: 27" + nl +
+                        "Row #13: 27" + nl +
+                        "Row #13: 27" + nl +
+                        "Row #13: 27" + nl +
                         "Row #14: $674.70" + nl +
                         "Row #14: $674.54" + nl +
                         "Row #14: $676.25" + nl +
@@ -2311,10 +2311,10 @@ public class BuiltinFunTable extends FunTable {
                         "Row #14: 201" + nl +
                         "Row #14: 201" + nl +
                         "Row #14: 201" + nl +
-                        "Row #14: 201" + nl +
-                        "Row #14: 201" + nl +
-                        "Row #14: 201" + nl +
-                        "Row #14: 201" + nl);
+                        "Row #14: 67" + nl +
+                        "Row #14: 67" + nl +
+                        "Row #14: 67" + nl +
+                        "Row #14: 67" + nl);
             }
         });
 

@@ -425,36 +425,41 @@ public class AggregationManager extends RolapAggregationManager {
     private static class DrillThroughQuerySpec implements QuerySpec {
         private final CellRequest request;
         private final String[] columnNames;
+        private final RolapStar star;
 
         public DrillThroughQuerySpec(CellRequest request) {
             this.request = request;
+            this.star = request.getMeasure().table.star;
             this.columnNames = computeDistinctColumnNames();
         }
 
         private String[] computeDistinctColumnNames() {
-            final RolapStar star = request.getMeasure().table.star;
             final ArrayList columnNames = new ArrayList();
             final RolapStar.Column[] columns = getColumns();
             HashSet columnNameSet = new HashSet();
-            int j = 0;
             for (int i = 0; i < columns.length; i++) {
                 RolapStar.Column column = columns[i];
-                String columnName = star.getColumnName(column);
-                if (columnName != null) {
-                    // nothing
-                } else if (column.expression instanceof MondrianDef.Column) {
-                    columnName = ((MondrianDef.Column) column.expression).name;
-                } else {
-                    columnName = "c" + i;
-                }
-                // Register the column name, and if it's not unique,
-                // generate names until it is.
-                while (!columnNameSet.add(columnName)) {
-                    columnName = "x" + (j++);
-                }
-                columnNames.add(columnName);
+                addColumnName(column, columnNames, columnNameSet);
             }
+            addColumnName(request.getMeasure(), columnNames, columnNameSet);
             return (String[]) columnNames.toArray(new String[columnNames.size()]);
+        }
+
+        private void addColumnName(RolapStar.Column column, final ArrayList columnNames, HashSet columnNameSet) {
+            String columnName = star.getColumnName(column);
+            if (columnName != null) {
+                // nothing
+            } else if (column.expression instanceof MondrianDef.Column) {
+                columnName = ((MondrianDef.Column) column.expression).name;
+            } else {
+                columnName = "c" + columnNames.size();
+            }
+            // Register the column name, and if it's not unique,
+            // generate names until it is.
+            for (int j = 0; !columnNameSet.add(columnName); j++) {
+                columnName = "x" + j;
+            }
+            columnNames.add(columnName);
         }
 
         public int getMeasureCount() {
@@ -468,7 +473,7 @@ public class AggregationManager extends RolapAggregationManager {
 
         public String getMeasureAlias(int i) {
             Util.assertTrue(i == 0);
-            return null;
+            return columnNames[columnNames.length - 1];
         }
 
         public RolapStar getStar() {
