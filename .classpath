@@ -8,8 +8,8 @@
 	<classpathentry kind="lib" path="lib/jlfgr-1_0.jar"/>
 	<classpathentry kind="lib" path="lib/jmi.jar"/>
 	<classpathentry kind="lib" path="lib/mof.jar"/>
-	<classpathentry kind="lib" path="lib/mondrian-resource.jar"/>
-	<classpathentry kind="lib" path="lib/mondrian-xom.jar"/>
+	<classpathentry kind="lib" path="lib/eigenbase-resgen.jar"/>
+	<classpathentry kind="lib" path="lib/eigenbase-xom.jar"/>
 	<classpathentry kind="lib" path="lib/ant.jar"/>
 	<classpathentry kind="lib" path="lib/xalan.jar"/>
 	<classpathentry kind="lib" path="lib/xercesImpl.jar"/>

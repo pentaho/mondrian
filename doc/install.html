@@ -275,13 +275,13 @@ for the Java VM.</p><h2><a name="Appendix_A_Compatibility_issues">Appendix A. Co
 issues</a></h2><h3><a name="Appendix_A_1_Weblogic_6_1_and_Xerces">
 <font color="#990000">A</font></a><font color="#990000"><a name="Appendix_A_1_Weblogic_6_1_and_Xerces">.1. Weblogic 6.1 and Xerces</a></font></h3><p>Weblogic 6.1 ships with an older, incompatible, version of Xerces. The
 symptom is the error</p><blockquote>
-  <pre>java.lang.VerifyError: (class: mondrian/xom/wrappers/XercesDOMParser,
+  <pre>java.lang.VerifyError: (class: org/eigenbase/xom/wrappers/XercesDOMParser,
  method: parse signature: (Lorg/xml/sax/InputSource;)Lorg/w3c/dom/Document;)
  Incompatible object argument for function call
 at java.lang.Class.forName0(Native Method)
 at java.lang.Class.forName(Class.java:120)
-at mondrian.xom.XOMUtil.createDefaultParser(XOMUtil.java:165)
-at mondrian.resource.Util.load(Util.java:49)
+at org.eigenbase.xom.XOMUtil.createDefaultParser(XOMUtil.java:165)
+at org.eigenbase.resgen.Util.load(Util.java:49)
 ...</pre></blockquote><p>The solution is to place <code>xml-apis.jar</code> and <code>xercesImpl.jar</code>
 before <code>weblogic.jar</code> on your class-path.</p><p>Generally, Mondrian uses whichever JAXP-compliant XML parser is provided by
 the system. Unfortunately Weblogic's parser cannot be set to non-validating

@@ -398,8 +398,8 @@ ${lib.dir}/jmi.jar,
 ${lib.dir}/log4j-1.2.9.jar,
 ${lib.dir}/jsp-api.jar,
 ${lib.dir}/mof.jar,
-${lib.dir}/mondrian-resource.jar,
-${lib.dir}/mondrian-xom.jar,
+${lib.dir}/eigenbase-resgen.jar,
+${lib.dir}/eigenbase-xom.jar,
 ${lib.dir}/servlet.jar,
 ${testsrc.dir}/queryFiles/**/*.xml,
 ${testsrc.dir}/**/*.java,
@@ -564,6 +564,7 @@ VERSION.txt"/>
       <link href="http://java.sun.com/j2se/1.4/docs/api/"/>
       <link href="http://www.junit.org/junit/javadoc/3.8/"/>
       <link href="http://java.sun.com/products/servlet/2.2/javadoc/"/>
+      <link href="http://eigenbase.sourceforge.net/resgen/api/"/>
     </javadoc>
     <copy file="${java.dir}/mondrian/olap/Mondrian.xml"
         todir="${javadoc.dir}/mondrian/olap"/>

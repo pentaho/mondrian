@@ -54,7 +54,7 @@ echo CATALINA_HOME (%CATALINA_HOME%) does not exist
 goto end
 :catalinaHomeOk
 
-set CLASSPATH=%SRCROOT%classes;%SRCROOT%lib/javacup.jar;%SRCROOT%lib/mondrian-xom.jar;%SRCROOT%lib/mondrian-resource.jar
+set CLASSPATH=%SRCROOT%classes;%SRCROOT%lib/javacup.jar;%SRCROOT%lib/eigenbase-xom.jar;%SRCROOT%lib/eigenbase-resgen.jar
 
 rem To use Oracle, uncomment the next line and modify appropriately
 rem set ORACLE_HOME=%HOME_DRIVE%:/oracle/ora81

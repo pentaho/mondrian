@@ -42,7 +42,7 @@ if [ ! -d "${CATALINA_HOME}" ]; then
   exit 1
 fi
 
-export CLASSPATH="${SRCROOT}/classes${PS}${SRCROOT}/lib/javacup.jar${PS}${SRCROOT}/lib/mondrian-xom.jar${PS}${SRCROOT}/lib/mondrian-resource.jar${PS}${XALAN_HOME}/bin/xml-apis.jar${PS}${XALAN_HOME}/bin/xercesImpl.jar${PS}${JUNIT_HOME}/junit.jar"
+export CLASSPATH="${SRCROOT}/classes${PS}${SRCROOT}/lib/javacup.jar${PS}${SRCROOT}/lib/eigenbase-xom.jar${PS}${SRCROOT}/lib/eigenbase-resgen.jar${PS}${XALAN_HOME}/bin/xml-apis.jar${PS}${XALAN_HOME}/bin/xercesImpl.jar${PS}${JUNIT_HOME}/junit.jar"
 
 # To use Oracle, uncomment the next line and modify appropriately
 # set ORACLE_HOME="${PREFIX}/oracle/ora81"
