@@ -116,16 +116,22 @@ public class RolapSchema implements Schema
 		return ((RolapCube) cube).createDimension(xmlDimension);
 	}
 
-	private static Pool pool = new Pool();
 	/**
 	 * A pool is a collection of schemas. Call <code>Pool.instance.{@link #get
 	 * get(catalogName,jdbcConnectString)</code>.
 	 */
-	static class Pool {
-		HashMap mapUrlToSchema = new HashMap();
-		static Pool instance() {
+	public static class Pool {
+		private static Pool pool = new Pool();
+
+		private HashMap mapUrlToSchema = new HashMap();
+
+		private Pool() {
+		}
+
+		public static Pool instance() {
 			return pool;
 		}
+
 		synchronized RolapSchema get(
 				String catalogName, String jdbcConnectString,
 				Util.PropertyList connectInfo) {
@@ -136,9 +142,13 @@ public class RolapSchema implements Schema
 				mapUrlToSchema.put(key, schema);
 				// Must create RolapConnection after we add to map, otherwise
 				// we will loop.
-				schema.internalConnection = new RolapConnection(connectInfo, schema);
+				// no, this is redundant - its set in the ctor of RolapSchema
+				// schema.internalConnection = new RolapConnection(connectInfo, schema);
 			}
 			return schema;
+		}
+		public synchronized void remove(String catalogName, String jdbcConnectString) {
+			mapUrlToSchema.remove(catalogName + ":" + jdbcConnectString);
 		}
 	}
 
