@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// (C) Copyright 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -11,23 +11,24 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.Util;
 import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util;
 
+import javax.sql.DataSource;
 import java.io.*;
 import java.lang.reflect.Array;
-import java.net.URI;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Vector;
-import java.util.List;
+import java.util.*;
+
+import org.apache.commons.pool.ObjectPool;
+import org.apache.commons.pool.impl.GenericObjectPool;
+import org.apache.commons.dbcp.*;
 
 /**
- * todo:
+ * Utility methods for classes in the <code>mondrian.rolap</code> package.
  *
  * @author jhyde
  * @since 22 December, 2001
@@ -313,7 +314,60 @@ public class RolapUtil {
 		return querySemaphore;
 	}
 
-	static class Semaphore {
+    /**
+	 * Sets up a pooling data source for connection pooling.
+	 * This can be used if the application server does not have a pooling
+	 * dataSource already configured.
+	 * This takes a normal jdbc connection string, and requires a jdbc
+	 * driver to be loaded, and then uses a
+     * {@link DriverManagerConnectionFactory} to create connections to the
+     * database.
+	 * An alternative method of configuring a pooling driver is to use an external
+	 * configuration file. See the the Apache jakarta-commons commons-pool
+	 * documentation.
+	 * @param connectionFactory Creates connections from an underlying
+     *   JDBC connect string or DataSource
+	 * @return a pooling DataSource object
+	 */
+	static DataSource getPoolingDataSource(ConnectionFactory connectionFactory) {
+
+		// use GenericObjectPool, which provides for resource limits
+		ObjectPool connectionPool = new GenericObjectPool(
+			null, // PoolableObjectFactory, can be null
+			50, // max active
+			GenericObjectPool.WHEN_EXHAUSTED_FAIL, // action when exhausted
+			3000, // max wait (milli seconds)
+			10, // max idle
+			false, // test on borrow
+			false, // test on return
+			60000, // time between eviction runs (millis)
+			5, // number to test on eviction run
+			30000, // min evictable idle time (millis)
+			true // test while idle
+			);
+
+		// create a PoolableConnectionFactory
+		AbandonedConfig abandonedConfig = new AbandonedConfig();
+		abandonedConfig.setRemoveAbandoned(true); // flag to remove abandoned connections from pool
+		abandonedConfig.setRemoveAbandonedTimeout(300); // timeout (seconds) before removing abandoned connections
+		abandonedConfig.setLogAbandoned(true); // Flag to log stack traces for application code which abandoned a Statement or Connection
+        PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(
+            connectionFactory, // the connection factory
+            connectionPool, // the object pool
+            null, // statement pool factory for pooling prepared statements, or null for no pooling
+            null, // validation query (must return at least 1 row e.g. Oracle: select count(*) from dual) to test connection, can be null
+            false, // default "read only" setting for borrowed connections
+            true, // default "auto commit" setting for returned connections
+            abandonedConfig // AbandonedConfig object configures how to handle abandoned connections
+            );
+        // "poolableConnectionFactory" has registered itself with
+        // "connectionPool", somehow, so we don't need the value any more.
+        Util.discard(poolableConnectionFactory);
+		// create pooling datasource
+		return new PoolingDataSource(connectionPool);
+	}
+
+    static class Semaphore {
 		private int count;
 		Semaphore(int count) {
 			if (count < 0) {

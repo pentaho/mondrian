@@ -19,6 +19,7 @@ import mondrian.rolap.sql.SqlQuery;
 
 import java.io.PrintWriter;
 import java.sql.Connection;
+import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -38,7 +39,7 @@ import java.util.Iterator;
  **/
 public class RolapStar {
 	RolapSchema schema;
-	java.sql.Connection jdbcConnection;
+	DataSource dataSource;
 	Measure[] measures;
 	public Table factTable;
 	/** Maps {@link RolapCube} to a {@link HashMap} which maps
@@ -51,18 +52,31 @@ public class RolapStar {
 	 * Please use {@link Pool#getOrCreateStar} to create a {@link
 	 * RolapStar}.
 	 */
-	RolapStar(RolapSchema schema, Connection jdbcConnection) {
+	RolapStar(RolapSchema schema, DataSource dataSource) {
 		this.schema = schema;
-		this.jdbcConnection = jdbcConnection;
+		this.dataSource = dataSource;
 	}
 
+    /**
+     * Allocates a connection to the underlying RDBMS.
+     *
+     * The client MUST close this connection; use the <code>try ...
+     * finally</code> idiom to be sure of this.
+     */
 	public Connection getJdbcConnection() {
+		Connection jdbcConnection;
+		try {
+			jdbcConnection = dataSource.getConnection();
+		} catch (SQLException e) {
+			throw Util.newInternal(
+				e, "Error while creating connection from data source");
+		}
 		return jdbcConnection;
 	}
 
 	/** For testing purposes only. **/
 	public void setJdbcConnection(Connection jdbcConnection) {
-		this.jdbcConnection = jdbcConnection;
+//		this.jdbcConnection = jdbcConnection;
 	}
 
 	/**
@@ -97,64 +111,77 @@ public class RolapStar {
 	 **/
 	Object getCell(CellRequest request)
 	{
-		Measure measure = request.getMeasure();
-		Column[] columns = request.getColumns();
-		Object[] values = request.getSingleValues();
-		Util.assertTrue(columns.length == values.length);
-		SqlQuery sqlQuery;
-		try {
-			sqlQuery = new SqlQuery(jdbcConnection.getMetaData());
-		} catch (SQLException e) {
-			throw Util.getRes().newInternal("while computing single cell", e);
-		}
-		// add measure
-		Util.assertTrue(measure.table == factTable);
-		factTable.addToFrom(sqlQuery, true, true);
-		sqlQuery.addSelect(
-			measure.aggregator.getExpression(measure.getExpression(sqlQuery)));
-		// add constraining dimensions
-		for (int i = 0; i < columns.length; i++) {
-			Object value = values[i];
-			if (value == null) {
-				continue; // not constrained
-			}
-			Column column = columns[i];
-			Table table = column.table;
-			if (table.isFunky()) {
-				// this is a funky dimension -- ignore for now
-				continue;
-			}
-			table.addToFrom(sqlQuery, true, true);
-		}
-		String sql = sqlQuery.toString();
-		ResultSet resultSet = null;
-		try {
-			resultSet = RolapUtil.executeQuery(
-					jdbcConnection, sql, "RolapStar.getCell");
-			Object o = null;
-			if (resultSet.next()) {
-				o = resultSet.getObject(1);
-			}
-			if (o == null) {
-				o = Util.nullValue; // convert to placeholder
-			}
-			return o;
-		} catch (SQLException e) {
-			throw Util.getRes().newInternal(
-					"while computing single cell; sql=[" + sql + "]", e);
-		} finally {
-			try {
-				if (resultSet != null) {
-					resultSet.getStatement().close();
-					resultSet.close();
-				}
-			} catch (SQLException e) {
-				// ignore
-			}
-		}
-	}
+        Connection jdbcConnection = getJdbcConnection();
+        try {
+            return getCell(request, jdbcConnection);
+        } finally {
+            try {
+                jdbcConnection.close();
+            } catch (SQLException e) {
+                //ignore
+            }
+        }
+    }
 
-	public static class Column
+    private Object getCell(CellRequest request, Connection jdbcConnection) {
+        Measure measure = request.getMeasure();
+        Column[] columns = request.getColumns();
+        Object[] values = request.getSingleValues();
+        Util.assertTrue(columns.length == values.length);
+        SqlQuery sqlQuery;
+        try {
+            sqlQuery = new SqlQuery(jdbcConnection.getMetaData());
+        } catch (SQLException e) {
+            throw Util.getRes().newInternal("while computing single cell", e);
+        }
+        // add measure
+        Util.assertTrue(measure.table == factTable);
+        factTable.addToFrom(sqlQuery, true, true);
+        sqlQuery.addSelect(
+            measure.aggregator.getExpression(measure.getExpression(sqlQuery)));
+        // add constraining dimensions
+        for (int i = 0; i < columns.length; i++) {
+            Object value = values[i];
+            if (value == null) {
+                continue; // not constrained
+            }
+            Column column = columns[i];
+            Table table = column.table;
+            if (table.isFunky()) {
+                // this is a funky dimension -- ignore for now
+                continue;
+            }
+            table.addToFrom(sqlQuery, true, true);
+        }
+        String sql = sqlQuery.toString();
+        ResultSet resultSet = null;
+        try {
+            resultSet = RolapUtil.executeQuery(
+                    jdbcConnection, sql, "RolapStar.getCell");
+            Object o = null;
+            if (resultSet.next()) {
+                o = resultSet.getObject(1);
+            }
+            if (o == null) {
+                o = Util.nullValue; // convert to placeholder
+            }
+            return o;
+        } catch (SQLException e) {
+            throw Util.getRes().newInternal(
+                    "while computing single cell; sql=[" + sql + "]", e);
+        } finally {
+            try {
+                if (resultSet != null) {
+                    resultSet.getStatement().close();
+                    resultSet.close();
+                }
+            } catch (SQLException e) {
+                // ignore
+            }
+        }
+    }
+
+    public static class Column
 	{
 		public Table table;
 		public MondrianDef.Expression expression;
@@ -190,60 +217,73 @@ public class RolapStar {
 		public int getCardinality()
 		{
 			if (cardinality == -1) {
-				SqlQuery sqlQuery;
-				try {
-					sqlQuery = new SqlQuery(
-						table.star.jdbcConnection.getMetaData());
-				} catch (SQLException e) {
-					throw Util.getRes().newInternal(
-							"while counting distinct values of column '" +
-							expression.getGenericExpression() + "'", e);
-				}
-				if (sqlQuery.isAccess()) {
-					// Access doesn't like 'count(distinct)', so use,
-					// e.g. "select count(*) from (select distinct product_id
-					// from product)"
-					SqlQuery inner = sqlQuery.cloneEmpty();
-					inner.setDistinct(true);
-					inner.addSelect(getExpression(inner));
-					boolean failIfExists = true,
-						joinToParent = false;
-					table.addToFrom(inner, failIfExists, joinToParent);
-					sqlQuery.addSelect("count(*)");
-					sqlQuery.addFrom(inner, "init", failIfExists);
-				} else {
-					// e.g. "select count(distinct product_id) from product"
-					sqlQuery.addSelect(
-						"count(distinct " + getExpression(sqlQuery) + ")");
-					table.addToFrom(sqlQuery, true, true);
-				}
-				String sql = sqlQuery.toString();
-				ResultSet resultSet = null;
-				try {
-					resultSet = RolapUtil.executeQuery(
-							table.star.jdbcConnection, sql,
-							"RolapStar.Column.getCardinality");
-					Util.assertTrue(resultSet.next());
-					cardinality = resultSet.getInt(1);
-				} catch (SQLException e) {
-					throw Util.getRes().newInternal(
-							"while counting distinct values of column '" +
-							expression.getGenericExpression() + "'; sql=[" + sql + "]",
-							e);
-				} finally {
-					try {
-						if (resultSet != null) {
-							resultSet.getStatement().close();
-							resultSet.close();
-						}
-					} catch (SQLException e) {
-						// ignore
-					}
-				}
-			}
+				Connection jdbcConnection = table.star.getJdbcConnection();
+                try {
+                    cardinality = getCardinality(jdbcConnection);
+                } finally {
+                    try {
+                        jdbcConnection.close();
+                    } catch (SQLException e) {
+                        //ignore
+                    }
+                }
+            }
 			return cardinality;
 		}
-	}
+
+        private int getCardinality(Connection jdbcConnection) {
+            SqlQuery sqlQuery;
+            try {
+                sqlQuery = new SqlQuery(
+                    jdbcConnection.getMetaData());
+            } catch (SQLException e) {
+                throw Util.getRes().newInternal(
+                        "while counting distinct values of column '" +
+                        expression.getGenericExpression() + "'", e);
+            }
+            if (sqlQuery.isAccess()) {
+                // Access doesn't like 'count(distinct)', so use,
+                // e.g. "select count(*) from (select distinct product_id
+                // from product)"
+                SqlQuery inner = sqlQuery.cloneEmpty();
+                inner.setDistinct(true);
+                inner.addSelect(getExpression(inner));
+                boolean failIfExists = true,
+                    joinToParent = false;
+                table.addToFrom(inner, failIfExists, joinToParent);
+                sqlQuery.addSelect("count(*)");
+                sqlQuery.addFrom(inner, "init", failIfExists);
+            } else {
+                // e.g. "select count(distinct product_id) from product"
+                sqlQuery.addSelect(
+                    "count(distinct " + getExpression(sqlQuery) + ")");
+                table.addToFrom(sqlQuery, true, true);
+            }
+            String sql = sqlQuery.toString();
+            ResultSet resultSet = null;
+            try {
+                resultSet = RolapUtil.executeQuery(
+                        jdbcConnection, sql,
+                        "RolapStar.Column.getCardinality");
+                Util.assertTrue(resultSet.next());
+                return resultSet.getInt(1);
+            } catch (SQLException e) {
+                throw Util.getRes().newInternal(
+                        "while counting distinct values of column '" +
+                        expression.getGenericExpression() + "'; sql=[" + sql + "]",
+                        e);
+            } finally {
+                try {
+                    if (resultSet != null) {
+                        resultSet.getStatement().close();
+                        resultSet.close();
+                    }
+                } catch (SQLException e) {
+                    // ignore
+                }
+            }
+        }
+    }
 
 	public static class Measure extends Column
 	{
@@ -473,8 +513,8 @@ public class RolapStar {
 					return star;
 				}
 			}
-			Connection jdbcConnection = schema.getInternalConnection().jdbcConnection;
-			RolapStar star = new RolapStar(schema, jdbcConnection);
+			DataSource dataSource = schema.getInternalConnection().dataSource;
+			RolapStar star = new RolapStar(schema, dataSource);
 			star.factTable = new Table(fact, null, null);
 			star.factTable.star = star;
 			stars.add(star);

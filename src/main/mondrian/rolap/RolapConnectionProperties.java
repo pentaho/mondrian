@@ -23,7 +23,7 @@ public class RolapConnectionProperties extends EnumeratedValues {
 	private RolapConnectionProperties() {
 		super(new String[] {
 			Provider, Jdbc, JdbcDrivers, JdbcUser, JdbcPassword, Catalog,
-			CatalogContent, DataSource, Role});
+			CatalogContent, DataSource, PoolNeeded, Role});
 	}
 	/**
 	 * @{value} must equal <code>"Mondrian"</code>.
@@ -71,6 +71,16 @@ public class RolapConnectionProperties extends EnumeratedValues {
 	 * You must specify either {@link #DataSource} or {@link #Jdbc}.
 	 */
 	public static final String DataSource = "DataSource";
+    /**
+     * @{value} tells Mondrian whether to add a layer of connection pooling.
+     * 
+     * <p>If no value is specified, we assume that:<ul>
+     * <li>connections created via the {@link #Jdbc} property are not pooled,
+     *     and therefore need to be pooled,
+     * <li>connections created via the {@link #DataSource} are already pooled.
+     * </ul>
+     */
+    public static final String PoolNeeded = "PoolNeeded";
 	/**
 	 * {@value} is the name of the {@link mondrian.olap.Role role} to adopt. If
 	 * not specified, the connection uses a role which has access to every

@@ -343,9 +343,10 @@ public class Segment implements CachePool.Cacheable
 		// execute
 		ResultSet resultSet = null;
 		final int measureCount = segments.length;
+		java.sql.Connection jdbcConnection = star.getJdbcConnection();
 		try {
 			resultSet = RolapUtil.executeQuery(
-					star.getJdbcConnection(), sql, "Segment.load");
+					jdbcConnection, sql, "Segment.load");
 			ArrayList rows = new ArrayList();
 			while (resultSet.next()) {
 				Object[] row = new Object[arity + measureCount];
@@ -442,6 +443,11 @@ public class Segment implements CachePool.Cacheable
 				}
 			} catch (SQLException e) {
 				// ignore
+			}
+			try {
+				jdbcConnection.close();
+			} catch (SQLException e) {
+				//ignore
 			}
 			// Any segments which are still loading have failed.
 			for (int i = 0; i < segments.length; i++) {

@@ -252,13 +252,26 @@ public class AggregationManager extends RolapAggregationManager {
 	}
 
 	private static String generateSQL(QuerySpec spec) {
-		RolapStar star = spec.getStar();
+        java.sql.Connection jdbcConnection = spec.getStar().getJdbcConnection();
+        try {
+            return generateSql(spec, jdbcConnection);
+        } finally {
+            try {
+                jdbcConnection.close();
+            } catch (SQLException e) {
+                // ignore
+            }
+        }
+    }
+
+    private static String generateSql(QuerySpec spec, java.sql.Connection jdbcConnection) {
         final DatabaseMetaData metaData;
-		try {
-            metaData = star.getJdbcConnection().getMetaData();
+        try {
+            metaData = jdbcConnection.getMetaData();
         } catch (SQLException e) {
-			throw Util.getRes().newInternal("while loading segment", e);
-		}
+            throw Util.getRes().newInternal("while loading segment", e);
+        }
+        RolapStar star = spec.getStar();
         // are there any distinct measures?
         int distinctCount = 0;
         for (int i = 0, measureCount = spec.getMeasureCount(); i < measureCount; i++) {
@@ -344,11 +357,10 @@ public class AggregationManager extends RolapAggregationManager {
                     measure.aggregator.getExpression(measure.getExpression(sqlQuery)));
             }
         }
-		String sql = sqlQuery.toString();
-		return sql;
-	}
+        return sqlQuery.toString();
+    }
 
-	/**
+    /**
 	 * Contains the information necessary to generate a SQL statement to
 	 * retrieve a set of cells.
 	 */

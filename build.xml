@@ -77,6 +77,9 @@ demo/mysql/FoodMartData.sql"/>
   <path id="project.classpath">
     <pathelement location="${classes.dir}"/>
     <pathelement location="${catalina.home}/common/lib/servlet.jar"/>
+    <pathelement location="${catalina.home}/common/lib/commons-dbcp.jar"/>
+    <pathelement location="${catalina.home}/common/lib/commons-collections.jar"/>
+    <pathelement location="${catalina.home}/common/lib/commons-pool.jar"/>
     <pathelement location="${lib.dir}/javacup.jar"/>
     <pathelement location="${lib.dir}/mof.jar"/>
     <pathelement location="${lib.dir}/jmi.jar"/>
