@@ -135,7 +135,7 @@ fname + ' ' + lname
 "fname" || ' ' || "lname"
 					</SQL>
 					<SQL dialect="mysql">
-CONCAT(`customer`.`fname`, " ", `customer`.`lname`)
+CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)
 					</SQL>
 					<SQL dialect="generic">
 "lname"

@@ -498,7 +498,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 		String fname_plus_lname;
 		if (jdbc_url.toLowerCase().indexOf("mysql") >= 0 ) {
 			// Mysql would generate "CONCAT( ... )"
-			fname_plus_lname = " CONCAT(`customer`.`fname`, \" \", `customer`.`lname`) as `Name`,";
+			fname_plus_lname = " CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `Name`,";
 		} else {
 			fname_plus_lname = " fname + ' ' + lname as `Name`,";
 		}
@@ -3709,9 +3709,9 @@ public class BasicQueryTest extends FoodMartTestCase {
 
 	/**
 	 * Makes sure that the expression <code>
-	 * 
+	 *
 	 * [Measures].[Unit Sales] / ([Measures].[Unit Sales], [Product].[All Products])
-	 * 
+	 *
 	 * </code> depends on the current member of the Product dimension, although
      * [Product].[All Products] is referenced from the expression.
 	 */
@@ -3723,8 +3723,8 @@ public class BasicQueryTest extends FoodMartTestCase {
 		"  {[Measures].[Unit Sales]} ON columns, " + nl +
 		"  {[Product].[All Products].[Food].[Deli], [Product].[All Products].[Food].[Frozen Foods]} ON rows " + nl +
 		"from [Sales] " + nl +
-		"where ([Customers].[my], [Time].[1997])" + nl, 
-		
+		"where ([Customers].[my], [Time].[1997])" + nl,
+
 		"Axis #0:" + nl +
 		"{[Customers].[my], [Time].[1997]}" + nl +
 		"Axis #1:" + nl +
