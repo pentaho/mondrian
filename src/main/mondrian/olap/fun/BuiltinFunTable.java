@@ -1389,10 +1389,8 @@ public class BuiltinFunTable extends FunTable {
 						if (members == null) {
 							members = (List) getArg(evaluator, args, 0);
 							evaluator.setExpResult(args[0], members);
-							System.out.println("miss");
 						}
-						else
-							System.out.println("hit");
+
 						ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
 						Aggregator aggregator = (Aggregator) evaluator.getProperty(Property.PROPERTY_AGGREGATION_TYPE);
 						if (aggregator == null) {
