@@ -852,8 +852,12 @@ public class FunUtil extends Util {
 			}
 			m = m.getParentMember();
 		}
+		// If m == null, then "level" was lower than member's level.
+		// periodsToDate( [Time].[Quarter], [Time].[1997] is valid,
+		//  but will return an empty List
 		ArrayList members = new ArrayList();
-		evaluator.getSchemaReader().getMemberRange(level, m, member, members);
+		if (m != null)
+			evaluator.getSchemaReader().getMemberRange(level, m, member, members);
 		return members;
 	}
 
