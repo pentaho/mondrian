@@ -32,7 +32,7 @@ class RolapResult extends ResultBase
 	private CellKey point;
 	HashMap cellValues;
 	AggregatingCellReader aggregatingReader;
-	BatchingCellReader batchingReader;
+	FastBatchingCellReader batchingReader;
     private int[] modulos;
     private static final int MAX_AGGREGATION_PASS_COUNT = 3;
 
@@ -47,7 +47,7 @@ class RolapResult extends ResultBase
 		final boolean alwaysFlush = MondrianProperties.instance().getFlushAfterQuery();
 		final boolean printCacheables = MondrianProperties.instance().getPrintCacheablesAfterQuery();
 		HashSet pinnedSegments = new HashSet();
-		this.batchingReader = new BatchingCellReader(
+		this.batchingReader = new FastBatchingCellReader(
 			(RolapCube) query.getCube(), pinnedSegments);
 		try {
 			for (int i = -1; i < axes.length; i++) {

@@ -11,15 +11,20 @@
 */
 
 package mondrian.rolap.agg;
-import mondrian.olap.Util;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 import mondrian.olap.MondrianDef;
+import mondrian.olap.Util;
 import mondrian.rolap.RolapAggregationManager;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.sql.SqlQuery;
-
-import java.util.*;
-import java.sql.SQLException;
-import java.sql.DatabaseMetaData;
 
 /**
  * <code>RolapAggregationManager</code> manages all {@link Aggregation}s
@@ -133,7 +138,7 @@ public class AggregationManager extends RolapAggregationManager {
      * @param measuresList
      * @return
      */
-    private static RolapStar.Measure getFirstDistinctMeasure(ArrayList measuresList) {
+    public static RolapStar.Measure getFirstDistinctMeasure(ArrayList measuresList) {
         for (int i = 0; i < measuresList.size(); i++) {
             RolapStar.Measure measure = (RolapStar.Measure) measuresList.get(i);
             if (measure.aggregator.distinct) {
@@ -143,7 +148,7 @@ public class AggregationManager extends RolapAggregationManager {
         return null;
     }
 
-    private synchronized void loadAggregation(
+    public synchronized void loadAggregation(
 		RolapStar.Measure[] measures, RolapStar.Column[] columns,
 		Object[][] constraintses, Collection pinnedSegments)
 	{
