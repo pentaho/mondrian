@@ -52,6 +52,7 @@ public class Main {
                 pw.println(errors[i]);
             }
             pw.flush();
+            System.exit(1);
         }
     }
 
@@ -63,7 +64,9 @@ public class Main {
         if (false) {
             new MondrianHarness().run(test, new MondrianListener());
         } else {
-            TestRunner.run(test);
+            TestResult tres = TestRunner.run(test);
+            if (!tres.wasSuccessful())
+            	System.exit(1);
         }
 	}
 
