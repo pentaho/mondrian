@@ -72,12 +72,6 @@ ${lib.dir}/optional.jar,
 ${lib.dir}/xalan.jar,
 ${lib.dir}/xercesImpl.jar,
 ${lib.dir}/xml-apis.jar,
-${lib.dir}/servlet.jar,
-${lib.dir}/jsp-api.jar,
-${lib.dir}/commons-collections.jar,
-${lib.dir}/commons-dbcp.jar,
-${lib.dir}/commons-pool.jar,
-${testlib.dir}/junit.jar,
 demo/FoodMartCreateData.sql"/>
 
   <path id="project.classpath">
@@ -266,7 +260,8 @@ unzip-FoodMartCreateData"/>
 
   <!-- Before you run it, you will need to set the
        "mondrian.jdbcDrivers", "mondrian.foodmart.jdbcURL", and
-       "mondrian.foodmart.catalogURL" properties.  -->
+       "mondrian.foodmart.catalogURL" properties. The easiest way to
+       do this is to edit the file "build.properties". -->
 
   <target name="FoodMartTest"
       description="Runs a few queries using the FoodMart schema.">
@@ -279,7 +274,7 @@ unzip-FoodMartCreateData"/>
           value="${mondrian.foodmart.catalogURL}"/>
 
       <!-- mondrian.test.connectString is the mondrian connect-string.
-           Provider must be 'mondrian'. Jdbc is the  Catalog is the  -->
+           Provider must be 'mondrian'. -->
       <sysproperty key="mondrian.test.connectString"
           value="Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}';JdbcUser='${mondrian.foodmart.jdbcUser}';JdbcPassword='${mondrian.foodmart.jdbcPassword}'"/>
 
@@ -324,7 +319,7 @@ in {mondrian.foodmart.jdbcURL}.">
         </classpath>
 
         <sysproperty key="log4j.configuration" 
-            value="file://${project.location}/log4j.properties"/>
+            value="log4j.properties"/>
         <sysproperty key="mondrian.jdbcDrivers"
             value="${mondrian.jdbcDrivers}"/>
         <sysproperty key="mondrian.test.connectString"

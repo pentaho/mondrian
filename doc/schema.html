@@ -21,7 +21,7 @@
 
 <body>
 <h1>How to design a Mondrian schema</h1>
-<p>Julian Hyde; last updated February, 2005.</p>
+<p>Julian Hyde; last updated March, 2005.</p>
 <h2>Contents</h2>
 <ol>
   <li><a href="#What_is_a_schema">What is a schema?</a></li>
@@ -58,10 +58,6 @@
   <ol>
     <li><a href="#Defining_roles">Defining a role</a></li>
     <li><a href="#Setting_a_connections_role">Setting a connection's role</a></li>
-  </ol></li>
-  <li><a href="#Other_stuff">Other stuff</a>
-  <ol>
-  <li><a href="#Format_strings">Format strings</a></li>
   </ol></li>
   <li><a href="#Appendix_A_XML_elements">Appendix A: XML elements</a></li>
 </ol>
@@ -138,10 +134,10 @@ dimensions, &quot;Time&quot;, and &quot;Gender&quot;, and two measures, &quot;Un
 Sales&quot;.</p>
 <p>We can write an MDX query on this schema:</p>
 <blockquote>
-<p><code>select {[Measures].[Unit Sales], [Measures].[Store Sales]} on columns,<br>
-&nbsp; {[Time].[1997].[Q1].descendants} on rows<br>
-from [Sales]<br>
-where [Gender].[F]</code></p>
+<p><code>SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} ON COLUMNS,<br>
+&nbsp; {[Time].[1997].[Q1].descendants} ON ROWS<br>
+FROM [Sales]<br>
+WHERE [Gender].[F]</code></p>
 </blockquote>
 <p>This query refers to the Sales cube (<code>[Sales]</code>), each of the
 dimensions <code>[Measures]</code>, <code>[Time]</code>, <code>[Gender</code>],
@@ -234,13 +230,13 @@ a WITH MEMBER clause, like this:</p>
 
 <blockquote>
 
-    <p><code>with member [Measures].[Profit] as '[Measures].[Store
+    <p><code>WITH MEMBER [Measures].[Profit] AS '[Measures].[Store
     Sales]-[Measures].[Store Cost]',<br>
 &nbsp;&nbsp; FORMAT_STRING = '$#,###'<br>
-    select {[Measures].[Store Sales], [Measures].[Profit]} on columns,<br>
-&nbsp; {[Product].Children} on rows<br>
-    from [Sales]<br>
-    where [Time].[1997]</code></p>
+    SELECT {[Measures].[Store Sales], [Measures].[Profit]} ON COLUMNS,<br>
+&nbsp; {[Product].Children} ON ROWS<br>
+    FROM [Sales]<br>
+    WHERE [Time].[1997]</code></p>
 </blockquote>
 <p>But rather than including this clause in every MDX query of your application,
 you can define the member in your schema, as part of your cube definition:</p>
@@ -257,8 +253,9 @@ you can define the member in your schema, as part of your cube definition:</p>
 (not <code>&lt;<a href="#XML_Property">Property</a>&gt;</code>) element corresponds
 to the <code>FORMAT_STRING = '$#,###'</code> fragment of the MDX statement. You
 can define other properties here too, but <code>FORMAT_STRING</code> is by far
-the most useful in practice. This property's value is the constant string <code>
-&quot;$#,##0.00&quot;</code>, but a property's value can also be an expression. When
+the most useful in practice.</p>
+
+<p>The FORMAT_STRING property value can also be evaluated using an expression. When
 formatting a particular cell, first the expression is evaluated to yield a
 format string, then the format string is applied to the cell value. Here is the
 same property with a conditional format string:</p>
@@ -266,9 +263,12 @@ same property with a conditional format string:</p>
 <blockquote>
 
     <p><code>&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>
-    name=&quot;FORMAT_STRING&quot; expression=&quot;Iif(Value &lt; 0, '($#,##0.00)',
-    '$#,##0.00')&quot;/&gt;</code></p>
+    name=&quot;FORMAT_STRING&quot; expression=&quot;Iif(Value &lt; 0, '|($#,##0.00)|style=red',
+    '|$#,##0.00|style=green')&quot;/&gt;</code></p>
 </blockquote>
+
+<p>For more details about format strings, see the
+<a href="mdx.html#Format_strings">MDX specification</a>.</p>
 
 <p>You can make a calculated member or a measure invisible. If you specify <code>
 visible=&quot;false&quot;</code> (the default is &quot;true&quot;) in the <code>&lt;<a href="#XML_Measure">Measure</a>&gt;
@@ -790,7 +790,7 @@ element maps the level onto a <code>&lt;<a href="#XML_Table">Table</a>&gt;</code
 
 <blockquote>
 
-    <p><code>&lt;;<a href="#XML_Dimension">Dimension</a> name=&quot;Employees&quot; foreignKey=&quot;employee_id&quot;&gt;<br>
+    <p><code>&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Employees&quot; foreignKey=&quot;employee_id&quot;&gt;<br>
 &nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All Employees&quot; primaryKey=&quot;employee_id&quot;&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> name=&quot;employee&quot;/&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Employee Id&quot; uniqueMembers=&quot;true&quot; type=&quot;Numeric&quot;<br>
@@ -833,38 +833,40 @@ the application's responsibility to do so -- Mondrian does not do this!
 Here is an example of a stored procedure that computes a closure table.</p>
 
 <blockquote><code><pre>
-  CREATE PROCEDURE close_employee()
-  BEGIN
-    DECLARE distance int;
-    TRUNCATE TABLE employee_closure;
-    SET distance = 0;
-    <i>-- seed closure with self-pairs (distance 0)</i>
-    INSERT INTO employee_closure (supervisor_id, employee_id, distance)
-      SELECT employee_id, employee_id, distance
-        FROM employee;
+CREATE PROCEDURE close_employee()
+BEGIN
+  DECLARE distance int;
+  TRUNCATE TABLE employee_closure;
+  SET distance = 0;
+  <i>-- seed closure with self-pairs (distance 0)</i>
+  INSERT INTO employee_closure (supervisor_id, employee_id, distance)
+    SELECT employee_id, employee_id, distance
+      FROM employee;
 
-    <i>-- for each pair (root, leaf) in the closure,
-    -- add (root, leaf->child) from the base table</i>
-    REPEAT
-      SET distance = distance + 1;
-      INSERT INTO employee_closure (supervisor_id, employee_id, distance)
-        SELECT employee_closure.supervisor_id, employee.employee_id, distance
-          FROM employee_closure, employee
-            WHERE employee_closure.employee_id = employee.supervisor_id
-            AND employee_closure.distance = distance - 1;
-    UNTIL (ROW_COUNT() == 0))
-    END REPEAT
-  END
+  <i>-- for each pair (root, leaf) in the closure,
+  -- add (root, leaf->child) from the base table</i>
+  REPEAT
+    SET distance = distance + 1;
+    INSERT INTO employee_closure (supervisor_id, employee_id, distance)
+      SELECT employee_closure.supervisor_id, employee.employee_id, distance
+        FROM employee_closure, employee
+          WHERE employee_closure.employee_id = employee.supervisor_id
+          AND employee_closure.distance = distance - 1;
+  UNTIL (ROW_COUNT() == 0))
+  END REPEAT
+END
 </pre></code></blockquote>
 
 
-<h3><a name="Member_properties">Member properties</a></h3><p>Member properties are defined by the <code><a href="#XML_Property">&lt;Property&gt;</a></code element. You use them via the <code><i>member</i>.Properties(&quot;<i>propertyName</i>&quot;)</code>
-function, for example::</p><blockquote>
-  <preSELECT {[Store Sales]} ON COLUMNS,
-    TopCount(Filter([Store].[Store Name].Members,
-                    [Store].CurrentMember.Properties(&quot;Store Type&quot;) = &quot;Supermarket&quot;),
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 10, [Store Sales]) ON ROWSS
-FROM [Sales]</pre></blockquote><p>Mondrian deduces the type of the property expression, if it can. If the
+<h3><a name="Member_properties">Member properties</a></h3><p>Member properties are defined by the <code><a href="#XML_Property">&lt;Property&gt;</a></code> element. You use them via the <code><i>member</i>.Properties(&quot;<i>propertyName</i>&quot;)</code>
+function, for example:</p><blockquote>
+  <code>SELECT {[Store Sales]} ON COLUMNS,<br>
+&nbsp; TopCount(Filter([Store].[Store Name].Members,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    [Store].CurrentMember.Properties(&quot;Store Type&quot;) = &quot;Supermarket&quot;),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [Store Sales]) ON ROWS<br>
+	FROM [Sales]</code></blockquote><p>Mondrian deduces the type of the property expression, if it can. If the
 property name is a constant string, the type is based upon the type attribute
 (&quot;String&quot;, &quot;Numeric&quot; or &quot;Boolean&quot;) of the property definition. If the property
 name is an expression (for example <code>CurrentMember.Properties(&quot;Store &quot; +
@@ -915,30 +917,36 @@ interface mondrian.olap.CellFormatter</a></code>.</p><h3><a name="Member_formatt
 returned by <code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/Member.html#getCaption()">getCaption()</a></code>.</p><blockquote>
   <pre>&lt;<a href="#XML_Level">Level</a> column=&quot;column&quot; name=&quot;name&quot; formatter=&quot;com.foo.MyMemberFormatter&quot;/&gt;</pre></blockquote><p>The class &quot;com.foo.MyMemberFormatter&quot; would have to implement <code>
 <a href="http://mondrian.sourceforge.net/api/mondrian/olap/MemberFormatter.html">
-interface mondrian.olap.MemberFormatter</a></code>.</p><h3><a name="I18n">Internationalization</a></h3><p>Internationalized applications based on Mondrian could use multiple, language dependent schemas.<br/>
-If so, the MDX statements would be language dependent too. This might be more difficult to maintain.<br/>
-Instead of holding several copies of schema and MDX we provide a way to dynamically handle Mondrian schemas.<br/>
+interface mondrian.olap.MemberFormatter</a></code>.</p><h3><a name="I18n">Internationalization</a></h3><p>Internationalized applications based on Mondrian could use multiple, language-dependent schemas.
+If so, the MDX statements would be language dependent too. This might be more difficult to maintain.
+Instead of holding several copies of schema and MDX we provide a way to dynamically handle Mondrian schemas.
 Calling <code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/DriverManager.html#getConnection(mondrian.olap.Util.PropertyList, boolean)">DriverManager.getConnection()</a></code>
 we can provide a property "DynamicSchemaProcessor" denoting the name of a class to implement the
-<code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/DynamicSchemaProcessor.html">DynamicSchemaProcessor</a></code> interface.<br/>
+<code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/DynamicSchemaProcessor.html">DynamicSchemaProcessor</a></code> interface.
 So any transformation can be applied to a Mondrian schema at runtime. A "dynamic" schema will not be cached by Mondrian.
 </p><p>
 To keep the MDX expressions free from language dependent names, it is a good idea to use the "caption" attribute,
-which is supported for any Olap element.<br/>
+which is supported for any Olap element.
 Additonally:
 <ul><li>A hierarchy can have an <code>allMemberCaption</code> attribute as display value of the "All" member.
 </li><li>For the schema we can set a display value of the "measures" dimension by the <code>measuresCaption</code> attribute.
 </li></ul>
-</p><p>
-<b><u>Examples</u></b><br/>
-If your DynamicSchemaProcessor would support JSTL-like resolving of variables,<br>
-you might use <code>caption</code>, <code>allMemberCaption</code>, <code>measuresCaption</code> attributes as follows.
+</p><h4>
+Examples</h4>
 
-<blockquote>
-  <pre>&lt;<a href="#XML_Schema">Schema</a> measuresCaption=&quot;${MEASURESCAPTION}&quot;&gt;</pre><pre>&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Gender&quot; foreignKey=&quot;customer_id&quot; caption=&quot;${GENDER}&quot;&gt;</pre><pre>&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All Genders&quot; primaryKey=&quot;customer_id&quot; allMemberCaption=&quot;${ALLGENDER}&quot;&gt;</pre><pre>&lt;<a href="#XML_Level">Level</a> name=&quot;Gender&quot; column=&quot;gender&quot; uniqueMembers=&quot;true&quot; caption=&quot;${GENDER}&quot;&gt;</pre><pre>&lt;<a href="#XML_Measure">Measure</a> name=&quot;Unit Sales&quot; column=&quot;unit_sales&quot; caption=&quot;${UNITSALES}&quot;&gt;</pre></blockquote>A hierarchy with no <code>caption</code> defined would inherit the <code>caption</code> attribute from the dimension parent.
-</p>
-<h2><a name="Access_control">Access-control</a></h2><p>You've got all this great data, but you don't everyone to be able to read all
-of it. You can define an access-control profile, called a Role, as part of the
+<p>
+Supposing that your DynamicSchemaProcessor supports JSTL-like resolving of variables,
+you might use <code>caption</code>, <code>allMemberCaption</code> and <code>measuresCaption</code> 
+attributes as follows:<blockquote>
+  <p><code>&lt;<a href="#XML_Schema">Schema</a> measuresCaption=&quot;${MEASURESCAPTION}&quot;&gt;<br>
+	&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Gender&quot; foreignKey=&quot;customer_id&quot; caption=&quot;${GENDER}&quot;&gt;<br>
+	&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All Genders&quot; primaryKey=&quot;customer_id&quot; allMemberCaption=&quot;${ALLGENDER}&quot;&gt;<br>
+	&lt;<a href="#XML_Level">Level</a> name=&quot;Gender&quot; column=&quot;gender&quot; uniqueMembers=&quot;true&quot; caption=&quot;${GENDER}&quot;&gt;<br>
+	&lt;<a href="#XML_Measure">Measure</a> name=&quot;Unit Sales&quot; column=&quot;unit_sales&quot; caption=&quot;${UNITSALES}&quot;&gt;</code></p></blockquote>
+
+<p>A hierarchy with no <code>caption</code> defined would inherit the <code>caption</code> attribute from the dimension parent.</p>
+<h2><a name="Access_control">Access-control</a></h2><p>OK, so now you've got all this great data, but you don't everyone to be able to read all
+of it. To solve this, you can define an access-control profile, called a Role, as part of the
 schema, and set this role when establishing a connection.</p><h3><a name="Defining_roles">Defining a role</a></h3><p>Roles are defined by <code><a href="#XML_Role">&lt;Role&gt;</a></code> elements,
 which occur as direct children of the <code><a href="#XML_Schema">&lt;Schema&gt;</a></code>
 element, after the last <code><a href="#XML_Cube">&lt;Cube&gt;</a></code>. Here is an example of a role:</p><blockquote>
@@ -1007,14 +1015,9 @@ of doing this:</p><ol>
   Role</a> for more details), or look
   one up using the method
   <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Schema.html#lookupRole(java.lang.String)">
-  Schema.lookupRole(String)</a>.</li></ol><h2><a name="Other_stuff">Other stuff</a></h2><h3><a name="Format_strings">Format strings</a></h3><p>Format strings use Visual Basic formatting syntax, see
-<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Format.html">class
-mondrian.olap.Format</a> for more details. </p>
+  Schema.lookupRole(String)</a>.</li></ol>
 
-<p>A measure's format string is usually a fixed string, but it really
-an expression, which is evaluated in the same context as the cell. You can
-therefore change the formatting of a cell depending upon the cell's value.</p><p><i>todo</i>: example of expression format string to do
-traffic-lighting</p><h2><a name="Appendix_A_XML_elements">Appendix A: XML elements</a></h2><table border="2" cellpadding="2" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" id="AutoNumber2">
+<h2><a name="Appendix_A_XML_elements">Appendix A: XML elements</a></h2><table border="2" cellpadding="2" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" id="AutoNumber2">
   <tr>
     <th>Element</th><th>Description</th></tr><tr>
     <td><code>&lt;<a name="XML_Schema" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Schema">Schema</a>&gt;</code></td><td>Collection of Cubes, Virtual cubes,  Shared dimensions, and Roles.</td></tr><tr>

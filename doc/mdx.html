@@ -79,6 +79,65 @@ differences between Mondrian's dialect and the standard dialect of MDX.</p>
 <p>Pseudo-functions <code>Param()</code> and <code>ParamRef()</code> allow
   you to create parameterized MDX statements.</p>
 
+<h2><a name="Format_strings">Format strings</a></h2><p>Every member has a 
+FORMAT_STRING property, which affects how its raw value is rendered into text in 
+the user interface. For example, the query</p>
+
+<blockquote>
+
+	<p><code>WITH MEMBER [Measures].[Profit] AS '([Measures].[Store Sales] - [Measures].[Store Cost])',<br>
+	&nbsp;&nbsp;FORMAT_STRING = &quot;$#,###.00&quot;<br/>
+SELECT {[Measures].[Store Sales], [Measures].[Profit]} ON COLUMNS,<br/>
+&nbsp;&nbsp;{[Product].CurrentMember.Children} ON ROWS<br/>
+FROM [Sales]</code></p>
+</blockquote>
+
+<p>yields cells formatted in dollar and cent amounts.</p>
+
+<p>Members defined in a schema file can also have format strings. Measures use 
+the <code>formatString</code> attribute:</p>
+
+<blockquote>
+
+	<p><code>&lt;Measure name=&quot;Store Sales&quot; column=&quot;store_sales&quot; aggregator=&quot;sum&quot; 
+	formatString=&quot;#,###.00&quot;/&gt;</code></p>
+</blockquote>
+
+<p>and calculated members use the <code>&lt;CalculatedMemberProperty&gt;</code> 
+sub-element:</p>
+
+<blockquote>
+
+	<p><code>&lt;CalculatedMember name=&quot;Profit&quot; dimension=&quot;Measures&quot; formula=&quot;[Measures].[Store 
+	Sales] - [Measures].[Store Cost]&quot;&gt;<br>
+&nbsp; &lt;CalculatedMemberProperty name=&quot;FORMAT_STRING&quot; value=&quot;$#,##0.00&quot;/&gt;<br>
+	&lt;/CalculatedMember&gt;</code></p>
+</blockquote>
+
+<p>Format strings use Visual Basic formatting syntax; see
+<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Format.html">class
+mondrian.olap.Format</a> for more details.</p>
+
+<p>A measure's format string is usually a fixed string, but is really
+an expression, which is evaluated in the same context as the cell. You can
+therefore change the formatting of a cell depending upon the cell's value.</p>
+
+<p>The format string can even contain 'style' attributes which are interpreted 
+specially by JPivot. If present, JPivot will render cells in color. 
+
+<p>The following example combines a dynamic formula with style attributes. The 
+result is that cells are displayed with green background if they are less than 
+$100,000, or a red background if they are greater than $100,000:<blockquote>
+<code>WITH MEMBER [Measures].[Profit] AS<br/>
+&nbsp;
+&nbsp;&nbsp;'([Measures].[Store Sales] - [Measures].[Store Cost])',<br>
+&nbsp;&nbsp;&nbsp;FORMAT_STRING = Iif([Measures].[Profit] < 100000, '|#|style=green', '|#|style=red')<br/>
+SELECT {[Measures].[Store Sales], [Measures].[Profit]} ON COLUMNS,<br/>
+&nbsp;&nbsp;{[Product].CurrentMember.Children} ON ROWS<br/>
+FROM [Sales]</code></blockquote>
+ 
+</p>
+
 <h2>Function list</h2>
 
 <p>These are the functions implemented in the current Mondrian release.</p>
