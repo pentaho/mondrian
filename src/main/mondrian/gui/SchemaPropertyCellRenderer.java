@@ -9,6 +9,7 @@ package mondrian.gui;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
+import mondrian.olap.*;
 
 /**
  *
@@ -18,6 +19,7 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
     JLabel stringRenderer;
     JCheckBox booleanRenderer;
     JLabel integerRenderer;
+	JTable tableRenderer;
 
     /** Creates a new instance of SchemaPropertyCellRenderer */
     public SchemaPropertyCellRenderer() {
@@ -29,6 +31,8 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
         integerRenderer = new JLabel();
         integerRenderer.setHorizontalAlignment(JTextField.RIGHT);
         integerRenderer.setFont(Font.decode("Courier"));
+
+        tableRenderer = new JTable();
     }
     
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -42,7 +46,43 @@ public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCe
             } else if (value instanceof Integer) {
                 integerRenderer.setText((String)value);
                 return integerRenderer;
-            }            
+  			} else if (value == null) {
+				return null;
+			} else if (value.getClass() == MondrianDef.Join.class) {
+				SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+				tableRenderer.setDefaultRenderer(Object.class, spcr);
+				PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_JOIN); 
+				tableRenderer.setModel(ptm);			
+				return tableRenderer;  
+			} else if (value.getClass() == MondrianDef.OrdinalExpression.class) {
+				SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+				tableRenderer.setDefaultRenderer(Object.class, spcr);
+				PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_SQL); 
+				tableRenderer.setModel(ptm);			
+				return tableRenderer;  
+
+  			} else if (value.getClass() == MondrianDef.Relation.class) {                
+				SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+				tableRenderer.setDefaultRenderer(Object.class, spcr);
+				PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_RELATION); 
+				tableRenderer.setModel(ptm);			
+				return tableRenderer;   
+  			} else if (value.getClass() == MondrianDef.Table.class) {                
+				SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+				tableRenderer.setDefaultRenderer(Object.class, spcr);
+				PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_TABLE); 
+				tableRenderer.setModel(ptm);			
+				return tableRenderer;          
+			} else if (value.getClass() == MondrianDef.Property.class) {
+				SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+				tableRenderer.setDefaultRenderer(Object.class, spcr);
+				PropertyTableModel ptm = new PropertyTableModel(value,SchemaExplorer.DEF_PROPERTY); 
+				tableRenderer.setModel(ptm);			
+				return tableRenderer;          
+			} else {
+				return null;
+			}            
+
         }
         
         return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);

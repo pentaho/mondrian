@@ -6,9 +6,7 @@
 
 package mondrian.gui;
 
-import java.lang.reflect.*;
-import java.beans.*;
-import java.util.*;
+import java.lang.reflect.Field;
 
 /**
  *
@@ -82,12 +80,27 @@ public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
         } else {
             try {
                 Field f = target.getClass().getField(propertyNames[rowIndex]);
-                return f.get(target);
+                
+                Object obj = f.get(target);
+                return obj;
             } catch (Exception ex) {
                 ex.printStackTrace();
                 return "#ERROR";
             }            
         }        
+    }
+    
+	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+		try {
+			Field f = target.getClass().getField(propertyNames[rowIndex]);
+			f.set(target,aValue);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		} 		
+	}
+    
+    public Object getValue() {
+    	return target;
     }
     
 }
