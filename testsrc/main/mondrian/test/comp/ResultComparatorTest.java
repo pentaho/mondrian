@@ -132,10 +132,12 @@ public class ResultComparatorTest extends TestCase {
     public static TestSuite suite() {
         TestSuite suite = new TestSuite();
         String filePattern = MondrianProperties.instance().getQueryFilePattern();
+        String fileDirectory = MondrianProperties.instance().getQueryFileDirectory();
 
         final Pattern pattern = filePattern == null ? null : Pattern.compile(filePattern);
+        final String directory = fileDirectory == null ? "testsrc" + File.separatorChar + "queryFiles" : fileDirectory;
 
-        File[] files = new File("testsrc" + File.separatorChar + "queryFiles").listFiles(new FilenameFilter() {
+        File[] files = new File(directory).listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 if (name.startsWith("query") && name.endsWith(".xml")) {
                     if (pattern == null) {

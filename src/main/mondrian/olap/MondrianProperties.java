@@ -306,6 +306,11 @@ public class MondrianProperties extends PropertiesPlus {
         return getProperty(QueryFilePattern);
     }
 
+    public static final String QueryFileDirectory = "mondrian.test.QueryFileDirectory";
+    public String getQueryFileDirectory() {
+        return getProperty(QueryFileDirectory);
+    }
+
     public static final String CachePoolType = "mondrian.rolap.CachePoolType";
     public static final String CachePoolType_Soft = "soft";
     public static final String CachePoolType_Mondrian = "mondrian";
