@@ -16,7 +16,7 @@
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
-  <property name="version" value="1.1.1"/>
+  <property name="version" value="1.1.2"/>
 
   <!--
     ===================================================================
@@ -52,7 +52,6 @@
   <property name="catalina.home" value="${env.CATALINA_HOME}"/>
   <property name="xalan.home" value="${env.XALAN_HOME}"/>
   <property name="junit.home" value="${env.JUNIT_HOME}"/>
-  <property name="weblogic.home" value="${env.WEBLOGIC_HOME}"/>
   <property name="generated.java.files" value="
 ${java.dir}/mondrian/olap/Parser.java,
 ${java.dir}/mondrian/olap/ParserSym.java,
@@ -99,9 +98,6 @@ demo/FoodMartCreateData.sql"/>
     <pathelement location="${lib.dir}/xercesImpl.jar"/>
     <!-- CLASSPATH must contain xml-apis.jar, xercesImpl.jar, javacup.jar -->
     <pathelement path="${env.CLASSPATH}"/>
-    <!-- Weblogic must be after xml-apis.jar and xercesImpl.jar, because it
-         contains an incompatible version of xerces. -->
-    <pathelement location="${weblogic.home}/lib/weblogic.jar"/>
     <pathelement location="${ant.home}/lib/ant.jar"/>
     <pathelement location="${ant.home}/lib/optional.jar"/>
   </path>
@@ -127,13 +123,6 @@ demo/FoodMartCreateData.sql"/>
   <taskdef name="xomgen" classname="mondrian.xom.XOMGenTask">
     <classpath refid="project.boot.classpath"/>
   </taskdef>
-
-  <target name="sniff"
-        description="Figures out which components are available">
-    <available property="weblogic.available"
-        classname="weblogic.jspc"
-        classpathref="project.classpath"/>
-  </target>
 
   <!--
     ===================================================================
@@ -181,7 +170,6 @@ demo/FoodMartCreateData.sql"/>
   <echo>catalina.home         = ${env.CATALINA_HOME}</echo>
   <echo>xalan.home            = ${env.XALAN_HOME}</echo>
   <echo>junit.home            = ${env.JUNIT_HOME}</echo>
-  <echo>weblogic.home         = ${env.WEBLOGIC_HOME}</echo>
   <echo>mondrian.foodmart.catalogURL = ${mondrian.foodmart.catalogURL}</echo>
   <echo>==============================================================</echo>
   </target>
@@ -203,14 +191,11 @@ demo/FoodMartCreateData.sql"/>
   </target>
 
   <target name="compile" depends="
-copy-jars,
-sniff,
 prepare,
 parser,
 compile.xom,
 generate.resources,
 def,
-compile.jsp.maybe,
 compile.java,
 copy.properties,
 unzip-FoodMartCreateData"/>
@@ -315,22 +300,6 @@ unzip-FoodMartCreateData"/>
         dtdname="mondrian.dtd"/>
     <copy file="${java.dir}/mondrian/olap/mondrian.dtd"
         todir="${lib.dir}"/>
-  </target>
-
-  <target name="compile.jsp.maybe" depends="compile.java"
-      if="weblogic.available"
-      description="Compiles jsp pages, but only if weblogic is available">
-    <antcall target="compile.jsp"/>
-  </target>
-
-  <target name="compile.jsp"
-      description="Compiles jsp pages, fails if weblogic is not available.">
-    <mkdir dir="${etc.dir}"/>
-    <wljspc src="${webapp.dir}" dest="${etc.dir}"
-        package="mondrian.web.jsp">
-      <classpath refid="project.classpath"/>
-      <include name="**/*.jsp"/>
-    </wljspc>
   </target>
 
   <!-- Before you run it, you will need to set the
@@ -460,16 +429,22 @@ ${java.dir}/**/*.cup,
 ${java.dir}/**/*.gif,
 ${java.dir}/**/*.html,
 ${java.dir}/mondrian/resource/Resource.xsl,
-${lib.dir}/mondrian-xom.jar,
-${lib.dir}/mondrian-resource.jar,
+${lib.dir}/commons-collections.jar,
+${lib.dir}/commons-dbcp.jar,
+${lib.dir}/commons-pool.jar,
 ${lib.dir}/javacup.jar,
-${lib.dir}/log4j-1.2.9.jar,
 ${lib.dir}/jmi.jar,
+${lib.dir}/log4j-1.2.9.jar,
+${lib.dir}/jsp-api.jar,
 ${lib.dir}/mof.jar,
+${lib.dir}/mondrian-resource.jar,
+${lib.dir}/mondrian-xom.jar,
+${lib.dir}/servlet.jar,
 ${testsrc.dir}/queryFiles/**/*.xml,
 ${testsrc.dir}/**/*.java,
 ${testsrc.dir}/**/*.html,
 ${testsrc.dir}/**/*.txt,
+${testlib.dir}/junit.jar,
 ${webapp.dir}/WEB-INF/web*.xml,
 ${webapp.dir}/**/*.jsp,
 ${webapp.dir}/WEB-INF/*.xsl,
@@ -500,9 +475,14 @@ doc/deployDoc.sh" />
 
   <target name="check-FoodMartCreateData-uptodate">
     <condition property="FoodMartCreateData.uptodate">
-      <uptodate
-          srcfile="demo/FoodMartCreateData.zip"
-          targetfile="demo/FoodMartCreateData.sql"/>
+      <or>
+        <not>
+          <available file="demo/FoodMartCreateData.zip"/>
+        </not>
+        <uptodate
+            srcfile="demo/FoodMartCreateData.zip"
+            targetfile="demo/FoodMartCreateData.sql"/>
+      </or>
     </condition>
   </target>
 
