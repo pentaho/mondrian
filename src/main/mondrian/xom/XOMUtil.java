@@ -196,15 +196,15 @@ public abstract class XOMUtil extends XMLUtil {
 			Class clazz = Class.forName(className);
 			return (Parser) clazz.newInstance();
 		} catch (ClassNotFoundException e) {
-			throw new XOMException(e, "while creating xml parser " + className);
+			throw new XOMException(e, "Error while creating xml parser '" + className + "'");
 		} catch (IllegalAccessException e) {
-			throw new XOMException(e, "while creating xml parser" + className);
+			throw new XOMException(e, "Error while creating xml parser '" + className + "'");
 		} catch (InstantiationException e) {
-			throw new XOMException(e, "while creating xml parser" + className);
+			throw new XOMException(e, "Error while creating xml parser '" + className + "'");
 		} catch (VerifyError e) {
 			throw new XOMException(
-					e, "while creating xml parser" + className +
-					" (if you are running Weblogic 6.1, try putting " +
+					e, "Error while creating xml parser '" + className + "' " +
+					"(If you are running Weblogic 6.1, try putting " +
 					"xml-apis.jar and xercesImpl.jar BEFORE weblogic.jar " +
 					"on CLASSPATH)");
 		}

@@ -1712,6 +1712,33 @@ public class FoodMartTestCase extends TestCase {
 		assertEquals(285011, ((Number) value).intValue());
 	}
 
+	public void testDynamicFormat() {
+		runQueryCheckResult(
+				"with member [Measures].[USales] as [Measures].[Unit Sales]," + nl +
+				"  format_string = iif([Measures].[Unit Sales] > 50000, \"\\<b\\>#.00\\<\\/b\\>\", \"\\<i\\>#.00\\<\\/i\\>\")" + nl +
+				"select " + nl +
+				"  {[Measures].[USales]} on columns," + nl +
+				"  {[Store Type].members} on rows" + nl +
+				"from Sales",
+
+				"Axis #0:" + nl +
+				"{}" + nl +
+				"Axis #1:" + nl +
+				"{[Measures].[USales]}" + nl +
+				"Axis #2:" + nl +
+				"{[Store Type].[All Store Types]}" + nl +
+				"{[Store Type].[All Store Types].[Deluxe Supermarket]}" + nl +
+				"{[Store Type].[All Store Types].[Gourmet Supermarket]}" + nl +
+				"{[Store Type].[All Store Types].[Mid-Size Grocery]}" + nl +
+				"{[Store Type].[All Store Types].[Small Grocery]}" + nl +
+				"{[Store Type].[All Store Types].[Supermarket]}" + nl +
+				"Row #0: <b>266773.00</b>" + nl +
+				"Row #1: <b>76837.00</b>" + nl +
+				"Row #2: <i>21333.00</i>" + nl +
+				"Row #3: <i>11491.00</i>" + nl +
+				"Row #4: <i>6557.00</i>" + nl +
+				"Row #5: <b>150555.00</b>" + nl);
+	}
 	/** Make sure that the "Store" cube is working. **/
 	public void testStoreCube() {
 		runQueryCheckResult(

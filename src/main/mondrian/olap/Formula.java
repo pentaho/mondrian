@@ -14,7 +14,8 @@ package mondrian.olap;
 import java.io.*;
 
 /**
- * Set or member specification.
+ * A <code>Formula</code> is a clause in an MDX query which defines a Set or a
+ * Member.
  **/
 public class Formula extends QueryPart {
 
@@ -63,22 +64,25 @@ public class Formula extends QueryPart {
       return x2;
    }
 
-   public QueryPart resolve(Query q)
-   {
-      exp = (ExpBase) exp.resolve(q);
-      String id = Util.quoteMdxIdentifier(names);
-      if (isMember) {
-         if (!(!exp.isSet() ||
-              (exp instanceof FunCall && ((FunCall) exp).isCallToTuple()))) {
-            throw Util.getRes().newMdxMemberExpIsSet(id);
-         }
-      } else {
-         if (!exp.isSet()) {
-            throw Util.getRes().newMdxSetExpNotSet(id);
-         }
-      }
-      return this;
-   }
+	public QueryPart resolve(Query q)
+	{
+		exp = (ExpBase) exp.resolve(q);
+		String id = Util.quoteMdxIdentifier(names);
+		if (isMember) {
+			if (!(!exp.isSet() ||
+					(exp instanceof FunCall && ((FunCall) exp).isCallToTuple()))) {
+				throw Util.getRes().newMdxMemberExpIsSet(id);
+			}
+		} else {
+			if (!exp.isSet()) {
+				throw Util.getRes().newMdxSetExpNotSet(id);
+			}
+		}
+		for (int i = 0; i < memberProperties.length; i++) {
+			memberProperties[i] = (MemberProperty) memberProperties[i].resolve(q);
+		}
+		return this;
+	}
 
    public QueryPart createElement(Query q)
    {
@@ -288,7 +292,10 @@ public class Formula extends QueryPart {
    }
 
    /**
-    * get the mdx member
+    * Returns the Member. (Not valid if this formula defines a set.)
+	*
+	* @pre isMember()
+	* @post return != null
     */
    public Member getMdxMember() {
      return mdxMember;
