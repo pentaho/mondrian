@@ -200,6 +200,7 @@ demo/mysql/FoodMartData.sql"/>
   <target name="clean">
       <delete includeEmptyDirs="true" quiet="true">
           <fileset dir="${classes.dir}" includes="**/*.class,**/*.properties"/>
+          <fileset dir="${testclasses.dir}" includes="**/*.class,**/*.properties"/>
           <fileset dir="." includes="${generated.java.files},${generated.lib.files}"/>
       </delete>
   </target>
@@ -655,8 +656,8 @@ VERSION.txt"/>
   <target name="javadoc">
     <mkdir dir="${javadoc.dir}" />
     <delete quiet="true" file="${javadoc.dir}/index.html"/>
-    <javadoc sourcepath="${java.dir}"
-        classpathref="project.classpath"
+    <javadoc sourcepath="${java.dir}:${javatest.dir}"
+        classpathref="project.test.classpath"
         destdir="${javadoc.dir}"
         packagenames="mondrian.*,javax.*,org.omg.*"
         overview="${java.dir}/overview.html"
