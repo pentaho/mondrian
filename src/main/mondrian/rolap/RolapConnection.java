@@ -328,6 +328,9 @@ public class RolapConnection extends ConnectionBase {
     }
 
 
+	public DataSource getDataSource() {
+		return dataSource;
+	}
 }
 
 /**
