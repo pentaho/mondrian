@@ -18,10 +18,10 @@ import mondrian.olap.Member;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapAggregationManager;
 import mondrian.rolap.RolapStar;
-import mondrian.rolap.RolapUtil;
 import mondrian.test.TestContext;
 import mondrian.util.DelegatingInvocationHandler;
 
+import javax.sql.DataSource;
 import java.lang.reflect.Proxy;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -58,7 +58,12 @@ public class TestAggregationManager extends TestCase {
 	 */
 	public void testFemaleUnitSalesSql() {
 		CellRequest request = createRequest("Sales", "[Measures].[Unit Sales]", "customer", "gender", "F");
-		final String pattern = "select `customer`.`gender` as `c0`, sum(`sales_fact_1997`.`unit_sales`) as `c1` from `customer` as `customer`, `sales_fact_1997` as `sales_fact_1997` where `sales_fact_1997`.`customer_id` = `customer`.`customer_id` group by `customer`.`gender`";
+		final String pattern = "select `customer`.`gender` as `c0`," +
+                " sum(`sales_fact_1997`.`unit_sales`) as `m0` " +
+                "from `customer` as `customer`," +
+                " `sales_fact_1997` as `sales_fact_1997` " +
+                "where `sales_fact_1997`.`customer_id` = `customer`.`customer_id` " +
+                "group by `customer`.`gender`";
 		assertRequestSql(new CellRequest[] {request}, pattern, "select `customer`.`gender`");
 	}
 
@@ -84,7 +89,16 @@ public class TestAggregationManager extends TestCase {
 					new String[] {"customer", "store"},
 					new String[] {"gender", "store_state"},
 					new String[] {"F", "OR"})};
-		final String pattern = "select `customer`.`gender` as `c0`, `store`.`store_state` as `c1`, sum(`sales_fact_1997`.`unit_sales`) as `c2`, sum(`sales_fact_1997`.`store_sales`) as `c3` from `customer` as `customer`, `sales_fact_1997` as `sales_fact_1997`, `store` as `store` where `sales_fact_1997`.`customer_id` = `customer`.`customer_id` and `sales_fact_1997`.`store_id` = `store`.`store_id` and `store`.`store_state` in ('CA', 'OR') group by `customer`.`gender`, `store`.`store_state`";
+		final String pattern = "select `customer`.`gender` as `c0`," +
+                " `store`.`store_state` as `c1`," +
+                " sum(`sales_fact_1997`.`unit_sales`) as `m0`," +
+                " sum(`sales_fact_1997`.`store_sales`) as `m1` " +
+                "from `customer` as `customer`, `sales_fact_1997` as `sales_fact_1997`," +
+                " `store` as `store` " +
+                "where `sales_fact_1997`.`customer_id` = `customer`.`customer_id`" +
+                " and `sales_fact_1997`.`store_id` = `store`.`store_id`" +
+                " and `store`.`store_state` in ('CA', 'OR') " +
+                "group by `customer`.`gender`, `store`.`store_state`";
 		assertRequestSql(requests, pattern, "select `customer`.`gender`");
 	}
 
@@ -139,44 +153,41 @@ public class TestAggregationManager extends TestCase {
 	 */
 	public void testHierarchyInFactTable() {
 		CellRequest request = createRequest("Store", "[Measures].[Store Sqft]", "store", "store_type", "Supermarket");
-		final String pattern = "select `store`.`store_type` as `c0`, sum(`store`.`store_sqft`) as `c1` from `store` as `store` group by `store`.`store_type`";
+		final String pattern = "select `store`.`store_type` as `c0`," +
+                " sum(`store`.`store_sqft`) as `m0` " +
+                "from `store` as `store` " +
+                "group by `store`.`store_type`";
 		assertRequestSql(new CellRequest[] {request}, pattern, "select `store`.`store_type` as `c0`");
 	}
 
-	private void assertRequestSql_old(CellRequest request, final String pattern) {
-		final RolapAggregationManager aggMan = AggregationManager.instance();
-		ArrayList pinnedSegments = new ArrayList();
-		final RolapUtil.TeeWriter tw = RolapUtil.startTracing();
-		aggMan.loadAggregations(createBatch(new CellRequest[] {request}), pinnedSegments);
-		String s = tw.toString();
-		assertMatches(s,pattern);
-	}
-
-	class Bomb extends RuntimeException {
+	static class Bomb extends RuntimeException {
 		String sql;
 		Bomb(String sql) {
 			this.sql = sql;
 		}
-	};
+	}
 
 	private void assertRequestSql(CellRequest[] requests, final String pattern, final String trigger) {
 		final RolapAggregationManager aggMan = AggregationManager.instance();
 		ArrayList pinnedSegments = new ArrayList();
 		RolapStar star = requests[0].getMeasure().table.star;
-		final java.sql.Connection connection = star.getJdbcConnection();
-		String database = null;
+        String database = null;
 		try {
-			database = connection.getMetaData().getDatabaseProductName();
+			database = star.getJdbcConnection().getMetaData().getDatabaseProductName();
 		} catch (SQLException e) {
 		}
 		if (!database.equals("ACCESS")) {
 			return;
 		}
-		star.setJdbcConnection(
-				(java.sql.Connection) Proxy.newProxyInstance(
-						null,
-						new Class[]{java.sql.Connection.class},
-						new TriggerHandler(connection, trigger)));
+        // Create a dummy DataSource which will throw a 'bomb' if it is asked
+        // to execute a particular SQL statement, but will otherwise behave
+        // exactly the same as the current DataSource.
+        DataSource oldDataSource = star.getDataSource();
+        final DataSource dataSource = (DataSource) Proxy.newProxyInstance(
+                null,
+                new Class[] {DataSource.class},
+                new DataSourceHandler(oldDataSource, trigger));
+        star.setDataSource(dataSource);
 		Bomb bomb;
 		try {
 			aggMan.loadAggregations(createBatch(requests), pinnedSegments);
@@ -184,7 +195,7 @@ public class TestAggregationManager extends TestCase {
 		} catch (Bomb e) {
 			bomb = e;
 		} finally {
-			star.setJdbcConnection(connection);
+			star.setDataSource(oldDataSource);
 		}
 		assertTrue(bomb != null);
 		assertEquals(pattern, bomb.sql);
@@ -227,41 +238,59 @@ public class TestAggregationManager extends TestCase {
 		return request;
 	}
 
-	public class TriggerHandler extends DelegatingInvocationHandler {
-		private final java.sql.Connection connection;
-		private final String trigger;
 
-		public TriggerHandler(java.sql.Connection connection, String trigger) {
-			super(connection);
-			this.connection = connection;
-			this.trigger = trigger;
-		}
+    public static class DataSourceHandler extends DelegatingInvocationHandler {
+        private final DataSource dataSource;
+        private final String trigger;
 
-		public Statement createStatement() throws SQLException {
-			final Statement statement = connection.createStatement();
-			return (Statement) Proxy.newProxyInstance(
-					null,
-					new Class[]{Statement.class},
-					new StatementHandler(statement));
-		}
+        public DataSourceHandler(DataSource dataSource, String trigger) {
+            super(dataSource);
+            this.dataSource = dataSource;
+            this.trigger = trigger;
+        }
 
-		public class StatementHandler extends DelegatingInvocationHandler {
-			private final Statement statement;
+        public java.sql.Connection getConnection() throws SQLException {
+            final java.sql.Connection connection = dataSource.getConnection();
+            return (java.sql.Connection) Proxy.newProxyInstance(
+                    null,
+                    new Class[]{java.sql.Connection.class},
+                    new TriggerHandler(connection));
+        }
 
-			public StatementHandler(Statement statement) {
-				super(statement);
-				this.statement = statement;
-			}
+        public class TriggerHandler extends DelegatingInvocationHandler {
+            private final java.sql.Connection connection;
 
-			public ResultSet executeQuery(String sql) throws SQLException {
-				if (trigger == null || sql.startsWith(trigger)) {
-					throw new Bomb(sql);
-				} else {
-					return statement.executeQuery(sql);
-				}
-			}
-		}
-	}
+            public TriggerHandler(java.sql.Connection connection) {
+                super(connection);
+                this.connection = connection;
+            }
+
+            public Statement createStatement() throws SQLException {
+                final Statement statement = connection.createStatement();
+                return (Statement) Proxy.newProxyInstance(
+                        null,
+                        new Class[]{Statement.class},
+                        new StatementHandler(statement));
+            }
+        }
+
+        public class StatementHandler extends DelegatingInvocationHandler {
+            private final Statement statement;
+
+            public StatementHandler(Statement statement) {
+                super(statement);
+                this.statement = statement;
+            }
+
+            public ResultSet executeQuery(String sql) throws SQLException {
+                if (trigger == null || sql.startsWith(trigger)) {
+                    throw new Bomb(sql);
+                } else {
+                    return statement.executeQuery(sql);
+                }
+            }
+        }
+    }
 }
 
 

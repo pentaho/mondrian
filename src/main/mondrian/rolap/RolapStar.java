@@ -78,9 +78,13 @@ public class RolapStar {
 	}
 
 	/** For testing purposes only. **/
-	public void setJdbcConnection(Connection jdbcConnection) {
-//		this.jdbcConnection = jdbcConnection;
+	public void setDataSource(DataSource dataSource) {
+		this.dataSource = dataSource;
 	}
+
+    public DataSource getDataSource() {
+        return dataSource;
+    }
 
 	/**
 	 * Retrieves the {@link RolapStar.Measure} in which a measure is stored.

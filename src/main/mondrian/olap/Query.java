@@ -63,9 +63,8 @@ public class Query extends QueryPart {
 		setSlicer(slicer);
 		this.cellProps = cellProps;
 		this.parameters = parameters;
-        resolve(createResolver()); // resolve self and children
-        resolveParameters();  //calculate parameter's usage in query
-	}
+        resolve();
+    }
 
     public Exp.Resolver createResolver() {
         return new StackResolver(BuiltinFunTable.instance());
@@ -120,7 +119,25 @@ public class Query extends QueryPart {
 		}
 	}
 
-	public QueryPart resolve(Exp.Resolver resolver)
+    /**
+     * Performs type-checking and validates internal consistency of a query,
+     * using the default resolver.
+     *
+     * <p>This method is called automatically when a query is created; you need
+     * to call this method manually if you have modified the query's expression
+     * tree in any way.
+     */
+    public void resolve() {
+        resolve(createResolver()); // resolve self and children
+    }
+
+    /**
+     * Performs type-checking and validates internal consistency of a query,
+     * using a custom resolver.
+     *
+     * @param resolver Custom resolver
+     */
+	void resolve(Exp.Resolver resolver)
 	{
 		if (formulas != null) {
 			//resolving of formulas should be done in two parts
@@ -148,7 +165,7 @@ public class Query extends QueryPart {
 		for (int i = 0; i < parameters.length; i++) {
 			parameters[i] = resolver.resolveChild(parameters[i]);
         }
-		return this;
+        resolveParameters();
 	}
 
 	public void unparse(PrintWriter pw)
@@ -273,6 +290,7 @@ public class Query extends QueryPart {
 
 	/** Returns the MDX query string. */
 	public String toString() {
+        resolve();
 		return toWebUIMdx();
 	}
 
@@ -646,12 +664,15 @@ public class Query extends QueryPart {
 			level.getDimension());
 	}
 
-	/** SetParameter.  Assign 'value' to parameter 'name'*/
+	/**
+     * Assigns a value to the parameter with a given name.
+     *
+     * @throws RuntimeException if there is not parameter with the given name
+     */
 	public void setParameter(String parameterName, String value)
 	{
 		Parameter param = lookupParam(parameterName);
-		if (param == null)
-		{
+		if (param == null) {
 			throw Util.getRes().newMdxParamNotFound(parameterName);
 		}
 		param.setValue(value, this);
