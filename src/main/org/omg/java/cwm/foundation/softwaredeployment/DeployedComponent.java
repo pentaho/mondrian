@@ -8,17 +8,17 @@ package org.omg.java.cwm.foundation.softwaredeployment;
 public interface DeployedComponent
 extends org.omg.java.cwm.objectmodel.core.Package {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public java.lang.String getPathname();
 
   public void setPathname( java.lang.String value );
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.foundation.softwaredeployment.Component getComponent();
 

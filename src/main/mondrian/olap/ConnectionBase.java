@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2004 Kana Software, Inc. and others.
+// (C) Copyright 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -23,37 +23,37 @@ package mondrian.olap;
 public abstract class ConnectionBase implements Connection
 {
 
-	public String getFullConnectString()
-	{
-		String s = getConnectString(),
-			catalogName = getCatalogName();
-		if (catalogName != null) {
-			if (!s.endsWith(";")) {
-				s += ";";
-			}
-			s += "Initial Catalog=" + catalogName + ";";
-		}
-		return s;
-	}
+    public String getFullConnectString()
+    {
+        String s = getConnectString(),
+            catalogName = getCatalogName();
+        if (catalogName != null) {
+            if (!s.endsWith(";")) {
+                s += ";";
+            }
+            s += "Initial Catalog=" + catalogName + ";";
+        }
+        return s;
+    }
 
-	public Query parseQuery(String s) {
-		try {
-			boolean debug = false;
-			Parser parser = new Parser();
-			Query q = parser.parseInternal(this, s, debug);
-			return q;
-		} catch (Throwable e) {
+    public Query parseQuery(String s) {
+        try {
+            boolean debug = false;
+            Parser parser = new Parser();
+            Query q = parser.parseInternal(this, s, debug);
+            return q;
+        } catch (Throwable e) {
             throw MondrianResource.instance().newFailedToParseQuery(s, e);
-		}
-	}
+        }
+    }
 
-	public Exp parseExpression(String s) {
-		Util.assertTrue(
-				s.startsWith("'") && s.endsWith("'"),
-				"only string literals are supported right now");
-		String s2 = s.substring(1, s.length() - 1);
-		return Literal.createString(s2);
-	}
+    public Exp parseExpression(String s) {
+        Util.assertTrue(
+                s.startsWith("'") && s.endsWith("'"),
+                "only string literals are supported right now");
+        String s2 = s.substring(1, s.length() - 1);
+        return Literal.createString(s2);
+    }
 }
 
 // End ConnectionBase.java

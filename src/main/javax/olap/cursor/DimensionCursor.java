@@ -8,9 +8,9 @@ package javax.olap.cursor;
 public interface DimensionCursor
 extends javax.olap.cursor.RowDataAccessor, javax.olap.cursor.RowDataNavigation, javax.olap.cursor.Cursor {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public long getEdgeStart()
     throws javax.olap.OLAPException;
@@ -24,9 +24,9 @@ extends javax.olap.cursor.RowDataAccessor, javax.olap.cursor.RowDataNavigation, 
   public void setEdgeEnd( long value )
     throws javax.olap.OLAPException;
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.cursor.EdgeCursor getEdgeCursor()
     throws javax.olap.OLAPException;

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2003 Kana Software, Inc. and others
+// (C) Copyright 2002-2005 Kana Software, Inc. and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -23,27 +23,27 @@ import mondrian.olap.*;
  * @version $Id$
  **/
 abstract class MultiResolver extends FunUtil implements Resolver {
-	String name;
-	String description;
-	String[] signatures;
-	Syntax syntax;
+    String name;
+    String description;
+    String[] signatures;
+    Syntax syntax;
 
     MultiResolver(String name, String signature, String description,
             String[] signatures) {
-		this.name = name;
-		this.description = description;
-		this.signatures = signatures;
-		Util.assertTrue(signatures.length > 0);
-		this.syntax = decodeSyntacticType(signatures[0]);
-		for (int i = 1; i < signatures.length; i++) {
-			Util.assertTrue(decodeSyntacticType(
+        this.name = name;
+        this.description = description;
+        this.signatures = signatures;
+        Util.assertTrue(signatures.length > 0);
+        this.syntax = decodeSyntacticType(signatures[0]);
+        for (int i = 1; i < signatures.length; i++) {
+            Util.assertTrue(decodeSyntacticType(
                     signatures[i]) == syntax);
-		}
-	}
+        }
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
     public Syntax getSyntax() {
         return syntax;
@@ -53,27 +53,27 @@ abstract class MultiResolver extends FunUtil implements Resolver {
         return emptyStringArray;
     }
 
-	public FunDef resolve(Exp[] args, int[] conversionCount) {
+    public FunDef resolve(Exp[] args, int[] conversionCount) {
 outer:
-		for (int j = 0; j < signatures.length; j++) {
-			int[] parameterTypes = decodeParameterTypes(
+        for (int j = 0; j < signatures.length; j++) {
+            int[] parameterTypes = decodeParameterTypes(
                     signatures[j]);
-			if (parameterTypes.length != args.length) {
-				continue;
-			}
-			for (int i = 0; i < args.length; i++) {
-				if (!BuiltinFunTable.canConvert(
-						args[i], parameterTypes[i], conversionCount)) {
-					continue outer;
-				}
-			}
-			final String signature = signatures[j];
-			int returnType = decodeReturnType(signature);
-			FunDef dummy = new FunDefBase(this, returnType, parameterTypes);
-			return createFunDef(args, dummy);
-		}
-		return null;
-	}
+            if (parameterTypes.length != args.length) {
+                continue;
+            }
+            for (int i = 0; i < args.length; i++) {
+                if (!BuiltinFunTable.canConvert(
+                        args[i], parameterTypes[i], conversionCount)) {
+                    continue outer;
+                }
+            }
+            final String signature = signatures[j];
+            int returnType = decodeReturnType(signature);
+            FunDef dummy = new FunDefBase(this, returnType, parameterTypes);
+            return createFunDef(args, dummy);
+        }
+        return null;
+    }
 
     public boolean requiresExpression(int k) {
         for (int j = 0; j < signatures.length; j++) {
@@ -87,7 +87,7 @@ outer:
         return true;
     }
 
-	protected abstract FunDef createFunDef(Exp[] args, FunDef dummyFunDef);
+    protected abstract FunDef createFunDef(Exp[] args, FunDef dummyFunDef);
 }
 
 // End MultiResolver.java

@@ -8,9 +8,9 @@ package javax.olap.serversidemetadata;
 public interface CodedLevel
 extends javax.olap.metadata.Level {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.foundation.expressions.ExpressionNode getEncoding()
     throws javax.olap.OLAPException;

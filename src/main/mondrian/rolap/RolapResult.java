@@ -29,43 +29,43 @@ import java.util.List;
  */
 class RolapResult extends ResultBase
 {
-	private RolapEvaluator evaluator;
-	private CellKey point;
-	HashMap cellValues;
-	AggregatingCellReader aggregatingReader;
-	FastBatchingCellReader batchingReader;
+    private RolapEvaluator evaluator;
+    private CellKey point;
+    HashMap cellValues;
+    AggregatingCellReader aggregatingReader;
+    FastBatchingCellReader batchingReader;
     private int[] modulos;
     private static final int MAX_AGGREGATION_PASS_COUNT = 5;
 
     RolapResult(Query query) {
-		this.query = query;
-		this.point = new CellKey(new int[query.axes.length]);
-		this.axes = new RolapAxis[query.axes.length];
-		this.evaluator = new RolapEvaluator(
-				(RolapCube) query.getCube(),
-				(RolapConnection) query.getConnection());
-		this.aggregatingReader = new AggregatingCellReader();
-		HashSet pinnedSegments = new HashSet();
-		this.batchingReader = new FastBatchingCellReader(
-			(RolapCube) query.getCube(), pinnedSegments);
-		try {
-			for (int i = -1; i < axes.length; i++) {
-				QueryAxis axis;
-				if (i == -1) {
-					if (query.slicer != null) {
-						axis = new QueryAxis(
-							false,
-							new FunCall(
-								"{}", Syntax.Braces, new Exp[] {query.slicer}
+        this.query = query;
+        this.point = new CellKey(new int[query.axes.length]);
+        this.axes = new RolapAxis[query.axes.length];
+        this.evaluator = new RolapEvaluator(
+                (RolapCube) query.getCube(),
+                (RolapConnection) query.getConnection());
+        this.aggregatingReader = new AggregatingCellReader();
+        HashSet pinnedSegments = new HashSet();
+        this.batchingReader = new FastBatchingCellReader(
+            (RolapCube) query.getCube(), pinnedSegments);
+        try {
+            for (int i = -1; i < axes.length; i++) {
+                QueryAxis axis;
+                if (i == -1) {
+                    if (query.slicer != null) {
+                        axis = new QueryAxis(
+                            false,
+                            new FunCall(
+                                "{}", Syntax.Braces, new Exp[] {query.slicer}
                             ).resolve(query.createResolver()),
-							"slicer",
-							QueryAxis.SubtotalVisibility.Undefined);
-					} else {
-						axis = null;
-					}
-				} else {
-					axis = query.axes[i];
-				}
+                            "slicer",
+                            QueryAxis.SubtotalVisibility.Undefined);
+                    } else {
+                        axis = null;
+                    }
+                } else {
+                    axis = query.axes[i];
+                }
                 RolapAxis axisResult;
                 int attempt = 0;
                 while (true) {
@@ -82,25 +82,25 @@ class RolapResult extends ResultBase
                     }
                 }
 
-				evaluator.cellReader = aggregatingReader;
-				axisResult = executeAxis(evaluator.push(), axis);
-				evaluator.clearExpResultCache();
+                evaluator.cellReader = aggregatingReader;
+                axisResult = executeAxis(evaluator.push(), axis);
+                evaluator.clearExpResultCache();
 
-				if (i == -1) {
-					this.slicerAxis = axisResult;
-					// Use the context created by the slicer for the other
-					// axes.  For example, "select filter([Customers], [Store
-					// Sales] > 100) on columns from Sales where
-					// ([Time].[1998])" should show customers whose 1998 (not
-					// total) purchases exceeded 100.
-					Position position = this.slicerAxis.positions[0];
-					for (int j = 0; j < position.members.length; j++) {
-						evaluator.setContext(position.members[j]);
-					}
-				} else {
-					this.axes[i] = axisResult;
-				}
-			}
+                if (i == -1) {
+                    this.slicerAxis = axisResult;
+                    // Use the context created by the slicer for the other
+                    // axes.  For example, "select filter([Customers], [Store
+                    // Sales] > 100) on columns from Sales where
+                    // ([Time].[1998])" should show customers whose 1998 (not
+                    // total) purchases exceeded 100.
+                    Position position = this.slicerAxis.positions[0];
+                    for (int j = 0; j < position.members.length; j++) {
+                        evaluator.setContext(position.members[j]);
+                    }
+                } else {
+                    this.axes[i] = axisResult;
+                }
+            }
             // Suppose the result is 4 x 3 x 2, then modulo = {1, 4, 12, 24}.
             //
             // Then the ordinal of cell (3, 2, 1)
@@ -118,157 +118,157 @@ class RolapResult extends ResultBase
                 modulo *= axes[i].positions.length;
                 modulos[i + 1] = modulo;
             }
-			executeBody(query);
-		} finally {
-			evaluator.clearExpResultCache();
-		}
-		query.getCube().getDimensions();
-	}
+            executeBody(query);
+        } finally {
+            evaluator.clearExpResultCache();
+        }
+        query.getCube().getDimensions();
+    }
 
-	// implement Result
-	public Axis[] getAxes()
-	{
-		return axes;
-	}
-	public Cell getCell(int[] pos)
-	{
-		if (pos.length != point.ordinals.length) {
-			throw Util.newError(
-					"coordinates should have dimension " + point.ordinals.length);
-		}
-		Object value = cellValues.get(new CellKey(pos));
-		if (value == null) {
-			value = Util.nullValue;
-		}
+    // implement Result
+    public Axis[] getAxes()
+    {
+        return axes;
+    }
+    public Cell getCell(int[] pos)
+    {
+        if (pos.length != point.ordinals.length) {
+            throw Util.newError(
+                    "coordinates should have dimension " + point.ordinals.length);
+        }
+        Object value = cellValues.get(new CellKey(pos));
+        if (value == null) {
+            value = Util.nullValue;
+        }
         return new RolapCell(this, getCellOrdinal(pos), value);
-	}
+    }
 
     private RolapAxis executeAxis(Evaluator evaluator, QueryAxis axis)
-	{
-		Position[] positions;
-		if (axis == null) {
-			// Create an axis containing one position with no members (not
-			// the same as an empty axis).
-			RolapPosition position = new RolapPosition();
-			position.members = new Member[0];
-			positions = new Position[] {position};
-		} else {
-			Exp exp = axis.set;
-			evaluator.setNonEmpty(axis.nonEmpty);
-			Object value = exp.evaluate(evaluator);
-			evaluator.setNonEmpty(false);
-			if (value == null) {
-				value = Collections.EMPTY_LIST;
-			}
-			Util.assertTrue(value instanceof List);
-			List vector = (List) value;
-			positions = new Position[vector.size()];
-			for (int i = 0; i < vector.size(); i++) {
-				RolapPosition position = new RolapPosition();
-				Object o = vector.get(i);
-				if (o instanceof Object[]) {
-					Object[] a = (Object[]) o;
-					position.members = new Member[a.length];
-					for (int j = 0; j < a.length; j++) {
-						position.members[j] = (Member) a[j];
-					}
-				} else {
-					position.members = new Member[] {(Member) o};
-				}
-				positions[i] = position;
-			}
-		}
-		return new RolapAxis(positions);
-	}
+    {
+        Position[] positions;
+        if (axis == null) {
+            // Create an axis containing one position with no members (not
+            // the same as an empty axis).
+            RolapPosition position = new RolapPosition();
+            position.members = new Member[0];
+            positions = new Position[] {position};
+        } else {
+            Exp exp = axis.set;
+            evaluator.setNonEmpty(axis.nonEmpty);
+            Object value = exp.evaluate(evaluator);
+            evaluator.setNonEmpty(false);
+            if (value == null) {
+                value = Collections.EMPTY_LIST;
+            }
+            Util.assertTrue(value instanceof List);
+            List vector = (List) value;
+            positions = new Position[vector.size()];
+            for (int i = 0; i < vector.size(); i++) {
+                RolapPosition position = new RolapPosition();
+                Object o = vector.get(i);
+                if (o instanceof Object[]) {
+                    Object[] a = (Object[]) o;
+                    position.members = new Member[a.length];
+                    for (int j = 0; j < a.length; j++) {
+                        position.members[j] = (Member) a[j];
+                    }
+                } else {
+                    position.members = new Member[] {(Member) o};
+                }
+                positions[i] = position;
+            }
+        }
+        return new RolapAxis(positions);
+    }
 
-	private void executeBody(Query query) {
-		// Compute the cells several times. The first time, use a dummy
-		// evaluator which collects requests.
-		int count = 0;
+    private void executeBody(Query query) {
+        // Compute the cells several times. The first time, use a dummy
+        // evaluator which collects requests.
+        int count = 0;
         while (true) {
-			cellValues = new HashMap();
-			//
-			evaluator.cellReader = this.batchingReader;
-			executeStripe(query.axes.length - 1, (RolapEvaluator) evaluator.push());
-			evaluator.clearExpResultCache();
+            cellValues = new HashMap();
+            //
+            evaluator.cellReader = this.batchingReader;
+            executeStripe(query.axes.length - 1, (RolapEvaluator) evaluator.push());
+            evaluator.clearExpResultCache();
 
-			// Retrieve the aggregations collected.
-			//
-			//
+            // Retrieve the aggregations collected.
+            //
+            //
             if (!batchingReader.loadAggregations()) {
                 // We got all of the cells we needed, so the result must be
                 // correct.
                 return;
             }
-			if (count++ > MAX_AGGREGATION_PASS_COUNT) {
-				throw Util.newInternal("Query required more than " + count + " iterations");
-			}
-		}
-	}
+            if (count++ > MAX_AGGREGATION_PASS_COUNT) {
+                throw Util.newInternal("Query required more than " + count + " iterations");
+            }
+        }
+    }
 
-	/**
-	 * An <code>AggregatingCellReader</code> reads cell values from the
-	 * {@link RolapAggregationManager}.
-	 **/
-	private static class AggregatingCellReader implements CellReader
-	{
-		private final RolapAggregationManager aggregationManager = AggregationManager.instance();
-		/**
-		 * Overrides {@link CellReader#get}. Returns <code>null</code> if no
-		 * aggregation contains the required cell.
-		 **/
-		// implement CellReader
-		public Object get(Evaluator evaluator)
-		{
+    /**
+     * An <code>AggregatingCellReader</code> reads cell values from the
+     * {@link RolapAggregationManager}.
+     **/
+    private static class AggregatingCellReader implements CellReader
+    {
+        private final RolapAggregationManager aggregationManager = AggregationManager.instance();
+        /**
+         * Overrides {@link CellReader#get}. Returns <code>null</code> if no
+         * aggregation contains the required cell.
+         **/
+        // implement CellReader
+        public Object get(Evaluator evaluator)
+        {
             final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator;
             return aggregationManager.getCellFromCache(rolapEvaluator.currentMembers);
-		}
-	};
+        }
+    };
 
-	private void executeStripe(int axis, RolapEvaluator evaluator)
-	{
-		if (axis < 0) {
-			RolapAxis _axis = (RolapAxis) slicerAxis;
-			int count = _axis.positions.length;
-			for (int i = 0; i < count; i++) {
-				RolapPosition position = (RolapPosition) _axis.positions[i];
-				for (int j = 0; j < position.members.length; j++) {
-					evaluator.setContext(position.members[j]);
-				}
-				Object o;
-				try {
-					o = evaluator.evaluateCurrent();
-				} catch (MondrianEvaluationException e) {
-					o = e;
-				}
-				if (o != null && o != RolapUtil.valueNotReadyException) {
-					CellKey key = point.copy();
-					cellValues.put(key, o);
-					// Compute the formatted value, to ensure that any needed
-					// values are in the cache.
-					try {
+    private void executeStripe(int axis, RolapEvaluator evaluator)
+    {
+        if (axis < 0) {
+            RolapAxis _axis = (RolapAxis) slicerAxis;
+            int count = _axis.positions.length;
+            for (int i = 0; i < count; i++) {
+                RolapPosition position = (RolapPosition) _axis.positions[i];
+                for (int j = 0; j < position.members.length; j++) {
+                    evaluator.setContext(position.members[j]);
+                }
+                Object o;
+                try {
+                    o = evaluator.evaluateCurrent();
+                } catch (MondrianEvaluationException e) {
+                    o = e;
+                }
+                if (o != null && o != RolapUtil.valueNotReadyException) {
+                    CellKey key = point.copy();
+                    cellValues.put(key, o);
+                    // Compute the formatted value, to ensure that any needed
+                    // values are in the cache.
+                    try {
                         Cell cell = getCell(point.ordinals);
                         Util.discard(cell.getFormattedValue());
-					} catch (MondrianEvaluationException e) {
-						// ignore
-					} catch (Throwable e) {
-						Util.discard(e);
-					}
-				}
-			}
-		} else {
-			RolapAxis _axis = (RolapAxis) axes[axis];
-			int count = _axis.positions.length;
-			for (int i = 0; i < count; i++) {
-				point.ordinals[axis] = i;
-				RolapPosition position = (RolapPosition) _axis.positions[i];
-				for (int j = 0; j < position.members.length; j++) {
-					evaluator.setContext(position.members[j]);
-				}
-				executeStripe(axis - 1, evaluator);
-			}
-		}
-	}
+                    } catch (MondrianEvaluationException e) {
+                        // ignore
+                    } catch (Throwable e) {
+                        Util.discard(e);
+                    }
+                }
+            }
+        } else {
+            RolapAxis _axis = (RolapAxis) axes[axis];
+            int count = _axis.positions.length;
+            for (int i = 0; i < count; i++) {
+                point.ordinals[axis] = i;
+                RolapPosition position = (RolapPosition) _axis.positions[i];
+                for (int j = 0; j < position.members.length; j++) {
+                    evaluator.setContext(position.members[j]);
+                }
+                executeStripe(axis - 1, evaluator);
+            }
+        }
+    }
 
     /**
      * Converts a cell ordinal to a set of cell coordinates. Converse of

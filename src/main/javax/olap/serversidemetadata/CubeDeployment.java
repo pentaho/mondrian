@@ -8,9 +8,9 @@ package javax.olap.serversidemetadata;
 public interface CubeDeployment
 extends org.omg.java.cwm.objectmodel.core.CoreClass {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.serversidemetadata.CubeRegion getCubeRegion()
     throws javax.olap.OLAPException;

@@ -8,9 +8,9 @@ package javax.olap.cursor;
 public interface EdgeCursor
 extends javax.olap.cursor.RowDataNavigation, javax.olap.cursor.Cursor {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.List getDimensionCursor()
     throws javax.olap.OLAPException;

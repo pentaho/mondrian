@@ -40,11 +40,11 @@ public final class EvaluationKindEnum implements EvaluationKind {
     }
 
     protected Object readResolve() throws java.io.ObjectStreamException {
-    	try {
-    		return forName(literalName);
-    	} catch ( IllegalArgumentException iae ) {
-    		throw new java.io.InvalidObjectException(iae.getMessage());
-    	}
+        try {
+            return forName(literalName);
+        } catch ( IllegalArgumentException iae ) {
+            throw new java.io.InvalidObjectException(iae.getMessage());
+        }
     }
   public static EvaluationKind forName( java.lang.String value ) {
     if ( value.equals("immediate") ) return EvaluationKindEnum.IMMEDIATE;

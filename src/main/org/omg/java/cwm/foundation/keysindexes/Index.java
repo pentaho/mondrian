@@ -8,9 +8,9 @@ package org.omg.java.cwm.foundation.keysindexes;
 public interface Index
 extends org.omg.java.cwm.objectmodel.core.ModelElement {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public boolean isPartitioning();
 
@@ -24,9 +24,9 @@ extends org.omg.java.cwm.objectmodel.core.ModelElement {
 
   public void setUnique( boolean value );
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.List getIndexedFeature();
 

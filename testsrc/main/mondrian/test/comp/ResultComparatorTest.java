@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2004-2004 Julian Hyde and others.
+// (C) Copyright 2004-2005 Julian Hyde and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -109,14 +109,14 @@ public class ResultComparatorTest extends TestCase {
 
         Connection cxn = TestContext.instance().getFoodMartConnection(false);
         try {
-			Query query = cxn.parseQuery(queryString);
-			Result result = cxn.execute(query);
+            Query query = cxn.parseQuery(queryString);
+            Result result = cxn.execute(query);
 
-			ResultComparator comp = new ResultComparator((Element) doc.getElementsByTagName(
-					"dataResult").item(0), result);
+            ResultComparator comp = new ResultComparator((Element) doc.getElementsByTagName(
+                    "dataResult").item(0), result);
 
-			comp.compareResults();
-		} finally {
+            comp.compareResults();
+        } finally {
             cxn.close();
         }
     }

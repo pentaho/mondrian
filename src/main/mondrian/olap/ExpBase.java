@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1999-2003 Kana Software, Inc. and others.
+// (C) Copyright 1999-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -17,176 +17,176 @@ import java.io.PrintWriter;
  * Skeleton implementation of {@link Exp} interface.
  **/
 public abstract class ExpBase
-	extends QueryPart
-	implements Exp
+    extends QueryPart
+    implements Exp
 {
-	public abstract Object clone();
+    public abstract Object clone();
 
-	static Exp[] cloneArray(Exp[] a)
-	{
-		Exp[] a2 = new Exp[a.length];
-		for (int i = 0; i < a.length; i++)
-			a2[i] = (Exp) a[i].clone();
-		return a2;
-	}
+    static Exp[] cloneArray(Exp[] a)
+    {
+        Exp[] a2 = new Exp[a.length];
+        for (int i = 0; i < a.length; i++)
+            a2[i] = (Exp) a[i].clone();
+        return a2;
+    }
 
-	/**
-	 * Returns the dimension of a this expression, or null if no dimension is
-	 * defined. Applicable only to set expressions.
-	 *
-	 * <p>Example 1:
-	 * <blockquote><pre>
-	 * [Sales].children
-	 * </pre></blockquote>
-	 * has dimension <code>[Sales]</code>.</p>
-	 *
-	 * <p>Example 2:
-	 * <blockquote><pre>
-	 * order(except([Promotion Media].[Media Type].members,
-	 *              {[Promotion Media].[Media Type].[No Media]}),
-	 *       [Measures].[Unit Sales], DESC)
-	 * </pre></blockquote>
-	 * has dimension [Promotion Media].</p>
-	 *
-	 * <p>Example 3:
-	 * <blockquote><pre>
-	 * CrossJoin([Product].[Product Department].members,
-	 *           [Gender].members)
-	 * </pre></blockquote>
-	 * has no dimension (well, actually it is [Product] x [Gender], but we
-	 * can't represent that, so we return null);</p>
-	 **/
-	public Dimension getDimension()
-	{
-		Hierarchy mdxHierarchy = getHierarchy();
-		if (mdxHierarchy != null) {
-			return mdxHierarchy.getDimension();
-		}
-		return null;
-	}
+    /**
+     * Returns the dimension of a this expression, or null if no dimension is
+     * defined. Applicable only to set expressions.
+     *
+     * <p>Example 1:
+     * <blockquote><pre>
+     * [Sales].children
+     * </pre></blockquote>
+     * has dimension <code>[Sales]</code>.</p>
+     *
+     * <p>Example 2:
+     * <blockquote><pre>
+     * order(except([Promotion Media].[Media Type].members,
+     *              {[Promotion Media].[Media Type].[No Media]}),
+     *       [Measures].[Unit Sales], DESC)
+     * </pre></blockquote>
+     * has dimension [Promotion Media].</p>
+     *
+     * <p>Example 3:
+     * <blockquote><pre>
+     * CrossJoin([Product].[Product Department].members,
+     *           [Gender].members)
+     * </pre></blockquote>
+     * has no dimension (well, actually it is [Product] x [Gender], but we
+     * can't represent that, so we return null);</p>
+     **/
+    public Dimension getDimension()
+    {
+        Hierarchy mdxHierarchy = getHierarchy();
+        if (mdxHierarchy != null) {
+            return mdxHierarchy.getDimension();
+        }
+        return null;
+    }
 
-	public Hierarchy getHierarchy()
-	{
-		return null;
-	}
+    public Hierarchy getHierarchy()
+    {
+        return null;
+    }
 
-	public final boolean isSet()
-	{
-		int cat = getType();
-		return cat == Category.Set || cat == Category.Tuple;
-	}
+    public final boolean isSet()
+    {
+        int cat = getType();
+        return cat == Category.Set || cat == Category.Tuple;
+    }
 
-	public final boolean isMember()
-	{
-		return getType() == Category.Member;
-	}
+    public final boolean isMember()
+    {
+        return getType() == Category.Member;
+    }
 
-	public final boolean isElement()
-	{
-		int category = getType();
-		return isMember() ||
-			category == Category.Hierarchy ||
-			category == Category.Level ||
-			category == Category.Dimension;
-	}
+    public final boolean isElement()
+    {
+        int category = getType();
+        return isMember() ||
+            category == Category.Hierarchy ||
+            category == Category.Level ||
+            category == Category.Dimension;
+    }
 
-	public final boolean isEmptySet()
-	{
-		if (this instanceof FunCall) {
-			FunCall f = (FunCall) this;
-			return f.getSyntax() == Syntax.Braces &&
-				f.args.length == 0;
-		} else {
-			return false;
-		}
-	}
+    public final boolean isEmptySet()
+    {
+        if (this instanceof FunCall) {
+            FunCall f = (FunCall) this;
+            return f.getSyntax() == Syntax.Braces &&
+                f.args.length == 0;
+        } else {
+            return false;
+        }
+    }
 
-	/**
-	 * Returns an array of {@link Member}s if this is a member or a tuple,
-	 * null otherwise.
-	 **/
-	public final Member[] isConstantTuple()
-	{
-		if (this instanceof Member) {
-			return new Member[] {(Member) this};
-		}
-		if (!(this instanceof FunCall)) {
-			return null;
-		}
-		FunCall f = (FunCall) this;
-		if (!f.isCallToTuple()) {
-			return null;
-		}
-		for (int i = 0; i < f.args.length; i++) {
-			if (!(f.args[i] instanceof Member)) {
-				return null;
-			}
-		}
-		Member[] members = new Member[f.args.length];
-		System.arraycopy(f.args, 0, members, 0, f.args.length);
-		return members;
-	}
+    /**
+     * Returns an array of {@link Member}s if this is a member or a tuple,
+     * null otherwise.
+     **/
+    public final Member[] isConstantTuple()
+    {
+        if (this instanceof Member) {
+            return new Member[] {(Member) this};
+        }
+        if (!(this instanceof FunCall)) {
+            return null;
+        }
+        FunCall f = (FunCall) this;
+        if (!f.isCallToTuple()) {
+            return null;
+        }
+        for (int i = 0; i < f.args.length; i++) {
+            if (!(f.args[i] instanceof Member)) {
+                return null;
+            }
+        }
+        Member[] members = new Member[f.args.length];
+        System.arraycopy(f.args, 0, members, 0, f.args.length);
+        return members;
+    }
 
-	protected static boolean arrayUsesDimension(Exp[] exps, Dimension dim)
-	{
-		for (int i = 0; i < exps.length; i++)
-			if (exps[i].usesDimension(dim))
-				return true;
-		return false;
-	}
+    protected static boolean arrayUsesDimension(Exp[] exps, Dimension dim)
+    {
+        for (int i = 0; i < exps.length; i++)
+            if (exps[i].usesDimension(dim))
+                return true;
+        return false;
+    }
 
-	public int addAtPosition(Exp e, int iPosition) {
-		// Since this method has not been overridden for this type of
-		// expression, we presume that the expression has a dimensionality of
-		// 1.  We therefore return 1 to indicate that we could not add the
-		// expression, and that this expression has a dimensionality of 1.
-		return 1;
-	}
+    public int addAtPosition(Exp e, int iPosition) {
+        // Since this method has not been overridden for this type of
+        // expression, we presume that the expression has a dimensionality of
+        // 1.  We therefore return 1 to indicate that we could not add the
+        // expression, and that this expression has a dimensionality of 1.
+        return 1;
+    }
 
-	public Object evaluate(Evaluator evaluator) {
-		throw new Error("unsupported");
-	}
+    public Object evaluate(Evaluator evaluator) {
+        throw new Error("unsupported");
+    }
 
-	public Object evaluateScalar(Evaluator evaluator) {
-		Object o = evaluate(evaluator);
-		if (o instanceof Member) {
+    public Object evaluateScalar(Evaluator evaluator) {
+        Object o = evaluate(evaluator);
+        if (o instanceof Member) {
             evaluator = evaluator.push((Member) o);
-			return evaluator.evaluateCurrent();
-		} else if (o instanceof Member[]) {
+            return evaluator.evaluateCurrent();
+        } else if (o instanceof Member[]) {
             evaluator = evaluator.push((Member[]) o);
-			return evaluator.evaluateCurrent();
-		} else {
-			return o;
-		}
-	}
+            return evaluator.evaluateCurrent();
+        } else {
+            return o;
+        }
+    }
 
     public static void unparseList(PrintWriter pw, Exp[] exps, String start,
             String mid, String end) {
-		pw.print(start);
-		for (int i = 0; i < exps.length; i++) {
-			if (i > 0) {
-				pw.print(mid);
-			}
-			exps[i].unparse(pw);
-		}
-		pw.print(end);
-	}
+        pw.print(start);
+        for (int i = 0; i < exps.length; i++) {
+            if (i > 0) {
+                pw.print(mid);
+            }
+            exps[i].unparse(pw);
+        }
+        pw.print(end);
+    }
 
-	public static int[] getTypes(Exp[] exps) {
-		int[] types = new int[exps.length];
-		for (int i = 0; i < exps.length; i++) {
-			types[i] = exps[i].getType();
-		}
-		return types;
-	}
-	/**
-	 * A simple and incomplete default implementation for dependsOn().
-	 * It assumes that a dimension, that is used somewhere in the expression
-	 * makes the whole expression independent of that dimension.
-	 */
-	public boolean dependsOn(Dimension dimension) {
-		return !usesDimension(dimension);
-	}
+    public static int[] getTypes(Exp[] exps) {
+        int[] types = new int[exps.length];
+        for (int i = 0; i < exps.length; i++) {
+            types[i] = exps[i].getType();
+        }
+        return types;
+    }
+    /**
+     * A simple and incomplete default implementation for dependsOn().
+     * It assumes that a dimension, that is used somewhere in the expression
+     * makes the whole expression independent of that dimension.
+     */
+    public boolean dependsOn(Dimension dimension) {
+        return !usesDimension(dimension);
+    }
 }
 
 

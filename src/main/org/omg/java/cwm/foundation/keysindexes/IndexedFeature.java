@@ -8,17 +8,17 @@ package org.omg.java.cwm.foundation.keysindexes;
 public interface IndexedFeature
 extends org.omg.java.cwm.objectmodel.core.ModelElement {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public java.lang.Boolean isAscending();
 
   public void setAscending( java.lang.Boolean value );
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.objectmodel.core.StructuralFeature getFeature();
 

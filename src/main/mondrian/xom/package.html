@@ -15,7 +15,7 @@ methods to serialize to and from XML.
   </tr>
   <tr>
     <th>Copyright</th>
-    <td>(C) Copyright 2001-2002 Kana Software, Inc.</td>
+    <td>(C) Copyright 2001-2005 Kana Software, Inc.</td>
   </tr>
   <tr>
     <th>Author</th>
@@ -63,7 +63,7 @@ provides complete typesafe access to the whole document!</p>
 and retrieve the parsed {@link org.w3c.dom.Document} object.</li>
 <li>Call {@link org.w3c.dom.Document#getDocumentElement()} to retrieve the toplevel Node
 in the document.</li>
-<li>Wrap the toplevel node in an instance of 
+<li>Wrap the toplevel node in an instance of
 {@link mondrian.xom.wrappers.W3CDOMWrapper}.</li>
 <li>Construct the appropriate {@link mondrian.xom.ElementDef} subclass
 from the wrapped node.</li>
@@ -75,7 +75,7 @@ from the wrapped node.</li>
 and retrieve {@link com.ms.xml.om.Document} object representing the document.</li>
 <li>Call {@link com.ms.xml.om.Document#getRoot()} to retrieve the toplevel Element
 in the document.</li>
-<li>Wrap the toplevel element in an instance of 
+<li>Wrap the toplevel element in an instance of
 {@link mondrian.xom.wrappers.MSXMLWrapper}.</li>
 <li>Construct the appropriate {@link mondrian.xom.ElementDef} subclass
 from the wrapped node.</li>
@@ -85,8 +85,8 @@ from the wrapped node.</li>
 <p>The utility is the Java class {@link MetaGenerator}. It takes command-line
 arguments; usage:</p>
 <blockquote><pre>jview &lt;classpath_options&gt; mondrian.xom.MetaGenerator
-	[-debug] [-test]
-	&lt;XML model file&gt; &lt;output directory&gt;</pre></blockquote>
+    [-debug] [-test]
+    &lt;XML model file&gt; &lt;output directory&gt;</pre></blockquote>
 The XML model file is the name of the XML model file to use (e.g. assoc.xml,
 input.xml, etc).&nbsp; You would have something like 'diablo.xml'.
 <p>The output directory is the directory in which all output files (a DTD and a

@@ -8,9 +8,9 @@ package org.omg.java.cwm.objectmodel.core;
 public interface TaggedValue
 extends org.omg.java.cwm.objectmodel.core.Element {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public java.lang.String getTag();
 
@@ -20,9 +20,9 @@ extends org.omg.java.cwm.objectmodel.core.Element {
 
   public void setValue( java.lang.String value );
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.objectmodel.core.ModelElement getModelElement();
 

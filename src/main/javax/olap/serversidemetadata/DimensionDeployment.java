@@ -8,9 +8,9 @@ package javax.olap.serversidemetadata;
 public interface DimensionDeployment
 extends org.omg.java.cwm.objectmodel.core.CoreClass {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.serversidemetadata.HierarchyLevelAssociation getHierarchyLevelAssociation()
     throws javax.olap.OLAPException;

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2003 Julian Hyde
+// (C) Copyright 2003-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -30,9 +30,9 @@ import java.util.regex.Pattern;
 public class XmlaTest extends TestCase {
     private static final String nl = System.getProperty("line.separator");
     //private static final String dataSource = "Provider=MSOLAP;Data Source=local;";
-	private static final String FOODMART_CATALOG_URL = "mondrian.test.foodmart.catalogURL";
+    private static final String FOODMART_CATALOG_URL = "mondrian.test.foodmart.catalogURL";
     private static String catalogName;
-	private static String dataSource;
+    private static String dataSource;
 
     /**
      * Usually null, when {@link #getRequests} sets it, {@link #executeRequest}
@@ -42,11 +42,11 @@ public class XmlaTest extends TestCase {
 
     public XmlaTest(String s) {
         super(s);
-		if( System.getProperty(FOODMART_CATALOG_URL) != null )
-		    catalogName = System.getProperty(FOODMART_CATALOG_URL);
-		else
-		    catalogName = "file:/E:/mondrian/demo/FoodMart.xml";
-		dataSource = "Provider=Mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;Catalog=" + catalogName + ";JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver;";
+        if( System.getProperty(FOODMART_CATALOG_URL) != null )
+            catalogName = System.getProperty(FOODMART_CATALOG_URL);
+        else
+            catalogName = "file:/E:/mondrian/demo/FoodMart.xml";
+        dataSource = "Provider=Mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;Catalog=" + catalogName + ";JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver;";
 
     }
 

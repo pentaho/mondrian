@@ -8,9 +8,9 @@ package javax.olap.query.querycoremodel;
 public interface IntegerInsertOffset
 extends javax.olap.query.edgefilters.EdgeInsertOffset, javax.olap.query.dimensionfilters.DimensionInsertOffset {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public int getValue()
     throws javax.olap.OLAPException;

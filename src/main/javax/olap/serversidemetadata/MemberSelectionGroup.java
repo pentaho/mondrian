@@ -8,9 +8,9 @@ package javax.olap.serversidemetadata;
 public interface MemberSelectionGroup
 extends org.omg.java.cwm.objectmodel.core.CoreClass {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.Collection getMemberSelection()
     throws javax.olap.OLAPException;

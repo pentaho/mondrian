@@ -18,31 +18,31 @@ import java.util.*;
 
 class RolapPosition extends Position
 {
-	// override Object
-	public boolean equals(Object o)
-	{
-		if (o instanceof RolapPosition) {
-			RolapPosition other = (RolapPosition) o;
-			if (other.members.length == this.members.length) {
-				for (int i = 0; i < this.members.length; i++) {
-					if (this.members[i] != other.members[i]) {
-						return false;
-					}
-				}
-				return true;
-			}
-		}
-		return false;
-	}
-	// override Object
-	public int hashCode()
-	{
-		int h = 0;
-		for (int i = 0; i < members.length; i++) {
-			h = (h << 4) ^ members[i].hashCode();
-		}
-		return h;
-	}
+    // override Object
+    public boolean equals(Object o)
+    {
+        if (o instanceof RolapPosition) {
+            RolapPosition other = (RolapPosition) o;
+            if (other.members.length == this.members.length) {
+                for (int i = 0; i < this.members.length; i++) {
+                    if (this.members[i] != other.members[i]) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+    // override Object
+    public int hashCode()
+    {
+        int h = 0;
+        for (int i = 0; i < members.length; i++) {
+            h = (h << 4) ^ members[i].hashCode();
+        }
+        return h;
+    }
 }
 
 // End RolapPosition.java

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -31,312 +31,312 @@ import java.io.StringReader;
  */
 public class DOMBuilder {
 
-	Document factory;
-	Result result;
-	int dimCount;
+    Document factory;
+    Result result;
+    int dimCount;
 
-	protected DOMBuilder(Document factory, Result result) {
-		this.factory = factory;
-		this.result = result;
-	}
+    protected DOMBuilder(Document factory, Result result) {
+        this.factory = factory;
+        this.result = result;
+    }
 
-	public static Document build(Result result) throws ParserConfigurationException {
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		dbf.setValidating(false);
-		dbf.setExpandEntityReferences(true);
-		DocumentBuilder db = dbf.newDocumentBuilder();
-		Document doc = db.newDocument();
-		Element table = build(doc, result);
-		doc.appendChild(table);
-		// debug(doc);
-		return doc;
-	}
+    public static Document build(Result result) throws ParserConfigurationException {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setValidating(false);
+        dbf.setExpandEntityReferences(true);
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document doc = db.newDocument();
+        Element table = build(doc, result);
+        doc.appendChild(table);
+        // debug(doc);
+        return doc;
+    }
 
-	public static Element build(Document factory, Result result) {
-		return new DOMBuilder(factory, result).build();
-	}
+    public static Element build(Document factory, Result result) {
+        return new DOMBuilder(factory, result).build();
+    }
 
-	private Element build() {
-		dimCount = result.getAxes().length;
-		Element mdxtable = factory.createElement("mdxtable");
-		Element query = elem("query", mdxtable);
-		cdata(result.getQuery().toWebUIMdx(), query);
-		Element head = elem("head", mdxtable);
-		Element body = elem("body", mdxtable);
-		switch (dimCount) {
-		case 0:
-			buildRows0Dim(body);
-			break;
-		case 1:
-			buildColumns(head, result.getAxes()[0]);
-			buildRows1Dim(body);
-			break;
-		case 2:
-			buildColumns(head, result.getAxes()[0]);
-			buildRows2Dim(body, result.getAxes()[1]);
-			break;
-		default:
-			throw new IllegalArgumentException("DOMBuilder requires 0, 1 or 2 dimensional result");
-		}
-		Element slicers = elem("slicers", mdxtable);
-		buildSlicer(slicers);
-		return mdxtable;
-	}
+    private Element build() {
+        dimCount = result.getAxes().length;
+        Element mdxtable = factory.createElement("mdxtable");
+        Element query = elem("query", mdxtable);
+        cdata(result.getQuery().toWebUIMdx(), query);
+        Element head = elem("head", mdxtable);
+        Element body = elem("body", mdxtable);
+        switch (dimCount) {
+        case 0:
+            buildRows0Dim(body);
+            break;
+        case 1:
+            buildColumns(head, result.getAxes()[0]);
+            buildRows1Dim(body);
+            break;
+        case 2:
+            buildColumns(head, result.getAxes()[0]);
+            buildRows2Dim(body, result.getAxes()[1]);
+            break;
+        default:
+            throw new IllegalArgumentException("DOMBuilder requires 0, 1 or 2 dimensional result");
+        }
+        Element slicers = elem("slicers", mdxtable);
+        buildSlicer(slicers);
+        return mdxtable;
+    }
 
-	abstract class AxisBuilder {
-		Member[] prevMembers;
-		Element[] prevElems;
-		int [] prevSpan;
+    abstract class AxisBuilder {
+        Member[] prevMembers;
+        Element[] prevElems;
+        int [] prevSpan;
 
-		Element parent;
-		Position[] positions;
-		int levels;
+        Element parent;
+        Position[] positions;
+        int levels;
 
-		AxisBuilder(Element parent, Axis axis) {
-			this.parent   = parent;
+        AxisBuilder(Element parent, Axis axis) {
+            this.parent   = parent;
 
-			positions = axis.positions;
-			levels = positions[0].members.length;
-			prevMembers = new Member[levels];
-			prevElems = new Element[levels];
-			prevSpan = new int[levels];
-		}
+            positions = axis.positions;
+            levels = positions[0].members.length;
+            prevMembers = new Member[levels];
+            prevElems = new Element[levels];
+            prevSpan = new int[levels];
+        }
 
-		abstract int getRowCount();
-		abstract Element build(int rowIndex);
-	}
+        abstract int getRowCount();
+        abstract Element build(int rowIndex);
+    }
 
-	class RowBuilder extends AxisBuilder {
-		RowBuilder(Element parent, Axis axis) {
-			super(parent, axis);
-		}
+    class RowBuilder extends AxisBuilder {
+        RowBuilder(Element parent, Axis axis) {
+            super(parent, axis);
+        }
 
-		Element build(int rowIndex) {
-			boolean even = (rowIndex % 2 != 0);  // counting starts at row 1
-			Element row = elem("row", parent);
-			build(row, positions[rowIndex].members, even);
-			return row;
-		}
+        Element build(int rowIndex) {
+            boolean even = (rowIndex % 2 != 0);  // counting starts at row 1
+            Element row = elem("row", parent);
+            build(row, positions[rowIndex].members, even);
+            return row;
+        }
 
-		int getRowCount() {
-			return positions.length;
-		}
+        int getRowCount() {
+            return positions.length;
+        }
 
-		private void build(Element row, Member[] currentMembers, boolean even) {
-			for (int i = 0; i < levels; i++) {
-				Member currentMember = currentMembers[i];
-				Member prevMember    = prevMembers[i];
-				if (prevMember == null || !prevMember.equals(currentMember)) {
-					Element currentElem = createMemberElem("row-heading", row, currentMember);
-					if (even)
-						currentElem.setAttribute("style", "even");
-					else
-						currentElem.setAttribute("style", "odd");
-					prevMembers[i] = currentMember;
-					prevElems[i] = currentElem;
-					prevSpan[i] = 1;
-					for (int j = i + 1; j < levels; j++)
-						prevMembers[j] = null;
-				}
-				else {
-					Element prevElem = prevElems[i];
-					prevElem.setAttribute("style", "span");
-					prevSpan[i] += 1;
-					prevElem.setAttribute("rowspan", Integer.toString(prevSpan[i]));
-				}
-			}
-		}
-	}
-
-
-	class ColumnBuilder extends AxisBuilder {
-		ColumnBuilder(Element parent, Axis axis) {
-			super(parent, axis);
-		}
-
-		int getRowCount() {
-			return levels;
-		}
-
-		Element build(int rowIndex) {
-			Element row = elem("row", parent);
-			if (dimCount > 1 && rowIndex == 0)
-				buildCornerElement(row);
-			build(row, rowIndex);
-			return row;
-		}
-
-		private void build(Element row, int rowIndex) {
-			for (int i = 0; i < levels; i++)
-				prevMembers[i] = null;
-
-			for (int i = 0; i < positions.length; i++) {
-				Member[] currentMembers = positions[i].members;
-
-				for (int j = 0; j < rowIndex - 1; j++) {
-					Member currentMember = currentMembers[j];
-					if (prevMembers[j] == null || !prevMembers[j].equals(currentMember)) {
-						prevMembers[j] = currentMember;
-						for (int k = j + 1; k < levels; k++)
-							prevMembers[j] = null;
-					}
-				}
-
-				Member currentMember = currentMembers[rowIndex];
-				Member prevMember    = prevMembers[rowIndex];
-				if (prevMember == null || !prevMember.equals(currentMember)) {
-					Element currentElem = createMemberElem("column-heading", row, currentMember);
-					prevMembers[rowIndex] = currentMember;
-					prevElems[rowIndex] = currentElem;
-					prevSpan[rowIndex] = 1;
-					for (int j = rowIndex + 1; j < levels; j++)
-						prevMembers[j] = null;
-				}
-				else {
-					Element prevElem = prevElems[rowIndex];
-					prevElem.setAttribute("style", "span");
-					prevSpan[rowIndex] += 1;
-					prevElem.setAttribute("colspan", Integer.toString(prevSpan[rowIndex]));
-				}
-			}
-		}
-
-		void buildCornerElement(Element row) {
-			Element corner = elem("corner", row);
-			corner.setAttribute("rowspan", Integer.toString(result.getAxes()[0].positions[0].members.length));
-			corner.setAttribute("colspan", Integer.toString(result.getAxes()[1].positions[0].members.length));
-		}
-	}
+        private void build(Element row, Member[] currentMembers, boolean even) {
+            for (int i = 0; i < levels; i++) {
+                Member currentMember = currentMembers[i];
+                Member prevMember    = prevMembers[i];
+                if (prevMember == null || !prevMember.equals(currentMember)) {
+                    Element currentElem = createMemberElem("row-heading", row, currentMember);
+                    if (even)
+                        currentElem.setAttribute("style", "even");
+                    else
+                        currentElem.setAttribute("style", "odd");
+                    prevMembers[i] = currentMember;
+                    prevElems[i] = currentElem;
+                    prevSpan[i] = 1;
+                    for (int j = i + 1; j < levels; j++)
+                        prevMembers[j] = null;
+                }
+                else {
+                    Element prevElem = prevElems[i];
+                    prevElem.setAttribute("style", "span");
+                    prevSpan[i] += 1;
+                    prevElem.setAttribute("rowspan", Integer.toString(prevSpan[i]));
+                }
+            }
+        }
+    }
 
 
-	private void buildRows2Dim(Element parent, Axis axis) {
-		RowBuilder rb = new RowBuilder(parent, axis);
-		final int N = rb.getRowCount();
-		int[] cellIndex = new int[2];
-		for (int i = 0; i < N; i++) {
-			Element row = rb.build(i);
-			boolean even = (i % 2 != 0);  // counting starts at row 1
-			cellIndex[1] = i;
-			buildCells(row, cellIndex, even);
-		}
-	}
+    class ColumnBuilder extends AxisBuilder {
+        ColumnBuilder(Element parent, Axis axis) {
+            super(parent, axis);
+        }
 
-	private void buildRows1Dim(Element parent) {
-		int[] cellIndex = new int[1];
-		Element row = elem("row", parent);
-		buildCells(row, cellIndex, false);
-	}
+        int getRowCount() {
+            return levels;
+        }
 
-	private void buildColumns(Element parent, Axis axis) {
-		ColumnBuilder cb = new ColumnBuilder(parent, axis);
-		final int N = cb.getRowCount();
-		for (int i = 0; i < N; i++) {
-			Element row = cb.build(i);
-		}
-	}
+        Element build(int rowIndex) {
+            Element row = elem("row", parent);
+            if (dimCount > 1 && rowIndex == 0)
+                buildCornerElement(row);
+            build(row, rowIndex);
+            return row;
+        }
+
+        private void build(Element row, int rowIndex) {
+            for (int i = 0; i < levels; i++)
+                prevMembers[i] = null;
+
+            for (int i = 0; i < positions.length; i++) {
+                Member[] currentMembers = positions[i].members;
+
+                for (int j = 0; j < rowIndex - 1; j++) {
+                    Member currentMember = currentMembers[j];
+                    if (prevMembers[j] == null || !prevMembers[j].equals(currentMember)) {
+                        prevMembers[j] = currentMember;
+                        for (int k = j + 1; k < levels; k++)
+                            prevMembers[j] = null;
+                    }
+                }
+
+                Member currentMember = currentMembers[rowIndex];
+                Member prevMember    = prevMembers[rowIndex];
+                if (prevMember == null || !prevMember.equals(currentMember)) {
+                    Element currentElem = createMemberElem("column-heading", row, currentMember);
+                    prevMembers[rowIndex] = currentMember;
+                    prevElems[rowIndex] = currentElem;
+                    prevSpan[rowIndex] = 1;
+                    for (int j = rowIndex + 1; j < levels; j++)
+                        prevMembers[j] = null;
+                }
+                else {
+                    Element prevElem = prevElems[rowIndex];
+                    prevElem.setAttribute("style", "span");
+                    prevSpan[rowIndex] += 1;
+                    prevElem.setAttribute("colspan", Integer.toString(prevSpan[rowIndex]));
+                }
+            }
+        }
+
+        void buildCornerElement(Element row) {
+            Element corner = elem("corner", row);
+            corner.setAttribute("rowspan", Integer.toString(result.getAxes()[0].positions[0].members.length));
+            corner.setAttribute("colspan", Integer.toString(result.getAxes()[1].positions[0].members.length));
+        }
+    }
 
 
-	private void buildCells(Element row, int[] cellIndex, boolean even) {
-		int columns = result.getAxes()[0].positions.length;
-		for (int i = 0; i < columns; i++) {
-			cellIndex[0] = i;
-			Cell cell = result.getCell(cellIndex);
-			buildCell(cell, row, even);
-		}
-	}
+    private void buildRows2Dim(Element parent, Axis axis) {
+        RowBuilder rb = new RowBuilder(parent, axis);
+        final int N = rb.getRowCount();
+        int[] cellIndex = new int[2];
+        for (int i = 0; i < N; i++) {
+            Element row = rb.build(i);
+            boolean even = (i % 2 != 0);  // counting starts at row 1
+            cellIndex[1] = i;
+            buildCells(row, cellIndex, even);
+        }
+    }
 
-	private void buildCell(Cell cell, Element row, boolean even) {
-		Element cellElem = elem("cell", row);
-		String s = cell.getFormattedValue();
-		if (s == null || s.length() == 0 || s.equals("(null)"))
-			s = "\u00a0"; // &nbsp;
-		cellElem.setAttribute("value", s);
-		cellElem.setAttribute("style", even ? "even" : "odd");
-	}
+    private void buildRows1Dim(Element parent) {
+        int[] cellIndex = new int[1];
+        Element row = elem("row", parent);
+        buildCells(row, cellIndex, false);
+    }
 
-	private void buildRows0Dim(Element parent) {
-		int[] cellIndex = new int[0];
-		Element row = elem("row", parent);
-		Cell cell = result.getCell(cellIndex);
-		buildCell(cell, row, false);
-	}
+    private void buildColumns(Element parent, Axis axis) {
+        ColumnBuilder cb = new ColumnBuilder(parent, axis);
+        final int N = cb.getRowCount();
+        for (int i = 0; i < N; i++) {
+            Element row = cb.build(i);
+        }
+    }
 
-	private void buildSlicer(Element parent) {
-		Position[] positions = result.getSlicerAxis().positions;
-		for (int i = 0; i < positions.length; i++) {
-			Member[] members = positions[i].members;
-			if (members.length > 0) {
-				Element position = elem("position", parent);
-				for (int j = 0; j < members.length; j++) {
-					createMemberElem("member", position, members[j]);
-				}
-			}
-		}
-	}
 
-	private Element createMemberElem(String name, Element parent, Member m) {
-		Element e = elem(name, parent);
-		e.setAttribute("caption", m.getCaption());
-		e.setAttribute("depth", Integer.toString(m.getLevel().getDepth()));
-		//e.setAttribute("name", m.getName());
-		//e.setAttribute("qname", m.getQualifiedName());
-		e.setAttribute("uname", m.getUniqueName());
-		e.setAttribute("colspan", "1");
-		e.setAttribute("rowspan", "1");
+    private void buildCells(Element row, int[] cellIndex, boolean even) {
+        int columns = result.getAxes()[0].positions.length;
+        for (int i = 0; i < columns; i++) {
+            cellIndex[0] = i;
+            Cell cell = result.getCell(cellIndex);
+            buildCell(cell, row, even);
+        }
+    }
+
+    private void buildCell(Cell cell, Element row, boolean even) {
+        Element cellElem = elem("cell", row);
+        String s = cell.getFormattedValue();
+        if (s == null || s.length() == 0 || s.equals("(null)"))
+            s = "\u00a0"; // &nbsp;
+        cellElem.setAttribute("value", s);
+        cellElem.setAttribute("style", even ? "even" : "odd");
+    }
+
+    private void buildRows0Dim(Element parent) {
+        int[] cellIndex = new int[0];
+        Element row = elem("row", parent);
+        Cell cell = result.getCell(cellIndex);
+        buildCell(cell, row, false);
+    }
+
+    private void buildSlicer(Element parent) {
+        Position[] positions = result.getSlicerAxis().positions;
+        for (int i = 0; i < positions.length; i++) {
+            Member[] members = positions[i].members;
+            if (members.length > 0) {
+                Element position = elem("position", parent);
+                for (int j = 0; j < members.length; j++) {
+                    createMemberElem("member", position, members[j]);
+                }
+            }
+        }
+    }
+
+    private Element createMemberElem(String name, Element parent, Member m) {
+        Element e = elem(name, parent);
+        e.setAttribute("caption", m.getCaption());
+        e.setAttribute("depth", Integer.toString(m.getLevel().getDepth()));
+        //e.setAttribute("name", m.getName());
+        //e.setAttribute("qname", m.getQualifiedName());
+        e.setAttribute("uname", m.getUniqueName());
+        e.setAttribute("colspan", "1");
+        e.setAttribute("rowspan", "1");
 
         // add properties to dom tree
-		addMemberProperties(m, e);
-		
-		return e;
-	}
+        addMemberProperties(m, e);
 
-	private void addMemberProperties(Member m, Element e) {
-		Property[] props = m.getLevel().getProperties();
-		if (props != null) {
-		  for (int i = 0; i < props.length; i++) {
-		  	String propName = props[i].getName();
-		  	String propValue = "" + m.getPropertyValue(propName);
-		  	Element propElem = elem("property", e);
-		  	propElem.setAttribute("name", propName);
-		  	propElem.setAttribute("value", propValue);
-		  }
-		}
-	}
+        return e;
+    }
 
-	private Element elem(String name, Element parent) {
-		Element elem = factory.createElement(name);
-		parent.appendChild(elem);
-		return elem;
-	}
+    private void addMemberProperties(Member m, Element e) {
+        Property[] props = m.getLevel().getProperties();
+        if (props != null) {
+          for (int i = 0; i < props.length; i++) {
+            String propName = props[i].getName();
+            String propValue = "" + m.getPropertyValue(propName);
+            Element propElem = elem("property", e);
+            propElem.setAttribute("name", propName);
+            propElem.setAttribute("value", propValue);
+          }
+        }
+    }
 
-	private Object cdata(String content, Element parent) {
-		CDATASection section = factory.createCDATASection(content);
-		parent.appendChild(section);
-		return section;
-	}
+    private Element elem(String name, Element parent) {
+        Element elem = factory.createElement(name);
+        parent.appendChild(elem);
+        return elem;
+    }
 
-	private static final String PRETTY_PRINTER = ""
-	+ "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n"
-	+ "<xsl:output method=\"xml\" indent=\"yes\"/>\n"
-	+ "<xsl:template match=\"*|@*\">\n"
-	+ "  <xsl:copy>\n"
-	+ "    <xsl:apply-templates select=\"*|@*\"/>\n"
-	+ "  </xsl:copy>\n"
-	+ "</xsl:template>\n"
-	+ "</xsl:stylesheet>\n";
+    private Object cdata(String content, Element parent) {
+        CDATASection section = factory.createCDATASection(content);
+        parent.appendChild(section);
+        return section;
+    }
 
-	public static void debug(Document doc) {
-		try {
-			TransformerFactory tf = TransformerFactory.newInstance();
-			StringReader input = new StringReader(PRETTY_PRINTER);
-			//File input = new File(System.getProperty("test.dir") + "/" + "pretty.xsl");
-			Templates templates = tf.newTemplates(new StreamSource(input));
-			templates.newTransformer().transform(new DOMSource(doc), new StreamResult(System.out));
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+    private static final String PRETTY_PRINTER = ""
+    + "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n"
+    + "<xsl:output method=\"xml\" indent=\"yes\"/>\n"
+    + "<xsl:template match=\"*|@*\">\n"
+    + "  <xsl:copy>\n"
+    + "    <xsl:apply-templates select=\"*|@*\"/>\n"
+    + "  </xsl:copy>\n"
+    + "</xsl:template>\n"
+    + "</xsl:stylesheet>\n";
+
+    public static void debug(Document doc) {
+        try {
+            TransformerFactory tf = TransformerFactory.newInstance();
+            StringReader input = new StringReader(PRETTY_PRINTER);
+            //File input = new File(System.getProperty("test.dir") + "/" + "pretty.xsl");
+            Templates templates = tf.newTemplates(new StreamSource(input));
+            templates.newTransformer().transform(new DOMSource(doc), new StreamResult(System.out));
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 }
 

@@ -8,9 +8,9 @@ package javax.olap.serversidemetadata;
 public interface StructureMap
 extends org.omg.java.cwm.analysis.transformation.TransformationMap {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.serversidemetadata.DimensionDeployment getDimensionDeployment()
     throws javax.olap.OLAPException;

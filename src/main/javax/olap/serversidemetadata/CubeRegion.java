@@ -8,9 +8,9 @@ package javax.olap.serversidemetadata;
 public interface CubeRegion
 extends org.omg.java.cwm.objectmodel.core.CoreClass {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public boolean isReadOnly()
     throws javax.olap.OLAPException;
@@ -24,9 +24,9 @@ extends org.omg.java.cwm.objectmodel.core.CoreClass {
   public void setFullyRealized( boolean value )
     throws javax.olap.OLAPException;
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.Collection getMemberSelectionGroup()
     throws javax.olap.OLAPException;

@@ -8,9 +8,9 @@ package javax.olap.resource;
 public interface ConnectionFactory
 extends java.io.Serializable, javax.resource.Referenceable {
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public javax.olap.resource.Connection getConnection()
     throws javax.olap.OLAPException;

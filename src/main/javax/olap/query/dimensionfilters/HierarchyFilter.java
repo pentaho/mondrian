@@ -8,9 +8,9 @@ package javax.olap.query.dimensionfilters;
 public interface HierarchyFilter
 extends javax.olap.query.dimensionfilters.DimensionFilter {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.query.enumerations.HierarchyFilterType getHierarchyFilterType()
     throws javax.olap.OLAPException;
@@ -18,9 +18,9 @@ extends javax.olap.query.dimensionfilters.DimensionFilter {
   public void setHierarchyFilterType( javax.olap.query.enumerations.HierarchyFilterType value )
     throws javax.olap.OLAPException;
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.metadata.Hierarchy getHierarchy()
     throws javax.olap.OLAPException;

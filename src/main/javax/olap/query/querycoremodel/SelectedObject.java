@@ -8,9 +8,9 @@ package javax.olap.query.querycoremodel;
 public interface SelectedObject
 extends javax.olap.query.querycoremodel.NamedObject {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.query.querycoremodel.DimensionView getOwner()
     throws javax.olap.OLAPException;

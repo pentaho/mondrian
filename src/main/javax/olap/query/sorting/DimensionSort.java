@@ -8,9 +8,9 @@ package javax.olap.query.sorting;
 public interface DimensionSort
 extends javax.olap.query.querycoremodel.DimensionStep {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.query.enumerations.SortType getDirection()
     throws javax.olap.OLAPException;

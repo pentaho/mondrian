@@ -7,9 +7,9 @@ package javax.olap.resource;
 
 public interface ConnectionMetaData {
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public java.lang.String getEISProductName()
     throws javax.olap.OLAPException;

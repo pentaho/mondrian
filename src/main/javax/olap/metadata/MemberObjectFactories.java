@@ -7,9 +7,9 @@ package javax.olap.metadata;
 
 public interface MemberObjectFactories {
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public javax.olap.metadata.Member createMember( javax.olap.metadata.Dimension owner )
     throws javax.olap.OLAPException;

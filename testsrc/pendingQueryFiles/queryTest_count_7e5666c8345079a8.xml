@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>WITH MEMBER [Measures].[Dimension Count] AS 'Dimensions.Count' 
+    <mdxQuery>WITH MEMBER [Measures].[Dimension Count] AS 'Dimensions.Count'
 SELECT {[Measures].[Dimension Count]} ON AXIS(0)
 FROM [Sales] </mdxQuery>
     <dataResult>

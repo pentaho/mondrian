@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004 SAS Institute, Inc.
+// Copyright (C) 2004-2005 SAS Institute, Inc.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -23,18 +23,18 @@ import mondrian.olap.FunDef;
  */
 public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
 
-	public NonEmptyCrossJoinFunDef(FunDef dummyFunDef) {
-		super(dummyFunDef);
-	}
+    public NonEmptyCrossJoinFunDef(FunDef dummyFunDef) {
+        super(dummyFunDef);
+    }
 
-	public Object evaluate(Evaluator evaluator, Exp[] args) {
-		// evaluate the arguments in non empty mode
-		evaluator = evaluator.push();
-		evaluator.setNonEmpty(true);
-		List result = (List)super.evaluate(evaluator, args);
-		
-		// remove any remaining empty crossings from the result
+    public Object evaluate(Evaluator evaluator, Exp[] args) {
+        // evaluate the arguments in non empty mode
+        evaluator = evaluator.push();
+        evaluator.setNonEmpty(true);
+        List result = (List)super.evaluate(evaluator, args);
+        
+        // remove any remaining empty crossings from the result
         result = nonEmptyList(evaluator, result);
-		return result;
-	}
+        return result;
+    }
 }

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>WITH MEMBER [Product].[All Products].[Product Count] AS '{[Product].[All Products], [Product].[All Products].Children}.Count' 
-SELECT {[Store].[All Stores], [Store].[All Stores].Children} ON AXIS(0), 
-       {[Product].[All Products], [Product].[All Products].Children, [Product].[All Products].[Product Count]} ON AXIS(1) 
+    <mdxQuery>WITH MEMBER [Product].[All Products].[Product Count] AS '{[Product].[All Products], [Product].[All Products].Children}.Count'
+SELECT {[Store].[All Stores], [Store].[All Stores].Children} ON AXIS(0),
+       {[Product].[All Products], [Product].[All Products].Children, [Product].[All Products].[Product Count]} ON AXIS(1)
 FROM [Sales]</mdxQuery>
     <dataResult>
         <slicer>

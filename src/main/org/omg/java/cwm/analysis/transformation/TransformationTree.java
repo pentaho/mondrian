@@ -8,9 +8,9 @@ package org.omg.java.cwm.analysis.transformation;
 public interface TransformationTree
 extends org.omg.java.cwm.analysis.transformation.Transformation {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.analysis.transformation.TreeType getType();
 

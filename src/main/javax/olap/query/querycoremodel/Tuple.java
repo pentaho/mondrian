@@ -8,9 +8,9 @@ package javax.olap.query.querycoremodel;
 public interface Tuple
 extends javax.olap.query.querycoremodel.NamedObject {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.List getMember()
     throws javax.olap.OLAPException;

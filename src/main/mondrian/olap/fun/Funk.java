@@ -1,10 +1,10 @@
 /*
 // $Id$
-// (C) Copyright 2002 Kana Software, Inc.
+// (C) Copyright 2002-2005 Kana Software, Inc.
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -25,14 +25,14 @@ import mondrian.olap.Exp;
  * @version $Id$
  **/
 interface Funk {
-	/**
-	 * Evaluates this function with the given set of expressions. The
-	 * implementation will often evaluate the expressions first. For example,
-	 * <code>TopCount([Promotion Media].members, 2 + 3, [Measures].[Unit
-	 * Sales])</code> would evaluate the first and second arguments, but not
-	 * the third.
-	 **/
-	Object evaluate(Evaluator evaluator, Exp[] args);
+    /**
+     * Evaluates this function with the given set of expressions. The
+     * implementation will often evaluate the expressions first. For example,
+     * <code>TopCount([Promotion Media].members, 2 + 3, [Measures].[Unit
+     * Sales])</code> would evaluate the first and second arguments, but not
+     * the third.
+     **/
+    Object evaluate(Evaluator evaluator, Exp[] args);
 }
 
 // End Funk.java

@@ -8,9 +8,9 @@ package org.omg.java.cwm.foundation.keysindexes;
 public interface KeyRelationship
 extends org.omg.java.cwm.objectmodel.core.ModelElement {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.List getFeature();
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>SELECT {[Education Level].[Partial College].PrevMember, [Education Level].Children} ON AXIS(0), 
-       {[Time].[1997].[Q1].[2].PrevMember, [Time].[1997].[Q1].[2].NextMember} ON AXIS(1) 
+    <mdxQuery>SELECT {[Education Level].[Partial College].PrevMember, [Education Level].Children} ON AXIS(0),
+       {[Time].[1997].[Q1].[2].PrevMember, [Time].[1997].[Q1].[2].NextMember} ON AXIS(1)
 FROM [Sales]</mdxQuery>
     <dataResult>
         <slicer>

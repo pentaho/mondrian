@@ -181,12 +181,12 @@ An HTML table is displayed, containing the rows of the fact</p>
 <p>If the pivot table supports selection of cells, rows or columns, the rows
 shown should relate only to selected cells.</p>
 
-<p><i>Julian: It's not hard to implement the server-side part of it (given a set of 
-coordinates, e.g {([Time].[1997], [Store].[USA]), ([Time].[1998], 
-[Store].[USA].[CA])}, return a select statement/parse tree of a select 
-statement/jdbc result set for the fact table rows which went into those cells). 
-The hard part is to incorporate it into the ui in a non-trivial way. (Which end 
-user wants to see a table with columns headed REGION_ID, TIME_ID, UNIT_SALES, 
+<p><i>Julian: It's not hard to implement the server-side part of it (given a set of
+coordinates, e.g {([Time].[1997], [Store].[USA]), ([Time].[1998],
+[Store].[USA].[CA])}, return a select statement/parse tree of a select
+statement/jdbc result set for the fact table rows which went into those cells).
+The hard part is to incorporate it into the ui in a non-trivial way. (Which end
+user wants to see a table with columns headed REGION_ID, TIME_ID, UNIT_SALES,
 and a bunch of surrogate keys?)</i></p>
 
 <h4><a name="5_2_2_Chart_button">5.2.2. Chart button</a></h4>
@@ -198,9 +198,9 @@ Data is rendered in pie chart.</p>
 
 <p><i>Tony, please specify.</i></p>
 
-<p><i>Julian: These come under the aegis of the pivot table until we have an 
-independent controller. It should be easy to shoehorn their 
-metadata into the catalog (of which FoodMart.xml is an example, and Mondrian.xml 
+<p><i>Julian: These come under the aegis of the pivot table until we have an
+independent controller. It should be easy to shoehorn their
+metadata into the catalog (of which FoodMart.xml is an example, and Mondrian.xml
 is the specification).</i></p>
 
 <h4><a name="5_2_4__Drill_anywhere">5.2.4. Drill anywhere</a></h4>

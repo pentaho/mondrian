@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2003 Julian Hyde <jhyde@users.sf.net>
+// Copyright (C) 2003-2005 Julian Hyde <jhyde@users.sf.net>
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -157,36 +157,36 @@ class Enumeration extends EnumeratedValues {
         public final int literalMaxLength;
 
         // Enum DBLITERALENUM and DBLITERALENUM20, OLEDB.H.
-        public static final int DBLITERAL_INVALID	= 0,
-        DBLITERAL_BINARY_LITERAL	= 1,
-        DBLITERAL_CATALOG_NAME	= 2,
-        DBLITERAL_CATALOG_SEPARATOR	= 3,
-        DBLITERAL_CHAR_LITERAL	= 4,
-        DBLITERAL_COLUMN_ALIAS	= 5,
-        DBLITERAL_COLUMN_NAME	= 6,
-        DBLITERAL_CORRELATION_NAME	= 7,
-        DBLITERAL_CURSOR_NAME	= 8,
-        DBLITERAL_ESCAPE_PERCENT	= 9,
-        DBLITERAL_ESCAPE_UNDERSCORE	= 10,
-        DBLITERAL_INDEX_NAME	= 11,
-        DBLITERAL_LIKE_PERCENT	= 12,
-        DBLITERAL_LIKE_UNDERSCORE	= 13,
-        DBLITERAL_PROCEDURE_NAME	= 14,
-        DBLITERAL_QUOTE	= 15,
+        public static final int DBLITERAL_INVALID   = 0,
+        DBLITERAL_BINARY_LITERAL    = 1,
+        DBLITERAL_CATALOG_NAME  = 2,
+        DBLITERAL_CATALOG_SEPARATOR = 3,
+        DBLITERAL_CHAR_LITERAL  = 4,
+        DBLITERAL_COLUMN_ALIAS  = 5,
+        DBLITERAL_COLUMN_NAME   = 6,
+        DBLITERAL_CORRELATION_NAME  = 7,
+        DBLITERAL_CURSOR_NAME   = 8,
+        DBLITERAL_ESCAPE_PERCENT    = 9,
+        DBLITERAL_ESCAPE_UNDERSCORE = 10,
+        DBLITERAL_INDEX_NAME    = 11,
+        DBLITERAL_LIKE_PERCENT  = 12,
+        DBLITERAL_LIKE_UNDERSCORE   = 13,
+        DBLITERAL_PROCEDURE_NAME    = 14,
+        DBLITERAL_QUOTE = 15,
         DBLITERAL_QUOTE_PREFIX = DBLITERAL_QUOTE,
-        DBLITERAL_SCHEMA_NAME	= 16,
-        DBLITERAL_TABLE_NAME	= 17,
-        DBLITERAL_TEXT_COMMAND	= 18,
-        DBLITERAL_USER_NAME	= 19,
-        DBLITERAL_VIEW_NAME	= 20,
-        DBLITERAL_CUBE_NAME	= 21,
-        DBLITERAL_DIMENSION_NAME	= 22,
-        DBLITERAL_HIERARCHY_NAME	= 23,
-        DBLITERAL_LEVEL_NAME	= 24,
-        DBLITERAL_MEMBER_NAME	= 25,
-        DBLITERAL_PROPERTY_NAME	= 26,
-        DBLITERAL_SCHEMA_SEPARATOR	= 27,
-        DBLITERAL_QUOTE_SUFFIX	= 28;
+        DBLITERAL_SCHEMA_NAME   = 16,
+        DBLITERAL_TABLE_NAME    = 17,
+        DBLITERAL_TEXT_COMMAND  = 18,
+        DBLITERAL_USER_NAME = 19,
+        DBLITERAL_VIEW_NAME = 20,
+        DBLITERAL_CUBE_NAME = 21,
+        DBLITERAL_DIMENSION_NAME    = 22,
+        DBLITERAL_HIERARCHY_NAME    = 23,
+        DBLITERAL_LEVEL_NAME    = 24,
+        DBLITERAL_MEMBER_NAME   = 25,
+        DBLITERAL_PROPERTY_NAME = 26,
+        DBLITERAL_SCHEMA_SEPARATOR  = 27,
+        DBLITERAL_QUOTE_SUFFIX  = 28;
 
         Literal(String literalName, int ordinal, String literalValue, int literalMaxLength, String literalInvalidChars, String literalInvalidStartingChars, String description) {
             super(literalName, ordinal, description);

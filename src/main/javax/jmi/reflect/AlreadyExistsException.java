@@ -7,9 +7,9 @@ package javax.jmi.reflect;
  * more common for singletons.</B>
  */
 public class AlreadyExistsException extends JmiException {
-    
+
     private final RefObject existing;
-    
+
     /**
      * Constructs new <code>AlreadyExistsException</code> without detail message.
      * @param existing existing singleton instance
@@ -29,7 +29,7 @@ public class AlreadyExistsException extends JmiException {
         super(existing.refMetaObject(), msg);
         this.existing = existing;
     }
-    
+
     /**
      * Returns existing instance of singleton.
      * @return existing singleton instance

@@ -355,7 +355,7 @@ lname
           nameColumn="full_name" nullParentValue="0">
         <Closure parentColumn="supervisor_id" childColumn="employee_id">
           <Table name="employee_closure"/>
-        </Closure>        
+        </Closure>
         <Property name="Marital Status" column="marital_status"/>
         <Property name="Position Title" column="position_title"/>
         <Property name="Gender" column="gender"/>
@@ -557,7 +557,7 @@ fname + ' ' + lname
         <MemberGrant member="[Store].[USA].[CA]" access="all"/>
         <MemberGrant member="[Store].[USA].[CA].[Los Angeles]" access="none"/>
       </HierarchyGrant>
-      <HierarchyGrant hierarchy="[Customers]" access="custom" 
+      <HierarchyGrant hierarchy="[Customers]" access="custom"
           topLevel="[Customers].[State Province]" bottomLevel="[Customers].[City]">
         <MemberGrant member="[Customers].[USA].[CA]" access="all"/>
         <MemberGrant member="[Customers].[USA].[CA].[Los Angeles]" access="none"/>

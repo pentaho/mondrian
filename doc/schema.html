@@ -28,12 +28,12 @@
   <li><a href="#Schema_files">Schema files</a></li>
   <li><a href="#Cubes_and_dimensions">Logical model</a><ol>
   <li><a href="#Cube">Cube</a></li>
-	<li><a href="#Measures">Measures</a></li>
-	<li><a href="#Calculated_members">Calculated members</a></li>
-	<li><a href="#Dimensions,_Hierarchies,_Levels">Dimensions, Hierarchies, 
-	Levels</a></li>
+    <li><a href="#Measures">Measures</a></li>
+    <li><a href="#Calculated_members">Calculated members</a></li>
+    <li><a href="#Dimensions,_Hierarchies,_Levels">Dimensions, Hierarchies,
+    Levels</a></li>
 </ol>
-	</li>
+    </li>
   <li><a href="#Star_schemas">Star and snowflake schemas</a>
   <ol>
       <li><a href="#Shared_dimensions">Shared dimensions</a></li>
@@ -205,8 +205,8 @@ statements.</p>
     aggregator=&quot;sum&quot; formatString=&quot;#,###.00&quot;/&gt;</pre>
 </blockquote>
 <p>Each measure (see <a href="#XML_Measure">&lt;Measure&gt;</a>) has a name,
-a column in the fact table, and an <code>aggregator</code>. The aggregator is usually &quot;sum&quot;, 
-but &quot;count&quot;, &quot;mix&quot;, &quot;max&quot;, &quot;avg&quot;, and &quot;distinct count&quot; are also allowed; 
+a column in the fact table, and an <code>aggregator</code>. The aggregator is usually &quot;sum&quot;,
+but &quot;count&quot;, &quot;mix&quot;, &quot;max&quot;, &quot;avg&quot;, and &quot;distinct count&quot; are also allowed;
 &quot;distinct count&quot; has some limitations if your cube contains a
 <a href="#Parent_child_hierarchies">parent-child hierarchy</a>.</p>
 
@@ -228,82 +228,82 @@ Defining a specific caption does make sense if special letters (e.g. &#931; or &
 
 <h3><a name="Calculated_members">Calculated members</a></h3>
 
-<p>Suppose you want to create a measure whose value comes not from a 
-column of the fact table, but from an MDX formula. One way to do this is to use 
+<p>Suppose you want to create a measure whose value comes not from a
+column of the fact table, but from an MDX formula. One way to do this is to use
 a WITH MEMBER clause, like this:</p>
 
 <blockquote>
 
-	<p><code>with member [Measures].[Profit] as '[Measures].[Store 
-	Sales]-[Measures].[Store Cost]',<br>
+    <p><code>with member [Measures].[Profit] as '[Measures].[Store
+    Sales]-[Measures].[Store Cost]',<br>
 &nbsp;&nbsp; FORMAT_STRING = '$#,###'<br>
-	select {[Measures].[Store Sales], [Measures].[Profit]} on columns,<br>
+    select {[Measures].[Store Sales], [Measures].[Profit]} on columns,<br>
 &nbsp; {[Product].Children} on rows<br>
-	from [Sales]<br>
-	where [Time].[1997]</code></p>
+    from [Sales]<br>
+    where [Time].[1997]</code></p>
 </blockquote>
-<p>But rather than including this clause in every MDX query of your application, 
+<p>But rather than including this clause in every MDX query of your application,
 you can define the member in your schema, as part of your cube definition:</p>
 
 <blockquote>
 
-	<p><code>&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name=&quot;Profit&quot; dimension=&quot;Measures&quot;<br>
+    <p><code>&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name=&quot;Profit&quot; dimension=&quot;Measures&quot;<br>
 &nbsp;&nbsp;&nbsp; formula=&quot;[Measures].[Store Sales]-[Measures].[Store Cost]&quot;&gt;<br>
 &nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name=&quot;FORMAT_STRING&quot; value=&quot;$#,##0.00&quot;/&gt;<br>
-	&lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code></p>
+    &lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code></p>
 </blockquote>
 
-<p>Note that the <code>&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>&gt;</code> 
-(not <code>&lt;<a href="#XML_Property">Property</a>&gt;</code>) element corresponds 
-to the <code>FORMAT_STRING = '$#,###'</code> fragment of the MDX statement. You 
-can define other properties here too, but <code>FORMAT_STRING</code> is by far 
+<p>Note that the <code>&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>&gt;</code>
+(not <code>&lt;<a href="#XML_Property">Property</a>&gt;</code>) element corresponds
+to the <code>FORMAT_STRING = '$#,###'</code> fragment of the MDX statement. You
+can define other properties here too, but <code>FORMAT_STRING</code> is by far
 the most useful in practice. This property's value is the constant string <code>
-&quot;$#,##0.00&quot;</code>, but a property's value can also be an expression. When 
-formatting a particular cell, first the expression is evaluated to yield a 
-format string, then the format string is applied to the cell value. Here is the 
+&quot;$#,##0.00&quot;</code>, but a property's value can also be an expression. When
+formatting a particular cell, first the expression is evaluated to yield a
+format string, then the format string is applied to the cell value. Here is the
 same property with a conditional format string:</p>
 
 <blockquote>
 
-	<p><code>&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> 
-	name=&quot;FORMAT_STRING&quot; expression=&quot;Iif(Value &lt; 0, '($#,##0.00)', 
-	'$#,##0.00')&quot;/&gt;</code></p>
+    <p><code>&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>
+    name=&quot;FORMAT_STRING&quot; expression=&quot;Iif(Value &lt; 0, '($#,##0.00)',
+    '$#,##0.00')&quot;/&gt;</code></p>
 </blockquote>
 
 <p>You can make a calculated member or a measure invisible. If you specify <code>
-visible=&quot;false&quot;</code> (the default is &quot;true&quot;) in the <code>&lt;<a href="#XML_Measure">Measure</a>&gt; 
-or &lt;<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code> element, 
-user-interfaces such as JPivot will notice this property and hide the member. 
-This is useful if you want to perform calculations in a number of steps, and 
-hide intermediate steps from end-users. For example, here only &quot;Margin per Sqft&quot; 
+visible=&quot;false&quot;</code> (the default is &quot;true&quot;) in the <code>&lt;<a href="#XML_Measure">Measure</a>&gt;
+or &lt;<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code> element,
+user-interfaces such as JPivot will notice this property and hide the member.
+This is useful if you want to perform calculations in a number of steps, and
+hide intermediate steps from end-users. For example, here only &quot;Margin per Sqft&quot;
 is visible, and its factors &quot;Store Cost&quot;, &quot;Margin&quot; and &quot;Store Sqft&quot; are hidden:</p>
 
 <blockquote>
 
-	<p><code>&lt;<a href="#XML_Measure">Measure</a><br>
+    <p><code>&lt;<a href="#XML_Measure">Measure</a><br>
 &nbsp;&nbsp;&nbsp; name=&quot;Store Cost&quot;<br>
 &nbsp;&nbsp;&nbsp; column=&quot;store_cost&quot;<br>
 &nbsp;&nbsp;&nbsp; aggregator=&quot;sum&quot;<br>
 &nbsp;&nbsp;&nbsp; formatString=&quot;#,###.00&quot;<br>
 &nbsp;&nbsp;&nbsp; visible=&quot;false&quot;/&gt;<br>
-	&lt;<a href="#XML_CalculatedMember">CalculatedMember</a><br>
+    &lt;<a href="#XML_CalculatedMember">CalculatedMember</a><br>
 &nbsp;&nbsp;&nbsp; name=&quot;Margin&quot; <br>
 &nbsp;&nbsp;&nbsp; dimension=&quot;Measures&quot; <br>
 &nbsp;&nbsp;&nbsp; visible=&quot;false&quot;<br>
-&nbsp;&nbsp;&nbsp; formula=&quot;([Measures].[Store Sales] - [Measures].[Store Cost]) 
-	/ [Measures].[Store Cost]&quot;/&gt;<br>
-	&lt;<a href="#XML_CalculatedMember">CalculatedMember</a><br>
+&nbsp;&nbsp;&nbsp; formula=&quot;([Measures].[Store Sales] - [Measures].[Store Cost])
+    / [Measures].[Store Cost]&quot;/&gt;<br>
+    &lt;<a href="#XML_CalculatedMember">CalculatedMember</a><br>
 &nbsp;&nbsp;&nbsp; name=&quot;Store Sqft&quot; <br>
 &nbsp;&nbsp;&nbsp; dimension=&quot;Measures&quot;<br>
 &nbsp;&nbsp;&nbsp; visible=&quot;false&quot;<br>
 &nbsp;&nbsp;&nbsp; formula='[Store].Properties(&quot;Sqft&quot;)'/&gt;<br>
-	&lt;<a href="#XML_CalculatedMember">CalculatedMember</a><br>
+    &lt;<a href="#XML_CalculatedMember">CalculatedMember</a><br>
 &nbsp;&nbsp;&nbsp; name=&quot;Margin per Sqft&quot;<br>
 &nbsp;&nbsp;&nbsp; dimension=&quot;Measures&quot;<br>
 &nbsp;&nbsp;&nbsp; visible=&quot;true&quot;<br>
 &nbsp;&nbsp;&nbsp; formula=&quot;[Measures].[Margin] / [Measures].[Store Cost]&quot;&gt;<br>
 &nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name=&quot;FORMAT_STRING&quot; value=&quot;$#,##0.00&quot;/&gt;<br>
-	&lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code></p>
+    &lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code></p>
 </blockquote>
 
 <h3><a name="Dimensions,_Hierarchies,_Levels">Dimensions, Hierarchies, Levels</a></h3>
@@ -549,130 +549,130 @@ nullParentValue</code>:</p>
 
 <h4>Tuning parent-child hierarchies</h4>
 
-<p>There's one serious problem with the parent-child hierarchy defined above, 
-and that is the amount of work Mondrian has to do in order to compute 
+<p>There's one serious problem with the parent-child hierarchy defined above,
+and that is the amount of work Mondrian has to do in order to compute
 cell-totals. Let's suppose that the employee table contains the following data:</p>
 
 <blockquote>
 <table border="2" cellpadding="2" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" id="table3">
-	<tr>
-		<th colspan="3">employee</th>
-	</tr>
-	<tr>
-		<th>supervisor_id</th>
-		<th>employee_id</th>
-		<th>full_name</th>
-	</tr>
-	<tr>
-		<td>null</td>
-		<td>1</td>
-		<td>Frank</td>
-	</tr>
-	<tr>
-		<td>1</td>
-		<td>2</td>
-		<td>Bill</td>
-	</tr>
-	<tr>
-		<td>2</td>
-		<td>3</td>
-		<td>Eric</td>
-	</tr>
-	<tr>
-		<td>1</td>
-		<td>4</td>
-		<td>Jane</td>
-	</tr>
-	<tr>
-		<td>3</td>
-		<td>5</td>
-		<td>Mark</td>
-	</tr>
-	<tr>
-		<td>2</td>
-		<td>6</td>
-		<td>Carla</td>
-	</tr>
+    <tr>
+        <th colspan="3">employee</th>
+    </tr>
+    <tr>
+        <th>supervisor_id</th>
+        <th>employee_id</th>
+        <th>full_name</th>
+    </tr>
+    <tr>
+        <td>null</td>
+        <td>1</td>
+        <td>Frank</td>
+    </tr>
+    <tr>
+        <td>1</td>
+        <td>2</td>
+        <td>Bill</td>
+    </tr>
+    <tr>
+        <td>2</td>
+        <td>3</td>
+        <td>Eric</td>
+    </tr>
+    <tr>
+        <td>1</td>
+        <td>4</td>
+        <td>Jane</td>
+    </tr>
+    <tr>
+        <td>3</td>
+        <td>5</td>
+        <td>Mark</td>
+    </tr>
+    <tr>
+        <td>2</td>
+        <td>6</td>
+        <td>Carla</td>
+    </tr>
 </table>
 </blockquote>
 
-<p>If we want to compute the total salary budget for Bill, we need to add in the 
-salaries of Eric and Carla (who report to Bill) and Mark (who reports to Eric). 
-Usually Mondrian generates a SQL <code>GROUP BY</code> statement to compute 
-these totals, but there is no (generally available) SQL construct which can 
-traverse hierarchies. So by default, Mondrian generates one SQL statement per 
-supervisor, to retrieve and total all of that supervisor's direct reports.</p><p>This approach has a couple of drawbacks. First, the performance is not very 
-good if a hierarchy contains more than a hundred members. Second, because Mondrian implements the 
-&quot;distinct count&quot; aggregator by generating SQL, you 
-cannot define a &quot;distinct count&quot; member in any cube which contains a parent-child 
-hierarchy.</p><p>How can we solve these problems? The answer is to enhance the data so that Mondrian is able to retrieve the information it needs using standard SQL, 
+<p>If we want to compute the total salary budget for Bill, we need to add in the
+salaries of Eric and Carla (who report to Bill) and Mark (who reports to Eric).
+Usually Mondrian generates a SQL <code>GROUP BY</code> statement to compute
+these totals, but there is no (generally available) SQL construct which can
+traverse hierarchies. So by default, Mondrian generates one SQL statement per
+supervisor, to retrieve and total all of that supervisor's direct reports.</p><p>This approach has a couple of drawbacks. First, the performance is not very
+good if a hierarchy contains more than a hundred members. Second, because Mondrian implements the
+&quot;distinct count&quot; aggregator by generating SQL, you
+cannot define a &quot;distinct count&quot; member in any cube which contains a parent-child
+hierarchy.</p><p>How can we solve these problems? The answer is to enhance the data so that Mondrian is able to retrieve the information it needs using standard SQL,
 and Mondrian supports two ways of doing this.</p>
 
 <h5>Path column</h5>
 
-<p>The first approach is to add a 
+<p>The first approach is to add a
 path column to the employee table, like this:</p>
 
 <blockquote>
 <table border="2" cellpadding="2" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" id="table3">
-	<tr>
-		<th colspan="4">employee_plus_path</th>
-	</tr>
-	<tr>
-		<th>supervisor_id</th>
-		<th>employee_id</th>
-		<th>path</th>
-		<th>full_name</th>
-	</tr>
-	<tr>
-		<td>null</td>
-		<td>1</td>
-		<td>1</td>
-		<td>Frank</td>
-	</tr>
-	<tr>
-		<td>1</td>
-		<td>2</td>
-		<td>1.1</td>
-		<td>Bill</td>
-	</tr>
-	<tr>
-		<td>2</td>
-		<td>3</td>
-		<td>1.1.1</td>
-		<td>Eric</td>
-	</tr>
-	<tr>
-		<td>1</td>
-		<td>4</td>
-		<td>1.2</td>
-		<td>Jane</td>
-	</tr>
-	<tr>
-		<td>3</td>
-		<td>5</td>
-		<td>1.1.1.1</td>
-		<td>Mark</td>
-	</tr>
-	<tr>
-		<td>2</td>
-		<td>6</td>
-		<td>1.1.2</td>
-		<td>Carla</td>
-	</tr>
+    <tr>
+        <th colspan="4">employee_plus_path</th>
+    </tr>
+    <tr>
+        <th>supervisor_id</th>
+        <th>employee_id</th>
+        <th>path</th>
+        <th>full_name</th>
+    </tr>
+    <tr>
+        <td>null</td>
+        <td>1</td>
+        <td>1</td>
+        <td>Frank</td>
+    </tr>
+    <tr>
+        <td>1</td>
+        <td>2</td>
+        <td>1.1</td>
+        <td>Bill</td>
+    </tr>
+    <tr>
+        <td>2</td>
+        <td>3</td>
+        <td>1.1.1</td>
+        <td>Eric</td>
+    </tr>
+    <tr>
+        <td>1</td>
+        <td>4</td>
+        <td>1.2</td>
+        <td>Jane</td>
+    </tr>
+    <tr>
+        <td>3</td>
+        <td>5</td>
+        <td>1.1.1.1</td>
+        <td>Mark</td>
+    </tr>
+    <tr>
+        <td>2</td>
+        <td>6</td>
+        <td>1.1.2</td>
+        <td>Carla</td>
+    </tr>
 </table>
 </blockquote>
 
-<p>The path column describes the position of the record in the hierarchy. It has 
+<p>The path column describes the position of the record in the hierarchy. It has
 the property that, for any two records <i>x</i> and <i>y</i>, the SQL expression
-<code>x.path LIKE y.path || '%'</code> is true if and only if <i>x</i> is an 
-ancestor of <i>y</i>. Many databases can find the descendants of x efficiently 
-if there is an index on the path column. The catalog XML contains just one extra 
+<code>x.path LIKE y.path || '%'</code> is true if and only if <i>x</i> is an
+ancestor of <i>y</i>. Many databases can find the descendants of x efficiently
+if there is an index on the path column. The catalog XML contains just one extra
 attribute, <code>pathColumn</code>:</p>
 
 <blockquote>
 
-	<p><code>&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Employees&quot; foreignKey=&quot;employee_id&quot;&gt;<br>
+    <p><code>&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Employees&quot; foreignKey=&quot;employee_id&quot;&gt;<br>
 &nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All Employees&quot; primaryKey=&quot;employee_id&quot;&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> name=&quot;employee&quot;/&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Employee Id&quot; uniqueMembers=&quot;true&quot; type=&quot;Numeric&quot;<br>
@@ -686,111 +686,111 @@ attribute, <code>pathColumn</code>:</p>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> name=&quot;Education Level&quot; column=&quot;education_level&quot;/&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> name=&quot;Management Role&quot; column=&quot;management_role&quot;/&gt;<br>
 &nbsp;&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
-	&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</code></p>
+    &lt;/<a href="#XML_Dimension">Dimension</a>&gt;</code></p>
 </blockquote>
 
 <h5>Closure table</h5>
 
-<p>The second approach is to add a bridge table containing a record for every 
-employee/supervisor relationship, regardless of depth. (In mathematical terms, 
-this is called the 'symmetric transitive closure' of the employee/supervisor 
-relationship. The <code>distance</code> column is not strictly required, but it 
+<p>The second approach is to add a bridge table containing a record for every
+employee/supervisor relationship, regardless of depth. (In mathematical terms,
+this is called the 'symmetric transitive closure' of the employee/supervisor
+relationship. The <code>distance</code> column is not strictly required, but it
 makes it easier to populate the table.)</p>
 
 <blockquote>
 <table border="2" cellpadding="2" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" id="table3">
-	<tr>
-		<th colspan="3">employee_closure</th>
-	</tr>
-	<tr>
-		<th width="91">supervisor_id</th>
-		<th width="85">employee_id</th>
-		<th width="8">distance</th>
-	</tr>
-	<tr>
-		<td width="91">1</td>
-		<td width="85">1</td>
-		<td width="8">0</td>
-	</tr>
-	<tr>
-		<td width="91">1</td>
-		<td width="85">2</td>
-		<td width="8">1</td>
-	</tr>
-	<tr>
-		<td width="91">1</td>
-		<td width="85">3</td>
-		<td width="8">2</td>
-	</tr>
-	<tr>
-		<td width="91">1</td>
-		<td width="85">4</td>
-		<td width="8">1</td>
-	</tr>
-	<tr>
-		<td width="91">1</td>
-		<td width="85">5</td>
-		<td width="8">3</td>
-	</tr>
-	<tr>
-		<td width="91">1</td>
-		<td width="85">6</td>
-		<td width="8">2</td>
-	</tr>
-	<tr>
-		<td width="91">2</td>
-		<td width="85">2</td>
-		<td width="8">0</td>
-	</tr>
-	<tr>
-		<td width="91">2</td>
-		<td width="85">3</td>
-		<td width="8">1</td>
-	</tr>
-	<tr>
-		<td width="91">2</td>
-		<td width="85">5</td>
-		<td width="8">2</td>
-	</tr>
-	<tr>
-		<td width="91">2</td>
-		<td width="85">6</td>
-		<td width="8">1</td>
-	</tr>
-	<tr>
-		<td width="91">3</td>
-		<td width="85">3</td>
-		<td width="8">0</td>
-	</tr>
-	<tr>
-		<td width="91">3</td>
-		<td width="85">5</td>
-		<td width="8">1</td>
-	</tr>
-	<tr>
-		<td width="91">4</td>
-		<td width="85">4</td>
-		<td width="8">0</td>
-	</tr>
-	<tr>
-		<td width="91">5</td>
-		<td width="85">5</td>
-		<td width="8">0</td>
-	</tr>
-	<tr>
-		<td width="91">6</td>
-		<td width="85">6</td>
-		<td width="8">0</td>
-	</tr>
-	</table>
+    <tr>
+        <th colspan="3">employee_closure</th>
+    </tr>
+    <tr>
+        <th width="91">supervisor_id</th>
+        <th width="85">employee_id</th>
+        <th width="8">distance</th>
+    </tr>
+    <tr>
+        <td width="91">1</td>
+        <td width="85">1</td>
+        <td width="8">0</td>
+    </tr>
+    <tr>
+        <td width="91">1</td>
+        <td width="85">2</td>
+        <td width="8">1</td>
+    </tr>
+    <tr>
+        <td width="91">1</td>
+        <td width="85">3</td>
+        <td width="8">2</td>
+    </tr>
+    <tr>
+        <td width="91">1</td>
+        <td width="85">4</td>
+        <td width="8">1</td>
+    </tr>
+    <tr>
+        <td width="91">1</td>
+        <td width="85">5</td>
+        <td width="8">3</td>
+    </tr>
+    <tr>
+        <td width="91">1</td>
+        <td width="85">6</td>
+        <td width="8">2</td>
+    </tr>
+    <tr>
+        <td width="91">2</td>
+        <td width="85">2</td>
+        <td width="8">0</td>
+    </tr>
+    <tr>
+        <td width="91">2</td>
+        <td width="85">3</td>
+        <td width="8">1</td>
+    </tr>
+    <tr>
+        <td width="91">2</td>
+        <td width="85">5</td>
+        <td width="8">2</td>
+    </tr>
+    <tr>
+        <td width="91">2</td>
+        <td width="85">6</td>
+        <td width="8">1</td>
+    </tr>
+    <tr>
+        <td width="91">3</td>
+        <td width="85">3</td>
+        <td width="8">0</td>
+    </tr>
+    <tr>
+        <td width="91">3</td>
+        <td width="85">5</td>
+        <td width="8">1</td>
+    </tr>
+    <tr>
+        <td width="91">4</td>
+        <td width="85">4</td>
+        <td width="8">0</td>
+    </tr>
+    <tr>
+        <td width="91">5</td>
+        <td width="85">5</td>
+        <td width="8">0</td>
+    </tr>
+    <tr>
+        <td width="91">6</td>
+        <td width="85">6</td>
+        <td width="8">0</td>
+    </tr>
+    </table>
 </blockquote>
 
-<p>In the catalog XML, the <code>&lt;<a href="#XML_Closure">Closure</a>&gt;</code> 
+<p>In the catalog XML, the <code>&lt;<a href="#XML_Closure">Closure</a>&gt;</code>
 element maps the level onto a <code>&lt;<a href="#XML_Table">Table</a>&gt;</code>:</p>
 
 <blockquote>
 
-	<p><code>&lt;;<a href="#XML_Dimension">Dimension</a> name=&quot;Employees&quot; foreignKey=&quot;employee_id&quot;&gt;<br>
+    <p><code>&lt;;<a href="#XML_Dimension">Dimension</a> name=&quot;Employees&quot; foreignKey=&quot;employee_id&quot;&gt;<br>
 &nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All Employees&quot; primaryKey=&quot;employee_id&quot;&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> name=&quot;employee&quot;/&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Employee Id&quot; uniqueMembers=&quot;true&quot; type=&quot;Numeric&quot;<br>
@@ -798,8 +798,8 @@ element maps the level onto a <code>&lt;<a href="#XML_Table">Table</a>&gt;</code
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; parentColumn=&quot;supervisor_id&quot; nullParentValue=&quot;0&quot;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pathColumn=&quot;path&quot;&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Closure">Closure</a> parentColumn=&quot;supervisor_id&quot; childColumn=&quot;employee_id&quot;&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> 
-	name=&quot;employee_closure&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a>
+    name=&quot;employee_closure&quot;/&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Closure">Closure</a>&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> name=&quot;Marital Status&quot; column=&quot;marital_status&quot;/&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> name=&quot;Position Title&quot; column=&quot;position_title&quot;/&gt;<br>
@@ -808,28 +808,28 @@ element maps the level onto a <code>&lt;<a href="#XML_Table">Table</a>&gt;</code
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> name=&quot;Education Level&quot; column=&quot;education_level&quot;/&gt;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> name=&quot;Management Role&quot; column=&quot;management_role&quot;/&gt;<br>
 &nbsp;&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
-	&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</code></p>
+    &lt;/<a href="#XML_Dimension">Dimension</a>&gt;</code></p>
 </blockquote>
 
-<p>Once again, this table allows totals to be evaluated in pure SQL. Even though 
-this introduces an table into the query, database optimizers are very good at 
-handling joins, and this structure is more efficient than the 'path' approach 
-for most databases. I recommend that you declare both <code>supervisor_id</code> 
+<p>Once again, this table allows totals to be evaluated in pure SQL. Even though
+this introduces an table into the query, database optimizers are very good at
+handling joins, and this structure is more efficient than the 'path' approach
+for most databases. I recommend that you declare both <code>supervisor_id</code>
 and <code>employee_id</code> NOT NULL, and index them as follows:</p>
 
 <blockquote>
 
-	<p><code>CREATE UNIQUE INDEX employee_closure_pk ON employee_closure (<br>
+    <p><code>CREATE UNIQUE INDEX employee_closure_pk ON employee_closure (<br>
 &nbsp;&nbsp; supervisor_id,<br>
 &nbsp;&nbsp; employee_id<br>
-	);<br>
-	CREATE INDEX employee_closure_emp ON employee_closure (<br>
+    );<br>
+    CREATE INDEX employee_closure_emp ON employee_closure (<br>
 &nbsp;&nbsp; employee_id<br>
-	);</code></p>
+    );</code></p>
 </blockquote>
 
-<p>The table needs to be re-populated whenever the hierarchy changes, and it is 
-the application's responsibility to do so -- Mondrian does not do this! 
+<p>The table needs to be re-populated whenever the hierarchy changes, and it is
+the application's responsibility to do so -- Mondrian does not do this!
 Here is an example of a stored procedure that computes a closure table.</p>
 
 <blockquote><code><pre>
@@ -843,7 +843,7 @@ Here is an example of a stored procedure that computes a closure table.</p>
       SELECT employee_id, employee_id, distance
         FROM employee;
 
-    <i>-- for each pair (root, leaf) in the closure, 
+    <i>-- for each pair (root, leaf) in the closure,
     -- add (root, leaf->child) from the base table</i>
     REPEAT
       SET distance = distance + 1;
@@ -858,7 +858,7 @@ Here is an example of a stored procedure that computes a closure table.</p>
 </pre></code></blockquote>
 
 
-<h3><a name="Member_properties">Member properties</a></h3><p>Member properties are defined by the <code><a href="#XML_Property">&lt;Property&gt;</a></code element. You use them via the <code><i>member</i>.Properties(&quot;<i>propertyName</i>&quot;)</code> 
+<h3><a name="Member_properties">Member properties</a></h3><p>Member properties are defined by the <code><a href="#XML_Property">&lt;Property&gt;</a></code element. You use them via the <code><i>member</i>.Properties(&quot;<i>propertyName</i>&quot;)</code>
 function, for example::</p><blockquote>
   <preSELECT {[Store Sales]} ON COLUMNS,
     TopCount(Filter([Store].[Store Name].Members,
@@ -1032,13 +1032,13 @@ traffic-lighting</p><h2><a name="Appendix_A_XML_elements">Appendix A: XML elemen
     <td><code>&lt;<a name="XML_Level" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Level">Level</a>&gt;</code></td><td>&nbsp;</td>
   </tr>
   <tr>
-    <td><code>&lt;<a name="XML_Property" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Property">Property</a>&gt;</code></td><td>Member property. The definition is a hierarchy or level, but the 
-	property will be available to all members.</td></tr><tr>
+    <td><code>&lt;<a name="XML_Property" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Property">Property</a>&gt;</code></td><td>Member property. The definition is a hierarchy or level, but the
+    property will be available to all members.</td></tr><tr>
     <td><code>&lt;<a name="XML_Measure" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Measure">Measure</a>&gt;</code></td><td>&nbsp;</td>
   </tr>
   <tr>
-    <td><code>&lt;<a href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#CalculatedMember" name="XML_CalculatedMember">CalculatedMember</a>&gt;</code></td><td>A member whose value is derived using a formula, defined as part of a 
-	cube.</td></tr><tr>
+    <td><code>&lt;<a href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#CalculatedMember" name="XML_CalculatedMember">CalculatedMember</a>&gt;</code></td><td>A member whose value is derived using a formula, defined as part of a
+    cube.</td></tr><tr>
     <td colspan="2"><i>Physical elements</i></td></tr><tr>
     <td><code>&lt;<a name="XML_Table" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Table">Table</a>&gt;</code></td><td>Fact- or dimension table.</td></tr><tr>
     <td><code>&lt;<a name="XML_View" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#View">View</a>&gt;</code></td><td>Defines a 'table' using a SQL query, which can have

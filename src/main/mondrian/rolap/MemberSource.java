@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2003 Kana Software, Inc. and others.
+// (C) Copyright 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -44,64 +44,64 @@ import java.util.List;
  * @version $Id$
  **/
 public interface MemberSource {
-	/** Returns the hierarchy that this source is reading for. **/
-	RolapHierarchy getHierarchy();
-	/**
-	 * Sets the cache which this <code>MemberSource</code> will write to.
-	 *
-	 * <p>Cache-writeback is optional (for example, {@link SqlMemberSource}
-	 * supports it, and {@link ArrayMemberSource} does not), and the return
-	 * value from this method indicates whether this object supports it.
-	 *
-	 * <p>If this method returns <code>true</code>, the {@link #getMembers},
-	 * {@link #getRootMembers} and {@link #getMemberChildren} methods must
-	 * write to the cache, in addition to returning members as a return value.
-	 *
-	 * @param cache The <code>MemberCache</code> which the caller would like
-	 *   this <code>MemberSource</code> to write to.
-	 * @return Whether this <code>MemberSource</code> supports cache-writeback.
-	 **/
-	boolean setCache(MemberCache cache);
-	/**
-	 * Returns all members of this hierarchy, sorted by ordinal.
-	 *
-	 * <p>If this object {@link #setCache supports cache-writeaback}, also
-	 * writes these members to the cache.
-	 **/
-	RolapMember[] getMembers();
-	/**
-	 * Returns all members of this hierarchy which do not have a parent,
-	 * sorted by ordinal.
-	 *
-	 * <p>If this object {@link #setCache supports cache-writeback}, also
-	 * writes these members to the cache.
-	 *
-	 * @return {@link List} of {@link RolapMember}s
-	 **/
-	List getRootMembers();
-	/**
-	 * Writes all children <code>parentMember</code> to <code>children</code>.
-	 *
-	 * <p>If this object {@link #setCache supports cache-writeback}, also
-	 * writes these members to the cache.
-	 **/
-	void getMemberChildren(RolapMember parentMember, List children);
-	/**
-	 * Returns all members which are a child of one of the members in
-	 * <code>parentMembers</code>, sorted by ordinal.
-	 *
-	 * <p>If this object {@link #setCache supports cache-writeaback}, also
-	 * writes these members to the cache.
-	 **/
-	void getMemberChildren(List parentMembers, List children);
-	/**
-	 * Returns an estimate of number of members in this hierarchy.
-	 **/
-	int getMemberCount();
-	/**
-	 * Finds a member based upon its unique name.
-	 **/
-	RolapMember lookupMember(String[] uniqueNameParts, boolean failIfNotFound);
+    /** Returns the hierarchy that this source is reading for. **/
+    RolapHierarchy getHierarchy();
+    /**
+     * Sets the cache which this <code>MemberSource</code> will write to.
+     *
+     * <p>Cache-writeback is optional (for example, {@link SqlMemberSource}
+     * supports it, and {@link ArrayMemberSource} does not), and the return
+     * value from this method indicates whether this object supports it.
+     *
+     * <p>If this method returns <code>true</code>, the {@link #getMembers},
+     * {@link #getRootMembers} and {@link #getMemberChildren} methods must
+     * write to the cache, in addition to returning members as a return value.
+     *
+     * @param cache The <code>MemberCache</code> which the caller would like
+     *   this <code>MemberSource</code> to write to.
+     * @return Whether this <code>MemberSource</code> supports cache-writeback.
+     **/
+    boolean setCache(MemberCache cache);
+    /**
+     * Returns all members of this hierarchy, sorted by ordinal.
+     *
+     * <p>If this object {@link #setCache supports cache-writeaback}, also
+     * writes these members to the cache.
+     **/
+    RolapMember[] getMembers();
+    /**
+     * Returns all members of this hierarchy which do not have a parent,
+     * sorted by ordinal.
+     *
+     * <p>If this object {@link #setCache supports cache-writeback}, also
+     * writes these members to the cache.
+     *
+     * @return {@link List} of {@link RolapMember}s
+     **/
+    List getRootMembers();
+    /**
+     * Writes all children <code>parentMember</code> to <code>children</code>.
+     *
+     * <p>If this object {@link #setCache supports cache-writeback}, also
+     * writes these members to the cache.
+     **/
+    void getMemberChildren(RolapMember parentMember, List children);
+    /**
+     * Returns all members which are a child of one of the members in
+     * <code>parentMembers</code>, sorted by ordinal.
+     *
+     * <p>If this object {@link #setCache supports cache-writeaback}, also
+     * writes these members to the cache.
+     **/
+    void getMemberChildren(List parentMembers, List children);
+    /**
+     * Returns an estimate of number of members in this hierarchy.
+     **/
+    int getMemberCount();
+    /**
+     * Finds a member based upon its unique name.
+     **/
+    RolapMember lookupMember(String[] uniqueNameParts, boolean failIfNotFound);
 }
 
 // End MemberSource.java

@@ -8,9 +8,9 @@ package javax.olap.query.edgefilters;
 public interface EdgeDrillFilter
 extends javax.olap.query.querycoremodel.EdgeFilter {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.query.enumerations.DrillType getDrillType()
     throws javax.olap.OLAPException;
@@ -18,9 +18,9 @@ extends javax.olap.query.querycoremodel.EdgeFilter {
   public void setDrillType( javax.olap.query.enumerations.DrillType value )
     throws javax.olap.OLAPException;
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.metadata.Hierarchy getHierarchy()
     throws javax.olap.OLAPException;

@@ -40,11 +40,11 @@ public final class AggregationKindEnum implements AggregationKind {
     }
 
     protected Object readResolve() throws java.io.ObjectStreamException {
-    	try {
-    		return forName(literalName);
-    	} catch ( IllegalArgumentException iae ) {
-    		throw new java.io.InvalidObjectException(iae.getMessage());
-    	}
+        try {
+            return forName(literalName);
+        } catch ( IllegalArgumentException iae ) {
+            throw new java.io.InvalidObjectException(iae.getMessage());
+        }
     }
   public static AggregationKind forName( java.lang.String value ) {
     if ( value.equals("none") ) return AggregationKindEnum.NONE;

@@ -25,7 +25,7 @@ public class JDBCTreeModel implements javax.swing.tree.TreeModel {
     DatabaseMetaData metadata;
     List catalogs;
     Node root;
-    
+
     /** Creates a new instance of JDBCTreeModel */
     public JDBCTreeModel(Connection c) {
         connection = c;
@@ -34,7 +34,7 @@ public class JDBCTreeModel implements javax.swing.tree.TreeModel {
             catalogs = new ArrayList();
             String catalogName = connection.getCatalog();
             Node cat = new Node(catalogName, Node.CATALOG);
-            
+
             ResultSet trs = metadata.getTables(cat.name, null, null, null);
             while (trs.next()) {
                 Node table = new Node(trs.getString(3), Node.TABLE);
@@ -47,13 +47,13 @@ public class JDBCTreeModel implements javax.swing.tree.TreeModel {
                 }
             }
             root = cat;
-                        
+
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
-    
-    
+
+
     /** Adds a listener for the <code>TreeModelEvent</code>
      * posted after the tree changes.
      *
@@ -64,7 +64,7 @@ public class JDBCTreeModel implements javax.swing.tree.TreeModel {
     public void addTreeModelListener(TreeModelListener l) {
         treeModelListeners.add(l);
     }
-    
+
     /** Returns the child of <code>parent</code> at index <code>index</code>
      * in the parent's
      * child array.  <code>parent</code> must be a node previously obtained
@@ -81,10 +81,10 @@ public class JDBCTreeModel implements javax.swing.tree.TreeModel {
         if (parent instanceof Node) {
             return ((Node)parent).children.get(index);
         }
-        
+
         return null;
     }
-    
+
     /** Returns the number of children of <code>parent</code>.
      * Returns 0 if the node
      * is a leaf or if it has no children.  <code>parent</code> must be a node
@@ -100,7 +100,7 @@ public class JDBCTreeModel implements javax.swing.tree.TreeModel {
         }
         return 0;
     }
-    
+
     /** Returns the index of child in parent.  If <code>parent</code>
      * is <code>null</code> or <code>child</code> is <code>null</code>,
      * returns -1.
@@ -115,10 +115,10 @@ public class JDBCTreeModel implements javax.swing.tree.TreeModel {
        if (parent instanceof Node) {
             return ((Node)parent).children.indexOf(child);
        }
-       
+
        return -1;
     }
-    
+
     /** Returns the root of the tree.  Returns <code>null</code>
      * only if the tree has no nodes.
      *
@@ -128,7 +128,7 @@ public class JDBCTreeModel implements javax.swing.tree.TreeModel {
     public Object getRoot() {
         return root;
     }
-    
+
     /** Returns <code>true</code> if <code>node</code> is a leaf.
      * It is possible for this method to return <code>false</code>
      * even if <code>node</code> has no children.
@@ -143,7 +143,7 @@ public class JDBCTreeModel implements javax.swing.tree.TreeModel {
     public boolean isLeaf(Object node) {
         return getChildCount(node) == 0;
     }
-    
+
     /** Removes a listener previously added with
      * <code>addTreeModelListener</code>.
      *
@@ -154,7 +154,7 @@ public class JDBCTreeModel implements javax.swing.tree.TreeModel {
     public void removeTreeModelListener(TreeModelListener l) {
         treeModelListeners.remove(l);
     }
-    
+
     /** Messaged when the user has altered the value for the item identified
      * by <code>path</code> to <code>newValue</code>.
      * If <code>newValue</code> signifies a truly new value
@@ -174,13 +174,13 @@ public class JDBCTreeModel implements javax.swing.tree.TreeModel {
         String name;
         int type;
         ArrayList children;
-        
+
         public Node(String n, int t) {
             name = n;
             type = t;
             children = new ArrayList();
         }
-        
+
         public String toString() {
             return name;
         }

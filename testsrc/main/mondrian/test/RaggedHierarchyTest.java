@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2004-2004 Julian Hyde
+// (C) Copyright 2004-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -93,7 +93,7 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
         assertRaggedReturns("[Store].[All Stores].[Mexico].[DF].Lead(-543)",
                 "");
     }
-    
+
     // disabled: (1) does not work with SmartMemberReader and (2) test returns [null] member
     public void dont_testDescendantsOfVatican() {
         assertRaggedReturns("Descendants([Store].[Vatican])",
@@ -183,7 +183,7 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
                 "[Store].[All Stores].[USA].[WA].[Spokane]" + nl +
                 "[Store].[All Stores].[Vatican]");
     }
-    
+
     /**
      * Make sure that the numbers are right! The Vatican is the tricky case,
      * because one of the columns is null, so the SQL generator might get

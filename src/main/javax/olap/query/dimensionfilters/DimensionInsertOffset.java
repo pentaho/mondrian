@@ -7,9 +7,9 @@ package javax.olap.query.dimensionfilters;
 
 public interface DimensionInsertOffset {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.query.dimensionfilters.DimensionFilter getDimensionFilter()
     throws javax.olap.OLAPException;

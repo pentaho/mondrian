@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -109,54 +109,54 @@ import java.util.ArrayList;
  * @version $Id$
  **/
 public class ResourceGenTask extends Task {
-	private ArrayList resources = new ArrayList();
+    private ArrayList resources = new ArrayList();
     int mode = MODE_JAVA;
-	File src;
-	File dest;
-	boolean statik = true;
-	String locales;
+    File src;
+    File dest;
+    boolean statik = true;
+    String locales;
 
     private static final int MODE_UNKNOWN = -1;
     private static final int MODE_JAVA = 1;
     private static final int MODE_CPP = 2;
     private static final int MODE_ALL = 3;
 
-	public ResourceGenTask() {
-	}
+    public ResourceGenTask() {
+    }
 
-	public void execute() throws BuildException {
-		validate();
-		try {
-			new ResourceGen().run(this);
-		} catch (IOException e) {
-			throw new BuildException(e);
-		}
-	}
+    public void execute() throws BuildException {
+        validate();
+        try {
+            new ResourceGen().run(this);
+        } catch (IOException e) {
+            throw new BuildException(e);
+        }
+    }
 
-	/** Called by ANT. **/
-	public void addInclude(Include resourceArgs) {
-		resources.add(resourceArgs);
-		resourceArgs.root = this;
-	}
-	void validate() {
+    /** Called by ANT. **/
+    public void addInclude(Include resourceArgs) {
+        resources.add(resourceArgs);
+        resourceArgs.root = this;
+    }
+    void validate() {
         if (mode != MODE_JAVA && mode != MODE_CPP && mode != MODE_ALL) {
             throw new BuildException("You must specify a value mode: java, c++, or all");
         }
 
-		if (src == null) {
-			throw new BuildException("You must specify 'srcdir'");
-		}
-		if (dest == null) {
-			dest = src;
-		}
-		final Include[] args = getIncludes();
-		for (int i = 0; i < args.length; i++) {
-			args[i].validate();
-		}
-	}
-	Include[] getIncludes() {
-		return (Include[]) resources.toArray(new Include[0]);
-	}
+        if (src == null) {
+            throw new BuildException("You must specify 'srcdir'");
+        }
+        if (dest == null) {
+            dest = src;
+        }
+        final Include[] args = getIncludes();
+        for (int i = 0; i < args.length; i++) {
+            args[i].validate();
+        }
+    }
+    Include[] getIncludes() {
+        return (Include[]) resources.toArray(new Include[0]);
+    }
 
     /** Sets <a href="#mode">mode</a>. **/
     public void setMode(String mode)
@@ -173,152 +173,152 @@ public class ResourceGenTask extends Task {
         }
     }
 
-	/** Sets <a href="#srcdir">srcdir</a>. **/
-	public void setSrcdir(File srcDir) {
-		this.src = srcDir;
-	}
-	/** Sets <a href="#srcdir">srcdir</a>. **/
-	public void setDestdir(File destDir) {
-		this.dest = destDir;
-	}
-	/** Sets <a href="#static">static</a>. **/
-	public void setStatic(boolean statik) throws BuildException {
-		this.statik = statik;
-		throw new BuildException(
-				"The 'static' parameter is not implemented yet");
-	}
-	/** Sets <a href="#locales">locales</a>. **/
-	public void setLocales(String locales) throws BuildException {
-		this.locales = locales;
-	}
+    /** Sets <a href="#srcdir">srcdir</a>. **/
+    public void setSrcdir(File srcDir) {
+        this.src = srcDir;
+    }
+    /** Sets <a href="#srcdir">srcdir</a>. **/
+    public void setDestdir(File destDir) {
+        this.dest = destDir;
+    }
+    /** Sets <a href="#static">static</a>. **/
+    public void setStatic(boolean statik) throws BuildException {
+        this.statik = statik;
+        throw new BuildException(
+                "The 'static' parameter is not implemented yet");
+    }
+    /** Sets <a href="#locales">locales</a>. **/
+    public void setLocales(String locales) throws BuildException {
+        this.locales = locales;
+    }
 
-	/**
-	 * <code>Include</code> implements &lt;include&gt; element nested
-	 * within a &lt;resgen&gt; task (see {@link ResourceGenTask}).
-	 *
-	 * <table border="2">
-	 * <tr>
-	 * <th>Attribute</th>
-	 * <th>Description</th>
-	 * <th>Required</th>
-	 * </tr>
-	 *
-	 * <tr>
-	 * <td><a name="name">name</a></td>
-	 * <td>The name, relative to <a href="#srcdir">srcdir</a>, of the XML file
-	 *     which defines the resources.</td>
-	 * <td>Yes</td>
-	 * </tr>
-	 *
-	 * <tr>
-	 * <td><a name="className">className</a></td>
-	 * <td>The name of the class to be generated, including the package, but
-	 *     not including any locale suffix. By default, the class name is
-	 *     derived from the name of the source file, for example
-	 *     <code>happy/BirthdayResource_en_US.xml</code> becomes class
-	 *     <code>happy.BirthdayResource</code>.</td>
-	 * <td>No</td>
-	 * </tr>
-	 * <tr>
+    /**
+     * <code>Include</code> implements &lt;include&gt; element nested
+     * within a &lt;resgen&gt; task (see {@link ResourceGenTask}).
      *
-	 * <td><a name="cppClassName">cppClassName</a></td>
-	 * <td>The name of the C++ class to be generated.  By default, the class
+     * <table border="2">
+     * <tr>
+     * <th>Attribute</th>
+     * <th>Description</th>
+     * <th>Required</th>
+     * </tr>
+     *
+     * <tr>
+     * <td><a name="name">name</a></td>
+     * <td>The name, relative to <a href="#srcdir">srcdir</a>, of the XML file
+     *     which defines the resources.</td>
+     * <td>Yes</td>
+     * </tr>
+     *
+     * <tr>
+     * <td><a name="className">className</a></td>
+     * <td>The name of the class to be generated, including the package, but
+     *     not including any locale suffix. By default, the class name is
+     *     derived from the name of the source file, for example
+     *     <code>happy/BirthdayResource_en_US.xml</code> becomes class
+     *     <code>happy.BirthdayResource</code>.</td>
+     * <td>No</td>
+     * </tr>
+     * <tr>
+     *
+     * <td><a name="cppClassName">cppClassName</a></td>
+     * <td>The name of the C++ class to be generated.  By default, the class
      *     name is derived from the name of the source file, for example
-	 *     <code>happy/BirthdayResource_en_US.xml</code> becomes class
-	 *     <code>happy.BirthdayResource</code>.</td>
-	 * <td>No</td>
-	 * </tr>
-	 *
-	 * <tr>
-	 * <td><a name="baseClassName">baseClassName</a></td>
-	 * <td>The fully-qualified name of the base class of the resource bundle.
-	 *     Defaults to "mondrian.resource.ShadowResourceBundle".</td>
-	 * <td>No</td>
-	 * </tr>
+     *     <code>happy/BirthdayResource_en_US.xml</code> becomes class
+     *     <code>happy.BirthdayResource</code>.</td>
+     * <td>No</td>
+     * </tr>
      *
-	 * <tr>
-	 * <td><a name="cppBaseClassName">cppBaseClassName</a></td>
-	 * <td>The fully-qualified name of the base class of the resource bundle
+     * <tr>
+     * <td><a name="baseClassName">baseClassName</a></td>
+     * <td>The fully-qualified name of the base class of the resource bundle.
+     *     Defaults to "mondrian.resource.ShadowResourceBundle".</td>
+     * <td>No</td>
+     * </tr>
+     *
+     * <tr>
+     * <td><a name="cppBaseClassName">cppBaseClassName</a></td>
+     * <td>The fully-qualified name of the base class of the resource bundle
      *     for C++.  Defaults to "ResourceBundle".</td>
-	 * <td>No</td>
-	 * </tr>
-	 *
-	 * </table>
-	 */
-	public static class Include {
-		public Include() {
-		}
-		ResourceGenTask root;
-		/** Name of source file, relative to 'srcdir'. **/
-		String fileName;
-		/** Class name. **/
-		String className;
-		/** Base class. */
-		String baseClassName;
+     * <td>No</td>
+     * </tr>
+     *
+     * </table>
+     */
+    public static class Include {
+        public Include() {
+        }
+        ResourceGenTask root;
+        /** Name of source file, relative to 'srcdir'. **/
+        String fileName;
+        /** Class name. **/
+        String className;
+        /** Base class. */
+        String baseClassName;
 
         /** C++ Class name. **/
         String cppClassName;
-		/** C++ Base class. */
-		String cppBaseClassName;
+        /** C++ Base class. */
+        String cppBaseClassName;
 
-		void validate() throws BuildException {
-			if (fileName == null) {
-				throw new BuildException("You must specify attribute 'name'");
-			}
-		}
-		void process(ResourceGen generator) throws BuildException {
-			ResourceGen.FileTask task;
+        void validate() throws BuildException {
+            if (fileName == null) {
+                throw new BuildException("You must specify attribute 'name'");
+            }
+        }
+        void process(ResourceGen generator) throws BuildException {
+            ResourceGen.FileTask task;
 
             boolean outputJava = (root.mode != ResourceGenTask.MODE_CPP);
             boolean outputCpp = (root.mode != ResourceGenTask.MODE_JAVA);
 
-			if (fileName.endsWith(".xml")) {
-				task = generator.createXmlTask(this, fileName,
+            if (fileName.endsWith(".xml")) {
+                task = generator.createXmlTask(this, fileName,
                                        className, baseClassName, outputJava,
                                        cppClassName, cppBaseClassName,
                                        outputCpp);
-			} else if (fileName.endsWith(".properties")) {
-				task = generator.createPropertiesTask(this, fileName);
-			} else {
-				throw new BuildException(
-							"File '" + fileName + "' is not of a supported " +
-							"type (.java or .properties)");
-			}
-			try {
-				task.process(generator);
-			} catch (IOException e) {
-				e.printStackTrace();
-				throw new BuildException(
-						"Failed while processing '" + fileName + "'", e);
-			}
-		}
-		/** Sets <a href="#name">name</a>. **/
-		public void setName(String name) {
-			this.fileName = name;
-		}
-		/** Sets <a href="#className">className</a>. **/
-		public void setClassName(String className) {
-			this.className = className;
-		}
-		/** Sets <a href="#baseClassName">baseClassName</a>. **/
-		public void setBaseClassName(String baseClassName) {
-			this.baseClassName = baseClassName;
-		}
-		String getBaseClassName() {
-			return baseClassName;
-		}
-		/** Sets <a href="#cppClassName">cppClassName</a>. **/
-		public void setCppClassName(String className) {
-			this.cppClassName = className;
-		}
-		/** Sets <a href="#cppBaseClassName">cppBaseClassName</a>. **/
-		public void setCppBaseClassName(String baseClassName) {
-			this.cppBaseClassName = baseClassName;
-		}
-		String getCppBaseClassName() {
-			return cppBaseClassName;
-		}
-	}
+            } else if (fileName.endsWith(".properties")) {
+                task = generator.createPropertiesTask(this, fileName);
+            } else {
+                throw new BuildException(
+                            "File '" + fileName + "' is not of a supported " +
+                            "type (.java or .properties)");
+            }
+            try {
+                task.process(generator);
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new BuildException(
+                        "Failed while processing '" + fileName + "'", e);
+            }
+        }
+        /** Sets <a href="#name">name</a>. **/
+        public void setName(String name) {
+            this.fileName = name;
+        }
+        /** Sets <a href="#className">className</a>. **/
+        public void setClassName(String className) {
+            this.className = className;
+        }
+        /** Sets <a href="#baseClassName">baseClassName</a>. **/
+        public void setBaseClassName(String baseClassName) {
+            this.baseClassName = baseClassName;
+        }
+        String getBaseClassName() {
+            return baseClassName;
+        }
+        /** Sets <a href="#cppClassName">cppClassName</a>. **/
+        public void setCppClassName(String className) {
+            this.cppClassName = className;
+        }
+        /** Sets <a href="#cppBaseClassName">cppBaseClassName</a>. **/
+        public void setCppBaseClassName(String baseClassName) {
+            this.cppBaseClassName = baseClassName;
+        }
+        String getCppBaseClassName() {
+            return cppBaseClassName;
+        }
+    }
 
 }
 

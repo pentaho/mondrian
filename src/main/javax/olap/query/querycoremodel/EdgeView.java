@@ -8,9 +8,9 @@ package javax.olap.query.querycoremodel;
 public interface EdgeView
 extends javax.olap.query.querycoremodel.Ordinate {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.query.querycoremodel.CubeView getPageOwner()
     throws javax.olap.OLAPException;
@@ -39,9 +39,9 @@ extends javax.olap.query.querycoremodel.Ordinate {
   public java.util.Collection getTuple()
     throws javax.olap.OLAPException;
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public javax.olap.cursor.EdgeCursor createCursor()
     throws javax.olap.OLAPException;

@@ -8,9 +8,9 @@ package javax.olap.query.dimensionfilters;
 public interface SingleMemberFilter
 extends javax.olap.query.dimensionfilters.DimensionFilter {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.metadata.Member getMember()
     throws javax.olap.OLAPException;

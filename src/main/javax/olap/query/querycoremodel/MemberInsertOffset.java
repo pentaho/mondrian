@@ -8,9 +8,9 @@ package javax.olap.query.querycoremodel;
 public interface MemberInsertOffset
 extends javax.olap.query.dimensionfilters.DimensionInsertOffset {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.metadata.Member getMember()
     throws javax.olap.OLAPException;

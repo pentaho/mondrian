@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2003 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -26,26 +26,26 @@ import java.util.Collection;
  * @version $Id$
  **/
 class MondrianJolapMember extends ClassifierSupport implements Member {
-	mondrian.olap.Member member;
-	
-	public MondrianJolapMember(Dimension dimension) {
-	}
+    mondrian.olap.Member member;
 
-	// Object methods
+    public MondrianJolapMember(Dimension dimension) {
+    }
 
-	public Collection getSlot() {
-		throw new UnsupportedOperationException();
-	}
+    // Object methods
 
-	// Instance methods
+    public Collection getSlot() {
+        throw new UnsupportedOperationException();
+    }
 
-	public void setClassifier(Classifier input) {
-		throw new UnsupportedOperationException();
-	}
+    // Instance methods
 
-	public Classifier getClassifier() {
-		throw new UnsupportedOperationException();
-	}
+    public void setClassifier(Classifier input) {
+        throw new UnsupportedOperationException();
+    }
+
+    public Classifier getClassifier() {
+        throw new UnsupportedOperationException();
+    }
 }
 
 // End MondrianJolapMember.java

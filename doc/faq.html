@@ -44,7 +44,7 @@
   </ul></li>
   <li><a href="#Build_install">Build/install</a></li>
   <li><a href="#Performance">Performance</a><ul>
-    <li><a href="#cache_refresh">When I change the data in the RDBMS, the result 
+    <li><a href="#cache_refresh">When I change the data in the RDBMS, the result
     doesn't change even if i refresh the browser. Why is this?</a></li>
   </ul></li>
 </ul>
@@ -52,32 +52,32 @@
 <hr noshade color="#000000" size="1">
 
 <h2><a name="Applications">How do I use Mondrian in my application?</a></h2>
-<p>There are several ways. If you have a fixed set of queries which you'd like 
+<p>There are several ways. If you have a fixed set of queries which you'd like
 to display as HTML tables, use the tab library. <a href="../webapp/taglib.jsp">
 webapp/taglib.jsp</a> is an example of this.</p>
-<p dir="ltr">The JPivot project (<a href="http://jpivot.sourceforge.net">http://jpivot.sourceforge.net</a>) 
-is a JSP-based pivot table, and will allow you to dynamically explore a dataset 
+<p dir="ltr">The JPivot project (<a href="http://jpivot.sourceforge.net">http://jpivot.sourceforge.net</a>)
+is a JSP-based pivot table, and will allow you to dynamically explore a dataset
 over the web. It replaces the prototype pivot table <a href="../webapp/morph.jsp">webapp/morph.jsp</a>.</p>
 <p>You could also build a pivot table in a client technology such as Swing.</p>
 <h2><a name="API">Why doesn't Mondrian use a standard API?</a></h2>
-<p>Because there isn't one. MDX is a component of Microsoft's OLE DB for OLAP 
-standard which, as the name implies, only runs on Windows. Mondrian's API is 
-fairly similar in flavor to ADO MD (ActiveX Data Objects for Multidimensional), 
+<p>Because there isn't one. MDX is a component of Microsoft's OLE DB for OLAP
+standard which, as the name implies, only runs on Windows. Mondrian's API is
+fairly similar in flavor to ADO MD (ActiveX Data Objects for Multidimensional),
 a API which Microsoft built in order to make OLE DB for OLAP easier to use.</p>
-<p>XML for Analysis is pretty much OLE DB for OLAP expressed in Web Services 
-rather than COM, and therefore seems to offer a platform-neutral standard for 
-OLAP, but take-up seems to be limited to vendors who supported OLE DB for OLAP 
+<p>XML for Analysis is pretty much OLE DB for OLAP expressed in Web Services
+rather than COM, and therefore seems to offer a platform-neutral standard for
+OLAP, but take-up seems to be limited to vendors who supported OLE DB for OLAP
 already.</p>
-<p>The other query vendors failed to reach consensus several years ago with the 
+<p>The other query vendors failed to reach consensus several years ago with the
 OLAP Council API, and are now encamped on the JOLAP specification.</p>
 <p>We plan to provide a JOLAP API to Mondrian as soon as JOLAP is available.</p>
 <h2><a name="MDX_dialect">How does Mondrian's dialect of MDX differ from MSOLAP's?</a></h2>
 <p>Not very much.</p>
 <ol>
-  <li>The <code>StrToSet()</code> and <code>StrToTuple()</code> functions take 
+  <li>The <code>StrToSet()</code> and <code>StrToTuple()</code> functions take
   an extra parameter.</li>
   <li>Parsing is case-sensitive.</li>
-  <li>Pseudo-functions <code>Param()</code> and <code>ParamRef()</code> allow 
+  <li>Pseudo-functions <code>Param()</code> and <code>ParamRef()</code> allow
   you to create parameterized MDX statements.</li>
 </ol>
 <h2><a name="Extensiblity">How can Mondrian be extended?</a></h2>
@@ -85,28 +85,28 @@ OLAP Council API, and are now encamped on the JOLAP specification.</p>
 <p><i>todo</i>: Cell readers</p>
 <p><i>todo</i>: Member readers</p>
 <h2><a name="Scalability">Can Mondrian handle large datasets?</a></h2>
-<p>Yes, if your RDBMS can. We delegate the aggregation to the RDBMS, and if your 
-RDBMS happens to have materialized group by views created, your query will fly. 
-And the next time you run the same or a similar query, that will really fly, 
+<p>Yes, if your RDBMS can. We delegate the aggregation to the RDBMS, and if your
+RDBMS happens to have materialized group by views created, your query will fly.
+And the next time you run the same or a similar query, that will really fly,
 because the results will be in the aggregation cache.</p>
 <h2><a name="Tracing">How do I enable tracing?</a></h2>
 <p>To enable tracing, set <code>mondrian.trace.level</code> to 1 in <code>
-mondrian.properties</code>. You will see text and execution time of each SQL 
+mondrian.properties</code>. You will see text and execution time of each SQL
 statement, like this:</p>
 <blockquote>
-  <p dir="ltr"><font face="Courier">SqlMemberSource.getLevelMemberCount: 
-  executing sql [select count(*) as `c0` from (select distinct `store`.`store_country` 
+  <p dir="ltr"><font face="Courier">SqlMemberSource.getLevelMemberCount:
+  executing sql [select count(*) as `c0` from (select distinct `store`.`store_country`
   as `c0` from `store` as `store`) as `foo`], 110 ms<br>
-  SqlMemberSource.getMembers: executing sql [select distinct `store`.`store_sqft` 
+  SqlMemberSource.getMembers: executing sql [select distinct `store`.`store_sqft`
   as `c0` from `store` as `store` order by `store`.`store_sqft`], 50 ms</font></p>
 </blockquote>
 <p>Notes:</p>
 <ul>
   <li>If you are running mondrian from the command-line, or via Ant, <code>
   mondrian.properties</code> should be in the current directory.</li>
-  <li>If you are running in Tomcat, <code>mondrian.properties</code> should be 
-  in <i></i><code><i>TOMCAT_HOME</i>/bin</code>. Changes will only take effect 
-  when you re-start Tomcat. The output goes to the console from which you 
+  <li>If you are running in Tomcat, <code>mondrian.properties</code> should be
+  in <i></i><code><i>TOMCAT_HOME</i>/bin</code>. Changes will only take effect
+  when you re-start Tomcat. The output goes to the console from which you
   started Tomcat.</li>
 </ul>
 
@@ -125,31 +125,31 @@ mondrian.olap.DriverManager.getConnection(String connectString, boolean fresh)</
 <h2><a name="Further_reading">Where can I find out more?</a></h2>
 <p>
 <a href="http://www.amazon.com/exec/obidos/tg/detail/-/0471400467/ref=pd_bxgy_text_1/002-1268646-6661668?v=glance&s=books">
-<i>MDX Solutions with Microsoft SQL Server Analysis Services</i> by George 
-Spofford</a> is the best book I have found on MDX. Despite the title,  principles 
+<i>MDX Solutions with Microsoft SQL Server Analysis Services</i> by George
+Spofford</a> is the best book I have found on MDX. Despite the title,  principles
 it describes can be applied to any RDBMS.</p>
 <p>
 <a href="http://www.amazon.com/exec/obidos/tg/detail/-/0471400300/ref=pd_sim_books_4/002-1268646-6661668?v=glance&s=books">
 <i>OLAP Solutions: Building Multidimensional Information Systems</i>
-by Erik Thomsen</a> is a great overview of multidimensional databases, but does 
+by Erik Thomsen</a> is a great overview of multidimensional databases, but does
 not deal with MDX.</p>
 <p>
 The reference work on data warehousing is
 <a href="http://www.amazon.com/exec/obidos/tg/detail/-/0471200247/qid=1038277569/sr=1-2/ref=sr_1_2/002-1268646-6661668?v=glance&s=books">
-<i>The Data Warehouse Toolkit: The Complete Guide to Dimensional Modeling (Second 
-Edition)</i>, by Ralph Kimball, Margy Ross</a>. It covers the business process 
+<i>The Data Warehouse Toolkit: The Complete Guide to Dimensional Modeling (Second
+Edition)</i>, by Ralph Kimball, Margy Ross</a>. It covers the business process
 well, but the focus is more on star schemas and ROLAP than OLAP.</font></span></p>
 <p>
 The
 <a href="http://msdn.microsoft.com/library/en-us/olapdmad/agmdxbasics_04qg.asp">
-Microsoft Analysis Services online documentation</a> has excellent online 
+Microsoft Analysis Services online documentation</a> has excellent online
 documentation of MDX, including a
 <a href="http://msdn.microsoft.com/library/en-us/olapdmad/agmdxfunctions_9elw.asp">
 list of MDX functions</a>.</p>
 <h2><a name="Feedback">Mondrian is wonderful! How can I possibly thank you?</a></h2>
-<p>We'd <a href="mailto:jhyde@users.sourceforge.net">love to hear</a> what you liked and didn't like about 
-it. If you can think of ways that Mondrian can be improved, roll up your sleeves 
-and help make it better. If you use Mondrian in your application, consider 
+<p>We'd <a href="mailto:jhyde@users.sourceforge.net">love to hear</a> what you liked and didn't like about
+it. If you can think of ways that Mondrian can be improved, roll up your sleeves
+and help make it better. If you use Mondrian in your application, consider
 sharing your work so that everyone can use it.</p>
 
 <hr noshade color="#000000">
@@ -168,13 +168,13 @@ sharing your work so that everyone can use it.</p>
 
 <hr noshade color="#000000" size="1">
 
-<h3><a name="fact_table_based_upon_query">How can I define my fact table based 
+<h3><a name="fact_table_based_upon_query">How can I define my fact table based
 on an arbitrary SQL statement?</a></h3>
 
-<p>Use the &lt;View&gt; element INSTEAD OF the &lt;Table&gt; element. You need to specify 
+<p>Use the &lt;View&gt; element INSTEAD OF the &lt;Table&gt; element. You need to specify
 the 'alias' attribute, which Mondrian uses as a table alias.</p>
 
-<p>The XML 'CDATA' construct is useful in case there are strange characters in 
+<p>The XML 'CDATA' construct is useful in case there are strange characters in
 your SQL, but isn't essential.</p>
 
 <pre>&lt;View alias=&quot;DFACD_filtered&quot;&gt;
@@ -190,8 +190,8 @@ your SQL, but isn't essential.</p>
 <p>Consider this scenario. I have created some tables in Oracle, like this:</p>
 
 <blockquote><pre>CREATE TABLE sales (
-    prodid INTEGER, 
-    day INTEGER, 
+    prodid INTEGER,
+    day INTEGER,
     amount NUMBER);</pre></blockquote>
 
 <p>and referenced it in my schema.xml like this:</p>
@@ -203,30 +203,30 @@ your SQL, but isn't essential.</p>
     &lt;Measure name=&quot;Sales count&quot; column=&quot;prodid&quot; aggregator=&quot;count&quot;/&gt;
 &lt;/Cube&gt;</pre></blockquote>
 
-<p>Now I start up Mondrian and get an error 
-<code>ORA-00942: Table or view &quot;sales&quot; does not exist</code> while executing the 
+<p>Now I start up Mondrian and get an error
+<code>ORA-00942: Table or view &quot;sales&quot; does not exist</code> while executing the
 SQL statement
-<code>SELECT &quot;prodid&quot;, count(*) FROM &quot;sales&quot; GROUP BY &quot;prodid&quot;</code>. The query 
+<code>SELECT &quot;prodid&quot;, count(*) FROM &quot;sales&quot; GROUP BY &quot;prodid&quot;</code>. The query
 looks valid, and the table exists, so why is Oracle giving an error?</p>
 
-<p>The problem is that table and column names are case-sensitive. You told 
+<p>The problem is that table and column names are case-sensitive. You told
 Mondrian to look for a table called &quot;sales&quot;, not &quot;SALES&quot; or &quot;Sales&quot;.
 
-<p>Oracle's table and column names are case-sensitive too, provided that you 
+<p>Oracle's table and column names are case-sensitive too, provided that you
 enclose them in double-quotes, like this:
 
 <blockquote><pre>CREATE TABLE &quot;sales&quot; (
-    &quot;prodid&quot; INTEGER, 
-    &quot;day&quot; INTEGER, 
+    &quot;prodid&quot; INTEGER,
+    &quot;day&quot; INTEGER,
     &quot;amount&quot; NUMBER);</pre></blockquote>
 
-<p>If you omit the double-quotes, Oracle automatically converts the identifiers 
-to upper-case, so the first <code>CREATE TABLE</code> command actually created a 
-table called &quot;SALES&quot;. When the query gets run, Mondrian is looking for a table 
-called &quot;sales&quot; (because that's what you called it in your schema.xml), yet 
+<p>If you omit the double-quotes, Oracle automatically converts the identifiers
+to upper-case, so the first <code>CREATE TABLE</code> command actually created a
+table called &quot;SALES&quot;. When the query gets run, Mondrian is looking for a table
+called &quot;sales&quot; (because that's what you called it in your schema.xml), yet
 Oracle only has a table called &quot;SALES&quot;.</p>
 
-<p>There are two possible solutions. The simplest is to change the objects to 
+<p>There are two possible solutions. The simplest is to change the objects to
 upper-case in your schema.xml file:</p>
 
 <blockquote><pre>&lt;Cube name=&quot;Sales&quot;&gt;
@@ -236,9 +236,9 @@ upper-case in your schema.xml file:</p>
     &lt;Measure name=&quot;Sales count&quot; column=&quot;<b><font color="#FF0000">PRODID</font></b>&quot; aggregator=&quot;count&quot;/&gt;
 &lt;/Cube&gt;</pre></blockquote>
 
-<p>Alternatively, if you decide you would like your table and column names to be 
-in lower or mixed case (or even, for that matter, to contain spaces), then you 
-must double-quote object names when you issue <code>CREATE TABLE</code> 
+<p>Alternatively, if you decide you would like your table and column names to be
+in lower or mixed case (or even, for that matter, to contain spaces), then you
+must double-quote object names when you issue <code>CREATE TABLE</code>
 statements to Oracle.</p>
 
 <hr noshade color="#000000" size="1">
@@ -248,45 +248,45 @@ statements to Oracle.</p>
 <h3><a name="compilation_errors">I get compilation errors? Why is this?</a></h3>
 <p>For example:</p>
 <blockquote>
-<p><code>&quot;SchemaTreeModel.java&quot;: Error #: 302 : cannot access class 
-MondrianDef.Schema; java.io.IOException: class not found: class 
+<p><code>&quot;SchemaTreeModel.java&quot;: Error #: 302 : cannot access class
+MondrianDef.Schema; java.io.IOException: class not found: class
 MondrianDef.Schema at line 29, column 14</code></p>
 </blockquote>
-<p>You can't just compile the source code using your IDE; you must build using 
-ant, as described in the <a href="install.html">build instructions</a>. This is 
-because several Java classes, such as <code>mondrian.olap.MondrianDef</code> (as 
+<p>You can't just compile the source code using your IDE; you must build using
+ant, as described in the <a href="install.html">build instructions</a>. This is
+because several Java classes, such as <code>mondrian.olap.MondrianDef</code> (as
 in this case), <code>mondrian.olap.MondrianResource</code> and <code>
-mondrian.olap.Parser</code> are generated from other files. I recommend that you 
+mondrian.olap.Parser</code> are generated from other files. I recommend that you
 do <code>ant clean</code> before trying to build again.</p>
 <p>Another example:</p>
 <blockquote>
-<p><code>&quot;NamedObject.java&quot;: Error #: 704 : cannot access directory 
+<p><code>&quot;NamedObject.java&quot;: Error #: 704 : cannot access directory
 javax\jmi\reflect at line 4, column 1</code></p>
 </blockquote>
-<p>You don't have the correct JAR files (in this case, <code>lib/jmi.jar</code>) 
+<p>You don't have the correct JAR files (in this case, <code>lib/jmi.jar</code>)
 on your classpath. Again, you should have followed the <a href="install.html">
-build instructions</a>. This problem often happens when people try to build 
-using an IDE. You must use ant for the first ever build, but you may be able to 
+build instructions</a>. This problem often happens when people try to build
+using an IDE. You must use ant for the first ever build, but you may be able to
 setup your IDE to do incremental builds.</p>
 
 <hr noshade color="#000000" size="1">
 
 <h2><a name="Performance">Performance</a></h2>
-<h3><a name="cache_refresh">When I change the data in the RDBMS, the result 
+<h3><a name="cache_refresh">When I change the data in the RDBMS, the result
 doesn't change even if i refresh the browser. Why is this?</a></h3>
-<p>Mondrian uses a cache to improve performance. The first time you run a query, 
-Mondrian will execute various SQL statements to load the data (you can see these 
-statements by turning on tracing). The next time, it will use the information in 
+<p>Mondrian uses a cache to improve performance. The first time you run a query,
+Mondrian will execute various SQL statements to load the data (you can see these
+statements by turning on tracing). The next time, it will use the information in
 the cache.</p>
-<p>Cache control is primitive right now. If the data in the RDBMS is modified, 
-Mondrian has no way to know, and does not refresh its cache. If you are using 
-the JPivot web ui and refresh the browser, that will simply regenerate the web 
-page, not flush the cache. The only way to refresh the cache is to call the 
+<p>Cache control is primitive right now. If the data in the RDBMS is modified,
+Mondrian has no way to know, and does not refresh its cache. If you are using
+the JPivot web ui and refresh the browser, that will simply regenerate the web
+page, not flush the cache. The only way to refresh the cache is to call the
 following piece of code, which flushes the entire contents:</p>
 <blockquote>
   <p><code>mondrian.rolap.CachePool.instance().flush();</code></p>
 </blockquote>
-<p>See <a href="components.html#caching">caching design</a> for more 
+<p>See <a href="components.html#caching">caching design</a> for more
 information.</p>
 
 <hr noshade color="#000000" size="1">
@@ -306,6 +306,6 @@ information.</p>
     </td>
   </tr>
 </table>
-  
+
 </body>
 </html>

@@ -8,9 +8,9 @@ package javax.olap.query.querycoremodel;
 public interface DimensionStepManager
 extends javax.olap.query.querycoremodel.NamedObject {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.query.querycoremodel.DimensionView getDimensionView()
     throws javax.olap.OLAPException;
@@ -24,9 +24,9 @@ extends javax.olap.query.querycoremodel.NamedObject {
   public java.util.List getDimensionStep()
     throws javax.olap.OLAPException;
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public javax.olap.query.querycoremodel.DimensionStep createDimensionStep( javax.olap.query.enumerations.DimensionStepType stepType )
     throws javax.olap.OLAPException;

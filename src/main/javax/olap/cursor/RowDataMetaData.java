@@ -8,9 +8,9 @@ package javax.olap.cursor;
 public interface RowDataMetaData
 extends javax.olap.query.querycoremodel.NamedObject {
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public int getColumnCount()
     throws javax.olap.OLAPException;

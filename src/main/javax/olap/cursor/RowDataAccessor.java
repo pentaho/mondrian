@@ -7,9 +7,9 @@ package javax.olap.cursor;
 
 public interface RowDataAccessor {
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public java.io.InputStream getAsciiStream( int arg0 )
     throws javax.olap.OLAPException;

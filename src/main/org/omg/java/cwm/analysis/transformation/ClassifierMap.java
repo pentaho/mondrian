@@ -8,9 +8,9 @@ package org.omg.java.cwm.analysis.transformation;
 public interface ClassifierMap
 extends org.omg.java.cwm.objectmodel.core.Namespace {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.objectmodel.core.ProcedureExpression getFunction();
 
@@ -20,9 +20,9 @@ extends org.omg.java.cwm.objectmodel.core.Namespace {
 
   public void setFunctionDescription( java.lang.String value );
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.Collection getSource();
 

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2003 Julian Hyde
+// (C) Copyright 2003-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -27,13 +27,13 @@ public class Syntax extends EnumeratedValues.BasicValue {
      * <code>FUNCTION(args)</code>. **/
     public static final Syntax Function = new Syntax("Function", 0) {
         public void unparse(String fun, Exp[] args, PrintWriter pw) {
-			if (fun.equals("_Value")) {
-				// pseudo function evaluting a tuple value
-				if (args[0] instanceof FunCall && ((FunCall)args[0]).isCallToTuple()) {
-					((FunCall)args[0]).unparse(pw);
-					return;
-			    }
-			}
+            if (fun.equals("_Value")) {
+                // pseudo function evaluting a tuple value
+                if (args[0] instanceof FunCall && ((FunCall)args[0]).isCallToTuple()) {
+                    ((FunCall)args[0]).unparse(pw);
+                    return;
+                }
+            }
             ExpBase.unparseList(pw, args, fun + "(", ", ", ")");
         }
     };
@@ -222,8 +222,8 @@ public class Syntax extends EnumeratedValues.BasicValue {
     }
 
     private static String getTypeDescription(int type) {
-		return "<" + Category.instance.getDescription(type & Category.Mask) + ">";
-	}
+        return "<" + Category.instance.getDescription(type & Category.Mask) + ">";
+    }
 
     private static String getTypeDescriptionCommaList(int[] types, int start) {
         int initialSize = (types.length - start) * 16;

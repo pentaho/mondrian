@@ -6,8 +6,8 @@ import java.io.InputStream;
 import java.util.Collection;
 
 public interface XmiReader {
-    public Collection read(InputStream stream, String URI, RefPackage extent) 
+    public Collection read(InputStream stream, String URI, RefPackage extent)
         throws IOException, MalformedXMIException;
-    public Collection read(String URI, RefPackage extent) 
+    public Collection read(String URI, RefPackage extent)
         throws IOException, MalformedXMIException;
 }

@@ -4,7 +4,7 @@ package javax.jmi.reflect;
  * violated. (Supertype Closure rule can never be violated in JMI).
  */
 public class ClosureViolationException extends JmiException {
-    
+
     /**
      * Constructs an <code>ClosureViolationException</code> without detail message.
      * @param objectInError An instance that violated the closure rule.

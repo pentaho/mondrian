@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1999-2002 Kana Software, Inc. and others.
+// (C) Copyright 1999-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -17,11 +17,11 @@ package mondrian.olap;
  * {@link Walker}.
  **/
 interface Walkable {
-	/**
-	 * Returns an array of the object's children.  Those which are not {@link
-	 * Walkable} are ignored.
-	 **/
-	Object[] getChildren();
+    /**
+     * Returns an array of the object's children.  Those which are not {@link
+     * Walkable} are ignored.
+     **/
+    Object[] getChildren();
 }
 
 // End Walkable.java

@@ -27,132 +27,132 @@ import java.util.Collections;
  * @version $Id$
  **/
 public abstract class RolapSchemaReader implements SchemaReader {
-	private Role role;
-	private HashMap hierarchyReaders = new HashMap();
+    private Role role;
+    private HashMap hierarchyReaders = new HashMap();
     private RolapSchema schema;
 
-	RolapSchemaReader(Role role, RolapSchema schema) {
+    RolapSchemaReader(Role role, RolapSchema schema) {
         assert role != null : "precondition: role != null";
-		this.role = role;
+        this.role = role;
         this.schema = schema;
-	}
+    }
 
-	public Role getRole() {
-		return role;
-	}
+    public Role getRole() {
+        return role;
+    }
 
-	public Member[] getHierarchyRootMembers(Hierarchy hierarchy) {
-		final Role.HierarchyAccess hierarchyAccess = role.getAccessDetails(hierarchy);
-		Level firstLevel;
-		if (hierarchyAccess == null) {
-			firstLevel = hierarchy.getLevels()[0];
-		} else {
-			firstLevel = hierarchyAccess.getTopLevel();
-			if (firstLevel == null) {
-				firstLevel = hierarchy.getLevels()[0];
-			}
-		}
-		return getLevelMembers(firstLevel);
-	}
+    public Member[] getHierarchyRootMembers(Hierarchy hierarchy) {
+        final Role.HierarchyAccess hierarchyAccess = role.getAccessDetails(hierarchy);
+        Level firstLevel;
+        if (hierarchyAccess == null) {
+            firstLevel = hierarchy.getLevels()[0];
+        } else {
+            firstLevel = hierarchyAccess.getTopLevel();
+            if (firstLevel == null) {
+                firstLevel = hierarchy.getLevels()[0];
+            }
+        }
+        return getLevelMembers(firstLevel);
+    }
 
-	private synchronized MemberReader getMemberReader(Hierarchy hierarchy) {
-		MemberReader memberReader = (MemberReader) hierarchyReaders.get(hierarchy);
-		if (memberReader == null) {
-			memberReader = ((RolapHierarchy) hierarchy).getMemberReader(role);
-			hierarchyReaders.put(hierarchy, memberReader);
-		}
-		return memberReader;
-	}
+    private synchronized MemberReader getMemberReader(Hierarchy hierarchy) {
+        MemberReader memberReader = (MemberReader) hierarchyReaders.get(hierarchy);
+        if (memberReader == null) {
+            memberReader = ((RolapHierarchy) hierarchy).getMemberReader(role);
+            hierarchyReaders.put(hierarchy, memberReader);
+        }
+        return memberReader;
+    }
 
-	public void getMemberRange(Level level, Member startMember, Member endMember, List list) {
-		getMemberReader(level.getHierarchy()).getMemberRange(
-				(RolapLevel) level, (RolapMember) startMember, (RolapMember) endMember, list);
-	}
+    public void getMemberRange(Level level, Member startMember, Member endMember, List list) {
+        getMemberReader(level.getHierarchy()).getMemberRange(
+                (RolapLevel) level, (RolapMember) startMember, (RolapMember) endMember, list);
+    }
 
-	public int compareMembersHierarchically(Member m1, Member m2) {
-		final RolapHierarchy hierarchy = (RolapHierarchy) m1.getHierarchy();
-		Util.assertPrecondition(hierarchy == m2.getHierarchy());
-		return getMemberReader(hierarchy).compare((RolapMember) m1, (RolapMember) m2, true);
-	}
+    public int compareMembersHierarchically(Member m1, Member m2) {
+        final RolapHierarchy hierarchy = (RolapHierarchy) m1.getHierarchy();
+        Util.assertPrecondition(hierarchy == m2.getHierarchy());
+        return getMemberReader(hierarchy).compare((RolapMember) m1, (RolapMember) m2, true);
+    }
 
-	public Member getMemberParent(Member member) {
-		Member parentMember = member.getParentMember();
+    public Member getMemberParent(Member member) {
+        Member parentMember = member.getParentMember();
         // Skip over hidden parents.
         while (parentMember != null && parentMember.isHidden()) {
             parentMember = parentMember.getParentMember();
         }
         // Skip over non-accessible parents.
-		if (parentMember != null) {
-			final Role.HierarchyAccess hierarchyAccess =
+        if (parentMember != null) {
+            final Role.HierarchyAccess hierarchyAccess =
                     role.getAccessDetails(member.getHierarchy());
-			if (hierarchyAccess != null &&
-					hierarchyAccess.getAccess(parentMember) == Access.NONE) {
-				return null;
-			}
-		}
-		return parentMember;
-	}
+            if (hierarchyAccess != null &&
+                    hierarchyAccess.getAccess(parentMember) == Access.NONE) {
+                return null;
+            }
+        }
+        return parentMember;
+    }
 
-	public int getMemberDepth(Member member) {
-		final Role.HierarchyAccess hierarchyAccess = role.getAccessDetails(member.getHierarchy());
-		if (hierarchyAccess != null) {
-			int memberDepth = member.getLevel().getDepth();
-			final Level topLevel = hierarchyAccess.getTopLevel();
-			if (topLevel != null) {
-				memberDepth -= topLevel.getDepth();
-			}
-			return memberDepth;
-		} else if (((RolapLevel) member.getLevel()).parentExp != null) {
-			// For members of parent-child hierarchy, members in the same level may have
-			// different depths.
-			int depth = 0;
-			for (Member m = member.getParentMember(); m != null; m = m.getParentMember()) {
-				depth++;
-			}
-			return depth;
-		} else {
-			return member.getLevel().getDepth();
-		}
-	}
+    public int getMemberDepth(Member member) {
+        final Role.HierarchyAccess hierarchyAccess = role.getAccessDetails(member.getHierarchy());
+        if (hierarchyAccess != null) {
+            int memberDepth = member.getLevel().getDepth();
+            final Level topLevel = hierarchyAccess.getTopLevel();
+            if (topLevel != null) {
+                memberDepth -= topLevel.getDepth();
+            }
+            return memberDepth;
+        } else if (((RolapLevel) member.getLevel()).parentExp != null) {
+            // For members of parent-child hierarchy, members in the same level may have
+            // different depths.
+            int depth = 0;
+            for (Member m = member.getParentMember(); m != null; m = m.getParentMember()) {
+                depth++;
+            }
+            return depth;
+        } else {
+            return member.getLevel().getDepth();
+        }
+    }
 
-	public Member[] getMemberChildren(Member member) {
-		ArrayList children = new ArrayList();
+    public Member[] getMemberChildren(Member member) {
+        ArrayList children = new ArrayList();
         final Hierarchy hierarchy = member.getHierarchy();
         final MemberReader memberReader = getMemberReader(hierarchy);
         memberReader.getMemberChildren((RolapMember) member, children);
-		return RolapUtil.toArray(children);
-	}
+        return RolapUtil.toArray(children);
+    }
 
     /**
      * check, whether members children are cached, and
      * if yes - return children counnt
      * if no  - return -1
      */
-	public int getChildrenCountFromCache(Member member) {
+    public int getChildrenCountFromCache(Member member) {
         final Hierarchy hierarchy = member.getHierarchy();
         final MemberReader memberReader = getMemberReader(hierarchy);
         if( !(memberReader instanceof MemberCache))
-        	return -1;
+            return -1;
         if (!((MemberCache)memberReader).hasChildren((RolapMember)member))
-        	return -1;
-		ArrayList children = new ArrayList();
+            return -1;
+        ArrayList children = new ArrayList();
         memberReader.getMemberChildren((RolapMember) member, children);
-		return children.size();
-	}
+        return children.size();
+    }
 
-	public Member[] getMemberChildren(Member[] members) {
-		if (members.length == 0) {
-			return RolapUtil.emptyMemberArray;
-		} else {
+    public Member[] getMemberChildren(Member[] members) {
+        if (members.length == 0) {
+            return RolapUtil.emptyMemberArray;
+        } else {
             final Hierarchy hierarchy = members[0].getHierarchy();
             final MemberReader memberReader = getMemberReader(hierarchy);
-			ArrayList children = new ArrayList();
-			for (int i = 0; i < members.length; i++) {
-				memberReader.getMemberChildren((RolapMember) members[i], children);
-			}
-			return RolapUtil.toArray(children);
-		}
-	}
+            ArrayList children = new ArrayList();
+            for (int i = 0; i < members.length; i++) {
+                memberReader.getMemberChildren((RolapMember) members[i], children);
+            }
+            return RolapUtil.toArray(children);
+        }
+    }
 
     public void getMemberDescendants(Member member, List result, Level level,
             boolean before, boolean self, boolean after) {
@@ -165,18 +165,18 @@ public abstract class RolapSchemaReader implements SchemaReader {
 
     public abstract Cube getCube();
 
-	public OlapElement getElementChild(OlapElement parent, String name) {
-		return parent.lookupChild(this, name);
-	}
+    public OlapElement getElementChild(OlapElement parent, String name) {
+        return parent.lookupChild(this, name);
+    }
 
-	public Member getMemberByUniqueName(
+    public Member getMemberByUniqueName(
         String[] uniqueNameParts,
         boolean failIfNotFound)
     {
         // In general, this schema reader doesn't have a cube, so we cannot
         // start looking up members.
         return null;
-	}
+    }
 
     public OlapElement lookupCompound(OlapElement parent, String[] names,
         boolean failIfNotFound, int category)
@@ -190,56 +190,56 @@ public abstract class RolapSchemaReader implements SchemaReader {
         return null;
     }
 
-	public Member getLeadMember(Member member, int n) {
-		return getMemberReader(member.getHierarchy()).getLeadMember((RolapMember) member, n);
-	}
+    public Member getLeadMember(Member member, int n) {
+        return getMemberReader(member.getHierarchy()).getLeadMember((RolapMember) member, n);
+    }
 
-	public Member[] getLevelMembers(Level level) {
+    public Member[] getLevelMembers(Level level) {
         final MemberReader memberReader = getMemberReader(level.getHierarchy());
         final List membersInLevel = memberReader.getMembersInLevel(
-					(RolapLevel) level, 0, Integer.MAX_VALUE);
-		return RolapUtil.toArray(membersInLevel);
-	}
+                    (RolapLevel) level, 0, Integer.MAX_VALUE);
+        return RolapUtil.toArray(membersInLevel);
+    }
 
-	public Level[] getHierarchyLevels(Hierarchy hierarchy) {
-		Util.assertPrecondition(hierarchy != null, "hierarchy != null");
-		final Role.HierarchyAccess hierarchyAccess = role.getAccessDetails(hierarchy);
-		final Level[] levels = hierarchy.getLevels();
-		if (hierarchyAccess == null) {
-			return levels;
-		}
-		Level topLevel = hierarchyAccess.getTopLevel();
-		Level bottomLevel = hierarchyAccess.getBottomLevel();
-		if (topLevel == null &&
-				bottomLevel == null) {
-			return levels;
-		}
-		if (topLevel == null) {
-			topLevel = levels[0];
-		}
-		if (bottomLevel == null) {
-			bottomLevel = levels[levels.length - 1];
-		}
-		final int levelCount = bottomLevel.getDepth() - topLevel.getDepth() + 1;
-		Level[] restrictedLevels = new Level[levelCount];
-		System.arraycopy(levels, topLevel.getDepth(), restrictedLevels, 0, levelCount);
-		Util.assertPostcondition(restrictedLevels.length >= 1, "return.length >= 1");
-		return restrictedLevels;
-	}
+    public Level[] getHierarchyLevels(Hierarchy hierarchy) {
+        Util.assertPrecondition(hierarchy != null, "hierarchy != null");
+        final Role.HierarchyAccess hierarchyAccess = role.getAccessDetails(hierarchy);
+        final Level[] levels = hierarchy.getLevels();
+        if (hierarchyAccess == null) {
+            return levels;
+        }
+        Level topLevel = hierarchyAccess.getTopLevel();
+        Level bottomLevel = hierarchyAccess.getBottomLevel();
+        if (topLevel == null &&
+                bottomLevel == null) {
+            return levels;
+        }
+        if (topLevel == null) {
+            topLevel = levels[0];
+        }
+        if (bottomLevel == null) {
+            bottomLevel = levels[levels.length - 1];
+        }
+        final int levelCount = bottomLevel.getDepth() - topLevel.getDepth() + 1;
+        Level[] restrictedLevels = new Level[levelCount];
+        System.arraycopy(levels, topLevel.getDepth(), restrictedLevels, 0, levelCount);
+        Util.assertPostcondition(restrictedLevels.length >= 1, "return.length >= 1");
+        return restrictedLevels;
+    }
 
-	public Member getHierarchyDefaultMember(Hierarchy hierarchy) {
+    public Member getHierarchyDefaultMember(Hierarchy hierarchy) {
         Util.assertPrecondition(hierarchy != null, "hierarchy != null");
         // if we have no access to this hierarchy at all, we return
         // the unrestricted default member (e.g. All member)
         if (role.getAccess(hierarchy) == Access.NONE) {
-        	return hierarchy.getDefaultMember();
+            return hierarchy.getDefaultMember();
         }
-		Member[] rootMembers = this.getHierarchyRootMembers(hierarchy);
-		if (rootMembers.length > 0) {
-			return rootMembers[0];
+        Member[] rootMembers = this.getHierarchyRootMembers(hierarchy);
+        if (rootMembers.length > 0) {
+            return rootMembers[0];
         }
-		return null;
-	}
+        return null;
+    }
 
     public boolean isDrillable(Member member) {
         final RolapLevel level = (RolapLevel) member.getLevel();

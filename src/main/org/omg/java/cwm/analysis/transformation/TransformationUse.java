@@ -8,17 +8,17 @@ package org.omg.java.cwm.analysis.transformation;
 public interface TransformationUse
 extends org.omg.java.cwm.objectmodel.core.Dependency {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public java.lang.String getType();
 
   public void setType( java.lang.String value );
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.Collection getTransformation();
 

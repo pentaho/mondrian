@@ -8,9 +8,9 @@ package javax.olap.cursor;
 public interface Timestamp
 extends javax.olap.query.querycoremodel.NamedObject {
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public javax.olap.cursor.Timestamp valueOf( java.lang.String s )
     throws javax.olap.OLAPException;

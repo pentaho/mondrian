@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2003 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -30,49 +30,49 @@ import java.util.List;
  * @version $Id$
  **/
 class MondrianCubeView extends QueryObjectSupport implements CubeView {
-	private OrderedRelationshipList pageEdge = new OrderedRelationshipList(Meta.pageEdge);
-	private OrderedRelationshipList ordinateEdge = new OrderedRelationshipList(Meta.ordinateEdge);
-	private OrderedRelationshipList defaultOrdinatePrecedence = new OrderedRelationshipList(Meta.defaultOrdinatePrecedence);
-	private RelationshipList cubeCursor = new RelationshipList(Meta.cubeCursor);
-	MondrianJolapConnection connection;
-	Cube cube;
+    private OrderedRelationshipList pageEdge = new OrderedRelationshipList(Meta.pageEdge);
+    private OrderedRelationshipList ordinateEdge = new OrderedRelationshipList(Meta.ordinateEdge);
+    private OrderedRelationshipList defaultOrdinatePrecedence = new OrderedRelationshipList(Meta.defaultOrdinatePrecedence);
+    private RelationshipList cubeCursor = new RelationshipList(Meta.cubeCursor);
+    MondrianJolapConnection connection;
+    Cube cube;
 
-	static abstract class Meta {
-		static final Relationship pageEdge = new Relationship(MondrianCubeCursor.class, "pageEdge", EdgeView.class, "pageOwner");
-		public static Relationship ordinateEdge = new Relationship(MondrianCubeView.class, "ordinateEdge", EdgeView.class, "ordinateOwner");
-		public static Relationship defaultOrdinatePrecedence = new Relationship(MondrianCubeView.class, "defaultOrdinatePrecedence", Ordinate.class);
-		public static Relationship cubeCursor = new Relationship(MondrianCubeView.class, "cubeCursor", CubeCursor.class);
-	}
+    static abstract class Meta {
+        static final Relationship pageEdge = new Relationship(MondrianCubeCursor.class, "pageEdge", EdgeView.class, "pageOwner");
+        public static Relationship ordinateEdge = new Relationship(MondrianCubeView.class, "ordinateEdge", EdgeView.class, "ordinateOwner");
+        public static Relationship defaultOrdinatePrecedence = new Relationship(MondrianCubeView.class, "defaultOrdinatePrecedence", Ordinate.class);
+        public static Relationship cubeCursor = new Relationship(MondrianCubeView.class, "cubeCursor", CubeCursor.class);
+    }
 
-	public MondrianCubeView(MondrianJolapConnection connection, Cube cube) {
-		super(true);
-		this.connection = connection;
-		this.cube = cube;
-	}
+    public MondrianCubeView(MondrianJolapConnection connection, Cube cube) {
+        super(true);
+        this.connection = connection;
+        this.cube = cube;
+    }
 
     public List getOrdinateEdge() throws OLAPException {
-		return ordinateEdge;
-	}
+        return ordinateEdge;
+    }
 
     public Collection getPageEdge() throws OLAPException {
-		return pageEdge;
-	}
+        return pageEdge;
+    }
 
     public List getDefaultOrdinatePrecedence() throws OLAPException {
         return defaultOrdinatePrecedence;
-	}
+    }
 
     public Collection getCubeCursor() throws OLAPException {
         return cubeCursor;
-	}
+    }
 
     public CubeCursor createCursor() throws OLAPException {
-		return (CubeCursor) cubeCursor.addNew(new MondrianCubeCursor(this));
-	}
+        return (CubeCursor) cubeCursor.addNew(new MondrianCubeCursor(this));
+    }
 
-	public EdgeView createOrdinateEdge() throws OLAPException {
-		return (EdgeView) ordinateEdge.addNew(new MondrianEdgeView(this, false));
-	}
+    public EdgeView createOrdinateEdge() throws OLAPException {
+        return (EdgeView) ordinateEdge.addNew(new MondrianEdgeView(this, false));
+    }
 
     public EdgeView createOrdinateEdgeBefore(EdgeView member) throws OLAPException {
         return (EdgeView) ordinateEdge.addBefore(member, new MondrianEdgeView(this, false));
@@ -82,25 +82,25 @@ class MondrianCubeView extends QueryObjectSupport implements CubeView {
         return (EdgeView) ordinateEdge.addAfter(member, new MondrianEdgeView(this, false));
     }
 
-	public EdgeView createPageEdge() throws OLAPException {
-		return (EdgeView) pageEdge.addNew(new MondrianEdgeView(this, true));
-	}
+    public EdgeView createPageEdge() throws OLAPException {
+        return (EdgeView) pageEdge.addNew(new MondrianEdgeView(this, true));
+    }
 
     public CalculationRelationship createCalculationRelationship() throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
+        throw new UnsupportedOperationException();
+    }
 
-	public void pivot(DimensionView dv, EdgeView source, EdgeView target) throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
+    public void pivot(DimensionView dv, EdgeView source, EdgeView target) throws OLAPException {
+        throw new UnsupportedOperationException();
+    }
 
-	public void pivot(DimensionView dv, EdgeView source, EdgeView target, int position) throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
+    public void pivot(DimensionView dv, EdgeView source, EdgeView target, int position) throws OLAPException {
+        throw new UnsupportedOperationException();
+    }
 
-	public void rotate(EdgeView edv1, EdgeView edv2) throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
+    public void rotate(EdgeView edv1, EdgeView edv2) throws OLAPException {
+        throw new UnsupportedOperationException();
+    }
 
     public Collection getCalculationRelationship() throws OLAPException {
         throw new UnsupportedOperationException();

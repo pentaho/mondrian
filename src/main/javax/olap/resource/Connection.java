@@ -8,9 +8,9 @@ package javax.olap.resource;
 public interface Connection
 extends javax.olap.resource.Abortable {
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public void close()
     throws javax.olap.OLAPException;

@@ -15,32 +15,32 @@ import java.lang.reflect.Field;
 public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
     String[] propertyNames;
     Object target;
-    
+
     public PropertyTableModel(Object t, String[] pNames) {
         super();
-        
+
         propertyNames = pNames;
         target = t;
     }
-    
+
     public String getColumnName(int i) {
         if (i == 0) {
             return "Property";
         } else if (i==1) {
             return "Value";
-        } 
-        
-        return "?";        
+        }
+
+        return "?";
     }
-    
+
     public boolean isCellEditable(int row, int col) {
         if (col == 1) {
             return true;
         }
-        
-        return false;        
+
+        return false;
     }
-    
+
     /** Returns the number of columns in the model. A
      * <code>JTable</code> uses this method to determine how many columns it
      * should create and display by default.
@@ -52,7 +52,7 @@ public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
     public int getColumnCount() {
         return 2; //that's 'Property' and 'Value'
     }
-    
+
     /** Returns the number of rows in the model. A
      * <code>JTable</code> uses this method to determine how many rows it
      * should display.  This method should be quick, as it
@@ -65,13 +65,13 @@ public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
     public int getRowCount() {
         return propertyNames.length;
     }
-    
+
     /** Returns the value for the cell at <code>columnIndex</code> and
      * <code>rowIndex</code>.
      *
-     * @param	rowIndex	the row whose value is to be queried
-     * @param	columnIndex 	the column whose value is to be queried
-     * @return	the value Object at the specified cell
+     * @param   rowIndex    the row whose value is to be queried
+     * @param   columnIndex     the column whose value is to be queried
+     * @return  the value Object at the specified cell
      *
      */
     public Object getValueAt(int rowIndex, int columnIndex) {
@@ -80,27 +80,27 @@ public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
         } else {
             try {
                 Field f = target.getClass().getField(propertyNames[rowIndex]);
-                
+
                 Object obj = f.get(target);
                 return obj;
             } catch (Exception ex) {
                 ex.printStackTrace();
                 return "#ERROR";
-            }            
-        }        
+            }
+        }
     }
-    
-	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-		try {
-			Field f = target.getClass().getField(propertyNames[rowIndex]);
-			f.set(target,aValue);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		} 		
-	}
-    
+
+    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+        try {
+            Field f = target.getClass().getField(propertyNames[rowIndex]);
+            f.set(target,aValue);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
     public Object getValue() {
-    	return target;
+        return target;
     }
-    
+
 }

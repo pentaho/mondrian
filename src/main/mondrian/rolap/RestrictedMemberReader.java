@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2004 Julian Hyde
+// (C) Copyright 2003-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -29,36 +29,36 @@ import java.util.List;
  * @version $Id$
  **/
 class RestrictedMemberReader extends DelegatingMemberReader {
-	private Role.HierarchyAccess hierarchyAccess;
+    private Role.HierarchyAccess hierarchyAccess;
     private final boolean ragged;
 
     /**
-	 * Creates a <code>RestrictedMemberReader</code>.
+     * Creates a <code>RestrictedMemberReader</code>.
      *
      * <p>There's no filtering to be done unless
      * either the role has restrictions on this hierarchy,
      * or the hierarchy is ragged; there's a pre-condition to this effect.</p>
      *
-	 * @param memberReader Underlying (presumably unrestricted) member reader
-	 * @param role Role whose access profile to obey. The role must have
-	 *   restrictions on this hierarchy
-	 * @pre role.getAccessDetails(memberReader.getHierarchy()) != null ||
+     * @param memberReader Underlying (presumably unrestricted) member reader
+     * @param role Role whose access profile to obey. The role must have
+     *   restrictions on this hierarchy
+     * @pre role.getAccessDetails(memberReader.getHierarchy()) != null ||
      *   memberReader.getHierarchy().isRagged()
-	 */
-	RestrictedMemberReader(MemberReader memberReader, Role role) {
-		super(memberReader);
+     */
+    RestrictedMemberReader(MemberReader memberReader, Role role) {
+        super(memberReader);
         RolapHierarchy hierarchy = memberReader.getHierarchy();
         hierarchyAccess = role.getAccessDetails(hierarchy);
         ragged = hierarchy.isRagged();
         Util.assertPrecondition(hierarchyAccess != null || ragged,
                 "role.getAccessDetails(memberReader.getHierarchy()) != " +
                 "null || hierarchy.isRagged()");
-	}
+    }
 
-	public boolean setCache(MemberCache cache) {
-		// Don't support cache-writeback. It would confuse the cache!
-		return false;
-	}
+    public boolean setCache(MemberCache cache) {
+        // Don't support cache-writeback. It would confuse the cache!
+        return false;
+    }
 
     public RolapMember getLeadMember(RolapMember member, int n) {
         int i = 0;
@@ -70,7 +70,7 @@ class RestrictedMemberReader extends DelegatingMemberReader {
         while (i < n) {
             member = memberReader.getLeadMember(member, increment);
             if (member.isNull())
-            	return member;
+                return member;
             if (canSee(member)) {
                 ++i;
             }
@@ -78,11 +78,11 @@ class RestrictedMemberReader extends DelegatingMemberReader {
         return member;
     }
 
-	public void getMemberChildren(RolapMember parentMember, List children) {
-		// todo: optimize if parentMember is beyond last level
-		ArrayList fullChildren = new ArrayList();
+    public void getMemberChildren(RolapMember parentMember, List children) {
+        // todo: optimize if parentMember is beyond last level
+        ArrayList fullChildren = new ArrayList();
         ArrayList grandChildren = null;
-		memberReader.getMemberChildren(parentMember, fullChildren);
+        memberReader.getMemberChildren(parentMember, fullChildren);
         for (int i = 0; i < fullChildren.size(); i++) {
             RolapMember member = (RolapMember) fullChildren.get(i);
             // If a child is hidden (due to raggedness) include its children.
@@ -119,21 +119,21 @@ class RestrictedMemberReader extends DelegatingMemberReader {
         }
     }
 
-	/**
-	 * Writes to members which we can see.
-	 * @param members Input list
-	 * @param filteredMembers Output list
-	 */
-	private void filterMembers(List members, List filteredMembers) {
-		for (int i = 0, n = members.size(); i < n; i++) {
-			RolapMember member = (RolapMember) members.get(i);
-			if (canSee(member)) {
-				filteredMembers.add(member);
-			}
-		}
-	}
+    /**
+     * Writes to members which we can see.
+     * @param members Input list
+     * @param filteredMembers Output list
+     */
+    private void filterMembers(List members, List filteredMembers) {
+        for (int i = 0, n = members.size(); i < n; i++) {
+            RolapMember member = (RolapMember) members.get(i);
+            if (canSee(member)) {
+                filteredMembers.add(member);
+            }
+        }
+    }
 
-	private boolean canSee(final RolapMember member) {
+    private boolean canSee(final RolapMember member) {
         if (ragged && member.isHidden()) {
             return false;
         }
@@ -142,14 +142,14 @@ class RestrictedMemberReader extends DelegatingMemberReader {
             return access != Access.NONE;
         }
         return true;
-	}
+    }
 
-	public void getMemberChildren(List parentMembers, List children) {
+    public void getMemberChildren(List parentMembers, List children) {
         for (Iterator i = parentMembers.iterator(); i.hasNext();) {
             RolapMember parentMember = (RolapMember) i.next();
             getMemberChildren(parentMember, children);
         }
-	}
+    }
 
     public List getMembersInLevel(RolapLevel level, int startOrdinal,
             int endOrdinal) {
@@ -164,12 +164,12 @@ class RestrictedMemberReader extends DelegatingMemberReader {
                 return Collections.EMPTY_LIST;
             }
         }
-		final List membersInLevel = super.getMembersInLevel(level,
+        final List membersInLevel = super.getMembersInLevel(level,
                 startOrdinal, endOrdinal);
-		ArrayList filteredMembers = new ArrayList();
-		filterMembers(membersInLevel, filteredMembers);
-		return filteredMembers;
-	}
+        ArrayList filteredMembers = new ArrayList();
+        filterMembers(membersInLevel, filteredMembers);
+        return filteredMembers;
+    }
 
     public void getMemberDescendants(RolapMember member, List result,
             RolapLevel level, boolean before, boolean self, boolean after) {

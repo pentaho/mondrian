@@ -41,11 +41,11 @@ public final class DirectionKindEnum implements DirectionKind {
     }
 
     protected Object readResolve() throws java.io.ObjectStreamException {
-    	try {
-    		return forName(literalName);
-    	} catch ( IllegalArgumentException iae ) {
-    		throw new java.io.InvalidObjectException(iae.getMessage());
-    	}
+        try {
+            return forName(literalName);
+        } catch ( IllegalArgumentException iae ) {
+            throw new java.io.InvalidObjectException(iae.getMessage());
+        }
     }
   public static DirectionKind forName( java.lang.String value ) {
     if ( value.equals("in_dir") ) return DirectionKindEnum.IN_DIR;

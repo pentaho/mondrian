@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2003 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -27,51 +27,51 @@ import javax.olap.query.querycoremodel.DimensionStepManager;
  * @version $Id$
  **/
 class MondrianDimensionCursor extends CursorSupport implements DimensionCursor {
-	private MondrianEdgeCursor edgeCursor;
+    private MondrianEdgeCursor edgeCursor;
 
-	public MondrianDimensionCursor(final MondrianEdgeCursor edgeCursor, final Axis axis, final int axisOffset) {
-		super(edgeCursor.navigator,
-				new Accessor() {
-					public Object getObject(int i) throws OLAPException {
-						int positionIndex = (int) edgeCursor.navigator.getPosition();
-						final Position position = axis.positions[positionIndex];
-						return position.members[axisOffset];
-					}
-				});
-		this.edgeCursor = edgeCursor;
-	}
+    public MondrianDimensionCursor(final MondrianEdgeCursor edgeCursor, final Axis axis, final int axisOffset) {
+        super(edgeCursor.navigator,
+                new Accessor() {
+                    public Object getObject(int i) throws OLAPException {
+                        int positionIndex = (int) edgeCursor.navigator.getPosition();
+                        final Position position = axis.positions[positionIndex];
+                        return position.members[axisOffset];
+                    }
+                });
+        this.edgeCursor = edgeCursor;
+    }
 
-	public long getEdgeStart() throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
+    public long getEdgeStart() throws OLAPException {
+        throw new UnsupportedOperationException();
+    }
 
-	public void setEdgeStart(long input) throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
+    public void setEdgeStart(long input) throws OLAPException {
+        throw new UnsupportedOperationException();
+    }
 
-	public long getEdgeEnd() throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
+    public long getEdgeEnd() throws OLAPException {
+        throw new UnsupportedOperationException();
+    }
 
-	public void setEdgeEnd(long input) throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
+    public void setEdgeEnd(long input) throws OLAPException {
+        throw new UnsupportedOperationException();
+    }
 
-	public void setEdgeCursor(EdgeCursor input) throws OLAPException {
-		this.edgeCursor = (MondrianEdgeCursor) input;
-	}
+    public void setEdgeCursor(EdgeCursor input) throws OLAPException {
+        this.edgeCursor = (MondrianEdgeCursor) input;
+    }
 
-	public EdgeCursor getEdgeCursor() throws OLAPException {
-		return edgeCursor;
-	}
+    public EdgeCursor getEdgeCursor() throws OLAPException {
+        return edgeCursor;
+    }
 
-	public void setCurrentDimensionStepManager(DimensionStepManager input) throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
+    public void setCurrentDimensionStepManager(DimensionStepManager input) throws OLAPException {
+        throw new UnsupportedOperationException();
+    }
 
-	public DimensionStepManager getCurrentDimensionStepManager() throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
+    public DimensionStepManager getCurrentDimensionStepManager() throws OLAPException {
+        throw new UnsupportedOperationException();
+    }
 }
 
 // End MondrianDimensionCursor.java

@@ -8,9 +8,9 @@ package org.omg.java.cwm.foundation.businessinformation;
 public interface Contact
 extends org.omg.java.cwm.objectmodel.core.ModelElement {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.List getEmail();
 

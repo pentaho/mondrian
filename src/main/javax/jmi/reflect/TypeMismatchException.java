@@ -6,7 +6,7 @@ package javax.jmi.reflect;
 public class TypeMismatchException extends JmiException {
 
     private final Class expectedType;
-    
+
     /**
      * Constructs an <code>TypeMismatchException</code> without detail message.
      * @param expectedType class of expected type.
@@ -29,11 +29,11 @@ public class TypeMismatchException extends JmiException {
         super(objectInError, elementInError, msg);
         this.expectedType = expectedType;
     }
-    
+
     /**
      * Returns class of expected type.
      * @return expected type.
-     */    
+     */
     public Class getExpectedType() {
         return expectedType;
     }

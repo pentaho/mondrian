@@ -18,219 +18,219 @@
  packageName="mondrian.olap"
  root="Schema"
  version="1.0">
-	<Doc>
+    <Doc>
 This is the XML model for Mondrian schemas.
 <p/>
 Revision is $Id$
-	</Doc>
+    </Doc>
 
-	<!-- Schema ========================================================== -->
-	<Element type="Schema">
-		<Doc>
-			A schema is a collection of cubes and shared dimensions.
-		</Doc>
-		<Attribute name="name" required="true">
-			<Doc>Name of this schema</Doc>
-		</Attribute>
-		<Attribute name="measuresCaption" required="false">
-			<Doc>Label for the measures dimension</Doc>
-		</Attribute>
-		<Attribute name="defaultRole" required="false">
-			<Doc>The name of the default schema for connections to this schema</Doc>
-		</Attribute>
-		<Array name="dimensions" type="Dimension"/>
-		<Array name="cubes" type="Cube"/>
-		<Array name="virtualCubes" type="VirtualCube"/>
-		<Array name="roles" type="Role"/>
-		<Code><![CDATA[
-			Cube getCube(String cubeName) {
-				for (int i = 0; i < cubes.length; i++) {
-					if (cubes[i].name.equals(cubeName)) {
-						return cubes[i];
-					}
-				}
-				throw Util.newInternal("Cannot find cube '" + cubeName + "'");
-			}
-			Dimension getPublicDimension(String dimensionName) {
-				for (int i = 0; i < dimensions.length; i++) {
-					if (dimensions[i].name.equals(dimensionName)) {
-						return dimensions[i];
-					}
-				}
-				throw Util.newInternal(
-					"Cannot find public dimension '" + dimensionName + "'");
-			}]]>
-		</Code>
-	</Element>
+    <!-- Schema ========================================================== -->
+    <Element type="Schema">
+        <Doc>
+            A schema is a collection of cubes and shared dimensions.
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>Name of this schema</Doc>
+        </Attribute>
+        <Attribute name="measuresCaption" required="false">
+            <Doc>Label for the measures dimension</Doc>
+        </Attribute>
+        <Attribute name="defaultRole" required="false">
+            <Doc>The name of the default schema for connections to this schema</Doc>
+        </Attribute>
+        <Array name="dimensions" type="Dimension"/>
+        <Array name="cubes" type="Cube"/>
+        <Array name="virtualCubes" type="VirtualCube"/>
+        <Array name="roles" type="Role"/>
+        <Code><![CDATA[
+            Cube getCube(String cubeName) {
+                for (int i = 0; i < cubes.length; i++) {
+                    if (cubes[i].name.equals(cubeName)) {
+                        return cubes[i];
+                    }
+                }
+                throw Util.newInternal("Cannot find cube '" + cubeName + "'");
+            }
+            Dimension getPublicDimension(String dimensionName) {
+                for (int i = 0; i < dimensions.length; i++) {
+                    if (dimensions[i].name.equals(dimensionName)) {
+                        return dimensions[i];
+                    }
+                }
+                throw Util.newInternal(
+                    "Cannot find public dimension '" + dimensionName + "'");
+            }]]>
+        </Code>
+    </Element>
 
-	<!-- CubeDimension ==================================================== -->
-	<Class class="CubeDimension">
-		<Doc>
-			A CubeDimension is either a usage of a Dimension ('shared
-			dimension', in MSOLAP parlance), or a 'private dimension'.
-		</Doc>
-		<Attribute name="name" required="true"/>
-		<Attribute name="foreignKey">
-			<Doc>
-				The name of the column in the fact table which joins
-				to the leaf level of this dimension. Required in a
-				private Dimension or a DimensionUsage, but not in a
-				public Dimension.
-			</Doc>
-		</Attribute>
-		<Code><![CDATA[
-			/**
-			 * Looks up the base dimension of this dimension. If this is a usage
-			 * of a shared dimension, returns the referenced dimension;
-			 * otherwise returns the dimension itself. 
-			 *
-			 * <p>Never returns null; if the dimension cannot be
-			 * found, throws an error.
-			 *
-			 * @param schema Schema, never null
-			 * @pre schema != null
-			 * @post return != null
-			 */
-			public abstract Dimension getDimension(Schema schema);]]>
-		</Code>
-	</Class>
+    <!-- CubeDimension ==================================================== -->
+    <Class class="CubeDimension">
+        <Doc>
+            A CubeDimension is either a usage of a Dimension ('shared
+            dimension', in MSOLAP parlance), or a 'private dimension'.
+        </Doc>
+        <Attribute name="name" required="true"/>
+        <Attribute name="foreignKey">
+            <Doc>
+                The name of the column in the fact table which joins
+                to the leaf level of this dimension. Required in a
+                private Dimension or a DimensionUsage, but not in a
+                public Dimension.
+            </Doc>
+        </Attribute>
+        <Code><![CDATA[
+            /**
+             * Looks up the base dimension of this dimension. If this is a usage
+             * of a shared dimension, returns the referenced dimension;
+             * otherwise returns the dimension itself.
+             *
+             * <p>Never returns null; if the dimension cannot be
+             * found, throws an error.
+             *
+             * @param schema Schema, never null
+             * @pre schema != null
+             * @post return != null
+             */
+            public abstract Dimension getDimension(Schema schema);]]>
+        </Code>
+    </Class>
 
-	<!-- Cube ============================================================ -->
-	<Element type="Cube">
-		<Doc>
-    		Definition of a cube.
-		</Doc>
-		<Attribute name="name" required="true">
-			<Doc>
-				Name of this cube.
-			</Doc>
-		</Attribute>
-		<Object name="fact" type="Relation" required="true">
-			<Doc>
-				The fact table is the source of all measures in this cube. If
-				this is a <link class="Table"/> and the schema name is not
-				present, table name is left unqualified.
-			</Doc>
-		</Object>
-		<Array name="dimensions" type="CubeDimension"><Doc></Doc></Array>
-		<Array name="measures" type="Measure"><Doc></Doc></Array>
-		<Array name="calculatedMembers" type="CalculatedMember">
-			<Doc>
-				Calculated members in this cube.
-			</Doc>
-		</Array>
-		<Code><![CDATA[
-			Dimension getDimension(Schema xmlSchema, String dimensionName) {
-				for (int i = 0; i < dimensions.length; i++) {
-					if (dimensions[i].name.equals(dimensionName)) {
-						return dimensions[i].getDimension(xmlSchema);
-					}
-				}
-				throw Util.newInternal(
-					"Cannot find dimension '" + dimensionName + "' in cube '" +
-					name + "'");
-			}]]>
-		</Code>
-	</Element>
+    <!-- Cube ============================================================ -->
+    <Element type="Cube">
+        <Doc>
+            Definition of a cube.
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of this cube.
+            </Doc>
+        </Attribute>
+        <Object name="fact" type="Relation" required="true">
+            <Doc>
+                The fact table is the source of all measures in this cube. If
+                this is a <link class="Table"/> and the schema name is not
+                present, table name is left unqualified.
+            </Doc>
+        </Object>
+        <Array name="dimensions" type="CubeDimension"><Doc></Doc></Array>
+        <Array name="measures" type="Measure"><Doc></Doc></Array>
+        <Array name="calculatedMembers" type="CalculatedMember">
+            <Doc>
+                Calculated members in this cube.
+            </Doc>
+        </Array>
+        <Code><![CDATA[
+            Dimension getDimension(Schema xmlSchema, String dimensionName) {
+                for (int i = 0; i < dimensions.length; i++) {
+                    if (dimensions[i].name.equals(dimensionName)) {
+                        return dimensions[i].getDimension(xmlSchema);
+                    }
+                }
+                throw Util.newInternal(
+                    "Cannot find dimension '" + dimensionName + "' in cube '" +
+                    name + "'");
+            }]]>
+        </Code>
+    </Element>
 
-	<!-- VirtualCube ====================================================== -->
-	<Element type="VirtualCube">
-		<Doc>
-			A <code>VirtualCube</code> is a set of dimensions and
-			measures gleaned from other cubes.
-		</Doc>
-		<Attribute name="name"><Doc></Doc></Attribute>
-		<Array name="dimensions" type="VirtualCubeDimension"><Doc></Doc></Array>
-		<Array name="measures" type="VirtualCubeMeasure"><Doc></Doc></Array>
-	</Element>
+    <!-- VirtualCube ====================================================== -->
+    <Element type="VirtualCube">
+        <Doc>
+            A <code>VirtualCube</code> is a set of dimensions and
+            measures gleaned from other cubes.
+        </Doc>
+        <Attribute name="name"><Doc></Doc></Attribute>
+        <Array name="dimensions" type="VirtualCubeDimension"><Doc></Doc></Array>
+        <Array name="measures" type="VirtualCubeMeasure"><Doc></Doc></Array>
+    </Element>
 
-	<!-- VirtualCubeDimension ============================================= -->
-	<Element type="VirtualCubeDimension" class="CubeDimension">
-		<Doc>
-			A VirtualCubeDimension is a usage of a Dimension in a VirtualCube.
-		</Doc>
-		<Attribute name="cubeName">
-			<Doc>
-				Name of the cube which the dimension belongs to, or
-				unspecified if the dimension is shared.
-			</Doc>
-		</Attribute>
-		<Attribute name="name"><Doc>
-			Name of the dimension.</Doc></Attribute>
-		<Code><![CDATA[
-			// implement CubeDimension
-			public Dimension getDimension(Schema schema) {
-				Util.assertPrecondition(schema != null, "schema != null");
-				if (cubeName == null) {
-					return schema.getPublicDimension(name);
-				} else {
-					Cube cube = schema.getCube(cubeName);
-					return cube.getDimension(schema, name);
-				}
-			}]]>
-		</Code>
-	</Element>
+    <!-- VirtualCubeDimension ============================================= -->
+    <Element type="VirtualCubeDimension" class="CubeDimension">
+        <Doc>
+            A VirtualCubeDimension is a usage of a Dimension in a VirtualCube.
+        </Doc>
+        <Attribute name="cubeName">
+            <Doc>
+                Name of the cube which the dimension belongs to, or
+                unspecified if the dimension is shared.
+            </Doc>
+        </Attribute>
+        <Attribute name="name"><Doc>
+            Name of the dimension.</Doc></Attribute>
+        <Code><![CDATA[
+            // implement CubeDimension
+            public Dimension getDimension(Schema schema) {
+                Util.assertPrecondition(schema != null, "schema != null");
+                if (cubeName == null) {
+                    return schema.getPublicDimension(name);
+                } else {
+                    Cube cube = schema.getCube(cubeName);
+                    return cube.getDimension(schema, name);
+                }
+            }]]>
+        </Code>
+    </Element>
 
-	<!-- VirtualCubeMeasure =============================================== -->
-	<Element type="VirtualCubeMeasure">
-		<Doc>
-			A VirtualCubeMeasure is a usage of a Measure in a VirtualCube.
-		</Doc>
-		<Attribute name="cubeName">
-			<Doc>
-				Name of the cube which the measure belongs to.
-			</Doc>
-		</Attribute>
-		<Attribute name="name">
-			<Doc>
-				Unique name of the measure within its cube.
-			</Doc>
-		</Attribute>
-	</Element>
+    <!-- VirtualCubeMeasure =============================================== -->
+    <Element type="VirtualCubeMeasure">
+        <Doc>
+            A VirtualCubeMeasure is a usage of a Measure in a VirtualCube.
+        </Doc>
+        <Attribute name="cubeName">
+            <Doc>
+                Name of the cube which the measure belongs to.
+            </Doc>
+        </Attribute>
+        <Attribute name="name">
+            <Doc>
+                Unique name of the measure within its cube.
+            </Doc>
+        </Attribute>
+    </Element>
 
-	<!-- DimensionUsage =================================================== -->
-	<Element type="DimensionUsage" class="CubeDimension">
-		<Doc>
-			A <code>DimensionUsage</code> is usage of a shared
-			Dimension within the context of a cube.
-		</Doc>
-		<Attribute name="source" required="true">
-			<Doc>Name of the source dimension. Must be a dimension in
-			this schema. Case-sensitive.</Doc>
-		</Attribute>
-		<Attribute name="level" required="false">
-			<Doc>
-				Name of the level to join to. If not specified, joins to the
-				lowest level of the dimension.
-			</Doc>
-		</Attribute>
-		<Code><![CDATA[
-			// implement CubeDimension
-			public Dimension getDimension(Schema schema) {
-				Util.assertPrecondition(schema != null, "schema != null");
-				for (int i = 0; i < schema.dimensions.length; i++) {
-					if (schema.dimensions[i].name.equals(source)) {
-						return schema.dimensions[i];
-					}
-				}
-				throw Util.newInternal(
-					"Cannot find shared dimension '" + source + "'");
-			}]]>
-		</Code>
-	</Element>
+    <!-- DimensionUsage =================================================== -->
+    <Element type="DimensionUsage" class="CubeDimension">
+        <Doc>
+            A <code>DimensionUsage</code> is usage of a shared
+            Dimension within the context of a cube.
+        </Doc>
+        <Attribute name="source" required="true">
+            <Doc>Name of the source dimension. Must be a dimension in
+            this schema. Case-sensitive.</Doc>
+        </Attribute>
+        <Attribute name="level" required="false">
+            <Doc>
+                Name of the level to join to. If not specified, joins to the
+                lowest level of the dimension.
+            </Doc>
+        </Attribute>
+        <Code><![CDATA[
+            // implement CubeDimension
+            public Dimension getDimension(Schema schema) {
+                Util.assertPrecondition(schema != null, "schema != null");
+                for (int i = 0; i < schema.dimensions.length; i++) {
+                    if (schema.dimensions[i].name.equals(source)) {
+                        return schema.dimensions[i];
+                    }
+                }
+                throw Util.newInternal(
+                    "Cannot find shared dimension '" + source + "'");
+            }]]>
+        </Code>
+    </Element>
 
-	<!-- Dimension ======================================================== -->
-	<Element type="Dimension" class="CubeDimension">
-		<Doc>
-			A <code>Dimension</code> is a collection of hierarchies. There are
-			two kinds: a <dfn>public</dfn> dimension belongs to a <link
-			class="Schema">schema</link>, and be used by several cubes; a
-			<dfn>private</dfn> dimension belongs to a
-			<link class="Cube">cube</link>. The
-			<link member="foreignKey">foreignKey</link> field is only
-			applicable to private dimensions.
-		</Doc>
-		<Attribute name="name" required="true"><Doc></Doc></Attribute>
+    <!-- Dimension ======================================================== -->
+    <Element type="Dimension" class="CubeDimension">
+        <Doc>
+            A <code>Dimension</code> is a collection of hierarchies. There are
+            two kinds: a <dfn>public</dfn> dimension belongs to a <link
+            class="Schema">schema</link>, and be used by several cubes; a
+            <dfn>private</dfn> dimension belongs to a
+            <link class="Cube">cube</link>. The
+            <link member="foreignKey">foreignKey</link> field is only
+            applicable to private dimensions.
+        </Doc>
+        <Attribute name="name" required="true"><Doc></Doc></Attribute>
         <Attribute name="type" required="false">
             <Doc>
                 The dimension's type may be one of "Standard" or "Time". A
@@ -244,18 +244,18 @@ Revision is $Id$
             <Value>TimeDimension</Value>
         </Attribute>
         <Attribute name="caption" required="false">
-			<Doc>
-				A string being displayed instead of the dimensions's name.
-			</Doc>
-		</Attribute>
-        
-		<Array name="hierarchies" type="Hierarchy"><Doc></Doc></Array>
-		<Code>
-			// implement CubeDimension
-			public Dimension getDimension(Schema schema) {
-				Util.assertPrecondition(schema != null, "schema != null");
-				return this;
-			}
+            <Doc>
+                A string being displayed instead of the dimensions's name.
+            </Doc>
+        </Attribute>
+
+        <Array name="hierarchies" type="Hierarchy"><Doc></Doc></Array>
+        <Code>
+            // implement CubeDimension
+            public Dimension getDimension(Schema schema) {
+                Util.assertPrecondition(schema != null, "schema != null");
+                return this;
+            }
 
             // Return the dimension's enumerated type.
             public DimensionType getDimensionType() {
@@ -265,251 +265,251 @@ Revision is $Id$
                     return (DimensionType) DimensionType.enumeration.getValue(type);
                 }
             }
-		</Code>
-	</Element>
+        </Code>
+    </Element>
 
-	<Element type="Hierarchy">
-		<Doc>
-			Defines a hierarchy.
+    <Element type="Hierarchy">
+        <Doc>
+            Defines a hierarchy.
 
-			<p/>You must specify at most one <code>&lt;Relation&gt;</code>
-			or <code>memberReaderClass</code>. If you specify none, the
-			hierarchy is assumed to come from the same fact table of the
-			current cube.
-		</Doc>
-		<Attribute name="name" required="false">
-			<Doc>
-				Name of the hierarchy. If this is not specified, the hierarchy
-				has the same name as its dimension.
-			</Doc>
-		</Attribute>
-		<Attribute name="hasAll" type="Boolean" required="true">
-			<Doc>
-				Whether this hierarchy has an 'all' member.
-			</Doc>
-		</Attribute>
-		<Attribute name="allMemberName" required="false">
-			<Doc>
-				Name of the 'all' member. If this attribute is not specified,
-				the all member is named 'All <i>hierarchyName</i>', for
-				example, 'All Store'. Note that the 'all' level is always
-				called '(All)'.
-			</Doc>
-		</Attribute>
-		<Attribute name="allMemberCaption" required="false">
-			<Doc>
-				A string being displayed instead as the all member's name.
-			</Doc>
-		</Attribute>
-		<Attribute name="primaryKey">
-			<Doc>
-				The name of the column which identifies members, and
-				which is referenced by rows in the fact table.
-				If not specified, the key of the lowest level is used.
-				See also <link class="CubeDimension"
-				member="foreignKey">CubeDimension.foreignKey</link>.
-			</Doc>
-		</Attribute>
-		<Attribute name="primaryKeyTable">
-			<Doc>
-				The name of the table which contains <code>primaryKey</code>.
-				If the hierarchy has only one table, defaults to that;
-				it is required.
-			</Doc>
-		</Attribute>
-		<Attribute name="defaultMember"><Doc></Doc></Attribute>
-		<Attribute name="memberReaderClass">
-			<Doc>
-				Name of the custom member reader class. Must implement
-				{@link Broadbase.olap.RolapConnection.MemberReader}.
-			</Doc>
-		</Attribute>
+            <p/>You must specify at most one <code>&lt;Relation&gt;</code>
+            or <code>memberReaderClass</code>. If you specify none, the
+            hierarchy is assumed to come from the same fact table of the
+            current cube.
+        </Doc>
+        <Attribute name="name" required="false">
+            <Doc>
+                Name of the hierarchy. If this is not specified, the hierarchy
+                has the same name as its dimension.
+            </Doc>
+        </Attribute>
+        <Attribute name="hasAll" type="Boolean" required="true">
+            <Doc>
+                Whether this hierarchy has an 'all' member.
+            </Doc>
+        </Attribute>
+        <Attribute name="allMemberName" required="false">
+            <Doc>
+                Name of the 'all' member. If this attribute is not specified,
+                the all member is named 'All <i>hierarchyName</i>', for
+                example, 'All Store'. Note that the 'all' level is always
+                called '(All)'.
+            </Doc>
+        </Attribute>
+        <Attribute name="allMemberCaption" required="false">
+            <Doc>
+                A string being displayed instead as the all member's name.
+            </Doc>
+        </Attribute>
+        <Attribute name="primaryKey">
+            <Doc>
+                The name of the column which identifies members, and
+                which is referenced by rows in the fact table.
+                If not specified, the key of the lowest level is used.
+                See also <link class="CubeDimension"
+                member="foreignKey">CubeDimension.foreignKey</link>.
+            </Doc>
+        </Attribute>
+        <Attribute name="primaryKeyTable">
+            <Doc>
+                The name of the table which contains <code>primaryKey</code>.
+                If the hierarchy has only one table, defaults to that;
+                it is required.
+            </Doc>
+        </Attribute>
+        <Attribute name="defaultMember"><Doc></Doc></Attribute>
+        <Attribute name="memberReaderClass">
+            <Doc>
+                Name of the custom member reader class. Must implement
+                {@link Broadbase.olap.RolapConnection.MemberReader}.
+            </Doc>
+        </Attribute>
         <Attribute name="caption" required="false">
-			<Doc>
-				A string being displayed instead of the hierarchie's name.
-			</Doc>
-		</Attribute>
-		
-		<Object name="relation" type="Relation">
-			<Doc>
-				The {@link MondrianDef.Table table},
-				{@link MondrianDef.Join set of tables}, or
-				{@link MondrianDef.View SQL statement} which populates this
-				hierarchy.
-			</Doc>
-		</Object>
-		<Array name="levels" type="Level"><Doc></Doc></Array>
-		<Array name="memberReaderParameters" type="Parameter"/>
-	</Element>
+            <Doc>
+                A string being displayed instead of the hierarchie's name.
+            </Doc>
+        </Attribute>
 
-	<Element type="Level">
-		<Attribute name="name"><Doc></Doc></Attribute>
-		<Attribute name="table" required="false">
-			<Doc>
-				The name of the table that the column comes from. If
-				this hierarchy is based upon just one table, defaults to
-				the name of that table; otherwise, it is required.
-			</Doc>
-		</Attribute>
-		<Attribute name="column">
-			<Doc>
-				The name of the column which holds the unique identifier of
-				this level.
-			</Doc>
-		</Attribute>
-		<Attribute name="nameColumn">
-			<Doc>
-				The name of the column which holds the user identifier of
-				this level.
-			</Doc>
-		</Attribute>
-		<Attribute name="ordinalColumn" required="false">
-			<Doc>
-				The name of the column which holds member
-				ordinals. Only applicable for the last level in a
-				hierarchy. If this column is not specified, the
-				hierarchy cannot be implemented in ROLAP mode.
-			</Doc>
-		</Attribute>
-		<Attribute name="parentColumn" required="false">
-			<Doc>
-				The name of the column which references the parent member in
-				a parent-child hierarchy.
-			</Doc>
-		</Attribute>
-		<Attribute name="nullParentValue" required="false">
-			<Doc>
-				Value which identifies null parents in a parent-child
-				hierarchy. Typical values are 'NULL' and '0'.
-			</Doc>
-		</Attribute>
-		<Attribute name="type" default="String">
-			<Doc>
-				Indicates the type of this level's key column: String or
-				Numeric. When generating SQL statements, Mondrian
-				encloses values for String columns in quotation marks,
-				but leaves values for Numeric columns un-quoted.
-			</Doc>
-			<Value>String</Value>
-			<Value>Numeric</Value>
-		</Attribute>
-		<Attribute name="uniqueMembers" type="Boolean" default="false">
-			<Doc>
-				Whether members are unique across all parents. For
-				example, zipcodes are unique across all states. The
-				first level's members are always unique.
-			</Doc>
-		</Attribute>
-		<Attribute name="levelType" required="false" default="Regular">
-			<Doc>
-				Whether this is a regular or a time-related level.
-				The value makes a difference to time-related functions
-				such as YTD (year-to-date).
-			</Doc>
-			<Value>Regular</Value>
-			<Value>TimeYears</Value>
-			<Value>TimeQuarters</Value>
-			<Value>TimeMonths</Value>
-			<Value>TimeWeeks</Value>
-			<Value>TimeDays</Value>
-		</Attribute>
-		<Attribute name="hideMemberIf" default="Never">
-			<Doc>
-				Condition which determines whether a member of this level
-				is hidden. If a hierarchy has one or more levels with hidden
-				members, then it is possible that not all leaf members are the
-				same distance from the root, and it is termed a <dfn>ragged
-				hierarchy</dfn>.
+        <Object name="relation" type="Relation">
+            <Doc>
+                The {@link MondrianDef.Table table},
+                {@link MondrianDef.Join set of tables}, or
+                {@link MondrianDef.View SQL statement} which populates this
+                hierarchy.
+            </Doc>
+        </Object>
+        <Array name="levels" type="Level"><Doc></Doc></Array>
+        <Array name="memberReaderParameters" type="Parameter"/>
+    </Element>
 
-				<p>Allowable values are:
-				<code>Never</code> (a member always appears; the default);
-				<code>IfBlankName</code> (a member doesn't appear if its name
-				is null or empty); and
-				<code>IfParentsName</code> (a member appears unless its name
-				matches the parent's.</p>
-			</Doc>
-			<Value>Never</Value>
-			<Value>IfBlankName</Value>
-			<Value>IfParentsName</Value>
-		</Attribute>
-		<Attribute name="formatter" required="false">
-			<Doc>
-				Name of a formatter class for the member labels being displayed.
-				The class must implement the mondrian.olap.MemberFormatter interface.
-			</Doc>
-		</Attribute>
-		<Attribute name="caption" required="false">
-			<Doc>
-				A string being displayed instead of the level's name.
-			</Doc>
-		</Attribute>
-		
-		<Object name="keyExp" type="KeyExpression" required="false">
-			<Doc>
-				The SQL expression used to populate this level's key.
-			</Doc>
-		</Object>
-		<Object name="nameExp" type="NameExpression" required="false">
-			<Doc>
-				The SQL expression used to populate this level's name. If not
-				specified, the level's key is used.
-			</Doc>
-		</Object>
-		<Object name="ordinalExp" type="OrdinalExpression" required="false">
-			<Doc>
-				The SQL expression used to populate this level's ordinal.
-			</Doc>
-		</Object>
-		<Object name="parentExp" type="ParentExpression" required="false">
-			<Doc>
-				The SQL expression used to join to the parent member in a
-				parent-child hierarchy.
-			</Doc>
-		</Object>
+    <Element type="Level">
+        <Attribute name="name"><Doc></Doc></Attribute>
+        <Attribute name="table" required="false">
+            <Doc>
+                The name of the table that the column comes from. If
+                this hierarchy is based upon just one table, defaults to
+                the name of that table; otherwise, it is required.
+            </Doc>
+        </Attribute>
+        <Attribute name="column">
+            <Doc>
+                The name of the column which holds the unique identifier of
+                this level.
+            </Doc>
+        </Attribute>
+        <Attribute name="nameColumn">
+            <Doc>
+                The name of the column which holds the user identifier of
+                this level.
+            </Doc>
+        </Attribute>
+        <Attribute name="ordinalColumn" required="false">
+            <Doc>
+                The name of the column which holds member
+                ordinals. Only applicable for the last level in a
+                hierarchy. If this column is not specified, the
+                hierarchy cannot be implemented in ROLAP mode.
+            </Doc>
+        </Attribute>
+        <Attribute name="parentColumn" required="false">
+            <Doc>
+                The name of the column which references the parent member in
+                a parent-child hierarchy.
+            </Doc>
+        </Attribute>
+        <Attribute name="nullParentValue" required="false">
+            <Doc>
+                Value which identifies null parents in a parent-child
+                hierarchy. Typical values are 'NULL' and '0'.
+            </Doc>
+        </Attribute>
+        <Attribute name="type" default="String">
+            <Doc>
+                Indicates the type of this level's key column: String or
+                Numeric. When generating SQL statements, Mondrian
+                encloses values for String columns in quotation marks,
+                but leaves values for Numeric columns un-quoted.
+            </Doc>
+            <Value>String</Value>
+            <Value>Numeric</Value>
+        </Attribute>
+        <Attribute name="uniqueMembers" type="Boolean" default="false">
+            <Doc>
+                Whether members are unique across all parents. For
+                example, zipcodes are unique across all states. The
+                first level's members are always unique.
+            </Doc>
+        </Attribute>
+        <Attribute name="levelType" required="false" default="Regular">
+            <Doc>
+                Whether this is a regular or a time-related level.
+                The value makes a difference to time-related functions
+                such as YTD (year-to-date).
+            </Doc>
+            <Value>Regular</Value>
+            <Value>TimeYears</Value>
+            <Value>TimeQuarters</Value>
+            <Value>TimeMonths</Value>
+            <Value>TimeWeeks</Value>
+            <Value>TimeDays</Value>
+        </Attribute>
+        <Attribute name="hideMemberIf" default="Never">
+            <Doc>
+                Condition which determines whether a member of this level
+                is hidden. If a hierarchy has one or more levels with hidden
+                members, then it is possible that not all leaf members are the
+                same distance from the root, and it is termed a <dfn>ragged
+                hierarchy</dfn>.
+
+                <p>Allowable values are:
+                <code>Never</code> (a member always appears; the default);
+                <code>IfBlankName</code> (a member doesn't appear if its name
+                is null or empty); and
+                <code>IfParentsName</code> (a member appears unless its name
+                matches the parent's.</p>
+            </Doc>
+            <Value>Never</Value>
+            <Value>IfBlankName</Value>
+            <Value>IfParentsName</Value>
+        </Attribute>
+        <Attribute name="formatter" required="false">
+            <Doc>
+                Name of a formatter class for the member labels being displayed.
+                The class must implement the mondrian.olap.MemberFormatter interface.
+            </Doc>
+        </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the level's name.
+            </Doc>
+        </Attribute>
+
+        <Object name="keyExp" type="KeyExpression" required="false">
+            <Doc>
+                The SQL expression used to populate this level's key.
+            </Doc>
+        </Object>
+        <Object name="nameExp" type="NameExpression" required="false">
+            <Doc>
+                The SQL expression used to populate this level's name. If not
+                specified, the level's key is used.
+            </Doc>
+        </Object>
+        <Object name="ordinalExp" type="OrdinalExpression" required="false">
+            <Doc>
+                The SQL expression used to populate this level's ordinal.
+            </Doc>
+        </Object>
+        <Object name="parentExp" type="ParentExpression" required="false">
+            <Doc>
+                The SQL expression used to join to the parent member in a
+                parent-child hierarchy.
+            </Doc>
+        </Object>
         <Object name="closure" type="Closure" required="false"/>
-		<Array name="properties" type="Property" min="0"/>
-		<Code>
-			public Expression getKeyExp() {
-				if (keyExp != null) {
-					return keyExp;
-				} else if (column != null) {
-					return new Column(table, column);
-				} else {
-					return null;
-				}
-			}
-			public Expression getNameExp() {
-				if (nameExp != null) {
-					return nameExp;
-				} else if (nameColumn != null) {
-					return new Column(table, nameColumn);
-				} else {
-					return null;
-				}
-			}
-			public Expression getOrdinalExp() {
-				if (ordinalExp != null) {
-					return ordinalExp;
-				} else if (ordinalColumn != null) {
-					return new Column(table, ordinalColumn);
-				} else {
-					return null;
-				}
-			}
-			public Expression getParentExp() {
-				if (parentExp != null) {
-					return parentExp;
-				} else if (parentColumn != null) {
-					return new Column(table, parentColumn);
-				} else {
-					return null;
-				}
-			}
-			public Expression getPropertyExp(int i) {
-				return new Column(table, properties[i].column);
-			}
-		</Code>
-	</Element>
+        <Array name="properties" type="Property" min="0"/>
+        <Code>
+            public Expression getKeyExp() {
+                if (keyExp != null) {
+                    return keyExp;
+                } else if (column != null) {
+                    return new Column(table, column);
+                } else {
+                    return null;
+                }
+            }
+            public Expression getNameExp() {
+                if (nameExp != null) {
+                    return nameExp;
+                } else if (nameColumn != null) {
+                    return new Column(table, nameColumn);
+                } else {
+                    return null;
+                }
+            }
+            public Expression getOrdinalExp() {
+                if (ordinalExp != null) {
+                    return ordinalExp;
+                } else if (ordinalColumn != null) {
+                    return new Column(table, ordinalColumn);
+                } else {
+                    return null;
+                }
+            }
+            public Expression getParentExp() {
+                if (parentExp != null) {
+                    return parentExp;
+                } else if (parentColumn != null) {
+                    return new Column(table, parentColumn);
+                } else {
+                    return null;
+                }
+            }
+            public Expression getPropertyExp(int i) {
+                return new Column(table, properties[i].column);
+            }
+        </Code>
+    </Element>
 
     <Element type="Closure">
         <Doc>
@@ -523,505 +523,505 @@ Revision is $Id$
         <Object name="table" type="Table" required="true"/>
     </Element>
 
-	<Element type="Property">
-		<Doc>
-			Member property.
-		</Doc>
-		<Attribute name="name"><Doc></Doc></Attribute>
-		<Attribute name="column"><Doc></Doc></Attribute>
-		<Attribute name="type" default="String">
-			<Doc>Data type of this property</Doc>
-			<Value>String</Value>
-			<Value>Numeric</Value>
-			<Value>Boolean</Value>
-		</Attribute>
-		<Attribute name="formatter" required="false">
-			<Doc>
-				Name of a formatter class for the appropriate property value being displayed.
-				The class must implement the mondrian.olap.PropertyFormatter interface.
-			</Doc>
-		</Attribute>
-		<Attribute name="caption" required="false">
-			<Doc>
-				A string being displayed instead of the name.
-			</Doc>
-		</Attribute>
-	</Element>
+    <Element type="Property">
+        <Doc>
+            Member property.
+        </Doc>
+        <Attribute name="name"><Doc></Doc></Attribute>
+        <Attribute name="column"><Doc></Doc></Attribute>
+        <Attribute name="type" default="String">
+            <Doc>Data type of this property</Doc>
+            <Value>String</Value>
+            <Value>Numeric</Value>
+            <Value>Boolean</Value>
+        </Attribute>
+        <Attribute name="formatter" required="false">
+            <Doc>
+                Name of a formatter class for the appropriate property value being displayed.
+                The class must implement the mondrian.olap.PropertyFormatter interface.
+            </Doc>
+        </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the name.
+            </Doc>
+        </Attribute>
+    </Element>
 
-	<Element type="Measure">
-		<Attribute name="name" required="true">
-			<Doc>Name of this measure.</Doc>
-		</Attribute>
-		<Attribute name="column" required="true">
-			<Doc>Column which is source of this measure's valies.</Doc>
-		</Attribute>
-		<Attribute name="formatString">
-			<Doc>
-				Format string with which to format cells of this measure. For
-				more details, see {@link mondrian.util.Format}.
-			</Doc>
-		</Attribute>
-		<Attribute name="aggregator" required="true">
-			<Doc>Aggregation function.</Doc>
-			<Value>sum</Value>
-			<Value>count</Value>
-			<Value>min</Value>
-			<Value>max</Value>
-			<Value>avg</Value>
-			<Value>distinct count</Value>
-		</Attribute>
-		<Attribute name="formatter" required="false">
-			<Doc>
-				Name of a formatter class for the appropriate cell being displayed.
-				The class must implement the mondrian.olap.CellFormatter interface.
-			</Doc>
-		</Attribute>
-		<Attribute name="caption" required="false">
-			<Doc>
-				A string being displayed instead of the name.
-			</Doc>
-		</Attribute>
-		<Attribute name="visible" type="Boolean" required="false">
-			<Doc>
-				Whether this member is visible in the user-interface.
+    <Element type="Measure">
+        <Attribute name="name" required="true">
+            <Doc>Name of this measure.</Doc>
+        </Attribute>
+        <Attribute name="column" required="true">
+            <Doc>Column which is source of this measure's valies.</Doc>
+        </Attribute>
+        <Attribute name="formatString">
+            <Doc>
+                Format string with which to format cells of this measure. For
+                more details, see {@link mondrian.util.Format}.
+            </Doc>
+        </Attribute>
+        <Attribute name="aggregator" required="true">
+            <Doc>Aggregation function.</Doc>
+            <Value>sum</Value>
+            <Value>count</Value>
+            <Value>min</Value>
+            <Value>max</Value>
+            <Value>avg</Value>
+            <Value>distinct count</Value>
+        </Attribute>
+        <Attribute name="formatter" required="false">
+            <Doc>
+                Name of a formatter class for the appropriate cell being displayed.
+                The class must implement the mondrian.olap.CellFormatter interface.
+            </Doc>
+        </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the name.
+            </Doc>
+        </Attribute>
+        <Attribute name="visible" type="Boolean" required="false">
+            <Doc>
+                Whether this member is visible in the user-interface.
                 Default true.
-			</Doc>
-		</Attribute>
-		<Array name="memberProperties" type="CalculatedMemberProperty" min="0"/>
-	</Element>
+            </Doc>
+        </Attribute>
+        <Array name="memberProperties" type="CalculatedMemberProperty" min="0"/>
+    </Element>
 
-	<Element type="CalculatedMember">
-		<Attribute name="name" required="true">
-			<Doc>
-				Name of this calculated member.
-			</Doc>
-		</Attribute>
-		<Attribute name="formatString">
-			<Doc>
-				Format string with which to format cells of this member. For
-				more details, see {@link mondrian.util.Format}.
-			</Doc>
-		</Attribute>
-		<Attribute name="caption" required="false">
-			<Doc>
-				A string being displayed instead of the name.
-			</Doc>
-		</Attribute>
-		<Attribute name="formula" required="true">
-			<Doc>
-				MDX expression which gives the value of this member.
-			</Doc>
-		</Attribute>
-		<Attribute name="dimension" required="true">
-			<Doc>
-				Name of the dimension which this member belongs to.
-			</Doc>
-		</Attribute>
-		<Attribute name="visible" type="Boolean" required="false">
-			<Doc>
-				Whether this member is visible in the user-interface.
+    <Element type="CalculatedMember">
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of this calculated member.
+            </Doc>
+        </Attribute>
+        <Attribute name="formatString">
+            <Doc>
+                Format string with which to format cells of this member. For
+                more details, see {@link mondrian.util.Format}.
+            </Doc>
+        </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the name.
+            </Doc>
+        </Attribute>
+        <Attribute name="formula" required="true">
+            <Doc>
+                MDX expression which gives the value of this member.
+            </Doc>
+        </Attribute>
+        <Attribute name="dimension" required="true">
+            <Doc>
+                Name of the dimension which this member belongs to.
+            </Doc>
+        </Attribute>
+        <Attribute name="visible" type="Boolean" required="false">
+            <Doc>
+                Whether this member is visible in the user-interface.
                 Default true.
-			</Doc>
-		</Attribute>
-		<Array name="memberProperties" type="CalculatedMemberProperty" min="0"/>
-	</Element>
+            </Doc>
+        </Attribute>
+        <Array name="memberProperties" type="CalculatedMemberProperty" min="0"/>
+    </Element>
 
-	<Element type="CalculatedMemberProperty">
-		<Doc>
-			Property of a calculated member defined against a cube.
-			It must have either an expression or a value.
-		</Doc>
-		<Attribute name="name" required="true">
-			<Doc>
-				Name of this member property.
-			</Doc>
-		</Attribute>
-		<Attribute name="expression">
-			<Doc>
-				MDX expression which defines the value of this property.
-				If the expression is a constant string, you could enclose it in
-				quotes, or just specify the 'value' attribute instead.
-			</Doc>
-		</Attribute>
-		<Attribute name="value">
-			<Doc>
-				Value of this property.
-				If the value is not constant, specify the 'expression' attribute instead.
-			</Doc>
-		</Attribute>
-	</Element>
+    <Element type="CalculatedMemberProperty">
+        <Doc>
+            Property of a calculated member defined against a cube.
+            It must have either an expression or a value.
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of this member property.
+            </Doc>
+        </Attribute>
+        <Attribute name="expression">
+            <Doc>
+                MDX expression which defines the value of this property.
+                If the expression is a constant string, you could enclose it in
+                quotes, or just specify the 'value' attribute instead.
+            </Doc>
+        </Attribute>
+        <Attribute name="value">
+            <Doc>
+                Value of this property.
+                If the value is not constant, specify the 'expression' attribute instead.
+            </Doc>
+        </Attribute>
+    </Element>
 
-	<Element type="Parameter">
-		<Attribute name="name"/>
-		<Attribute name="value"/>
-	</Element>
+    <Element type="Parameter">
+        <Attribute name="name"/>
+        <Attribute name="value"/>
+    </Element>
 
-	<Class class="Relation">
-		<Doc>A table or a join</Doc>
-		<Code>
-			public abstract Relation find(String seekAlias);
- 			public abstract String getAlias();
- 			public boolean equals(Object o) {
-				return this == o;
-			}
- 			public int hashCode() {
-				return System.identityHashCode(this);
-			}
-		</Code>
-	</Class>
+    <Class class="Relation">
+        <Doc>A table or a join</Doc>
+        <Code>
+            public abstract Relation find(String seekAlias);
+            public abstract String getAlias();
+            public boolean equals(Object o) {
+                return this == o;
+            }
+            public int hashCode() {
+                return System.identityHashCode(this);
+            }
+        </Code>
+    </Class>
 
-	<Element type="View" class="Relation">
-		<Doc>
-			A collection of SQL statements, one per dialect.
-		</Doc>
-		<Attribute name="alias" required="true"/>
-		<Array name="selects" type="SQL" min="1"/>
-		<Code>
-			public String toString() {
-				return selects[0].cdata;
-			}
-			public Relation find(String seekAlias) {
-				if (seekAlias.equals(alias)) {
-					return this;
-				} else {
-					return null;
-				}
-			}
- 			public String getAlias() {
-				return alias;
-			}
-			</Code>
-	</Element>
+    <Element type="View" class="Relation">
+        <Doc>
+            A collection of SQL statements, one per dialect.
+        </Doc>
+        <Attribute name="alias" required="true"/>
+        <Array name="selects" type="SQL" min="1"/>
+        <Code>
+            public String toString() {
+                return selects[0].cdata;
+            }
+            public Relation find(String seekAlias) {
+                if (seekAlias.equals(alias)) {
+                    return this;
+                } else {
+                    return null;
+                }
+            }
+            public String getAlias() {
+                return alias;
+            }
+            </Code>
+    </Element>
 
-	<Element type="SQL">
-		<Attribute name="dialect" default="generic">
-			<Doc>
-				Dialect of SQL the view is intended for.
-			</Doc>
-			<Value>generic</Value>
-			<Value>oracle</Value>
-			<Value>mysql</Value>
-			<Value>access</Value>
-			<Value>postgres</Value>
-			<Value>hsqldb</Value>
-			<Value>mssql</Value>
-			<Value>sybase</Value>
-		</Attribute>
-		<CData/>
-	</Element>
+    <Element type="SQL">
+        <Attribute name="dialect" default="generic">
+            <Doc>
+                Dialect of SQL the view is intended for.
+            </Doc>
+            <Value>generic</Value>
+            <Value>oracle</Value>
+            <Value>mysql</Value>
+            <Value>access</Value>
+            <Value>postgres</Value>
+            <Value>hsqldb</Value>
+            <Value>mssql</Value>
+            <Value>sybase</Value>
+        </Attribute>
+        <CData/>
+    </Element>
 
-	<Element type="Join" class="Relation">
-		<Attribute name="leftAlias">
-			<Doc>
-				Defaults to left's alias if left is a table, otherwise
-				required.
-			</Doc>
-		</Attribute>
-		<Attribute name="leftKey" required="true"/>
-		<Attribute name="rightAlias">
-			<Doc>
-				Defaults to right's alias if right is a table, otherwise
-				required.
-			</Doc>
-		</Attribute>
-		<Attribute name="rightKey" required="true"/>
-		<Object name="left" type="Relation" required="true"/>
-		<Object name="right" type="Relation" required="true"/>
-		<Code>
-			/**
-			  * Returns the alias of the left join key, defaulting to left's
-			  * alias if left is a table.
-			  **/
-			public String getLeftAlias() {
-				if (leftAlias != null) {
-					return leftAlias;
-				}
-				if (left instanceof Table) {
-					return ((Table) left).getAlias();
-				}
-				throw Util.newInternal(
-					"alias is required because " + left + " is not a table");
-			}
-			/**
-			  * Returns the alias of the right join key, defaulting to right's
-			  * alias if right is a table.
-			  **/
-			public String getRightAlias() {
-				if (rightAlias != null) {
-					return rightAlias;
-				}
-				if (right instanceof Table) {
-					return ((Table) right).getAlias();
-				}
-				throw Util.newInternal(
-					"alias is required because " + right + " is not a table");
-			}
-			public String toString() {
-				return "(" + left + ") join (" + right + ") on " +
-					leftAlias + "." + leftKey + " = " +
-					rightAlias + "." + rightKey;
-			}
-			public Relation find(String seekAlias) {
-				Relation relation = left.find(seekAlias);
-				if (relation == null) {
-					relation = right.find(seekAlias);
-				}
-				return relation;
-			}
- 			public String getAlias() {
-				throw Util.newInternal("join does not have alias");
-			}
-		</Code>
-	</Element>
+    <Element type="Join" class="Relation">
+        <Attribute name="leftAlias">
+            <Doc>
+                Defaults to left's alias if left is a table, otherwise
+                required.
+            </Doc>
+        </Attribute>
+        <Attribute name="leftKey" required="true"/>
+        <Attribute name="rightAlias">
+            <Doc>
+                Defaults to right's alias if right is a table, otherwise
+                required.
+            </Doc>
+        </Attribute>
+        <Attribute name="rightKey" required="true"/>
+        <Object name="left" type="Relation" required="true"/>
+        <Object name="right" type="Relation" required="true"/>
+        <Code>
+            /**
+              * Returns the alias of the left join key, defaulting to left's
+              * alias if left is a table.
+              **/
+            public String getLeftAlias() {
+                if (leftAlias != null) {
+                    return leftAlias;
+                }
+                if (left instanceof Table) {
+                    return ((Table) left).getAlias();
+                }
+                throw Util.newInternal(
+                    "alias is required because " + left + " is not a table");
+            }
+            /**
+              * Returns the alias of the right join key, defaulting to right's
+              * alias if right is a table.
+              **/
+            public String getRightAlias() {
+                if (rightAlias != null) {
+                    return rightAlias;
+                }
+                if (right instanceof Table) {
+                    return ((Table) right).getAlias();
+                }
+                throw Util.newInternal(
+                    "alias is required because " + right + " is not a table");
+            }
+            public String toString() {
+                return "(" + left + ") join (" + right + ") on " +
+                    leftAlias + "." + leftKey + " = " +
+                    rightAlias + "." + rightKey;
+            }
+            public Relation find(String seekAlias) {
+                Relation relation = left.find(seekAlias);
+                if (relation == null) {
+                    relation = right.find(seekAlias);
+                }
+                return relation;
+            }
+            public String getAlias() {
+                throw Util.newInternal("join does not have alias");
+            }
+        </Code>
+    </Element>
 
-	<Element type="Table" class="Relation">
-		<Attribute name="name" required="true"/>
-		<Attribute name="schema">
-			<Doc>
-				Optional qualifier for <code>table</code>.
-			</Doc>
-		</Attribute>
-		<Attribute name="alias">
-			<Doc>
-				Alias to be used with this table when it is used to
-				form queries. If not specified, defaults to the table
-				name, but in any case, must be unique within the
-				schema. (You can use the same table in different
-				hierarchies, but it must have different aliases.)
-			</Doc>
-		</Attribute>
-		<Object name="filter" type="SQL" required="false">
-		<Doc>
-		  The SQL WHERE clause expression to be appended to any select statement
-		</Doc>
-		</Object>
+    <Element type="Table" class="Relation">
+        <Attribute name="name" required="true"/>
+        <Attribute name="schema">
+            <Doc>
+                Optional qualifier for <code>table</code>.
+            </Doc>
+        </Attribute>
+        <Attribute name="alias">
+            <Doc>
+                Alias to be used with this table when it is used to
+                form queries. If not specified, defaults to the table
+                name, but in any case, must be unique within the
+                schema. (You can use the same table in different
+                hierarchies, but it must have different aliases.)
+            </Doc>
+        </Attribute>
+        <Object name="filter" type="SQL" required="false">
+        <Doc>
+          The SQL WHERE clause expression to be appended to any select statement
+        </Doc>
+        </Object>
 
-		<Code><![CDATA[
-			/** Convenience contructor. **/
-			public Table(String schema, String name, String alias) {
-				this();
-				this.schema = schema;
-				this.name = name;
-				this.alias = alias;
-			}
-			/** Returns the alias or, if it is null, the table name. **/
-			public String getAlias() {
-				if (alias != null) {
-					return alias;
-				}
-				return name;
-			}
-			public String toString() {
-				if (schema == null) {
-					return name;
-				} else {
-					return schema + "." + name;
-				}
-			}
-			public Relation find(String seekAlias) {
-				if (seekAlias.equals(name)) {
-				  return this;
-				} else {
-					return null;
-				}
-			}
-			public boolean equals(Object o) {
-				if (o instanceof Table) {
-					Table that = (Table) o;
-					return this.name.equals(that.name) &&
-						Util.equals(this.schema, that.schema);
-				} else {
-					return false;
-				}
-			}
-			public int hashCode() {
-				return toString().hashCode();
-			}
-			public String getFilter() {
-				if (filter == null)
-				  return null;
-				else
-				  return filter.cdata;
-			}
+        <Code><![CDATA[
+            /** Convenience contructor. **/
+            public Table(String schema, String name, String alias) {
+                this();
+                this.schema = schema;
+                this.name = name;
+                this.alias = alias;
+            }
+            /** Returns the alias or, if it is null, the table name. **/
+            public String getAlias() {
+                if (alias != null) {
+                    return alias;
+                }
+                return name;
+            }
+            public String toString() {
+                if (schema == null) {
+                    return name;
+                } else {
+                    return schema + "." + name;
+                }
+            }
+            public Relation find(String seekAlias) {
+                if (seekAlias.equals(name)) {
+                  return this;
+                } else {
+                    return null;
+                }
+            }
+            public boolean equals(Object o) {
+                if (o instanceof Table) {
+                    Table that = (Table) o;
+                    return this.name.equals(that.name) &&
+                        Util.equals(this.schema, that.schema);
+                } else {
+                    return false;
+                }
+            }
+            public int hashCode() {
+                return toString().hashCode();
+            }
+            public String getFilter() {
+                if (filter == null)
+                  return null;
+                else
+                  return filter.cdata;
+            }
       ]]>
-		</Code>
-	</Element>
+        </Code>
+    </Element>
 
-	<Class class="Expression">
-		<Code>
-			public abstract String getExpression(mondrian.rolap.sql.SqlQuery query);
-			public abstract String getGenericExpression();
-			public abstract String getTableAlias();
-		</Code>
-	</Class>
+    <Class class="Expression">
+        <Code>
+            public abstract String getExpression(mondrian.rolap.sql.SqlQuery query);
+            public abstract String getGenericExpression();
+            public abstract String getTableAlias();
+        </Code>
+    </Class>
 
-	<Element type="Column" class="Expression">
-		<Attribute name="table">
-			<Doc>
-				Alias of the table which contains this column. Not required if
-				the query only has one table.
-			</Doc>
-		</Attribute>
-		<Attribute name="name" required="true">
-			<Doc>
-				Name of the column.
-			</Doc>
-		</Attribute>
-		<Code>
-			/** Convenience contructor. **/
-			public Column(String table, String name) {
-				this();
-				Util.assertTrue(name != null);
-				this.table = table;
-				this.name = name;
-			}
-			public String getExpression(mondrian.rolap.sql.SqlQuery query) {
-				return query.quoteIdentifier(table, name);
-			}
-			public String getGenericExpression() {
-				if (table == null) {
-					return name;
-				} else {
-					return table + "." + name;
-				}
-			}
-			public String getTableAlias() {
-				return table;
-			}
-		</Code>
-	</Element>
+    <Element type="Column" class="Expression">
+        <Attribute name="table">
+            <Doc>
+                Alias of the table which contains this column. Not required if
+                the query only has one table.
+            </Doc>
+        </Attribute>
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of the column.
+            </Doc>
+        </Attribute>
+        <Code>
+            /** Convenience contructor. **/
+            public Column(String table, String name) {
+                this();
+                Util.assertTrue(name != null);
+                this.table = table;
+                this.name = name;
+            }
+            public String getExpression(mondrian.rolap.sql.SqlQuery query) {
+                return query.quoteIdentifier(table, name);
+            }
+            public String getGenericExpression() {
+                if (table == null) {
+                    return name;
+                } else {
+                    return table + "." + name;
+                }
+            }
+            public String getTableAlias() {
+                return table;
+            }
+        </Code>
+    </Element>
 
-	<Class class="ExpressionView" superclass="Expression">
-		<Doc>
-			A collection of SQL expressions, one per dialect.
-		</Doc>
-		<Array name="expressions" type="SQL" min="1"/>
-		<Code><![CDATA[
-			public String toString() {
-				return expressions[0].cdata;
-			}
-			public String getExpression(mondrian.rolap.sql.SqlQuery query) {
-				return query.chooseQuery(expressions);
-			}
-			public String getGenericExpression() {
-				for (int i = 0; i < expressions.length; i++) {
-					if (expressions[i].dialect.equals("generic")) {
-						return expressions[i].cdata;
-					}
-				}
-				return expressions[0].cdata;
-			}
-			public String getTableAlias() {
-				return null;
-			}]]>
-		</Code>
-	</Class>
+    <Class class="ExpressionView" superclass="Expression">
+        <Doc>
+            A collection of SQL expressions, one per dialect.
+        </Doc>
+        <Array name="expressions" type="SQL" min="1"/>
+        <Code><![CDATA[
+            public String toString() {
+                return expressions[0].cdata;
+            }
+            public String getExpression(mondrian.rolap.sql.SqlQuery query) {
+                return query.chooseQuery(expressions);
+            }
+            public String getGenericExpression() {
+                for (int i = 0; i < expressions.length; i++) {
+                    if (expressions[i].dialect.equals("generic")) {
+                        return expressions[i].cdata;
+                    }
+                }
+                return expressions[0].cdata;
+            }
+            public String getTableAlias() {
+                return null;
+            }]]>
+        </Code>
+    </Class>
 
-	<Element type="KeyExpression" class="ExpressionView"/>
-	<Element type="ParentExpression" class="ExpressionView"/>
-	<Element type="OrdinalExpression" class="ExpressionView"/>
-	<Element type="NameExpression" class="ExpressionView"/>
+    <Element type="KeyExpression" class="ExpressionView"/>
+    <Element type="ParentExpression" class="ExpressionView"/>
+    <Element type="OrdinalExpression" class="ExpressionView"/>
+    <Element type="NameExpression" class="ExpressionView"/>
 
-	<!-- Access control =================================================== -->
-	<Element type="Role">
-		<Doc>
-			A role defines an access-control profile. It has a series of grants
-			(or denials) for schema elements.
-		</Doc>
-		<Attribute name="name" required="true"/>
-		<Array name="schemaGrants" type="SchemaGrant"/>
-	</Element>
+    <!-- Access control =================================================== -->
+    <Element type="Role">
+        <Doc>
+            A role defines an access-control profile. It has a series of grants
+            (or denials) for schema elements.
+        </Doc>
+        <Attribute name="name" required="true"/>
+        <Array name="schemaGrants" type="SchemaGrant"/>
+    </Element>
 
-	<Class class="Grant">
-		<Attribute name="access" required="true">
-			<Doc>Values correspond to <link class="Access"/></Doc>
-			<Value>all</Value>
-			<Value>custom</Value>
-			<Value>none</Value>
-			<Value>all_dimensions</Value>
-		</Attribute>
-	</Class>
+    <Class class="Grant">
+        <Attribute name="access" required="true">
+            <Doc>Values correspond to <link class="Access"/></Doc>
+            <Value>all</Value>
+            <Value>custom</Value>
+            <Value>none</Value>
+            <Value>all_dimensions</Value>
+        </Attribute>
+    </Class>
 
-	<Element class="Grant" type="SchemaGrant">
-		<Doc>
-			<![CDATA[Grants (or denies) this role access to this schema.
-			<code>access</code> may be "all", "all_dimensions", or "none".
-			If <code>access</code> is "all_dimensions", the role has access
-			to all dimensions but still needs explicit access to cubes.
- 			See {@link mondrian.olap.Role#grant(mondrian.olap.Schema,int)}.]]>
-		</Doc>
-		<Array name="cubeGrants" type="CubeGrant"/>
-	</Element>
+    <Element class="Grant" type="SchemaGrant">
+        <Doc>
+            <![CDATA[Grants (or denies) this role access to this schema.
+            <code>access</code> may be "all", "all_dimensions", or "none".
+            If <code>access</code> is "all_dimensions", the role has access
+            to all dimensions but still needs explicit access to cubes.
+            See {@link mondrian.olap.Role#grant(mondrian.olap.Schema,int)}.]]>
+        </Doc>
+        <Array name="cubeGrants" type="CubeGrant"/>
+    </Element>
 
-	<Element class="Grant" type="CubeGrant">
-		<Doc>
-			<![CDATA[Grants (or denies) this role access to a cube.
-			<code>access</code> may be "all" or "none".
- 			See {@link mondrian.olap.Role#grant(mondrian.olap.Cube,int)}.]]>
-		</Doc>
-		<Attribute name="cube" required="true">
-			<Doc>The unique name of the cube</Doc>
-		</Attribute>
-		<Array name="dimensionGrants" type="DimensionGrant"/>
-		<Array name="hierarchyGrants" type="HierarchyGrant"/>
-	</Element>
+    <Element class="Grant" type="CubeGrant">
+        <Doc>
+            <![CDATA[Grants (or denies) this role access to a cube.
+            <code>access</code> may be "all" or "none".
+            See {@link mondrian.olap.Role#grant(mondrian.olap.Cube,int)}.]]>
+        </Doc>
+        <Attribute name="cube" required="true">
+            <Doc>The unique name of the cube</Doc>
+        </Attribute>
+        <Array name="dimensionGrants" type="DimensionGrant"/>
+        <Array name="hierarchyGrants" type="HierarchyGrant"/>
+    </Element>
 
-	<Element class="Grant" type="DimensionGrant">
-		<Doc>
-			<![CDATA[Grants (or denies) this role access to a dimension.
-			<code>access</code> may be "all" or "none".
-			Note that a role is implicitly given access to a dimension when it
-			is given acess to a cube.
-			See also the "all_dimensions" option of the "SchemaGrant" element.
- 			See {@link mondrian.olap.Role#grant(mondrian.olap.Dimension,int)}.]]>
-		</Doc>
-		<Attribute name="dimension" required="true">
-			<Doc>The unique name of the dimension</Doc>
-		</Attribute>
-	</Element>
+    <Element class="Grant" type="DimensionGrant">
+        <Doc>
+            <![CDATA[Grants (or denies) this role access to a dimension.
+            <code>access</code> may be "all" or "none".
+            Note that a role is implicitly given access to a dimension when it
+            is given acess to a cube.
+            See also the "all_dimensions" option of the "SchemaGrant" element.
+            See {@link mondrian.olap.Role#grant(mondrian.olap.Dimension,int)}.]]>
+        </Doc>
+        <Attribute name="dimension" required="true">
+            <Doc>The unique name of the dimension</Doc>
+        </Attribute>
+    </Element>
 
-	<Element class="Grant" type="HierarchyGrant">
-		<Doc>
-			<![CDATA[Grants (or denies) this role access to a hierarchy.
-			<code>access</code> may be "all", "custom" or "none".
-			If <code>access</code> is "custom", you may also specify the
-			attributes <code>topLevel</code>, <code>bottomLevel</code>, and
-			the member grants.
- 			See {@link mondrian.olap.Role#grant(mondrian.olap.Hierarchy,int,mondrian.olap.Level,mondrian.olap.Level)}.]]>
-		</Doc>
-		<Attribute name="hierarchy" required="true">
-			<Doc>The unique name of the hierarchy</Doc>
-		</Attribute>
-		<Attribute name="topLevel" required="false">
-			<Doc>Unique name of the highest level of the hierarchy from which
-			this role is allowed to see members. May only be specified if
-			the <code>HierarchyGrant.access</code> is "custom". If not
-			specified, role can see members up to the top level.</Doc>
-		</Attribute>
-		<Attribute name="bottomLevel" required="false">
-			<Doc>Unique name of the lowest level of the hierarchy from which
-			this role is allowed to see members. May only be specified if
-			the <code>HierarchyGrant.access</code> is "custom". If not
-			specified, role can see members down to the leaf level.</Doc>
-		</Attribute>
-		<Array name="memberGrants" type="MemberGrant"/>
-	</Element>
+    <Element class="Grant" type="HierarchyGrant">
+        <Doc>
+            <![CDATA[Grants (or denies) this role access to a hierarchy.
+            <code>access</code> may be "all", "custom" or "none".
+            If <code>access</code> is "custom", you may also specify the
+            attributes <code>topLevel</code>, <code>bottomLevel</code>, and
+            the member grants.
+            See {@link mondrian.olap.Role#grant(mondrian.olap.Hierarchy,int,mondrian.olap.Level,mondrian.olap.Level)}.]]>
+        </Doc>
+        <Attribute name="hierarchy" required="true">
+            <Doc>The unique name of the hierarchy</Doc>
+        </Attribute>
+        <Attribute name="topLevel" required="false">
+            <Doc>Unique name of the highest level of the hierarchy from which
+            this role is allowed to see members. May only be specified if
+            the <code>HierarchyGrant.access</code> is "custom". If not
+            specified, role can see members up to the top level.</Doc>
+        </Attribute>
+        <Attribute name="bottomLevel" required="false">
+            <Doc>Unique name of the lowest level of the hierarchy from which
+            this role is allowed to see members. May only be specified if
+            the <code>HierarchyGrant.access</code> is "custom". If not
+            specified, role can see members down to the leaf level.</Doc>
+        </Attribute>
+        <Array name="memberGrants" type="MemberGrant"/>
+    </Element>
 
-	<Element type="MemberGrant">
-		<Doc>
-			<![CDATA[Grants (or denies) this role access to a member.
- 			The children of this member inherit that access.
- 			You can implicitly see a member if you can see any of its children.
- 			See {@link mondrian.olap.Role#grant(Member,int)}.]]>
-		</Doc>
-		<Attribute name="member" required="true">
-			<Doc>The unique name of the member</Doc>
-		</Attribute>
-		<Attribute name="access" required="true">
-			<Value>all</Value>
-			<Value>none</Value>
-		</Attribute>
-	</Element>
+    <Element type="MemberGrant">
+        <Doc>
+            <![CDATA[Grants (or denies) this role access to a member.
+            The children of this member inherit that access.
+            You can implicitly see a member if you can see any of its children.
+            See {@link mondrian.olap.Role#grant(Member,int)}.]]>
+        </Doc>
+        <Attribute name="member" required="true">
+            <Doc>The unique name of the member</Doc>
+        </Attribute>
+        <Attribute name="access" required="true">
+            <Value>all</Value>
+            <Value>none</Value>
+        </Attribute>
+    </Element>
 
 </Model>
 

@@ -8,9 +8,9 @@ package javax.olap.sourcemodel;
 public interface StringSource
 extends javax.olap.sourcemodel.Source {
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public javax.olap.sourcemodel.StringSource appendValue( java.lang.String appendValue )
     throws javax.olap.OLAPException;

@@ -8,9 +8,9 @@ package javax.olap.metadata;
 public interface CubeDimensionAssociation
 extends org.omg.java.cwm.objectmodel.core.CoreClass {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.metadata.Dimension getDimension()
     throws javax.olap.OLAPException;

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>SELECT {Store.[All Stores].[USA].LastSibling, Store.[All Stores].[USA].[CA].LastSibling, Store.[All Stores].[USA].[CA], Store.[All Stores].[USA].[CA].[Los Angeles]} on ROWS, 
+    <mdxQuery>SELECT {Store.[All Stores].[USA].LastSibling, Store.[All Stores].[USA].[CA].LastSibling, Store.[All Stores].[USA].[CA], Store.[All Stores].[USA].[CA].[Los Angeles]} on ROWS,
        {Time.[1997], Time.[1997].[Q3].LastSibling, Time.[1997].[Q3].[9].LastSibling} on COLUMNS
 FROM [Sales]
 WHERE([Measures].[Unit Sales], [Product].[All Products], [Store Size in SQFT].[All Store Size in SQFTs], [Store Type].[All Store Types], [Promotions].[All Promotions], [Customers].[All Customers].[USA].[CA].[Woodland Hills], [Education Level].[All Education Levels], [Marital Status].[All Marital Status], [Yearly Income].[All Yearly Incomes], [Promotion Media].[All Media], [Gender].[All Gender])</mdxQuery>

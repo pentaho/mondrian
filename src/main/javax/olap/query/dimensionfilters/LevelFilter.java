@@ -8,9 +8,9 @@ package javax.olap.query.dimensionfilters;
 public interface LevelFilter
 extends javax.olap.query.dimensionfilters.DimensionFilter {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.metadata.Level getLevel()
     throws javax.olap.OLAPException;

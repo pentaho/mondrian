@@ -8,9 +8,9 @@ package org.omg.java.cwm.foundation.datatypes;
 public interface UnionMember
 extends org.omg.java.cwm.objectmodel.core.Attribute {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.objectmodel.core.Expression getMemberCase();
 

@@ -8,9 +8,9 @@ package javax.olap.sourcemodel;
 public interface NumberSource
 extends javax.olap.sourcemodel.Source {
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public javax.olap.sourcemodel.NumberSource abs()
     throws javax.olap.OLAPException;

@@ -18,4 +18,4 @@ public interface RefPackage extends RefBaseObject {
     public RefEnum refGetEnum(RefObject enum, String name);
     public RefEnum refGetEnum(String enumName, String name);
     public void refDelete();
-} 
+}

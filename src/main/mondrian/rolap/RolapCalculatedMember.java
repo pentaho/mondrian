@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2003 Kana Software, Inc. and others.
+// Copyright (C) 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -27,19 +27,19 @@ import mondrian.olap.Property;
  * @version $Id$
  **/
 class RolapCalculatedMember extends RolapMember {
-	private final Formula formula;
+    private final Formula formula;
 
-	RolapCalculatedMember(
-			RolapMember parentMember, RolapLevel level, String name,
-			Formula formula) {
-		super(parentMember, level, name);
-		this.formula = formula;
-	}
+    RolapCalculatedMember(
+            RolapMember parentMember, RolapLevel level, String name,
+            Formula formula) {
+        super(parentMember, level, name);
+        this.formula = formula;
+    }
 
-	// override RolapMember
-	int getSolveOrder() {
-		return 0;
-	}
+    // override RolapMember
+    int getSolveOrder() {
+        return 0;
+    }
 
     public Object getPropertyValue(String name) {
         if (name.equals(Property.PROPERTY_FORMULA)) {
@@ -48,17 +48,17 @@ class RolapCalculatedMember extends RolapMember {
         return super.getPropertyValue(name);
     }
 
-	public boolean isCalculated() {
-		return true;
-	}
+    public boolean isCalculated() {
+        return true;
+    }
 
-	public boolean isCalculatedInQuery() {
-		return true;
-	}
+    public boolean isCalculatedInQuery() {
+        return true;
+    }
 
-	Exp getExpression() {
-		return formula.getExpression();
-	}
+    Exp getExpression() {
+        return formula.getExpression();
+    }
 
 }
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>SELECT {[Product], [Product].Children} ON AXIS(0), 
-       {[Time].[1997].[Q1].[1].NextMember, [Time].[1997].[Q1].[2].NextMember} ON AXIS(1) 
+    <mdxQuery>SELECT {[Product], [Product].Children} ON AXIS(0),
+       {[Time].[1997].[Q1].[1].NextMember, [Time].[1997].[Q1].[2].NextMember} ON AXIS(1)
 FROM [Sales]
 WHERE [Marital Status].[M].NextMember</mdxQuery>
     <dataResult>

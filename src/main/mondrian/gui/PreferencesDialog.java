@@ -12,33 +12,33 @@ package mondrian.gui;
  */
 public class PreferencesDialog extends javax.swing.JDialog {
     boolean accepted = false;
-    
+
     /** Creates new form PreferencesDialog */
     public PreferencesDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
     }
-    
+
     public boolean accepted() {
         return accepted;
     }
-    
+
     public void setJDBCConnectionUrl(String s) {
-        this.urlTextField.setText(s);        
+        this.urlTextField.setText(s);
     }
-    
+
     public String getJDBCConnectionUrl() {
         return urlTextField.getText();
     }
-    
+
     public void setJDBCDriverClassName(String s) {
         this.driverClassTextField.setText(s);
     }
-    
+
     public String getJDBCDriverClassName() {
         return driverClassTextField.getText();
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -155,21 +155,21 @@ public class PreferencesDialog extends javax.swing.JDialog {
         accepted = false;
         hide();
     }//GEN-LAST:event_cancelButtonActionPerformed
-    
+
     /** Closes the dialog */
     private void closeDialog(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_closeDialog
         setVisible(false);
         dispose();
     }//GEN-LAST:event_closeDialog
-    
+
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
         new PreferencesDialog(new javax.swing.JFrame(), true).show();
     }
-    
-    
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField driverClassTextField;
     private javax.swing.JPanel jPanel1;
@@ -180,5 +180,5 @@ public class PreferencesDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
-    
+
 }

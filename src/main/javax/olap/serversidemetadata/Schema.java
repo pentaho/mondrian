@@ -8,9 +8,9 @@ package javax.olap.serversidemetadata;
 public interface Schema
 extends javax.olap.metadata.Schema {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.Collection getDeploymentGroup()
     throws javax.olap.OLAPException;

@@ -9,12 +9,12 @@ public class OLAPException extends java.lang.Exception
   {
     super();
   }
-  
+
   public OLAPException(String reason)
   {
     super(reason);
   }
-  
+
   public OLAPException(String reason, String OLAPState)
   {
     super(reason);
@@ -24,12 +24,12 @@ public class OLAPException extends java.lang.Exception
   {
     super(reason);
   }
-  
+
   public String getOLAPState()
   {
     return(new String("return implementation of error text"));
   }
-  
+
   public int getErrorCode()
   {
     int retval = 0;   //retval should be populated by the implementation
@@ -43,7 +43,7 @@ public class OLAPException extends java.lang.Exception
                                  //this code will be replaced by the implementation
                                  //to provide the next exception
   }
-  
+
   public  void  setNextException(OLAPException exception)
   {
     //this method sets the next exception,

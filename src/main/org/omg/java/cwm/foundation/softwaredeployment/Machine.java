@@ -8,9 +8,9 @@ package org.omg.java.cwm.foundation.softwaredeployment;
 public interface Machine
 extends org.omg.java.cwm.objectmodel.core.Namespace {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public java.util.List getIpAddress();
 
@@ -20,9 +20,9 @@ extends org.omg.java.cwm.objectmodel.core.Namespace {
 
   public void setMachineId( java.lang.String value );
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.foundation.softwaredeployment.Site getSite();
 

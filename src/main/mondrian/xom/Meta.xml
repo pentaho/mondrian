@@ -5,10 +5,10 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == (C) Copyright 2000-2002 Kana Software, Inc. and others.
+  == (C) Copyright 2000-2005 Kana Software, Inc. and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
-  == 
+  ==
   == This file is the Mining Meta Model description of itself, in XML.
   -->
 
@@ -22,7 +22,7 @@
 >
 
 <Doc>
-  This model is the Mining Meta Model.  It is the specification of the model used 
+  This model is the Mining Meta Model.  It is the specification of the model used
   to define new XML-based models.  It is also an instance of itself.
 
 </Doc>
@@ -33,7 +33,7 @@
        contains all other elements in the model and also defines the model's
        basic attributes, such as its name and version number.
     </Doc>
-    
+
     <Attribute name="name" required="true"/>
     <Attribute name="dtdName"/>
     <Attribute name="className"/>
@@ -45,9 +45,9 @@
     <Object name="doc" type="Doc"/>
     <Array name="elements" type="Definition" min="1">
         <Doc>
-	   The elements array contains a definition for each element within the
-	   model.  Elements include Class, Element, and String definitions.
-	</Doc>
+       The elements array contains a definition for each element within the
+       model.  Elements include Class, Element, and String definitions.
+    </Doc>
     </Array>
 </Element>
 
@@ -60,11 +60,11 @@
 
     <Object name="doc" type="Doc">
         <Doc>
-	  Doc tags allow documentation to be added to any definition.  The
-	  documentation will automatically appear in all physical forms
-	  of this model, including dtds, java classes, and the xsl
-	  transformation.
-	</Doc>
+      Doc tags allow documentation to be added to any definition.  The
+      documentation will automatically appear in all physical forms
+      of this model, including dtds, java classes, and the xsl
+      transformation.
+    </Doc>
     </Object>
 </Class>
 
@@ -76,60 +76,60 @@
 
     <Attribute name="contentModel" default="sequential">
         <Doc>
-	  Specifies the content model of this definition.  Content model
-	  determines how the contained objects and arrays will be parsed
-	  and intepreted:<ul>
-	  
-	  <li><dfn>Sequential</dfn> content is the default model.
-	  Under a sequential model, content is intepreted by its position,
-	  and the order of content in a .xml file must match the order
-	  defined in the model.</li>
+      Specifies the content model of this definition.  Content model
+      determines how the contained objects and arrays will be parsed
+      and intepreted:<ul>
 
-	  <li>Under <dfn>random</dfn> content, order is less important;
-	  different types are parsed as needed.  Order is still used to resolve
-	  multiple instances of the same type.</li>
+      <li><dfn>Sequential</dfn> content is the default model.
+      Under a sequential model, content is intepreted by its position,
+      and the order of content in a .xml file must match the order
+      defined in the model.</li>
 
-	  <li><dfn>Mixed</dfn> content allows text
-	  to appear intermixed with elements, which are interpreted in random
-	  order.  It is currently unsupported.</li>
+      <li>Under <dfn>random</dfn> content, order is less important;
+      different types are parsed as needed.  Order is still used to resolve
+      multiple instances of the same type.</li>
 
-	  <li><dfn>Any</dfn> content removes all
-	  restrictions, allowing any content to appear (but at the price of
-	  a lack of type-safety in the java representation of the element).</li>
+      <li><dfn>Mixed</dfn> content allows text
+      to appear intermixed with elements, which are interpreted in random
+      order.  It is currently unsupported.</li>
 
-	  <li><dfn>CData</dfn> content specifies text-only content.  No objects or arrays
-	  may be defined.</li>
+      <li><dfn>Any</dfn> content removes all
+      restrictions, allowing any content to appear (but at the price of
+      a lack of type-safety in the java representation of the element).</li>
 
-	  </ul>
-	</Doc>
-	<Value>sequential</Value>
-	<Value>random</Value>
-	<Value>mixed</Value>
-	<Value>any</Value>
-	<Value>cdata</Value>
+      <li><dfn>CData</dfn> content specifies text-only content.  No objects or arrays
+      may be defined.</li>
+
+      </ul>
+    </Doc>
+    <Value>sequential</Value>
+    <Value>random</Value>
+    <Value>mixed</Value>
+    <Value>any</Value>
+    <Value>cdata</Value>
     </Attribute>
 
-	<Attribute name="keepDef" type="Boolean" default="false">
-		<Doc>
-			Whether to keep the underlying wrapper around (in a field
-			called <code>_def</code>) after the object has been
-			constructed.
-		</Doc>
-	</Attribute>
+    <Attribute name="keepDef" type="Boolean" default="false">
+        <Doc>
+            Whether to keep the underlying wrapper around (in a field
+            called <code>_def</code>) after the object has been
+            constructed.
+        </Doc>
+    </Attribute>
 
     <Array name="attributes" type="Attribute">
         <Doc>
-	  This array defines all attributes to appear within this class or
-	  element.
-	</Doc>
+      This array defines all attributes to appear within this class or
+      element.
+    </Doc>
     </Array>
 
     <Array name="content" type="Content">
         <Doc>
-	  This array defines all content (objects and arrays) to appear within
-	  this class or element.  The interpretation of this array depends
-	  on the element's defined content model.
-	</Doc>
+      This array defines all content (objects and arrays) to appear within
+      this class or element.  The interpretation of this array depends
+      on the element's defined content model.
+    </Doc>
     </Array>
 
     <Object name="any" type="Any"/>
@@ -137,10 +137,10 @@
 
     <Object name="code" type="Code">
         <Doc>
-	  This element allows arbitrary Java Code to be attached to any
-	  class or element.  Code sections are not verified until the final
-	  .java class is compiled and should be used sparingly.
-	</Doc>
+      This element allows arbitrary Java Code to be attached to any
+      class or element.  Code sections are not verified until the final
+      .java class is compiled and should be used sparingly.
+    </Doc>
     </Object>
 </Class>
 
@@ -152,14 +152,14 @@
        types.  Content consists of other Elements and Strings, either
        appearing alone or as arrays.
     </Doc>
-    
+
     <Attribute name="type" required="true"/>
     <Attribute name="class"/>
     <Attribute name="dtdName" required="false">
         <Doc>
-		The dtdName attribute sets the name by which this Element will be
-		known in the dtd.  If not specified, it will default to the model's
-		prefix (in any) plus the type of this element.</Doc>
+        The dtdName attribute sets the name by which this Element will be
+        known in the dtd.  If not specified, it will default to the model's
+        prefix (in any) plus the type of this element.</Doc>
     </Attribute>
 </Element>
 
@@ -200,7 +200,7 @@
 
     <Array name="attributes" type="Attribute"/>
     <Object name="code" type="Code"/>
-</Element>    
+</Element>
 
 <Element type="Import" class="Definition">
     <Doc>
@@ -242,7 +242,7 @@
        An Attribute definition may limit its values by specifying Value
        objects.
     </Doc>
-    
+
     <Attribute name="name" required="true"/>
     <Attribute name="type" default="String"/>
     <Attribute name="required" type="Boolean" default="false"/>

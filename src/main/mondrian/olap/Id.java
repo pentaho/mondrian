@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1998-2003 Kana Software, Inc. and others.
+// (C) Copyright 1998-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -17,63 +17,63 @@ import java.io.PrintWriter;
  * Multi-part identifier.
  **/
 public class Id
-	extends ExpBase
-	implements Cloneable
+    extends ExpBase
+    implements Cloneable
 {
-	private final String[] names;
-	private final boolean[] keys;
+    private final String[] names;
+    private final boolean[] keys;
 
-	Id(String s, boolean key)
-	{
-		names = new String[] {s};
-		keys = new boolean[] {key};
-	}
+    Id(String s, boolean key)
+    {
+        names = new String[] {s};
+        keys = new boolean[] {key};
+    }
 
-	Id(String s)
-	{
-		this(s, false);
-	}
+    Id(String s)
+    {
+        this(s, false);
+    }
 
-	private Id(String[] names, boolean[] keys)
-	{
-		this.names = names;
-		this.keys = keys;
-	}
+    private Id(String[] names, boolean[] keys)
+    {
+        this.names = names;
+        this.keys = keys;
+    }
 
-	public Object clone()
-	{
+    public Object clone()
+    {
         // This is immutable, so no need to clone.
         return this;
-	}
+    }
 
-	public int getType()
-	{
-		return Category.Unknown;
-	}
+    public int getType()
+    {
+        return Category.Unknown;
+    }
 
-	public boolean usesDimension(Dimension dimension)
-	{
-		// don't know til we resolve
-		return false;
-	}
+    public boolean usesDimension(Dimension dimension)
+    {
+        // don't know til we resolve
+        return false;
+    }
 
-	public String toString()
-	{
-		return Util.quoteMdxIdentifier(toStringArray());
-	}
+    public String toString()
+    {
+        return Util.quoteMdxIdentifier(toStringArray());
+    }
 
-	public String[] toStringArray()
-	{
+    public String[] toStringArray()
+    {
         return (String[]) names.clone();
-	}
+    }
 
-	public String getElement(int i)
-	{
-		return names[i];
-	}
+    public String getElement(int i)
+    {
+        return names[i];
+    }
 
-	public Id append(String s, boolean key)
-	{
+    public Id append(String s, boolean key)
+    {
         String[] newNames = new String[names.length + 1];
         boolean[] newKeys = new boolean[keys.length + 1];
         System.arraycopy(names, 0, newNames, 0, names.length);
@@ -81,48 +81,48 @@ public class Id
         newNames[newNames.length - 1] = s;
         newKeys[newKeys.length - 1] = key;
         return new Id(newNames, newKeys);
-	}
+    }
 
-	public void append(String s)
-	{
-		append(s, false);
-	}
+    public void append(String s)
+    {
+        append(s, false);
+    }
 
-	public Exp resolve(Resolver resolver)
-	{
-		if (names.length == 1) {
-			final String s = names[0];
-			if (FunTable.instance().isReserved(s)) {
-				return Literal.createSymbol(s.toUpperCase());
-			}
-		}
-		return Util.lookup(resolver.getQuery(), names);
-	}
+    public Exp resolve(Resolver resolver)
+    {
+        if (names.length == 1) {
+            final String s = names[0];
+            if (FunTable.instance().isReserved(s)) {
+                return Literal.createSymbol(s.toUpperCase());
+            }
+        }
+        return Util.lookup(resolver.getQuery(), names);
+    }
 
-	public void unparse(PrintWriter pw)
-	{
-		for (int i = 0; i < names.length; i++) {
-			String s = names[i];
-			if (i > 0) {
-				pw.print(".");
-			}
-			if (keys[i]) {
-				pw.print("&[" + Util.mdxEncodeString(s) + "]");
-			} else {
-				pw.print("[" + Util.mdxEncodeString(s) + "]");
-			}
-		}
-	}
+    public void unparse(PrintWriter pw)
+    {
+        for (int i = 0; i < names.length; i++) {
+            String s = names[i];
+            if (i > 0) {
+                pw.print(".");
+            }
+            if (keys[i]) {
+                pw.print("&[" + Util.mdxEncodeString(s) + "]");
+            } else {
+                pw.print("[" + Util.mdxEncodeString(s) + "]");
+            }
+        }
+    }
 
-	// implement Exp
-	public Object evaluate(Evaluator evaluator)
-	{
-		return evaluator.xx(this);
-	}
+    // implement Exp
+    public Object evaluate(Evaluator evaluator)
+    {
+        return evaluator.xx(this);
+    }
 
-	public boolean dependsOn(Dimension dimension) {
-		throw new UnsupportedOperationException();
-	}
+    public boolean dependsOn(Dimension dimension) {
+        throw new UnsupportedOperationException();
+    }
 
 }
 

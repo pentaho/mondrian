@@ -8,9 +8,9 @@ package javax.olap.query.querycoremodel;
 public interface CubeView
 extends javax.olap.query.querycoremodel.QueryObject {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.List getOrdinateEdge()
     throws javax.olap.OLAPException;
@@ -27,9 +27,9 @@ extends javax.olap.query.querycoremodel.QueryObject {
   public java.util.Collection getCalculationRelationship()
     throws javax.olap.OLAPException;
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public javax.olap.cursor.CubeCursor createCursor()
     throws javax.olap.OLAPException;

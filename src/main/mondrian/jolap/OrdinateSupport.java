@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2003 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -27,33 +27,33 @@ import java.util.List;
  * @version $Id$
  **/
 abstract class OrdinateSupport extends QueryObjectSupport implements Ordinate {
-	OrdinateSupport() {
-		super(false);
-	}
+    OrdinateSupport() {
+        super(false);
+    }
 
     public List getCalculatedMember() throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
+        throw new UnsupportedOperationException();
+    }
 
-	public CalculatedMember createCalculatedMember() throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
+    public CalculatedMember createCalculatedMember() throws OLAPException {
+        throw new UnsupportedOperationException();
+    }
 
-	public CalculatedMember createCalculatedMemberBefore(CalculatedMember member) throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
+    public CalculatedMember createCalculatedMemberBefore(CalculatedMember member) throws OLAPException {
+        throw new UnsupportedOperationException();
+    }
 
-	public CalculatedMember createCalculatedMemberAfter(CalculatedMember member) throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
+    public CalculatedMember createCalculatedMemberAfter(CalculatedMember member) throws OLAPException {
+        throw new UnsupportedOperationException();
+    }
 
     public Collection getOperatorInput() throws OLAPException {
         throw new UnsupportedOperationException();
     }
 
-	public OperatorInput createOperatorInput(OperatorInputType type) throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
+    public OperatorInput createOperatorInput(OperatorInputType type) throws OLAPException {
+        throw new UnsupportedOperationException();
+    }
 }
 
 // End OrdinateSupport.java

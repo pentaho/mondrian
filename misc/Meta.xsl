@@ -4,7 +4,7 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == (C) Copyright 2000-2002 Kana Software, Inc. and others.
+  == (C) Copyright 2000-2005 Kana Software, Inc. and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
@@ -79,8 +79,8 @@ DIV.clsDesFooter { margin:10px 10px 0px 223px; }
 DIV.clsFPfig { font-size:80%; }
 
 DIV.clsHi {
-	padding-left:2em;
-	text-indent:-2em
+    padding-left:2em;
+    text-indent:-2em
 }
 
 DIV.clsShowme { margin-bottom:.5em; margin-top:.5em; }
@@ -116,8 +116,8 @@ H6 {
 }
 
 HR.clsTransHR {
-	position:relative; top:20;
-	margin-bottom:15;
+    position:relative; top:20;
+    margin-bottom:15;
 }
 
 P.clsRef {
@@ -127,7 +127,7 @@ P.clsRef {
 
 PRE {
   background:#EEEEEE;
-  margin-top:1em;	margin-bottom:1em; margin-left:0px;
+  margin-top:1em;   margin-bottom:1em; margin-left:0px;
   padding:5pt;
 }
 
@@ -161,26 +161,26 @@ SPAN.clsShowme {
 TABLE { font-size:100%; }
 
 TABLE.clsStd {
-	background-color:#444;
-	border:1px none;
-	cellspacing:0;
-	cellpadding:0
+    background-color:#444;
+    border:1px none;
+    cellspacing:0;
+    cellpadding:0
 }
 
 TABLE.clsStd TH,
 BLOCKQUOTE TH {
-	font-size:100%;
-	text-align:left; vertical-align:top;
-	background-color:#DDD;
-	padding:2px;
+    font-size:100%;
+    text-align:left; vertical-align:top;
+    background-color:#DDD;
+    padding:2px;
 }
 
 TABLE.clsStd TD,
 BLOCKQUOTE TD {
-	font-size:100%;
-	vertical-align:top;
-	background-color:#EEE;
-	padding:2px;
+    font-size:100%;
+    vertical-align:top;
+    background-color:#EEE;
+    padding:2px;
 }
 
 TABLE.clsParamVls,
@@ -205,8 +205,8 @@ UL UL, OL UL { list-style-type:square; }
 .#pBackTop { display:none; }
 
 #idTransDiv {
-	position:relative;
-	width:90%; top:20;
+    position:relative;
+    width:90%; top:20;
   filter:revealTrans(duration=1.0, transition=23);
 }
 
@@ -226,7 +226,7 @@ SPAN.clsAccess { text-decoration:underline; }
 TABLE.clsIndex {
   font-size:100%;
   padding-left:2pt; padding-right:2pt;
-	margin-top: 17pt;
+    margin-top: 17pt;
 }
 
 TABLE.clsIndex TD {
@@ -258,7 +258,7 @@ LI OL { padding-bottom: 1.5em }
 FORM.clsSamples { margin-bottom:0; margin-top:0; }
 
 H1.clsSampH1 {
-	font-size:145%;
+    font-size:145%;
   margin-top:.25em; margin-bottom:.25em;
 }
 
@@ -306,38 +306,38 @@ SPAN.clsToolsTitle {
 
 /*** DESIGN ***/
 P.cat {
-	font-size:13pt;
-	color:#787800;
-	text-decoration:none;
-	margin-top:18px;
+    font-size:13pt;
+    color:#787800;
+    text-decoration:none;
+    margin-top:18px;
 }
 
 P.author {
-	font-size:9pt; font-style:italic;
-	line-height:13pt;
-	margin-top:10px;
+    font-size:9pt; font-style:italic;
+    line-height:13pt;
+    margin-top:10px;
 }
 
 P.date {
-	font-size:8pt;
-	line-height:12px;
-	margin-top:0px;
-	color:#3366FF;
+    font-size:8pt;
+    line-height:12px;
+    margin-top:0px;
+    color:#3366FF;
 }
 
 P.graph1 {
-	line-height:13pt;
-	margin-top:-10px;
+    line-height:13pt;
+    margin-top:-10px;
 }
 
 P.col {
-	line-height:13pt;
-	margin-top:10px; margin-left:5px;
+    line-height:13pt;
+    margin-top:10px; margin-left:5px;
 }
 
 P.cal1 {
-	text-decoration:none;
-	margin-top:-10px;
+    text-decoration:none;
+    margin-top:-10px;
 }
 
 P.cal2 {margin-top:-10px; }
@@ -347,17 +347,17 @@ P.photo { font-size:8pt; }
 /*** DOCTOP ***/
 
 #tblNavLinks A {
-	color:black;
-	text-decoration:none;
-	font-family:verdana,arial,helvetica,sans-serif;
+    color:black;
+    text-decoration:none;
+    font-family:verdana,arial,helvetica,sans-serif;
 }
 #lnkShowText, #lnkSyncText, #lnkSearchText, #lnkIndexText { font-size:8pt; font-weight:bold; }
 #lnkPrevText, #lnkNextText, #lnkUpText { font-size:7.5pt; font-weight:normal; }
 
 
 DIV.clsBucketBranch {
-	margin-left:10px; margin-top:15px; margin-bottom:-10pt;
-	font-style:italic; font-size:85%;
+    margin-left:10px; margin-top:15px; margin-bottom:-10pt;
+    font-style:italic; font-size:85%;
 }
 
 DIV.clsBucketBranch A,
@@ -373,7 +373,7 @@ DIV.clsExpanded, A.clsExpanded { display:inline; color:black; }
 DIV.clsCollapsed, A.clsCollapsed { display:none; }
 SPAN.clsPropattr { font-weight:bold; }
 
-#pStyles,	#pCode, #pSyntax, #pEvents, #pStyles {display:none; text-decoration:underline; cursor:hand; }
+#pStyles,   #pCode, #pSyntax, #pEvents, #pStyles {display:none; text-decoration:underline; cursor:hand; }
 
 CODE { color:maroon; font-family:'courier new' }
 
@@ -390,7 +390,7 @@ DFN { font-weight:bold; font-style:italic; }
 
 </xsl:template>
 
-<!-- 
+<!--
   - Doc processing
   -->
 
@@ -405,11 +405,11 @@ DFN { font-weight:bold; font-style:italic; }
 <xsl:template match="Model">
 <h1>Mining Meta Model Instance <u><xsl:value-of select="@name"/></u></h1>
 <p>
-<b>DTD Name:</b> 
+<b>DTD Name:</b>
 <a><xsl:attribute name="href"><xsl:value-of select="@dtdName"/>
 </xsl:attribute>
 <xsl:value-of select="@dtdName"/></a><br/>
-<b>Class Name:</b> 
+<b>Class Name:</b>
 <a><xsl:attribute name="href">http://code/bb/main/mining/Broadbase/mining/xml/<xsl:value-of select="@className"/>.java</xsl:attribute>
 <xsl:value-of select="@className"/></a> <br/>
 <b>Root Element:</b>
@@ -511,35 +511,35 @@ DFN { font-weight:bold; font-style:italic; }
   <xsl:for-each select="Attribute">
   <tr><td>
           <xsl:choose>
-	     <xsl:when test=".[@required='true']">
-	         <b><xsl:value-of select="@name"/></b>
+         <xsl:when test=".[@required='true']">
+             <b><xsl:value-of select="@name"/></b>
              </xsl:when>
-	     <xsl:otherwise>
-	         <xsl:value-of select="@name"/>
+         <xsl:otherwise>
+             <xsl:value-of select="@name"/>
              </xsl:otherwise>
-	  </xsl:choose>
+      </xsl:choose>
       </td>
       <td><i>
          <xsl:choose>
             <xsl:when test="@type">
               <xsl:value-of select="@type"/>
-	    </xsl:when>
-	    <xsl:otherwise>String</xsl:otherwise>
-	 </xsl:choose>
+        </xsl:when>
+        <xsl:otherwise>String</xsl:otherwise>
+     </xsl:choose>
       </i></td>
       <td>
          <xsl:choose>
-	    <xsl:when test="@default">
-	        <xsl:value-of select="@default"/>
-	    </xsl:when>
-	    <xsl:otherwise><i>none</i></xsl:otherwise>
-	 </xsl:choose>
+        <xsl:when test="@default">
+            <xsl:value-of select="@default"/>
+        </xsl:when>
+        <xsl:otherwise><i>none</i></xsl:otherwise>
+     </xsl:choose>
       </td>
       <td>
          <xsl:choose>
-	    <xsl:when test="Doc">
-	        <xsl:apply-templates select="Doc" mode="copy"/>
-	    </xsl:when>
+        <xsl:when test="Doc">
+            <xsl:apply-templates select="Doc" mode="copy"/>
+        </xsl:when>
             <xsl:otherwise><i>none</i></xsl:otherwise>
          </xsl:choose>
       </td></tr>
@@ -559,32 +559,32 @@ DFN { font-weight:bold; font-style:italic; }
   <xsl:for-each select="Object|Array">
   <tr><td>
          <a><xsl:attribute name="href">#<xsl:value-of select="@type"/>
-	    </xsl:attribute>
+        </xsl:attribute>
          <xsl:value-of select="@type"/></a>
       </td>
       <td><xsl:value-of select="@name"/></td>
       <td>
          <xsl:choose>
-	    <xsl:when test=".[@required='true']">
-	        <i>Required</i>
-	    </xsl:when>
-	    <xsl:when test="@min">
-	        <i>Array [<xsl:value-of select="@min"/> .. 
-		<xsl:value-of select="@max"/>]</i>
-	    </xsl:when>
-	    <xsl:when test=".[@name=../Array/@name]">
-	        <i>Array</i>
-	    </xsl:when>
-	    <xsl:otherwise>
-	        <i>Optional</i>
-	    </xsl:otherwise>
-	 </xsl:choose>
+        <xsl:when test=".[@required='true']">
+            <i>Required</i>
+        </xsl:when>
+        <xsl:when test="@min">
+            <i>Array [<xsl:value-of select="@min"/> ..
+        <xsl:value-of select="@max"/>]</i>
+        </xsl:when>
+        <xsl:when test=".[@name=../Array/@name]">
+            <i>Array</i>
+        </xsl:when>
+        <xsl:otherwise>
+            <i>Optional</i>
+        </xsl:otherwise>
+     </xsl:choose>
       </td>
       <td>
          <xsl:choose>
-	    <xsl:when test="Doc">
-	        <xsl:apply-templates select="Doc" mode="copy"/>
-	    </xsl:when>
+        <xsl:when test="Doc">
+            <xsl:apply-templates select="Doc" mode="copy"/>
+        </xsl:when>
             <xsl:otherwise><i>none</i></xsl:otherwise>
          </xsl:choose>
   </td></tr>
@@ -638,35 +638,35 @@ DFN { font-weight:bold; font-style:italic; }
   <xsl:for-each select="Attribute">
   <tr><td>
           <xsl:choose>
-	     <xsl:when test=".[@required='true']">
-	         <b><xsl:value-of select="@name"/></b>
+         <xsl:when test=".[@required='true']">
+             <b><xsl:value-of select="@name"/></b>
              </xsl:when>
-	     <xsl:otherwise>
-	         <xsl:value-of select="@name"/>
+         <xsl:otherwise>
+             <xsl:value-of select="@name"/>
              </xsl:otherwise>
-	  </xsl:choose>
+      </xsl:choose>
       </td>
       <td><i>
          <xsl:choose>
             <xsl:when test="@type">
               <xsl:value-of select="@type"/>
-	    </xsl:when>
-	    <xsl:otherwise>String</xsl:otherwise>
-	 </xsl:choose>
+        </xsl:when>
+        <xsl:otherwise>String</xsl:otherwise>
+     </xsl:choose>
       </i></td>
       <td>
          <xsl:choose>
-	    <xsl:when test="@default">
-	        <xsl:value-of select="@default"/>
-	    </xsl:when>
-	    <xsl:otherwise><i>none</i></xsl:otherwise>
-	 </xsl:choose>
+        <xsl:when test="@default">
+            <xsl:value-of select="@default"/>
+        </xsl:when>
+        <xsl:otherwise><i>none</i></xsl:otherwise>
+     </xsl:choose>
       </td>
       <td>
          <xsl:choose>
-	    <xsl:when test="Doc">
-	        <xsl:apply-templates select="Doc" mode="copy"/>
-	    </xsl:when>
+        <xsl:when test="Doc">
+            <xsl:apply-templates select="Doc" mode="copy"/>
+        </xsl:when>
             <xsl:otherwise><i>none</i></xsl:otherwise>
          </xsl:choose>
       </td></tr>
@@ -680,7 +680,7 @@ DFN { font-weight:bold; font-style:italic; }
       <td>Broadbase.mining.xml</td>
       <td>The <i>defClass</i> attribute, available to all Plugins, specifies
           the class name of the Java Class used to parse all plugin contents.</td>
-  </tr>  
+  </tr>
 </table>
 </blockquote>
 
@@ -730,35 +730,35 @@ DFN { font-weight:bold; font-style:italic; }
   <xsl:for-each select="Attribute">
   <tr><td>
           <xsl:choose>
-	     <xsl:when test=".[@required='true']">
-	         <b><xsl:value-of select="@name"/></b>
+         <xsl:when test=".[@required='true']">
+             <b><xsl:value-of select="@name"/></b>
              </xsl:when>
-	     <xsl:otherwise>
-	         <xsl:value-of select="@name"/>
+         <xsl:otherwise>
+             <xsl:value-of select="@name"/>
              </xsl:otherwise>
-	  </xsl:choose>
+      </xsl:choose>
       </td>
       <td><i>
          <xsl:choose>
             <xsl:when test="@type">
               <xsl:value-of select="@type"/>
-	    </xsl:when>
-	    <xsl:otherwise>String</xsl:otherwise>
-	 </xsl:choose>
+        </xsl:when>
+        <xsl:otherwise>String</xsl:otherwise>
+     </xsl:choose>
       </i></td>
       <td>
          <xsl:choose>
-	    <xsl:when test="@default">
-	        <xsl:value-of select="@default"/>
-	    </xsl:when>
-	    <xsl:otherwise><i>none</i></xsl:otherwise>
-	 </xsl:choose>
+        <xsl:when test="@default">
+            <xsl:value-of select="@default"/>
+        </xsl:when>
+        <xsl:otherwise><i>none</i></xsl:otherwise>
+     </xsl:choose>
       </td>
       <td>
          <xsl:choose>
-	    <xsl:when test="Doc">
-	        <xsl:apply-templates select="Doc" mode="copy"/>
-	    </xsl:when>
+        <xsl:when test="Doc">
+            <xsl:apply-templates select="Doc" mode="copy"/>
+        </xsl:when>
             <xsl:otherwise><i>none</i></xsl:otherwise>
          </xsl:choose>
       </td></tr>
@@ -778,32 +778,32 @@ DFN { font-weight:bold; font-style:italic; }
   <xsl:for-each select="Object|Array">
   <tr><td>
          <a><xsl:attribute name="href">#<xsl:value-of select="@type"/>
-	    </xsl:attribute>
+        </xsl:attribute>
          <xsl:value-of select="@type"/></a>
       </td>
       <td><xsl:value-of select="@name"/></td>
       <td>
          <xsl:choose>
-	    <xsl:when test=".[@required='true']">
-	        <i>Required</i>
-	    </xsl:when>
-	    <xsl:when test="@min">
-	        <i>Array [<xsl:value-of select="@min"/> .. 
-		<xsl:value-of select="@max"/>]</i>
-	    </xsl:when>
-	    <xsl:when test=".[@name=../Array/@name]">
-	        <i>Array</i>
-	    </xsl:when>
-	    <xsl:otherwise>
-	        <i>Optional</i>
-	    </xsl:otherwise>
-	 </xsl:choose>
+        <xsl:when test=".[@required='true']">
+            <i>Required</i>
+        </xsl:when>
+        <xsl:when test="@min">
+            <i>Array [<xsl:value-of select="@min"/> ..
+        <xsl:value-of select="@max"/>]</i>
+        </xsl:when>
+        <xsl:when test=".[@name=../Array/@name]">
+            <i>Array</i>
+        </xsl:when>
+        <xsl:otherwise>
+            <i>Optional</i>
+        </xsl:otherwise>
+     </xsl:choose>
       </td>
       <td>
          <xsl:choose>
-	    <xsl:when test="Doc">
-	        <xsl:apply-templates select="Doc" mode="copy"/>
-	    </xsl:when>
+        <xsl:when test="Doc">
+            <xsl:apply-templates select="Doc" mode="copy"/>
+        </xsl:when>
             <xsl:otherwise><i>none</i></xsl:otherwise>
          </xsl:choose>
   </td></tr>

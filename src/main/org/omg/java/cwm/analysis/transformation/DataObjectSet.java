@@ -8,9 +8,9 @@ package org.omg.java.cwm.analysis.transformation;
 public interface DataObjectSet
 extends org.omg.java.cwm.objectmodel.core.ModelElement {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.Collection getElement();
 

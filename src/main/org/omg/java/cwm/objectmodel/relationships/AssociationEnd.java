@@ -8,9 +8,9 @@ package org.omg.java.cwm.objectmodel.relationships;
 public interface AssociationEnd
 extends org.omg.java.cwm.objectmodel.core.StructuralFeature {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.objectmodel.relationships.AggregationKind getAggregation();
 

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// (C) Copyright 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -27,22 +27,22 @@ import mondrian.olap.Property;
  **/
 abstract class RolapMeasure extends RolapMember
 {
-	/**
-	 * Holds the {@link mondrian.rolap.RolapStar.Measure} from which this
-	 * member is computed. Untyped, because another implementation might store
-	 * it somewhere else.
-	 */
-	Object starMeasure;
+    /**
+     * Holds the {@link mondrian.rolap.RolapStar.Measure} from which this
+     * member is computed. Untyped, because another implementation might store
+     * it somewhere else.
+     */
+    Object starMeasure;
 
-	RolapMeasure(
-			RolapMember parentMember, RolapLevel level, String name,
-			String formatString) {
-		super(parentMember, level, name);
-		if (formatString == null) {
-			formatString = "";
-		}
-		setProperty(Property.PROPERTY_FORMAT_EXP, Literal.createString(formatString));
-	}
+    RolapMeasure(
+            RolapMember parentMember, RolapLevel level, String name,
+            String formatString) {
+        super(parentMember, level, name);
+        if (formatString == null) {
+            formatString = "";
+        }
+        setProperty(Property.PROPERTY_FORMAT_EXP, Literal.createString(formatString));
+    }
 }
 
 

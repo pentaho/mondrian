@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2003 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -76,12 +76,12 @@ import java.io.PrintWriter;
  * @version $Id$
  **/
 public class FunDefBase extends FunUtil implements FunDef {
-	protected int flags;
+    protected int flags;
     private String name;
     private String description;
-	protected int returnType;
-	protected int[] parameterTypes;
-	boolean isAbstract = false;
+    protected int returnType;
+    protected int[] parameterTypes;
+    boolean isAbstract = false;
 
     /**
      * Creates an operator.
@@ -103,16 +103,16 @@ public class FunDefBase extends FunUtil implements FunDef {
      * @param parameterTypes An array of {@link Category} codes, one for
      *   each parameter.
      */
-	FunDefBase(
-			String name, String signature, String description,
-			Syntax syntax, int returnType, int[] parameterTypes) {
-		this.name = name;
-		Util.discard(signature);
-		this.description = description;
-		this.flags = syntax.ordinal_;
-		this.returnType = returnType;
-		this.parameterTypes = parameterTypes;
-	}
+    FunDefBase(
+            String name, String signature, String description,
+            Syntax syntax, int returnType, int[] parameterTypes) {
+        this.name = name;
+        Util.discard(signature);
+        this.description = description;
+        this.flags = syntax.ordinal_;
+        this.returnType = returnType;
+        this.parameterTypes = parameterTypes;
+    }
 
     /**
      * Creates an operator.
@@ -131,26 +131,26 @@ public class FunDefBase extends FunUtil implements FunDef {
      *    {@link Syntax#Property property} syntax (p) which returns a set
      *    (x) and takes a dimension (d) as its argument".
      */
-	protected FunDefBase(
-			String name, String signature, String description, String flags) {
-		this(name,
-			signature,
-			description,
-			decodeSyntacticType(flags),
-			decodeReturnType(flags),
-			decodeParameterTypes(flags));
-	}
-	/**
-	 * Convenience constructor when we are created by a {@link Resolver}.
-	 **/
-	FunDefBase(Resolver resolver, int returnType, int[] parameterTypes) {
-		this(resolver.getName(), null, null, resolver.getSyntax(), returnType,
+    protected FunDefBase(
+            String name, String signature, String description, String flags) {
+        this(name,
+            signature,
+            description,
+            decodeSyntacticType(flags),
+            decodeReturnType(flags),
+            decodeParameterTypes(flags));
+    }
+    /**
+     * Convenience constructor when we are created by a {@link Resolver}.
+     **/
+    FunDefBase(Resolver resolver, int returnType, int[] parameterTypes) {
+        this(resolver.getName(), null, null, resolver.getSyntax(), returnType,
                 parameterTypes);
-	}
+    }
 
-	/**
-	 * Copy constructor.
-	 */
+    /**
+     * Copy constructor.
+     */
     FunDefBase(FunDef funDef) {
         this(funDef.getName(), funDef.getSignature(),
                 funDef.getDescription(), funDef.getSyntax(),
@@ -163,19 +163,19 @@ public class FunDefBase extends FunUtil implements FunDef {
     public String getDescription() {
         return description;
     }
-	public Syntax getSyntax() {
+    public Syntax getSyntax() {
         return Syntax.get(flags);
-	}
-	public int getReturnType() {
-		return returnType;
-	}
-	public int[] getParameterTypes() {
-		return parameterTypes;
-	}
+    }
+    public int getReturnType() {
+        return returnType;
+    }
+    public int[] getParameterTypes() {
+        return parameterTypes;
+    }
 
     // implement FunDef
-	public Hierarchy getHierarchy(Exp[] args)
-	{
+    public Hierarchy getHierarchy(Exp[] args)
+    {
         switch (getReturnType()) {
         case Category.Set:
         case Category.Tuple:
@@ -190,48 +190,48 @@ public class FunDefBase extends FunUtil implements FunDef {
             // Other types of expression don't have a hierarchy.
             return null;
         }
-	}
+    }
 
-	// implement FunDef
-	public Object evaluate(Evaluator evaluator, Exp[] args) {
-		throw Util.newInternal(
-			"function '" + getSignature() + "' has not been implemented");
-	}
+    // implement FunDef
+    public Object evaluate(Evaluator evaluator, Exp[] args) {
+        throw Util.newInternal(
+            "function '" + getSignature() + "' has not been implemented");
+    }
 
-	public String getSignature() {
-		return getSyntax().getSignature(getName(), getReturnType(),
+    public String getSignature() {
+        return getSyntax().getSignature(getName(), getReturnType(),
                 getParameterTypes());
-	}
+    }
 
-	public void unparse(Exp[] args, PrintWriter pw) {
+    public void unparse(Exp[] args, PrintWriter pw) {
         getSyntax().unparse(getName(), args, pw);
-	}
+    }
 
-	/**
-	 * Default implementation returns true if at least one
-	 * of the arguments depends on <code>dimension</code>
-	 */
-	public boolean dependsOn(Exp[] args, Dimension dimension) {
-		for (int i = 0; i < args.length; i++)
-			if (args[i] != null && args[i].dependsOn(dimension))
-				return true;
-		return false;
-	}
+    /**
+     * Default implementation returns true if at least one
+     * of the arguments depends on <code>dimension</code>
+     */
+    public boolean dependsOn(Exp[] args, Dimension dimension) {
+        for (int i = 0; i < args.length; i++)
+            if (args[i] != null && args[i].dependsOn(dimension))
+                return true;
+        return false;
+    }
 
-	/**
-	 * computes the dependsOn() for functions like Tupel and Filter.
-	 * The result of these functions depend on <code>dimension</dimension>
-	 * if all of their arguments depend on it.
-	 * <p>
-	 * Derived classes may overload dependsOn() and call this method
-	 * instead of the default implementation.
-	 */
-	protected boolean dependsOnIntersection(Exp[] args, Dimension dimension) {
-		for (int i = 0; i < args.length; i++)
-			if (args[i] != null && !args[i].dependsOn(dimension))
-				return false;
-		return true;
-	}
+    /**
+     * computes the dependsOn() for functions like Tupel and Filter.
+     * The result of these functions depend on <code>dimension</dimension>
+     * if all of their arguments depend on it.
+     * <p>
+     * Derived classes may overload dependsOn() and call this method
+     * instead of the default implementation.
+     */
+    protected boolean dependsOnIntersection(Exp[] args, Dimension dimension) {
+        for (int i = 0; i < args.length; i++)
+            if (args[i] != null && !args[i].dependsOn(dimension))
+                return false;
+        return true;
+    }
 }
 
 // End FunDefBase.java

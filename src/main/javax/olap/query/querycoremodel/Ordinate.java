@@ -8,9 +8,9 @@ package javax.olap.query.querycoremodel;
 public interface Ordinate
 extends javax.olap.query.querycoremodel.QueryObject {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.List getCalculatedMember()
     throws javax.olap.OLAPException;
@@ -18,9 +18,9 @@ extends javax.olap.query.querycoremodel.QueryObject {
   public java.util.Collection getOperatorInput()
     throws javax.olap.OLAPException;
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public javax.olap.query.calculatedmembers.CalculatedMember createCalculatedMember()
     throws javax.olap.OLAPException;

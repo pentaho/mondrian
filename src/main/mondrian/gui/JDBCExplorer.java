@@ -15,17 +15,17 @@ import java.sql.Connection;
 public class JDBCExplorer extends javax.swing.JPanel {
     Connection connection;
     JDBCTreeModel model;
-    
+
     /** Creates new form JDBCExplorer */
     public JDBCExplorer() {
         initComponents();
     }
-    
+
     public JDBCExplorer(Connection c) {
         this();
         setConnection(c);
     }
-    
+
     public void setConnection(Connection c) {
         try {
             this.connection = c;
@@ -34,12 +34,12 @@ public class JDBCExplorer extends javax.swing.JPanel {
 
             tree.setModel(model);
             //tree.addTreeSelectionListener(this);
-            
+
         } catch (Exception ex) {
             ex.printStackTrace();
-        }    
+        }
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -63,13 +63,13 @@ public class JDBCExplorer extends javax.swing.JPanel {
         add(jSplitPane1, java.awt.BorderLayout.CENTER);
 
     }//GEN-END:initComponents
-    
-    
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTree tree;
     private javax.swing.JSplitPane jSplitPane1;
     // End of variables declaration//GEN-END:variables
-    
+
 }

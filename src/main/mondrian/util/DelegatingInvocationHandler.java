@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -29,34 +29,34 @@ import java.lang.reflect.Method;
  * @version $Id$
  */
 public abstract class DelegatingInvocationHandler implements InvocationHandler {
-	private Object fallback;
-	protected DelegatingInvocationHandler(Object fallback) {
-		this.fallback = fallback;
-	}
-	public Object invoke(Object proxy, Method method, Object[] args)
-			throws Throwable {
-		Class clazz = getClass();
-		Method matchingMethod;
-		try {
-			matchingMethod = clazz.getMethod(
-					method.getName(), method.getParameterTypes());
-		} catch (NoSuchMethodException e) {
-			matchingMethod = null;
-		} catch (SecurityException e) {
-			matchingMethod = null;
-		}
-		try {
-			if (matchingMethod != null) {
-				// Invoke the method in the derived class.
-				return matchingMethod.invoke(this, args);
-			} else {
-				// Invoke the method on the proxy.
-				return method.invoke(fallback, args);
-			}
-		} catch (InvocationTargetException e) {
-			throw e.getTargetException();
-		}
-	}
+    private Object fallback;
+    protected DelegatingInvocationHandler(Object fallback) {
+        this.fallback = fallback;
+    }
+    public Object invoke(Object proxy, Method method, Object[] args)
+            throws Throwable {
+        Class clazz = getClass();
+        Method matchingMethod;
+        try {
+            matchingMethod = clazz.getMethod(
+                    method.getName(), method.getParameterTypes());
+        } catch (NoSuchMethodException e) {
+            matchingMethod = null;
+        } catch (SecurityException e) {
+            matchingMethod = null;
+        }
+        try {
+            if (matchingMethod != null) {
+                // Invoke the method in the derived class.
+                return matchingMethod.invoke(this, args);
+            } else {
+                // Invoke the method on the proxy.
+                return method.invoke(fallback, args);
+            }
+        } catch (InvocationTargetException e) {
+            throw e.getTargetException();
+        }
+    }
 }
 
 // End DelegatingInvocationHandler.java

@@ -8,9 +8,9 @@ package javax.olap.cursor;
 public interface CubeCursor
 extends javax.olap.query.querytransaction.TransactionalObject, javax.olap.cursor.RowDataAccessor, javax.olap.cursor.Cursor {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.List getOrdinateEdge()
     throws javax.olap.OLAPException;
@@ -18,9 +18,9 @@ extends javax.olap.query.querytransaction.TransactionalObject, javax.olap.cursor
   public java.util.Collection getPageEdge()
     throws javax.olap.OLAPException;
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public void synchronizePages()
     throws javax.olap.OLAPException;

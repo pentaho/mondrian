@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2004-2004 Kana Software, Inc. and others.
+// (C) Copyright 2004-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -96,7 +96,7 @@ class DescendantsFunDef extends FunDefBase
      * function.
      */
     static class Flags extends EnumeratedValues {
-		static final Flags instance = new Flags();
+        static final Flags instance = new Flags();
         private Flags() {
             super(
                 new String[] {
@@ -108,15 +108,15 @@ class DescendantsFunDef extends FunDefBase
                     SELF_AND_AFTER, SELF_AND_BEFORE, SELF_BEFORE_AFTER,
                     LEAVES});
         }
-		public static final int SELF = 1;
-		public static final int AFTER = 2;
-		public static final int BEFORE = 4;
-		public static final int BEFORE_AND_AFTER = BEFORE | AFTER;
-		public static final int SELF_AND_AFTER = SELF | AFTER;
-		public static final int SELF_AND_BEFORE = SELF | BEFORE;
-		public static final int SELF_BEFORE_AFTER = SELF | BEFORE | AFTER;
-		public static final int LEAVES = 8;
-	}
+        public static final int SELF = 1;
+        public static final int AFTER = 2;
+        public static final int BEFORE = 4;
+        public static final int BEFORE_AND_AFTER = BEFORE | AFTER;
+        public static final int SELF_AND_AFTER = SELF | AFTER;
+        public static final int SELF_AND_BEFORE = SELF | BEFORE;
+        public static final int SELF_BEFORE_AFTER = SELF | BEFORE | AFTER;
+        public static final int LEAVES = 8;
+    }
 
     /**
      * Resolves calls to the <code>DESCENDANTS</code> function.

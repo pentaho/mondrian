@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// (C) Copyright 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -29,58 +29,58 @@ import java.io.IOException;
  */
 
 public class XercesDOMParser extends GenericDOMParser {
-	private DOMParser parser;
+    private DOMParser parser;
 
-	/**
-	 * Constructs a non-validating Xerces DOM Parser.
-	 */
-	public XercesDOMParser() throws XOMException {
-		this(false);
-	}
+    /**
+     * Constructs a non-validating Xerces DOM Parser.
+     */
+    public XercesDOMParser() throws XOMException {
+        this(false);
+    }
 
-	/**
-	 * Constructs a Xerces DOM Parser.
-	 * @param validate whether to enable validation
-	 */
-	public XercesDOMParser(boolean validate) throws XOMException {
-		parser = new DOMParser();
-		try {
-			if (!validate) {
-				parser.setFeature(VALIDATION_FEATURE, false);
-				parser.setFeature(LOAD_EXTERNAL_DTD_FEATURE, false);
-			}
-		} catch (SAXException e) {
-			throw new XOMException(e, "Error setting up validation");
-		}
+    /**
+     * Constructs a Xerces DOM Parser.
+     * @param validate whether to enable validation
+     */
+    public XercesDOMParser(boolean validate) throws XOMException {
+        parser = new DOMParser();
+        try {
+            if (!validate) {
+                parser.setFeature(VALIDATION_FEATURE, false);
+                parser.setFeature(LOAD_EXTERNAL_DTD_FEATURE, false);
+            }
+        } catch (SAXException e) {
+            throw new XOMException(e, "Error setting up validation");
+        }
 
-		parser.setErrorHandler(this);
-		document = new DocumentImpl();
-	}
+        parser.setErrorHandler(this);
+        document = new DocumentImpl();
+    }
 
-	// implement GenericDOMParser
-	protected Document parseInputSource(InputSource in) throws XOMException {
-		prepareParse();
-		try {
-			parser.parse(in);
-		} catch (SAXException ex) {
-			// Display any pending errors
-			handleErrors();
-			throw new XOMException(ex, "Document parse failed");
-		} catch (IOException ex) {
-			// Display any pending errors
-			handleErrors();
-			throw new XOMException(ex, "Document parse failed");
-		}
+    // implement GenericDOMParser
+    protected Document parseInputSource(InputSource in) throws XOMException {
+        prepareParse();
+        try {
+            parser.parse(in);
+        } catch (SAXException ex) {
+            // Display any pending errors
+            handleErrors();
+            throw new XOMException(ex, "Document parse failed");
+        } catch (IOException ex) {
+            // Display any pending errors
+            handleErrors();
+            throw new XOMException(ex, "Document parse failed");
+        }
 
-		handleErrors();
-		return parser.getDocument();
-	}
+        handleErrors();
+        return parser.getDocument();
+    }
 
-	// implement Parser
-	public DOMWrapper create(String tagName) {
-		Node node = document.createElement(tagName);
-		return new W3CDOMWrapper(node);
-	}
+    // implement Parser
+    public DOMWrapper create(String tagName) {
+        Node node = document.createElement(tagName);
+        return new W3CDOMWrapper(node);
+    }
 }
 
 // End XercesDOMParser.java

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>SELECT {[Education Level].[Partial College].PrevMember} ON AXIS(0), 
-       {[Time].[1997].[Q3].[9].PrevMember, [Time].[1997].[Q2].[4].NextMember} ON AXIS(1) 
+    <mdxQuery>SELECT {[Education Level].[Partial College].PrevMember} ON AXIS(0),
+       {[Time].[1997].[Q3].[9].PrevMember, [Time].[1997].[Q2].[4].NextMember} ON AXIS(1)
 FROM [Sales]
 WHERE [Store Size in SQFT].[21215].PrevMember</mdxQuery>
     <dataResult>

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2003 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -24,21 +24,21 @@ import javax.olap.metadata.*;
  * @version $Id$
  **/
 class MondrianMemberObjectFactories implements MemberObjectFactories  {
-	public Member createMember(Dimension owner) {
-		return new MondrianJolapMember(owner);
-	}
+    public Member createMember(Dimension owner) {
+        return new MondrianJolapMember(owner);
+    }
 
-	public CurrentMember createCurrentMember(Dimension owner) {
-		throw new UnsupportedOperationException();
-	}
+    public CurrentMember createCurrentMember(Dimension owner) {
+        throw new UnsupportedOperationException();
+    }
 
-	public MemberList createMemberList(Dimension owner) {
-		throw new UnsupportedOperationException();
-	}
+    public MemberList createMemberList(Dimension owner) {
+        throw new UnsupportedOperationException();
+    }
 
     public MemberValue createMemberValue(Member owner, Attribute attribute) throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
+        throw new UnsupportedOperationException();
+    }
 }
 
 // End MondrianMemberObjectFactories.java

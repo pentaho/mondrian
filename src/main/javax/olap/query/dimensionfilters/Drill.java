@@ -8,9 +8,9 @@ package javax.olap.query.dimensionfilters;
 public interface Drill
 extends javax.olap.query.dimensionfilters.DimensionFilter {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.query.enumerations.DrillType getDrillType()
     throws javax.olap.OLAPException;
@@ -18,9 +18,9 @@ extends javax.olap.query.dimensionfilters.DimensionFilter {
   public void setDrillType( javax.olap.query.enumerations.DrillType value )
     throws javax.olap.OLAPException;
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.metadata.Hierarchy getHierarchy()
     throws javax.olap.OLAPException;

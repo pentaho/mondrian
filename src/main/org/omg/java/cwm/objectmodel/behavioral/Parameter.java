@@ -8,9 +8,9 @@ package org.omg.java.cwm.objectmodel.behavioral;
 public interface Parameter
 extends org.omg.java.cwm.objectmodel.core.ModelElement {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.objectmodel.core.Expression getDefaultValue();
 
@@ -20,9 +20,9 @@ extends org.omg.java.cwm.objectmodel.core.ModelElement {
 
   public void setKind( org.omg.java.cwm.objectmodel.behavioral.ParameterDirectionKind value );
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.objectmodel.behavioral.BehavioralFeature getBehavioralFeature();
 

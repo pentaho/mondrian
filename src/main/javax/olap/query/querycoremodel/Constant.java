@@ -8,9 +8,9 @@ package javax.olap.query.querycoremodel;
 public interface Constant
 extends javax.olap.query.querycoremodel.NamedObject {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public java.lang.Object getValue()
     throws javax.olap.OLAPException;

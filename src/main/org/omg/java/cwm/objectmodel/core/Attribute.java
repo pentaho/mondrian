@@ -8,9 +8,9 @@ package org.omg.java.cwm.objectmodel.core;
 public interface Attribute
 extends org.omg.java.cwm.objectmodel.core.StructuralFeature {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.objectmodel.core.Expression getInitialValue();
 

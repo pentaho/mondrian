@@ -4,7 +4,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -100,7 +100,7 @@ The same thing the other way round. The current slicer is <strong><mdx:transform
 <p>
 
 <h3>1-dim Table</h3>
-A One dimensional table. Slicer is 
+A One dimensional table. Slicer is
 <strong>"<mdx:transform query="query4" xsltURI="/WEB-INF/mdxslicer.xsl" xsltCache="false"/>"</strong>
 
 <p>

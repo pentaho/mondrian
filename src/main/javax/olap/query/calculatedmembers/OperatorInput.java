@@ -7,9 +7,9 @@ package javax.olap.query.calculatedmembers;
 
 public interface OperatorInput {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.query.querycoremodel.Ordinate getOrdinate()
     throws javax.olap.OLAPException;

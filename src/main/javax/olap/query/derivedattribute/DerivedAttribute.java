@@ -8,9 +8,9 @@ package javax.olap.query.derivedattribute;
 public interface DerivedAttribute
 extends javax.olap.query.querycoremodel.NamedObject, javax.olap.query.derivedattribute.DerivedAttributeComponent {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.query.enumerations.DAOperator getOperator()
     throws javax.olap.OLAPException;
@@ -18,9 +18,9 @@ extends javax.olap.query.querycoremodel.NamedObject, javax.olap.query.derivedatt
   public void setOperator( javax.olap.query.enumerations.DAOperator value )
     throws javax.olap.OLAPException;
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.List getComponent()
     throws javax.olap.OLAPException;
@@ -31,9 +31,9 @@ extends javax.olap.query.querycoremodel.NamedObject, javax.olap.query.derivedatt
   public void setDimensionView( javax.olap.query.querycoremodel.DimensionView value )
     throws javax.olap.OLAPException;
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public javax.olap.query.derivedattribute.DerivedAttributeComponent createComponent( javax.olap.query.enumerations.DerivedAttributeComponentType componentType )
     throws javax.olap.OLAPException;

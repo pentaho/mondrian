@@ -5,7 +5,7 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == (C) Copyright 2000-2002 Kana Software, Inc. and others.
+  == (C) Copyright 2000-2005 Kana Software, Inc. and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   ==
@@ -28,126 +28,126 @@ version="1.0"
 
 <Element type="resourceBundle">
     <Doc>
-		A <code>ResourceBundle</code> is a collection of resources.
-		The resource generator generates a class from a resource bundle
-		which has an accessor method for each resource.
+        A <code>ResourceBundle</code> is a collection of resources.
+        The resource generator generates a class from a resource bundle
+        which has an accessor method for each resource.
     </Doc>
-	<Attribute name="locale" required="true">
-		<Doc>
-			The locale of resources in this resource bundle,
-			for example, "en_US_Boston", "en_US", or "en".
-		</Doc>
-	</Attribute>
-	<Attribute name="exceptionClassName" required="false">
-		<Doc>
-			Default class for exceptions.
-		</Doc>
-	</Attribute>
-	<Attribute name="cppNamespace" required="false">
-		<Doc>
-			C++ Namespace for generated classes. Base
-			classes are assumed to be in the same namespace.
-		</Doc>
-	</Attribute>
-	<Attribute name="cppCommonInclude" required="false">
-		<Doc>
-			C++ common include file.  Included at the
-			start of all generated C++ class implementations.
-		</Doc>
-	</Attribute>
-	<Attribute name="cppExceptionClassName" required="false">
-		<Doc>
-			Default class for exceptions in generated C++.
-		</Doc>
-	</Attribute>
-	<Attribute name="cppExceptionClassLocation" required="false">
-		<Doc>
-			The location of the C++ header file that contains
-			the definition of the defautl C++ exception class.
-			Required if the default C++ exception class is
-			defined.  This location is also used as the default
-			location for resource-specific exception classes.
-		</Doc>
-	</Attribute>
-	<Array name="resources" type="resource"/>
-	<Object name="code" type="Code">
-		<Doc>
-			Text within this element is included in the generated class.
-		</Doc>
-	</Object>
+    <Attribute name="locale" required="true">
+        <Doc>
+            The locale of resources in this resource bundle,
+            for example, "en_US_Boston", "en_US", or "en".
+        </Doc>
+    </Attribute>
+    <Attribute name="exceptionClassName" required="false">
+        <Doc>
+            Default class for exceptions.
+        </Doc>
+    </Attribute>
+    <Attribute name="cppNamespace" required="false">
+        <Doc>
+            C++ Namespace for generated classes. Base
+            classes are assumed to be in the same namespace.
+        </Doc>
+    </Attribute>
+    <Attribute name="cppCommonInclude" required="false">
+        <Doc>
+            C++ common include file.  Included at the
+            start of all generated C++ class implementations.
+        </Doc>
+    </Attribute>
+    <Attribute name="cppExceptionClassName" required="false">
+        <Doc>
+            Default class for exceptions in generated C++.
+        </Doc>
+    </Attribute>
+    <Attribute name="cppExceptionClassLocation" required="false">
+        <Doc>
+            The location of the C++ header file that contains
+            the definition of the defautl C++ exception class.
+            Required if the default C++ exception class is
+            defined.  This location is also used as the default
+            location for resource-specific exception classes.
+        </Doc>
+    </Attribute>
+    <Array name="resources" type="resource"/>
+    <Object name="code" type="Code">
+        <Doc>
+            Text within this element is included in the generated class.
+        </Doc>
+    </Object>
 </Element>
 
 <Element type="Code">
-	<CData/>
+    <CData/>
 </Element>
 
 <Class class="resource" keepDef="true">
-	<Attribute name="name" required="true">
-		<Doc>
-			The name of this message or error, unique within this resource
-			bundle.
-		</Doc>
-	</Attribute>
-	<Object name="text" type="text"/>
-	<Code>
-		abstract mondrian.xom.DOMWrapper getDef();
-	</Code>
+    <Attribute name="name" required="true">
+        <Doc>
+            The name of this message or error, unique within this resource
+            bundle.
+        </Doc>
+    </Attribute>
+    <Object name="text" type="text"/>
+    <Code>
+        abstract mondrian.xom.DOMWrapper getDef();
+    </Code>
 </Class>
 
 <Element type="message" class="resource" keepDef="true">
     <Doc>
 A message.
     </Doc>
-	<Code>
-		mondrian.xom.DOMWrapper getDef() { return _def; }
-	</Code>
+    <Code>
+        mondrian.xom.DOMWrapper getDef() { return _def; }
+    </Code>
 </Element>
 
 <Element type="text">
-	<CData/>
+    <CData/>
 </Element>
 
 <Element type="exception" class="resource" keepDef="true">
     <Doc>
-		An <code>exception</code> defines a message which is issued in response
-		to some invalid condition. It has a type, which must be derived from
-		{@link Throwable}. The generated <code>new<i>ExceptionName</i></code>
-		method creates an instance of this exception with the appropriate
-		parameters.
-	</Doc>
-	<Attribute name="className" required="false">
-		<Doc>
-			The name of the exception class. Must be fully qualified,
-			unless it is in the package <code>java.lang</code>. If not
-			specified, the resource bundle's default exception class is used.
-		</Doc>
-	</Attribute>
-	<Attribute name="cppClassName" required="false">
-		<Doc>
-			The name of the C++ exception class.  If not specified,
-			the resource bundle's default C++ exception class is
-			used.
-		</Doc>
-	</Attribute>
-	<Attribute name="cppClassLocation" required="false">
-		<Doc>
-			The name of the C++ exception class.  If not specified,
-			the resource bundle's default C++ exception location is
-			used.  One of the two must be specfied if the C++
-			exception class is given.
-		</Doc>
-	</Attribute>
-	<Attribute name="cppChainExceptions" required="false">
-		<Doc>
-			Set to true if the C++ exception classes support
-			being chained together.	 The default is false.
-			If true, an extra method will be generated for
-			that takes a const pointer to the C++ exception class.
-		</Doc>
-	</Attribute>
-	<Code>
-		mondrian.xom.DOMWrapper getDef() { return _def; }
-	</Code>
+        An <code>exception</code> defines a message which is issued in response
+        to some invalid condition. It has a type, which must be derived from
+        {@link Throwable}. The generated <code>new<i>ExceptionName</i></code>
+        method creates an instance of this exception with the appropriate
+        parameters.
+    </Doc>
+    <Attribute name="className" required="false">
+        <Doc>
+            The name of the exception class. Must be fully qualified,
+            unless it is in the package <code>java.lang</code>. If not
+            specified, the resource bundle's default exception class is used.
+        </Doc>
+    </Attribute>
+    <Attribute name="cppClassName" required="false">
+        <Doc>
+            The name of the C++ exception class.  If not specified,
+            the resource bundle's default C++ exception class is
+            used.
+        </Doc>
+    </Attribute>
+    <Attribute name="cppClassLocation" required="false">
+        <Doc>
+            The name of the C++ exception class.  If not specified,
+            the resource bundle's default C++ exception location is
+            used.  One of the two must be specfied if the C++
+            exception class is given.
+        </Doc>
+    </Attribute>
+    <Attribute name="cppChainExceptions" required="false">
+        <Doc>
+            Set to true if the C++ exception classes support
+            being chained together.  The default is false.
+            If true, an extra method will be generated for
+            that takes a const pointer to the C++ exception class.
+        </Doc>
+    </Attribute>
+    <Code>
+        mondrian.xom.DOMWrapper getDef() { return _def; }
+    </Code>
 </Element>
 
 </Model>

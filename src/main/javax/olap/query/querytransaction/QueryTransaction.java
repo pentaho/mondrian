@@ -8,9 +8,9 @@ package javax.olap.query.querytransaction;
 public interface QueryTransaction
 extends javax.olap.query.querycoremodel.NamedObject {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.Collection getTransactionElement()
     throws javax.olap.OLAPException;

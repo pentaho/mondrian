@@ -8,9 +8,9 @@ package javax.olap.query.querycoremodel;
 public interface EdgeFilter
 extends javax.olap.query.querycoremodel.NamedObject {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.query.enumerations.SetEdgeActionType getSetEdgeAction()
     throws javax.olap.OLAPException;
@@ -18,9 +18,9 @@ extends javax.olap.query.querycoremodel.NamedObject {
   public void setSetEdgeAction( javax.olap.query.enumerations.SetEdgeActionType value )
     throws javax.olap.OLAPException;
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.query.querycoremodel.EdgeView getOwner()
     throws javax.olap.OLAPException;

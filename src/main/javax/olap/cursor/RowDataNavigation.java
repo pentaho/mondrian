@@ -7,9 +7,9 @@ package javax.olap.cursor;
 
 public interface RowDataNavigation {
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public boolean next()
     throws javax.olap.OLAPException;

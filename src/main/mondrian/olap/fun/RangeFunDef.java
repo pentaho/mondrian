@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2003 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -25,24 +25,24 @@ import java.io.PrintWriter;
  * @version $Id$
  **/
 class RangeFunDef extends FunDefBase {
-	RangeFunDef() {
-		super(
-			":",
-			"{<Member> : <Member>}",
-			"Infix colon operator returns the set of members between a given pair of members.",
-			Syntax.Infix,
-			Category.Set,
-			new int[] {Category.Member, Category.Member});
-	}
-	public void unparse(Exp[] args, PrintWriter pw) {
-		ExpBase.unparseList(pw, args, "{", " : ", "}");
-	}
-	public int getReturnType() {
-		return Category.Set;
-	}
-	public int[] getParameterTypes() {
-		return new int[] {Category.Member, Category.Member};
-	}
+    RangeFunDef() {
+        super(
+            ":",
+            "{<Member> : <Member>}",
+            "Infix colon operator returns the set of members between a given pair of members.",
+            Syntax.Infix,
+            Category.Set,
+            new int[] {Category.Member, Category.Member});
+    }
+    public void unparse(Exp[] args, PrintWriter pw) {
+        ExpBase.unparseList(pw, args, "{", " : ", "}");
+    }
+    public int getReturnType() {
+        return Category.Set;
+    }
+    public int[] getParameterTypes() {
+        return new int[] {Category.Member, Category.Member};
+    }
 }
 
 // End RangeFunDef.java

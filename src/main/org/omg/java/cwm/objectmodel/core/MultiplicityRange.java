@@ -8,9 +8,9 @@ package org.omg.java.cwm.objectmodel.core;
 public interface MultiplicityRange
 extends org.omg.java.cwm.objectmodel.core.Element {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public int getLower();
 
@@ -20,9 +20,9 @@ extends org.omg.java.cwm.objectmodel.core.Element {
 
   public void setUpper( int value );
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.objectmodel.core.Multiplicity getMultiplicity();
 

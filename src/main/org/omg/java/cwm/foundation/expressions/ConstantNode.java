@@ -8,9 +8,9 @@ package org.omg.java.cwm.foundation.expressions;
 public interface ConstantNode
 extends org.omg.java.cwm.foundation.expressions.ExpressionNode {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public java.lang.Object getValue();
 

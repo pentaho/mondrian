@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2003 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -26,40 +26,40 @@ import javax.olap.query.enumerations.HierarchyFilterType;
  * @version $Id$
  **/
 class MondrianHierarchyFilter extends MondrianDimensionFilter
-		implements HierarchyFilter {
-	private HierarchyFilterType hierarchyFilterType;
-	private Hierarchy hierarchy;
+        implements HierarchyFilter {
+    private HierarchyFilterType hierarchyFilterType;
+    private Hierarchy hierarchy;
 
-	public MondrianHierarchyFilter(MondrianDimensionStepManager manager) {
-		super(manager);
-	}
+    public MondrianHierarchyFilter(MondrianDimensionStepManager manager) {
+        super(manager);
+    }
 
-	Exp convert(Exp exp) throws OLAPException {
-		Exp newExp = _convert();
-		return combine(exp, newExp);
-	}
+    Exp convert(Exp exp) throws OLAPException {
+        Exp newExp = _convert();
+        return combine(exp, newExp);
+    }
 
-	private Exp _convert() throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
+    private Exp _convert() throws OLAPException {
+        throw new UnsupportedOperationException();
+    }
 
-	// object model methods
+    // object model methods
 
-	public HierarchyFilterType getHierarchyFilterType() throws OLAPException {
-		return hierarchyFilterType;
-	}
+    public HierarchyFilterType getHierarchyFilterType() throws OLAPException {
+        return hierarchyFilterType;
+    }
 
-	public void setHierarchyFilterType(HierarchyFilterType input) throws OLAPException {
-		this.hierarchyFilterType = input;
-	}
+    public void setHierarchyFilterType(HierarchyFilterType input) throws OLAPException {
+        this.hierarchyFilterType = input;
+    }
 
-	public void setHierarchy(Hierarchy input) throws OLAPException {
-		this.hierarchy = input;
-	}
+    public void setHierarchy(Hierarchy input) throws OLAPException {
+        this.hierarchy = input;
+    }
 
-	public Hierarchy getHierarchy() throws OLAPException {
-		return hierarchy;
-	}
+    public Hierarchy getHierarchy() throws OLAPException {
+        return hierarchy;
+    }
 }
 
 // End MondrianHierarchyFilter.java

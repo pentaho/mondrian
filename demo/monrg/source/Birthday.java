@@ -15,12 +15,12 @@ public class Birthday {
     }
     public static void main(String[] args) {
         wishHappyBirthday("Fred", 33);
-		try {
-			wishHappyBirthday("Wilma", -3);
-		} catch (Throwable e) {
-			System.out.println("Received " + e);
-		}
-		BirthdayResource.setThreadLocale(Locale.FRANCE);
-		wishHappyBirthday("Pierre", 22);
+        try {
+            wishHappyBirthday("Wilma", -3);
+        } catch (Throwable e) {
+            System.out.println("Received " + e);
+        }
+        BirthdayResource.setThreadLocale(Locale.FRANCE);
+        wishHappyBirthday("Pierre", 22);
     }
 }

@@ -8,9 +8,9 @@ package javax.olap.query.calculatedmembers;
 public interface NullHandling
 extends javax.olap.query.querycoremodel.NamedObject {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public boolean isNullAsZero()
     throws javax.olap.OLAPException;

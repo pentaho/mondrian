@@ -564,7 +564,7 @@ public class FunctionTest extends FoodMartTestCase {
 
         // Expect all children of USA.CA and USA.OR
         assertAxisReturns("DrilldownMember({[Store].[USA].[CA], [Store].[USA].[OR]}, "+
-        	"{[Store].[USA].[CA], [Store].[USA].[OR], [Store].[USA].[WA]})",
+            "{[Store].[USA].[CA], [Store].[USA].[OR], [Store].[USA].[WA]})",
                 "[Store].[All Stores].[USA].[CA]" + nl +
                 "[Store].[All Stores].[USA].[CA].[Alameda]" + nl +
                 "[Store].[All Stores].[USA].[CA].[Beverly Hills]" + nl +
@@ -583,14 +583,14 @@ public class FunctionTest extends FoodMartTestCase {
         // Drill down a leaf member
         assertAxisReturns("DrilldownMember({[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}, "+
         "{[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]})",
-        		"[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]");
+                "[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]");
 
         // Complex case with option recursive
         assertAxisReturns("DrilldownMember({[Store].[All Stores].[USA]}, "+
         "{[Store].[All Stores].[USA], [Store].[All Stores].[USA].[CA], "+
          "[Store].[All Stores].[USA].[CA].[San Diego], [Store].[All Stores].[USA].[WA]}, "+
          "RECURSIVE)",
-        		"[Store].[All Stores].[USA]" + nl +
+                "[Store].[All Stores].[USA]" + nl +
                 "[Store].[All Stores].[USA].[CA]" + nl +
                 "[Store].[All Stores].[USA].[CA].[Alameda]" + nl +
                 "[Store].[All Stores].[USA].[CA].[Beverly Hills]" + nl +
@@ -3297,7 +3297,7 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testItemTuple() {
         String s = executeExpr("CrossJoin([Gender].[All Gender].children, " +
-        		"[Time].[1997].[Q2].children).Item(0).Item(1).UniqueName");
+                "[Time].[1997].[Q2].children).Item(0).Item(1).UniqueName");
         Assert.assertEquals("[Time].[1997].[Q2].[4]", s);
     }
 

@@ -8,9 +8,9 @@ package javax.olap.query.querycoremodel;
 public interface Segment
 extends javax.olap.query.querycoremodel.NamedObject {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.query.querycoremodel.EdgeView getEdgeView()
     throws javax.olap.OLAPException;

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2004-2004 Julian Hyde and others
+// (C) Copyright 2004-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -273,15 +273,15 @@ public class MemberHelperTest extends TestCase {
         }
 
         public int getDepth() {
-			return 0;
-		}
+            return 0;
+        }
 
-		public String getPropertyFormattedValue(String propertyName) {
-			return "";
-		}
+        public String getPropertyFormattedValue(String propertyName) {
+            return "";
+        }
 
-		public Member getDataMember() {
-			return null;
-		}
+        public Member getDataMember() {
+            return null;
+        }
     }
 }

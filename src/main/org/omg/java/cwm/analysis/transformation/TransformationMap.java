@@ -8,9 +8,9 @@ package org.omg.java.cwm.analysis.transformation;
 public interface TransformationMap
 extends org.omg.java.cwm.analysis.transformation.Transformation {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.Collection getClassifierMap();
 

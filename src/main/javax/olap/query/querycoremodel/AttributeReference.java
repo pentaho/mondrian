@@ -8,9 +8,9 @@ package javax.olap.query.querycoremodel;
 public interface AttributeReference
 extends javax.olap.query.calculatedmembers.OperatorInput, javax.olap.query.querycoremodel.SelectedObject, javax.olap.query.dimensionfilters.DataBasedMemberFilterInput, javax.olap.query.derivedattribute.DerivedAttributeComponent {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.objectmodel.core.Attribute getAttribute()
     throws javax.olap.OLAPException;

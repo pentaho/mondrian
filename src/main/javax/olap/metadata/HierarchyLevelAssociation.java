@@ -8,9 +8,9 @@ package javax.olap.metadata;
 public interface HierarchyLevelAssociation
 extends org.omg.java.cwm.objectmodel.core.CoreClass {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.metadata.LevelBasedHierarchy getLevelBasedHierarchy()
     throws javax.olap.OLAPException;

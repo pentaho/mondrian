@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1998-2004 Kana Software, Inc. and others.
+// (C) Copyright 1998-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -28,24 +28,24 @@ public class EnumeratedValues implements Cloneable
     /** map symbol names to values */
     private HashMap valuesByName = new HashMap();
 
-	/** the smallest ordinal value */
-	private int min = Integer.MAX_VALUE;
+    /** the smallest ordinal value */
+    private int min = Integer.MAX_VALUE;
 
-	/** the largest ordinal value */
-	private int max = Integer.MIN_VALUE;
+    /** the largest ordinal value */
+    private int max = Integer.MIN_VALUE;
 
-	// the variables below are only set AFTER makeImmutable() has been called
+    // the variables below are only set AFTER makeImmutable() has been called
 
     /** An array mapping ordinals to {@link Value}s. It is biased by the
      * min value. It is built by {@link #makeImmutable}. */
     private Value[] ordinalToValueMap;
     private static final String[] emptyStringArray = new String[0];
 
-	/**
-	 * Creates a new empty, mutable enumeration.
-	 */
-	public EnumeratedValues() {
-	}
+    /**
+     * Creates a new empty, mutable enumeration.
+     */
+    public EnumeratedValues() {
+    }
 
     /** Creates an enumeration, with an array of values, and freezes it. */
     public EnumeratedValues(Value[] values) {
@@ -55,68 +55,68 @@ public class EnumeratedValues implements Cloneable
         makeImmutable();
     }
 
-	/** Creates an enumeration, initialize it with an array of strings, and
-	 * freezes it. */
-	public EnumeratedValues(String[] names)
-	{
-		for (int i = 0; i < names.length; i++) {
-			register(new BasicValue(names[i], i, names[i]));
-		}
-		makeImmutable();
-	}
+    /** Creates an enumeration, initialize it with an array of strings, and
+     * freezes it. */
+    public EnumeratedValues(String[] names)
+    {
+        for (int i = 0; i < names.length; i++) {
+            register(new BasicValue(names[i], i, names[i]));
+        }
+        makeImmutable();
+    }
 
-	/** Create an enumeration, initializes it with arrays of code/name pairs,
-	 * and freezes it. */
-	public EnumeratedValues(String[] names, int[] codes)
-	{
-		for (int i = 0; i < names.length; i++) {
-			register(new BasicValue(names[i], codes[i], names[i]));
-		}
-		makeImmutable();
-	}
+    /** Create an enumeration, initializes it with arrays of code/name pairs,
+     * and freezes it. */
+    public EnumeratedValues(String[] names, int[] codes)
+    {
+        for (int i = 0; i < names.length; i++) {
+            register(new BasicValue(names[i], codes[i], names[i]));
+        }
+        makeImmutable();
+    }
 
-	/** Create an enumeration, initializes it with arrays of code/name pairs,
-	 * and freezes it. */
-	public EnumeratedValues(String[] names, int[] codes, String[] descriptions)
-	{
-		for (int i = 0; i < names.length; i++) {
-			register(new BasicValue(names[i], codes[i], descriptions[i]));
-		}
-		makeImmutable();
-	}
+    /** Create an enumeration, initializes it with arrays of code/name pairs,
+     * and freezes it. */
+    public EnumeratedValues(String[] names, int[] codes, String[] descriptions)
+    {
+        for (int i = 0; i < names.length; i++) {
+            register(new BasicValue(names[i], codes[i], descriptions[i]));
+        }
+        makeImmutable();
+    }
 
-	protected Object clone()
-	{
-		EnumeratedValues clone = null;
-		try {
-			clone = (EnumeratedValues) super.clone();
-		} catch(CloneNotSupportedException ex) {
-			// IMPLEMENT internal error?
-		}
-		clone.valuesByName = (HashMap) valuesByName.clone();
-		clone.ordinalToValueMap = null;
-		return clone;
-	}
+    protected Object clone()
+    {
+        EnumeratedValues clone = null;
+        try {
+            clone = (EnumeratedValues) super.clone();
+        } catch(CloneNotSupportedException ex) {
+            // IMPLEMENT internal error?
+        }
+        clone.valuesByName = (HashMap) valuesByName.clone();
+        clone.ordinalToValueMap = null;
+        return clone;
+    }
 
-	/**
-	 * Creates a mutable enumeration from an existing enumeration, which may
-	 * already be immutable.
-	 */
-	public EnumeratedValues getMutableClone()
-	{
-		return (EnumeratedValues) clone();
-	}
+    /**
+     * Creates a mutable enumeration from an existing enumeration, which may
+     * already be immutable.
+     */
+    public EnumeratedValues getMutableClone()
+    {
+        return (EnumeratedValues) clone();
+    }
 
-	/**
-	 * Associates a symbolic name with an ordinal value.
+    /**
+     * Associates a symbolic name with an ordinal value.
      *
      * @pre value != null
-	 * @pre !isImmutable()
-	 * @pre value.getName() != null
-	 */
-	public void register(Value value) {
+     * @pre !isImmutable()
+     * @pre value.getName() != null
+     */
+    public void register(Value value) {
         Util.assertPrecondition(value != null, "value != null");
-		Util.assertPrecondition(!isImmutable(), "isImmutable()");
+        Util.assertPrecondition(!isImmutable(), "isImmutable()");
         final String name = value.getName();
         Util.assertPrecondition(name != null, "value.getName() != null");
         Value old = (Value) valuesByName.put(name, value);
@@ -125,69 +125,69 @@ public class EnumeratedValues implements Cloneable
         }
         final int ordinal = value.getOrdinal();
         min = Math.min(min,ordinal);
-		max = Math.max(max,ordinal);
-	}
+        max = Math.max(max,ordinal);
+    }
 
-	/**
-	 * Freezes the enumeration, preventing it from being further modified.
-	 */
-	public void makeImmutable()
-	{
-		ordinalToValueMap = new Value[1 + max - min];
-		for (Iterator values = valuesByName.values().iterator();
+    /**
+     * Freezes the enumeration, preventing it from being further modified.
+     */
+    public void makeImmutable()
+    {
+        ordinalToValueMap = new Value[1 + max - min];
+        for (Iterator values = valuesByName.values().iterator();
                 values.hasNext(); ) {
-			Value value = (Value) values.next();
+            Value value = (Value) values.next();
             final int index = value.getOrdinal() - min;
             if (ordinalToValueMap[index] != null) {
                 throw Util.newInternal("Enumeration has more than one value with ordinal " + value.getOrdinal());
             }
             ordinalToValueMap[index] = value;
-		}
-	}
+        }
+    }
 
-	public final boolean isImmutable()
-	{
-		return (ordinalToValueMap != null);
-	}
+    public final boolean isImmutable()
+    {
+        return (ordinalToValueMap != null);
+    }
 
-	/**
-	 * Returns the smallest ordinal defined by this enumeration.
-	 */
-	public final int getMin()
-	{
-		return min;
-	}
+    /**
+     * Returns the smallest ordinal defined by this enumeration.
+     */
+    public final int getMin()
+    {
+        return min;
+    }
 
-	/**
-	 * Returns the largest ordinal defined by this enumeration.
-	 */
-	public final int getMax()
-	{
-		return max;
-	}
+    /**
+     * Returns the largest ordinal defined by this enumeration.
+     */
+    public final int getMax()
+    {
+        return max;
+    }
 
-	/**
-	 * Returns whether <code>ordinal</code> is valid for this enumeration.
-	 * This method is particularly useful in pre- and post-conditions, for
-	 * example
-	 * <blockquote>
-	 * <pre>&#64;param axisCode Axis code, must be a {&#64;link AxisCode} value
-	 * &#64;pre AxisCode.instance.isValid(axisCode)</pre>
-	 * </blockquote>
-	 *
-	 * @param ordinal Suspected ordinal from this enumeration.
-	 * @return Whether <code>ordinal</code> is valid.
-	 */
-	public final boolean isValid(int ordinal)
-	{
-		if ((ordinal < min) || (ordinal > max)) {
-			return false;
-		}
-		if (getName(ordinal) == null) {
-			return false;
-		}
-		return true;
-	}
+    /**
+     * Returns whether <code>ordinal</code> is valid for this enumeration.
+     * This method is particularly useful in pre- and post-conditions, for
+     * example
+     * <blockquote>
+     * <pre>&#64;param axisCode Axis code, must be a {&#64;link AxisCode} value
+     * &#64;pre AxisCode.instance.isValid(axisCode)</pre>
+     * </blockquote>
+     *
+     * @param ordinal Suspected ordinal from this enumeration.
+     * @return Whether <code>ordinal</code> is valid.
+     */
+    public final boolean isValid(int ordinal)
+    {
+        if ((ordinal < min) || (ordinal > max)) {
+            return false;
+        }
+        if (getName(ordinal) == null) {
+            return false;
+        }
+        return true;
+    }
 
     /**
      * Returns the name associated with an ordinal; the return value
@@ -200,42 +200,42 @@ public class EnumeratedValues implements Cloneable
         return ordinalToValueMap[ordinal - min];
     }
 
-	/**
-	 * Returns the name associated with an ordinal; the return value
-	 * is null if the ordinal is not a member of the enumeration.
+    /**
+     * Returns the name associated with an ordinal; the return value
+     * is null if the ordinal is not a member of the enumeration.
      *
-	 * @pre isImmutable()
-	 */
-	public final String getName(int ordinal)
-	{
-		Util.assertPrecondition(isImmutable());
+     * @pre isImmutable()
+     */
+    public final String getName(int ordinal)
+    {
+        Util.assertPrecondition(isImmutable());
         final Value value = ordinalToValueMap[ordinal - min];
         if (value == null) {
             return null;
         } else {
             return value.getName();
         }
-	}
+    }
 
-	/**
-	 * Returns the description associated with an ordinal; the return value
-	 * is null if the ordinal is not a member of the enumeration.
+    /**
+     * Returns the description associated with an ordinal; the return value
+     * is null if the ordinal is not a member of the enumeration.
      *
-	 * @pre isImmutable()
-	 */
-	public final String getDescription(int ordinal)
-	{
-		Util.assertPrecondition(isImmutable());
+     * @pre isImmutable()
+     */
+    public final String getDescription(int ordinal)
+    {
+        Util.assertPrecondition(isImmutable());
         final Value value = ordinalToValueMap[ordinal - min];
         if (value == null) {
             return null;
         } else {
             return value.getDescription();
         }
-	}
+    }
 
-	/**
-	 * Returns the ordinal associated with a name
+    /**
+     * Returns the ordinal associated with a name
      *
      * @throws Error if the name is not a member of the enumeration
      */
@@ -277,15 +277,15 @@ public class EnumeratedValues implements Cloneable
         return list;
     }
 
-	/**
-	 * Returns an error indicating that the value is illegal. (The client needs
-	 * to throw the error.)
-	 */
-	public RuntimeException badValue(int ordinal) {
-		return Util.newInternal("bad value " + ordinal + "(" +
-				getName(ordinal) + ") for enumeration '" +
-				getClass().getName() + "'");
-	}
+    /**
+     * Returns an error indicating that the value is illegal. (The client needs
+     * to throw the error.)
+     */
+    public RuntimeException badValue(int ordinal) {
+        return Util.newInternal("bad value " + ordinal + "(" +
+                getName(ordinal) + ") for enumeration '" +
+                getClass().getName() + "'");
+    }
 
     /**
      * Returns an exception indicating that we didn't expect to find this value

@@ -8,9 +8,9 @@ package javax.olap.query.sorting;
 public interface DerivedAttributeSort
 extends javax.olap.query.sorting.DimensionSort {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.query.derivedattribute.DerivedAttribute getBasedOn()
     throws javax.olap.OLAPException;

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2003 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -28,29 +28,29 @@ import java.util.List;
  * @version $Id$
  **/
 class MondrianJolapHierarchy extends ClassifierSupport implements LevelBasedHierarchy {
-	private mondrian.olap.Hierarchy hierarchy;
-	private OrderedRelationshipList hierarchyLevelAssociation = new OrderedRelationshipList(Meta.hierarchyLevelAssociation);
-	private Dimension dimension;
-	private RelationshipList cubeDimensionAssociation = new RelationshipList(Meta.cubeDimensionAssociation);
-	private Dimension defaultedDimension;
+    private mondrian.olap.Hierarchy hierarchy;
+    private OrderedRelationshipList hierarchyLevelAssociation = new OrderedRelationshipList(Meta.hierarchyLevelAssociation);
+    private Dimension dimension;
+    private RelationshipList cubeDimensionAssociation = new RelationshipList(Meta.cubeDimensionAssociation);
+    private Dimension defaultedDimension;
 
-	static class Meta {
-		static Relationship hierarchyLevelAssociation = new Relationship(MondrianJolapHierarchy.class, "hierarchyLevelAssociation", HierarchyLevelAssociation.class);
-		static Relationship cubeDimensionAssociation = new Relationship(MondrianJolapHierarchy.class, "cubeDimensionAssociation", CubeDimensionAssociation.class);
-	}
+    static class Meta {
+        static Relationship hierarchyLevelAssociation = new Relationship(MondrianJolapHierarchy.class, "hierarchyLevelAssociation", HierarchyLevelAssociation.class);
+        static Relationship cubeDimensionAssociation = new Relationship(MondrianJolapHierarchy.class, "cubeDimensionAssociation", CubeDimensionAssociation.class);
+    }
 
-	public MondrianJolapHierarchy(mondrian.olap.Hierarchy hierarchy) {
-		super();
-		this.hierarchy = hierarchy;
-	}
+    public MondrianJolapHierarchy(mondrian.olap.Hierarchy hierarchy) {
+        super();
+        this.hierarchy = hierarchy;
+    }
 
     public List getHierarchyLevelAssociation() throws OLAPException {
         return hierarchyLevelAssociation;
-	}
+    }
 
     public Dimension getDimension() throws OLAPException {
-		return dimension;
-	}
+        return dimension;
+    }
 
     public void setDimension(Dimension value) throws OLAPException {
         throw new UnsupportedOperationException("cannot transfer");
@@ -58,15 +58,15 @@ class MondrianJolapHierarchy extends ClassifierSupport implements LevelBasedHier
 
     public Collection getCubeDimensionAssociation() throws OLAPException {
         return cubeDimensionAssociation;
-	}
+    }
 
     public void setDefaultedDimension(Dimension input) throws OLAPException {
-		this.defaultedDimension = input;
-	}
+        this.defaultedDimension = input;
+    }
 
-	public Dimension getDefaultedDimension() throws OLAPException {
-		return defaultedDimension;
-	}
+    public Dimension getDefaultedDimension() throws OLAPException {
+        return defaultedDimension;
+    }
 }
 
 // End MondrianJolapHierarchy.java

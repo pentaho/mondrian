@@ -16,20 +16,20 @@ import mondrian.olap.Result;
  */
 public class QueryPanel extends javax.swing.JPanel {
     Connection connection;
-    
+
     /** Creates new form QueryPanel */
     public QueryPanel() {
         initComponents();
     }
-    
+
     public void setConnection(Connection c) {
         connection = c;
     }
-    
+
     public Connection getConnection() {
         return connection;
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -89,10 +89,10 @@ public class QueryPanel extends javax.swing.JPanel {
         } catch (Exception ex) {
             resultTextPane.setText(ex.getMessage());
         }
-        
+
     }//GEN-LAST:event_executeButtonActionPerformed
-    
-    
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane2;
@@ -102,5 +102,5 @@ public class QueryPanel extends javax.swing.JPanel {
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JButton executeButton;
     // End of variables declaration//GEN-END:variables
-    
+
 }

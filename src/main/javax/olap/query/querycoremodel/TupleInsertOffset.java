@@ -8,9 +8,9 @@ package javax.olap.query.querycoremodel;
 public interface TupleInsertOffset
 extends javax.olap.query.edgefilters.EdgeInsertOffset {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.query.querycoremodel.Tuple getTuple()
     throws javax.olap.OLAPException;

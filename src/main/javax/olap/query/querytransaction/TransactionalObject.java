@@ -7,9 +7,9 @@ package javax.olap.query.querytransaction;
 
 public interface TransactionalObject {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.query.querytransaction.QueryTransaction getActiveIn()
     throws javax.olap.OLAPException;

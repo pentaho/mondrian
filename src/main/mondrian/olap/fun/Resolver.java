@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2003 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -28,8 +28,8 @@ interface Resolver
     /**
      * Returns the name of the function or operator.
      */
-	String getName();
-    
+    String getName();
+
     /**
      * Returns the syntax with which the function or operator was invoked.
      */
@@ -52,7 +52,7 @@ interface Resolver
      *
      * @return
      */
-	FunDef resolve(Exp[] args, int[] conversionCount);
+    FunDef resolve(Exp[] args, int[] conversionCount);
 
     /**
      * Returns whether a particular argument must be a scalar expression.

@@ -8,9 +8,9 @@ package org.omg.java.cwm.objectmodel.core;
 public interface Expression
 extends org.omg.java.cwm.objectmodel.core.Element {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public java.lang.String getBody();
 

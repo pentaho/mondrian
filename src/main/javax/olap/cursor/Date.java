@@ -8,9 +8,9 @@ package javax.olap.cursor;
 public interface Date
 extends javax.olap.query.querycoremodel.NamedObject {
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public void date( long date )
     throws javax.olap.OLAPException;

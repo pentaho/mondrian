@@ -8,9 +8,9 @@ package org.omg.java.cwm.objectmodel.core;
 public interface ModelElement
 extends org.omg.java.cwm.objectmodel.core.Element {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public java.lang.String getName();
 
@@ -20,9 +20,9 @@ extends org.omg.java.cwm.objectmodel.core.Element {
 
   public void setVisibility( org.omg.java.cwm.objectmodel.core.VisibilityKind value );
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.Collection getClientDependency();
 

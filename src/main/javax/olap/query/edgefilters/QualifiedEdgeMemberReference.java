@@ -8,9 +8,9 @@ package javax.olap.query.edgefilters;
 public interface QualifiedEdgeMemberReference
 extends javax.olap.query.querycoremodel.NamedObject {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.query.edgefilters.SuppressEdgeMemberFilter getOwner()
     throws javax.olap.OLAPException;

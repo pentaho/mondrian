@@ -8,9 +8,9 @@ package javax.olap.query.querytransaction;
 public interface QueryTransactionManager
 extends javax.olap.query.querycoremodel.NamedObject {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.Collection getQueryTransaction()
     throws javax.olap.OLAPException;
@@ -21,9 +21,9 @@ extends javax.olap.query.querycoremodel.NamedObject {
   public void setCurrentTransaction( javax.olap.query.querytransaction.QueryTransaction value )
     throws javax.olap.OLAPException;
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public javax.olap.query.querytransaction.QueryTransaction beginRootTransaction()
     throws javax.olap.OLAPException;

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -15,39 +15,39 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
 public class ResourceDefinition {
-	//int code;
-	public String key;
-	public String baseMessage;
-	//int severity;
+    //int code;
+    public String key;
+    public String baseMessage;
+    //int severity;
 
-	public ResourceDefinition(String key, String baseMessage) {
-		this.key = key;
-		this.baseMessage = baseMessage;
-	}
-	/** Creates an instance of this definition with a set of parameters.
-	 * Derived classes can override this factory method. **/
-	public ResourceInstance instantiate(ResourceBundle bundle, Object[] args) {
-		return new Instance(bundle, this, args);
-	}
+    public ResourceDefinition(String key, String baseMessage) {
+        this.key = key;
+        this.baseMessage = baseMessage;
+    }
+    /** Creates an instance of this definition with a set of parameters.
+     * Derived classes can override this factory method. **/
+    public ResourceInstance instantiate(ResourceBundle bundle, Object[] args) {
+        return new Instance(bundle, this, args);
+    }
 
-	/** Default implementation of {@link ResourceInstance}. **/
-	private static class Instance implements ResourceInstance {
-		ResourceDefinition definition;
-		ResourceBundle bundle;
-		Object[] args;
-		public Instance(ResourceBundle bundle, ResourceDefinition definition, Object[] args) {
-			this.definition = definition;
-			this.bundle = bundle;
-			this.args = args;
-		}
-		public String toString() {
-			String message = bundle.getString(definition.key);
-			MessageFormat format = new MessageFormat(message);
-			format.setLocale(bundle.getLocale());
-			String formattedMessage = format.format(args);
-			return formattedMessage;
-		}
-	}
+    /** Default implementation of {@link ResourceInstance}. **/
+    private static class Instance implements ResourceInstance {
+        ResourceDefinition definition;
+        ResourceBundle bundle;
+        Object[] args;
+        public Instance(ResourceBundle bundle, ResourceDefinition definition, Object[] args) {
+            this.definition = definition;
+            this.bundle = bundle;
+            this.args = args;
+        }
+        public String toString() {
+            String message = bundle.getString(definition.key);
+            MessageFormat format = new MessageFormat(message);
+            format.setLocale(bundle.getLocale());
+            String formattedMessage = format.format(args);
+            return formattedMessage;
+        }
+    }
 }
 
 // End ResourceDefinition.java

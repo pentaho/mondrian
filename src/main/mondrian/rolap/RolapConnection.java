@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2003 Kana Software, Inc. and others.
+// Copyright (C) 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -38,68 +38,68 @@ import java.util.*;
  * @version $Id$
  */
 public class RolapConnection extends ConnectionBase {
-	Util.PropertyList connectInfo;
+    Util.PropertyList connectInfo;
     /** Factory for JDBC connections to talk to the RDBMS. This factory will
      * usually use a connection pool. */
-	DataSource dataSource;
-	String catalogName;
-	RolapSchema schema;
-	private SchemaReader schemaReader;
-	protected Role role;
-	private Locale locale = Locale.US;
+    DataSource dataSource;
+    String catalogName;
+    RolapSchema schema;
+    private SchemaReader schemaReader;
+    protected Role role;
+    private Locale locale = Locale.US;
 
     /**
-	 * Creates a connection.
-	 *
-	 * @param connectInfo Connection properties; keywords are described in
-	 *   {@link RolapConnectionProperties}.
-	 */
-	public RolapConnection(Util.PropertyList connectInfo) {
-		this(connectInfo, null);
-	}
+     * Creates a connection.
+     *
+     * @param connectInfo Connection properties; keywords are described in
+     *   {@link RolapConnectionProperties}.
+     */
+    public RolapConnection(Util.PropertyList connectInfo) {
+        this(connectInfo, null);
+    }
 
-	/**
-	 * Creates a RolapConnection.
-	 *
-	 * <p>Only {@link mondrian.rolap.RolapSchema.Pool#get} calls this with schema != null (to
-	 * create a schema's internal connection). Other uses retrieve a schema
-	 * from the cache based upon the <code>Catalog</code> property.
-	 *
-	 * @param connectInfo Connection properties; keywords are described in
-	 *   {@link RolapConnectionProperties}.
-	 * @param schema Schema for the connection. Must be null unless this is to
-	 *   be an internal connection.
-	 * @pre connectInfo != null
-	 */
-	RolapConnection(Util.PropertyList connectInfo, RolapSchema schema) {
+    /**
+     * Creates a RolapConnection.
+     *
+     * <p>Only {@link mondrian.rolap.RolapSchema.Pool#get} calls this with schema != null (to
+     * create a schema's internal connection). Other uses retrieve a schema
+     * from the cache based upon the <code>Catalog</code> property.
+     *
+     * @param connectInfo Connection properties; keywords are described in
+     *   {@link RolapConnectionProperties}.
+     * @param schema Schema for the connection. Must be null unless this is to
+     *   be an internal connection.
+     * @pre connectInfo != null
+     */
+    RolapConnection(Util.PropertyList connectInfo, RolapSchema schema) {
         String provider = connectInfo.get(RolapConnectionProperties.Provider);
         Util.assertTrue(provider.equalsIgnoreCase("mondrian"));
-		this.connectInfo = connectInfo;
+        this.connectInfo = connectInfo;
         this.catalogName = connectInfo.get(RolapConnectionProperties.Catalog);
         this.dataSource = createDataSource(connectInfo);
-		Role role = null;
-		if (schema == null) {
-			// If RolapSchema.Pool.get were to call this with schema == null,
-			// we would loop.
+        Role role = null;
+        if (schema == null) {
+            // If RolapSchema.Pool.get were to call this with schema == null,
+            // we would loop.
             final String jdbcConnectString = connectInfo.get(RolapConnectionProperties.Jdbc);
             final String jdbcUser = connectInfo.get(RolapConnectionProperties.JdbcUser);
             final String dataSource = connectInfo.get(RolapConnectionProperties.DataSource);
-			schema = RolapSchema.Pool.instance().get(
-					catalogName, jdbcConnectString + getJDBCProperties(connectInfo).toString(), jdbcUser, dataSource, connectInfo);
-			String roleName = connectInfo.get(RolapConnectionProperties.Role);
-			if (roleName != null) {
-				role = schema.lookupRole(roleName);
-				if (role == null) {
-					throw Util.newError("Role '" + roleName + "' not found");
-				}
-			}
-		}
-		if (role == null) {
-			role = schema.defaultRole;
-		}
+            schema = RolapSchema.Pool.instance().get(
+                    catalogName, jdbcConnectString + getJDBCProperties(connectInfo).toString(), jdbcUser, dataSource, connectInfo);
+            String roleName = connectInfo.get(RolapConnectionProperties.Role);
+            if (roleName != null) {
+                role = schema.lookupRole(roleName);
+                if (role == null) {
+                    throw Util.newError("Role '" + roleName + "' not found");
+                }
+            }
+        }
+        if (role == null) {
+            role = schema.defaultRole;
+        }
         this.schema = schema;
-		setRole(role);
-	}
+        setRole(role);
+    }
 
     //
     // This is package-level in order for the RolapConnectionTest class to have access.
@@ -216,78 +216,78 @@ public class RolapConnection extends ConnectionBase {
     }
 
     public Util.PropertyList getConnectInfo() {
-		return connectInfo;
-	}
+        return connectInfo;
+    }
 
     public void close() {
-	}
+    }
 
-	public Schema getSchema() {
-		return schema;
-	}
+    public Schema getSchema() {
+        return schema;
+    }
 
-	public String getConnectString()
-	{
-		return connectInfo.toString();
-	}
-	public String getCatalogName()
-	{
-		return catalogName;
-	}
+    public String getConnectString()
+    {
+        return connectInfo.toString();
+    }
+    public String getCatalogName()
+    {
+        return catalogName;
+    }
 
   public Locale getLocale()
   {
     return locale;
   }
 
-	public void setLocale(Locale locale)
-	{
-		this.locale = locale;
-	}
+    public void setLocale(Locale locale)
+    {
+        this.locale = locale;
+    }
 
-	public SchemaReader getSchemaReader() {
-		return schemaReader;
-	}
+    public SchemaReader getSchemaReader() {
+        return schemaReader;
+    }
 
-	public Result execute(Query query)
-	{
-		try {
-			Result result = new RolapResult(query);
-			for (int i = 0; i < query.axes.length; i++) {
-				QueryAxis axis = query.axes[i];
-				if (axis.nonEmpty) {
-					result = new NonEmptyResult(result, query, i);
-				}
-			}
-			return result;
-		} catch (Throwable e) {
-			String queryString;
-			try {
-				queryString = query.getQueryString();
-			} catch (Exception e1) {
-				queryString = "?";
-			}
-			throw Util.newError(e, "Error while executing query [" +
-					queryString + "]");
-		}
-	}
+    public Result execute(Query query)
+    {
+        try {
+            Result result = new RolapResult(query);
+            for (int i = 0; i < query.axes.length; i++) {
+                QueryAxis axis = query.axes[i];
+                if (axis.nonEmpty) {
+                    result = new NonEmptyResult(result, query, i);
+                }
+            }
+            return result;
+        } catch (Throwable e) {
+            String queryString;
+            try {
+                queryString = query.getQueryString();
+            } catch (Exception e1) {
+                queryString = "?";
+            }
+            throw Util.newError(e, "Error while executing query [" +
+                    queryString + "]");
+        }
+    }
 
-	public void setRole(Role role) {
-		Util.assertPrecondition(role != null, "role != null");
-		Util.assertPrecondition(!role.isMutable(), "!role.isMutable()");
-		this.role = role;
-		this.schemaReader = new RolapSchemaReader(role, schema) {
-			public Cube getCube() {
-				throw new UnsupportedOperationException();
-			}
-		};
-	}
+    public void setRole(Role role) {
+        Util.assertPrecondition(role != null, "role != null");
+        Util.assertPrecondition(!role.isMutable(), "!role.isMutable()");
+        this.role = role;
+        this.schemaReader = new RolapSchemaReader(role, schema) {
+            public Cube getCube() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
 
-	public Role getRole() {
-		Util.assertPostcondition(role != null, "role != null");
-		Util.assertPostcondition(!role.isMutable(), "!role.isMutable()");
-		return role;
-	}
+    public Role getRole() {
+        Util.assertPostcondition(role != null, "role != null");
+        Util.assertPostcondition(!role.isMutable(), "!role.isMutable()");
+        return role;
+    }
 
     /**
      * Implementation of {@link DataSource} which calls the good ol'
@@ -339,9 +339,9 @@ public class RolapConnection extends ConnectionBase {
     }
 
 
-	public DataSource getDataSource() {
-		return dataSource;
-	}
+    public DataSource getDataSource() {
+        return dataSource;
+    }
 }
 
 /**
@@ -349,84 +349,84 @@ public class RolapConnection extends ConnectionBase {
  * on a particular axis.
  */
 class NonEmptyResult extends ResultBase {
-	Result underlying;
-	int axis;
-	HashMap map;
-	/** workspace. Synchronized access only. **/
-	private int[] pos;
+    Result underlying;
+    int axis;
+    HashMap map;
+    /** workspace. Synchronized access only. **/
+    private int[] pos;
 
-	NonEmptyResult(Result result, Query query, int axis) {
-		this.underlying = result;
-		this.axis = axis;
-		this.map = new HashMap();
-		int axisCount = underlying.getAxes().length;
-		this.pos = new int[axisCount];
-		this.query = query;
-		this.axes = (Axis[]) underlying.getAxes().clone();
-		this.slicerAxis = underlying.getSlicerAxis();
-		Position[] positions = underlying.getAxes()[axis].positions;
-		ArrayList positionsList = new ArrayList();
-		for (int i = 0, count = positions.length; i < count; i++) {
-			Position position = positions[i];
-			if (isEmpty(i, axis)) {
-				continue;
-			} else {
-				map.put(new Integer(positionsList.size()), new Integer(i));
-				positionsList.add(position);
-			}
-		}
-		this.axes[axis] = new RolapAxis(
-			(Position[]) positionsList.toArray(new Position[0]));
-	}
+    NonEmptyResult(Result result, Query query, int axis) {
+        this.underlying = result;
+        this.axis = axis;
+        this.map = new HashMap();
+        int axisCount = underlying.getAxes().length;
+        this.pos = new int[axisCount];
+        this.query = query;
+        this.axes = (Axis[]) underlying.getAxes().clone();
+        this.slicerAxis = underlying.getSlicerAxis();
+        Position[] positions = underlying.getAxes()[axis].positions;
+        ArrayList positionsList = new ArrayList();
+        for (int i = 0, count = positions.length; i < count; i++) {
+            Position position = positions[i];
+            if (isEmpty(i, axis)) {
+                continue;
+            } else {
+                map.put(new Integer(positionsList.size()), new Integer(i));
+                positionsList.add(position);
+            }
+        }
+        this.axes[axis] = new RolapAxis(
+            (Position[]) positionsList.toArray(new Position[0]));
+    }
 
-	/**
-	 * Returns true if all cells at a given offset on a given axis are
-	 * empty. For example, in a 2x2x2 dataset, <code>isEmpty(1,0)</code>
-	 * returns true if cells <code>{(1,0,0), (1,0,1), (1,1,0),
-	 * (1,1,1)}</code> are all empty. As you can see, we hold the 0th
-	 * coordinate fixed at 1, and vary all other coordinates over all
-	 * possible values.
-	 */
-	private boolean isEmpty(int offset, int fixedAxis) {
-		int axisCount = getAxes().length;
-		pos[fixedAxis] = offset;
-		return isEmptyRecurse(fixedAxis, axisCount - 1);
-	}
+    /**
+     * Returns true if all cells at a given offset on a given axis are
+     * empty. For example, in a 2x2x2 dataset, <code>isEmpty(1,0)</code>
+     * returns true if cells <code>{(1,0,0), (1,0,1), (1,1,0),
+     * (1,1,1)}</code> are all empty. As you can see, we hold the 0th
+     * coordinate fixed at 1, and vary all other coordinates over all
+     * possible values.
+     */
+    private boolean isEmpty(int offset, int fixedAxis) {
+        int axisCount = getAxes().length;
+        pos[fixedAxis] = offset;
+        return isEmptyRecurse(fixedAxis, axisCount - 1);
+    }
 
-	private boolean isEmptyRecurse(int fixedAxis, int axis) {
-		if (axis < 0) {
-			RolapCell cell = (RolapCell) underlying.getCell(pos);
-			return cell.isNull();
-		} else if (axis == fixedAxis) {
-			return isEmptyRecurse(fixedAxis, axis - 1);
-		} else {
-			Position[] positions = getAxes()[axis].positions;
-			for (int i = 0, count = positions.length; i < count; i++) {
-				pos[axis] = i;
-				if (!isEmptyRecurse(fixedAxis, axis - 1)) {
-					return false;
-				}
-			}
-			return true;
-		}
-	}
+    private boolean isEmptyRecurse(int fixedAxis, int axis) {
+        if (axis < 0) {
+            RolapCell cell = (RolapCell) underlying.getCell(pos);
+            return cell.isNull();
+        } else if (axis == fixedAxis) {
+            return isEmptyRecurse(fixedAxis, axis - 1);
+        } else {
+            Position[] positions = getAxes()[axis].positions;
+            for (int i = 0, count = positions.length; i < count; i++) {
+                pos[axis] = i;
+                if (!isEmptyRecurse(fixedAxis, axis - 1)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
 
-	// synchronized because we use 'pos'
-	public synchronized Cell getCell(int[] externalPos) {
-		System.arraycopy(externalPos, 0, this.pos, 0, externalPos.length);
-		int offset = externalPos[axis];
-		int mappedOffset = mapOffsetToUnderlying(offset);
-		this.pos[axis] = mappedOffset;
-		return underlying.getCell(this.pos);
-	}
+    // synchronized because we use 'pos'
+    public synchronized Cell getCell(int[] externalPos) {
+        System.arraycopy(externalPos, 0, this.pos, 0, externalPos.length);
+        int offset = externalPos[axis];
+        int mappedOffset = mapOffsetToUnderlying(offset);
+        this.pos[axis] = mappedOffset;
+        return underlying.getCell(this.pos);
+    }
 
-	private int mapOffsetToUnderlying(int offset) {
-		return ((Integer) map.get(new Integer(offset))).intValue();
-	}
+    private int mapOffsetToUnderlying(int offset) {
+        return ((Integer) map.get(new Integer(offset))).intValue();
+    }
 
-	public void close() {
-		underlying.close();
-	}
+    public void close() {
+        underlying.close();
+    }
 
 }
 

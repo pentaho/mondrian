@@ -8,9 +8,9 @@ package org.omg.java.cwm.objectmodel.core;
 public interface StructuralFeature
 extends org.omg.java.cwm.objectmodel.core.Feature {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.objectmodel.core.ChangeableKind getChangeability();
 
@@ -28,9 +28,9 @@ extends org.omg.java.cwm.objectmodel.core.Feature {
 
   public void setTargetScope( org.omg.java.cwm.objectmodel.core.ScopeKind value );
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.objectmodel.core.Classifier getType();
 

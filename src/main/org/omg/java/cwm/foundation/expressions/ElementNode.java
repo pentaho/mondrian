@@ -8,9 +8,9 @@ package org.omg.java.cwm.foundation.expressions;
 public interface ElementNode
 extends org.omg.java.cwm.foundation.expressions.ExpressionNode {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.objectmodel.core.ModelElement getModelElement();
 

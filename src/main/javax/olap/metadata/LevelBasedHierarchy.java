@@ -8,9 +8,9 @@ package javax.olap.metadata;
 public interface LevelBasedHierarchy
 extends javax.olap.metadata.Hierarchy {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.List getHierarchyLevelAssociation()
     throws javax.olap.OLAPException;

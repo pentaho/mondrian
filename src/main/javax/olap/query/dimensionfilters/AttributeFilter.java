@@ -8,9 +8,9 @@ package javax.olap.query.dimensionfilters;
 public interface AttributeFilter
 extends javax.olap.query.dimensionfilters.DimensionFilter {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.query.enumerations.OperatorType getOp()
     throws javax.olap.OLAPException;
@@ -24,9 +24,9 @@ extends javax.olap.query.dimensionfilters.DimensionFilter {
   public void setRhs( java.lang.Object value )
     throws javax.olap.OLAPException;
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.objectmodel.core.Attribute getAttribute()
     throws javax.olap.OLAPException;

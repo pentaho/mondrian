@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>WITH MEMBER [Product].[Product Levels] AS '[Product].Levels.Count' 
+    <mdxQuery>WITH MEMBER [Product].[Product Levels] AS '[Product].Levels.Count'
 SELECT {[Product].[Product Levels]} ON AXIS(0)
 FROM [Sales] </mdxQuery>
     <dataResult>

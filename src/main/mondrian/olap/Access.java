@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2003 Julian Hyde
+// (C) Copyright 2003-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -19,32 +19,32 @@ package mondrian.olap;
  * @version $Id$
  **/
 public class Access extends EnumeratedValues {
-	/** The singleton instance of <code>Access</code>. **/
-	public static final Access instance = new Access();
+    /** The singleton instance of <code>Access</code>. **/
+    public static final Access instance = new Access();
 
-	private Access() {
-		super(
-				new String[] {
-					"none", "custom", "all_dimensions", "all",
-				},
-				new int[] {
-					NONE, CUSTOM, ALL_DIMENSIONS, ALL,
-				}
-		);
-	}
+    private Access() {
+        super(
+                new String[] {
+                    "none", "custom", "all_dimensions", "all",
+                },
+                new int[] {
+                    NONE, CUSTOM, ALL_DIMENSIONS, ALL,
+                }
+        );
+    }
 
-	/** Returns the singleton instance of <code>Access</code>. **/
-	public static final Access instance() {
-		return instance;
-	}
-	/** No access to an object. **/
-	public static final int NONE = 1;
-	/** Custom access to an object (described by other parameters). **/
-	public static final int CUSTOM = 2;
-	/** Access to all shared dimensions (applies to schema grant). **/
-	public static final int ALL_DIMENSIONS = 3;
-	/** All access to an object. **/
-	public static final int ALL = 4;
+    /** Returns the singleton instance of <code>Access</code>. **/
+    public static final Access instance() {
+        return instance;
+    }
+    /** No access to an object. **/
+    public static final int NONE = 1;
+    /** Custom access to an object (described by other parameters). **/
+    public static final int CUSTOM = 2;
+    /** Access to all shared dimensions (applies to schema grant). **/
+    public static final int ALL_DIMENSIONS = 3;
+    /** All access to an object. **/
+    public static final int ALL = 4;
 }
 
 // End Access.java

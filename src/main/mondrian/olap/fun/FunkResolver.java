@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2003 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -24,28 +24,28 @@ import mondrian.olap.FunDef;
  * @version $Id$
  **/
 class FunkResolver extends MultiResolver {
-	Funk funk;
+    Funk funk;
 
-	FunkResolver(
-			String name, String signature, String description,
-			String[] signatures, Funk funk) {
-		super(name, signature, description, signatures);
-		this.funk = funk;
-	}
+    FunkResolver(
+            String name, String signature, String description,
+            String[] signatures, Funk funk) {
+        super(name, signature, description, signatures);
+        this.funk = funk;
+    }
 
-//	public void addTests(TestSuite suite, Pattern pattern) {
-//		super.addTests(suite, pattern);
-//		funk.addTests(suite, pattern);
-//	}
+//  public void addTests(TestSuite suite, Pattern pattern) {
+//      super.addTests(suite, pattern);
+//      funk.addTests(suite, pattern);
+//  }
 
-	protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-		return new FunDefBase(this, dummyFunDef.getReturnType(),
+    protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+        return new FunDefBase(this, dummyFunDef.getReturnType(),
                 dummyFunDef.getParameterTypes()) {
-			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				return funk.evaluate(evaluator, args);
-			}
-		};
-	}
+            public Object evaluate(Evaluator evaluator, Exp[] args) {
+                return funk.evaluate(evaluator, args);
+            }
+        };
+    }
 }
 
 // End FunkResolver.java

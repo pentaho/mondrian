@@ -8,9 +8,9 @@ package org.omg.java.cwm.analysis.transformation;
 public interface TransformationTask
 extends org.omg.java.cwm.foundation.softwaredeployment.Component {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.Collection getTransformation();
 

@@ -3,11 +3,11 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2003 Kana Software, Inc. and others.
+// Copyright (C) 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 // jhyde, 23 September, 2002
-// 
+//
 // Global style-sheet for mondrian project.
 */
 
@@ -331,7 +331,7 @@ ol.coll {
 
 PRE {
   background:#EEEEEE;
-  margin-top:1em;	margin-bottom:1em; margin-left:0px;
+  margin-top:1em;   margin-bottom:1em; margin-left:0px;
   padding:5pt;
 }
 

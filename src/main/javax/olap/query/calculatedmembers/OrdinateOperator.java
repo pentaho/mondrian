@@ -8,9 +8,9 @@ package javax.olap.query.calculatedmembers;
 public interface OrdinateOperator
 extends javax.olap.query.querycoremodel.NamedObject {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.query.enumerations.Operator getOperator()
     throws javax.olap.OLAPException;
@@ -18,9 +18,9 @@ extends javax.olap.query.querycoremodel.NamedObject {
   public void setOperator( javax.olap.query.enumerations.Operator value )
     throws javax.olap.OLAPException;
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.List getInput()
     throws javax.olap.OLAPException;
@@ -31,9 +31,9 @@ extends javax.olap.query.querycoremodel.NamedObject {
   public void setNullHandling( javax.olap.query.calculatedmembers.NullHandling value )
     throws javax.olap.OLAPException;
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public javax.olap.query.calculatedmembers.NullHandling createNullHandling()
     throws javax.olap.OLAPException;

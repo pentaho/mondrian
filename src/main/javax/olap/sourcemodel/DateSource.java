@@ -8,9 +8,9 @@ package javax.olap.sourcemodel;
 public interface DateSource
 extends javax.olap.sourcemodel.Source {
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public javax.olap.sourcemodel.DateSource appendValue( java.util.Date appendValue )
     throws javax.olap.OLAPException;

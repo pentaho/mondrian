@@ -8,9 +8,9 @@ package org.omg.java.cwm.analysis.transformation;
 public interface Transformation
 extends org.omg.java.cwm.objectmodel.core.Namespace {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.objectmodel.core.ProcedureExpression getFunction();
 
@@ -24,9 +24,9 @@ extends org.omg.java.cwm.objectmodel.core.Namespace {
 
   public void setPrimary( boolean value );
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.Collection getSource();
 

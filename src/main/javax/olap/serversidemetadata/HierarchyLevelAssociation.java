@@ -8,9 +8,9 @@ package javax.olap.serversidemetadata;
 public interface HierarchyLevelAssociation
 extends javax.olap.metadata.HierarchyLevelAssociation {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.List getDimensionDeployment()
     throws javax.olap.OLAPException;

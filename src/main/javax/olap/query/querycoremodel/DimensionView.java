@@ -8,9 +8,9 @@ package javax.olap.query.querycoremodel;
 public interface DimensionView
 extends javax.olap.query.querycoremodel.Ordinate {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public boolean isDistinct()
     throws javax.olap.OLAPException;
@@ -18,9 +18,9 @@ extends javax.olap.query.querycoremodel.Ordinate {
   public void setDistinct( boolean value )
     throws javax.olap.OLAPException;
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.query.querycoremodel.EdgeView getEdgeView()
     throws javax.olap.OLAPException;
@@ -46,9 +46,9 @@ extends javax.olap.query.querycoremodel.Ordinate {
   public java.util.Collection getDerivedAttribute()
     throws javax.olap.OLAPException;
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public javax.olap.cursor.DimensionCursor createCursor()
     throws javax.olap.OLAPException;

@@ -29,28 +29,28 @@ class PropertiesFunDef extends FunDefBase {
     }
 
     private static boolean isValidProperty(
-			Member member, String propertyName) {
-		return lookupProperty(member.getLevel(), propertyName) != null;
-	}
+            Member member, String propertyName) {
+        return lookupProperty(member.getLevel(), propertyName) != null;
+    }
 
     /**
-	 * Finds a member property called <code>propertyName</code> at, or above,
-	 * <code>level</code>.
-	 */
-	private static Property lookupProperty(
-			Level level, String propertyName) {
-		do {
-			Property[] properties = level.getProperties();
-			for (int i = 0; i < properties.length; i++) {
-				Property property = properties[i];
-				if (property.getName().equals(propertyName)) {
-					return property;
-				}
-			}
-			level = level.getParentLevel();
-		} while (level != null);
-		return null;
-	}
+     * Finds a member property called <code>propertyName</code> at, or above,
+     * <code>level</code>.
+     */
+    private static Property lookupProperty(
+            Level level, String propertyName) {
+        do {
+            Property[] properties = level.getProperties();
+            for (int i = 0; i < properties.length; i++) {
+                Property property = properties[i];
+                if (property.getName().equals(propertyName)) {
+                    return property;
+                }
+            }
+            level = level.getParentLevel();
+        } while (level != null);
+        return null;
+    }
 
     /**
      * Resolves calls to the <code>PROPERTIES</code> MDX function.

@@ -23,15 +23,15 @@
 <body>
 <h1>MonRG: Mondrian Resource Generator</h1>
 <p>Julian Hyde, October 12<sup><font face="Verdana">th</font></sup>, 2002.</p>
-<p>MonRG (the <i><b>Mon</b></i>drian <i><b>R</b></i>esource <i><b>G</b></i>enerator) 
-helps you build and maintain internationalized applications in Java. From a 
-simple XML file, it generates classes to access those resources in a type-safe 
+<p>MonRG (the <i><b>Mon</b></i>drian <i><b>R</b></i>esource <i><b>G</b></i>enerator)
+helps you build and maintain internationalized applications in Java. From a
+simple XML file, it generates classes to access those resources in a type-safe
 manner. It is tightly integrated with <a href="http://jakarta.apache.org/ant/">
-ANT</a>, to make the development process painless; and it supports a variety of 
+ANT</a>, to make the development process painless; and it supports a variety of
 schemes to determine the current locale.</p>
 <p>Let's take a look at a simple example.</p>
 <h2>Example</h2>
-<p>The following example shows how you would define a simple resource file, generate 
+<p>The following example shows how you would define a simple resource file, generate
 resource classes from it, and use those classes in your own code.</p>
 <h3>Create a resource file</h3>
 <p>First, create a resource file like the following, <code>BirthdayResource_en_US.xml</code>:</p>
@@ -47,10 +47,10 @@ resource classes from it, and use those classes in your own code.</p>
   &lt;/exception&gt;
 &lt;/resourceBundle&gt;</pre>
 </blockquote>
-<p dir="ltr">The top-level element of a resource file is always a <code>&lt;resourceBundle&gt;</code>, and the only necessary property 
+<p dir="ltr">The top-level element of a resource file is always a <code>&lt;resourceBundle&gt;</code>, and the only necessary property
 is the <code>locale</code> of the current file. Its children are a mixture of
 <code>&lt;message&gt;</code> and <code>&lt;exception&gt;</code> elements. Each must have a
-<code>name</code> attribute and a <code>&lt;text&gt;</code> child holding the message 
+<code>name</code> attribute and a <code>&lt;text&gt;</code> child holding the message
 string.</p>
 <h3>Create ANT target</h3>
 <p>Now modify your ANT build-file, <code>build.xml</code>, as follows:</p>
@@ -74,13 +74,13 @@ string.</p>
   &lt;/copy&gt;
 &lt;/target&gt;</pre>
 </blockquote>
-<p>I have assumed that your Java source files are held in the &quot;<code>source</code>&quot; 
-directory, and classes are compiled to <code>classes</code> directory, but this 
-ought to be easy to change. If you already have a target to compile Java source 
-files, you don't need the &quot;<code>compile</code>&quot; target; just add its contents to your own 
+<p>I have assumed that your Java source files are held in the &quot;<code>source</code>&quot;
+directory, and classes are compiled to <code>classes</code> directory, but this
+ought to be easy to change. If you already have a target to compile Java source
+files, you don't need the &quot;<code>compile</code>&quot; target; just add its contents to your own
 target.</p>
 <h3>Compile</h3>
-<p>Build as follows. (You need 'ant' on your path, and you will need to edit the 
+<p>Build as follows. (You need 'ant' on your path, and you will need to edit the
 project.classpath property in <code>build.xml</code>.)</p>
 <blockquote>
   <pre>$ ant
@@ -168,15 +168,15 @@ TooYoung={0} has not been born yet.</pre>
 # to this file to override the translations in the base
 # properties file, BirthdayResource.properties.</pre>
 </blockquote>
-<p>For each resource, a <code>get</code><code><i>Xxx</i>()</code> method is 
-generated to retrieve that resource in the current locale, substituting 
-parameters appropriately. For exception resources, an additional two <code>new<i>Xxx</i>()</code> 
+<p>For each resource, a <code>get</code><code><i>Xxx</i>()</code> method is
+generated to retrieve that resource in the current locale, substituting
+parameters appropriately. For exception resources, an additional two <code>new<i>Xxx</i>()</code>
 methods are generated to create (but not throw) an exception.</p>
-<p>Tokens such as <code>{0}</code> and <code>{1,number}</code> in the message 
-are automatically converted to method parameters of the right type. This means 
-that if you ever change the parameters in your error message, or accidentally 
-delete it, you code will no longer build. (If your code doesn't compile, you can 
-fix the problem immediately; better that than getting a phone call, &quot;I just got 
+<p>Tokens such as <code>{0}</code> and <code>{1,number}</code> in the message
+are automatically converted to method parameters of the right type. This means
+that if you ever change the parameters in your error message, or accidentally
+delete it, you code will no longer build. (If your code doesn't compile, you can
+fix the problem immediately; better that than getting a phone call, &quot;I just got
 this really weird error...&quot;, in a few months time.)</p>
 <p>Here's how you might use it in your code:</p>
 <blockquote>
@@ -200,22 +200,22 @@ public class Birthday {
     <pre>Happy Birthday, Fred! You don't look 33.
 RuntimeException: Wilma has not been born yet.</pre>
 </blockquote>
-<p>So there are the basics. That was easy, wasn't it? Now let's look at how you can 
-tell the system to switch to another locale, and how you go about producing 
+<p>So there are the basics. That was easy, wasn't it? Now let's look at how you can
+tell the system to switch to another locale, and how you go about producing
 resource files for that locale.</p>
 <h2>Of locales and threads</h2>
-<p>When you ask for a message, the system needs to know the locale in order to 
+<p>When you ask for a message, the system needs to know the locale in order to
 get the right translation. There are several strategies for this.</p>
-<p>The simplest strategy is to do nothing. Most applications run in the same locale as their 
-host machine, and so when the system calls <code>Locale.getDefault()</code>, it 
+<p>The simplest strategy is to do nothing. Most applications run in the same locale as their
+host machine, and so when the system calls <code>Locale.getDefault()</code>, it
 will return the right answer.</p>
-<p>You can switch locale by calling <code>Locale.getDefault(Locale newLocale)</code>, 
-but this call will affect other applications running in the same Java Virtual 
+<p>You can switch locale by calling <code>Locale.getDefault(Locale newLocale)</code>,
+but this call will affect other applications running in the same Java Virtual
 Machine, and is not allowed in some application server environments.</p>
 <p>MonRG provides a method
 <a href="http://mondrian.sourceforge.net/api/mondrian/resource/ShadowResourceBundle.html#setThreadLocale(java.util.Locale)">
-<code>ShadowResourceBundle.setThreadLocale(Locale)</code></a> to allow threads 
-to have different locales. Threads which are working in a different locale 
+<code>ShadowResourceBundle.setThreadLocale(Locale)</code></a> to allow threads
+to have different locales. Threads which are working in a different locale
 should call this method at their entry point. For example:</p>
 <blockquote>
   <pre>System.out.println(BirthdayResource.getHappyBirthday(&quot;Fred&quot;, 33));
@@ -228,7 +228,7 @@ System.out.println(BirthdayResource.getHappyBirthday(&quot;Pierre&quot;, 22));</
 Bon anniversaire, Pi&egrave;rre! 22, quel bon &acirc;ge.</pre>
 </blockquote>
 <p>Threads which have not made this call will remain in the default locale.</p>
-<p>This strategy may not be possible if the threading model is complex. Here, 
+<p>This strategy may not be possible if the threading model is complex. Here,
 you should use an explicit resource bundle object:</p>
 <blockquote>
   <pre>BirthdayResource myResource = BirthdayResource.getInstance();
@@ -236,7 +236,7 @@ System.out.println(myResource.getHappyBirthday(&quot;Fred&quot;, 33));
 myResource = BirthdayResource.getInstance(Locale.FR);
 System.out.println(myResource.getHappyBirthday(&quot;Pierre&quot;, 22));</pre>
 </blockquote>
-<p>The problem is that the accessor methods (<code>getHappyBirthday</code>, and so forth) are 
+<p>The problem is that the accessor methods (<code>getHappyBirthday</code>, and so forth) are
 static. To make them non-static, change add <code>static=&quot;false&quot;</code> to the
 <code>&lt;resgen&gt;</code> ANT task:</p>
 <blockquote>
@@ -248,21 +248,21 @@ static. To make them non-static, change add <code>static=&quot;false&quot;</code
 </blockquote>
 <p>(Non-static methods are not yet implemented.) </p>
 <h2>Translation</h2>
-<p>So far, we've just been dealing with one resource file, and you're probably 
-wondering why you went to all the trouble of extracting your messages and 
-exception strings! Have no fear, there will be more. A typical development 
+<p>So far, we've just been dealing with one resource file, and you're probably
+wondering why you went to all the trouble of extracting your messages and
+exception strings! Have no fear, there will be more. A typical development
 process goes as follows.</p>
 <p>First, you develop your application for a single locale, referred to as the
-<dfn><font face="Verdana">base locale</font></dfn>. I have been assuming that 
-this American English (<code>en_US</code>), but you can develop in any locale 
+<dfn><font face="Verdana">base locale</font></dfn>. I have been assuming that
+this American English (<code>en_US</code>), but you can develop in any locale
 you choose.</p>
-<p>You create an XML file for this language containing all the messages and 
-exceptions used by your application. Developers are often tempted to put in 
-hard-coded strings, but MonRG's tight integration with ANT makes it painless to 
+<p>You create an XML file for this language containing all the messages and
+exceptions used by your application. Developers are often tempted to put in
+hard-coded strings, but MonRG's tight integration with ANT makes it painless to
 modify the XML file and re-generate the wrapper as you go.</p>
-<p>So now you have an application in the beta stage. You're written most of the 
-code, are getting through the pile of bugs, and would like to translate the 
-product into French (<code>fr_FR</code>). Recall that in the above example, we 
+<p>So now you have an application in the beta stage. You're written most of the
+code, are getting through the pile of bugs, and would like to translate the
+product into French (<code>fr_FR</code>). Recall that in the above example, we
 were dealing with the following set of files.</p>
 <blockquote>
   <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" id="AutoNumber1">
@@ -288,7 +288,7 @@ were dealing with the following set of files.</p>
 </blockquote>
 <p>Do the following steps:</p>
 <ol>
-  <li>Copy <code>happy/BirthdayResource.properties</code>&nbsp; to <code>happy/BirthdayResource_fr_FR.properties</code>, 
+  <li>Copy <code>happy/BirthdayResource.properties</code>&nbsp; to <code>happy/BirthdayResource_fr_FR.properties</code>,
   and translate the messages as appropriate for the new locale:<blockquote>
   <pre>HappyBirthday=Bon anniversaire, {0}! {1,number}, c'est un bon age.
 TooYoung={0} n'est pas encore n&eacute;(e).</pre>
@@ -304,11 +304,11 @@ TooYoung={0} n'est pas encore n&eacute;(e).</pre>
     </blockquote></li>
    <li>Build.</li>
 </ol>
-<p>MonRG treats <code>happy/BirthdayResource_fr_FR.properties</code> as a source file. 
-It generates <code>happy/BirthdayResource_fr_FR.java</code> from it, and validates that 
+<p>MonRG treats <code>happy/BirthdayResource_fr_FR.properties</code> as a source file.
+It generates <code>happy/BirthdayResource_fr_FR.java</code> from it, and validates that
 every resource in <code>happy/BirthdayResource_fr_FR.properties</code> exists in
 <code>happy/BirthdayResource_en_US.xml</code>, and has the same number and types of parameters.</p>
-<p>In this multi-language scenario, the source and generated files are as 
+<p>In this multi-language scenario, the source and generated files are as
 follows (new files are shown in <i>italic</i>):</p><blockquote>
 
   <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" id="AutoNumber1">
@@ -337,7 +337,7 @@ follows (new files are shown in <i>italic</i>):</p><blockquote>
   </table>
 </blockquote>
 
-<p>(Validation is not implemented yet. As well as detecting modified and deleted 
+<p>(Validation is not implemented yet. As well as detecting modified and deleted
 messages, it should also have a mode which reminds us to add new messages.)</p>
 
 <a name="cpp_resources"></a>
@@ -360,12 +360,12 @@ internationalized applications in <a target="_self" href="monrg_cpp.html">C++</a
     <p>Attributes:</p>
     <ul>
       <li><b><code>locale</code></b> The locale of resources in this file. Required.</li>
-      <li><b><code>static</code></b> If true (the defaut), generate static accessor methods; 
+      <li><b><code>static</code></b> If true (the defaut), generate static accessor methods;
       if false, generate dynamic accessor methods. </li>
-      <li><b><code>exceptionClassName</code></b> The default class of exception to generate. 
+      <li><b><code>exceptionClassName</code></b> The default class of exception to generate.
       Must be qualified by package name, unless it is in the package <code>
-      java.lang</code>. Not required; default value is &quot;java.lang.RuntimeException&quot;. 
-      The <code>className</code> attribute of <code>&lt;exception&gt;</code> overrides 
+      java.lang</code>. Not required; default value is &quot;java.lang.RuntimeException&quot;.
+      The <code>className</code> attribute of <code>&lt;exception&gt;</code> overrides
       this for a specific exception.</li>
       <li><b><code>cppNamespace</code></b> The namespace used for
       generated C++ files.  Only used if resources are generated in
@@ -392,8 +392,8 @@ internationalized applications in <a target="_self" href="monrg_cpp.html">C++</a
     <td><p>Defines a localizable message.</p>
     <p>Attributes:</p>
     <ul>
-      <li><b><code>name</code></b> The identifier of the message. Becomes the name of the 
-      property in the generated <code>.properties</code> file. Required, must be 
+      <li><b><code>name</code></b> The identifier of the message. Becomes the name of the
+      property in the generated <code>.properties</code> file. Required, must be
       unique within the resource file, and must be a valid Java identifer.</li>
     </ul>
     <p>Children:</p>
@@ -406,8 +406,8 @@ internationalized applications in <a target="_self" href="monrg_cpp.html">C++</a
     <td>&lt;exception&gt;</td>
     <td>Defines an exception and its associated message.<p>Attributes:</p>
     <ul>
-      <li><b><code>name</code></b> The identifier of the exception. Becomes the name of the 
-      property in the generated <code>.properties</code> file. Required, must be 
+      <li><b><code>name</code></b> The identifier of the exception. Becomes the name of the
+      property in the generated <code>.properties</code> file. Required, must be
       unique within the resource file, and must be a valid Java identifer.</li>
       <li><b><code>className</code></b> The type of exception to generate. Must be fully qualified,
       unless it is in the package &lt;code&gt;java.lang&lt;/code&gt;. If not<br>
@@ -435,8 +435,8 @@ internationalized applications in <a target="_self" href="monrg_cpp.html">C++</a
     <td><code>&lt;text&gt;</code></td>
     <td>The text of the message or exception. Should be in Java message format (see
     <a href="http://java.sun.com/j2se/1.4/docs/api/java/text/MessageFormat.html">
-    class java.text.MessageFormat</a> for more details). If the message contains 
-    XML special characters such as '&lt;' and '&amp;', you may find it easier to 
+    class java.text.MessageFormat</a> for more details). If the message contains
+    XML special characters such as '&lt;' and '&amp;', you may find it easier to
     enclose the message in <code>&lt;![CDATA[</code> ... <code>]]&gt;</code>.</td>
   </tr>
 </table>
@@ -449,17 +449,17 @@ internationalized applications in <a target="_self" href="monrg_cpp.html">C++</a
 <a href="http://mondrian.sourceforge.net/api/mondrian/resource/ResourceGenTask.html">here</a>.</p>
 
 <h2>Conclusion</h2>
-<p>MonRG helps you build and maintain an internationalized application. Code 
-generation helps to leverage the power of the compiler: it detects parameters 
-which are missing or of the wrong type, spelling mistakes, and informational 
+<p>MonRG helps you build and maintain an internationalized application. Code
+generation helps to leverage the power of the compiler: it detects parameters
+which are missing or of the wrong type, spelling mistakes, and informational
 messages which are being used to describe error conditions.</p>
 
 <h2>About MonRG and Mondrian</h2>
 
-<p>MonRG is a spin-off of the Mondrian project, an open-source OLAP server. The 
-source code and binaries are currently only available as part of the Mondrian 
+<p>MonRG is a spin-off of the Mondrian project, an open-source OLAP server. The
+source code and binaries are currently only available as part of the Mondrian
 distribution. For more details on Mondrian, go to
-<a href="http://sourceforge.net/projects/mondrian">the project home page at 
+<a href="http://sourceforge.net/projects/mondrian">the project home page at
 SourceForge.net</a>, or email <a href="mailto:jhyde@users.sourceforge.net">
 Julian Hyde</a>.</p>
 

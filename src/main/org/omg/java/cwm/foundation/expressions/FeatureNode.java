@@ -8,9 +8,9 @@ package org.omg.java.cwm.foundation.expressions;
 public interface FeatureNode
 extends org.omg.java.cwm.foundation.expressions.ExpressionNode {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.List getArgument();
 

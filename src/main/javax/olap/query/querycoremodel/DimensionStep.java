@@ -8,9 +8,9 @@ package javax.olap.query.querycoremodel;
 public interface DimensionStep
 extends javax.olap.query.querytransaction.TransactionalObject, javax.olap.query.querycoremodel.NamedObject {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.query.querycoremodel.DimensionStepManager getDimensionStepManager()
     throws javax.olap.OLAPException;

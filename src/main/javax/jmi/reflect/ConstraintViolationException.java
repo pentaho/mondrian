@@ -3,7 +3,7 @@ package javax.jmi.reflect;
 /** Exception thrown when a constraint is violated.
  */
 public class ConstraintViolationException extends JmiException {
-    
+
     /**
      * Constructs new <code>ConstraintViolationException</code> without detail message.
      * @param objectInError object violating the constraint.

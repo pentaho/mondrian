@@ -7,9 +7,9 @@ package javax.olap.resource;
 
 public interface ResourceAdapterMetaData {
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public java.lang.String getAdapterName()
     throws javax.olap.OLAPException;

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1999-2003 Kana Software, Inc. and others.
+// (C) Copyright 1999-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -19,151 +19,151 @@ import java.util.ArrayList;
 // Preliminaries to set up and use the scanner.
 // action code {: ... :};
 parser code {:
-	// Generated from $Id$
-	private Scanner scanner;
-	private String sQuery;
-	private Connection mdxConnection;
+    // Generated from $Id$
+    private Scanner scanner;
+    private String sQuery;
+    private Connection mdxConnection;
 
-	/** Called only by {@link ConnectionBase#parseQuery} and
-	  * {@link ConnectionBase#parseExpression}.
-	  **/
-	Query parseInternal(
-		Connection mdxConnection, String sQuery, boolean debug)
-	{
-		Symbol parse_tree = null;
-		this.scanner = new StringScanner(sQuery, debug);
-		this.mdxConnection = mdxConnection;
-		this.sQuery = sQuery;
-		try {
-			if (debug) {
-				parse_tree = debug_parse();
-			} else {
-				parse_tree = parse();
-			}
-			return (Query) parse_tree.value;
-		} catch (Exception e) {
-			// "Error while parsing MDX statement '%1'"
-			throw Util.getRes().newWhileParsingMdx(sQuery, e);
-		} finally {
-			this.scanner = null;
-			this.mdxConnection = null;
-			this.sQuery = null;
-		}
-	}
-	/** override this function to make your kind of query */
-	protected Query makeQuery(
-		Formula[] formulae, QueryAxis[] axes,
-		String cube, Exp slicer, QueryPart[] cellProps)
-	{
-		return new Query(
-			mdxConnection, formulae, axes, cube, slicer, cellProps);
-	}
-
-	// Override lr_parser methods for NLS.  With this error handling scheme,
-	// all errors are fatal.
-	public void report_fatal_error(
-		String   message,
-		Object   info)
-		throws java.lang.Exception
-	{
-		done_parsing();
-		try {
-			report_error(message, info);
-		} catch (Throwable e) {
-			// "MDX parser cannot recover from previous error(s)"
-			throw Util.getRes().newMdxFatalError(e);
-		}
-	}
-
-	// override lr_parser method
-	public void report_error(String message, Object info)
-	{
-		// "Error: %1"
-		throw Util.getRes().newMdxError(message);
-	}
-
-	// override lr_parser method
-	public void syntax_error(Symbol cur_token)
-	{
-		String s = cur_token.value.toString();
-		if (cur_token.left != -1) {
-			int loc[] = new int[2];
-			scanner.getLocation(cur_token, loc);
-			// "Syntax error at line %2, column %3, token '%1'"
-			throw Util.getRes().newMdxSyntaxErrorAt(
-				s, Integer.toString(loc[0] + 1), Integer.toString(loc[1] + 1));
-		} else {
-			// "Syntax error at token '%1'"
-			throw Util.getRes().newMdxSyntaxError(s);
-		}
+    /** Called only by {@link ConnectionBase#parseQuery} and
+      * {@link ConnectionBase#parseExpression}.
+      **/
+    Query parseInternal(
+        Connection mdxConnection, String sQuery, boolean debug)
+    {
+        Symbol parse_tree = null;
+        this.scanner = new StringScanner(sQuery, debug);
+        this.mdxConnection = mdxConnection;
+        this.sQuery = sQuery;
+        try {
+            if (debug) {
+                parse_tree = debug_parse();
+            } else {
+                parse_tree = parse();
+            }
+            return (Query) parse_tree.value;
+        } catch (Exception e) {
+            // "Error while parsing MDX statement '%1'"
+            throw Util.getRes().newWhileParsingMdx(sQuery, e);
+        } finally {
+            this.scanner = null;
+            this.mdxConnection = null;
+            this.sQuery = null;
+        }
+    }
+    /** override this function to make your kind of query */
+    protected Query makeQuery(
+        Formula[] formulae, QueryAxis[] axes,
+        String cube, Exp slicer, QueryPart[] cellProps)
+    {
+        return new Query(
+            mdxConnection, formulae, axes, cube, slicer, cellProps);
     }
 
-	public void unrecovered_syntax_error(Symbol cur_token)
-		throws java.lang.Exception
+    // Override lr_parser methods for NLS.  With this error handling scheme,
+    // all errors are fatal.
+    public void report_fatal_error(
+        String   message,
+        Object   info)
+        throws java.lang.Exception
     {
-		// "Couldn't repair and continue parse"
-		String sFatalSyntaxError = Util.getRes().getMdxFatalSyntaxError();
-		report_fatal_error(sFatalSyntaxError, cur_token);
+        done_parsing();
+        try {
+            report_error(message, info);
+        } catch (Throwable e) {
+            // "MDX parser cannot recover from previous error(s)"
+            throw Util.getRes().newMdxFatalError(e);
+        }
+    }
+
+    // override lr_parser method
+    public void report_error(String message, Object info)
+    {
+        // "Error: %1"
+        throw Util.getRes().newMdxError(message);
+    }
+
+    // override lr_parser method
+    public void syntax_error(Symbol cur_token)
+    {
+        String s = cur_token.value.toString();
+        if (cur_token.left != -1) {
+            int loc[] = new int[2];
+            scanner.getLocation(cur_token, loc);
+            // "Syntax error at line %2, column %3, token '%1'"
+            throw Util.getRes().newMdxSyntaxErrorAt(
+                s, Integer.toString(loc[0] + 1), Integer.toString(loc[1] + 1));
+        } else {
+            // "Syntax error at token '%1'"
+            throw Util.getRes().newMdxSyntaxError(s);
+        }
+    }
+
+    public void unrecovered_syntax_error(Symbol cur_token)
+        throws java.lang.Exception
+    {
+        // "Couldn't repair and continue parse"
+        String sFatalSyntaxError = Util.getRes().getMdxFatalSyntaxError();
+        report_fatal_error(sFatalSyntaxError, cur_token);
     }
 :};
 init with {:
-	scanner.init();
+    scanner.init();
 :};
 scan with {:
-	return scanner.next_token();
+    return scanner.next_token();
 :};
 
 // Terminals (tokens returned by the scanner).
 // a. Keywords.
 terminal
-	AND,
-	AS,
-	AXIS,
-	CASE,
-	CELL,
-	CELL_ORDINAL,
-	DIMENSION,
-	ELSE,
-	EMPTY,
-	END,
-	FORMATTED_VALUE,
-	FROM,
-	MEMBER,
-	NON,
-	NOT,
-	ON,
-	OR,
-	PROPERTIES,
-	QUOTE,
-	SELECT,
-	SET,
-	THEN,
-	VALUE,
-	WHEN,
-	WHERE,
-	XOR,
-	WITH;
+    AND,
+    AS,
+    AXIS,
+    CASE,
+    CELL,
+    CELL_ORDINAL,
+    DIMENSION,
+    ELSE,
+    EMPTY,
+    END,
+    FORMATTED_VALUE,
+    FROM,
+    MEMBER,
+    NON,
+    NOT,
+    ON,
+    OR,
+    PROPERTIES,
+    QUOTE,
+    SELECT,
+    SET,
+    THEN,
+    VALUE,
+    WHEN,
+    WHERE,
+    XOR,
+    WITH;
 
 // b. Symbols
 terminal
-	ASTERISK,					// *
-	COLON,						// :
-	COMMA,						// ,
-	CONCAT,						// ||
-	DOT,						// .
-	EQ,							// =
-	GE,							// >=
-	GT,							// >
-	LBRACE,						// {
-	LE,							// <=
-	LPAREN,						// (
-	LT,							// <
-	MINUS,						// -
-	NE,							// <>
-	PLUS,						// +
-	RBRACE,						// }
-	RPAREN,						// )
-	SOLIDUS;					// /
+    ASTERISK,                   // *
+    COLON,                      // :
+    COMMA,                      // ,
+    CONCAT,                     // ||
+    DOT,                        // .
+    EQ,                         // =
+    GE,                         // >=
+    GT,                         // >
+    LBRACE,                     // {
+    LE,                         // <=
+    LPAREN,                     // (
+    LT,                         // <
+    MINUS,                      // -
+    NE,                         // <>
+    PLUS,                       // +
+    RBRACE,                     // }
+    RPAREN,                     // )
+    SOLIDUS;                    // /
 
 // c. Typed terminals
 terminal Double NUMBER;
@@ -175,76 +175,76 @@ terminal String UNKNOWN; // a token the lexer doesn't like!
 
 // Non terminals
 non terminal QueryAxis
-	axis_specification;
+    axis_specification;
 non terminal Exp
-	case_expression,
+    case_expression,
     else_clause_opt,
-	expression,
-	factor,
-	slicer_specification,
-	term,
-	term2,
-	term3,
-	term4,
-	term5,
-	value_expression,
-	value_expression_opt,
-	value_expression_primary,
-	where_clause_opt;
+    expression,
+    factor,
+    slicer_specification,
+    term,
+    term2,
+    term3,
+    term4,
+    term5,
+    value_expression,
+    value_expression_opt,
+    value_expression_primary,
+    where_clause_opt;
 non terminal QueryPart
-	select_statement;
+    select_statement;
 non terminal Id
-	compound_id,
-	cube_name,
-	cube_specification,
-	member_name,
-	set_name;
+    compound_id,
+    cube_name,
+    cube_specification,
+    member_name,
+    set_name;
 non terminal String
-	axis_name,
-	comp_op,
-	identifier,
-	quoted_identifier,
-	unquoted_identifier,
-	amp_quoted_identifier,
-	keyword;
+    axis_name,
+    comp_op,
+    identifier,
+    quoted_identifier,
+    unquoted_identifier,
+    amp_quoted_identifier,
+    keyword;
 non terminal Formula
-	member_specification,
-	set_specification,
-	single_formula_specification;
+    member_specification,
+    set_specification,
+    single_formula_specification;
 non terminal MemberProperty
-	member_property_definition;
+    member_property_definition;
 non terminal
-	cell_opt,
-	cell_property,
-	cell_property_list,
-	dim_props,
-	dim_props_opt,
-	dimension_opt,
-	mandatory_cell_property,
-	optional_cell_property,
-	property,
-	property_list,
-	provider_specific_cell_property,
-	unsigned_integer;
+    cell_opt,
+    cell_property,
+    cell_property_list,
+    dim_props,
+    dim_props_opt,
+    dimension_opt,
+    mandatory_cell_property,
+    optional_cell_property,
+    property,
+    property_list,
+    provider_specific_cell_property,
+    unsigned_integer;
 
 non terminal Boolean
-	non_empty_opt;
+    non_empty_opt;
 
 non terminal ArrayList
-	axis_specification_list,
-	axis_specification_list_opt,
-	cell_props,
-	cell_props_opt,
-	comma_member_property_def_list_opt,
-	exp_list,
-	exp_list_opt,
-	formula_specification,
-	member_property_def_list,
-	when_list,
-	with_formula_specification_opt;
+    axis_specification_list,
+    axis_specification_list_opt,
+    cell_props,
+    cell_props_opt,
+    comma_member_property_def_list_opt,
+    exp_list,
+    exp_list_opt,
+    formula_specification,
+    member_property_def_list,
+    when_list,
+    with_formula_specification_opt;
 
 non terminal Exp[]
-	when_clause;
+    when_clause;
 
 // Start symbol
 start with select_statement;
@@ -256,53 +256,53 @@ start with select_statement;
 // <identifier> ::= <regular_identifier> | <delimited_identifier>
 
 quoted_identifier ::=
-		QUOTED_ID
-	;
+        QUOTED_ID
+    ;
 
 amp_quoted_identifier ::=
-		AMP_QUOTED_ID
-	;
+        AMP_QUOTED_ID
+    ;
 
 unquoted_identifier ::=
-		ID
-	|	keyword
-	;
+        ID
+    |   keyword
+    ;
 
 
 identifier ::=
-		unquoted_identifier
+        unquoted_identifier
     |   quoted_identifier
-	;
+    ;
 
 // a keyword (unlike a reserved word) can be converted back into an
 // identifier in some contexts
 keyword ::=
-		DIMENSION {:
-			RESULT = "Dimension";
-		:}
-	|	PROPERTIES {:
-			RESULT = "Properties";
-		:}
-	;
+        DIMENSION {:
+            RESULT = "Dimension";
+        :}
+    |   PROPERTIES {:
+            RESULT = "Properties";
+        :}
+    ;
 
 compound_id ::=
-		identifier:i {:
-			RESULT = new Id(i);
-		:}
-	|	compound_id:hd DOT identifier:tl {:
-			RESULT = hd.append(tl, false);
-		:}
+        identifier:i {:
+            RESULT = new Id(i);
+        :}
+    |   compound_id:hd DOT identifier:tl {:
+            RESULT = hd.append(tl, false);
+        :}
 
-	;
+    ;
 
 //
 // <regular_identifier> ::= <alpha_char> [{<alpha_char> | <digit>
-// 										 | <underscore>}...]
+//                                       | <underscore>}...]
 //
 // <delimited_identifier> ::=
-// 		<start_delimiter>{<double_end_delimiter> | <nondelimit_end_symbol>}
-// 			 [{<double_end_delimiter> | <nondelimit_end_symbol> }...]
-// 		<end_delimiter>
+//      <start_delimiter>{<double_end_delimiter> | <nondelimit_end_symbol>}
+//           [{<double_end_delimiter> | <nondelimit_end_symbol> }...]
+//      <end_delimiter>
 //
 // <start_delimiter> ::= <open_bracket>
 //
@@ -313,7 +313,7 @@ compound_id ::=
 // <nondelimit_end_symbol> ::= !! <any_character_except_delimit_end_symbol>
 //
 // <cube_name> ::= [ [ [ <data_source>] <catalog_name>] [<schema_name>].]
-// 				   <identifier>
+//                 <identifier>
 cube_name ::= compound_id ;
 //
 // <data_source> ::= <identifier>
@@ -323,22 +323,22 @@ cube_name ::= compound_id ;
 // <schema_name> ::= <identifier>
 //
 // <dim_hier> ::= [<cube_name>.]<dimension_name>
-// 			   | [[<cube_name>.]< dimension_name>.]<hierarchy_name>
+//             | [[<cube_name>.]< dimension_name>.]<hierarchy_name>
 // jhyde: Need more lookahead for this to work... just use id in place of dim_hier.
 //   dim_hier ::= id;
 //
 // <dimension_name> ::= <identifier>
-// 					  | <member>.DIMENSION
-// 					  | <level>.DIMENSION
-// 					  | <hierarchy>.DIMENSION
+//                    | <member>.DIMENSION
+//                    | <level>.DIMENSION
+//                    | <hierarchy>.DIMENSION
 //
 // <hierarchy_name> ::= <identifier>
-// 					  | < member>.HIERARCHY
-// 					  | <level>.HIERARCHY
+//                    | < member>.HIERARCHY
+//                    | <level>.HIERARCHY
 //
 // <level> ::= [<dim_hier>.]< identifier>
-// 			  | <dim_hier>.LEVELS(<index>)
-// 			  | <member>.LEVEL
+//            | <dim_hier>.LEVELS(<index>)
+//            | <member>.LEVEL
 //
 // Note: The first production is for the case when named levels are
 // supported. The second production is for the case when named levels are not
@@ -346,9 +346,9 @@ cube_name ::= compound_id ;
 //
 //
 // <member> ::= [<level>.]<identifier>
-// 			   | <dim_hier>.<identifier>
-// 			   | <member>.<identifier>
-// 			   | <member_value_expression>
+//             | <dim_hier>.<identifier>
+//             | <member>.<identifier>
+//             | <member_value_expression>
 //
 // Note: The <member>.<identifier> recognizes the fact that members may
 // sometimes need to be qualified by their parent names. For example,
@@ -359,27 +359,27 @@ cube_name ::= compound_id ;
 // <property> ::= <mandatory_property> | <user_defined_property>
 //
 // <mandatory_property> ::= CATALOG_NAME
-// 						  | SCHEMA_NAME
-// 						  | CUBE_NAME
-// 						  | DIMENSION_UNIQUE_NAME
-// 						  | HIERARCHY_UNIQUE_NAME
-// 						  | LEVEL_UNIQUE_NAME
-// 						  | LEVEL_NUMBER
-// 						  | MEMBER_UNIQUE_NAME
-// 						  | MEMBER_NAME
-// 						  | MEMBER_TYPE
-// 						  | MEMBER_GUID
-// 						  | MEMBER_CAPTION
-// 						  | MEMBER_ORDINAL
-// 						  | CHILDREN_CARDINALITY
-// 						  | PARENT_LEVEL
-// 						  | PARENT_UNIQUE_NAME
-// 						  | PARENT_COUNT
-// 						  | DESCRIPTION
+//                        | SCHEMA_NAME
+//                        | CUBE_NAME
+//                        | DIMENSION_UNIQUE_NAME
+//                        | HIERARCHY_UNIQUE_NAME
+//                        | LEVEL_UNIQUE_NAME
+//                        | LEVEL_NUMBER
+//                        | MEMBER_UNIQUE_NAME
+//                        | MEMBER_NAME
+//                        | MEMBER_TYPE
+//                        | MEMBER_GUID
+//                        | MEMBER_CAPTION
+//                        | MEMBER_ORDINAL
+//                        | CHILDREN_CARDINALITY
+//                        | PARENT_LEVEL
+//                        | PARENT_UNIQUE_NAME
+//                        | PARENT_COUNT
+//                        | DESCRIPTION
 //
 // <user_defined_property> ::= <dim_hier>.<identifier>
-// 							 | <level>.<identifier>
-// 							 | <member>.<identifier>
+//                           | <level>.<identifier>
+//                           | <member>.<identifier>
 //
 // Note: The three productions recognize the fact that a property can apply to
 // all the members of a dimension, or all the members of a level, or just to a
@@ -387,8 +387,8 @@ cube_name ::= compound_id ;
 //
 //
 // <tuple> ::= <member>
-// 			| (<member> [, <member>...])
-// 			| <tuple_value_expression>
+//          | (<member> [, <member>...])
+//          | <tuple_value_expression>
 //
 // Note: Each member must be from a different dimension or from a different
 // hierarchy.
@@ -399,14 +399,14 @@ cube_name ::= compound_id ;
 // Note: Each member must be from the same hierarchy and the same level.
 //
 //
-// 		   | <set_value_expression>
-// 		   | <open_brace>[<set>|<tuple> [, <set>|<tuple>...]]<close_brace>
+//         | <set_value_expression>
+//         | <open_brace>[<set>|<tuple> [, <set>|<tuple>...]]<close_brace>
 //
 // Note: Duplicates (if any) are always retained when specifying sets in this
 // fashion.
 //
 //
-// 		   | (<set>)
+//         | (<set>)
 //
 // <open_brace> ::= {
 //
@@ -491,77 +491,77 @@ cube_name ::= compound_id ;
 // intermediate nonterminals.
 //
 // <value_expression> ::= <numeric_value_expression>
-// 						| <string_value_expression>
+//                      | <string_value_expression>
 //
 // <numeric_value_expression> ::= <term>
-// 					  | <numeric_value_expression> {<plus> | <minus>} <term>
+//                    | <numeric_value_expression> {<plus> | <minus>} <term>
 value_expression ::=
-		term5
-	|	value_expression:x OR term5:y {:
-			RESULT = new FunCall("OR", Syntax.Infix, new Exp[] {x, y});
-		:}
-	|	value_expression:x XOR term5:y {:
-			RESULT = new FunCall("XOR", Syntax.Infix, new Exp[] {x, y});
-		:}
-	;
+        term5
+    |   value_expression:x OR term5:y {:
+            RESULT = new FunCall("OR", Syntax.Infix, new Exp[] {x, y});
+        :}
+    |   value_expression:x XOR term5:y {:
+            RESULT = new FunCall("XOR", Syntax.Infix, new Exp[] {x, y});
+        :}
+    ;
 
 term5 ::=
-		term4
-	|	term5:x AND term4:y {:
-			RESULT = new FunCall("AND", Syntax.Infix, new Exp[] {x, y});
-		:}
-	;
+        term4
+    |   term5:x AND term4:y {:
+            RESULT = new FunCall("AND", Syntax.Infix, new Exp[] {x, y});
+        :}
+    ;
 
 term4 ::=
-		term3
-	|	NOT term4:p {:
-			RESULT = new FunCall("NOT", Syntax.Prefix, new Exp[] {p});
-		:}
-	;
+        term3
+    |   NOT term4:p {:
+            RESULT = new FunCall("NOT", Syntax.Prefix, new Exp[] {p});
+        :}
+    ;
 
 term3 ::=
-		term2
-	|	term3:x comp_op:op term2:y {: // e.g. 1 < 5
-			RESULT = new FunCall(op, Syntax.Infix, new Exp[] {x, y});
-		:}
-	;
+        term2
+    |   term3:x comp_op:op term2:y {: // e.g. 1 < 5
+            RESULT = new FunCall(op, Syntax.Infix, new Exp[] {x, y});
+        :}
+    ;
 
 term2 ::=
-		term
-	|	term2:x PLUS term:y {:
-			RESULT = new FunCall("+", Syntax.Infix, new Exp[] {x, y});
-		:}
-	|	term2:x MINUS term:y {:
-			RESULT = new FunCall("-", Syntax.Infix, new Exp[] {x, y});
-		:}
-	|	term2:x CONCAT term:y {:
-			RESULT = new FunCall("||", Syntax.Infix, new Exp[] {x, y});
-		:}
-	;
+        term
+    |   term2:x PLUS term:y {:
+            RESULT = new FunCall("+", Syntax.Infix, new Exp[] {x, y});
+        :}
+    |   term2:x MINUS term:y {:
+            RESULT = new FunCall("-", Syntax.Infix, new Exp[] {x, y});
+        :}
+    |   term2:x CONCAT term:y {:
+            RESULT = new FunCall("||", Syntax.Infix, new Exp[] {x, y});
+        :}
+    ;
 
 //
 // <term> ::= <factor> | <term> {<asterisk> | <solidus>} <factor>
 term ::=
-		factor
-	|	term:x ASTERISK factor:y {:
-			RESULT = new FunCall("*", Syntax.Infix, new Exp[] {x, y});
-		:}
-	|	term:x SOLIDUS factor:y {:
-			RESULT = new FunCall("/", Syntax.Infix, new Exp[] {x, y});
-		:}
-	;
+        factor
+    |   term:x ASTERISK factor:y {:
+            RESULT = new FunCall("*", Syntax.Infix, new Exp[] {x, y});
+        :}
+    |   term:x SOLIDUS factor:y {:
+            RESULT = new FunCall("/", Syntax.Infix, new Exp[] {x, y});
+        :}
+    ;
 //
 // <factor> ::= [<sign>] <numeric_primary>
 //
 factor ::=
-		value_expression_primary
-	|	PLUS value_expression_primary:p {:
-			RESULT = p;
-		:}
-	|	MINUS value_expression_primary:p {:
-			RESULT = new FunCall("-", Syntax.Prefix, new Exp[] {p});
-		:}
-	;
+        value_expression_primary
+    |   PLUS value_expression_primary:p {:
+            RESULT = p;
+        :}
+    |   MINUS value_expression_primary:p {:
+            RESULT = new FunCall("-", Syntax.Prefix, new Exp[] {p});
+        :}
+    ;
 // <sign> ::= + | -
 //
 // <plus> ::= +
@@ -573,122 +573,122 @@ factor ::=
 // <solidus> ::= /
 //
 // <numeric_primary> ::= <value_expression_primary>
-// 					   | <numeric_value_function>
+//                     | <numeric_value_function>
 //
 // Note: The data type of <value_expression_primary> in the above production
 // shall be numeric.
 //
 //
 // <value_expression_primary> ::= <unsigned_numeric_literal>
-// 							   | (<value_expression>)
-// 							   |  <character_string_literal>
-// 							   | [<cube_name>.]<tuple>[.VALUE]
-// 							   |  <property>[.VALUE]
-// 							   |  <conditional_expression>
+//                             | (<value_expression>)
+//                             |  <character_string_literal>
+//                             | [<cube_name>.]<tuple>[.VALUE]
+//                             |  <property>[.VALUE]
+//                             |  <conditional_expression>
 value_expression_primary ::=
-		STRING:s {:
-			RESULT = Literal.createString(s);
-		:}
-	|	NUMBER:d {:
-			RESULT = Literal.create(d);
-		:}
-	|	identifier:i {:
-			RESULT = new Id(i);
-		:}
-	|	value_expression_primary:i DOT unquoted_identifier:j {:
-			RESULT = new FunCall(j, Syntax.Property, new Exp[] {i});
-		:}
-	|	value_expression_primary:i DOT quoted_identifier:j {:
-			if (i instanceof Id) {
-				RESULT = ((Id) i).append(j, false);
-			} else {
-				RESULT = new FunCall(
-					j, Syntax.QuotedProperty, new Exp[] {i});
-			}
-		:}
-	|	value_expression_primary:i DOT amp_quoted_identifier:j {:
-			if (i instanceof Id) {
-				RESULT = ((Id) i).append(j, true);
-			} else {
-				RESULT = new FunCall(
-					j, Syntax.AmpersandQuotedProperty, new Exp[] {i});
-			}
-		:}
-	|	value_expression_primary:i DOT identifier:j LPAREN exp_list_opt:lis RPAREN {:
-			lis.add(0, i);
-			RESULT = new FunCall(j, Syntax.Method, (Exp[]) lis.toArray(new Exp[0]));
-		:}
-	|	identifier:i LPAREN exp_list_opt:lis RPAREN {:
-			RESULT = new FunCall(
-				i, Syntax.Function, (Exp[]) lis.toArray(new Exp[0]));
-		:}
-	|	LPAREN exp_list:lis RPAREN {:
-			// Whereas ([Sales],[Time]) and () are tuples, ([Sales]) and (5)
-			// are just expressions.
-			RESULT = new FunCall(
-				"()", Syntax.Parentheses, (Exp[]) lis.toArray(new Exp[0]));
-		:}
-	|	LBRACE exp_list_opt:lis RBRACE {: // set built from sets/tuples
-			RESULT = new FunCall(
-				"{}", Syntax.Braces, (Exp[]) lis.toArray(new Exp[0]));
-		:}
-	|	case_expression
-	;
+        STRING:s {:
+            RESULT = Literal.createString(s);
+        :}
+    |   NUMBER:d {:
+            RESULT = Literal.create(d);
+        :}
+    |   identifier:i {:
+            RESULT = new Id(i);
+        :}
+    |   value_expression_primary:i DOT unquoted_identifier:j {:
+            RESULT = new FunCall(j, Syntax.Property, new Exp[] {i});
+        :}
+    |   value_expression_primary:i DOT quoted_identifier:j {:
+            if (i instanceof Id) {
+                RESULT = ((Id) i).append(j, false);
+            } else {
+                RESULT = new FunCall(
+                    j, Syntax.QuotedProperty, new Exp[] {i});
+            }
+        :}
+    |   value_expression_primary:i DOT amp_quoted_identifier:j {:
+            if (i instanceof Id) {
+                RESULT = ((Id) i).append(j, true);
+            } else {
+                RESULT = new FunCall(
+                    j, Syntax.AmpersandQuotedProperty, new Exp[] {i});
+            }
+        :}
+    |   value_expression_primary:i DOT identifier:j LPAREN exp_list_opt:lis RPAREN {:
+            lis.add(0, i);
+            RESULT = new FunCall(j, Syntax.Method, (Exp[]) lis.toArray(new Exp[0]));
+        :}
+    |   identifier:i LPAREN exp_list_opt:lis RPAREN {:
+            RESULT = new FunCall(
+                i, Syntax.Function, (Exp[]) lis.toArray(new Exp[0]));
+        :}
+    |   LPAREN exp_list:lis RPAREN {:
+            // Whereas ([Sales],[Time]) and () are tuples, ([Sales]) and (5)
+            // are just expressions.
+            RESULT = new FunCall(
+                "()", Syntax.Parentheses, (Exp[]) lis.toArray(new Exp[0]));
+        :}
+    |   LBRACE exp_list_opt:lis RBRACE {: // set built from sets/tuples
+            RESULT = new FunCall(
+                "{}", Syntax.Braces, (Exp[]) lis.toArray(new Exp[0]));
+        :}
+    |   case_expression
+    ;
 
 case_expression ::=
-		CASE value_expression_opt:x
-		when_list:y
-		else_clause_opt:z
-		END {:
-			ArrayList v = new ArrayList();
-			if (x != null) {
-				v.add(x);
-			}
-			for (int i = 0; i < y.size(); i++) {
-				Exp[] exps = (Exp[]) y.get(i);
-				Util.assertTrue(exps.length == 2);
-				v.add(exps[0]);
-				v.add(exps[1]);
-			}
-			if (z != null) {
-				v.add(z);
-			}
-			if (x == null) {
-				RESULT = new FunCall(
-					"_CaseTest", Syntax.Case, (Exp[]) v.toArray(new Exp[0]));
-			} else {
-				RESULT = new FunCall(
-					"_CaseMatch", Syntax.Case, (Exp[]) v.toArray(new Exp[0]));
-			}
-		:}
-	;
+        CASE value_expression_opt:x
+        when_list:y
+        else_clause_opt:z
+        END {:
+            ArrayList v = new ArrayList();
+            if (x != null) {
+                v.add(x);
+            }
+            for (int i = 0; i < y.size(); i++) {
+                Exp[] exps = (Exp[]) y.get(i);
+                Util.assertTrue(exps.length == 2);
+                v.add(exps[0]);
+                v.add(exps[1]);
+            }
+            if (z != null) {
+                v.add(z);
+            }
+            if (x == null) {
+                RESULT = new FunCall(
+                    "_CaseTest", Syntax.Case, (Exp[]) v.toArray(new Exp[0]));
+            } else {
+                RESULT = new FunCall(
+                    "_CaseMatch", Syntax.Case, (Exp[]) v.toArray(new Exp[0]));
+            }
+        :}
+    ;
 
 value_expression_opt ::=
-		/* empty */
-	|	value_expression
-	;
+        /* empty */
+    |   value_expression
+    ;
 
 when_list ::=
-		/* empty */ {:
-			RESULT = new ArrayList();
-		:}
-	|	when_list:x when_clause:y {:
-			RESULT = x; x.add(y);
-		:}
-	;
+        /* empty */ {:
+            RESULT = new ArrayList();
+        :}
+    |   when_list:x when_clause:y {:
+            RESULT = x; x.add(y);
+        :}
+    ;
 
 when_clause ::=
-		WHEN value_expression:x THEN value_expression:y {:
-			RESULT = new Exp[] {x,y};
-		:}
-	;
+        WHEN value_expression:x THEN value_expression:y {:
+            RESULT = new Exp[] {x,y};
+        :}
+    ;
 
 else_clause_opt ::=
-		/* empty */
-	|	ELSE value_expression:x {:
-			RESULT = x;
-		:}
-	;
+        /* empty */
+    |   ELSE value_expression:x {:
+            RESULT = x;
+        :}
+    ;
 
 //
 // <conditional_expression> ::= <if_expression> | <case_expression>
@@ -702,14 +702,14 @@ else_clause_opt ::=
 // <case_expression> ::= <simple_case> | <searched_case> | <coalesce_empty>
 //
 // <simple_case> ::= CASE <case_operand>
-// 						<simple_when_clause>...
-// 					   [<else_clause>]
-// 					 END
+//                      <simple_when_clause>...
+//                     [<else_clause>]
+//                   END
 //
 // <searched_case> ::= CASE
-// 						  <searched_when_clause>...
-// 						 [<else_clause>]
-// 					   END
+//                        <searched_when_clause>...
+//                       [<else_clause>]
+//                     END
 //
 // <simple_when_clause> ::= WHEN <when_operand> THEN <result>
 //
@@ -724,16 +724,16 @@ else_clause_opt ::=
 // <result> ::= <value_expression>
 //
 // <coalesce_empty> ::= COALESCEEMPTY (<value_expression>
-// 									{, <value_expression> }...)
+//                                  {, <value_expression> }...)
 //
 // <signed_numeric_literal> ::= [<sign>]<unsigned_numeric_literal>
 //
 // <unsigned_numeric_literal> ::= <exact_numeric_literal>
-// 								| <approximate_numeric_literal>
+//                              | <approximate_numeric_literal>
 //
 // <exact_numeric_literal> ::= <unsigned_integer>[.<unsigned_integer>]
-// 							 | <unsigned_integer>.
-// 							 | .<unsigned_integer>
+//                           | <unsigned_integer>.
+//                           | .<unsigned_integer>
 //
 // <unsigned_integer> ::= {<digit>}...
 //
@@ -744,21 +744,21 @@ else_clause_opt ::=
 // <exponent> ::= [<sign>]<unsigned_integer>
 //
 // <string_value_expression> ::= <value_expression_primary>
-// 							   | <string_value_expression>
-// 								 <concatenation_operator>
-// 								 <value_expression_primary>
+//                             | <string_value_expression>
+//                               <concatenation_operator>
+//                               <value_expression_primary>
 //
 // Note: The data type of <value_expression_primary> in the above production
 // shall be a character string.
 //
 //
 // <character_string_literal> ::= <quote>[<character_representation>...]
-// 								 <quote>
+//                               <quote>
 //
 // <character_representation> ::= <nonquote_character> | <quote_symbol>
 //
 // <nonquote_character> ::= !!
-// 					   <any_character_in_the_character_set_other_than_quote>
+//                     <any_character_in_the_character_set_other_than_quote>
 //
 // <quote_symbol> ::= <quote> <quote>
 //
@@ -788,29 +788,29 @@ else_clause_opt ::=
 // Search Condition
 //
 // <search_condition> ::= <boolean_term>
-// 						| <search_condition> {OR | XOR} <boolean_term>
+//                      | <search_condition> {OR | XOR} <boolean_term>
 //
 // <boolean_term> ::= <boolean_factor> | <boolean_term> AND <boolean_factor>
 //
 // <boolean_factor> ::= [NOT] <boolean_primary>
 //
 // <boolean_primary> ::= <value_expression> <comp_op> <value_expression>
-// 					   | ISEMPTY(<value_expression>)
-// 					   | (<search_condition>)
+//                     | ISEMPTY(<value_expression>)
+//                     | (<search_condition>)
 // <comp_op> ::= <equals_operator>
-// 			   | <not_equals_operator>
-// 			   | <less_than_operator>
-// 			   | <greater_than_operator>
-// 			   | <less_than_or_equals_operator>
-// 			   | <greater_than_or_equals_operator>
+//             | <not_equals_operator>
+//             | <less_than_operator>
+//             | <greater_than_operator>
+//             | <less_than_or_equals_operator>
+//             | <greater_than_or_equals_operator>
 comp_op ::=
-		EQ {: RESULT = "="; :}
-	|	NE {: RESULT = "<>"; :}
-	|	LT {: RESULT = "<"; :}
-	|	GT {: RESULT = ">"; :}
-	|	LE {: RESULT = "<="; :}
-	|	GE {: RESULT = ">="; :}
-	;
+        EQ {: RESULT = "="; :}
+    |   NE {: RESULT = "<>"; :}
+    |   LT {: RESULT = "<"; :}
+    |   GT {: RESULT = ">"; :}
+    |   LE {: RESULT = "<="; :}
+    |   GE {: RESULT = ">="; :}
+    ;
 //
 // <equals_operator> ::= =
 //
@@ -845,117 +845,117 @@ comp_op ::=
 // <percentage> ::= <numeric_value_expression>
 //
 // <set_value_expression> ::= <dim_hier>.MEMBERS
-// 							| <level>.MEMBERS
-// 							| <member>.CHILDREN
-// 							| BOTTOMCOUNT(<set>, <index>
-// 								 [, <numeric_value_expression>])
-// 							| BOTTOMPERCENT(<set>, <percentage>,
-// 								 <numeric_value_expression>)
-// 							| BOTTOMSUM(<set>, <numeric_value_expression>,
-// 								 <numeric_value_expression>)
-// 							| CROSSJOIN(<set>, <set>)
-// 							| DESCENDANTS(<member>, <level> [,<desc_flags>])
+//                          | <level>.MEMBERS
+//                          | <member>.CHILDREN
+//                          | BOTTOMCOUNT(<set>, <index>
+//                               [, <numeric_value_expression>])
+//                          | BOTTOMPERCENT(<set>, <percentage>,
+//                               <numeric_value_expression>)
+//                          | BOTTOMSUM(<set>, <numeric_value_expression>,
+//                               <numeric_value_expression>)
+//                          | CROSSJOIN(<set>, <set>)
+//                          | DESCENDANTS(<member>, <level> [,<desc_flags>])
 //
 // Note: In the absence of explicit <desc_flags> specification, SELF is the
 // default.
 //
-// 							| DISTINCT(<set>)
-// 							| DRILLDOWNLEVEL(<set> [, <level>]])
-// 							| DRILLDOWNLEVELBOTTOM(<set>, <index>
-// 								[,[<level>] [, <numeric_value_expression>]])
-// 							| DRILLDOWNLEVELTOP(<set>, <index>[, [<level>]
-// 								[, <numeric_value_expression>]])
-// 							| DRILLDOWNMEMBER(<set>, <set>[, RECURSIVE])
-// 							| DRILLDOWNMEMBERBOTTOM(<set>, <set>, <index>
-// 							   [, <numeric_value_expression>][, RECURSIVE]])
-// 							| DRILLDOWNMEMBERTOP(<set>, <set>, <index>
-// 							  [, [<numeric_value_expression>][, RECURSIVE]])
-// 							| DRILLUPLEVEL(<set>[, <level>]])
-// 							| DRILLUPMEMBER(<set>, <set>)
-// 							| EXCEPT(<set>, <set> [, ALL])
-// 							| EXTRACT(<set>, <dim_hier>[, <dim_hier>...])
-// 							| FILTER(<set>, <search_condition>)
-// 							| GENERATE(<set>, <set> [, ALL])
-// 							| HIERARCHIZE(<set>)
-// 							| INTERSECT(<set>, <set> [, ALL])
-// 							| LASTPERIODS(<index> [, <member>])
-// 							| MTD([<member>])
-// 							| ORDER(<set>, <value_expression>
-// 								[, ASC | DESC | BASC | BDESC])
+//                          | DISTINCT(<set>)
+//                          | DRILLDOWNLEVEL(<set> [, <level>]])
+//                          | DRILLDOWNLEVELBOTTOM(<set>, <index>
+//                              [,[<level>] [, <numeric_value_expression>]])
+//                          | DRILLDOWNLEVELTOP(<set>, <index>[, [<level>]
+//                              [, <numeric_value_expression>]])
+//                          | DRILLDOWNMEMBER(<set>, <set>[, RECURSIVE])
+//                          | DRILLDOWNMEMBERBOTTOM(<set>, <set>, <index>
+//                             [, <numeric_value_expression>][, RECURSIVE]])
+//                          | DRILLDOWNMEMBERTOP(<set>, <set>, <index>
+//                            [, [<numeric_value_expression>][, RECURSIVE]])
+//                          | DRILLUPLEVEL(<set>[, <level>]])
+//                          | DRILLUPMEMBER(<set>, <set>)
+//                          | EXCEPT(<set>, <set> [, ALL])
+//                          | EXTRACT(<set>, <dim_hier>[, <dim_hier>...])
+//                          | FILTER(<set>, <search_condition>)
+//                          | GENERATE(<set>, <set> [, ALL])
+//                          | HIERARCHIZE(<set>)
+//                          | INTERSECT(<set>, <set> [, ALL])
+//                          | LASTPERIODS(<index> [, <member>])
+//                          | MTD([<member>])
+//                          | ORDER(<set>, <value_expression>
+//                              [, ASC | DESC | BASC | BDESC])
 //
 // Note:   In the absence of explicit specification, ASC is the default.
 //
 //
-// 							| PERIODSTODATE([<level>[, <member>]])
-// 							| QTD([<member>])
-// 							| TOGGLEDRILLSTATE(<set1>, <set2>[, RECURSIVE])
+//                          | PERIODSTODATE([<level>[, <member>]])
+//                          | QTD([<member>])
+//                          | TOGGLEDRILLSTATE(<set1>, <set2>[, RECURSIVE])
 //
 // Note: With the exception of CROSSJOIN, all set functions that take more than
 // one <set> argument require that the two set arguments have tuples of the
 // same dimensionality.
 //
 //
-// 							| TOPCOUNT(<set>, <index>
-// 								[, <numeric_value_expression>])
-// 							| TOPPERCENT(<set>, <percentage>,
-// 								<numeric_value_expression>)
-// 							| TOPSUM(<set>, <numeric_value_expression>,
-// 								<numeric_value_expression>)
-// 							| UNION(<set>, <set> [, ALL])
-// 							| WTD([<member>])
-// 							| YTD(<member>)
+//                          | TOPCOUNT(<set>, <index>
+//                              [, <numeric_value_expression>])
+//                          | TOPPERCENT(<set>, <percentage>,
+//                              <numeric_value_expression>)
+//                          | TOPSUM(<set>, <numeric_value_expression>,
+//                              <numeric_value_expression>)
+//                          | UNION(<set>, <set> [, ALL])
+//                          | WTD([<member>])
+//                          | YTD(<member>)
 //
 // <desc_flags> ::= SELF
-// 				  | AFTER
-// 				  | BEFORE
-// 				  | BEFORE_AND_AFTER
-// 				  | SELF_AND_AFTER
-// 				  | SELF_AND_BEFORE
-// 				  | SELF_BEFORE_AFTER
+//                | AFTER
+//                | BEFORE
+//                | BEFORE_AND_AFTER
+//                | SELF_AND_AFTER
+//                | SELF_AND_BEFORE
+//                | SELF_BEFORE_AFTER
 //
 
 // ----------------------------------------------------------------------------
 // Member Value Expression
 //
 // <member_value_expression> ::= <member>.{PARENT | FIRSTCHILD | LASTCHILD
-// 										   | PREVMEMBER | NEXTMEMBER}
-// 							   | <member>.LEAD(<index>)
-// 							   | <member>.LAG(<index>)
+//                                         | PREVMEMBER | NEXTMEMBER}
+//                             | <member>.LEAD(<index>)
+//                             | <member>.LAG(<index>)
 //
 // Note:   LAG(<index>) is the same as LEAD(-<index>)
 //
 //
-// 							   | <member>.{FIRSTSIBLING | LASTSIBLING}
-// 							   | <dimension>.[CURRENTMEMBER]
-// 							   | <dimension>.DEFAULTMEMBER
-// 							   | <hierarchy>.DEFAULTMEMBER
-// 							   | ANCESTOR(<member>, <level>)
-// 							   | CLOSINGPERIOD([<level>[, <member>])
-// 							   | COUSIN(<member>, <member>)
-// 							   | OPENINGPERIOD([<level>[, <member>])
-// 							   | PARALLELPERIOD([<level>[, <index>
-// 												[, <member>]]])
+//                             | <member>.{FIRSTSIBLING | LASTSIBLING}
+//                             | <dimension>.[CURRENTMEMBER]
+//                             | <dimension>.DEFAULTMEMBER
+//                             | <hierarchy>.DEFAULTMEMBER
+//                             | ANCESTOR(<member>, <level>)
+//                             | CLOSINGPERIOD([<level>[, <member>])
+//                             | COUSIN(<member>, <member>)
+//                             | OPENINGPERIOD([<level>[, <member>])
+//                             | PARALLELPERIOD([<level>[, <index>
+//                                              [, <member>]]])
 expression ::=
-		expression:x COLON value_expression:y {: // range yields set
-			RESULT = new FunCall(":", Syntax.Infix, new Exp[] {x, y});
-		:}
-	|	value_expression
-	;
+        expression:x COLON value_expression:y {: // range yields set
+            RESULT = new FunCall(":", Syntax.Infix, new Exp[] {x, y});
+        :}
+    |   value_expression
+    ;
 exp_list_opt ::=
-		/* empty */ {:
-			RESULT = new ArrayList();
-		:}
-	|	exp_list
-	;
+        /* empty */ {:
+            RESULT = new ArrayList();
+        :}
+    |   exp_list
+    ;
 exp_list ::=
-		expression:e {:
-			RESULT = new ArrayList();
-			RESULT.add(e);
-		:}
-	|	expression:e COMMA exp_list:list {:
-			list.add(0, e); RESULT = list;
-		:}
-	;
+        expression:e {:
+            RESULT = new ArrayList();
+            RESULT.add(e);
+        :}
+    |   expression:e COMMA exp_list:list {:
+            list.add(0, e); RESULT = list;
+        :}
+    ;
 //
 // Leveling Rules for Member Value Expression
 //
@@ -965,25 +965,25 @@ exp_list ::=
 //
 
 //
-// 	* Tuple Value Expression
+//  * Tuple Value Expression
 //
 // <tuple_value_expression> ::= <set>.CURRENTMEMBER
-// 							  | <set>[.ITEM](<string_value_expression>
-// 								 [, <string_value_expression>...] | <index>)
+//                            | <set>[.ITEM](<string_value_expression>
+//                               [, <string_value_expression>...] | <index>)
 //
 
 //
-// 	* Numeric Value Function
+//  * Numeric Value Function
 //
 // <numeric_value_function> ::=
-// 		  AGGREGATE(<set> [, <numeric_value_expression>])
-// 		| AVG(<set>[, <numeric_value_expression>])
-// 		| CORRELATION(<set> [, <numeric_value_expression>]
-// 			 [, <numeric_value_expression>])
-// 		| COVARIANCE(<set>[, <numeric_value_expression>
-// 			 [, <numeric_value_expression>])
-// 		| COUNT(<set>[, INCLUDEEMPTY])
-// 		| LINREGINTERCEPT(<set>[, <numeric_value_expression>
+//        AGGREGATE(<set> [, <numeric_value_expression>])
+//      | AVG(<set>[, <numeric_value_expression>])
+//      | CORRELATION(<set> [, <numeric_value_expression>]
+//           [, <numeric_value_expression>])
+//      | COVARIANCE(<set>[, <numeric_value_expression>
+//           [, <numeric_value_expression>])
+//      | COUNT(<set>[, INCLUDEEMPTY])
+//      | LINREGINTERCEPT(<set>[, <numeric_value_expression>
 //
 //
 // Leveling Rules for Numeric Value Function
@@ -999,130 +999,130 @@ exp_list ::=
 // MDX Statement
 //
 // <MDX_statement> ::= <select_statement>
-// 					 | <create_formula_statement>
-// 					 | <drop_formula_statement>
+//                   | <create_formula_statement>
+//                   | <drop_formula_statement>
 //
 
 // <select_statement> ::= [WITH <formula_specification>]
-// 						   SELECT [<axis_specification>
-// 								  [, <axis_specification>...]]
-// 						   FROM [<cube_specification>]
-// 						   WHERE [<slicer_specification>]
-// 						   [<cell_props>]
+//                         SELECT [<axis_specification>
+//                                [, <axis_specification>...]]
+//                         FROM [<cube_specification>]
+//                         WHERE [<slicer_specification>]
+//                         [<cell_props>]
 // jhyde: The above is wrong... you can omit 'WHERE'.
 select_statement ::=
-		with_formula_specification_opt:f
-		SELECT axis_specification_list_opt:a
-		FROM cube_specification:c
-		where_clause_opt:w
-		cell_props_opt:cp {:
-			Parser parser = (Parser) CUP$Parser$parser;
-			// We want 'Sales', not '[Sales]', and can't handle 'Schema.Sales'
-			// yet.
-			String cubeName = c.getElement(0);
-			RESULT = parser.makeQuery(
-				(Formula[]) f.toArray(new Formula[0]),
-				(QueryAxis[]) a.toArray(new QueryAxis[0]),
-				cubeName,
-				w,
-				(QueryPart[]) cp.toArray(new QueryPart[0]));
-		:};
+        with_formula_specification_opt:f
+        SELECT axis_specification_list_opt:a
+        FROM cube_specification:c
+        where_clause_opt:w
+        cell_props_opt:cp {:
+            Parser parser = (Parser) CUP$Parser$parser;
+            // We want 'Sales', not '[Sales]', and can't handle 'Schema.Sales'
+            // yet.
+            String cubeName = c.getElement(0);
+            RESULT = parser.makeQuery(
+                (Formula[]) f.toArray(new Formula[0]),
+                (QueryAxis[]) a.toArray(new QueryAxis[0]),
+                cubeName,
+                w,
+                (QueryPart[]) cp.toArray(new QueryPart[0]));
+        :};
 
 with_formula_specification_opt ::=
-	/* empty */ {:
-			RESULT = new ArrayList();
-		:}
-	|	WITH formula_specification:f {:
-			RESULT = f;
-		:}
-	;
+    /* empty */ {:
+            RESULT = new ArrayList();
+        :}
+    |   WITH formula_specification:f {:
+            RESULT = f;
+        :}
+    ;
 axis_specification_list_opt ::=
-		/* empty */ {:
-			RESULT = new ArrayList();
-		:}
-	|	axis_specification_list
-	;
+        /* empty */ {:
+            RESULT = new ArrayList();
+        :}
+    |   axis_specification_list
+    ;
 axis_specification_list ::=
-		axis_specification:i {:
-			RESULT = new ArrayList();
-			RESULT.add(i);
-		:}
-	|	axis_specification:e COMMA axis_specification_list:list {:
-			list.add(0, e);
-			RESULT = list;
-		:}
-	;
+        axis_specification:i {:
+            RESULT = new ArrayList();
+            RESULT.add(i);
+        :}
+    |   axis_specification:e COMMA axis_specification_list:list {:
+            list.add(0, e);
+            RESULT = list;
+        :}
+    ;
 where_clause_opt ::=
-		/* empty */
-	|	WHERE slicer_specification:s {: RESULT = s; :};
+        /* empty */
+    |   WHERE slicer_specification:s {: RESULT = s; :};
 cell_props_opt ::=
-		/* empty */ {:
-			RESULT = new ArrayList();
-		:}
-	|	cell_props;
+        /* empty */ {:
+            RESULT = new ArrayList();
+        :}
+    |   cell_props;
 
 //
 // <formula_specification> ::= <single_formula_specification>
-// 							  [<single_formula_specification>...]
+//                            [<single_formula_specification>...]
 //
 formula_specification ::=
-		single_formula_specification:e {:
-			RESULT = new ArrayList();
-			RESULT.add(e);
-		:}
-	|	single_formula_specification:hd formula_specification:tl {:
-			tl.add(0,hd); RESULT = tl;
-		:}
-	;
+        single_formula_specification:e {:
+            RESULT = new ArrayList();
+            RESULT.add(e);
+        :}
+    |   single_formula_specification:hd formula_specification:tl {:
+            tl.add(0,hd); RESULT = tl;
+        :}
+    ;
 
 // <single_formula_specification> ::= <member_specification>
-// 									| <set_specification>
+//                                  | <set_specification>
 //
 single_formula_specification ::=
-		member_specification
-	|	set_specification
-	;
+        member_specification
+    |   set_specification
+    ;
 //
 // <member_specification> ::= MEMBER <member_name> AS <value_expression>
-// 								   [, <solve_order_specification>]
-// 								   [, <member_property_definition>...]
+//                                 [, <solve_order_specification>]
+//                                 [, <member_property_definition>...]
 member_specification ::=
-		MEMBER member_name:m AS QUOTE value_expression:e QUOTE
-		comma_member_property_def_list_opt:l {:
-			RESULT = new Formula(
-				m.toStringArray(),
-				e,
-				(MemberProperty[]) l.toArray(new MemberProperty[0]));
-		:}
-	|	MEMBER member_name:m AS value_expression:e
-		comma_member_property_def_list_opt:l {:
-			RESULT = new Formula(
-				m.toStringArray(),
-				e,
-				(MemberProperty[]) l.toArray(new MemberProperty[0]));
-		:}
-	;
+        MEMBER member_name:m AS QUOTE value_expression:e QUOTE
+        comma_member_property_def_list_opt:l {:
+            RESULT = new Formula(
+                m.toStringArray(),
+                e,
+                (MemberProperty[]) l.toArray(new MemberProperty[0]));
+        :}
+    |   MEMBER member_name:m AS value_expression:e
+        comma_member_property_def_list_opt:l {:
+            RESULT = new Formula(
+                m.toStringArray(),
+                e,
+                (MemberProperty[]) l.toArray(new MemberProperty[0]));
+        :}
+    ;
 comma_member_property_def_list_opt ::=
-		/* empty */ {:
-			RESULT = new ArrayList();
-		:}
-	|	COMMA member_property_def_list:l {:
-			RESULT = l;
-		:}
-	;
+        /* empty */ {:
+            RESULT = new ArrayList();
+        :}
+    |   COMMA member_property_def_list:l {:
+            RESULT = l;
+        :}
+    ;
 member_property_def_list ::=
-		member_property_definition:m {:
-			RESULT = new ArrayList();
-			RESULT.add(m);
-		:}
-	|	member_property_definition:hd COMMA member_property_def_list:tl {:
-			RESULT = tl;
-			RESULT.add(0,hd);
-		:}
-	;
+        member_property_definition:m {:
+            RESULT = new ArrayList();
+            RESULT.add(m);
+        :}
+    |   member_property_definition:hd COMMA member_property_def_list:tl {:
+            RESULT = tl;
+            RESULT.add(0,hd);
+        :}
+    ;
 //
 // <member_name> ::= <member>.<identifier>
-// 				   | <cube_name>.<member>.<identifier>
+//                 | <cube_name>.<member>.<identifier>
 //
 member_name ::= compound_id;
 //
@@ -1141,10 +1141,10 @@ member_name ::= compound_id;
 //
 // <member_property_definition> ::= <identifier> = <value_expression>
 member_property_definition ::=
-		identifier:id EQ value_expression:e {:
-			RESULT = new MemberProperty(id, e);
-		:}
-	;
+        identifier:id EQ value_expression:e {:
+            RESULT = new MemberProperty(id, e);
+        :}
+    ;
 //
 // Note: Since the property definition appears in the context of a member
 // definition, there is enough information to associate the identifier (which
@@ -1153,13 +1153,13 @@ member_property_definition ::=
 //
 // <set_specification> ::= SET <set_name> AS <set>
 set_specification ::=
-		SET set_name:s AS QUOTE expression:e QUOTE {:
-			RESULT = new Formula(s.toStringArray(), e);
-		:}
-	|	SET set_name:s AS expression:e {:
-			RESULT = new Formula(s.toStringArray(), e);
-		:}
-	;
+        SET set_name:s AS QUOTE expression:e QUOTE {:
+            RESULT = new Formula(s.toStringArray(), e);
+        :}
+    |   SET set_name:s AS expression:e {:
+            RESULT = new Formula(s.toStringArray(), e);
+        :}
+    ;
 //
 // <set_name> ::= <identifier> | <cube_name>.<identifier>
 set_name ::= compound_id ;
@@ -1171,9 +1171,9 @@ set_name ::= compound_id ;
 //
 // <axis_specification> ::= [NON EMPTY] <set> [<dim_props>] ON <axis_name>
 axis_specification ::=
-		non_empty_opt:b expression:s dim_props_opt ON axis_name:a {:
-			RESULT = new QueryAxis(b.booleanValue(), s, a, QueryAxis.SubtotalVisibility.Undefined);
-		:}
+        non_empty_opt:b expression:s dim_props_opt ON axis_name:a {:
+            RESULT = new QueryAxis(b.booleanValue(), s, a, QueryAxis.SubtotalVisibility.Undefined);
+        :}
     |   non_empty_opt:b expression:s dim_props_opt ON AXIS LPAREN NUMBER:n RPAREN :a {:
             double d = n.doubleValue();
             int index = (int)d;
@@ -1188,85 +1188,85 @@ axis_specification ::=
             }
 
             String axisName = AxisOrdinal.instance.getName(index);
-			RESULT = new QueryAxis(b.booleanValue(), s, axisName, QueryAxis.SubtotalVisibility.Undefined);
-		:}
+            RESULT = new QueryAxis(b.booleanValue(), s, axisName, QueryAxis.SubtotalVisibility.Undefined);
+        :}
 
-	;
+    ;
 non_empty_opt ::=
-		/* empty */ {: RESULT = new Boolean(false); :}
-	|	NON EMPTY {: RESULT = new Boolean(true); :}
-	;
+        /* empty */ {: RESULT = new Boolean(false); :}
+    |   NON EMPTY {: RESULT = new Boolean(true); :}
+    ;
 dim_props_opt ::=
-		/* empty */
-	|	dim_props
-	;
+        /* empty */
+    |   dim_props
+    ;
 //
 // <axis_name> ::= COLUMNS
-// 				 | ROWS
-// 				 | PAGES
-// 				 | CHAPTERS
-// 				 | SECTIONS
-// 				 | AXIS(<index>)
+//               | ROWS
+//               | PAGES
+//               | CHAPTERS
+//               | SECTIONS
+//               | AXIS(<index>)
 axis_name ::= identifier;
 //
 // <dim_props> ::= [DIMENSION] PROPERTIES <property> [, <property>...]
 dim_props ::=
-	dimension_opt PROPERTIES property_list
-	;
+    dimension_opt PROPERTIES property_list
+    ;
 dimension_opt ::=
-	/* empty */
-	|	DIMENSION
-	;
+    /* empty */
+    |   DIMENSION
+    ;
 property_list ::=
-		property
-	|	property COMMA property_list
-	;
+        property
+    |   property COMMA property_list
+    ;
 property ::=
-		compound_id
-	;
+        compound_id
+    ;
 //
 // <cube_specification> ::= [<cube_name>] [, <cube_name>]
 // jhyde: In this implementation, you must supply EXACTLY one cube.
 cube_specification ::=
-		cube_name;
+        cube_name;
 
 //
 // <slicer_specification> ::= {<set> | <tuple>}
 slicer_specification ::=
-		expression;
+        expression;
 //
 // <cell_props> ::= [CELL] PROPERTIES <cell_property> [, <cell_property>...]
 cell_props ::=
-		cell_opt PROPERTIES cell_property_list
-	;
+        cell_opt PROPERTIES cell_property_list
+    ;
 cell_opt ::=
-		/* empty */
-	|	CELL
-	;
+        /* empty */
+    |   CELL
+    ;
 cell_property_list ::=
-		cell_property
-	|	cell_property COMMA cell_property_list
-	;
+        cell_property
+    |   cell_property COMMA cell_property_list
+    ;
 //
 // <cell_property> ::= <mandatory_cell_property>
-// 					 | <optional_cell_property>
-// 					 | <provider_specific_cell_property>
+//                   | <optional_cell_property>
+//                   | <provider_specific_cell_property>
 cell_property ::=
-		mandatory_cell_property
-	|	optional_cell_property
-	|	provider_specific_cell_property
-	;
+        mandatory_cell_property
+    |   optional_cell_property
+    |   provider_specific_cell_property
+    ;
 //
 // <mandatory_cell_property> ::= CELL_ORDINAL | VALUE | FORMATTED_VALUE
 mandatory_cell_property ::=
-		CELL_ORDINAL | VALUE | FORMATTED_VALUE;
+        CELL_ORDINAL | VALUE | FORMATTED_VALUE;
 //
 // <optional_cell_property> ::= FORMAT_STRING
-// 							  | FORE_COLOR
-// 							  | BACK_COLOR
-// 							  | FONT_NAME
-// 							  | FONT_SIZE
-// 							  | FONT_FLAGS
+//                            | FORE_COLOR
+//                            | BACK_COLOR
+//                            | FONT_NAME
+//                            | FONT_SIZE
+//                            | FONT_FLAGS
 //
 // <provider_specific_cell_property> ::= <identifier>
 provider_specific_cell_property ::= identifier;
@@ -1274,10 +1274,10 @@ provider_specific_cell_property ::= identifier;
 // <create_formula_statement> ::= CREATE [<scope>]<formula_specification>
 //
 // <drop_formula_statement> ::= <drop_member_statement>
-// 							  | <drop_set_statement>
+//                            | <drop_set_statement>
 //
 // <drop_member_statement> ::= DROP MEMBER <member_name>
-// 										[, <member_name>...]
+//                                      [, <member_name>...]
 //
 // <drop_set_statement> ::= DROP SET <set_name> [, <set_name>...]
 //

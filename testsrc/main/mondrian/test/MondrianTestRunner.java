@@ -6,7 +6,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2004 SAS Institute, Inc.
+// Copyright (C) 2004-2005 SAS Institute, Inc.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -22,150 +22,183 @@ import junit.framework.*;
 import junit.runner.*;
 
 public class MondrianTestRunner extends BaseTestRunner {
-	private MondrianResultPrinter fPrinter;
-	private int fIterations = 1;
-	private int fVUsers = 1;
-	private int fTimeLimit = 0; // seconds
+    private MondrianResultPrinter fPrinter;
+    private int fIterations = 1;
+    private int fVUsers = 1;
+    private int fTimeLimit = 0; // seconds
 
-	public static final int SUCCESS_EXIT = 0;
-	public static final int FAILURE_EXIT = 1;
-	public static final int EXCEPTION_EXIT = 2;
+    public static final int SUCCESS_EXIT = 0;
+    public static final int FAILURE_EXIT = 1;
+    public static final int EXCEPTION_EXIT = 2;
 
-	private String stopReason = "Normal termination.";
+    private String stopReason = "Normal termination.";
 
-	/**
-	 * Constructs a TestRunner.
-	 */
-	public MondrianTestRunner() {
-		this(System.out);	}	/**
-	 * Constructs a TestRunner using the given stream for all the output
-	 */
-	public MondrianTestRunner(PrintStream writer) {
-		this(new MondrianResultPrinter(writer));
-	}
+    /**
+     * Constructs a TestRunner.
+     */
+    public MondrianTestRunner() {
+        this(System.out);
+   }
 
-	/**
-	 * Constructs a TestRunner using the given ResultPrinter all the output
-	 */
-	public MondrianTestRunner(MondrianResultPrinter printer) {
-		fPrinter = printer;
-	}
+   /**
+     * Constructs a TestRunner using the given stream for all the output
+     */
+    public MondrianTestRunner(PrintStream writer) {
+        this(new MondrianResultPrinter(writer));
+    }
 
-	/**
-	 * Always use the StandardTestSuiteLoader. Overridden from
-	 * BaseTestRunner.
-	 */
-	public TestSuiteLoader getLoader() {
-		return new StandardTestSuiteLoader();
-	}
+    /**
+     * Constructs a TestRunner using the given ResultPrinter all the output
+     */
+    public MondrianTestRunner(MondrianResultPrinter printer) {
+        fPrinter = printer;
+    }
 
-	public void testFailed(int status, Test test, Throwable t) {	}
-	public void testStarted(String testName) {	}
-	public void testEnded(String testName) {	}
-	/**
-	 * Creates the TestResult to be used for the test run.
-	 */
-	protected TestResult createTestResult() {
-		return new TestResult();
-	}
+    /**
+     * Always use the StandardTestSuiteLoader. Overridden from
+     * BaseTestRunner.
+     */
+    public TestSuiteLoader getLoader() {
+        return new StandardTestSuiteLoader();
+    }
 
-	public TestResult doRun(final Test suite) {
-		final TestResult result = createTestResult();		result.addListener(fPrinter);
-        /*        // uncomment this block to get a list of the single tests with time used
-		final long[] longa = new long[1];		result.addListener(new TestListener() {			public void addError(Test arg0, Throwable arg1) {				// do nothing			}			public void addFailure(Test arg0, AssertionFailedError arg1) {				// do nothing			}			public void endTest(Test arg0) {				if (arg0 instanceof TestCase) {					long longb = System.currentTimeMillis() - longa[0];					System.out.println("endTest " + ((TestCase)arg0).getName() + " " + longb + " ms");				}			}			public void startTest(Test arg0) {				if (arg0 instanceof TestCase) {					longa[0] = System.currentTimeMillis();					System.out.println("startTest " + ((TestCase)arg0).getName());				}			}		}		);
-		*/
+    public void testFailed(int status, Test test, Throwable t) {
+    }
+    public void testStarted(String testName) {
+  }
+    public void testEnded(String testName) {
+    }
+    /**
+     * Creates the TestResult to be used for the test run.
+     */
+    protected TestResult createTestResult() {
+        return new TestResult();
+    }
 
-		final long startTime = System.currentTimeMillis();
-		// Set up a timit limit if specified
-		if (getTimeLimit() > 0) {
-			Timer timer = new Timer();
-			timer.schedule(new TimerTask() {
-				public void run() {
-					setStopReason("Test stopped because the time limit expired.");
-					result.stop();
-				}
-			}, 1000L * (long)getTimeLimit());
-		}
+    public TestResult doRun(final Test suite) {
+        final TestResult result = createTestResult();
+       result.addListener(fPrinter);
+        /*
+        // uncomment this block to get a list of the single tests with time used
+        final long[] longa = new long[1];
+       result.addListener(new TestListener() {
 
-		// Start a new thread for each virtual user
-		Thread threads[] = new Thread[getVUsers()];
-		for (int i = 0; i < getVUsers(); i++) {
-			threads[i] = new Thread(new Runnable() {
-				public void run() {
-					//System.out.println("Thread: " + Thread.currentThread().getName());
-					for (int j = 0; getIterations() == 0 || j < getIterations(); j++) {
-						suite.run(result);
-						if (!result.wasSuccessful()) {
-							setStopReason("Test stopped due to errors.");
-							result.stop();
-						}
-						if (result.shouldStop())
-							break;
-					}
-				}
+         public void addError(Test arg0, Throwable arg1) {
+               // do nothing
+           }
 
-			}, "Test thread " + i);
-			threads[i].start();
-		}
-		System.out.println("All " + getVUsers() + " thread(s) started.");
+           public void addFailure(Test arg0, AssertionFailedError arg1) {
+              // do nothing
+           }
 
-		// wait for all threads to finish
-		for (int i = 0; i < getVUsers(); i++) {
-			try {
-				threads[i].join();
-			} catch (InterruptedException e) {
-				System.out.println("Thread: " + threads[i].getName() + " interrupted: "
-						+ e.getMessage());
-			}
-		}
+           public void endTest(Test arg0) {
+                if (arg0 instanceof TestCase) {
+                 long longb = System.currentTimeMillis() - longa[0];
+                 System.out.println("endTest " + ((TestCase)arg0).getName() + " " + longb + " ms");
+              }
+           }
 
-		// print timer results and any exceptions
-		long runTime = System.currentTimeMillis() - startTime;
-		fPrinter.print(result, runTime);
-		fPrinter.getWriter().println(getStopReason());
+           public void startTest(Test arg0) {
+              if (arg0 instanceof TestCase) {
+                 longa[0] = System.currentTimeMillis();
+                  System.out.println("startTest " + ((TestCase)arg0).getName());
+              }
+           }
+       }
+       );
+        */
 
-		return result;
-	}
+        final long startTime = System.currentTimeMillis();
+        // Set up a timit limit if specified
+        if (getTimeLimit() > 0) {
+            Timer timer = new Timer();
+            timer.schedule(new TimerTask() {
+                public void run() {
+                    setStopReason("Test stopped because the time limit expired.");
+                    result.stop();
+                }
+            }, 1000L * (long)getTimeLimit());
+        }
 
-	protected void runFailed(String message) {
-		System.err.println(message);
-		System.exit(FAILURE_EXIT);
-	}
+        // Start a new thread for each virtual user
+        Thread threads[] = new Thread[getVUsers()];
+        for (int i = 0; i < getVUsers(); i++) {
+            threads[i] = new Thread(new Runnable() {
+                public void run() {
+                    //System.out.println("Thread: " + Thread.currentThread().getName());
+                    for (int j = 0; getIterations() == 0 || j < getIterations(); j++) {
+                        suite.run(result);
+                        if (!result.wasSuccessful()) {
+                            setStopReason("Test stopped due to errors.");
+                            result.stop();
+                        }
+                        if (result.shouldStop())
+                            break;
+                    }
+                }
 
-	public void setPrinter(MondrianResultPrinter printer) {
-		fPrinter = printer;
-	}
+            }, "Test thread " + i);
+            threads[i].start();
+        }
+        System.out.println("All " + getVUsers() + " thread(s) started.");
 
-	public void setIterations(int fIterations) {
-		this.fIterations = fIterations;
-	}
+        // wait for all threads to finish
+        for (int i = 0; i < getVUsers(); i++) {
+            try {
+                threads[i].join();
+            } catch (InterruptedException e) {
+                System.out.println("Thread: " + threads[i].getName() + " interrupted: "
+                        + e.getMessage());
+            }
+        }
 
-	public int getIterations() {
-		return fIterations;
-	}
+        // print timer results and any exceptions
+        long runTime = System.currentTimeMillis() - startTime;
+        fPrinter.print(result, runTime);
+        fPrinter.getWriter().println(getStopReason());
 
-	public void setVUsers(int fVUsers) {
-		this.fVUsers = fVUsers;
-	}
+        return result;
+    }
 
-	public int getVUsers() {
-		return fVUsers;
-	}
+    protected void runFailed(String message) {
+        System.err.println(message);
+        System.exit(FAILURE_EXIT);
+    }
 
-	public void setTimeLimit(int fTimeLimit) {
-		this.fTimeLimit = fTimeLimit;
-	}
+    public void setPrinter(MondrianResultPrinter printer) {
+        fPrinter = printer;
+    }
 
-	public int getTimeLimit() {
-		return fTimeLimit;
-	}
+    public void setIterations(int fIterations) {
+        this.fIterations = fIterations;
+    }
 
-	private void setStopReason(String stopReason) {
-		this.stopReason = stopReason;
-	}
+    public int getIterations() {
+        return fIterations;
+    }
 
-	private String getStopReason() {
-		return stopReason;
-	}
+    public void setVUsers(int fVUsers) {
+        this.fVUsers = fVUsers;
+    }
+
+    public int getVUsers() {
+        return fVUsers;
+    }
+
+    public void setTimeLimit(int fTimeLimit) {
+        this.fTimeLimit = fTimeLimit;
+    }
+
+    public int getTimeLimit() {
+        return fTimeLimit;
+    }
+
+    private void setStopReason(String stopReason) {
+        this.stopReason = stopReason;
+    }
+
+    private String getStopReason() {
+        return stopReason;
+    }
 
 }

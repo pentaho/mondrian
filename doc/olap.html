@@ -22,23 +22,23 @@
 <body>
 <h1>What is Mondrian?</h1>
 
-<p>Mondrian is an OLAP engine written in Java. It executes queries written in 
-the MDX language, reading data from a relational database (RDBMS), and presents 
-the results in a multidimensional format via a Java API. Let's go into what that 
+<p>Mondrian is an OLAP engine written in Java. It executes queries written in
+the MDX language, reading data from a relational database (RDBMS), and presents
+the results in a multidimensional format via a Java API. Let's go into what that
 means.</p>
 <h2>Online Analytical Processing</h2>
-<p><dfn><font face="Verdana">Online Analytical Processing (OLAP)</font></dfn> 
-means analysing large quantities of data in real-time. Unlike Online Transaction 
-Processing (OLTP), where typical operations read and modify individual and small 
-numbers of records, OLAP deals with data in bulk, and operations are generally 
-read-only. The term 'online' implies that even though huge quantities of data 
-are involved — typically many millions of records, occupying several gigabytes 
-— the system must respond to queries fast enough to allow an interactive 
-exploration of the data. As we shall see, that presents considerable technical 
+<p><dfn><font face="Verdana">Online Analytical Processing (OLAP)</font></dfn>
+means analysing large quantities of data in real-time. Unlike Online Transaction
+Processing (OLTP), where typical operations read and modify individual and small
+numbers of records, OLAP deals with data in bulk, and operations are generally
+read-only. The term 'online' implies that even though huge quantities of data
+are involved — typically many millions of records, occupying several gigabytes
+— the system must respond to queries fast enough to allow an interactive
+exploration of the data. As we shall see, that presents considerable technical
 challenges.</p>
-<p>OLAP employs a technique called <dfn><font face="Verdana">Multidimensional Analysis</font></dfn>. Whereas a 
-relational database stores all data in the form of rows and columns, a 
-multidimensional dataset consists of <dfn><font face="Verdana">axes</font></dfn> and 
+<p>OLAP employs a technique called <dfn><font face="Verdana">Multidimensional Analysis</font></dfn>. Whereas a
+relational database stores all data in the form of rows and columns, a
+multidimensional dataset consists of <dfn><font face="Verdana">axes</font></dfn> and
 <dfn><font face="Verdana">cells</font></dfn>. Consider the dataset</p>
 <blockquote>
   <table border="2" style="clsStd; border-collapse:collapse" id="AutoNumber1" cellpadding="2" bordercolor="#111111" cellspacing="0">
@@ -115,30 +115,30 @@ multidimensional dataset consists of <dfn><font face="Verdana">axes</font></dfn>
 </blockquote>
 
 
-<p>The rows axis consists of the members 'All products', 'Books', 'Fiction', and 
-so forth, 
-and the columns axis consists of the cartesian product of the years '2000' and 
-'2001', and the <font face="Verdana">calculation</font> 'Growth', and the 
-<dfn>measures</dfn> 'Unit sales' and 'Dollar sales'. Each cell 
-represents the sales of a product category in a particular year; for example, 
+<p>The rows axis consists of the members 'All products', 'Books', 'Fiction', and
+so forth,
+and the columns axis consists of the cartesian product of the years '2000' and
+'2001', and the <font face="Verdana">calculation</font> 'Growth', and the
+<dfn>measures</dfn> 'Unit sales' and 'Dollar sales'. Each cell
+represents the sales of a product category in a particular year; for example,
 the dollar sales of Magazines in 2001 were $2426.</p>
-<p>This is a richer view of the data than would be presented by a relational 
-database. The members of a multidimensional dataset are not always values 
-from a relational column. 'Total', 'Books' and 'Fiction' are members at 
-successive levels in a <dfn>hierarchy</dfn>, each of 
-which is rolled up to the next. And even though it is alongside the years '2000' 
-and '2001', 'Growth' is 
+<p>This is a richer view of the data than would be presented by a relational
+database. The members of a multidimensional dataset are not always values
+from a relational column. 'Total', 'Books' and 'Fiction' are members at
+successive levels in a <dfn>hierarchy</dfn>, each of
+which is rolled up to the next. And even though it is alongside the years '2000'
+and '2001', 'Growth' is
 a <dfn>calculated member</dfn>, which introduces a
-formula for computing cells from other 
+formula for computing cells from other
 cells.</p>
-<p>The dimensions used here — products, time, and measures — are just three of 
-many dimensions by which the dataset can be categorized and filtered. The 
+<p>The dimensions used here — products, time, and measures — are just three of
+many dimensions by which the dataset can be categorized and filtered. The
 collection of dimensions, hierarchies and measures is called a <dfn>
 <font face="Verdana">cube</font></dfn>.</p>
 <p>I hope I have demonstrated that multidimensional  is above all a way of <em>
-<font face="Verdana">presenting</font></em> data. Although some multidimensional 
-databases <em><font face="Verdana">store</font></em> the data in multidimensional format, 
-I shall argue that it is simpler to store the data in relational format. It's 
+<font face="Verdana">presenting</font></em> data. Although some multidimensional
+databases <em><font face="Verdana">store</font></em> the data in multidimensional format,
+I shall argue that it is simpler to store the data in relational format. It's
 time to look at the architecture of an OLAP system.</p>
 
 <hr>
@@ -158,6 +158,6 @@ time to look at the architecture of an OLAP system.</p>
     </td>
   </tr>
 </table>
-  
+
 </body>
 </html>

@@ -8,9 +8,9 @@ package org.omg.java.cwm.foundation.typemapping;
 public interface TypeMapping
 extends org.omg.java.cwm.objectmodel.core.ModelElement {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public boolean isBestMatch();
 
@@ -20,9 +20,9 @@ extends org.omg.java.cwm.objectmodel.core.ModelElement {
 
   public void setLossy( boolean value );
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.objectmodel.core.Classifier getSourceType();
 

@@ -46,64 +46,64 @@ following requirements:</p>
 <ol>
 <li>The presence of a class named <b>Locale</b> in the same namespace
 as the generated resource files.
-	<ul>
-	<li>The header file for Locale must be Locale.h.</li>
-	<li>The Locale class must be suitable for use as a a key value
-	in a <copd>std::map</code> (e.g. it should define 
-	<code>operator&lt;</code>).</li>
-	<li>It must also define a method <code>const Locale
-	&getDefault()</code> that returns a suitable default locale.</li>
-	</ul>
+    <ul>
+    <li>The header file for Locale must be Locale.h.</li>
+    <li>The Locale class must be suitable for use as a a key value
+    in a <copd>std::map</code> (e.g. it should define
+    <code>operator&lt;</code>).</li>
+    <li>It must also define a method <code>const Locale
+    &getDefault()</code> that returns a suitable default locale.</li>
+    </ul>
 </li>
 <li>The presence of a class named <b>ResourceBundle</b> in the same namespace
 as the generated resource files that may be used as a base class for
 generated resources.
-	<ul>
-	<li>The header file for ResourceBundle must be
-	ResourceBundle.h</li>
-	<li>ResourceBundle's must have constructor
-	<code>ResourceBundle(const std::string &basename, const Locale
-	&locale, const std::string &location)</code> where basename is
-	the name of the resource bundle
-	(e.g. <code>BirthdayResource</code> in the previous example),
-	locale is the Locale this ResourceBundle will handle and
-	location is the path to the directory where the ResourceBundle
-	can find its properties file.</li>
+    <ul>
+    <li>The header file for ResourceBundle must be
+    ResourceBundle.h</li>
+    <li>ResourceBundle's must have constructor
+    <code>ResourceBundle(const std::string &basename, const Locale
+    &locale, const std::string &location)</code> where basename is
+    the name of the resource bundle
+    (e.g. <code>BirthdayResource</code> in the previous example),
+    locale is the Locale this ResourceBundle will handle and
+    location is the path to the directory where the ResourceBundle
+    can find its properties file.</li>
 
-	<li>ResourceBundle is responsible for loading the properties
-	files, handling the Java format strings (e.g. <code>"There are
-	{0, number} letters in {1}."</code>), and returning messages
-	in a format usable by ResourceDefinition.  One possible
-	implementation is to convert the Java format strings into <a
-	href="http://www.boost.org">Boost</a> format strings.</li>
+    <li>ResourceBundle is responsible for loading the properties
+    files, handling the Java format strings (e.g. <code>"There are
+    {0, number} letters in {1}."</code>), and returning messages
+    in a format usable by ResourceDefinition.  One possible
+    implementation is to convert the Java format strings into <a
+    href="http://www.boost.org">Boost</a> format strings.</li>
         </ul>
 </li>
 <li>The presence of a class name <b>ResourceDefinition</b> in the same
 namespace as the generated resource files.
-	<ul>
-	<li>ResourceDefinitions must have a constructor
-	<code>ResourceDefinition(ResourceBundle *bundle, const
-	std::string &key)</code>.</li>
-	<li>ResourceDefinition must implement these methods:
-		<code></code> as well as templated
-	methods that take varying numbers of arguments:
-	<blockquote><pre>
-	std::string format() const;
-	template&lt;typename t0&gt; string format(const t0 &p0) const;
+    <ul>
+    <li>ResourceDefinitions must have a constructor
+    <code>ResourceDefinition(ResourceBundle *bundle, const
+    std::string &key)</code>.</li>
+    <li>ResourceDefinition must implement these methods:
+        <code></code> as well as templated
+    methods that take varying numbers of arguments:
+    <blockquote><pre>
+    std::string format() const;
+    template&lt;typename t0&gt; string format(const t0 &p0) const;
         template&lt;typename t0, typename t1&gt;
-	  string format(const t0 &p0, const t1 &p1) const;
-	.
-	.
-	.</pre></blockquote>
+      string format(const t0 &p0, const t1 &p1) const;
+    .
+    .
+    .</pre></blockquote>
 
-	Each <code>format</code> method should lookup up the message
-	associated with the key given in the constructor from the
-	ResourceBundle given in the constructor and should format the
-	message given the arguments, returning the resulting
-	std::string.  If a format template method doesn't exist of the
-	number of parameters in your message, a compile time error
-	will occur.
-	</ul>
+    Each <code>format</code> method should lookup up the message
+    associated with the key given in the constructor from the
+    ResourceBundle given in the constructor and should format the
+    message given the arguments, returning the resulting
+    std::string.  If a format template method doesn't exist of the
+    number of parameters in your message, a compile time error
+    will occur.
+    </ul>
 </li>
 <li>The presence of this templated method:
 <blockquote><pre>template&lt;class _GRB, class _BC, class _BC_ITER&gt;
@@ -165,9 +165,9 @@ given above.</p>
   <pre>&lt;?xml version=&quot;1.0&quot; ?&gt;
 &lt;?xml-stylesheet type=&quot;text/xsl&quot; href=&quot;Resource.xsl&quot; ?&gt;
 &lt;resourceBundle
-	locale=&quot;en_US&quot;
-	cppExceptionClassName=&quot;Excn&quot;
-	cppExceptionClassLocation=&quot;Excn.h&quot;&gt;
+    locale=&quot;en_US&quot;
+    cppExceptionClassName=&quot;Excn&quot;
+    cppExceptionClassLocation=&quot;Excn.h&quot;&gt;
   &lt;message name=&quot;HappyBirthday&quot;&gt;
     &lt;text&gt;Happy Birthday, {0}! You don''t look {1,number}.&lt;/text&gt;
   &lt;/message&gt;
@@ -192,13 +192,13 @@ given above.</p>
 &lt;/target&gt;</pre>
 </blockquote>
 
-<p>I have assumed that your C++ source files are held in the &quot;<code>source</code>&quot; 
+<p>I have assumed that your C++ source files are held in the &quot;<code>source</code>&quot;
 directory.  I also assume that you'll write your own Makefile or
 equivalent to compile the code generated (<code>BirthdayResource.h</code> and
 <code>BirthdayResource.cpp</code> in this example).</p>
 
 <h3>Compile</h3>
-<p>Build as follows. (You need 'ant' on your path, and you will need to edit the 
+<p>Build as follows. (You need 'ant' on your path, and you will need to edit the
 project.classpath property in <code>build.xml</code>.)</p>
 <blockquote>
   <pre>$ ant
@@ -246,7 +246,7 @@ Total time: 3 seconds</pre>
 
 using namespace std;
 
-	/** <code>HappyBirthday</code> is 'Happy Birthday, {0}! You don''t look {1,number}.'	 */
+    /** <code>HappyBirthday</code> is 'Happy Birthday, {0}! You don''t look {1,number}.'     */
 class HappyBirthday : public ResourceDefinition
 {
   public:
@@ -256,7 +256,7 @@ class HappyBirthday : public ResourceDefinition
 };
 
 
-	/** <code>TooYoung</code> is '{0} has not been born yet.'	 */
+    /** <code>TooYoung</code> is '{0} has not been born yet.'    */
 class TooYoung : public ResourceDefinition
 {
   public:
@@ -440,7 +440,7 @@ Exception: Wilma has not been born yet.</pre>
 handle switching from locale to locale.</p>
 
 <hr>
-  
+
 </body>
 </html>
 <table border="0" class="clsStd" width="100%" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0">
@@ -458,4 +458,4 @@ handle switching from locale to locale.</p>
     </td>
   </tr>
 </table>
-  
+

@@ -8,9 +8,9 @@ package org.omg.java.cwm.foundation.softwaredeployment;
 public interface PackageUsage
 extends org.omg.java.cwm.objectmodel.core.Dependency {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public java.lang.String getPackageAlias();
 

@@ -8,9 +8,9 @@ package javax.olap.metadata;
 public interface CurrentMember
 extends javax.olap.metadata.Member {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.metadata.MemberQuantifierType getMemberQuantifier()
     throws javax.olap.OLAPException;

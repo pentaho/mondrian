@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2003 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -25,25 +25,25 @@ import java.util.Iterator;
  * @version $Id$
  **/
 class RelationshipList extends ArrayList {
-	protected Relationship relationship;
+    protected Relationship relationship;
 
-	RelationshipList(Relationship relationship) {
-		this.relationship = relationship;
-	}
+    RelationshipList(Relationship relationship) {
+        this.relationship = relationship;
+    }
 
-	public void set(Collection collection) {
-		clear();
-		addAll(collection);
-		for (Iterator iterator = collection.iterator(); iterator.hasNext();) {
-			final Object o = iterator.next();
-			Util.assertTrue(relationship.toClass.isInstance(o));
-		}
-	}
+    public void set(Collection collection) {
+        clear();
+        addAll(collection);
+        for (Iterator iterator = collection.iterator(); iterator.hasNext();) {
+            final Object o = iterator.next();
+            Util.assertTrue(relationship.toClass.isInstance(o));
+        }
+    }
 
     public Object addNew(Object o) {
-		add(o);
-		return o;
-	}
+        add(o);
+        return o;
+    }
 }
 
 // End RelationshipList.java

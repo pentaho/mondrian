@@ -8,17 +8,17 @@ package org.omg.java.cwm.foundation.softwaredeployment;
 public interface ProviderConnection
 extends org.omg.java.cwm.objectmodel.core.ModelElement {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public boolean isReadOnly();
 
   public void setReadOnly( boolean value );
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.foundation.softwaredeployment.DataProvider getDataProvider();
 

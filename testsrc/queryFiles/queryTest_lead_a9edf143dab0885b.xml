@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>SELECT {Store, Store.[All Stores].[Canada], Store.[All Stores].[Canada].Lead(2)} on ROWS, 
+    <mdxQuery>SELECT {Store, Store.[All Stores].[Canada], Store.[All Stores].[Canada].Lead(2)} on ROWS,
        {Time.[1997].[Q2], Time.[1997].[Q2].Lead(-1)} on COLUMNS
 FROM [Sales]
 WHERE([Measures].[Unit Sales], [Product].[All Products], [Store Size in SQFT].[All Store Size in SQFTs], [Store Type].[All Store Types].[Mid-Size Grocery], [Promotions].[All Promotions], [Customers].[All Customers], [Education Level].[All Education Levels], [Marital Status].[All Marital Status], [Yearly Income].[All Yearly Incomes], [Promotion Media].[All Media], [Gender].[All Gender])</mdxQuery>

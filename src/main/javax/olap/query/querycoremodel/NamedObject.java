@@ -7,9 +7,9 @@ package javax.olap.query.querycoremodel;
 
 public interface NamedObject {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public java.lang.String getName()
     throws javax.olap.OLAPException;

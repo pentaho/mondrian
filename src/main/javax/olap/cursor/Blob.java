@@ -8,9 +8,9 @@ package javax.olap.cursor;
 public interface Blob
 extends javax.olap.query.querycoremodel.NamedObject {
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public long length()
     throws javax.olap.OLAPException;

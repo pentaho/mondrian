@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2003 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -26,30 +26,30 @@ import javax.olap.query.querycoremodel.Ordinate;
  * @version $Id$
  **/
 abstract class MondrianDataBasedMemberFilterInput
-		implements DataBasedMemberFilterInput, OperatorInput {
-	private DataBasedMemberFilter dataBasedMemberFilter;
-	private Ordinate ordinate;
-	private OrdinateOperator ordinateOperator;
+        implements DataBasedMemberFilterInput, OperatorInput {
+    private DataBasedMemberFilter dataBasedMemberFilter;
+    private Ordinate ordinate;
+    private OrdinateOperator ordinateOperator;
 
-	public void setDataBasedMemberFilter(DataBasedMemberFilter input) throws OLAPException {
-		this.dataBasedMemberFilter = input;
-	}
+    public void setDataBasedMemberFilter(DataBasedMemberFilter input) throws OLAPException {
+        this.dataBasedMemberFilter = input;
+    }
 
-	public DataBasedMemberFilter getDataBasedMemberFilter() throws OLAPException {
-		return dataBasedMemberFilter;
-	}
+    public DataBasedMemberFilter getDataBasedMemberFilter() throws OLAPException {
+        return dataBasedMemberFilter;
+    }
 
-	public Ordinate getOrdinate() throws OLAPException {
-		return ordinate;
-	}
+    public Ordinate getOrdinate() throws OLAPException {
+        return ordinate;
+    }
 
-	public void setOrdinateOperator(OrdinateOperator input) throws OLAPException {
-		this.ordinateOperator = input;
-	}
+    public void setOrdinateOperator(OrdinateOperator input) throws OLAPException {
+        this.ordinateOperator = input;
+    }
 
-	public OrdinateOperator getOrdinateOperator() throws OLAPException {
-		return ordinateOperator;
-	}
+    public OrdinateOperator getOrdinateOperator() throws OLAPException {
+        return ordinateOperator;
+    }
 }
 
 // End MondrianDataBasedMemberFilterInput.java

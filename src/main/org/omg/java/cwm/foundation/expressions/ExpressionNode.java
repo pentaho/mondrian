@@ -8,17 +8,17 @@ package org.omg.java.cwm.foundation.expressions;
 public interface ExpressionNode
 extends org.omg.java.cwm.objectmodel.core.Element {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.objectmodel.core.Expression getExpression();
 
   public void setExpression( org.omg.java.cwm.objectmodel.core.Expression value );
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.foundation.expressions.FeatureNode getFeatureNode();
 

@@ -8,9 +8,9 @@ package org.omg.java.cwm.foundation.softwaredeployment;
 public interface DeployedSoftwareSystem
 extends org.omg.java.cwm.objectmodel.core.Package {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.foundation.softwaredeployment.SoftwareSystem getSoftwareSystem();
 

@@ -8,9 +8,9 @@ package javax.olap.serversidemetadata;
 public interface DeploymentGroup
 extends org.omg.java.cwm.objectmodel.core.Package {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.serversidemetadata.Schema getSchema()
     throws javax.olap.OLAPException;

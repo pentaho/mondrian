@@ -8,9 +8,9 @@ package org.omg.java.cwm.analysis.transformation;
 public interface ClassifierFeatureMap
 extends org.omg.java.cwm.objectmodel.core.ModelElement {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.objectmodel.core.ProcedureExpression getFunction();
 
@@ -24,9 +24,9 @@ extends org.omg.java.cwm.objectmodel.core.ModelElement {
 
   public void setClassifierToFeature( boolean value );
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.Collection getClassifier();
 

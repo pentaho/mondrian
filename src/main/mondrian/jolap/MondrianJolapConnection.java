@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2003 Julian Hyde
+// (C) Copyright 2003-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -37,69 +37,69 @@ import java.util.List;
  * @version $Id$
  **/
 class MondrianJolapConnection extends RefObjectSupport implements Connection {
-	mondrian.olap.Connection mondrianConnection;
+    mondrian.olap.Connection mondrianConnection;
     private final MondrianMemberObjectFactories memberObjectFactories = new MondrianMemberObjectFactories();
 
     MondrianJolapConnection(mondrian.olap.Connection connection) {
-		this.mondrianConnection = connection;
-	}
-	public void close() throws OLAPException {
-		mondrianConnection.close();
-	}
+        this.mondrianConnection = connection;
+    }
+    public void close() throws OLAPException {
+        mondrianConnection.close();
+    }
 
-	public ConnectionMetaData getMetaData() throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
+    public ConnectionMetaData getMetaData() throws OLAPException {
+        throw new UnsupportedOperationException();
+    }
 
-	public RefPackage getTopLevelPackage() throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
+    public RefPackage getTopLevelPackage() throws OLAPException {
+        throw new UnsupportedOperationException();
+    }
 
-	public List getSchema() throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
+    public List getSchema() throws OLAPException {
+        throw new UnsupportedOperationException();
+    }
 
-	public Schema getCurrentSchema() throws OLAPException {
-		return null; // todo:
-	}
+    public Schema getCurrentSchema() throws OLAPException {
+        return null; // todo:
+    }
 
-	public void setCurrentSchema(Schema schema) throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
+    public void setCurrentSchema(Schema schema) throws OLAPException {
+        throw new UnsupportedOperationException();
+    }
 
-	public Collection getDimensions() throws OLAPException {
-		final mondrian.olap.Schema schema = mondrianConnection.getSchema();
-		final Hierarchy[] sharedHierarchies = schema.getSharedHierarchies();
-		final ArrayList list = new ArrayList();
-		for (int i = 0; i < sharedHierarchies.length; i++) {
-			list.add(new MondrianJolapDimension(
-					getCurrentSchema(), sharedHierarchies[i].getDimension()));
-		}
-		return list;
-	}
+    public Collection getDimensions() throws OLAPException {
+        final mondrian.olap.Schema schema = mondrianConnection.getSchema();
+        final Hierarchy[] sharedHierarchies = schema.getSharedHierarchies();
+        final ArrayList list = new ArrayList();
+        for (int i = 0; i < sharedHierarchies.length; i++) {
+            list.add(new MondrianJolapDimension(
+                    getCurrentSchema(), sharedHierarchies[i].getDimension()));
+        }
+        return list;
+    }
 
-	public Collection getCubes() throws OLAPException {
-		final mondrian.olap.Schema schema = mondrianConnection.getSchema();
-		final mondrian.olap.Cube[] cubes = schema.getCubes();
-		final ArrayList list = new ArrayList();
-		for (int i = 0; i < cubes.length; i++) {
-			mondrian.olap.Cube cube = cubes[i];
-			list.add(new MondrianJolapCube(getCurrentSchema(), cube));
-		}
-		return list;
-	}
+    public Collection getCubes() throws OLAPException {
+        final mondrian.olap.Schema schema = mondrianConnection.getSchema();
+        final mondrian.olap.Cube[] cubes = schema.getCubes();
+        final ArrayList list = new ArrayList();
+        for (int i = 0; i < cubes.length; i++) {
+            mondrian.olap.Cube cube = cubes[i];
+            list.add(new MondrianJolapCube(getCurrentSchema(), cube));
+        }
+        return list;
+    }
 
-	public CubeView createCubeView() throws OLAPException {
+    public CubeView createCubeView() throws OLAPException {
         return new MondrianCubeView(this, null);
-	}
+    }
 
     public DimensionView createDimensionView(Dimension dimension) throws OLAPException {
-		return new MondrianDimensionView(dimension);
-	}
+        return new MondrianDimensionView(dimension);
+    }
 
-	public EdgeView createEdgeView() throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
+    public EdgeView createEdgeView() throws OLAPException {
+        throw new UnsupportedOperationException();
+    }
 
     public Collection getSchemas() throws OLAPException {
         throw new UnsupportedOperationException();

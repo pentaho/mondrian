@@ -24,30 +24,30 @@ import mondrian.olap.MondrianDef;
  **/
 class PrivateHierarchyUsage extends HierarchyUsage
 {
-	RolapHierarchy hierarchy;
+    RolapHierarchy hierarchy;
 
-	PrivateHierarchyUsage(MondrianDef.Relation fact, RolapHierarchy hierarchy)
+    PrivateHierarchyUsage(MondrianDef.Relation fact, RolapHierarchy hierarchy)
     {
-		super(fact, hierarchy.foreignKey);
-		this.hierarchy = hierarchy;
-	}
+        super(fact, hierarchy.foreignKey);
+        this.hierarchy = hierarchy;
+    }
 
-	public boolean equals(Object o)
-	{
-		if (!(o instanceof PrivateHierarchyUsage)) {
-			return false;
-		}
-		PrivateHierarchyUsage that = (PrivateHierarchyUsage) o;
-		return this.fact.equals(that.fact) &&
-				this.hierarchy.equals(that.hierarchy);
-	}
+    public boolean equals(Object o)
+    {
+        if (!(o instanceof PrivateHierarchyUsage)) {
+            return false;
+        }
+        PrivateHierarchyUsage that = (PrivateHierarchyUsage) o;
+        return this.fact.equals(that.fact) &&
+                this.hierarchy.equals(that.hierarchy);
+    }
 
-	public int hashCode()
-	{
-		int h = fact.hashCode(),
-			i = hierarchy.hashCode();
-		return (h << 8) ^ i;
-	}
+    public int hashCode()
+    {
+        int h = fact.hashCode(),
+            i = hierarchy.hashCode();
+        return (h << 8) ^ i;
+    }
 }
 
 // End PrivateHierarchyUsage.java

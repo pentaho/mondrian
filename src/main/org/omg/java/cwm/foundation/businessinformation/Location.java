@@ -8,9 +8,9 @@ package org.omg.java.cwm.foundation.businessinformation;
 public interface Location
 extends org.omg.java.cwm.objectmodel.core.ModelElement {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public java.lang.String getLocationType();
 
@@ -36,9 +36,9 @@ extends org.omg.java.cwm.objectmodel.core.ModelElement {
 
   public void setCountry( java.lang.String value );
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.Collection getContact();
 

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1998-2003 Kana Software, Inc. and others.
+// (C) Copyright 1998-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -18,34 +18,34 @@ import java.io.PrintWriter;
  **/
 public abstract class QueryPart implements Walkable
 {
-	QueryPart() {
-	}
+    QueryPart() {
+    }
 
-	public void unparse(PrintWriter pw)
-	{
+    public void unparse(PrintWriter pw)
+    {
         pw.print(toString());
-	}
+    }
 
-	/** Replace the <code>ordinal</code>th child (as it appeared in the array
-	 * returned from <code>getChildren()</code>) with <code>with</code>. */
-	public void replaceChild(int ordinal, QueryPart with)
-	{
-		// By default, a QueryPart is atomic (has no children).
-		throw new Error("unsupported");
-	}
+    /** Replace the <code>ordinal</code>th child (as it appeared in the array
+     * returned from <code>getChildren()</code>) with <code>with</code>. */
+    public void replaceChild(int ordinal, QueryPart with)
+    {
+        // By default, a QueryPart is atomic (has no children).
+        throw new Error("unsupported");
+    }
 
-	// implement Walkable
-	public Object[] getChildren()
-	{
-		// By default, a QueryPart is atomic (has no children).
-		return null;
-	}
+    // implement Walkable
+    public Object[] getChildren()
+    {
+        // By default, a QueryPart is atomic (has no children).
+        return null;
+    }
 
-	protected Object[] getAllowedChildren( CubeAccess cubeAccess )
-	{
-		// By default, a QueryPart is atomic (has no children).
-		return null;
-	}
+    protected Object[] getAllowedChildren( CubeAccess cubeAccess )
+    {
+        // By default, a QueryPart is atomic (has no children).
+        return null;
+    }
 }
 
 // End QueryPart.java

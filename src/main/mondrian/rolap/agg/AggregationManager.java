@@ -33,86 +33,86 @@ import mondrian.rolap.sql.SqlQuery;
  * @version $Id$
  **/
 public class AggregationManager extends RolapAggregationManager {
-	private static AggregationManager instance;
+    private static AggregationManager instance;
 
-	AggregationManager()
-	{
-	}
+    AggregationManager()
+    {
+    }
 
- 	/** Returns or creates the singleton. **/
-	public static synchronized AggregationManager instance()
-	{
-		if (instance == null) {
-			instance = new AggregationManager();
-		}
-		return instance;
-	}
+    /** Returns or creates the singleton. **/
+    public static synchronized AggregationManager instance()
+    {
+        if (instance == null) {
+            instance = new AggregationManager();
+        }
+        return instance;
+    }
 
 
     public void loadAggregation(
-		RolapStar.Measure[] measures, RolapStar.Column[] columns,
-		ColumnConstraint[][] constraintses, Collection pinnedSegments)
-	{
-		RolapStar star = measures[0].table.star;
-		Aggregation aggregation = star.lookupOrCreateAggregation(columns);
+        RolapStar.Measure[] measures, RolapStar.Column[] columns,
+        ColumnConstraint[][] constraintses, Collection pinnedSegments)
+    {
+        RolapStar star = measures[0].table.star;
+        Aggregation aggregation = star.lookupOrCreateAggregation(columns);
 
-		// try to eliminate unneccessary constraints
+        // try to eliminate unneccessary constraints
         // for Oracle: prevent an IN-clause with more than 1000 elements
-		constraintses = aggregation.optimizeConstraints(constraintses);
+        constraintses = aggregation.optimizeConstraints(constraintses);
 
-		aggregation.load(measures, constraintses, pinnedSegments);
-	}
+        aggregation.load(measures, constraintses, pinnedSegments);
+    }
 
 
 
-	public Object getCellFromCache(CellRequest request) {
-		RolapStar.Measure measure = request.getMeasure();
-		Aggregation aggregation = measure.table.star.lookupAggregation(
-			request.getColumns());
-		if (aggregation == null) {
-			return null; // cell is not in any aggregation
-		}
-		Object o = aggregation.get(
-				measure, request.getSingleValues(), null);
-		if (o != null) {
-			return o;
-		}
-		throw Util.getRes().newInternal("not found");
-	}
+    public Object getCellFromCache(CellRequest request) {
+        RolapStar.Measure measure = request.getMeasure();
+        Aggregation aggregation = measure.table.star.lookupAggregation(
+            request.getColumns());
+        if (aggregation == null) {
+            return null; // cell is not in any aggregation
+        }
+        Object o = aggregation.get(
+                measure, request.getSingleValues(), null);
+        if (o != null) {
+            return o;
+        }
+        throw Util.getRes().newInternal("not found");
+    }
 
-	public Object getCellFromCache(CellRequest request, Set pinSet) {
-		Util.assertPrecondition(pinSet != null);
-		RolapStar.Measure measure = request.getMeasure();
-		Aggregation aggregation = measure.table.star.lookupAggregation(
-			request.getColumns());
-		if (aggregation == null) {
-			return null; // cell is not in any aggregation
-		}
-		return aggregation.get(
-				measure, request.getSingleValues(), pinSet);
-	}
+    public Object getCellFromCache(CellRequest request, Set pinSet) {
+        Util.assertPrecondition(pinSet != null);
+        RolapStar.Measure measure = request.getMeasure();
+        Aggregation aggregation = measure.table.star.lookupAggregation(
+            request.getColumns());
+        if (aggregation == null) {
+            return null; // cell is not in any aggregation
+        }
+        return aggregation.get(
+                measure, request.getSingleValues(), pinSet);
+    }
 
-	public String getDrillThroughSQL(final CellRequest request) {
+    public String getDrillThroughSQL(final CellRequest request) {
         final DrillThroughQuerySpec spec = new DrillThroughQuerySpec(request);
         return generateSQL(spec, false);
-	}
+    }
 
     /**
-	 * Generates the query to retrieve the cells for a list of segments.
-	 */
-	static String generateSQL(Segment[] segments) {
+     * Generates the query to retrieve the cells for a list of segments.
+     */
+    static String generateSQL(Segment[] segments) {
         final SegmentArrayQuerySpec spec = new SegmentArrayQuerySpec(segments);
         return generateSQL(spec, true);
-	}
+    }
 
     /**
-	 * Generates the query to retrieve the cells for a list of segments.
+     * Generates the query to retrieve the cells for a list of segments.
      *
      * @param spec Query specification
      * @param aggregate Whether to aggregate; <code>true</code> for populating
      *   a segment, <code>false</code> for drill-through
-	 */
-	private static String generateSQL(QuerySpec spec, boolean aggregate) {
+     */
+    private static String generateSQL(QuerySpec spec, boolean aggregate) {
         java.sql.Connection jdbcConnection = spec.getStar().getJdbcConnection();
         try {
             return generateSql(spec, jdbcConnection, aggregate);
@@ -236,71 +236,71 @@ public class AggregationManager extends RolapAggregationManager {
     }
 
     /**
-	 * Contains the information necessary to generate a SQL statement to
-	 * retrieve a set of cells.
-	 */
-	private interface QuerySpec {
-		int getMeasureCount();
-		RolapStar.Measure getMeasure(int i);
+     * Contains the information necessary to generate a SQL statement to
+     * retrieve a set of cells.
+     */
+    private interface QuerySpec {
+        int getMeasureCount();
+        RolapStar.Measure getMeasure(int i);
         String getMeasureAlias(int i);
-		RolapStar getStar();
-		RolapStar.Column[] getColumns();
+        RolapStar getStar();
+        RolapStar.Column[] getColumns();
         String getColumnAlias(int i);
-		ColumnConstraint[] getConstraints(int i);
+        ColumnConstraint[] getConstraints(int i);
     }
 
-	/**
-	 * Provides the information necessary to generate a SQL statement to
-	 * retrieve a list of segments.
-	 */
-	private static class SegmentArrayQuerySpec implements QuerySpec {
-		private final Segment[] segments;
+    /**
+     * Provides the information necessary to generate a SQL statement to
+     * retrieve a list of segments.
+     */
+    private static class SegmentArrayQuerySpec implements QuerySpec {
+        private final Segment[] segments;
 
-		SegmentArrayQuerySpec(Segment[] segments) {
-			this.segments = segments;
-			Util.assertPrecondition(segments.length > 0, "segments.length > 0");
-			for (int i = 0; i < segments.length; i++) {
-				Segment segment = segments[i];
-				Util.assertPrecondition(segment.aggregation == segments[0].aggregation);
-				int n = segment.axes.length;
-				Util.assertTrue(n == segments[0].axes.length);
-				for (int j = 0; j < segment.axes.length; j++) {
-					// We only require that the two arrays have the same
-					// contents, we but happen to know they are the same array,
-					// because we constructed them at the same time.
-					Util.assertTrue(segment.axes[j].constraints == segments[0].axes[j].constraints);
-				}
-			}
-		}
+        SegmentArrayQuerySpec(Segment[] segments) {
+            this.segments = segments;
+            Util.assertPrecondition(segments.length > 0, "segments.length > 0");
+            for (int i = 0; i < segments.length; i++) {
+                Segment segment = segments[i];
+                Util.assertPrecondition(segment.aggregation == segments[0].aggregation);
+                int n = segment.axes.length;
+                Util.assertTrue(n == segments[0].axes.length);
+                for (int j = 0; j < segment.axes.length; j++) {
+                    // We only require that the two arrays have the same
+                    // contents, we but happen to know they are the same array,
+                    // because we constructed them at the same time.
+                    Util.assertTrue(segment.axes[j].constraints == segments[0].axes[j].constraints);
+                }
+            }
+        }
 
-		public int getMeasureCount() {
-			return segments.length;
-		}
+        public int getMeasureCount() {
+            return segments.length;
+        }
 
-		public RolapStar.Measure getMeasure(int i) {
-			return segments[i].measure;
-		}
+        public RolapStar.Measure getMeasure(int i) {
+            return segments[i].measure;
+        }
 
         public String getMeasureAlias(int i) {
             return "m" + i;
         }
 
-		public RolapStar getStar() {
-			return segments[0].aggregation.star;
-		}
+        public RolapStar getStar() {
+            return segments[0].aggregation.star;
+        }
 
-		public RolapStar.Column[] getColumns() {
-			return segments[0].aggregation.columns;
-		}
+        public RolapStar.Column[] getColumns() {
+            return segments[0].aggregation.columns;
+        }
 
         public String getColumnAlias(int i) {
             return "c" + i;
         }
 
-		public ColumnConstraint[] getConstraints(int i) {
-			return segments[0].axes[i].constraints;
-		}
-	}
+        public ColumnConstraint[] getConstraints(int i) {
+            return segments[0].axes[i].constraints;
+        }
+    }
 
     /**
      * Provides the information necessary to generate SQL for a drill-through

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2003 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -25,19 +25,19 @@ import java.util.Collection;
  * @version $Id$
  **/
 class MondrianQualifiedMemberReference extends MondrianDataBasedMemberFilterInput
-		implements QualifiedMemberReference {
-	private RelationshipList member = new RelationshipList(Meta.member);
+        implements QualifiedMemberReference {
+    private RelationshipList member = new RelationshipList(Meta.member);
 
-	static class Meta {
-		static Relationship member = new Relationship(MondrianQualifiedMemberReference.class, "member", Member.class);
-	}
+    static class Meta {
+        static Relationship member = new Relationship(MondrianQualifiedMemberReference.class, "member", Member.class);
+    }
 
-	public MondrianQualifiedMemberReference() {
-	}
+    public MondrianQualifiedMemberReference() {
+    }
 
     public Collection getMember() throws OLAPException {
         return member;
-	}
+    }
 
     public void setOrdinate(Ordinate value) throws OLAPException {
         throw new UnsupportedOperationException();

@@ -3,7 +3,7 @@ package javax.jmi.reflect;
 /** Exception thrown when an instance object is going to become owned by more than one element (in sense of aggregation semantics).
  */
 public class CompositionViolationException extends JmiException {
-    
+
     /**
      * Constructs a <code>CompositionViolationException</code> without detail message.
      * @param objectInError An instance (component) that caused the composition violation.
@@ -12,7 +12,7 @@ public class CompositionViolationException extends JmiException {
     public CompositionViolationException(Object objectInError, RefObject elementInError) {
         super(objectInError, elementInError);
     }
-    
+
     /**
      * Constructs a <code>CompositionViolationException</code> with the specified detail message.
      * @param objectInError An instance (component) that caused the composition voilation.

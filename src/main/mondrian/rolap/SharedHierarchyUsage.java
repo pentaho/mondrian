@@ -32,37 +32,37 @@ import java.util.HashMap;
  **/
 class SharedHierarchyUsage extends HierarchyUsage
 {
-	private final String sharedHierarchy;
+    private final String sharedHierarchy;
     private RolapCube cube;
 
     SharedHierarchyUsage(
         RolapCube cube,
         String sharedHierarchy,
         String foreignKey)
-	{
-		super(cube.fact, foreignKey);
+    {
+        super(cube.fact, foreignKey);
         this.cube = cube;
-		this.sharedHierarchy = sharedHierarchy;
+        this.sharedHierarchy = sharedHierarchy;
     }
 
-	public boolean equals(Object o)
-	{
-		if (!(o instanceof SharedHierarchyUsage)) {
-			return false;
-		}
-		SharedHierarchyUsage that = (SharedHierarchyUsage) o;
-		return this.fact.equals(that.fact) &&
-			this.sharedHierarchy.equals(that.sharedHierarchy) &&
+    public boolean equals(Object o)
+    {
+        if (!(o instanceof SharedHierarchyUsage)) {
+            return false;
+        }
+        SharedHierarchyUsage that = (SharedHierarchyUsage) o;
+        return this.fact.equals(that.fact) &&
+            this.sharedHierarchy.equals(that.sharedHierarchy) &&
             Util.equals(this.foreignKey, that.foreignKey);
-	}
+    }
 
-	public int hashCode()
-	{
-		int h = fact.hashCode();
+    public int hashCode()
+    {
+        int h = fact.hashCode();
         h = Util.hash(h, sharedHierarchy);
         h = Util.hash(h, foreignKey);
         return h;
-	}
+    }
 }
 
 // End SharedHierarchyUsage.java

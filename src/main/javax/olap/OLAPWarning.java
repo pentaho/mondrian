@@ -10,17 +10,17 @@ public class OLAPWarning extends OLAPException
   {
     super();
   }
-  
+
   public OLAPWarning(String reason)
   {
     super(reason);
   }
-  
+
   public OLAPWarning(String reason, String OLAPState)
   {
     super(reason, OLAPState);
   }
-  
+
   public OLAPWarning(String reason, String OLAPState, int vendorCode)
   {
     super(reason, OLAPState, vendorCode);

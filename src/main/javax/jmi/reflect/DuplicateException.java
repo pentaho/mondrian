@@ -13,7 +13,7 @@ public class DuplicateException extends JmiException {
     public DuplicateException(Object objectInError, RefObject elementInError) {
         super(objectInError, elementInError);
     }
-    
+
     /**
      * Constructs an <code>DuplicateException</code> with the specified detail message.
      * @param objectInError object that was duplicated.

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// (C) Copyright 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -26,94 +26,94 @@ import java.io.PrintWriter;
  **/
 public class TextDef implements NodeDef {
 
-	public String s;
+    public String s;
 
-	/**
-	 * Whether to print the data as is -- never quote as a CDATA
-	 * section. Useful if the fragment contains a valid XML string.
-	 **/
-	boolean asIs;
+    /**
+     * Whether to print the data as is -- never quote as a CDATA
+     * section. Useful if the fragment contains a valid XML string.
+     **/
+    boolean asIs;
 
-	public TextDef()
-	{
-	}
+    public TextDef()
+    {
+    }
 
-	public TextDef(String s)
-	{
-		this.s = s;
-	}
+    public TextDef(String s)
+    {
+        this.s = s;
+    }
 
-	public TextDef(String s, boolean asIs)
-	{
-		this.s = s;
-		this.asIs = asIs;
-	}
+    public TextDef(String s, boolean asIs)
+    {
+        this.s = s;
+        this.asIs = asIs;
+    }
 
-	public TextDef(mondrian.xom.DOMWrapper _def)
-		throws mondrian.xom.XOMException
-	{
-		switch (_def.getType()) {
-		case DOMWrapper.FREETEXT:
-		case DOMWrapper.CDATA:
-		case DOMWrapper.COMMENT:
-			break;
-		default:
-			throw new XOMException(
-				"cannot make CDATA/PCDATA element from a " + _def.getType());
-		}
-		this.s = _def.getText();
-	}
+    public TextDef(mondrian.xom.DOMWrapper _def)
+        throws mondrian.xom.XOMException
+    {
+        switch (_def.getType()) {
+        case DOMWrapper.FREETEXT:
+        case DOMWrapper.CDATA:
+        case DOMWrapper.COMMENT:
+            break;
+        default:
+            throw new XOMException(
+                "cannot make CDATA/PCDATA element from a " + _def.getType());
+        }
+        this.s = _def.getText();
+    }
 
-	// override ElementDef
-	public String getName()
-	{
-		return null;
-	}
+    // override ElementDef
+    public String getName()
+    {
+        return null;
+    }
 
-	// override ElementDef
-	public String getText()
-	{
-		return s;
-	}
+    // override ElementDef
+    public String getText()
+    {
+        return s;
+    }
 
-	// implement NodeDef
-	public NodeDef[] getChildren()
-	{
-		return XOMUtil.emptyNodeArray;
-	}
+    // implement NodeDef
+    public NodeDef[] getChildren()
+    {
+        return XOMUtil.emptyNodeArray;
+    }
 
-	// implement NodeDef
-	public DOMWrapper getWrapper()
-	{
-		return null;
-	}
+    // implement NodeDef
+    public DOMWrapper getWrapper()
+    {
+        return null;
+    }
 
-	// implement NodeDef
-	public int getType()
-	{
-		return DOMWrapper.FREETEXT;
-	}
+    // implement NodeDef
+    public int getType()
+    {
+        return DOMWrapper.FREETEXT;
+    }
 
-	// implement NodeDef
-	public void display(PrintWriter pw, int indent)
-	{
-		pw.print(s);
-	}
+    // implement NodeDef
+    public void display(PrintWriter pw, int indent)
+    {
+        pw.print(s);
+    }
 
-	// override NodeDef
-	public void displayXML(XMLOutput out, int indent)
-	{ 
-		if (out.getIgnorePcdata()) {
-			return;
-		}
-		out.beginNode();
-		if (asIs) {
-			out.print(s);
-		} else {
-			boolean quote = true;
-			out.cdata(s, quote);
-		}
-	}
+    // override NodeDef
+    public void displayXML(XMLOutput out, int indent)
+    {
+        if (out.getIgnorePcdata()) {
+            return;
+        }
+        out.beginNode();
+        if (asIs) {
+            out.print(s);
+        } else {
+            boolean quote = true;
+            out.cdata(s, quote);
+        }
+    }
 }
 
 

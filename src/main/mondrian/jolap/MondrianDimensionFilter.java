@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2003 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -37,62 +37,62 @@ import javax.olap.query.querycoremodel.MemberInsertOffset;
  * @version $Id$
  **/
 abstract class MondrianDimensionFilter extends MondrianDimensionStep
-		implements DimensionFilter {
-	private SetActionType setAction;
-	private MondrianInsertOffset dimensionInsertOffset;
+        implements DimensionFilter {
+    private SetActionType setAction;
+    private MondrianInsertOffset dimensionInsertOffset;
 
-	MondrianDimensionFilter(MondrianDimensionStepManager manager) {
-		super(manager);
-	}
+    MondrianDimensionFilter(MondrianDimensionStepManager manager) {
+        super(manager);
+    }
 
-	protected Exp combine(Exp previousExp, Exp exp) {
-		if (setAction == SetActionTypeEnum.APPEND) {
-			return new FunCall("Union", new Exp[] {previousExp, exp});
-		} else if (setAction == SetActionTypeEnum.DIFFERENCE) {
-			return new FunCall("Minus", new Exp[] {previousExp, exp});
-		} else if (setAction == SetActionTypeEnum.INITIAL) {
-//			Util.assertTrue(previousExp == null);
-			return exp;
-		} else if (setAction == SetActionTypeEnum.INSERT) {
-			// todo: Implement "Insert(<set>,<set>,<number>|<member>)" and
-			return new FunCall("Insert", new Exp[] {
-				previousExp, exp, dimensionInsertOffset.convert()});
-		} else if (setAction == SetActionTypeEnum.INTERSECTION) {
-			return new FunCall("Intersect", new Exp[] {previousExp, exp});
-		} else if (setAction == SetActionTypeEnum.PREPEND) {
-			return new FunCall("Union", new Exp[] {exp, previousExp});
-		} else {
-			throw Util.newInternal("Unknown SetAction " + setAction);
-		}
-	}
+    protected Exp combine(Exp previousExp, Exp exp) {
+        if (setAction == SetActionTypeEnum.APPEND) {
+            return new FunCall("Union", new Exp[] {previousExp, exp});
+        } else if (setAction == SetActionTypeEnum.DIFFERENCE) {
+            return new FunCall("Minus", new Exp[] {previousExp, exp});
+        } else if (setAction == SetActionTypeEnum.INITIAL) {
+//          Util.assertTrue(previousExp == null);
+            return exp;
+        } else if (setAction == SetActionTypeEnum.INSERT) {
+            // todo: Implement "Insert(<set>,<set>,<number>|<member>)" and
+            return new FunCall("Insert", new Exp[] {
+                previousExp, exp, dimensionInsertOffset.convert()});
+        } else if (setAction == SetActionTypeEnum.INTERSECTION) {
+            return new FunCall("Intersect", new Exp[] {previousExp, exp});
+        } else if (setAction == SetActionTypeEnum.PREPEND) {
+            return new FunCall("Union", new Exp[] {exp, previousExp});
+        } else {
+            throw Util.newInternal("Unknown SetAction " + setAction);
+        }
+    }
 
-	// object model methods
+    // object model methods
 
-	public SetActionType getSetAction() throws OLAPException {
-		return setAction;
-	}
+    public SetActionType getSetAction() throws OLAPException {
+        return setAction;
+    }
 
-	public void setSetAction(SetActionType input) throws OLAPException {
-		this.setAction = input;
-	}
+    public void setSetAction(SetActionType input) throws OLAPException {
+        this.setAction = input;
+    }
 
-	public void setDimensionInsertOffset(DimensionInsertOffset input) throws OLAPException {
-		this.dimensionInsertOffset = (MondrianInsertOffset) input;
-	}
+    public void setDimensionInsertOffset(DimensionInsertOffset input) throws OLAPException {
+        this.dimensionInsertOffset = (MondrianInsertOffset) input;
+    }
 
-	public DimensionInsertOffset getDimensionInsertOffset() throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
+    public DimensionInsertOffset getDimensionInsertOffset() throws OLAPException {
+        throw new UnsupportedOperationException();
+    }
 
-	public DimensionInsertOffset createDimensionInsertOffset(DimensionInsertOffsetType type) throws OLAPException {
-		if (type == DimensionInsertOffsetTypeEnum.INTEGER_INSERT_OFFSET) {
-			return new MondrianIntegerInsertOffset(this);
-		} else if (type == DimensionInsertOffsetTypeEnum.MEMBER_INSERT_OFFSET) {
-			return new MondrianMemberInsertOffset(this);
-		} else {
-			throw Util.newInternal("Unknown DimensionInsertOffsetType " + type);
-		}
-	}
+    public DimensionInsertOffset createDimensionInsertOffset(DimensionInsertOffsetType type) throws OLAPException {
+        if (type == DimensionInsertOffsetTypeEnum.INTEGER_INSERT_OFFSET) {
+            return new MondrianIntegerInsertOffset(this);
+        } else if (type == DimensionInsertOffsetTypeEnum.MEMBER_INSERT_OFFSET) {
+            return new MondrianMemberInsertOffset(this);
+        } else {
+            throw Util.newInternal("Unknown DimensionInsertOffsetType " + type);
+        }
+    }
 
     public void setDimensionStepManager(DimensionStepManager value) throws OLAPException {
         throw new UnsupportedOperationException();
@@ -109,73 +109,73 @@ abstract class MondrianDimensionFilter extends MondrianDimensionStep
  * {@link MemberInsertOffset}.
  */
 abstract class MondrianInsertOffset extends QueryObjectSupport implements
-		EdgeInsertOffset {
-	private MondrianDimensionFilter dimensionFilter;
+        EdgeInsertOffset {
+    private MondrianDimensionFilter dimensionFilter;
 
-	MondrianInsertOffset(MondrianDimensionFilter dimensionFilter) {
-		super(false);
-		this.dimensionFilter = dimensionFilter;
-	}
+    MondrianInsertOffset(MondrianDimensionFilter dimensionFilter) {
+        super(false);
+        this.dimensionFilter = dimensionFilter;
+    }
 
-	public DimensionFilter getDimensionFilter() throws OLAPException {
-		return dimensionFilter;
-	}
+    public DimensionFilter getDimensionFilter() throws OLAPException {
+        return dimensionFilter;
+    }
 
     public void setDimensionFilter(DimensionFilter dimensionFilter) throws OLAPException {
         this.dimensionFilter = (MondrianDimensionFilter) dimensionFilter;
     }
 
-	/** Converts this offset into an expression which can be used in a call to
-	 * the "Insert(<set>,<set>,<member>|<number>)" function. */
-	abstract Exp convert();
+    /** Converts this offset into an expression which can be used in a call to
+     * the "Insert(<set>,<set>,<member>|<number>)" function. */
+    abstract Exp convert();
 }
 
 /**
  * Implementation of {@link DimensionInsertOffset} for integers.
  */
 class MondrianIntegerInsertOffset extends MondrianInsertOffset
-		implements DimensionInsertOffset {
-	Integer value;
+        implements DimensionInsertOffset {
+    Integer value;
 
-	MondrianIntegerInsertOffset(MondrianDimensionFilter dimensionFilter) {
-		super(dimensionFilter);
-	}
+    MondrianIntegerInsertOffset(MondrianDimensionFilter dimensionFilter) {
+        super(dimensionFilter);
+    }
 
-	Exp convert() {
-		return Literal.create(value);
-	}
+    Exp convert() {
+        return Literal.create(value);
+    }
 
-	public Integer getValue() throws OLAPException {
-		return value;
-	}
+    public Integer getValue() throws OLAPException {
+        return value;
+    }
 
-	public void setValue(Integer input) throws OLAPException {
-		this.value = input;
-	}
+    public void setValue(Integer input) throws OLAPException {
+        this.value = input;
+    }
 }
 
 /**
  * Implementation of {@link MemberInsertOffset}.
  */
 class MondrianMemberInsertOffset extends MondrianInsertOffset
-		implements MemberInsertOffset {
-	Member member;
+        implements MemberInsertOffset {
+    Member member;
 
-	MondrianMemberInsertOffset(MondrianDimensionFilter dimensionFilter) {
-		super(dimensionFilter);
-	}
+    MondrianMemberInsertOffset(MondrianDimensionFilter dimensionFilter) {
+        super(dimensionFilter);
+    }
 
-	Exp convert() {
-		return ((MondrianJolapMember) member).member;
-	}
+    Exp convert() {
+        return ((MondrianJolapMember) member).member;
+    }
 
-	public Member getMember() throws OLAPException {
-		return member;
-	}
+    public Member getMember() throws OLAPException {
+        return member;
+    }
 
-	public void setMember(Member input) throws OLAPException {
-		this.member = input;
-	}
+    public void setMember(Member input) throws OLAPException {
+        this.member = input;
+    }
 }
 
 // End MondrianDimensionFilter.java

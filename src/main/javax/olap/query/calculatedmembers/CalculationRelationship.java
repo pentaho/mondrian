@@ -8,9 +8,9 @@ package javax.olap.query.calculatedmembers;
 public interface CalculationRelationship
 extends javax.olap.query.querycoremodel.NamedObject {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.query.calculatedmembers.CalculatedMember getSuperiorPrecedence()
     throws javax.olap.OLAPException;

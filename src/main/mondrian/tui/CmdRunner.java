@@ -75,12 +75,12 @@ public class CmdRunner {
         this.stack = null;
     }
 
-	private String formatError(Throwable mex) {
-		String message = mex.getMessage();
-		if (mex.getCause() != null && mex.getCause() != mex)
-			message = message + "\n" + formatError(mex.getCause());
-		return message;
-	}
+    private String formatError(Throwable mex) {
+        String message = mex.getMessage();
+        if (mex.getCause() != null && mex.getCause() != mex)
+            message = message + "\n" + formatError(mex.getCause());
+        return message;
+    }
 
     public static void listPropertyNames(StringBuffer buf) {
         for (int i = 0; i < propertyNames.length; i++) {
@@ -314,7 +314,7 @@ public class CmdRunner {
         StringBuffer buf = null;
         BufferedReader br = new BufferedReader(new InputStreamReader(in));
         boolean inMDXCmd = false;
-    	String resultString = null;
+        String resultString = null;
 
         for(;;) {
             if (resultString != null) {
@@ -322,13 +322,13 @@ public class CmdRunner {
                 resultString = null;
             }
             if (interactive) {
-            	if (inMDXCmd)
+                if (inMDXCmd)
                     System.out.print(COMMAND_PROMPT_MID);
-            	else
-            		System.out.print(COMMAND_PROMPT_START);
+                else
+                    System.out.print(COMMAND_PROMPT_START);
             }
             if (!inMDXCmd) {
-            	buf = new StringBuffer(2048);
+                buf = new StringBuffer(2048);
             }
             String line = br.readLine();
             if (line != null) {
@@ -384,7 +384,7 @@ public class CmdRunner {
                 }
 
                 inMDXCmd = false;
-                
+
             } else if (line.length() > 0) {
                 // OK, just add the line to the mdx query we are building.
                 inMDXCmd = true;
@@ -395,9 +395,9 @@ public class CmdRunner {
                     resultString = executeMDXCmd(mdxCmd);
                     inMDXCmd = false;
                 } else {
-	                // add carriage return so that query keeps formatting
-	                buf.append('\n');
-	            }
+                    // add carriage return so that query keeps formatting
+                    buf.append('\n');
+                }
             }
         }
     }
@@ -855,7 +855,7 @@ public class CmdRunner {
         }
     }
 
-	/////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////
     // context
     /////////////////////////////////////////////////////////////////////////
     private static class Context {

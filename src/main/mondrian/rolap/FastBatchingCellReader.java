@@ -32,177 +32,177 @@ import java.util.*;
  */
 public class FastBatchingCellReader implements CellReader {
 
-	RolapCube cube;
-	Set pinnedSegments;
-	Map batches = new HashMap();
-	RolapAggregationManager aggMgr = AggregationManager.instance();
+    RolapCube cube;
+    Set pinnedSegments;
+    Map batches = new HashMap();
+    RolapAggregationManager aggMgr = AggregationManager.instance();
 
-	public FastBatchingCellReader(RolapCube cube, Set pinnedSegments) {
-		this.cube = cube;
-		this.pinnedSegments = pinnedSegments;
-	}
+    public FastBatchingCellReader(RolapCube cube, Set pinnedSegments) {
+        this.cube = cube;
+        this.pinnedSegments = pinnedSegments;
+    }
 
-	public Object get(Evaluator evaluator) {
+    public Object get(Evaluator evaluator) {
         final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator;
         RolapMember[] currentMembers = rolapEvaluator.currentMembers;
-		CellRequest request =
+        CellRequest request =
                 RolapAggregationManager.makeRequest(currentMembers, false);
-		if (request == null) {
-			return Util.nullValue; // request out of bounds
+        if (request == null) {
+            return Util.nullValue; // request out of bounds
         }
-		// Try to retrieve a cell and simultaneously pin the segment which
-		// contains it.
-		Object o = aggMgr.getCellFromCache(request, pinnedSegments);
+        // Try to retrieve a cell and simultaneously pin the segment which
+        // contains it.
+        Object o = aggMgr.getCellFromCache(request, pinnedSegments);
 
-		if (o == Boolean.TRUE) {
-			// Aggregation is being loaded. (todo: Use better value, or
-			// throw special exception)
-			return RolapUtil.valueNotReadyException;
-		}
-		if (o != null) {
-			return o;
-		}
-		// if there is no such cell, record that we need to fetch it, and
-		// return 'error'
-		recordCellRequest(request);
-		return RolapUtil.valueNotReadyException;
-	}
+        if (o == Boolean.TRUE) {
+            // Aggregation is being loaded. (todo: Use better value, or
+            // throw special exception)
+            return RolapUtil.valueNotReadyException;
+        }
+        if (o != null) {
+            return o;
+        }
+        // if there is no such cell, record that we need to fetch it, and
+        // return 'error'
+        recordCellRequest(request);
+        return RolapUtil.valueNotReadyException;
+    }
 
-	int requestCount = 0;
-	void recordCellRequest(CellRequest request) {
-		++requestCount;
-		Object key = request.getBatchKey();
-		Batch batch = (Batch) batches.get(key);
-		if (batch == null) {
-			batch = new Batch(request);
-			batches.put(key, batch);
-		}
-		batch.add(request);
-	}
+    int requestCount = 0;
+    void recordCellRequest(CellRequest request) {
+        ++requestCount;
+        Object key = request.getBatchKey();
+        Batch batch = (Batch) batches.get(key);
+        if (batch == null) {
+            batch = new Batch(request);
+            batches.put(key, batch);
+        }
+        batch.add(request);
+    }
 
-	boolean loadAggregations() {
-		//System.out.println("requestCount = " + requestCount);
-		long t1 = System.currentTimeMillis();
-		requestCount = 0;
-		if (batches.isEmpty()) {
-			return false;
+    boolean loadAggregations() {
+        //System.out.println("requestCount = " + requestCount);
+        long t1 = System.currentTimeMillis();
+        requestCount = 0;
+        if (batches.isEmpty()) {
+            return false;
         }
         Iterator it = batches.values().iterator();
-		while (it.hasNext()) {
-			 ((Batch) it.next()).loadAggregation();
+        while (it.hasNext()) {
+             ((Batch) it.next()).loadAggregation();
         }
-		batches.clear();
-		long t2 = System.currentTimeMillis();
-		if (false) {
+        batches.clear();
+        long t2 = System.currentTimeMillis();
+        if (false) {
             System.out.println("loadAggregation " + (t2 - t1));
         }
-		return true;
-	}
+        return true;
+    }
 
-	class Batch {
+    class Batch {
 
-		RolapStar.Column[] columns;
-		ArrayList measuresList = new ArrayList();
-		Set[] valueSets;
+        RolapStar.Column[] columns;
+        ArrayList measuresList = new ArrayList();
+        Set[] valueSets;
 
-		public Batch(CellRequest request) {
-			columns = request.getColumns();
-			valueSets = new HashSet[columns.length];
-			for (int i = 0; i < valueSets.length; i++) {
-				valueSets[i] = new HashSet();
-			}
-		}
+        public Batch(CellRequest request) {
+            columns = request.getColumns();
+            valueSets = new HashSet[columns.length];
+            for (int i = 0; i < valueSets.length; i++) {
+                valueSets[i] = new HashSet();
+            }
+        }
 
-		public void add(CellRequest request) {
-			ArrayList values = request.getValueList();
-			for (int j = 0; j < columns.length; j++) {
-				valueSets[j].add(values.get(j));
-			}
-			RolapStar.Measure measure = request.getMeasure();
-			if (!measuresList.contains(measure)) {
+        public void add(CellRequest request) {
+            ArrayList values = request.getValueList();
+            for (int j = 0; j < columns.length; j++) {
+                valueSets[j].add(values.get(j));
+            }
+            RolapStar.Measure measure = request.getMeasure();
+            if (!measuresList.contains(measure)) {
                 assert measuresList.size() == 0 ||
                         measure.table.star ==
                         ((RolapStar.Measure) measuresList.get(0)).table.star :
                         "Measure must belong to same star as other measures";
-				measuresList.add(measure);
-			}
-		}
+                measuresList.add(measure);
+            }
+        }
 
-		void loadAggregation() {
-			long t1 = System.currentTimeMillis();
-			AggregationManager aggmgr = AggregationManager.instance();
-			ColumnConstraint[][] constraintses =
+        void loadAggregation() {
+            long t1 = System.currentTimeMillis();
+            AggregationManager aggmgr = AggregationManager.instance();
+            ColumnConstraint[][] constraintses =
                     new ColumnConstraint[columns.length][];
-			for (int j = 0; j < columns.length; j++) {
-				ColumnConstraint[] constraints;
-				Set valueSet = valueSets[j];
-				if (valueSet == null) {
-					constraints = null;
-				} else {
-					constraints = (ColumnConstraint[]) valueSet.
+            for (int j = 0; j < columns.length; j++) {
+                ColumnConstraint[] constraints;
+                Set valueSet = valueSets[j];
+                if (valueSet == null) {
+                    constraints = null;
+                } else {
+                    constraints = (ColumnConstraint[]) valueSet.
                             toArray(new ColumnConstraint[valueSet.size()]);
-				}
-				constraintses[j] = constraints;
-			}
-			// todo: optimize key sets; drop a constraint if more than x% of
-			// the members are requested; whether we should get just the cells
-			// requested or expand to a n-cube
+                }
+                constraintses[j] = constraints;
+            }
+            // todo: optimize key sets; drop a constraint if more than x% of
+            // the members are requested; whether we should get just the cells
+            // requested or expand to a n-cube
 
-			// If the database cannot execute "count(distinct ...)", split the
-			// distinct aggregations out.
-			while (true) {
-				// Scan for a measure based upon a distinct aggregation.
-				RolapStar.Measure distinctMeasure =
+            // If the database cannot execute "count(distinct ...)", split the
+            // distinct aggregations out.
+            while (true) {
+                // Scan for a measure based upon a distinct aggregation.
+                RolapStar.Measure distinctMeasure =
                         getFirstDistinctMeasure(measuresList);
-				if (distinctMeasure == null) {
-					break;
-				}
-				final String expr = distinctMeasure.expression.getGenericExpression();
-				final ArrayList distinctMeasuresList = new ArrayList();
-				for (int i = 0; i < measuresList.size();) {
-					RolapStar.Measure measure = (RolapStar.Measure) measuresList.get(i);
-					if (measure.aggregator.distinct &&
+                if (distinctMeasure == null) {
+                    break;
+                }
+                final String expr = distinctMeasure.expression.getGenericExpression();
+                final ArrayList distinctMeasuresList = new ArrayList();
+                for (int i = 0; i < measuresList.size();) {
+                    RolapStar.Measure measure = (RolapStar.Measure) measuresList.get(i);
+                    if (measure.aggregator.distinct &&
                             measure.expression.getGenericExpression().equals(expr)) {
-						measuresList.remove(i);
-						distinctMeasuresList.add(distinctMeasure);
-					} else {
-						i++;
-					}
-				}
-				RolapStar.Measure[] measures = (RolapStar.Measure[])
+                        measuresList.remove(i);
+                        distinctMeasuresList.add(distinctMeasure);
+                    } else {
+                        i++;
+                    }
+                }
+                RolapStar.Measure[] measures = (RolapStar.Measure[])
                         distinctMeasuresList.toArray(
                                 new RolapStar.Measure[distinctMeasuresList.size()]);
                 aggmgr.loadAggregation(measures, columns, constraintses, pinnedSegments);
-			}
-			final int measureCount = measuresList.size();
-			if (measureCount > 0) {
-				RolapStar.Measure[] measures = (RolapStar.Measure[])
+            }
+            final int measureCount = measuresList.size();
+            if (measureCount > 0) {
+                RolapStar.Measure[] measures = (RolapStar.Measure[])
                         measuresList.toArray(new RolapStar.Measure[measureCount]);
-				aggmgr.loadAggregation(measures, columns, constraintses, pinnedSegments);
-			}
-			long t2 = System.currentTimeMillis();
-			if (false) {
+                aggmgr.loadAggregation(measures, columns, constraintses, pinnedSegments);
+            }
+            long t2 = System.currentTimeMillis();
+            if (false) {
                 System.out.println("Batch.loadAggregation " + (t2 - t1));
             }
-		}
+        }
 
-	    /**
-	     * Returns the first measure based upon a distinct aggregation, or null if
-	     * there is none.
-	     * @param measuresList
-	     * @return
-	     */
-	    RolapStar.Measure getFirstDistinctMeasure(ArrayList measuresList) {
-	        for (int i = 0; i < measuresList.size(); i++) {
-	            RolapStar.Measure measure = (RolapStar.Measure) measuresList.get(i);
-	            if (measure.aggregator.distinct) {
-	                return measure;
-	            }
-	        }
-	        return null;
-	    }
+        /**
+         * Returns the first measure based upon a distinct aggregation, or null if
+         * there is none.
+         * @param measuresList
+         * @return
+         */
+        RolapStar.Measure getFirstDistinctMeasure(ArrayList measuresList) {
+            for (int i = 0; i < measuresList.size(); i++) {
+                RolapStar.Measure measure = (RolapStar.Measure) measuresList.get(i);
+                if (measure.aggregator.distinct) {
+                    return measure;
+                }
+            }
+            return null;
+        }
 
-	}
+    }
 
 }
 

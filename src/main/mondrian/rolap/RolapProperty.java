@@ -29,34 +29,34 @@ class RolapProperty extends Property {
     private String caption=  null;
 
     RolapProperty(String name, int type, MondrianDef.Expression exp, String formatterDef, String caption) {
-		super(name, type);
-		this.exp = exp;
-		this.caption = caption;
-		if (!Util.isEmpty(formatterDef)) {
-			// there is a special property formatter class
-			try {
-				Class clazz = Class.forName(formatterDef);
-				Constructor ctor = clazz.getConstructor(new Class[0]);
-				formatter = (PropertyFormatter) ctor.newInstance(new Object[0]);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
+        super(name, type);
+        this.exp = exp;
+        this.caption = caption;
+        if (!Util.isEmpty(formatterDef)) {
+            // there is a special property formatter class
+            try {
+                Class clazz = Class.forName(formatterDef);
+                Constructor ctor = clazz.getConstructor(new Class[0]);
+                formatter = (PropertyFormatter) ctor.newInstance(new Object[0]);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
-	public PropertyFormatter getFormatter() {
-		return formatter;
-	}
+    public PropertyFormatter getFormatter() {
+        return formatter;
+    }
 
-	/** The column or expression which yields the property's value. */
-	MondrianDef.Expression exp;
+    /** The column or expression which yields the property's value. */
+    MondrianDef.Expression exp;
 
-	/**
-	 * @return Returns the caption.
-	 */
-	public String getCaption() {
-		return caption;
-	}
+    /**
+     * @return Returns the caption.
+     */
+    public String getCaption() {
+        return caption;
+    }
 }
 
 // End RolapProperty.java

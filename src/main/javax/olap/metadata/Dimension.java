@@ -8,9 +8,9 @@ package javax.olap.metadata;
 public interface Dimension
 extends org.omg.java.cwm.objectmodel.core.CoreClass {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public boolean isTime()
     throws javax.olap.OLAPException;
@@ -24,9 +24,9 @@ extends org.omg.java.cwm.objectmodel.core.CoreClass {
   public void setMeasure( boolean value )
     throws javax.olap.OLAPException;
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.Collection getHierarchy()
     throws javax.olap.OLAPException;

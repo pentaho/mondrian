@@ -8,9 +8,9 @@ package javax.olap.metadata;
 public interface Schema
 extends org.omg.java.cwm.objectmodel.core.Package {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.Collection getCube()
     throws javax.olap.OLAPException;

@@ -7,9 +7,9 @@ package javax.olap.resource;
 
 public interface Abortable {
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public void abort()
     throws javax.olap.OLAPException;

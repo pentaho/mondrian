@@ -1,10 +1,10 @@
 /*
 // $Id$
-// (C) Copyright 2002 Kana Software, Inc.
+// (C) Copyright 2002-2005 Kana Software, Inc.
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -33,21 +33,21 @@ import java.util.HashMap;
  * @version $Id$
  **/
 class SparseSegmentDataset implements SegmentDataset {
-	private HashMap values = new HashMap();
+    private HashMap values = new HashMap();
 
-	SparseSegmentDataset(Segment segment) {
-		Util.discard(segment);
-	}
-	public Object get(CellKey pos) {
-		return values.get(pos);
-	}
-	void put(CellKey key, Object value) {
-		values.put(key, value);
-	}
-	public double getBytes() {
-		// assume a slot, key, and value are each 4 bytes
-		return values.size() * 12;
-	}
+    SparseSegmentDataset(Segment segment) {
+        Util.discard(segment);
+    }
+    public Object get(CellKey pos) {
+        return values.get(pos);
+    }
+    void put(CellKey key, Object value) {
+        values.put(key, value);
+    }
+    public double getBytes() {
+        // assume a slot, key, and value are each 4 bytes
+        return values.size() * 12;
+    }
 }
 
 // End SparseSegmentDataset.java

@@ -8,9 +8,9 @@ package javax.olap.query.dimensionfilters;
 public interface ExceptionMemberFilter
 extends javax.olap.query.dimensionfilters.DataBasedMemberFilter {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.query.enumerations.OperatorType getOp()
     throws javax.olap.OLAPException;

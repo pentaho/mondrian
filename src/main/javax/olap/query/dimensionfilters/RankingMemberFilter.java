@@ -8,9 +8,9 @@ package javax.olap.query.dimensionfilters;
 public interface RankingMemberFilter
 extends javax.olap.query.dimensionfilters.DataBasedMemberFilter {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public int getTop()
     throws javax.olap.OLAPException;

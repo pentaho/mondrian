@@ -8,9 +8,9 @@ package javax.olap.cursor;
 public interface Cursor
 extends javax.olap.query.querycoremodel.NamedObject {
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public java.lang.Object clone();
 

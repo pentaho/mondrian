@@ -8,9 +8,9 @@ package javax.olap.sourcemodel;
 public interface BooleanSource
 extends javax.olap.sourcemodel.Source {
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public javax.olap.sourcemodel.BooleanSource and( boolean rhs )
     throws javax.olap.OLAPException;

@@ -7,9 +7,9 @@ package javax.olap.sourcemodel;
 
 public interface Template {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public javax.olap.sourcemodel.Source getSource()
     throws javax.olap.OLAPException;

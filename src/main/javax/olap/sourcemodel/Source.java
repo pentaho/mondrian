@@ -7,9 +7,9 @@ package javax.olap.sourcemodel;
 
 public interface Source {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.Collection getSourceOutput()
     throws javax.olap.OLAPException;
@@ -23,9 +23,9 @@ public interface Source {
   public void setType( javax.olap.sourcemodel.Source value )
     throws javax.olap.OLAPException;
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public javax.olap.sourcemodel.Source alias()
     throws javax.olap.OLAPException;

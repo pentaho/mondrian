@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2000-2002 Kana Software, Inc. and others.
+// (C) Copyright 2000-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -18,7 +18,7 @@ package mondrian.olap;
  * MDX query.
  **/
 public interface Set extends OlapElement {
-	void setName(String newName);
+    void setName(String newName);
 }
 
 

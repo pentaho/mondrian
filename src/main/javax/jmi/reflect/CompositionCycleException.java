@@ -3,7 +3,7 @@ package javax.jmi.reflect;
 /** Exception thrown when an instance object is a component of itself.
  */
 public class CompositionCycleException extends JmiException {
-    
+
     /**
      * Constructs an <code>CompositionCycleException</code> without detail message.
      * @param objectInError An instance that caused the composition cycle.
@@ -12,7 +12,7 @@ public class CompositionCycleException extends JmiException {
     public CompositionCycleException(Object objectInError, RefObject elementInError) {
         super(objectInError, elementInError);
     }
-    
+
     /**
      * Constructs an <code>CompositionCycleException</code> with the specified detail message.
      * @param objectInError An instance that caused the composition cycle.

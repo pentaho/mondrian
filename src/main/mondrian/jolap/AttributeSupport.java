@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2003 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -23,29 +23,29 @@ import java.util.Collection;
  * @version $Id$
  **/
 abstract class AttributeSupport extends RefObjectSupport implements Attribute {
-	public Expression getInitialValue() {
-		throw new UnsupportedOperationException();
-	}
+    public Expression getInitialValue() {
+        throw new UnsupportedOperationException();
+    }
 
-	public void setInitialValue(Expression input) {
-		throw new UnsupportedOperationException();
-	}
+    public void setInitialValue(Expression input) {
+        throw new UnsupportedOperationException();
+    }
 
-	public ChangeableKind getChangeability() {
-		throw new UnsupportedOperationException();
-	}
+    public ChangeableKind getChangeability() {
+        throw new UnsupportedOperationException();
+    }
 
     public void setChangeability(ChangeableKind value) {
         throw new UnsupportedOperationException();
     }
 
-	public Multiplicity getMultiplicity() {
-		throw new UnsupportedOperationException();
-	}
+    public Multiplicity getMultiplicity() {
+        throw new UnsupportedOperationException();
+    }
 
-	public void setMultiplicity(Multiplicity input) {
-		throw new UnsupportedOperationException();
-	}
+    public void setMultiplicity(Multiplicity input) {
+        throw new UnsupportedOperationException();
+    }
 
     public OrderingKind getOrdering() {
         throw new UnsupportedOperationException();
@@ -63,13 +63,13 @@ abstract class AttributeSupport extends RefObjectSupport implements Attribute {
         throw new UnsupportedOperationException();
     }
 
-	public void setType(Classifier input) {
-		throw new UnsupportedOperationException();
-	}
+    public void setType(Classifier input) {
+        throw new UnsupportedOperationException();
+    }
 
-	public Classifier getType() {
-		throw new UnsupportedOperationException();
-	}
+    public Classifier getType() {
+        throw new UnsupportedOperationException();
+    }
 
     public ScopeKind getOwnerScope() {
         throw new UnsupportedOperationException();
@@ -79,19 +79,19 @@ abstract class AttributeSupport extends RefObjectSupport implements Attribute {
         throw new UnsupportedOperationException();
     }
 
-	public void setOwner(Classifier input) {
-		throw new UnsupportedOperationException();
-	}
+    public void setOwner(Classifier input) {
+        throw new UnsupportedOperationException();
+    }
 
-	public Classifier getOwner() {
-		throw new UnsupportedOperationException();
-	}
+    public Classifier getOwner() {
+        throw new UnsupportedOperationException();
+    }
 
-	public abstract String getName();
+    public abstract String getName();
 
-	public void setName(String input) {
-		throw new UnsupportedOperationException();
-	}
+    public void setName(String input) {
+        throw new UnsupportedOperationException();
+    }
 
     public VisibilityKind getVisibility() {
         throw new UnsupportedOperationException();
@@ -101,25 +101,25 @@ abstract class AttributeSupport extends RefObjectSupport implements Attribute {
         throw new UnsupportedOperationException();
     }
 
-	public Collection getClientDependency() {
-		throw new UnsupportedOperationException();
-	}
+    public Collection getClientDependency() {
+        throw new UnsupportedOperationException();
+    }
 
-	public Collection getConstraint() {
-		throw new UnsupportedOperationException();
-	}
+    public Collection getConstraint() {
+        throw new UnsupportedOperationException();
+    }
 
-	public Collection getImporter() {
-		throw new UnsupportedOperationException();
-	}
+    public Collection getImporter() {
+        throw new UnsupportedOperationException();
+    }
 
-	public void setNamespace(Namespace input) {
-		throw new UnsupportedOperationException();
-	}
+    public void setNamespace(Namespace input) {
+        throw new UnsupportedOperationException();
+    }
 
-	public Namespace getNamespace() {
-		throw new UnsupportedOperationException();
-	}
+    public Namespace getNamespace() {
+        throw new UnsupportedOperationException();
+    }
 }
 
 // End AttributeSupport.java

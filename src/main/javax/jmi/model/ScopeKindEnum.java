@@ -39,11 +39,11 @@ public final class ScopeKindEnum implements ScopeKind {
     }
 
     protected Object readResolve() throws java.io.ObjectStreamException {
-    	try {
-    		return forName(literalName);
-    	} catch ( IllegalArgumentException iae ) {
-    		throw new java.io.InvalidObjectException(iae.getMessage());
-    	}
+        try {
+            return forName(literalName);
+        } catch ( IllegalArgumentException iae ) {
+            throw new java.io.InvalidObjectException(iae.getMessage());
+        }
     }
   public static ScopeKind forName( java.lang.String value ) {
     if ( value.equals("instance_level") ) return ScopeKindEnum.INSTANCE_LEVEL;

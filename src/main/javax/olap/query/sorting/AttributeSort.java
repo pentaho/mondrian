@@ -8,9 +8,9 @@ package javax.olap.query.sorting;
 public interface AttributeSort
 extends javax.olap.query.sorting.DimensionSort {
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public org.omg.java.cwm.objectmodel.core.Attribute getBasedOn()
     throws javax.olap.OLAPException;

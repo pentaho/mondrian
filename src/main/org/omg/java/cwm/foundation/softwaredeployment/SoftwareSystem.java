@@ -8,9 +8,9 @@ package org.omg.java.cwm.foundation.softwaredeployment;
 public interface SoftwareSystem
 extends org.omg.java.cwm.objectmodel.core.Subsystem {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public java.lang.String getType();
 
@@ -28,9 +28,9 @@ extends org.omg.java.cwm.objectmodel.core.Subsystem {
 
   public void setVersion( java.lang.String value );
 
-	// ------------------------------------------------
-	// -----   Reference-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Reference-Generated                -----
+    // ------------------------------------------------
 
   public java.util.Collection getTypespace();
 

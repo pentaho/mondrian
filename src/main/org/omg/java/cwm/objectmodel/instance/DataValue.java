@@ -8,9 +8,9 @@ package org.omg.java.cwm.objectmodel.instance;
 public interface DataValue
 extends org.omg.java.cwm.objectmodel.instance.Instance {
 
-	// ------------------------------------------------
-	// -----   Attribute-Generated                -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Attribute-Generated                -----
+    // ------------------------------------------------
 
   public java.lang.String getValue();
 

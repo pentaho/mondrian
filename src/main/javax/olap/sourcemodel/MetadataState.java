@@ -7,9 +7,9 @@ package javax.olap.sourcemodel;
 
 public interface MetadataState {
 
-	// ------------------------------------------------
-	// -----   Interface Operations               -----
-	// ------------------------------------------------
+    // ------------------------------------------------
+    // -----   Interface Operations               -----
+    // ------------------------------------------------
 
   public java.lang.Object clone();
 

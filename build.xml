@@ -155,7 +155,7 @@ demo/mysql/FoodMartData.sql"/>
 
   <!-- URL of the catalog definition. -->
   <property name="mondrian.foodmart.catalogURL"
-      value="file:///${project.location}/${demo.dir}/FoodMart.xml"/>
+      value="file:${project.location}/${demo.dir}/FoodMart.xml"/>
 
   <target name="help">
       <echo>
@@ -675,11 +675,11 @@ VERSION.txt"/>
       <link href="http://www.junit.org/junit/javadoc/3.8/"/>
       <link href="http://java.sun.com/products/servlet/2.2/javadoc/"/>
     </javadoc>
-    <copy file="${java.dir}/mondrian/xom/meta.xml"
+    <copy file="${java.dir}/mondrian/xom/Meta.xml"
         todir="${javadoc.dir}/mondrian/xom"/>
-    <copy file="${java.dir}/mondrian/resource/resource.xml"
+    <copy file="${java.dir}/mondrian/resource/Resource.xml"
         todir="${javadoc.dir}/mondrian/resource"/>
-    <copy file="${java.dir}/mondrian/olap/mondrian.xml"
+    <copy file="${java.dir}/mondrian/olap/Mondrian.xml"
         todir="${javadoc.dir}/mondrian/olap"/>
   </target>
 

@@ -35,37 +35,37 @@ import java.util.Set;
 public abstract class RolapAggregationManager implements CellReader {
 
 
-	/**
-	 * Creates a request to evaluate the cell identified by
-	 * <code>members</code>. If any of the members is the null member, returns
-	 * null, since there is no cell. If the measure is calculated, returns
-	 * null.
+    /**
+     * Creates a request to evaluate the cell identified by
+     * <code>members</code>. If any of the members is the null member, returns
+     * null, since there is no cell. If the measure is calculated, returns
+     * null.
      *
      * @param members Set of members which constrain the cell
      * @param extendedContext If true, add non-constraining columns to the
      * query for levels below each current member. This additional context
      * makes the drill-through queries easier for humans to understand.
      **/
-	static CellRequest makeRequest(RolapMember[] members,
+    static CellRequest makeRequest(RolapMember[] members,
             boolean extendedContext)
     {
         boolean showNames = extendedContext;
-		if (!(members[0] instanceof RolapStoredMeasure)) {
-			return null;
-		}
-		RolapStoredMeasure measure = (RolapStoredMeasure) members[0];
-		final RolapStar.Measure starMeasure = (RolapStar.Measure)
-				measure.starMeasure;
-		Util.assertTrue(starMeasure != null);
-		RolapStar star = starMeasure.table.star;
-		CellRequest request = new CellRequest(starMeasure);
-		HashMap mapLevelToColumn = (HashMap)
+        if (!(members[0] instanceof RolapStoredMeasure)) {
+            return null;
+        }
+        RolapStoredMeasure measure = (RolapStoredMeasure) members[0];
+        final RolapStar.Measure starMeasure = (RolapStar.Measure)
+                measure.starMeasure;
+        Util.assertTrue(starMeasure != null);
+        RolapStar star = starMeasure.table.star;
+        CellRequest request = new CellRequest(starMeasure);
+        HashMap mapLevelToColumn = (HashMap)
             star.mapCubeToMapLevelToColumn.get(measure.cube);
         HashMap mapLevelNameToColumn = (HashMap)
             star.mapCubeToMapLevelToNameColumn.get(measure.cube);
-		for (int i = 1; i < members.length; i++) {
-			RolapMember member = members[i];
-			RolapLevel previousLevel = null;
+        for (int i = 1; i < members.length; i++) {
+            RolapMember member = members[i];
+            RolapLevel previousLevel = null;
             Hierarchy hierarchy = member.getHierarchy();
             if (extendedContext) {
                 // Add the key columns as non-constraining columns. For
@@ -104,27 +104,27 @@ public abstract class RolapAggregationManager implements CellReader {
                     }
                 }
             }
-			for (RolapMember m = member; m != null; m = (RolapMember)
-					 m.getParentMember()) {
-				if (m.key == null) {
-					if (m == m.getHierarchy().getNullMember()) {
-						// cannot form a request if one of the members is null
-						return null;
-					} else if (m.isAll()) {
-						continue;
-					} else {
-						throw Util.getRes().newInternal("why is key null?");
-					}
-				}
-				RolapLevel level = (RolapLevel) m.getLevel();
-				if (level == previousLevel) {
-					// We are looking at a parent in a parent-child hierarchy,
-					// for example, we have moved from Fred to Fred's boss,
-					// Wilma. We don't want to include Wilma's key in the
-					// request.
-					continue;
-				}
-				previousLevel = level;
+            for (RolapMember m = member; m != null; m = (RolapMember)
+                     m.getParentMember()) {
+                if (m.key == null) {
+                    if (m == m.getHierarchy().getNullMember()) {
+                        // cannot form a request if one of the members is null
+                        return null;
+                    } else if (m.isAll()) {
+                        continue;
+                    } else {
+                        throw Util.getRes().newInternal("why is key null?");
+                    }
+                }
+                RolapLevel level = (RolapLevel) m.getLevel();
+                if (level == previousLevel) {
+                    // We are looking at a parent in a parent-child hierarchy,
+                    // for example, we have moved from Fred to Fred's boss,
+                    // Wilma. We don't want to include Wilma's key in the
+                    // request.
+                    continue;
+                }
+                previousLevel = level;
 
                 // Replace a parent/child level by its closed equivalent, when
                 // available; this is always valid, and improves performance by
@@ -143,16 +143,16 @@ public abstract class RolapAggregationManager implements CellReader {
                             ((RolapMember) member).key);
                     }
                 }
-				RolapStar.Column column =
+                RolapStar.Column column =
                     (RolapStar.Column) mapLevelToColumn.get(level);
-				if (column == null) {
-					// This hierarchy is not one which qualifies the starMeasure
+                if (column == null) {
+                    // This hierarchy is not one which qualifies the starMeasure
                     // (this happens in virtual cubes). The starMeasure only has
                     // a value for the 'all' member of the hierarchy.
-					return null;
-				}
-				// use the member as constraint, this will give us some
-				//  optimization potential
+                    return null;
+                }
+                // use the member as constraint, this will give us some
+                //  optimization potential
                 request.addConstrainedColumn(column, m);
                 if (showNames && level.nameExp != null) {
                     RolapStar.Column nameColumn = (RolapStar.Column)
@@ -160,45 +160,45 @@ public abstract class RolapAggregationManager implements CellReader {
                     Util.assertTrue(nameColumn != null);
                     request.addConstrainedColumn(nameColumn, null);
                 }
-			}
-		}
-		return request;
-	}
+            }
+        }
+        return request;
+    }
 
-	/**
-	 * Returns the value of a cell from an existing aggregation.
-	 **/
-	public Object getCellFromCache(RolapMember[] members)
-	{
-		CellRequest request = makeRequest(members, false);
-		if (request == null) {
-			return Util.nullValue; // request out of bounds
-		}
-		return getCellFromCache(request);
-	}
+    /**
+     * Returns the value of a cell from an existing aggregation.
+     **/
+    public Object getCellFromCache(RolapMember[] members)
+    {
+        CellRequest request = makeRequest(members, false);
+        if (request == null) {
+            return Util.nullValue; // request out of bounds
+        }
+        return getCellFromCache(request);
+    }
 
-	public abstract Object getCellFromCache(CellRequest request);
+    public abstract Object getCellFromCache(CellRequest request);
 
     public abstract Object getCellFromCache(CellRequest request, Set pinSet);
 
-	public Object getCell(RolapMember[] members)
-	{
-		CellRequest request = makeRequest(members, false);
-		RolapMeasure measure = (RolapMeasure) members[0];
-		final RolapStar.Measure starMeasure = (RolapStar.Measure)
-				measure.starMeasure;
-		Util.assertTrue(starMeasure != null);
-		RolapStar star = starMeasure.table.star;
-		return star.getCell(request);
-	}
+    public Object getCell(RolapMember[] members)
+    {
+        CellRequest request = makeRequest(members, false);
+        RolapMeasure measure = (RolapMeasure) members[0];
+        final RolapStar.Measure starMeasure = (RolapStar.Measure)
+                measure.starMeasure;
+        Util.assertTrue(starMeasure != null);
+        RolapStar star = starMeasure.table.star;
+        return star.getCell(request);
+    }
 
-	// implement CellReader
-	public Object get(Evaluator evaluator) {
+    // implement CellReader
+    public Object get(Evaluator evaluator) {
         final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator;
         return getCell(rolapEvaluator.currentMembers);
-	}
+    }
 
-	public abstract String getDrillThroughSQL(CellRequest request);
+    public abstract String getDrillThroughSQL(CellRequest request);
 
 }
 

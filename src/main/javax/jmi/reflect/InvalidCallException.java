@@ -5,7 +5,7 @@ package javax.jmi.reflect;
  * changeable)
  */
 public class InvalidCallException extends JmiException {
-    
+
     /**
      * Constructs an <code>InvalidCallException</code> without detail message.
      * @param objectInError object in error

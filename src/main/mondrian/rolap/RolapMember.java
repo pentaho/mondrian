@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2004 Kana Software, Inc. and others.
+// (C) Copyright 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -25,20 +25,20 @@ import java.util.*;
  */
 public class RolapMember extends MemberBase
 {
-	/** Ordinal of the member within the hierarchy. Some member readers do not
-	 * use this property; in which case, they should leave it as its default,
-	 * -1. */
-	int ordinal;
-	Object key;
-	/**
-	 * Maps property name to property value.
-	 *
-	 * <p> We expect there to be a lot of members, but few of them will
-	 * have properties. So to reduce memory usage, when empty, this is set to
-	 * an immutable empty set.
-	 */
-	private Map mapPropertyNameToValue = emptyMap;
-	private static final Map emptyMap = Collections.unmodifiableMap(new HashMap(0));
+    /** Ordinal of the member within the hierarchy. Some member readers do not
+     * use this property; in which case, they should leave it as its default,
+     * -1. */
+    int ordinal;
+    Object key;
+    /**
+     * Maps property name to property value.
+     *
+     * <p> We expect there to be a lot of members, but few of them will
+     * have properties. So to reduce memory usage, when empty, this is set to
+     * an immutable empty set.
+     */
+    private Map mapPropertyNameToValue = emptyMap;
+    private static final Map emptyMap = Collections.unmodifiableMap(new HashMap(0));
 
     /**
      * Creates a RolapMember
@@ -51,29 +51,29 @@ public class RolapMember extends MemberBase
      */
     RolapMember(RolapMember parentMember, RolapLevel level, Object key,
             String name, int flags) {
-		this.parentMember = parentMember;
-		this.parentUniqueName = parentMember == null ? null:
-			parentMember.getUniqueName();
-		this.level = level;
-		this.key = key;
-		this.ordinal = -1;
-		this.flags = flags;
-		if (name != null &&
-				!(key != null && name.equals(key.toString()))) {
-			// Save memory by only saving the name as a property if it's
+        this.parentMember = parentMember;
+        this.parentUniqueName = parentMember == null ? null:
+            parentMember.getUniqueName();
+        this.level = level;
+        this.key = key;
+        this.ordinal = -1;
+        this.flags = flags;
+        if (name != null &&
+                !(key != null && name.equals(key.toString()))) {
+            // Save memory by only saving the name as a property if it's
             // different from the key.
-			setProperty(Property.PROPERTY_NAME, name);
-		} else {
-			setUniqueName(key);
-		}
-	}
+            setProperty(Property.PROPERTY_NAME, name);
+        } else {
+            setUniqueName(key);
+        }
+    }
 
-	private void setUniqueName(Object key) {
+    private void setUniqueName(Object key) {
         String name = keyToString(key);
         this.uniqueName = (parentMember == null)
-			? Util.makeFqName(getHierarchy(), name)
-			: Util.makeFqName(parentMember, name);
-	}
+            ? Util.makeFqName(getHierarchy(), name)
+            : Util.makeFqName(parentMember, name);
+    }
 
     /**
      * Converts a key to a string to be used as part of the member's name
@@ -95,46 +95,46 @@ public class RolapMember extends MemberBase
     }
 
     RolapMember(RolapMember parentMember, RolapLevel level, Object value) {
-		this(parentMember, level, value, null, REGULAR_MEMBER_TYPE);
-	}
+        this(parentMember, level, value, null, REGULAR_MEMBER_TYPE);
+    }
 
-	public boolean isCalculatedInQuery() {
-		return false;
-	}
+    public boolean isCalculatedInQuery() {
+        return false;
+    }
 
-	public String getName() {
-		final String name = (String) getPropertyValue(Property.PROPERTY_NAME);
-		if (name != null) {
-			return name;
-		}
+    public String getName() {
+        final String name = (String) getPropertyValue(Property.PROPERTY_NAME);
+        if (name != null) {
+            return name;
+        }
         return keyToString(key);
-	}
+    }
 
-	public void setName(String name) {
-		throw new Error("unsupported");
-	}
-	/**
-	 * Sets a property of this member to a given value.
-	 * <p>WARNING: Setting system properties such as "$name" may have nasty
-	 * side-effects.
-	 */
-	public synchronized void setProperty(String name, Object value) {
-		if (mapPropertyNameToValue.isEmpty()) {
-			// the empty map is shared and immutable; create our own
-			mapPropertyNameToValue = new HashMap();
-		}
-		mapPropertyNameToValue.put(name, value);
-		if (name.equals(Property.PROPERTY_NAME)) {
-			setUniqueName(value);
-		}
-	}
+    public void setName(String name) {
+        throw new Error("unsupported");
+    }
+    /**
+     * Sets a property of this member to a given value.
+     * <p>WARNING: Setting system properties such as "$name" may have nasty
+     * side-effects.
+     */
+    public synchronized void setProperty(String name, Object value) {
+        if (mapPropertyNameToValue.isEmpty()) {
+            // the empty map is shared and immutable; create our own
+            mapPropertyNameToValue = new HashMap();
+        }
+        mapPropertyNameToValue.put(name, value);
+        if (name.equals(Property.PROPERTY_NAME)) {
+            setUniqueName(value);
+        }
+    }
 
-	public Object getPropertyValue(String name) {
-		if (name.equals(Property.PROPERTY_CONTRIBUTING_CHILDREN)) {
-			List list = new ArrayList();
-			((RolapHierarchy) getHierarchy()).memberReader.getMemberChildren(this, list);
-			return list;
-		} else if (name.equals(Property.PROPERTY_MEMBER_UNIQUE_NAME)) {
+    public Object getPropertyValue(String name) {
+        if (name.equals(Property.PROPERTY_CONTRIBUTING_CHILDREN)) {
+            List list = new ArrayList();
+            ((RolapHierarchy) getHierarchy()).memberReader.getMemberChildren(this, list);
+            return list;
+        } else if (name.equals(Property.PROPERTY_MEMBER_UNIQUE_NAME)) {
             return getUniqueName();
         } else if (name.equals(Property.PROPERTY_MEMBER_CAPTION)) {
             return getCaption();
@@ -143,95 +143,95 @@ public class RolapMember extends MemberBase
         } else if (name.equals(Property.PROPERTY_LEVEL_NUMBER)) {
             return new Integer(getLevel().getDepth());
         }
-		synchronized (this) {
-			return mapPropertyNameToValue.get(name);
-		}
-	}
-	public Property[] getProperties() {
-		return level.getInheritedProperties();
-	}
-	// implement Exp
-	public Object evaluateScalar(Evaluator evaluator)
-	{
-		Member old = evaluator.setContext(this);
-		Object value = evaluator.evaluateCurrent();
-		evaluator.setContext(old);
-		return value;
-	}
+        synchronized (this) {
+            return mapPropertyNameToValue.get(name);
+        }
+    }
+    public Property[] getProperties() {
+        return level.getInheritedProperties();
+    }
+    // implement Exp
+    public Object evaluateScalar(Evaluator evaluator)
+    {
+        Member old = evaluator.setContext(this);
+        Object value = evaluator.evaluateCurrent();
+        evaluator.setContext(old);
+        return value;
+    }
 
-	String quoteKeyForSql()
-	{
-		if ((((RolapLevel) level).flags & RolapLevel.NUMERIC) != 0) {
-			return key.toString();
-		} else {
-			return RolapUtil.singleQuoteForSql(key.toString());
-		}
-	}
+    String quoteKeyForSql()
+    {
+        if ((((RolapLevel) level).flags & RolapLevel.NUMERIC) != 0) {
+            return key.toString();
+        } else {
+            return RolapUtil.singleQuoteForSql(key.toString());
+        }
+    }
 
-	int getSolveOrder() {
-		return -1;
-	}
+    int getSolveOrder() {
+        return -1;
+    }
 
-	/**
-	 * Returns whether this member is calculated using an expression.
-	 * (<code>member.{@link #isCalculated}()</code> is equivalent to
-	 * <code>member.{@link #getExpression}() != null</code>.)
-	 */
-	public boolean isCalculated() {
-		return false;
-	}
+    /**
+     * Returns whether this member is calculated using an expression.
+     * (<code>member.{@link #isCalculated}()</code> is equivalent to
+     * <code>member.{@link #getExpression}() != null</code>.)
+     */
+    public boolean isCalculated() {
+        return false;
+    }
 
-	/**
-	 * Returns the expression by which this member is calculated. The expression
-	 * is not null if and only if the member is not calculated.
-	 *
-	 * @post (return != null) == (isCalculated())
-	 */
-	Exp getExpression() {
-		return null;
-	}
+    /**
+     * Returns the expression by which this member is calculated. The expression
+     * is not null if and only if the member is not calculated.
+     *
+     * @post (return != null) == (isCalculated())
+     */
+    Exp getExpression() {
+        return null;
+    }
 
-	/**
-	 * Returns the ordinal of the Rolap Member
-	 */
-	public int getOrdinal() {
-		return ordinal;
-	}
+    /**
+     * Returns the ordinal of the Rolap Member
+     */
+    public int getOrdinal() {
+        return ordinal;
+    }
 
-	/**
-	 * implement the Comparable interface
-	 */
-	public int compareTo(Object o) {
-		RolapMember other = (RolapMember)o;
+    /**
+     * implement the Comparable interface
+     */
+    public int compareTo(Object o) {
+        RolapMember other = (RolapMember)o;
 
-		if (this.key != null && other.key == null)
-			return 1; // not null is greater than null
+        if (this.key != null && other.key == null)
+            return 1; // not null is greater than null
 
-		if (this.key == null && other.key != null)
-			return -1; // null is less than not null
+        if (this.key == null && other.key != null)
+            return -1; // null is less than not null
 
-		// compare by unique name, if both keys are null
-		if (this.key == null && other.key == null)
-			return this.getUniqueName().compareTo(other.getUniqueName());
+        // compare by unique name, if both keys are null
+        if (this.key == null && other.key == null)
+            return this.getUniqueName().compareTo(other.getUniqueName());
 
-		// compare by unique name, if one ore both members are null
-		if (this.key == RolapUtil.sqlNullValue ||
-		    other.key == RolapUtil.sqlNullValue)
-			return this.getUniqueName().compareTo(other.getUniqueName());
+        // compare by unique name, if one ore both members are null
+        if (this.key == RolapUtil.sqlNullValue ||
+            other.key == RolapUtil.sqlNullValue)
+            return this.getUniqueName().compareTo(other.getUniqueName());
 
-		// as both keys are not null, compare by key
-		//  String, Double, Integer should be possible
-		//  any key object should be "Comparable"
-		// anyway - keys should be of the same class
-		if (this.key.getClass().equals(other.key.getClass()))
-			return ((Comparable)this.key).compareTo(other.key);
+        // as both keys are not null, compare by key
+        //  String, Double, Integer should be possible
+        //  any key object should be "Comparable"
+        // anyway - keys should be of the same class
+        if (this.key.getClass().equals(other.key.getClass()))
+            return ((Comparable)this.key).compareTo(other.key);
 
-		// Compare by unique name in case of different key classes.
-		// This is possible, if a new calculated member is created
-		//  in a dimension with an Integer key. The calculated member 
-		//  has a key of type String.
-		return this.getUniqueName().compareTo(other.getUniqueName());
-	}
+        // Compare by unique name in case of different key classes.
+        // This is possible, if a new calculated member is created
+        //  in a dimension with an Integer key. The calculated member
+        //  has a key of type String.
+        return this.getUniqueName().compareTo(other.getUniqueName());
+    }
 
     public boolean isHidden() {
         final RolapLevel rolapLevel = (RolapLevel) level;
@@ -259,43 +259,43 @@ public class RolapMember extends MemberBase
         }
     }
 
-	/**
-	 * @return the level's depth
-	 * @see mondrian.olap.Member#getDepth()
-	 */
-	public int getDepth() {
-		return level.getDepth();
-	}
-	public Object getSqlKey() {
-		return key;
-	}
+    /**
+     * @return the level's depth
+     * @see mondrian.olap.Member#getDepth()
+     */
+    public int getDepth() {
+        return level.getDepth();
+    }
+    public Object getSqlKey() {
+        return key;
+    }
 
-	/**
-	 * Returns the formatted value of the property named <code>propertyName</code>.
-	 */
-	public String getPropertyFormattedValue(String propertyName){
-		// do we have a formatter ? if yes, use it
-		RolapLevel lev = (RolapLevel) this.getLevel();
-		Property[] props = lev.getProperties();
-		Property prop = null;
-		for(int i = 0; i < props.length; i++){
-			if(props[i].getName().equals(propertyName)){
-				prop = props[i];
-				break;
-			}
-		}
-		PropertyFormatter pf;
-		if (prop!=null && (pf = prop.getFormatter()) != null) {
-			return pf.formatProperty(this, propertyName, getPropertyValue(propertyName)); 
-		}
-		
-		Object val = getPropertyValue(propertyName);
-		if (val == null)
-			return "";
-		else
-			return val.toString();
-	}
- 
+    /**
+     * Returns the formatted value of the property named <code>propertyName</code>.
+     */
+    public String getPropertyFormattedValue(String propertyName){
+        // do we have a formatter ? if yes, use it
+        RolapLevel lev = (RolapLevel) this.getLevel();
+        Property[] props = lev.getProperties();
+        Property prop = null;
+        for(int i = 0; i < props.length; i++){
+            if(props[i].getName().equals(propertyName)){
+                prop = props[i];
+                break;
+            }
+        }
+        PropertyFormatter pf;
+        if (prop!=null && (pf = prop.getFormatter()) != null) {
+            return pf.formatProperty(this, propertyName, getPropertyValue(propertyName));
+        }
+
+        Object val = getPropertyValue(propertyName);
+        if (val == null)
+            return "";
+        else
+            return val.toString();
+    }
+
 }
 
 // End RolapMember.java

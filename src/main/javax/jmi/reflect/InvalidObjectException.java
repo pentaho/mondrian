@@ -4,7 +4,7 @@ package javax.jmi.reflect;
  * a non-existing (i.e. deleted) object.
  */
 public class InvalidObjectException extends JmiException {
-    
+
     /**
      * Constructs an <code>InvalidObjectException</code> without detail message.
      * @elementInError element in error.
