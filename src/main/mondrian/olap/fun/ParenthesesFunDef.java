@@ -11,6 +11,7 @@
 */
 package mondrian.olap.fun;
 import mondrian.olap.*;
+import mondrian.olap.type.Type;
 
 import java.io.PrintWriter;
 
@@ -44,10 +45,12 @@ class ParenthesesFunDef extends FunDefBase {
             args[0].unparse(pw);
         }
     }
-    public Hierarchy getHierarchy(Exp[] args) {
+
+    public Type getResultType(Validator validator, Exp[] args) {
         Util.assertTrue(args.length == 1);
-        return args[0].getHierarchy();
+        return args[0].getTypeX();
     }
+
     public Object evaluate(Evaluator evaluator, Exp[] args) {
         return args[0].evaluate(evaluator);
     }

@@ -11,9 +11,11 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.Exp;
-import mondrian.olap.FunDef;
-import mondrian.olap.Hierarchy;
+import mondrian.olap.*;
+import mondrian.olap.type.Type;
+import mondrian.olap.type.StringType;
+import mondrian.olap.type.NumericType;
+import mondrian.olap.type.MemberType;
 
 /**
  * A <code>ParameterFunDef</code> is a pseudo-function describing calls to
@@ -31,15 +33,15 @@ public class ParameterFunDef extends FunDefBase {
     public final Exp exp;
     public final String parameterDescription;
 
-    ParameterFunDef(FunDef funDef, 
-                    String parameterName, 
+    ParameterFunDef(FunDef funDef,
+                    String parameterName,
                     Hierarchy hierarchy,
-                    int returnType, 
-                    Exp exp, 
+                    int returnType,
+                    Exp exp,
                     String description) {
-        super(funDef.getName(), 
+        super(funDef.getName(),
              funDef.getSignature(),
-             funDef.getDescription(), 
+             funDef.getDescription(),
              funDef.getSyntax(),
              returnType,
              funDef.getParameterTypes());
@@ -59,8 +61,17 @@ public class ParameterFunDef extends FunDefBase {
         return getName().equals("Parameter");
     }
 
-    public Hierarchy getHierarchy(Exp[] args) {
-        return hierarchy;
+    public Type getResultType(Validator validator, Exp[] args) {
+        switch (returnType) {
+        case Category.String:
+            return new StringType();
+        case Category.Numeric:
+            return new NumericType();
+        case Category.Member:
+            return new MemberType(hierarchy, null, null);
+        default:
+            throw Category.instance.badValue(returnType);
+        }
     }
 }
 

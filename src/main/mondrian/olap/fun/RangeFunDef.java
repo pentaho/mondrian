@@ -37,7 +37,7 @@ class RangeFunDef extends FunDefBase {
     public void unparse(Exp[] args, PrintWriter pw) {
         ExpBase.unparseList(pw, args, "{", " : ", "}");
     }
-    public int getReturnType() {
+    public int getReturnCategory() {
         return Category.Set;
     }
     public int[] getParameterTypes() {

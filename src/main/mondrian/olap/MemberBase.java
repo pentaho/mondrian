@@ -11,6 +11,9 @@
 */
 
 package mondrian.olap;
+import mondrian.olap.type.Type;
+import mondrian.olap.type.MemberType;
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -47,8 +50,12 @@ public abstract class MemberBase
         return Util.getRes().getMdxMemberName(uniqueName);
     }
 
-    public final int getType() {
+    public final int getCategory() {
         return Category.Member;
+    }
+
+    public Type getTypeX() {
+        return new MemberType(getHierarchy(), null, null);
     }
 
     public abstract String getName();
@@ -74,8 +81,8 @@ public abstract class MemberBase
         return parentUniqueName;
     }
 
-    public boolean usesDimension(Dimension dimension) {
-        return level.getHierarchy().getDimension() == dimension;
+    public Dimension getDimension() {
+        return level.getDimension();
     }
 
     public final Hierarchy getHierarchy() {
@@ -120,7 +127,7 @@ public abstract class MemberBase
         } else {
             boolean failIfNotFound = true;
             final Hierarchy hierarchy = getHierarchy();
-            final SchemaReader schemaReader = 
+            final SchemaReader schemaReader =
                 hierarchy.getDimension().getSchema().getSchemaReader();
             String[] parentUniqueNameParts = Util.explode(parentUniqueName);
             parentMember = (MemberBase) schemaReader.getMemberByUniqueName(
@@ -156,14 +163,14 @@ public abstract class MemberBase
         String parentUniqueName = getParentUniqueName();
         return (parentUniqueName == null)
             // have reached root
-            ? false 
+            ? false
             // try candidate's parentMember
             : ((MemberBase) getParentMember()).isChildOrEqualTo(uniqueName);
     }
 
     // implement Member
     public boolean isCalculated() {
-        return (isCalculatedInQuery()) 
+        return (isCalculatedInQuery())
             ? true
             // If the member is not created from the "with member ..." MDX, the
             // calculated will be null. But it may be still a calculated measure
@@ -185,7 +192,7 @@ public abstract class MemberBase
     }
 
 
-    public Exp resolve(Resolver resolver) {
+    public Exp resolve(Validator resolver) {
         return this;
     }
 

@@ -795,7 +795,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * http://msdn.microsoft.com/library/default.asp?url=/library/en-us/olapdmad/agmdxadvanced_6jn7.asp
      * and http://dev.hyperion.com/download_files/resource_library/white_papers/mdx.pdf,
      * if solve orders are the same then the dimension specified first when defining the cube wins.
-     * 
+     *
      * In the first test, the answer should be 1 because Promotions comes before
      * Customers in the FoodMart.xml schema.
      */
@@ -4276,7 +4276,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         visible = member.getPropertyValue(Property.PROPERTY_VISIBLE);
         assertEquals(Boolean.FALSE, visible);
     }
-    
+
     public void testAllMemberCaption() {
         RolapConnection conn = (RolapConnection) getConnection();
         Schema schema = getConnection().getSchema();
@@ -4284,7 +4284,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         schema.createDimension(
                 salesCube,
                 "<Dimension name=\"Gender3\" foreignKey=\"customer_id\">" + nl +
-                "  <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\"" + nl + 
+                "  <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\"" + nl +
                 " allMemberCaption=\"Frauen und Maenner\" primaryKey=\"customer_id\">" + nl +
                 "  <Table name=\"customer\"/>" + nl +
                 "    <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>" +nl +
@@ -4299,6 +4299,86 @@ public class BasicQueryTest extends FoodMartTestCase {
         Assert.assertEquals(caption, "Frauen und Maenner");
     }
 
+    /**
+     * It is illegal for a query to have the same dimension on more than
+     * one axis.
+     */
+    public void testSameDimOnTwoAxesFails() {
+        assertThrows(
+                "select {[Measures].[Unit Sales]} on columns," + nl +
+                " {[Measures].[Store Sales]} on rows" + nl +
+                "from [Sales]",
+                "Dimension '[Measures]' appears in more than one independent axis");
+
+        // as part of a crossjoin
+        assertThrows(
+                "select {[Measures].[Unit Sales]} on columns," + nl +
+                " CrossJoin({[Product].members}," +
+                "           {[Measures].[Store Sales]}) on rows" + nl +
+                "from [Sales]",
+                "Dimension '[Measures]' appears in more than one independent axis");
+
+        // as part of a tuple
+        assertThrows(
+                "select CrossJoin(" + nl +
+                "    {[Product].children}," + nl +
+                "    {[Measures].[Unit Sales]}) on columns," + nl +
+                "    {([Product]," + nl +
+                "      [Store].CurrentMember)} on rows" + nl +
+                "from [Sales]",
+                "Dimension '[Product]' appears in more than one independent axis");
+
+        // clash between columns and slicer
+        assertThrows(
+                "select {[Measures].[Unit Sales]} on columns," + nl +
+                " {[Store].Members} on rows" + nl +
+                "from [Sales]" + nl +
+                "where ([Time].[1997].[Q1], [Measures].[Store Sales])",
+                "Dimension '[Measures]' appears in more than one independent axis");
+
+        // within aggregate is OK
+        runQueryCheckResult(
+                "with member [Measures].[West Coast Total] as " +
+                " ' Aggregate({[Store].[USA].[CA], [Store].[USA].[OR], [Store].[USA].[WA]}) ' " + nl +
+                "select " +
+                "   {[Measures].[Store Sales], " + nl +
+                "    [Measures].[Unit Sales]} on Columns," + nl +
+                " CrossJoin(" + nl +
+                "   {[Product].children}," + nl +
+                "   {[Store].children}) on Rows" + nl +
+                "from [Sales]",
+                null);
+    }
+
+    public void _testSetArgToTupleFails() {
+        assertThrows(
+                "select CrossJoin(" + nl +
+                "    {[Product].children}," + nl +
+                "    {[Measures].[Unit Sales]}) on columns," + nl +
+                "    {([Product]," + nl +
+                "      [Store].members)} on rows" + nl +
+                "from [Sales]",
+                "Dimension '[Product]' appears in more than one independent axis");
+    }
+
+    public void _badArgsToTupleFails() {
+        // clash within slicer
+        assertThrows(
+                "select {[Measures].[Unit Sales]} on columns," + nl +
+                " {[Store].Members} on rows" + nl +
+                "from [Sales]" + nl +
+                "where ([Time].[1997].[Q1], [Product], [Time].[1997].[Q2])",
+                "Dimension '[Time]' more than once in same tuple");
+
+        // ditto
+        assertThrows(
+                "select {[Measures].[Unit Sales]} on columns," + nl +
+                " CrossJoin({[Time].[1997].[Q1]," + nl +
+                "           {[Product]}," + nl +
+                "           {[Time].[1997].[Q2]}) on rows" + nl +
+                "from [Sales]",
+                "Dimension '[Time]' more than once in same tuple");
+    }
 }
 
 // End BasicQueryTest.java

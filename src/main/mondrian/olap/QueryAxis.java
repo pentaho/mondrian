@@ -105,7 +105,7 @@ public class QueryAxis extends QueryPart {
         this.set = set;
     }
 
-    public void resolve(Exp.Resolver resolver) {
+    public void resolve(Validator resolver) {
         set = resolver.resolveChild(set);
         if (!set.isSet()) {
             throw Util.getRes().newMdxAxisIsNotSet( axisName );
@@ -144,7 +144,9 @@ public class QueryAxis extends QueryPart {
     }
 
     void setShowSubtotals(boolean bShowSubtotals) {
-        showSubtotals = bShowSubtotals ? SubtotalVisibility.Show : SubtotalVisibility.Hide;
+        showSubtotals = bShowSubtotals ?
+            SubtotalVisibility.Show :
+            SubtotalVisibility.Hide;
     }
 
     public int getShowSubtotals() {

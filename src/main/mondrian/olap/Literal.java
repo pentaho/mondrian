@@ -11,6 +11,11 @@
 */
 
 package mondrian.olap;
+import mondrian.olap.type.Type;
+import mondrian.olap.type.StringType;
+import mondrian.olap.type.NumericType;
+import mondrian.olap.type.SymbolType;
+
 import java.io.PrintWriter;
 
 /**
@@ -106,20 +111,25 @@ public class Literal extends ExpBase {
         }
     }
 
-    // from Exp
-    public int getType() { 
-        return type; 
-    }
-    public Hierarchy getHierarchy() { 
-        return null; 
+    public int getCategory() {
+        return type;
     }
 
-    public Exp resolve(Resolver resolver) {
+    public Type getTypeX() {
+        switch (type) {
+        case Category.Symbol:
+            return new SymbolType();
+        case Category.Numeric:
+            return new NumericType();
+        case Category.String:
+            return new StringType();
+        default:
+            throw Category.instance.badValue(type);
+        }
+    }
+
+    public Exp resolve(Validator resolver) {
         return this;
-    }
-
-    public boolean usesDimension(Dimension dimension) {
-        return false;
     }
 
     public Object evaluate(Evaluator evaluator) {

@@ -38,7 +38,7 @@ public class MemberProperty extends QueryPart {
         return x2;
     }
 
-    void resolve(Exp.Resolver resolver) {
+    void resolve(Validator resolver) {
         exp = resolver.resolveChild(exp);
     }
 

@@ -12,6 +12,9 @@
 
 package mondrian.olap;
 
+import mondrian.olap.type.Type;
+import mondrian.olap.type.HierarchyType;
+
 /**
  * Skeleton implementation for {@link Hierarchy}.
  *
@@ -74,24 +77,32 @@ public abstract class HierarchyBase
     public String getQualifiedName() {
         return Util.getRes().getMdxHierarchyName(getUniqueName());
     }
+
     public String getDescription() { 
         return description; 
     }
-    public Dimension getDimension() { 
-        return dimension; 
+
+    public Dimension getDimension() {
+        return dimension;
     }
-    public boolean usesDimension(Dimension dimension) {
-        return (this.dimension == dimension);
+
+    public Level[] getLevels() {
+        return levels;
     }
-    public Level[] getLevels() { 
-        return levels; 
+
+    public Hierarchy getHierarchy() {
+        return this;
     }
-    public Hierarchy getHierarchy() { 
-        return this; 
-    }
-    public int getType() {
+
+    public int getCategory() {
         return Category.Hierarchy;
     }
+
+    public Type getTypeX() {
+        return new HierarchyType(this);
+    }
+
+
     public boolean hasAll() { 
         return hasAll; 
     }

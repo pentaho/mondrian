@@ -12,6 +12,10 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
+import mondrian.olap.type.Type;
+import mondrian.olap.type.SetType;
+import mondrian.olap.type.MemberType;
+import mondrian.olap.type.TypeUtil;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -33,14 +37,33 @@ class SetFunDef extends FunDefBase {
     public void unparse(Exp[] args, PrintWriter pw) {
         ExpBase.unparseList(pw, args, "{", ", ", "}");
     }
-    public Hierarchy getHierarchy(Exp[] args) {
+
+    public Type getResultType(Validator validator, Exp[] args) {
         // All of the members in {<Member1>[,<MemberI>]...} must have the same
         // Hierarchy.  But if there are no members, we can't derive a
-        // Hierarchy, so we return null.
-        return (args.length == 0) 
-            ? null 
-            : args[0].getHierarchy();
+        // hierarchy.
+        Type type0 = null;
+        if (args.length == 0) {
+            // No members to go on, so we can't guess the hierarchy.
+            type0 = new MemberType(null, null, null);
+        } else {
+            for (int i = 0; i < args.length; i++) {
+                Exp arg = args[i];
+                Type type = arg.getTypeX();
+                type = TypeUtil.stripSetType(type);
+                if (i == 0) {
+                    type0 = type;
+                } else {
+                    if (!TypeUtil.isUnionCompatible(type0, type)) {
+                        throw MondrianResource.instance()
+                                .newArgsMustHaveSameHierarchy(getName());
+                    }
+                }
+            }
+        }
+        return new SetType(type0);
     }
+
     public Object evaluate(Evaluator evaluator, Exp[] args) {
         List list = null;
         for (int i = 0; i < args.length; i++) {

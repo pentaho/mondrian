@@ -11,6 +11,8 @@
 */
 
 package mondrian.olap;
+import mondrian.olap.type.*;
+
 import java.io.PrintWriter;
 
 /**
@@ -20,9 +22,9 @@ public class FunCall extends ExpBase {
     /** Name of the function. **/
     private final String fun;
 
-    /** 
+    /**
      * The arguments to the function call.  Note that for methods, 0-th arg is
-     * 'this'. 
+     * 'this'.
      *
      *
      * NOTE: This must be public because JPivoi directly accesses this instance
@@ -41,6 +43,11 @@ public class FunCall extends ExpBase {
 
     /** As {@link FunDef#getSyntax}. **/
     private final Syntax syntax;
+
+    /**
+     * The type of the return value. Set during {@link #resolve(Validator)}.
+     */
+    private Type type;
 
     public FunCall(String fun, Exp[] args) {
         this(fun, Syntax.Function, args);
@@ -64,35 +71,31 @@ public class FunCall extends ExpBase {
         }
     }
 
-    /** @deprecated use #FunCall(String,Syntax,Exp[]) */
-    public FunCall(String fun, Exp[] args, int syntax) {
-        this(fun, Syntax.get(syntax), args);
-    }
-
     public Object clone() {
         return new FunCall(fun, syntax, ExpBase.cloneArray(args));
     }
-    
-    /** 
-     * Get the function name. 
-     * 
+
+    /**
+     * Returns the function name.
+     *
      * @return function name.
      */
     public String getFunName() {
         return fun;
     }
-    /** 
-     * Get the Syntax. 
-     * 
+
+    /**
+     * Returns the syntax of this function call.
+     *
      * @return the Syntax.
      */
     public Syntax getSyntax() {
         return syntax;
     }
-    
-    /** 
-     * Returns the Exp argument at the specified index. 
-     * 
+
+    /**
+     * Returns the Exp argument at the specified index.
+     *
      * @param      index   the index of the Exp.
      * @return     the Exp at the specified index of this array of Exp.
      *             The first Exp is at index <code>0</code>.
@@ -100,44 +103,47 @@ public class FunCall extends ExpBase {
     public Exp getArg(int index) {
         return args[index];
     }
-    
-    /** 
-     * Return the internal array of Exp arguments. 
-     * Note: this does NOT do a copy. 
-     * 
+
+    /**
+     * Return the internal array of Exp arguments.
+     * Note: this does NOT do a copy.
+     *
      * @return the array of Exps.
      */
     public Exp[] getArgs() {
         return args;
     }
-    
-    /** 
-     * Returns the number of Exps in the argument array. 
-     * 
+
+    /**
+     * Returns the number of Exps in the argument array.
+     *
      * @return number of arguments.
      */
     public int getArgLength() {
         return args.length;
     }
+
     public final boolean isCallTo(String funName) {
         return fun.equalsIgnoreCase(funName);
     }
+
     public boolean isCallToTuple() {
         return getSyntax() == Syntax.Parentheses;
     }
+
     public boolean isCallToCrossJoin() {
         return fun.equalsIgnoreCase("CROSSJOIN") || fun.equals("*");
     }
+
     public boolean isCallToParameter() {
         return fun.equalsIgnoreCase("Parameter") ||
             fun.equalsIgnoreCase("ParamRef");
     }
-    public boolean isCallToFilter() {
-        return fun.equalsIgnoreCase("FILTER");
-    }
+
     public Object[] getChildren() {
         return args;
     }
+
     public void replaceChild(int i, QueryPart with) {
         args[i] = (Exp) with;
     }
@@ -158,27 +164,24 @@ public class FunCall extends ExpBase {
         args = newArgs;
     }
 
-    public boolean usesDimension(Dimension dimension) {
-        return ExpBase.arrayUsesDimension(args, dimension);
-    }
-
     public FunDef getFunDef() {
         return funDef;
     }
 
-    public final int getType() {
-        return funDef.getReturnType();
+    public final int getCategory() {
+        return funDef.getReturnCategory();
     }
 
-    public Hierarchy getHierarchy() {
-        return funDef.getHierarchy(args);
+    public final Type getTypeX() {
+        return type;
     }
 
-    public Exp resolve(Resolver resolver) {
+    public Exp resolve(Validator resolver) {
+        final FunTable funTable = resolver.getFunTable();
         for (int i = 0; i < args.length; i++) {
             args[i] = resolver.resolveChild(args[i]);
         }
-        funDef = resolver.getFunTable().getDef(this, resolver);
+        funDef = funTable.getDef(this, resolver);
         if (this.isCallToParameter()) {
             Parameter param = resolver.createOrLookupParam(this);
             return resolver.resolveChild(param);
@@ -191,7 +194,7 @@ public class FunCall extends ExpBase {
                 if (args[j] instanceof Dimension) {
                     // if arg is a dimension, switch to dimension's default
                     // hierarchy
-                    args[j] = args[j].getHierarchy();
+                    args[j] = ((Dimension) args[j]).getHierarchy();
                 } else if (args[j] instanceof Hierarchy) {
                     // nothing
                 } else {
@@ -203,7 +206,11 @@ public class FunCall extends ExpBase {
         Util.assertTrue(types.length == args.length);
         for (int i = 0; i < args.length; i++) {
             Exp arg = args[i];
-            args[i] = FunTable.instance().convert(arg, types[i], resolver);
+            args[i] = funTable.convert(arg, types[i], resolver);
+        }
+        type = funDef.getResultType(resolver, args);
+        if (type == null) {
+            throw Util.newInternal("could not derive type");
         }
         return this;
     }
@@ -243,33 +250,32 @@ public class FunCall extends ExpBase {
                     ? -1 // added successfully
                     : nLeft + nRight; // not added
             }
-        } else if( isCallToTuple() ){
+        } else if (isCallToTuple()) {
             // For all functions besides CrossJoin, the dimensionality is
             // determined by the first argument alone.  (For example,
             // 'Union(CrossJoin(a, b), CrossJoin(c, d)' has a dimensionality of
             // 2.)
-            Exp newArgs[] = new Exp[ args.length + 1 ];
-            if( iPosition == 0 ){
+            Exp newArgs[] = new Exp[args.length + 1];
+            if (iPosition == 0) {
                 // the expression has to go first
                 newArgs[0] = e;
-                for( int i = 0; i < args.length; i++ ){
-                    newArgs[i+1] = args[i];
+                for (int i = 0; i < args.length; i++) {
+                    newArgs[i + 1] = args[i];
                 }
-            } else if( iPosition < 0 || iPosition >= args.length ){
+            } else if (iPosition < 0 || iPosition >= args.length) {
                 //the expression has to go last
-                for( int i = 0; i < args.length; i++ ){
+                for (int i = 0; i < args.length; i++) {
                     newArgs[i] = args[i];
                 }
                 newArgs[args.length] = e;
             } else {
                 //the expression has to go in the middle
-                int i = 0;
-                for( i = 0; i < iPosition; i++ ){
+                for (int i = 0; i < iPosition; i++) {
                     newArgs[i] = args[i];
                 }
                 newArgs[iPosition] = e;
-                for( i =(iPosition + 1); i < newArgs.length; i++ ){
-                    newArgs[i] = args[i-1];
+                for (int i = iPosition + 1; i < newArgs.length; i++) {
+                    newArgs[i] = args[i - 1];
                 }
             }
             args = newArgs;
@@ -277,7 +283,7 @@ public class FunCall extends ExpBase {
         } else {
             if ((getSyntax() == Syntax.Braces) &&
                 (args[0] instanceof FunCall) &&
-                ((FunCall)args[0]).isCallToTuple()){
+                ((FunCall)args[0]).isCallToTuple()) {
                 // DO not add to the tuple, return -1 to create new CrossJoin
                 return 1;
             }
@@ -285,15 +291,12 @@ public class FunCall extends ExpBase {
         }
     }
 
-    // implement Exp
     public Object evaluate(Evaluator evaluator) {
         return evaluator.xx(this);
     }
 
-    /**
-     * delegates to funDef
-     */
     public boolean dependsOn(Dimension dimension) {
+        // delegate to FunDef
         return funDef.dependsOn(args, dimension);
     }
 

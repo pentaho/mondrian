@@ -2030,6 +2030,20 @@ public class FunctionTest extends FoodMartTestCase {
         Assert.assertEquals("(null)", s);
     }
 
+    public void testCaseTypeMismatch() {
+        // type mismatch between case and else
+        assertAxisThrows("CASE 1 WHEN 1 THEN 2 ELSE \"foo\" END",
+                "No function matches signature");
+        // type mismatch between case and case
+        assertAxisThrows("CASE 1 WHEN 1 THEN 2 WHEN 2 THEN \"foo\" ELSE 3 END",
+                "No function matches signature");
+        // type mismatch between value and case
+        assertAxisThrows("CASE 1 WHEN \"foo\" THEN 2 ELSE 3 END",
+                "No function matches signature");
+        // non-boolean condition
+        assertAxisThrows("CASE WHEN 1 = 2 THEN 3 WHEN 4 THEN 5 ELSE 6 END",
+                "No function matches signature");
+    }
 
     public void testPropertiesExpr() {
         String s = executeExpr("[Store].[USA].[CA].[Beverly Hills].[Store 6].Properties(\"Store Type\")");
@@ -3401,6 +3415,156 @@ public class FunctionTest extends FoodMartTestCase {
     public void testStrToMember() {
         String s = executeExpr("StrToMember(\"[Time].[1997].[Q2].[4]\").Name");
         Assert.assertEquals("4", s);
+    }
+
+    public void testYtd() {
+        assertAxisReturns("Ytd()", "[Time].[1997]");
+        assertAxisReturns("Ytd([Time].[1997].[Q3])",
+                "[Time].[1997].[Q1]" + nl +
+                "[Time].[1997].[Q2]" + nl +
+                "[Time].[1997].[Q3]");
+        assertAxisReturns("Ytd([Time].[1997].[Q2].[4])",
+                "[Time].[1997].[Q1].[1]" + nl +
+                "[Time].[1997].[Q1].[2]" + nl +
+                "[Time].[1997].[Q1].[3]" + nl +
+                "[Time].[1997].[Q2].[4]");
+        assertAxisThrows("Ytd([Store])",
+                "Argument to function 'Ytd' must belong to Time hierarchy");
+    }
+
+    public void testQtd() {
+        // zero args
+        runQueryCheckResult(
+                "with member [Measures].[Foo] as ' SetToStr(Qtd()) '" + nl +
+                "select {[Measures].[Foo]} on columns" + nl +
+                "from [Sales]" + nl +
+                "where [Time].[1997].[Q2].[5]",
+                "Axis #0:" + nl +
+                "{[Time].[1997].[Q2].[5]}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Foo]}" + nl +
+                "Row #0: {[Time].[1997].[Q2].[4], [Time].[1997].[Q2].[5]}" + nl);
+
+        // one arg, a month
+        assertAxisReturns("Qtd([Time].[1997].[Q2].[5])",
+                "[Time].[1997].[Q2].[4]" + nl +
+                "[Time].[1997].[Q2].[5]");
+
+
+        // one arg, a quarter
+        assertAxisReturns("Qtd([Time].[1997].[Q2])",
+                "[Time].[1997].[Q2]");
+
+        // one arg, a year
+        assertAxisReturns("Qtd([Time].[1997])",
+                "");
+
+        assertAxisThrows("Qtd([Store])",
+                "Argument to function 'Qtd' must belong to Time hierarchy");
+    }
+
+    public void testMtd() {
+        // zero args
+        runQueryCheckResult(
+                "with member [Measures].[Foo] as ' SetToStr(Mtd()) '" + nl +
+                "select {[Measures].[Foo]} on columns" + nl +
+                "from [Sales]" + nl +
+                "where [Time].[1997].[Q2].[5]",
+                "Axis #0:" + nl +
+                "{[Time].[1997].[Q2].[5]}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Foo]}" + nl +
+                "Row #0: {[Time].[1997].[Q2].[5]}" + nl);
+
+        // one arg, a month
+        assertAxisReturns("Mtd([Time].[1997].[Q2].[5])",
+                "[Time].[1997].[Q2].[5]");
+
+        // one arg, a quarter
+        assertAxisReturns("Mtd([Time].[1997].[Q2])",
+                "");
+
+        // one arg, a year
+        assertAxisReturns("Mtd([Time].[1997])",
+                "");
+
+        assertAxisThrows("Mtd([Store])",
+                "Argument to function 'Mtd' must belong to Time hierarchy");
+    }
+
+    public void testPeriodsToDate() {
+        // two args
+        assertAxisReturns(
+                "PeriodsToDate([Time].[Quarter], [Time].[1997].[Q2].[5])",
+                "[Time].[1997].[Q2].[4]" + nl +
+                "[Time].[1997].[Q2].[5]");
+
+        // one arg
+        runQueryCheckResult(
+                "with member [Measures].[Foo] as ' SetToStr(PeriodsToDate([Time].[Quarter])) '" + nl +
+                "select {[Measures].[Foo]} on columns" + nl +
+                "from [Sales]" + nl +
+                "where [Time].[1997].[Q2].[5]",
+                "Axis #0:" + nl +
+                "{[Time].[1997].[Q2].[5]}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Foo]}" + nl +
+                "Row #0: {[Time].[1997].[Q2].[4], [Time].[1997].[Q2].[5]}" + nl);
+
+        // zero args
+        runQueryCheckResult(
+                "with member [Measures].[Foo] as ' SetToStr(PeriodsToDate()) '" + nl +
+                "select {[Measures].[Foo]} on columns" + nl +
+                "from [Sales]" + nl +
+                "where [Time].[1997].[Q2].[5]",
+                "Axis #0:" + nl +
+                "{[Time].[1997].[Q2].[5]}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Foo]}" + nl +
+                "Row #0: {[Time].[1997].[Q2].[4], [Time].[1997].[Q2].[5]}" + nl);
+
+        // zero args, evaluated at a member which is at the top level.
+        // The default level is the level above the current member -- so
+        // choosing a member at the highest level might trip up the
+        // implementation.
+        runQueryCheckResult(
+                "with member [Measures].[Foo] as ' SetToStr(PeriodsToDate()) '" + nl +
+                "select {[Measures].[Foo]} on columns" + nl +
+                "from [Sales]" + nl +
+                "where [Time].[1997]",
+                "Axis #0:" + nl +
+                "{[Time].[1997]}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Foo]}" + nl +
+                "Row #0: {}" + nl);
+    }
+
+    public void testSetToStr() {
+        assertExprReturns("SetToStr([Time].children)",
+                "{[Time].[1997].[Q1], [Time].[1997].[Q2], [Time].[1997].[Q3], [Time].[1997].[Q4]}");
+
+        // Now, applied to tuples
+        assertExprReturns("SetToStr({CrossJoin([Marital Status].children, {[Gender].[M]})})",
+                "{" +
+                "([Marital Status].[All Marital Status].[M]," +
+                " [Gender].[All Gender].[M]), " +
+                "([Marital Status].[All Marital Status].[S]," +
+                " [Gender].[All Gender].[M])" +
+                "}");
+    }
+
+    public void testTupleToStr() {
+        // Applied to a dimension (which becomes a member)
+        assertExprReturns("TupleToStr([Time])",
+                "[Time].[1997]");
+
+        // Applied to a member
+        assertExprReturns("TupleToStr([Store].[USA].[OR])",
+                "[Store].[All Stores].[USA].[OR]");
+
+        // Now, applied to tuples
+        assertExprReturns("TupleToStr(([Marital Status], [Gender].[M]))",
+                "([Marital Status].[All Marital Status], [Gender].[All Gender].[M])");
     }
 
     /**

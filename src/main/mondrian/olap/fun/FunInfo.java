@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2005-2005 Kana Software, Inc. and others.
+// (C) Copyright 2005-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -13,12 +13,12 @@ package mondrian.olap.fun;
 import mondrian.olap.FunDef;
 import mondrian.olap.Syntax;
 
-/** 
- * Support class for the CmdRunner allowing one to view available functions and
- * their syntax.
- * 
+/**
+ * Support class for the {@link mondrian.tui.CmdRunner} allowing one to view
+ * available functions and their syntax.
+ *
  * @author Richard M. Emberson
- * @version 
+ * @version $Id$
  */
 public class FunInfo implements Comparable {
 
@@ -47,7 +47,7 @@ public class FunInfo implements Comparable {
         this.syntax = funDef.getSyntax();
         this.name = funDef.getName();
         this.description = funDef.getDescription();
-        this.returnTypes = new int[] { funDef.getReturnType() };
+        this.returnTypes = new int[] { funDef.getReturnCategory() };
         this.parameterTypes = new int[][] { funDef.getParameterTypes() };
     }
     FunInfo(MultiResolver multiResolver) {
@@ -63,6 +63,7 @@ public class FunInfo implements Comparable {
             this.parameterTypes[i] = FunUtil.decodeParameterTypes(signatures[i]);
         }
     }
+    
     FunInfo(Resolver resolver) {
         this.syntax = resolver.getSyntax();
         this.name = resolver.getName();
@@ -74,17 +75,19 @@ public class FunInfo implements Comparable {
     public String[] getSignatures() {
         if (this.parameterTypes == null) {
             return null;
-        } 
+        }
 
         String[] sigs = new String[this.parameterTypes.length];
         for (int i = 0; i < sigs.length; i++) {
-            sigs[i] = this.syntax.getSignature(this.name, this.returnTypes[i], 
+            sigs[i] = this.syntax.getSignature(this.name, this.returnTypes[i],
                 this.parameterTypes[i]);
         }
         return sigs;
     }
+
     /**
-     * Returns the syntactic type of the function. */
+     * Returns the syntactic type of the function.
+     */
     public Syntax getSyntax() {
         return this.syntax;
     }
@@ -105,7 +108,7 @@ public class FunInfo implements Comparable {
 
     /**
      * Returns the type of value returned by this function. Values are the same
-     * as those returned by {@link Exp#getType}.
+     * as those returned by {@link mondrian.olap.Exp#getType}.
      **/
     public int[] getReturnTypes() {
         return this.returnTypes;
@@ -113,10 +116,10 @@ public class FunInfo implements Comparable {
 
     /**
      * Returns the types of the arguments of this function. Values are the same
-     * as those returned by {@link Exp#getType}. The 0<sup>th</sup>
-     * argument of methods and properties are the object they are applied
-     * to. Infix operators have two arguments, and prefix operators have one
-     * argument.
+     * as those returned by {@link mondrian.olap.Exp#getType}. The
+     * 0<sup>th</sup> argument of methods and properties are the object they
+     * are applied to. Infix operators have two arguments, and prefix operators
+     * have one argument.
      **/
     public int[][] getParameterTypes() {
         return this.parameterTypes;
@@ -129,3 +132,5 @@ public class FunInfo implements Comparable {
     }
 
 }
+
+// End FunInfo.java

@@ -12,6 +12,9 @@
 
 package mondrian.olap;
 
+import mondrian.olap.type.Type;
+import mondrian.olap.type.CubeType;
+
 /**
  * <code>CubeBase</code> is an abstract implementation of {@link Cube}.
  *
@@ -64,6 +67,10 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
         return Util.getRes().getMdxCubeName(getName());
     }
 
+    public Dimension getDimension() {
+        return null;
+    }
+
     public Hierarchy getHierarchy() {
         return null;
     }
@@ -76,12 +83,12 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
         return this;
     }
 
-    public int getType() {
+    public int getCategory() {
         return Category.Cube;
     }
 
-    public boolean usesDimension(Dimension dimension) {
-        return false;
+    public Type getTypeX() {
+        return new CubeType(this);
     }
 
     public Dimension[] getDimensions() {
@@ -98,7 +105,7 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
             Hierarchy[] hierarchies = dimension.getHierarchies();
             for (int j = 0; j < hierarchies.length; j++) {
                 Hierarchy hierarchy = hierarchies[j];
-                String name = unique 
+                String name = unique
                     ? hierarchy.getUniqueName() : hierarchy.getName();
                 if (name.equals(s)) {
                     return hierarchy;

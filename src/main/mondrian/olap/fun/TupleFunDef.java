@@ -11,6 +11,8 @@
 */
 package mondrian.olap.fun;
 import mondrian.olap.*;
+import mondrian.olap.type.Type;
+import mondrian.olap.type.TupleType;
 
 import java.io.PrintWriter;
 
@@ -36,7 +38,7 @@ class TupleFunDef extends FunDefBase {
             argTypes);
         this.argTypes = argTypes;
     }
-    public int getReturnType() {
+    public int getReturnCategory() {
         return Category.Tuple;
     }
     public int[] getParameterTypes() {
@@ -45,16 +47,25 @@ class TupleFunDef extends FunDefBase {
     public void unparse(Exp[] args, PrintWriter pw) {
         ExpBase.unparseList(pw, args, "(", ", ", ")");
     }
-    public Hierarchy getHierarchy(Exp[] args) {
+
+    public Type getResultType(Validator validator, Exp[] args) {
         // _Tuple(<Member1>[,<MemberI>]...), which is written
-        // (<Member1>[,<MemberI>]...), has Hierarchy [Hie1] x ... x [HieN],
-        // which we can't represent, so we return null.  But if there is only
-        // one member, it merely represents a parenthesized expression, whose
-        // Hierarchy is that of the member.
-        return (args.length == 1) ?
-            args[0].getHierarchy() :
-            null;
+        // (<Member1>[,<MemberI>]...), has type [Hie1] x ... x [HieN].
+        //
+        // If there is only one member, it merely represents a parenthesized
+        // expression, whose Hierarchy is that of the member.
+        if (args.length == 1) {
+            return args[0].getTypeX();
+        } else {
+            Type[] types = new Type[args.length];
+            for (int i = 0; i < args.length; i++) {
+                Exp arg = args[i];
+                types[i] = arg.getTypeX();
+            }
+            return new TupleType(types);
+        }
     }
+
     public Object evaluate(Evaluator evaluator, Exp[] args) {
         Member[] members = new Member[args.length];
         for (int i = 0; i < args.length; i++) {

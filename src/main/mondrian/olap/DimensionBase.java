@@ -12,11 +12,13 @@
 
 package mondrian.olap;
 
+import mondrian.olap.type.Type;
+
 import java.util.List;
 import java.util.ArrayList;
 
 /**
- * todo:
+ * Abstract implementation for a {@link Dimension}.
  *
  * @author jhyde
  * @since 6 August, 2001
@@ -33,40 +35,60 @@ public abstract class DimensionBase
     protected Hierarchy[] hierarchies;
     protected DimensionType dimensionType;
 
-    protected DimensionBase(String name,
-                            String uniqueName,
-                            String description,
-                            int globalOrdinal,
-                            DimensionType dimensionType) {
-        this.name = name; 
+    protected DimensionBase(
+        String name,
+        String uniqueName,
+        String description,
+        int globalOrdinal,
+        DimensionType dimensionType)
+    {
+        this.name = name;
         this.uniqueName = Util.makeFqName(name);
         this.description = null;
         this.globalOrdinal = globalOrdinal;
         this.dimensionType = dimensionType;
     }
 
-    // implement Element
     public String getUniqueName() { 
         return uniqueName; 
     }
-    public String getName() { 
-        return name; 
+
+    public String getName() {
+        return name;
     }
-    public String getDescription() { 
-        return description; 
+
+    public String getDescription() {
+        return description;
     }
-    public Hierarchy[] getHierarchies() { 
-        return hierarchies; 
+
+    public Hierarchy[] getHierarchies() {
+        return hierarchies;
     }
-    public int getType() {
+
+    public Hierarchy getHierarchy() {
+        return hierarchies[0];
+    }
+
+    public Dimension getDimension() {
+        return this;
+    }
+
+    public int getCategory() {
         return Category.Dimension;
     }
-    public DimensionType getDimensionType() { 
-        return dimensionType; 
+
+    public Type getTypeX() {
+        return new mondrian.olap.type.DimensionType(this);
     }
+
+    public DimensionType getDimensionType() {
+        return dimensionType;
+    }
+
     public String getQualifiedName() {
         return Util.getRes().getMdxDimensionName(getUniqueName());
     }
+
     public boolean isMeasures() {
         return getUniqueName().equals(MEASURES_UNIQUE_NAME);
     }
@@ -86,7 +108,7 @@ public abstract class DimensionBase
             oe = getHierarchy().lookupChild(schemaReader, s);
         }
 
-        if (getLogger().isDebugEnabled()) { 
+        if (getLogger().isDebugEnabled()) {
             StringBuffer buf = new StringBuffer(64);
             buf.append("DimensionBase.lookupChild: ");
             buf.append("name=");

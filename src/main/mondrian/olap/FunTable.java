@@ -38,13 +38,11 @@ public abstract class FunTable {
 
 
     /** used during initialization **/
-    protected List resolvers;
-    protected final List funInfoList;
+    protected final List resolvers = new ArrayList();
+    protected final List funInfoList = new ArrayList();
 
 
     protected FunTable() {
-        this.funInfoList = new ArrayList();
-        this.resolvers = new ArrayList();
     }
 
     /**
@@ -52,13 +50,13 @@ public abstract class FunTable {
      * overloaded, returns as precise a match to the argument types as
      * possible.
      **/
-    public abstract FunDef getDef(FunCall call, Exp.Resolver resolver);
+    public abstract FunDef getDef(FunCall call, Validator resolver);
 
     /**
      * Adds a casting function, if necessary, to ensure that an expression is
      * of a given type. Throws an error if conversion is not possible.
      */
-    public abstract Exp convert(Exp fromExp, int to, Exp.Resolver resolver);
+    public abstract Exp convert(Exp fromExp, int to, Validator resolver);
 
     /**
      * This method is called from the constructor, to define the set of
@@ -79,9 +77,10 @@ public abstract class FunTable {
      * Returns whether the <code>k</code>th argument to a function call
      * has to be an expression.
      */
-    public abstract boolean requiresExpression(FunCall funCall, 
-                                               int k,
-                                               Exp.Resolver resolver);
+    public abstract boolean requiresExpression(
+        FunCall funCall,
+        int k,
+        Validator resolver);
 
     public List getFunInfoList() {
         return Collections.unmodifiableList(this.funInfoList);

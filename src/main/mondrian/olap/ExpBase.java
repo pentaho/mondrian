@@ -11,6 +11,8 @@
 */
 
 package mondrian.olap;
+import mondrian.olap.type.Type;
+
 import java.io.PrintWriter;
 
 /**
@@ -34,52 +36,17 @@ public abstract class ExpBase
 
     public abstract Object clone();
 
-    /**
-     * Returns the dimension of a this expression, or null if no dimension is
-     * defined. Applicable only to set expressions.
-     *
-     * <p>Example 1:
-     * <blockquote><pre>
-     * [Sales].children
-     * </pre></blockquote>
-     * has dimension <code>[Sales]</code>.</p>
-     *
-     * <p>Example 2:
-     * <blockquote><pre>
-     * order(except([Promotion Media].[Media Type].members,
-     *              {[Promotion Media].[Media Type].[No Media]}),
-     *       [Measures].[Unit Sales], DESC)
-     * </pre></blockquote>
-     * has dimension [Promotion Media].</p>
-     *
-     * <p>Example 3:
-     * <blockquote><pre>
-     * CrossJoin([Product].[Product Department].members,
-     *           [Gender].members)
-     * </pre></blockquote>
-     * has no dimension (well, actually it is [Product] x [Gender], but we
-     * can't represent that, so we return null);</p>
-     **/
-    public Dimension getDimension() {
-        Hierarchy mdxHierarchy = getHierarchy();
-        return (mdxHierarchy == null) ? null : mdxHierarchy.getDimension();
-    }
-
-    public Hierarchy getHierarchy() {
-        return null;
-    }
-
     public final boolean isSet() {
-        int cat = getType();
+        int cat = getCategory();
         return (cat == Category.Set) || (cat == Category.Tuple);
     }
 
     public final boolean isMember() {
-        return (getType() == Category.Member);
+        return getCategory() == Category.Member;
     }
 
     public final boolean isElement() {
-        int category = getType();
+        int category = getCategory();
         return isMember() ||
             (category == Category.Hierarchy) ||
             (category == Category.Level) ||
@@ -90,7 +57,7 @@ public abstract class ExpBase
     {
         if (this instanceof FunCall) {
             FunCall f = (FunCall) this;
-            return (f.getSyntax() == Syntax.Braces) && 
+            return (f.getSyntax() == Syntax.Braces) &&
                    (f.getArgLength() == 0);
         } else {
             return false;
@@ -124,15 +91,6 @@ public abstract class ExpBase
         // non-type checking copy
         System.arraycopy(f.getArgs(), 0, members, 0, len);
         return members;
-    }
-
-    protected static boolean arrayUsesDimension(Exp[] exps, Dimension dim)
-    {
-        for (int i = 0; i < exps.length; i++)
-            if (exps[i].usesDimension(dim)) {
-                return true;
-            }
-        return false;
     }
 
     public int addAtPosition(Exp e, int iPosition) {
@@ -175,17 +133,27 @@ public abstract class ExpBase
     public static int[] getTypes(Exp[] exps) {
         int[] types = new int[exps.length];
         for (int i = 0; i < exps.length; i++) {
-            types[i] = exps[i].getType();
+            types[i] = exps[i].getCategory();
         }
         return types;
     }
+
     /**
-     * A simple and incomplete default implementation for dependsOn().
+     * A simple and incomplete default implementation for
+     * {@link Exp#dependsOn(Dimension)}.
      * It assumes that a dimension, that is used somewhere in the expression
      * makes the whole expression independent of that dimension.
      */
     public boolean dependsOn(Dimension dimension) {
-        return !usesDimension(dimension);
+        final Type type = getTypeX();
+        return !type.usesDimension(dimension);
+    }
+
+    /**
+     * @deprecated Use {@link #getCategory()}
+     **/
+    public int getType() {
+        return getCategory();
     }
 }
 

@@ -24,7 +24,7 @@ public class Formula extends QueryPart {
     /** defining expression **/
     private ExpBase exp;
     // properties/solve order of member
-    private final MemberProperty[] memberProperties; 
+    private final MemberProperty[] memberProperties;
     /**
      * <code>true</code> is this is a member, <code>false</code> if it is a
      * set.
@@ -44,8 +44,8 @@ public class Formula extends QueryPart {
         this(true, names, (ExpBase) exp, memberProperties);
     }
 
-    private Formula(boolean isMember, 
-                    String[] names, 
+    private Formula(boolean isMember,
+                    String[] names,
                     ExpBase exp,
                     MemberProperty[] memberProperties) {
         this.isMember = isMember;
@@ -56,8 +56,8 @@ public class Formula extends QueryPart {
 
     public Object clone()
     {
-        return new Formula(isMember, 
-                           names, 
+        return new Formula(isMember,
+                           names,
                            (ExpBase) exp.clone(),
                            MemberProperty.cloneArray(memberProperties));
     }
@@ -74,7 +74,7 @@ public class Formula extends QueryPart {
      * Resolves identifiers into objects.
      * @param resolver The query which contains this formula.
      */
-    void resolve(Exp.Resolver resolver) {
+    void resolve(Validator resolver) {
         exp = (ExpBase) resolver.resolveChild(exp);
         String id = Util.quoteMdxIdentifier(names);
         if (isMember) {
@@ -265,9 +265,9 @@ public class Formula extends QueryPart {
      */
     public int getSolveOrder() {
         Exp exp = getMemberProperty(Property.PROPERTY_SOLVE_ORDER);
-        return ((exp != null) && (exp.getType() == Category.Numeric))
-            ? ((Literal)exp).getIntValue()
-            : 0;
+        return ((exp != null) && (exp.getCategory() == Category.Numeric)) ?
+            ((Literal) exp).getIntValue() :
+            0;
     }
 
     /**

@@ -13,6 +13,8 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.olap.type.Type;
+import mondrian.olap.type.MemberType;
 import mondrian.rolap.sql.SqlQuery;
 
 import org.apache.log4j.Logger;
@@ -57,6 +59,11 @@ class RolapHierarchy extends HierarchyBase {
 
     // for newClosedPeerHierarchy() to copy; but never used??
     private String primaryKey;
+
+    /**
+     * Type for members of this hierarchy. Set once to avoid excessive newing.
+     */
+    final Type memberType = new MemberType(this, null, null);
 
     RolapHierarchy(RolapDimension dimension, String subName, boolean hasAll) {
         super(dimension, subName, hasAll);
@@ -152,13 +159,13 @@ class RolapHierarchy extends HierarchyBase {
         RolapHierarchy that = (RolapHierarchy)o;
         return ((sharedHierarchy == null) || (that.sharedHierarchy == null))
             ? false
-            : (sharedHierarchy.equals(that.sharedHierarchy) && 
+            : (sharedHierarchy.equals(that.sharedHierarchy) &&
                 getUniqueName().equals(that.getUniqueName()));
     }
 
     public int hashCode() {
-        return super.hashCode() ^ (sharedHierarchy == null 
-            ? 0 
+        return super.hashCode() ^ (sharedHierarchy == null
+            ? 0
             : sharedHierarchy.hashCode());
     }
 
@@ -205,7 +212,7 @@ class RolapHierarchy extends HierarchyBase {
         return (relation != null) && tableExists(tableName, relation);
     }
 
-    private static boolean tableExists(String tableName, 
+    private static boolean tableExists(String tableName,
                                        MondrianDef.Relation relation) {
         if (relation instanceof MondrianDef.Table) {
             return ((MondrianDef.Table) relation).name.equals(tableName);
@@ -248,9 +255,9 @@ class RolapHierarchy extends HierarchyBase {
         return nullMember;
     }
 
-    public Member createMember(Member parent, 
-                               Level level, 
-                               String name, 
+    public Member createMember(Member parent,
+                               Level level,
+                               String name,
                                Formula formula) {
         return (formula != null)
             ? new RolapCalculatedMember(
@@ -274,9 +281,6 @@ class RolapHierarchy extends HierarchyBase {
      * @param query Query to add the hierarchy to
      * @param expression Level to qualify up to; if null, qualifies up to the
      *    topmost ('all') expression, which may require more columns and more joins
-     * @param cube If not null, include the cube's fact table in the query and
-     *    join to it. Member readers generally do not want to join the cube,
-     *    but measure readers do.
      */
     void addToFrom(SqlQuery query, MondrianDef.Expression expression) {
         if (relation == null) {
@@ -308,7 +312,7 @@ class RolapHierarchy extends HierarchyBase {
      * such an alias.
      */
     private static MondrianDef.Relation relationSubset(
-        MondrianDef.Relation relation, 
+        MondrianDef.Relation relation,
         String alias) {
 
         if (relation instanceof MondrianDef.Table) {
@@ -340,7 +344,7 @@ class RolapHierarchy extends HierarchyBase {
         final int access = role.getAccess(this);
         switch (access) {
         case Access.NONE:
-            throw Util.newInternal("Illegal access to members of hierarchy " 
+            throw Util.newInternal("Illegal access to members of hierarchy "
                     + this);
         case Access.ALL:
             return (isRagged())
@@ -381,9 +385,9 @@ class RolapHierarchy extends HierarchyBase {
         if (aggregateChildrenExpression == null) {
             FunCall fc = new FunCall(
                 "$AggregateChildren",
-                Syntax.Internal, 
+                Syntax.Internal,
                 new Exp[] {this});
-            Exp.Resolver resolver =
+            Validator resolver =
                     Util.createSimpleResolver(FunTable.instance());
             aggregateChildrenExpression = fc.resolve(resolver);
         }
@@ -502,23 +506,23 @@ class RolapHierarchy extends HierarchyBase {
         flags = src.getFlags() | RolapLevel.UNIQUE;
         keyExp = new MondrianDef.Column(clos.table.name, clos.childColumn);
         RolapLevel sublevel = new RolapLevel(
-            peerHier, 
+            peerHier,
             index++,
             "Item",
-            keyExp, 
-            null, 
+            keyExp,
             null,
-            null, 
+            null,
+            null,
             null,  // no longer a parent-child hierarchy
-            null, 
-            RolapProperty.emptyArray, 
+            null,
+            RolapProperty.emptyArray,
             flags,
-            src.getHideMemberCondition(), 
+            src.getHideMemberCondition(),
             src.getLevelType());
-        peerHier.levels = 
+        peerHier.levels =
             (RolapLevel[]) RolapUtil.addElement(peerHier.levels, sublevel);
 
-/* 
+/*
 RME HACK
 */
         cube.createUsage(peerHier, xmlDimension);
@@ -537,10 +541,10 @@ RME HACK
      */
     class RolapNullMember extends RolapMember {
         RolapNullMember(RolapHierarchy hierarchy) {
-            super(null, 
-                  (RolapLevel) hierarchy.getLevels()[0], 
-                  null, 
-                  "#Null", 
+            super(null,
+                  (RolapLevel) hierarchy.getLevels()[0],
+                  null,
+                  "#Null",
                   NULL_MEMBER_TYPE);
         }
 

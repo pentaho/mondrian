@@ -183,7 +183,10 @@ public class MDXQueryServlet extends HttpServlet {
             boolean fail = true;
             Member member = query.getSchemaReader(true).getMemberByUniqueName(
                     Util.explode(memberName), fail);
-            query.toggleDrillState(member);
+            if (true) {
+                throw new UnsupportedOperationException(
+                        "query.toggleDrillState(member) has been de-supported");
+            }
         } else {
             throw Util.newInternal("unkown operation '" + operation + "'");
         }

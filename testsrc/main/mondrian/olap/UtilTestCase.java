@@ -32,7 +32,8 @@ public class UtilTestCase extends TestCase {
     }
 
     public void testParseConnectStringComplex() {
-        Util.PropertyList properties = Util.parseConnectString("normalProp=value;" +
+        Util.PropertyList properties = Util.parseConnectString(
+                "normalProp=value;" +
                 "emptyValue=;" +
                 " spaceBeforeProp=abc;" +
                 " spaceBeforeAndAfterProp =def;" +
@@ -193,4 +194,51 @@ public class UtilTestCase extends TestCase {
         assertEquals("[a [bracketed]] string]", Util.quoteMdxIdentifier("a [bracketed] string"));
         assertEquals("[Store].[USA].[California]", Util.quoteMdxIdentifier(new String[]{"Store", "USA", "California"}));
     }
+
+    public void testBufReplace() {
+        // Replace with longer string. Search pattern at beginning & end.
+        checkReplace("xoxox", "x", "yy", "yyoyyoyy");
+
+        // Replace with shorter string.
+        checkReplace("xxoxxoxx", "xx", "z", "zozoz");
+
+        // Replace with empty string.
+        checkReplace("xxoxxoxx", "xx", "", "oo");
+
+        // Replacement string contains search string. (A bad implementation
+        // might loop!)
+        checkReplace("xox", "x", "xx", "xxoxx");
+
+        // Replacement string combines with characters in the original to
+        // match search string.
+        checkReplace("cacab", "cab", "bb", "cabb");
+
+        // Seek string does not exist.
+        checkReplace("the quick brown fox", "coyote", "wolf",
+                "the quick brown fox");
+
+        // Empty buffer.
+        checkReplace("", "coyote", "wolf", "");
+
+        // Empty seek string. This is a bit mean!
+        checkReplace("fox", "", "dog", "dogfdogodogxdog");
+    }
+
+    private static void checkReplace(
+            String original, String seek, String replace, String expected) {
+        // Check whether the JDK does what we expect. (If it doesn't it's
+        // probably a bug in the test, not the JDK.)
+        assertEquals(expected, original.replaceAll(seek, replace));
+
+        // Check the StringBuffer version of replace.
+        StringBuffer buf = new StringBuffer(original);
+        StringBuffer buf2 = Util.replace(buf, 0, seek, replace);
+        assertTrue(buf == buf2);
+        assertEquals(expected, buf.toString());
+
+        // Check the String version of replace.
+        assertEquals(expected, Util.replace(original, seek, replace));
+    }
 }
+
+// End UtilTestCase.java

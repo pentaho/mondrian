@@ -10,6 +10,9 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
+import mondrian.olap.type.Type;
+import mondrian.olap.type.TupleType;
+import mondrian.olap.type.SetType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,10 +27,41 @@ class CrossJoinFunDef extends FunDefBase {
         super(dummyFunDef);
     }
 
-    public Hierarchy getHierarchy(Exp[] args) {
-        // CROSSJOIN(<Set1>,<Set2>) has Hierarchy [Hie1] x [Hie2], which we
-        // can't represent, so we return null.
-        return null;
+    public Type getResultType(Validator validator, Exp[] args) {
+        // CROSSJOIN(<Set1>,<Set2>) has type [Hie1] x [Hie2].
+        ArrayList list = new ArrayList();
+        for (int i = 0; i < args.length; i++) {
+            Exp arg = args[i];
+            final Type type = arg.getTypeX();
+            if (type instanceof SetType) {
+                SetType setType = (SetType) type;
+                addTypes(setType.getElementType(), list);
+            } else if (getName().equals("*")) {
+                // The "*" form of CrossJoin is lenient: args can be either
+                // members/tuples or sets.
+                addTypes(type, list);
+            } else {
+                throw Util.newInternal("arg to crossjoin must be a set");
+            }
+        }
+        final Type[] types = (Type[]) list.toArray(new Type[list.size()]);
+        final TupleType tupleType = new TupleType(types);
+        return new SetType(tupleType);
+    }
+
+    /**
+     * Adds a type to a list of types. If type is a {@link TupleType}, does so
+     * recursively.
+     */
+    private static void addTypes(final Type type, ArrayList list) {
+        if (type instanceof TupleType) {
+                TupleType tupleType = (TupleType) type;
+            for (int i = 0; i < tupleType.elementTypes.length; i++) {
+                addTypes(tupleType.elementTypes[i], list);
+            }
+        } else {
+            list.add(type);
+        }
     }
 
     public Object evaluate(Evaluator evaluator, Exp[] args) {
@@ -154,3 +188,5 @@ class CrossJoinFunDef extends FunDefBase {
     }
 
 }
+
+// End CrossJoinFunDef.java

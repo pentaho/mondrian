@@ -12,6 +12,8 @@
 
 package mondrian.olap;
 
+import mondrian.olap.type.Type;
+
 import java.io.PrintWriter;
 
 /**
@@ -34,10 +36,10 @@ public interface FunDef {
     String getDescription();
 
     /**
-     * Returns the type of value returned by this function. Values are the same
-     * as those returned by {@link Exp#getType}.
+     * Returns the {@link Category} code of the value returned by this
+     * function.
      **/
-    int getReturnType();
+    int getReturnCategory();
 
     /**
      * Returns the types of the arguments of this function. Values are the same
@@ -49,14 +51,10 @@ public interface FunDef {
     int[] getParameterTypes();
 
     /**
-     * Returns the hierarchy of the result of applying this function to
-     * <code>args</code>, or null if no dimension is defined. Only applicable
-     * to functions which return a {@link Category#Set} or
-     * {@link Category#Tuple}.
-     *
-     * @see Exp#getHierarchy
+     * Returns the type of a call to this function with a given set of
+     * arguments.
      **/
-    Hierarchy getHierarchy(Exp[] args);
+    Type getResultType(Validator validator, Exp[] args);
 
     /**
      * Returns an English description of the signature of the function, for

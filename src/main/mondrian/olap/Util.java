@@ -36,13 +36,13 @@ public class Util extends mondrian.xom.XOMUtil {
 
     /** encodes string for MDX (escapes ] as ]] inside a name) */
     public static String mdxEncodeString(String st) {
-        StringBuffer retString = new StringBuffer(st.length()+20);
+        StringBuffer retString = new StringBuffer(st.length() + 20);
         for (int i = 0; i < st.length(); i++) {
             char c = st.charAt(i);
             if ((c == ']') &&
                 ((i+1) < st.length()) &&
                 (st.charAt(i+1) != '.')) {
-                
+
                 retString.append(']'); //escaping character
             }
             retString.append(c);
@@ -52,13 +52,13 @@ public class Util extends mondrian.xom.XOMUtil {
 
 
     /** Return quoted */
-    public static String quoteForMdx(String val) {   
+    public static String quoteForMdx(String val) {
         StringBuffer buf = new StringBuffer(val.length()+20);
         buf.append("\"");
-        
+
         String s0 = replace(val, "\"", "\"\"");
         buf.append(s0);
-        
+
         buf.append("\"");
         return buf.toString();
     }
@@ -73,21 +73,20 @@ public class Util extends mondrian.xom.XOMUtil {
         quoteMdxIdentifier(id, buf);
         return buf.toString();
     }
+
     public static void quoteMdxIdentifier(String id, StringBuffer buf) {
         buf.append('[');
-        
-        String s0 = replace(id, "]", "]]");
-        buf.append(s0);
-        
+        int start = buf.length();
+        buf.append(id);
+        replace(buf, start, "]", "]]");
         buf.append(']');
     }
-
 
     /**
      * Return identifiers quoted in [...].[...].  For example, {"Store", "USA",
      * "California"} becomes "[Store].[USA].[California]".
      **/
-    public static String quoteMdxIdentifier(String[] ids) {   
+    public static String quoteMdxIdentifier(String[] ids) {
         StringBuffer sb = new StringBuffer(64);
         for (int i = 0; i < ids.length; i++) {
             if (i > 0) {
@@ -105,7 +104,10 @@ public class Util extends mondrian.xom.XOMUtil {
         return (s == null) ? (t == null) : s.equals(t);
     }
 
-    /** Does not modify the original string */
+    /**
+     * Returns a string with every occurrence of a seek string replaced with
+     * another.
+     */
     public static String replace(String s, String find, String replace) {
         // let's be optimistic
         int found = s.indexOf(find);
@@ -115,21 +117,62 @@ public class Util extends mondrian.xom.XOMUtil {
         StringBuffer sb = new StringBuffer(s.length() + 20);
         int start = 0;
         char[] chars = s.toCharArray();
-        for (;;) {
-            sb.append(chars, start, found-start);
-            if (found == s.length()) {
-                break;
-            }
-            sb.append(replace);
-            start += (find.length() + found);
-            found = s.indexOf(find, start);
-            if (found == -1) {
-                found = s.length();
+        final int step = find.length();
+        if (step == 0) {
+            // Special case where find is "".
+            sb.append(s);
+            replace(sb, 0, find, replace);
+        } else {
+            for (;;) {
+                sb.append(chars, start, found-start);
+                if (found == s.length()) {
+                    break;
+                }
+                sb.append(replace);
+                start = found + step;
+                found = s.indexOf(find, start);
+                if (found == -1) {
+                    found = s.length();
+                }
             }
         }
         return sb.toString();
     }
 
+    /**
+     * Replaces all occurrences of a string in a buffer with another.
+     *
+     * @param buf String buffer to act on
+     * @param start
+     * @param find String to find
+     * @param replace String to replace it with
+     * @return The string buffer
+     */
+    public static StringBuffer replace(StringBuffer buf, int start, String find, String replace) {
+
+        // Search and replace from the end towards the start, to avoid O(n ^ 2)
+        // copying if the string occurs very commonly.
+        int findLength = find.length();
+        if (findLength == 0) {
+            // Special case where the seek string is empty.
+            for (int j = buf.length(); j >= 0; --j) {
+                buf.insert(j, replace);
+            }
+            return buf;
+        }
+        int k = buf.length();
+        while (k > 0) {
+            int i = buf.lastIndexOf(find, k);
+            if (i < start) {
+                break;
+            }
+            buf.replace(i, i + find.length(), replace);
+            // Step back far enough to ensure that the beginning of the section
+            // we just replaced does not cause a match.
+            k = i - findLength;
+        }
+        return buf;
+    }
 
     public static String[] explode(String s) {
         List list = new ArrayList();
@@ -160,12 +203,12 @@ public class Util extends mondrian.xom.XOMUtil {
         return names;
     }
 
-    public static String implode(String[] names) {   
+    public static String implode(String[] names) {
         if (names.length == 0) {
             return "";
         }
         StringBuffer sb = new StringBuffer(64);
-        sb.append('['); 
+        sb.append('[');
         for (int i = 0; i < names.length; i++) {
             if (i > 0) {
                 sb.append("].[");
@@ -192,7 +235,7 @@ public class Util extends mondrian.xom.XOMUtil {
         }
     }
 
-    public static String makeFqName(String parentUniqueName, String name) {   
+    public static String makeFqName(String parentUniqueName, String name) {
         if (parentUniqueName == null) {
             return quoteMdxIdentifier(name);
         } else {
@@ -369,8 +412,8 @@ public class Util extends mondrian.xom.XOMUtil {
      * @param memberName
      * @return Member, or null if not found
      */
-    public static Member lookupHierarchyRootMember(SchemaReader reader, 
-                                                   Hierarchy hierarchy, 
+    public static Member lookupHierarchyRootMember(SchemaReader reader,
+                                                   Hierarchy hierarchy,
                                                    String memberName) {
         // Lookup member at first level.
         Member[] rootMembers = reader.getHierarchyRootMembers(hierarchy);
@@ -421,7 +464,7 @@ public class Util extends mondrian.xom.XOMUtil {
      * @param member
      * @return
      */
-    public static int getMemberOrdinalInParent(SchemaReader reader, 
+    public static int getMemberOrdinalInParent(SchemaReader reader,
                                                Member member) {
         Member parent = member.getParentMember();
         Member[] siblings =  (parent == null)
@@ -442,8 +485,8 @@ public class Util extends mondrian.xom.XOMUtil {
      * If parent = [Time].[1997] and level = [Time].[Month], then
      * the member [Time].[1997].[Q1].[1] will be returned
      */
-    public static Member getFirstDescendantOnLevel(SchemaReader reader, 
-                                                   Member parent, 
+    public static Member getFirstDescendantOnLevel(SchemaReader reader,
+                                                   Member parent,
                                                    Level level) {
         Member m = parent;
         while (m.getLevel() != level) {
@@ -608,7 +651,7 @@ public class Util extends mondrian.xom.XOMUtil {
      *   is derived from {@link java.sql.SQLException} or is exactly a {@link
      *   java.lang.Exception}
      */
-    public static String getErrorMessage(Throwable err, 
+    public static String getErrorMessage(Throwable err,
                                          boolean prependClassName) {
         String errMsg = err.getMessage();
         if ((errMsg == null) || (err instanceof RuntimeException)) {
@@ -920,11 +963,11 @@ public class Util extends mondrian.xom.XOMUtil {
     }
 
     /**
-     * Creates a very simple implementation of {@link Exp.Resolver}. (Only
+     * Creates a very simple implementation of {@link Validator}. (Only
      * useful for resolving trivial expressions.)
      */
-    public static Exp.Resolver createSimpleResolver(final FunTable funTable) {
-        return new Exp.Resolver() {
+    public static Validator createSimpleResolver(final FunTable funTable) {
+        return new Validator() {
             public Query getQuery() {
                 throw new UnsupportedOperationException();
             }

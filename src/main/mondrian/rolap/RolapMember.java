@@ -12,6 +12,7 @@
 
 package mondrian.rolap;
 import mondrian.olap.*;
+import mondrian.olap.type.Type;
 
 import org.apache.log4j.Logger;
 import java.util.*;
@@ -69,10 +70,10 @@ public class RolapMember extends MemberBase {
      * @param name Name of this member
      * @param flags Flags describing this member (see {@link #flags}
      */
-    RolapMember(Member parentMember, 
-                RolapLevel level, 
+    RolapMember(Member parentMember,
+                RolapLevel level,
                 Object key,
-                String name, 
+                String name,
                 int flags) {
         super(parentMember, level, flags);
 
@@ -117,8 +118,8 @@ public class RolapMember extends MemberBase {
                             +uniqueName);
                 }
             }
-        } 
-    }       
+        }
+    }
 
     private void setUniqueName(Object key) {
         String name = keyToString(key);
@@ -226,7 +227,7 @@ public class RolapMember extends MemberBase {
     }
     void setOrdinal(int ordinal) {
         this.ordinal = ordinal;
-    }   
+    }
     Object getKey() {
         return this.key;
     }
@@ -302,15 +303,16 @@ public class RolapMember extends MemberBase {
         }
     }
 
-    /**
-     * @return the level's depth
-     * @see mondrian.olap.Member#getDepth()
-     */
     public int getDepth() {
         return level.getDepth();
     }
+
     public Object getSqlKey() {
         return key;
+    }
+
+    public Type getTypeX() {
+        return ((RolapHierarchy) getHierarchy()).memberType;
     }
 
     /**
@@ -328,7 +330,7 @@ public class RolapMember extends MemberBase {
         }
         PropertyFormatter pf;
         if (prop!=null && (pf = prop.getFormatter()) != null) {
-            return pf.formatProperty(this, propertyName, 
+            return pf.formatProperty(this, propertyName,
                 getPropertyValue(propertyName));
         }
 

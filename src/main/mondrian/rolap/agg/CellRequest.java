@@ -28,19 +28,22 @@ import java.util.List;
  **/
 public class CellRequest {
     private final RolapStar.Measure measure;
-    /** List of columns being which have values in this request. The 0th
+    /**
+     * List of columns being which have values in this request. The 0th
      * entry is a dummy entry: the star, which ensures that 2 requests for the
      * same columns on measures in the same star get put into the same batch.
+     *
+     * We need to efficiently compare pairs of column lists (to figure out
+     * whether two CellRequest objects belong to the same
+     * FastBatchingCellReader.Batch), so we use an implementation of ArrayList
+     * which computes hashCode and equals more efficiently.
      */
-    private final List columnList;
-    private final List valueList;
+    private final List columnList = new FastHashingArrayList();
+    private final List valueList = new ArrayList();
 
     /** Creates a {@link CellRequest}. **/
     public CellRequest(RolapStar.Measure measure) {
         this.measure = measure;
-        this.columnList = new ArrayList();
-        this.valueList = new ArrayList();
-
         this.columnList.add(measure.getStar());
     }
 
@@ -87,6 +90,40 @@ public class CellRequest {
             a[i] = constr.getValue();
         }
         return a;
+    }
+
+    /**
+     * Extension to {@link ArrayList} with fast {@link #equals(Object)} and
+     * {@link #hashCode()} methods.
+     */
+    private static class FastHashingArrayList extends ArrayList {
+        public boolean equals(Object o) {
+            if (!(o instanceof FastHashingArrayList)) {
+                return false;
+            }
+            FastHashingArrayList that = (FastHashingArrayList) o;
+            final int size = this.size();
+            if (size != that.size()) {
+                return false;
+            }
+            for (int i = 0; i < size; i++) {
+                Object o1 = (Object) this.get(i);
+                Object o2 = (Object) that.get(i);
+                if (!o1.equals(o2)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public int hashCode() {
+            int hashCode = 1;
+            for (int i = 0; i < size(); i++) {
+                Object obj = (Object) get(i);
+                hashCode = 31 * hashCode + (obj == null ? 0 : obj.hashCode());
+            }
+            return hashCode;
+        }
     }
 }
 

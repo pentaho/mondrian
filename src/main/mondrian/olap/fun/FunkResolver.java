@@ -43,7 +43,7 @@ class FunkResolver extends MultiResolver {
     }
 
     protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-        return new FunDefBase(this, dummyFunDef.getReturnType(),
+        return new FunDefBase(this, dummyFunDef.getReturnCategory(),
                 dummyFunDef.getParameterTypes()) {
             public Object evaluate(Evaluator evaluator, Exp[] args) {
                 return funk.evaluate(evaluator, args);

@@ -12,6 +12,8 @@
 
 package mondrian.olap;
 
+import mondrian.olap.type.Type;
+
 /**
  * Skeleton implementation of {@link Level}
  *
@@ -44,53 +46,61 @@ public abstract class LevelBase
 
     // from Element
     public String getQualifiedName() {
-        return Util.getRes().getMdxLevelName(getUniqueName()); }
+        return Util.getRes().getMdxLevelName(getUniqueName());
+    }
 
-    // from Exp
-    public int getType() {
+    public int getCategory() {
         return Category.Level;
     }
-    public LevelType getLevelType() { 
-        return levelType; 
+
+    public Type getTypeX() {
+        return new mondrian.olap.type.LevelType(hierarchy, this);
     }
-    public String getUniqueName() { 
-        return uniqueName; 
+
+    public LevelType getLevelType() {
+        return levelType;
     }
-    public String getName() { 
-        return name; 
+
+    public String getUniqueName() {
+        return uniqueName;
     }
-    public String getDescription() { 
-        return description; 
+
+    public String getName() {
+        return name;
     }
-    public Hierarchy getHierarchy() { 
-        return hierarchy; 
+
+    public String getDescription() {
+        return description;
     }
-    public Dimension getDimension() { 
-        return hierarchy.getDimension(); 
+
+    public Hierarchy getHierarchy() {
+        return hierarchy;
     }
-    public boolean usesDimension(Dimension dimension) {
-        return ((HierarchyBase) hierarchy).dimension == dimension;
+
+    public Dimension getDimension() {
+        return hierarchy.getDimension();
     }
-    public int getDepth() { 
-        return depth; 
+
+    public int getDepth() {
+        return depth;
     }
 
     public Level getChildLevel() {
         int childDepth = depth + 1;
         Level[] levels = hierarchy.getLevels();
         return (childDepth < levels.length)
-            ? levels[childDepth] 
+            ? levels[childDepth]
             : null;
     }
+
     public Level getParentLevel() {
         int parentDepth = depth - 1;
         Level[] levels = hierarchy.getLevels();
         return (parentDepth >= 0)
-            ? levels[parentDepth] 
+            ? levels[parentDepth]
             : null;
     }
 
-    // AdomdLevel and RolapLevel do it differently
     public abstract boolean isAll();
 
     public boolean isMeasure() {
@@ -98,7 +108,7 @@ public abstract class LevelBase
     }
 
     public OlapElement lookupChild(SchemaReader schemaReader, String s) {
-        return (areMembersUnique())
+        return areMembersUnique()
             ? Util.lookupHierarchyRootMember(schemaReader, hierarchy, s)
             : null;
     }
@@ -106,13 +116,15 @@ public abstract class LevelBase
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
     public void childrenAccept(Visitor visitor) {
         // we don't generally visit child members
     }
 
-    /** @return the MemberFormatter
+    /**
+      * Returns the object which is used to format members of this level.
       */
-    public MemberFormatter getMemberFormatter(){
+    public MemberFormatter getMemberFormatter() {
         return memberFormatter;
     }
 }

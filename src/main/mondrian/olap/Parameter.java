@@ -11,33 +11,32 @@
 */
 
 package mondrian.olap;
+import mondrian.olap.type.Type;
+
 import java.io.PrintWriter;
 
 public class Parameter extends ExpBase {
 
     private final String name;
     // Category.String, Category.Numeric, or Category.Member
-    private final int category; 
-    private final Hierarchy hierarchy;
+    private final int category;
     private final String description;
     private Exp exp;
     private int defineCount;
-    /** How many times this parameter has been printed; first time we output
-     * a "Parameter" function, subsequent times, a "ParamRef". **/
-    private int printCount;
+    private final Type type;
 
-    Parameter(String name, 
-              int category, 
-              Hierarchy hierarchy, 
-              Exp exp,
-              String description) {
+    Parameter(
+            String name,
+            int category,
+            Exp exp,
+            String description,
+            Type type) {
         this.name = name;
         this.category = category;
-        this.hierarchy = hierarchy;
         this.exp = exp;
-        this.printCount = 0;
         this.defineCount = 1;
         this.description = description;
+        this.type = type;
     }
 
     static Parameter[] cloneArray(Parameter[] a) {
@@ -51,8 +50,12 @@ public class Parameter extends ExpBase {
         return a2;
     }
 
-    public int getType() {
+    public int getCategory() {
         return category;
+    }
+
+    public Type getTypeX() {
+        return type;
     }
 
     public Exp getExp() {
@@ -62,24 +65,19 @@ public class Parameter extends ExpBase {
     void incrementDefineCount() {
         defineCount++;
     }
+
     int getDefineCount() {
         return defineCount;
     }
-    
-    /** 
-     * Set defineCount instance variable to 0. 
+
+    /**
+     * Sets defineCount instance variable to 0.
      */
     void resetDefineCount() {
         defineCount = 0;
     }
 
-    public boolean usesDimension(Dimension dimension) {
-        Hierarchy mdxHierarchy = getHierarchy();
-        return (mdxHierarchy != null) &&
-            (mdxHierarchy.getDimension() == dimension);
-    }
-
-    public Exp resolve(Resolver resolver) {
+    public Exp resolve(Validator resolver) {
         // There must be some Parameter with this name registered with the
         // Query.  After clone(), there will be many copies of the same
         // parameter, and we rely on this method to bring them down to one.
@@ -104,16 +102,17 @@ public class Parameter extends ExpBase {
      *   {@link #setValue(Object)}
      */
     public void setValue(String value, Query query) {
+        this.exp = quickParse(value, query);
+    }
+
+    Exp quickParse(String value, Query query) {
         switch (category) {
         case Category.Numeric:
-            exp = Literal.create(new Double(value));
-            break;
+            return Literal.create(new Double(value));
         case Category.String:
-            exp = Literal.createString(value);
-            break;
+            return Literal.createString(value);
         case Category.Member:
-            exp = Util.lookup(query, Util.explode(value));
-            break;
+            return Util.lookup(query, Util.explode(value));
         default:
             throw Category.instance.badValue(category);
         }
@@ -136,10 +135,10 @@ public class Parameter extends ExpBase {
                         return new Double(-((Double)o).doubleValue());
                     } else if (o instanceof Integer) {
                         // probably impossible
-                        return new Integer(-((Integer)o).intValue()); 
+                        return new Integer(-((Integer)o).intValue());
                     } else if (o instanceof Integer) {
                         // probably impossible
-                        return o; 
+                        return o;
                     }
                 } else {
                     //unexpected funcall in parameter definition
@@ -191,7 +190,7 @@ public class Parameter extends ExpBase {
         case 1:
             break;
         default:
-            throw MondrianResource.instance().newMdxParamMultipleDef(name, 
+            throw MondrianResource.instance().newMdxParamMultipleDef(name,
                 new Integer(defineCount));
         }
         if (exp == null) {
@@ -199,18 +198,16 @@ public class Parameter extends ExpBase {
         }
     }
 
-    public Hierarchy getHierarchy() {
-        return hierarchy;
-    }
-
     public Object clone() {
-        return new Parameter(name, category, hierarchy, exp, description);
+        return new Parameter(name, category, exp, description, type);
     }
 
     public void unparse(PrintWriter pw) {
-        if (printCount++ > 0) {
-            pw.print("ParamRef(" + Util.quoteForMdx(name) + ")");
-        } else {
+        boolean firstPrinting = true;
+        if (pw instanceof Query.QueryPrintWriter) {
+            firstPrinting = ((Query.QueryPrintWriter) pw).parameters.add(this);
+        }
+        if (firstPrinting) {
             pw.print("Parameter(" + Util.quoteForMdx(name) + ", ");
             switch (category) {
             case Category.String:
@@ -218,7 +215,7 @@ public class Parameter extends ExpBase {
                 pw.print(getParameterType());
                 break;
             case Category.Member:
-                hierarchy.unparse(pw);
+                type.getHierarchy().unparse(pw);
                 break;
             default:
                 throw Category.instance.badValue(category);
@@ -229,6 +226,8 @@ public class Parameter extends ExpBase {
                 pw.print(", " + Util.quoteForMdx(description));
             }
             pw.print(")");
+        } else {
+            pw.print("ParamRef(" + Util.quoteForMdx(name) + ")");
         }
     }
 
@@ -246,12 +245,8 @@ public class Parameter extends ExpBase {
         }
         Parameter that = (Parameter) other;
         return that.getName().equals(this.getName()) &&
-            (that.getType() == this.getType()) &&
+            (that.getCategory() == this.getCategory()) &&
             that.exp.equals(this.exp);
-    }
-
-    public void resetPrintProperty() {
-        this.printCount = 0;
     }
 
     public Object evaluate(Evaluator evaluator) {

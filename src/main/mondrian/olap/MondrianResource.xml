@@ -291,6 +291,18 @@
     <text>The member arguments to the Cousin function must be from the same hierarchy. The members are ''{0}'' and ''{1}''.</text>
 </exception>
 
+<exception id="350510" name="DimensionInIndependentAxes">
+    <text>Dimension ''{0}'' appears in more than one independent axis.</text>
+</exception>
+
+<exception id="350520" name="ArgsMustHaveSameHierarchy">
+    <text>All arguments to function ''{0}'' must have same hierarchy.</text>
+</exception>
+
+<exception id="350530" name="TimeArgNeeded">
+    <text>Argument to function ''{0}'' must belong to Time hierarchy.</text>
+</exception>
+
 <!-- ====================================================================== -->
 <!-- Catalog errors -->
 

@@ -11,6 +11,8 @@
 */
 
 package mondrian.olap;
+import mondrian.olap.type.Type;
+
 import java.io.PrintWriter;
 
 /**
@@ -42,13 +44,13 @@ public class Id
         return this;
     }
 
-    public int getType() {
+    public int getCategory() {
         return Category.Unknown;
     }
 
-    public boolean usesDimension(Dimension dimension) {
-        // don't know til we resolve
-        return false;
+    public Type getTypeX() {
+        // Can't give the type until we have resolved.
+        throw new UnsupportedOperationException();
     }
 
     public String toString() {
@@ -77,7 +79,7 @@ public class Id
         append(s, false);
     }
 
-    public Exp resolve(Resolver resolver) {
+    public Exp resolve(Validator resolver) {
         if (names.length == 1) {
             final String s = names[0];
             if (FunTable.instance().isReserved(s)) {

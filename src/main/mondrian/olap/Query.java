@@ -13,9 +13,11 @@
 package mondrian.olap;
 import mondrian.olap.fun.BuiltinFunTable;
 import mondrian.olap.fun.ParameterFunDef;
+import mondrian.olap.type.*;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.*;
 
 /**
@@ -30,37 +32,37 @@ public class Query extends QueryPart {
     //hidden string
     public static final String HIDDEN = "hidden_";
 
-    /** 
+    /**
      * NOTE: This must be public because JPivoi directly accesses this instance
      * variable.
-     * Currently, the JPivoi usages are:
+     * Currently, the JPivot usages are:
      * mondrian.olap.Formula[] formulas = q.formulas;
      *
-     * This usage is deprecated: please use the formulas's getter methods:
+     * <p>This usage is deprecated: please use the formulas's getter methods:
      *   public Formula[] getFormulas()
      */
     public Formula[] formulas;
 
-    /** 
-     * NOTE: This must be public because JPivoi directly accesses this instance
+    /**
+     * NOTE: This must be public because JPivot directly accesses this instance
      * variable.
      * Currently, the JPivoi usages are:
      * monQuery.axes.length
      * mondrian.olap.QueryAxis qAxis = monQuery.axes[i];
      *
-     * This usage is deprecated: please use the axes's getter methods:
+     * <p>This usage is deprecated: please use the axes's getter methods:
      *   public QueryAxis[] getAxes()
      */
     public QueryAxis[] axes;
-    
-    /** 
-     * NOTE: This must be public because JPivoi directly accesses this instance
-     * variable. 
+
+    /**
+     * NOTE: This must be public because JPivot directly accesses this instance
+     * variable.
      * Currently, the JPivoi usages are:
      * monQuery.slicer = null;
      * monQuery.slicer = f;
      *
-     * This usage is deprecated: please use the slicer's getter and setter
+     * <p>This usage is deprecated: please use the slicer's getter and setter
      * methods:
      *   public Exp getSlicer()
      *   public void setSlicer(Exp exp)
@@ -72,35 +74,32 @@ public class Query extends QueryPart {
     private final Cube mdxCube;
     private final Connection connection;
 
-/*
-    public Query() {
-    }
-*/
-
     /** Constructs a Query. */
-    public Query(Connection connection, 
-                 Formula[] formulas, 
-                 QueryAxis[] axes,
-                 String cube, 
-                 Exp slicer, 
-                 QueryPart[] cellProps) {
-        this(connection, 
-             connection.getSchema().lookupCube(cube, true),
-             formulas, 
-             axes, 
-             slicer, 
-             cellProps, 
-             new Parameter[0]);
+    public Query(
+            Connection connection,
+            Formula[] formulas,
+            QueryAxis[] axes,
+            String cube,
+            Exp slicer,
+            QueryPart[] cellProps) {
+        this(connection,
+                connection.getSchema().lookupCube(cube, true),
+                formulas,
+                axes,
+                slicer,
+                cellProps,
+                new Parameter[0]);
     }
 
     /** Construct a Query; called from clone(). */
-    public Query(Connection connection, 
-                 Cube mdxCube,
-                 Formula[] formulas, 
-                 QueryAxis[] axes, 
-                 Exp slicer,
-                 QueryPart[] cellProps, 
-                 Parameter[] parameters) {
+    public Query(
+            Connection connection,
+            Cube mdxCube,
+            Formula[] formulas,
+            QueryAxis[] axes,
+            Exp slicer,
+            QueryPart[] cellProps,
+            Parameter[] parameters) {
         this.connection = connection;
         this.mdxCube = mdxCube;
         this.formulas = formulas;
@@ -135,8 +134,8 @@ public class Query extends QueryPart {
      * add a new formula specifying a member
      *  to an existing query
      */
-    public void addFormula(String[] names, 
-                           Exp exp, 
+    public void addFormula(String[] names,
+                           Exp exp,
                            MemberProperty[] memberProperties) {
         Formula newFormula = new Formula(names, exp, memberProperties);
         int nFor = 0;
@@ -153,16 +152,16 @@ public class Query extends QueryPart {
     }
 
 
-    public Exp.Resolver createResolver() {
+    public Validator createResolver() {
         return new StackResolver(BuiltinFunTable.instance());
     }
 
     public Object clone() throws CloneNotSupportedException {
-        return new Query(connection,  
+        return new Query(connection,
                          mdxCube,
-                         Formula.cloneArray(formulas), 
+                         Formula.cloneArray(formulas),
                          QueryAxis.cloneArray(axes),
-                         (slicer == null) ? null : (Exp) slicer.clone(), 
+                         (slicer == null) ? null : (Exp) slicer.clone(),
                          null,
                          Parameter.cloneArray(parameters));
     }
@@ -187,7 +186,7 @@ public class Query extends QueryPart {
      * interchanged) the returned string represents the current parse tree.
      */
     public String getQueryString() {
-        return toWebUIMdx();
+        return toMdx();
     }
 
     private void normalizeAxes() {
@@ -225,7 +224,7 @@ public class Query extends QueryPart {
      *
      * @param resolver Custom resolver
      */
-    void resolve(Exp.Resolver resolver) {
+    void resolve(Validator resolver) {
         if (formulas != null) {
             //resolving of formulas should be done in two parts
             //because formulas might depend on each other, so all calculated
@@ -253,6 +252,32 @@ public class Query extends QueryPart {
             parameters[i] = resolver.resolveChild(parameters[i]);
         }
         resolveParameters();
+
+        // Make sure that no dimension is used on more than one axis.
+        final Dimension[] dimensions = getCube().getDimensions();
+        for (int i = 0; i < dimensions.length; i++) {
+            Dimension dimension = dimensions[i];
+            int useCount = 0;
+            for (int j = -1; j < axes.length; j++) {
+                final Exp axisExp;
+                if (j < 0) {
+                    if (slicer == null) {
+                        continue;
+                    }
+                    axisExp = slicer;
+                } else {
+                    axisExp = axes[j].set;
+                }
+                if (axisExp.getTypeX().usesDimension(dimension)) {
+                    ++useCount;
+                }
+            }
+            if (useCount > 1) {
+                throw MondrianResource.instance()
+                        .newDimensionInIndependentAxes(
+                                dimension.getUniqueName());
+            }
+        }
     }
 
     public void unparse(PrintWriter pw) {
@@ -289,18 +314,10 @@ public class Query extends QueryPart {
         }
     }
 
-    public String toPlatoMdx() {
+    public String toMdx() {
         StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
+        PrintWriter pw = new QueryPrintWriter(sw);
         unparse(pw);
-        return sw.toString();
-    }
-
-    public String toWebUIMdx() {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        unparse(pw);
-        resetParametersPrintProperty();
         return sw.toString();
     }
 
@@ -321,12 +338,12 @@ public class Query extends QueryPart {
      * @return axis label in original query (0 = columns, 1 = rows, etc.)
      */
     public int getLogicalAxis(int iPhysicalAxis) {
-        if ((iPhysicalAxis == AxisOrdinal.SLICER) || 
+        if ((iPhysicalAxis == AxisOrdinal.SLICER) ||
                 (iPhysicalAxis == axes.length)) {
             return AxisOrdinal.SLICER; // slicer is never permuted
         }
         String axisName = axes[iPhysicalAxis].getAxisName();
-        final EnumeratedValues.Value value = 
+        final EnumeratedValues.Value value =
             AxisOrdinal.instance.getValue(axisName);
 
         return (value != null)
@@ -371,7 +388,7 @@ public class Query extends QueryPart {
     /** Returns the MDX query string. */
     public String toString() {
         resolve();
-        return toWebUIMdx();
+        return toMdx();
     }
 
     public Object[] getChildren() {
@@ -433,17 +450,21 @@ public class Query extends QueryPart {
             axes.length + " axes, " + formulas.length + " formula)");
     }
 
-    /** Normalize slicer into a tuple of members; for example, '[Time]' becomes
-     * '([Time].DefaultMember)'.  todo: Make slicer an Axis, not an Exp, and
-     * put this code inside Axis.  */
+    /**
+     * Normalize slicer into a tuple of members. For example, '[Time]' becomes
+     * '([Time].DefaultMember)'.
+     *
+     * <p>todo: Make slicer an Axis, not an Exp, and
+     * put this code inside Axis.
+     */
     public void setSlicer(Exp exp) {
         slicer = exp;
         if (slicer instanceof Level ||
             slicer instanceof Hierarchy ||
             slicer instanceof Dimension) {
 
-            slicer = new FunCall("DefaultMember", 
-                                 Syntax.Property, 
+            slicer = new FunCall("DefaultMember",
+                                 Syntax.Property,
                                  new Exp[] {slicer});
         }
         if (slicer == null) {
@@ -481,254 +502,24 @@ public class Query extends QueryPart {
     }
 
     /**
-     * Walk over the tree looking for an expression of a particular hierarchy
-     * If there is one, return the walker pointing at it (from which we can get
-     * its parent); otherwise, return null.
-     **/
-    private Walker findHierarchy(Hierarchy hierarchy) {
-        Walker walker = new Walker(this);
-        while (walker.hasMoreElements()) {
-            Object o = walker.nextElement();
-            if (o instanceof Formula) {
-                walker.prune();
-                continue; // ignore expressions in formula
-            } else if (o instanceof Exp) {
-
-                // if object's parent is a function (except a tuple/parentheses
-                // or CrossJoin), algorithm shall look only at the first child
-                Object parent =  walker.getParent();
-                if (parent instanceof FunCall) {
-                    FunCall funCall = (FunCall) parent;
-                    if (!funCall.isCallToTuple() &&
-                        !funCall.isCallToCrossJoin() &&
-                        !funCall.isCallTo("Generate") &&
-                        funCall.getArg(0) != o) {
-                        walker.prune();
-                        continue;
-                    }
-                }
-
-                Exp e = (Exp) o;
-                // expression must represent a set or be mdx element
-                if (!e.isSet() && !e.isElement()) {
-                    continue;
-                }
-
-                Hierarchy obExpHierarchy = e.getHierarchy();
-                if (obExpHierarchy == null) {
-                    // set must have a dimension (e.g. disallow CrossJoin)
-                    continue;
-                }
-
-                if (obExpHierarchy.equals(hierarchy)) {
-                    return walker; // success!
-                } else if (e instanceof FunCall && 
-                        ((FunCall) e).isCallToFilter()){
-                    // tell walker not to look at any more children of Filter
-                    walker.prune();
-                }
-            }
-        }
-        return null; // no expression of that dimension found
-    }
-
-    /**
-     * Returns the hierarchies in an expression
-     * @see #findHierarchy
+     * Returns the hierarchies in an expression.
      */
-    private Hierarchy[] collectHierarchies(QueryPart queryPart) {
-        Walker walker = new Walker(queryPart);
-        List hierList = new ArrayList();
-        while (walker.hasMoreElements()) {
-            Object o = walker.nextElement();
-            if (o instanceof Exp) {
-                // if object's parent is a function (except tuple/parentheses
-                // or CrossJoin), algorithm shall look only at the first child
-                Object parent =  walker.getParent();
-                if (parent instanceof FunCall) {
-                    FunCall funCall = (FunCall) parent;
-                    if (!funCall.isCallToTuple() &&
-                        !funCall.isCallToCrossJoin() &&
-                        !funCall.isCallTo("Generate") &&
-                        funCall.getArg(0) != o) {
-                        walker.prune();
-                        continue;
-                    }
-                }
-
-                Exp e = (Exp) o;
-                if (!e.isSet() && !e.isMember()) {
-                    continue; // expression must represent a set or be a member
-                }
-
-                Hierarchy obExpHierarchy = e.getHierarchy();
-                if (obExpHierarchy == null) {
-                    // set must have a dimension (e.g. disallow CrossJoin)
-                    continue;
-                }
-                if(!hierList.contains(obExpHierarchy)) {
-                  hierList.add(obExpHierarchy);
-                }
-            }
+    private Hierarchy[] collectHierarchies(Exp queryPart) {
+        Type type = queryPart.getTypeX();
+        if (type instanceof SetType) {
+            type = ((SetType) type).getElementType();
         }
-
-        return (Hierarchy[]) hierList.toArray(new Hierarchy[0]);
-    }
-
-    /** Place expression 'exp' at position 'iPositionOnAxis' on axis 'axis'. */
-    private void putInAxisPosition(Exp exp, int axis, int iPositionOnAxis) {
-        switch (axis) {
-        case AxisOrdinal.SLICER:
-            // slicer shall contain at most one tuple
-            if (slicer == null) {
-                setSlicer(exp);
-            } else {
-                slicer.addAtPosition(exp, iPositionOnAxis);
+        if (type instanceof TupleType) {
+            final Type[] types = ((TupleType) type).elementTypes;
+            ArrayList hierarchyList = new ArrayList();
+            for (int i = 0; i < types.length; i++) {
+                final Hierarchy hierarchy = types[i].getHierarchy();
+                hierarchyList.add(hierarchy);
             }
-            break;
-
-        default:
-            Util.assertTrue(axis >= 0);
-            if (axis >= axes.length) {
-                Util.assertTrue(axis == axes.length);
-                QueryAxis[] oldAxes = axes;
-                axes = new QueryAxis[oldAxes.length + 1];
-                for (int i = 0; i < oldAxes.length; i++) {
-                    axes[i] = oldAxes[i];
-                }
-                axes[oldAxes.length] = new QueryAxis(
-                    false, null, AxisOrdinal.instance.getName(axis),
-                    QueryAxis.SubtotalVisibility.Undefined);
-            }
-
-            Exp axisExp = axes[axis].set;
-            if (axisExp == null || axisExp.isEmptySet()) {
-                // Axis is empty, so just put expression there.
-                axes[axis].set = exp;
-            } else {
-                if (iPositionOnAxis == 0) {
-                    // 'exp' has to go first:
-                    //   axisExp
-                    // becomes
-                    //   CrossJoin(exp, axisExp)
-                    FunCall funCrossJoin = new FunCall("CrossJoin",
-                            Syntax.Function, new Exp[] {exp, axisExp});
-                    axes[axis].set = funCrossJoin;
-                } else if (iPositionOnAxis < 0) {
-                    // 'exp' has to go last:
-                    //   axisExp
-                    // becomes
-                    //   CrossJoin(axisExp, exp)
-                    FunCall funCrossJoin = new FunCall("CrossJoin",
-                            Syntax.Function, new Exp[] {axisExp, exp});
-                    axes[axis].set = funCrossJoin;
-                } else {
-                    int i = axes[axis].set.addAtPosition(exp, iPositionOnAxis);
-                    if (i != -1) {
-                        // The expression was not added, because the position
-                        // equalled or exceded the number of hierarchies. Add
-                        // it on the end.
-                        FunCall funCrossJoin = new FunCall("CrossJoin",
-                                Syntax.Function, new Exp[] {axisExp, exp});
-                        axes[axis].set = funCrossJoin;
-                    }
-                }
-            }
-            break;
+            return (Hierarchy[])
+                    hierarchyList.toArray(new Hierarchy[hierarchyList.size()]);
         }
-    }
-
-    /**
-     * Restrict the axis which contains "level" to only return members
-     * between "startMember" and "endMember", inclusive.
-     */
-    public void crop(Level level, Member startMember, Member endMember) {
-        // Form the cropping expression.  If we have a range, include all
-        // descendents of the ends of the range, because ':' only includes
-        // members at the same level.
-        Hierarchy hierarchy = level.getHierarchy();
-        Exp expCrop = startMember.equals(endMember)
-                // e.g. {[Beverages]}
-                ?  new FunCall("{}", Syntax.Braces, new Exp[] {startMember})
-                // e.g.
-                // Generate([Beverages]:[Breakfast Foods],
-                //          Descendants([Products].CurrentMember,
-                //                      [Products].[(All)],
-                //                      SELF_BEFORE_AFTER))
-                : new FunCall("Generate", Syntax.Function, new Exp[] {
-                    new FunCall(":", Syntax.Infix, new Exp[] {
-                        startMember, endMember}),
-                    new FunCall("Descendants", Syntax.Function, new Exp[] {
-                        new FunCall("CurrentMember", Syntax.Property, new Exp[] {
-                            hierarchy}),
-                        Util.lookupHierarchyLevel(hierarchy, "(All)"),
-                        Literal.createSymbol("SELF_BEFORE_AFTER")
-                    })
-                });
-
-        crop(level, expCrop);
-    }
-
-    /**
-     *
-     * The technique is to find the expression which generates the set of
-     * members for that dimension, then intersect it with the cropping set.
-     *
-     * For example,
-     *
-     * select
-     *    {[Measures].[Unit Sales], [Measures].[Sales Count]} on columns,
-     *    CROSSJOIN(
-     *        [Product].[Product Department].MEMBERS,
-     *        [Gender].[Gender].MEMBERS) on rows
-     * from Sales
-     *
-     * when cropped with {[Beverages], [Breakfast Foods]} becomes
-     *
-     * select
-     *    {[Measures].[Unit Sales], [Measures].[Sales Count]} on columns,
-     *    CROSSJOIN(
-     *        INTERSECT(
-     *            [Product].[Product Department].MEMBERS,
-     *            {[Beverages], [Breakfast Foods]}),
-     *        [Gender].[Gender].MEMBERS) on rows
-     * from Sales
-     */
-    private void crop(Level level, Exp expCrop) {
-        boolean found = false;
-        Walker walker = new Walker(this);
-        while (walker.hasMoreElements()) {
-            Object o = walker.nextElement();
-            if (o instanceof Exp) {
-                Exp e = (Exp) o;
-                if (!e.isSet()) {
-                    continue;   // expression must represent a set
-                }
-
-                Dimension dim = e.getDimension();
-                if (dim == null) {
-                    // set must have a dimension (e.g. disallow Crossjoin)
-                    continue;
-                }
-
-                if (!dim.equals(level.getDimension())) {
-                    continue; // set must be of right dimension
-                }
-
-                FunCall funIntersect = new FunCall("Intersect", 
-                                                   Syntax.Function, 
-                                                   new Exp[] {e, expCrop});
-
-                QueryPart parent = (QueryPart) walker.getParent();
-                parent.replaceChild(walker.getOrdinal(), funIntersect);
-                found = true;
-                break;
-            }
-        }
-        Util.assertTrue(
-            found,
-            "could not find expression of dimension " +
-            level.getDimension());
+        return new Hierarchy[] {type.getHierarchy()};
     }
 
     /**
@@ -741,443 +532,8 @@ public class Query extends QueryPart {
         if (param == null) {
             throw Util.getRes().newMdxParamNotFound(parameterName);
         }
-        param.setValue(value, this);
-    }
-
-    /**
-     * Moves <code>hierarchy</code> from <code>fromAxis</code>, to
-     * <code>toAxis</code> at <code>position</code> (-1 means last position).
-     * The hierarchy is added if <code>fromAxis</code> is {@link AxisOrdinal#NONE},
-     * and removed if <code>toAxis</code> is {@link AxisOrdinal#NONE}.
-     *
-     * <p>If the target axis is the slicer, selects the [All] member;
-     * otherwise, if the hierarchy is already on an axis, keep the same
-     * drill-state; otherwise, select the first level (children), if expand =
-     * true, else put default member.</p>
-     **/
-    public void moveHierarchy(Hierarchy hierarchy, 
-                              int fromAxis, 
-                              int toAxis,
-                              int iPositionOnAxis, 
-                              boolean bExpand) {
-        Exp e;
-
-        // Find the hierarchy in its current position.
-        Walker walker = findHierarchy(hierarchy.getHierarchy());
-        if (fromAxis == AxisOrdinal.NONE) {
-            if (walker != null) {
-                throw Util.getRes().newMdxHierarchyUsed(hierarchy.getUniqueName());
-            }
-            e = null;
-        } else {
-            if (walker == null) {
-                throw Util.getRes().newMdxHierarchyNotUsed(hierarchy.getUniqueName());
-            }
-
-            // Remove from current position.
-            e = (Exp) walker.currentElement();
-            QueryPart parent = (QueryPart) walker.getParent();
-            Util.assertTrue(parent != null, "hierarchy must have parent");
-            if (parent instanceof QueryAxis) {
-                // Axis only contains this hierarchy; remove it.
-                Util.assertTrue(walker.getAncestor(2) == this);
-                int iAxis = walker.getAncestorOrdinal(1);
-                replaceChild(iAxis, null);
-                if (toAxis > iAxis) {
-                    --toAxis;
-                }
-            } else if (parent instanceof Query && fromAxis == AxisOrdinal.SLICER) {
-                // Hierachy sits on the slicer and it's the only hierachy on
-                // the slicer (otherwise the parent would be _Tuple with at
-                // least 2 children) and it is being removed - Simply delete
-                // the slicer
-                slicer = null;
-            } else if (parent instanceof FunCall &&
-                       ((FunCall) parent).isCallToCrossJoin()) {
-                // Function must be CrossJoin.  If 'e' is our expression, then
-                //   f(..., CrossJoin(e, other), ...)
-                // becomes
-                //   f(..., other, ...).
-                int iOrdinal = walker.getOrdinal();
-                int iOtherOrdinal = 1 - iOrdinal;
-                Exp otherExp = ((FunCall) parent).getArg(iOtherOrdinal);
-                QueryPart grandparent = (QueryPart) walker.getAncestor(2);
-                int iParentOrdinal = walker.getAncestorOrdinal(1);
-                grandparent.replaceChild(iParentOrdinal, (QueryPart) otherExp);
-            } else if (parent instanceof FunCall &&
-                       ((FunCall)parent).isCallToTuple() &&
-                       fromAxis == AxisOrdinal.SLICER) {
-                int iOrdinal = walker.getOrdinal();
-                ((FunCall)slicer).removeChild( iOrdinal );
-            } else if (parent instanceof Parameter) {
-                // The hierarchy is a child of parameter, so we need to remove
-                // the parameter itself.
-                QueryPart grandparent = (QueryPart) walker.getAncestor(2);
-                int iParentOrdinal = walker.getAncestorOrdinal(1);
-                if (grandparent instanceof FunCall &&
-                       ((FunCall)grandparent).isCallToTuple() &&
-                       fromAxis == AxisOrdinal.SLICER) {
-                    ((FunCall)slicer).removeChild( iParentOrdinal );
-                    if (((FunCall)slicer).getArgLength() == 0) {
-                        // the slicer is empty now
-                        slicer = null;
-                    }
-                } else if (grandparent instanceof FunCall &&
-                       ((FunCall) grandparent).isCallToCrossJoin()) {
-                    // Function must be CrossJoin.  If 'e' is our expression,
-                    // then
-                    //   f(..., CrossJoin(e, other), ...)
-                    // becomes
-                    //   f(..., other, ...).
-                    int iOtherOrdinal = 1 - iParentOrdinal;
-                    Exp otherExp = 
-                        ((FunCall) grandparent).getArg(iOtherOrdinal);
-                    QueryPart grandGrandparent = (QueryPart)
-                        walker.getAncestor(3);
-                    int iGrandParentOrdinal = walker.getAncestorOrdinal(2);
-                    grandGrandparent.replaceChild(
-                        iGrandParentOrdinal, (QueryPart) otherExp);
-                }
-            } else {
-                throw Util.getRes().newInternal(
-                    "hierarchy starts under " + parent.toString());
-            }
-        }
-
-        // Move to slicer?
-        switch (toAxis) {
-        case AxisOrdinal.SLICER:
-            // we do not care of expression is already a Member, because it's a
-            // very rare case; we have to make a new expression containing
-            // default
-            e = new FunCall("DefaultMember", 
-                            Syntax.Property, 
-                            new Exp[] {hierarchy});
-            putInAxisPosition(e, toAxis, iPositionOnAxis);
-            break;
-        case AxisOrdinal.COLUMNS:
-        case AxisOrdinal.ROWS:
-            // If this hierarchy is new, create an expression to display the
-            // children of the default member (which is, we hope, the root
-            // member).
-            if (e == null) {
-                if (bExpand) {
-                    e = new FunCall("Children", 
-                                    Syntax.Property, 
-                                    new Exp[] {hierarchy});
-                } else {
-                    Exp tmpExp = new FunCall("DefaultMember", 
-                                             Syntax.Property, 
-                                             new Exp[] {hierarchy}
-                    );
-                    e = new FunCall("{}", 
-                                    Syntax.Braces, 
-                                    new Exp[] {tmpExp});
-                }
-            } else if (fromAxis == AxisOrdinal.SLICER) {
-                // Expressions on slicers are stored as DefaultMember.  We need
-                // to convert it to $Brace expression first (curly braces
-                // needed).
-                e = new FunCall("{}", Syntax.Braces, new Exp[] {e});
-            }
-
-            // Move to regular axis.
-            putInAxisPosition(e, toAxis, iPositionOnAxis);
-            break;
-
-        case AxisOrdinal.NONE:
-            // Discard hierarchy.  Nothing to do.
-            break;
-
-        default:
-            throw Util.getRes().newInternal("bad axis code: " + toAxis);
-        }
-    }
-
-    /**
-     * Filters the set of elements which are returned from a hierarchy.  If
-     * hierarchy is in the slicer, the set must contain exactly one element.
-     * (Hierarchy must be on the axis specified.)
-     *
-     * 'members' are the members to be displayed.  They may be from different
-     * levels - for example, {[USA], [USA].[California]} - and their order is
-     * important.
-     *
-     * @pre AxisOrdinal.instance().isValid(axis)
-     * @pre axis &lt; axes.length
-     **/
-    public void filterHierarchy(Hierarchy hierarchy, 
-                                int /*axisType*/ axis, 
-                                Member[] members) {
-        Util.assertPrecondition(AxisOrdinal.instance.isValid(axis), 
-            "AxisOrdinal.instance.isValid(axis)");
-        Util.assertPrecondition(axis < axes.length, "axis < axes.length");
-
-        // Check that there can be only one filter per hierarchy applied on
-        // slicer.
-        if (axis == AxisOrdinal.SLICER && members.length > 1) {
-            throw Util.getRes().newInternal(
-                "there can be only one filter per hierarchy on slicer");
-        }
-        // Check that members are all in the right hierarchy.
-        for (int iMember = 0; iMember < members.length; iMember++) {
-            if (!members[iMember].getHierarchy().equals(hierarchy)) {
-                throw Util.getRes().newInternal(
-                    "member " + members[iMember] +
-                    " is not in hierarchy " + hierarchy);
-            }
-        }
-
-        Walker walker = findHierarchy(hierarchy.getHierarchy());
-        if (walker == null) {
-            // Hierarchy is not currently used.  Put it at the last position on
-            // the desired axis, then filter it.
-            moveHierarchy(hierarchy, AxisOrdinal.NONE, axis, -1, true);
-            walker = findHierarchy(hierarchy.getHierarchy());
-            Util.assertTrue(walker != null, "hierarchy wasn't added");
-        }
-
-        // The expression we find may be either:
-        // a) a member, for example '[Gender].[M]' in
-        //      ([Gender].[M], [Marital Status].[S])
-        //    or in
-        //      CrossJoin([Marital Status].Members, {[Gender].[M]}); or
-        // b) a set, for example '[Gender].Members' in
-        //      CrossJoin([Store].Members, [Gender].Members).
-        // We replace a set with a set, and a member with a member.
-        QueryPart parent = (QueryPart) walker.getParent();
-        int iOrdinal = walker.getOrdinal();
-        Exp e = (Exp) walker.currentElement();
-        if (e.isMember()) {
-            Util.assertTrue(
-                members.length == 1,
-                "filterHierarchy cannot replace member with set");
-
-            parent.replaceChild(iOrdinal, (QueryPart) members[0]);
-
-        } else if (e.isSet()) {
-            // Build a set out of the members supplied using the "{}" operator.
-            // If there are no members, revert to the default member (for bug
-            // 13728).
-            Exp[] exps = members;
-            if (members.length == 0) {
-                exps = new Exp[] {new FunCall(
-                    "DefaultMember", Syntax.Property, new Exp[] {hierarchy})};
-            }
-            // Neither slicer nor the tuple function (which is likely to occur
-            // in a slicer) can have a set as a child, so reduce a singleton
-            // set to a member in these cases.
-            Exp exp = (exps.length == 1) &&
-                      (parent instanceof Query || // because e is slicer
-                      parent instanceof FunCall &&
-                      ((FunCall) parent).isCallToTuple())
-                ? exps[0]
-                : new FunCall("{}", Syntax.Braces, exps);
-
-            parent.replaceChild(iOrdinal, (QueryPart) exp);
-
-        } else {
-            throw Util.newInternal("findHierarchy returned a " +
-                    Category.instance.getName(e.getType()));
-        }
-    }
-
-    /** ToggleDrillState. */
-    public void toggleDrillState(Member member) {
-        Walker walker = findHierarchy(member.getHierarchy());
-        if (walker == null) {
-            throw Util.getRes().newInternal(
-                "member's dimension is not used: " + member.toString());
-        }
-
-        // If 'e' is our expression, then
-        //    f(..., e, ...)
-        // becomes
-        //    f(..., ToggleDrillState(e, {member}), ...)
-        Exp e = (Exp) walker.currentElement();
-        FunCall funToggle = new FunCall("ToggleDrillState", 
-                                        Syntax.Function, 
-                                        new Exp[] {
-                                            e, 
-                                            new FunCall("{}", 
-                                                        Syntax.Braces, 
-                                                        new Exp[] {member})
-                                        }
-                                    );
-        QueryPart parent = (QueryPart) walker.getParent();
-        int iOrdinal = walker.getOrdinal();
-        parent.replaceChild(iOrdinal, funToggle);
-    }
-
-
-    /**
-     * Sort.
-     *
-     * <p>This function always removes previous sort on <code>axis</code>.
-     * If <code>direction</code> is "none" then axis becomes sorted in natural
-     * order (no explicit sorting).
-     *
-     * @param axis is the axis to sort, a member of {@link AxisOrdinal}
-     * @param direction is the direction to sort, a member of {@link SortDirection}
-     * @param members is tuple of members to sort on.  For
-     *   example, the y-axis can be sorted by [Time].[Quarter] (its name), or by
-     *   {[Measures].[Unit Sales], [Stores].[California]} (Unit Sales in
-     *   California).  In general, the latter specification identifies a single
-     *   column (or row, for x-axis sorting) for each hierarchy on the other
-     *   axis.
-     *
-     * @pre AxisOrdinal.instance().isValid(axis)
-     * @pre axis &lt; axes.length
-     * @pre SortDirection.instance.isValid(direction)
-     */
-    public void sort(int axis, int direction, Member[] members) {
-        Util.assertPrecondition(AxisOrdinal.instance.isValid(axis), 
-            "AxisOrdinal.instance.isValid(axis)");
-        Util.assertPrecondition(axis < axes.length, "axis < axes.length");
-        Util.assertPrecondition(SortDirection.instance().isValid(direction), 
-            "SortDirection.instance().isValid(direction)");
-
-        // Find and remove any existing sorts on this axis.
-        removeSortFromAxis(axis);
-
-        //apply new sort
-        if (direction == SortDirection.NONE) {
-            return; // we already removed the sort
-        }
-        String sDirection = SortDirection.instance().getName(direction);
-        Exp e = axes[axis].set;
-
-        if (members.length == 0) {
-            // No members to sort on means use default sort order.  As
-            // we've already removed any sorters, we're done.
-            return;
-        } else {
-            Exp membersExp = (members.length == 0)
-                             ? null 
-                             // handled above
-                             : (members.length == 1) 
-                                ? (Exp) members[0] 
-                                : (Exp) new FunCall("()", 
-                                                    Syntax.Parentheses, 
-                                                    members);
-            FunCall funOrder = new FunCall("Order", 
-                                           Syntax.Function, 
-                                           new Exp[] {
-                                            e,
-                                            membersExp,
-                                            Literal.createSymbol(sDirection)
-                                          }
-                                     );
-/*
-XXXXXXXXXXXXX
-            FunCall funOrder = new FunCall("Order", 
-                                           Syntax.Function, 
-                                           new Exp[] {
-                                            e,
-                                            (members.length == 0)
-                                                ? null 
-                                                // handled above
-                                                : (members.length == 1) 
-                                                    ? (Exp) members[0] 
-                                                    : (Exp) new FunCall("()", 
-                                                      Syntax.Parentheses, 
-                                                      members),
-                                Literal.createSymbol(sDirection)
-                                          }
-                                     );
-*/
-
-            axes[axis].set = funOrder;
-        }
-    }
-
-    /**
-     * Finds and removes existing sorts and top/bottom functions from axis.
-     *
-     * @pre AxisOrdinal.instance().isValid(axis)
-     * @pre axis &lt; axes.length
-     */
-    public void removeSortFromAxis(int axis) {
-        Util.assertPrecondition(AxisOrdinal.instance.isValid(axis), 
-            "AxisOrdinal.instance.isValid(axis)");
-        Util.assertPrecondition(axis < axes.length, "axis < axes.length");
-
-        Walker walker = new Walker((QueryPart) axes[axis].set);
-        while (walker.hasMoreElements()) {
-            Object o = walker.nextElement();
-            if (o instanceof FunCall) {
-                FunCall funCall = (FunCall) o;
-                if (!funCall.isCallTo("Order") &&
-                    !isValidTopBottomNName(funCall.getFunName()))
-                    continue;
-
-                Exp e = funCall.getArg(0);
-                QueryPart parent = (QueryPart) walker.getParent();
-                if (parent == null) {
-                    axes[axis].set = e;
-                } else {
-                    parent.replaceChild(walker.getOrdinal(), (QueryPart) e);
-                }
-            }
-        }
-    }
-
-
-    /**
-     * Calls {@link #removeSortFromAxis} first and then applies top/bottom
-     * function to the axis.
-     *
-     * @param axis Axis ordinal
-     * @param fName Name of function
-     * @param n Number of members top/bottom should return
-     * @param members Members to sort on
-     *
-     * @pre AxisOrdinal.instance().isValid(axis)
-     * @pre axis &lt; axes.length
-     * @pre fName != null
-     * @pre isValidTopBottomNName(fName)
-     * @pre members != null
-     * @pre members.length > 0
-     */
-    public void applyTopBottomN(
-            int axis, String fName, Integer n, Member[] members) {
-        Util.assertPrecondition(fName != null, "fName != null");
-        Util.assertPrecondition(AxisOrdinal.instance.isValid(axis), 
-            "AxisOrdinal.instance.isValid(axis)");
-        Util.assertPrecondition(axis < axes.length, "axis < axes.length");
-        Util.assertPrecondition(members != null, "members != null");
-        Util.assertPrecondition(members.length > 0, "members.length > 0");
-        Util.assertPrecondition(isValidTopBottomNName(fName), 
-            "isValidTopBottomNName(fName)");
-
-        if (!isValidTopBottomNName(fName)) {
-            throw Util.getRes().newMdxTopBottomInvalidFunctionName(fName);
-        }
-
-        // Find and remove any existing sorts on this axis.
-        removeSortFromAxis(axis);
-
-        Exp e = axes[axis].set;
-
-        Exp membersExp = (members.length == 1)
-            ? (Exp) members[0] 
-            : (Exp) new FunCall("()", Syntax.Parentheses, members);
-
-        FunCall funOrder = new FunCall(fName, 
-                                       Syntax.Function, 
-                                       new Exp[] {
-                                           e,
-                                           Literal.create(n),
-                                           membersExp
-                                        });
-        axes[axis].set = funOrder;
-    }
-
-    public static boolean isValidTopBottomNName(String fName) {
-        return fName.equalsIgnoreCase("TopCount") ||
-            fName.equalsIgnoreCase("BottomCount") ||
-            fName.equalsIgnoreCase("TopPercent") ||
-            fName.equalsIgnoreCase("BottomPercent");
+        final Exp exp = param.quickParse(value, this);
+        param.setValue(exp);
     }
 
     /**
@@ -1265,20 +621,13 @@ XXXXXXXXXXXXX
         return usedParameters;
     }
 
-    void resetParametersPrintProperty() {
-        for (int i = 0; i < parameters.length; i++) {
-            parameters[i].resetPrintProperty();
-        }
-    }
-
-    // implement NameResolver
     public Cube getCube() {
         return mdxCube;
     }
 
     public SchemaReader getSchemaReader(boolean accessControlled) {
-        final Role role = accessControlled 
-            ? getConnection().getRole() 
+        final Role role = accessControlled
+            ? getConnection().getRole()
             : null;
         final SchemaReader cubeSchemaReader = mdxCube.getSchemaReader(role);
         return new QuerySchemaReader(cubeSchemaReader);
@@ -1325,8 +674,8 @@ XXXXXXXXXXXXX
                 }
                 // mdxElement is used in the query. lets find on on which axis
                 // or formula
-                String formulaType = formula.isMember() 
-                    ? Util.getRes().getCalculatedMember() 
+                String formulaType = formula.isMember()
+                    ? Util.getRes().getCalculatedMember()
                     : Util.getRes().getCalculatedSet();
 
                 int i = 0;
@@ -1336,14 +685,14 @@ XXXXXXXXXXXXX
                     if (grandParent instanceof Query) {
                         if (parent instanceof Axis) {
                             throw Util.getRes().newMdxCalculatedFormulaUsedOnAxis(
-                                formulaType, 
+                                formulaType,
                                 uniqueName,
                                 ((QueryAxis) parent).getAxisName());
 
                         } else if (parent instanceof Formula) {
-                            String parentFormulaType = 
-                                ((Formula) parent).isMember() 
-                                    ? Util.getRes().getCalculatedMember() 
+                            String parentFormulaType =
+                                ((Formula) parent).isMember()
+                                    ? Util.getRes().getCalculatedMember()
                                     : Util.getRes().getCalculatedSet();
                             throw Util.getRes().newMdxCalculatedFormulaUsedInFormula(
                                 formulaType, uniqueName, parentFormulaType,
@@ -1359,7 +708,7 @@ XXXXXXXXXXXXX
                     grandParent = walker.getAncestor(i+1);
                 }
                 throw Util.getRes().newMdxCalculatedFormulaUsedInQuery(
-                    formulaType, uniqueName, this.toWebUIMdx());
+                    formulaType, uniqueName, this.toMdx());
             }
         }
 
@@ -1413,7 +762,7 @@ XXXXXXXXXXXXX
         Formula formula = findFormula(uniqueName);
         if (formula == null) {
             throw Util.getRes().newMdxFormulaNotFound(
-                "formula", uniqueName, toWebUIMdx());
+                "formula", uniqueName, toMdx());
         }
         formula.rename(newName);
     }
@@ -1437,99 +786,22 @@ XXXXXXXXXXXXX
         axes[axis].nonEmpty = !showEmpty;
     }
 
-    /** finds axis by index and adds/removes subtotals. It finds all
-     * hierarchies used on axis, then for every hierarchy it finds the
-     * expression, where it's used. Using that expression, it executes mdx
-     * query to generate array of mdxMembers. Based on
-     * <code>showSubtotals</code> it modifies array of mdxMembers and
-     * substitutes expression with set, which is created based on array of
-     * mdxMembers */
-    public void setAxisShowSubtotals(int axis, boolean showSubtotals) {
-        if (axis >= axes.length || axis < 0) {
-            //based on Prashant request: don't throw error-just return
-            return;
-        }
-
-        String sCalculatedMembers = null;
-        if (formulas != null) {
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            for (int i = 0; i < formulas.length; i++) {
-                if (i == 0) {
-                    pw.print("with ");
-                } else {
-                    pw.print("  ");
-                }
-                formulas[i].unparse(pw);
-                pw.println();
-            }
-            sCalculatedMembers = sw.toString();
-        }
-
-        Hierarchy[] mdxHierarchies = collectHierarchies(axes[axis]);
-        for (int j = 0; j < mdxHierarchies.length; j++) {
-            Walker walker = findHierarchy(mdxHierarchies[j]);
-            Exp e = (Exp) walker.currentElement();
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            e.unparse(pw);
-            String sExp = sw.toString();
-            String sQuery = "";
-            if (sCalculatedMembers != null)
-                sQuery = sCalculatedMembers;
-            sQuery += "select {" + sExp + "} on columns from [" +
-                mdxCube.getUniqueName() + "]";
-            Member[] mdxMembers = mdxCube.getMembersForQuery(
-                sQuery, getDefinedMembers());
-            java.util.Set set = new HashSet();
-            if (showSubtotals) {
-                // we need to put all those members plus all their parent
-                // members
-                for (int i = 0; i < mdxMembers.length; i++){
-                    if (!set.contains(mdxMembers[i])) {
-                        Member[] parentMembers =
-                            mdxMembers[i].getAncestorMembers();
-                        for (int k = parentMembers.length - 1; k >= 0; k--) {
-                            if (!set.contains(parentMembers[k])) {
-                                set.add(parentMembers[k]);
-                            }
-                        }
-                        set.add(mdxMembers[i]);
-                    }
-                }
-            } else {
-                //we need to put only members with biggest depth
-                int nMaxDepth = 0;
-                for (int i = 0; i < mdxMembers.length; i++){
-                    if (nMaxDepth < mdxMembers[i].getLevel().getDepth()) {
-                        nMaxDepth = mdxMembers[i].getLevel().getDepth();
-                    }
-                }
-                for (int i = 0; i < mdxMembers.length; i++){
-                    if (nMaxDepth == mdxMembers[i].getLevel().getDepth()) {
-                        set.add(mdxMembers[i]);
-                    }
-                }
-            }
-            Member[] goodMembers = (Member[]) set.toArray(new Member[0]);
-            filterHierarchy(mdxHierarchies[j], axis, goodMembers);
-        }
-        axes[axis].setShowSubtotals(showSubtotals);
-    }
-
-    /** returns <code>Hierarchy[]</code> used on <code>axis</code>. It calls
-     * collectHierarchies() */
+    /**
+     * Returns <code>Hierarchy[]</code> used on <code>axis</code>. It calls
+     * {@link #collectHierarchies}.
+     */
     public Hierarchy[] getMdxHierarchiesOnAxis(int axis) {
         if (axis >= axes.length) {
             throw Util.getRes().newMdxAxisShowSubtotalsNotSupported(new Integer(axis));
         }
-        return (axis == AxisOrdinal.SLICER)
-            ? collectHierarchies((QueryPart) slicer)
-            : collectHierarchies(axes[axis]);
+        return collectHierarchies(
+                (axis == AxisOrdinal.SLICER) ?
+                slicer :
+                axes[axis].set);
     }
 
     /**
-     * Default implementation of {@link Exp.Resolver}.
+     * Default implementation of {@link Validator}.
      *
      * <p>Uses a stack to help us guess the type of our parent expression
      * before we've completely resolved our children -- necessary,
@@ -1541,7 +813,7 @@ XXXXXXXXXXXXX
      * be wrong, but can cause resolution to be an <code>O(2^N)</code>
      * operation.)
      */
-    private class StackResolver implements Exp.Resolver {
+    private class StackResolver implements Validator {
         private final Stack stack = new Stack();
         private final FunTable funTable;
         private boolean haveCollectedParameters;
@@ -1664,9 +936,26 @@ XXXXXXXXXXXXX
                         return param;
                     }
                 }
-                param = new Parameter(funDef.parameterName, funCall.getType(),
-                        funCall.getHierarchy(), funDef.exp,
-                        funDef.parameterDescription);
+                final Exp arg1 = funCall.getArg(1);
+                final Type type;
+                final int category = funCall.getCategory();
+                switch (category) {
+                case Category.Member:
+                    Dimension dimension = (Dimension) arg1;
+                    type = new MemberType(dimension.getHierarchy(), null, null);
+                    break;
+                case Category.String:
+                    type = new StringType();
+                    break;
+                case Category.Numeric:
+                    type = new NumericType();
+                    break;
+                default:
+                    throw Category.instance.badValue(category);
+                }
+                param = new Parameter(
+                        funDef.parameterName, category,
+                        funDef.exp, funDef.parameterDescription, type);
 
                 // Append it to the array of known parameters.
                 Parameter[] old = parameters;
@@ -1801,9 +1090,9 @@ XXXXXXXXXXXXX
             return mdxElement;
         }
 
-        public OlapElement lookupCompound(OlapElement parent, 
+        public OlapElement lookupCompound(OlapElement parent,
                                           String[] names,
-                                          boolean failIfNotFound, 
+                                          boolean failIfNotFound,
                                           int category) {
             // First look to ourselves.
             switch (category) {
@@ -1817,9 +1106,9 @@ XXXXXXXXXXXXX
                 }
             }
             // Then delegate to the next reader.
-            OlapElement olapElement = super.lookupCompound(parent, 
+            OlapElement olapElement = super.lookupCompound(parent,
                                                            names,
-                                                           failIfNotFound, 
+                                                           failIfNotFound,
                                                            category);
             if (olapElement instanceof Member) {
                 Member member = (Member) olapElement;
@@ -1836,6 +1125,19 @@ XXXXXXXXXXXXX
                 }
             }
             return olapElement;
+        }
+    }
+
+    /**
+     * PrintWriter used for unparsing queries. Remembers which parameters have
+     * been printed. The first time, they print themselves as "Parameter";
+     * subsequent times as "ParamRef".
+     */
+    static class QueryPrintWriter extends PrintWriter {
+        final HashSet parameters = new HashSet();
+
+        QueryPrintWriter(Writer writer) {
+            super(writer);
         }
     }
 }

@@ -60,7 +60,7 @@ public class DOMBuilder {
         dimCount = result.getAxes().length;
         Element mdxtable = factory.createElement("mdxtable");
         Element query = elem("query", mdxtable);
-        cdata(result.getQuery().toWebUIMdx(), query);
+        cdata(result.getQuery().toMdx(), query);
         Element head = elem("head", mdxtable);
         Element body = elem("body", mdxtable);
         switch (dimCount) {

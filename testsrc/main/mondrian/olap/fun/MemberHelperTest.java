@@ -12,6 +12,8 @@ package mondrian.olap.fun;
 
 import junit.framework.TestCase;
 import mondrian.olap.*;
+import mondrian.olap.Validator;
+import mondrian.olap.type.Type;
 
 import java.io.PrintWriter;
 
@@ -237,7 +239,15 @@ public class MemberHelperTest extends TestCase {
         }
 
         public int getType() {
-            return 0;
+            return getCategory();
+        }
+
+        public int getCategory() {
+            return Category.Unknown;
+        }
+
+        public Type getTypeX() {
+            throw new UnsupportedOperationException();
         }
 
         public boolean isElement() {
@@ -256,12 +266,8 @@ public class MemberHelperTest extends TestCase {
             return false;
         }
 
-        public Exp resolve(Exp.Resolver resolver) {
+        public Exp resolve(Validator resolver) {
             return null;
-        }
-
-        public boolean usesDimension(Dimension dimension) {
-            return false;
         }
 
         public int compareTo(Object o) {
@@ -285,7 +291,7 @@ public class MemberHelperTest extends TestCase {
         }
         public Exp getExpression() {
             return null;
-        }   
+        }
         public int getSolveOrder() {
             return -1;
         }

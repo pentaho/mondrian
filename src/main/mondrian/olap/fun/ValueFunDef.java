@@ -13,6 +13,7 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
+import mondrian.olap.type.Type;
 
 import java.io.PrintWriter;
 
@@ -37,18 +38,23 @@ class ValueFunDef extends FunDefBase {
             argTypes);
         this.argTypes = argTypes;
     }
-    public int getReturnType() {
+
+    public int getReturnCategory() {
         return Category.Tuple;
     }
+
     public int[] getParameterTypes() {
         return argTypes;
     }
+
     public void unparse(Exp[] args, PrintWriter pw) {
         ExpBase.unparseList(pw, args, "(", ", ", ")");
     }
-    public Hierarchy getHierarchy(Exp[] args) {
+
+    public Type getResultType(Validator validator, Exp[] args) {
         return null;
     }
+
     public Object evaluate(Evaluator evaluator, Exp[] args) {
         Member[] members = new Member[args.length];
         for (int i = 0; i < args.length; i++) {

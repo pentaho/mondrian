@@ -35,10 +35,10 @@ public abstract class OlapElementBase
     private String caption = null;
 
     protected OlapElementBase() {
-    }           
+    }
 
     protected abstract Logger getLogger();
-        
+
     public boolean equals(Object o)
     {
         return (o instanceof OlapElement) &&
@@ -69,7 +69,7 @@ public abstract class OlapElementBase
         return evaluator.xx(this);
     }
 
-    public Exp resolve(Resolver resolver)
+    public Exp resolve(Validator resolver)
     {
         return this;
     }

@@ -14,6 +14,9 @@ package mondrian.olap;
 
 import org.apache.log4j.Logger;
 
+import mondrian.olap.type.Type;
+import mondrian.olap.type.SetType;
+
 /**
  * Skeleton implementation of {@link Set} interface.
  *
@@ -54,26 +57,37 @@ class SetBase extends OlapElementBase implements Set {
         return null; 
     }
 
-    public int getType() {
+    public int getCategory() {
         return Category.Set;
     }
-    public boolean usesDimension(Dimension dimension) {
-        return false;
+
+    public Type getTypeX() {
+        return new SetType(exp.getTypeX());
     }
+
     public Hierarchy getHierarchy() {
-        return exp.getHierarchy();
+        return exp.getTypeX().getHierarchy();
     }
+
+    public Dimension getDimension() {
+        return getHierarchy().getDimension();
+    }
+
     public OlapElement lookupChild(SchemaReader schemaReader, String s) {
         return null;
     }
+
     public void setName(String name) {
         this.name = name;
     }
+
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
     public void childrenAccept(Visitor visitor) {
     }
+
     public boolean dependsOn(Dimension dimension) {
         throw new UnsupportedOperationException();
     }
