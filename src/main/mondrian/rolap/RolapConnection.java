@@ -118,20 +118,25 @@ public class RolapConnection extends ConnectionBase {
         if (schema == null) {
             // If RolapSchema.Pool.get were to call this with schema == null,
             // we would loop.
-            // Even if an external data source is passed in,
-            // we expect the following properties to be set,
-            // as they are used to generate the schema cache key.
-            final String jdbcConnectString =
+            if (dataSource == null) {
+                // If there is no external data source is passed in,
+                // we expect the following properties to be set,
+                // as they are used to generate the schema cache key.
+                final String jdbcConnectString =
                     connectInfo.get(RolapConnectionProperties.Jdbc);
-            final String jdbcUser =
+                final String jdbcUser =
                     connectInfo.get(RolapConnectionProperties.JdbcUser);
-            final String strDataSource =
+                final String strDataSource =
                     connectInfo.get(RolapConnectionProperties.DataSource);
+                final String key = jdbcConnectString +
+                getJDBCProperties(connectInfo).toString();
 
-            final String key = jdbcConnectString +
-                    getJDBCProperties(connectInfo).toString();
-            schema = RolapSchema.Pool.instance().get(
+                schema = RolapSchema.Pool.instance().get(
                     catalogName, key, jdbcUser, strDataSource, connectInfo);
+            } else {
+                schema = RolapSchema.Pool.instance().get(
+                        catalogName, dataSource, connectInfo);
+            }
             String roleName = connectInfo.get(RolapConnectionProperties.Role);
             if (roleName != null) {
                 role = schema.lookupRole(roleName);

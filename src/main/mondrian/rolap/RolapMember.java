@@ -119,6 +119,11 @@ public class RolapMember extends MemberBase
      * side-effects.
      */
     public synchronized void setProperty(String name, Object value) {
+        if (name.equals(Property.PROPERTY_MEMBER_CAPTION)) {
+            setCaption((String)value);
+            return;
+        }
+
         if (mapPropertyNameToValue.isEmpty()) {
             // the empty map is shared and immutable; create our own
             mapPropertyNameToValue = new HashMap();

@@ -78,12 +78,14 @@ public class RolapSchema implements Schema
     private static final int[] hierarchyAllowed = new int[] {Access.NONE, Access.ALL, Access.CUSTOM};
     private static final int[] memberAllowed = new int[] {Access.NONE, Access.ALL};
 
+    
     /**
      * Creates a {@link RolapSchema}. Use
      * <code>RolapSchema.Pool.instance().get(catalogName)</code>.
      */
-    private RolapSchema(String catalogName, Util.PropertyList connectInfo) {
-        internalConnection = new RolapConnection(connectInfo, this);
+    private RolapSchema(String catalogName, Util.PropertyList connectInfo,
+        DataSource externalDataSource ) {
+        internalConnection = new RolapConnection(connectInfo, this, externalDataSource);
         try {
             mondrian.xom.Parser xmlParser =
                 mondrian.xom.XOMUtil.createDefaultParser();
@@ -325,17 +327,40 @@ public class RolapSchema implements Schema
             if (!Util.isEmpty(dynProc) ||
                 catalogName.toLowerCase().startsWith("http")) {
                 // no caching
-                return new RolapSchema(catalogName, connectInfo);
+                return new RolapSchema(catalogName, connectInfo, null);
             }
             final String key = makeKey(catalogName, jdbcConnectString, jdbcUser, dataSource);
             RolapSchema schema = (RolapSchema) mapUrlToSchema.get(key);
             if (schema == null) {
-                schema = new RolapSchema(catalogName, connectInfo);
+                schema = new RolapSchema(catalogName, connectInfo, null);
                     mapUrlToSchema.put(key, schema);
             }
             return schema;
         }
 
+        /**
+         * special case, where an external DataSource is to be used
+         */
+        synchronized RolapSchema get( String catalogName,
+            DataSource externalDataSource, Util.PropertyList connectInfo) {
+        // if a schema will be dynamically processed, caching is not possible
+        // a "http" URL schema is assumed to be dynamic and will not be cached either
+        String dynProc = connectInfo.get(RolapConnectionProperties.DynamicSchemaProcessor);
+        if (!Util.isEmpty(dynProc) ||
+            catalogName.toLowerCase().startsWith("http")) {
+            // no caching
+            return new RolapSchema(catalogName, connectInfo, externalDataSource);
+        }
+        String dataSourceId = "#external#" + externalDataSource.toString();
+        final String key = makeKey(catalogName, dataSourceId);
+        RolapSchema schema = (RolapSchema) mapUrlToSchema.get(key);
+        if (schema == null) {
+            schema = new RolapSchema(catalogName, connectInfo, externalDataSource);
+                mapUrlToSchema.put(key, schema);
+        }
+        return schema;
+    }
+        
         synchronized void remove(String catalogName, String jdbcConnectString, String jdbcUser, String dataSource) {
             mapUrlToSchema.remove(makeKey(catalogName, jdbcConnectString, jdbcUser, dataSource));
         }
@@ -354,6 +379,17 @@ public class RolapSchema implements Schema
             appendIfNotNull(buf, catalogName);
             appendIfNotNull(buf, jdbcConnectString);
             appendIfNotNull(buf, jdbcUser);
+            appendIfNotNull(buf, dataSource);
+            String key = buf.toString();
+            return key;
+        }
+
+        /**
+         * Creates a key with which to identify a schema in the cache.
+         */
+        private static String makeKey(String catalogName, String dataSource) {
+            StringBuffer buf = new StringBuffer();
+            appendIfNotNull(buf, catalogName);
             appendIfNotNull(buf, dataSource);
             String key = buf.toString();
             return key;

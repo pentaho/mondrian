@@ -54,8 +54,7 @@ public abstract class MemberBase
         if (mf != null) {
             return mf.formatMember(this);
         }
-
-        final String caption = (String) getPropertyValue(Property.PROPERTY_CAPTION);
+        final String caption = super.getCaption();
         if (caption != null) {
             return caption;
         }

@@ -13,7 +13,10 @@ package mondrian.test;
 
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
+import mondrian.olap.Axis;
 import mondrian.olap.Cube;
+import mondrian.olap.Member;
+import mondrian.olap.Position;
 import mondrian.olap.Result;
 
 /**
@@ -282,6 +285,17 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 " AddCalculatedMembers([Measures].members) on rows" + nl +
                 " from Sales");
     }
+    
+    public void testCalculatedMemberCaption() {
+        String mdx = "select {[Measures].[Profit Growth]} on columns from Sales";
+        Result result = TestContext.instance().executeFoodMart(mdx);
+        Axis axis0 = result.getAxes()[0];
+        Position pos0 = axis0.positions[0];
+        Member profGrowth = pos0.members[0];
+        String caption = profGrowth.getCaption();
+        Assert.assertEquals(caption, "Gewinn-Wachstum");
+    }    
+
 }
 
 // End CalculatedMembersTestCase.java

@@ -101,6 +101,24 @@ class RolapResult extends ResultBase
                     this.axes[i] = axisResult;
                 }
             }
+            // now, that the axes are evaluated,
+            //  make sure, that the total number of positions does
+            //  not exceed the result limit
+            // throw an exeption, if the total numer of positions gets too large
+            int limit = MondrianProperties.instance().getResultLimit();
+            if (limit > 0) {
+                // result limit exceeded, throw an exception
+                long n = 1;
+                for (int i = 0; i < axes.length; i++) {
+                    n = n*axes[i].positions.length;
+                }
+                if ( n > limit) {
+                    throw MondrianResource.instance().
+                        newLimitExceededDuringCrossjoin(
+                                new Long(n), new Long(limit));
+                }
+            }
+
             // Suppose the result is 4 x 3 x 2, then modulo = {1, 4, 12, 24}.
             //
             // Then the ordinal of cell (3, 2, 1)

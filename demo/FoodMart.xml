@@ -208,7 +208,8 @@ lname
       name="Profit Growth"
       dimension="Measures"
       formula="([Measures].[Profit] - [Measures].[Profit last Period]) / [Measures].[Profit last Period]"
-      visible="true">
+      visible="true"
+      caption="Gewinn-Wachstum">
     <CalculatedMemberProperty name="FORMAT_STRING" value="0.0%"/>
   </CalculatedMember>
 </Cube>
