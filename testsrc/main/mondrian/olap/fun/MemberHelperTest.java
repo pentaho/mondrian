@@ -272,5 +272,9 @@ public class MemberHelperTest extends TestCase {
         public boolean isHidden() {
             return false;
         }
+
+        public int getDepth() {
+			return 0;
+		}
     }
 }
