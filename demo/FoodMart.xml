@@ -48,7 +48,7 @@
 		</Hierarchy>
 	</Dimension>
 
-	<Dimension name="Time" foreignKey="time_id">
+	<Dimension name="Time">
 		<Hierarchy hasAll="false" primaryKey="time_id">
 			<Table name="time_by_day"/>
 			<Level name="Year" column="the_year" type="Numeric" uniqueMembers="true" levelType="TimeYears"/>
@@ -57,7 +57,7 @@
 		</Hierarchy>
 	</Dimension>
 
-	<Dimension name="Product" foreignKey="product_id">
+	<Dimension name="Product">
 		<Hierarchy hasAll="true" primaryKey="product_id" primaryKeyTable="product">
 			<Join leftKey="product_class_id" rightKey="product_class_id">
 				<Table name="product"/>
