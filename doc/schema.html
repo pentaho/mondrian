@@ -426,7 +426,20 @@ nullParentValue</code>:</p>
 </ul>
 <h3><a name="Member_properties">Member properties</a></h3>
 <p>Member properties are defined by the <code><a href="#XML_Property">&lt;Property&gt;</a></code> 
-element. (To be continued...)</p>
+element. You use them via the <code><i>member</i>.Properties(&quot;<i>propertyName</i>&quot;)</code> 
+function, for example:</p>
+<blockquote>
+  <pre>SELECT {[Store Sales]} ON COLUMNS,
+    TopCount(Filter([Store].[Store Name].Members,
+                    [Store].CurrentMember.Properties(&quot;Store Type&quot;) = &quot;Supermarket&quot;),
+             10, [Store Sales]) ON ROWS
+FROM [Sales]</pre>
+</blockquote>
+<p>Mondrian deduces the type of the property expression, if it can. If the 
+property name is a constant string, the type is based upon the type attribute 
+(&quot;String&quot;, &quot;Numeric&quot; or &quot;Boolean&quot;) of the property definition. If the property 
+name is an expression (for example <code>CurrentMember.Properties(&quot;Store &quot; + 
+&quot;Type&quot;)</code>), Mondrian will return an untyped value.</p>
 <h2><a name="Advanced_physical_constructs">Advanced physical constructs</a></h2>
 <h3><a name="Member_readers">Member readers</a></h3>
 <p>A <dfn><font face="Verdana">member reader</font></dfn> is a means of 
