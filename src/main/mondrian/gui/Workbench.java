@@ -26,6 +26,9 @@ import javax.swing.tree.*;
  * @author  sean
  */
 public class Workbench extends javax.swing.JFrame {
+    Connection connection;
+    String jdbcDriverClassName = "org.gjt.mm.mysql.Driver";
+    String jdbcConnectionUrl = "jdbc:mysql://localhost/foodmart";
     
     /** Creates new form Workbench */
     public Workbench() {
@@ -47,10 +50,13 @@ public class Workbench extends javax.swing.JFrame {
         toolbarOpenButton = new javax.swing.JButton();
         toolbarSaveButton = new javax.swing.JButton();
         toolbarSaveAsButton = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
+        toolbarPreferencesButton = new javax.swing.JButton();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         newMenu = new javax.swing.JMenu();
         newSchemaMenuItem = new javax.swing.JMenuItem();
+        newQueryMenuItem = new javax.swing.JMenuItem();
         openMenuItem = new javax.swing.JMenuItem();
         saveMenuItem = new javax.swing.JMenuItem();
         saveAsMenuItem = new javax.swing.JMenuItem();
@@ -77,12 +83,10 @@ public class Workbench extends javax.swing.JFrame {
 
         toolbarNewButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/New16.gif")));
         toolbarNewButton.setToolTipText("New");
-        toolbarNewButton.setRolloverEnabled(true);
         jToolBar1.add(toolbarNewButton);
 
         toolbarOpenButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/Open16.gif")));
         toolbarOpenButton.setToolTipText("New");
-        toolbarOpenButton.setRolloverEnabled(true);
         toolbarOpenButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openMenuItemActionPerformed(evt);
@@ -93,7 +97,6 @@ public class Workbench extends javax.swing.JFrame {
 
         toolbarSaveButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/Save16.gif")));
         toolbarSaveButton.setToolTipText("New");
-        toolbarSaveButton.setRolloverEnabled(true);
         toolbarSaveButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveMenuItemActionPerformed(evt);
@@ -104,7 +107,6 @@ public class Workbench extends javax.swing.JFrame {
 
         toolbarSaveAsButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/SaveAs16.gif")));
         toolbarSaveAsButton.setToolTipText("New");
-        toolbarSaveAsButton.setRolloverEnabled(true);
         toolbarSaveAsButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveAsMenuItemActionPerformed(evt);
@@ -112,6 +114,18 @@ public class Workbench extends javax.swing.JFrame {
         });
 
         jToolBar1.add(toolbarSaveAsButton);
+
+        jPanel1.setMaximumSize(new java.awt.Dimension(8, 32767));
+        jToolBar1.add(jPanel1);
+
+        toolbarPreferencesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/Preferences16.gif")));
+        toolbarPreferencesButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                toolbarPreferencesButtonActionPerformed(evt);
+            }
+        });
+
+        jToolBar1.add(toolbarPreferencesButton);
 
         getContentPane().add(jToolBar1, java.awt.BorderLayout.NORTH);
 
@@ -125,6 +139,15 @@ public class Workbench extends javax.swing.JFrame {
         });
 
         newMenu.add(newSchemaMenuItem);
+
+        newQueryMenuItem.setText("MDX Query");
+        newQueryMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newQueryMenuItemActionPerformed(evt);
+            }
+        });
+
+        newMenu.add(newQueryMenuItem);
 
         fileMenu.add(newMenu);
 
@@ -206,6 +229,40 @@ public class Workbench extends javax.swing.JFrame {
         pack();
     }//GEN-END:initComponents
 
+    private void toolbarPreferencesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toolbarPreferencesButtonActionPerformed
+        // Add your handling code here:
+        PreferencesDialog pd = new PreferencesDialog(this, true);
+        pd.setJDBCConnectionUrl(jdbcConnectionUrl);
+        pd.setJDBCDriverClassName(jdbcDriverClassName);
+        
+        pd.show();
+        
+        if (pd.accepted()) {
+            jdbcConnectionUrl = pd.getJDBCConnectionUrl();
+            jdbcDriverClassName = pd.getJDBCDriverClassName();
+        }
+        
+    }//GEN-LAST:event_toolbarPreferencesButtonActionPerformed
+
+    private void newQueryMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newQueryMenuItemActionPerformed
+        JInternalFrame jf = new JInternalFrame();
+        jf.setTitle("MDX Query");
+        QueryPanel qp = new QueryPanel();
+        qp.setConnection(connection);
+        jf.getContentPane().add(qp);
+        jf.setBounds(0, 0, 500, 480);
+        jf.setClosable(true);
+        jf.setIconifiable(true);
+        jf.setMaximizable(true);
+        jf.setResizable(true);
+        jf.setVisible(true);
+
+        desktopPane.add(jf);
+        
+        jf.show();
+        
+    }//GEN-LAST:event_newQueryMenuItemActionPerformed
+
     private void newSchemaMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newSchemaMenuItemActionPerformed
         // Add your handling code here:
     }//GEN-LAST:event_newSchemaMenuItemActionPerformed
@@ -254,10 +311,16 @@ public class Workbench extends javax.swing.JFrame {
         Util.getProperties();
         if (jfc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             try {
-
+                
                 JInternalFrame schemaFrame = new JInternalFrame();
                 schemaFrame.setTitle("Schema - " + jfc.getSelectedFile().getName());
-
+                
+                Class.forName(jdbcDriverClassName);
+                String connectString = "Provider=mondrian;" +
+                    "Jdbc=" + jdbcConnectionUrl + ";" +
+                    "Catalog=" + jfc.getSelectedFile().toURL();
+                connection = DriverManager.getConnection(connectString, null, false); 
+                
                 schemaFrame.getContentPane().add(new SchemaExplorer(jfc.getSelectedFile()));
 
                 schemaFrame.setBounds(0, 0, 500, 480);
@@ -301,6 +364,8 @@ public class Workbench extends javax.swing.JFrame {
     private javax.swing.JButton toolbarSaveAsButton;
     private javax.swing.JMenuItem openMenuItem;
     private javax.swing.JMenu fileMenu;
+    private javax.swing.JMenuItem newQueryMenuItem;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JButton toolbarOpenButton;
     private javax.swing.JButton toolbarNewButton;
     private javax.swing.JSeparator jSeparator1;
@@ -316,6 +381,7 @@ public class Workbench extends javax.swing.JFrame {
     private javax.swing.JMenuItem deleteMenuItem;
     private javax.swing.JMenuItem newSchemaMenuItem;
     private javax.swing.JMenuItem exitMenuItem;
+    private javax.swing.JButton toolbarPreferencesButton;
     private javax.swing.JCheckBoxMenuItem viewMeasuresMenuItem;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem pasteMenuItem;
