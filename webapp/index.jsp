@@ -17,15 +17,16 @@
 <body>
 <p>Mondrian examples:</p>
 <ul>
-<li><a href="adhoc.jsp">Ad hoc queries</a></li>
+<li><a href="testpage.jsp?query=mondrian">JPivot pivot table</a></li>
 <li><a href="taglib.jsp">Various queries formatted using the tag-library</a></li>
-<li><a href="pivot.jsp">A pivot table</a></li>
+<li><a href="adhoc.jsp">Basic interface for ad hoc queries</a></li>
+<li><a href="pivot.jsp">Basic pivot table</a></li>
 </ul>
 
 <p>Other links:</p>
 <ul>
-<li><a href="http://sourceforge.net/projects/mondrian">Home page</a></li>
-<li><a href="http://sourceforge.net/projects/jpivot">JPivot (more advanced pivot table)</a></li>
+<li><a href="http://sourceforge.net/projects/mondrian">Mondrian project page</a></li>
+<li><a href="http://sourceforge.net/projects/jpivot">JPivot project page</a></li>
 </ul>
 
 </body>

@@ -17,7 +17,7 @@
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
-  <property name="version" value="0.4"/>
+  <property name="version" value="0.5"/>
 
   <!--
     ===================================================================
@@ -43,7 +43,7 @@
   <property name="jar.file" value="${lib.dir}/${name}.jar"/>
   <property name="workbench.jar.file" value="workbench.jar"/>
   <property name="boot.jar.file" value="${lib.dir}/boot.jar"/>
-  <property name="war.file" value="${lib.dir}/mondrian.war"/>
+  <property name="war.file" value="${lib.dir}/${name}.war"/>
   <property name="jdk.home" value="${myenv.JAVA_HOME}"/>
   <property name="tomcat.home" value="${myenv.TOMCAT_HOME}"/>
   <property name="xalan.home" value="${myenv.XALAN_HOME}"/>
@@ -440,6 +440,11 @@ demo/**/*.sh"
     </exec>
   </target>
 
+  <target name="release" depends="binzip,srczip,war">
+    <delete file="${dist.dir}/${dist.name}.war"/>
+    <copy file="${war.file}" tofile="${dist.dir}/${dist.name}.war"/>
+  </target>
+
   <target name="binzip" depends="compile,javadoc,jar,copy-jars,version">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.bin.file}"/>
@@ -554,6 +559,28 @@ build mondrian.war as in the runtime environment.">
   </target>
 
   <target name="war" description="
+Creates mondrian.war based upon jpivot.war.
+Assumes that mondrian.jar exists (use 'jar' target)">
+    <filter filtersfile="mondrian.properties"/>
+    <mkdir dir="${lib.dir}" />
+    <delete file="${war.file}"/>
+    <copy file="${lib.dir}/jpivot.war" tofile="${war.file}"/>
+    <delete file="${lib.dir}/web.xml"/>
+    <copy file="${webapp.dir}/WEB-INF/web-jpivot.xml"
+        filtering="true" tofile="${lib.dir}/web.xml"/>
+    <war warfile="${war.file}"
+        update="yes"
+        webxml="${lib.dir}/web.xml">
+      <webinf dir="${webapp.dir}/WEB-INF" excludes="web.xml"/>
+	  <!-- our FoodMart.xml may be newer than jpivot's -->
+      <webinf dir="${demo.dir}" includes="FoodMart.xml"/>
+      <fileset dir="${webapp.dir}" excludes="WEB-INF/**/*"/>
+	  <!-- should already contain javacup.jar, xalan.jar, junit.jar -->
+      <lib dir="${lib.dir}" includes="${name}.jar"/>
+    </war>
+  </target>
+
+  <target name="war-no-jpivot" description="
 Creates mondrian.war.
 Assumes that mondrian.jar exists (use 'jar' target),
 and lib contains ant.jar, junit.jar etc. (use 'copy-jars' target)">
@@ -580,66 +607,6 @@ junit.jar"/>
     <delete dir="${tomcat.home}/webapps/mondrian"/>
     <copy file="${war.file}"
         todir="${tomcat.home}/webapps"/>
-  </target>
-
-  <!-- targets to start and stop tomcat -->
-
-  <path id="tomcat.classpath">
-    <pathelement location="${tomcat.home}/lib/tools.jar"/>
-    <pathelement location="${tomcat.home}/localhost/work/classes"/>
-    <pathelement location="${tomcat.home}/bin/bootstrap.jar"/>
-	<!-- Add your JDBC driver(s) here. -->
-    <pathelement location="${myenv.ORACLE_HOME}/jdbc/lib/classes12.zip"/>
-    <pathelement location="${myenv.MYSQL_HOME}/lib/mysql-connector-java-2.0.14-bin.jar"/>
-  </path>
-
-  <target name="start.tomcat" description="
-Convenience target to start Tomcat. You can still use
-TOMCAT_HOME/bin/startup.bat">
-    <property name="foo" refid="tomcat.classpath"/>
-    <echo message="classpath is ${foo}"/>
-    <java classpathref="tomcat.classpath"
-          classname="org.apache.catalina.startup.Bootstrap"
-          dir="${tomcat.home}/bin"
-          fork="yes">
-      <sysproperty key="catalina.base" value=".."/>
-      <sysproperty key="catalina.home" value=".."/>
-      <sysproperty key="java.io.tmpdir" value="../temp"/>
-      <sysproperty key="java.endorsed.dirs" value="../bin;../common/lib"/>
-      <arg value="start"/>
-    </java>
-  </target>
-
-  <target name="debug.tomcat" description="
-Convenience target to start Tomcat in debug mode. You can still use
-TOMCAT_HOME/bin/startup.bat or startup.sh.">
-    <java classpathref="tomcat.classpath"
-          classname="org.apache.catalina.startup.Bootstrap"
-          dir="${tomcat.home}/bin"
-          fork="yes">
-      <sysproperty key="catalina.base" value=".."/>
-      <sysproperty key="catalina.home" value=".."/>
-      <sysproperty key="java.io.tmpdir" value="../temp"/>
-      <sysproperty key="java.endorsed.dirs" value="../bin;../common/lib"/>
-      <jvmarg value="-Xdebug"/>
-      <jvmarg value="-Xrunjdwp:transport=dt_socket,address=5000,server=y,suspend=n"/>
-      <arg value="start"/>
-    </java>
-  </target>
-
-  <target name="stop.tomcat" description="
-Convenience target to stop Tomcat. You can still use
-TOMCAT_HOME/bin/shutdown.bat or shutdown.sh.">
-    <java classpathref="tomcat.classpath"
-          classname="org.apache.catalina.startup.Bootstrap"
-          dir="${tomcat.home}/bin"
-          fork="yes">
-      <sysproperty key="catalina.base" value=".."/>
-      <sysproperty key="catalina.home" value=".."/>
-      <sysproperty key="java.io.tmpdir" value="../temp"/>
-      <sysproperty key="java.endorsed.dirs" value="../bin;../common/lib"/>
-      <arg value="stop"/>
-    </java>
   </target>
 
   <target name="setup-compile-farm">

@@ -494,6 +494,26 @@ public class BasicQueryTest extends FoodMartTestCase {
 		assertTrue(result.getSlicerAxis().positions[0].members.length == 3);
 	}
 
+	public void testSlicerIsEvaluatedBeforeAxes() {
+		// about 10 products exceeded 20000 units in 1997, only 2 for Q1
+		assertSize(
+				"SELECT {[Measures].[Unit Sales]} on columns," + nl +
+				" filter({[Product].members}, [Measures].[Unit Sales] > 20000) on rows" + nl +
+				"FROM Sales" + nl +
+				"WHERE [Time].[1997].[Q1]", 1, 2);
+	}
+
+	public void testSlicerWithCalculatedMembers() {
+		assertSize(
+				"WITH MEMBER [Time].[1997].[H1] as ' Aggregate({[Time].[1997].[Q1], [Time].[1997].[Q2]})' " + nl +
+				"  MEMBER [Measures].[Store Margin] as '[Measures].[Store Sales] - [Measures].[Store Cost]'" + nl +
+				"SELECT {[Gender].children} on columns," + nl +
+				" filter({[Product].members}, [Gender].[F] > 10000) on rows" + nl +
+				"FROM Sales" + nl +
+				"WHERE ([Time].[1997].[H1], [Measures].[Store Margin])",
+				2, 6);
+	}
+
 	public void _testEver() {
 		runQueryCheckResult(
 				"select" + nl +

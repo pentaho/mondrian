@@ -24,36 +24,38 @@
 
 <h2><a name="1_Contents">1. Contents</a></h2>
 <ol>
-  <li><a href="#1_Contents">Contents</a>
-  <li><a href="#2_Modification_history">Modification history</a>
-  <li><a href="#3_Setup_build_environment">Setup build environment</a>
-  <li><a href="#4_Download_the_source_code">Download the  code</a>
-  <li><a href="#5_Load_the_database">Load the database</a>
+  <li><a href="#1_Contents">Contents</a></li>
+  <li><a href="#2_Modification_history">Modification history</a></li>
+  <li><a href="#3_Getting_Mondrian">Download the  code</a>
   <ol>
-    <li><a href="#5_1_Microsoft_Access">Microsoft Access</a></li>
-    <li><a href="#5_2_Oracle">Oracle</a></li>
-    <li><a href="#5_3_hsqldb">hsqldb</a></li>
-    <li><a href="#5_4_MySQL">MySQL</a></li>
-    <li><a href="#5_5_PostgreSQL">PostreSQL</a></li>
-    <li><a href="#5_6_IBM_DB2">IBM DB2</a></li>
+    <li><a href="#3_1_Download_mondrian_war">Download mondrian.war</a></li>
+    <li><a href="#3_2_Download_the_latest_binary_release">Download the latest binary release</a></li>
+    <li><a href="#3_3_Download_the_latest_source_release">Download the latest source release</a></li>
+    <li><a href="#3_4_Connect_to_the_Perforce_source_code_server">Connect to the Perforce source code server</a></li>
+  </ol>
+  <li><a href="#4_Load_the_database">Load the database</a></li>
+  <ol>
+    <li><a href="#4_1_Microsoft_Access">Microsoft Access</a></li>
+    <li><a href="#4_2_Oracle">Oracle</a></li>
+    <li><a href="#4_3_hsqldb">hsqldb</a></li>
+    <li><a href="#4_4_MySQL">MySQL</a></li>
+    <li><a href="#4_5_PostgreSQL">PostreSQL</a></li>
+    <li><a href="#4_6_IBM_DB2">IBM DB2</a></li>
   </ol></li>
-  <li><a href="#6_Run_the_test_suite">Run the test suite</a>
-  <li><a href="#8_Run_the_web_app">Run the web app</a>
-  <li><a href="#8_Miscellaneous">Miscellaneous</a>
-    <ol>
-      <li><a href="#8_1_Coding_guidelines">Coding guidelines</a></li>
-    </ol>
-  <li><a href="#Appendix_A_Product_installation_instructions">Appendix A: 
-  Product instllation instructions</a></li>
-  <li><a href="#Appendix_B_How_to_debug_Tomcat_using_IntelliJ">Appendix B: How 
-  to debug Tomcat using IntelliJ</a><li><a href="#Appendix_C_Compatibility_issues">Appendix C. Compatibility issues</a><ol>
-  <li><a href="#Appendix_C_1_Weblogic_6_1_and_Xerces">Weblogic 6.1 and Xerces</a></li>
-  <li><a href="#Appendix_C_2_Xalan_and_Tomcat">Xalan and Tomcat</a></li>
-
-</ol>
-
+  <li><a href="#5_Run_the_test_suite">Run the test suite</a></li>
+  <li><a href="#6_Run_the_web_app">Run the web app</a></li>
+  <li><a href="#7_Miscellaneous">Miscellaneous</a></li>
+  <ol>
+    <li><a href="#7_1_Coding_guidelines">Coding guidelines</a></li>
+  </ol>
+  <li><a href="#Appendix_A_Product_installation_instructions">Appendix A: Product installation instructions</a></li>
+  <li><a href="#Appendix_B_How_to_debug_Tomcat_using_IntelliJ">Appendix B: How to debug Tomcat using IntelliJ</a></li>
+  <li><a href="#Appendix_C_Compatibility_issues">Appendix C. Compatibility issues</a></li>
+  <ol>
+    <li><a href="#Appendix_C_1_Weblogic_6_1_and_Xerces">Weblogic 6.1 and Xerces</a></li>
+    <li><a href="#Appendix_C_2_Xalan_and_Tomcat">Xalan and Tomcat</a></li>
+  </ol>
   </li>
-
 </ol>
 
 <h2><a name="2_Modification_history">2. Modification history</a></h2>
@@ -65,107 +67,110 @@
     <th>Comment</th>
   </tr>
   <tr>
-    <td nowrap><I>February 7<SUP>th</SUP>, 2002</I></td>
-    <td><em>1</em></td>
-    <td><i>Julian Hyde</i></td>
-    <td><em>Created</em></td>
+    <td nowrap>February 7th, 2002</td>
+    <td>1</td>
+    <td>Julian Hyde</td>
+    <td>Created</td>
   </tr>
   <tr>
-    <td><I>March 5<SUP>th</SUP>, 2002</I></td>
-    <td><em>2</em></td>
-    <td><i>Julian Hyde</i></td>
-    <td><em>Tomcat install</em></td>
+    <td>March 5th, 2002</td>
+    <td>2</td>
+    <td>Julian Hyde</td>
+    <td>Tomcat install</td>
   </tr>
   <tr>
-    <td><I>March 28<SUP>th</SUP>, 2002</I></td>
-    <td><em>3</em></td>
-    <td><i>Julian Hyde</i></td>
-    <td><em>Xalan, JUnit and Oracle.<br>
-    Moved product info to an appendix.</em></td>
+    <td>March 28th, 2002</td>
+    <td>3</td>
+    <td>Julian Hyde</td>
+    <td>Xalan, JUnit and Oracle.<br>
+    Moved product info to an appendix.</td>
   </tr>
   <tr>
-    <td><I>July 26<SUP>th</SUP>, 2002</I></td>
-    <td><em>4</em></td>
-    <td><i>Julian Hyde</i></td>
-    <td><em>Upgrade to Ant 1.5, Tomcat 4.0.4.</em></td>
+    <td>July 26th, 2002</td>
+    <td>4</td>
+    <td>Julian Hyde</td>
+    <td>Upgrade to Ant 1.5, Tomcat 4.0.4.</td>
   </tr>
   
   <tr>
-    <td><I>August  1<SUP>st</SUP>, 2002</I></td>
-    <td><em>5</em></td>
-    <td><i>Julian Hyde</i></td>
-    <td><em>Clean up database instructions. Add 'Download the source code' 
-    section.</em></td>
+    <td>August  1st, 2002</td>
+    <td>5</td>
+    <td>Julian Hyde</td>
+    <td>Clean up database instructions. Add 'Download the source code' 
+    section.</td>
   </tr>
   
    <tr>
-    <td nowrap><I>August 21<SUP>st</SUP>, 2002</I></td>
-    <td><em>6</em></td>
-    <td nowrap><i>Paul Dymecki</i></td>
-    <td><em>Add binary installation instructions in 4.1. Add run installation to section 5.
-    </em></td>
+    <td nowrap>August 21st, 2002</td>
+    <td>6</td>
+    <td nowrap>Paul Dymecki</td>
+    <td>Add binary installation instructions in 4.1. Add run installation to section 5. </td>
   </tr>
   
    <tr>
-    <td nowrap><i>August 23<sup>rd</sup>, 2002</i></td>
-    <td><em>7</em></td>
-    <td nowrap><i>Julian Hyde</i></td>
-    <td><em>Add MySQL instructions.</em></td>
+    <td nowrap>August 23rd, 2002</td>
+    <td>7</td>
+    <td nowrap>Julian Hyde</td>
+    <td>Add MySQL instructions.</td>
   </tr>
   
    <tr>
-    <td nowrap><i>September 23<sup>rd</sup>, 2002</i></td>
-    <td><em>8</em></td>
-    <td nowrap><i>Julian Hyde</i></td>
-    <td><em>Revised installation instructions for binary release.</em></td>
+    <td nowrap>September 23rd, 2002</td>
+    <td>8</td>
+    <td nowrap>Julian Hyde</td>
+    <td>Revised installation instructions for binary release.</td>
   </tr>
   
    <tr>
-    <td nowrap><i>Februrary 12<sup>th</sup>, 2003</i></td>
-    <td><em>9</em></td>
-    <td nowrap><i>Julian Hyde</i></td>
-    <td><em>New versions of Xalan, Tomcat, JDK.</em></td>
+    <td nowrap>Februrary 12th, 2003</td>
+    <td>9</td>
+    <td nowrap>Julian Hyde</td>
+    <td>New versions of Xalan, Tomcat, JDK.</td>
   </tr>
 </table>
 
-<h2><a name="3_Setup_build_environment">3. Setup build environment</a></h2>
+<h2><a name="3_Getting_Mondrian">3. Download the code</a></h2>
 
-<p>Here are the steps to setup a build environment.</p>
+<p>There are 4 ways to get Mondrian running. Ranging from fastest to most 
+flexible, these are: <a href="#3_1_Download_mondrian_war">download mondrian.war</a>;
+<a href="#3_2_Download_the_latest_binary_release">download a binary release</a>;
+<a href="#3_3_Download_the_latest_source_release">download and build a source 
+release</a>; and <a href="#3_4_Connect_to_the_Perforce_source_code_server">
+download and build the source code from the Perforce source server</a>.</p>
+
+<h3><a name="3_1_Download_mondrian_war">3.1. Download mondrian.war</a></h3>
+
+<p>This is the easiest way to get Mondrian running, but doesn't give you any 
+flexibility to modify source code or change the configuration of the web 
+application.</p>
 
 <ol>
-  <li>Install <a href="#JDK">JDK</a>.</li>
-  <li>Install <a href="#Ant">Ant</a>.</li>
-  <li>Install <a href="#Tomcat">Tomcat</a>.</li>
-  <li>Install <a href="#Xalan">Xalan</a>.</li>
-  <li>Install <a href="#JUnit">JUnit</a>.</li>
-  <li>Modify <code>build.bat</code>, setting <code>JAVA_HOME</code>, <code>ANT_HOME</code>, 
-  <code>TOMCAT_HOME</code>, <code>XALAN_HOME</code>, <code>JUNIT_HOME</code>.</li>
+  <li>Install the <a href="#JDK">JDK</a> and <a href="#Tomcat">Tomcat</a>.</li>
+  <li>Download <code>mondrian-<i>version</i>.war</code> from <a href="http://sourceforge.net/projects/mondrian">
+SourceForge</a>, and save it as <i></i><code><i>TOMCAT_HOME</i>/webapps/mondrian.war</code>.</li>
+  <li>Start Tomcat and hit <a href="http://localhost:8080/mondrian">http://localhost:8080/mondrian</a>.</li>
 </ol>
 
-<p>Optional:</p>
-<ol>
-  <li>Install <a href="#Jikes">Jikes</a>.</li>
-  <li>Configure <a href="#Weblogic">Weblogic</a>.</li>
-</ol>
-
-<h2><a name="4_Download_the_source_code">4. Download the code</a></h2>
-
-<p>Three ways to do this: you can get a binary distribution, get and build a 
-source distribution, or get and build the latest code from the Perforce 
-source-code server.</p>
-
-<h3><a name="4_1_Download_the_latest_binary_release">4.1. Download the latest binary release</a></h3>
+<h3><a name="3_2_Download_the_latest_binary_release">3.2. Download the latest binary release</a></h3>
 
 <p>Download the latest binary
-release <code> mondrian-0.<i>x</i>-bin.zip</code> from <a href="http://sourceforge.net/projects/mondrian">
+release <code> mondrian-<i>version</i>-bin.zip</code> from <a href="http://sourceforge.net/projects/mondrian">
 SourceForge</a>, and unzip it. The place you unzipped to &mdash; say <code>C:\mondrian</code> 
-or <code>/usr/mondrian-0.<i>x</i></code> &mdash; is your <dfn>project 
-location</dfn> (denoted by <code> <i>${project.location}</i></code>). Now 
+or <code>/usr/mondrian-<i>version</i></code> &mdash; is your <dfn>project 
+location</dfn> (denoted by <code> <i>${project.location}</i></code>). </p>
+
+<p>Next, install a build environment. Install the <a href="#JDK">JDK</a>, <a href="#Ant">Ant</a>, <a href="#Tomcat">Tomcat</a>, <a href="#Xalan">Xalan</a>, 
+and <a href="#JUnit">JUnit</a>; and modify <code>build.bat</code>, setting <code>JAVA_HOME</code>, <code>ANT_HOME</code>, 
+  <code>TOMCAT_HOME</code>, <code>XALAN_HOME</code>, <code>JUNIT_HOME</code>. 
+Download the latest <code>jpivot-<i>version</i>.war</code> from
+<a href="http://sourceforge.net/projects/jpivot">SourceForge</a> and save it as <code><i>${project.location}</i>/lib/jpivot.war</code>.</p>
+
+<p>Now 
 do the following steps:</p>
 
 <blockquote>
 <ol>
-<li>Load the database, as described <a href="#5_Load_the_database">here</a>.</li>
+<li>Load the database, as described <a href="#4_Load_the_database">here</a>.</li>
 <li>Change variables in <code><i>${project.location}</i>/bin/mondrian.bat</code> 
 and <code><i>${project.location}</i>/bin/mondrian.properties</code> to suit your environment.</li>
 <li><code>cd <i>${project.location}</i>/bin</code></li>   
@@ -177,11 +182,14 @@ This will create <i><code>TOMCAT_HOME</i>/webapps/mondrian.war</code>.</li>
  </ol>
 </blockquote>
 
-<h3><a name="4_2_Download_the_latest_source_release">4.2. Download the 
-latest source release</a></h3>
-<p>Download the latest <code>mondrian-0.<i>x</i>-src.zip</code> from <a href="http://sourceforge.net/projects/mondrian">
+<h3><a name="3_3_Download_the_latest_source_release">3.3. Download the latest 
+source release</a></h3>
+<p>Download the latest <code>mondrian-<i>version</i>-src.zip</code> from <a href="http://sourceforge.net/projects/mondrian">
 SourceForge</a>, and unzip. The place you unzipped to &mdash; <code>C:\mondrian</code> 
-or <code>/usr/mondrian-0.<i>x</i></code> &mdash; your <dfn>project location</dfn> (denoted by <code><i>${project.location}</i></code>).</p>
+or <code>/usr/mondrian-<i>version</i></code> &mdash; your <dfn>project location</dfn> (denoted by <code><i>${project.location}</i></code>).</p>
+
+<p>Set up a build environment as described
+<a href="#3_2_Download_the_latest_binary_release">above</a>.</p>
 
 <p>Now build the code, as follows:</p>
 
@@ -240,12 +248,14 @@ BUILD SUCCESSFUL
 Total time: 35 seconds</pre>
 </blockquote>
 
-<h3><a name="4_3_Connect_to_the_Perforce_source_code_server">4.3. Connect to the 
+<h3><a name="3_4_Connect_to_the_Perforce_source_code_server">3.4. Connect to the 
 Perforce source-code server</a></h3>
 
 <p>If you are a mondrian developer, and need to access the latest source code 
 and check in changes, you should connect to the Perforce source-code server:</p>
 <ol>
+  <li>First, set up a build environment, as described
+  <a href="#3_2_Download_the_latest_binary_release">above</a>.</li>
   <li>Download the perforce client from
   <a href="http://www.perforce.com/perforce/loadprog.html">
   http://www.perforce.com/perforce/loadprog.html</a></li>
@@ -271,7 +281,7 @@ and check in changes, you should connect to the Perforce source-code server:</p>
   </li>
   <li>Sync to head revision.</li>
   <li>Build the code, as described
-  <a href="#4_2_Download_the_latest_source_release">above</a>.</li>
+  <a href="#3_3_Download_the_latest_source_release">above</a>.</li>
   <li>
   If you intend to check-in changes to the perforce server,
   <a href="mailto:jhyde@users.sourceforge.net?subject=Can I please have access to the Perforce server?">
@@ -279,7 +289,7 @@ and check in changes, you should connect to the Perforce source-code server:</p>
   the perforce depot.</li>
 </ol>
 
-<h2><a name="5_Load_the_database">5. Load the database</a></h2>
+<h2><a name="4_Load_the_database">4. Load the database</a></h2>
 <p>First, get the dataset. If you installed from a binary or source distribution, you will need to 
 download a dataset: get <code>mondrian-data.zip</code> from <a href="http://sourceforge.net/projects/mondrian">
 SourceForge</a>, and unzip it to <code> <i>${project.location}</i></code>. If you got your files from the Perforce 
@@ -290,11 +300,11 @@ which database you are using.</p>
 working on other databases/versions? Please 
 <a href="mailto:jhyde@users.sourceforge.net">let me know</a>.)</i></p>
 
-<h3><a name="5_1_Microsoft_Access">5.1. Microsoft Access</a></h3>
+<h3><a name="4_1_Microsoft_Access">4.1. Microsoft Access</a></h3>
 <p>Start ODBC Administrator, and create a System ODBC DSN called <code>MondrianFoodMart</code> pointing to 
 <code><i>${project.location}</i>/demo/access/MondrianFoodMart.mdb</code>.
     The JDBC connect string will be <code>jdbc:odbc:MondrianFoodMart</code>.</p>
-<h3><a name="5_2_Oracle">5.2. Oracle</a></h3>
+<h3><a name="4_2_Oracle">4.2. Oracle</a></h3>
 <p>Version 8.1.7 or higher.</p>
 <p>Create the dataset by importing <code>${project.location}/demo/oracle/FoodMart.dmp</code>:<blockquote>
 
@@ -358,10 +368,10 @@ Import terminated successfully without warnings.</pre>
   <li>Make sure that the <code>JdbcDrivers</code> property of the connect string includes <code>oracle.jdbc.OracleDriver</code>.</li>
 </ol>
 
-<h3><a name="5_3_hsqldb">5.3. Hypersonic SQL (hsqldb)</a></h3>
+<h3><a name="4_3_hsqldb">4.3. Hypersonic SQL (hsqldb)</a></h3>
 <p>Create and populate the schema  by running the scripts <code>FoodMartTables.sql</code>,
     <code>FoodMartData.sql</code> and <code>FoodMartIndexes.sql</code> in <code>${project.location}/demo/</code>.</p>
-<h3><a name="5_4_MySQL">5.4. MySQL</a></h3>
+<h3><a name="4_4_MySQL">4.4. MySQL</a></h3>
 <p>First, <a href="#MySQL">install MySQL</a>. Then
 <a href="http://www.mysql.com/doc/en/Adding_users.html">create a user</a> and a 
 database:</p>
@@ -472,19 +482,19 @@ example:</p><blockquote>
     value=&quot;jdbc:mysql://localhost/foodmart?user=root&amp;#38;password=&quot;/&gt;</pre>
     
 </blockquote>
-<h3><a name="5_5_PostgreSQL">5.5. PostgreSQL</a></h3>
-<p>As <a href="#5_3_hsqldb">hsqldb</a>, except for the following.</p>
+<h3><a name="4_5_PostgreSQL">4.5. PostgreSQL</a></h3>
+<p>As <a href="#4_3_hsqldb">hsqldb</a>, except for the following.</p>
 <p>In <code>
         FoodMartTables.sql</code>, change <code>DOUBLE</code> to <code>DOUBLE
     PRECISION</code>, and <code>BIT</code> to <code>SMALLINT</code>.</p>
 
-<h3><a name="5_6_IBM_DB2">5.6. IBM DB2</a></h3>
+<h3><a name="4_6_IBM_DB2">4.6. IBM DB2</a></h3>
 
 <p>There are unconfirmed reports of mondrian running on DB2. If you have 
 succeeded, please 
 <a href="mailto:jhyde@users.sourceforge.net">let me know</a>.</p>
 
-<h2><a name="6_Run_the_test_suite">6. Running the test suite</a></h2>
+<h2><a name="5_Run_the_test_suite">5. Running the test suite</a></h2>
 <p>In a build environment,</p>
 <blockquote>
   <pre>cd <i>${project.location}</i>
@@ -495,7 +505,7 @@ build test</pre>
   <pre>cd <i>${project.location}</i>/bin
 mondrian test</pre>
 </blockquote>
-<h2><a name="8_Run_the_web_app">7. Run the web app</a></h2>
+<h2><a name="6_Run_the_web_app">6. Run the web app</a></h2>
 <ol>
   <li>First <a href="#Tomcat">install Tomcat</a>.</li>
   <li>Make sure the values in <code>mondrian.properties</code> are correct for your environment. In particular:<ul>
@@ -511,8 +521,8 @@ mondrian test</pre>
   <li>Start up tomcat. (If this is a build environment, <code>build start.tomcat</code> is an easy way to do this.)</li>
   <li>Hit <a href="http://localhost:8080/mondrian" target="_new">http://localhost:8080/mondrian</a>.</li>
 </ol>
-<h2><a name="8_Miscellaneous">8. Miscellaneous</a></h2>
-<h3><a name="8_1_Coding_guidelines">8.1. Coding guidelines</a></h3>
+<h2><a name="7_Miscellaneous">7. Miscellaneous</a></h2>
+<h3><a name="7_1_Coding_guidelines">7.1. Coding guidelines</a></h3>
 <p>If you are contributing code, please follow the same guidelines used for the 
 rest of the code:</p>
 <ul>
