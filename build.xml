@@ -22,7 +22,7 @@
   <!--
     ===================================================================
     Set the properties related to paths
-    =================================================================== 
+    ===================================================================
   -->
   <property name="src.dir" value="src"/>
   <property name="java.dir" value="${src.dir}/main"/>
@@ -81,7 +81,7 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
 
   <target name="sniff"
         description="Figures out which components are available">
-    <available property="weblogic.available" 
+    <available property="weblogic.available"
         classname="weblogic.jspc"
         classpathref="project.classpath"/>
   </target>
@@ -90,7 +90,7 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
     ===================================================================
     Properties for running the FoodMart test. (Override them by
 	editing mondrian.properties)
-    =================================================================== 
+    ===================================================================
   -->
 
   <!-- Comma-separated list of jdbc drivers. Typical drivers:
@@ -135,14 +135,14 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
   </target>
 
   <target name="all" depends="clean,compile,test"/>
-  
+
   <target name="clean">
       <delete includeEmptyDirs="true" quiet="true">
           <fileset dir="${classes.dir}" includes="**/*.class"/>
           <fileset dir="." includes="${generated.java.files}"/>
       </delete>
   </target>
-  
+
   <target name="prepare">
     <mkdir dir="${classes.dir}"/>
   </target>
@@ -206,7 +206,7 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
 
   <target name="FoodMartTest"
       description="Runs a few queries using the FoodMart schema.">
-    <java classpathref="project.classpath" classname="mondrian.test.Main" 
+    <java classpathref="project.classpath" classname="mondrian.test.Main"
         fork="yes">
       <jvmarg value="-Dmondrian.jdbcDrivers=${mondrian.jdbcDrivers}"/>
       <jvmarg value="-Dmondrian.resourceURL=${mondrian.resourceURL}"/>
@@ -250,7 +250,7 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
       description="
 Runs all JUnit tests, using the given database connection
 in {mondrian.foodmart.jdbcURL}.">
-    <java classpathref="project.classpath" classname="mondrian.test.Main" 
+    <java classpathref="project.classpath" classname="mondrian.test.Main"
         fork="yes">
       <jvmarg value="-Dmondrian.jdbcDrivers=${mondrian.jdbcDrivers}"/>
       <jvmarg value="-Dmondrian.resourceURL=${mondrian.resourceURL}"/>
@@ -286,7 +286,7 @@ in {mondrian.foodmart.jdbcURL}.">
   <report format="frames" todir="junit-results/html"/>
 </junitreport>
 
-	
+
 </target>
 
   <target name="etags">
@@ -373,6 +373,28 @@ demo/**/*.sh"
       <arg line="file=FoodMart.dmp"/>
       <arg line="owner=FOODMART"/>
 	</exec>
+  </target>
+
+    <target name="binaryzip" depends="javadoc,jar,webapp">
+    <mkdir dir="${dist.dir}" />
+      <delete quiet="true"  file="${dist.dir}/${dist.bin.file}"/>
+    <zip
+        zipfile="${dist.bin.file}"
+        update="true">
+      <zipfileset
+          dir="."
+          prefix="${dist.name}"
+          includes="${javadoc.dir}/**/*, ${resource.dir}/**/*,${demo.dir}/FoodMart.xml,${lib.dir}/javacup.jar,junit.jar,LICENSE.html, README.txt, VERSION.txt"
+          excludes="**/*~"/>
+      <zipfileset
+          dir="${dist.dir}"
+          prefix="${dist.name}/lib"
+          includes="${name}.jar,${name}.war"/>
+          <zipfileset
+          dir="${dist.dir}"
+          prefix="${dist.name}/bin"
+          includes="startJunit.bat"/>
+    </zip>
   </target>
 
   <target name="binzip" depends="javadoc">
