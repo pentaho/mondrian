@@ -75,10 +75,12 @@ public class CmdRunner {
         this.stack = null;
     }
 
-    private String formatError(Throwable mex) {
-        String message = mex.getMessage();
-        if (mex.getCause() != null && mex.getCause() != mex)
-            message = message + "\n" + formatError(mex.getCause());
+    private String formatError(Throwable t) {
+        String message = t.getMessage();
+        if (message == null)
+           message = t.toString();
+        if (t.getCause() != null && t.getCause() != t)
+            message = message + "\n" + formatError(t.getCause());
         return message;
     }
 
