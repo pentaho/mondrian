@@ -27,7 +27,7 @@ import java.io.PrintWriter;
  * @version $Id$
  **/
 public class FoodMartTestCase extends TestCase {
-	private static final String nl = System.getProperty("line.separator");
+	protected static final String nl = System.getProperty("line.separator");
 
 	public FoodMartTestCase(String name) {
 		super(name);
