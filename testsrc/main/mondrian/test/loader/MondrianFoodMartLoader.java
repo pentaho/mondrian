@@ -90,6 +90,8 @@ public class MondrianFoodMartLoader {
     private FileWriter fileOutput = null;
 
     private SqlQuery sqlQuery;
+    private String booleanColumnType;
+    private String bigIntColumnType;
     private final HashMap mapTableNameToColumns = new HashMap();
 
     public MondrianFoodMartLoader(String[] args) {
@@ -209,6 +211,18 @@ public class MondrianFoodMartLoader {
         final DatabaseMetaData metaData = connection.getMetaData();
         sqlQuery = new SqlQuery(metaData);
 
+        booleanColumnType = "SMALLINT";
+        if (sqlQuery.isPostgres()) {
+            booleanColumnType = "BOOLEAN";
+        } else if (sqlQuery.isMySQL()) {
+            booleanColumnType = "BIT";
+        }
+
+        bigIntColumnType = "BIGINT";
+        if (sqlQuery.isOracle()) {
+            bigIntColumnType = "DECIMAL(15,0)";
+        }
+
         try {
             createTables();  // This also initializes mapTableNameToColumns
             if (data) {
@@ -294,7 +308,6 @@ public class MondrianFoodMartLoader {
                 String tableName = matcher.group(1); // e.g. "foo"
                 String columnNames = matcher.group(2);
                 String values = matcher.group(3);
-//            Util.discard(values); // Not needed now
 
                 // If table just changed, flush the previous batch.
                 if (!tableName.equals(prevTable)) {
@@ -307,8 +320,10 @@ public class MondrianFoodMartLoader {
                     batchSize = 0;
                     prevTable = tableName;
                     quotedTableName = quoteId(tableName);
-                    quotedColumnNames = columnNames.replaceAll("`", sqlQuery.getQuoteIdentifierString());
-                    String[] splitColumnNames = columnNames.replaceAll("`", "").replaceAll(" ", "").split(",");
+                    quotedColumnNames = columnNames
+                        .replaceAll("`", sqlQuery.getQuoteIdentifierString());
+                    String[] splitColumnNames = columnNames.replaceAll("`", "")
+                        .replaceAll(" ", "").split(",");
                     Column[] columns = (Column[]) mapTableNameToColumns.get(tableName);
 
                     orderedColumns = new Column[columns.length];
@@ -414,7 +429,11 @@ public class MondrianFoodMartLoader {
             if (i > 0) {
                 sb.append(",");
             }
-            sb.append(columnValue(individualValues[i], columns[i]));
+            String value = individualValues[i];
+            if (value != null && value.trim().equals("NULL")) {
+                value = null;
+            }
+            sb.append(columnValue(value, columns[i]));
         }
         return sb.toString();
 
@@ -682,6 +701,8 @@ public class MondrianFoodMartLoader {
         createIndex(false, "reserve_employee", "i_reserve_employee_dept_id", new String[] {"department_id"});
         createIndex(false, "reserve_employee", "i_reserve_employee_store_id", new String[] {"store_id"});
         createIndex(false, "reserve_employee", "i_reserve_employee_super_id", new String[] {"supervisor_id"});
+        createIndex(false, "salary", "i_salary_pay_date", new String[] {"pay_date"});
+        createIndex(false, "salary", "i_salary_employee", new String[] {"employee_id"});
         createIndex(false, "sales_fact_1997", "i_sales_1997_customer_id", new String[] {"customer_id"});
         createIndex(false, "sales_fact_1997", "i_sales_1997_product_id", new String[] {"product_id"});
         createIndex(false, "sales_fact_1997", "i_sales_1997_promotion_id", new String[] {"promotion_id"});
@@ -707,11 +728,6 @@ public class MondrianFoodMartLoader {
         createIndex(false, "time_by_day", "i_time_quarter", new String[] {"quarter"});
         createIndex(false, "time_by_day", "i_time_month", new String[] {"month_of_year"});
 
-        createIndex(false, "salary", "i_salary_pay_date", new String[] {"pay_date"});
-        createIndex(false, "salary", "i_salary_employee", new String[] {"employee_id"});
-        createIndex(true, "employee", "i_employee_id", new String[] {"employee_id"});
-        createIndex(false, "employee", "i_employee_store", new String[] {"store_id"});
-        createIndex(false, "employee", "i_employee_supvsr", new String[] {"supervisor_id"});
         if (outputDirectory != null) {
             fileOutput.close();
         }
@@ -739,18 +755,18 @@ public class MondrianFoodMartLoader {
         try {
             StringBuffer buf = new StringBuffer();
             if (jdbcOutput) {
-	            try {
-					buf.append("DROP INDEX ")
-						.append(quoteId(indexName));
-					if (sqlQuery.isMySQL()) {
-						buf.append(" ON ")
-							.append(quoteId(tableName));
-					}
-					final String deleteDDL = buf.toString();
-					executeDDL(deleteDDL);
-				} catch (Exception e1) {
-					System.out.println("Drop failed: but continue");
-				}
+                try {
+                    buf.append("DROP INDEX ")
+                        .append(quoteId(indexName));
+                    if (sqlQuery.isMySQL()) {
+                        buf.append(" ON ")
+                            .append(quoteId(tableName));
+                    }
+                    final String deleteDDL = buf.toString();
+                    executeDDL(deleteDDL);
+                } catch (Exception e1) {
+                    System.out.println("Drop failed: but continue");
+                }
             }
 
             buf = new StringBuffer();
@@ -783,18 +799,6 @@ public class MondrianFoodMartLoader {
     private void createTables() throws Exception  {
         if (outputDirectory != null) {
             fileOutput = new FileWriter(new File(outputDirectory, "createTables.sql"));
-        }
-
-        String booleanColumnType = "SMALLINT";
-        if (sqlQuery.isPostgres()) {
-            booleanColumnType = "BOOLEAN";
-        } else if (sqlQuery.isMySQL()) {
-            booleanColumnType = "BIT";
-        }
-
-        String bigIntColumnType = "BIGINT";
-        if (sqlQuery.isOracle()) {
-            bigIntColumnType = "DECIMAL(15,0)";
         }
 
         createTable("sales_fact_1997", new Column[] {
@@ -852,11 +856,11 @@ public class MondrianFoodMartLoader {
           new Column("store_invoice", "DECIMAL(10,4)", ""),
         });
         createTable("currency", new Column[] {
-                new Column("currency_id", "INTEGER", "NOT NULL"),
-                new Column("date", "DATE", "NOT NULL"),
-                new Column("currency", "VARCHAR(30)", "NOT NULL"),
-                new Column("conversion_ratio", "DECIMAL(10,4)", "NOT NULL"),
-              });
+          new Column("currency_id", "INTEGER", "NOT NULL"),
+          new Column("date", "DATE", "NOT NULL"),
+          new Column("currency", "VARCHAR(30)", "NOT NULL"),
+          new Column("conversion_ratio", "DECIMAL(10,4)", "NOT NULL"),
+        });
         createTable("account", new Column[] {
           new Column("account_id", "INTEGER", "NOT NULL"),
           new Column("account_parent", "INTEGER", ""),
@@ -1136,7 +1140,7 @@ public class MondrianFoodMartLoader {
                     // We're going to load the data without [re]creating
                     // the table, so let's remove the data.
                     try {
-                    	executeDDL("DELETE FROM " + quoteId(name));
+                        executeDDL("DELETE FROM " + quoteId(name));
                     } catch (SQLException e) {
                         throw MondrianResource.instance().newCreateTableFailed(name, e);
                     }
@@ -1160,7 +1164,7 @@ public class MondrianFoodMartLoader {
             buf.append(")");
             final String ddl = buf.toString();
             executeDDL("DROP TABLE " + quoteId(name));
-        	executeDDL(ddl);
+            executeDDL(ddl);
         } catch (Exception e) {
             throw MondrianResource.instance().newCreateTableFailed(name, e);
         }
@@ -1379,18 +1383,24 @@ public class MondrianFoodMartLoader {
 
         /*
          * Output for a BOOLEAN (Postgres) or BIT (other DBMSs)
+         *
+         * FIXME This code assumes that only a boolean column would
+         * map onto booleanColumnType. It would be better if we had a
+         * logical and physical type for each column.
          */
-        } else if (columnType.startsWith("BOOLEAN") || columnType.startsWith("BIT")) {
-            if (!sqlQuery.isMySQL()) {
-                if (columnValue.trim().equals("1")) {
+        } else if (columnType.equals(booleanColumnType)) {
+            String trimmedValue = columnValue.trim();
+            if (!sqlQuery.isMySQL() &&
+                    !sqlQuery.isOracle()) {
+                if (trimmedValue.equals("1")) {
                     return "true";
-                } else if (columnValue.trim().equals("0")) {
+                } else if (trimmedValue.equals("0")) {
                     return "false";
                 }
             } else {
-                if (columnValue.trim().equals("true")) {
+                if (trimmedValue.equals("true")) {
                     return "1";
-                } else if (columnValue.trim().equals("false")) {
+                } else if (trimmedValue.equals("false")) {
                     return "0";
                 }
             }
@@ -1478,3 +1488,6 @@ public class MondrianFoodMartLoader {
         }
     }
 }
+
+
+// End MondrianFoodMartLoader.java
