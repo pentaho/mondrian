@@ -21,7 +21,7 @@
 
 <body>
 <h1>How to design a Mondrian schema</h1>
-<p>Julian Hyde, March 2003.</p>
+<p>Julian Hyde; last updated December, 2004.</p>
 <h2>Contents</h2>
 <ol>
   <li><a href="#What_is_a_schema">What is a schema?</a></li>
@@ -205,9 +205,12 @@ statements.</p>
     aggregator=&quot;sum&quot; formatString=&quot;#,###.00&quot;/&gt;</pre>
 </blockquote>
 <p dir="ltr">Each measure (see <a href="#XML_Measure">&lt;Measure&gt;</a>) has a name,
-a column in the fact table, and an aggregation function (usually &quot;sum&quot;).</p>
+a column in the fact table, and an <code>aggregator</code>. The aggregator is usually &quot;sum&quot;, 
+but &quot;count&quot;, &quot;mix&quot;, &quot;max&quot;, &quot;avg&quot;, and &quot;distinct count&quot; are also allowed; 
+&quot;distinct count&quot; has some limitations if your cube contains a
+<a href="#Parent_child_hierarchies">parent-child hierarchy</a>.</p>
 
-<p dir="ltr">An optional <code>formatString</code> specifies how the value is to
+<p dir="ltr">An optional <code>formatString</code> attribute specifies how the value is to
 be printed. Here, we have chosen to output unit sales with no decimal places
 (since it is an integer), and store sales with two decimal places (since it is a
 currency value). The ',' and '.' symbols are locale-sensitive, so if you were
@@ -507,47 +510,346 @@ nullParentValue</code>:</p>
   but since many database don't index null values, schema designers sometimes
   use values as the empty string, 0, and -1 instead.</li>
 </ul>
-<h3><a name="Member_properties">Member properties</a></h3>
-<p>Member properties are defined by the <code><a href="#XML_Property">&lt;Property&gt;</a></code>
-element. You use them via the <code><i>member</i>.Properties(&quot;<i>propertyName</i>&quot;)</code>
-function, for example:</p>
+
+<h4>Tuning parent-child hierarchies</h4>
+
+<p>There's one serious problem with the parent-child hierarchy defined above, 
+and that is the amount of work Mondrian has to do in order to compute 
+cell-totals. Let's suppose that the employee table contains the following data:</p>
+
 <blockquote>
-  <pre>SELECT {[Store Sales]} ON COLUMNS,
+<table border="2" cellpadding="2" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" id="table3">
+	<tr>
+		<th colspan="3">employee</th>
+	</tr>
+	<tr>
+		<th>supervisor_id</th>
+		<th>employee_id</th>
+		<th>full_name</th>
+	</tr>
+	<tr>
+		<td>null</td>
+		<td>1</td>
+		<td>Frank</td>
+	</tr>
+	<tr>
+		<td>1</td>
+		<td>2</td>
+		<td>Bill</td>
+	</tr>
+	<tr>
+		<td>2</td>
+		<td>3</td>
+		<td>Eric</td>
+	</tr>
+	<tr>
+		<td>1</td>
+		<td>4</td>
+		<td>Jane</td>
+	</tr>
+	<tr>
+		<td>3</td>
+		<td>5</td>
+		<td>Mark</td>
+	</tr>
+	<tr>
+		<td>2</td>
+		<td>6</td>
+		<td>Carla</td>
+	</tr>
+</table>
+</blockquote>
+
+<p>If we want to compute the total salary budget for Bill, we need to add in the 
+salaries of Eric and Carla (who report to Bill) and Mark (who reports to Eric). 
+Usually Mondrian generates a SQL <code>GROUP BY</code> statement to compute 
+these totals, but there is no (generally available) SQL construct which can 
+traverse hierarchies. So by default, Mondrian generates one SQL statement per 
+supervisor, to retrieve and total all of that supervisor's direct reports.</p><p>This approach has a couple of drawbacks. First, the performance is not very 
+good if a hierarchy contains more than a hundred members. Second, because Mondrian implements the 
+&quot;distinct count&quot; aggregator by generating SQL, you 
+cannot define a &quot;distinct count&quot; member in any cube which contains a parent-child 
+hierarchy.</p><p>How can we solve these problems? The answer is to enhance the data so that Mondrian is able to retrieve the information it needs using standard SQL, 
+and Mondrian supports two ways of doing this.</p>
+
+<h5>Path column</h5>
+
+<p>The first approach is to add a 
+path column to the employee table, like this:</p>
+
+<blockquote>
+<table border="2" cellpadding="2" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" id="table3">
+	<tr>
+		<th colspan="4">employee_plus_path</th>
+	</tr>
+	<tr>
+		<th>supervisor_id</th>
+		<th>employee_id</th>
+		<th>path</th>
+		<th>full_name</th>
+	</tr>
+	<tr>
+		<td>null</td>
+		<td>1</td>
+		<td>1</td>
+		<td>Frank</td>
+	</tr>
+	<tr>
+		<td>1</td>
+		<td>2</td>
+		<td>1.1</td>
+		<td>Bill</td>
+	</tr>
+	<tr>
+		<td>2</td>
+		<td>3</td>
+		<td>1.1.1</td>
+		<td>Eric</td>
+	</tr>
+	<tr>
+		<td>1</td>
+		<td>4</td>
+		<td>1.2</td>
+		<td>Jane</td>
+	</tr>
+	<tr>
+		<td>3</td>
+		<td>5</td>
+		<td>1.1.1.1</td>
+		<td>Mark</td>
+	</tr>
+	<tr>
+		<td>2</td>
+		<td>6</td>
+		<td>1.1.2</td>
+		<td>Carla</td>
+	</tr>
+</table>
+</blockquote>
+
+<p>The path column describes the position of the record in the hierarchy. It has 
+the property that, for any two records <i>x</i> and <i>y</i>, the SQL expression
+<code>x.path LIKE y.path || '%'</code> is true if and only if <i>x</i> is an 
+ancestor of <i>y</i>. Many databases can find the descendants of x efficiently 
+if there is an index on the path column. The catalog XML contains just one extra 
+attribute, <code>pathColumn</code>:</p>
+
+<blockquote>
+
+	<p><code>&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Employees&quot; foreignKey=&quot;employee_id&quot;&gt;<br>
+&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All Employees&quot; primaryKey=&quot;employee_id&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> name=&quot;employee&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Employee Id&quot; uniqueMembers=&quot;true&quot; type=&quot;Numeric&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; column=&quot;employee_id&quot; nameColumn=&quot;full_name&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; parentColumn=&quot;supervisor_id&quot; nullParentValue=&quot;0&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pathColumn=&quot;path&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> name=&quot;Marital Status&quot; column=&quot;marital_status&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> name=&quot;Position Title&quot; column=&quot;position_title&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> name=&quot;Gender&quot; column=&quot;gender&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> name=&quot;Salary&quot; column=&quot;salary&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> name=&quot;Education Level&quot; column=&quot;education_level&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> name=&quot;Management Role&quot; column=&quot;management_role&quot;/&gt;<br>
+&nbsp;&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
+	&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</code></p>
+</blockquote>
+
+<h5>Closure table</h5>
+
+<p>The second approach is to add a bridge table containing a record for every 
+employee/supervisor relationship, regardless of depth. (In mathematical terms, 
+this is called the 'symmetric transitive closure' of the employee/supervisor 
+relationship. The <code>distance</code> column is not strictly required, but it 
+makes it easier to populate the table.)</p>
+
+<blockquote>
+<table border="2" cellpadding="2" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" id="table3">
+	<tr>
+		<th colspan="3">employee_closure</th>
+	</tr>
+	<tr>
+		<th width="91">supervisor_id</th>
+		<th width="85">employee_id</th>
+		<th width="8">distance</th>
+	</tr>
+	<tr>
+		<td width="91">1</td>
+		<td width="85">1</td>
+		<td width="8">0</td>
+	</tr>
+	<tr>
+		<td width="91">1</td>
+		<td width="85">2</td>
+		<td width="8">1</td>
+	</tr>
+	<tr>
+		<td width="91">1</td>
+		<td width="85">3</td>
+		<td width="8">2</td>
+	</tr>
+	<tr>
+		<td width="91">1</td>
+		<td width="85">4</td>
+		<td width="8">1</td>
+	</tr>
+	<tr>
+		<td width="91">1</td>
+		<td width="85">5</td>
+		<td width="8">3</td>
+	</tr>
+	<tr>
+		<td width="91">1</td>
+		<td width="85">6</td>
+		<td width="8">2</td>
+	</tr>
+	<tr>
+		<td width="91">2</td>
+		<td width="85">2</td>
+		<td width="8">0</td>
+	</tr>
+	<tr>
+		<td width="91">2</td>
+		<td width="85">3</td>
+		<td width="8">1</td>
+	</tr>
+	<tr>
+		<td width="91">2</td>
+		<td width="85">5</td>
+		<td width="8">2</td>
+	</tr>
+	<tr>
+		<td width="91">2</td>
+		<td width="85">6</td>
+		<td width="8">1</td>
+	</tr>
+	<tr>
+		<td width="91">3</td>
+		<td width="85">3</td>
+		<td width="8">0</td>
+	</tr>
+	<tr>
+		<td width="91">3</td>
+		<td width="85">5</td>
+		<td width="8">1</td>
+	</tr>
+	<tr>
+		<td width="91">4</td>
+		<td width="85">4</td>
+		<td width="8">0</td>
+	</tr>
+	<tr>
+		<td width="91">5</td>
+		<td width="85">5</td>
+		<td width="8">0</td>
+	</tr>
+	<tr>
+		<td width="91">6</td>
+		<td width="85">6</td>
+		<td width="8">0</td>
+	</tr>
+	</table>
+</blockquote>
+
+<p>In the catalog XML, the <code>&lt;<a href="#XML_Closure">Closure</a>&gt;</code> 
+element maps the level onto a <code>&lt;<a href="#XML_Table">Table</a>&gt;</code>:</p>
+
+<blockquote>
+
+	<p><code>&lt;;<a href="#XML_Dimension">Dimension</a> name=&quot;Employees&quot; foreignKey=&quot;employee_id&quot;&gt;<br>
+&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All Employees&quot; primaryKey=&quot;employee_id&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> name=&quot;employee&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Employee Id&quot; uniqueMembers=&quot;true&quot; type=&quot;Numeric&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; column=&quot;employee_id&quot; nameColumn=&quot;full_name&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; parentColumn=&quot;supervisor_id&quot; nullParentValue=&quot;0&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pathColumn=&quot;path&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Closure">Closure</a> parentColumn=&quot;supervisor_id&quot; childColumn=&quot;employee_id&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> 
+	name=&quot;employee_closure&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Closure">Closure</a>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> name=&quot;Marital Status&quot; column=&quot;marital_status&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> name=&quot;Position Title&quot; column=&quot;position_title&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> name=&quot;Gender&quot; column=&quot;gender&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> name=&quot;Salary&quot; column=&quot;salary&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> name=&quot;Education Level&quot; column=&quot;education_level&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> name=&quot;Management Role&quot; column=&quot;management_role&quot;/&gt;<br>
+&nbsp;&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
+	&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</code></p>
+</blockquote>
+
+<p>Once again, this table allows totals to be evaluated in pure SQL. Even though 
+this introduces an table into the query, database optimizers are very good at 
+handling joins, and this structure is more efficient than the 'path' approach 
+for most databases. I recommend that you declare both <code>supervisor_id</code> 
+and <code>employee_id</code> NOT NULL, and index them as follows:</p>
+
+<blockquote>
+
+	<p><code>CREATE UNIQUE INDEX employee_closure_pk ON employee_closure (<br>
+&nbsp;&nbsp; supervisor_id,<br>
+&nbsp;&nbsp; employee_id<br>
+	);<br>
+	CREATE INDEX employee_closure_emp ON employee_closure (<br>
+&nbsp;&nbsp; employee_id<br>
+	);</code></p>
+</blockquote>
+
+<p>The table needs to be re-populated whenever the hierarchy changes, and it is 
+the application's responsibiltiy for doing so -- Mondrian does not do this! The 
+following pseudo-code shows how:</p>
+
+<blockquote>
+
+	<p><code>TRUNCATE TABLE employee_closure;<br>
+	<br>
+	int distance = 0;<br>
+	INSERT INTO employee_closure (supervisor_id, employee_id, distance)<br>
+	&nbsp;&nbsp;&nbsp;
+	SELECT supervisor_id, employee_id, distance<br>
+	&nbsp;&nbsp;&nbsp;
+	FROM employee;<br>
+	<br>
+	do {<br>
+&nbsp;&nbsp;&nbsp; ++depth;<br>
+&nbsp; &nbsp; INSERT INTO employee_closure (supervisor_id, employee_id, distance)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SELECT employee_closure.supervisor_id, employee.employee_id<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FROM employee_closure,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; employee_closure<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; WHERE employee_closure.supervisor_id = employee.employee_id<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; AND employee_closure.distance = 
+	distance - 1;<br>
+	<br>
+&nbsp;&nbsp;&nbsp;&nbsp; if (no rows were inserted) {{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; break;<br>
+&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+	}</code></p>
+</blockquote>
+
+<h3><a name="Member_properties">Member properties</a></h3><p>Member properties are defined by the <code><a href="#XML_Property">&lt;Property&gt;</a></code element. You use them via the <code><i>member</i>.Properties(&quot;<i>propertyName</i>&quot;)</code> 
+function, for example::</p><blockquote>
+  <preSELECT {[Store Sales]} ON COLUMNS,
     TopCount(Filter([Store].[Store Name].Members,
                     [Store].CurrentMember.Properties(&quot;Store Type&quot;) = &quot;Supermarket&quot;),
-             10, [Store Sales]) ON ROWS
-FROM [Sales]</pre>
-</blockquote>
-<p>Mondrian deduces the type of the property expression, if it can. If the
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 10, [Store Sales]) ON ROWSS
+FROM [Sales]</pre></blockquote><p>Mondrian deduces the type of the property expression, if it can. If the
 property name is a constant string, the type is based upon the type attribute
 (&quot;String&quot;, &quot;Numeric&quot; or &quot;Boolean&quot;) of the property definition. If the property
 name is an expression (for example <code>CurrentMember.Properties(&quot;Store &quot; +
-&quot;Type&quot;)</code>), Mondrian will return an untyped value.</p>
-<h2><a name="Advanced_physical_constructs">Advanced physical constructs</a></h2>
-<h3><a name="Member_readers">Member readers</a></h3>
-<p>A <dfn><font face="Verdana">member reader</font></dfn> is a means of
+&quot;Type&quot;)</code>), Mondrian will return an untyped value.</p><h2><a name="Advanced_physical_constructs">Advanced physical constructs</a></h2><h3><a name="Member_readers">Member readers</a></h3><p>A <dfn><font face="Verdana">member reader</font></dfn> is a means of
 accessing members. Hierarchies are usually based upon a dimension table (an
 'arm' of a star schema), and are therefore populated using SQL. But even if your
 data doesn't reside in an RDBMS, you can make it appear as a hierarchy by
-writing a Java class called a <dfn><font face="Verdana">custom member reader</font></dfn>.</p>
-<p>Here are a couple of examples:</p>
-<ol>
+writing a Java class called a <dfn><font face="Verdana">custom member reader</font></dfn>.</p><p>Here are a couple of examples:</p><ol>
   <li><code>DateSource</code> (to be written) generates a time hierarchy.
   Conventionally, data warehouse implementors generate a table containing a row
   for every date their system is ever likely to deal with. But the problem is
   that this table needs to be loaded, and as time goes by, they will have to
   remember to add more rows. DateSource generates date members in memory, and on
-  demand.</li>
-  <li><code>FileSystemSource</code> (to be written) presents the file system as
+  demand.</li><li><code>FileSystemSource</code> (to be written) presents the file system as
   a hierarchy of directories and files. Since a directory can have a parent
   which is itself a directory, it is a parent-child hierarchy. Like the time
   hierarchy created by DateSource, this is a virtual hierarchy: the member for a
   particular file is only created when, and if, that file's parent directory is
-  expanded.</li>
-  <li><code>ExpressionMemberReader</code> (to be written) creates a hierarchy
-  based upon an expression.</li>
-</ol>
-<p>A custom member reader must implement
+  expanded.</li><li><code>ExpressionMemberReader</code> (to be written) creates a hierarchy
+  based upon an expression.</li></ol><p>A custom member reader must implement
 <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/MemberSource.html">interface
 mondrian.rolap.MemberSource</a>. If you need to implement a larger set of member
 operations for fine-grained control, implement the derived
@@ -557,53 +859,28 @@ in a
 <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/MemberSource.html">mondrian.rolap.CacheMemberReader</a>.
 Your member reader must have a
 public constructor which takes <code>(<a href="http://mondrian.sourceforge.net/api/mondrian/rolap/RolapHierarchy.html">Hierarchy</a>,<a href="http://java.sun.com/j2se/1.4/docs/api/java/util/Properties.html">Properties</a>)</code>
-parameters, and throws no checked exceptions.</p>
-<p>Member readers are declared using the <code><a href="#XML_Hierarchy">&lt;Hierarchy&gt;</a></code> element's
+parameters, and throws no checked exceptions.</p><p>Member readers are declared using the <code><a href="#XML_Hierarchy">&lt;Hierarchy&gt;</a></code> element's
 <code>memberReaderClass</code> attribute; any <code><a href="#XML_Parameter">&lt;Parameter&gt;</a></code> child
-elements are passed via the <code>properties</code> constructor parameter. Here is an example:</p>
-<blockquote>
+elements are passed via the <code>properties</code> constructor parameter. Here is an example:</p><blockquote>
   <pre>&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Has bought dairy&quot;&gt;
-  &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; memberReaderClass=&quot;mondrian.rolap.HasBoughtDairySource&quot;&gt;
-    &lt;<a href="#XML_Level">Level</a> name=&quot;Has bought dairy&quot; uniqueMembers=&quot;true&quot;/&gt;
-    &lt;<a href="#XML_Parameter">Parameter</a> name=&quot;expression&quot; value=&quot;not used&quot;/&gt;
-  &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;
+&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; memberReaderClass=&quot;mondrian.rolap.HasBoughtDairySource&quot;&gt;
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Has bought dairy&quot; uniqueMembers=&quot;true&quot;/&gt;
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Parameter">Parameter</a> name=&quot;expression&quot; value=&quot;not used&quot;/&gt;
+&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;
 &lt;/<a href="#XML_Dimension">Dimension</a>&gt;
-</pre>
-</blockquote>
-<h3><a name="Cell_readers">Cell readers</a></h3>
-<p dir="ltr">Not implemented yet. Syntax would be something like</p>
-
-<blockquote>
-  <pre dir="ltr">&lt;<a href="#XML_Measure">Measure</a> name=&quot;name&quot; cellReaderClass=&quot;com.foo.MyCellReader&quot;&gt;</pre>
-</blockquote>
-<p>and the class &quot;com.foo.MyCellReader&quot; would have to implement <code>
+</pre></blockquote><h3><a name="Cell_readers">Cell readers</a></h3><p dir="ltr">Not implemented yet. Syntax would be something like</p><blockquote>
+  <pre dir="ltr">&lt;<a href="#XML_Measure">Measure</a> name=&quot;name&quot; cellReaderClass=&quot;com.foo.MyCellReader&quot;&gt;</pre></blockquote><p>and the class &quot;com.foo.MyCellReader&quot; would have to implement <code>
 <a href="http://mondrian.sourceforge.net/api/mondrian/olap/CellReader.html">
-interface mondrian.olap.CellReader</a></code>.</p>
-
-<h3><a name="Cell_formatter">Cell formatter</a></h3>
-<p dir="ltr">A cell formatter attribute demotes a java class to format the cell value
+interface mondrian.olap.CellReader</a></code>.</p><h3><a name="Cell_formatter">Cell formatter</a></h3><p dir="ltr">A cell formatter attribute demotes a java class to format the cell value
 being displayed by
-<code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/Cell.html#getFormattedValue()">getFormattedValue()</a></code>.</p>
-<blockquote>
-  <pre dir="ltr">&lt;<a href="#XML_Measure">Measure</a> name=&quot;name&quot; formatter=&quot;com.foo.MyCellFormatter&quot;/&gt;</pre>
-</blockquote>
-<p>The class &quot;com.foo.MyCellFormatter&quot; would have to implement <code>
+<code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/Cell.html#getFormattedValue()">getFormattedValue()</a></code>.</p><blockquote>
+  <pre dir="ltr">&lt;<a href="#XML_Measure">Measure</a> name=&quot;name&quot; formatter=&quot;com.foo.MyCellFormatter&quot;/&gt;</pre></blockquote><p>The class &quot;com.foo.MyCellFormatter&quot; would have to implement <code>
 <a href="http://mondrian.sourceforge.net/api/mondrian/olap/CellFormatter.html">
-interface mondrian.olap.CellFormatter</a></code>.</p>
-
-<h3><a name="Member_formatter">Member formatter</a></h3>
-<p>A member formatter attribute demotes a java class to format a member's display value
-returned by <code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/Member.html#getCaption()">getCaption()</a></code>.</p>
-<blockquote>
-  <pre dir="ltr">&lt;<a href="#XML_Level">Level</a> column=&quot;column&quot; name=&quot;name&quot; formatter=&quot;com.foo.MyMemberFormatter&quot;/&gt;</pre>
-</blockquote>
-
-<p>The class &quot;com.foo.MyMemberFormatter&quot; would have to implement <code>
+interface mondrian.olap.CellFormatter</a></code>.</p><h3><a name="Member_formatter">Member formatter</a></h3><p>A member formatter attribute demotes a java class to format a member's display value
+returned by <code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/Member.html#getCaption()">getCaption()</a></code>.</p><blockquote>
+  <pre dir="ltr">&lt;<a href="#XML_Level">Level</a> column=&quot;column&quot; name=&quot;name&quot; formatter=&quot;com.foo.MyMemberFormatter&quot;/&gt;</pre></blockquote><p>The class &quot;com.foo.MyMemberFormatter&quot; would have to implement <code>
 <a href="http://mondrian.sourceforge.net/api/mondrian/olap/MemberFormatter.html">
-interface mondrian.olap.MemberFormatter</a></code>.</p>
-
-<h3><a name="I18n">Internationalization</a></h3>
-<p>Internationalized applications based on Mondrian could use multiple, language dependent schemas.<br/>
+interface mondrian.olap.MemberFormatter</a></code>.</p><h3><a name="I18n">Internationalization</a></h3><p>Internationalized applications based on Mondrian could use multiple, language dependent schemas.<br/>
 If so, the MDX statements would be language dependent too. This might be more difficult to maintain.<br/>
 Instead of holding several copies of schema and MDX we provide a way to dynamically handle Mondrian schemas.<br/>
 Calling <code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/DriverManager.html#getConnection(mondrian.olap.Util.PropertyList, boolean)">DriverManager.getConnection()</a></code>
@@ -623,56 +900,34 @@ If your DynamicSchemaProcessor would support JSTL-like resolving of variables,<b
 you might use <code>caption</code>, <code>allMemberCaption</code>, <code>measuresCaption</code> attributes as follows.
 
 <blockquote>
-  <pre dir="ltr">&lt;<a href="#XML_Schema">Schema</a> measuresCaption=&quot;${MEASURESCAPTION}&quot;&gt;</pre>
-  <pre dir="ltr">&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Gender&quot; foreignKey=&quot;customer_id&quot; caption=&quot;${GENDER}&quot;&gt;</pre>
-  <pre dir="ltr">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All Genders&quot; primaryKey=&quot;customer_id&quot; allMemberCaption=&quot;${ALLGENDER}&quot;&gt;</pre>
-  <pre dir="ltr">&lt;<a href="#XML_Level">Level</a> name=&quot;Gender&quot; column=&quot;gender&quot; uniqueMembers=&quot;true&quot; caption=&quot;${GENDER}&quot;&gt;</pre>
-  <pre dir="ltr">&lt;<a href="#XML_Measure">Measure</a> name=&quot;Unit Sales&quot; column=&quot;unit_sales&quot; caption=&quot;${UNITSALES}&quot;&gt;</pre>
-</blockquote>
-
-A hierarchy with no <code>caption</code> defined would inherit the <code>caption</code> attribute from the dimension parent.
+  <pre dir="ltr">&lt;<a href="#XML_Schema">Schema</a> measuresCaption=&quot;${MEASURESCAPTION}&quot;&gt;</pre><pre dir="ltr">&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Gender&quot; foreignKey=&quot;customer_id&quot; caption=&quot;${GENDER}&quot;&gt;</pre><pre dir="ltr">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All Genders&quot; primaryKey=&quot;customer_id&quot; allMemberCaption=&quot;${ALLGENDER}&quot;&gt;</pre><pre dir="ltr">&lt;<a href="#XML_Level">Level</a> name=&quot;Gender&quot; column=&quot;gender&quot; uniqueMembers=&quot;true&quot; caption=&quot;${GENDER}&quot;&gt;</pre><pre dir="ltr">&lt;<a href="#XML_Measure">Measure</a> name=&quot;Unit Sales&quot; column=&quot;unit_sales&quot; caption=&quot;${UNITSALES}&quot;&gt;</pre></blockquote>A hierarchy with no <code>caption</code> defined would inherit the <code>caption</code> attribute from the dimension parent.
 </p>
-<h2><a name="Access_control">Access-control</a></h2>
-
-<p>You've got all this great data, but you don't everyone to be able to read all
+<h2><a name="Access_control">Access-control</a></h2><p>You've got all this great data, but you don't everyone to be able to read all
 of it. You can define an access-control profile, called a Role, as part of the
-schema, and set this role when establishing a connection.</p>
-
-<h3><a name="Defining_roles">Defining a role</a></h3>
-
-<p>Roles are defined by <code><a href="#XML_Role">&lt;Role&gt;</a></code> elements,
+schema, and set this role when establishing a connection.</p><h3><a name="Defining_roles">Defining a role</a></h3><p>Roles are defined by <code><a href="#XML_Role">&lt;Role&gt;</a></code> elements,
 which occur as direct children of the <code><a href="#XML_Schema">&lt;Schema&gt;</a></code>
-element, after the last <code><a href="#XML_Cube">&lt;Cube&gt;</a></code>. Here is an example of a role:</p>
-
-<blockquote>
+element, after the last <code><a href="#XML_Cube">&lt;Cube&gt;</a></code>. Here is an example of a role:</p><blockquote>
   <pre>&lt;<a href="#XML_Role">Role</a> name=&quot;California manager&quot;&gt;
-  &lt;<a href="#XML_SchemaGrant">SchemaGrant</a> access=&quot;none&quot;&gt;
-    &lt;<a href="#XML_CubeGrant">CubeGrant</a> cube=&quot;Sales&quot; access=&quot;all&quot;&gt;
-      &lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a> hierarchy=&quot;[Store]&quot; access=&quot;custom&quot; topLevel=&quot;[Store].[Store Country]&quot;&gt;
-        &lt;<a href="#XML_MemberGrant">MemberGrant</a> member=&quot;[Store].[USA].[CA]&quot; access=&quot;all&quot;/&gt;
-        &lt;<a href="#XML_MemberGrant">MemberGrant</a> member=&quot;[Store].[USA].[CA].[Los Angeles]&quot; access=&quot;none&quot;/&gt;
-      &lt;/<a href="#XML_HierarchyGrant">HierarchyGrant</a>&gt;
-      &lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a> hierarchy=&quot;[Customers]&quot; access=&quot;custom&quot; topLevel=&quot;[Customers].[State Province]&quot; bottomLevel=&quot;[Customers].[City]&quot;&gt;
-        &lt;<a href="#XML_MemberGrant">MemberGrant</a> member=&quot;[Customers].[USA].[CA]&quot; access=&quot;all&quot;/&gt;
-        &lt;<a href="#XML_MemberGrant">MemberGrant</a> member=&quot;[Customers].[USA].[CA].[Los Angeles]&quot; access=&quot;none&quot;/&gt;
-      &lt;/<a href="#XML_HierarchyGrant">HierarchyGrant</a>&gt;
-      &lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a> hierarchy=&quot;[Gender]&quot; access=&quot;none&quot;/&gt;
-    &lt;/<a href="#XML_CubeGrant">CubeGrant</a>&gt;
-  &lt;/<a href="#XML_SchemaGrant">SchemaGrant</a>&gt;
-&lt;/<a href="#XML_Role">Role</a>&gt;</pre>
-</blockquote>
-
-<p>A <code><a href="#XML_SchemaGrant">&lt;SchemaGrant&gt;</a></code> defines the default access for
+&nbsp; &lt;<a href="#XML_SchemaGrant">SchemaGrant</a> access=&quot;none&quot;&gt;
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_CubeGrant">CubeGrant</a> cube=&quot;Sales&quot; access=&quot;all&quot;&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a> hierarchy=&quot;[Store]&quot; access=&quot;custom&quot; topLevel=&quot;[Store].[Store Country]&quot;&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_MemberGrant">MemberGrant</a> member=&quot;[Store].[USA].[CA]&quot; access=&quot;all&quot;/&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_MemberGrant">MemberGrant</a> member=&quot;[Store].[USA].[CA].[Los Angeles]&quot; access=&quot;none&quot;/&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_HierarchyGrant">HierarchyGrant</a>&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a> hierarchy=&quot;[Customers]&quot; access=&quot;custom&quot; topLevel=&quot;[Customers].[State Province]&quot; bottomLevel=&quot;[Customers].[City]&quot;&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_MemberGrant">MemberGrant</a> member=&quot;[Customers].[USA].[CA]&quot; access=&quot;all&quot;/&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_MemberGrant">MemberGrant</a> member=&quot;[Customers].[USA].[CA].[Los Angeles]&quot; access=&quot;none&quot;/&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_HierarchyGrant">HierarchyGrant</a>&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a> hierarchy=&quot;[Gender]&quot; access=&quot;none&quot;/&gt;
+&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_CubeGrant">CubeGrant</a>&gt;
+&nbsp; &lt;/<a href="#XML_SchemaGrant">SchemaGrant</a>&gt;
+&lt;/<a href="#XML_Role">Role</a>&gt;</pre></blockquote><p>A <code><a href="#XML_SchemaGrant">&lt;SchemaGrant&gt;</a></code> defines the default access for
 objects in a schema. The <code>access</code> attribute can be &quot;all&quot; or &quot;none&quot;;
 this access can be overridden for specific objects. In this case, because
 <code>access=&quot;none&quot;</code>, a user would only be able to browse the &quot;Sales&quot; cube,
-because it is explicitly granted.</p>
-
-<p>A <code><a href="#XML_CubeGrant">&lt;CubeGrant&gt;</a></code> defines the access to
+because it is explicitly granted.</p><p>A <code><a href="#XML_CubeGrant">&lt;CubeGrant&gt;</a></code> defines the access to
 a particular cube. As for <code><a href="#XML_SchemaGrant">&lt;SchemaGrant&gt;</a></code>, the access attribute can be &quot;all&quot; or &quot;none&quot;, and can
-be overridden for specific sub-objects in the cube.</p>
-
-<p>A <code><a href="#XML_HierarchyGrant">&lt;HierarchyGrant&gt;</a></code> defines
+be overridden for specific sub-objects in the cube.</p><p>A <code><a href="#XML_HierarchyGrant">&lt;HierarchyGrant&gt;</a></code> defines
 access to a hierarchy. The access attribute can be &quot;all&quot;, meaning all members
 are visible; &quot;none&quot;, meaning the hierarchy's very existence is hidden from the
 user; and &quot;custom&quot;. With custom access, you can use the <code>topLevel</code>
@@ -682,51 +937,34 @@ Store Country</code> level); or use the <code>bottomLevel</code> attribute to
 define the bottom level which is visible (here, preventing users from invading
 looking at individual customers' details); or control which sets of members the
 user can see, by defining nested <a href="#XML_MemberGrant">&lt;MemberGrant&gt;</a>
-elements.</p>
-
-<p>You can only define a <code><a href="#XML_MemberGrant">&lt;MemberGrant&gt;</a></code>
+elements.</p><p>You can only define a <code><a href="#XML_MemberGrant">&lt;MemberGrant&gt;</a></code>
 element if its enclosing <code><a href="#XML_HierarchyGrant">&lt;HierarchyGrant&gt;</a></code>
 has <code>access=&quot;custom&quot;</code>. Member grants give (or remove) access to a
-given member, and all of its children. Here are the rules:</p>
-
-<ol>
+given member, and all of its children. Here are the rules:</p><ol>
   <li><b>Members inherit access from their parents</b>. If you deny access to
-  California, you won't be able to see San Francisco.</li>
-  <li><b>Grants are order-dependent</b>. If you grant access to USA, then deny
+  California, you won't be able to see San Francisco.</li><li><b>Grants are order-dependent</b>. If you grant access to USA, then deny
   access to Oregon, then you won't be able to see Oregon, or Portland. But if
   you were to deny access to Oregon, then grant access to USA, you can
-  effectively see everything.</li>
-  <li><b>A member is visible if any of its children are visible</b>. Suppose you
+  effectively see everything.</li><li><b>A member is visible if any of its children are visible</b>. Suppose you
   deny access to USA, then grant access to California. You will be able to see
   USA, and California, but none of the other states. The totals against USA will
-  still reflect all states, however.</li>
-  <li><b>Member grants don't override the hierarchy grant's top- and
+  still reflect all states, however.</li><li><b>Member grants don't override the hierarchy grant's top- and
   bottom-levels</b>. If you set <code>topLevel=&quot;[Store].[Store State]&quot;</code>,
-  and grant access to California, you won't be able to see USA.</li>
-</ol>
-
-<p>In the example, the user will have access to California, and all of the
+  and grant access to California, you won't be able to see USA.</li></ol><p>In the example, the user will have access to California, and all of the
 cities in California except Los Angeles. They will be able to see USA (because
 its child, California, is visible), but no other nations, and not All Stores
-(because it is above the top level, <code>Store Country</code>).</p>
-
-<h3><a name="Setting_a_connections_role">Setting a connection's role</a></h3>
-
-<p>A role only has effect when it is associated with a connection. By default,
+(because it is above the top level, <code>Store Country</code>).</p><h3><a name="Setting_a_connections_role">Setting a connection's role</a></h3><p>A role only has effect when it is associated with a connection. By default,
 connections have a role which gives them access to every
 cube in that connection's schema. </p>
 
 <p>Most databases associate roles (or 'groups') with users, and automatically
 assign them when users log in. However, Mondrian doesn't have the notion of
 users, so you have to establish the role in a different way. There are two ways
-of doing this:</p>
-
-<ol>
+of doing this:</p><ol>
   <li><b>In the connect string</b>. If you specify the <code>Role</code> keyword
   in the connect string, the connection will adopt that role. See
   <a href="http://mondrian.sourceforge.net/api/mondrian/olap/DriverManager.html">
-  class DriverManager</a> for examples of connect string syntax.</li>
-  <li><b>Programmatically</b>. Once your application has established a
+  class DriverManager</a> for examples of connect string syntax.</li><li><b>Programmatically</b>. Once your application has established a
   connection, call the method
   <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Connection.html#setRole(mondrian.olap.Role)">
   Connection.setRole(Role)</a>. You can create a Role programmatically (see
@@ -734,134 +972,59 @@ of doing this:</p>
   Role</a> for more details), or look
   one up using the method
   <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Schema.html#lookupRole(java.lang.String)">
-  Schema.lookupRole(String)</a>.</li>
-</ol>
-
-<h2><a name="Other_stuff">Other stuff</a></h2>
-
-<h3 dir="ltr"><a name="Format_strings">Format strings</a></h3>
-
-<p dir="ltr">Format strings use Visual Basic formatting syntax, see
+  Schema.lookupRole(String)</a>.</li></ol><h2><a name="Other_stuff">Other stuff</a></h2><h3 dir="ltr"><a name="Format_strings">Format strings</a></h3><p dir="ltr">Format strings use Visual Basic formatting syntax, see
 <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Format.html">class
 mondrian.olap.Format</a> for more details. </p>
 
 <p dir="ltr">A measure's format string is usually a fixed string, but it really
 an expression, which is evaluated in the same context as the cell. You can
-therefore change the formatting of a cell depending upon the cell's value.</p>
-
-<p dir="ltr"><i>todo</i>: example of expression format string to do
-traffic-lighting</p>
-
-<h2><a name="Appendix_A_XML_elements">Appendix A: XML elements</a></h2>
-
-<table border="2" cellpadding="2" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" id="AutoNumber2">
+therefore change the formatting of a cell depending upon the cell's value.</p><p dir="ltr"><i>todo</i>: example of expression format string to do
+traffic-lighting</p><h2><a name="Appendix_A_XML_elements">Appendix A: XML elements</a></h2><table border="2" cellpadding="2" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" id="AutoNumber2">
   <tr>
-    <th>Element</th>
-    <th>Description</th>
+    <th>Element</th><th>Description</th></tr><tr>
+    <td><code>&lt;<a name="XML_Schema" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Schema">Schema</a>&gt;</code></td><td>Collection of Cubes, Virtual cubes,  Shared dimensions, and Roles.</td></tr><tr>
+    <td colspan="2"><i>Logical elements</i></td></tr><tr>
+    <td><code>&lt;<a name="XML_Cube" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Cube">Cube</a>&gt;</code></td><td>A collection of dimensions and measures, all centered on a fact table.</td></tr><tr>
+    <td><code>&lt;<a name="XML_VirtualCube" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#VirtualCube">VirtualCube</a>&gt;</code></td><td>A cube defined by combining the dimensions and measures of one or more
+    cubes.</td></tr><tr>
+    <td><code>&lt;<a name="XML_Dimension" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Dimension">Dimension</a>&gt;</code></td><td>&nbsp;</td>
   </tr>
   <tr>
-    <td><code>&lt;<a name="XML_Schema" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Schema">Schema</a>&gt;</code></td>
-    <td>Collection of Cubes, Virtual cubes,  Shared dimensions, and Roles.</td>
+    <td><code>&lt;<a name="XML_DimensionUsage" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#DimensionUsage">DimensionUsage</a>&gt;</code></td><td>Usage of a shared dimension by a cube.</td></tr><tr>
+    <td><code>&lt;<a name="XML_Hierarchy" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Hierarchy">Hierarchy</a>&gt;</code></td><td>&nbsp;</td>
   </tr>
   <tr>
-    <td colspan="2"><i>Logical elements</i></td>
-    </tr>
-  <tr>
-    <td><code>&lt;<a name="XML_Cube" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Cube">Cube</a>&gt;</code></td>
-    <td>A collection of dimensions and measures, all centered on a fact table.</td>
+    <td><code>&lt;<a name="XML_Level" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Level">Level</a>&gt;</code></td><td>&nbsp;</td>
   </tr>
   <tr>
-    <td><code>&lt;<a name="XML_VirtualCube" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#VirtualCube">VirtualCube</a>&gt;</code></td>
-    <td>A cube defined by combining the dimensions and measures of one or more
-    cubes.</td>
+    <td><code>&lt;<a name="XML_Property" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Property">Property</a>&gt;</code></td><td>Member property. The definition is a hierarchy or level, but the 
+	property will be available to all members.</td></tr><tr>
+    <td><code>&lt;<a name="XML_Measure" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Measure">Measure</a>&gt;</code></td><td>&nbsp;</td>
   </tr>
   <tr>
-    <td><code>&lt;<a name="XML_Dimension" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Dimension">Dimension</a>&gt;</code></td>
-    <td>&nbsp;</td>
+    <td><code>&lt;<a href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#CalculatedMember" name="XML_CalculatedMember">CalculatedMember</a>&gt;</code></td><td>A member whose value is derived using a formula, defined as part of a 
+	cube.</td></tr><tr>
+    <td colspan="2"><i>Physical elements</i></td></tr><tr>
+    <td><code>&lt;<a name="XML_Table" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Table">Table</a>&gt;</code></td><td>Fact- or dimension table.</td></tr><tr>
+    <td><code>&lt;<a name="XML_View" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#View">View</a>&gt;</code></td><td>Defines a 'table' using a SQL query, which can have
+    different variants for different underlying databases.</td></tr><tr>
+    <td><code>&lt;<a name="XML_Join" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Join">Join</a>&gt;</code></td><td>Defines a 'table' by joining a set of queries.</td></tr><tr>
+    <td><code>&lt;<a name="XML_Closure" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Closure">Closure</a>&gt;</code></td>
+    <td>Maps a parent-child hierarchy onto a closure table.</td></tr><tr>
+    <td colspan="2"><i>Access control</i></td></tr><tr>
+    <td><code>&lt;<a href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Role" name="XML_Role">Role</a>&gt;</code></td><td>An access-control profile.</td></tr><tr>
+    <td><code>&lt;<a href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#SchemaGrant" name="XML_SchemaGrant">SchemaGrant</a>&gt;</code></td><td>A set of rights to a schema.</td></tr><tr>
+    <td><code>&lt;<a href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#CubeGrant" name="XML_CubeGrant">CubeGrant</a>&gt;</code></td><td>A set of rights to a cube.</td></tr><tr>
+    <td><code>&lt;<a href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#HierarchyGrant" name="XML_HierarchyGrant">HierarchyGrant</a>&gt;</code></td><td>A set of rights to a hierarchy and levels within that hierarchy.</td></tr><tr>
+    <td><code>&lt;<a href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#MemberGrant" name="XML_MemberGrant">MemberGrant</a>&gt;</code></td><td>A set of rights to a member and its children.</td></tr><tr>
+    <td colspan="2"><i>Miscellaneous</i></td></tr><tr>
+    <td><code>&lt;<a href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Parameter" name="XML_Parameter">Parameter</a>&gt;</code></td><td>&nbsp;</td>
   </tr>
   <tr>
-    <td><code>&lt;<a name="XML_DimensionUsage" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#DimensionUsage">DimensionUsage</a>&gt;</code></td>
-    <td>Usage of a shared dimension by a cube.</td>
+    <td><code>&lt;<a name="XML_Table" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Table">Table</a>&gt;</code></td><td>&nbsp;</td>
   </tr>
   <tr>
-    <td><code>&lt;<a name="XML_Hierarchy" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Hierarchy">Hierarchy</a>&gt;</code></td>
-    <td>&nbsp;</td>
-  </tr>
-  <tr>
-    <td><code>&lt;<a name="XML_Level" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Level">Level</a>&gt;</code></td>
-    <td>&nbsp;</td>
-  </tr>
-  <tr>
-    <td><code>&lt;<a name="XML_Property" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Property">Property</a>&gt;</code></td>
-    <td>Member property. The definition is a hierarchy or level, but the 
-	property will be available to all members.</td>
-  </tr>
-  <tr>
-    <td><code>&lt;<a name="XML_Measure" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Measure">Measure</a>&gt;</code></td>
-    <td>&nbsp;</td>
-  </tr>
-  <tr>
-    <td><code>&lt;<a href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#CalculatedMember" name="XML_CalculatedMember">CalculatedMember</a>&gt;</code></td>
-    <td>A member whose value is derived using a formula, defined as part of a 
-	cube.</td>
-  </tr>
-  <tr>
-    <td colspan="2"><i>Physical elements</i></td>
-    </tr>
-  <tr>
-    <td><code>&lt;<a name="XML_Table" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Table">Table</a>&gt;</code></td>
-    <td>Fact- or dimension table.</td>
-  </tr>
-  <tr>
-    <td><code>&lt;<a name="XML_View" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#View">View</a>&gt;</code></td>
-    <td>Defines a 'table' using a SQL query, which can have
-    different variants for different underlying databases.</td>
-  </tr>
-  <tr>
-    <td><code>&lt;<a name="XML_Join" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Join">Join</a>&gt;</code></td>
-    <td>Defines a 'table' by joining a set of queries.</td>
-  </tr>
-  <tr>
-    <td colspan="2"><i>Access control</i></td>
-    </tr>
-  <tr>
-    <td><code>&lt;<a href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Role" name="XML_Role">Role</a>&gt;</code></td>
-    <td>An access-control profile.</td>
-  </tr>
-  <tr>
-    <td><code>&lt;<a href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#SchemaGrant" name="XML_SchemaGrant">SchemaGrant</a>&gt;</code></td>
-    <td>A set of rights to a schema.</td>
-  </tr>
-  <tr>
-    <td><code>&lt;<a href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#CubeGrant" name="XML_CubeGrant">CubeGrant</a>&gt;</code></td>
-    <td>A set of rights to a cube.</td>
-  </tr>
-  <tr>
-    <td><code>&lt;<a href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#HierarchyGrant" name="XML_HierarchyGrant">HierarchyGrant</a>&gt;</code></td>
-    <td>A set of rights to a hierarchy and levels within that hierarchy.</td>
-  </tr>
-  <tr>
-    <td><code>&lt;<a href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#MemberGrant" name="XML_MemberGrant">MemberGrant</a>&gt;</code></td>
-    <td>A set of rights to a member and its children.</td>
-  </tr>
-  <tr>
-    <td colspan="2"><i>Miscellaneous</i></td>
-    </tr>
-  <tr>
-    <td><code>&lt;<a href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Parameter" name="XML_Parameter">Parameter</a>&gt;</code></td>
-    <td>&nbsp;</td>
-  </tr>
-  <tr>
-    <td><code>&lt;<a name="XML_Table" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Table">Table</a>&gt;</code></td>
-    <td>&nbsp;</td>
-  </tr>
-  <tr>
-    <td><code>&lt;<a name="XML_CalculatedMemberProperty" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#MemberProperty">CalculatedMemberProperty</a>&gt;</code></td>
-    <td>Property of a calculated member.</td>
-  </tr>
-  </table>
-
-<hr>
+    <td><code>&lt;<a name="XML_CalculatedMemberProperty" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#MemberProperty">CalculatedMemberProperty</a>&gt;</code></td><td>Property of a calculated member.</td></tr></table><hr>
 
 <table border="0" class="clsStd" width="100%" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0">
   <tr>
@@ -869,8 +1032,7 @@ traffic-lighting</p>
       <a target="_top" href="index.html">Home</a> |
       <a target="_top" href="schema.html">No frames</a> | This file is<i>
       <a href="http://perforce.eigenbase.org:8080/open/mondrian/doc/schema.html">$Id$
-      </a></i> (<a href="http://perforce.eigenbase.org:8080/open/mondrian/doc/schema.html?ac=22">log</a>)</td>
-    <td align="right">
+      </a></i> (<a href="http://perforce.eigenbase.org:8080/open/mondrian/doc/schema.html?ac=22">log</a>)</td><td align="right">
       <a href="http://sourceforge.net">
         <img src="http://sourceforge.net/sflogo.php?group_id=35302&type=1" width="88" height="31" border="0" alt="SourceForge.net Logo">
       </a>
