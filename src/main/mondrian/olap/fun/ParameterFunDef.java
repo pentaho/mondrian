@@ -85,11 +85,11 @@ public class ParameterFunDef extends FunDefBase {
             // "[Time]", and the automatic type conversion did the rest.
             FunCall hierarchyCall = (FunCall) typeArg;
             if (hierarchyCall.getFunName().equals("Hierarchy") &&
-                    hierarchyCall.getArgLength() > 0 &&
+                    hierarchyCall.getArgCount() > 0 &&
                     hierarchyCall.getArg(0) instanceof FunCall) {
                 FunCall currentMemberCall = (FunCall) hierarchyCall.getArg(0);
                 if (currentMemberCall.getFunName().equals("CurrentMember") &&
-                        currentMemberCall.getArgLength() > 0 &&
+                        currentMemberCall.getArgCount() > 0 &&
                         currentMemberCall.getArg(0) instanceof Dimension) {
                     return true;
                 }

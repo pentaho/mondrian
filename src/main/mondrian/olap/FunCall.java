@@ -90,27 +90,30 @@ public class FunCall extends ExpBase {
      * @param      index   the index of the Exp.
      * @return     the Exp at the specified index of this array of Exp.
      *             The first Exp is at index <code>0</code>.
+     * @see #getArgs()
      */
     public Exp getArg(int index) {
         return args[index];
     }
 
     /**
-     * Return the internal array of Exp arguments.
-     * Note: this does NOT do a copy.
+     * Returns the internal array of Exp arguments.
      *
-     * @return the array of Exps.
+     * <p>Note: this does NOT do a copy.
+     *
+     * @return the array of expressions
      */
     public Exp[] getArgs() {
         return args;
     }
 
     /**
-     * Returns the number of Exps in the argument array.
+     * Returns the number of arguments.
      *
      * @return number of arguments.
+     * @see #getArgs()
      */
-    public int getArgLength() {
+    public final int getArgCount() {
         return args.length;
     }
 

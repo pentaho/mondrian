@@ -58,7 +58,7 @@ public abstract class ExpBase
         if (this instanceof FunCall) {
             FunCall f = (FunCall) this;
             return (f.getSyntax() == Syntax.Braces) &&
-                   (f.getArgLength() == 0);
+                   (f.getArgCount() == 0);
         } else {
             return false;
         }
@@ -81,7 +81,7 @@ public abstract class ExpBase
             return null;
         }
         // Make sure all of the Exp are Members
-        int len = f.getArgLength();
+        int len = f.getArgCount();
         for (int i = 0; i < len; i++) {
             if (!(f.getArg(i) instanceof Member)) {
                 return null;
