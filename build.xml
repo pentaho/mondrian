@@ -1,0 +1,330 @@
+<!--
+  == $Id$
+  == This software is subject to the terms of the Common Public License
+  == Agreement, available at the following URL:
+  == http://www.opensource.org/licenses/cpl.html.
+  == (C) Copyright 2001-2002 Kana Software, Inc. and others.
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  == jhyde, 31 October, 2001
+  -->
+<project name="mondrian" default="compile">
+  <property environment="myenv"/>
+  <property name="project.location" location="."/>
+  <property name="lib.location" location="${project.location}/lib"/>
+  <property file="${project.location}/build.properties"/>
+  <property name="project.build.debug" value="on"/>
+  <property name="Name" value="Mondrian"/>
+  <property name="name" value="mondrian"/>
+  <property name="version" value="0.2"/>
+
+  <!--
+    ===================================================================
+    Set the properties related to paths
+    =================================================================== 
+  -->
+  <property name="src.dir" value="src"/>
+  <property name="java.dir" value="${src.dir}/main"/>
+  <property name="lib.dir" value="lib"/>
+  <property name="doc.dir" value="doc"/>
+  <property name="resource.location" location="resource"/>
+  <property name="javadoc.dir" value="${doc.dir}/api"/>
+  <property name="classes.dir" value="classes"/>
+  <property name="dist.name" value="${name}-${version}"/>
+  <property name="dist.base" value="distribution"/>
+  <property name="dist.dir" value="dist"/>
+  <property name="demo.dir" value="demo"/>
+  <property name="webapp.dir" value="webapp"/>
+  <property name="dist.src.file" value="${dist.dir}/${dist.name}-src.zip"/>
+  <property name="dist.data.file" value="${dist.dir}/${dist.name}-data.zip"/>
+  <property name="dist.bin.file" value="${dist.dir}/${dist.name}-bin.zip"/>
+  <property name="dist.jar.file" value="${dist.dir}/${name}.jar"/>
+  <property name="boot.jar.file" value="${lib.dir}/boot.jar"/>
+  <property name="war.file" value="${dist.dir}/mondrian.war"/>
+  <property name="tomcat.home" value="${myenv.TOMCAT_HOME}"/>
+  <property name="xalan.home" value="${myenv.XALAN_HOME}"/>
+  <property name="junit.home" value="${myenv.JUNIT_HOME}"/>
+  <property name="generated.java.files" value="${java.dir}/mondrian/olap/Parser.java, ${java.dir}/mondrian/olap/ParserSym.java, ${java.dir}/mondrian/resource/ResourceDef.java, ${java.dir}/mondrian/olap/MondrianDef.java, ${java.dir}/mondrian/xom/MetaDef.java"/>
+
+  <path id="project.classpath">
+    <pathelement location="${classes.dir}"/>
+    <pathelement location="${tomcat.home}/common/lib/xerces.jar"/>
+    <pathelement location="${tomcat.home}/common/lib/servlet.jar"/>
+    <pathelement location="${lib.dir}/javacup.jar"/>
+    <pathelement location="${xalan.home}/bin/xml-apis.jar"/>
+    <pathelement location="${xalan.home}/bin/xalan.jar"/>
+    <pathelement location="${junit.home}/junit.jar"/>
+    <pathelement path="${myenv.CLASSPATH}"/>
+  </path>
+
+  <path id="project.boot.classpath">
+    <path refid="project.classpath"/>
+    <pathelement location="${boot.jar.file}"/>
+  </path>
+
+  <taskdef name="javacup" classname="java_cup.JavaCUPTask"/>
+  <taskdef name="xomgen" classname="mondrian.xom.XOMGenTask"/>
+
+  <!--
+    ===================================================================
+    Properties for running the FoodMart test
+    =================================================================== 
+  -->
+
+  <!-- Comma-separated list of jdbc drivers; for example,
+       "org.hsqldb.jdbcDriver,sun.jdbc.odbc.JdbcOdbcDriver,oracle.jdbc.OracleDriver" -->
+  <property name="mondrian.jdbcDrivers"
+      value="sun.jdbc.odbc.JdbcOdbcDriver,oracle.jdbc.OracleDriver"/>
+  <!-- The URL of the folder which contains the resource files. -->
+  <property name="mondrian.resourceURL"
+      value="file:///${resource.location}"/>
+  <!-- JDBC URL of the relational database; examples are
+       "jdbc:odbc:MondrianFoodMart", "jdbc:hsqldb:demo/hsql/FoodMart",
+	   "jdbc:oracle:oci8:foodmart/foodmart@kanaebiz". -->
+  <property name="mondrian.foodmart.jdbcURL"
+      value="jdbc:odbc:MondrianFoodMart"/>
+  <!-- URL of the catalog definition. -->
+  <property name="mondrian.foodmart.catalogURL"
+      value="file:///${project.location}/${demo.dir}/FoodMart.xml"/>
+
+  <target name="help">
+      <echo>
+      You must specify a specific project target when using the ANT build.
+      Targets are one of the following:
+      - all
+          Cleans, compiles all classes, and runs a simple test.
+      - compile
+          Compiles functional classes only.
+      - clean
+          Deletes build output.
+      - test
+          Runs a simple test.
+      </echo>
+  </target>
+
+  <target name="all" depends="clean,compile,test"/>
+  
+  <target name="clean">
+      <delete includeEmptyDirs="true" quiet="true">
+          <fileset dir="${classes.dir}" includes="**/*.class"/>
+          <fileset dir="." includes="${generated.java.files}"/>
+      </delete>
+  </target>
+  
+  <target name="prepare">
+    <mkdir dir="${classes.dir}"/>
+  </target>
+
+  <target name="compile" depends="prepare,parser,def,compile.java"/>
+
+  <target name="compile.java">
+    <javac
+        srcdir="${java.dir}"
+        destdir="${classes.dir}"
+        debug="${project.build.debug}"
+        classpathref="project.classpath">
+      <include name="mondrian/**/*.java" />
+    </javac>
+  </target>
+
+  <target name="parser">
+    <javacup
+        srcdir="${java.dir}"
+        input="${java.dir}/mondrian/olap/Parser.cup"
+        interface="true"/>
+  </target>
+
+  <target name="def">
+    <xomgen
+        model="${java.dir}/mondrian/xom/Meta.xml"
+		destdir="${java.dir}"
+		classname="mondrian.xom.MetaDef"
+		dtdname="meta.dtd"/>
+    <xomgen
+        model="${java.dir}/mondrian/olap/Mondrian.xml"
+        destdir="${java.dir}"
+		classname="mondrian.olap.MondrianDef"
+        dtdname="mondrian.dtd"/>
+    <xomgen
+        model="${java.dir}/mondrian/resource/Resource.xml"
+		destdir="${java.dir}"
+		classname="mondrian.resource.ResourceDef"
+		dtdname="Resource.dtd"/>
+  </target>
+
+  <!-- FoodMartTest runs a few queries using the FoodMart schema. Before you
+       run it, you will need to set the "mondrian.jdbcDrivers",
+       "mondrian.foodmart.jdbcURL", and "mondrian.foodmart.catalogURL"
+       properties.  -->
+  <target name="FoodMartTest">
+    <java classpathref="project.classpath" classname="mondrian.test.Main" 
+        fork="yes">
+      <jvmarg value="-Dmondrian.jdbcDrivers=${mondrian.jdbcDrivers}"/>
+      <jvmarg value="-Dmondrian.resourceURL=${mondrian.resourceURL}"/>
+
+      <!-- mondrian.test.connectString is the mondrian connect-string.
+           Provider must be 'mondrian'. Jdbc is the  Catalog is the  -->
+      <jvmarg value="-Dmondrian.test.connectString=Provider=mondrian;Jdbc=${mondrian.foodmart.jdbcURL};Catalog=${mondrian.foodmart.catalogURL}"/>
+    </java>
+  </target>
+
+  <!-- test runs all JUnit tests. Same prerequisites as FoodMartTest -->
+  <target name="test">
+    <java classpathref="project.classpath" classname="mondrian.test.Main" 
+        fork="yes">
+      <jvmarg value="-Dmondrian.jdbcDrivers=${mondrian.jdbcDrivers}"/>
+      <jvmarg value="-Dmondrian.resourceURL=${mondrian.resourceURL}"/>
+
+      <!-- mondrian.test.connectString is the mondrian connect-string.
+           Provider must be 'mondrian'. Jdbc is the  Catalog is the  -->
+      <jvmarg value="-Dmondrian.test.connectString=Provider=mondrian;Jdbc=${mondrian.foodmart.jdbcURL};Catalog=${mondrian.foodmart.catalogURL}"/>
+    </java>
+  </target>
+
+  <target name="etags">
+    <exec dir="${project.location}" executable="find" output="javaFiles">
+      <arg line=". -name &quot;*.java&quot; -print"/>
+    </exec>
+    <exec dir="${project.location}" executable="ctags">
+      <arg line="-e"/>
+      <arg line="-L javaFiles"/>
+    </exec>
+    <delete file="${project.location}/javaFiles" quiet="true"/>
+  </target>
+
+  <target name="srczip">
+    <mkdir dir="${dist.dir}" />
+    <zip
+        zipfile="${dist.src.file}"
+        update="true">
+      <zipfileset
+          dir="."
+          prefix="${dist.name}"
+          includes="**/*.java, **/*.cup, **/*.html, **/*.css, ${java.dir}/mondrian/resource/Resource.xml, ${java.dir}/mondrian/olap/Mondrian.xml, ${java.dir}/mondrian/xom/Meta.xml, ${lib.dir}/javacup.jar, ${lib.dir}/boot.jar, ${webapp.dir}/WEB-INF/web.xml, ${webapp.dir}/**/*.jsp, ${webapp.dir}/WEB-INF/*.xsl, ${webapp.dir}/WEB-INF/*.tld, resource/*.xml, resource/*.xsl, build.xml, build.bat, build.properties, deploy_env.properties, LICENSE.html, README.txt, VERSION.txt, ${demo.dir}/FoodMart.xml"
+          excludes="${javadoc.dir}/**, **/*~, ${generated.java.files}" />
+    </zip>
+  </target>
+
+  <target name="datazip">
+    <mkdir dir="${dist.dir}" />
+    <zip
+        zipfile="${dist.data.file}"
+        update="true">
+      <zipfileset
+          dir="."
+          prefix="${dist.name}"
+          includes="LICENSE.html, README.txt, VERSION.txt, demo/FoodMartData.sql, demo/FoodMartTables.sql, demo/FoodMartIndexes.sql, demo/oracle/FoodMartData.sql, demo/oracle/FoodMartTables.sql, demo/oracle/FoodMartIndexes.sql, demo/oracle/FoodMart.dmp, demo/access/MondrianFoodMart.mdb, demo/**/*.pl, demo/**/*.sh"
+          excludes="demo/FoodMart.xml, **/*~"/>
+    </zip>
+  </target>
+
+  <target name="export.foodmart.oracle">
+    <exec dir="${demo.dir}/oracle" executable="${myenv.ORACLE_HOME}/bin/exp">
+      <arg line="userid=foodmart/foodmart@kanaebiz"/>
+      <arg line="file=FoodMart.dmp"/>
+      <arg line="owner=FOODMART"/>
+	</exec>
+  </target>
+
+  <target name="binzip" depends="javadoc">
+    <mkdir dir="${dist.dir}" />
+    <zip
+        zipfile="${dist.bin.file}"
+        update="true">
+      <zipfileset
+          dir="."
+          prefix="${dist.name}"
+          includes="${javadoc.dir}/**/*, LICENSE.html, README.txt, VERSION.txt"
+          excludes="**/*~"/>
+      <zipfileset
+          dir="${dist.dir}"
+          prefix="${dist.name}/lib"
+          includes="${name}.jar"/>
+    </zip>
+  </target>
+
+  <target name="jar">
+    <mkdir dir="${dist.dir}" />
+    <zip
+        zipfile="${dist.jar.file}"
+        update="true">
+      <zipfileset
+          dir="${classes.dir}"
+          includes="**/*.class"/>
+      <zipfileset
+          dir="."
+          includes="LICENSE.html, README.txt, VERSION.txt"/>
+    </zip>
+  </target>
+
+  <target name="bootjar"
+      description="Builds a jar file of the classes we need in order to run ant; when the new versions have built, we can replace them. Run this target when the bootstrap files have changed so much that you can't bootstrap, and you need o generate a new boot.jar to check in to source control.">
+    <mkdir dir="${lib.dir}" />
+    <delete file="${boot.jar.file}"/>
+    <jar jarfile="${boot.jar.file}">
+      <fileset
+          dir="${classes.dir}"
+          includes="mondrian/xom/**/*.class, mondrian/resource/**/*.class"/>
+    </jar>
+  </target>
+
+  <target name="javadoc">
+    <mkdir dir="${javadoc.dir}" />
+    <javadoc sourcepath="${java.dir}"
+        destdir="${javadoc.dir}"
+        packagenames="mondrian.*"
+        overview="${doc.dir}/overview.html"
+        author="true"/>
+    <copy file="${java.dir}/mondrian/xom/meta.xml"
+        todir="${javadoc.dir}/mondrian/xom"/>
+    <copy file="${java.dir}/mondrian/resource/resource.xml"
+        todir="${javadoc.dir}/mondrian/resource"/>
+    <copy file="${java.dir}/mondrian/olap/mondrian.xml"
+        todir="${javadoc.dir}/mondrian/olap"/>
+  </target>
+
+  <target name="webapp" depends="compile">
+    <filter filtersfile="deploy_env.properties"/>
+    <mkdir dir="${dist.dir}" />
+    <delete file="${war.file}"/>
+    <copy file="${webapp.dir}/WEB-INF/web.xml"
+	    filtering="true" todir="${dist.dir}"/>
+    <war warfile="${war.file}"
+        webxml="${dist.dir}/web.xml">
+      <fileset dir="${webapp.dir}" excludes="${webapp.dir}/WEB-INF/web.xml"/>
+      <lib dir="${lib.dir}" includes="javacup.jar"/>
+      <lib dir="${xalan.home}/bin" includes="xml-apis.jar,xalan.jar"/>
+	  <lib dir="${tomcat.home}/common/lib" includes="xerces.jar"/>
+	  <lib dir="${junit.home}" includes="junit.jar"/>
+      <classes dir="${classes.dir}"/>
+    </war>
+  </target>
+
+  <target name="deploy-webapp" depends="webapp">
+    <delete dir="${tomcat.home}/webapps/mondrian"/>
+    <copy file="${war.file}"
+        todir="${tomcat.home}/webapps"/>
+  </target>
+
+  <!-- only runs on Windows -->
+  <target name="run-tomcat" depends="deploy-webapp">
+    <exec dir="${tomcat.home}/bin"
+		executable="cmd">
+      <arg line="/c startup.bat"/>
+    </exec>
+  </target>
+
+  <target name="stop-tomcat">
+    <exec dir="${tomcat.home}/bin"
+		executable="cmd">
+      <arg line="/c shutdown.bat"/>
+    </exec>
+  </target>
+
+  <target name="debug-tomcat" depends="deploy-webapp">
+    <exec dir="${tomcat.home}/bin"
+		executable="cmd">
+      <arg line="/c catalina.bat jpda run"/>
+    </exec>
+  </target>
+</project>

@@ -1,0 +1,187 @@
+/*
+// $Id$
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+//
+// jhyde, 21 December, 2001
+*/
+
+package mondrian.rolap;
+import mondrian.olap.*;
+import mondrian.rolap.sql.SqlQuery;
+
+import java.util.Properties;
+import java.util.Vector;
+import java.util.HashMap;
+
+/**
+ * <code>CacheMemberReader</code> implements {@link MemberReader} by reading
+ * from a pre-populated array of {@link Member}s. The derived class must
+ * implement {@link #qualifyQuery}.
+ *
+ * @author jhyde
+ * @since 21 December, 2001
+ * @version $Id$
+ **/
+class CacheMemberReader implements MemberReader, MemberCache
+{
+	private MemberSource source;
+	private RolapMember[] members;
+	/** Maps a {@link MemberKey} to a {@link RolapMember}. **/
+	private HashMap mapKeyToMember;
+
+	CacheMemberReader(MemberSource source)
+	{
+		this.source = source;
+		source.setCache(this);
+		this.mapKeyToMember = new HashMap();
+		this.members = source.getMembers();
+		for (int i = 0; i < members.length; i++) {
+			members[i].ordinal = i;
+		}
+	}
+
+	// implement MemberReader
+	public RolapHierarchy getHierarchy()
+	{
+		return source.getHierarchy();
+	}
+
+	// implement MemberSource
+	public void setCache(MemberCache cache)
+	{
+		throw Util.newInternal(
+			getClass() + " must be master of its own cache");
+	}
+
+	// implement MemberReader
+	public RolapMember[] getMembers()
+	{
+		return members;
+	}
+
+	// implement MemberCache
+	public Object makeKey(RolapMember parent, Object key)
+	{
+		return new MemberKey(parent, key);
+	}
+
+	// implement MemberCache
+	public RolapMember getMember(Object key)
+	{
+		return (RolapMember) mapKeyToMember.get(key);
+	}
+
+	// implement MemberCache
+	public Object putMember(Object key, RolapMember value)
+	{
+		return mapKeyToMember.put(key, value);
+	}
+
+	public RolapMember[] getRootMembers()
+	{
+		Vector v = new Vector();
+		for (int i = 0; i < members.length; i++) {
+			if (members[i].getParentUniqueName() == null) {
+				v.addElement(members[i]);
+			}
+		}
+		RolapMember[] results = new RolapMember[v.size()];
+		v.copyInto(results);
+		return results;
+	}
+	public RolapMember[] getMembersInLevel(
+		RolapLevel level, int startOrdinal, int endOrdinal)
+	{
+		Vector v = new Vector();
+		for (int i = 0; i < members.length; i++) {
+			RolapMember member = members[i];
+			if (member.getLevel() == level &&
+				startOrdinal <= member.ordinal &&
+				member.ordinal < endOrdinal) {
+				v.addElement(members[i]);
+			}
+		}
+		RolapMember[] results = new RolapMember[v.size()];
+		v.copyInto(results);
+		return results;
+	}
+	public RolapMember[] getMemberChildren(
+		RolapMember[] parentOlapMembers)
+	{
+		// Find the children by simply scanning the array of all
+		// members. This won't be efficient when there are a lot of
+		// members.
+		Vector childrenVector = new Vector();
+		for (int i = 0; i < members.length; i++) {
+			RolapMember member = (RolapMember) members[i];
+			for (int j = 0; j < parentOlapMembers.length; j++) {
+				if (member.getParentMember() == parentOlapMembers[j]) {
+					childrenVector.addElement(member);
+				}
+			}
+		}
+		RolapMember[] children = new RolapMember[childrenVector.size()];
+		childrenVector.copyInto(children);
+		return children;
+	}
+	public RolapMember getLeadMember(RolapMember member, int n)
+	{
+		if (n >= 0) {
+			for (int ordinal = member.ordinal; ordinal < members.length;
+				 ordinal++) {
+				if (members[ordinal].getLevel() == member.getLevel() &&
+					n-- == 0) {
+					return members[ordinal];
+				}
+			}
+			return (RolapMember) member.getHierarchy().getNullMember();
+		} else {
+			for (int ordinal = member.ordinal; ordinal >= 0; ordinal--) {
+				if (members[ordinal].getLevel() == member.getLevel() &&
+					n++ == 0) {
+					return members[ordinal];
+				}
+			}
+			return (RolapMember) member.getHierarchy().getNullMember();
+		}
+	}
+	public RolapMember[] getPeriodsToDate(
+		RolapLevel level, RolapMember member)
+	{
+		Vector vector = new Vector();
+		int startOrdinal = -1;
+		for (RolapMember m = member; m != null; m = (RolapMember) m.getParentMember()) {
+			if (m.getLevel() == level) {
+				startOrdinal = m.ordinal;
+			}
+		}
+		if (startOrdinal == -1) {
+			return new RolapMember[0]; // level not found
+		}
+		for (int i = startOrdinal; i <= member.ordinal; i++) {
+			if (members[i].getLevel() == member.getLevel()) {
+				vector.addElement(members[i]);
+			}
+		}
+		RolapMember[] members = new RolapMember[vector.size()];
+		vector.copyInto(members);
+		return members;
+	}
+	public int getMemberCount()
+	{
+		return members.length;
+	}
+	// implement MemberReader
+	public void qualifyQuery(
+		SqlQuery sqlQuery, RolapMember member)
+	{
+		source.qualifyQuery(sqlQuery, member);
+	}
+};
+
+// End CacheMemberReader.java

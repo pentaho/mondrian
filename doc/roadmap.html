@@ -1,0 +1,250 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Mondrian roadmap</title>
+<link rel="stylesheet" type="text/css" href="stylesheet.css" />
+</head>
+
+<body bgcolor="#ffffff">
+
+<table border="1" class="clsStd" width="100%">
+  <tr>
+    <td colspan="2"><a href="index.html" style="color: #000066">Top</a> |
+    <a href="http://public.perforce.com/guest/julian_hyde/mondrian/doc/index.html" style="color: #000066">Web home</a> |
+    <a href="http://sourceforge.net/projects/mondrian/" style="color: #000066">SourceForge home</a></td>
+    <td width="0" align="right" rowspan="2">
+    <a href="http://sourceforge.net" style="color: #000066"><img src="http://sourceforge.net/sflogo.php?group_id=35302&type=1" width="88" height="31" border="0" alt="SourceForge.net Logo"></a></td>
+  </tr>
+  <tr>
+    <td colspan="2"><em>$Id$</em></td>
+  </tr>
+  <tr>
+    <td colspan="3"><em>(C) Copyright 2002, Kana Software, Inc.</em></td>
+  </tr>
+  <tr>
+    <th align="right" width="30%">Author</th>
+    <td colspan="2">Julian Hyde</td>
+  </tr>
+</table>
+
+<h1><font size="6"> Mondrian roadmap</font></h1>
+
+<h2><a name="1_Contents">1. Contents</a></h2>
+<ol>
+  <li><a href="#1_Contents">Contents</a>
+  <li><a href="#2_Modification_history">Modification history</a>
+  <li><a href="#3_Setup_build_environment">Introduction</a></li>
+  <li><a href="#4_Build">Components</a>
+  <li><a href="#5__Specifications">Specifications</a>
+    <ol>
+      <li><a href="#5_1_Server">Server</a></li>
+      <li><a href="#5_2__Html_pivot_table">Html pivot table</a>
+        <ol>
+          <li><a href="#5_2_1_Basic_drill_through">Basic drill through</a></li>
+          <li><a href="#5_2_2_Chart_button">Chart button</a></li>
+          <li><a href="#5_2_3__Actions">Actions</a></li>
+          <li><a href="#5_2_4__Drill_anywhere">Drill anywhere</a></li>
+        </ol>
+      </li>
+      <li><a href="#5_3_Html_servlet">Html servlet</a></li>
+      <li><a href="#5_4_Charts">Charts</a></li>
+      <li><a href="#5_5_Web_test_harness">Web test harness</a></li>
+    </ol>
+  </li>
+</ol>
+
+<h2><a name="2_Modification_history">2. Modification history</a></h2>
+<table border="1" class="clsStd" width="100%">
+  <tr>
+    <th>Date</th>
+    <th>Revision</th>
+    <th>Author</th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><I>March 12<SUP>th</SUP>, 2002</I></td>
+    <td><em>1</em></td>
+    <td><i>Julian Hyde</i></td>
+    <td><em>Created</em></td>
+  </tr>
+  </table>
+
+<h2><a name="3_Introduction">3. Introduction</a></h2>
+
+<p>This is a list of features we propose to deliver in future releases of
+Mondrian. Each feature is linked to a high-level description. Complex features
+will have more detailed specifications in a separate document.</p>
+
+<p>Component designs
+are added to the <a href="overview.html">architectural overview</a> as
+necessary. Short term, you can put designs into an appendix.</p>
+
+<p>It occurs to me that we haven't really defined who our customer is. Our main
+customer, I would contend, is someone using a web application (such as the
+sourceforge usage chart, <a href="http://sourceforge.net/project/stats/?group_id=35302">http://sourceforge.net/project/stats/?group_id=35302</a>).
+In some cases we will deliver apis and servlets to a second kind of customer, a
+developer. But almost every feature should have a deliverable -- perhaps just a
+sample application -- which can be used by the web-user.</p>
+
+<h2><a name="4_Components">4. Components</a></h2>
+
+<p>Components/features for release 1.0 ('must have' unless otherwise specified)</p>
+
+<ul>
+  <li><a href="#5_1_Server">server</a>
+    <ul>
+      <li>implement full set of mdx builtin functions</li>
+      <li>support databases which do not have select-in-from-clause</li>
+      <li>tuning</li>
+      <li>unit tests</li>
+    </ul>
+  </li>
+  <li><a href="#5_2__Html_pivot_table">html pivot table</a>
+    <ul>
+      <li><a href="#5_2_1_Basic_drill_through">basic drill through</a></li>
+      <li><a href="#5_2_2_Chart_button">chart button</a></li>
+      <li>drill-anywhere (nice to have)</li>
+      <li>calculation builder</li>
+      <li>run arbitrary mdx</li>
+    </ul>
+  </li>
+</ul>
+
+<ul>
+  <li><a href="#5_3_Html_servlet">html servlet</a>
+    <ul>
+      <li>xml/xsl generator (nice to have)</li>
+    </ul>
+  </li>
+  <li><a href="#5_4_Charts">charts</a>
+    <ul>
+      <li>chart wizard (nice to have)</li>
+    </ul>
+  </li>
+  <li><a href="#5_5_Web_test_harness">web test harness</a></li>
+</ul>
+
+<p>Components in a later release:</p>
+<ul>
+  <li>server
+    <ul>
+      <li>xml api (e.g. XML for Analysis)</li>
+      <li>jolap api</li>
+      <li>create and use aggregation tables</li>
+    </ul>
+  </li>
+  <li>html pivot table
+    <ul>
+      <li>actions</li>
+    </ul>
+  </li>
+  <li>charts
+    <ul>
+      <li>dynamic charts</li>
+    </ul>
+  </li>
+  <li>swing
+    <ul>
+      <li>swing pivot table</li>
+      <li>swing charts</li>
+    </ul>
+  </li>
+  <li>administration ui
+    <ul>
+      <li>catalog viewer/editor</li>
+      <li>performance monitor</li>
+      <li>validate catalog</li>
+    </ul>
+  </li>
+</ul>
+
+<h2><a name="5__Specifications">5. Specifications</a></h2>
+
+<h3><a name="5_1_Server">5.1. Server</a></h3>
+
+<p>See <a href="overview.html">architectural overview</a>.</p>
+
+<h3><a name="5_2__Html_pivot_table">5.2. Html pivot table</a></h3>
+
+<p><i>Sean, please complete this.</i></p>
+
+<p><i>Does the pivot table support cell-selection in this release?</i></p>
+
+<h4><a name="5_2_1_Basic_drill_through">5.2.1. Basic drill through</a></h4>
+
+<p>Use case: User runs a query in the pivot table. Presses 'show data' button.
+An HTML table is displayed, containing the rows of the fact</p>
+
+<p>If the pivot table supports selection of cells, rows or columns, the rows
+shown should relate only to selected cells.</p>
+
+<p><i>Julian: It's not hard to implement the server-side part of it (given a set of 
+coordinates, e.g {([Time].[1997], [Store].[USA]), ([Time].[1998], 
+[Store].[USA].[CA])}, return a select statement/parse tree of a select 
+statement/jdbc result set for the fact table rows which went into those cells). 
+The hard part is to incorporate it into the ui in a non-trivial way. (Which end 
+user wants to see a table with columns headed REGION_ID, TIME_ID, UNIT_SALES, 
+and a bunch of surrogate keys?)</i></p>
+
+<h4><a name="5_2_2_Chart_button">5.2.2. Chart button</a></h4>
+
+<p>Use case: User runs a query in the pivot table. Presses 'pie chart' button.
+Data is rendered in pie chart.</p>
+
+<h4><a name="5_2_3__Actions">5.2.3. Actions</a></h4>
+
+<p><i>Tony, please specify.</i></p>
+
+<p><i>Julian: These come under the aegis of the pivot table until we have an 
+independent controller. It should be easy to shoehorn their 
+metadata into the catalog (of which FoodMart.xml is an example, and Mondrian.xml 
+is the specification).</i></p>
+
+<h4><a name="5_2_4__Drill_anywhere">5.2.4. Drill anywhere</a></h4>
+
+<p>Use case: User runs a query in the pivot table. They choose a column (for
+example, day of week) which is not a dimension, and drill on it. (Behind the
+scenes, the server is creating a dimension on the fly.)</p>
+
+<h3><a name="5_3_Html_servlet">5.3. Html servlet</a></h3>
+
+<p>Runs an mdx statement, renders the results as an html table.</p>
+
+<p><i>Sean, please complete this. Sketch out the major components (reference
+javadoc if these are classes), and describe the sample code we will deliver,
+list preferences.</i></p>
+
+<h3><a name="5_4_Charts">5.4. Charts</a></h3>
+
+<p><i>Tony, please complete this.</i></p>
+
+<p><i>Possible deliverables:</i></p>
+
+<ul>
+  <li><i>api &amp; example code render mdx results as chart</i></li>
+  <li><i>servlet</i></li>
+  <li><i>chart wizard</i></li>
+</ul>
+<p><i>What formats shall we support in 1.0? We must do either JPEG or GIF.</i></p>
+
+<h3><a name="5_5_Web_test_harness">5.5. Web test harness</a></h3>
+
+<p><i>Sean, please complete this.</i></p>
+
+<p>&nbsp;</p>
+
+<b>
+  <table border="1" width="100%" class="clsStd">
+    <tr>
+      <td>End <i>$Id$</i></td>
+    </tr>
+  </table>
+  <p>&nbsp;&nbsp;&nbsp; </p>
+</b>
+
+</body>
+
+</html>

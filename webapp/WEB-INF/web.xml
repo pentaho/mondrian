@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+$Id$
+
+This software is subject to the terms of the Common Public License
+Agreement, available at the following URL:
+http://www.opensource.org/licenses/cpl.html.
+(C) Copyright 2002 Kana Software, Inc. and others.
+All Rights Reserved.
+You must accept the terms of that agreement to use this software.
+-->
+
+
+<!DOCTYPE web-app
+    PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+    "http://java.sun.com/dtd/web-app_2_3.dtd">
+
+<web-app>
+
+    <context-param>
+      <param-name>jdbcDrivers</param-name>
+      <param-value>sun.jdbc.odbc.JdbcOdbcDriver</param-value>
+    </context-param>
+
+    <context-param>
+      <param-name>connectString</param-name>
+      <param-value>@connectString@</param-value>
+    </context-param>
+
+    <context-param>
+      <param-name>resourceURL</param-name>
+      <param-value>@resourceURL@</param-value>
+    </context-param>
+
+    <listener>
+      <listener-class>mondrian.web.taglib.Listener</listener-class>
+    </listener>
+
+    <servlet>
+      <servlet-name>MDXQueryServlet</servlet-name>
+      <servlet-class>mondrian.web.servlet.MDXQueryServlet</servlet-class>
+      <init-param>
+        <param-name>jdbcDrivers</param-name>
+        <param-value>sun.jdbc.odbc.JdbcOdbcDriver</param-value>
+      </init-param>
+      <init-param>
+        <param-name>connectString</param-name>
+        <param-value>@connectString@</param-value>
+      </init-param>
+      <init-param>
+        <param-name>resourceURL</param-name>
+        <param-value>@resourceURL@</param-value>
+      </init-param>
+    </servlet>
+
+    <servlet-mapping>
+      <servlet-name>MDXQueryServlet</servlet-name>
+      <url-pattern>/mdxquery</url-pattern>
+    </servlet-mapping>
+
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+        <welcome-file>index.html</welcome-file>
+        <welcome-file>index.htm</welcome-file>
+    </welcome-file-list>
+</web-app>

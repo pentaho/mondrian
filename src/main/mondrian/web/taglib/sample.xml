@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--
+$Id$
+
+This software is subject to the terms of the Common Public License
+Agreement, available at the following URL:
+http://www.opensource.org/licenses/cpl.html.
+(C) Copyright 2002 Kana Software, Inc. and others.
+All Rights Reserved.
+You must accept the terms of that agreement to use this software.
+-->
+<!-- example of generated DOM -->
+<mdxtable>
+  <head>
+    <row>
+      <corner colspan="2" rowspan="1"/>
+      <column-heading caption="Umsatz" colspan="1" rowspan="1"/>
+    </row>
+  </head>
+  <body>
+    <row>
+      <row-heading caption="Fernseher" colspan="1" rowspan="2" style="span"/>
+      <row-heading caption="grün" colspan="1" rowspan="1" style="odd"/>
+      <cell value="100" style="odd"/>
+    </row>
+    <row>
+      <row-heading caption="blau" colspan="1" rowspan="1" style="even"/>
+      <cell value="200" style="even"/>
+    </row>
+  </body>
+  <slicers>
+    <position>
+      <member caption="1997" colspan="1" rowspan="1" uname="[Time].[1997]"/>
+    </position>
+  </slicers>
+</mdxtable>

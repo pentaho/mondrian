@@ -1,0 +1,51 @@
+/*
+// $Id$
+// (C) Copyright 2002 Kana Software, Inc.
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// (C) Copyright 2002 Kana Software, Inc. and others.
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+//
+// jhyde, 3 March, 2002
+*/
+package mondrian.olap.fun;
+import mondrian.olap.*;
+
+import java.io.PrintWriter;
+
+/**
+ * <code>ParenthesesFunDef</code> implements the parentheses operator as if it
+ * were a function.
+ *
+ * @author jhyde
+ * @since 3 March, 2002
+ * @version $Id$
+ **/
+class ParenthesesFunDef extends FunDefBase
+{
+	int argType;
+	ParenthesesFunDef(int argType) {
+		super(
+			"()",
+			"(<Expression>)",
+			"Parenthesis enclose an expression and indicate precedence.",
+			FunDef.TypeParentheses,
+			argType,
+			new int[] {argType});
+		this.argType = argType;
+	}
+	public void unparse(Exp[] args, PrintWriter pw, ElementCallback callback) {
+		ExpBase.unparseList(pw, args, "(", ",", ")", callback);
+	}
+	public Hierarchy getHierarchy(Exp[] args) {
+		Util.assertTrue(args.length == 1);
+		return args[0].getHierarchy();
+	}
+	public Object evaluate(Evaluator evaluator, Exp[] args) {
+		return args[0].evaluate(evaluator);
+	}
+}
+
+// End ParenthesesFunDef.java

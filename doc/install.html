@@ -1,0 +1,354 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Mondrian installation guide</title>
+<link rel="stylesheet" type="text/css" href="stylesheet.css" />
+</head>
+
+<body bgcolor="#ffffff">
+
+<table border="1" class="clsStd" width="100%">
+  <tr>
+    <td colspan="2"><a href="index.html" style="color: #000066">Top</a> |
+    <a href="http://public.perforce.com/guest/julian_hyde/mondrian/doc/index.html" style="color: #000066">Web home</a> |
+    <a href="http://sourceforge.net/projects/mondrian/" style="color: #000066">SourceForge home</a></td>
+    <td width="0" align="right" rowspan="2">
+    <a href="http://sourceforge.net" style="color: #000066"><img src="http://sourceforge.net/sflogo.php?group_id=35302&type=1" width="88" height="31" border="0" alt="SourceForge.net Logo"></a></td>
+  </tr>
+  <tr>
+    <td colspan="2"><em>$Id$</em></td>
+  </tr>
+  <tr>
+    <td colspan="3"><em>(C) Copyright 2002, Kana Software, Inc.</em></td>
+  </tr>
+  <tr>
+    <th align="right" width="30%">Author</th>
+    <td colspan="2">Julian Hyde</td>
+  </tr>
+</table>
+
+<h1><font size="6">How to build and install Mondrian</font></h1>
+
+<h2><a name="1_Contents">1. Contents</a></h2>
+<ol>
+  <li><a href="#1_Contents">Contents</a>
+  <li><a href="#2_Modification_history">Modification history</a>
+  <li><a href="#3_Setup_build_environment">Setup build environment</a>
+  <li><a href="#4_Build">Build</a>
+  <li><a href="#5_Run_the_demo">Run the demo</a>
+  <li><a href="#6_Run_the_web_app">Run the web app</a>
+  <li><a href="#7_Debug_tomcat_using_IntelliJ">Debug tomcat using IntelliJ</a><li>
+  <a href="#8_Miscellaneous">Miscellaneous</a>
+    <ol>
+      <li><a href="#8_1_Coding_guidelines">Coding guidelines</a></li>
+    </ol>
+  <li><a href="#Appendix_A_Product_installation_instructions">Appendix A: 
+  Product instllation instructions</a></li>
+</ol>
+
+<h2><a name="2_Modification_history">2. Modification history</a></h2>
+<table border="1" class="clsStd" width="100%">
+  <tr>
+    <th>Date</th>
+    <th>Revision</th>
+    <th>Author</th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><I>February 7<SUP>th</SUP>, 2002</I></td>
+    <td><em>1</em></td>
+    <td><i>Julian Hyde</i></td>
+    <td><em>Created</em></td>
+  </tr>
+  <tr>
+    <td><I>March 5<SUP>th</SUP>, 2002</I></td>
+    <td><em>2</em></td>
+    <td><i>Julian Hyde</i></td>
+    <td><em>Tomcat install</em></td>
+  </tr>
+  <tr>
+    <td><I>March 28<SUP>th</SUP>, 2002</I></td>
+    <td><em>3</em></td>
+    <td><i>Julian Hyde</i></td>
+    <td><em>Xalan, JUnit and Oracle.<br>
+    Moved product info to an appendix.</em></td>
+  </tr>
+  </table>
+
+<h2><a name="3_Setup_build_environment">3. Setup build environment</a></h2>
+
+<p>Here are the steps to setup a build environment.</p>
+
+<ol>
+  <li>Install <a href="#JDK">JDK 1.3.1</a>.</li>
+  <li>Install <a href="#Ant">Ant</a>.</li>
+  <li>Install <a href="#Tomcat">Tomcat</a>.</li>
+  <li>Install <a href="#Xalan">Xalan</a>.</li>
+  <li>Install <a href="#JUnit">JUnit</a>.</li>
+  <li>Go to <i></i><code><i>${xalan.home}</i>/bin</code>, and copy <code>
+  xalan.jar</code> and <code>xml-apis.jar</code> to <i></i><code><i>${tomcat.home}</i>/common/lib</code>. 
+  (This shouldn't be necessary, because these JARs are in <code>mondrian.war</code>, 
+  but I think there's a bug in Tomcat/4.0.3.)</li>
+  <li>Modify <code>build.bat</code>, setting <code>JAVA_HOME</code>, <code>ANT_HOME</code>, 
+  <code>TOMCAT_HOME</code>, <code>XALAN_HOME</code>, <code>JUNIT_HOME</code>.</li>
+</ol>
+
+<p>Optional:</p>
+<ol>
+  <li>Install <a href="#Jikes">Jikes</a>.</li>
+</ol>
+
+<h2><a name="4_Build">4. Build</a></h2>
+<p>As follows:</p>
+<blockquote>
+<pre>cd <i>${project.location}</i>
+build</pre>
+</blockquote>
+<h2><a name="5_Run_the_demo">5. Run the demo</a></h2>
+<p>You first need a database. I wanted to distribute a hsqldb database, but when loaded and indexed, the 300,000
+rows/20Mb data set turned into a 400Mb datafile. So, two choices:</p>
+<ol>
+  <li>If you have <b>Microsoft Access</b>, create a System ODBC DSN called
+    MondrianFoodMart pointing to <code><i>${project.location}</i>/demo/access/FoodMart.mdb</code>.
+    The JDBC connect string will be <code>jdbc:odbc:MondrianFoodMart</code>. </li>
+  <li>If you have <b>Oracle</b>, create the dataset by importing <code>${project.location}/demo/oracle/FoodMart.dmp</code>. 
+  Setup your environment:<ol>
+  <li>Set <code>ORACLE_HOME</code> in <code>build.bat</code>, or in your 
+  environment.</li>
+  <li>Append <code>%ORACLE_HOME%/jdbc/lib/classes12.zip</code> to <code>
+  CLASSPATH</code> in <code>build.bat</code>, or in your environment.</li>
+  <li>In <code>build.xml</code>, make sure that the property <code>
+  mondrian.jdbcDrivers</code> includes <code>oracle.jdbc.OracleDriver</code>.</li>
+  <li>In <code>build.xml</code>, set the property <code>
+  mondrian.foodmart.jdbcURL</code>. It should probably include a username and 
+  password, for example <code>jdbc:oracle:oci8:foodmart/foodmart@myoracle</code>.</li>
+</ol>
+  </li>
+  <li>If you have another database, create and populate the schema  by running the scripts <code>FoodMartTables.sql</code>,
+    <code>FoodMartData.sql</code> and <code>FoodMartIndexes.sql</code> in <code>${project.location}/demo/</code>. You may need to modify the scripts for your database's
+    particular DDL
+    syntax. Examples:<ul>
+    <li>The scripts work with <b>hsqldb</b> as is.</li>
+    <li>For <b>mySQL</b>, you will need to change all <code>varchar</code> 
+        columns in <code>FoodMartTables.sql</code> to
+        <code>varchar(30)</code>,&nbsp; and change all
+        <code>false</code>/<code>true</code> values in <code>
+        FoodMartData.sql</code> to <code>0</code>/<code>1</code>;</li>
+    <li>For <b>postgres</b>, change <code>DOUBLE</code> to <code>DOUBLE
+    PRECISION</code> in <code>
+        FoodMartTables.sql</code>.</li>
+    <li>Oracle versions of these scripts are available in <code>demo/oracle</code> 
+    (but it's easier to import <code>FoodMart.dmp</code>, as described above).</li>
+    <li>(Please let me know your experiences with other databases.)</li>
+    </ul>
+    </li>
+</ol>
+<p>Edit the &quot;FoodMartTest&quot; target in <code>build.xml</code>.</p>
+<p>Run</p>
+<blockquote>
+  <pre>cd <i>${project.location}</i>
+build test</pre>
+</blockquote>
+<h2><a name="6_Run_the_web_app">6. Run the web app</a></h2>
+<ol>
+  <li>First install Tomcat, as above.</li>
+  <li>Make sure the <code>web.xml</code> file in <code>${project.location}/</code><code>webapp/WEB-INF</code> 
+  is correct for your environment. In particular, check the paths in the init 
+  parameters to <code>MDXQueryServlet</code>.</li>
+  <li><code>build deploy-webapp</code>.</li>
+  <li>Start up tomcat.</li>
+  <li>Hit <a href="http://localhost:8080/mondrian">
+  http://localhost:8080/mondrian</a>.</li>
+</ol>
+<h2><a name="7_Debug_tomcat_using_IntelliJ">7. Debug tomcat using IntelliJ</a></h2>
+<ol>
+  <li>add <code><i>${tomcat.home}</i>/webapps/mondrian.war</code> to intellij's 
+  classpath</li>
+  <li>edit <code><i>${tomcat.home}</i>/bin/catalina.bat</code> as follows:
+  <blockquote>
+<pre><code>:doJpda
+if not &quot;%SECURITY_POLICY_FILE%&quot; == &quot;&quot; goto doSecurityJpda
+%_EXECJAVA% %JAVA_OPTS% %CATALINA_OPTS% -Xdebug <font color="#FF0000"><i><b>-Xnoagent
+ </b></i></font> -Xrunjdwp:transport=<font color="#FF0000"><i><b>dt_socket</b></i></font>,address=%JPDA_ADDRESS%,server=y,suspend=n %DEBUG_OPTS%
+  -Djava.endorsed.dirs=&quot;%JAVA_ENDORSED_DIRS%&quot; -classpath &quot;%CLASSPATH%&quot;
+  -Dcatalina.base=&quot;%CATALINA_BASE%&quot; -Dcatalina.home=&quot;%CATALINA_HOME%&quot;
+  -Djava.io.tmpdir=&quot;%CATALINA_TMPDIR%&quot; %MAINCLASS% %CMD_LINE_ARGS% %ACTION%
+goto end</code></pre>
+  </blockquote>
+  </li>
+  <li>create <code><i>${tomcat.home}</i>/bin/setenv.bat</code> as follows:
+  <blockquote>
+<pre><code>set JPDA_ADDRESS=5000</code></pre>
+  </blockquote>
+  </li>
+  <li><code>cd e:\jakarta-tomcat-4.0.3\bin</code></li>
+  <li><code>catalina jpda run</code></li>
+  <li>attach intellij's debugger to port 5000</li>
+</ol>
+<h2><a name="8_Miscellaneous">8. Miscellaneous</a></h2>
+<h3><a name="8_1_Coding_guidelines">8.1. Coding guidelines</a></h3>
+<ul>
+  <li>Indentation 4.</li>
+  <li>Tab stop 4.</li>
+  <li>Use tabs, not space.</li>
+  <li>K&R bracing
+convention (that is, open braces on the same line as the preceding 'if', 'else', 'while' statement or 'class' declaration).</li>
+  <li>Use braces even for single-line blocks.</li>
+  <li>Declare variables as near to
+their first use as possible.</li>
+  <li>Don't initialize variables with 'dummy' values just
+to shut up the compiler.</li>
+  <li>Try to keep lines shorter than 80 characters.</li>
+  <li>Javadoc comments on
+methods are written in the active ('Collects garbage.') not imperative ('Collect
+garbage.')</li>
+  <li>When editing HTML documents, don't use an editor which reformats the
+HTML source (such as Word).</li>
+</ul>
+
+<h2><a name="Appendix_A_Product_installation_instructions">Appendix A. Product 
+installation instructions</a></h2>
+
+<p>These are the products I used to build mondrian. Install all of the products
+marked 'required'. (I use <code>/</code>-es in paths because I am run MKS on
+Windows 2000, and it makes things simpler.)</p>
+
+<p>In the following, the symbol <code><i>${project.location}</i></code> means the root of your
+source tree.</p>
+
+<p>Where the instructions suggest setting an environment variable, it is often 
+sufficient to edit the corresponding line in <code><i>${project.location}</i>/build.bat</code>.</p>
+
+<table border="1" class="clsStd" width="100%">
+  <tr>
+    <th>Product</th>
+    <th>Required?</th>
+    <th>Version</th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><a name="JDK">JDK</a></td>
+    <td>Yes</td>
+    <td>1.1 or later (I use version 1.3.1.)</td>
+    <td>Available from <a href="http://developer.java.sun.com/" target="_blank">http://developer.java.sun.com/</a>.
+      I downloaded <code>j2sdk-1_3_1_02-win.exe</code>, and extracted to <code>E:/jdk1.3.1_02</code>. Set
+      <code> JAVA_HOME</code> to same, and <code> CLASS_PATH</code> to <code>%JAVA_HOME%/lib/dt.jar</code>.</td>
+  </tr>
+  <tr>
+    <td><a name="Ant">Ant</a></td>
+    <td>Yes</td>
+    <td>1.4.1 or later&nbsp;</td>
+    <td>I downloaded
+<a href="http://jakarta.apache.org/builds/jakarta-ant/release/v1.4.1/bin/jakarta-ant-1.4.1-bin.zip">
+jakarta-ant-1.4.1-bin.zip</a>,  extracted to <code>E:/jakarta-ant-1.4.1</code>, 
+    and set <code>ANT_HOME</code> to the same.</td>
+  </tr>
+  <tr>
+    <td><a name="Tomcat">Tomcat</a></td>
+    <td>Yes</td>
+    <td>4.0 or later (I use version 4.0.3)</td>
+    <td>Available from <a href="http://jakarta.apache.org/tomcat" target="_blank">
+    http://jakarta.apache.org/tomcat</a>. I downloaded <code>
+    jakarta-tomcat-4.0.3.zip</code>,  extracted to <code>E:/jakarta-tomcat-4.0.3</code>, 
+    and set <font face="Verdana"><code>TOMCAT_HOME</code></font> to the same.</td>
+  </tr>
+  <tr>
+    <td><a name="Jikes">Jikes</a></td>
+    <td>No</td>
+    <td>&nbsp;</td>
+    <td>Available from <a href="http://oss.software.ibm.com/developerworks/opensource/jikes/" target="_blank">http://oss.software.ibm.com/developerworks/opensource/jikes/</a>.
+      I <code>downloaded jikes-1.15-windows.zip</code>, and extracted <code>jikes.exe</code>
+      to <code>C:/winnt/system32</code>. Then uncomment the relevant lines of <code><i>${project.location}</i>/build.properties</code>.</td>
+  </tr>
+  <tr>
+    <td><a name="Xerces">Xerces</a></td>
+    <td>&nbsp;</td>
+    <td>1.4.1 or later</td>
+    <td><code>xerces.jar</code> is included with Tomcat.</td>
+  </tr>
+  <tr>
+    <td><a name="Xalan">Xalan</a></td>
+    <td>Yes</td>
+    <td>2.3.1 or later</td>
+    <td>Available from <a href="http://xml.apache.org/xalan-j/" target="_blank">
+    http://xml.apache.org/xalan-j/</a>. I downloaded <code>xalan-j_2_3_1-bin.zip</code>, 
+    extracted to <code>E:/xalan-j_2_3_1</code>, and set <code>XALAN_HOME</code> 
+    to the same.</td>
+  </tr>
+  <tr>
+    <td><a name="JUnit">JUnit</a></td>
+    <td>Yes</td>
+    <td>3.7 or later</td>
+    <td>Available from <a href="http://www.junit.org/">http://www.junit.org/</a>. I downloaded <code>
+    junit3.7.zip</code>, 
+    extracted to <code>E:/junit3.7</code>, and set <code>JUNIT_HOME</code> 
+    to the same.</td>
+  </tr>
+  <tr>
+    <td>Intellij IDEA (a Java IDE)</td>
+    <td>No</td>
+    <td>2.5.1</td>
+    <td>You can download a 30-day evaluation copy from <a href="http://www.intellij.com/idea/" target="_blank">http://www.intellij.com/idea/</a>.
+      Follow the instructions in <code>Install.txt</code> in <code>idea-2_5_1.zip</code>
+      to there.
+      <p>Create a project <code><i>${project.location}</i>/mondrian.ipr</code>.
+      Set the compiler output path to <code><i>${project.location}</i>/classes/</code>.
+      Add <code>javacup.jar</code> and <code>xerces.jar</code>
+      in <code><i>${project.location}</i>/lib/</code> to the class
+      path.</p>
+      <p>To use Ant build, click the '6: Ant Build' tab, click '+', choose <code><i>${project.location}</i>/build.xml</code>, then right-click, choose
+      'Properties', and choose 'Include project classpath'. (<code>javacup.jar</code> 
+      is needed in order to build the <code>parser</code> target.)</td>
+  </tr>
+  <tr>
+    <td>hsql Database Engine</td>
+    <td>No</td>
+    <td>1.61</td>
+    <td>
+<p>Available from <a href="http://hsqldb.sourceforge.net/" target="_blank">http://hsqldb.sourceforge.net/</a>.
+I extracted <code>hsqldb_v.1.61.zip</code> to <code>E:/hsqldb_v.1.61</code>,
+then edited <code>bin/run.bat</code>. You will need to add <code>hsqldb.jar</code> 
+to your classpath.</p>
+    </td>
+  </tr>
+  <tr>
+    <td>mySQL</td>
+    <td>No</td>
+    <td>?</td>
+    <td>
+?</td>
+  </tr>
+  <tr>
+    <td>Postgres</td>
+    <td>No</td>
+    <td>?</td>
+    <td>
+?</td>
+  </tr>
+  <tr>
+    <td>JavaCUP (parser generator)</td>
+    <td>Included with source distribution, as <code>lib/javacup.jar</code>.&nbsp;</td>
+    <td>v0.10g (with modifications)</td>
+    <td>Available from <a href="http://www.cs.princeton.edu/~appel/modern/java/CUP/" target="_blank">http://www.cs.princeton.edu/~appel/modern/java/CUP/</a>.
+      I modified version v.0.10g to add an Ant task, and to output error
+      messages in a format which Emacs can parse.</td>
+  </tr>
+  </table>
+
+<p>&nbsp;</p>
+
+<b>
+  <table border="1" width="100%" class="clsStd">
+    <tr>
+      <td>End <i>$Id$</i></td>
+    </tr>
+  </table>
+  <p>&nbsp;&nbsp;&nbsp; </p>
+</b>
+
+</body>
+
+</html>

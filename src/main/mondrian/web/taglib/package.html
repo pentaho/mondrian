@@ -1,0 +1,72 @@
+<html>
+<head>
+<title>Package mondrian.web.taglib</title>
+<link rel="stylesheet" type="text/css" href="../../../../DesignDoc.css" />
+</head>
+<body>
+Provides a tag library for embedding MDX queries in JSP pages.
+<p>&nbsp;</p>
+<table border="1" width="100%">
+  <tr>
+    <th>Revision</th>
+    <td>$Id$</td>
+  </tr>
+  <tr>
+    <th>Copyright</th>
+    <td>(C) Copyright 2002 Kana Software, Inc. and others</td>
+  </tr>
+  <tr>
+    <th>Author</th>
+    <td>Julian Hyde</td>
+  </tr>
+</table>
+<h2>Tags</h2>
+<p>{@link mondrian.web.taglib.QueryTag} and {@link mondrian.web.taglib.TransformTag}.</p>
+
+<h2>Example</h2>
+
+<blockquote>
+<pre>
+&lt;%@ page language="java" %&gt;
+&lt;%@ taglib uri="/WEB-INF/mdxtable.tld" prefix="mdx" %&gt;
+
+&lt;mdx:query name="query1" resultCache="true"&gt;
+select
+  {[Measures].[Unit Sales], [Measures].[Store Cost]} on columns,
+  CrossJoin(
+    { [Promotion Media].[All Promotion Media].[Radio],
+      [Promotion Media].[All Promotion Media].[TV],
+      [Promotion Media].[All Promotion Media].[Sunday Paper],
+      [Promotion Media].[All Promotion Media].[Street Handout] },
+    [Product].[All Products].[Drink].children) on rows
+from Sales
+where ([Time].[1997])
+&lt;/mdx:query&gt;
+
+The current slicer is &lt;strong&gt;
+  &lt;mdx:transform query="query1"
+     xsltURI="/WEB-INF/mdxslicer.xsl"
+     xsltCache="true"/&gt;
+&lt;/strong&gt;.
+&lt;p&gt;
+  &lt;mdx:transform query="query1"
+     xsltURI="/WEB-INF/mdxtable.xsl"
+     xsltCache="false"/&gt;
+&lt;/p&gt;
+</pre>
+</blockquote>
+
+<h2>Known Issues</h2>
+
+<h2>Dependencies</h2>
+<p>This package is dependent upon the following other packages:</p>
+<ul>
+  <li>{@link mondrian.olap}, but NOT {@link mondrian.rolap}</li>
+  <li>{@link javax.servlet}, {@link javax.servlet.jsp}</li>
+  <li>{@link javax.xml.parsers}</li>
+  <li>{@link javax.xml.transform}</li>
+  <li>{@link org.w3c.dom}</li>
+  <li>{@link java.lang}, {@link java.io}, {@link java.util}</li>
+</ul>
+</body>
+</html>

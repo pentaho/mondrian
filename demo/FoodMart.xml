@@ -1,0 +1,154 @@
+<!--
+  == $Id$
+  == This software is subject to the terms of the Common Public License
+  == Agreement, available at the following URL:
+  == http://www.opensource.org/licenses/cpl.html.
+  == (C) Copyright 2000-2002 Kana Software, Inc. and others.
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  -->
+<Schema>
+
+<!-- Shared dimensions -->
+
+	<Dimension name="Store">
+		<Hierarchy hasAll="true" table="store" primaryKey="store_id">
+			<Level name="Store Country" column="store_country" uniqueMembers="true"/>
+			<Level name="Store State" column="store_state" uniqueMembers="true"/>
+			<Level name="Store City" column="store_city" uniqueMembers="false"/>
+			<Level name="Store Name" column="store_name" uniqueMembers="true"/>
+		</Hierarchy>
+	</Dimension>
+
+	<Dimension name="Store Size in SQFT">
+		<Hierarchy hasAll="true" table="store" primaryKey="store_id">
+			<Level name="Store Sqft" column="store_sqft" type="Numeric" uniqueMembers="true"/>
+		</Hierarchy>
+	</Dimension>
+
+	<Dimension name="Store Type">
+		<Hierarchy hasAll="true" table="store" primaryKey="store_id">
+			<Level name="Store Type" column="store_type" uniqueMembers="true"/>
+		</Hierarchy>
+	</Dimension>
+
+	<Dimension name="Time" foreignKey="time_id">
+		<Hierarchy hasAll="false" table="time_by_day" primaryKey="time_id">
+			<Level name="Year" column="the_year" type="Numeric" uniqueMembers="true"/>
+			<Level name="Quarter" column="quarter" uniqueMembers="false"/>
+			<Level name="Month" column="month_of_year" uniqueMembers="false" type="Numeric"/>
+		</Hierarchy>
+	</Dimension>
+
+	<Dimension name="Product" foreignKey="product_id">
+		<Hierarchy hasAll="true" sql="SELECT * FROM &quot;product&quot;, &quot;product_class&quot; WHERE &quot;product&quot;.&quot;product_class_id&quot; = &quot;product_class&quot;.&quot;product_class_id&quot;" primaryKey="product_id">
+			<Level name="Product Family" column="product_family" uniqueMembers="true"/>
+			<Level name="Product Department" column="product_department" uniqueMembers="false"/>
+			<Level name="Product Category" column="product_category" uniqueMembers="false"/>
+			<Level name="Product Subcategory" column="product_subcategory" uniqueMembers="false"/>
+			<Level name="Brand Name" column="brand_name" uniqueMembers="false"/>
+			<Level name="Product Name" column="product_name" uniqueMembers="true"/>
+		</Hierarchy>
+	</Dimension>
+
+	<Dimension name="Warehouse">
+		<Hierarchy hasAll="true" table="warehouse" primaryKey="warehouse_id">
+			<Level name="Country" column="warehouse_country" uniqueMembers="true"/>
+			<Level name="State Province" column="warehouse_state_province" uniqueMembers="true"/>
+			<Level name="City" column="warehouse_city" uniqueMembers="false"/>
+			<Level name="Warehouse Name" column="warehouse_name" uniqueMembers="true"/>
+		</Hierarchy>
+	</Dimension>
+
+<!-- Sales -->
+<Cube name="Sales" factTable="sales_fact_1997">
+	<DimensionUsage name="Store" source="Store" foreignKey="store_id"/>
+	<DimensionUsage name="Store Size in SQFT" source="Store Size in SQFT" foreignKey="store_id"/>
+	<DimensionUsage name="Store Type" source="Store Type" foreignKey="store_id"/>
+	<DimensionUsage name="Time" source="Time" foreignKey="time_id"/>
+	<DimensionUsage name="Product" source="Product" foreignKey="product_id"/>
+	<Dimension name="Promotion Media" foreignKey="promotion_id">
+		<Hierarchy hasAll="true" table="promotion" primaryKey="promotion_id">
+			<Level name="Media Type" column="media_type" uniqueMembers="true"/>
+		</Hierarchy>
+	</Dimension>
+	<Dimension name="Promotions" foreignKey="promotion_id">
+		<Hierarchy hasAll="true" table="promotion" primaryKey="promotion_id">
+			<Level name="Promotion Name" column="promotion_name" uniqueMembers="true"/>
+		</Hierarchy>
+	</Dimension>
+	<Dimension name="Customers" foreignKey="customer_id">
+		<!-- ifdef ORACLE ==
+		<Hierarchy hasAll="true" sql="SELECT &quot;customer&quot;.*, &quot;fname&quot; || ' ' || &quot;lname&quot; as &quot;name&quot; FROM &quot;customer&quot;" primaryKey="customer_id">
+		  == elif TRUE -->
+		<Hierarchy hasAll="true" sql="SELECT *, &quot;fname&quot; + ' ' + &quot;lname&quot; as &quot;name&quot; FROM &quot;customer&quot;" primaryKey="customer_id">
+		<!-- else ==
+		<Hierarchy hasAll="true" table="customer" primaryKey="customer_id">
+		  == endif -->
+			<Level name="Country" column="country" uniqueMembers="true"/>
+			<Level name="State Province" column="state_province" uniqueMembers="true"/>
+			<Level name="City" column="city" uniqueMembers="false"/>
+			<Level name="Name" column="name" ordinalColumn="ordinal" uniqueMembers="true"/>
+		</Hierarchy>
+	</Dimension>
+	<Dimension name="Education Level" foreignKey="customer_id">
+		<Hierarchy hasAll="true" table="customer" primaryKey="customer_id">
+			<Level name="Education Level" column="education" uniqueMembers="true"/>
+		</Hierarchy>
+	</Dimension>
+	<Dimension name="Gender" foreignKey="customer_id">
+		<Hierarchy hasAll="true" table="customer" primaryKey="customer_id">
+			<Level name="Gender" column="gender" uniqueMembers="true"/>
+		</Hierarchy>
+	</Dimension>
+	<Dimension name="Marital Status" foreignKey="customer_id">
+		<Hierarchy hasAll="true" table="customer" primaryKey="customer_id">
+			<Level name="Marital Status" column="marital_status" uniqueMembers="true"/>
+		</Hierarchy>
+	</Dimension>
+	<Dimension name="Yearly Income" foreignKey="customer_id">
+		<Hierarchy hasAll="true" table="customer" primaryKey="customer_id">
+			<Level name="Yearly Income" column="yearly_income" uniqueMembers="true"/>
+		</Hierarchy>
+	</Dimension>
+	<Dimension name="Has bought dairy">
+		<Hierarchy hasAll="true" memberReaderClass="mondrian.rolap.HasBoughtDairySource">
+			<Level name="Has bought dairy" uniqueMembers="true"/>
+			<Param name="expression" value="not used"/>
+		</Hierarchy>
+	</Dimension>
+	<Measure name="Unit Sales" column="unit_sales" aggregator="sum" formatString="#,###.00"/>
+	<Measure name="Store Cost" column="store_cost" aggregator="sum" formatString="#,###.00"/>
+	<Measure name="Store Sales" column="store_sales" aggregator="sum" formatString="#,###.##"/>
+	<Measure name="Sales Count" column="product_id" aggregator="count" formatString="#,###"/>
+	<Measure name="Store Sales Net" column="&quot;sales_fact_1997&quot;.&quot;store_sales&quot;-&quot;sales_fact_1997&quot;.&quot;store_cost&quot;" aggregator="sum" formatString="#,###.00"/>
+</Cube>
+
+<Cube name="Warehouse" factTable="inventory_fact_1997">
+	<DimensionUsage name="Store" source="Store" foreignKey="store_id"/>
+	<DimensionUsage name="Store Size in SQFT" source="Store Size in SQFT" foreignKey="store_id"/>
+	<DimensionUsage name="Store Type" source="Store Type" foreignKey="store_id"/>
+	<DimensionUsage name="Time" source="Time" foreignKey="time_id"/>
+	<DimensionUsage name="Product" source="Product" foreignKey="product_id"/>
+	<DimensionUsage name="Warehouse" source="Warehouse" foreignKey="warehouse_id"/>
+	<!-- todo: virtual dimensions -->
+
+	<Measure name="Store Invoice" column="store_invoice" aggregator="sum"/>
+	<Measure name="Supply Time" column="supply_time" aggregator="sum"/>
+	<Measure name="Warehouse Cost" column="warehouse_cost" aggregator="sum"/>
+	<Measure name="Warehouse Sales" column="warehouse_sales" aggregator="sum"/>
+	<Measure name="Units Shipped" column="units_shipped" aggregator="sum"/>
+	<Measure name="Units Ordered" column="units_ordered" aggregator="sum"/>
+	<Measure name="Warehouse Profit" column="&quot;inventory_fact_1997&quot;.&quot;warehouse_sales&quot;-&quot;inventory_fact_1997&quot;.&quot;warehouse_cost&quot;" aggregator="sum"/>
+</Cube>
+
+<VirtualCube name="Warehouse and Sales">
+	<VirtualCubeDimension name="Time"/>
+	<VirtualCubeDimension name="Store"/>
+	<VirtualCubeDimension cubeName="Warehouse" name="Warehouse"/>
+	<VirtualCubeMeasure cubeName="Sales" name="[Measures].[Store Sales]"/>
+	<VirtualCubeMeasure cubeName="Sales" name="[Measures].[Unit Sales]"/>
+	<VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Units Shipped]"/>
+</VirtualCube>
+
+</Schema>

@@ -1,0 +1,170 @@
+<html>
+<head>
+<title>Package mondrian.xom</title>
+</head>
+<body>
+Provides an object layer for reading and writing XML documents. &nbsp;The
+Mondrian XML-Object Mapping layer generates a class for each entity in an XML
+schema, a member property for each attribute, collections for sub-objects, and
+methods to serialize to and from XML.
+<p>&nbsp;</p>
+<table border="1" width="100%">
+  <tr>
+    <th>Revision</th>
+    <td>$Id$</td>
+  </tr>
+  <tr>
+    <th>Copyright</th>
+    <td>(C) Copyright 2001-2002 Kana Software, Inc.</td>
+  </tr>
+  <tr>
+    <th>Author</th>
+    <td>Dan Sommerfield, Julian Hyde</td>
+  </tr>
+</table>
+<h2>Schema format</h2>
+<p>The schema is defined in an XML file, whose format is somewhat similar to an
+XML Schema.&nbsp; The (self-describing) meta-schema is <code><a href="meta.xml">meta.xml</a>
+(</code>as you can see, an <a href="../../../../misc/Meta.xsl">XSL style-sheet</a> formats each schema into a javadoc-like web
+page).</p>
+<p>Other schemas include <code><a href="../olap/mondrian.xml">mondrian.xml</a></code>
+and <code><a href="../resource/resource.xml">resource.xml</a></code>.&nbsp;</p>
+
+<h2>Generated Java Classes</h2>
+<p>The utilities in this package enable conversion of XML (stored in a DOM-style
+model) into a typesafe Java representation.  Roughly, conversion occurs as
+follows:
+
+<ul>
+<li>Each defined <code>Element</code> becomes a Java Class.  The Java Class name matches the
+Element name.  All classes representing Elements descend from
+{@link mondrian.xom.ElementDef}.  All classes from the same model are
+implemented as static inner classes of a single <i>enclosure class</i>.
+By convention, enclosure classes always end in "Def".</li>
+<li>Each <code>Attribute</code> becomes a public member of its enclosing Element class.</li>
+<li>Text (<code>PCDATA</code>) content becomes a single public String called <code>cdata</code>.</li>
+<li>Element content becomes a series of public members.  The members are of
+the appropriate types.  The members' names are defined in the schema.</li>
+<li><code>ANY</code> content becomes a single array of {@link mondrian.xom.ElementDef}
+called <code>children</code>.
+</ul></p>
+
+<p>Converting an XML Document to its XOM representation is a two-step process.  First,
+you parse the XML into a DOM representation using your favorite W3C DOM Level 1-compliant
+parser (<i>note:</i> MSXML is supported as well for backward compatibility).
+Then, you instantiate the XOM {@link mondrian.xom.ElementDef} subclass
+corresponding to the root element in the document, passing a portion of the DOM
+as input to the constructor.  After this, the fully-constructed root element
+provides complete typesafe access to the whole document!</p>
+
+<p>Specific instructions for parsing using a DOM-compliant parser (such as XERCES):
+<ol>
+<li>Instantiate your parser, parse the document (validation against the DTD is optional),
+and retrieve the parsed {@link org.w3c.dom.Document} object.</li>
+<li>Call {@link org.w3c.dom.Document.getDocumentElement()} to retrieve the toplevel Node
+in the document.</li>
+<li>Wrap the toplevel node in an instance of 
+{@link mondrian.xom.wrappers.W3CDOMWrapper}.</li>
+<li>Construct the appropriate {@link mondrian.xom.ElementDef} subclass
+from the wrapped node.</li>
+</ol></p>
+
+<p>Specific instructions for parsing using Microsoft's XML Parser:
+<ol>
+<li>Instantiate your parser, parse the document (validation against the DTD is optional),
+and retrieve {@link com.ms.xml.om.Document} object representing the document.</li>
+<li>Call {@link com.ms.xml.om.Document#getRoot()} to retrieve the toplevel Element
+in the document.</li>
+<li>Wrap the toplevel element in an instance of 
+{@link mondrian.xom.wrappers.MSXMLWrapper}.</li>
+<li>Construct the appropriate {@link mondrian.xom.ElementDef} subclass
+from the wrapped node.</li>
+</ol></p>
+
+<h2>Generator</h2>
+<p>The utility is the Java class {@link MetaGenerator}. It takes command-line
+arguments; usage:</p>
+<blockquote><pre>jview &lt;classpath_options&gt; mondrian.xom.MetaGenerator
+	[-debug] [-test]
+	&lt;XML model file&gt; &lt;output directory&gt;</pre></blockquote>
+The XML model file is the name of the XML model file to use (e.g. assoc.xml,
+input.xml, etc).&nbsp; You would have something like 'diablo.xml'.
+<p>The output directory is the directory in which all output files (a DTD and a
+.java file to be precise) will be created.&nbsp; Note that the actual names of
+these files are specified by the <code>dtdName</code>, <code>className</code>,
+and <code>packageName</code> attributes of the <code>&lt;Model&gt;</code>.<p>Given <code><a href="../olap/mondrian.xml">mondrian.xml</a></code>
+as follows:</p>
+<blockquote><pre>&lt;Model
+    name=&quot;bas&quot;
+    dtdName=&quot;mondrian.dtd&quot;
+    className=&quot;MondrianDef&quot;
+    packageName=&quot;mondrian.olap&quot;
+    root=&quot;Schema&quot;
+    version=&quot;1.0&quot;&gt;
+...</pre></blockquote>
+A run generates <code>mondrian.dtd</code> and {@link
+mondrian.olap.MondrianDef}:
+<blockquote><pre>$ cd das
+$ jview mondrian.xom.MetaGenerator src/main/mondrian/olap/mondrian.xml src/main
+Writing src/main/mondrian/olap/mondrian.dtd
+Writing src/main/mondrian/olap/MondrianDef.java
+Done
+$</pre></blockquote>
+
+<p>todo: There is now an ANT target, <code>XOMGen</code>, implemented by {@link mondrian.xom.XOMGenTask}.</p>
+
+<h2>Tester</h2>
+<p>There is another helpful utility we use to verify that the stuff we generate
+works.&nbsp; It is class {@link MetaTester}, and you invoke it as follows:</p>
+<blockquote><pre>jview &lt;classpath_options&gt; mondrian.xom.MetaTester [-debug]
+        [-msxml | -xerces] &lt;XML model file&gt; &lt;output dir&gt; [&lt;tests&gt;...]</pre></blockquote>
+All the arguments are the same as the ones for {@link MetaGenerator}, except for
+tests.&nbsp; &lt;tests&gt; is a list of test .xml files that should be valid
+according to the generated DTD.&nbsp; The tester will validate the java files
+against the DTD and also against the java class.&nbsp; It also runs some basic
+checks on the java class to make sure that it works.
+<p>We run both utilities from a test harness in the mining directory.&nbsp; Look
+at any of the runtest.sh files under the <code>mining/test/metamodel/&lt;anydir&gt;</code>
+hierarchy.&nbsp; These files ultimately call down to a common script file.&nbsp;
+The test script runs {@link MetaGenerator}, compiles the generated java
+class (to verify that it was created correctly), tests one or more test xml
+files against the model, and optionally installs the generated files into the
+build tree (it was easier to generate the files and check them in than to run
+MetaGenerator with each build).&nbsp; The package declaration &quot;Broadbase.mining.xml&quot;
+is added to any java classes when they get installed.&nbsp; Also, the test
+harness diffs the generated DTD and .java file against the most recently
+generated version.
+
+<p>Currently the test harness tests all files against both the MSXML parser and
+against the Apache XERCES parser.</p>
+
+<h2>Generation</h2>
+For all XML files except <code>meta.xml</code>, we generate corresponding DTD and <code><i>Name</i>Def.java</code>
+at build time.&nbsp; {@link MetaDef} is tricky, because it
+depends upon itself.&nbsp; We source-control it and <code><a href="meta.dtd">meta.dtd</a></code>.&nbsp;
+If you change <code>meta.xml</code>, you need to regenerate them as follows:
+<blockquote><pre>$ p4 edit src/main/mondrian/xom/meta.dtd src/main/mondrian/xom/MetaDef.java
+$ build metadef</pre></blockquote>
+<p>Then insert the modified class files into <code>lib/boot.jar</code>. If things get screwed up, refresh <code>MetaDef.java</code> and <code>meta.dtd</code>
+from perforce.</p>
+<h2>Guidelines for writing models</h2>
+<ol>
+  <li>Note that within an <code>&lt;Entity&gt;</code>, all <code>&lt;Attribute&gt;</code>s
+    must occur <i>before</i> all <code>&lt;Object&gt;</code>, <code>&lt;Array&gt;</code>
+    or <code>&lt;CData&gt;</code> elements.</li>
+</ol>
+
+<h2>Known Issues</h2>
+
+<h2>Dependencies</h2>
+<p>This package is dependent upon the following other packages:</p>
+<ul>
+  <li>{@link mondrian.resource}</li>
+  <li>{@link com.ms.xml} -- MetaGenerator and MetaTester currently depend on 
+    the Microsoft XML Parser.  The remaining classes are parser-independent.</li>
+  <li>{@link java.lang}, {@link java.io}, {@link java.util}</li>
+</ul>
+<p>Class {@link XOMGenTask} <em>only</em> is dependent upon {@link org.apache.tools.ant}. You therefore require <code>ant.jar</code> to build, but not to run.<p>
+<p>Class {@link mondrian.xom.wrappers.XercesDOMParser} <em>only</em> is dependent upon {@link org.xml.sax} and {@link org.apache.xerces.parsers.DOMParser}. You therefore require <code>xerces.jar</code> to build, but not to run.<p>
+</body>
+</html>

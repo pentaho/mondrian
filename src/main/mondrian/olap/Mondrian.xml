@@ -1,0 +1,301 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="../../../../misc/Meta.xsl" ?>
+<!--
+  == $Id$
+  == This software is subject to the terms of the Common Public License
+  == Agreement, available at the following URL:
+  == http://www.opensource.org/licenses/cpl.html.
+  == (C) Copyright 2001-2002 Kana Software, Inc. and others.
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  ==
+  == This file defines an MMM schema for an Olap schema.
+  -->
+<Model
+ name="mondrian"
+ dtdName="mondrian.dtd"
+ className="MondrianDef"
+ packageName="mondrian.olap"
+ root="Schema"
+ version="1.0">
+	<Doc>
+This is the XML model for Mondrian schemas.
+<p/>
+Revision is $Id$
+	</Doc>
+
+	<!-- Schema ========================================================== -->
+	<Element type="Schema">
+		<Doc>
+			A schema is a collection of cubes and shared dimensions.
+		</Doc>
+		<Array name="dimensions" type="Dimension"/>
+		<Array name="cubes" type="Cube"/>
+		<Array name="virtualCubes" type="VirtualCube"/>
+		<Code><![CDATA[
+			Cube getCube(String cubeName) {
+				for (int i = 0; i < cubes.length; i++) {
+					if (cubes[i].name.equals(cubeName)) {
+						return cubes[i];
+					}
+				}
+				throw Util.newInternal("Cannot find cube '" + cubeName + "'");
+			}
+			Dimension getPublicDimension(String dimensionName) {
+				for (int i = 0; i < dimensions.length; i++) {
+					if (dimensions[i].name.equals(dimensionName)) {
+						return dimensions[i];
+					}
+				}
+				throw Util.newInternal(
+					"Cannot find public dimension '" + dimensionName + "'");
+			}]]>
+		</Code>
+	</Element>
+
+	<!-- CubeDimension ==================================================== -->
+	<Class class="CubeDimension">
+		<Doc>
+			A CubeDimension is either a usage of a Dimension ('shared
+			dimension', in MSOLAP parlance), or a 'private dimension'.
+		</Doc>
+		<Attribute name="name" required="true"/>
+		<Attribute name="foreignKey">
+			<Doc>
+				The name of the column in the fact table which joins
+				to the leaf level of this dimension. Required in a
+				private Dimension or a DimensionUsage, but not in a
+				public Dimension.
+			</Doc>
+		</Attribute>
+		<Code>
+			public abstract Dimension getDimension(Schema schema);
+		</Code>
+	</Class>
+
+	<!-- Cube ============================================================ -->
+	<Element type="Cube">
+		<Doc>
+todo:
+	</Doc>
+		<Attribute name="name" required="true"><Doc></Doc></Attribute>
+		<Attribute name="factTable" required="true"><Doc>todo: move to mapping</Doc></Attribute>
+		<Attribute name="factSchema" required="false">
+			<Doc>
+				Qualifier for the fact table. If not present, the fact table
+				name is left unqualified.
+			</Doc>
+		</Attribute>
+		<Array name="dimensions" type="CubeDimension"><Doc></Doc></Array>
+		<Array name="measures" type="Measure"><Doc></Doc></Array>
+		<Code><![CDATA[
+			Dimension getDimension(Schema xmlSchema, String dimensionName) {
+				for (int i = 0; i < dimensions.length; i++) {
+					if (dimensions[i].name.equals(dimensionName)) {
+						return dimensions[i].getDimension(xmlSchema);
+					}
+				}
+				throw Util.newInternal(
+					"Cannot find dimension '" + dimensionName + "' in cube '" +
+					name + "'");
+			}]]>
+		</Code>
+	</Element>
+
+	<!-- VirtualCube ====================================================== -->
+	<Element type="VirtualCube">
+		<Doc>
+			A <code>VirtualCube</code> is a set of dimensions and
+			measures gleaned from other cubes.
+		</Doc>
+		<Attribute name="name"><Doc></Doc></Attribute>
+		<Array name="dimensions" type="VirtualCubeDimension"><Doc></Doc></Array>
+		<Array name="measures" type="VirtualCubeMeasure"><Doc></Doc></Array>
+	</Element>
+
+	<!-- VirtualCubeDimension ============================================= -->
+	<Element type="VirtualCubeDimension" class="CubeDimension">
+		<Doc>
+			A VirtualCubeDimension is a usage of a Dimension in a VirtualCube.
+		</Doc>
+		<Attribute name="cubeName">
+			<Doc>
+				Name of the cube which the dimension belongs to, or
+				unspecified if the dimension is shared.
+			</Doc>
+		</Attribute>
+		<Attribute name="name"><Doc>
+			Name of the dimension.</Doc></Attribute>
+		<Code><![CDATA[
+			// implement CubeDimension
+			public Dimension getDimension(Schema schema) {
+				if (cubeName == null) {
+					return schema.getPublicDimension(name);
+				} else {
+					Cube cube = schema.getCube(cubeName);
+					return cube.getDimension(schema, name);
+				}
+			}]]>
+		</Code>
+	</Element>
+
+	<!-- VirtualCubeMeasure =============================================== -->
+	<Element type="VirtualCubeMeasure">
+		<Doc>
+			A VirtualCubeMeasure is a usage of a Measure in a VirtualCube.
+		</Doc>
+		<Attribute name="cubeName">
+			<Doc>
+				Name of the cube which the measure belongs to.
+			</Doc>
+		</Attribute>
+		<Attribute name="name">
+			<Doc>
+				Unique name of the measure within its cube.
+			</Doc>
+		</Attribute>
+	</Element>
+
+	<!-- DimensionUsage =================================================== -->
+	<Element type="DimensionUsage" class="CubeDimension">
+		<Doc>
+			A <code>DimensionUsage</code> is usage of a shared
+			Dimension within the context of a cube.
+		</Doc>
+		<Attribute name="source" required="true">
+			<Doc>Name of the source dimension. Must be a dimension in
+			this schema. Case-sensitive.</Doc>
+		</Attribute>
+		<Code><![CDATA[
+			// implement CubeDimension
+			public Dimension getDimension(Schema schema) {
+				for (int i = 0; i < schema.dimensions.length; i++) {
+					if (schema.dimensions[i].name.equals(source)) {
+						return schema.dimensions[i];
+					}
+				}
+				throw Util.newInternal(
+					"Cannot find shared dimension '" + source + "'");
+			}]]>
+		</Code>
+	</Element>
+
+	<!-- Dimension ======================================================== -->
+	<Element type="Dimension" class="CubeDimension">
+		<Doc>
+			A <code>Dimension</code> is a collection of hierarchies. There are
+			two kinds: a <dfn>public</dfn> dimension belongs to a <link
+			class="Schema"/>, and be used by several cubes; a
+			<dfn>private</dfn> dimension belongs to a <link class="Cube"/>. The
+			<link member="foreignKey"/> field is only applicable to private
+			dimensions.
+		</Doc>
+		<Attribute name="name"><Doc></Doc></Attribute>
+		<Array name="hierarchies" type="Hierarchy"><Doc></Doc></Array>
+		<Code>
+			// implement CubeDimension
+			public Dimension getDimension(Schema schema) {
+				return this;
+			}
+		</Code>
+	</Element>
+
+	<Element type="Hierarchy">
+		<Doc>
+			Defines a hierarchy.
+			
+			<p/> You must specify precisely one of <code>sql</code>,
+			<code>table</code>, and <code>memberReaderClass</code>.
+		</Doc>
+		<Attribute name="name" required="false">
+			<Doc>
+				Name of the hierarchy. If this is not specified, the hierarchy
+				has the same name as its dimension.
+			</Doc>
+		</Attribute>
+		<Attribute name="hasAll" type="Boolean" required="true"><Doc></Doc></Attribute>
+		<Attribute name="sql" required="false">
+			<Doc>
+				SQL statement to populate the hierarchy. (More powerful than
+				<code>table</code> but sometimes you will need to hard-code
+				schema names, which may cause installation problems.)
+			</Doc>
+		</Attribute>
+		<Attribute name="table" required="false">
+			<Doc>
+				Name of table to populate the hierarchy.
+			</Doc>
+		</Attribute>
+		<Attribute name="schema" required="false">
+			<Doc>
+				Optional qualifier for <code>table</code>.
+			</Doc>
+		</Attribute>
+		<Attribute name="primaryKey">
+			<Doc>
+				The name of the column which identifies members, and
+				which is referenced by rows in the fact table. See
+				also <link class="CubeDimension"
+				member="foreignKey"/>.
+			</Doc>
+		</Attribute>
+		<Attribute name="defaultMember"><Doc></Doc></Attribute>
+		<Attribute name="memberReaderClass">
+			<Doc>
+				Name of the custom member reader class. Must implement
+				{@link Broadbase.olap.RolapConnection.MemberReader}.
+			</Doc>
+		</Attribute>
+		<Array name="levels" type="Level"><Doc></Doc></Array>
+		<Array name="memberReaderParameters" type="Parameter"/>
+	</Element>
+
+	<Element type="Level">
+		<Attribute name="name"><Doc></Doc></Attribute>
+		<Attribute name="column"><Doc>todo:</Doc></Attribute>
+		<Attribute name="ordinalColumn" required="false">
+			<Doc>
+				The name of the column which holds member
+				ordinals. Only applicable for the last level in a
+				hierarchy. If this column is not specified, the
+				hierarchy cannot be implemented in ROLAP mode.
+			</Doc>
+		</Attribute>
+		<Attribute name="type" default="String">
+			<Doc>todo:</Doc>
+			<Value>String</Value>
+			<Value>Numeric</Value>
+		</Attribute>
+		<Attribute name="uniqueMembers" type="Boolean" default="false">
+			<Doc>
+				Whether members are unique across all parents. For
+				example, zipcodes are unique across all states. The
+				first level's members are always unique.
+			</Doc>
+		</Attribute>
+	</Element>
+
+	<Element type="Measure">
+		<Attribute name="name"><Doc></Doc></Attribute>
+		<Attribute name="column"><Doc>todo:</Doc></Attribute>
+		<Attribute name="formatString">
+			<Doc>
+				Format string with which to format cells of this measure. For
+				more details, see {@link mondrian.util.Format}.
+			</Doc>
+		</Attribute>
+		<Attribute name="aggregator">
+			<Doc>todo:</Doc>
+			<Value>sum</Value>
+			<Value>count</Value>
+		</Attribute>
+	</Element>
+
+	<Element type="Parameter">
+		<Attribute name="name"/>
+		<Attribute name="value"/>
+	</Element>
+
+</Model>
+
+<!-- End Mondrian.xml -->

@@ -1,0 +1,127 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type="text/xsl" href="../../../../misc/Meta.xsl" ?>
+<!--
+  == $Id$
+  == This software is subject to the terms of the Common Public License
+  == Agreement, available at the following URL:
+  == http://www.opensource.org/licenses/cpl.html.
+  == (C) Copyright 2000-2002 Kana Software, Inc. and others.
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  ==
+  == This file is the Meta Model description of BaflResourceList.
+  -->
+
+<Model
+name="resource"
+dtdName="Resource.dtd"
+className="ResourceDef"
+packageName="mondrian.resource"
+root="BaflResourceList"
+version="1.0"
+>
+
+<Doc>
+  This model specifies the elements which make up a Foundation resource file.
+</Doc>
+
+<Element type="BaflResourceList">
+    <Doc>
+todo:
+    </Doc>
+	<Attribute name="packageName" required="true">
+		<Doc>
+			The package of the java class to be generated, for example
+			<code>Broadbase.util</code>.
+		</Doc>
+	</Attribute>
+	<Attribute name="className" required="true">
+		<Doc>
+			The name of the java class to be generated, for example
+			<code>ServerResource</code>.
+		</Doc>
+	</Attribute>
+	<Attribute name="contextParams"/>
+	<Attribute name="contextArgs"/>
+	<Attribute name="generateNew" type="Boolean" default="false">
+		<Doc>
+			Whether to generate a <code>Error
+			new<i>MessageName</i>(<i>args</i>)</code> and a <code>Error
+			new<i>MessageName</i>(Throwable, <i>args</i>)</code> method for
+			each message. These methods return <code>errorClass</code>.  The
+			methods are never generated for informational messages.
+		</Doc>
+	</Attribute>
+	<Attribute name="generateThrowProcess" type="Boolean" default="true">
+		<Doc>
+			Not used.
+		</Doc>
+	</Attribute>
+	<Attribute name="errorClass" default="mondrian.resource.Error">
+		<Doc>
+			See <code>generateNew</code>.
+		</Doc>
+	</Attribute>
+	<Attribute name="baseClass" required="false">
+		<Doc>
+			The fully-qualified name of the base class of the generated
+			resource class, for example
+			<code>"Broadbase.util.ResourceBase"</code>.
+		</Doc>
+	</Attribute>
+	<Attribute name="label" required="false">
+		<Doc>
+			The label by which <code>ResourceFinder</code> will retrieve this
+    		resource class, for example, <code> "SERVER_RESOURCE_XML"</code>.
+		</Doc>
+	</Attribute>
+	<Attribute name="locale" required="false">
+		<Doc>
+			The locale or language supported by this resource file, for example,
+			"en_US_Boston", "en_US", or "en".
+		</Doc>
+	</Attribute>
+    <Array name="resources" type="BaflResourceText"/>
+    <Object name="code" type="Code">
+        <Doc>
+			Text within this element is included in the generated class.
+		</Doc>
+    </Object>
+</Element>
+
+<Element type="Code">
+	<CData/>
+</Element>
+
+<Element type="BaflResourceText" keepDef="true">
+    <Doc>
+todo:
+    </Doc>
+    <Attribute name="id" type="Integer" required="true"/>
+    <Attribute name="macroName" required="true"/>
+    <Attribute name="type" default="i">
+		<Value>i</Value>
+		<Value>e</Value>
+		<Value>n</Value>
+		<Value>w</Value>
+	</Attribute>
+    <Attribute name="context" type="Boolean" default="false"/>
+	<CData/>
+	<Code><![CDATA[
+		public int getSeverity() {
+			if (type.equals("i")) {
+				return Resource.SEVERITY_INFO;
+			} else if (type.equals("w")) {
+				return Resource.SEVERITY_WARN;
+			} else if (type.equals("n")) {
+				return Resource.SEVERITY_NON_FATAL_ERR;
+			} else {
+				// "e" and everything else is an error
+				return Resource.SEVERITY_ERR;
+			}
+		}
+		]]>
+	</Code>
+</Element>
+
+</Model>
