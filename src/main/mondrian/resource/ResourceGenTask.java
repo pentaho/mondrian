@@ -49,7 +49,7 @@ import java.util.ArrayList;
  * <pre>source/happy/BirthdayResource.resources
  *source/happy/BirthdayResource_en_US.resources
  *source/happy/BirthdayResource.h
- *source/happy/BirthdayResource.cpp</pre>
+ *source/happy/BirthdayResource.cpp</pre></blockquote>
  *
  * Files are not generated if there is an existing newer one.
  * The output path is determined by 'destdir' and the package-name (derived

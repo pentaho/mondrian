@@ -1,0 +1,436 @@
+<html>
+<!--
+  == $Id$
+  == This software is subject to the terms of the Common Public License
+  == Agreement, available at the following URL:
+  == http://www.opensource.org/licenses/cpl.html.
+  == (C) Copyright 2001-2002 Kana Software, Inc. and others.
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  == jhyde, 18 February 2004
+  -->
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<title>MonRG C++ specification</title>
+<link rel="stylesheet" href="stylesheet.css" type="text/css" />
+<base target="_top">
+</head>
+
+<body>
+<h1>MonRG: Mondrian Resource Generator, C++ Mode</h1>
+<p>Stephan Zuercher, February 18<sup><font face="Verdana">th</font></sup>, 2004.</p>
+
+<h2>C++ Resources</h2>
+
+<p>In practice, MonRG supports three modes of operation:</p>
+<ul>
+<li><b>Java</b> - resources are generated as described in the main
+<a href="monrg.html">MonRG documentation</a>.</li>
+<li><b>C++</b> - resource are generated as described in this document.</li>
+<li><b>both</b> - Java and C++ resources are generated.</li>
+</ul>
+<p>Up to this point, this document has concerned itself exclusively with
+MonRG's Java mode.  This section explains how MonRG operates in C++
+mode.  See the section on the <a href="monrg.html#resgen">resgen ANT task</a>
+for more information on selecting MonRG's mode.</p>
+
+<p>MonRG's C++ mode uses the same properties files as Java mode.  In
+addition it generates a header (.h) and source (.cpp) file for each
+resource bundle.</p>
+
+<h2>C++ framework</h2>
+
+<p>C++ mode requires that project using the generated resouces provide
+a framework for managing the messages given.  The framework has the
+following requirements:</p>
+<ol>
+<li>The presence of a class named <b>Locale</b> in the same namespace
+as the generated resource files.
+	<ul>
+	<li>The header file for Locale must be Locale.h.</li>
+	<li>The Locale class must be suitable for use as a a key value
+	in a <copd>std::map</code>.  It is assumed that the Locale
+	header file defines a <code>struct localeLess</code> that can
+	be passed as the less implementation when definining a
+	std::map.</li>
+	<li>It must also define a method <code>const Locale
+	&getDefault()</code> that returns a suitable default locale.</li>
+	</ul>
+</li>
+<li>The presence of a class named <b>ResourceBundle</b> in the same namespace
+as the generated resource files that may be used as a base class for
+generated resources.
+	<ul>
+	<li>The header file for ResourceBundle must be
+	ResourceBundle.h</li>
+	<li>ResourceBundle's must have constructor
+	<code>ResourceBundle(const std::string &basename, const Locale
+	&locale, const std::string &location)</code> where basename is
+	the name of the resource bundle
+	(e.g. <code>BirthdayResource</code> in the previous example),
+	locale is the Locale this ResourceBundle will handle and
+	location is the path to the directory where the ResourceBundle
+	can find its properties file.</li>
+
+	<li>ResourceBundle is responsible for loading the properties
+	files, handling the Java format strings (e.g. <code>"There are
+	{0, number} letters in {1}."</code>), and returning messages
+	in a format usable by ResourceDefinition.  One possible
+	implementation is to convert the Java format strings into <a
+	href="http://www.boost.org">Boost</a> format strings.</li>
+        </ul>
+</li>
+<li>The presence of a class name <b>ResourceDefinition</b> in the same
+namespace as the generated resource files.
+	<ul>
+	<li>ResourceDefinitions must have a constructor
+	<code>ResourceDefinition(ResourceBundle *bundle, const
+	std::string &key)</code>.</li>
+	<li>ResourceDefinition must implement these methods:
+		<code></code> as well as templated
+	methods that take varying numbers of arguments:
+	<blockquote><pre>
+	std::string format() const;
+	template&lt;typename t0&gt; string format(const t0 &p0) const;
+        template&lt;typename t0, typename t1&gt;
+	  string format(const t0 &p0, const t1 &p1) const;
+	.
+	.
+	.</pre></blockquote>
+
+	Each <code>format</code> method should lookup up the message
+	associated with the key given in the constructor from the
+	ResourceBundle given in the constructor and should format the
+	message given the arguments, returning the resulting
+	std::string.  If a format template method doesn't exist of the
+	number of parameters in your message, a compile time error
+	will occur.
+	</ul>
+</ol>
+
+<p>An example of how to create a framework appropriate for MonRG C++
+resources can be found in the <a href="http://fennel.sourceforge.net/">Fennel</a> project.
+</p>
+
+<h2>C++ exceptions</h2>
+
+<p>If exception resources are used (as opposed to just message
+resources), you will need to provide an exception class.  A default
+exception class for all exception resources can be given (see
+<code>&lt;resourceBundle&gt;</code>, below), or you can override the
+default on a per-resource basis.  The exception class must always have
+a basic constructor like this one:</p>
+
+<blockquote><pre>Excn(const std::string &msg);</pre></blockquote>
+
+<p>If chained exceptions are enabled for an exception resource, the
+exception class must also have a chained constructor:</p>
+
+<blockquote><pre>Excn(const std::string &msg, const Excn * const chained);</pre></blockquote>
+
+<h2>C++ Example</h2>
+
+<p>The following examples assume you're familiar with the Java example
+given above.</p>
+
+<h3>Create a resource file</h3>
+
+<p>First, create a resource file like the following, <code>BirthdayResource_en_US.xml</code>:</p>
+<blockquote>
+  <pre>&lt;?xml version=&quot;1.0&quot; ?&gt;
+&lt;?xml-stylesheet type=&quot;text/xsl&quot; href=&quot;Resource.xsl&quot; ?&gt;
+&lt;resourceBundle
+	locale=&quot;en_US&quot;
+	cppExceptionClassName=&quot;Excn&quot;
+	cppExceptionClassLocation=&quot;Excn.h&quot;&gt;
+  &lt;message name=&quot;HappyBirthday&quot;&gt;
+    &lt;text&gt;Happy Birthday, {0}! You don''t look {1,number}.&lt;/text&gt;
+  &lt;/message&gt;
+  &lt;exception name=&quot;TooYoung&quot;&gt;
+    &lt;text&gt;{0} has not been born yet.&lt;/text&gt;
+  &lt;/exception&gt;
+&lt;/resourceBundle&gt;</pre>
+</blockquote>
+
+<h3>Create ANT target</h3>
+<p>Now modify (or create) your ANT build-file, <code>build.xml</code>, as follows:</p>
+<blockquote>
+  <pre>&lt;taskdef name=&quot;resgen&quot; classname=&quot;mondrian.resource.ResourceGenTask&quot;&gt;
+  &lt;classpath path=&quot;lib/mondrian.jar&quot;/&gt;
+&lt;/taskdef&gt;
+
+&lt;target name=&quot;generate.resources&quot;&gt;
+  &lt;resgen srcdir=&quot;source&quot; locales=&quot;en_US&quot;&gt;
+    &lt;include name=&quot;BirthdayResource_en_US.xml&quot;/&gt;
+  &lt;/resgen&gt;
+&lt;/target&gt;
+&lt;/target&gt;</pre>
+</blockquote>
+
+<p>I have assumed that your C++ source files are held in the &quot;<code>source</code>&quot; 
+directory.  I also assume that you'll write your own Makefile or
+equivalent to compile the code generated (<code>BirthdayResource.h</code> and
+<code>BirthdayResource.cpp</code> in this example).</p>
+
+<h3>Compile</h3>
+<p>Build as follows. (You need 'ant' on your path, and you will need to edit the 
+project.classpath property in <code>build.xml</code>.)</p>
+<blockquote>
+  <pre>$ ant
+Buildfile: build.xml
+
+generate.resources:
+[resgen] Generating source\BirthdayResource.properties
+[resgen] Generating source\BirthdayResource_en_US.properties
+[resgen] Generating source\BirthdayResource.h
+[resgen] Generating source\BirthdayResource.cpp
+
+BUILD SUCCESSFUL
+
+Total time: 3 seconds</pre>
+</blockquote>
+
+<p>Four files are generated.</p>
+<p><code>source/happy/BirthdayResource.h</code>:</p>
+<blockquote>
+  <pre>// This class is generated. Do NOT modify it, or
+// add it to source control.
+
+/**
+ * This class was generated
+ * by class mondrian.resource.ResourceGen
+ * from /BirthdayResource_en_US.xml
+ * on Wed Feb 18 13:10:31 PST 2004.
+ * It contains a list of messages, and methods to
+ * retrieve and format those messages.
+ **/
+
+#ifndef Fennel_BirthdayResource_Included
+#define Fennel_BirthdayResource_Included
+
+#include &lt;ctime&gt;
+#include &lt;string&gt;
+
+#include "Locale.h"
+#include "ResourceDefinition.h"
+#include "ResourceBundle.h"
+
+// begin includes specified by BirthdayResource_en_US.xml
+#include "Excn.h"
+// end includes specified by BirthdayResource_en_US.xml
+
+using namespace std;
+
+	/** <code>HappyBirthday</code> is 'Happy Birthday, {0}! You don''t look {1,number}.'	 */
+class HappyBirthday : public ResourceDefinition
+{
+  public:
+  HappyBirthday(ResourceBundle *bundle, const string &key);
+
+  string operator()(const string &p0, int p1) const;
+};
+
+
+	/** <code>TooYoung</code> is '{0} has not been born yet.'	 */
+class TooYoung : public ResourceDefinition
+{
+  public:
+  TooYoung(ResourceBundle *bundle, const string &key);
+
+  string operator()(const string &p0) const;
+};
+
+
+class BirthdayResource;
+typedef map<Locale, BirthdayResource*, localeLess> BirthdayResourceBundleCache;
+
+class BirthdayResource : ResourceBundle
+{
+  protected:
+  BirthdayResource(Locale locale);
+
+  public:
+  virtual ~BirthdayResource() { }
+
+  static const BirthdayResource &instance();
+  static const BirthdayResource &instance(const Locale &locale);
+
+  static void setResourceFileLocation(const string &location);
+
+  HappyBirthday HappyBirthday;
+
+  TooYoung TooYoung;
+  Excn* newTooYoung(const string &p0) const;
+
+  template<class _GRB, class _BC, class _BC_ITER>
+    friend _GRB *makeInstance(_BC &bundleCache, const Locale &locale);
+};
+
+#endif // Fennel_BirthdayResource_Included</pre>
+</blockquote>
+
+<p><code>source/happy/BirthdayResource.cpp</code>:</p>
+<blockquote>
+  <pre>// This class is generated. Do NOT modify it, or
+// add it to source control.
+
+/**
+ * This class was generated
+ * by class mondrian.resource.ResourceGen
+ * from BirthdayResource_en_US.xml
+ * on Wed Feb 18 13:14:30 PST 2004.
+ * It contains a list of messages, and methods to
+ * retrieve and format those messages.
+ **/
+
+#include "BirthdayResource.h"
+#include "ResourceBundle.h"
+#include "Locale.h"
+
+#include &lt;map&gt;
+#include &lt;string&gt;
+
+using namespace std;
+
+#define BASENAME ("BirthdayResource")
+
+static BirthdayResourceBundleCache bundleCache;
+static string bundleLocation("");
+
+const BirthdayResource &BirthdayResource::instance()
+{
+  return BirthdayResource::instance(Locale::getDefault());
+}
+
+const BirthdayResource &BirthdayResource::instance(const Locale &locale)
+{
+  return *makeInstance<BirthdayResource, BirthdayResourceBundleCache, BirthdayResourceBundleCache::iterator>(bundleCache, locale);
+}
+
+void BirthdayResource::setResourceFileLocation(const string &location)
+{
+  bundleLocation = location;
+}
+
+BirthdayResource::BirthdayResource(Locale locale)
+  : ResourceBundle(BASENAME, locale, bundleLocation),
+    HappyBirthday(this, "HappyBirthday"),
+    TooYoung(this, "TooYoung")
+{ }
+
+Excn* BirthdayResource::newTooYoung(const string &p0) const
+{
+  return new Excn(TooYoung.operator()(p0));
+}
+
+HappyBirthday::HappyBirthday(ResourceBundle *bundle, const string &key)
+  : ResourceDefinition(bundle, key)
+{ }
+
+string HappyBirthday::operator()(const string &p0, int p1) const
+{
+  return format(p0, p1);
+}
+
+TooYoung::TooYoung(ResourceBundle *bundle, const string &key)
+  : ResourceDefinition(bundle, key)
+{ }
+
+string TooYoung::operator()(const string &p0) const
+{
+  return format(p0);
+}</pre></blockquote>
+
+<p><code>source/happy/BirthdayResource.properties</code>:</p>
+<blockquote>
+  <pre>HappyBirthday=Happy Birthday, {0}! You don''t look {1, number}.
+TooYoung={0} has not been born yet.</pre>
+</blockquote>
+<p><code>source/happy/BirthdayResource_en_US.properties</code>:</p>
+<blockquote>
+  <pre># This file is intentionally blank. Add property values
+# to this file to override the translations in the base
+# properties file, BirthdayResource.properties.</pre>
+</blockquote>
+
+<p>For each resource, a member variable is generated in the generated
+class.  The member variable allows you to use <code>operator()</code>
+to generate the resource's message with appropriate arguments
+substituted.  In addition a <code>new<i>Xxx</i>()</code> function is
+generated for each exception resource to retrieve an instance of that
+exception.</p>
+
+<p>To obtain an instance of the resource bundle
+(e.g. <code>BirthdayResource</code>), use the static
+<code>instance()</code> or <code>instance(const Locale &)</code>
+methods.  The former returns an instance for the default locale and
+the latter returns an instance for the given locale.
+
+<p>Tokens such as <code>{0}</code> and <code>{1, number}</code> in the
+message are automatically converted to method parameters of the right
+type. This means that if you ever change the parameters in your error
+message, or accidentally delete it, you code will no longer build. (If
+your code doesn't compile, you can fix the problem immediately; better
+that than getting a phone call, &quot;I just got this really weird
+error...&quot;, in a few months time.)</p>
+
+<p>Here's how you might use it in your code:</p>
+<blockquote>
+  <pre>#include "BirthdayResource.h"
+
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+
+using namespace std;
+
+void wishHappyBirthday(const string &name, int age) {
+  if (age &lt; 0) {
+    throw BirthdayResource::instance().newTooYoung(name);
+  }
+
+  cout << BirthdayResource::instance().HappyBirthday(name, age) << endl;
+}
+
+int main(int argc, char **argv) {
+  BirthdayResources::setResourceFileLocation("./");
+
+  try {
+    wishHappyBirthday("Fred", 33);
+    wishHappyBirthday("Wilma", -3);
+  }
+  catch(Excn *x) {
+    cout << "Exception: " << x-&gt;getMessage() << endl;
+  }
+
+  return 0;
+}
+</pre></blockquote>
+<p>This produces the following output.</p>
+<blockquote>
+    <pre>Happy Birthday, Fred! You don't look 33.
+Exception: Wilma has not been born yet.</pre>
+</blockquote>
+
+<p>In MonRG C++ resources, it is the framework's responsibility to
+handle switching from locale to locale.</p>
+
+<hr>
+  
+</body>
+</html>
+<table border="0" class="clsStd" width="100%" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0">
+  <tr>
+    <td class="content">
+      <a target="_top" href="index.html">Home</a> |
+      <a target="_top" href="monrg_cpp.html">No frames</a> | This file is<i>
+      <a href="http://apoptosis.dyndns.org:8080/open/mondrian/doc/monrg_cpp.html">
+        $Id$
+      </a></i> (<a href="http://apoptosis.dyndns.org:8080/open/mondrian/doc/monrg_cpp.html?ac=22">log</a>)</td>
+    <td align="right">
+      <a href="http://sourceforge.net">
+        <img src="http://sourceforge.net/sflogo.php?group_id=35302&type=1" width="88" height="31" border="0" alt="SourceForge.net Logo">
+      </a>
+    </td>
+  </tr>
+</table>
+  

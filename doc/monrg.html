@@ -340,6 +340,12 @@ follows (new files are shown in <i>italic</i>):</p><blockquote>
 <p>(Validation is not implemented yet. As well as detecting modified and deleted 
 messages, it should also have a mode which reminds us to add new messages.)</p>
 
+<a name="cpp_resources"></a>
+<h2>C++ Resource Support</h2>
+
+<p>MonRG also includes support for building and maintaining
+internationalized applications in <a target="_self" href="monrg_cpp.html">C++</a>.
+
 <h2>Resource file format</h2>
 
 <blockquote>
@@ -361,6 +367,19 @@ messages, it should also have a mode which reminds us to add new messages.)</p>
       java.lang</code>. Not required; default value is &quot;java.lang.RuntimeException&quot;. 
       The <code>className</code> attribute of <code>&lt;exception&gt;</code> overrides 
       this for a specific exception.</li>
+      <li><b><code>cppNamespace</code></b> The namespace used for
+      generated C++ files.  Only used if resources are generated in
+      C++ mode.  Optional.</li>
+      <li><b><code>cppCommonInclude</code></b> The name of a header file to
+      include at the start of all generated C++ files.  Optional. Only used if
+      resources are generated in C++ mode.</li>
+      <li><b><code>cppExceptionClassName</code></b> The name of the
+      exception class to be returned by exception resources.
+      Optional. Only used if resources are generated in C++ mode.</li>
+      <li><b><code>cppExceptionClassLocation</code></b> The name of
+      the header file to include.  Should define the class referred to
+      in cppExceptionClassName.  Required if cppExceptionClassName is
+      given.</li>
     </ul>
     <p>Children:</p>
     <ul>
@@ -390,10 +409,21 @@ messages, it should also have a mode which reminds us to add new messages.)</p>
       <li><b><code>name</code></b> The identifier of the exception. Becomes the name of the 
       property in the generated <code>.properties</code> file. Required, must be 
       unique within the resource file, and must be a valid Java identifer.</li>
-      <li><b><code>className</code></b> The type of exception to generate. Must be fully 
-      qualified,<br>
+      <li><b><code>className</code></b> The type of exception to generate. Must be fully qualified,
       unless it is in the package &lt;code&gt;java.lang&lt;/code&gt;. If not<br>
       specified, the resource bundle's default exception class is used.</li>
+      <li><b><code>cppClassName</code></b> The name of the C++
+      exception class returned by this exception.  Either this attribute
+      or <code>&lt;resourceBundle&gt;'s cppExceptionClassName</code>
+      must be defined.</li>
+      <li><b><code>cppClassLocation</code></b> The name of a C++
+      header file to be included.  Required if
+      <code>cppClassName</code> is used.</li>
+      <li><b><code>cppChainExceptions</code></b> If <code>false</code>
+      (the default), only a basic constructor is need.  If
+      <code>true</code> the basic and chained constructors are
+      required (see the section on <a href="#cpp_resources">C++
+      resources</a>.</li>
     </ul>
     <p>Children:</p>
     <ul>
@@ -412,6 +442,7 @@ messages, it should also have a mode which reminds us to add new messages.)</p>
 </table>
 </blockquote>
 
+<a name="resgen"></a>
 <h2>resgen ANT task</h2>
 
 <p>The <code>&lt;resgen&gt;</code> task is defined
@@ -449,6 +480,5 @@ Julian Hyde</a>.</p>
     </td>
   </tr>
 </table>
-  
 </body>
 </html>
