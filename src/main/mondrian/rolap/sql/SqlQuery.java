@@ -17,6 +17,7 @@ import mondrian.olap.Util;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -61,34 +62,72 @@ import java.util.ArrayList;
  * <dd> In Oracle, BIT is CHAR(1), TIMESTAMP is DATE.
  *      In PostgreSQL, DOUBLE is DOUBLE PRECISION, BIT is BOOL. </dd>
  * </ul>
- **/
+ * 
+ * <p>
+ * NOTE: Instances of this class are NOT thread safe so the user must make 
+ * sure this is accessed by only one thread at a time.
+ */
 public class SqlQuery
 {
-    DatabaseMetaData databaseMetaData;
-    // todo: replace {select, selectCount} with a StringList; etc.
-    boolean distinct;
-    private final ClauseList select = new ClauseList(true);
-    private final ClauseList from = new ClauseList(true);
-    private final ClauseList where = new ClauseList(false);
-    private final ClauseList groupBy = new ClauseList(false);
-    private final ClauseList having = new ClauseList(false);
-    private final ClauseList orderBy = new ClauseList(false);
-    private final List fromAliases = new ArrayList();
-    private String quoteIdentifierString = null;
+    private boolean distinct;
+    private final DatabaseMetaData databaseMetaData;
+
+    private final ClauseList select;
+    private final ClauseList from;
+    private final ClauseList where;
+    private final ClauseList groupBy;
+    private final ClauseList having;
+    private final ClauseList orderBy;
+
+    /** 
+     * This list is used to keep track of what aliases have been  used in the
+     * FROM clause. One might think that a java.util.Set would be a more
+     * appropriate Collection type, but if you only have a couple of "from
+     * aliases", then iterating over a list is faster than doing a hash lookup
+     * (as is used in java.util.HashSet).
+     */
+    private final List fromAliases;
+    
+    private final String quoteIdentifierString;
 
     /** Scratch buffer. Clear it before use. */
-    private final StringBuffer buf = new StringBuffer();
+    private final StringBuffer buf;
 
+    /** 
+     * Base constructor used by all other constructors to create an empty
+     * instance.
+     * 
+     * @param databaseMetaData 
+     */
+    private SqlQuery(final DatabaseMetaData databaseMetaData,
+                     final String quoteIdentifierString) {
+        // the databaseMetaData instance variable must be set before calling
+        // initializeQuoteIdentifierString method
+        this.databaseMetaData = databaseMetaData;
+
+        this.quoteIdentifierString = (quoteIdentifierString == null)
+                ? initializeQuoteIdentifierString()
+                : quoteIdentifierString;
+
+        // both select and from allow duplications
+        this.select = new ClauseList(true);
+        this.from = new ClauseList(true);
+
+        this.where = new ClauseList(false);
+        this.groupBy = new ClauseList(false);
+        this.having = new ClauseList(false);
+        this.orderBy = new ClauseList(false);
+        this.fromAliases = new ArrayList();
+        this.buf = new StringBuffer(128);
+    }
     /**
      * Creates a <code>SqlQuery</code>
      *
      * @param databaseMetaData used to determine which dialect of
      *     SQL to generate
      */
-    public SqlQuery(DatabaseMetaData databaseMetaData) {
-        this.databaseMetaData = databaseMetaData;
-        initializeQuoteIdentifierString();
-
+    public SqlQuery(final DatabaseMetaData databaseMetaData) {
+        this(databaseMetaData, null);
     }
 
     /**
@@ -97,32 +136,31 @@ public class SqlQuery
      **/
     public SqlQuery cloneEmpty()
     {
-        return new SqlQuery(databaseMetaData);
+        return new SqlQuery(databaseMetaData, quoteIdentifierString);
     }
 
-    public void setDistinct(boolean distinct) {
+    public void setDistinct(final boolean distinct) {
         this.distinct = distinct;
     }
 
-    private void initializeQuoteIdentifierString() {
+    private String initializeQuoteIdentifierString() {
+        String s = null;
         try {
-            quoteIdentifierString = databaseMetaData.getIdentifierQuoteString();
+            s = databaseMetaData.getIdentifierQuoteString();
         } catch (SQLException e) {
             throw Util.getRes().newInternal("while quoting identifier", e);
         }
-        if (quoteIdentifierString == null || quoteIdentifierString.trim().equals("")) {
+
+        if ((s == null) || (s.trim().length() == 0)) {
             if (isMySQL()) {
                 // mm.mysql.2.0.4 driver lies. We know better.
-                quoteIdentifierString = "`";
+                s = "`";
             } else {
                 // Quoting not supported
-                quoteIdentifierString = "";
+                s = null;
             }
         }
-        // set to null so that quoteIdentifier method need only test for null
-        if (quoteIdentifierString != null && quoteIdentifierString.trim().equals("")) {
-            quoteIdentifierString = null;
-        }
+        return s;
     }
 
     /**         
@@ -142,13 +180,24 @@ public class SqlQuery
      * <code>"emp"</code> in Oracle, and a string containing
      * <code>[emp]</code> in Access.
      **/
-    public String quoteIdentifier(String val) {
+    public String quoteIdentifier(final String val) {
         int size = val.length() + SINGLE_QUOTE_SIZE;
         StringBuffer buf = new StringBuffer(size);
+
         quoteIdentifier(val, buf);
+
         return buf.toString();
     }   
-    public void quoteIdentifier(String val, StringBuffer buf) {
+    
+    /** 
+     * This is the implementation of the quoteIdentifier method which quotes the
+     * the val parameter (identifier) placing the result in the StringBuffer
+     * parameter.
+     * 
+     * @param val identifier to quote (must not be null).
+     * @param buf 
+     */
+    public void quoteIdentifier(final String val, final StringBuffer buf) {
         String q = getQuoteIdentifierString();
         if (q == null) {
             // quoting is not supported
@@ -164,6 +213,7 @@ public class SqlQuery
             buf.append(val);
             return;
         }
+
         int k = val.indexOf('.');
         if (k > 0) {
             // qualified
@@ -176,14 +226,13 @@ public class SqlQuery
             buf.append(q);
             buf.append(val2);
             buf.append(q);
-            //return q + val1 + q + "." +  q + val2 + q ;
+
         } else {
             // not Qualified
             String val2 = Util.replace(val, q, q + q);
             buf.append(q);
             buf.append(val2);
             buf.append(q);
-            //return q + val2 + q;
         }
     }
 
@@ -198,7 +247,7 @@ public class SqlQuery
      *             <code>"<em>qual</em>".</code> is prepended.
      * @param name Name to be quoted.
      **/
-    public String quoteIdentifier(String qual, String name) {
+    public String quoteIdentifier(final String qual, final String name) {
         // We know if the qalifier is null, then only the name is going
         // to be quoted.
         int size = name.length()
@@ -206,7 +255,9 @@ public class SqlQuery
                 ? SINGLE_QUOTE_SIZE
                 : (qual.length() + DOUBLE_QUOTE_SIZE));
         StringBuffer buf = new StringBuffer(size);
+
         quoteIdentifier(qual, name, buf);
+
         return buf.toString();
     } 
 
@@ -214,16 +265,19 @@ public class SqlQuery
      * This implements the quoting of a qualifier and name allowing one to 
      * pass in a StringBuffer thus saving the allocation and copying.
      *      
-     * @param qual 
-     * @param name 
+     * @param qual optional qualifier to be quoted.
+     * @param name name to be quoted (must not be null).
      * @param buf 
      */     
-    public void quoteIdentifier(String qual, String name, StringBuffer buf) {
+    public void quoteIdentifier(final String qual, 
+                                final String name, 
+                                final StringBuffer buf) {
         if (qual == null) {
             quoteIdentifier(name, buf);
+
         } else {
             Util.assertTrue(
-                !qual.equals(""),
+                (qual.length() != 0),
                 "qual should probably be null, not empty");
 
             quoteIdentifier(qual, buf);
@@ -291,12 +345,30 @@ public class SqlQuery
             return true;
         */
         // assume, that version <= 04 is "old"
-        if ("04".compareTo(version_release[0]) >= 0) {
-            return true;
-        }
-        return false;
+        return ("04".compareTo(version_release[0]) >= 0);
     }
 
+    // Note: its not clear that caching the best name would actually save
+    // very much time, so we do not do so.
+    private String getBestName() {
+        String best;
+        if (isOracle()) {
+            best = "oracle";
+        } else if (isMSSql() || isMSSQL()) {
+            best = "mssql";
+        } else if (isMySQL()) {
+            best = "mysql";
+        } else if (isAccess()) {
+            best = "access";
+        } else if (isPostgres()) {
+            best = "postgres";
+        } else if (isSybase()) {
+            best = "sybase";
+        } else {
+            best = "generic";
+        }
+        return best;
+    }
 
     public boolean isInformix() {
         return getProduct().startsWith("Informix");
@@ -346,23 +418,9 @@ public class SqlQuery
      * mondrian.olap.MondrianDef.SQL} which best matches the current SQL
      * dialect.
      */
-    public String chooseQuery(MondrianDef.SQL[] sqls) {
-        String best;
-        if (isOracle()) {
-            best = "oracle";
-        } else if (isMSSql() || isMSSQL()) {
-            best = "mssql";
-        } else if (isMySQL()) {
-            best = "mysql";
-        } else if (isAccess()) {
-            best = "access";
-        } else if (isPostgres()) {
-            best = "postgres";
-        } else if (isSybase()) {
-            best = "sybase";
-        } else {
-            best = "generic";
-        }
+    public String chooseQuery(final MondrianDef.SQL[] sqls) {
+        String best = getBestName();
+
         String generic = null;
         for (int i = 0; i < sqls.length; i++) {
             MondrianDef.SQL sql = sqls[i];
@@ -380,12 +438,20 @@ public class SqlQuery
     }
 
     /**
-     * @pre alias != null
+     *
+     *
+     * @param query  
+     * @param alias (if not null, must not be zero length).
+     * @param failIfExists if true, throws exception if alias already exists
      * @return true if query *was* added
+     *
+     * @pre alias != null
      */
-    public boolean addFromQuery(
-            String query, String alias, boolean failIfExists) {
+    public boolean addFromQuery(final String query,   
+                                final String alias, 
+                                final boolean failIfExists) {
         Util.assertPrecondition(alias != null);
+
         if (fromAliases.contains(alias)) {
             if (failIfExists) {
                 throw Util.newInternal(
@@ -394,12 +460,15 @@ public class SqlQuery
                 return false;
             }
         }
+
         buf.setLength(0);
+
         buf.append('(');
         buf.append(query);
         buf.append(')');
         if (alias != null) {
-            Util.assertTrue(!alias.equals(""));
+            Util.assertTrue(alias.length() > 0);
+
             if (allowsAs()) {
                 buf.append(" as ");
             } else {
@@ -408,6 +477,7 @@ public class SqlQuery
             quoteIdentifier(alias, buf);
             fromAliases.add(alias);
         }
+
         from.add(buf.toString());
         return true;
     }
@@ -417,16 +487,18 @@ public class SqlQuery
      *
      * @param schema schema name; may be null
      * @param table table name
-     * @param alias table alias, may not be null
+     * @param alias table alias, may not be null 
+     *              (if not null, must not be zero length).
+     * @param failIfExists 
      *
      * @pre alias != null
      * @return true if table *was* added
      */
-    private boolean addFromTable(String schema, 
-                                 String table, 
-                                 String alias, 
-                                 String filter, 
-                                 boolean failIfExists) {
+    private boolean addFromTable(final String schema, 
+                                 final String table, 
+                                 final String alias, 
+                                 final String filter, 
+                                 final boolean failIfExists) {
         if (fromAliases.contains(alias)) {
             if (failIfExists) {
                 throw Util.newInternal(
@@ -435,19 +507,23 @@ public class SqlQuery
                 return false;
             }
         }
+
         buf.setLength(0);
         quoteIdentifier(schema, table, buf);
         if (alias != null) {
-            Util.assertTrue(!alias.equals(""));
+            Util.assertTrue(alias.length() > 0);
+
             if (allowsAs()) {
                 buf.append(" as ");
             } else {
-                buf.append(" ");
+                buf.append(' ');
             }
             quoteIdentifier(alias, buf);
             fromAliases.add(alias);
         }
+
         from.add(buf.toString());
+
         if (filter != null) {
             // append filter condition to where clause
             addWhere("(", filter, ")");
@@ -455,7 +531,9 @@ public class SqlQuery
         return true;
     }
 
-    public void addFrom(SqlQuery sqlQuery, String alias, boolean failIfExists)
+    public void addFrom(final SqlQuery sqlQuery, 
+                        final String alias, 
+                        final boolean failIfExists)
     {
         addFromQuery(sqlQuery.toString(), alias, failIfExists);
     }
@@ -471,37 +549,36 @@ public class SqlQuery
      * @param failIfExists Whether to fail if relation is already present
      * @return true, if relation *was* added to query
      */
-    public boolean addFrom(MondrianDef.Relation relation, String alias,
-        boolean failIfExists)
+    public boolean addFrom(final MondrianDef.Relation relation, 
+                           final String alias,
+                           final boolean failIfExists)
     {
         if (relation instanceof MondrianDef.View) {
-            MondrianDef.View view = (MondrianDef.View) relation;
-            if (alias == null) {
-                alias = relation.getAlias();
-            }
-            String sqlString = chooseQuery(view.selects);
-            if (!fromAliases.contains(alias)) {
-                return addFromQuery(sqlString, alias, failIfExists);
-            }
-            return false;
+            final MondrianDef.View view = (MondrianDef.View) relation;
+            final String viewAlias = (alias == null)
+                    ? view.getAlias()
+                    : alias;
+            final String sqlString = chooseQuery(view.selects);
+
+            return addFromQuery(sqlString, viewAlias, false);
+
         } else if (relation instanceof MondrianDef.Table) {
-            MondrianDef.Table table = (MondrianDef.Table) relation;
-            if (alias == null) {
-                alias = relation.getAlias();
-            }
-            return addFromTable(table.schema, table.name, alias,
+            final MondrianDef.Table table = (MondrianDef.Table) relation;
+            final String tableAlias = (alias == null)
+                    ? table.getAlias()
+                    : alias;
+
+            return addFromTable(table.schema, table.name, tableAlias,
                 table.getFilter(), failIfExists);
+
         } else if (relation instanceof MondrianDef.Join) {
-            MondrianDef.Join join = (MondrianDef.Join) relation;
-            boolean added = false;
+            final MondrianDef.Join join = (MondrianDef.Join) relation;
             final String leftAlias = join.getLeftAlias();
-            if (addFrom(join.left, leftAlias, failIfExists)) {
-                added = true;
-            }
             final String rightAlias = join.getRightAlias();
-            if (addFrom(join.right, rightAlias, failIfExists)) {
-                added = true;
-            }
+
+            boolean added = addFrom(join.left, leftAlias, failIfExists) ||
+                            addFrom(join.right, rightAlias, failIfExists);
+
             if (added) {
                 buf.setLength(0);
 
@@ -512,32 +589,17 @@ public class SqlQuery
                 addWhere(buf.toString());
             }
             return added;
+
         } else {
             throw Util.newInternal("bad relation type " + relation);
         }
     }
-    /**
-     * @pre alias != null
-    public void addJoin(
-            String type, String query, String alias, String condition) {
-        Util.assertPrecondition(alias != null);
-        Util.assertPrecondition(condition != null);
-        Util.assertTrue(!fromAliases.contains(alias));
-        Util.assertTrue(from.size() > 0);
-        String last = (String) from.get(from.size() - 1);
-        last = last +
-            " " + type + " join " + query + " as " +
-            quoteIdentifier(alias) + " on " + condition;
-        from.set(from.size() - 1, last);
-        fromAliases.add(alias);
-    }
-     */
 
     /**
      * Adds an expression to the select clause, automatically creating a
      * column alias.
      */
-    public void addSelect(String expression) {
+    public void addSelect(final String expression) {
         // some DB2 versions (AS/400) throw an error, if a column alias is
         //  *not* used in a subsequent order by (Group by)
         if (isAS400()) {
@@ -548,7 +610,7 @@ public class SqlQuery
     }
     /** Adds an expression to the select clause, with a specified column
      * alias. **/
-    public void addSelect(String expression, String alias) {
+    public void addSelect(final String expression, final String alias) {
         buf.setLength(0);
 
         buf.append(expression);
@@ -560,31 +622,35 @@ public class SqlQuery
         select.add(buf.toString());
     }
 
-    public void addWhere(String exprLeft, String exprMid, String exprRight)
+    public void addWhere(final String exprLeft, 
+                         final String exprMid, 
+                         final String exprRight)
     {
         int len = exprLeft.length() + exprMid.length() + exprRight.length();
         StringBuffer buf = new StringBuffer(len);
+
         buf.append(exprLeft);
         buf.append(exprMid);
         buf.append(exprRight);
+
         addWhere(buf.toString());
     }
-    public void addWhere(String expression)
+    public void addWhere(final String expression)
     {
         where.add(expression);
     }
 
-    public void addGroupBy(String expression)
+    public void addGroupBy(final String expression)
     {
         groupBy.add(expression);
     }
 
-    public void addHaving(String expression)
+    public void addHaving(final String expression)
     {
         having.add(expression);
     }
 
-    public void addOrderBy(String expression)
+    public void addOrderBy(final String expression)
     {
         orderBy.add(expression);
     }
@@ -592,40 +658,52 @@ public class SqlQuery
     public String toString()
     {
         buf.setLength(0);
-        select.toBuffer(buf,
-                distinct ? "select distinct " : "select ", ", ");
+
+        select.toBuffer(buf, distinct ? "select distinct " : "select ", ", ");
         from.toBuffer(buf, " from ", ", ");
         where.toBuffer(buf, " where ", " and ");
         groupBy.toBuffer(buf, " group by ", ", ");
         having.toBuffer(buf, " having ", " and ");
         orderBy.toBuffer(buf, " order by ", ", ");
+
         return buf.toString();
     }
 
     private class ClauseList extends ArrayList {
         private final boolean allowDups;
 
-        ClauseList(boolean allowDups) {
+        ClauseList(final boolean allowDups) {
             this.allowDups = allowDups;
         }
 
-        public boolean add(String element) {
-            if (!allowDups) {
-                if (contains(element)) {
-                    return false;
-                }
+        
+        /** 
+         * Parameter element is added if either duplicates are allowed or if
+         * it has not already been added.
+         * 
+         * @param element 
+         */
+        void add(final String element) {
+            if (allowDups || !contains(element)) {
+                super.add(element);
             }
-            return super.add(element);
         }
 
-        void toBuffer(StringBuffer buf, String first, String sep) {
-            for (int i = 0; i < this.size(); i++) {
-                String s = (String) this.get(i);
-                if (i == 0) {
+        void toBuffer(final StringBuffer buf, 
+                      final String first, 
+                      final String sep) {
+            Iterator it = iterator();
+            boolean firstTime = true;
+            while (it.hasNext()) {
+                String s = (String) it.next();
+
+                if (firstTime) {
                     buf.append(first);
+                    firstTime = false;
                 } else {
                     buf.append(sep);
                 }
+
                 buf.append(s);
             }
         }
