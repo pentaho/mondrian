@@ -1392,10 +1392,24 @@ public class Query extends QueryPart {
 		}
 	}
 
+    /**
+     * Default implementation of {@link Exp.Resolver}.
+     *
+     * <p>Uses a stack to help us guess the type of our parent expression
+     * before we've completely resolved our children -- necessary,
+     * unfortunately, when figuring out whether the "*" operator denotes
+     * multiplication or crossjoin.
+     *
+     * <p>Keeps track of which nodes have already been resolved, so we don't
+     * try to resolve nodes which have already been resolved. (That would not
+     * be wrong, but can cause resolution to be an <code>O(2^N)</code>
+     * operation.)
+     */
     private class StackResolver implements Exp.Resolver {
         private final Stack stack = new Stack();
         private final FunTable funTable;
         private boolean haveCollectedParameters;
+        private HashSet resolvedNodes = new HashSet();
 
         public StackResolver(FunTable funTable) {
             this.funTable = funTable;
@@ -1406,24 +1420,37 @@ public class Query extends QueryPart {
         }
 
         public Exp resolveChild(Exp exp) {
+            if (!resolvedNodes.add(exp)) {
+                return exp; // already resolved
+            }
             stack.push(exp);
             try {
-                return exp.resolve(this);
+                final Exp resolved = exp.resolve(this);
+                resolvedNodes.add(resolved);
+                return resolved;
             } finally {
                 stack.pop();
             }
         }
 
         public Parameter resolveChild(Parameter parameter) {
+            if (!resolvedNodes.add(parameter)) {
+                return parameter; // already resolved
+            }
             stack.push(parameter);
             try {
-                return (Parameter) parameter.resolve(this);
+                final Parameter resolved = (Parameter) parameter.resolve(this);
+                resolvedNodes.add(resolved);
+                return resolved;
             } finally {
                 stack.pop();
             }
         }
 
         public void resolveChild(MemberProperty memberProperty) {
+            if (!resolvedNodes.add(memberProperty)) {
+                return; // already resolved
+            }
             stack.push(memberProperty);
             try {
                 memberProperty.resolve(this);
@@ -1433,6 +1460,9 @@ public class Query extends QueryPart {
         }
 
         public void resolveChild(QueryAxis axis) {
+            if (!resolvedNodes.add(axis)) {
+                return; // already resolved
+            }
             stack.push(axis);
             try {
                 axis.resolve(this);
@@ -1442,6 +1472,9 @@ public class Query extends QueryPart {
         }
 
         public void resolveChild(Formula formula) {
+            if (!resolvedNodes.add(formula)) {
+                return; // already resolved
+            }
             stack.push(formula);
             try {
                 formula.resolve(this);

@@ -2069,6 +2069,94 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "Row #9: 45,185.41" + nl);
     }
 
+    /**
+     * Bug 793616: Deeply nested UNION function takes forever to validate.
+     * (Problem was that each argument of a function was validated twice, hence
+     * the validation time was <code>O(2 ^ depth)</code>.)
+     */
+    public void testBug793616() {
+        Result result = runQuery("select {[Measures].[Unit Sales]," + nl +
+                " [Measures].[Store Cost]," + nl +
+                " [Measures].[Store Sales]} ON columns," + nl +
+                "Hierarchize(Union(Union(Union(Union(Union(Union(Union(Union(Union(Union(Union(Union(Union(Union(Union(Union(Union(Union(Union(Union" + nl +
+                "({([Gender].[All Gender]," + nl +
+                " [Marital Status].[All Marital Status]," + nl +
+                " [Customers].[All Customers]," + nl +
+                " [Product].[All Products])}," + nl +
+                " Crossjoin ([Gender].[All Gender].Children," + nl +
+                " {([Marital Status].[All Marital Status]," + nl +
+                " [Customers].[All Customers]," + nl +
+                " [Product].[All Products])}))," + nl +
+                " Crossjoin(Crossjoin({[Gender].[All Gender].[F]}," + nl +
+                " [Marital Status].[All Marital Status].Children)," + nl +
+                " {([Customers].[All Customers]," + nl +
+                " [Product].[All Products])}))," + nl +
+                " Crossjoin(Crossjoin({([Gender].[All Gender].[F]," + nl +
+                " [Marital Status].[All Marital Status].[M])}," + nl +
+                " [Customers].[All Customers].Children)," + nl +
+                " {[Product].[All Products]}))," + nl +
+                " Crossjoin(Crossjoin({([Gender].[All Gender].[F]," + nl +
+                " [Marital Status].[All Marital Status].[M])}," + nl +
+                " [Customers].[All Customers].[USA].Children)," + nl +
+                " {[Product].[All Products]}))," + nl +
+                " Crossjoin ({([Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M], [Customers].[All Customers].[USA].[CA])}," + nl +
+                "   [Product].[All Products].Children))," + nl +
+                " Crossjoin({([Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M], [Customers].[All Customers].[USA].[OR])}," + nl +
+                "   [Product].[All Products].Children))," + nl +
+                " Crossjoin({([Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M], [Customers].[All Customers].[USA].[WA])}," + nl +
+                "   [Product].[All Products].Children))," + nl +
+                " Crossjoin ({([Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M], [Customers].[All Customers].[USA])}," + nl +
+                "   [Product].[All Products].Children))," + nl +
+                " Crossjoin(" + nl +
+                "   Crossjoin({([Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S])}, [Customers].[All Customers].Children)," + nl +
+                "   {[Product].[All Products]}))," + nl +
+                " Crossjoin(Crossjoin({([Gender].[All Gender].[F]," + nl +
+                " [Marital Status].[All Marital Status].[S])}," + nl +
+                " [Customers].[All Customers].[USA].Children)," + nl +
+                " {[Product].[All Products]}))," + nl +
+                " Crossjoin ({([Gender].[All Gender].[F]," + nl +
+                " [Marital Status].[All Marital Status].[S]," + nl +
+                " [Customers].[All Customers].[USA].[CA])}," + nl +
+                " [Product].[All Products].Children))," + nl +
+                " Crossjoin({([Gender].[All Gender].[F]," + nl +
+                " [Marital Status].[All Marital Status].[S]," + nl +
+                " [Customers].[All Customers].[USA].[OR])}," + nl +
+                " [Product].[All Products].Children))," + nl +
+                " Crossjoin({([Gender].[All Gender].[F]," + nl +
+                " [Marital Status].[All Marital Status].[S]," + nl +
+                " [Customers].[All Customers].[USA].[WA])}," + nl +
+                " [Product].[All Products].Children))," + nl +
+                " Crossjoin ({([Gender].[All Gender].[F]," + nl +
+                " [Marital Status].[All Marital Status].[S]," + nl +
+                " [Customers].[All Customers].[USA])}," + nl +
+                " [Product].[All Products].Children))," + nl +
+                " Crossjoin(Crossjoin({([Gender].[All Gender].[F]," + nl +
+                " [Marital Status].[All Marital Status])}," + nl +
+                " [Customers].[All Customers].Children)," + nl +
+                " {[Product].[All Products]}))," + nl +
+                " Crossjoin(Crossjoin({([Gender].[All Gender].[F]," + nl +
+                " [Marital Status].[All Marital Status])}," + nl +
+                " [Customers].[All Customers].[USA].Children)," + nl +
+                " {[Product].[All Products]}))," + nl +
+                " Crossjoin ({([Gender].[All Gender].[F]," + nl +
+                " [Marital Status].[All Marital Status]," + nl +
+                " [Customers].[All Customers].[USA].[CA])}," + nl +
+                " [Product].[All Products].Children))," + nl +
+                " Crossjoin({([Gender].[All Gender].[F]," + nl +
+                " [Marital Status].[All Marital Status]," + nl +
+                " [Customers].[All Customers].[USA].[OR])}," + nl +
+                " [Product].[All Products].Children))," + nl +
+                " Crossjoin({([Gender].[All Gender].[F]," + nl +
+                " [Marital Status].[All Marital Status]," + nl +
+                " [Customers].[All Customers].[USA].[WA])}," + nl +
+                " [Product].[All Products].Children))," + nl +
+                " Crossjoin ({([Gender].[All Gender].[F]," + nl +
+                " [Marital Status].[All Marital Status]," + nl +
+                " [Customers].[All Customers].[USA])}," + nl +
+                " [Product].[All Products].Children))) ON rows  from [Sales]  where [Time].[1997]");
+        assertEquals(59, result.getAxes()[1].positions.length);
+    }
+
 	public void testCatalogHierarchyBasedOnView() {
 		Schema schema = getConnection().getSchema();
 		final Cube salesCube = schema.lookupCube("Sales", true);
