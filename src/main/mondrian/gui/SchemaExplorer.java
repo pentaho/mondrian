@@ -7,7 +7,11 @@
 package mondrian.gui;
 
 import javax.swing.event.*;
+import javax.swing.*;
+import java.io.*;
+
 import mondrian.olap.*;
+import mondrian.xom.*;
 
 /**
  *
@@ -17,22 +21,31 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
     MondrianDef.Schema schema;
     SchemaTreeModel model;
     SchemaTreeCellRenderer renderer;
+    File schemaFile;
     
     /** Creates new form SchemaExplorer */
     public SchemaExplorer() {
         initComponents();
     }
     
-    public SchemaExplorer(MondrianDef.Schema s) {
+    public SchemaExplorer(File f) {
         this();
-        this.schema = s;
-        renderer = new SchemaTreeCellRenderer();
-        model = new SchemaTreeModel(schema);
-       
-        tree.setModel(model);
-        tree.setCellRenderer(renderer);
-        tree.addTreeSelectionListener(this);
-        
+        try {
+            mondrian.xom.Parser xmlParser =
+                    mondrian.xom.XOMUtil.createDefaultParser();
+            this.schemaFile = f;
+            schema = new MondrianDef.Schema(
+                    xmlParser.parse(schemaFile.toURL()));
+            renderer = new SchemaTreeCellRenderer();
+            model = new SchemaTreeModel(schema);
+
+            tree.setModel(model);
+            tree.setCellRenderer(renderer);
+            tree.addTreeSelectionListener(this);
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
     
     /** This method is called from within the constructor to
@@ -45,14 +58,26 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         jPanel1 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         propertyTable = new javax.swing.JTable();
+        targetLabel = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tree = new javax.swing.JTree();
+        jToolBar1 = new javax.swing.JToolBar();
+        saveButton = new javax.swing.JButton();
+        jPanel4 = new javax.swing.JPanel();
+        addCubeButton = new javax.swing.JButton();
+        addDimensionButton = new javax.swing.JButton();
+        addMeasureButton = new javax.swing.JButton();
+        addLevelButton = new javax.swing.JButton();
+        addPropertyButton = new javax.swing.JButton();
+        jPanel3 = new javax.swing.JPanel();
+        cutButton = new javax.swing.JButton();
+        copyButton = new javax.swing.JButton();
+        pasteButton = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
 
         jSplitPane1.setDividerLocation(200);
-        jSplitPane1.setToolTipText("null");
         jPanel1.setLayout(new java.awt.BorderLayout());
 
         propertyTable.setModel(new javax.swing.table.DefaultTableModel(
@@ -82,6 +107,13 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         jPanel1.add(jScrollPane2, java.awt.BorderLayout.CENTER);
 
+        targetLabel.setFont(new java.awt.Font("Dialog", 1, 14));
+        targetLabel.setForeground((java.awt.Color) javax.swing.UIManager.getDefaults().get("CheckBoxMenuItem.acceleratorForeground"));
+        targetLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        targetLabel.setText("Schema");
+        targetLabel.setBorder(new javax.swing.border.EtchedBorder());
+        jPanel1.add(targetLabel, java.awt.BorderLayout.NORTH);
+
         jSplitPane1.setRightComponent(jPanel1);
 
         jPanel2.setLayout(new java.awt.BorderLayout());
@@ -94,7 +126,72 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         add(jSplitPane1, java.awt.BorderLayout.CENTER);
 
+        saveButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/Save24.gif")));
+        saveButton.setToolTipText("Save");
+        saveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveButtonActionPerformed(evt);
+            }
+        });
+
+        jToolBar1.add(saveButton);
+
+        jPanel4.setMaximumSize(new java.awt.Dimension(10, 32767));
+        jToolBar1.add(jPanel4);
+
+        addCubeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/addCube24.gif")));
+        addCubeButton.setToolTipText("Add Cube");
+        jToolBar1.add(addCubeButton);
+
+        addDimensionButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/addDimension24.gif")));
+        addDimensionButton.setToolTipText("Add Dimension");
+        jToolBar1.add(addDimensionButton);
+
+        addMeasureButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/addMeasure24.gif")));
+        addMeasureButton.setToolTipText("Add Measure");
+        jToolBar1.add(addMeasureButton);
+
+        addLevelButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/addLevel24.gif")));
+        addLevelButton.setToolTipText("Add Level");
+        jToolBar1.add(addLevelButton);
+
+        addPropertyButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/addProperty24.gif")));
+        addPropertyButton.setToolTipText("Add Property");
+        jToolBar1.add(addPropertyButton);
+
+        jPanel3.setMaximumSize(new java.awt.Dimension(10, 32767));
+        jToolBar1.add(jPanel3);
+
+        cutButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/Cut24.gif")));
+        cutButton.setToolTipText("Cut");
+        jToolBar1.add(cutButton);
+
+        copyButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/Copy24.gif")));
+        copyButton.setToolTipText("Copy");
+        jToolBar1.add(copyButton);
+
+        pasteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/Paste24.gif")));
+        pasteButton.setToolTipText("Paste");
+        jToolBar1.add(pasteButton);
+
+        add(jToolBar1, java.awt.BorderLayout.NORTH);
+
     }//GEN-END:initComponents
+
+    private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
+        JFileChooser jfc = new JFileChooser();
+        Util.getProperties();
+        jfc.setSelectedFile(schemaFile);
+        if (jfc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            try {
+                XMLOutput out = new XMLOutput(new FileWriter(jfc.getSelectedFile()));
+                this.schema.displayXML(out);
+                schemaFile = jfc.getSelectedFile();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }//GEN-LAST:event_saveButtonActionPerformed
 
     /**
      * Called whenever the value of the selection changes.
@@ -107,97 +204,134 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             MondrianDef.Column c = (MondrianDef.Column)o;
             PropertyTableModel ptm = new PropertyTableModel(c, new String[]{"name", "table"});
             propertyTable.setModel(ptm);
+            targetLabel.setText("Column");
         } else if (o instanceof MondrianDef.Cube) {
             MondrianDef.Cube c = (MondrianDef.Cube)o;
             PropertyTableModel ptm = new PropertyTableModel(c, new String[]{"name", "factSchema", "factTable"});
             propertyTable.setModel(ptm);
+            targetLabel.setText("Cube");
         } else if (o instanceof MondrianDef.Dimension) {
             MondrianDef.Dimension d = (MondrianDef.Dimension)o;
             PropertyTableModel ptm = new PropertyTableModel(d, new String[]{"name", "foreignKey"});
             propertyTable.setModel(ptm);
+            targetLabel.setText("Dimension");
         } else if (o instanceof MondrianDef.DimensionUsage) {
             MondrianDef.DimensionUsage du = (MondrianDef.DimensionUsage)o;
             PropertyTableModel ptm = new PropertyTableModel(du, new String[]{"name", "foreignKey", "source"});
             propertyTable.setModel(ptm);
+            targetLabel.setText("Dimension Usage");
         } else if (o instanceof MondrianDef.ExpressionView) {
             MondrianDef.ExpressionView ev = (MondrianDef.ExpressionView)o;
             PropertyTableModel ptm = new PropertyTableModel(ev, new String[]{"name", "foreignKey", "source"});
             propertyTable.setModel(ptm);
+            targetLabel.setText("Expression View");
         } else if (o instanceof MondrianDef.Hierarchy) {
             MondrianDef.Hierarchy h = (MondrianDef.Hierarchy)o;
             PropertyTableModel ptm = new PropertyTableModel(h, 
                 new String[]{"hasAll", "defaultMember", "memberReaderClass", "primaryKey", "primaryKeyTable", "relation"});
             propertyTable.setModel(ptm);
+            targetLabel.setText("Hierarchy");
         } else if (o instanceof MondrianDef.Join) {
             MondrianDef.Join j = (MondrianDef.Join)o;
             PropertyTableModel ptm = new PropertyTableModel(j, 
                 new String[]{"left", "leftAlias", "leftKey", "right", "rightAlias", "rightKey"});
             propertyTable.setModel(ptm);
+            targetLabel.setText("Join");
         } else if (o instanceof MondrianDef.Level) {
             MondrianDef.Level l = (MondrianDef.Level)o;
             PropertyTableModel ptm = new PropertyTableModel(l, 
                 new String[]{"name", "column", "nameExp", "ordinalColumn", "ordinalExp", "table", "type", "uniqueMembers"});
             propertyTable.setModel(ptm);
+            targetLabel.setText("Level");
         } else if (o instanceof MondrianDef.Measure) {
             MondrianDef.Measure m = (MondrianDef.Measure)o;
             PropertyTableModel ptm = new PropertyTableModel(m, 
                 new String[]{"name", "aggregator", "column", "formatString"});
             propertyTable.setModel(ptm);
+            targetLabel.setText("Measure");
         } else if (o instanceof MondrianDef.Parameter) {
             MondrianDef.Parameter p = (MondrianDef.Parameter)o;
             PropertyTableModel ptm = new PropertyTableModel(p, 
                 new String[]{"name", "value"});
             propertyTable.setModel(ptm);
+            targetLabel.setText("Parameter");
         } else if (o instanceof MondrianDef.Property) {
             MondrianDef.Property p = (MondrianDef.Property)o;
             PropertyTableModel ptm = new PropertyTableModel(p, 
                 new String[]{"name", "column", "type"});
             propertyTable.setModel(ptm);
+            targetLabel.setText("Property");
+        } else if (o instanceof MondrianDef.Schema) {
+            MondrianDef.Schema s = (MondrianDef.Schema)o;
+            PropertyTableModel ptm = new PropertyTableModel(s, 
+                new String[]{});
+            propertyTable.setModel(ptm);
+            targetLabel.setText("Schema");
         } else if (o instanceof MondrianDef.SQL) {
             MondrianDef.SQL s = (MondrianDef.SQL)o;
             PropertyTableModel ptm = new PropertyTableModel(s, 
                 new String[]{"cdata", "dialect"});
             propertyTable.setModel(ptm);
+            targetLabel.setText("SQL");
         } else if (o instanceof MondrianDef.Table) {
             MondrianDef.Table t = (MondrianDef.Table)o;
             PropertyTableModel ptm = new PropertyTableModel(t, 
                 new String[]{"name", "alias", "schema"});
             propertyTable.setModel(ptm);
+            targetLabel.setText("Table");
         } else if (o instanceof MondrianDef.View) {
             MondrianDef.View v = (MondrianDef.View)o;
             PropertyTableModel ptm = new PropertyTableModel(v, 
                 new String[]{"alias"});
             propertyTable.setModel(ptm);
+            targetLabel.setText("View");
         } else if (o instanceof MondrianDef.VirtualCube) {
             MondrianDef.VirtualCube vc = (MondrianDef.VirtualCube)o;
             PropertyTableModel ptm = new PropertyTableModel(vc, 
                 new String[]{"name"});
             propertyTable.setModel(ptm);
+            targetLabel.setText("Virtual Cube");
         } else if (o instanceof MondrianDef.VirtualCubeDimension) {
             MondrianDef.VirtualCubeDimension vc = (MondrianDef.VirtualCubeDimension)o;
             PropertyTableModel ptm = new PropertyTableModel(vc, 
                 new String[]{"cubeName"});
             propertyTable.setModel(ptm);
+            targetLabel.setText("Virtual Cube Dimension");
         } else if (o instanceof MondrianDef.VirtualCubeMeasure) {
             MondrianDef.VirtualCubeMeasure vc = (MondrianDef.VirtualCubeMeasure)o;
             PropertyTableModel ptm = new PropertyTableModel(vc, 
                 new String[]{"name", "cubeName"});
             propertyTable.setModel(ptm);
+            targetLabel.setText("Virtual Cube Measure");
         } else {
             PropertyTableModel ptm = new PropertyTableModel(o, new String[]{});
             propertyTable.setModel(ptm);
+            targetLabel.setText("Unknown Type");
         }
     }    
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JTable propertyTable;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JButton addLevelButton;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JButton addPropertyButton;
+    private javax.swing.JButton pasteButton;
+    private javax.swing.JLabel targetLabel;
     private javax.swing.JTree tree;
     private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JButton addDimensionButton;
+    private javax.swing.JButton cutButton;
+    private javax.swing.JButton saveButton;
+    private javax.swing.JButton addMeasureButton;
+    private javax.swing.JButton addCubeButton;
+    private javax.swing.JButton copyButton;
+    private javax.swing.JToolBar jToolBar1;
     // End of variables declaration//GEN-END:variables
     
 }

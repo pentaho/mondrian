@@ -50,18 +50,9 @@ public class SchemaTreeModel implements TreeModel {
      *
      */
     public Object getChild(Object parent, int index) {
-        if (parent instanceof MondrianDef.Schema) {
-            MondrianDef.Schema s = (MondrianDef.Schema)parent;
-            //return children in this order: cubes, virtual cubes, dimensions
-            if (s.cubes.length > index) {
-                return s.cubes[index];
-            } else if (s.virtualCubes.length + s.cubes.length > index) {
-                return s.virtualCubes[index - s.cubes.length];
-            } else if (s.dimensions.length + s.virtualCubes.length + s.cubes.length > index) {
-                return s.dimensions[index - s.cubes.length - s.virtualCubes.length];
-            } else {
-                return null;
-            }
+        if (parent instanceof MondrianDef.Column) {
+            MondrianDef.Column c = (MondrianDef.Column)parent;
+            return null;
         } else if (parent instanceof MondrianDef.Cube) {
             MondrianDef.Cube c = (MondrianDef.Cube)parent;
             //return children in this order: dimensions, measures
@@ -72,23 +63,20 @@ public class SchemaTreeModel implements TreeModel {
             } else {
                 return null;
             }
-        } else if (parent instanceof MondrianDef.VirtualCube) {
-            MondrianDef.VirtualCube c = (MondrianDef.VirtualCube)parent;
-            //return children in this order: dimensions, measures
-            if (c.dimensions.length > index) {
-                return c.dimensions[index];
-            } else if (c.measures.length + c.dimensions.length > index) {
-                return c.measures[index - c.dimensions.length];
-            } else {
-                return null;
-            }
-        } else if (parent instanceof MondrianDef.Measure) {
-            MondrianDef.Measure m = (MondrianDef.Measure)parent;
-            return null;
         } else if (parent instanceof MondrianDef.Dimension) {
             MondrianDef.Dimension d = (MondrianDef.Dimension)parent;
             if (d.hierarchies.length > index) {
                 return d.hierarchies[index];
+            } else {
+                return null;
+            }
+        } else if (parent instanceof MondrianDef.DimensionUsage) {
+            MondrianDef.DimensionUsage c = (MondrianDef.DimensionUsage)parent;
+            return null;
+        } else if (parent instanceof MondrianDef.ExpressionView) {
+            MondrianDef.ExpressionView ev = (MondrianDef.ExpressionView)parent;
+            if (ev.expressions.length > index) {
+                return ev.expressions[index];
             } else {
                 return null;
             }
@@ -102,8 +90,8 @@ public class SchemaTreeModel implements TreeModel {
             } else {
                 return null;
             }
-        } else if (parent instanceof MondrianDef.Parameter) {
-            MondrianDef.Parameter p = (MondrianDef.Parameter)parent;
+        } else if (parent instanceof MondrianDef.Join) {
+            MondrianDef.Join j = (MondrianDef.Join)parent;
             return null;
         } else if (parent instanceof MondrianDef.Level) {
             MondrianDef.Level l = (MondrianDef.Level)parent;
@@ -112,6 +100,56 @@ public class SchemaTreeModel implements TreeModel {
             } else {
                 return null;
             }
+        } else if (parent instanceof MondrianDef.Measure) {
+            MondrianDef.Measure m = (MondrianDef.Measure)parent;
+            return null;
+        } else if (parent instanceof MondrianDef.Parameter) {
+            MondrianDef.Parameter p = (MondrianDef.Parameter)parent;
+            return null;
+        } else if (parent instanceof MondrianDef.Property) {
+            MondrianDef.Property p = (MondrianDef.Property)parent;
+            return null;
+        } else if (parent instanceof MondrianDef.Schema) {
+            MondrianDef.Schema s = (MondrianDef.Schema)parent;
+            //return children in this order: cubes, virtual cubes, dimensions
+            if (s.cubes.length > index) {
+                return s.cubes[index];
+            } else if (s.virtualCubes.length + s.cubes.length > index) {
+                return s.virtualCubes[index - s.cubes.length];
+            } else if (s.dimensions.length + s.virtualCubes.length + s.cubes.length > index) {
+                return s.dimensions[index - s.cubes.length - s.virtualCubes.length];
+            } else {
+                return null;
+            }
+        } else if (parent instanceof MondrianDef.SQL) {
+            MondrianDef.SQL s = (MondrianDef.SQL)parent;
+            return null;
+        } else if (parent instanceof MondrianDef.Table) {
+            MondrianDef.Table t = (MondrianDef.Table)parent;
+            return null;
+        } else if (parent instanceof MondrianDef.View) {
+            MondrianDef.View v = (MondrianDef.View)parent;
+            if (v.selects.length > index) {
+                return v.selects[index];
+            } else {
+                return null;
+            }
+        } else if (parent instanceof MondrianDef.VirtualCube) {
+            MondrianDef.VirtualCube c = (MondrianDef.VirtualCube)parent;
+            //return children in this order: dimensions, measures
+            if (c.dimensions.length > index) {
+                return c.dimensions[index];
+            } else if (c.measures.length + c.dimensions.length > index) {
+                return c.measures[index - c.dimensions.length];
+            } else {
+                return null;
+            }
+        } else if (parent instanceof MondrianDef.VirtualCubeDimension) {
+            MondrianDef.VirtualCubeDimension vcd = (MondrianDef.VirtualCubeDimension)parent;
+            return null;
+        } else if (parent instanceof MondrianDef.VirtualCubeMeasure) {
+            MondrianDef.VirtualCubeMeasure vcd = (MondrianDef.VirtualCubeMeasure)parent;
+            return null;
         } else {
             return null;
         }
@@ -127,27 +165,56 @@ public class SchemaTreeModel implements TreeModel {
      *
      */
     public int getChildCount(Object parent) {
-        if (parent instanceof MondrianDef.Schema) {
-            MondrianDef.Schema s = (MondrianDef.Schema)parent;
-            return s.dimensions.length + s.virtualCubes.length + s.cubes.length;
+        if (parent instanceof MondrianDef.Column) {
+            return 0;
         } else if (parent instanceof MondrianDef.Cube) {
             MondrianDef.Cube c = (MondrianDef.Cube)parent;
             return c.measures.length + c.dimensions.length;
-        } else if (parent instanceof MondrianDef.VirtualCube) {
-            MondrianDef.VirtualCube c = (MondrianDef.VirtualCube)parent;
-            return c.measures.length + c.dimensions.length;
-        } else if (parent instanceof MondrianDef.Measure) {
-            MondrianDef.Measure m = (MondrianDef.Measure)parent;
-            return 0;
         } else if (parent instanceof MondrianDef.Dimension) {
             MondrianDef.Dimension d = (MondrianDef.Dimension)parent;
             return d.hierarchies.length;
+        } else if (parent instanceof MondrianDef.DimensionUsage) {
+            MondrianDef.DimensionUsage d = (MondrianDef.DimensionUsage)parent;
+            return 0;
+        } else if (parent instanceof MondrianDef.ExpressionView) {
+            MondrianDef.ExpressionView ev = (MondrianDef.ExpressionView)parent;
+            return ev.expressions.length;
         } else if (parent instanceof MondrianDef.Hierarchy) {
             MondrianDef.Hierarchy h = (MondrianDef.Hierarchy)parent;
             return h.memberReaderParameters.length + h.levels.length;
+        } else if (parent instanceof MondrianDef.Join) {
+            MondrianDef.Join j = (MondrianDef.Join)parent;
+            return 0;
         } else if (parent instanceof MondrianDef.Level) {
             MondrianDef.Level l = (MondrianDef.Level)parent;
             return l.properties.length;
+        } else if (parent instanceof MondrianDef.Measure) {
+            MondrianDef.Measure m = (MondrianDef.Measure)parent;
+            return 0;
+        } else if (parent instanceof MondrianDef.Parameter) {
+            MondrianDef.Parameter p = (MondrianDef.Parameter)parent;
+            return 0;
+        } else if (parent instanceof MondrianDef.Property) {
+            MondrianDef.Property p = (MondrianDef.Property)parent;
+            return 0;
+        } else if (parent instanceof MondrianDef.Schema) {
+            MondrianDef.Schema s = (MondrianDef.Schema)parent;
+            return s.dimensions.length + s.virtualCubes.length + s.cubes.length;
+        } else if (parent instanceof MondrianDef.SQL) {
+            MondrianDef.SQL s = (MondrianDef.SQL)parent;
+            return 0;
+        } else if (parent instanceof MondrianDef.View) {
+            MondrianDef.View v = (MondrianDef.View)parent;
+            return v.selects.length;
+        } else if (parent instanceof MondrianDef.VirtualCube) {
+            MondrianDef.VirtualCube c = (MondrianDef.VirtualCube)parent;
+            return c.measures.length + c.dimensions.length;
+        } else if (parent instanceof MondrianDef.VirtualCubeDimension) {
+            MondrianDef.VirtualCubeDimension c = (MondrianDef.VirtualCubeDimension)parent;
+            return 0;
+        } else if (parent instanceof MondrianDef.VirtualCubeMeasure) {
+            MondrianDef.VirtualCubeMeasure c = (MondrianDef.VirtualCubeMeasure)parent;
+            return 0;
         } else {
             return 0;
         }
@@ -164,30 +231,8 @@ public class SchemaTreeModel implements TreeModel {
      *
      */
     public int getIndexOfChild(Object parent, Object child) {
-        if (parent instanceof MondrianDef.Schema) {
-            MondrianDef.Schema s = (MondrianDef.Schema)parent;
-            //return children in this order: cubes, virtual cubes, dimensions
-            if (child instanceof MondrianDef.Cube) {
-                for (int i=0; i<s.cubes.length; i++) {
-                    if (s.cubes[i].equals(child)) 
-                        return i;
-                }
-                return -1;
-            } else if (child instanceof MondrianDef.VirtualCube) {
-                for (int i=0; i<s.virtualCubes.length; i++) {
-                    if (s.virtualCubes[i].equals(child)) 
-                        return i + s.cubes.length;
-                }
-                return -1;
-            } else if (child instanceof MondrianDef.Dimension) {
-                for (int i=0; i<s.dimensions.length; i++) {
-                    if (s.dimensions[i].equals(child)) 
-                        return i + s.cubes.length + s.dimensions.length;
-                }
-                return -1;
-            } else {
-                return -1;
-            }
+        if (parent instanceof MondrianDef.Column) {
+            return -1;
         } else if (parent instanceof MondrianDef.Cube) {
             MondrianDef.Cube c = (MondrianDef.Cube)parent;
             if (child instanceof MondrianDef.CubeDimension) {
@@ -205,26 +250,6 @@ public class SchemaTreeModel implements TreeModel {
             } else {
                 return -1;
             }
-        } else if (parent instanceof MondrianDef.VirtualCube) {
-            MondrianDef.VirtualCube c = (MondrianDef.VirtualCube)parent;
-            if (child instanceof MondrianDef.VirtualCubeDimension) {
-                for (int i=0; i<c.dimensions.length; i++) {
-                    if (c.dimensions[i].equals(child)) 
-                        return i;
-                }
-                return -1;
-            } else if (child instanceof MondrianDef.VirtualCubeMeasure) {
-                for (int i=0; i<c.measures.length; i++) {
-                    if (c.measures[i].equals(child)) 
-                        return i + c.dimensions.length;
-                }
-                return -1;
-            } else {
-                return -1;
-            }
-        } else if (parent instanceof MondrianDef.Measure) {
-            MondrianDef.Measure m = (MondrianDef.Measure)parent;
-            return -1;
         } else if (parent instanceof MondrianDef.Dimension) {
             MondrianDef.Dimension d = (MondrianDef.Dimension)parent;
             if (child instanceof MondrianDef.Hierarchy) {
@@ -236,9 +261,17 @@ public class SchemaTreeModel implements TreeModel {
             } else {
                 return -1;
             }
-        } else if (parent instanceof MondrianDef.VirtualCubeDimension) {
-            MondrianDef.VirtualCubeDimension d = (MondrianDef.VirtualCubeDimension)parent;
-            return -1;
+        } else if (parent instanceof MondrianDef.ExpressionView) {
+            MondrianDef.ExpressionView ev = (MondrianDef.ExpressionView)parent;
+            if (child instanceof MondrianDef.SQL) {
+                for (int i=0; i<ev.expressions.length; i++) {
+                    if (ev.expressions[i].equals(child)) 
+                        return i;
+                }
+                return -1;                
+            } else {
+                return -1;
+            }
         } else if (parent instanceof MondrianDef.Hierarchy) {
             MondrianDef.Hierarchy h = (MondrianDef.Hierarchy)parent;
             if (child instanceof MondrianDef.Level) {
@@ -267,6 +300,67 @@ public class SchemaTreeModel implements TreeModel {
             } else {
                 return -1;
             }
+        } else if (parent instanceof MondrianDef.Measure) {
+            MondrianDef.Measure m = (MondrianDef.Measure)parent;
+            return -1;
+        } else if (parent instanceof MondrianDef.Schema) {
+            MondrianDef.Schema s = (MondrianDef.Schema)parent;
+            //return children in this order: cubes, virtual cubes, dimensions
+            if (child instanceof MondrianDef.Cube) {
+                for (int i=0; i<s.cubes.length; i++) {
+                    if (s.cubes[i].equals(child)) 
+                        return i;
+                }
+                return -1;
+            } else if (child instanceof MondrianDef.VirtualCube) {
+                for (int i=0; i<s.virtualCubes.length; i++) {
+                    if (s.virtualCubes[i].equals(child)) 
+                        return i + s.cubes.length;
+                }
+                return -1;
+            } else if (child instanceof MondrianDef.Dimension) {
+                for (int i=0; i<s.dimensions.length; i++) {
+                    if (s.dimensions[i].equals(child)) 
+                        return i + s.cubes.length + s.dimensions.length;
+                }
+                return -1;
+            } else {
+                return -1;
+            }
+        } else if (parent instanceof MondrianDef.View) {
+            MondrianDef.View v = (MondrianDef.View)parent;
+            if (child instanceof MondrianDef.SQL) {
+                for (int i=0; i<v.selects.length; i++) {
+                    if (v.selects[i].equals(child)) {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+            return -1;
+        } else if (parent instanceof MondrianDef.VirtualCube) {
+            MondrianDef.VirtualCube c = (MondrianDef.VirtualCube)parent;
+            if (child instanceof MondrianDef.VirtualCubeDimension) {
+                for (int i=0; i<c.dimensions.length; i++) {
+                    if (c.dimensions[i].equals(child)) 
+                        return i;
+                }
+                return -1;
+            } else if (child instanceof MondrianDef.VirtualCubeMeasure) {
+                for (int i=0; i<c.measures.length; i++) {
+                    if (c.measures[i].equals(child)) 
+                        return i + c.dimensions.length;
+                }
+                return -1;
+            } else {
+                return -1;
+            }
+        } else if (parent instanceof MondrianDef.VirtualCubeDimension) {
+            MondrianDef.VirtualCubeDimension d = (MondrianDef.VirtualCubeDimension)parent;
+            return -1;
+        } else if (parent instanceof MondrianDef.VirtualCubeMeasure) {
+            MondrianDef.VirtualCubeMeasure d = (MondrianDef.VirtualCubeMeasure)parent;
+            return -1;
         } else {
             return -1;
         }

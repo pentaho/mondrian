@@ -79,6 +79,12 @@ public class Workbench extends javax.swing.JFrame {
         fileMenu.add(openMenuItem);
 
         saveMenuItem.setText("Save");
+        saveMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveMenuItemActionPerformed(evt);
+            }
+        });
+
         fileMenu.add(saveMenuItem);
 
         saveAsMenuItem.setText("Save As ...");
@@ -135,20 +141,20 @@ public class Workbench extends javax.swing.JFrame {
         pack();
     }//GEN-END:initComponents
 
+    private void saveMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveMenuItemActionPerformed
+    
+    }//GEN-LAST:event_saveMenuItemActionPerformed
+
     private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMenuItemActionPerformed
         JFileChooser jfc = new JFileChooser();
         Util.getProperties();
         if (jfc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             try {
-                mondrian.xom.Parser xmlParser =
-                        mondrian.xom.XOMUtil.createDefaultParser();
-                MondrianDef.Schema schema = new MondrianDef.Schema(
-                        xmlParser.parse(jfc.getSelectedFile().toURL()));
 
                 JInternalFrame schemaFrame = new JInternalFrame();
                 schemaFrame.setTitle("Schema - " + jfc.getSelectedFile().getName());
 
-                schemaFrame.getContentPane().add(new SchemaExplorer(schema));
+                schemaFrame.getContentPane().add(new SchemaExplorer(jfc.getSelectedFile()));
 
                 schemaFrame.setBounds(0, 0, 500, 480);
                 schemaFrame.setClosable(true);
