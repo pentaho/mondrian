@@ -34,12 +34,18 @@ class RolapLevel extends LevelBase
 	int flags;
 	static final int NUMERIC = 1;
 	static final int ALL = 2;
+	RolapProperty[] properties;
 
+	/**
+	 * Creates a level.
+	 *
+	 * @pre properties != null
+	 */
 	RolapLevel(
-		RolapHierarchy hierarchy, int depth, String name,
-		MondrianDef.Expression nameExp, MondrianDef.Expression ordinalExp,
-		int flags)
-	{
+			RolapHierarchy hierarchy, int depth, String name,
+			MondrianDef.Expression nameExp, MondrianDef.Expression ordinalExp,
+			RolapProperty[] properties, int flags) {
+		Util.assertPrecondition(properties != null);
 		this.hierarchy = hierarchy;
 		this.name = name;
 		this.uniqueName = Util.makeFqName(hierarchy, name);
@@ -51,6 +57,13 @@ class RolapLevel extends LevelBase
 			checkColumn((MondrianDef.Column) ordinalExp);
 		}
 		this.ordinalExp = ordinalExp;
+		for (int i = 0; i < properties.length; i++) {
+			RolapProperty property = properties[i];
+			if (property.exp instanceof MondrianDef.Column) {
+				checkColumn((MondrianDef.Column) property.exp);
+			}
+		}
+		this.properties = properties;
 		this.flags = flags;
 		this.depth = depth;
 		this.levelType = Level.STANDARD;
@@ -69,8 +82,33 @@ class RolapLevel extends LevelBase
 	{
 		this(
 				hierarchy, depth, xmlLevel.name, xmlLevel.getNameExp(),
-				xmlLevel.getOrdinalExp(),
+				xmlLevel.getOrdinalExp(), createProperties(xmlLevel),
 				xmlLevel.type.equals("Numeric") ? NUMERIC : 0);
+	}
+
+	static RolapProperty[] createProperties(MondrianDef.Level xmlLevel) {
+		RolapProperty[] properties = new RolapProperty[
+				xmlLevel.properties.length];
+		for (int i = 0; i < xmlLevel.properties.length; i++) {
+			MondrianDef.Property property = xmlLevel.properties[i];
+			properties[i] = new RolapProperty(
+					property.name,
+					convertPropertyTypeNameToCode(property.type),
+					xmlLevel.getPropertyExp(i));
+		}
+		return properties;
+	}
+
+	private static int convertPropertyTypeNameToCode(String type) {
+		if (type.equals("String")) {
+			return Property.TYPE_STRING;
+		} else if (type.equals("Numeric")) {
+			return Property.TYPE_NUMERIC;
+		} else if (type.equals("Boolean")) {
+			return Property.TYPE_BOOLEAN;
+		} else {
+			throw Util.newError("Unknown property type '" + type + "'");
+		}
 	}
 
 	private void checkColumn(MondrianDef.Column nameColumn) {
@@ -113,6 +151,10 @@ class RolapLevel extends LevelBase
 	}
 	public String getTableAlias() {
 		return nameExp.getTableAlias();
+	}
+
+	public Property[] getProperties() {
+		return properties;
 	}
 }
 

@@ -11,11 +11,14 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.*;
-import mondrian.util.Format;
+import mondrian.olap.Evaluator;
+import mondrian.olap.Member;
+import mondrian.olap.MemberBase;
+import mondrian.olap.Util;
 
-import java.util.Properties;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * todo:
@@ -28,12 +31,15 @@ class RolapMember extends MemberBase
 {
 	int ordinal;
 	Object key;
-	/** Maps property name to property value. Is left null to reduce memory
-	 * usage, because there will be a lot of members, but few of them will
-	 * have properties.
+	/**
+	 * Maps property name to property value.
+	 *
+	 * <p> We expect there to be a lot of members, but few of them will
+	 * have properties. So to reduce memory usage, when empty, this is set to
+	 * an immutable empty set.
 	 */
-	private HashMap properties;
-	static final RolapMember[] emptyArray = new RolapMember[0];
+	private Map mapPropertyNameToValue = emptyMap;
+	private static final Map emptyMap = Collections.unmodifiableMap(new HashMap(0));
 
 	RolapMember(
 		RolapMember parentMember, RolapLevel level, Object key, String name)
@@ -83,16 +89,14 @@ class RolapMember extends MemberBase
 	/** The name of the property which holds the parsed format string. Internal. **/
 	public static final String PROPERTY_FORMAT_EXP = "$format_exp";
 	public void setProperty(String name, Object value) {
-		if (properties == null) {
-			properties = new HashMap();
+		if (mapPropertyNameToValue.isEmpty()) {
+			// the empty map is shared and immutable; create our own
+			mapPropertyNameToValue = new HashMap();
 		}
-		properties.put(name, value);
+		mapPropertyNameToValue.put(name, value);
 	}
 	public Object getProperty(String name) {
-		if (properties == null) {
-			return null;
-		}
-		return properties.get(name);
+		return mapPropertyNameToValue.get(name);
 	}
 	// implement Exp
 	public Object evaluateScalar(Evaluator evaluator)

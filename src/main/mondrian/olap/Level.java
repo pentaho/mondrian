@@ -34,7 +34,7 @@ public interface Level extends OlapElement {
 	static final int MONTHS = 3;
 	static final int WEEKS = 4;
 	static final int DAYS = 5;
-
+	Property[] getProperties();
 }
 
 // End Level.java

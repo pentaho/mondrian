@@ -292,6 +292,12 @@ class SqlMemberSource implements MemberReader
 						map.put(key, member);
 					}
 					column++;
+					for (int j = 0; j < level.properties.length; j++) {
+						RolapProperty property = level.properties[j];
+						member.setProperty(
+								property.getName(), resultSet.getObject(column + 1));
+						column++;
+					}
 				}
 			}
 
@@ -324,6 +330,11 @@ class SqlMemberSource implements MemberReader
 			}
 			hierarchy.addToFrom(sqlQuery, level, null);
 			sqlQuery.addSelect(level.nameExp.getExpression(sqlQuery));
+			for (int j = 0; j < level.properties.length; j++) {
+				RolapProperty property = level.properties[j];
+				String q = property.exp.getExpression(sqlQuery);
+				sqlQuery.addSelect(q);
+			}
 		}
 		return sqlQuery.toString();
 	}
@@ -397,6 +408,11 @@ class SqlMemberSource implements MemberReader
 			}
 			sqlQuery.addSelect(q);
  		}
+		for (int i = 0; i < level.properties.length; i++) {
+			RolapProperty property = level.properties[i];
+			String q = property.exp.getExpression(sqlQuery);
+			sqlQuery.addSelect(q);
+		}
 		return sqlQuery.toString();
 	}
 
@@ -437,6 +453,11 @@ class SqlMemberSource implements MemberReader
 							member.ordinal = resultSet.getInt(column + 2);
 						} else {
 							member.ordinal = ordinal++;
+						}
+						for (int j = 0; j < level.properties.length; j++) {
+							RolapProperty property = level.properties[j];
+							member.setProperty(
+									property.getName(), resultSet.getObject(column + 3 + j));
 						}
 						list.add(member);
 						cache.putMember(key, member);

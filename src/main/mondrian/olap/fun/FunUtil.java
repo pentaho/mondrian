@@ -206,13 +206,12 @@ public class FunUtil extends Util {
 		return vector;
 	}
 
-	static Hashtable toHashtable(Vector vector) {
-		Hashtable hashtable = new Hashtable();
+	static HashSet toHashSet(Vector vector) {
+		HashSet set = new HashSet();
 		for (int i = 0, count = vector.size(); i < count; i++) {
-			Object o = vector.elementAt(i);
-			hashtable.put(o, o);
+			set.add(vector.elementAt(i));
 		}
-		return hashtable;
+		return set;
 	}
 
 	static Vector addMembers(Vector vector, Hierarchy hierarchy) {
@@ -226,15 +225,6 @@ public class FunUtil extends Util {
 	static Vector addMembers(Vector vector, Level level) {
 		Member[] members = level.getMembers();
 		return addArray(vector, members);
-	}
-
-	static HashSet toHashSet(Vector v) {
-		HashSet set = new HashSet();
-		Enumeration e = v.elements();
-		while (e.hasMoreElements()) {
-			set.add(e.nextElement());
-		}
-		return set;
 	}
 
 	/**
@@ -258,11 +248,11 @@ public class FunUtil extends Util {
 		return false;
 	}
 
-	static Hashtable evaluateMembers(
+	static HashMap evaluateMembers(
 			Evaluator evaluator, ExpBase exp, Vector members) {
 		Member[] constantTuple = exp.isConstantTuple();
 		if (constantTuple == null) {
-			return _evaluateMembers(evaluator.push(new Member[0]), exp, members);
+			return _evaluateMembers(evaluator.push(), exp, members);
 		} else {
 			// exp is constant -- add it to the context before the loop, rather
 			// than at every step
@@ -270,9 +260,9 @@ public class FunUtil extends Util {
 		}
 	}
 
-	private static Hashtable _evaluateMembers(
+	private static HashMap _evaluateMembers(
 			Evaluator evaluator, ExpBase exp, Vector members) {
-		Hashtable mapMemberToValue = new Hashtable();
+		HashMap mapMemberToValue = new HashMap();
 		for (int i = 0, count = members.size(); i < count; i++) {
 			Member member = (Member) members.elementAt(i);
 			evaluator.setContext(member);
@@ -292,8 +282,8 @@ public class FunUtil extends Util {
 		return mapMemberToValue;
 	}
 
-	static Hashtable evaluateMembers(Evaluator evaluator, Vector members) {
-		Hashtable mapMemberToValue = new Hashtable();
+	static HashMap evaluateMembers(Evaluator evaluator, Vector members) {
+		HashMap mapMemberToValue = new HashMap();
 		for (int i = 0, count = members.size(); i < count; i++) {
 			Member member = (Member) members.elementAt(i);
 			evaluator.setContext(member);
@@ -306,7 +296,7 @@ public class FunUtil extends Util {
 	static void sort(
 			Evaluator evaluator, Vector members, ExpBase exp, boolean desc,
 			boolean brk) {
-		Hashtable mapMemberToValue = evaluateMembers(evaluator, exp, members);
+		HashMap mapMemberToValue = evaluateMembers(evaluator, exp, members);
 		Comparator comparator = new MemberComparator(
 				mapMemberToValue, desc, brk);
 		sort(comparator, members);
@@ -373,12 +363,11 @@ public class FunUtil extends Util {
 	}
 
 	static class MemberComparator implements Comparator {
-		Hashtable mapMemberToValue;
+		Map mapMemberToValue;
 		boolean desc;
 		boolean brk;
 
-		MemberComparator(
-				Hashtable mapMemberToValue, boolean desc, boolean brk) {
+		MemberComparator(Map mapMemberToValue, boolean desc, boolean brk) {
 			this.mapMemberToValue = mapMemberToValue;
 			this.desc = desc;
 			this.brk = brk;

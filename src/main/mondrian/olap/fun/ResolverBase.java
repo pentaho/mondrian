@@ -25,12 +25,14 @@ import mondrian.olap.FunDef;
  **/
 abstract class ResolverBase extends FunUtil implements Resolver {
 	String name;
+	String signature;
 	String description;
 	int syntacticType;
 	ResolverBase(
 			String name, String signature, String description,
 			int syntacticType) {
 		this.name = name;
+		this.signature = signature;
 		this.description = description;
 		this.syntacticType = syntacticType;
 	}

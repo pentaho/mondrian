@@ -118,6 +118,11 @@ public interface Member extends OlapElement {
 	 * {@link Literal}.
 	 **/
 	Exp getFormatStringExp();
+
+	/**
+	 * Returns the value of the property named <code>propertyName</code>.
+	 */
+	Object getProperty(String propertyName);
 }
 
 // End Member.java

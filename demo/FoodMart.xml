@@ -17,7 +17,16 @@
 			<Level name="Store Country" column="store_country" uniqueMembers="true"/>
 			<Level name="Store State" column="store_state" uniqueMembers="true"/>
 			<Level name="Store City" column="store_city" uniqueMembers="false"/>
-			<Level name="Store Name" column="store_name" uniqueMembers="true"/>
+			<Level name="Store Name" column="store_name" uniqueMembers="true">
+				<Property name="Store Type" column="store_type"/>
+				<Property name="Store Manager" column="store_manager"/>
+				<Property name="Store Sqft" column="store_sqft" type="Numeric"/>
+				<Property name="Grocery Sqft" column="grocery_sqft" type="Numeric"/>
+				<Property name="Frozen Sqft" column="frozen_sqft" type="Numeric"/>
+				<Property name="Meat Sqft" column="meat_sqft" type="Numeric"/>
+				<Property name="Has coffee bar" column="coffee_bar" type="Boolean"/>
+				<Property name="Street address" column="store_street_address" type="String"/>
+			</Level>
 		</Hierarchy>
 	</Dimension>
 
@@ -127,6 +136,10 @@ CONCAT(`customer`.`fname`, " ", `customer`.`lname`)
 "lname"
 					</SQL>
 				</ExpressionView>
+				<Property name="Gender" column="gender"/>
+				<Property name="Marital Status" column="marital_status"/>
+				<Property name="Education" column="education"/>
+				<Property name="Yearly Income" column="yearly_income"/>
 			</Level>
 <!--
 			<Query>

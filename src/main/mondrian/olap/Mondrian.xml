@@ -290,6 +290,7 @@ todo:
 				The SQL expression used to populate this level's ordinal.
 			</Doc>
 		</Object>
+		<Array name="properties" type="Property" min="0"/>
 		<Code>
 			public Expression getNameExp() {
 				if (nameExp != null) {
@@ -309,7 +310,24 @@ todo:
 					return null;
 				}
 			}
+			public Expression getPropertyExp(int i) {
+				return new Column(table, properties[i].column);
+			}
 		</Code>
+	</Element>
+
+	<Element type="Property">
+		<Doc>
+			Member property.
+		</Doc>
+		<Attribute name="name"><Doc></Doc></Attribute>
+		<Attribute name="column"><Doc></Doc></Attribute>
+		<Attribute name="type" default="String">
+			<Doc>todo:</Doc>
+			<Value>String</Value>
+			<Value>Numeric</Value>
+			<Value>Boolean</Value>
+		</Attribute>
 	</Element>
 
 	<Element type="Measure">

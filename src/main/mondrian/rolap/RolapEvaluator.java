@@ -72,8 +72,7 @@ class RolapEvaluator implements Evaluator
 		return parent;
 	}
 
-	public Evaluator push(Member[] members)
-	{
+	public Evaluator push(Member[] members) {
 		RolapMember[] cloneCurrentMembers = new RolapMember[
 			this.currentMembers.length];
 		for (int i = 0; i < this.currentMembers.length; i++) {
@@ -86,6 +85,15 @@ class RolapEvaluator implements Evaluator
 		}
 		return new RolapEvaluator(cube, cloneCurrentMembers, this);
 	}
+
+	public Evaluator push() {
+		return push(emptyMembers);
+	}
+
+	public Evaluator push(Member member) {
+		return push(new Member[] {member});
+	}
+
 	public Evaluator pop()
 	{
 		return parent;
@@ -139,8 +147,13 @@ class RolapEvaluator implements Evaluator
 		}
 		if (minSolve < Integer.MAX_VALUE) {
 			// There is at least one calculated member. Expand the first one
-			// with the lowest solve order.  todo: Handle cycles.
-			Evaluator evaluator = push(emptyMembers);
+			// with the lowest solve order.
+			RolapMember defaultMember = (RolapMember)
+					minSolveMember.getHierarchy().getDefaultMember();
+			Util.assertTrue(
+					defaultMember != minSolveMember,
+					"default member must not be calculated");
+			Evaluator evaluator = push(defaultMember);
 			return minSolveMember.getExpression().evaluateScalar(evaluator);
 		}
 		return cellReader.get(this);
@@ -224,8 +237,14 @@ class RolapEvaluator implements Evaluator
 	}
 
 	public String format(Object o) {
-		Format format = getFormat();
-		return format.format(o);
+		if (o == Util.nullValue) {
+			return "(null)";
+		} else if (o instanceof Throwable) {
+			return "#ERR: " + o.toString();
+		} else {
+			Format format = getFormat();
+			return format.format(o);
+		}
 	}
 
 	class MeasureCellReader implements CellReader

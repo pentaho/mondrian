@@ -369,6 +369,16 @@ public class FoodMartTestCase extends TestCase {
 				"FROM Sales");
 	}
 
+	public void testConstantString() {
+		String s = executeExpr(" \"a string\" ");
+		assertEquals("a string", s);
+	}
+
+	public void testConstantNumber() {
+		String s = executeExpr(" 12 ");
+		assertEquals("12.0", s);
+	}
+
 	public void testCyclicalCalculatedMembers() {
 		Result result = runQuery(
 				"WITH" + nl +
@@ -380,8 +390,19 @@ public class FoodMartTestCase extends TestCase {
 				"FROM Sales");
 	}
 
+	/**
+	 * Disabled test. It used throw an 'infinite loop' error (which is what
+	 * Plato does). But now we revert to the context of the default member when
+	 * calculating calculated members (we used to stay in the context of the
+	 * calculated member), and we get a result.
+	 **/
 	public void testCycle() {
-		assertExprThrows("[Time].[1997].[Q4]", "infinite loop");
+		if (false) {
+			assertExprThrows("[Time].[1997].[Q4]", "infinite loop");
+		} else {
+			String s = executeExpr("[Time].[1997].[Q4]");
+			assertEquals("72024.0", s);
+		}
 	}
 
 	public void testHalfYears() {

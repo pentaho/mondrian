@@ -12,6 +12,9 @@
 
 package mondrian.olap;
 import java.util.Vector;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Collections;
 
 /**
  * <code>MemberBase</code> is a partial implementation of {@link Member}.

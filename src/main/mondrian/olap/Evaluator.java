@@ -25,6 +25,13 @@ public interface Evaluator {
 	Cube getCube();
 	/** Creates a new evaluator with the same state. */
 	Evaluator push(Member[] members);
+	/** Creates a new evaluator with the same state.
+	* Equivalent to {@link #push(Member[]) push(new Member[0])}. **/
+	Evaluator push();
+	/** Creates a new evaluator with the same state except for one member.
+	 * Equivalent to {@link #push(Member[]) push(new Member[]
+	 * &#124;member&#125;)}. **/
+	Evaluator push(Member member);
 	/** Restores previous evaluator. */
 	Evaluator pop();
 	/** Makes <code>member</code> the current member of its dimension. Returns

@@ -903,7 +903,12 @@ public class BuiltinFunTable extends FunTable {
 						"Members '[Time].[1997]' and '[Gender].[All Genders].[M]' are not compatible as cousins");
 			}
 		});
-		define(new FunDefBase("CurrentMember", "<Dimension>.CurrentMember", "Returns the current member along a dimension during an iteration.", "pmd"));
+		define(new FunDefBase("CurrentMember", "<Dimension>.CurrentMember", "Returns the current member along a dimension during an iteration.", "pmd") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				Dimension dimension = getDimensionArg(evaluator, args, 0, true);
+				return evaluator.getContext(dimension);
+			}
+		});
 		define(new FunDefBase("DefaultMember", "<Dimension>.DefaultMember", "Returns the default member of a dimension.", "pmd") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Dimension dimension = getDimensionArg(evaluator, args, 0, true);
@@ -1275,7 +1280,7 @@ public class BuiltinFunTable extends FunTable {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Vector members = (Vector) getArg(evaluator, args, 0);
 						ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
-						return sum(evaluator.push(new Member[0]), members, exp);
+						return sum(evaluator.push(), members, exp);
 					}
 				}));
 		define(new FunDefBase("Value", "<Measure>.Value", "Returns the value of a measure.", "pnm") {
@@ -1430,13 +1435,12 @@ public class BuiltinFunTable extends FunTable {
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						// todo: implement ALL
-						Hashtable set2 = toHashtable(
-								(Vector) getArg(evaluator, args, 1));
+						HashSet set2 = toHashSet((Vector) getArg(evaluator, args, 1));
 						Vector set1 = (Vector) getArg(evaluator, args, 0);
 						Vector result = new Vector();
 						for (int i = 0, count = set1.size(); i < count; i++) {
 							Object o = set1.elementAt(i);
-							if (set2.get(o) == null) {
+							if (!set2.contains(o)) {
 								result.addElement(o);
 							}
 						}
@@ -1450,7 +1454,7 @@ public class BuiltinFunTable extends FunTable {
 				Vector members = (Vector) getArg(evaluator, args, 0);
 				Exp exp = args[1];
 				Vector result = new Vector();
-				Evaluator evaluator2 = evaluator.push(new Member[0]);
+				Evaluator evaluator2 = evaluator.push();
 				for (int i = 0, count = members.size(); i < count; i++) {
 					Object o = members.elementAt(i);
 					if (o instanceof Member) {
@@ -1958,6 +1962,72 @@ public class BuiltinFunTable extends FunTable {
 			}
 		});
 
+		define(new ResolverBase(
+					   "Properties",
+					   "<Member>.Properties(<String Expression>)",
+					   "Returns the value of a member property.",
+					   FunDef.TypeMethod) {
+			public FunDef resolve(Exp[] args, int[] conversionCount) {
+				final int[] argTypes = new int[]{Exp.CatMember, Exp.CatString | Exp.CatExpression};
+				if (args.length != 2 ||
+						args[0].getType() != Exp.CatMember ||
+						args[1].getType() != Exp.CatString) {
+					return null;
+				}
+				int returnType;
+				if (args[1] instanceof Literal) {
+					String propertyName = (String) ((Literal) args[1]).getValue();
+					Hierarchy hierarchy = args[0].getHierarchy();
+					Level[] levels = hierarchy.getLevels();
+					Property property = lookupProperty(
+							levels[levels.length - 1], propertyName);
+					if (property == null) {
+						// we'll likely get a runtime error
+						returnType = Exp.CatValue;
+					} else {
+						switch (property.getType()) {
+						case Property.TYPE_BOOLEAN:
+							returnType = Exp.CatLogical;
+							break;
+						case Property.TYPE_NUMERIC:
+							returnType = Exp.CatNumeric;
+							break;
+						case Property.TYPE_STRING:
+							returnType = Exp.CatString;
+							break;
+						default:
+							throw Util.newInternal("Unknown property type " + property.getType());
+						}
+					}
+				} else {
+					returnType = Exp.CatValue;
+				}
+				return new PropertiesFunDef(name, signature, description, syntacticType, returnType, argTypes);
+			}
+			public void testPropertiesExpr(FoodMartTestCase test) {
+				String s = test.executeExpr(
+						"[Store].[USA].[CA].[Beverly Hills].[Store 6].Properties(\"Store Type\")");
+				test.assertEquals("Gourmet Supermarket", s);
+			}
+
+			/** Tests that non-existent property throws an error. **/
+			public void testPropertiesNonExistent(FoodMartTestCase test) {
+				test.assertExprThrows(
+						"[Store].[USA].[CA].[Beverly Hills].[Store 6].Properties(\"Foo\")",
+						"Property 'Foo' is not valid for");
+			}
+
+			public void testPropertiesFilter(FoodMartTestCase test) {
+				Result result = test.execute(
+						"SELECT { [Store Sales] } ON COLUMNS," + nl +
+						" TOPCOUNT( Filter( [Store].[Store Name].Members," + nl +
+						"                   [Store].CurrentMember.Properties(\"Store Type\") = \"Supermarket\" )," + nl +
+						"           10, [Store Sales]) ON ROWS" + nl +
+						"FROM [Sales]");
+				test.assertEquals(8, result.getAxes()[1].positions.length);
+			}
+		});
+
 		//
 		// PARAMETER FUNCTIONS
 		if (false) define(new FunDefBase("Parameter", "Parameter(<Name>, <Type>, <DefaultValue>, <Description>)", "Returns default value of parameter.", "f*"));
@@ -2005,7 +2075,15 @@ public class BuiltinFunTable extends FunTable {
 		define(new FunDefBase("OR", "<Logical Expression> OR <Logical Expression>", "Returns the disjunction of two conditions.", "ibbb"));
 		define(new FunDefBase("XOR", "<Logical Expression> XOR <Logical Expression>", "Returns whether two conditions are mutually exclusive.", "ibbb"));
 		define(new FunDefBase("NOT", "NOT <Logical Expression>", "Returns the negation of a condition.", "Pbb"));
+		define(new FunDefBase("=", "<String Expression> = <String Expression>", "Returns whether two expressions are equal.", "ibSS") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				String o0 = getStringArg(evaluator, args, 0, null),
+						o1 = getStringArg(evaluator, args, 1, null);
+				return toBoolean(o0.equals(o1));
+			}
+		});
 		define(new FunDefBase("=", "<Numeric Expression> = <Numeric Expression>", "Returns whether two expressions are equal.", "ibnn"));
+		define(new FunDefBase("<>", "<String Expression> <> <String Expression>", "Returns whether two expressions are not equal.", "ibSS"));
 		define(new FunDefBase("<>", "<Numeric Expression> <> <Numeric Expression>", "Returns whether two expressions are not equal.", "ibnn"));
 		define(new FunDefBase("<", "<Numeric Expression> < <Numeric Expression>", "Returns whether an expression is less than another.", "ibnn"));
 		define(new FunDefBase("<=", "<Numeric Expression> <= <Numeric Expression>", "Returns whether an expression is less than or equal to another.", "ibnn"));
@@ -2013,12 +2091,14 @@ public class BuiltinFunTable extends FunTable {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Double o0 = getDoubleArg(evaluator, args, 0),
 						o1 = getDoubleArg(evaluator, args, 1);
-				return o0.doubleValue() > o1.doubleValue() ?
-						Boolean.TRUE :
-						Boolean.FALSE;
+				return toBoolean(o0.doubleValue() > o1.doubleValue());
 			}
 		});
 		define(new FunDefBase(">=", "<Numeric Expression> >= <Numeric Expression>", "Returns whether an expression is greater than or equal to another.", "ibnn"));
+	}
+
+	private Boolean toBoolean(boolean b) {
+		return b ? Boolean.TRUE : Boolean.FALSE;
 	}
 
 	public TestSuite suite() {
@@ -2066,6 +2146,55 @@ public class BuiltinFunTable extends FunTable {
 			"select <a member>.UniqueName from Sales",
 		};
 	}
+
+	private boolean isValidProperty(
+			Member member, String propertyName) {
+		return lookupProperty(member.getLevel(), propertyName) != null;
+	}
+
+	/**
+	 * Finds a member property called <code>propertyName</code> at, or above,
+	 * <code>level</code>.
+	 */
+	private Property lookupProperty(
+			Level level, String propertyName) {
+		do {
+			Property[] properties = level.getProperties();
+			for (int i = 0; i < properties.length; i++) {
+				Property property = properties[i];
+				if (property.getName().equals(propertyName)) {
+					return property;
+				}
+			}
+			level = level.getParentLevel();
+		} while (level != null);
+		return null;
+	}
+
+	private class PropertiesFunDef extends FunDefBase {
+		public PropertiesFunDef(
+				String name, String signature, String description,
+				int syntacticType, int returnType, int[] parameterTypes) {
+			super(name, signature, description, syntacticType, returnType, parameterTypes);
+		}
+
+		public Object evaluate(Evaluator evaluator, Exp[] args) {
+			Member member = getMemberArg(evaluator, args, 0, true);
+			String s = getStringArg(evaluator, args, 1, null);
+			Object o = member.getProperty(s);
+			if (o == null) {
+				if (isValidProperty(member, s)) {
+					o = member.getHierarchy().getNullMember();
+				} else {
+					throw new MondrianEvaluationException(
+							"Property '" + s +
+							"' is not valid for member '" + member + "'");
+				}
+			}
+			return o;
+		}
+	}
+
 }
 
 // End BuiltinFunTable.java

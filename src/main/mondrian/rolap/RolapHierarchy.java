@@ -104,7 +104,7 @@ class RolapHierarchy extends HierarchyBase
 		if (hasAll) {
 			this.levels = new RolapLevel[xmlHierarchy.levels.length + 1];
 			this.levels[0] = new RolapLevel(
-					this, 0, "(All)", null, null, RolapLevel.ALL);
+					this, 0, "(All)", null, null, new RolapProperty[0], RolapLevel.ALL);
 			for (int i = 0; i < xmlHierarchy.levels.length; i++) {
 				levels[i + 1] = new RolapLevel(
 					this, i + 1, xmlHierarchy.levels[i]);
@@ -200,7 +200,7 @@ class RolapHierarchy extends HierarchyBase
 			MondrianDef.Expression ordinalExp, int flags) {
 		RolapLevel level = new RolapLevel(
 				this, this.levels.length, name, nameExp, ordinalExp,
-				flags);
+				new RolapProperty[0], flags);
 		this.levels = (RolapLevel[]) RolapUtil.addElement(this.levels, level);
 		return level;
 	}

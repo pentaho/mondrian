@@ -28,6 +28,7 @@ class FunDefBase extends FunUtil implements FunDef {
     private String description;
 	protected int returnType;
 	protected int[] parameterTypes;
+	boolean isAbstract = false;
 
 	FunDefBase(
 			String name, String signature, String description,

@@ -112,7 +112,7 @@ class RolapResult extends ResultBase
 			pos, cube.measuresHierarchy.getDimension());
 		// todo: set up evaluator's context better -- context dependent format
 		// strings are going to be just WRONG
-		Evaluator cellEvaluator = evaluator.push(RolapMember.emptyArray);
+		Evaluator cellEvaluator = evaluator.push();
 		return new RolapCell(measure,value,cellEvaluator);
 	}
 	private RolapAxis executeAxis(Evaluator evaluator, QueryAxis axis)
@@ -361,13 +361,7 @@ class RolapCell implements Cell
 	static String computeFormattedValue(
 		RolapMember measure, Object value, Evaluator evaluator)
 	{
-		if (value == Util.nullValue) {
-			return "(null)";
-		} else if (value instanceof Throwable) {
-			return "#ERR: " + value.toString();
-		} else {
-			return evaluator.format(value);
-		}
+		return evaluator.format(value);
 	}
 
 	public Object getValue() {

@@ -246,8 +246,10 @@ public abstract class ExpBase
 			return "<Parameter>";
 		case CatCube:
 			return "<Cube>";
+		case CatValue:
+			return "<Value>";
         default:
-            throw new Error("unkown type " + type);
+            throw Util.newInternal("unknown expression type " + type);
 		}
 	}
 
