@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -14,15 +14,15 @@ package mondrian.jolap;
 import mondrian.olap.Exp;
 import mondrian.olap.Util;
 
-import javax.olap.query.querycoremodel.DimensionStep;
-import javax.olap.query.querycoremodel.DimensionStepManager;
-import javax.olap.query.querycoremodel.CompoundDimensionStep;
+import javax.olap.OLAPException;
 import javax.olap.query.enumerations.DimensionStepType;
 import javax.olap.query.enumerations.DimensionStepTypeEnum;
-import javax.olap.OLAPException;
+import javax.olap.query.querycoremodel.CompoundDimensionStep;
+import javax.olap.query.querycoremodel.DimensionStep;
+import javax.olap.query.querycoremodel.DimensionStepManager;
 
 /**
- * A <code>MondrianDimensionStep</code> is ...
+ * Implementation of {@link DimensionStep}.
  *
  * @author jhyde
  * @since Dec 24, 2002
@@ -43,29 +43,29 @@ abstract class MondrianDimensionStep extends QueryObjectSupport implements Dimen
 	/** Factory method. **/
 	static DimensionStep create(
 			MondrianDimensionStepManager stepManager, DimensionStepType stepType) {
-		if (stepType == DimensionStepTypeEnum.ATTRIBUTEFILTER) {
+		if (stepType == DimensionStepTypeEnum.ATTRIBUTE_FILTER) {
 			return new MondrianAttributeFilter(stepManager);
-		} else if (stepType == DimensionStepTypeEnum.ATTRIBUTESORT) {
+		} else if (stepType == DimensionStepTypeEnum.ATTRIBUTE_SORT) {
 			throw new UnsupportedOperationException();
-		} else if (stepType == DimensionStepTypeEnum.DATABASEDMEMBERFILTER) {
+		} else if (stepType == DimensionStepTypeEnum.COMPOUND_DIMENSION_STEP) {
 			throw new UnsupportedOperationException();
-		} else if (stepType == DimensionStepTypeEnum.DATABASEDSORT) {
+		} else if (stepType == DimensionStepTypeEnum.DATA_BASED_SORT) {
 			throw new UnsupportedOperationException();
-		} else if (stepType == DimensionStepTypeEnum.DRILLFILTER) {
+		} else if (stepType == DimensionStepTypeEnum.DRILL_FILTER) {
 			return new MondrianDrillFilter(stepManager);
-		} else if (stepType == DimensionStepTypeEnum.EXCEPTIONMEMBERFILTER) {
+		} else if (stepType == DimensionStepTypeEnum.EXCEPTION_MEMBER_FILTER) {
 			return new MondrianExceptionMemberFilter(stepManager);
-		} else if (stepType == DimensionStepTypeEnum.HIERARCHYFILTER) {
+		} else if (stepType == DimensionStepTypeEnum.HIERARCHY_MEMBER_FILTER) {
 			return new MondrianHierarchyFilter(stepManager);
-		} else if (stepType == DimensionStepTypeEnum.HIERARCHICALSORT) {
+		} else if (stepType == DimensionStepTypeEnum.HIERARCHICAL_SORT) {
 			return new MondrianHierarchyFilter(stepManager);
-		} else if (stepType == DimensionStepTypeEnum.LEVELFILTER) {
+		} else if (stepType == DimensionStepTypeEnum.LEVEL_FILTER) {
 			return new MondrianLevelFilter(stepManager);
-		} else if (stepType == DimensionStepTypeEnum.MEMBERLISTFILTER) {
+		} else if (stepType == DimensionStepTypeEnum.MEMBER_LIST_FILTER) {
 			throw new UnsupportedOperationException();
-		} else if (stepType == DimensionStepTypeEnum.RANKINGMEMBERFILTER) {
+		} else if (stepType == DimensionStepTypeEnum.RANKING_MEMBER_FILTER) {
 			return new MondrianRankingMemberFilter(stepManager);
-		} else if (stepType == DimensionStepTypeEnum.SINGLEMEMBERFILTER) {
+		} else if (stepType == DimensionStepTypeEnum.SINGLE_MEMBER_FILTER) {
 			throw new UnsupportedOperationException();
 		} else {
 			throw Util.newInternal("Unknown DimensionStepType " + stepType);

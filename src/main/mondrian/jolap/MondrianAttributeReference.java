@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -11,18 +11,17 @@
 */
 package mondrian.jolap;
 
-import org.omg.cwm.objectmodel.core.Attribute;
+import org.omg.java.cwm.objectmodel.core.Attribute;
 
-import javax.olap.query.querycoremodel.SelectedObject;
-import javax.olap.query.querycoremodel.DimensionView;
-import javax.olap.query.querycoremodel.AttributeReference;
-import javax.olap.query.querycoremodel.Ordinate;
+import javax.olap.OLAPException;
 import javax.olap.query.calculatedmembers.OrdinateOperator;
 import javax.olap.query.dimensionfilters.DataBasedMemberFilter;
-import javax.olap.OLAPException;
+import javax.olap.query.querycoremodel.AttributeReference;
+import javax.olap.query.querycoremodel.DimensionView;
+import javax.olap.query.querycoremodel.Ordinate;
 
 /**
- * A <code>MondrianAttributeReference</code> is ...
+ * Implementation of {@link AttributeReference}.
  *
  * @author jhyde
  * @since Dec 24, 2002
@@ -42,6 +41,10 @@ class MondrianAttributeReference extends QueryObjectSupport
 		return dimensionView;
 	}
 
+    public void setOwner(DimensionView value) throws OLAPException {
+        dimensionView = (MondrianDimensionView) value;
+    }
+
 	public void setAttribute(Attribute attribute) throws OLAPException {
 		this.attribute = attribute;
 	}
@@ -53,6 +56,10 @@ class MondrianAttributeReference extends QueryObjectSupport
 	public Ordinate getOrdinate() throws OLAPException {
 		throw new UnsupportedOperationException();
 	}
+
+    public void setOrdinate(Ordinate value) throws OLAPException {
+        throw new UnsupportedOperationException();
+    }
 
 	public void setOrdinateOperator(OrdinateOperator input) throws OLAPException {
 		throw new UnsupportedOperationException();

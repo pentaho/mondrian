@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -11,19 +11,18 @@
 */
 package mondrian.jolap;
 
-import org.omg.cwm.objectmodel.core.*;
-import org.omg.cwm.objectmodel.core.Package;
+import org.omg.java.cwm.objectmodel.core.*;
 
 import java.util.Collection;
 
 /**
- * A <code>AttributeSupport</code> is ...
+ * Abstract implementation of {@link Attribute}.
  *
  * @author jhyde
  * @since Dec 24, 2002
  * @version $Id$
  **/
-abstract class AttributeSupport implements Attribute {
+abstract class AttributeSupport extends RefObjectSupport implements Attribute {
 	public Expression getInitialValue() {
 		throw new UnsupportedOperationException();
 	}
@@ -32,13 +31,13 @@ abstract class AttributeSupport implements Attribute {
 		throw new UnsupportedOperationException();
 	}
 
-	public String getChangeability() {
+	public ChangeableKind getChangeability() {
 		throw new UnsupportedOperationException();
 	}
 
-	public void setChangeability(String input) {
-		throw new UnsupportedOperationException();
-	}
+    public void setChangeability(ChangeableKind value) {
+        throw new UnsupportedOperationException();
+    }
 
 	public Multiplicity getMultiplicity() {
 		throw new UnsupportedOperationException();
@@ -48,21 +47,21 @@ abstract class AttributeSupport implements Attribute {
 		throw new UnsupportedOperationException();
 	}
 
-	public String getOrdering() {
-		throw new UnsupportedOperationException();
-	}
+    public OrderingKind getOrdering() {
+        throw new UnsupportedOperationException();
+    }
 
-	public void setOrdering(String input) {
-		throw new UnsupportedOperationException();
-	}
+    public void setOrdering(OrderingKind value) {
+        throw new UnsupportedOperationException();
+    }
 
-	public String getTargetScope() {
-		throw new UnsupportedOperationException();
-	}
+    public ScopeKind getTargetScope() {
+        throw new UnsupportedOperationException();
+    }
 
-	public void setTargetScope(String input) {
-		throw new UnsupportedOperationException();
-	}
+    public void setTargetScope(ScopeKind value) {
+        throw new UnsupportedOperationException();
+    }
 
 	public void setType(Classifier input) {
 		throw new UnsupportedOperationException();
@@ -72,13 +71,13 @@ abstract class AttributeSupport implements Attribute {
 		throw new UnsupportedOperationException();
 	}
 
-	public String getOwnerScope() {
-		throw new UnsupportedOperationException();
-	}
+    public ScopeKind getOwnerScope() {
+        throw new UnsupportedOperationException();
+    }
 
-	public void setOwnerScope(String input) {
-		throw new UnsupportedOperationException();
-	}
+    public void setOwnerScope(ScopeKind value) {
+        throw new UnsupportedOperationException();
+    }
 
 	public void setOwner(Classifier input) {
 		throw new UnsupportedOperationException();
@@ -94,31 +93,15 @@ abstract class AttributeSupport implements Attribute {
 		throw new UnsupportedOperationException();
 	}
 
-	public String getVisibility() {
-		throw new UnsupportedOperationException();
-	}
+    public VisibilityKind getVisibility() {
+        throw new UnsupportedOperationException();
+    }
 
-	public void setVisibility(String input) {
-		throw new UnsupportedOperationException();
-	}
-
-	public void setClientDependency(Collection input) {
-		throw new UnsupportedOperationException();
-	}
+    public void setVisibility(VisibilityKind value) {
+        throw new UnsupportedOperationException();
+    }
 
 	public Collection getClientDependency() {
-		throw new UnsupportedOperationException();
-	}
-
-	public void addClientDependency(Dependency input) {
-		throw new UnsupportedOperationException();
-	}
-
-	public void removeClientDependency(Dependency input) {
-		throw new UnsupportedOperationException();
-	}
-
-	public void setConstraint(Collection input) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -126,27 +109,7 @@ abstract class AttributeSupport implements Attribute {
 		throw new UnsupportedOperationException();
 	}
 
-	public void addConstraint(Constraint input) {
-		throw new UnsupportedOperationException();
-	}
-
-	public void removeConstraint(Constraint input) {
-		throw new UnsupportedOperationException();
-	}
-
-	public void setImporter(Collection input) {
-		throw new UnsupportedOperationException();
-	}
-
 	public Collection getImporter() {
-		throw new UnsupportedOperationException();
-	}
-
-	public void addImporter(Package input) {
-		throw new UnsupportedOperationException();
-	}
-
-	public void removeImporter(Package input) {
 		throw new UnsupportedOperationException();
 	}
 

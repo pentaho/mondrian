@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * A <code>MondrianCubeView</code> is ...
+ * Implementation of {@link CubeView}.
  *
  * @author jhyde
  * @since Dec 24, 2002
@@ -50,83 +50,23 @@ class MondrianCubeView extends QueryObjectSupport implements CubeView {
 		this.cube = cube;
 	}
 
-	public void setOrdinateEdge(Collection input) throws OLAPException {
-		ordinateEdge.set(input);
+    public List getOrdinateEdge() throws OLAPException {
+		return ordinateEdge;
 	}
 
-	public List getOrdinateEdge() throws OLAPException {
-		return ordinateEdge.get();
+    public Collection getPageEdge() throws OLAPException {
+		return pageEdge;
 	}
 
-	public void removeOrdinateEdge(EdgeView input) throws OLAPException {
-		ordinateEdge.remove(input);
+    public List getDefaultOrdinatePrecedence() throws OLAPException {
+        return defaultOrdinatePrecedence;
 	}
 
-	public void moveOrdinateEdgeBefore(EdgeView before, EdgeView input) throws OLAPException {
-		ordinateEdge.moveBefore(before, input);
+    public Collection getCubeCursor() throws OLAPException {
+        return cubeCursor;
 	}
 
-	public void moveOrdinateEdgeAfter(EdgeView before, EdgeView input) throws OLAPException {
-		ordinateEdge.moveAfter(before, input);
-	}
-
-	public void setPageEdge(Collection input) throws OLAPException {
-		pageEdge.set(input);
-	}
-
-	public Collection getPageEdge() throws OLAPException {
-		return pageEdge.get();
-	}
-
-	public void removePageEdge(EdgeView input) throws OLAPException {
-		pageEdge.remove(input);
-	}
-
-	public void setDefaultOrdinatePrecedence(Collection input) throws OLAPException {
-		defaultOrdinatePrecedence.set(input);
-	}
-
-	public List getDefaultOrdinatePrecedence() throws OLAPException {
-		return defaultOrdinatePrecedence.get();
-	}
-
-	public void addDefaultOrdinatePrecedence(Ordinate input) throws OLAPException {
-		defaultOrdinatePrecedence.add(input);
-	}
-
-	public void removeDefaultOrdinatePrecedence(Ordinate input) throws OLAPException {
-		defaultOrdinatePrecedence.remove(input);
-	}
-
-	public void addDefaultOrdinatePrecedenceBefore(Ordinate before, Ordinate input) throws OLAPException {
-		defaultOrdinatePrecedence.addBefore(before, input);
-	}
-
-	public void addDefaultOrdinatePrecedenceAfter(Ordinate before, Ordinate input) throws OLAPException {
-		defaultOrdinatePrecedence.addAfter(before, input);
-	}
-
-	public void moveDefaultOrdinatePrecedenceBefore(Ordinate before, Ordinate input) throws OLAPException {
-		defaultOrdinatePrecedence.moveBefore(before, input);
-	}
-
-	public void moveDefaultOrdinatePrecedenceAfter(Ordinate before, Ordinate input) throws OLAPException {
-		defaultOrdinatePrecedence.moveAfter(before, input);
-	}
-
-	public void setCubeCursor(Collection input) throws OLAPException {
-		cubeCursor.set(input);
-	}
-
-	public Collection getCubeCursor() throws OLAPException {
-		return cubeCursor.get();
-	}
-
-	public void removeCubeCursor(CubeCursor input) throws OLAPException {
-		cubeCursor.remove(input);
-	}
-
-	public CubeCursor createCursor() throws OLAPException {
+    public CubeCursor createCursor() throws OLAPException {
 		return (CubeCursor) cubeCursor.addNew(new MondrianCubeCursor(this));
 	}
 
@@ -134,19 +74,19 @@ class MondrianCubeView extends QueryObjectSupport implements CubeView {
 		return (EdgeView) ordinateEdge.addNew(new MondrianEdgeView(this, false));
 	}
 
+    public EdgeView createOrdinateEdgeBefore(EdgeView member) throws OLAPException {
+        return (EdgeView) ordinateEdge.addBefore(member, new MondrianEdgeView(this, false));
+    }
+
+    public EdgeView createOrdinateEdgeAfter(EdgeView member) throws OLAPException {
+        return (EdgeView) ordinateEdge.addAfter(member, new MondrianEdgeView(this, false));
+    }
+
 	public EdgeView createPageEdge() throws OLAPException {
 		return (EdgeView) pageEdge.addNew(new MondrianEdgeView(this, true));
 	}
 
-	public EdgeView createPageEdgeBefore(EdgeView member) throws OLAPException {
-		return (EdgeView) pageEdge.addBefore(member, new MondrianEdgeView(this, true));
-	}
-
-	public EdgeView createPageEdgeAfter(EdgeView member) throws OLAPException {
-		return (EdgeView) pageEdge.addAfter(member, new MondrianEdgeView(this, true));
-	}
-
-	public CalculationRelationship createCalculationRelationship() throws OLAPException {
+    public CalculationRelationship createCalculationRelationship() throws OLAPException {
 		throw new UnsupportedOperationException();
 	}
 
@@ -161,6 +101,10 @@ class MondrianCubeView extends QueryObjectSupport implements CubeView {
 	public void rotate(EdgeView edv1, EdgeView edv2) throws OLAPException {
 		throw new UnsupportedOperationException();
 	}
+
+    public Collection getCalculationRelationship() throws OLAPException {
+        throw new UnsupportedOperationException();
+    }
 }
 
 // End MondrianCubeView.java

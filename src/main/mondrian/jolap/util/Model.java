@@ -13,9 +13,12 @@ package mondrian.jolap.util;
 
 import mondrian.olap.Util;
 
-import java.util.*;
-import java.lang.reflect.*;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.*;
 
 /**
  * <code>Model</code> attempts to deduce an object model consisting of

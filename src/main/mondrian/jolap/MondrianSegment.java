@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -11,14 +11,14 @@
 */
 package mondrian.jolap;
 
-import javax.olap.query.querycoremodel.Segment;
-import javax.olap.query.querycoremodel.EdgeView;
-import javax.olap.query.querycoremodel.DimensionStepManager;
 import javax.olap.OLAPException;
+import javax.olap.query.querycoremodel.DimensionStepManager;
+import javax.olap.query.querycoremodel.EdgeView;
+import javax.olap.query.querycoremodel.Segment;
 import java.util.Collection;
 
 /**
- * A <code>MondrianSegment</code> is ...
+ * Implementation of {@link Segment}.
  *
  * <p>This class is <em>not</em> related to {@link mondrian.rolap.agg.Segment}.
  *
@@ -40,23 +40,11 @@ class MondrianSegment extends RefObjectSupport implements Segment {
 		throw new UnsupportedOperationException();
 	}
 
-	public void setDimensionStepManager(Collection input) throws OLAPException {
-		dimensionStepManager.set(input);
+    public Collection getDimensionStepManager() throws OLAPException {
+        return dimensionStepManager;
 	}
 
-	public Collection getDimensionStepManager() throws OLAPException {
-		return dimensionStepManager.get();
-	}
-
-	public void addDimensionStepManager(DimensionStepManager input) throws OLAPException {
-		dimensionStepManager.add(input);
-	}
-
-	public void removeDimensionStepManager(DimensionStepManager input) throws OLAPException {
-		dimensionStepManager.remove(input);
-	}
-
-	public String getName() throws OLAPException {
+    public String getName() throws OLAPException {
 		throw new UnsupportedOperationException();
 	}
 
@@ -71,6 +59,10 @@ class MondrianSegment extends RefObjectSupport implements Segment {
 	public void setId(String input) throws OLAPException {
 		throw new UnsupportedOperationException();
 	}
+
+    public void setEdgeView(EdgeView value) throws OLAPException {
+        throw new UnsupportedOperationException();
+    }
 }
 
 // End MondrianSegment.java

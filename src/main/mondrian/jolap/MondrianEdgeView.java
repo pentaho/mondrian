@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * A <code>MondrianEdgeView</code> is ...
+ * Implementation of {@link EdgeView}.
  *
  * @author jhyde
  * @since Dec 24, 2002
@@ -53,99 +53,39 @@ class MondrianEdgeView extends OrdinateSupport implements EdgeView {
 		return pageOwner;
 	}
 
+    public void setPageOwner(CubeView value) throws OLAPException {
+        pageOwner = (MondrianCubeView) value;
+    }
+
 	public CubeView getOrdinateOwner() throws OLAPException {
 		return ordinateOwner;
 	}
 
-	public void setDimensionView(Collection input) throws OLAPException {
-		dimensionView.set(input);
+    public void setOrdinateOwner(CubeView value) throws OLAPException {
+        ordinateOwner = (MondrianCubeView) value;
+    }
+
+    public List getDimensionView() throws OLAPException {
+        return dimensionView;
 	}
 
-	public List getDimensionView() throws OLAPException {
-		return dimensionView.get();
+    public Collection getEdgeCursor() throws OLAPException {
+        return edgeCursor;
 	}
 
-	public void addDimensionView(DimensionView input) throws OLAPException {
-		dimensionView.add(input);
+    public List getSegment() throws OLAPException {
+        return segment;
 	}
 
-	public void removeDimensionView(DimensionView input) throws OLAPException {
-		dimensionView.remove(input);
+    public List getEdgeFilter() throws OLAPException {
+        return edgeFilter;
 	}
 
-	public void addDimensionViewBefore(DimensionView before, DimensionView input) throws OLAPException {
-		dimensionView.addBefore(before, input);
-	}
-
-	public void addDimensionViewAfter(DimensionView before, DimensionView input) throws OLAPException {
-		dimensionView.addAfter(before, input);
-	}
-
-	public void moveDimensionViewBefore(DimensionView before, DimensionView input) throws OLAPException {
-		dimensionView.moveBefore(before, input);
-	}
-
-	public void moveDimensionViewAfter(DimensionView before, DimensionView input) throws OLAPException {
-		dimensionView.moveAfter(before, input);
-	}
-
-	public void setEdgeCursor(Collection input) throws OLAPException {
-		edgeCursor.set(input);
-	}
-
-	public Collection getEdgeCursor() throws OLAPException {
-		return edgeCursor.get();
-	}
-
-	public void removeEdgeCursor(EdgeCursor input) throws OLAPException {
-		edgeCursor.remove(input);
-	}
-
-	public void setSegment(Collection input) throws OLAPException {
-		segment.set(input);
-	}
-
-	public Collection getSegment() throws OLAPException {
-		return segment.get();
-	}
-
-	public void removeSegment(Segment input) throws OLAPException {
-		segment.remove(input);
-	}
-
-	public void setEdgeFilter(Collection input) throws OLAPException {
-		edgeFilter.set(input);
-	}
-
-	public List getEdgeFilter() throws OLAPException {
-		return edgeFilter.get();
-	}
-
-	public void removeEdgeFilter(EdgeFilter input) throws OLAPException {
-		edgeFilter.remove(input);
-	}
-
-	public void moveEdgeFilterBefore(EdgeFilter before, EdgeFilter input) throws OLAPException {
-		edgeFilter.moveBefore(before, input);
-	}
-
-	public void moveEdgeFilterAfter(EdgeFilter before, EdgeFilter input) throws OLAPException {
-		edgeFilter.moveAfter(before, input);
-	}
-
-	public void setTuple(Collection input) throws OLAPException {
+    public Collection getTuple() throws OLAPException {
 		throw new UnsupportedOperationException();
 	}
 
-	public Collection getTuple() throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
-
-	public void removeTuple(Tuple input) throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
-
-	public EdgeCursor createCursor() throws OLAPException {
+    public EdgeCursor createCursor() throws OLAPException {
 		throw new UnsupportedOperationException();
 	}
 

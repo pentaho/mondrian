@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -17,10 +17,11 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Map;
 
 /**
- * A <code>CursorSupport</code> is ...
+ * Abstract implementation of {@link Cursor}.
  *
  * @author jhyde
  * @since Dec 24, 2002
@@ -106,7 +107,7 @@ abstract class CursorSupport extends QueryObjectSupport
 		throw new UnsupportedOperationException();
 	}
 
-	public void getWarnings() throws OLAPException {
+	public Collection getWarnings() throws OLAPException {
 		throw new UnsupportedOperationException();
 	}
 
@@ -208,23 +209,19 @@ abstract class CursorSupport extends QueryObjectSupport
 		throw new UnsupportedOperationException();
 	}
 
-	// todo: spec: should return a value
-	public void getDate(int arg0) throws OLAPException {
+	public Date getDate(int arg0) throws OLAPException {
 		throw new UnsupportedOperationException();
 	}
 
-	// todo: spec: should return a value
-	public void getDate(String arg0) throws OLAPException {
+	public Date getDate(String arg0) throws OLAPException {
 		throw new UnsupportedOperationException();
 	}
 
-	// todo: spec: should return a value
-	public void getDate(int arg0, Calendar arg1) throws OLAPException {
+	public Date getDate(int arg0, Calendar arg1) throws OLAPException {
 		throw new UnsupportedOperationException();
 	}
 
-	// todo: spec: should return a value
-	public void getDate(String arg0, Calendar arg1) throws OLAPException {
+	public Date getDate(String arg0, Calendar arg1) throws OLAPException {
 		throw new UnsupportedOperationException();
 	}
 

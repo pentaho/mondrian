@@ -17,11 +17,11 @@ import javax.olap.OLAPException;
 import java.util.Iterator;
 
 /**
- * A <code>Converter</code> translates Mondrian JOLAP constructs into their
- * equivalent raw Mondrian constructs.
+ * Translates Mondrian JOLAP constructs into their equivalent raw Mondrian
+ * constructs.
  *
- * For example, {@link #createQuery}
- * converts a {@link MondrianCubeView} into a {@link Query}.
+ * <p>For example, {@link #createQuery} converts a {@link MondrianCubeView}
+ * into a {@link Query}.</p>
  *
  * @author jhyde
  * @since Dec 25, 2002

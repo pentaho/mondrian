@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -18,13 +18,14 @@ import javax.olap.query.dimensionfilters.ExceptionMemberFilter;
 import javax.olap.query.enumerations.OperatorType;
 
 /**
- * A <code>MondrianExceptionMemberFilter</code> is ...
+ * Implementation of {@link ExceptionMemberFilter}.
  *
  * @author jhyde
  * @since Dec 24, 2002
  * @version $Id$
  **/
-class MondrianExceptionMemberFilter extends MondrianDataBasedMemberFilter implements ExceptionMemberFilter {
+class MondrianExceptionMemberFilter extends MondrianDataBasedMemberFilter
+        implements ExceptionMemberFilter {
 	private OperatorType op;
 	private Object rhs;
 
@@ -37,7 +38,7 @@ class MondrianExceptionMemberFilter extends MondrianDataBasedMemberFilter implem
 		return combine(exp, newExp);
 	}
 
-	private Exp _convert() throws OLAPException {
+	private Exp _convert() {
 		throw new UnsupportedOperationException(); // todo:
 	}
 

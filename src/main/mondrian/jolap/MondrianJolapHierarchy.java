@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -11,16 +11,17 @@
 */
 package mondrian.jolap;
 
-import javax.olap.metadata.LevelBasedHierarchy;
-import javax.olap.metadata.HierarchyLevelAssociation;
-import javax.olap.metadata.Dimension;
-import javax.olap.metadata.CubeDimensionAssociation;
 import javax.olap.OLAPException;
+import javax.olap.metadata.CubeDimensionAssociation;
+import javax.olap.metadata.Dimension;
+import javax.olap.metadata.HierarchyLevelAssociation;
+import javax.olap.metadata.LevelBasedHierarchy;
 import java.util.Collection;
 import java.util.List;
 
 /**
- * A <code>MondrianJolapHierarchy</code> is ...
+ * Implementation of {@link LevelBasedHierarchy JOLAP Hierarchy} based upon a
+ * {@link mondrian.olap.Hierarchy Mondrian Hierarchy}.
  *
  * @author jhyde
  * @since Dec 24, 2002
@@ -43,47 +44,23 @@ class MondrianJolapHierarchy extends ClassifierSupport implements LevelBasedHier
 		this.hierarchy = hierarchy;
 	}
 
-	public void setHierarchyLevelAssociation(Collection input) throws OLAPException {
-		hierarchyLevelAssociation.set(input);
+    public List getHierarchyLevelAssociation() throws OLAPException {
+        return hierarchyLevelAssociation;
 	}
 
-	public List getHierarchyLevelAssociation() throws OLAPException {
-		return hierarchyLevelAssociation.get();
-	}
-
-	public void removeHierarchyLevelAssociation(HierarchyLevelAssociation input) throws OLAPException {
-		hierarchyLevelAssociation.remove(input);
-	}
-
-	public void moveHierarchyLevelAssociationBefore(HierarchyLevelAssociation before, HierarchyLevelAssociation input) throws OLAPException {
-		hierarchyLevelAssociation.moveBefore(before, input);
-	}
-
-	public void moveHierarchyLevelAssociationAfter(HierarchyLevelAssociation before, HierarchyLevelAssociation input) throws OLAPException {
-		hierarchyLevelAssociation.moveAfter(before, input);
-	}
-
-	public Dimension getDimension() throws OLAPException {
+    public Dimension getDimension() throws OLAPException {
 		return dimension;
 	}
 
-	public void setCubeDimensionAssociation(Collection input) throws OLAPException {
-		cubeDimensionAssociation.set(input);
+    public void setDimension(Dimension value) throws OLAPException {
+        throw new UnsupportedOperationException("cannot transfer");
+    }
+
+    public Collection getCubeDimensionAssociation() throws OLAPException {
+        return cubeDimensionAssociation;
 	}
 
-	public Collection getCubeDimensionAssociation() throws OLAPException {
-		return cubeDimensionAssociation.get();
-	}
-
-	public void addCubeDimensionAssociation(CubeDimensionAssociation input) throws OLAPException {
-		cubeDimensionAssociation.add(input);
-	}
-
-	public void removeCubeDimensionAssociation(CubeDimensionAssociation input) throws OLAPException {
-		cubeDimensionAssociation.remove(input);
-	}
-
-	public void setDefaultedDimension(Dimension input) throws OLAPException {
+    public void setDefaultedDimension(Dimension input) throws OLAPException {
 		this.defaultedDimension = input;
 	}
 

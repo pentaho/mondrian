@@ -13,9 +13,8 @@ package mondrian.test;
 
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
-import mondrian.jolap.MondrianMemberObjectFactories;
 import mondrian.olap.Util;
-import org.omg.cwm.objectmodel.core.Attribute;
+import org.omg.java.cwm.objectmodel.core.Attribute;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -31,13 +30,15 @@ import javax.olap.query.querycoremodel.*;
 import javax.olap.resource.Connection;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 
 /**
- * A <code>JolapTest</code> is ...
+ * Tests Mondrian's compliance with the JOLAP API.
  *
  * @author jhyde
  * @since Dec 23, 2002
@@ -45,8 +46,6 @@ import java.util.List;
  **/
 public class JolapTest extends TestCase {
 	private static final String nl = System.getProperty("line.separator");
-	private MemberObjectFactories memberObjectFactories =
-			new MondrianMemberObjectFactories();
 
 	public JolapTest(String name) {
 		super(name);
@@ -73,7 +72,7 @@ public class JolapTest extends TestCase {
 		Connection cx = getConnection();
 		// Get the list of all JOLAP Dimensions for the default Schema
 		// and print out their names...
-		List dimList = cx.getDimensions();
+		Collection dimList = cx.getDimensions();
 		Iterator dimIter = dimList.iterator();
 		while ( dimIter.hasNext() )
 		{
@@ -98,11 +97,9 @@ public class JolapTest extends TestCase {
 					= (javax.olap.resource.ConnectionFactory)initCtx.lookup(
 							"JOLAPServer" );
 			// Create a connection spec
-			javax.olap.resource.ConnectionSpec cxs
-					=(javax.olap.resource.ConnectionSpec)
-					cxf.createConnectionSpec();
-			cxs.setName( "jolapuser" );
-			cxs.setPassword( "guest" );
+			javax.olap.resource.ConnectionSpec cxs = cxf.createConnectionSpec();
+            setProperty(cxs, "name", "jolapuser");
+            setProperty(cxs, "password", "guest");
 			// Note: if the specific type of ConnectionSpec is not known,
 			// clients can introspect the returned instance to determine
 			// which JavaBean-compliant attributes are required.
@@ -114,10 +111,28 @@ public class JolapTest extends TestCase {
 		}
 	}
 
-	public void testSimpleCubeView() throws OLAPException {
+    private static void setProperty(Object cxs, String propertyName, Object propertyValue) {
+        try {
+            final Method method = cxs.getClass().getMethod("get" + propertyName.substring(0,1).toUpperCase() + propertyName.substring(1),
+                    new Class[] {String.class});
+            method.invoke(cxs, new Object[] {propertyValue});
+        } catch (NoSuchMethodException e) {
+            throw Util.newError(e, "Error while setting property '" + propertyName + "'");
+        } catch (SecurityException e) {
+            throw Util.newError(e, "Error while setting property '" + propertyName + "'");
+        } catch (IllegalArgumentException e) {
+            throw Util.newError(e, "Error while setting property '" + propertyName + "'");
+        } catch (IllegalAccessException e) {
+            throw Util.newError(e, "Error while setting property '" + propertyName + "'");
+        } catch (InvocationTargetException e) {
+            throw Util.newError(e, "Error while setting property '" + propertyName + "'");
+        }
+    }
+
+    public void testSimpleCubeView() throws OLAPException {
 		Connection connection = getConnection();
 		Cube salesCube = getCube(connection, "Sales");
-		CubeView query = connection.createCubeView(salesCube);
+		CubeView query = connection.createCubeView();
 		EdgeView rowsEdge = query.createOrdinateEdge();
 		EdgeView colsEdge = query.createOrdinateEdge();
 		EdgeView pageEdge = query.createPageEdge();
@@ -125,12 +140,12 @@ public class JolapTest extends TestCase {
 
 	public void _testSimpleDimensionView() throws OLAPException {
 		Connection someConnection = getConnection();
-		DimensionView products = someConnection.createDimensionView();
-		Dimension prod = (Dimension)someConnection.getDimensions().get(0);
+		Dimension prod = getDimension(someConnection, "Product");
+        DimensionView products = someConnection.createDimensionView(prod);
 		products.setDimension(prod);
 		DimensionStepManager steps = products.createDimensionStepManager();
 		AttributeFilter nameFilter = (AttributeFilter)
-				steps.createDimensionStep(DimensionStepTypeEnum.ATTRIBUTEFILTER);
+				steps.createDimensionStep(DimensionStepTypeEnum.ATTRIBUTE_FILTER);
 		Attribute nameAttr = (Attribute)prod.getFeature().get(0);
 		nameFilter.setAttribute(nameAttr);
 		nameFilter.setSetAction(SetActionTypeEnum.INITIAL);
@@ -151,12 +166,12 @@ public class JolapTest extends TestCase {
 
 	private DimensionView createSimpleDimensionView(Connection someConnection) throws OLAPException {
 		Cube salesCube = getCube(someConnection, "Sales");
-		DimensionView products = someConnection.createDimensionView();
-		Dimension prod = getDimension(salesCube, "Product");
+        Dimension prod = getDimension(salesCube, "Product");
+		DimensionView products = someConnection.createDimensionView(prod);
 		products.setDimension(prod);
 		DimensionStepManager steps = products.createDimensionStepManager();
 		AttributeFilter nameFilter = (AttributeFilter)
-				steps.createDimensionStep(DimensionStepTypeEnum.ATTRIBUTEFILTER);
+				steps.createDimensionStep(DimensionStepTypeEnum.ATTRIBUTE_FILTER);
 		Attribute nameAttr = getAttribute(prod, "Product Subcategory");
 		nameFilter.setAttribute(nameAttr);
 		nameFilter.setSetAction(SetActionTypeEnum.INITIAL);
@@ -186,21 +201,21 @@ public class JolapTest extends TestCase {
 
 	private DimensionView createSimpleEdgeWithOneDimensionView(Connection someConnection) throws OLAPException {
 		Cube salesCube = getCube(someConnection, "Sales");
-		DimensionView customerView = someConnection.createDimensionView();
-		Dimension customer = getDimension(salesCube, "Customers");
+        Dimension customer = getDimension(salesCube, "Customers");
+		DimensionView customerView = someConnection.createDimensionView(customer);
 		customerView.setDimension(customer);
 		DimensionStepManager steps = customerView.createDimensionStepManager();
 		AttributeFilter genderFilter = (AttributeFilter)
-				steps.createDimensionStep(DimensionStepTypeEnum.ATTRIBUTEFILTER);
+				steps.createDimensionStep(DimensionStepTypeEnum.ATTRIBUTE_FILTER);
 		Attribute genderAttr = getAttribute(customer, "Gender");
 		genderFilter.setAttribute(genderAttr);
 		genderFilter.setSetAction(SetActionTypeEnum.INITIAL);
 		genderFilter.setOp(OperatorTypeEnum.EQ);
 		genderFilter.setRhs("F");
-		CubeView sampleCube = someConnection.createCubeView(salesCube);
+		CubeView sampleCube = someConnection.createCubeView(); //salesCube
 		EdgeView rows = sampleCube.createOrdinateEdge();
 		Segment defaultSegment = rows.createSegment();
-		defaultSegment.addDimensionStepManager( steps );
+		defaultSegment.getDimensionStepManager().add( steps );
 		return customerView;
 	}
 
@@ -214,23 +229,23 @@ public class JolapTest extends TestCase {
 	}
 
 	private DimensionView createMultiStepAttributeFilter(Connection someConnection) throws OLAPException {
-		DimensionView multiStep = 	someConnection.createDimensionView();
-		Dimension prod = (Dimension)someConnection.getDimensions().get(0);
+        Dimension prod = getDimension(someConnection, "Product");
+        DimensionView multiStep = 	someConnection.createDimensionView(prod);
 		multiStep.setDimension(prod);
 		AttributeReference selectCode = (AttributeReference)
-				multiStep.createSelectedObject(SelectedObjectTypeEnum.ATTRIBUTEREFERENCE);
+				multiStep.createSelectedObject(SelectedObjectTypeEnum.ATTRIBUTE_REFERENCE);
 		Attribute code = (Attribute)prod.getFeature().get(0);
 		selectCode.setAttribute(code);
 		DimensionStepManager steps = multiStep.createDimensionStepManager();
 		AttributeFilter redFilter = (AttributeFilter)
-				steps.createDimensionStep(DimensionStepTypeEnum.ATTRIBUTEFILTER);
+				steps.createDimensionStep(DimensionStepTypeEnum.ATTRIBUTE_FILTER);
 		Attribute color = (Attribute) prod.getFeature().get(1);
 		redFilter.setAttribute(color);
 		redFilter.setSetAction(SetActionTypeEnum.INITIAL);
 		redFilter.setOp(OperatorTypeEnum.EQ);
 		redFilter.setRhs("Red");
 		AttributeFilter blueFilter = (AttributeFilter)
-				steps.createDimensionStep(DimensionStepTypeEnum.ATTRIBUTEFILTER);
+				steps.createDimensionStep(DimensionStepTypeEnum.ATTRIBUTE_FILTER);
 		blueFilter.setAttribute(color);
 		blueFilter.setSetAction(SetActionTypeEnum.APPEND);
 		blueFilter.setOp(OperatorTypeEnum.EQ);
@@ -249,16 +264,16 @@ public class JolapTest extends TestCase {
 	}
 
 	private DimensionView createLevelFilter(Connection someConnection) throws OLAPException {
-		DimensionView partMembers = someConnection.createDimensionView();
-		Dimension prod = (Dimension)someConnection.getDimensions().get(0);
+        Dimension prod = getDimension(someConnection, "Product");
+		DimensionView partMembers = someConnection.createDimensionView(prod);
 		partMembers.setDimension(prod);
 		AttributeReference selectCode = (AttributeReference)
-				partMembers.createSelectedObject(SelectedObjectTypeEnum.ATTRIBUTEREFERENCE);
+				partMembers.createSelectedObject(SelectedObjectTypeEnum.ATTRIBUTE_REFERENCE);
 		Attribute code = (Attribute)prod.getFeature().get(0);
 		selectCode.setAttribute(code);
 		DimensionStepManager steps = partMembers.createDimensionStepManager();
 		LevelFilter levelFilter = (LevelFilter)
-				steps.createDimensionStep(DimensionStepTypeEnum.LEVELFILTER);
+				steps.createDimensionStep(DimensionStepTypeEnum.LEVEL_FILTER);
 		Collection parts = prod.getMemberSelection();
 		Level part = (Level)parts.iterator().next();
 		levelFilter.setLevel(part);
@@ -266,7 +281,18 @@ public class JolapTest extends TestCase {
 		return partMembers;
 	}
 
-	/**
+    private Dimension getDimension(Connection someConnection, String name) throws OLAPException {
+        final Collection dimensions = someConnection.getDimensions();
+        for (Iterator iterator = dimensions.iterator(); iterator.hasNext();) {
+            Dimension dimension = (Dimension) iterator.next();
+            if (dimension.getName().equals(name)) {
+                return dimension;
+            }
+        }
+        return null;
+    }
+
+    /**
 	 * "Sample code 8.5: Drill Filter"
 	 */
 	public void testDrillFilter() throws OLAPException {
@@ -276,25 +302,25 @@ public class JolapTest extends TestCase {
 	}
 
 	private DimensionView createDrillFilter(Connection someConnection) throws OLAPException {
-		DimensionView drill = someConnection.createDimensionView();
-		Dimension prod = (Dimension)someConnection.getDimensions().get(0);
+        Dimension prod = getDimension(someConnection, "Product");
+		DimensionView drill = someConnection.createDimensionView(prod);
 		drill.setDimension(prod);
 		AttributeReference selectCode = (AttributeReference)
-				drill.createSelectedObject(SelectedObjectTypeEnum.ATTRIBUTEREFERENCE);
+				drill.createSelectedObject(SelectedObjectTypeEnum.ATTRIBUTE_REFERENCE);
 		Attribute code = (Attribute)prod.getFeature().get(0);
 		selectCode.setAttribute(code);
 		DimensionStepManager steps = drill.createDimensionStepManager();
 		HierarchyFilter hierarchyFilter =
-		(HierarchyFilter)steps.createDimensionStep(DimensionStepTypeEnum.HIERARCHYFILTER);
+		(HierarchyFilter)steps.createDimensionStep(DimensionStepTypeEnum.HIERARCHY_MEMBER_FILTER);
 		Collection hierarchies = prod.getHierarchy();
 		LevelBasedHierarchy stdHierarchy = (LevelBasedHierarchy)
 				hierarchies.iterator().next();
 		hierarchyFilter.setHierarchy(stdHierarchy);
 		hierarchyFilter.setSetAction(SetActionTypeEnum.INITIAL);
-		hierarchyFilter.setHierarchyFilterType(HierarchyFilterTypeEnum.ALLMEMBERS);
+		hierarchyFilter.setHierarchyFilterType(HierarchyFilterTypeEnum.ALL_MEMBERS);
 		Drill drillW1000 = (Drill)
-				steps.createDimensionStep(DimensionStepTypeEnum.DRILLFILTER);
-		Member W1000 = memberObjectFactories.createMember(prod);
+				steps.createDimensionStep(DimensionStepTypeEnum.DRILL_FILTER);
+		Member W1000 = someConnection.getMemberObjectFactories().createMember(prod);
 		drillW1000.setDrillMember(W1000);
 		drillW1000.setSetAction(SetActionTypeEnum.APPEND);
 		drillW1000.setDrillType(DrillTypeEnum.CHILDREN);
@@ -311,30 +337,30 @@ public class JolapTest extends TestCase {
 
 	private DimensionView createDataBasedExceptionFilter() throws OLAPException {
 		Connection someConnection = getConnection();
-		DimensionView exceptionMembers = someConnection.createDimensionView();
-		Dimension prod = (Dimension)someConnection.getDimensions().get(0);
-		Dimension geog = (Dimension)someConnection.getDimensions().get(1);
-		Dimension meas = (Dimension)someConnection.getDimensions().get(2);
-		Dimension time = (Dimension)someConnection.getDimensions().get(3);
-		exceptionMembers.setDimension(prod);
+        Dimension prod = getDimension(someConnection, "Product");
+        Dimension geog = getDimension(someConnection, "Store");
+        Dimension meas = getDimension(someConnection, "Measures");
+        Dimension time = getDimension(someConnection, "Time");
+		DimensionView exceptionMembers = someConnection.createDimensionView(prod);
 		AttributeReference selectCode = (AttributeReference)
-				exceptionMembers.createSelectedObject(SelectedObjectTypeEnum.ATTRIBUTEREFERENCE);
+				exceptionMembers.createSelectedObject(SelectedObjectTypeEnum.ATTRIBUTE_REFERENCE);
 		Attribute code = (Attribute)prod.getFeature().get(0);
 		selectCode.setAttribute(code);
 		DimensionStepManager steps = exceptionMembers.createDimensionStepManager();
 		ExceptionMemberFilter prodsGT500 = (ExceptionMemberFilter)
-				steps.createDimensionStep(DimensionStepTypeEnum.EXCEPTIONMEMBERFILTER);
+				steps.createDimensionStep(DimensionStepTypeEnum.EXCEPTION_MEMBER_FILTER);
 		prodsGT500.setSetAction(SetActionTypeEnum.INITIAL);
 		prodsGT500.setOp(OperatorTypeEnum.EQ);
 		prodsGT500.setRhs(new Integer(500));
 		QualifiedMemberReference qmr1 = (QualifiedMemberReference)
-				prodsGT500.createDataBasedMemberFilterInput(DataBasedMemberFilterInputTypeEnum.QUALIFIEDMEMBERREFERENCE);
-		Member Sales = memberObjectFactories.createMember(meas);
+				prodsGT500.createDataBasedMemberFilterInput(DataBasedMemberFilterInputTypeEnum.QUALIFIED_MEMBER_REFERENCE);
+        final MemberObjectFactories memberObjectFactories = someConnection.getMemberObjectFactories();
+        Member Sales = memberObjectFactories.createMember(meas);
 		Member DavesStore = memberObjectFactories.createMember(geog);
 		Member Jan2001 = memberObjectFactories.createMember(time);
-		qmr1.addMember(Sales);
-		qmr1.addMember(DavesStore);
-		qmr1.addMember(Jan2001);
+		qmr1.getMember().add(Sales);
+		qmr1.getMember().add(DavesStore);
+		qmr1.getMember().add(Jan2001);
 		return exceptionMembers;
 	}
 
@@ -348,34 +374,34 @@ public class JolapTest extends TestCase {
 	}
 
 	private DimensionView createDataBasedRankingFilter(Connection someConnection) throws OLAPException {
-		DimensionView rankingMembers = someConnection.createDimensionView();
-		Dimension prod = (Dimension)someConnection.getDimensions().get(0);
-		Dimension geog = (Dimension)someConnection.getDimensions().get(1);
-		Dimension meas = (Dimension)someConnection.getDimensions().get(2);
-		Dimension time = (Dimension)someConnection.getDimensions().get(3);
-		rankingMembers.setDimension(prod);
+        Dimension prod = getDimension(someConnection, "Product");
+        Dimension geog = getDimension(someConnection, "Store");
+        Dimension meas = getDimension(someConnection, "Measures");
+        Dimension time = getDimension(someConnection, "Time");
+        DimensionView rankingMembers = someConnection.createDimensionView(prod);
 		AttributeReference selectCode = (AttributeReference)
-				rankingMembers.createSelectedObject(SelectedObjectTypeEnum.ATTRIBUTEREFERENCE);
+				rankingMembers.createSelectedObject(SelectedObjectTypeEnum.ATTRIBUTE_REFERENCE);
 		Attribute code = (Attribute)prod.getFeature().get(0);
 		selectCode.setAttribute(code);
 		DimensionStepManager steps =
 		rankingMembers.createDimensionStepManager();
 		RankingMemberFilter TB5Prods =
-		(RankingMemberFilter)steps.createDimensionStep(DimensionStepTypeEnum.RANKINGMEMBERFILTER);
+		(RankingMemberFilter)steps.createDimensionStep(DimensionStepTypeEnum.RANKING_MEMBER_FILTER);
 		TB5Prods.setSetAction(SetActionTypeEnum.INITIAL);
-		TB5Prods.setType(RankingTypeEnum.TOPBOTTOM);
-		TB5Prods.setTop(new Integer(5));
-		TB5Prods.setBottom(new Integer(5));
-		TB5Prods.setTopPercent(new Boolean(false));
-		TB5Prods.setBottomPercent(new Boolean(false));
+		TB5Prods.setType(RankingTypeEnum.TOP_BOTTOM);
+		TB5Prods.setTop(5);
+		TB5Prods.setBottom(5);
+		TB5Prods.setTopPercent(false);
+		TB5Prods.setBottomPercent(false);
 		QualifiedMemberReference qmr1 = (QualifiedMemberReference)
-				TB5Prods.createDataBasedMemberFilterInput(DataBasedMemberFilterInputTypeEnum.QUALIFIEDMEMBERREFERENCE);
-		Member Sales = memberObjectFactories.createMember(meas);
+				TB5Prods.createDataBasedMemberFilterInput(DataBasedMemberFilterInputTypeEnum.QUALIFIED_MEMBER_REFERENCE);
+        final MemberObjectFactories memberObjectFactories = someConnection.getMemberObjectFactories();
+        Member Sales = memberObjectFactories.createMember(meas);
 		Member DavesStore = memberObjectFactories.createMember(geog);
 		Member Jan2001 = memberObjectFactories.createMember(time);
-		qmr1.addMember(Sales);
-		qmr1.addMember(DavesStore);
-		qmr1.addMember(Jan2001);
+		qmr1.getMember().add(Sales);
+		qmr1.getMember().add(DavesStore);
+		qmr1.getMember().add(Jan2001);
 		return rankingMembers;
 	}
 
@@ -386,31 +412,32 @@ public class JolapTest extends TestCase {
 		// Create a DimensionView for each dimension
 		Connection connection = getConnection();
 		Cube salesCube = getCube(connection, "Sales");
-		DimensionView channelView = connection.createDimensionView();
-		channelView.setDimension(getDimension(salesCube, "Promotions" /*"Channel"*/));
-		DimensionView productView = connection.createDimensionView();
-		productView.setDimension(getDimension(salesCube, "Product"));
-		DimensionView geographyView = connection.createDimensionView();
-		geographyView.setDimension(getDimension(salesCube, "Gender" /*"Geography"*/));
-		DimensionView timeView = connection.createDimensionView();
-		timeView.setDimension(getDimension(salesCube, "Marital Status"/*"Time"*/));
-		MeasureView measView = connection.createMeasureView();
+        final Dimension channel = getDimension(salesCube, "Promotions" /*"Channel"*/);
+		DimensionView channelView = connection.createDimensionView(channel);
+        final Dimension prod = getDimension(salesCube, "Product");
+		DimensionView productView = connection.createDimensionView(prod);
+        final Dimension geog = getDimension(salesCube, "Gender" /*"Geography"*/);
+		DimensionView geographyView = connection.createDimensionView(geog);
+        final Dimension time = getDimension(salesCube, "Marital Status"/*"Time"*/);
+		DimensionView timeView = connection.createDimensionView(time);
+        final Dimension meas = getDimension(salesCube, "Measures");
+		MeasureView measView = (MeasureView) connection.createDimensionView(meas);
 		// jhyde added
-		CubeView query = connection.createCubeView(salesCube);
+		CubeView query = connection.createCubeView(); //salesCube
 		// Create a columns edge and add the time and geography views
 		//EdgeView columns = connection.createEdgeView();
 		EdgeView columns = query.createOrdinateEdge();
-		columns.addDimensionView(timeView);
-		columns.addDimensionView(geographyView);
+		columns.getDimensionView().add(timeView);
+		columns.getDimensionView().add(geographyView);
 		// Create a rows edge and add the product view
 		//EdgeView rows = connection.createEdgeView();
 		EdgeView rows = query.createOrdinateEdge();
-		rows.addDimensionView(productView);
+		rows.getDimensionView().add(productView);
  		// Create a pages edge and add the channel dimension view
 		//EdgeCursor pages = connection.createDimensionView();
 		EdgeView pages = query.createPageEdge();
-		pages.addDimensionView(channelView);
-		pages.addDimensionView(measView);
+		pages.getDimensionView().add(channelView);
+		pages.getDimensionView().add(measView);
 		// Create the query cube view and add edges and the measure
 		//CubeView query = connection.createCubeView();
 		//query.addOrdinateEdge(rows);
@@ -436,31 +463,32 @@ public class JolapTest extends TestCase {
 		// Create a DimensionView for each dimension
 		Connection connection = getConnection();
 		Cube salesCube = getCube(connection, "Sales");
-		DimensionView channelView = connection.createDimensionView();
-		channelView.setDimension(getDimension(salesCube, "Promotions" /*"Channel"*/));
-		DimensionView productView = connection.createDimensionView();
-		productView.setDimension(getDimension(salesCube, "Product"));
-		DimensionView geographyView = connection.createDimensionView();
-		geographyView.setDimension(getDimension(salesCube, "Gender" /*"Geography"*/));
-		DimensionView timeView = connection.createDimensionView();
-		timeView.setDimension(getDimension(salesCube, "Time"));
-		MeasureView measView = connection.createMeasureView();
+        final Dimension chan = getDimension(salesCube, "Promotions" /*"Channel"*/);
+		DimensionView channelView = connection.createDimensionView(chan);
+        final Dimension prod = getDimension(salesCube, "Product");
+		DimensionView productView = connection.createDimensionView(prod);
+        final Dimension geog = getDimension(salesCube, "Gender" /*"Geography"*/);
+		DimensionView geographyView = connection.createDimensionView(geog);
+        final Dimension time = getDimension(salesCube, "Time");
+		DimensionView timeView = connection.createDimensionView(time);
+        final Dimension meas = getDimension(salesCube, "Measures");
+		MeasureView measView = (MeasureView) connection.createDimensionView(meas);
 		// jhyde added
-		CubeView query = connection.createCubeView(salesCube);
+		CubeView query = connection.createCubeView();//salesCube
 		// Create a columns edge and add the time and geography views
 		//EdgeView columns = connection.createEdgeView();
 		EdgeView columns = query.createOrdinateEdge();
-		columns.addDimensionView(timeView);
-		columns.addDimensionView(geographyView);
+		columns.getDimensionView().add(timeView);
+		columns.getDimensionView().add(geographyView);
 		// Create a rows edge and add the product view
 		//EdgeView rows = connection.createEdgeView();
 		EdgeView rows = query.createOrdinateEdge();
-		rows.addDimensionView(productView);
+		rows.getDimensionView().add(productView);
  		// Create a pages edge and add the channel dimension view
 		//EdgeCursor pages = connection.createDimensionView();
 		EdgeView pages = query.createPageEdge();
-		pages.addDimensionView(channelView);
-		pages.addDimensionView(measView);
+		pages.getDimensionView().add(channelView);
+		pages.getDimensionView().add(measView);
 		// Create the query cube view and add edges and the measure
 		//CubeView query = connection.createCubeView();
 		//query.addOrdinateEdge(rows);
@@ -485,9 +513,9 @@ public class JolapTest extends TestCase {
 	private void print(DimensionView dimensionView, PrintWriter pw) throws OLAPException {
 		Connection connection = getConnection();
 		Cube salesCube = getCube(connection, "Sales");
-		CubeView query = connection.createCubeView(salesCube);
+		CubeView query = connection.createCubeView();//salesCube
 		EdgeView edgeView = query.createOrdinateEdge();
-		edgeView.addDimensionView(dimensionView);
+		edgeView.getDimensionView().add(dimensionView);
 		CubeCursor cubeCursor = query.createCursor();
 		print(cubeCursor, pw);
 	}

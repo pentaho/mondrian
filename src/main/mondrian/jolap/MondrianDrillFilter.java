@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -14,17 +14,16 @@ package mondrian.jolap;
 import mondrian.olap.Exp;
 import mondrian.olap.Util;
 
-import javax.olap.query.querycoremodel.DimensionStep;
-import javax.olap.query.dimensionfilters.Drill;
-import javax.olap.query.enumerations.DrillType;
-import javax.olap.query.enumerations.DrillTypeEnum;
 import javax.olap.OLAPException;
 import javax.olap.metadata.Hierarchy;
 import javax.olap.metadata.Level;
 import javax.olap.metadata.Member;
+import javax.olap.query.dimensionfilters.Drill;
+import javax.olap.query.enumerations.DrillType;
+import javax.olap.query.enumerations.DrillTypeEnum;
 
 /**
- * A <code>MondrianDrillFilter</code> is ...
+ * Implementation of {@link Drill}.
  *
  * @author jhyde
  * @since Dec 24, 2002
@@ -45,7 +44,7 @@ class MondrianDrillFilter extends MondrianDimensionFilter implements Drill {
 		return combine(exp, newExp);
 	}
 
-	private Exp _convert() throws OLAPException {
+	private Exp _convert() {
 		if (drillType == DrillTypeEnum.ANCESTORS) {
 			throw new UnsupportedOperationException();
 		} else if (drillType == DrillTypeEnum.CHILDREN) {
@@ -54,13 +53,13 @@ class MondrianDrillFilter extends MondrianDimensionFilter implements Drill {
 			throw new UnsupportedOperationException();
 		} else if (drillType == DrillTypeEnum.LEAVES) {
 			throw new UnsupportedOperationException();
-		} else if (drillType == DrillTypeEnum.PARENT) {
+		} else if (drillType == DrillTypeEnum.PARENTS) {
 			throw new UnsupportedOperationException();
 		} else if (drillType == DrillTypeEnum.ROOTS) {
 			throw new UnsupportedOperationException();
 		} else if (drillType == DrillTypeEnum.SIBLINGS) {
 			throw new UnsupportedOperationException();
-		} else if (drillType == DrillTypeEnum.TOLEVEL) {
+		} else if (drillType == DrillTypeEnum.TO_LEVEL) {
 			throw new UnsupportedOperationException();
 		} else {
 			throw Util.newInternal("Unknown drill type " + drillType);

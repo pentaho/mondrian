@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -11,17 +11,19 @@
 */
 package mondrian.jolap;
 
-import mondrian.olap.*;
+import mondrian.olap.Axis;
+import mondrian.olap.Query;
+import mondrian.olap.Result;
+import mondrian.olap.Util;
 
 import javax.olap.OLAPException;
 import javax.olap.cursor.CubeCursor;
-import javax.olap.cursor.EdgeCursor;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
 /**
- * A <code>MondrianCubeCursor</code> is ...
+ * Implementation of {@link CubeCursor}.
  *
  * @author jhyde
  * @since Dec 24, 2002
@@ -46,63 +48,23 @@ class MondrianCubeCursor extends CursorSupport implements CubeCursor {
 		Util.assertTrue(cubeView.getPageEdge().size() == 1);
 		for (Iterator pageEdges = cubeView.getPageEdge().iterator(); pageEdges.hasNext();) {
 			MondrianEdgeView edgeView = (MondrianEdgeView) pageEdges.next();
-			addPageEdge(new MondrianEdgeCursor(this, true, edgeView, slicerAxis));
+			pageEdge.add(new MondrianEdgeCursor(this, true, edgeView, slicerAxis));
 		}
 		Axis[] axes = result.getAxes();
 		int axisOffset = 0;
 		Util.assertTrue(cubeView.getOrdinateEdge().size() == axes.length);
 		for (Iterator ordinateEdges = cubeView.getOrdinateEdge().iterator(); ordinateEdges.hasNext();) {
 			MondrianEdgeView edgeView = (MondrianEdgeView) ordinateEdges.next();
-			addOrdinateEdge(new MondrianEdgeCursor(this, false, edgeView, axes[axisOffset++]));
+			ordinateEdge.add(new MondrianEdgeCursor(this, false, edgeView, axes[axisOffset++]));
 		}
 	}
 
-	public void setOrdinateEdge(Collection input) throws OLAPException {
-		ordinateEdge.set(input);
-	}
-
 	public List getOrdinateEdge() throws OLAPException {
-		return ordinateEdge.get();
-	}
-
-	public void addOrdinateEdge(EdgeCursor input) throws OLAPException {
-		ordinateEdge.add(input);
-	}
-
-	public void removeOrdinateEdge(EdgeCursor input) throws OLAPException {
-		ordinateEdge.remove(input);
-	}
-
-	public void addOrdinateEdgeBefore(EdgeCursor before, EdgeCursor input) throws OLAPException {
-		ordinateEdge.addBefore(before, input);
-	}
-
-	public void addOrdinateEdgeAfter(EdgeCursor before, EdgeCursor input) throws OLAPException {
-		ordinateEdge.addAfter(before, input);
-	}
-
-	public void moveOrdinateEdgeBefore(EdgeCursor before, EdgeCursor input) throws OLAPException {
-		ordinateEdge.moveBefore(before, input);
-	}
-
-	public void moveOrdinateEdgeAfter(EdgeCursor before, EdgeCursor input) throws OLAPException {
-		ordinateEdge.moveAfter(before, input);
-	}
-
-	public void setPageEdge(Collection input) throws OLAPException {
-		pageEdge.set(input);
+		return ordinateEdge;
 	}
 
 	public Collection getPageEdge() throws OLAPException {
-		return pageEdge.get();
-	}
-
-	public void addPageEdge(EdgeCursor input) throws OLAPException {
-		pageEdge.add(input);
-	}
-
-	public void removePageEdge(EdgeCursor input) throws OLAPException {
-		pageEdge.remove(input);
+        return pageEdge;
 	}
 
 	public void synchronizePages() throws OLAPException {

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -11,68 +11,45 @@
 */
 package mondrian.jolap;
 
-import org.omg.cwm.objectmodel.core.*;
-import org.omg.cwm.objectmodel.core.Package;
+import org.omg.java.cwm.objectmodel.core.Classifier;
+import org.omg.java.cwm.objectmodel.core.Feature;
+import org.omg.java.cwm.objectmodel.core.Namespace;
+import org.omg.java.cwm.objectmodel.core.VisibilityKind;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.ArrayList;
 
 /**
- * A <code>ClassifierSupport</code> is ...
+ * Abstract implementation of {@link Classifier}.
  *
  * @author jhyde
  * @since Dec 24, 2002
  * @version $Id$
  **/
-abstract class ClassifierSupport implements Classifier {
+abstract class ClassifierSupport extends RefObjectSupport implements Classifier {
 	protected OrderedRelationshipList feature = new OrderedRelationshipList(Meta.feature);
 
 	static class Meta {
 		static final Relationship feature = new Relationship(Classifier.class, "feature", Feature.class);
 	}
 
-	public Boolean getIsAbstract() {
+	public boolean isAbstract() {
 		throw new UnsupportedOperationException();
 	}
 
-	public void setIsAbstract(Boolean input) {
+	public void setAbstract(boolean input) {
 		throw new UnsupportedOperationException();
-	}
-
-	public void setFeature(Collection input) {
-		feature.set(input);
 	}
 
 	public List getFeature() {
-		return feature.get();
+        return feature;
 	}
 
-	public void removeFeature(Feature input) {
-		feature.remove(input);
-	}
-
-	public void moveFeatureBefore(Feature before, Feature input) {
-		feature.moveBefore(before, input);
-	}
-
-	public void moveFeatureAfter(Feature before, Feature input) {
-		feature.moveAfter(before, input);
-	}
-
-	public void setOwnedElement(Collection input) {
+    public Collection getOwnedElement() {
 		throw new UnsupportedOperationException();
 	}
 
-	public Collection getOwnedElement() {
-		throw new UnsupportedOperationException();
-	}
-
-	public void removeOwnedElement(ModelElement input) {
-		throw new UnsupportedOperationException();
-	}
-
-	public String getName() {
+    public String getName() {
 		throw new UnsupportedOperationException();
 	}
 
@@ -80,15 +57,11 @@ abstract class ClassifierSupport implements Classifier {
 		throw new UnsupportedOperationException();
 	}
 
-	public String getVisibility() {
+	public VisibilityKind getVisibility() {
 		throw new UnsupportedOperationException();
 	}
 
-	public void setVisibility(String input) {
-		throw new UnsupportedOperationException();
-	}
-
-	public void setClientDependency(Collection input) {
+	public void setVisibility(VisibilityKind input) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -96,31 +69,7 @@ abstract class ClassifierSupport implements Classifier {
 		throw new UnsupportedOperationException();
 	}
 
-	public void addClientDependency(Dependency input) {
-		throw new UnsupportedOperationException();
-	}
-
-	public void removeClientDependency(Dependency input) {
-		throw new UnsupportedOperationException();
-	}
-
-	public void setConstraint(Collection input) {
-		throw new UnsupportedOperationException();
-	}
-
 	public Collection getConstraint() {
-		throw new UnsupportedOperationException();
-	}
-
-	public void addConstraint(Constraint input) {
-		throw new UnsupportedOperationException();
-	}
-
-	public void removeConstraint(Constraint input) {
-		throw new UnsupportedOperationException();
-	}
-
-	public void setImporter(Collection input) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -128,15 +77,7 @@ abstract class ClassifierSupport implements Classifier {
 		throw new UnsupportedOperationException();
 	}
 
-	public void addImporter(Package input) {
-		throw new UnsupportedOperationException();
-	}
-
-	public void removeImporter(Package input) {
-		throw new UnsupportedOperationException();
-	}
-
-	public void setNamespace(Namespace input) {
+    public void setNamespace(Namespace input) {
 		throw new UnsupportedOperationException();
 	}
 

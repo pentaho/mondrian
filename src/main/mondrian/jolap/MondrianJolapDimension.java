@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -23,7 +23,8 @@ import javax.olap.metadata.Schema;
 import java.util.Collection;
 
 /**
- * A <code>MondrianJolapDimension</code> is ...
+ * Implementation of {@link Dimension JOLAP Dimension} based upon a
+ * {@link mondrian.olap.Dimension Mondrian Dimension}.
  *
  * @author jhyde
  * @since Dec 24, 2002
@@ -70,21 +71,20 @@ class MondrianJolapDimension extends ClassifierSupport implements javax.olap.met
 		}
 	}
 
-	public void setIsTime(Boolean input) throws OLAPException {
+	public void setTime(boolean input) throws OLAPException {
 		throw new UnsupportedOperationException();
 	}
 
-	public Boolean getIsTime() {
-		return dimension.getDimensionType() == Dimension.TIME ?
-				Boolean.TRUE : Boolean.FALSE;
+	public boolean isTime() {
+		return dimension.getDimensionType() == Dimension.TIME;
 	}
 
-	public void setIsMeasure(Boolean input) throws OLAPException {
+	public void setMeasure(boolean input) throws OLAPException {
 		throw new UnsupportedOperationException();
 	}
 
-	public Boolean getIsMeasure() {
-		return dimension.isMeasures() ? Boolean.TRUE : Boolean.FALSE;
+	public boolean isMeasure() {
+		return dimension.isMeasures();
 	}
 
 	public String getName() {
@@ -92,46 +92,18 @@ class MondrianJolapDimension extends ClassifierSupport implements javax.olap.met
 	}
 
 	public Collection getHierarchy() {
-		return hierarchy.get();
-	}
-
-	public void setHierarchy(Collection input) throws OLAPException {
-		hierarchy.set(input);
-	}
-
-	public void removeHierarchy(javax.olap.metadata.Hierarchy input) throws OLAPException {
-		hierarchy.remove(input);
+		return hierarchy;
 	}
 
 	public Collection getMemberSelection() {
-		return memberSelection.get();
+		return memberSelection;
 	}
 
-	public void setMemberSelection(Collection input) throws OLAPException {
-		memberSelection.set(input);
+    public Collection getCubeDimensionAssociation() throws OLAPException {
+        return cubeDimensionAssociation;
 	}
 
-	public void removeMemberSelection(MemberSelection input) throws OLAPException {
-		memberSelection.remove(input);
-	}
-
-	public void setCubeDimensionAssociation(Collection input) throws OLAPException {
-		cubeDimensionAssociation.set(input);
-	}
-
-	public Collection getCubeDimensionAssociation() throws OLAPException {
-		return cubeDimensionAssociation.get();
-	}
-
-	public void addCubeDimensionAssociation(CubeDimensionAssociation input) throws OLAPException {
-		cubeDimensionAssociation.add(input);
-	}
-
-	public void removeCubeDimensionAssociation(CubeDimensionAssociation input) throws OLAPException {
-		cubeDimensionAssociation.remove(input);
-	}
-
-	public void setDisplayDefault(javax.olap.metadata.Hierarchy input) throws OLAPException {
+    public void setDisplayDefault(javax.olap.metadata.Hierarchy input) throws OLAPException {
 		this.displayDefault = input;
 	}
 
@@ -142,6 +114,10 @@ class MondrianJolapDimension extends ClassifierSupport implements javax.olap.met
 	public Schema getSchema() throws OLAPException {
 		return schema;
 	}
+
+    public void setSchema(Schema value) throws OLAPException {
+        schema = value;
+    }
 }
 
 // End MondrianJolapDimension.java

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -11,13 +11,12 @@
 */
 package mondrian.jolap;
 
-import javax.olap.query.querycoremodel.DimensionView;
-import java.util.List;
-import java.util.Collection;
-
 /**
- * A <code>Relationship</code> is ...
+ * Defines an association between two classes.
  *
+ * <p>Instances of a relationship are held in {@link RelationshipList} or
+ * {@link OrderedRelationshipList}.
+ * 
  * @author jhyde
  * @since Dec 24, 2002
  * @version $Id$

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -13,15 +13,16 @@ package mondrian.jolap;
 
 import mondrian.olap.Dimension;
 
+import javax.olap.OLAPException;
 import javax.olap.metadata.Cube;
 import javax.olap.metadata.CubeDimensionAssociation;
-import javax.olap.metadata.Schema;
 import javax.olap.metadata.Hierarchy;
-import javax.olap.OLAPException;
+import javax.olap.metadata.Schema;
 import java.util.Collection;
 
 /**
- * A <code>MondrianJolapCube</code> is ...
+ * Implementation of {@link Cube JOLAP Cube} based upon a
+ * {@link mondrian.olap.Cube Mondrian Cube}.
  *
  * @author jhyde
  * @since Dec 25, 2002
@@ -54,30 +55,33 @@ public class MondrianJolapCube extends ClassifierSupport implements Cube {
 	}
 
 	// object model methods
-
-	public Boolean getIsVirtual() throws OLAPException {
+    public boolean isVirtual() throws OLAPException {
 		throw new UnsupportedOperationException();
 	}
 
-	public void setIsVirtual(Boolean input) throws OLAPException {
+    public void setVirtual(boolean value) throws OLAPException {
 		throw new UnsupportedOperationException();
-	}
-
-	public void setCubeDimensionAssociation(Collection input) throws OLAPException {
-		cubeDimensionAssociation.set(input);
 	}
 
 	public Collection getCubeDimensionAssociation() throws OLAPException {
-		return cubeDimensionAssociation.get();
-	}
-
-	public void removeCubeDimensionAssociation(CubeDimensionAssociation input) throws OLAPException {
-		cubeDimensionAssociation.remove(input);
+        return cubeDimensionAssociation;
 	}
 
 	public Schema getSchema() throws OLAPException {
 		return schema;
 	}
+
+    public void setSchema(Schema value) throws OLAPException {
+        schema = value;
+    }
+
+    public boolean isAbstract() {
+        throw new UnsupportedOperationException();
+    }
+
+    public void setAbstract(boolean value) {
+        throw new UnsupportedOperationException();
+    }
 }
 
 class MondrianCubeDimensionAssociation extends ClassifierSupport
@@ -109,5 +113,17 @@ class MondrianCubeDimensionAssociation extends ClassifierSupport
 	public Hierarchy getCalcHierarchy() throws OLAPException {
 		throw new UnsupportedOperationException();
 	}
+
+    public boolean isAbstract() {
+        throw new UnsupportedOperationException();
+    }
+
+    public void setAbstract(boolean value) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void setCube(Cube value) throws OLAPException {
+        cube = (MondrianJolapCube) value;
+    }
 }
 // End MondrianJolapCube.java

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -13,13 +13,13 @@ package mondrian.jolap;
 
 import mondrian.olap.Exp;
 
-import javax.olap.query.dimensionfilters.HierarchyFilter;
-import javax.olap.query.enumerations.HierarchyFilterType;
 import javax.olap.OLAPException;
 import javax.olap.metadata.Hierarchy;
+import javax.olap.query.dimensionfilters.HierarchyFilter;
+import javax.olap.query.enumerations.HierarchyFilterType;
 
 /**
- * A <code>MondrianHierarchyFilter</code> is ...
+ * Implementation of {@link HierarchyFilter}.
  *
  * @author jhyde
  * @since Dec 24, 2002
@@ -42,7 +42,7 @@ class MondrianHierarchyFilter extends MondrianDimensionFilter
 	private Exp _convert() throws OLAPException {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	// object model methods
 
 	public HierarchyFilterType getHierarchyFilterType() throws OLAPException {

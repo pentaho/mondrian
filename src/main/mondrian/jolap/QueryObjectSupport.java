@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -11,15 +11,15 @@
 */
 package mondrian.jolap;
 
+import javax.olap.OLAPException;
+import javax.olap.query.enumerations.SelectedObjectType;
+import javax.olap.query.enumerations.SelectedObjectTypeEnum;
 import javax.olap.query.querycoremodel.QueryObject;
 import javax.olap.query.querycoremodel.SelectedObject;
 import javax.olap.query.querytransaction.QueryTransaction;
-import javax.olap.query.enumerations.SelectedObjectType;
-import javax.olap.query.enumerations.SelectedObjectTypeEnum;
-import javax.olap.OLAPException;
 
 /**
- * A <code>QueryObjectSupport</code> is ...
+ * Abstract implementation of {@link QueryObject}.
  *
  * @author jhyde
  * @since Dec 24, 2002
@@ -33,8 +33,8 @@ abstract class QueryObjectSupport extends RefObjectSupport implements QueryObjec
 	}
 
 	/**
-	 * Factory method for creating {@link SelectedObject}s:<ul>
-	 * <li>{@link SelectedObjectTypeEnum#ATTRIBUTEREFERENCE} yields
+	 * Factory method for creating {@link SelectedObject} objects:<ul>
+	 * <li>{@link SelectedObjectTypeEnum#ATTRIBUTE_REFERENCE} yields
 	 *     {@link MondrianAttributeReference}</li>
 	 * </ul>
  	 *
@@ -45,7 +45,7 @@ abstract class QueryObjectSupport extends RefObjectSupport implements QueryObjec
 	 */
 	static SelectedObject createSelectedObject(
 			MondrianDimensionView dimensionView, SelectedObjectType type) {
-		if (type == SelectedObjectTypeEnum.ATTRIBUTEREFERENCE) {
+		if (type == SelectedObjectTypeEnum.ATTRIBUTE_REFERENCE) {
 			return new MondrianAttributeReference(dimensionView);
 		} else {
 			throw new UnsupportedOperationException("Unknown type " + type);

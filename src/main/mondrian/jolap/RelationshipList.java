@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -13,14 +13,12 @@ package mondrian.jolap;
 
 import mondrian.olap.Util;
 
-import javax.olap.cursor.CubeCursor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 /**
- * A <code>RelationshipList</code> is ...
+ * Represents the instances of a relationship.
  *
  * @author jhyde
  * @since Dec 24, 2002
@@ -42,11 +40,7 @@ class RelationshipList extends ArrayList {
 		}
 	}
 
-	public List get() {
-		return this;
-	}
-
-	public Object addNew(Object o) {
+    public Object addNew(Object o) {
 		add(o);
 		return o;
 	}

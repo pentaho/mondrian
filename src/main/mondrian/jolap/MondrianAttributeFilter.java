@@ -11,17 +11,16 @@
 */
 package mondrian.jolap;
 
-import org.omg.cwm.objectmodel.core.Attribute;
+import mondrian.olap.*;
+import org.omg.java.cwm.objectmodel.core.Attribute;
 
 import javax.olap.OLAPException;
 import javax.olap.query.dimensionfilters.AttributeFilter;
 import javax.olap.query.enumerations.OperatorType;
 import javax.olap.query.enumerations.OperatorTypeEnum;
 
-import mondrian.olap.*;
-
 /**
- * A <code>MondrianAttributeFilter</code> is ...
+ * Implementation of {@link AttributeFilter}.
  *
  * @author jhyde
  * @since Dec 24, 2002

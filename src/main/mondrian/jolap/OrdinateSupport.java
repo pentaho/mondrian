@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -11,15 +11,16 @@
 */
 package mondrian.jolap;
 
-import javax.olap.query.querycoremodel.Ordinate;
+import javax.olap.OLAPException;
 import javax.olap.query.calculatedmembers.CalculatedMember;
 import javax.olap.query.calculatedmembers.OperatorInput;
 import javax.olap.query.enumerations.OperatorInputType;
-import javax.olap.OLAPException;
+import javax.olap.query.querycoremodel.Ordinate;
 import java.util.Collection;
+import java.util.List;
 
 /**
- * A <code>OrdinateSupport</code> is ...
+ * Abtract implementation of {@link Ordinate}.
  *
  * @author jhyde
  * @since Dec 24, 2002
@@ -30,27 +31,7 @@ abstract class OrdinateSupport extends QueryObjectSupport implements Ordinate {
 		super(false);
 	}
 
-	public void setCalculatedMember(Collection input) throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
-
-	public Collection getCalculatedMember() throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
-
-	public void removeCalculatedMember(CalculatedMember input) throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
-
-	public void setOperatorInputs(Collection input) throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
-
-	public Collection getOperatorInputs() throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
-
-	public void removeOperatorInputs(OperatorInput input) throws OLAPException {
+    public List getCalculatedMember() throws OLAPException {
 		throw new UnsupportedOperationException();
 	}
 
@@ -65,6 +46,10 @@ abstract class OrdinateSupport extends QueryObjectSupport implements Ordinate {
 	public CalculatedMember createCalculatedMemberAfter(CalculatedMember member) throws OLAPException {
 		throw new UnsupportedOperationException();
 	}
+
+    public Collection getOperatorInput() throws OLAPException {
+        throw new UnsupportedOperationException();
+    }
 
 	public OperatorInput createOperatorInput(OperatorInputType type) throws OLAPException {
 		throw new UnsupportedOperationException();

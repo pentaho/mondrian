@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -11,14 +11,14 @@
 */
 package mondrian.jolap;
 
-import javax.olap.metadata.Level;
-import javax.olap.metadata.HierarchyLevelAssociation;
-import javax.olap.metadata.Dimension;
 import javax.olap.OLAPException;
+import javax.olap.metadata.Dimension;
+import javax.olap.metadata.Level;
 import java.util.Collection;
 
 /**
- * A <code>MondrianJolapLevel</code> is ...
+ * Implementation of {@link Level JOLAP Level} based upon a
+ * {@link mondrian.olap.Level Mondrian Level}.
  *
  * @author jhyde
  * @since Dec 24, 2002
@@ -30,27 +30,20 @@ class MondrianJolapLevel extends ClassifierSupport implements Level {
 
 	public MondrianJolapLevel(mondrian.olap.Level level, Dimension dimension) {
 		this.level = level;
-	}
-
-	public void setHierarchyLevelAssociation(Collection input) throws OLAPException {
-		throw new UnsupportedOperationException();
+        this.dimension = dimension;
 	}
 
 	public Collection getHierarchyLevelAssociation() throws OLAPException {
 		throw new UnsupportedOperationException();
 	}
 
-	public void addHierarchyLevelAssociation(HierarchyLevelAssociation input) throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
-
-	public void removeHierarchyLevelAssociation(HierarchyLevelAssociation input) throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
-
-	public Dimension getDimension() throws OLAPException {
+    public Dimension getDimension() throws OLAPException {
 		return dimension;
 	}
+
+    public void setDimension(Dimension value) throws OLAPException {
+        dimension = value;
+    }
 }
 
 // End MondrianJolapLevel.java
