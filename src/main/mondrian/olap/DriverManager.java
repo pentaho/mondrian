@@ -45,16 +45,16 @@ public class DriverManager {
 				return (Connection) constructor.newInstance(new Object[] {
 					sConnect, sCatalog, new Boolean(fresh)});
 			} catch (IllegalAccessException e) {
-				throw Util.getRes().newInternal(e, "while creating " + clazz);
+				throw Util.getRes().newInternal("while creating " + clazz, e);
 			} catch (NoSuchMethodException e) {
-				throw Util.getRes().newInternal(e, "while creating " + clazz);
+				throw Util.getRes().newInternal("while creating " + clazz, e);
 			} catch (InstantiationException e) {
-				throw Util.getRes().newInternal(e, "while creating " + clazz);
+				throw Util.getRes().newInternal("while creating " + clazz, e);
 			} catch (InvocationTargetException e) {
-				throw Util.getRes().newInternal(e, "while creating " + clazz);
+				throw Util.getRes().newInternal("while creating " + clazz, e);
 			}
 		} catch (ClassNotFoundException e) {
-			throw Util.getRes().newInternal(e, "while connecting to " + sConnect);
+			throw Util.getRes().newInternal("while connecting to " + sConnect, e);
 		}
 	}
 }

@@ -174,9 +174,9 @@ abstract class Util {
 		return s;
 	}
 
-	/** Does not modify the original string */
-	static String replace(String s,String find,String replace)
-	{
+	/** Returns <code>s</code> with every instance of <code>find</code>
+	 * converted to <code>replace</code>. */
+	static String replace(String s,String find,String replace) {
 		// let's be optimistic
 		int found = s.indexOf(find);
 		if (found == -1) {
@@ -201,6 +201,46 @@ abstract class Util {
 		return sb.toString();
 	}
 
+	/** Return <code>val</code> in double-quotes, suitable as a string in a
+	 * Java or JScript program.
+	 *
+	 * @param val the value
+	 * @param nullMeansNull whether to print a null value as <code>null</code>
+	 *   (the default), as opposed to <code>""</code>
+	 */
+	static String quoteForJava(String val,boolean nullMeansNull)
+	{
+		if (val == null) {
+			return nullMeansNull ? "null" : "";
+		}
+		String s0;
+		s0 = replace(val, "\\", "\\\\");
+		s0 = replace(val, "\"", "\\\"");
+		s0 = replace(s0, "\n\r", "\\n");
+		s0 = replace(s0, "\n", "\\n");
+		s0 = replace(s0, "\r", "\\r");
+		return "\"" + s0 + "\"";
+	}
+
+	static String quoteForJava(String val)
+	{
+		return quoteForJava(val,true);
+	}
+
+	/**
+	 * Returns a string quoted so that it can appear in a resource file.
+	 */
+	static String quoteForProperties(String val) {
+		String s0;
+		s0 = replace(val, "\\", "\\\\");
+//		s0 = replace(val, "\"", "\\\"");
+//		s0 = replace(s0, "'", "\\'");
+		s0 = replace(s0, "\n\r", "\\n");
+		s0 = replace(s0, "\n", "\\n");
+		s0 = replace(s0, "\r", "\\r");
+		s0 = replace(s0, "\t", "\\t");
+		return s0;
+	}
 	/**
 	 * Converts a chain of {@link Throwable}s into an array.
 	 **/

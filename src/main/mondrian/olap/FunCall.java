@@ -157,7 +157,7 @@ public class FunCall extends ExpBase
 				} else if (args[j] instanceof Hierarchy) {
 					// nothing
 				} else {
-					throw Util.getRes().newMdxFuncNotHier(j+1, fun);
+					throw Util.getRes().newMdxFuncNotHier(new Integer(j+1), fun);
 				}
 			}
 		}

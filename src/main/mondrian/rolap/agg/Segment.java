@@ -215,7 +215,7 @@ public class Segment implements CachePool.Cacheable
 			sqlQuery = new SqlQuery(
 				star.getJdbcConnection().getMetaData());
 		} catch (SQLException e) {
-			throw Util.getRes().newInternal(e, "while loading segment");
+			throw Util.getRes().newInternal("while loading segment", e);
 		}
 		// add constraining dimensions
 		for (int i = 0; i < arity; i++) {
@@ -306,7 +306,7 @@ public class Segment implements CachePool.Cacheable
 			return data;
 		} catch (SQLException e) {
 			throw Util.getRes().newInternal(
-				e, "while loading segment; sql=[" + sql + "]");
+					"while loading segment; sql=[" + sql + "]", e);
 		} finally {
 			try {
 				if (resultSet != null) {

@@ -103,7 +103,7 @@ public class RolapStar {
 		try {
 			sqlQuery = new SqlQuery(jdbcConnection.getMetaData());
 		} catch (SQLException e) {
-			throw Util.getRes().newInternal(e, "while computing single cell");
+			throw Util.getRes().newInternal("while computing single cell", e);
 		}
 		// add measure
 		Util.assertTrue(measure.table == factTable);
@@ -139,7 +139,7 @@ public class RolapStar {
 			return o;
 		} catch (SQLException e) {
 			throw Util.getRes().newInternal(
-				e, "while computing single cell; sql=[" + sql + "]");
+					"while computing single cell; sql=[" + sql + "]", e);
 		} finally {
 			try {
 				if (resultSet != null) {
@@ -222,9 +222,8 @@ public class RolapStar {
 						table.star.jdbcConnection.getMetaData());
 				} catch (SQLException e) {
 					throw Util.getRes().newInternal(
-						e,
-						"while counting distinct values of column '" +
-						expression.getGenericExpression() + "'");
+							"while counting distinct values of column '" +
+							expression.getGenericExpression() + "'", e);
 				}
 				if (sqlQuery.isAccess()) {
 					// Access doesn't like 'count(distinct)', so use,
@@ -254,8 +253,9 @@ public class RolapStar {
 					cardinality = resultSet.getInt(1);
 				} catch (SQLException e) {
 					throw Util.getRes().newInternal(
-						e, "while counting distinct values of column '" +
-						expression.getGenericExpression() + "'; sql=[" + sql + "]");
+							"while counting distinct values of column '" +
+							expression.getGenericExpression() + "'; sql=[" + sql + "]",
+							e);
 				} finally {
 					try {
 						if (resultSet != null) {

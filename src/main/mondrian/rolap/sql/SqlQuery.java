@@ -113,7 +113,7 @@ public class SqlQuery
 		try {
 			q = databaseMetaData.getIdentifierQuoteString();
 		} catch (SQLException e) {
-			throw Util.getRes().newInternal(e, "while quoting identifier");
+			throw Util.getRes().newInternal("while quoting identifier", e);
 		}
 		if (q == null || q.trim().equals("")) {
 			if (isMySQL()) {
@@ -160,7 +160,7 @@ public class SqlQuery
 			return productName;
 		} catch (SQLException e) {
 			throw Util.getRes().newInternal(
-				e, "while detecting database product");
+					"while detecting database product", e);
 		}
 	}
 	public boolean isOracle() {

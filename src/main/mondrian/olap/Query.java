@@ -79,14 +79,6 @@ public class Query extends QueryPart implements NameResolver {
 		resolveParameters();  //calculate parameter's usage in query
 	}
 
-	/**
-	 * @deprecated use Util#getRes
-	 **/
-	public static MondrianResource getError()
-	{
-		return Util.getRes();
-	}
-
 	public Object clone() throws CloneNotSupportedException
 	{
 		return new Query(
@@ -101,7 +93,7 @@ public class Query extends QueryPart implements NameResolver {
 		try {
 			return (Query) clone();
 		} catch (CloneNotSupportedException e) {
-			throw getError().newInternal(e, "Query.clone() failed");
+			throw Util.getRes().newInternal("Query.clone() failed", e);
 		}
 	}
 
@@ -435,7 +427,7 @@ public class Query extends QueryPart implements NameResolver {
 			}
 			return;
 		}
-		throw getError().newInternal(
+		throw Util.getRes().newInternal(
 			"Query child ordinal " + i0 + " out of range (there are " +
 			axes.length + " axes, " + formulas.length + " formula)");
 	}
@@ -768,7 +760,7 @@ public class Query extends QueryPart implements NameResolver {
 		Parameter param = lookupParam( sParameter );
 		if (param == null)
 		{
-			throw getError().newMdxParamNotFound(sParameter);
+			throw Util.getRes().newMdxParamNotFound(sParameter);
 		}
 		param.setValue(value, this);
 	}
@@ -794,12 +786,12 @@ public class Query extends QueryPart implements NameResolver {
 		Walker walker = findHierarchy(hierarchy.getHierarchy());
 		if (fromAxis == noAxis) {
 			if (walker != null) {
-				throw getError().newMdxHierarchyUsed(hierarchy.getUniqueName());
+				throw Util.getRes().newMdxHierarchyUsed(hierarchy.getUniqueName());
 			}
 			e = null;
 		} else {
 			if (walker == null) {
-				throw getError().newMdxHierarchyNotUsed(hierarchy.getUniqueName());
+				throw Util.getRes().newMdxHierarchyNotUsed(hierarchy.getUniqueName());
 			}
 
 			// Remove from current position.
@@ -866,7 +858,7 @@ public class Query extends QueryPart implements NameResolver {
 						iGrandParentOrdinal, (QueryPart) otherExp);
 				}
 			} else {
-				throw getError().newInternal(
+				throw Util.getRes().newInternal(
 					"hierarchy starts under " + parent.toString());
 			}
 		}
@@ -909,7 +901,7 @@ public class Query extends QueryPart implements NameResolver {
 			break;
 
 		default:
-			throw getError().newInternal("bad axis code: " + toAxis);
+			throw Util.getRes().newInternal("bad axis code: " + toAxis);
 		}
 	}
 
@@ -928,15 +920,16 @@ public class Query extends QueryPart implements NameResolver {
 		// Check that there can be only one filter per hierarchy applied on
 		// slicer.
 		if (axis == slicerAxis && members.length > 1) {
-			throw getError().newInternal(
+			throw Util.getRes().newInternal(
 				"there can be only one filter per hierarchy on slicer");
 		}
 		// Check that members are all in the right hierarchy.
 		for (int iMember = 0; iMember < members.length; iMember++) {
-			if (!members[iMember].getHierarchy().equals(hierarchy))
-				throw getError().newInternal(
+			if (!members[iMember].getHierarchy().equals(hierarchy)) {
+				throw Util.getRes().newInternal(
 					"member " + members[iMember] +
 					" is not in hierarchy " + hierarchy);
+			}
 		}
 
 		Walker walker = findHierarchy(hierarchy.getHierarchy());
@@ -995,8 +988,7 @@ public class Query extends QueryPart implements NameResolver {
 	public void toggleDrillState(Member member)
 	{
 		Walker walker = findHierarchy(member.getHierarchy());
-		if (walker == null)
-			throw getError().newInternal(
+		if (walker == null) throw Util.getRes().newInternal(
 				"member's dimension is not used: " + member.toString());
 
 		// If 'e' is our expression, then
@@ -1040,7 +1032,7 @@ public class Query extends QueryPart implements NameResolver {
 		case descDirection: sDirection = "DESC"; break;
 		case noneDirection: /*we already removed the sort*/ return;
 		default:
-			throw getError().newInternal("bad direction code " + direction);
+				throw Util.getRes().newInternal("bad direction code " + direction);
 		}
 
 		Exp e = axes[axis].set;
@@ -1100,11 +1092,9 @@ public class Query extends QueryPart implements NameResolver {
 		Util.assertTrue(fName != null, "TopBottomN function name" +
 						  " can not be null");
 		Util.assertTrue(axis < axes.length, "Bad axis code");
-		if (members.length == 0)
-			throw getError().newMdxTopBottomNRequireSortMember();
+		if (members.length == 0) throw Util.getRes().newMdxTopBottomNRequireSortMember();
 
-		if (!isValidTopBottomNName(fName))
-			throw getError().newMdxTopBottomInvalidFunctionName(fName);
+		if (!isValidTopBottomNName(fName)) throw Util.getRes().newMdxTopBottomInvalidFunctionName(fName);
 
 		// Find and remove any existing sorts on this axis.
 		removeSortFromAxis(axis);
@@ -1169,7 +1159,7 @@ public class Query extends QueryPart implements NameResolver {
 				Walker walker = findHierarchy( noAccessHierarchies[i] );
 				if (walker != null){
 					// noAccess hierarchy is used; reject the query
-					throw getError().newUserDoesNotHaveRightsTo(
+					throw Util.getRes().newUserDoesNotHaveRightsTo(
 						noAccessHierarchies[i].getUniqueName());
 				}
 			}
@@ -1286,7 +1276,7 @@ public class Query extends QueryPart implements NameResolver {
 		} else {
 			// limitedMember and foundMember are not inheriting each other
 			// example. [OR].[Seattle] and [CA].[San Jose]
-			throw getError().newUserDoesNotHaveRightsTo(
+			throw Util.getRes().newUserDoesNotHaveRightsTo(
 				foundMember.getUniqueName());
 		}
 	}
@@ -1358,8 +1348,7 @@ public class Query extends QueryPart implements NameResolver {
 						break;
 					}
 				}
-				if (!found)
-					throw getError().newMdxParamNotFound(
+				if (!found) throw Util.getRes().newMdxParamNotFound(
 						((Parameter) queryElement).name);
 			}
 		}
@@ -1499,8 +1488,8 @@ public class Query extends QueryPart implements NameResolver {
 				// mdxElement is used in the query. lets find on on which axis
 				// or formula
 				String formulaType = formula.isMember() ?
-					getError().getCalculatedMember() :
-					getError().getCalculatedSet();
+					Util.getRes().getCalculatedMember() :
+					Util.getRes().getCalculatedSet();
 
 				int i = 0;
 				Object parent = walker.getAncestor(i);
@@ -1508,19 +1497,19 @@ public class Query extends QueryPart implements NameResolver {
 				while (parent != null && grandParent != null) {
 					if (grandParent instanceof Query) {
 						if (parent instanceof Axis) {
-							throw getError().newMdxCalculatedFormulaUsedOnAxis(
+							throw Util.getRes().newMdxCalculatedFormulaUsedOnAxis(
 								formulaType, uniqueName,
 								((QueryAxis) parent).axisName);
 						} else if (parent instanceof Formula) {
 							String parentFormulaType =
 								((Formula) parent).isMember() ?
-								getError().getCalculatedMember() :
-								getError().getCalculatedSet();
-							throw getError().newMdxCalculatedFormulaUsedInFormula(
+								Util.getRes().getCalculatedMember() :
+								Util.getRes().getCalculatedSet();
+							throw Util.getRes().newMdxCalculatedFormulaUsedInFormula(
 								formulaType, uniqueName, parentFormulaType,
 								((Formula) parent).getUniqueName());
 						} else {
-							throw getError().newMdxCalculatedFormulaUsedOnSlicer(
+							throw Util.getRes().newMdxCalculatedFormulaUsedOnSlicer(
 								formulaType, uniqueName);
 						}
 					}
@@ -1528,7 +1517,7 @@ public class Query extends QueryPart implements NameResolver {
 					parent = walker.getAncestor(i);
 					grandParent = walker.getAncestor(i+1);
 					}
-				throw getError().newMdxCalculatedFormulaUsedInQuery(
+				throw Util.getRes().newMdxCalculatedFormulaUsedInQuery(
 					formulaType, uniqueName, this.toWebUIMdx());
 			}
 		}
@@ -1559,8 +1548,7 @@ public class Query extends QueryPart implements NameResolver {
 	public void renameFormula(String uniqueName, String newName)
 	{
 		Formula formula = findFormula(uniqueName);
-		if (formula == null)
-			throw getError().newMdxFormulaNotFound(
+		if (formula == null) throw Util.getRes().newMdxFormulaNotFound(
 				"formula", uniqueName, toWebUIMdx());
 		formula.rename(newName);
 	}
@@ -1579,8 +1567,10 @@ public class Query extends QueryPart implements NameResolver {
 	/** finds axis by index and sets flag to show empty cells on that axis*/
 	public void setAxisShowEmptyCells(int axis, boolean showEmpty)
 	{
-		if (axis >= axes.length)
-			throw getError().newMdxAxisShowEmptyCellsNotSupported(axis);
+		if (axis >= axes.length) {
+			throw Util.getRes().newMdxAxisShowEmptyCellsNotSupported(
+					new Integer(axis));
+		}
 		axes[axis].nonEmpty = !showEmpty;
 	}
 
@@ -1668,7 +1658,7 @@ public class Query extends QueryPart implements NameResolver {
 	public Hierarchy[] getMdxHierarchiesOnAxis(int axis)
 	{
 		if (axis >= axes.length) {
-			throw getError().newMdxAxisShowSubtotalsNotSupported(axis);
+			throw Util.getRes().newMdxAxisShowSubtotalsNotSupported(new Integer(axis));
 		}
 		if (axis == Query.slicerAxis) {
 			return collectHierarchies((QueryPart) slicer);

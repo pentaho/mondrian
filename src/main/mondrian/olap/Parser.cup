@@ -43,7 +43,7 @@ parser code {:
 			return (Query) parse_tree.value;
 		} catch (Exception e) {
 			// "Error while parsing MDX statement '%1'"
-			throw Util.getRes().newWhileParsingMdx(e, sQuery);
+			throw Util.getRes().newWhileParsingMdx(sQuery, e);
 		} finally {
 			this.scanner = null;
 			this.mdxConnection = null;

@@ -214,8 +214,9 @@ public class RolapSchema implements Schema
 				e2 = e;
 			}
 			throw Util.getRes().newInternal(
-				e2, "while instantiating member reader '" +
-				xmlHierarchy.memberReaderClass);
+					"while instantiating member reader '" +
+					xmlHierarchy.memberReaderClass,
+					e2);
 		} else {
 			SqlMemberSource source = new SqlMemberSource(hierarchy);
 			int memberCount = source.getMemberCount();

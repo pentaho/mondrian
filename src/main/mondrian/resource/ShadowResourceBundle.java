@@ -144,7 +144,8 @@ public abstract class ShadowResourceBundle extends ResourceBundle {
 		if (locale == null) {
 			locale = Locale.getDefault();
 		}
-		return ResourceBundle.getBundle(baseName, locale);
+		ResourceBundle bundle = ResourceBundle.getBundle(baseName, locale);
+		return bundle;
 	}
 
 	/** Sets the locale for the current thread. Used by {@link

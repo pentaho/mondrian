@@ -60,9 +60,7 @@ public class RolapConnection extends ConnectionBase {
 				jdbcConnectString);
 		} catch (SQLException e) {
 			throw Util.getRes().newInternal(
-				e,
-				"while creating RolapSchema (" +
-				connectInfo.toString() + ")");
+					"while creating RolapSchema (" + connectInfo.toString() + ")", e);
 		}
 		if (schema == null && catalogName != null) {
 			// If RolapSchema.Pool.get were to call this with schema == null,

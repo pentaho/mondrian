@@ -294,7 +294,7 @@ public class Util extends mondrian.xom.XOMUtil
 	}
 
 	public static RuntimeException newInternal(Throwable e, String message) {
-		return getRes().newInternal(e, message);
+		return getRes().newInternal(message, e);
 	}
 
 	/** Creates a non-internal error. Currently implemented in terms of
@@ -306,7 +306,7 @@ public class Util extends mondrian.xom.XOMUtil
 	/** Creates a non-internal error. Currently implemented in terms of
 	 * internal errors, but later we will create resourced messages. **/
 	public static RuntimeException newError(Throwable e, String message) {
-		return getRes().newInternal(e, message);
+		return getRes().newInternal(message, e);
 	}
 
 	/**

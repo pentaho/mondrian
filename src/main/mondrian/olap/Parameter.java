@@ -215,10 +215,10 @@ public class Parameter extends ExpBase {
 
 	public void validate(Query q) {
 		if (nDefines != 1) {
-			throw q.getError().newMdxParamMultipleDef( name, nDefines );
+			throw MondrianResource.instance().newMdxParamMultipleDef(name, new Integer(nDefines));
 		}
 		if (!(defaultValue != null || currentValue != null)) {
-			throw q.getError().newMdxParamValueNotFound(name);
+			throw Util.getRes().newMdxParamValueNotFound(name);
 		}
 	}
 

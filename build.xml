@@ -55,6 +55,8 @@ ${java.dir}/mondrian/olap/ParserSym.java,
 ${java.dir}/mondrian/resource/ResourceDef.java,
 ${java.dir}/mondrian/olap/MondrianDef.java,
 ${java.dir}/mondrian/xom/MetaDef.java,
+${java.dir}/mondrian/olap/MondrianResource*.java,
+${java.dir}/mondrian/olap/MondrianResource*.properties,
 ${etc.dir}/mondrian/web/jsp/**/*.java"/>
   <property name="generated.lib.files" value="
 ${lib.dir}/mondrian.jar,
@@ -148,7 +150,7 @@ ${lib.dir}/xml-apis.jar"/>
 
   <target name="clean">
       <delete includeEmptyDirs="true" quiet="true">
-          <fileset dir="${classes.dir}" includes="**/*.class"/>
+          <fileset dir="${classes.dir}" includes="**/*.class,**/*.properties"/>
           <fileset dir="." includes="${generated.java.files},${generated.lib.files}"/>
       </delete>
   </target>
@@ -157,7 +159,24 @@ ${lib.dir}/xml-apis.jar"/>
     <mkdir dir="${classes.dir}"/>
   </target>
 
-  <target name="compile" depends="sniff,prepare,parser,def,compile.jsp.maybe,compile.java,copy.properties"/>
+  <target name="compile" depends="sniff,prepare,parser,compile.generator,generate.resources,def,compile.jsp.maybe,compile.java,copy.properties"/>
+
+  <target name="compile.generator">
+    <javac
+        srcdir="${java.dir}"
+        destdir="${classes.dir}"
+        debug="${project.build.debug}"
+        classpathref="project.classpath">
+      <include name="mondrian/resource/*.java" />
+    </javac>
+  </target>
+
+  <target name="generate.resources">
+    <java classpathref="project.classpath"
+        classname="mondrian.resource.ResourceGen" fork="yes">
+      <arg value="resource/MondrianResource_en.xml"/>
+    </java>
+  </target>
 
   <target name="compile.java">
     <javac

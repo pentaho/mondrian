@@ -12,6 +12,7 @@
 package mondrian.resource;
 
 import java.util.ResourceBundle;
+import java.text.MessageFormat;
 
 public class ResourceDefinition {
 	//int code;
@@ -41,7 +42,10 @@ public class ResourceDefinition {
 		}
 		public String toString() {
 			String message = bundle.getString(definition.key);
-			return Util.formatError(message, args);
+			MessageFormat format = new MessageFormat(message);
+			format.setLocale(bundle.getLocale());
+			String formattedMessage = format.format(args);
+			return formattedMessage;
 		}
 	}
 }

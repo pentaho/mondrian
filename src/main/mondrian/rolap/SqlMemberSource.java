@@ -100,8 +100,9 @@ class SqlMemberSource implements MemberReader
 			return resultSet.getInt(1);
 		} catch (SQLException e) {
 			throw Util.getRes().newInternal(
-				e, "while counting members of level '" + level + "'; sql=[" +
-				sql + "]");
+					"while counting members of level '" + level + "'; sql=[" +
+					sql + "]",
+					e);
 		} finally {
 			try {
 				if (resultSet != null) {
@@ -121,7 +122,7 @@ class SqlMemberSource implements MemberReader
 			return new SqlQuery(
 				jdbcConnection.getMetaData());
 		} catch (SQLException e) {
-			throw Util.getRes().newInternal(e, err);
+			throw Util.getRes().newInternal(err, e);
 		}
 	}
 
@@ -263,7 +264,7 @@ class SqlMemberSource implements MemberReader
 			return RolapUtil.toArray(list);
 		} catch (SQLException e) {
 			throw Util.getRes().newInternal(
-				e, "while building member cache; sql=[" + sql + "]");
+					"while building member cache; sql=[" + sql + "]", e);
 		} finally {
 			try {
 				if (resultSet != null) {
@@ -428,7 +429,7 @@ class SqlMemberSource implements MemberReader
 			return RolapUtil.toArray(list);
 		} catch (SQLException e) {
 			throw Util.getRes().newInternal(
-				e, "while building member cache; sql=[" + sql + "]");
+					"while building member cache; sql=[" + sql + "]", e);
 		} finally {
 			try {
 				if (resultSet != null) {
@@ -549,7 +550,7 @@ class SqlMemberSource implements MemberReader
 			}
 		} catch (SQLException e) {
 			throw Util.getRes().newInternal(
-				e, "while building member cache; sql=[" + sql + "]");
+					"while building member cache; sql=[" + sql + "]", e);
 		} finally {
 			try {
 				if (resultSet != null) {
