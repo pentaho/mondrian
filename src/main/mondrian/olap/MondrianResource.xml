@@ -19,7 +19,7 @@
 <resourceBundle
 	static="false"
 	locale="en_US"
-	exceptionClassName="mondrian.resource.ChainableRuntimeException">
+	exceptionClassName="java.lang.RuntimeException">
 
 <!-- ====================================================================== -->
 <!-- Internal errors 320,000 - 321,000 ==================================== -->

@@ -11,20 +11,18 @@
 */
 
 package mondrian.resource;
-import mondrian.xom.XOMException;
-import mondrian.xom.Parser;
-import mondrian.xom.XOMUtil;
 import mondrian.xom.DOMWrapper;
+import mondrian.xom.Parser;
+import mondrian.xom.XOMException;
+import mondrian.xom.XOMUtil;
 
 import java.io.*;
-import java.net.URL;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Locale;
-import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
-import java.rmi.RemoteException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Locale;
 
 /**
  * Miscellaneous utility methods for the <code>mondrian.resource</code>
@@ -350,9 +348,6 @@ abstract class Util {
 	private static final Class[] emptyClassArray = new Class[0];
 
 	private static Throwable getCause(Throwable err) {
-		if (err instanceof ChainableThrowable) {
-			return ((ChainableThrowable) err).getCause();
-		}
 		if (err instanceof InvocationTargetException) {
 			return ((InvocationTargetException) err).getTargetException();
 		}
@@ -397,13 +392,7 @@ abstract class Util {
 				pw.println();
 				pw.print("Caused by: ");
 			}
-			if (throwable instanceof ChainableThrowable) {
-				pw.print(throwable.getMessage());
-				pw.print(" at ");
-				throwable.printStackTrace(pw);
-			} else {
-				pw.print(throwable.toString());
-			}
+            pw.print(throwable.toString());
 		}
 		return sw.toString();
 	}
@@ -433,7 +422,8 @@ abstract class Util {
 	}
 
 	/**
-	 * So we know to avoid recursively calling {@link printStackTrace(PrintWriter)}.
+	 * So we know to avoid recursively calling
+     * {@link #printStackTrace(Throwable,PrintWriter)}.
 	 */
 	static class DummyPrintWriter extends PrintWriter {
 		public DummyPrintWriter(Writer out) {
@@ -442,7 +432,8 @@ abstract class Util {
 	}
 
 	/**
-	 * So we know to avoid recursively calling {@link printStackTrace(PrintStream)}.
+	 * So we know to avoid recursively calling
+     * {@link #printStackTrace(Throwable,PrintStream)}.
 	 */
 	static class DummyPrintStream extends PrintStream {
 		public DummyPrintStream(OutputStream out) {

@@ -11,13 +11,12 @@
 */
 
 package mondrian.xom;
-import mondrian.resource.ChainableException;
 
 /**
  * XOMException extends Exception and provides detailed error messages for
  * xom-specific exceptions.
  */
-public class XOMException extends ChainableException {
+public class XOMException extends Exception {
 
 	/**
 	 * Constructs a mining exception with no message.

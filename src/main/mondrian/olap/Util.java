@@ -11,16 +11,16 @@
 */
 
 package mondrian.olap;
-import mondrian.resource.ChainableThrowable;
-
-import java.io.*;
-import java.util.*;
-import java.net.URL;
-import java.net.MalformedURLException;
-
+import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import junit.framework.Test;
+
+import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
 
 /**
  * Utility functions used throughout mondrian. All methods are static.
@@ -495,31 +495,31 @@ public class Util extends mondrian.xom.XOMUtil
 		return MondrianResource.instance();
 	}
 
-	/**
-	 * Converts an error into an array of strings, the most recent error first.
-	 *
-	 * @param e the error; may be null. Errors are chained if the error
-	 *    implmements {@link ChainableThrowable}.
-	 **/
-	public static String[] convertStackToString(Throwable e)
-	{
-		Vector v = new Vector();
-		while (e != null) {
-			String sMsg = getErrorMessage(e);
-			v.addElement(sMsg);
-			if (e instanceof ChainableThrowable) {
-				e = e.getCause();
-			} else {
-				e = null;
-			}
-		}
-		String[] msgs = new String[v.size()];
-		v.copyInto(msgs);
-		return msgs;
-	}
+    /**
+     * Converts an error into an array of strings, the most recent error first.
+     *
+     * @param e the error; may be null. Errors are chained according to their
+     *    {@link Throwable#getCause cause}.
+     **/
+    public static String[] convertStackToString(Throwable e)
+    {
+        Vector v = new Vector();
+        while (e != null) {
+            String sMsg = getErrorMessage(e);
+            v.addElement(sMsg);
+            e = e.getCause();
+        }
+        String[] msgs = new String[v.size()];
+        v.copyInto(msgs);
+        return msgs;
+    }
 
 	/**
-	 * @see #getErrorMessage(Throwable,boolean)
+     * Constructs the message associated with an arbitrary Java error, making
+     * up one based on the stack trace if there is none. As
+     * {@link #getErrorMessage(Throwable,boolean)}, but does not print the
+     * class name if the exception is derived from {@link java.sql.SQLException}
+     * or is exactly a {@link java.lang.Exception}.
 	 **/
 	public static String getErrorMessage(Throwable err)
 	{
