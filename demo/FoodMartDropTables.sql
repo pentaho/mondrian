@@ -13,6 +13,7 @@ DROP TABLE customer;
 DROP TABLE days;
 DROP TABLE department;
 DROP TABLE employee;
+DROP TABLE employee_closure;
 DROP TABLE expense_fact;
 DROP TABLE inventory_fact_1997;
 DROP TABLE inventory_fact_1998;

@@ -793,35 +793,34 @@ and <code>employee_id</code> NOT NULL, and index them as follows:</p>
 </blockquote>
 
 <p>The table needs to be re-populated whenever the hierarchy changes, and it is 
-the application's responsibiltiy for doing so -- Mondrian does not do this! The 
-following pseudo-code shows how:</p>
+the application's responsibility to do so -- Mondrian does not do this! 
+Here is an example of a stored procedure that computes a closure table.</p>
 
-<blockquote>
+<blockquote><code><pre>
+  CREATE PROCEDURE close_employee()
+  BEGIN
+    DECLARE distance int;
+    TRUNCATE TABLE employee_closure;
+    SET distance = 0;
+    <i>-- seed closure with self-pairs (distance 0)</i>
+    INSERT INTO employee_closure (supervisor_id, employee_id, distance)
+      SELECT employee_id, employee_id, distance
+        FROM employee;
 
-	<p><code>TRUNCATE TABLE employee_closure;<br>
-	<br>
-	int distance = 0;<br>
-	INSERT INTO employee_closure (supervisor_id, employee_id, distance)<br>
-	&nbsp;&nbsp;&nbsp;
-	SELECT supervisor_id, employee_id, distance<br>
-	&nbsp;&nbsp;&nbsp;
-	FROM employee;<br>
-	<br>
-	do {<br>
-&nbsp;&nbsp;&nbsp; ++depth;<br>
-&nbsp; &nbsp; INSERT INTO employee_closure (supervisor_id, employee_id, distance)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SELECT employee_closure.supervisor_id, employee.employee_id<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FROM employee_closure,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; employee_closure<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; WHERE employee_closure.supervisor_id = employee.employee_id<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; AND employee_closure.distance = 
-	distance - 1;<br>
-	<br>
-&nbsp;&nbsp;&nbsp;&nbsp; if (no rows were inserted) {{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp; }<br>
-	}</code></p>
-</blockquote>
+    <i>-- for each pair (root, leaf) in the closure, 
+    -- add (root, leaf->child) from the base table</i>
+    REPEAT
+      SET distance = distance + 1;
+      INSERT INTO employee_closure (supervisor_id, employee_id, distance)
+        SELECT employee_closure.supervisor_id, employee.employee_id, distance
+          FROM employee_closure, employee
+            WHERE employee_closure.employee_id = employee.supervisor_id
+            AND employee_closure.distance = distance - 1;
+    UNTIL (ROW_COUNT() == 0))
+    END REPEAT
+  END
+</pre></code></blockquote>
+
 
 <h3><a name="Member_properties">Member properties</a></h3><p>Member properties are defined by the <code><a href="#XML_Property">&lt;Property&gt;</a></code element. You use them via the <code><i>member</i>.Properties(&quot;<i>propertyName</i>&quot;)</code> 
 function, for example::</p><blockquote>

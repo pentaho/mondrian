@@ -23,6 +23,10 @@ CREATE UNIQUE INDEX i_employee_id ON employee ( employee_id );
 CREATE        INDEX i_employee_department_id ON employee ( department_id );
 CREATE        INDEX i_employee_store_id ON employee ( store_id );
 CREATE        INDEX i_employee_supervisor_id ON employee ( supervisor_id );
+
+CREATE UNIQUE INDEX i_employee_closure ON employee_closure ( supervisor_id, employee_id );
+CREATE        INDEX i_employee_closure_emp ON employee_closure (employee_id );
+
 CREATE        INDEX i_expense_store_id ON expense_fact ( store_id );
 CREATE        INDEX i_expense_account_id ON expense_fact ( account_id );
 CREATE        INDEX i_expense_time_id ON expense_fact ( time_id );

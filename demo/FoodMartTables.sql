@@ -77,6 +77,10 @@ CREATE TABLE employee(
   marital_status VARCHAR NOT NULL,
   gender VARCHAR NOT NULL,
   management_role VARCHAR);
+CREATE TABLE employee_closure(
+  employee_id INTEGER NOT NULL,
+  supervisor_id INTEGER NOT NULL,
+  distance INTEGER);
 CREATE TABLE expense_fact(
   store_id INTEGER NOT NULL,
   account_id INTEGER NOT NULL,
