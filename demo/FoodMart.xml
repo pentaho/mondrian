@@ -182,10 +182,11 @@ lname
   -->
 	<Measure name="Customer Count" column="customer_id" aggregator="distinct count" formatString="#,###"/>
 	<CalculatedMember
-		name="Profit"
-		dimension="Measures"
-		formula="[Measures].[Store Sales]-[Measures].[Store Cost]"
-		formatString="#,###"/>
+			name="Profit"
+			dimension="Measures"
+			formula="[Measures].[Store Sales]-[Measures].[Store Cost]">
+		<MemberProperty name="FORMAT_STRING" value="$#,##0.00"/>
+    </CalculatedMember>
 </Cube>
 
 <Cube name="Warehouse">

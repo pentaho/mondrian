@@ -56,6 +56,16 @@ public interface Cube extends OlapElement {
 	 * access-control profile of role.
 	 */
 	SchemaReader getSchemaReader(Role role);
+
+    /**
+     * Creates a calculated member in this cube.
+     *
+     * <p>The XML string must be a <code>&lt;CalculatedMember/&gt;</code>
+     * element, as defined in <code>Mondrian.xml</code>.
+     *
+     * @param xml XML string
+     */
+    Member createCalculatedMember(String xml);
 }
 
 // End Cube.java

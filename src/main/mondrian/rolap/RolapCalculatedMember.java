@@ -43,7 +43,7 @@ class RolapCalculatedMember extends RolapMember {
 
     public Object getPropertyValue(String name) {
         if (name.equals(Property.PROPERTY_FORMULA)) {
-            return formula.getExpression();
+            return formula;
         }
         return super.getPropertyValue(name);
     }

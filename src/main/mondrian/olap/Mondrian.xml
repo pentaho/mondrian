@@ -98,9 +98,13 @@ Revision is $Id$
 	<!-- Cube ============================================================ -->
 	<Element type="Cube">
 		<Doc>
-todo:
-	</Doc>
-		<Attribute name="name" required="true"><Doc></Doc></Attribute>
+    		Definition of a cube.
+		</Doc>
+		<Attribute name="name" required="true">
+			<Doc>
+				Name of this cube.
+			</Doc>
+		</Attribute>
 		<Object name="fact" type="Relation" required="true">
 			<Doc>
 				The fact table is the source of all measures in this cube. If
@@ -110,7 +114,11 @@ todo:
 		</Object>
 		<Array name="dimensions" type="CubeDimension"><Doc></Doc></Array>
 		<Array name="measures" type="Measure"><Doc></Doc></Array>
-		<Array name="calculatedMembers" type="CalculatedMember"><Doc></Doc></Array>
+		<Array name="calculatedMembers" type="CalculatedMember">
+			<Doc>
+				Calculated members in this cube.
+			</Doc>
+		</Array>
 		<Code><![CDATA[
 			Dimension getDimension(Schema xmlSchema, String dimensionName) {
 				for (int i = 0; i < dimensions.length; i++) {
@@ -509,7 +517,7 @@ todo:
 		<Attribute name="name"><Doc></Doc></Attribute>
 		<Attribute name="column"><Doc></Doc></Attribute>
 		<Attribute name="type" default="String">
-			<Doc>todo:</Doc>
+			<Doc>Data type of this property</Doc>
 			<Value>String</Value>
 			<Value>Numeric</Value>
 			<Value>Boolean</Value>
@@ -589,6 +597,32 @@ todo:
 		<Attribute name="dimension" required="true">
 			<Doc>
 				Name of the dimension which this member belongs to.
+			</Doc>
+		</Attribute>
+		<Array name="memberProperties" type="MemberProperty" min="0"/>
+	</Element>
+
+	<Element type="MemberProperty">
+		<Doc>
+			Property of a calculated member defined against a cube.
+			It must have either an expression or a value.
+		</Doc>
+		<Attribute name="name" required="true">
+			<Doc>
+				Name of this member property.
+			</Doc>
+		</Attribute>
+		<Attribute name="expression">
+			<Doc>
+				MDX expression which defines the value of this property.
+				If the expression is a constant string, you could enclose it in
+				quotes, or just specify the 'value' attribute instead.
+			</Doc>
+		</Attribute>
+		<Attribute name="value">
+			<Doc>
+				Value of this property.
+				If the value is not constant, specify the 'expression' attribute instead.
 			</Doc>
 		</Attribute>
 	</Element>

@@ -1718,17 +1718,16 @@ public class Query extends QueryPart {
                 failIfNotFound, category);
             if (olapElement instanceof Member) {
                 Member member = (Member) olapElement;
-                final Exp exp = (Exp)
+                final Formula formula = (Formula)
                     member.getPropertyValue(Property.PROPERTY_FORMULA);
-                if (exp != null) {
+                if (formula != null) {
                     // This is a calculated member defined against the cube.
                     // Create a free-standing formula using the same
                     // expression, then use the member defined in that formula.
-                    final Formula formula =
-                        new Formula(names, exp, new MemberProperty[0]);
-                    formula.createElement(Query.this);
-                    formula.resolve(createResolver());
-                    olapElement = formula.getMdxMember();
+                    final Formula formulaClone = (Formula) formula.clone();
+                    formulaClone.createElement(Query.this);
+                    formulaClone.resolve(createResolver());
+                    olapElement = formulaClone.getMdxMember();
                 }
             }
             return olapElement;

@@ -12,6 +12,9 @@
 package mondrian.test;
 
 import junit.framework.Assert;
+import junit.framework.AssertionFailedError;
+import mondrian.olap.Cube;
+import mondrian.olap.Result;
 
 /**
  * Tests the expressions used for calculated members. Please keep in sync
@@ -28,7 +31,110 @@ public class TestCalculatedMembers extends FoodMartTestCase {
 
     public void testCalculatedMemberInCube() {
         String s = executeExpr("[Measures].[Profit]");
+        Assert.assertEquals("$339,610.90", s);
+    }
+
+    public void testCalculatedMemberInCubeViaApi() {
+        Cube salesCube = getSalesCube("Sales");
+        salesCube.createCalculatedMember(
+            "<CalculatedMember name='Profit2'" +
+            "  dimension='Measures'" +
+            "  formula='[Measures].[Store Sales]-[Measures].[Store Cost]'/>");
+
+        String s = executeExpr("[Measures].[Profit2]");
         Assert.assertEquals("339,610.90", s);
+
+        // should fail if member of same name exists
+        try {
+            salesCube.createCalculatedMember(
+                "<CalculatedMember name='Profit2'" +
+                "  dimension='Measures'" +
+                "  formula='[Measures].[Store Sales]-[Measures].[Store Cost]'/>");
+            throw new AssertionFailedError("expected error, got none");
+        } catch (RuntimeException e) {
+            final String msg = e.getMessage();
+            if (!msg.equals("Mondrian Error:Calculated member '[Measures].[Profit2]' already exists in cube 'Sales'")) {
+                throw e;
+            }
+        }
+    }
+
+    public void testCalculatedMemberInCubeWithProps() {
+        Cube salesCube = getSalesCube("Sales");
+
+        // member with a property
+        salesCube.createCalculatedMember(
+            "<CalculatedMember name='Profit3'" +
+            "  dimension='Measures'" +
+            "  formula='[Measures].[Store Sales]-[Measures].[Store Cost]'>" +
+            "    <MemberProperty name='FORMAT_STRING' value='#'/>" +
+            "</CalculatedMember>");
+
+        // note that result uses format string
+        Result result = TestContext.instance().executeFoodMart(
+            "select {[Measures].[Profit3]} on columns from Sales");
+        String s = result.getCell(new int[]{0}).getFormattedValue();
+        Assert.assertEquals("339611", s);
+
+        // should fail if member property has expr and value
+        try {
+            salesCube.createCalculatedMember(
+                "<CalculatedMember name='Profit4'" +
+                "  dimension='Measures'" +
+                "  formula='[Measures].[Store Sales]-[Measures].[Store Cost]'>" +
+                "    <MemberProperty name='FORMAT_STRING' />" +
+                "</CalculatedMember>");
+            throw new AssertionFailedError("expected error, got none");
+        } catch (RuntimeException e) {
+            final String msg = e.getMessage();
+            if (!msg.equals("Mondrian Error:Member property must have a value or an expression. (Property 'FORMAT_STRING' of member 'Profit4' of cube 'Sales'.)")) {
+                throw e;
+            }
+        }
+
+        // should fail if member property both expr and value
+        try {
+            salesCube.createCalculatedMember(
+                "<CalculatedMember name='Profit4'" +
+                "  dimension='Measures'" +
+                "  formula='[Measures].[Store Sales]-[Measures].[Store Cost]'>" +
+                "    <MemberProperty name='FORMAT_STRING' value='#' expression='\"#\"' />" +
+                "</CalculatedMember>");
+            throw new AssertionFailedError("expected error, got none");
+        } catch (RuntimeException e) {
+            final String msg = e.getMessage();
+            if (!msg.equals("Mondrian Error:Member property must not have both a value and an expression. (Property 'FORMAT_STRING' of member 'Profit4' of cube 'Sales'.)")) {
+                throw e;
+            }
+        }
+
+
+        // should fail if member property's expression is invalid
+        try {
+            salesCube.createCalculatedMember(
+                "<CalculatedMember name='Profit4'" +
+                "  dimension='Measures'" +
+                "  formula='[Measures].[Store Sales]-[Measures].[Store Cost]'>" +
+                "    <MemberProperty name='FORMAT_STRING' expression='1 + [FooBar]' />" +
+                "</CalculatedMember>");
+            throw new AssertionFailedError("expected error, got none");
+        } catch (RuntimeException e) {
+            final String msg = e.getMessage();
+            if (!msg.equals("Mondrian Error:Calculated member '[Measures].[Profit4]' in cube 'Sales' has bad formula")) {
+                throw e;
+            }
+        }
+    }
+
+    private Cube getSalesCube(String cubeName) {
+        Cube[] cubes = getConnection().getSchema().getSchemaReader().getCubes();
+        for (int i = 0; i < cubes.length; i++) {
+            Cube cube = cubes[i];
+            if (cube.getName().equals(cubeName)) {
+                return cube;
+            }
+        }
+        return null;
     }
 
     public void testCalculatedMemberInCubeAndQuery() {
@@ -46,12 +152,12 @@ public class TestCalculatedMembers extends FoodMartTestCase {
             "{[Time].[1997].[Q2].[4]}" + nl +
             "{[Time].[1997].[Q2].[5]}" + nl +
             "{[Time].[1997].[Q2].[6]}" + nl +
-            "Row #0: 25,766.55" + nl +
-            "Row #0: -4,289.24" + nl +
-            "Row #1: 26,673.73" + nl +
-            "Row #1: 907.18" + nl +
-            "Row #2: 27,261.76" + nl +
-            "Row #2: 588.03" + nl);
+            "Row #0: $25,766.55" + nl +
+            "Row #0: $-4,289.24" + nl +
+            "Row #1: $26,673.73" + nl +
+            "Row #1: $907.18" + nl +
+            "Row #2: $27,261.76" + nl +
+            "Row #2: $588.03" + nl);
     }
 
 	public void _testWhole() {

@@ -13,6 +13,9 @@
 package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.rolap.agg.AggregationManager;
+import mondrian.xom.DOMWrapper;
+import mondrian.xom.XOMException;
+import mondrian.xom.XOMUtil;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -116,13 +119,20 @@ class RolapCube extends CubeBase
 		init();
 	}
 
-    private Formula parseFormula(
-        String formulaString,
-        String memberUniqueName)
+    private Formula parseFormula(String formulaString,
+        String memberUniqueName, ArrayList propNames, ArrayList propExprs)
     {
         RolapConnection conn = schema.getInternalConnection();
-        String queryString = "WITH MEMBER " + memberUniqueName + " AS '" +
-            formulaString +  "' SELECT FROM " + getUniqueName();
+        StringBuffer buf = new StringBuffer(
+            "WITH MEMBER " + memberUniqueName + " AS " + formulaString);
+        assert propNames.size() == propExprs.size();
+        for (int i = 0; i < propNames.size(); i++) {
+            String name = (String) propNames.get(i);
+            String expr = (String) propExprs.get(i);
+            buf.append(", ").append(name).append(" = ").append(expr);
+        }
+        buf.append(" SELECT FROM " + getUniqueName());
+        final String queryString = buf.toString();
         final Query queryExp;
         try {
             queryExp = conn.parseQuery(queryString);
@@ -144,37 +154,75 @@ class RolapCube extends CubeBase
         // Load calculated members. (Cannot do this in the constructor, because
         // cannot parse the generated query, because the schema has not been
         // set in the cube at this point.)
-        ArrayList calculatedMemberList = new ArrayList();
         for (int i = 0; i < xmlCube.calculatedMembers.length; i++) {
-            MondrianDef.CalculatedMember calculatedMember =
+            MondrianDef.CalculatedMember xmlCalculatedMember =
                 xmlCube.calculatedMembers[i];
-            // Check there isn't another calc member with the same name and
-            // dimension.
-            for (int j = 0; j < calculatedMemberList.size(); j++) {
-                Formula formula = (Formula) calculatedMemberList.get(j);
-                if (formula.getName().equals(calculatedMember.name) &&
-                    formula.getMdxMember().getDimension().getName().equals(
-                        calculatedMember.dimension)) {
-                    throw MondrianResource.instance().newCalcMemberNotUnique(
-                        calculatedMember.name, calculatedMember.dimension, null);
-                }
-            }
-            final Dimension dimension =
-                (Dimension) lookupDimension(calculatedMember.dimension);
-            if (dimension == null) {
-                throw MondrianResource.instance().newCalcMemberHasBadDimension(
-                    calculatedMember.dimension, calculatedMember.name,
+            final Member member = createCalculatedMember(xmlCalculatedMember);
+            Util.discard(member);
+        }
+    }
+
+    private Member createCalculatedMember(
+        MondrianDef.CalculatedMember xmlCalcMember)
+    {
+        // Lookup dimension
+        final Dimension dimension =
+            (Dimension) lookupDimension(xmlCalcMember.dimension);
+        if (dimension == null) {
+            throw MondrianResource.instance().newCalcMemberHasBadDimension(
+                xmlCalcMember.dimension, xmlCalcMember.name,
+                getUniqueName());
+        }
+        // Check there isn't another calc member with the same name and
+        // dimension.
+        for (int i = 0; i < calculatedMembers.length; i++) {
+            Formula formula = calculatedMembers[i];
+            if (formula.getName().equals(xmlCalcMember.name) &&
+                formula.getMdxMember().getDimension().getName() ==
+                dimension.getName()) {
+                throw MondrianResource.instance().newCalcMemberNotUnique(
+                    Util.makeFqName(dimension, xmlCalcMember.name),
                     getUniqueName());
             }
-            final String memberUniqueName = Util.makeFqName(
-                dimension.getUniqueName(), calculatedMember.name);
-            final MemberProperty[] properties = new MemberProperty[0]; // TODO:
-            final Formula formula = parseFormula(calculatedMember.formula,
-                memberUniqueName);
-            calculatedMemberList.add(formula);
         }
-        this.calculatedMembers = (Formula[]) calculatedMemberList.toArray(
-            new Formula[calculatedMemberList.size()]);
+        final String memberUniqueName = Util.makeFqName(
+            dimension.getUniqueName(), xmlCalcMember.name);
+        final MondrianDef.MemberProperty[] xmlProperties =
+            xmlCalcMember.memberProperties;
+        final MemberProperty[] properties = new MemberProperty[xmlProperties.length];
+        ArrayList propNames = new ArrayList(),
+            propExprs = new ArrayList();
+        for (int i = 0; i < properties.length; i++) {
+            final MondrianDef.MemberProperty xmlProperty = xmlProperties[i];
+            if (xmlProperty.expression == null &&
+                xmlProperty.value == null) {
+                throw MondrianResource.instance()
+                    .newNeitherExprNorValueForCalcMemberProperty(
+                        xmlProperty.name,
+                        xmlCalcMember.name,
+                        getUniqueName());
+            }
+            if (xmlProperty.expression != null &&
+                xmlProperty.value != null) {
+                throw MondrianResource.instance()
+                    .newExprAndValueForMemberProperty(
+                        xmlProperty.name,
+                        xmlCalcMember.name,
+                        getUniqueName());
+            }
+            propNames.add(xmlProperty.name);
+            if (xmlProperty.expression != null) {
+                propExprs.add(xmlProperty.expression);
+            } else {
+                propExprs.add(Util.quoteForMdx(xmlProperty.value));
+            }
+        }
+        final Formula formula = parseFormula(xmlCalcMember.formula,
+            memberUniqueName, propNames, propExprs);
+
+        calculatedMembers = (Formula[])
+            RolapUtil.addElement(calculatedMembers, formula);
+        return formula.getMdxMember();
     }
 
     /**
@@ -430,11 +478,31 @@ class RolapCube extends CubeBase
 	}
 	
 	/**
-	 * get the measures hierarchy
+	 * Returns the the measures hierarchy.
 	 */
 	public Hierarchy getMeasuresHierarchy(){
 		return measuresHierarchy;
 	}
+
+    public Member createCalculatedMember(String xml) {
+        MondrianDef.CalculatedMember xmlCalcMember;
+        try {
+            final mondrian.xom.Parser xmlParser = XOMUtil.createDefaultParser();
+            final DOMWrapper def = xmlParser.parse(xml);
+            final String tagName = def.getTagName();
+            if (tagName.equals("CalculatedMember")) {
+                xmlCalcMember = new MondrianDef.CalculatedMember(def);
+            } else {
+                throw new XOMException("Got <" + tagName +
+                    "> when expecting <CalculatedMember>");
+            }
+        } catch (XOMException e) {
+            throw Util.newError(e,
+                "Error while creating calculated member from XML [" +
+                xml + "]");
+        }
+        return createCalculatedMember(xmlCalcMember);
+    }
 
     /**
      * Schema reader which works from the perspective of a particular cube

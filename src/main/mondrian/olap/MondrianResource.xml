@@ -341,9 +341,16 @@
 </exception>
 
 <exception id="40130" name="CalcMemberNotUnique">
-    <text>Calculated member ''{1}'' already exists in cube ''{2}''</text>
+    <text>Calculated member ''{0}'' already exists in cube ''{1}''</text>
 </exception>
 
+<exception id="40140" name="NeitherExprNorValueForCalcMemberProperty">
+    <text>Member property must have a value or an expression. (Property ''{0}'' of member ''{1}'' of cube ''{2}''.)</text>
+</exception>
+
+<exception id="40150" name="ExprAndValueForMemberProperty">
+    <text>Member property must not have both a value and an expression. (Property ''{0}'' of member ''{1}'' of cube ''{2}''.)</text>
+</exception>
 
 
 <!-- End of last error section ============================================ -->
