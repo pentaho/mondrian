@@ -125,7 +125,7 @@ WHERE "product"."product_class_id" = "product_class"."product_class_id"
 "fname" || ' ' || "lname"
 					</SQL>
 					<SQL dialect="access">
-[fname] + ' ' + [lname]
+fname + ' ' + lname
 					</SQL>
 					<SQL dialect="postgres">
 "fname" || ' ' || "lname"
