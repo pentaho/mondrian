@@ -67,7 +67,7 @@ public class TestCalculatedMembers extends FoodMartTestCase {
             "<CalculatedMember name='Profit3'" +
             "  dimension='Measures'" +
             "  formula='[Measures].[Store Sales]-[Measures].[Store Cost]'>" +
-            "    <MemberProperty name='FORMAT_STRING' value='#'/>" +
+            "    <CalculatedMemberProperty name='FORMAT_STRING' value='#'/>" +
             "</CalculatedMember>");
 
         // note that result uses format string
@@ -82,7 +82,7 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 "<CalculatedMember name='Profit4'" +
                 "  dimension='Measures'" +
                 "  formula='[Measures].[Store Sales]-[Measures].[Store Cost]'>" +
-                "    <MemberProperty name='FORMAT_STRING' />" +
+                "    <CalculatedMemberProperty name='FORMAT_STRING' />" +
                 "</CalculatedMember>");
             throw new AssertionFailedError("expected error, got none");
         } catch (RuntimeException e) {
@@ -98,7 +98,7 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 "<CalculatedMember name='Profit4'" +
                 "  dimension='Measures'" +
                 "  formula='[Measures].[Store Sales]-[Measures].[Store Cost]'>" +
-                "    <MemberProperty name='FORMAT_STRING' value='#' expression='\"#\"' />" +
+                "    <CalculatedMemberProperty name='FORMAT_STRING' value='#' expression='\"#\"' />" +
                 "</CalculatedMember>");
             throw new AssertionFailedError("expected error, got none");
         } catch (RuntimeException e) {
@@ -115,7 +115,7 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 "<CalculatedMember name='Profit4'" +
                 "  dimension='Measures'" +
                 "  formula='[Measures].[Store Sales]-[Measures].[Store Cost]'>" +
-                "    <MemberProperty name='FORMAT_STRING' expression='1 + [FooBar]' />" +
+                "    <CalculatedMemberProperty name='FORMAT_STRING' expression='1 + [FooBar]' />" +
                 "</CalculatedMember>");
             throw new AssertionFailedError("expected error, got none");
         } catch (RuntimeException e) {

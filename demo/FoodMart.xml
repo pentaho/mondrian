@@ -185,7 +185,7 @@ lname
 			name="Profit"
 			dimension="Measures"
 			formula="[Measures].[Store Sales]-[Measures].[Store Cost]">
-		<MemberProperty name="FORMAT_STRING" value="$#,##0.00"/>
+		<CalculatedMemberProperty name="FORMAT_STRING" value="$#,##0.00"/>
     </CalculatedMember>
 </Cube>
 

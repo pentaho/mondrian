@@ -187,13 +187,13 @@ class RolapCube extends CubeBase
         }
         final String memberUniqueName = Util.makeFqName(
             dimension.getUniqueName(), xmlCalcMember.name);
-        final MondrianDef.MemberProperty[] xmlProperties =
+        final MondrianDef.CalculatedMemberProperty[] xmlProperties =
             xmlCalcMember.memberProperties;
         final MemberProperty[] properties = new MemberProperty[xmlProperties.length];
         ArrayList propNames = new ArrayList(),
             propExprs = new ArrayList();
         for (int i = 0; i < properties.length; i++) {
-            final MondrianDef.MemberProperty xmlProperty = xmlProperties[i];
+            final MondrianDef.CalculatedMemberProperty xmlProperty = xmlProperties[i];
             if (xmlProperty.expression == null &&
                 xmlProperty.value == null) {
                 throw MondrianResource.instance()

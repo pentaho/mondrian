@@ -599,10 +599,10 @@ Revision is $Id$
 				Name of the dimension which this member belongs to.
 			</Doc>
 		</Attribute>
-		<Array name="memberProperties" type="MemberProperty" min="0"/>
+		<Array name="memberProperties" type="CalculatedMemberProperty" min="0"/>
 	</Element>
 
-	<Element type="MemberProperty">
+	<Element type="CalculatedMemberProperty">
 		<Doc>
 			Property of a calculated member defined against a cube.
 			It must have either an expression or a value.

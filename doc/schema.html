@@ -4,7 +4,7 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == Copyright (C) 2001-2003 Kana Software, Inc. and others.
+  == Copyright (C) 2001-2004 Kana Software, Inc. and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   == jhyde, 24 September, 2002
@@ -12,7 +12,7 @@
 
 <head>
 <meta http-equiv="Content-Language" content="en-us">
-<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="GENERATOR" content="Microsoft FrontPage 6.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
 <title>How to design a mondrian schema</title>
@@ -26,7 +26,14 @@
 <ol>
   <li><a href="#What_is_a_schema">What is a schema?</a></li>
   <li><a href="#Schema_files">Schema files</a></li>
-  <li><a href="#Cubes_and_dimensions">Logical model</a></li>
+  <li><a href="#Cubes_and_dimensions">Logical model</a><ol>
+  <li><a href="#Cube">Cube</a></li>
+	<li><a href="#Measures">Measures</a></li>
+	<li><a href="#Calculated_members">Calculated members</a></li>
+	<li><a href="#Dimensions,_Hierarchies,_Levels">Dimensions, Hierarchies, 
+	Levels</a></li>
+</ol>
+	</li>
   <li><a href="#Star_schemas">Star and snowflake schemas</a>
   <ol>
       <li><a href="#Shared_dimensions">Shared dimensions</a></li>
@@ -119,6 +126,10 @@ are all dimensions.</li>
         aggregator=&quot;sum&quot; formatString=&quot;#,###&quot;/&gt;
     &lt;<a href="#XML_Measure">Measure</a> name=&quot;Store Sales&quot; column=&quot;store_sales&quot;
         aggregator=&quot;sum&quot; formatString=&quot;#,###.##&quot;/&gt;
+    &lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name=&quot;Profit&quot; dimension=&quot;Measures&quot;
+        formula=&quot;[Measures].[Store Sales]-[Measures].[Store Cost]&quot;&gt;
+      &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name=&quot;FORMAT_STRING&quot; value=&quot;$#,##0.00&quot;/&gt;
+    &lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;
   &lt;/<a href="#XML_Cube">Cube</a>&gt;
 &lt;/<a href="#XML_Schema">Schema</a>&gt;</pre>
 </blockquote>
@@ -127,10 +138,10 @@ dimensions, &quot;Time&quot;, and &quot;Gender&quot;, and two measures, &quot;Un
 Sales&quot;.</p>
 <p>We can write an MDX query on this schema:</p>
 <blockquote>
-<p>select {[Measures].[Unit Sales], [Measures].[Store Sales]} on columns,<br>
+<p><code>select {[Measures].[Unit Sales], [Measures].[Store Sales]} on columns,<br>
 &nbsp; {[Time].[1997].[Q1].descendants} on rows<br>
 from [Sales]<br>
-where [Gender].[F]</p>
+where [Gender].[F]</code></p>
 </blockquote>
 <p>This query refers to the Sales cube (<code>[Sales]</code>), each of the
 dimensions <code>[Measures]</code>, <code>[Time]</code>, <code>[Gender</code>],
@@ -165,9 +176,8 @@ and various members of those dimensions. The results are as follows:</p>
   </table>
 </blockquote>
 <p>Now let's look at the schema definition in more detail.</p>
-<h3>Cube</h3>
-<p>A cube (see <code><a href="#XML_Cube">&lt;Cube&gt;</a></code>) is little more than
-a named collection of measures and dimensions. The one thing the measures and
+<h3><a name="Cube">Cube</a></h3>
+<p>A cube (see <code><a href="#XML_Cube">&lt;Cube&gt;</a></code>) is a named collection of measures and dimensions. The one thing the measures and
 dimensions have in common is the fact table, here <code>&quot;sales_fact_1997&quot;</code>.
 As we shall see, the fact table holds the columns from which measures are
 calculated, and contains references to the tables which hold the dimensions.</p>
@@ -186,7 +196,7 @@ schema using the &quot;schema&quot; attribute, for example</p>
 <p>You can also use the <code><a href="#XML_View">&lt;View&gt;</a></code> and <code>
 <a href="#XML_Join">&lt;Join&gt;</a></code> constructs to build more complicated SQL
 statements.</p>
-<h3>Measures</h3>
+<h3><a name="Measures">Measures</a></h3>
 <p>The Sales cube defines two measures, &quot;Unit Sales&quot; and &quot;Store Sales&quot;.</p>
 <blockquote>
   <pre>&lt;<a href="#XML_Measure">Measure</a> name=&quot;Unit Sales&quot; column=&quot;unit_sales&quot;
@@ -212,7 +222,52 @@ Defining a specific caption does make sense if special letters (e.g. &#931; or &
 <a href="#Cell_readers">cell reader</a>.</p>
 <p dir="ltr">In order to provide a specific formatting of the cell values, a measure can use a
 <a href="#Cell_formatter">cell formatter</a>.</p>
-<h3>Dimensions, Hierarchies, Levels</h3>
+
+<h3 dir="ltr"><a name="Calculated_members">Calculated members</a></h3>
+
+<p dir="ltr">Suppose you want to create a measure whose value comes not from a 
+column of the fact table, but from an MDX formula. One way to do this is to use 
+a WITH MEMBER clause, like this:</p>
+
+<blockquote>
+
+	<p dir="ltr"><code>with member [Measures].[Profit] as '[Measures].[Store 
+	Sales]-[Measures].[Store Cost]',<br>
+&nbsp;&nbsp; FORMAT_STRING = '$#,###'<br>
+	select {[Measures].[Store Sales], [Measures].[Profit]} on columns,<br>
+&nbsp; {[Product].Children} on rows<br>
+	from [Sales]<br>
+	where [Time].[1997]</code></p>
+</blockquote>
+<p>But rather than including this clause in every MDX query of your application, 
+you can define the member in your schema, as part of your cube definition:</p>
+
+<blockquote>
+
+	<p><code>&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name=&quot;Profit&quot; dimension=&quot;Measures&quot;<br>
+&nbsp;&nbsp;&nbsp; formula=&quot;[Measures].[Store Sales]-[Measures].[Store Cost]&quot;&gt;<br>
+&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name=&quot;FORMAT_STRING&quot; value=&quot;$#,##0.00&quot;/&gt;<br>
+	&lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code></p>
+</blockquote>
+
+<p>Note that the <code>&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>&gt;</code> 
+(not <code>&lt;<a href="#XML_Property">Property</a>&gt;</code>) element corresponds 
+to the <code>FORMAT_STRING = '$#,###'</code> fragment of the MDX statement. You 
+can define other properties here too, but <code>FORMAT_STRING</code> is by far 
+the most useful in practice. This property's value is the constant string <code>
+&quot;$#,##0.00&quot;</code>, but a property's value can also be an expression. When 
+formatting a particular cell, first the expression is evaluated to yield a 
+format string, then the format string is applied to the cell value. Here is the 
+same property with a conditional format string:</p>
+
+<blockquote>
+
+	<p><code>&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> 
+	name=&quot;FORMAT_STRING&quot; expression=&quot;Iif(Value &lt; 0, '($#,##0.00)', 
+	'$#,##0.00')&quot;/&gt;</code></p>
+</blockquote>
+
+<h3><a name="Dimensions,_Hierarchies,_Levels">Dimensions, Hierarchies, Levels</a></h3>
 <p>The Gender dimension consists of a single hierarchy, which has just one
 level.</p>
 <blockquote>
@@ -306,10 +361,9 @@ stores'.</p>
  A formatter class can be defined, which would be used by <code>getPropertyFormattedValue()</code>.</p>
 <blockquote>
   <pre>
-    &lt;<a href="#XML_Level">Level</a> name=&quot;MyLevel&quot; column=&quot;LevelColumn&quot; uniqueMembers=&quot;true&quot;/&gt;
-      &lt;Property name=&quot;MyProp&quot; column=&quot;PropColumn&quot; formatter=&quot;com.foo.MyPropertyFormatter&quot;/&gt;
-    &lt;Level/&gt;
- </pre>
+&lt;<a href="#XML_Level">Level</a> name=&quot;MyLevel&quot; column=&quot;LevelColumn&quot; uniqueMembers=&quot;true&quot;/&gt;
+  &lt;<a href="#XML_Property">Property</a> name=&quot;MyProp&quot; column=&quot;PropColumn&quot; formatter=&quot;com.foo.MyPropertyFormatter&quot;/&gt;
+&lt;<a href="#XML_Level">Level</a>/&gt;</pre>
 </blockquote>
 <p>The class &quot;com.foo.MyPropertyFormatter&quot; would have to implement <code>
 <a href="http://mondrian.sourceforge.net/api/mondrian/olap/PropertyFormatter.html">
@@ -531,7 +585,7 @@ interface mondrian.olap.CellReader</a></code>.</p>
 being displayed by
 <code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/Cell.html#getFormattedValue()">getFormattedValue()</a></code>.</p>
 <blockquote>
-  <pre dir="ltr">&lt;<a href="#XML_Measure">Measure</a> name=&quot;name&quot; formatter=&quot;com.foo.MyCellFormatter&quot;&gt;</pre>
+  <pre dir="ltr">&lt;<a href="#XML_Measure">Measure</a> name=&quot;name&quot; formatter=&quot;com.foo.MyCellFormatter&quot;/&gt;</pre>
 </blockquote>
 <p>The class &quot;com.foo.MyCellFormatter&quot; would have to implement <code>
 <a href="http://mondrian.sourceforge.net/api/mondrian/olap/CellFormatter.html">
@@ -541,14 +595,14 @@ interface mondrian.olap.CellFormatter</a></code>.</p>
 <p>A member formatter attribute demotes a java class to format a member's display value
 returned by <code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/Member.html#getCaption()">getCaption()</a></code>.</p>
 <blockquote>
-  <pre dir="ltr">&lt;<a href="#XML_Level">Level</a> column=&quot;column&quot; name=&quot;name&quot; formatter=&quot;com.foo.MyMemberFormatter&quot;&gt;</pre>
+  <pre dir="ltr">&lt;<a href="#XML_Level">Level</a> column=&quot;column&quot; name=&quot;name&quot; formatter=&quot;com.foo.MyMemberFormatter&quot;/&gt;</pre>
 </blockquote>
 
 <p>The class &quot;com.foo.MyMemberFormatter&quot; would have to implement <code>
 <a href="http://mondrian.sourceforge.net/api/mondrian/olap/MemberFormatter.html">
 interface mondrian.olap.MemberFormatter</a></code>.</p>
 
-<h3><a name="#I18n">Internationalization</a></h3>
+<h3><a name="I18n">Internationalization</a></h3>
 <p>Internationalized applications based on Mondrian could use multiple, language dependent schemas.<br/>
 If so, the MDX statements would be language dependent too. This might be more difficult to maintain.<br/>
 Instead of holding several copies of schema and MDX we provide a way to dynamically handle Mondrian schemas.<br/>
@@ -739,11 +793,17 @@ traffic-lighting</p>
   </tr>
   <tr>
     <td><code>&lt;<a name="XML_Property" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Property">Property</a>&gt;</code></td>
-    <td>&nbsp;</td>
+    <td>Member property. The definition is a hierarchy or level, but the 
+	property will be available to all members.</td>
   </tr>
   <tr>
     <td><code>&lt;<a name="XML_Measure" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Measure">Measure</a>&gt;</code></td>
     <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td><code>&lt;<a href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#CalculatedMember" name="XML_CalculatedMember">CalculatedMember</a>&gt;</code></td>
+    <td>A member whose value is derived using a formula, defined as part of a 
+	cube.</td>
   </tr>
   <tr>
     <td colspan="2"><i>Physical elements</i></td>
@@ -796,8 +856,8 @@ traffic-lighting</p>
     <td>&nbsp;</td>
   </tr>
   <tr>
-    <td><code>&lt;<a name="XML_Table" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Table">Table</a>&gt;</code></td>
-    <td>&nbsp;</td>
+    <td><code>&lt;<a name="XML_CalculatedMemberProperty" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#MemberProperty">CalculatedMemberProperty</a>&gt;</code></td>
+    <td>Property of a calculated member.</td>
   </tr>
   </table>
 
