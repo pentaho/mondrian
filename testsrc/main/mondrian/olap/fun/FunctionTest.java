@@ -987,6 +987,12 @@ public class FunctionTest extends FoodMartTestCase {
     public void testIIfNumeric() {
         String s = executeExpr("IIf(([Measures].[Unit Sales],[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]) > 100, 45, 32)");
         Assert.assertEquals("45", s);
+
+        // Compare two members. The system needs to figure out that they are
+        // both numeric, and use the right overloaded version of ">", otherwise
+        // we'll get a ClassCastException at runtime.
+        s = executeExpr("IIf([Measures].[Unit Sales] > [Measures].[Store Sales], 45, 32)");
+        Assert.assertEquals("32", s);
     }
 
     public void testMax() {

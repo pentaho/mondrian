@@ -344,13 +344,18 @@ public class BuiltinFunTable extends FunTable {
             if (to == Category.Dimension ||
                     to == Category.Hierarchy ||
                     to == Category.Level ||
-                    to == Category.Numeric ||
                     to == Category.Tuple) {
                 conversionCount[0]++;
                 return true;
+            } else if (to == (Category.Numeric | Category.Expression)) {
+                // We assume that members are numeric, so a cast to a numeric
+                // expression is less expensive than a conversion to a string
+                // expression.
+                conversionCount[0]++;
+                return true;
             } else if (to == Category.Value ||
-                    to == (Category.Numeric | Category.Expression) ||
                     to == (Category.String | Category.Expression)) {
+                conversionCount[0] += 2;
                 return true;
             } else {
                 return false;
