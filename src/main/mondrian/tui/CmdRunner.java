@@ -24,7 +24,18 @@ import java.util.Properties;
  * @version $Id$
  */
 public class CmdRunner {
+    private String filename;
+    private String mdxCmd;
+    private String mdxResult;
+    private String error;
+    private String stack;
+    private String connectString;
+    private Connection connection;
 
+    /** Name of the property "mondrian.catalogURL". */
+    public static final String CATALOG_URL = "mondrian.catalogURL";
+
+    /** List of all properties of interest to this utility. */
     private static final String[] propertyNames = {
         MondrianProperties.QueryLimit,
         MondrianProperties.TraceLevel,
@@ -33,11 +44,36 @@ public class CmdRunner {
         MondrianProperties.ResultLimit,
         MondrianProperties.TestConnectString,
         MondrianProperties.JdbcURL,
-        "mondrian.catalogURL",
+        CATALOG_URL,
         MondrianProperties.LargeDimensionThreshold,
         MondrianProperties.SparseSegmentCountThreshold,
         MondrianProperties.SparseSegmentDensityThreshold,
     };
+
+    /**
+     * Creates a <code>CmdRunner</code>.
+     */
+    public CmdRunner() {
+        this.connectString = makeConnectString();
+        this.filename = null;
+        this.mdxCmd = null;
+        this.mdxResult = null;
+        this.error = null;
+    }
+
+    void setError(Throwable t) {
+        this.error = t.toString();
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        t.printStackTrace(pw);
+        pw.flush();
+        this.stack = sw.toString();
+    }
+
+    void clearError() {
+        this.error = null;
+        this.stack = null;
+    }
 
     public static void listPropertyNames(StringBuffer buf) {
         for (int i = 0; i < propertyNames.length; i++) {
@@ -58,9 +94,9 @@ public class CmdRunner {
     }
 
     private static String getPropertyValue(String propertyName) {
-        if (propertyName.equals("mondrian.catalogURL")) {
+        if (propertyName.equals(CATALOG_URL)) {
             // XXX TODO is this ok in System
-            return System.getProperty("mondrian.catalogURL");
+            return System.getProperty(CATALOG_URL);
         } else {
             return MondrianProperties.instance().getProperty(propertyName);
         }
@@ -83,27 +119,44 @@ public class CmdRunner {
         MondrianProperties.instance().setProperty(name, value);
     }
 
-    private String connectString;
-    private Connection connection;
-
-    public CmdRunner() {
-        this.connectString = makeConnectString();
-//System.out.println("CmdRunner<init>: connectString="+connectString);
-    }
-
+    /**
+     * Executes a query and returns the result as a string.
+     *
+     * @param queryString MDX query text
+     * @return result String
+     */
     public String execute(String queryString) {
         Result result = runQuery(queryString);
         String resultString = toString(result);
         return resultString;
     }
 
+    /**
+     * Executes a query and returns the result.
+     *
+     * @param queryString MDX query text
+     * @return a {@link Result} object
+     */
     public Result runQuery(String queryString) {
-        Connection connection = getConnection();
-        Query query = connection.parseQuery(queryString);
-        return connection.execute(query);
+        CmdRunner.debug("CmdRunner.runQuery: TOP");
+        try {
+            Connection connection = getConnection();
+            CmdRunner.debug("CmdRunner.runQuery: AFTER getConnection");
+            Query query = connection.parseQuery(queryString);
+            CmdRunner.debug("CmdRunner.runQuery: AFTER parseQuery");
+            return connection.execute(query);
+        } finally {
+            CmdRunner.debug("CmdRunner.runQuery: BOTTOM");
+        }
     }
 
 
+    /**
+     * Converts a {@link Result} object to a string
+     *
+     * @param result
+     * @return String version of mondrian Result object.
+     */
     public String toString(Result result) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
@@ -115,46 +168,68 @@ public class CmdRunner {
 
     public String makeConnectString() {
         String connectString = CmdRunner.getConnectStringProperty();
-        // TODO replace all of these 'println' calls with Logger
-System.out.println("CmdRunner.makeConnectString: connectString="+connectString);
+        CmdRunner.debug("CmdRunner.makeConnectString: connectString="+connectString);
 
         Util.PropertyList connectProperties = null;
         if (connectString == null || connectString.equals("")) {
+            // create new and add provider
             connectProperties = new Util.PropertyList();
             connectProperties.put("Provider","mondrian");
         } else {
+            // load with existing connect string
             connectProperties = Util.parseConnectString(connectString);
         }
 
         // override jdbc url
         String jdbcURL = CmdRunner.getJdbcURLProperty();
-System.out.println("CmdRunner.makeConnectString: jdbcURL="+jdbcURL);
+
+        CmdRunner.debug("CmdRunner.makeConnectString: jdbcURL="+jdbcURL);
+
         if (jdbcURL != null) {
+            // add jdbc url to connect string
             connectProperties.put("Jdbc", jdbcURL);
         }
+
         // override jdbc drivers
         String jdbcDrivers = CmdRunner.getJdbcDriversProperty();
-System.out.println("CmdRunner.makeConnectString: jdbcDrivers="+jdbcDrivers);
-        if (jdbcURL != null) {
+
+        CmdRunner.debug("CmdRunner.makeConnectString: jdbcDrivers="+jdbcDrivers);
+        if (jdbcDrivers != null) {
+            // add jdbc drivers to connect string
             connectProperties.put("JdbcDrivers", jdbcDrivers);
         }
 
         // override catalog url
         String catalogURL = CmdRunner.getCatalogURLProperty();
-System.out.println("CmdRunner.makeConnectString: catalogURL="+catalogURL);
+
+        CmdRunner.debug("CmdRunner.makeConnectString: catalogURL="+catalogURL);
+
         if (catalogURL != null) {
+            // add catalog url to connect string
             connectProperties.put("catalog", catalogURL);
         }
 
-System.out.println("CmdRunner.makeConnectString: connectProperties="+connectProperties);
+        CmdRunner.debug("CmdRunner.makeConnectString: connectProperties="+connectProperties);
+
         return connectProperties.toString();
 
     }
 
+    /**
+     * Gets a connection to Mondrian.
+     *
+     * @return Mondrian {@link Connection}
+     */
     public Connection getConnection() {
         return getConnection(false);
     }
 
+    /**
+     * Gets a Mondrian connection, creating a new one if fresh is true.
+     *
+     * @param fresh
+     * @return mondrian Connection.
+     */
     public synchronized Connection getConnection(boolean fresh) {
         if (fresh) {
             return DriverManager.getConnection(this.connectString, null, fresh);
@@ -184,91 +259,77 @@ System.out.println("CmdRunner.makeConnectString: connectProperties="+connectProp
     // properties
     /////////////////////////////////////////////////////////////////////////
     protected static String getConnectStringProperty() {
-        //return System.getProperty(CmdRunner.CONNECT_STRING);
         return MondrianProperties.instance().getTestConnectString();
     }
     protected static String getJdbcURLProperty() {
-        //return System.getProperty(CmdRunner.JDBC_URL);
         return MondrianProperties.instance().getFoodmartJdbcURL();
     }
     protected static String getCatalogURLProperty() {
-        return System.getProperty("mondrian.catalogURL");
+        return System.getProperty(CmdRunner.CATALOG_URL);
     }
     protected static String getJdbcDriversProperty() {
-        //return System.getProperty(CmdRunner.JDBC_DRIVERS);
         return MondrianProperties.instance().getJdbcDrivers();
-    }
-
-    protected static String readFully(String filename) throws IOException {
-        return readFully(new File(filename));
-    }
-
-    /////////////////////////////////////////////////////////////////////////
-    // reading file
-    /////////////////////////////////////////////////////////////////////////
-
-    protected static String readFully(File file) throws IOException {
-        return readFully(new FileReader(file));
-    }
-
-    protected static String readFully(Reader rdr)
-                 throws IOException {
-
-
-        char[] buffer = new char[2048];
-        StringBuffer buf = new StringBuffer(buffer.length);
-
-        int len = rdr.read(buffer);
-        while (len != -1) {
-            buf.append(buffer, 0, len);
-            len = rdr.read(buffer);
-        }
-        String s = buf.toString();
-
-        return (s.length() == 0) ? null : s;
     }
 
     /////////////////////////////////////////////////////////////////////////
     // command loop
     /////////////////////////////////////////////////////////////////////////
 
-    protected void commandLoop(boolean interactive)
-        throws IOException {
-
+    protected void commandLoop(boolean interactive) throws IOException {
         commandLoop(System.in, interactive);
     }
 
-    protected void commandLoop(String mdxCmd,
-                                      boolean interactive)
-       throws IOException {
+    protected void commandLoop(File file) throws IOException {
+        commandLoop(new FileInputStream(file), false);
+    }
 
+    protected void commandLoop(
+            String mdxCmd, boolean interactive) throws IOException {
         ByteArrayInputStream is = new ByteArrayInputStream(mdxCmd.getBytes());
         commandLoop(is, interactive);
     }
 
-    protected void commandLoop(InputStream in,
-                                      boolean interactive)
-       throws IOException {
+    private static final String COMMAND_PROMPT_START = "> ";
+    private static final String COMMAND_PROMPT_MID = "? ";
+
+    /**
+     * The Command Loop where lines are read from the InputStream and
+     * interpreted. If interactive then prompts are printed.
+     *
+     * @param in Input stream
+     * @param interactive Whether the session is interactive
+     * @throws IOException if stream can not be accessed
+     */
+    protected void commandLoop(
+        InputStream in,
+        boolean interactive) throws IOException {
 
         StringBuffer buf = new StringBuffer(2048);
         BufferedReader br = new BufferedReader(new InputStreamReader(in));
         boolean inMDXCmd = false;
         if (interactive) {
-            System.out.print("> ");
+            System.out.print(COMMAND_PROMPT_START);
         }
-
         for(;;) {
             String line = br.readLine();
+            if (line != null) {
+                line = line.trim();
+            }
             debug("line="+line);
 
             if (! inMDXCmd) {
+                // If not in the middle of reading an mdx query and
+                // we reach end of file on the stream, then we are over.
                 if (line == null) {
                     return;
                 }
             }
+            line = stripComment(line);
 
+            // If not reading an mdx query, then check if the line is a
+            // user command.
             if (! inMDXCmd) {
-                String cmd = line.trim();
+                String cmd = line;
 
                 String resultString = null;
                 if (cmd.startsWith("help")) {
@@ -289,42 +350,81 @@ System.out.println("CmdRunner.makeConnectString: connectProperties="+connectProp
                     inMDXCmd = false;
                     buf.setLength(0);
                     if (interactive) {
-                        System.out.print("> ");
+                        System.out.print(COMMAND_PROMPT_START);
                     }
                     continue;
                 }
             }
 
-            if (line == null ||
-                    (line.length() == 1 && line.charAt(0) == '.')) {
+            // Are we ready to execute an mdx query.
+            if ((line == null) ||
+                    ((line.length() == 1) &&
+                    ((line.charAt(0) == EXECUTE_CHAR) ||
+                        (line.charAt(0) == CANCEL_CHAR)) )) {
 
-                String mdxCmd = buf.toString();
-                debug("mdxCmd="+mdxCmd);
+                // If EXECUTE_CHAR, then execute, otherwise its the
+                // CANCEL_CHAR and simply empty buffer.
+                if ((line == null) || (line.charAt(0) == EXECUTE_CHAR)) {
+                    String mdxCmd = buf.toString().trim();
+                    debug("mdxCmd=\""+mdxCmd+"\"");
 
-                String resultString = CmdRunner.executeMDXCmd(mdxCmd);
-                if (resultString != null) {
-                    printResults(resultString);
+                    String resultString = executeMDXCmd(mdxCmd);
+                    if (resultString != null) {
+                        printResults(resultString);
+                    }
                 }
 
                 inMDXCmd = false;
                 buf.setLength(0);
                 if (interactive) {
-                    System.out.print("> ");
+                    System.out.print(COMMAND_PROMPT_START);
                 }
 
             } else if (line.length() > 0) {
+                // OK, just add the line to the mdx query we are building.
                 inMDXCmd = true;
                 buf.append(line);
+                // add carriage return so that query keeps formatting
                 buf.append('\n');
                 if (interactive) {
-                    System.out.print("? ");
+                    System.out.print(COMMAND_PROMPT_MID);
                 }
+            }
+
+        }
+    }
+
+    protected static void printResults(String resultString) {
+        if (resultString != null) {
+            resultString = resultString.trim();
+            if (resultString.length() > 0) {
+                System.out.println(resultString);
             }
         }
     }
 
+    /**
+     * Strips a line from the {@link #COMMENT_CHAR comment character)
+     * (if present) to the end of line.
+     *
+     * <p>If the comment character is inside a string, this method
+     * incorrectly truncates the rest of the line.
+     *
+     * @param line Line
+     * @return Line truncated at comment character.
+     */
+    protected static String stripComment(String line) {
+        if (line != null) {
+            int index = line.indexOf(COMMENT_CHAR);
+            if (index != -1) {
+                line = line.substring(0,index);
+            }
+        }
+        return line;
+    }
+
     /////////////////////////////////////////////////////////////////////////
-    // commands
+    // user commands and help messages
     /////////////////////////////////////////////////////////////////////////
     private static final String INDENT = "  ";
 
@@ -339,7 +439,11 @@ System.out.println("CmdRunner.makeConnectString: connectProperties="+connectProp
     private static final int ALL_CMD  =
         HELP_CMD | SET_CMD | FILE_CMD | LIST_CMD | MDX_CMD | ERROR_CMD | EXIT_CMD;
 
-    protected String executeHelp(String mdxCmd) {
+    private static final char EXECUTE_CHAR        = '=';
+    private static final char CANCEL_CHAR         = '~';
+    private static final char COMMENT_CHAR        = '#';
+
+    protected static String executeHelp(String mdxCmd) {
         StringBuffer buf = new StringBuffer(200);
 
         String[] tokens = mdxCmd.split("\\s");
@@ -408,10 +512,50 @@ System.out.println("CmdRunner.makeConnectString: connectProperties="+connectProp
         if ((cmd & MDX_CMD) != 0) {
             buf.append('\n');
             appendIndent(buf, 1);
-            buf.append("<mdx query>");
+            buf.append("<mdx query> <cr> ( '");
+            buf.append(EXECUTE_CHAR);
+            buf.append("' | '");
+            buf.append(CANCEL_CHAR);
+            buf.append("' ) <cr>");
             buf.append('\n');
             appendIndent(buf, 2);
-            buf.append("Execute mdx query.");
+            buf.append("Execute or cancel mdx query.");
+            buf.append('\n');
+            appendIndent(buf, 2);
+            buf.append("An mdx query may span one or more lines.");
+            buf.append('\n');
+            appendIndent(buf, 2);
+            buf.append("After the last line of the query has been entered,");
+            buf.append('\n');
+            appendIndent(buf, 3);
+            buf.append("on the next line a single execute character, '");
+            buf.append(EXECUTE_CHAR);
+            buf.append("', may be entered");
+            buf.append('\n');
+            appendIndent(buf, 3);
+            buf.append("followed by a carriage return.");
+            buf.append('\n');
+            appendIndent(buf, 3);
+            buf.append("The lone '");
+            buf.append(EXECUTE_CHAR);
+            buf.append("' informs the interpreter that the query has");
+            buf.append('\n');
+            appendIndent(buf, 3);
+            buf.append("has been entered and is ready to execute.");
+            buf.append('\n');
+            appendIndent(buf, 2);
+            buf.append("At anytime during the entry of a query the cancel");
+            buf.append('\n');
+            appendIndent(buf, 3);
+            buf.append("character, '");
+            buf.append(CANCEL_CHAR);
+            buf.append("', may be entered alone on a line.");
+            buf.append('\n');
+            appendIndent(buf, 3);
+            buf.append("This removes all of the query text from the");
+            buf.append('\n');
+            appendIndent(buf, 3);
+            buf.append("the command interpreter.");
         }
 
         if ((cmd & ERROR_CMD) != 0) {
@@ -438,7 +582,7 @@ System.out.println("CmdRunner.makeConnectString: connectProperties="+connectProp
 
     protected static void appendSet(StringBuffer buf) {
         appendIndent(buf, 1);
-        buf.append("set [property[=value]]");
+        buf.append("set [ property[=value ] ] <cr>");
         buf.append('\n');
         appendIndent(buf, 2);
         buf.append("With no args, prints all mondrian properties and values.");
@@ -485,9 +629,9 @@ System.out.println("CmdRunner.makeConnectString: connectProperties="+connectProp
             }
 
         } else {
-            buf.append("Bad command usage:");
+            buf.append("Bad command usage: \"");
             buf.append(mdxCmd);
-            buf.append('\n');
+            buf.append("\"\n");
             appendSet(buf);
         }
 
@@ -496,42 +640,61 @@ System.out.println("CmdRunner.makeConnectString: connectProperties="+connectProp
 
     protected static void appendFile(StringBuffer buf) {
         appendIndent(buf, 1);
-        buf.append("file [filename]");
+        buf.append("file [ filename | '=' ] <cr>");
         buf.append('\n');
         appendIndent(buf, 2);
         buf.append("With no args, prints the last filename executed.");
         buf.append('\n');
         appendIndent(buf, 2);
         buf.append("With \"filename\", read and execute filename .");
+        buf.append('\n');
+        appendIndent(buf, 2);
+        buf.append("With \"=\" character, re-read and re-execute previous filename .");
     }
 
     protected String executeFile(String mdxCmd) {
-
-        StringBuffer buf = new StringBuffer(200);
-
+        StringBuffer buf = new StringBuffer(512);
         String[] tokens = mdxCmd.split("\\s");
 
         if (tokens.length == 1) {
-            buf.append(context.filename);
-
-        } else if (tokens.length == 2) {
-            String filename = tokens[1];
-            context.filename = filename;
-
-            try {
-                String mcmd = readFully(filename);
-                String resultString = CmdRunner.executeMDXCmd(mcmd);
-                buf.append(resultString);
-            } catch (IOException ex) {
-                context.setError(ex);
-                buf.append("Error: " +ex);
+            if (filename != null) {
+                buf.append(filename);
             }
 
+        } else if (tokens.length == 2) {
+            String token = tokens[1];
+            String filename = null;
+            if ((token.length() == 1) && (token.charAt(0) == EXECUTE_CHAR)) {
+                // file '='
+                if (filename == null) {
+                    buf.append("Bad command usage: \"");
+                    buf.append(mdxCmd);
+                    buf.append("\", no file to re-execute");
+                    buf.append('\n');
+                    appendFile(buf);
+                } else {
+                    filename = this.filename;
+                }
+            } else {
+                // file filename
+                filename = token;
+            }
+
+            if (filename != null) {
+                this.filename = filename;
+
+                try {
+                    commandLoop(new File(this.filename));
+                } catch (IOException ex) {
+                    setError(ex);
+                    buf.append("Error: " +ex);
+                }
+            }
 
         } else {
-            buf.append("Bad command usage:");
+            buf.append("Bad command usage: \"");
             buf.append(mdxCmd);
-            buf.append('\n');
+            buf.append("\"\n");
             appendFile(buf);
         }
         return buf.toString();
@@ -539,7 +702,7 @@ System.out.println("CmdRunner.makeConnectString: connectProperties="+connectProp
 
     protected static void appendList(StringBuffer buf) {
         appendIndent(buf, 1);
-        buf.append("list [cmd | result]");
+        buf.append("list [ cmd | result ] <cr>");
         buf.append('\n');
         appendIndent(buf, 2);
         buf.append("With no arguments, list previous cmd and result");
@@ -551,32 +714,42 @@ System.out.println("CmdRunner.makeConnectString: connectProperties="+connectProp
         buf.append("With \"result\" argument, list the last mdx query result.");
     }
 
-    protected String executeList(String mdxCmd) {
+    protected String executeList(String _mdxCmd) {
         StringBuffer buf = new StringBuffer(200);
 
-        String[] tokens = mdxCmd.split("\\s");
+        String[] tokens = _mdxCmd.split("\\s");
 
         if (tokens.length == 1) {
-            buf.append(context.mdxCmd);
-            buf.append('\n');
-            buf.append(context.mdxResult);
+            if (mdxCmd != null) {
+                buf.append(mdxCmd);
+                if (mdxResult != null) {
+                    buf.append('\n');
+                    buf.append(mdxResult);
+                }
+            } else if (mdxResult != null) {
+                buf.append(mdxResult);
+            }
 
         } else if (tokens.length == 2) {
             String arg = tokens[1];
             if (arg.equals("cmd")) {
-                buf.append(context.mdxCmd);
+                if (mdxCmd != null) {
+                    buf.append(mdxCmd);
+                }
             } else if (arg.equals("result")) {
-                buf.append(context.mdxResult);
+                if (mdxResult != null) {
+                    buf.append(mdxResult);
+                }
             } else {
                 buf.append("Bad sub command usage:");
-                buf.append(mdxCmd);
+                buf.append(_mdxCmd);
                 buf.append('\n');
                 appendList(buf);
             }
         } else {
-            buf.append("Bad command usage:");
-            buf.append(mdxCmd);
-            buf.append('\n');
+            buf.append("Bad command usage: \"");
+            buf.append(_mdxCmd);
+            buf.append("\"\n");
             appendList(buf);
         }
 
@@ -584,7 +757,7 @@ System.out.println("CmdRunner.makeConnectString: connectProperties="+connectProp
     }
     protected static void appendError(StringBuffer buf) {
         appendIndent(buf, 1);
-        buf.append("error [msg | stack]");
+        buf.append("error [ msg | stack ] <cr>");
         buf.append('\n');
         appendIndent(buf, 2);
         buf.append("With no arguemnts, both message and stack are printed.");
@@ -602,16 +775,26 @@ System.out.println("CmdRunner.makeConnectString: connectProperties="+connectProp
         String[] tokens = mdxCmd.split("\\s");
 
         if (tokens.length == 1) {
-            buf.append(context.error);
-            buf.append('\n');
-            buf.append(context.stack);
+            if (error != null) {
+                buf.append(error);
+                if (stack != null) {
+                    buf.append('\n');
+                    buf.append(stack);
+                }
+            } else if (stack != null) {
+                buf.append(stack);
+            }
 
         } else if (tokens.length == 2) {
             String arg = tokens[1];
             if (arg.equals("msg")) {
-                buf.append(context.error);
+                if (error != null) {
+                    buf.append(error);
+                }
             } else if (arg.equals("stack")) {
-                buf.append(context.stack);
+                if (stack != null) {
+                    buf.append(stack);
+                }
             } else {
                 buf.append("Bad sub command usage:");
                 buf.append(mdxCmd);
@@ -619,9 +802,9 @@ System.out.println("CmdRunner.makeConnectString: connectProperties="+connectProp
                 appendList(buf);
             }
         } else {
-            buf.append("Bad command usage:");
+            buf.append("Bad command usage: \"");
             buf.append(mdxCmd);
-            buf.append('\n');
+            buf.append("\"\n");
             appendList(buf);
         }
 
@@ -629,7 +812,7 @@ System.out.println("CmdRunner.makeConnectString: connectProperties="+connectProp
     }
     protected static void appendExit(StringBuffer buf) {
         appendIndent(buf, 1);
-        buf.append("exit");
+        buf.append("exit <cr>");
         buf.append('\n');
         appendIndent(buf, 2);
         buf.append("Exit mdx command interpreter.");
@@ -642,58 +825,31 @@ System.out.println("CmdRunner.makeConnectString: connectProperties="+connectProp
         return null;
     }
 
-    protected static String executeMDXCmd(String mdxCmd) {
+    protected String executeMDXCmd(String mdxCmd) {
 
-        context.mdxCmd = mdxCmd;
+        this.mdxCmd = mdxCmd;
         try {
 
             String resultString = context.cmdRunner.execute(mdxCmd);
-            context.mdxResult = resultString;
-            context.clearError();
+            mdxResult = resultString;
+            clearError();
             return resultString;
 
         } catch (MondrianException mex) {
-            context.setError(mex);
+            setError(mex);
             return mex.getMessage();
         }
     }
 
-
-    protected void printResults(String resultString) {
-        System.out.println(resultString);
-    }
 
     /////////////////////////////////////////////////////////////////////////
     // context
     /////////////////////////////////////////////////////////////////////////
     private static class Context {
         CmdRunner cmdRunner;
-        String filename;
-        String mdxCmd;
-        String mdxResult;
-        String error;
-        String stack;
-        Context() {
-            this.cmdRunner = new CmdRunner();
-            this.filename = null;
-            this.mdxCmd = null;
-            this.mdxResult = null;
-            this.error = null;
-        }
-        void setError(Throwable t) {
-            this.error = t.toString();
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            t.printStackTrace(pw);
-            pw.flush();
-            this.stack = sw.toString();
-        }
-        void clearError() {
-            this.error = null;
-            this.stack = null;
-        }
     }
 
+    /** Currently there is only one global Context */
     private static final Context context = new Context();
 
     /////////////////////////////////////////////////////////////////////////
@@ -727,7 +883,7 @@ System.out.println("CmdRunner.makeConnectString: connectProperties="+connectProp
         buf.append('\n');
         buf.append("  -f filename      : execute mdx in filename");
         buf.append('\n');
-        buf.append("  mdx_cmd              : execute mdx_cmd");
+        buf.append("  mdx_cmd          : execute mdx_cmd");
         buf.append('\n');
 
         System.out.println(buf.toString());
@@ -762,13 +918,11 @@ System.out.println("CmdRunner.makeConnectString: connectProperties="+connectProp
             }
         }
 
-        if (filename != null) {
-            context.filename = filename;
-
-            mdxCmd = readFully(filename);
-        }
         CmdRunner cmdRunner = new CmdRunner();
-        if (mdxCmd != null) {
+        if (filename != null) {
+            cmdRunner.filename = filename;
+            cmdRunner.commandLoop(new File(filename));
+        } else if (mdxCmd != null) {
             cmdRunner.commandLoop(mdxCmd, false);
         } else {
             cmdRunner.commandLoop(true);
