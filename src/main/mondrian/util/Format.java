@@ -2982,8 +2982,8 @@ class FloatingDecimal {
 		//         +maxDigitsRightOfDecimal
 		//         +10  (for decimal point and sign or -Infinity)
 		//         +decExponent/3 (for the thousand separators)
-		int resultLen = 10 + decExponent*4/3  + maxDigitsRightOfDecimal;
-        char result[] = new char[resultLen];
+		int resultLen = 10 + Math.abs(decExponent)*4/3 + maxDigitsRightOfDecimal;
+		char result[] = new char[resultLen];
 		int i = toJavaFormatString(
 			result, 0, minDigitsLeftOfDecimal, decimalChar,
 			minDigitsRightOfDecimal, maxDigitsRightOfDecimal, expChar, expSign,
