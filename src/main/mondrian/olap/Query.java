@@ -33,39 +33,17 @@ public class Query extends QueryPart {
     public static final String HIDDEN = "hidden_";
 
     /**
-     * NOTE: This must be public because JPivoi directly accesses this instance
-     * variable.
-     * Currently, the JPivot usages are:
-     * mondrian.olap.Formula[] formulas = q.formulas;
-     *
-     * <p>This usage is deprecated: please use the formulas's getter methods:
-     *   public Formula[] getFormulas()
+     * public-private: This must be public because it is still accessed in rolap.RolapCube
      */
     public Formula[] formulas;
 
     /**
-     * NOTE: This must be public because JPivot directly accesses this instance
-     * variable.
-     * Currently, the JPivoi usages are:
-     * monQuery.axes.length
-     * mondrian.olap.QueryAxis qAxis = monQuery.axes[i];
-     *
-     * <p>This usage is deprecated: please use the axes's getter methods:
-     *   public QueryAxis[] getAxes()
+     * public-private: This must be public because it is still accessed in rolap.RolapConnection
      */
     public QueryAxis[] axes;
 
     /**
-     * NOTE: This must be public because JPivot directly accesses this instance
-     * variable.
-     * Currently, the JPivoi usages are:
-     * monQuery.slicer = null;
-     * monQuery.slicer = f;
-     *
-     * <p>This usage is deprecated: please use the slicer's getter and setter
-     * methods:
-     *   public Exp getSlicer()
-     *   public void setSlicer(Exp exp)
+     * public-private: This must be public because it is still accessed in rolap.RolapResult
      */
     public Exp slicer;
 

@@ -46,32 +46,13 @@ public class QueryAxis extends QueryPart {
         public static final int Show = 1;
     }
 
-
     /**
-     * NOTE: This must be public because JPivoi directly accesses this instance
-     * variable.
-     * Currently, the JPivoi usages are:
-     * if (qAxis.nonEmpty)
-     * qAxis.nonEmpty = nonEmpty;
-     *
-     * This usage is deprecated: please use the nonEmpty's getter and setter
-     * methods:
-     *   public boolean isNonEmpty()
-     *   public void setNonEmpty(boolean nonEmpty)
+     * public-private: This must be public because it is accessed in olap.Query
      */
     public boolean nonEmpty;
 
     /**
-     * NOTE: This must be public because JPivoi directly accesses this instance
-     * variable.
-     * Currently, the JPivoi usages are:
-     * axis.set  = ...
-     *  = axis.set;
-     *
-     * This usage is deprecated: please use the set's getter and setter
-     * methods:
-     *   public Exp getSet()
-     *   public void setSet(Exp set)
+     * public-private: This must be public because it is accessed in olap.Query
      */
     public Exp set;
 

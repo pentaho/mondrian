@@ -389,7 +389,7 @@ public class BuiltinFunTable extends FunTable {
         // function, use some custom method, which generally involves looking
         // at the type of one of its arguments.
         String signature = call.getSyntax().getSignature(call.getFunName(),
-                Category.Unknown, ExpBase.getTypes(call.args));
+                Category.Unknown, ExpBase.getTypes(call.getArgs()));
         Resolver[] resolvers = (Resolver[]) mapNameToResolvers.get(key);
         if (resolvers == null) {
             resolvers = emptyResolvers;
@@ -401,7 +401,7 @@ public class BuiltinFunTable extends FunTable {
         FunDef matchDef = null;
         for (int i = 0; i < resolvers.length; i++) {
             conversionCount[0] = 0;
-            FunDef def = resolvers[i].resolve(call.args, conversionCount);
+            FunDef def = resolvers[i].resolve(call.getArgs(), conversionCount);
             if (def != null) {
                 if (def.getReturnCategory() == Category.Set &&
                         resolver.requiresExpression()) {

@@ -26,17 +26,8 @@ public class FunCall extends ExpBase {
      * The arguments to the function call.  Note that for methods, 0-th arg is
      * 'this'.
      *
-     *
-     * NOTE: This must be public because JPivoi directly accesses this instance
-     * variable.
-     * Currently, the JPivoi usages are:
-     * = f.args[0]
-     * f.args.length
-     *
-     * This usage is deprecated: please use the args's getter methods:
-     *   public Exp[] getArgs()
      */
-    public Exp[] args;
+    private Exp[] args;
 
     /** Definition, set after resolve. **/
     private FunDef funDef;

@@ -21,14 +21,9 @@ package mondrian.olap;
  * @version $Id$
  **/
 public class Position {
-    /** 
-     * NOTE: This must be public because JPivoi directly accesses this instance
-     * variable.
-     * Currently, the JPivoi usages are:
-     * monMembers = monPositions[i].members;
-     *
-     * This usage is deprecated: please use the members's getter methods:
-     *   public Member[] getMembers()
+
+    /**
+     * public-private: This must be public because it is still accessed in olap.ResultBase
      */
     public final Member[] members;
 
