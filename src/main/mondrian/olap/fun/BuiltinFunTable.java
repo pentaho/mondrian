@@ -462,8 +462,8 @@ public class BuiltinFunTable extends FunTable {
 		//??Had to add this to get <Hierarchy>.Dimension to work?
 		define(new FunDefBase("Dimension", "<Dimension>.Dimension", "Returns the dimension that contains a specified hierarchy.", "pdd") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				Hierarchy hierarchy = getHierarchyArg(evaluator, args, 0, true);
-				return hierarchy.getDimension();
+				Dimension dimension = getDimensionArg(evaluator, args, 0, true);
+				return dimension;
 			}
 
 			public void testDimensionHierarchy(FoodMartTestCase test) {
@@ -1605,7 +1605,7 @@ public class BuiltinFunTable extends FunTable {
 		if (false) define(new FunDefBase("Tail", "Tail(<Set>[, <Count>])", "Returns a subset from the end of a set.", "fx*"));
 		define(new MultiResolver(
 				"ToggleDrillState", "ToggleDrillState(<Set1>, <Set2>[, RECURSIVE])", "Toggles the drill state of members. This function is a combination of DrillupMember and DrilldownMember.",
-				new String[]{"fxx", "fxxs"},
+				new String[]{"fxxx", "fxxx#"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Vector v0 = (Vector) getArg(evaluator, args, 0),
@@ -1653,6 +1653,39 @@ public class BuiltinFunTable extends FunTable {
 							}
 						}
 						return result;
+					}
+					public void testToggleDrillState(FoodMartTestCase test) {
+						Axis axis = test.executeAxis2(
+								"ToggleDrillState({[Customers].[USA],[Customers].[Canada]},{[Customers].[USA],[Customers].[USA].[CA]})");
+						test.assertEquals("[Customers].[All Customers].[USA], [Customers].[All Customers].[USA].[CA], [Customers].[All Customers].[USA].[OR], [Customers].[All Customers].[USA].[WA], [Customers].[All Customers].[Canada]", toString(axis.positions));
+					}
+					public void testToggleDrillState2(FoodMartTestCase test) {
+						Axis axis = test.executeAxis2(
+								"ToggleDrillState([Product].[Product Department].members, {[Product].[All Products].[Food].[Snack Foods]})");
+						test.assertEquals("foo",toString(axis.positions));
+					}
+					private String toString(Position[] positions) {
+						StringBuffer sb = new StringBuffer();
+						for (int i = 0; i < positions.length; i++) {
+							Position position = positions[i];
+							if (i > 0) {
+								sb.append(", ");
+							}
+							if (position.members.length != 1) {
+								sb.append("{");
+							}
+							for (int j = 0; j < position.members.length; j++) {
+								Member member = position.members[j];
+								if (j > 0) {
+									sb.append(", ");
+								}
+								sb.append(member.getUniqueName());
+							}
+							if (position.members.length != 1) {
+								sb.append("}");
+							}
+						}
+						return sb.toString();
 					}
 				}));
 		define(new MultiResolver(

@@ -104,6 +104,9 @@ public class FunUtil extends Util {
 		}
 		Exp arg = args[index];
 		Object o = arg.evaluate(evaluator);
+        if (true) {
+            return (Member) o;
+        }
 		if (o instanceof Member) {
 			return (Member) o;
 		} else if (o instanceof Hierarchy) {
@@ -148,6 +151,9 @@ public class FunUtil extends Util {
 		}
 		Exp arg = args[index];
 		Object o = arg.evaluate(evaluator);
+        if (true) {
+            return (Hierarchy) o;
+        }
 		if (o instanceof Member) {
 			return ((Member) o).getHierarchy();
 		} else if (o instanceof Level) {
@@ -172,6 +178,9 @@ public class FunUtil extends Util {
 		}
 		Exp arg = args[index];
 		Object o = arg.evaluate(evaluator);
+        if (true) {
+            return (Dimension) o;
+        }
 		if (o instanceof Member) {
 			return ((Member) o).getDimension();
 		} else if (o instanceof Level) {
@@ -449,7 +458,7 @@ public class FunUtil extends Util {
 	 * like 'public void testXxx({@link TestCase})'.
 	 */
 	public static void addTests(Object o, TestSuite suite) {
-		String testName = TestContext.instance().getProperties().getProperty(
+		String testName = Util.getProperties().getProperty(
 				"mondrian.test.Name");
 		for (Class clazz = o.getClass(); clazz != null; clazz = clazz.getSuperclass()) {
 			Method[] methods = clazz.getDeclaredMethods();

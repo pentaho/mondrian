@@ -43,10 +43,6 @@ public class TestContext {
 	/** Connection to the FoodMart database. Set on the first call to {@link
 	 * #getFoodMartConnection}. **/
 	private Connection foodMartConnection;
-	/** Properties, drawn from {@link System#getProperties}, plus the contents
-	 * of "mondrian.properties" if it exists.
-	 */
-	private PropertiesPlus properties;
 
 	/**
 	 * Retrieves the singleton (instantiating if necessary).
@@ -68,7 +64,7 @@ public class TestContext {
 
 		mondrian.olap.Util.setThreadRes(MondrianResource.instance());
 
-		String jdbcDrivers = getProperties().getProperty(
+		String jdbcDrivers = Util.getProperties().getProperty(
 				"mondrian.jdbcDrivers", "org.hsqldb.jdbcDriver");
 		StringTokenizer tok = new java.util.StringTokenizer(jdbcDrivers, ",");
 		while (tok.hasMoreTokens()) {
@@ -80,43 +76,17 @@ public class TestContext {
 			}
 		}
 
-		foodMartConnectString = System.getProperty("mondrian.test.connectString");
+		foodMartConnectString = Util.getProperties().getProperty(
+                "mondrian.test.connectString");
 		if (foodMartConnectString == null) {
 			URL catalogUrl = mondrian.resource.Util.convertPathToURL(
 					new File("demo/FoodMart.xml"));
-			String jdbcURL = getProperties().getProperty(
+			String jdbcURL = Util.getProperties().getProperty(
 					"mondrian.test.jdbcURL", "jdbc:hsqldb:demo/hsql/FoodMart");
 			foodMartConnectString = "Provider=mondrian;" +
 					"Jdbc=" + jdbcURL + ";" +
 					"Catalog=" + catalogUrl;
 		}
-	}
-
-	/** Returns a {@link Properties} object. **/
-	public synchronized PropertiesPlus getProperties() {
-		if (properties == null) {
-			properties = new PropertiesPlus();
-			// read properties from the file "mondrian.properties", if it
-			// exists
-			File file = new File("mondrian.properties");
-			if (file.exists()) {
-				try {
-					properties.load(new FileInputStream(file));
-				} catch (IOException e) {
-					throw Util.newInternal(e, "while reading from " + file);
-				}
-			}
-			// copy in all system properties which start with "mondrian."
-			for (Enumeration keys = System.getProperties().keys();
-					keys.hasMoreElements(); ) {
-				String key = (String) keys.nextElement();
-				String value = System.getProperty(key);
-				if (key.startsWith("mondrian.")) {
-				    properties.setProperty(key, value);
-				}
-			}
-		}
-		return properties;
 	}
 
 	/** Returns a connection to the FoodMart database. **/
@@ -151,39 +121,6 @@ public class TestContext {
 	/** Returns the output writer. **/
 	public PrintWriter getWriter() {
 		return pw;
-	}
-
-	/**
-	 * <code>PropertiesPlus</code> adds a couple of convenience methods to {@link
-	 * Properties}.
-	 **/
-	public static class PropertiesPlus extends Properties {
-		/**
-		 * Retrieves an integer property. Returns -1 if the property is not
-		 * found, or if its value is not an integer.
-		 */
-		public int getIntProperty(String key) {
-			String value = getProperty(key);
-			if (value == null) {
-				return -1;
-			}
-			int i = Integer.valueOf(value).intValue();
-			return i;
-		}
-		/**
-		 * Retrieves a boolean property. Returns <code>true</code> if the
-		 * property exists, and its value is <code>1</code>, <code>true</code>
-		 * or <code>yes</code>; returns <code>false</code> otherwise.
-		 */
-		public boolean getBooleanProperty(String key) {
-			String value = getProperty(key);
-			if (value == null) {
-				return false;
-			}
-			return value.equalsIgnoreCase("1") ||
-				value.equalsIgnoreCase("true") ||
-				value.equalsIgnoreCase("yes");
-		}
 	}
 }
 

@@ -65,6 +65,16 @@ public class FoodMartTestCase extends TestCase {
 	}
 
 	/**
+	 * Runs a query with a given expression on an axis, and returns the whole
+	 * axis.
+	 */
+	public Axis executeAxis2(String expression) {
+		Result result = TestContext.instance().executeFoodMart(
+				"select {" + expression + "} on columns from Sales");
+		return result.getAxes()[0];
+	}
+
+	/**
 	 * Runs a query with a given expression on an axis, and returns the single
 	 * member.
 	 */

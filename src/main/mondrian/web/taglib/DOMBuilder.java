@@ -20,6 +20,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
+import org.w3c.dom.CDATASection;
 import mondrian.olap.Axis;
 import mondrian.olap.Position;
 import javax.xml.transform.TransformerFactory;
@@ -66,6 +67,8 @@ public class DOMBuilder {
 	private Element build() {
 		dimCount = result.getAxes().length;
 		Element mdxtable = factory.createElement("mdxtable");
+		Element query = elem("query", mdxtable);
+		cdata(result.getQuery().toWebUIMdx(), query);
 		Element head = elem("head", mdxtable);
 		Element body = elem("body", mdxtable);
 		switch (dimCount) {
@@ -295,6 +298,12 @@ public class DOMBuilder {
 		Element elem = factory.createElement(name);
 		parent.appendChild(elem);
 		return elem;
+	}
+
+	private Object cdata(String content, Element parent) {
+		CDATASection section = factory.createCDATASection(content);
+		parent.appendChild(section);
+		return section;
 	}
 
 	private static final String PRETTY_PRINTER = ""

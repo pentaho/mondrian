@@ -13,11 +13,8 @@
 package mondrian.olap;
 import mondrian.resource.ChainableThrowable;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Hashtable;
-import java.util.StringTokenizer;
-import java.util.Vector;
+import java.io.*;
+import java.util.*;
 
 /**
  * todo:
@@ -370,6 +367,40 @@ public class Util extends mondrian.xom.XOMUtil
 		}
 	}
 
+    /**
+     * Properties, drawn from {@link System#getProperties}, plus the contents
+	 * of "mondrian.properties" if it exists. A singleton.
+	 */
+	private static PropertiesPlus properties;
+
+    /** Returns a {@link Properties} object. If "mondrian.properties" exists,
+     * it is loaded. **/
+	public static synchronized PropertiesPlus getProperties() {
+		if (properties == null) {
+			properties = new PropertiesPlus();
+			// read properties from the file "mondrian.properties", if it
+			// exists
+			File file = new File("mondrian.properties");
+			if (file.exists()) {
+				try {
+					properties.load(new FileInputStream(file));
+				} catch (IOException e) {
+					throw Util.newInternal(e, "while reading from " + file);
+				}
+			}
+			// copy in all system properties which start with "mondrian."
+			for (Enumeration keys = System.getProperties().keys();
+					keys.hasMoreElements(); ) {
+				String key = (String) keys.nextElement();
+				String value = System.getProperty(key);
+				if (key.startsWith("mondrian.")) {
+				    properties.setProperty(key, value);
+				}
+			}
+		}
+		return properties;
+	}
+
 	/**
 	 * <code>PropertyList</code> is an order-preserving list of key-value
 	 * pairs. Lookup is case-insensitive, but the case of keys is preserved.
@@ -470,6 +501,39 @@ public class Util extends mondrian.xom.XOMUtil
 		return properties;
 	}
 
+
+    /**
+	 * <code>PropertiesPlus</code> adds a couple of convenience methods to {@link
+	 * Properties}.
+	 **/
+	public static class PropertiesPlus extends Properties {
+		/**
+		 * Retrieves an integer property. Returns -1 if the property is not
+		 * found, or if its value is not an integer.
+		 */
+		public int getIntProperty(String key) {
+			String value = getProperty(key);
+			if (value == null) {
+				return -1;
+			}
+			int i = Integer.valueOf(value).intValue();
+			return i;
+		}
+		/**
+		 * Retrieves a boolean property. Returns <code>true</code> if the
+		 * property exists, and its value is <code>1</code>, <code>true</code>
+		 * or <code>yes</code>; returns <code>false</code> otherwise.
+		 */
+		public boolean getBooleanProperty(String key) {
+			String value = getProperty(key);
+			if (value == null) {
+				return false;
+			}
+			return value.equalsIgnoreCase("1") ||
+				value.equalsIgnoreCase("true") ||
+				value.equalsIgnoreCase("yes");
+		}
+	}
 }
 
 // End Util.java

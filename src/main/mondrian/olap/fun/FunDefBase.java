@@ -97,7 +97,7 @@ class FunDefBase extends FunUtil implements FunDef {
 	// implement FunDef
 	public Hierarchy getHierarchy(Exp[] args)
 	{
-        switch (getSyntacticType()) {
+        switch (getReturnType()) {
         case Exp.CatSet:
         case Exp.CatTuple:
         case Exp.CatMember:

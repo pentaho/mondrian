@@ -14,6 +14,7 @@
 package mondrian.web.servlet;		
 
 import mondrian.olap.*;
+import mondrian.web.taglib.ResultCache;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -21,6 +22,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.StringTokenizer;
+import java.io.IOException;
 
 /** 
  * <code>MDXQueryServlet</code> is a servlet which receives MDX queries,
@@ -65,6 +67,12 @@ public class MDXQueryServlet extends HttpServlet {
     */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, java.io.IOException {
+	String queryName = request.getParameter("query");
+	request.setAttribute("query", queryName);
+	if (queryName != null) {
+	    processTransform(request,response);
+	    return;
+	}
 	String queryString = request.getParameter("queryString");
 	request.setAttribute("queryString", queryString);
 	String resultString = "result";
@@ -130,6 +138,30 @@ public class MDXQueryServlet extends HttpServlet {
 	getServletContext().getRequestDispatcher("/index.jsp").include(request, response);
     } 
 	
+    private void processTransform(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		String queryName = request.getParameter("query");
+		ResultCache rc = ResultCache.getInstance(request.getSession(), queryName);
+		Query query = rc.getQuery();
+		query = query.safeClone();
+		rc.setDirty();
+		String operation = request.getParameter("operation");
+		if (operation.equals("expand")) {
+			String memberName = request.getParameter("member");
+			boolean fail = true;
+			Member member = query.getCube().lookupMemberByUniqueName(memberName, fail);
+			query.toggleDrillState(member);
+		} else {
+			throw Util.newInternal("unkown operation '" + operation + "'");
+		}
+		rc.setQuery(query);
+		String redirect = request.getParameter("redirect");
+		if (redirect == null) {
+			redirect = "/index.jsp";
+		}
+		getServletContext().getRequestDispatcher(redirect).include(request, response);
+	}
+
     /** Handles the HTTP <code>GET</code> method.
     * @param request servlet request
     * @param response servlet response

@@ -25,6 +25,10 @@ public abstract class ResultBase implements Result {
 	protected Axis[] axes;
 	protected Axis slicerAxis;
 
+	public Query getQuery() {
+		return query;
+	}
+
 	// implement Result
 	public Axis[] getAxes()
 	{

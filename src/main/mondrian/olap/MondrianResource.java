@@ -37,7 +37,7 @@ public class MondrianResource extends mondrian.resource.ResourceBase implements 
 	public static synchronized MondrianResource instance() {
 		if (instance == null) {
 			try {
-				String resourceURL = System.getProperty(
+				String resourceURL = Util.getProperties().getProperty(
 					"mondrian.resourceURL");
 				instance = new MondrianResource(resourceURL, Locale.ENGLISH);
 			} catch (java.io.IOException e) {

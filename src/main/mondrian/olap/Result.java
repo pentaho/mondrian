@@ -22,6 +22,8 @@ package mondrian.olap;
  **/
 public interface Result
 {
+	/** Returns the query which generated this result. **/
+	Query getQuery();
 	/** Returns the non-slicer axes. **/
 	Axis[] getAxes();
 	/** Returns the slicer axis. **/

@@ -78,12 +78,20 @@ public class ResultCache {
 	}
 
 	/**
-	 * if you modify the query, call setDirty(true)
+	 * Returns the {@link Query}. If you modify the query, call
+	 * <code>{@link #setDirty}(true)</code>.
 	 */
 	public Query getQuery() {
 		return query;
 	}
 
+	/**
+	 * Sets the query. Automatically calls <code>{@link #setDirty}(true)</code>.
+	 */
+	public void setQuery(Query query) {
+		this.query = query;
+		setDirty();
+	}
 	/**
 	 * set to dirty after you have modified the query to force a recalcuation
 	 */

@@ -12,6 +12,7 @@
 
 package mondrian.test;
 import junit.framework.*;
+import junit.textui.TestRunner;
 import mondrian.olap.Util;
 import mondrian.olap.fun.BuiltinFunTable;
 import mondrian.util.Schedule;
@@ -27,29 +28,37 @@ import java.util.Properties;
  **/
 public class Main extends TestCase {
 	static public void main(String[] args) {
-		try {
-			new Main().run(args);
-		} catch (Exception e) {
-			PrintWriter pw = new PrintWriter(System.out);
-			pw.println("mondrian.test.Main received exception:");
-			String[] errors = Util.convertStackToString(e);
-			for (int i = 0; i < errors.length; i++) {
-				pw.println(errors[i]);
-			}
-			pw.flush();
-		}
-	}
+        new Main().runSafe(args);
+    }
 
-	Main() {
+    Main() {
 		super("mondrian");
 	}
+
+    private void runSafe(String[] args) {
+        try {
+            run(args);
+        } catch (Exception e) {
+            PrintWriter pw = new PrintWriter(System.out);
+            pw.println("mondrian.test.Main received exception:");
+            String[] errors = Util.convertStackToString(e);
+            for (int i = 0; i < errors.length; i++) {
+                pw.println(errors[i]);
+            }
+            pw.flush();
+        }
+    }
 
 	/**
 	 * Creates and runs the root test suite.
 	 */
 	void run(String[] args) throws Exception {
 		Test test = suite();
-		new MondrianHarness().run(test, new MondrianListener());
+        if (false) {
+            new MondrianHarness().run(test, new MondrianListener());
+        } else {
+            TestRunner.run(test);
+        }
 	}
 
 	/**
@@ -58,7 +67,7 @@ public class Main extends TestCase {
 	 * automatically by JUnit test-harnesses; see {@link TestSuite}.
 	 */
 	public static Test suite() throws Exception {
-		Properties properties = TestContext.instance().getProperties();
+		Properties properties = Util.getProperties();
 		String testName = properties.getProperty("mondrian.test.Name"),
 			testClass = properties.getProperty("mondrian.test.Class"),
 			testSuite = properties.getProperty("mondrian.test.Suite");
