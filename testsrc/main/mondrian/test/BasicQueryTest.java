@@ -15,6 +15,8 @@ import mondrian.olap.*;
 import mondrian.rolap.RolapConnection;
 import mondrian.rolap.cache.CachePool;
 
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 import java.util.regex.Pattern;
 
 /**
@@ -2448,8 +2450,10 @@ public class BasicQueryTest extends FoodMartTestCase {
 	 * with ascending sort order, null values sort at the end, and with 
 	 * descending sort order, null values sort at the beginning.
 	 * 
-	 * This test has expected results that vary depending on whether a Postgres or 
-	 * non-Postgres database is being used.
+	 * Oracle also sorts nulls high by default.
+	 * 
+	 * So, this test has expected results that vary depending on whether 
+	 * the database is being used sorts nulls high or low.
 	 * 
 	 */
 	public void testMemberWithNullKey() {
@@ -2460,11 +2464,33 @@ public class BasicQueryTest extends FoodMartTestCase {
 		String resultString = toString(result);
 		resultString = Pattern.compile("\\.0\\]").matcher(resultString).replaceAll("]");
 		
-		// Detect Postgres
+		// Try to detect whether nulls are sorted high, such as Postgres and Oracle.
+		// In practice, the different JDBC drivers do not report correctly in all
+		// instances.
 		
 		RolapConnection conn = (RolapConnection) getConnection();
+		boolean nullsSortHigh = false;
+		
+		// This did not seem to work consistently across drivers, so don't use it
+		// boolean nullsSortedAtEnd = false;
+		
+		try {
+			DatabaseMetaData dbMetadata = conn.getDataSource().getConnection().getMetaData();
+			nullsSortHigh = dbMetadata.nullsAreSortedHigh();
+			
+			// nullsSortedAtEnd = dbMetadata.nullsAreSortedAtEnd();  
+		} catch (SQLException e) {
+			fail("Failed to get DatabaseMetaData to check nulls sort order");
+			return;
+		}
+		
+		// Oracle apparently does not report the correct metadata for its handling 
+		// of sorting nulls, so we have a specific case (yuck!)
+		
 		String jdbc_url = conn.getConnectInfo().get("Jdbc");
-		boolean isPostgres = (jdbc_url.toLowerCase().indexOf("postgresql") >= 0);
+		if (jdbc_url.toLowerCase().indexOf("oracle") >= 0 ) {
+			nullsSortHigh = true;
+		}
 
 		int row = 0;
 		
@@ -2475,9 +2501,9 @@ public class BasicQueryTest extends FoodMartTestCase {
 						"Axis #2:" + nl +
 						"{[Store Size in SQFT].[All Store Size in SQFTs]}" + nl +
 						
-						// null is at the start in order under non Postgres DBMSs 
+						// null is at the start in order under DBMSs that sort null low 
 						
-						(!isPostgres ? "{[Store Size in SQFT].[All Store Size in SQFTs].[null]}" + nl : "") +
+						(!nullsSortHigh ? "{[Store Size in SQFT].[All Store Size in SQFTs].[null]}" + nl : "") +
 						"{[Store Size in SQFT].[All Store Size in SQFTs].[20319]}" + nl +
 						"{[Store Size in SQFT].[All Store Size in SQFTs].[21215]}" + nl +
 						"{[Store Size in SQFT].[All Store Size in SQFTs].[22478]}" + nl +
@@ -2499,11 +2525,11 @@ public class BasicQueryTest extends FoodMartTestCase {
 						"{[Store Size in SQFT].[All Store Size in SQFTs].[38382]}" + nl +
 						"{[Store Size in SQFT].[All Store Size in SQFTs].[39696]}" + nl +
 						
-						// null is at the end in order under Postgres 
+						// null is at the end in order for DBMSs that sort nulls high 
 						
-						(isPostgres ? "{[Store Size in SQFT].[All Store Size in SQFTs].[null]}" + nl : "") +
+						(nullsSortHigh ? "{[Store Size in SQFT].[All Store Size in SQFTs].[null]}" + nl : "") +
 						"Row #" + row++ + ": 266,773" + nl +
-						(!isPostgres ? "Row #" + row++ + ": 39,329" + nl : "" ) +
+						(!nullsSortHigh ? "Row #" + row++ + ": 39,329" + nl : "" ) +
 						"Row #" + row++ + ": 26,079" + nl +
 						"Row #" + row++ + ": 25,011" + nl +
 						"Row #" + row++ + ": 2,117" + nl +
@@ -2524,7 +2550,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 						"Row #" + row++ + ": (null)" + nl +
 						"Row #" + row++ + ": (null)" + nl +
 						"Row #" + row++ + ": 24,576" + nl +
-						(isPostgres ? "Row #" + row++ + ": 39,329" + nl : "" );
+						(nullsSortHigh ? "Row #" + row++ + ": 39,329" + nl : "" );
         assertEquals(expected, resultString);
 	}
 
