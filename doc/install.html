@@ -492,10 +492,14 @@ example:</p><blockquote>
     
 </blockquote>
 <h3><a name="4_5_PostgreSQL">4.5. PostgreSQL</a></h3>
-<p>As <a href="#4_3_hsqldb">hsqldb</a>, except for the following.</p>
-<p>In <code>
+<p>As <a href="#4_3_hsqldb">hsqldb</a>, except for the following:</p>
+<ul>
+  <li>In <code>
         FoodMartTables.sql</code>, change <code>DOUBLE</code> to <code>DOUBLE
-    PRECISION</code>, and <code>BIT</code> to <code>SMALLINT</code>.</p>
+    PRECISION</code>, and <code>BIT</code> to <code>BOOLEAN</code>.</li>
+  <li>Remove comment lines prefixed by '#'. (PostgreSQL doesn't recognize this 
+  comment syntax.)</li>
+</ul>
 
 <h3><a name="4_6_IBM_DB2">4.6. IBM DB2</a></h3>
 

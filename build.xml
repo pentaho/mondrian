@@ -481,7 +481,6 @@ demo/oracle/FoodMartData.sql,
 demo/oracle/FoodMartDropTables.sql,
 demo/oracle/FoodMartTables.sql,
 demo/oracle/FoodMartIndexes.sql,
-demo/oracle/FoodMart.dmp,
 demo/access/MondrianFoodMart.mdb,
 demo/**/*.pl,
 demo/**/*.sh"
