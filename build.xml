@@ -613,6 +613,9 @@ junit.jar"/>
       <fileset
           dir="${classes.dir}"
           includes="**/*.class"/>
+      <fileset
+          dir="."
+          includes="images/*.*"/>
     </jar>
     
   </target>
