@@ -262,7 +262,8 @@ public class RolapStar {
                 // e.g. "select count(distinct product_id) from product"
                 sqlQuery.addSelect(
                     "count(distinct " + getExpression(sqlQuery) + ")");
-                table.addToFrom(sqlQuery, true, true);
+                // no need to join fact table here
+                table.addToFrom(sqlQuery, true, false);
             }
             String sql = sqlQuery.toString();
             ResultSet resultSet = null;
