@@ -15,7 +15,7 @@
 @goto end
 :x010
 
-@set XALAN_HOME=%HOME_DRIVE%:/xalan-j_2_4_D1
+@set XALAN_HOME=%HOME_DRIVE%:/xalan-j_2_4_1
 @if exist "%XALAN_HOME%" goto x030
 @echo XALAN_HOME (%XALAN_HOME%) does not exist
 @goto end
@@ -27,21 +27,11 @@
 @goto end
 :x040
 
-@set TOMCAT_HOME=%HOME_DRIVE%:\jakarta-tomcat-4.0.4
+@set TOMCAT_HOME=%HOME_DRIVE%:\jakarta-tomcat-4.1.18
 @if exist "%TOMCAT_HOME%" goto x050
 @echo TOMCAT_HOME (%TOMCAT_HOME%) does not exist
 @goto end
 :x050
-
-@if exist "%TOMCAT_HOME%\common\lib\xalan.jar" goto x100
-@echo You must copy xalan.jar from XALAN/bin to TOMCAT/common/lib
-@goto end
-:x100
-
-@if exist "%TOMCAT_HOME%\common\lib\xml-apis.jar" goto x200
-@echo You must copy xml-apis.jar from XALAN/bin to TOMCAT/common/lib
-@goto end
-:x200
 
 @set CLASSPATH=%SRCROOT%/classes;%SRCROOT%/lib/javacup.jar;%SRCROOT%/lib/boot.jar;%XALAN_HOME%/bin/xml-apis.jar;%XALAN_HOME%/bin/xercesImpl.jar
 

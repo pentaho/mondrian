@@ -46,7 +46,15 @@
   <li><a href="#Appendix_A_Product_installation_instructions">Appendix A: 
   Product instllation instructions</a></li>
   <li><a href="#Appendix_B_How_to_debug_Tomcat_using_IntelliJ">Appendix B: How 
-  to debug Tomcat using IntelliJ</a></ol>
+  to debug Tomcat using IntelliJ</a><li><a href="#Appendix_C_Compatibility_issues">Appendix C. Compatibility issues</a><ol>
+  <li><a href="#Appendix_C_1_Weblogic_6_1_and_Xerces">Weblogic 6.1 and Xerces</a></li>
+  <li><a href="#Appendix_C_2_Xalan_and_Tomcat">Xalan and Tomcat</a></li>
+
+</ol>
+
+  </li>
+
+</ol>
 
 <h2><a name="2_Modification_history">2. Modification history</a></h2>
 <table border="1" class="clsStd" style="border-collapse: collapse" bordercolor="#111111" cellpadding="2" cellspacing="0">
@@ -123,8 +131,6 @@
   <li>Install <a href="#Tomcat">Tomcat</a>.</li>
   <li>Install <a href="#Xalan">Xalan</a>.</li>
   <li>Install <a href="#JUnit">JUnit</a>.</li>
-  <li>Go to <i></i><code><i>${xalan.home}</i>/bin</code>, and copy <code>
-  xalan.jar</code> and <code>xml-apis.jar</code> to <i></i><code><i>${tomcat.home}</i>/common/lib</code>.</li>
   <li>Modify <code>build.bat</code>, setting <code>JAVA_HOME</code>, <code>ANT_HOME</code>, 
   <code>TOMCAT_HOME</code>, <code>XALAN_HOME</code>, <code>JUNIT_HOME</code>.</li>
 </ol>
@@ -498,6 +504,8 @@ mondrian test</pre>
 </ol>
 <h2><a name="8_Miscellaneous">8. Miscellaneous</a></h2>
 <h3><a name="8_1_Coding_guidelines">8.1. Coding guidelines</a></h3>
+<p>If you are contributing code, please follow the same guidelines used for the 
+rest of the code:</p>
 <ul>
   <li>Indentation 4.</li>
   <li>Tab stop 4.</li>
@@ -510,20 +518,22 @@ their first use as possible.</li>
   <li>Don't initialize variables with 'dummy' values just
 to shut up the compiler.</li>
   <li>Try to keep lines shorter than 80 characters.</li>
+  <li>Classes and public methods must have javadoc.</li>
+  <li>Source files must contain copyright and license notices.</li>
   <li>Write Javadoc comments on
 methods  in the present active ('Collects garbage.'), <em><font face="Verdana">not</font></em> 
   the imperative ('Collect
 garbage.'), passive ('Garbage is collected.'), or future active ('Will collect 
   garbage.').</li>
   <li>When editing HTML documents, please don't use an editor which reformats the
-HTML source (such as Word).</li>
+HTML source (such as Microsoft Word).</li>
 </ul>
 
 <h2><a name="Appendix_A_Product_installation_instructions">Appendix A. Product 
 installation instructions</a></h2>
 
 <p>These are the products I used to build mondrian. Install all of the products
-marked 'required'. (I use <code>/</code>-es in paths because I am run MKS on
+marked 'required'. (I use <code>/</code>-es in paths because I  run MKS on
 Windows 2000, and it makes things simpler.)</p>
 
 <p>In the following, the symbol <code><i>${project.location}</i></code> means the root of your
@@ -542,7 +552,7 @@ sufficient to edit the corresponding line in <code><i>${project.location}</i>/bu
   <tr>
     <td><a name="JDK">JDK</a></td>
     <td>Yes</td>
-    <td>1.3 or later (I use version 1.4.1.)</td>
+    <td>1.4 or later (I use version 1.4.1.)</td>
     <td>Available from <a href="http://developer.java.sun.com/" target="_blank">http://developer.java.sun.com/</a>.
       I downloaded <code>j2sdk-1_4_1-windows-i586.exe</code>, and extracted to <code>E:/j2sdk1.4.1</code>. Set
       <code>JAVA_HOME</code> to same.</td>
@@ -559,10 +569,10 @@ jakarta-ant-1.5-bin.zip</a>,  extracted to <code>E:/jakarta-ant-1.5</code>,
   <tr>
     <td><a name="Tomcat">Tomcat</a></td>
     <td>Yes</td>
-    <td>4.0 or later (I use version 4.0.4)</td>
+    <td>4.1.18 or later</td>
     <td>Available from <a href="http://jakarta.apache.org/tomcat" target="_blank">
     http://jakarta.apache.org/tomcat</a>. I downloaded <code>
-    jakarta-tomcat-4.0.4.zip</code>,  extracted to <code>E:/jakarta-tomcat-4.0.4</code>, 
+    jakarta-tomcat-4.1.18.zip</code>,  extracted to <code>E:/jakarta-tomcat-4.1.18</code>, 
     and set <code>TOMCAT_HOME</code> to the same.</td>
   </tr>
   <tr>
@@ -576,16 +586,17 @@ jakarta-ant-1.5-bin.zip</a>,  extracted to <code>E:/jakarta-ant-1.5</code>,
   <tr>
     <td><a name="Xerces">Xerces</a></td>
     <td>&nbsp;</td>
-    <td>1.4.1 or later</td>
-    <td><code>xerces.jar</code> is included with Tomcat.</td>
+    <td>Use the version included with Tomcat</td>
+    <td>Xerces is included with Tomcat. If you use a different version, 
+    compatibility issues may arise.</td>
   </tr>
   <tr>
     <td><a name="Xalan">Xalan</a></td>
     <td>Yes</td>
-    <td>2.3.1 or later</td>
+    <td>2.4.1 or later</td>
     <td>Available from <a href="http://xml.apache.org/xalan-j/" target="_blank">
-    http://xml.apache.org/xalan-j/</a>. I downloaded <code>xalan-j_2_3_1-bin.zip</code>, 
-    extracted to <code>E:/xalan-j_2_3_1</code>, and set <code>XALAN_HOME</code> 
+    http://xml.apache.org/xalan-j/</a>. I downloaded <code>xalan-j_2_4_1-bin.zip</code>, 
+    extracted to <code>E:/xalan-j_2_4_1</code>, and set <code>XALAN_HOME</code> 
     to the same.</td>
   </tr>
   <tr>
@@ -648,11 +659,18 @@ The MySql service was started successfully.</code></pre>
     </td>
   </tr>
   <tr>
+    <td>Oracle</td>
+    <td>No</td>
+    <td>6.0 or later</td>
+    <td>
+&nbsp;</td>
+  </tr>
+  <tr>
     <td>PostgreSQL</td>
     <td>No</td>
     <td>?</td>
     <td>
-?</td>
+&nbsp;</td>
   </tr>
   <tr>
     <td>JavaCUP (parser generator)</td>
@@ -706,8 +724,10 @@ goto end</code></pre>
   <li>attach intellij's debugger to port 5000</li>
 </ol>
 
-<h2><a name="Appendix_C_A_note_on_Weblogic_and_Xerces">Appendix C. A note on 
-Weblogic and Xerces</a></h2>
+<h2><a name="Appendix_C_Compatibility_issues">Appendix C. Compatibility 
+issues</a></h2>
+<h3><font color="#990000"><a name="Appendix_C_1_Weblogic_6_1_and_Xerces">
+C.1. Weblogic 6.1 and Xerces</a></font></h3>
 <p>Weblogic 6.1 ships with an older, incompatible, version of Xerces. The 
 symptom is the error</p>
 <blockquote>
@@ -728,6 +748,44 @@ mode, and Mondrian needs this. Therefore, in a Weblogic environment, Mondrian
 explicitly uses Xerces.&nbsp; Fyi,
 <a href="http://xml.apache.org/soap/faq/faq-for-WL6.1beta.html">this note</a> 
 describes how to change Weblogic's default XML parser.</p>
+
+<h3><font color="#990000"><a name="Appendix_C_2_Xalan_and_Tomcat">C.2. JDK, Xalan and Tomcat</a></font></h3>
+
+<p>Mondrian binaries, as shipped, require JDK 1.4, Xalan 2.4.1, and Tomcat 
+4.1.18 or later.</p>
+
+<p>If you are running JDK 1.3.<i>x</i>, you will need to add <code>xml-apis.jar</code> 
+and <code>xercesImpl.jar</code> to <code>mondrian.war</code> (since JDK 1.3 does 
+not include the an XML parser), and copy <code>
+  xalan.jar</code> and <code>xml-apis.jar</code> from <code><i>${xalan.home}</i>/bin</code> 
+to <code><i>${tomcat.home}</i>/common/lib</code>.</p>
+
+<p>If you get the configuration wrong, a typical error is</p>
+
+<blockquote>
+  <pre>java.lang.VerifyError: Cannot inherit from final class
+at java.lang.ClassLoader.defineClass0(Native Method)
+at java.lang.ClassLoader.defineClass(ClassLoader.java:502)
+at java.security.SecureClassLoader.defineClass(SecureClassLoader.java:123)
+at org.apache.catalina.loader.WebappClassLoader.findClassInternal(WebappClassLoader.java:1664)
+at org.apache.catalina.loader.WebappClassLoader.findClass(WebappClassLoader.java:953)
+at org.apache.catalina.loader.WebappClassLoader.loadClass(WebappClassLoader.java:1394)
+at org.apache.catalina.loader.WebappClassLoader.loadClass(WebappClassLoader.java:1274)
+at java.lang.ClassLoader.loadClassInternal(ClassLoader.java:315)
+at org.apache.xerces.impl.XMLNSDocumentScannerImpl.createContentDispatcher(Unknown Source)
+at org.apache.xerces.impl.XMLDocumentFragmentScannerImpl.&lt;init&gt;(XMLDocumentFragmentScannerImpl.java:249)
+at org.apache.xerces.impl.XMLDocumentScannerImpl.&lt;init&gt;(XMLDocumentScannerImpl.java:245)
+at org.apache.xerces.impl.XMLNSDocumentScannerImpl.&lt;init&gt;(Unknown Source)
+at org.apache.xerces.parsers.IntegratedParserConfiguration.createDocumentScanner(Unknown Source)
+at org.apache.xerces.parsers.DTDConfiguration.&lt;init&gt;(DTDConfiguration.java:367)
+at org.apache.xerces.parsers.StandardParserConfiguration.&lt;init&gt;(StandardParserConfiguration.java:198)
+at org.apache.xerces.parsers.IntegratedParserConfiguration.&lt;init&gt;(Unknown Source)
+at org.apache.xerces.parsers.IntegratedParserConfiguration.&lt;init&gt;(Unknown Source)
+at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)</pre>
+</blockquote>
+<p>This error occurred under JDK 1.3.1, Tomcat 4.1.18, Xalan 2.4.1. The 
+solutions to the error were (a) move to JDK 1.4 and remove xml-apis.jar and 
+xercesImpl.jar from mondrian.war, or (b) revert to Xalan 2.3.1.</p>
 
 <hr>
 

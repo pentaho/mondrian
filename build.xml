@@ -63,7 +63,9 @@ ${lib.dir}/mondrian.jar,
 ${lib.dir}/mondrian.war,
 ${lib.dir}/web.xml,
 ${lib.dir}/ant.jar,
+${lib.dir}/junit.jar,
 ${lib.dir}/optional.jar,
+${lib.dir}/xalan.jar,
 ${lib.dir}/xercesImpl.jar,
 ${lib.dir}/xml-apis.jar"/>
 
@@ -455,7 +457,9 @@ bin/mondrian.bat,
 LICENSE.html,
 README.txt,
 VERSION.txt"
-          excludes="**/*~"/>
+          excludes="
+**/*~,
+**/*.psp"/>
       <!-- Files needed to run mondrian, ant, junit in runtime environment. -->
       <zipfileset
           dir="${lib.dir}"
@@ -568,8 +572,6 @@ and lib contains ant.jar, junit.jar etc. (use 'copy-jars' target)">
 ${name}.jar,
 javacup.jar,
 xalan.jar,
-xml-apis.jar,
-xercesImpl.jar
 junit.jar"/>
     </war>
   </target>
