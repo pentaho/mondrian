@@ -40,13 +40,19 @@ class RolapLevel extends LevelBase
 	static final int UNIQUE = 4;
 	RolapProperty[] properties;
 	RolapProperty[] inheritedProperties;
+
 	/** The expression which joins to the parent member in a parent-child
 	 * hierarchy, or null if this is a regular hierarchy. */
 	final MondrianDef.Expression parentExp;
 	/** Value which indicates a null parent in a parent-child hierarchy. */
 	String nullParentValue;
+    /** For a parent-child hierarchy with a closure provided by the schema,
+     * the equivalent level in the closed hierarchy; otherwise null */
+    private RolapLevel closedPeer;
+
     /** Condition under which members are hidden. */
     final HideMemberCondition hideMemberCondition;
+    private final MondrianDef.Closure xmlClosure;
 
     /**
 	 * Creates a level.
@@ -56,15 +62,15 @@ class RolapLevel extends LevelBase
      * @pre levelType != null
      * @pre hideMemberCondition != null
 	 */
-	RolapLevel(
-			RolapHierarchy hierarchy, int depth, String name,
-			MondrianDef.Expression keyExp,
-			MondrianDef.Expression ordinalExp,
-			MondrianDef.Expression parentExp, String nullParentValue,
-			RolapProperty[] properties,
-            int flags,
-            HideMemberCondition hideMemberCondition,
-            LevelType levelType) {
+	RolapLevel(RolapHierarchy hierarchy, int depth, String name,
+        MondrianDef.Expression keyExp,
+        MondrianDef.Expression ordinalExp,
+        MondrianDef.Expression parentExp, String nullParentValue,
+        MondrianDef.Closure xmlClosure, RolapProperty[] properties,
+        int flags,
+        HideMemberCondition hideMemberCondition,
+        LevelType levelType)
+    {
         Util.assertPrecondition(properties != null, "properties != null");
         Util.assertPrecondition(hideMemberCondition != null,
                 "hideMemberCondition != null");
@@ -96,6 +102,7 @@ class RolapLevel extends LevelBase
 		this.nullParentValue = nullParentValue;
 		Util.assertPrecondition(parentExp != null || nullParentValue == null,
                 "parentExp != null || nullParentValue == null");
+        this.xmlClosure = xmlClosure;
 		for (int i = 0; i < properties.length; i++) {
 			RolapProperty property = properties[i];
 			if (property.exp instanceof MondrianDef.Column) {
@@ -141,6 +148,7 @@ class RolapLevel extends LevelBase
             }
         }
         this.hideMemberCondition = hideMemberCondition;
+        this.closedPeer = null;
 	}
 
 	private Property lookupProperty(ArrayList list, String propertyName) {
@@ -158,16 +166,18 @@ class RolapLevel extends LevelBase
 	RolapLevel(RolapHierarchy hierarchy, int depth, MondrianDef.Level xmlLevel)
 	{
 		this(
-				hierarchy, depth, xmlLevel.name, xmlLevel.getKeyExp(),
-				xmlLevel.getOrdinalExp(),
-				xmlLevel.getParentExp(), xmlLevel.nullParentValue,
-				createProperties(xmlLevel),
-				(xmlLevel.type.equals("Numeric") ? NUMERIC : 0) |
-				(xmlLevel.uniqueMembers.booleanValue() ? UNIQUE : 0),
-                HideMemberCondition.lookup(xmlLevel.hideMemberIf),
-                LevelType.lookup(xmlLevel.levelType));
-		if (xmlLevel.caption != null && xmlLevel.caption.length() > 0)
+            hierarchy, depth, xmlLevel.name, xmlLevel.getKeyExp(),
+            xmlLevel.getOrdinalExp(),
+            xmlLevel.getParentExp(), xmlLevel.nullParentValue,
+            xmlLevel.closure, createProperties(xmlLevel),
+            (xmlLevel.type.equals("Numeric") ? NUMERIC : 0) |
+            (xmlLevel.uniqueMembers.booleanValue() ? UNIQUE : 0),
+            HideMemberCondition.lookup(xmlLevel.hideMemberIf),
+            LevelType.lookup(xmlLevel.levelType));
+
+		if (xmlLevel.caption != null && xmlLevel.caption.length() > 0) {
 			setCaption(xmlLevel.caption);
+        }
 		if (xmlLevel.formatter != null && xmlLevel.formatter.length() > 0) {
 			// there is a special member formatter class
 			try {
@@ -175,7 +185,8 @@ class RolapLevel extends LevelBase
 				Constructor ctor = clazz.getConstructor(new Class[0]);
 				memberFormatter = (MemberFormatter) ctor.newInstance(new Object[0]);
 			} catch (Exception e) {
-				e.printStackTrace();
+				throw MondrianResource.instance().newMemberFormatterLoadFailed(
+                    xmlLevel.formatter, getUniqueName(), e);
 			}
 		}
 	}
@@ -227,8 +238,15 @@ class RolapLevel extends LevelBase
 		}
 	}
 
-	void init()
+	void init(RolapCube cube)
 	{
+        if (xmlClosure != null) {
+            final RolapDimension dimension = ((RolapHierarchy) hierarchy)
+                .createClosedPeerDimension(this, xmlClosure);
+            dimension.init(cube);
+            cube.registerDimension(dimension);
+            this.closedPeer = (RolapLevel) dimension.getHierarchies()[0].getLevels()[1];
+        }
 	}
 
 	public boolean isAll() {
@@ -295,6 +313,25 @@ class RolapLevel extends LevelBase
 
         return null;
     }
+
+
+    /** true when the level is part of a parent/child hierarchy and has an equivalent
+     * closed level
+     */
+    boolean hasClosedPeer() {
+        return (parentExp != null) && (closedPeer != null);
+    }
+
+
+    /**
+     * When the level is part of a parent/child hierarchy and was provided with
+     * a closure, returns the equivalent closed level.
+     */
+    RolapLevel getClosedPeer() {
+        return closedPeer;
+    }
+
+
 }
 
 // End RolapLevel.java

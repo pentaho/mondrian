@@ -77,7 +77,7 @@ public class RolapSchema implements Schema
 	private static final int[] dimensionAllowed = new int[] {Access.NONE, Access.ALL};
 	private static final int[] hierarchyAllowed = new int[] {Access.NONE, Access.ALL, Access.CUSTOM};
 	private static final int[] memberAllowed = new int[] {Access.NONE, Access.ALL};
-	
+
 	/**
 	 * Creates a {@link RolapSchema}. Use
 	 * <code>RolapSchema.Pool.instance().get(catalogName)</code>.
@@ -418,12 +418,12 @@ public class RolapSchema implements Schema
 	 * @synchronization thread safe
 	 */
 	synchronized MemberReader createMemberReader(
-			String sharedName, RolapHierarchy hierarchy, MondrianDef.Hierarchy xmlHierarchy) {
+			String sharedName, RolapHierarchy hierarchy, String memberReaderClass) {
 		MemberReader reader;
 		if (sharedName != null) {
 			reader = (MemberReader) mapSharedHierarchyToReader.get(sharedName);
 			if (reader == null) {
-				reader = createMemberReader(hierarchy, xmlHierarchy);
+				reader = createMemberReader(hierarchy, memberReaderClass);
 				// share, for other uses of the same shared hierarchy
 				mapSharedHierarchyToReader.put(sharedName, reader);
 				mapSharedHierarchyNameToHierarchy.put(sharedName, hierarchy);
@@ -438,7 +438,7 @@ public class RolapSchema implements Schema
 						sharedDimension.getGlobalOrdinal());
 			}
 		} else {
-			reader = createMemberReader(hierarchy, xmlHierarchy);
+			reader = createMemberReader(hierarchy, memberReaderClass);
 		}
 		return reader;
 	}
@@ -447,13 +447,12 @@ public class RolapSchema implements Schema
 	 * Creates a {@link MemberReader} with which to read a hierarchy.
 	 */
 	private MemberReader createMemberReader(
-			RolapHierarchy hierarchy, MondrianDef.Hierarchy xmlHierarchy) {
-		if (xmlHierarchy.memberReaderClass != null) {
+			RolapHierarchy hierarchy, String memberReaderClass) {
+		if (memberReaderClass != null) {
 			Exception e2 = null;
 			try {
 				Properties properties = null;
-				Class clazz = Class.forName(
-					xmlHierarchy.memberReaderClass);
+				Class clazz = Class.forName(memberReaderClass);
 				Constructor constructor = clazz.getConstructor(new Class[] {
 					RolapHierarchy.class, Properties.class});
 				Object o = constructor.newInstance(
@@ -480,33 +479,32 @@ public class RolapSchema implements Schema
 			}
 			throw Util.getRes().newInternal(
 					"while instantiating member reader '" +
-					xmlHierarchy.memberReaderClass,
-					e2);
+					memberReaderClass, e2);
 		} else {
 			SqlMemberSource source = new SqlMemberSource(hierarchy);
-			return new SmartMemberReader(source);
 
-			// the CacheMemberReader is buggy, dont use
-			// @see CacheMemberReader
-			// return new CacheMemberReader(source);
+            // The following code is disabled bcause
+            // counting members is too slow. The test suite
+            // runs faster w/o this. So the optimization here
+            // is not to be too clever.
 
-			// The following code is disabed bcause
-			// counting members is too slow. The test suite
-			// runs faster w/o this. So the optimization here
-			// is not to be too clever.
-		    /*
-			SqlMemberSource source = new SqlMemberSource(hierarchy);
-			int memberCount = source.getMemberCount();
-			int largeDimensionThreshold =
-					MondrianProperties.instance().getLargeDimensionThreshold();
-			if (memberCount > largeDimensionThreshold) {
-				return new SmartMemberReader(source);
-			} else {
-				return new CacheMemberReader(source);
-			}
-			*/
-		}
-	}
+            // Also, the CacheMemberReader is buggy.
+
+            int memberCount;
+            if (false) {
+                memberCount = source.getMemberCount();
+            } else {
+                memberCount = Integer.MAX_VALUE;
+            }
+            int largeDimensionThreshold =
+                MondrianProperties.instance().getLargeDimensionThreshold();
+            if (memberCount > largeDimensionThreshold) {
+                return new SmartMemberReader(source);
+            } else {
+                return new CacheMemberReader(source);
+            }
+        }
+    }
 
 	synchronized HierarchyUsage getUsage(
 			RolapHierarchy hierarchy, RolapCube cube) {

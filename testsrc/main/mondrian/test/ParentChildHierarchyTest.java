@@ -11,9 +11,8 @@
 */
 package mondrian.test;
 
-import mondrian.olap.Result;
-import mondrian.olap.Util;
 import junit.framework.Assert;
+import mondrian.olap.Result;
 
 /**
  * <code>ParentChildHierarchyTest</code> tests parent-child hierarchies.
@@ -80,34 +79,34 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
 				"Row #0: 616" + nl +
 				"Row #0: $64.01" + nl);
 	}
-    // disable this test til bug is fixed
-	public void _testDistinctChildrenOfAll() {
+
+	public void testDistinctChildrenOfAll() {
         // parent/child dimension expanded: fails with
         // java.lang.UnsupportedOperationException at
         // mondrian.rolap.RolapAggregator$6.aggregate(RolapAggregator.java:72)
-		runQueryCheckResult(
-				"select {[Measures].[Count], [Measures].[Org Salary], " + nl +
-                "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns," + nl +
-				"{[Employees].children} on rows" + nl +
-				"from [HR]",
-				"Axis #0:" + nl +
-				"{}" + nl +
-				"Axis #1:" + nl +
-				"{[Measures].[Count]}" + nl +
-				"{[Measures].[Org Salary]}" + nl +
-				"{[Measures].[Number of Employees]}" + nl +
-				"{[Measures].[Avg Salary]}" + nl +
-				"Axis #2:" + nl +
-				"{[Employees].[All Employees]}" + nl +
-				"Row #0: 7,392" + nl +
-				"Row #0: $39,431.67" + nl +
-				"Row #0: 616" + nl +
-				"Row #0: $64.01" + nl);
+        runQueryCheckResult(
+            "select {[Measures].[Count], [Measures].[Org Salary], " + nl +
+            "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns," + nl +
+            "{[Employees].children} on rows" + nl +
+            "from [HR]",
+            "Axis #0:" + nl +
+            "{}" + nl +
+            "Axis #1:" + nl +
+            "{[Measures].[Count]}" + nl +
+            "{[Measures].[Org Salary]}" + nl +
+            "{[Measures].[Number of Employees]}" + nl +
+            "{[Measures].[Avg Salary]}" + nl +
+            "Axis #2:" + nl +
+            "{[Employees].[All Employees].[Sheri Nowmer]}" + nl +
+            "Row #0: 7,392" + nl +
+            "Row #0: $39,431.67" + nl +
+            "Row #0: 616" + nl +
+            "Row #0: $64.01" + nl);
 	}
 
     // same two tests, but on a subtree:
     // disable test til bug fixed
-    public void _testDistinctSubtree() {
+    public void testDistinctSubtree() {
         // also fails with UnsupportedOperationException
 		runQueryCheckResult(
 				"select {[Measures].[Count], [Measures].[Org Salary], " + nl +

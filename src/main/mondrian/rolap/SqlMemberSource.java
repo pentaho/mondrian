@@ -310,14 +310,15 @@ class SqlMemberSource implements MemberReader
                     null, hierarchy.getAllMemberName(),
                     Member.ALL_MEMBER_TYPE);
                 // assign "all member" caption
-                if (hierarchy.xmlHierarchy.allMemberCaption != null && 
+                if (hierarchy.xmlHierarchy != null &&
+                    hierarchy.xmlHierarchy.allMemberCaption != null &&
                 		hierarchy.xmlHierarchy.allMemberCaption.length() > 0)
                 	root.setCaption(hierarchy.xmlHierarchy.allMemberCaption );
- 
+
                 root.ordinal = lastOrdinal++;
                 list.add(root);
             }
-            
+
             int limit = MondrianProperties.instance().getResultLimit();
      		int nFetch = 0;
 
@@ -536,7 +537,7 @@ class SqlMemberSource implements MemberReader
 
             	if ( limit > 0 && limit < ++nFetch ) {
 					// result limit exceeded, throw an exception
-            		String msg = "SqlMemberSource.getMembersInLevel Fetch limit(" +limit +") exceeded; sql=[" + sql + "]"; 
+            		String msg = "SqlMemberSource.getMembersInLevel Fetch limit(" +limit +") exceeded; sql=[" + sql + "]";
 					throw Util.newInternal(new ResultLimitExceeded(msg), msg);
 				}
 
@@ -765,8 +766,14 @@ class SqlMemberSource implements MemberReader
                         // calculated, and its value is the aggregation of the data member and all
                         // of the children. The children and the data member belong to the parent
                         // member; the data member does not have any children.
-                        final RolapParentChildMember parentChildMember =
-                                new RolapParentChildMember(parentMember, childLevel, value, member);
+                        final RolapParentChildMember parentChildMember;
+                        if (childLevel.hasClosedPeer()) {
+                            parentChildMember = new RolapParentChildMember(
+                                parentMember, childLevel, value, member);
+                        } else {
+                            parentChildMember = new RolapParentChildMemberNoClosure(
+                                parentMember, childLevel, value, member);
+                        }
                         member = parentChildMember;
                     }
                     for (int j = 0; j < childLevel.properties.length; j++) {
@@ -920,7 +927,11 @@ class SqlMemberSource implements MemberReader
     }
 
     /**
-     * Member of a parent-child dimension.
+     * Member of a parent-child dimension which has a closure table.
+     *
+     * <p>When looking up cells, this member will automatically be converted
+     * to a corresponding member of the auxiliary dimension which maps onto
+     * the closure table.
      */
 	private static class RolapParentChildMember extends RolapMember {
 		private final RolapMember dataMember;
@@ -934,16 +945,10 @@ class SqlMemberSource implements MemberReader
 			else
 				depth = 0;
 		}
+
         public Member getDataMember() {
             return dataMember;
         }
-		public boolean isCalculated() {
-			return true;
-		}
-		Exp getExpression() {
-            final RolapHierarchy hierarchy = (RolapHierarchy) getHierarchy();
-            return hierarchy.getAggregateChildrenExpression();
-		}
 
 		public Object getPropertyValue(String name) {
 			if (name.equals(Property.PROPERTY_CONTRIBUTING_CHILDREN)) {
@@ -963,6 +968,31 @@ class SqlMemberSource implements MemberReader
 		 */
 		public int getDepth() {
 			return depth;
+		}
+	}
+
+    /**
+     * Member of a parent-child dimension which has no closure table.
+     *
+     * <p>This member is calculcated. When you ask for its value, it returns
+     * an expression which aggregates the values of its child members.
+     * This calculation is very inefficient, and we can only support
+     * aggregatable measures ("count distinct" is non-aggregatable).
+     * Unfortunately it's the best we can do without a closure table.
+     */
+	private static class RolapParentChildMemberNoClosure extends RolapParentChildMember {
+		public RolapParentChildMemberNoClosure(RolapMember parentMember,
+                RolapLevel childLevel, Object value, RolapMember dataMember) {
+			super(parentMember, childLevel, value, dataMember);
+		}
+
+		public boolean isCalculated() {
+			return true;
+		}
+
+		Exp getExpression() {
+            final RolapHierarchy hierarchy = (RolapHierarchy) getHierarchy();
+            return hierarchy.getAggregateChildrenExpression();
 		}
 	}
 }

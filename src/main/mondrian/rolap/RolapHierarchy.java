@@ -32,8 +32,11 @@ class RolapHierarchy extends HierarchyBase
      */
 	MemberReader memberReader;
 	MondrianDef.Hierarchy xmlHierarchy;
+    private String memberReaderClass;
+    private MondrianDef.Relation relation;
 	private RolapMember defaultMember;
 	private RolapNullMember nullMember;
+
 	/**
 	 * If this hierarchy is a public -- that is, it belongs to a dimension
 	 * which is a usage of a shared dimension -- then
@@ -48,6 +51,9 @@ class RolapHierarchy extends HierarchyBase
 
 	String foreignKey;
 	private Exp aggregateChildrenExpression;
+
+    // for newClosedPeerHierarchy() to copy; but never used??
+    private String primaryKey;
 
     RolapHierarchy(RolapDimension dimension, String subName, boolean hasAll)
 	{
@@ -86,6 +92,8 @@ class RolapHierarchy extends HierarchyBase
 			xmlHierarchy.relation = cube.fact;
 		}
 		this.xmlHierarchy = xmlHierarchy;
+        this.relation = xmlHierarchy.relation;
+        this.memberReaderClass = xmlHierarchy.memberReaderClass;
 		if (hasAll) {
 			if (xmlHierarchy.allMemberName != null) {
 				this.allMemberName = xmlHierarchy.allMemberName;
@@ -93,7 +101,7 @@ class RolapHierarchy extends HierarchyBase
 			this.levels = new RolapLevel[xmlHierarchy.levels.length + 1];
 			this.levels[0] = new RolapLevel(
 					this, 0, "(All)", null, null, null, null,
-                    RolapProperty.emptyArray,
+                    null, RolapProperty.emptyArray,
                     RolapLevel.ALL | RolapLevel.UNIQUE,
                     RolapLevel.HideMemberCondition.Never,
                     LevelType.Regular);
@@ -126,9 +134,12 @@ class RolapHierarchy extends HierarchyBase
             throw MondrianResource.instance()
                     .newHierarchyMustNotHaveMoreThanOneSource(getUniqueName());
         }
+        this.primaryKey = xmlHierarchy.primaryKey;
 		this.foreignKey = xmlCubeDimension.foreignKey;
-		if (xmlHierarchy.caption != null && xmlHierarchy.caption.length() > 0)
+		if (xmlHierarchy.caption != null &&
+            xmlHierarchy.caption.length() > 0) {
 			setCaption(xmlHierarchy.caption);
+        }
 	}
 
     public boolean equals(Object o) {
@@ -146,7 +157,7 @@ class RolapHierarchy extends HierarchyBase
     }
 
     public int hashCode() {
-        return super.hashCode() ^ (sharedHierarchy == null ? 0 : sharedHierarchy.hashCode()); 
+        return super.hashCode() ^ (sharedHierarchy == null ? 0 : sharedHierarchy.hashCode());
     }
 
 	/**
@@ -155,14 +166,14 @@ class RolapHierarchy extends HierarchyBase
 	void init(RolapCube cube)
 	{
 		for (int i = 0; i < levels.length; i++) {
-			((RolapLevel) levels[i]).init();
+			((RolapLevel) levels[i]).init(cube);
 		}
 		if (this.memberReader == null) {
-			this.memberReader = getSchema().createMemberReader(
-					sharedHierarchy, this, xmlHierarchy);
+			this.memberReader = getSchema()
+                .createMemberReader(sharedHierarchy, this, memberReaderClass);
 		}
 		if (this.getDimension().isMeasures() ||
-				this.xmlHierarchy.memberReaderClass != null) {
+            this.memberReaderClass != null) {
 			Util.assertTrue(foreignKey == null);
 			return;
 		}
@@ -176,7 +187,7 @@ class RolapHierarchy extends HierarchyBase
 	RolapLevel newLevel(String name, int flags) {
 		RolapLevel level = new RolapLevel(
 				this, this.levels.length, name, null, null,
-				null, null, RolapProperty.emptyArray, flags,
+				null, null, null, RolapProperty.emptyArray, flags,
                 RolapLevel.HideMemberCondition.Never, LevelType.Regular);
 		this.levels = (RolapLevel[]) RolapUtil.addElement(this.levels, level);
 		return level;
@@ -188,8 +199,6 @@ class RolapHierarchy extends HierarchyBase
 	 * otherwise, returns null.
 	 */
 	MondrianDef.Relation getUniqueTable() {
-		Util.assertTrue(xmlHierarchy != null);
-		MondrianDef.Relation relation = xmlHierarchy.relation;
 		if (relation instanceof MondrianDef.Table ||
 				relation instanceof MondrianDef.View) {
 			return relation;
@@ -202,9 +211,7 @@ class RolapHierarchy extends HierarchyBase
 	}
 
 	boolean tableExists(String tableName) {
-		return xmlHierarchy != null &&
-				xmlHierarchy.relation != null &&
-				tableExists(tableName, xmlHierarchy.relation);
+		return (relation != null) && tableExists(tableName, relation);
 	}
 
 	private static boolean tableExists(
@@ -225,11 +232,7 @@ class RolapHierarchy extends HierarchyBase
 	}
 
     MondrianDef.Relation getRelation() {
-		if (xmlHierarchy == null) {
-			return null;
-		} else {
-			return xmlHierarchy.relation;
-		}
+        return relation;
 	}
 
 	public Member getDefaultMember()
@@ -246,6 +249,7 @@ class RolapHierarchy extends HierarchyBase
 		}
 		return defaultMember;
 	}
+
 	public Member getNullMember()
 	{
 		// use lazy initialization to get around bootstrap issues
@@ -288,7 +292,7 @@ class RolapHierarchy extends HierarchyBase
 	 */
 	void addToFrom(
 			SqlQuery query, MondrianDef.Expression expression, RolapCube cube) {
-		if (xmlHierarchy == null) {
+		if (relation == null) {
 			throw Util.newError(
 					"cannot add hierarchy " + getUniqueName() +
 					" to query: it does not have a <Table>, <View> or <Join>");
@@ -304,8 +308,8 @@ class RolapHierarchy extends HierarchyBase
 					" = " +
 					hierarchyUsage.joinExp.getExpression(query));
 		}
-		MondrianDef.Relation relation = xmlHierarchy.relation;
-		if (relation instanceof MondrianDef.Join) {
+        MondrianDef.Relation subRelation = relation;
+        if (relation instanceof MondrianDef.Join) {
 			if (expression != null) {
 				// Suppose relation is
 				//   (((A join B) join C) join D)
@@ -315,10 +319,10 @@ class RolapHierarchy extends HierarchyBase
 				//   F left join ((A join B) join C).
 				// Search for the smallest subset of the relation which
 				// uses C.
-				relation = relationSubset(relation, expression.getTableAlias());
+				subRelation = relationSubset(relation, expression.getTableAlias());
 			}
 		}
-		query.addFrom(relation, failIfExists);
+		query.addFrom(subRelation, failIfExists);
 	}
 
 	/**
@@ -413,6 +417,129 @@ class RolapHierarchy extends HierarchyBase
 		}
 		return aggregateChildrenExpression;
 	}
+
+    /**
+     * Builds a dimension which maps onto a table holding the transitive
+     * closure of the relationship for this parent-child level.
+     *
+     * <p>This method is triggered by the {@link MondrianDef.Closure} element
+     * in a schema, and is only meaningful for a parent-child hierarchy.
+     *
+     * <p>When a Schema contains a parent-child Hierarchy that has an
+     * associated closure table, Mondrian creates a parallel internal
+     * Hierarchy, called a "closed peer", that refers to the closure table.
+     * This is indicated in the schema at the level of a Level, by including a
+     * Closure element. The closure table represents
+     * the transitive closure of the parent-child relationship.
+     *
+     * <p>The peer dimension, with its single hierarchy, and 3 levels (all,
+     * closure, item) really 'belong to' the parent-child level. If a single
+     * hierarchy had two parent-child levels (however unlikely this might be)
+     * then each level would have its own auxiliary dimension.
+     *
+     * <p>For example, in the demo schema the [HR].[Employee] dimension
+     * contains a parent-child hierarchy:
+     * 
+     * <pre>
+     * &lt;Dimension name="Employees" foreignKey="employee_id"&gt;
+     *   &lt;Hierarchy hasAll="true" allMemberName="All Employees"
+     *         primaryKey="employee_id"&gt;
+     *     &lt;Table name="employee"/&gt;
+     *     &lt;Level name="Employee Id" type="Numeric" uniqueMembers="true"
+     *            column="employee_id" parentColumn="supervisor_id"
+     *            nameColumn="full_name" nullParentValue="0"&gt;
+     *       &lt;Closure parentColumn="supervisor_id" childColumn="employee_id"&gt;
+     *          &lt;Table name="employee_closure"/&gt;
+     *       &lt;/Closure&gt;
+     *       ...
+     * </pre>
+     * The internal closed peer Hierarchy has this structure:
+     * <pre>
+     * &lt;Dimension name="Employees" foreignKey="employee_id"&gt;
+     *     ...
+     *     &lt;Hierarchy name="Employees$Closure"
+     *         hasAll="true" allMemberName="All Employees"
+     *         primaryKey="employee_id" primaryKeyTable="employee_closure"&gt;
+     *       &lt;Join leftKey="supervisor_id" rightKey="employee_id"&gt;
+     *         &lt;Table name="employee_closure"/&gt;
+     *         &lt;Table name="employee"/&gt;
+     *       &lt;/Join&gt;
+     *       &lt;Level name="Closure"  type="Numeric" uniqueMembers="false"
+     *           table="employee_closure" column="supervisor_id"/&gt;
+     *       &lt;Level name="Employee" type="Numeric" uniqueMembers="true"
+     *           table="employee_closure" column="employee_id"/&gt;
+     *     &lt;/Hierarchy&gt;
+     * </pre>
+     *
+     * <p>Note that the original Level with the Closure produces two Levels in
+     * the closed peer Hierarchy: a simple peer (Employee) and a closed peer
+     * (Closure).
+     *
+     * @param src a parent-child Level that has a Closure clause
+     * @param clos a Closure clause
+     * @return the closed peer Level in the closed peer Hierarchy
+     */
+    RolapDimension createClosedPeerDimension(
+        RolapLevel src,
+        MondrianDef.Closure clos)
+    {
+        // REVIEW (mb): What about attribute primaryKeyTable?
+
+        // Create a peer dimension.
+        RolapDimension peerDimension = new RolapDimension(
+            ((RolapDimension) dimension).schema,
+            dimension.getName() + "$Closure",
+            ++RolapDimension.nextOrdinal,
+            DimensionType.StandardDimension);
+
+        // Create a peer hierarchy.
+        RolapHierarchy peerHier = peerDimension.newHierarchy(subName, true);
+        peerHier.allMemberName = allMemberName;
+        peerHier.sharedHierarchy = sharedHierarchy;
+        peerHier.foreignKey = foreignKey;
+        peerHier.primaryKey = primaryKey;
+        MondrianDef.Join join = new MondrianDef.Join();
+        peerHier.relation = join;
+        join.left = clos.table;         // the closure table
+        join.leftKey = clos.parentColumn;
+        join.right = relation;     // the unclosed base table
+        join.rightKey = clos.childColumn;
+
+        // Create the upper level.
+        // This represents all groups of descendants. For example, in the
+        // Employee closure hierarchy, this level has a row for every employee.
+        int index = peerHier.levels.length;
+        int flags = src.flags &~ RolapLevel.UNIQUE;
+        MondrianDef.Expression keyExp =
+            new MondrianDef.Column(clos.table.name, clos.parentColumn);
+        RolapLevel level = new RolapLevel(peerHier, index++,
+            "Closure",
+            keyExp, null,
+            null, null,  // no longer a parent-child hierarchy
+            null, RolapProperty.emptyArray, flags,
+            src.hideMemberCondition, src.getLevelType());
+        peerHier.levels =
+            (RolapLevel[]) RolapUtil.addElement(peerHier.levels, level);
+
+        // Create lower level.
+        // This represents individual items. For example, in the Employee
+        // closure hierarchy, this level has a row for every direct and
+        // indirect report of every employee (which is more than the number
+        // of employees).
+        flags = src.flags | RolapLevel.UNIQUE;
+        keyExp = new MondrianDef.Column(clos.table.name, clos.childColumn);
+        RolapLevel sublevel = new RolapLevel(peerHier, index++,
+            "Item",
+            keyExp, null,
+            null, null,  // no longer a parent-child hierarchy
+            null, RolapProperty.emptyArray, flags,
+            src.hideMemberCondition, src.getLevelType());
+        peerHier.levels = (RolapLevel[]) RolapUtil.addElement(peerHier.levels, sublevel);
+
+        return peerDimension;
+    }
+
+
 }
 
 /**

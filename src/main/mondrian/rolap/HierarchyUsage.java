@@ -116,7 +116,7 @@ abstract class HierarchyUsage
 	}
 
 	private void setJoinTable(RolapHierarchy hierarchy, final String tableName) {
-		joinTable = hierarchy.xmlHierarchy.relation.find(tableName);
+		joinTable = hierarchy.getRelation().find(tableName);
 		if (joinTable == null) {
 			throw Util.newError(
 					"no table '" + tableName +

@@ -183,11 +183,16 @@ lname
     </Hierarchy>
   </Dimension>
 
-  <Measure name="Unit Sales" column="unit_sales" aggregator="sum" formatString="Standard"/>
-  <Measure name="Store Cost" column="store_cost" aggregator="sum" formatString="#,###.00"/>
-  <Measure name="Store Sales" column="store_sales" aggregator="sum" formatString="#,###.00"/>
-  <Measure name="Sales Count" column="product_id" aggregator="count" formatString="#,###"/>
-  <Measure name="Customer Count" column="customer_id" aggregator="distinct count" formatString="#,###"/>
+  <Measure name="Unit Sales" column="unit_sales" aggregator="sum"
+      formatString="Standard"/>
+  <Measure name="Store Cost" column="store_cost" aggregator="sum"
+      formatString="#,###.00"/>
+  <Measure name="Store Sales" column="store_sales" aggregator="sum"
+      formatString="#,###.00"/>
+  <Measure name="Sales Count" column="product_id" aggregator="count"
+      formatString="#,###"/>
+  <Measure name="Customer Count" column="customer_id"
+      aggregator="distinct count" formatString="#,###"/>
   <CalculatedMember
       name="Profit"
       dimension="Measures"
@@ -237,8 +242,10 @@ lname
     </Hierarchy>
   </Dimension>
 
-  <Measure name="Store Sqft" column="store_sqft" aggregator="sum" formatString="#,###"/>
-  <Measure name="Grocery Sqft" column="grocery_sqft" aggregator="sum" formatString="#,###"/>
+  <Measure name="Store Sqft" column="store_sqft" aggregator="sum"
+      formatString="#,###"/>
+  <Measure name="Grocery Sqft" column="grocery_sqft" aggregator="sum"
+      formatString="#,###"/>
 
 </Cube>
 
@@ -253,22 +260,26 @@ lname
           levelType="TimeYears"/>
       <Level name="Quarter" column="quarter" uniqueMembers="false"
           levelType="TimeQuarters"/>
-      <Level name="Month" column="month_of_year" uniqueMembers="false" type="Numeric"
-          levelType="TimeMonths"/>
+      <Level name="Month" column="month_of_year" uniqueMembers="false"
+          type="Numeric" levelType="TimeMonths"/>
     </Hierarchy>
   </Dimension>
 
   <Dimension name="Store" foreignKey="employee_id" >
-    <Hierarchy hasAll="true" primaryKey="employee_id" primaryKeyTable="employee">
+    <Hierarchy hasAll="true" primaryKey="employee_id"
+        primaryKeyTable="employee">
       <Join leftKey="store_id" rightKey="store_id">
         <Table name="employee"/>
         <Table name="store"/>
       </Join>
       <Level name="Store Country" table="store" column="store_country"
           uniqueMembers="true"/>
-      <Level name="Store State" table="store" column="store_state" uniqueMembers="true"/>
-      <Level name="Store City" table="store" column="store_city" uniqueMembers="false"/>
-      <Level name="Store Name" table="store" column="store_name" uniqueMembers="true">
+      <Level name="Store State" table="store" column="store_state"
+          uniqueMembers="true"/>
+      <Level name="Store City" table="store" column="store_city"
+          uniqueMembers="false"/>
+      <Level name="Store Name" table="store" column="store_name"
+          uniqueMembers="true">
         <Property name="Store Type" column="store_type"/>
         <Property name="Store Manager" column="store_manager"/>
         <Property name="Store Sqft" column="store_sqft" type="Numeric"/>
@@ -276,40 +287,51 @@ lname
         <Property name="Frozen Sqft" column="frozen_sqft" type="Numeric"/>
         <Property name="Meat Sqft" column="meat_sqft" type="Numeric"/>
         <Property name="Has coffee bar" column="coffee_bar" type="Boolean"/>
-        <Property name="Street address" column="store_street_address" type="String"/>
+        <Property name="Street address" column="store_street_address"
+            type="String"/>
       </Level>
     </Hierarchy>
   </Dimension>
 
   <Dimension name="Pay Type" foreignKey="employee_id">
-    <Hierarchy hasAll="true" primaryKey="employee_id" primaryKeyTable="employee">
+    <Hierarchy hasAll="true" primaryKey="employee_id"
+        primaryKeyTable="employee">
       <Join leftKey="position_id" rightKey="position_id">
         <Table name="employee"/>
         <Table name="position"/>
       </Join>
-      <Level name="Pay Type" table="position" column="pay_type" uniqueMembers="true"/>
+      <Level name="Pay Type" table="position" column="pay_type"
+          uniqueMembers="true"/>
     </Hierarchy>
   </Dimension>
   <DimensionUsage name="Store Type" source="Store Type" foreignKey="store_id"/>
   <Dimension name="Position" foreignKey="employee_id">
-    <Hierarchy hasAll="true" allMemberName="All Position" primaryKey="employee_id">
+    <Hierarchy hasAll="true" allMemberName="All Position"
+        primaryKey="employee_id">
       <Table name="employee"/>
-      <Level name="Management Role" uniqueMembers="true" column="management_role"/>
-      <Level name="Position Title" uniqueMembers="false" column="position_title"
-          ordinalColumn="position_id"/>
+      <Level name="Management Role" uniqueMembers="true"
+          column="management_role"/>
+      <Level name="Position Title" uniqueMembers="false"
+          column="position_title" ordinalColumn="position_id"/>
     </Hierarchy>
   </Dimension>
   <Dimension name="Department" foreignKey="department_id">
     <Hierarchy hasAll="true" primaryKey="department_id">
       <Table name="department"/>
-      <Level name="Department Description" uniqueMembers="true" column="department_id"/>
+      <Level name="Department Description" uniqueMembers="true"
+          column="department_id"/>
     </Hierarchy>
   </Dimension>
   <Dimension name="Employees" foreignKey="employee_id">
-    <Hierarchy hasAll="true" allMemberName="All Employees" primaryKey="employee_id">
+    <Hierarchy hasAll="true" allMemberName="All Employees"
+        primaryKey="employee_id">
       <Table name="employee"/>
-      <Level name="Employee Id" type="Numeric" uniqueMembers="true" column="employee_id"
-          parentColumn="supervisor_id" nameColumn="full_name" nullParentValue="0">
+      <Level name="Employee Id" type="Numeric" uniqueMembers="true"
+          column="employee_id" parentColumn="supervisor_id"
+          nameColumn="full_name" nullParentValue="0">
+        <Closure parentColumn="supervisor_id" childColumn="employee_id">
+          <Table name="employee_closure"/>
+        </Closure>        
         <Property name="Marital Status" column="marital_status"/>
         <Property name="Position Title" column="position_title"/>
         <Property name="Gender" column="gender"/>
@@ -322,12 +344,13 @@ lname
 
   <!-- Explicit Closure of [Employees] (just for unit testing):
     == [Employees] is a parent/child hierarchy (along the relationship
-    == supervisor_id/employee_id). The table employee_closure expresses the closure of the
-    == parent/child relation, ie it represents ancestor/descendant, having a row for each
-    == ancestor/descendant pair.
+    == supervisor_id/employee_id). The table employee_closure expresses the
+    == closure of the parent/child relation, ie it represents
+    == ancestor/descendant, having a row for each ancestor/descendant pair.
+    ==
     == The closed hierarchy has two levels: the detail level (here named
-    == [Employee]) is equivalent to the base hierarchy; the [Closure] level relates each
-    == descendant to all its ancestors.
+    == [Employee]) is equivalent to the base hierarchy; the [Closure] level
+    == relates each descendant to all its ancestors.
     -->
   <Dimension name="EmployeesClosure" foreignKey="employee_id">
       <Hierarchy hasAll="true" allMemberName="All Employees"
@@ -336,20 +359,25 @@ lname
           <Table name="employee_closure"/>
           <Table name="employee"/>
         </Join>
-        <Level name="Closure"  type="Numeric" uniqueMembers="false" table="employee_closure" column="supervisor_id"/>
-        <Level name="Employee" type="Numeric" uniqueMembers="true"  table="employee_closure" column="employee_id"/>
+        <Level name="Closure"  type="Numeric" uniqueMembers="false"
+            table="employee_closure" column="supervisor_id"/>
+        <Level name="Employee" type="Numeric" uniqueMembers="true"
+            table="employee_closure" column="employee_id"/>
       </Hierarchy>
   </Dimension>
 
   <Measure name="Org Salary" column="salary_paid" aggregator="sum"
       formatString="Currency"/>
-  <Measure name="Count" column="employee_id" aggregator="count" formatString="#,#"/>
-  <Measure name="Number of Employees" column="employee_id" aggregator="distinct count"
+  <Measure name="Count" column="employee_id" aggregator="count"
       formatString="#,#"/>
-  <CalculatedMember name="Employee Salary" dimension="Measures" formatString="Currency"
-    formula="([Employees].currentmember.datamember, [Measures].[Org Salary])"/>
-  <CalculatedMember name="Avg Salary" dimension="Measures" formatString="Currency"
-    formula="[Measures].[Org Salary]/[Measures].[Number of Employees]"/>
+  <Measure name="Number of Employees" column="employee_id"
+      aggregator="distinct count" formatString="#,#"/>
+  <CalculatedMember name="Employee Salary" dimension="Measures"
+      formatString="Currency"
+      formula="([Employees].currentmember.datamember, [Measures].[Org Salary])"/>
+  <CalculatedMember name="Avg Salary" dimension="Measures"
+      formatString="Currency"
+      formula="[Measures].[Org Salary]/[Measures].[Number of Employees]"/>
 </Cube>
 
 <!-- Cube with one ragged hierarchy (otherwise the same as the "Sales"

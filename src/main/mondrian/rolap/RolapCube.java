@@ -106,12 +106,12 @@ class RolapCube extends CubeBase
 					e.printStackTrace();
 				}
 			}
-	
+
 			if (xmlMeasure.caption != null && xmlMeasure.caption.length() > 0) {
 				// there is a special caption string
 				measures[i].setProperty("$caption", xmlMeasure.caption);
 			}
-				
+
 		}
 
 		this.measuresHierarchy.memberReader = new CacheMemberReader(
@@ -367,7 +367,7 @@ class RolapCube extends CubeBase
 		}
 	}
 
-	private void registerDimension(RolapDimension dimension) {
+	void registerDimension(RolapDimension dimension) {
 		RolapStar star = schema.getRolapStarRegistry().getOrCreateStar(
 				this.fact);
 		RolapHierarchy[] hierarchies = (RolapHierarchy[])
@@ -479,7 +479,7 @@ class RolapCube extends CubeBase
 		// use OlapElement's virtual lookup
 		return parent.lookupChild(getSchemaReader(), s);
 	}
-	
+
 	/**
 	 * Returns the the measures hierarchy.
 	 */

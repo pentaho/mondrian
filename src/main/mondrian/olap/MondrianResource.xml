@@ -352,6 +352,10 @@
     <text>Member property must not have both a value and an expression. (Property ''{0}'' of member ''{1}'' of cube ''{2}''.)</text>
 </exception>
 
+<exception id="40160" name="MemberFormatterLoadFailed">
+    <text>Failed to load formatter class ''{0}'' for level ''{1}''.</text>
+</exception>
+
 
 <!-- ====================================================================== -->
 <!-- Loader -->

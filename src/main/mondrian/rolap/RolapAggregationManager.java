@@ -15,9 +15,9 @@ package mondrian.rolap;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Util;
 import mondrian.rolap.agg.CellRequest;
-import mondrian.rolap.agg.Segment;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Set;
 
 /**
  * <code>RolapAggregationManager</code> manages all {@link
@@ -110,6 +110,20 @@ public abstract class RolapAggregationManager implements CellReader {
 					continue;
 				}
 				previousLevel = level;
+
+                // Replace a parent/child level by its closed equivalent, when
+                // available; this is always valid, and improves performance by
+                // enabling the database to compute aggregates.
+                if (level.hasClosedPeer()) {
+                    level = level.getClosedPeer();
+                    RolapHierarchy hierarchy =
+                        (RolapHierarchy) level.getHierarchy();
+                    final RolapMember allMember = (RolapMember)
+                        hierarchy.getDefaultMember();
+                    assert allMember.isAll();
+                    member = new RolapMember(allMember, level,
+                        ((RolapMember) member).key);
+                }
 				RolapStar.Column column = (RolapStar.Column) mapLevelToColumn.get(level);
 				if (column == null) {
 					// This hierarchy is not one which qualifies the starMeasure
