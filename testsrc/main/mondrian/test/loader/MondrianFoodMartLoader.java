@@ -15,6 +15,7 @@ import mondrian.rolap.RolapUtil;
 import mondrian.rolap.sql.SqlQuery;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.sql.*;
 import java.text.DecimalFormat;
 import java.util.Date;
@@ -540,8 +541,8 @@ public class MondrianFoodMartLoader {
           new Column("customer_id", "INTEGER", "NOT NULL"),
           new Column("promotion_id", "INTEGER", "NOT NULL"),
           new Column("store_id", "INTEGER", "NOT NULL"),
-          new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
-          new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
+          new Column("store_sales", "DECIMAL(10,2)", "NOT NULL"),
+          new Column("store_cost", "DECIMAL(10,2)", "NOT NULL"),
           new Column("unit_sales", "BIGINT", "NOT NULL"),
         });
         createTable("sales_fact_1998", new Column[] {
@@ -550,8 +551,8 @@ public class MondrianFoodMartLoader {
           new Column("customer_id", "INTEGER", "NOT NULL"),
           new Column("promotion_id", "INTEGER", "NOT NULL"),
           new Column("store_id", "INTEGER", "NOT NULL"),
-          new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
-          new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
+          new Column("store_sales", "DECIMAL(10,2)", "NOT NULL"),
+          new Column("store_cost", "DECIMAL(10,2)", "NOT NULL"),
           new Column("unit_sales", "BIGINT", "NOT NULL"),
         });
         createTable("sales_fact_dec_1998", new Column[] {
@@ -560,8 +561,8 @@ public class MondrianFoodMartLoader {
           new Column("customer_id", "INTEGER", "NOT NULL"),
           new Column("promotion_id", "INTEGER", "NOT NULL"),
           new Column("store_id", "INTEGER", "NOT NULL"),
-          new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
-          new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
+          new Column("store_sales", "DECIMAL(10,2)", "NOT NULL"),
+          new Column("store_cost", "DECIMAL(10,2)", "NOT NULL"),
           new Column("unit_sales", "BIGINT", "NOT NULL"),
         });
         createTable("inventory_fact_1997", new Column[] {
@@ -571,10 +572,10 @@ public class MondrianFoodMartLoader {
           new Column("store_id", "INTEGER", ""),
           new Column("units_ordered", "INTEGER", ""),
           new Column("units_shipped", "INTEGER", ""),
-          new Column("warehouse_sales", "DECIMAL(10,4)", ""),
-          new Column("warehouse_cost", "DECIMAL(10,4)", ""),
+          new Column("warehouse_sales", "DECIMAL(10,2)", ""),
+          new Column("warehouse_cost", "DECIMAL(10,2)", ""),
           new Column("supply_time", "SMALLINT", ""),
-          new Column("store_invoice", "DECIMAL(10,4)", ""),
+          new Column("store_invoice", "DECIMAL(10,2)", ""),
         });
         createTable("inventory_fact_1998", new Column[] {
           new Column("product_id", "INTEGER", "NOT NULL"),
@@ -583,10 +584,10 @@ public class MondrianFoodMartLoader {
           new Column("store_id", "INTEGER", ""),
           new Column("units_ordered", "INTEGER", ""),
           new Column("units_shipped", "INTEGER", ""),
-          new Column("warehouse_sales", "DECIMAL(10,4)", ""),
-          new Column("warehouse_cost", "DECIMAL(10,4)", ""),
+          new Column("warehouse_sales", "DECIMAL(10,2)", ""),
+          new Column("warehouse_cost", "DECIMAL(10,2)", ""),
           new Column("supply_time", "SMALLINT", ""),
-          new Column("store_invoice", "DECIMAL(10,4)", ""),
+          new Column("store_invoice", "DECIMAL(10,2)", ""),
         });
         createTable("account", new Column[] {
           new Column("account_id", "INTEGER", "NOT NULL"),
@@ -741,7 +742,7 @@ public class MondrianFoodMartLoader {
           new Column("birth_date", "TIMESTAMP", "NOT NULL"),
           new Column("hire_date", "TIMESTAMP", ""),
           new Column("end_date", "TIMESTAMP", ""),
-          new Column("salary", "DECIMAL(10,4)", "NOT NULL"),
+          new Column("salary", "DECIMAL(10,2)", "NOT NULL"),
           new Column("supervisor_id", "INTEGER", ""),
           new Column("education_level", "VARCHAR(30)", "NOT NULL"),
           new Column("marital_status", "VARCHAR(30)", "NOT NULL"),
@@ -752,8 +753,8 @@ public class MondrianFoodMartLoader {
           new Column("employee_id", "INTEGER", "NOT NULL"),
           new Column("department_id", "INTEGER", "NOT NULL"),
           new Column("currency_id", "INTEGER", "NOT NULL"),
-          new Column("salary_paid", "DECIMAL(10,4)", "NOT NULL"),
-          new Column("overtime_paid", "DECIMAL(10,4)", "NOT NULL"),
+          new Column("salary_paid", "DECIMAL(10,2)", "NOT NULL"),
+          new Column("overtime_paid", "DECIMAL(10,2)", "NOT NULL"),
           new Column("vacation_accrued", "INTEGER", "NOT NULL"),
           new Column("vacation_used", "INTEGER", "NOT NULL"),
         });
@@ -950,7 +951,12 @@ public class MondrianFoodMartLoader {
             }
             DecimalFormat formatter = new DecimalFormat(decimalFormat(matcher.group(1), matcher.group(2)));
             return formatter.format(rs.getDouble(column.name));
-        }
+/*
+            int places = Integer.parseInt(matcher.group(2));
+            BigDecimal dec = rs.getBigDecimal(column.name);
+            dec = dec.setScale(places, BigDecimal.ROUND_HALF_UP);
+            return dec.toString();
+*/        }
         if (columnType.startsWith("BIT")) {
             return Byte.toString(rs.getByte(column.name));
         }
@@ -984,10 +990,10 @@ public class MondrianFoodMartLoader {
         int length = Integer.parseInt(lengthStr);
         int places = Integer.parseInt(placesStr);
         for (int i = 0; i < length; i++) {
-            sb.append("#");
             if ((length - i) == places) {
                 sb.append('.');
             }
+            sb.append("#");
         }
         return sb.toString();
     }
