@@ -159,9 +159,33 @@ ${lib.dir}/xml-apis.jar"/>
     <mkdir dir="${classes.dir}"/>
   </target>
 
-  <target name="compile" depends="sniff,prepare,parser,compile.generator,generate.resources,def,compile.jsp.maybe,compile.java,copy.properties"/>
+  <target name="compile" depends="
+sniff,
+prepare,
+parser,
+compile.xom,
+generate.resources,
+def,
+compile.jsp.maybe,
+compile.java,
+copy.properties"/>
 
-  <target name="compile.generator">
+  <target name="compile.xom">
+    <javac
+        srcdir="${java.dir}"
+        destdir="${classes.dir}"
+        debug="${project.build.debug}"
+        classpathref="project.classpath">
+      <include name="mondrian/xom/**/*.java" />
+    </javac>
+  </target>
+
+  <target name="compile.resgen">
+    <xomgen
+        model="${java.dir}/mondrian/resource/Resource.xml"
+        destdir="${java.dir}"
+        classname="mondrian.resource.ResourceDef"
+        dtdname="Resource.dtd"/>
     <javac
         srcdir="${java.dir}"
         destdir="${classes.dir}"
@@ -171,11 +195,15 @@ ${lib.dir}/xml-apis.jar"/>
     </javac>
   </target>
 
-  <target name="generate.resources">
-    <java classpathref="project.classpath"
-        classname="mondrian.resource.ResourceGen" fork="yes">
-      <arg value="resource/MondrianResource_en.xml"/>
-    </java>
+  <target name="generate.resources" depends="compile.resgen">
+    <taskdef name="resgen" classname="mondrian.resource.ResourceGenTask">
+      <classpath refid="project.classpath"/>
+    </taskdef>
+
+    <resgen srcdir="${java.dir}">
+      <include name="mondrian/olap/MondrianResource.xml"/>
+    </resgen>
+
   </target>
 
   <target name="compile.java">
@@ -212,11 +240,6 @@ ${lib.dir}/xml-apis.jar"/>
         destdir="${java.dir}"
         classname="mondrian.olap.MondrianDef"
         dtdname="mondrian.dtd"/>
-    <xomgen
-        model="${java.dir}/mondrian/resource/Resource.xml"
-        destdir="${java.dir}"
-        classname="mondrian.resource.ResourceDef"
-        dtdname="Resource.dtd"/>
   </target>
 
   <target name="compile.jsp.maybe" depends="compile.java"
