@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2003 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -11,15 +11,12 @@
  */
 package mondrian.olap;
 import mondrian.olap.fun.BuiltinFunTable;
-import java.util.Vector;
-import java.util.Iterator;
-import java.util.ArrayList;
 
-import junit.framework.TestSuite;
+import java.util.ArrayList;
 
 /**
  * A <code>FunTable</code> resolves a function call, using a particular syntax
- * (see {@link FunDef#getSyntacticType}) and set of arguments to a function
+ * (see {@link FunDef#getSyntax}) and set of arguments to a function
  * definition (<code>class {@link FunDef}</code>).
  *
  * <p> It is a singleton class. The default implementation is {@link
@@ -44,13 +41,13 @@ public abstract class FunTable {
 	 * overloaded, returns as precise a match to the argument types as
 	 * possible.
 	 **/
-	public abstract FunDef getDef(FunCall call);
+	public abstract FunDef getDef(FunCall call, Exp.Resolver resolver);
 
 	/**
 	 * Adds a casting function, if necessary, to ensure that an expression is
 	 * of a given type. Throws an error if conversion is not possible.
 	 */
-	public abstract Exp convert(Exp fromExp, int to);
+	public abstract Exp convert(Exp fromExp, int to, Exp.Resolver resolver);
 
 	/**
 	 * This method is called from the constructor, to define the set of
@@ -66,6 +63,13 @@ public abstract class FunTable {
 	 * Returns whether a string is a reserved word.
 	 */
 	public abstract boolean isReserved(String s);
+
+    /**
+     * Returns whether the <code>k</code>th argument to a function call
+     * has to be an expression.
+     */ 
+    public abstract boolean requiresExpression(FunCall funCall, int k,
+            Exp.Resolver resolver);
 }
 
 // End FunTable.java

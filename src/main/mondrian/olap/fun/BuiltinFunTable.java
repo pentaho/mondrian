@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2003 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -18,23 +18,24 @@ import mondrian.olap.*;
 import mondrian.test.FoodMartTestCase;
 import mondrian.util.Format;
 
-import java.io.PrintWriter;
 import java.util.*;
 
 /**
- * <code>BuiltinFunTable</code> contains a list of all functions.
+ * <code>BuiltinFunTable</code> contains a list of all built-in MDX functions.
  *
  * @author jhyde
  * @since 26 February, 2002
  * @version $Id$
  **/
 public class BuiltinFunTable extends FunTable {
-	/** Maps the upper-case name of a function to an array of {@link Resolver}s
-	 * for that name. **/
-	private HashMap upperName2Resolvers;
+	/** Maps the upper-case name of a function plus its {@link Syntax} to an
+     * array of {@link Resolver}s for that name. **/
+	private HashMap mapNameToResolvers;
 
 	private static final Resolver[] emptyResolvers = new Resolver[0];
-	private static final FunCall valueFunCall = new FunCall("_Value", new Exp[0], FunDef.TypeFunction);
+    private final Exp.Resolver dummyResolver = Util.createSimpleResolver(this);
+
+    private Exp valueFunCall;
 	private static final String months = "[Time].[1997].[Q1].[1]" + FunUtil.nl +
 							"[Time].[1997].[Q1].[2]" + FunUtil.nl +
 							"[Time].[1997].[Q1].[3]" + FunUtil.nl +
@@ -61,7 +62,13 @@ public class BuiltinFunTable extends FunTable {
 	 **/
 	public BuiltinFunTable() {
 		init();
+        valueFunCall = new FunCall("_Value", Syntax.Function, new Exp[0])
+                .resolve(dummyResolver);
 	}
+
+    private static String makeResolverKey(String name, Syntax syntax) {
+        return name.toUpperCase() + "$" + syntax;
+    }
 
 	/** Calls {@link #defineFunctions} to load function definitions into a
 	 * List, then indexes that collection. **/
@@ -69,22 +76,22 @@ public class BuiltinFunTable extends FunTable {
 		resolvers = new ArrayList();
 		defineFunctions();
 		// Map upper-case function names to resolvers.
-		upperName2Resolvers = new HashMap();
+		mapNameToResolvers = new HashMap();
 		for (int i = 0, n = resolvers.size(); i < n; i++) {
 			Resolver resolver = (Resolver) resolvers.get(i);
-			String key = resolver.getName().toUpperCase();
-			List v2 = (List) upperName2Resolvers.get(key);
+			String key = makeResolverKey(resolver.getName(), resolver.getSyntax());
+			List v2 = (List) mapNameToResolvers.get(key);
 			if (v2 == null) {
 				v2 = new ArrayList();
-				upperName2Resolvers.put(key, v2);
+				mapNameToResolvers.put(key, v2);
 			}
 			v2.add(resolver);
 		}
 		// Convert the Lists into arrays.
-		for (Iterator keys = upperName2Resolvers.keySet().iterator(); keys.hasNext();) {
+		for (Iterator keys = mapNameToResolvers.keySet().iterator(); keys.hasNext();) {
 			String key = (String) keys.next();
-			List v2 = (List) upperName2Resolvers.get(key);
-			upperName2Resolvers.put(key, v2.toArray(emptyResolverArray));
+			List v2 = (List) mapNameToResolvers.get(key);
+			mapNameToResolvers.put(key, v2.toArray(emptyResolverArray));
 		}
 	}
 
@@ -96,21 +103,21 @@ public class BuiltinFunTable extends FunTable {
 		resolvers.add(resolver);
 	}
 
-	static int decodeSyntacticType(String flags) {
+	static Syntax decodeSyntacticType(String flags) {
 		char c = flags.charAt(0);
 		switch (c) {
 		case 'p':
-			return FunDef.TypeProperty;
+			return Syntax.Property;
 		case 'f':
-			return FunDef.TypeFunction;
+			return Syntax.Function;
 		case 'm':
-			return FunDef.TypeMethod;
+			return Syntax.Method;
 		case 'i':
-			return FunDef.TypeInfix;
+			return Syntax.Infix;
 		case 'P':
-			return FunDef.TypePrefix;
+			return Syntax.Prefix;
 		case 'I':
-			return FunDef.TypeInternal;
+			return Syntax.Internal;
 		default:
 			throw Util.newInternal(
 					"unknown syntax code '" + c + "' in string '" + flags + "'");
@@ -165,12 +172,12 @@ public class BuiltinFunTable extends FunTable {
 	/**
 	 * Converts an argument to a parameter type.
 	 */
-	public Exp convert(Exp fromExp, int to) {
+	public Exp convert(Exp fromExp, int to, Exp.Resolver resolver) {
 		Exp exp = convert_(fromExp, to);
 		if (exp == null) {
 			throw Util.newInternal("cannot convert " + fromExp + " to " + to);
 		}
-		return exp;
+		return resolver.resolveChild(exp);
 	}
 
 	private static Exp convert_(Exp fromExp, int to) {
@@ -190,24 +197,24 @@ public class BuiltinFunTable extends FunTable {
 			case Category.Hierarchy:
 				// "<Dimension>.CurrentMember.Hierarchy"
 				return new FunCall(
-						"Hierarchy", new Exp[]{
+						"Hierarchy", Syntax.Property, new Exp[]{
 						new FunCall(
 								"CurrentMember",
-								new Exp[]{fromExp},
-								FunDef.TypeProperty)},
-						FunDef.TypeProperty);
+                                Syntax.Property, new Exp[]{fromExp}
+                        )}
+                );
 			case Category.Level:
 				// "<Dimension>.CurrentMember.Level"
 				return new FunCall(
-						"Level", new Exp[]{
+						"Level", Syntax.Property, new Exp[]{
 						new FunCall(
 								"CurrentMember",
-								new Exp[]{fromExp},
-								FunDef.TypeProperty)},
-						FunDef.TypeProperty);
+                                Syntax.Property, new Exp[]{fromExp}
+                        )}
+                );
 			case Category.Member:
 				// "<Dimension>.CurrentMember"
-				return new FunCall("CurrentMember", new Exp[]{fromExp}, FunDef.TypeProperty);
+				return new FunCall("CurrentMember", Syntax.Property, new Exp[]{fromExp});
 			default:
 				return null;
 			}
@@ -215,7 +222,7 @@ public class BuiltinFunTable extends FunTable {
 			switch (to) {
 			case Category.Dimension:
 				// "<Hierarchy>.Dimension"
-				return new FunCall("Dimension", new Exp[]{fromExp}, FunDef.TypeProperty);
+				return new FunCall("Dimension", Syntax.Property, new Exp[]{fromExp});
 			default:
 				return null;
 			}
@@ -223,10 +230,10 @@ public class BuiltinFunTable extends FunTable {
 			switch (to) {
 			case Category.Dimension:
 				// "<Level>.Dimension"
-				return new FunCall("Dimension", new Exp[]{fromExp}, FunDef.TypeProperty);
+				return new FunCall("Dimension", Syntax.Property, new Exp[]{fromExp});
 			case Category.Hierarchy:
 				// "<Level>.Hierarchy"
-				return new FunCall("Hierarchy", new Exp[]{fromExp}, FunDef.TypeProperty);
+				return new FunCall("Hierarchy", Syntax.Property, new Exp[]{fromExp});
 			default:
 				return null;
 			}
@@ -236,17 +243,17 @@ public class BuiltinFunTable extends FunTable {
 			switch (to) {
 			case Category.Dimension:
 				// "<Member>.Dimension"
-				return new FunCall("Dimension", new Exp[]{fromExp}, FunDef.TypeProperty);
+				return new FunCall("Dimension", Syntax.Property, new Exp[]{fromExp});
 			case Category.Hierarchy:
 				// "<Member>.Hierarchy"
-				return new FunCall("Hierarchy", new Exp[]{fromExp}, FunDef.TypeProperty);
+				return new FunCall("Hierarchy", Syntax.Property, new Exp[]{fromExp});
 			case Category.Level:
 				// "<Member>.Level"
-				return new FunCall("Level", new Exp[]{fromExp}, FunDef.TypeProperty);
+				return new FunCall("Level", Syntax.Property, new Exp[]{fromExp});
 			case Category.Numeric | Category.Constant:
 			case Category.String | Category.Constant: //todo: assert is a string member
 				// "<Member>.Value"
-				return new FunCall("Value", new Exp[]{fromExp}, FunDef.TypeProperty);
+				return new FunCall("Value", Syntax.Property, new Exp[]{fromExp});
 			case Category.Value:
 			case Category.Numeric:
 			case Category.String:
@@ -267,7 +274,7 @@ public class BuiltinFunTable extends FunTable {
 			case Category.Value:
 				return fromExp;
 			case Category.Numeric | Category.Constant:
-				return new FunCall("_Value", new Exp[] {fromExp}, FunDef.TypeFunction);
+				return new FunCall("_Value", Syntax.Function, new Exp[] {fromExp});
 			default:
 				return null;
 			}
@@ -286,7 +293,7 @@ public class BuiltinFunTable extends FunTable {
 			case Category.Value:
 				return fromExp;
 			case Category.String | Category.Constant:
-				return new FunCall("_Value", new Exp[] {fromExp}, FunDef.TypeFunction);
+				return new FunCall("_Value", Syntax.Function, new Exp[] {fromExp});
 			default:
 				return null;
 			}
@@ -296,7 +303,7 @@ public class BuiltinFunTable extends FunTable {
 				return fromExp;
 			case Category.Numeric:
 			case Category.String:
-				return new FunCall("_Value", new Exp[] {fromExp}, FunDef.TypeFunction);
+				return new FunCall("_Value", Syntax.Function, new Exp[] {fromExp});
 			default:
 				return null;
 			}
@@ -317,7 +324,7 @@ public class BuiltinFunTable extends FunTable {
 	 *             is incremented if the conversion is non-trivial (for
 	 *             example, converting a member to a level).
 	 *
-	 * @see #convert
+	 * @see FunTable#convert
 	 */
 	static boolean canConvert(Exp fromExp, int to, int[] conversionCount) {
 		int from = fromExp.getType();
@@ -405,21 +412,16 @@ public class BuiltinFunTable extends FunTable {
 		return parameterTypes;
 	}
 
-	/**
-	 * Resolves a function call to a particular function. If the function is
-	 * overloaded, returns as precise a match to the argument types as
-	 * possible.
-	 **/
-	public FunDef getDef(FunCall call) {
-		String name = call.getFunName();
-		String upperName = name.toUpperCase();
+	public FunDef getDef(FunCall call, Exp.Resolver resolver) {
+        String key = makeResolverKey(call.getFunName(), call.getSyntax());
 
 		// Resolve function by its upper-case name first.  If there is only one
 		// function with that name, stop immediately.  If there is more than
 		// function, use some custom method, which generally involves looking
 		// at the type of one of its arguments.
-		String signature = call.getSignature();
-		Resolver[] resolvers = (Resolver[]) upperName2Resolvers.get(upperName);
+        String signature = call.getSyntax().getSignature(call.getFunName(),
+                Category.Unknown, ExpBase.getTypes(call.args));
+		Resolver[] resolvers = (Resolver[]) mapNameToResolvers.get(key);
 		if (resolvers == null) {
 			resolvers = emptyResolvers;
 		}
@@ -430,9 +432,12 @@ public class BuiltinFunTable extends FunTable {
 		FunDef matchDef = null;
 		for (int i = 0; i < resolvers.length; i++) {
 			conversionCount[0] = 0;
-			FunDef def = resolvers[i].resolve(
-					call.getSyntacticType(), call.args, conversionCount);
+			FunDef def = resolvers[i].resolve(call.args, conversionCount);
 			if (def != null) {
+                if (def.getReturnType() == Category.Set &&
+                        resolver.requiresExpression()) {
+                    continue;
+                }
 				int conversions = conversionCount[0];
 				if (conversions < minConversions) {
 					minConversions = conversions;
@@ -448,16 +453,49 @@ public class BuiltinFunTable extends FunTable {
 		}
 		switch (matchCount) {
 		case 0:
-			throw Util.newInternal(
-					"no function matches signature '" + signature + "'");
+			throw Util.newInternal("no function matches signature '" +
+                    signature + "'");
 		case 1:
+            final String matchKey = makeResolverKey(matchDef.getName(),
+                    matchDef.getSyntax());
+            Util.assertTrue(matchKey.equals(key), matchKey);
 			return matchDef;
 		default:
 			throw Util.newInternal(
-					"more than one function matches signature '" + signature +
+                    "more than one function matches signature '" + signature +
 					"'");
 		}
 	}
+
+    public boolean requiresExpression(FunCall call, int k,
+            Exp.Resolver resolver) {
+        final FunDef funDef = call.getFunDef();
+        if (funDef != null) {
+            final int[] parameterTypes = funDef.getParameterTypes();
+            return parameterTypes[k] != Category.Set;
+        }
+        // The function call has not been resolved yet. In fact, this method
+        // may have been invoked while resolving the child. Consider this:
+        //   CrossJoin([Measures].[Unit Sales] * [Measures].[Store Sales])
+        //
+        // In order to know whether to resolve '*' to the multiplication
+        // operator (which returns a scalar) or the crossjoin operator (which
+        // returns a set) we have to know what kind of expression is expected.
+        String key = makeResolverKey(call.getFunName(), call.getSyntax());
+        Resolver[] resolvers = (Resolver[]) mapNameToResolvers.get(key);
+        if (resolvers == null) {
+            resolvers = emptyResolvers;
+        }
+        for (int i = 0; i < resolvers.length; i++) {
+            Resolver resolver2 = resolvers[i];
+            if (!resolver2.requiresExpression(k)) {
+                // This resolver accepts a set in this argument position,
+                // therefore we don't REQUIRE a scalar expression.
+                return false;
+            }
+        }
+        return true;
+    }
 
 	public boolean isReserved(String s) {
 		return reservedWords.contains(s.toUpperCase());
@@ -1773,14 +1811,14 @@ public class BuiltinFunTable extends FunTable {
 				return member.evaluateScalar(evaluator);
 			}
 		});
-		define(new FunDefBase("_Value", "_Value(<Tuple>)", "Returns the value of the current measure within the context of a tuple.", "fvt") {
+		define(new FunDefBase("_Value", "_Value(<Tuple>)", "Returns the value of the current measure within the context of a tuple.", "fnt") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Member[] members = getTupleArg(evaluator, args, 0);
 				Evaluator evaluator2 = evaluator.push(members);
 				return evaluator2.evaluateCurrent();
 			}
 		});
-		define(new FunDefBase("_Value", "_Value()", "Returns the value of the current measure.", "fv") {
+		define(new FunDefBase("_Value", "_Value()", "Returns the value of the current measure.", "fn") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				return evaluator.evaluateCurrent();
 			}
@@ -1788,7 +1826,7 @@ public class BuiltinFunTable extends FunTable {
 		// _Value is a pseudo-function which evaluates a tuple to a number.
 		// It needs a custom resolver.
 		if (false)
-		define(new ResolverBase("_Value", null, null, FunDef.TypeParentheses) {
+		define(new ResolverBase("_Value", null, null, Syntax.Parentheses) {
 			public FunDef resolve(Exp[] args, int[] conversionCount) {
 				if (args.length == 1 &&
 						args[0].getType() == Category.Tuple) {
@@ -3257,15 +3295,6 @@ public class BuiltinFunTable extends FunTable {
 		});
 
 		define(new FunDefBase("StrToSet", "StrToSet(<String Expression>)", "Constructs a set from a string expression.", "fxS") {
-			public void unparse(Exp[] args, PrintWriter pw, ElementCallback callback) {
-				if (callback.isPlatoMdx()) {
-					// omit extra args (they're for us, not Plato)
-					super.unparse(new Exp[]{args[0]}, pw, callback);
-				} else {
-					super.unparse(args, pw, callback);
-				}
-			}
-
 			public Hierarchy getHierarchy(Exp[] args) {
 				// StrToSet(s, <Hie1>, ... <HieN>) is of type [Hie1] x ... x [HieN];
 				// so, for example, So StrToTuple("[Time].[1997]", [Time]) is of type
@@ -3787,8 +3816,8 @@ public class BuiltinFunTable extends FunTable {
 				"{}",
 				"{<Member> [, <Member>]...}",
 				"Brace operator constructs a set.",
-				FunDef.TypeBraces) {
-			protected FunDef resolve(Exp[] args, int[] conversionCount) {
+				Syntax.Braces) {
+			public FunDef resolve(Exp[] args, int[] conversionCount) {
 				int[] parameterTypes = new int[args.length];
 				for (int i = 0; i < args.length; i++) {
 					if (canConvert(
@@ -3808,7 +3837,7 @@ public class BuiltinFunTable extends FunTable {
 					}
 					return null;
 				}
-				return new SetFunDef(this, syntacticType, parameterTypes);
+				return new SetFunDef(this, parameterTypes);
 			}
 
 			public void testSetContainingLevelFails(FoodMartTestCase test) {
@@ -4015,15 +4044,6 @@ public class BuiltinFunTable extends FunTable {
 		define(new FunDefBase("Current", "<Set>.Current", "Returns the current tuple from a set during an iteration.", "ptx"));
 		if (false) define(new FunDefBase("Item", "<Set>.Item(<String Expression>[, <String Expression>...] | <Index>)", "Returns a tuple from a set.", "mt*"));
 		define(new FunDefBase("StrToTuple", "StrToTuple(<String Expression>)", "Constructs a tuple from a string.", "ftS") {
-			public void unparse(Exp[] args, PrintWriter pw, ElementCallback callback) {
-				if (callback.isPlatoMdx()) {
-					// omit extra args (they're for us, not Plato)
-					super.unparse(new Exp[]{args[0]}, pw, callback);
-				} else {
-					super.unparse(args, pw, callback);
-				}
-			}
-
 			public Hierarchy getHierarchy(Exp[] args) {
 				// StrToTuple(s, <Hie1>, ... <HieN>) is of type [Hie1] x
 				// ... x [HieN]; so, for example, So
@@ -4037,7 +4057,7 @@ public class BuiltinFunTable extends FunTable {
 		});
 
 		// special resolver for "()"
-		define(new ResolverBase("()", null, null, FunDef.TypeParentheses) {
+		define(new ResolverBase("()", null, null, Syntax.Parentheses) {
 			public FunDef resolve(Exp[] args, int[] conversionCount) {
 				// Compare with TupleFunDef.getReturnType().  For example,
 				//   ([Gender].members) is a set,
@@ -4059,8 +4079,8 @@ public class BuiltinFunTable extends FunTable {
 				"CoalesceEmpty",
 				"CoalesceEmpty(<Value Expression>[, <Value Expression>]...)",
 				"Coalesces an empty cell value to a different value. All of the expressions must be of the same type (number or string).",
-				FunDef.TypeFunction) {
-			protected FunDef resolve(Exp[] args, int[] conversionCount) {
+				Syntax.Function) {
+			public FunDef resolve(Exp[] args, int[] conversionCount) {
 				if (args.length < 1) {
 					return null;
 				}
@@ -4075,21 +4095,23 @@ public class BuiltinFunTable extends FunTable {
 						}
 					}
 					if (matchingArgs == args.length) {
-						return new FunDefBase(
-								this, FunDef.TypeFunction, type,
-								ExpBase.getTypes(args));
+						return new FunDefBase(this, type, ExpBase.getTypes(args));
 					}
 				}
 				return null;
 			}
+
+            public boolean requiresExpression(int k) {
+                return true;
+            }
 		});
 
 		define(new ResolverBase(
 				"_CaseTest",
 				"Case When <Logical Expression> Then <Expression> [...] [Else <Expression>] End",
 				"Evaluates various conditions, and returns the corresponding expression for the first which evaluates to true.",
-				FunDef.TypeCase) {
-			protected FunDef resolve(Exp[] args, int[] conversionCount) {
+				Syntax.Case) {
+			public FunDef resolve(Exp[] args, int[] conversionCount) {
 				if (args.length < 1) {
 					return null;
 				}
@@ -4112,9 +4134,7 @@ public class BuiltinFunTable extends FunTable {
 				}
 				Util.assertTrue(j == args.length);
 				if (mismatchingArgs == 0) {
-					return new FunDefBase(
-							this, FunDef.TypeFunction, returnType,
-							ExpBase.getTypes(args)) {
+					return new FunDefBase(this, returnType, ExpBase.getTypes(args)) {
 						// implement FunDef
 						public Object evaluate(Evaluator evaluator, Exp[] args) {
 							return evaluateCaseTest(evaluator, args);
@@ -4124,6 +4144,11 @@ public class BuiltinFunTable extends FunTable {
 					return null;
 				}
 			}
+
+            public boolean requiresExpression(int k) {
+                return true;
+            }
+
 			Object evaluateCaseTest(Evaluator evaluator, Exp[] args) {
 				int clauseCount = args.length / 2,
 					j = 0;
@@ -4162,8 +4187,8 @@ public class BuiltinFunTable extends FunTable {
 				"_CaseMatch",
 				"Case <Expression> When <Expression> Then <Expression> [...] [Else <Expression>] End",
 				"Evaluates various expressions, and returns the corresponding expression for the first which matches a particular value.",
-				FunDef.TypeCase) {
-			protected FunDef resolve(Exp[] args, int[] conversionCount) {
+				Syntax.Case) {
+			public FunDef resolve(Exp[] args, int[] conversionCount) {
 				if (args.length < 3) {
 					return null;
 				}
@@ -4190,9 +4215,7 @@ public class BuiltinFunTable extends FunTable {
 				}
 				Util.assertTrue(j == args.length);
 				if (mismatchingArgs == 0) {
-					return new FunDefBase(
-							this, FunDef.TypeFunction, returnType,
-							ExpBase.getTypes(args)) {
+					return new FunDefBase(this, returnType, ExpBase.getTypes(args)) {
 						// implement FunDef
 						public Object evaluate(Evaluator evaluator, Exp[] args) {
 							return evaluateCaseMatch(evaluator, args);
@@ -4202,6 +4225,11 @@ public class BuiltinFunTable extends FunTable {
 					return null;
 				}
 			}
+
+            public boolean requiresExpression(int k) {
+                return true;
+            }
+
 			Object evaluateCaseMatch(Evaluator evaluator, Exp[] args) {
 				int clauseCount = (args.length - 1)/ 2,
 					j = 0;
@@ -4241,7 +4269,7 @@ public class BuiltinFunTable extends FunTable {
 					   "Properties",
 					   "<Member>.Properties(<String Expression>)",
 					   "Returns the value of a member property.",
-					   FunDef.TypeMethod) {
+					   Syntax.Method) {
 			public FunDef resolve(Exp[] args, int[] conversionCount) {
 				final int[] argTypes = new int[]{Category.Member, Category.String};
 				if (args.length != 2 ||
@@ -4277,8 +4305,13 @@ public class BuiltinFunTable extends FunTable {
 				} else {
 					returnType = Category.Value;
 				}
-				return new PropertiesFunDef(name, signature, description, syntacticType, returnType, argTypes);
+				return new PropertiesFunDef(name, signature, description, syntax, returnType, argTypes);
 			}
+
+            public boolean requiresExpression(int k) {
+                return true;
+            }
+
 			public void testPropertiesExpr(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"[Store].[USA].[CA].[Beverly Hills].[Store 6].Properties(\"Store Type\")");
@@ -4455,6 +4488,42 @@ public class BuiltinFunTable extends FunTable {
 				String s = test.executeExpr("3 + 4 * 5 + 6");
 				Assert.assertEquals("29", s);
 			}
+            /** Bug 774807 caused expressions to be mistaken for the crossjoin
+             * operator. */
+            public void testMultiplyBug774807(FoodMartTestCase test) {
+                final String desiredResult = "Axis #0:" + nl +
+                        "{}" + nl +
+                        "Axis #1:" + nl +
+                        "{[Store].[All Stores]}" + nl +
+                        "Axis #2:" + nl +
+                        "{[Measures].[Store Sales]}" + nl +
+                        "{[Measures].[A]}" + nl +
+                        "Row #0: 565,238.13" + nl +
+                        "Row #1: 319,494,143,605.90" + nl;
+                test.runQueryCheckResult(
+                        "WITH MEMBER [Measures].[A] AS" + nl +
+                        " '([Measures].[Store Sales] * [Measures].[Store Sales])'" + nl +
+                        "SELECT {[Store]} ON COLUMNS," + nl +
+                        " {[Measures].[Store Sales], [Measures].[A]} ON ROWS" + nl +
+                        "FROM Sales",
+                        desiredResult);
+                // as above, no parentheses
+                test.runQueryCheckResult(
+                        "WITH MEMBER [Measures].[A] AS" + nl +
+                        " '[Measures].[Store Sales] * [Measures].[Store Sales]'" + nl +
+                        "SELECT {[Store]} ON COLUMNS," + nl +
+                        " {[Measures].[Store Sales], [Measures].[A]} ON ROWS" + nl +
+                        "FROM Sales",
+                        desiredResult);
+                // as above, plus 0
+                test.runQueryCheckResult(
+                        "WITH MEMBER [Measures].[A] AS" + nl +
+                        " '[Measures].[Store Sales] * [Measures].[Store Sales] + 0'" + nl +
+                        "SELECT {[Store]} ON COLUMNS," + nl +
+                        " {[Measures].[Store Sales], [Measures].[A]} ON ROWS" + nl +
+                        "FROM Sales",
+                        desiredResult);
+            }
 		});
 		define(new FunDefBase("/", "<Numeric Expression> / <Numeric Expression>", "Divides two numbers.", "innn") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
@@ -4723,7 +4792,7 @@ public class BuiltinFunTable extends FunTable {
 
 	TestSuite createSuite() {
 		TestSuite suite = new TestSuite("builtin functions");
-		for (Iterator resolverses = upperName2Resolvers.values().iterator();
+		for (Iterator resolverses = mapNameToResolvers.values().iterator();
 			 resolverses.hasNext();) {
 			Resolver[] resolvers = (Resolver[]) resolverses.next();
 			for (int i = 0; i < resolvers.length; i++) {
@@ -4766,8 +4835,8 @@ public class BuiltinFunTable extends FunTable {
 	private class PropertiesFunDef extends FunDefBase {
 		public PropertiesFunDef(
 				String name, String signature, String description,
-				int syntacticType, int returnType, int[] parameterTypes) {
-			super(name, signature, description, syntacticType, returnType, parameterTypes);
+				Syntax syntax, int returnType, int[] parameterTypes) {
+			super(name, signature, description, syntax, returnType, parameterTypes);
 		}
 
 		public Object evaluate(Evaluator evaluator, Exp[] args) {

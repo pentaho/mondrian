@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1998-2002 Kana Software, Inc. and others.
+// (C) Copyright 1998-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -44,14 +44,12 @@ public class QueryAxis extends QueryPart {
 		return a2;
 	}
 
-	public QueryPart resolve(Query q)
+	public void resolve(Exp.Resolver resolver)
 	{
-		set = set.resolve(q);
-		if (!set.isSet())
-		{
+		set = resolver.resolveChild(set);
+		if (!set.isSet()) {
 			throw Util.getRes().newMdxAxisIsNotSet( axisName );
 		}		
-		return this;
 	}
 
 	public Object[] getChildren()
@@ -65,31 +63,24 @@ public class QueryAxis extends QueryPart {
 		set = (Exp) with;
 	}
 
-	public void unparse(PrintWriter pw, ElementCallback callback)
+	public void unparse(PrintWriter pw)
 	{
-		if (nonEmpty)
+		if (nonEmpty) {
 			pw.print("NON EMPTY ");
-		if (set != null)
-			set.unparse(pw, callback);
-
-		// Plato can't handle missing axes, so for 'select {} on rows from
-		// Sales', pretend that the 'rows' axis is really 'columns'.
-		String name = callback.isPlatoMdx()
-			? AxisOrdinal.instance.getName(axisOrdinal) : this.axisName;
-		pw.print(" ON " + name);
+        }
+		if (set != null) {
+			set.unparse(pw);
+        }
+        pw.print(" ON " + axisName);
 	}
 
 	public void addLevel(Level level)
 	{
 		Util.assertTrue(level != null, "addLevel needs level");
-		set = new FunCall(
-			"Crossjoin",
-			new Exp[] {
-				set,
-				new FunCall(
-					"Members",
-					new Exp[] {level},
-					FunDef.TypeProperty)});
+        set = new FunCall("Crossjoin", Syntax.Function, new Exp[] {
+            set,
+            new FunCall("Members", Syntax.Property, new Exp[] {level})
+        });
 	}
 
 	void setShowSubtotals(boolean bShowSubtotals) {

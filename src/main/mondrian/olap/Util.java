@@ -824,7 +824,44 @@ public class Util extends mondrian.xom.XOMUtil
 		}
 	}
 
-	public static class UtilTestCase extends TestCase {
+    /**
+     * Creates a very simple implementation of {@link Exp.Resolver}. (Only
+     * useful for resolving trivial expressions.)
+     */
+    public static Exp.Resolver createSimpleResolver(final FunTable funTable) {
+        return new Exp.Resolver() {
+            public Query getQuery() {
+                throw new UnsupportedOperationException();
+            }
+
+            public Exp resolveChild(Exp exp) {
+                return exp;
+            }
+
+            public Parameter resolveChild(Parameter parameter) {
+                return parameter;
+            }
+
+            public void resolveChild(MemberProperty memberProperty) {
+            }
+
+            public void resolveChild(QueryAxis axis) {
+            }
+
+            public void resolveChild(Formula formula) {
+            }
+
+            public boolean requiresExpression() {
+                return false;
+            }
+
+            public FunTable getFunTable() {
+                return funTable;
+            }
+        };
+    }
+
+    public static class UtilTestCase extends TestCase {
 		public UtilTestCase(String s) {
 			super(s);
 		}

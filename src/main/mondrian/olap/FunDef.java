@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 1999-2003 Kana Software, Inc. and others.
+// (C) Copyright 1999-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -20,74 +20,11 @@ import java.io.PrintWriter;
  * FunTable}.
  **/
 public interface FunDef extends Testable {
-	/**
-	 * Returns the syntactic type of the function. One of the following:<dl>
-	 * <dt>{@link #TypeProperty}</dt><dd>invoked
-	 *     <code>object.PROPERTY</code>;</dd>
-	 * <dt>{@link #TypeMethod}</dt><dd>invoked <code>object.METHOD()</code> or
-	 *     <code>object.METHOD(args)</code>;</dd>
-	 * <dt>{@link #TypeFunction}</dt><dd>invoked <code>FUNCTION()</code> or
-	 *     <code>FUNCTION(args)</code>;</dd>
-	 * <dt>{@link #TypeInfix}</dt><dd>invoked <code>arg OPERATOR
-	 *     arg</code> (like '+' or 'AND');</dd>
-	 * <dt>{@link #TypePrefix}</dt><dd>invoked <code>OPERATOR arg</code> (like
-	 *     unary '-');</dd>
-	 * <dt>{@link #TypeBraces}</dt><dd>invoked <code>{ARG,...}</code>, that is,
-	 *     the set construction operator;</dd>
-	 * <dt>{@link #TypeParentheses}</dt><dd>invoked <code>(ARG)</code> or
-	 *      <code>(ARG,...)</code>; that is, parentheses for grouping
-	 *     expressions, and the tuple construction operator.</dd>
-	 * <dt>{@link #TypeCase}</dt><dd>invoked <code>CASE ... END</code>.</dd>
-	 * <dt>{@link #TypeInternal}</dt><dd>a function which cannot be specified
-	 *     syntactically.</dd>
-	 * </dl>
-	 **/
-	int getSyntacticType();
+    /**
+	 * Returns the syntactic type of the function. */
+    Syntax getSyntax();
 
-	/** @see #getSyntacticType **/
-	int TypeFunction = 0;
-	/** @see #getSyntacticType **/
-	int TypeProperty = 1;
-	/** @see #getSyntacticType **/
-	int TypeMethod = 2;
-	/** @see #getSyntacticType **/
-	int TypeInfix = 3;
-	/** @see #getSyntacticType **/
-	int TypePrefix = 4;
-	/** @see #getSyntacticType **/
-	int TypeBraces = 5;
-	/** @see #getSyntacticType **/
-	int TypeParentheses = 6;
-	/** @see #getSyntacticType **/
-	int TypeCase = 7;
-	/** @see #getSyntacticType */
-	int TypeInternal = 8;
-
-	int TypeMask = 0xFF;
-	int TypePropertyQuoted = TypeProperty | 0x100;
-	int TypePropertyAmpQuoted = TypeProperty | 0x200;
-
-	/** Returns <code>true</code> if this function is invoked using the syntax
-	 * 'FUNCTION(args)' or 'FUNCTION()' **/
-	boolean isFunction();
-
-	/** Returns <code>true</code> if this function is invoked using the syntax
-	 * 'object.METHOD(args)' or 'object.METHOD()' **/
-	boolean isMethod();
-
-	/** Returns <code>true</code> if this function is invoked using the syntax
-	 * 'object.PROPERTY' **/
-	boolean isProperty();
-
-	/** Returns <code>true</code> if this function is an infix operator, such
-	 * '+'. **/
-	boolean isInfix();
-
-	/** Returns <code>true</code> if this function is a prefix operator, such
-	 * as unary '-'. **/
-	boolean isPrefix();
-
-	/**
+    /**
 	 * Returns the name of this function.
 	 **/
 	String getName();
@@ -124,14 +61,14 @@ public interface FunDef extends Testable {
 
 	/**
 	 * Returns an English description of the signature of the function, for
-	 * example "<Numeric Expression> / <Numeric Expression>".
+	 * example "&lt;Numeric Expression&gt; / &lt;Numeric Expression&gt;".
 	 **/
 	String getSignature();
 
 	/**
 	 * Converts a function call into source code.
 	 **/
-	void unparse(Exp[] args, PrintWriter pw, ElementCallback callback);
+	void unparse(Exp[] args, PrintWriter pw);
 
 	/**
 	 * Applies this function to a set of arguments in the context provided

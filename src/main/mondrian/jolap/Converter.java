@@ -128,7 +128,7 @@ class Converter {
 	}
 
 	Exp convert(MondrianJolapDimension dimension) {
-		return new FunCall("Members", new Exp[] {dimension.dimension}, FunDef.TypeProperty);
+		return new FunCall("Members", Syntax.Property, new Exp[] {dimension.dimension});
 	}
 
 }

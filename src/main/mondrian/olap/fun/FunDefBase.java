@@ -1,10 +1,9 @@
 /*
 // $Id$
-// (C) Copyright 2002 Kana Software, Inc.
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -32,18 +31,17 @@ class FunDefBase extends FunUtil implements FunDef {
 
 	FunDefBase(
 			String name, String signature, String description,
-			int syntacticType, int returnType, int[] parameterTypes) {
+			Syntax syntax, int returnType, int[] parameterTypes) {
 		this.name = name;
 		Util.discard(signature);
 		this.description = description;
-		this.flags = syntacticType;
+		this.flags = syntax.ordinal_;
 		this.returnType = returnType;
 		this.parameterTypes = parameterTypes;
 	}
 	FunDefBase(
 			String name, String signature, String description, String flags) {
-		this(
-			name,
+		this(name,
 			signature,
 			description,
 			BuiltinFunTable.decodeSyntacticType(flags),
@@ -53,23 +51,19 @@ class FunDefBase extends FunUtil implements FunDef {
 	/**
 	 * Convenience constructor when we are created by a {@link Resolver}.
 	 **/
-	FunDefBase(
-			Resolver resolver, int syntacticType,
-			int returnType, int[] parameterTypes) {
-		this(
-			resolver.getName(), null, null, syntacticType, returnType,
-			parameterTypes);
+	FunDefBase(Resolver resolver, int returnType, int[] parameterTypes) {
+		this(resolver.getName(), null, null, resolver.getSyntax(), returnType,
+                parameterTypes);
 	}
 
 	/**
 	 * Copy constructor.
-	 */ 
-	FunDefBase(FunDef funDef) {
-		this(
-				funDef.getName(), funDef.getSignature(),
-				funDef.getDescription(), funDef.getSyntacticType(),
-				funDef.getReturnType(), funDef.getParameterTypes());
-	}
+	 */
+    FunDefBase(FunDef funDef) {
+        this(funDef.getName(), funDef.getSignature(),
+                funDef.getDescription(), funDef.getSyntax(),
+                funDef.getReturnType(), funDef.getParameterTypes());
+    }
 
     public String getName() {
         return name;
@@ -77,8 +71,8 @@ class FunDefBase extends FunUtil implements FunDef {
     public String getDescription() {
         return description;
     }
-	public int getSyntacticType() {
-		return flags & TypeMask;
+	public Syntax getSyntax() {
+        return Syntax.get(flags);
 	}
 	public int getReturnType() {
 		return returnType;
@@ -86,27 +80,8 @@ class FunDefBase extends FunUtil implements FunDef {
 	public int[] getParameterTypes() {
 		return parameterTypes;
 	}
-	// implement FunDef
-	public boolean isFunction() {
-		return getSyntacticType() == TypeFunction;
-	}
-	// implement FunDef
-	public boolean isMethod() {
-		return getSyntacticType() == TypeMethod;
-	}
-	// implement FunDef
-	public boolean isProperty() {
-		return getSyntacticType() == TypeProperty;
-	}
-	// implement FunDef
-	public boolean isInfix() {
-		return getSyntacticType() == TypeInfix;
-	}
-	// implement FunDef
-	public boolean isPrefix() {
-		return getSyntacticType() == TypePrefix;
-	}
-	// implement FunDef
+
+    // implement FunDef
 	public Hierarchy getHierarchy(Exp[] args)
 	{
         switch (getReturnType()) {
@@ -131,91 +106,15 @@ class FunDefBase extends FunUtil implements FunDef {
 			"function '" + getSignature() + "' has not been implemented");
 	}
 
-	// implement FunDef
 	public String getSignature() {
-		return ExpBase.getSignature(
-			getName(), getSyntacticType(), getReturnType(), getParameterTypes());
+		return getSyntax().getSignature(getName(), getReturnType(),
+                getParameterTypes());
 	}
 
-	// implement FunDef
-	public void unparse(Exp[] args, PrintWriter pw, ElementCallback callback) {
-		String fun = getName();
-		switch (getSyntacticType()) {
-		case TypeInfix:
-			if (needParen(args)) {
-				ExpBase.unparseList(pw, args, "(", " " + fun + " ", ")", callback);
-			} else {
-				ExpBase.unparseList(pw, args, "", " " + fun + " ", "", callback);
-			}
-			return;
-
-		case TypePrefix:
-			if (needParen(args)) {
-				ExpBase.unparseList(pw, args, "(" + fun + " ", null, ")", callback);
-			} else {
-				ExpBase.unparseList(pw, args, "" + fun + " ", null, "", callback);
-			}
-			return;
-
-		case TypeFunction:
-			ExpBase.unparseList(pw, args, fun + "(", ", ", ")", callback);
-			return;
-
-		case TypeMethod:
-			Util.assertTrue(args.length >= 1);
-			args[0].unparse(pw, callback); // 'this'
-			pw.print(".");
-			pw.print(fun);
-			pw.print("(");
-			for (int i = 1; i < args.length; i++) {
-				if (i > 1)
-					pw.print(", ");
-				args[i].unparse(pw, callback);
-			}
-			pw.print(")");
-			return;
-
-		case TypeProperty:
-			Util.assertTrue(args.length >= 1);
-			args[0].unparse(pw, callback); // 'this'
-			pw.print(".");
-			pw.print(fun);
-			return;
-
-		case TypeCase:
-			pw.print("CASE");
-			int j = 0;
-			if (fun.equals("CaseTest")) {
-				pw.print(" ");
-				args[j++].unparse(pw,callback);
-			} else {
-				Util.assertTrue(fun.equals("CaseMatch"));
-			}
-			int clauseCount = (args.length - j) / 2;
-			for (int i = 0; i < clauseCount; i++) {
-				pw.print(" WHEN ");
-				args[j++].unparse(pw, callback);
-				pw.print(" THEN ");
-				args[j++].unparse(pw, callback);
-			}
-			if (j < args.length) {
-				pw.print(" ELSE ");
-				args[j++].unparse(pw, callback);
-			}
-			Util.assertTrue(j == args.length);
-			pw.print(" END");
-			return;
-		default:
-			throw Util.newInternal(
-				"unknown syntactic type " + getSyntacticType());
-		}
+	public void unparse(Exp[] args, PrintWriter pw) {
+        getSyntax().unparse(getName(), args, pw);
 	}
 
-	private static boolean needParen(Exp[] args) {
-		return !(args.length == 1 &&
-				args[0] instanceof FunCall &&
-				((FunCall) args[0]).getSyntacticType() == TypeParentheses);
-	}
 }
 
 // End FunDefBase.java

@@ -1,10 +1,9 @@
 /*
 // $Id$
-// (C) Copyright 2002 Kana Software, Inc.
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -15,6 +14,8 @@ package mondrian.olap.fun;
 import junit.framework.TestSuite;
 import mondrian.olap.Exp;
 import mondrian.olap.FunDef;
+import mondrian.olap.Syntax;
+import mondrian.olap.Category;
 
 /**
  * A <code>SimpleResolver</code> resolves a single, non-overloaded function.
@@ -31,10 +32,12 @@ class SimpleResolver implements Resolver {
 	public String getName() {
 		return funDef.getName();
 	}
-	public FunDef resolve(int syntacticType, Exp[] args, int[] conversionCount) {
-		if (syntacticType != funDef.getSyntacticType()) {
-			return null;
-		}
+
+    public Syntax getSyntax() {
+        return funDef.getSyntax();
+    }
+
+	public FunDef resolve(Exp[] args, int[] conversionCount) {
 		int[] parameterTypes = funDef.getParameterTypes();
 		if (parameterTypes.length != args.length) {
 			return null;
@@ -46,6 +49,16 @@ class SimpleResolver implements Resolver {
 		}
 		return funDef;
 	}
+
+    public boolean requiresExpression(int k) {
+        int[] parameterTypes = funDef.getParameterTypes();
+        if (k < parameterTypes.length &&
+                parameterTypes[k] == Category.Set) {
+            return false;
+        }
+        return true;
+    }
+
 	public void addTests(TestSuite suite) {
 		funDef.addTests(suite);
 	}

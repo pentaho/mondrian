@@ -70,10 +70,10 @@ public class Formula extends QueryPart {
 
 	/**
 	 * Resolves identifiers into objects.
-	 * @param q The query which contains this formula.
+	 * @param resolver The query which contains this formula.
 	 */
-	void resolve(Query q) {
-		exp = (ExpBase) exp.resolve(q);
+	void resolve(Exp.Resolver resolver) {
+		exp = (ExpBase) resolver.resolveChild(exp);
 		String id = Util.quoteMdxIdentifier(names);
 		if (isMember) {
 			if (!(!exp.isSet() ||
@@ -86,7 +86,7 @@ public class Formula extends QueryPart {
 			}
 		}
 		for (int i = 0; i < memberProperties.length; i++) {
-			memberProperties[i].resolve(q);
+			resolver.resolveChild(memberProperties[i]);
 		}
 		// Get the format expression from the property list, or derive it from
 		// the formula.
@@ -148,22 +148,22 @@ public class Formula extends QueryPart {
       exp = (ExpBase) with;
    }
 
-   public void unparse(PrintWriter pw, ElementCallback callback)
+   public void unparse(PrintWriter pw)
    {
       if (isMember) {
          pw.print("member ");
-         mdxMember.unparse(pw, callback);
+         mdxMember.unparse(pw);
       } else {
          pw.print("set ");
          pw.print(Util.quoteMdxIdentifier(names));
       }
       pw.print(" as '");
-      exp.unparse(pw, callback);
+      exp.unparse(pw);
       pw.print("'");
       if (memberProperties != null) {
          for (int i = 0; i < memberProperties.length; i++) {
             pw.print(", ");
-            memberProperties[i].unparse(pw, callback);
+            memberProperties[i].unparse(pw);
          }
       }
    }

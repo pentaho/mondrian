@@ -11,6 +11,8 @@
 */
 
 package mondrian.olap;
+import mondrian.olap.fun.BuiltinFunTable;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
@@ -46,15 +48,12 @@ public class Query extends QueryPart {
 		Connection connection, Formula[] formulas, QueryAxis[] axes,
 		String cube, Exp slicer, QueryPart[] cellProps)
 	{
-		this(
-				connection,
-				connection.getSchema().lookupCube(cube, true),
-				formulas, axes, slicer, cellProps, new Parameter[0]);
+		this(connection, connection.getSchema().lookupCube(cube, true),
+                formulas, axes, slicer, cellProps, new Parameter[0]);
 	}
 
 	/** Construct a Query; called from clone(). */
-	public Query(
-			Connection connection, Cube mdxCube,
+	public Query(Connection connection, Cube mdxCube,
 			Formula[] formulas, QueryAxis[] axes, Exp slicer,
 			QueryPart[] cellProps, Parameter[] parameters) {
 		this.connection = connection;
@@ -65,11 +64,15 @@ public class Query extends QueryPart {
 		setSlicer(slicer);
 		this.cellProps = cellProps;
 		this.parameters = parameters;
-		resolve(this); // resolve self and children
-		resolveParameters();  //calculate parameter's usage in query
+        resolve(createResolver()); // resolve self and children
+        resolveParameters();  //calculate parameter's usage in query
 	}
 
-	public Object clone() throws CloneNotSupportedException
+    public Exp.Resolver createResolver() {
+        return new StackResolver(BuiltinFunTable.instance());
+    }
+
+    public Object clone() throws CloneNotSupportedException
 	{
 		return new Query(
 				connection,  mdxCube,
@@ -120,39 +123,39 @@ public class Query extends QueryPart {
 		}
 	}
 
-	public QueryPart resolve(Query q)
+	public QueryPart resolve(Exp.Resolver resolver)
 	{
 		if (formulas != null) {
 			//resolving of formulas should be done in two parts
 			//because formulas might depend on each other, so all calculated
 			//mdx elements have to be defined during resolve
 			for (int i = 0; i < formulas.length; i++) {
-				formulas[i].createElement(q);
+				formulas[i].createElement(resolver.getQuery());
 			}
 			for (int i = 0; i < formulas.length; i++) {
-				formulas[i].resolve(q);
+				resolver.resolveChild(formulas[i]);
 			}
 		}
 
-		if (axes != null)
-			for (int i = 0; i < axes.length; i++)
-				axes[i] = (QueryAxis) axes[i].resolve(q);
-
+		if (axes != null) {
+			for (int i = 0; i < axes.length; i++) {
+				resolver.resolveChild(axes[i]);
+            }
+        }
 		if (slicer != null) {
-			setSlicer(slicer.resolve(q));
+			setSlicer(resolver.resolveChild(slicer));
 		}
 
 		// Now that out Parameters have been created (from FunCall's to
 		// Parameter() and ParamRef()), resolve them.
-		for (int i = 0; i < parameters.length; i++)
-			parameters[i] = (Parameter) parameters[i].resolve(q);
-
+		for (int i = 0; i < parameters.length; i++) {
+			parameters[i] = resolver.resolveChild(parameters[i]);
+        }
 		return this;
 	}
 
-	public void unparse(PrintWriter pw, ElementCallback callback)
+	public void unparse(PrintWriter pw)
 	{
-		callback.disableHiddenNameLookup(true);
 		if (formulas != null) {
 			for (int i = 0; i < formulas.length; i++) {
 				if (i == 0) {
@@ -160,16 +163,15 @@ public class Query extends QueryPart {
 				} else {
 					pw.print("  ");
 				}
-				formulas[i].unparse(pw, callback);
+				formulas[i].unparse(pw);
 				pw.println();
 			}
 		}
-		callback.disableHiddenNameLookup(false);
 		pw.print("select ");
 		if (axes != null) {
 			for (int i = 0; i < axes.length; i++) {
 				axes[i].axisOrdinal = i;
-				axes[i].unparse(pw, callback);
+				axes[i].unparse(pw);
 				if (i < axes.length - 1) {
 					pw.println(",");
 					pw.print("  ");
@@ -179,77 +181,20 @@ public class Query extends QueryPart {
 			}
 		}
 		if (mdxCube != null) {
-			String cubeName = null;
-			cubeName = callback.registerItself(mdxCube);
-			if (cubeName == null) {
-				cubeName = mdxCube.getName();
-			}
-			pw.println("from [" + cubeName + "]");
+            pw.println("from [" + mdxCube.getName() + "]");
 		}
 		if (slicer != null) {
 			pw.print("where ");
-			slicer.unparse(pw, callback);
+			slicer.unparse(pw);
 			pw.println();
 		}
 	}
 
-	/** This class tells {@link #unparse} to expand parameters, because the
-	 * query is intended for Plato and substitute hidden members with existing
-	 * ones */
-	class PlatoCallBack extends ElementCallback {
-        /** Maps between existing and hidden members **/
-		HashMap hiddenNames = new HashMap();
-		boolean disableLookup = false;
-
-		public PlatoCallBack() {
-		}
-
-		/**creates PlatoCallBack object and initializes hiddenMembers mapping,
-		 * using names of formulas. Later, this.hiddenMembers will be used to
-		 * find hidden names for existing ones. We use this substitution to
-		 * allow formatting of existing members. If do not need to use this
-		 * feature call other constructor*/
-		public PlatoCallBack(Formula formulas[])
-		{
-			if (formulas == null) {
-				return;
-            }
-			for (int i = 0; i < formulas.length; i++) {
-				if (!formulas[i].isHidden())
-					continue;
-				String hiddenName = formulas[i].getUniqueName();
-				int offset = hiddenName.indexOf(Query.hidden);
-				String name = hiddenName.substring(0, offset) +
-					hiddenName.substring(offset + Query.hidden.length());
-				hiddenNames.put(name, hiddenName);
-			}
-		}
-
-		public boolean isPlatoMdx()
-		{return true;}
-
-		/** returns hiddenName for given uName if it exists. This feature is
-		 * used for formatting existing measures*/
-		public String findHiddenName(String uName)
-		{
-			if (disableLookup) {
-                return null;
-            }
-            return (String) hiddenNames.get(uName);
-		}
-
-        /** disables or enables hidden name lookup*/
-		public void disableHiddenNameLookup(boolean disableLookup) {
-            this.disableLookup = disableLookup;
-        }
-	}
-
-	public String toPlatoMdx()
+    public String toPlatoMdx()
 	{
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
-		ElementCallback callback = new PlatoCallBack(formulas);
-		unparse(pw, callback);
+		unparse(pw);
 		return sw.toString();
 	}
 
@@ -257,8 +202,7 @@ public class Query extends QueryPart {
 	{
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
-		ElementCallback callback = new ElementCallback();
-		unparse(pw, callback);
+		unparse(pw);
 		resetParametersPrintProperty();
 		return sw.toString();
 	}
@@ -406,7 +350,7 @@ public class Query extends QueryPart {
 			slicer instanceof Hierarchy ||
 			slicer instanceof Dimension) {
 			slicer = new FunCall(
-				"DefaultMember", new Exp[] {slicer}, FunDef.TypeProperty);
+				"DefaultMember", Syntax.Property, new Exp[] {slicer});
 		}
 		if (slicer == null) {
 			;
@@ -415,7 +359,7 @@ public class Query extends QueryPart {
 			;
 		} else {
 			slicer = new FunCall(
-				"()", new Exp[] {slicer}, FunDef.TypeParentheses);
+				"()", Syntax.Parentheses, new Exp[] {slicer});
 		}
 	}
 
@@ -566,16 +510,16 @@ public class Query extends QueryPart {
 					//   axisExp
 					// becomes
 					//   CrossJoin(exp, axisExp)
-					FunCall funCrossJoin = new FunCall(
-						"CrossJoin", new Exp[] {exp, axisExp});
+					FunCall funCrossJoin = new FunCall("CrossJoin",
+                            Syntax.Function, new Exp[] {exp, axisExp});
 					axes[axis].set = funCrossJoin;
 				} else if (iPositionOnAxis < 0) {
 					// 'exp' has to go last:
 					//   axisExp
 					// becomes
 					//   CrossJoin(axisExp, exp)
-					FunCall funCrossJoin = new FunCall(
-						"CrossJoin", new Exp[] {axisExp, exp});
+					FunCall funCrossJoin = new FunCall("CrossJoin",
+                            Syntax.Function, new Exp[] {axisExp, exp});
 					axes[axis].set = funCrossJoin;
 				} else {
 					int i = axes[axis].set.addAtPosition(exp, iPositionOnAxis);
@@ -583,8 +527,8 @@ public class Query extends QueryPart {
 						// The expression was not added, because the position
 						// equalled or exceded the number of hierarchies. Add
 						// it on the end.
-						FunCall funCrossJoin = new FunCall(
-							"CrossJoin", new Exp[] {axisExp, exp});
+						FunCall funCrossJoin = new FunCall("CrossJoin",
+                                Syntax.Function, new Exp[] {axisExp, exp});
 						axes[axis].set = funCrossJoin;
 					}
 				}
@@ -605,9 +549,8 @@ public class Query extends QueryPart {
 			level.getDimension());
 
 		Exp e = (Exp) walker.currentElement();
-		FunCall funDrillDownLevel = new FunCall(
-			"DrillDownLevel", new Exp[] {e});
-
+		FunCall funDrillDownLevel = new FunCall("DrillDownLevel", Syntax.Function, new Exp[] {e}
+        );
 		QueryPart parent = (QueryPart) walker.getParent();
 		parent.replaceChild(walker.getOrdinal(), funDrillDownLevel);
 	}
@@ -623,35 +566,27 @@ public class Query extends QueryPart {
 		// descendents of the ends of the range, because ':' only includes
 		// members at the same level.
 		Hierarchy hierarchy = level.getHierarchy();
-		Exp expCrop =
-			startMember.equals(endMember)
-			?
-			// e.g. {[Beverages]}
-			new FunCall("{}", new Exp[] {startMember}, FunDef.TypeBraces)
-			:
-			// e.g.
-			// Generate([Beverages]:[Breakfast Foods],
-			//          Descendants([Products].CurrentMember,
-			//                      [Products].[(All)],
-			//                      SELF_BEFORE_AFTER))
-			new FunCall(
-				"Generate",
-				new Exp[] {
-					new FunCall(
-						":",
-						new Exp[] {startMember, endMember},
-						FunDef.TypeInfix),
-					new FunCall(
-						"Descendants",
-						new Exp[] {
-							new FunCall(
-								"CurrentMember",
-								new Exp[] {hierarchy},
-								FunDef.TypeProperty),
-							Util.lookupHierarchyLevel(hierarchy, "(All)"),
-							Literal.createSymbol("SELF_BEFORE_AFTER")
-						})
-				});
+        Exp expCrop =
+                startMember.equals(endMember)
+                ?
+                // e.g. {[Beverages]}
+                new FunCall("{}", Syntax.Braces, new Exp[] {startMember})
+                :
+                // e.g.
+                // Generate([Beverages]:[Breakfast Foods],
+                //          Descendants([Products].CurrentMember,
+                //                      [Products].[(All)],
+                //                      SELF_BEFORE_AFTER))
+                new FunCall("Generate", Syntax.Function, new Exp[] {
+                    new FunCall(":", Syntax.Infix, new Exp[] {
+                        startMember, endMember}),
+                    new FunCall("Descendants", Syntax.Function, new Exp[] {
+                        new FunCall("CurrentMember", Syntax.Property, new Exp[] {
+                            hierarchy}),
+                        Util.lookupHierarchyLevel(hierarchy, "(All)"),
+                        Literal.createSymbol("SELF_BEFORE_AFTER")
+                    })
+                });
 		crop(level, expCrop);
 	}
 
@@ -700,7 +635,7 @@ public class Query extends QueryPart {
 					continue; // set must be of right dimension
 
 				FunCall funIntersect = new FunCall(
-					"Intersect", new Exp[] {e, expCrop});
+					"Intersect", Syntax.Function, new Exp[] {e, expCrop});
 
 				QueryPart parent = (QueryPart) walker.getParent();
 				parent.replaceChild(walker.getOrdinal(), funIntersect);
@@ -829,7 +764,7 @@ public class Query extends QueryPart {
 			// we do not care of expression is already a Member, because it's a
 			// very rare case; we have to make a new expression containing
 			// default
-			e = new FunCall("DefaultMember", new Exp[] {hierarchy}, FunDef.TypeProperty);
+			e = new FunCall("DefaultMember", Syntax.Property, new Exp[] {hierarchy});
 			putInAxisPosition(e, toAxis, iPositionOnAxis);
 			break;
 		case AxisOrdinal.COLUMNS:
@@ -839,17 +774,17 @@ public class Query extends QueryPart {
 			// member).
 			if (e == null) {
 				if (bExpand)
-					e = new FunCall("Children", new Exp[] {hierarchy}, FunDef.TypeProperty);
+					e = new FunCall("Children", Syntax.Property, new Exp[] {hierarchy});
 				else {
-					e = new FunCall("DefaultMember", new Exp[] {hierarchy},
-									FunDef.TypeProperty);
-					e = new FunCall("{}", new Exp[] {e}, FunDef.TypeBraces);
+					e = new FunCall("DefaultMember", Syntax.Property, new Exp[] {hierarchy}
+                    );
+					e = new FunCall("{}", Syntax.Braces, new Exp[] {e});
 				}
 			} else if (fromAxis == AxisOrdinal.SLICER) {
 				// Expressions on slicers are stored as DefaultMember.  We need
 				// to convert it to $Brace expression first (curly braces
 				// needed).
-				e = new FunCall("{}", new Exp[] {e}, FunDef.TypeBraces);
+				e = new FunCall("{}", Syntax.Braces, new Exp[] {e});
 			}
 
 			// Move to regular axis.
@@ -929,7 +864,7 @@ public class Query extends QueryPart {
 			Exp[] exps = members;
 			if (members.length == 0) {
 				exps = new Exp[] {new FunCall(
-					"DefaultMember", new Exp[] {hierarchy}, FunDef.TypeProperty)};
+					"DefaultMember", Syntax.Property, new Exp[] {hierarchy})};
 			}
 			// Neither slicer nor the tuple function (which is likely to occur
 			// in a slicer) can have a set as a child, so reduce a singleton
@@ -940,7 +875,7 @@ public class Query extends QueryPart {
 				 parent instanceof FunCall &&
 				 ((FunCall) parent).isCallToTuple())
 				? exps[0]
-				: new FunCall("{}", exps, FunDef.TypeBraces);
+				: new FunCall("{}", Syntax.Braces, exps);
 			parent.replaceChild(iOrdinal, (QueryPart) exp);
 		} else {
 			throw Util.newInternal("findHierarchy returned a " +
@@ -960,12 +895,10 @@ public class Query extends QueryPart {
 		// becomes
 		//    f(..., ToggleDrillState(e, {member}), ...)
 		Exp e = (Exp) walker.currentElement();
-		FunCall funToggle = new FunCall(
-			"ToggleDrillState", new Exp[] {
-				e, new FunCall(
-					"{}",
-					new Exp[] {member},
-					FunDef.TypeBraces)});
+        FunCall funToggle = new FunCall(
+                "ToggleDrillState", Syntax.Function, new Exp[] {
+                    e, new FunCall("{}", Syntax.Braces, new Exp[] {member})
+                });
 		QueryPart parent = (QueryPart) walker.getParent();
 		int iOrdinal = walker.getOrdinal();
 		parent.replaceChild(iOrdinal, funToggle);
@@ -1012,17 +945,12 @@ public class Query extends QueryPart {
 			// we've already removed any sorters, we're done.
 			return;
 		} else {
-			FunCall funOrder = new FunCall(
-				"Order",
-				new Exp[] {
-					e,
-					members.length == 0 ? null : // handled above
-					members.length == 1 ? (Exp) members[0] :
-					(Exp) new FunCall(
-						"()",
-						members,
-						FunDef.TypeParentheses),
-					Literal.createSymbol(sDirection)});
+            FunCall funOrder = new FunCall("Order", Syntax.Function, new Exp[] {
+                e,
+                members.length == 0 ? null : // handled above
+                    members.length == 1 ? (Exp) members[0] :
+                    (Exp) new FunCall("()", Syntax.Parentheses, members),
+                Literal.createSymbol(sDirection)});
 			axes[axis].set = funOrder;
 		}
 	}
@@ -1089,14 +1017,11 @@ public class Query extends QueryPart {
 		removeSortFromAxis(axis);
 
 		Exp e = axes[axis].set;
-		FunCall funOrder = new FunCall(
-			fName,
-			new Exp[] {
-				e,
-				Literal.create(n),
-				members.length == 1 ? (Exp) members[0] :
-				(Exp) new FunCall(
-					"()", members, FunDef.TypeParentheses)});
+        FunCall funOrder = new FunCall(fName, Syntax.Function, new Exp[] {
+            e,
+            Literal.create(n),
+            members.length == 1 ? (Exp) members[0] :
+                (Exp) new FunCall("()", Syntax.Parentheses, members)});
 		axes[axis].set = funOrder;
 	}
 
@@ -1576,7 +1501,7 @@ public class Query extends QueryPart {
 				} else {
 					pw.print("  ");
 				}
-				formulas[i].unparse(pw, new PlatoCallBack());
+				formulas[i].unparse(pw);
 				pw.println();
 			}
 			sCalculatedMembers = sw.toString();
@@ -1588,7 +1513,7 @@ public class Query extends QueryPart {
 			Exp e = (Exp) walker.currentElement();
 			StringWriter sw = new StringWriter();
 			PrintWriter pw = new PrintWriter(sw);
-			e.unparse(pw, new PlatoCallBack());
+			e.unparse(pw);
 			String sExp = sw.toString();
 			String sQuery = "";
 			if (sCalculatedMembers != null)
@@ -1644,6 +1569,103 @@ public class Query extends QueryPart {
 			return collectHierarchies(axes[axis]);
 		}
 	}
+
+    private class StackResolver implements Exp.Resolver {
+        private final Stack stack = new Stack();
+        private final FunTable funTable;
+
+        public StackResolver(FunTable funTable) {
+            this.funTable = funTable;
+        }
+
+        public Query getQuery() {
+            return Query.this;
+        }
+
+        public Exp resolveChild(Exp exp) {
+            stack.push(exp);
+            try {
+                return exp.resolve(this);
+            } finally {
+                stack.pop();
+            }
+        }
+
+        public Parameter resolveChild(Parameter parameter) {
+            stack.push(parameter);
+            try {
+                return (Parameter) parameter.resolve(this);
+            } finally {
+                stack.pop();
+            }
+        }
+
+        public void resolveChild(MemberProperty memberProperty) {
+            stack.push(memberProperty);
+            try {
+                memberProperty.resolve(this);
+            } finally {
+                stack.pop();
+            }
+        }
+
+        public void resolveChild(QueryAxis axis) {
+            stack.push(axis);
+            try {
+                axis.resolve(this);
+            } finally {
+                stack.pop();
+            }
+        }
+
+        public void resolveChild(Formula formula) {
+            stack.push(formula);
+            try {
+                formula.resolve(this);
+            } finally {
+                stack.pop();
+            }
+        }
+
+        public boolean requiresExpression() {
+            return requiresExpression(stack.size() - 1);
+        }
+
+        private boolean requiresExpression(int n) {
+            if (n < 1) {
+                return false;
+            }
+            final Object parent = stack.get(n - 1);
+            if (parent instanceof Formula) {
+                return true;
+            } else if (parent instanceof FunCall) {
+                final FunCall funCall = (FunCall) parent;
+                if (funCall.isCallToTuple()) {
+                    return requiresExpression(n - 1);
+                } else {
+                    final Exp arg = (Exp) stack.get(n);
+                    int k = whichArg(funCall, arg);
+                    Util.assertTrue(k >= 0);
+                    return funTable.requiresExpression(funCall, k, this);
+                }
+            } else {
+                return false;
+            }
+        }
+
+        public FunTable getFunTable() {
+            return funTable;
+        }
+
+        private int whichArg(final FunCall funCall, final Exp arg) {
+            for (int i = 0; i < funCall.args.length; i++) {
+                if (funCall.args[i] == arg) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+    }
 
 }
 

@@ -1,10 +1,9 @@
 /*
 // $Id$
-// (C) Copyright 2002 Kana Software, Inc.
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -31,19 +30,19 @@ class ParenthesesFunDef extends FunDefBase
 			"()",
 			"(<Expression>)",
 			"Parenthesis enclose an expression and indicate precedence.",
-			FunDef.TypeParentheses,
+			Syntax.Parentheses,
 			argType,
 			new int[] {argType});
 		this.argType = argType;
 	}
-	public void unparse(Exp[] args, PrintWriter pw, ElementCallback callback) {
+	public void unparse(Exp[] args, PrintWriter pw) {
 		if (args.length != 1) {
-			ExpBase.unparseList(pw, args, "(", ",", ")", callback);
+			ExpBase.unparseList(pw, args, "(", ",", ")");
 		} else {
 			// Don't use parentheses unless necessary. We add parentheses around
 			// expressions because we're not sure of operator precedence, so if
 			// we're not careful, the parentheses tend to multiply ad infinitum.
-			args[0].unparse(pw, callback);
+			args[0].unparse(pw);
 		}
 	}
 	public Hierarchy getHierarchy(Exp[] args) {

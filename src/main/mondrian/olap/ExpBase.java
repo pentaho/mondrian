@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 1999-2003 Kana Software, Inc. and others.
+// (C) Copyright 1999-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -94,7 +94,7 @@ public abstract class ExpBase
 	{
 		if (this instanceof FunCall) {
 			FunCall f = (FunCall) this;
-			return f.getSyntacticType() == FunDef.TypeBraces &&
+			return f.getSyntax() == Syntax.Braces &&
 				f.args.length == 0;
 		} else {
 			return false;
@@ -135,20 +135,19 @@ public abstract class ExpBase
 		return false;
 	}
 
-	public int addAtPosition(Exp e, int iPosition)
-	{
+	public int addAtPosition(Exp e, int iPosition) {
 		// Since this method has not been overridden for this type of
 		// expression, we presume that the expression has a dimensionality of
 		// 1.  We therefore return 1 to indicate that we could not add the
 		// expression, and that this expression has a dimensionality of 1.
 		return 1;
 	}
-	public Object evaluate(Evaluator evaluator)
-	{
+
+	public Object evaluate(Evaluator evaluator) {
 		throw new Error("unsupported");
 	}
-	public Object evaluateScalar(Evaluator evaluator)
-	{
+
+	public Object evaluateScalar(Evaluator evaluator) {
 		Object o = evaluate(evaluator);
 		if (o instanceof Member) {
 			evaluator.setContext((Member) o);
@@ -161,78 +160,14 @@ public abstract class ExpBase
 		}
 	}
 
-	public static String getSignature(
-			String name, int syntacticType, int returnType, int[] argTypes) {
-		switch (syntacticType) {
-		case FunDef.TypeInfix:
-			// e.g. "<Numeric Expression> / <Numeric Expression>"
-			return getTypeDescription(argTypes[0]) + " " + name + " " +
-				getTypeDescription(argTypes[1]);
-		case FunDef.TypePrefix:
-			// e.g. "- <Numeric Expression>"
-			return name + " " + getTypeDescription(argTypes[0]);
-		case FunDef.TypeProperty:
-			// e.g. "<Set>.Current"
-			return getTypeDescription(argTypes[0]) + "." + name;
-		case FunDef.TypeFunction:
-		case FunDef.TypeInternal:
-			// e.g. "StripCalculatedMembers(<Set>)"
-			return (returnType == Category.Unknown ? "" :
-					getTypeDescription(returnType) + " ") +
-				name + "(" + getTypeDescriptionCommaList(argTypes, 0) +
-				")";
-		case FunDef.TypeMethod:
-			// e.g. "<Member>.Lead(<Numeric Expression>)"
-			return (returnType == Category.Unknown ? "" :
-					getTypeDescription(returnType) + " ") +
-				getTypeDescription(argTypes[0]) + "." +
-				name + "(" + getTypeDescriptionCommaList(argTypes, 1) +
-				")";
-		case FunDef.TypeBraces:
-			return "{" + getTypeDescriptionCommaList(argTypes, 0) + "}";
-		case FunDef.TypeParentheses:
-			return "(" + getTypeDescriptionCommaList(argTypes, 0) + ")";
-		case FunDef.TypeCase:
-			String s = getTypeDescription(argTypes[0]);
-			if (argTypes[0] == Category.Logical) {
-				return "CASE WHEN " + s + " THEN <Expression> ... END";
-			} else {
-				return "CASE " + s + " WHEN " + s + " THEN <Expression> ... END";
-			}
-		default:
-			throw Util.newInternal("unknown syntactic type " + syntacticType);
-		}
-	}
-
-	private static String getTypeDescription(int type) {
-		return "<" + Category.instance.getDescription(type & Category.Mask) + ">";
-	}
-
-  private static String getTypeDescriptionCommaList(int[] types, int start)
-  {
-    int initialSize = (types.length - start) * 16;
-    StringBuffer sb = new StringBuffer(initialSize > 0 ? initialSize : 16);
-    for (int i = start; i < types.length; i++) {
-      if (i > start) {
-        sb.append(", ");
-      }
-      sb.append("<")
-        .append(Category.instance.getDescription(types[i] & Category.Mask))
-        .append(">");
-    }
-    return sb.toString();
-  }
-
-	public static void unparseList(
-		PrintWriter pw, Exp[] exps, String start, String mid, String end,
-		ElementCallback callback)
-	{
+    public static void unparseList(PrintWriter pw, Exp[] exps, String start,
+            String mid, String end) {
 		pw.print(start);
 		for (int i = 0; i < exps.length; i++) {
 			if (i > 0) {
 				pw.print(mid);
 			}
-			exps[i].unparse(pw, callback);
+			exps[i].unparse(pw);
 		}
 		pw.print(end);
 	}

@@ -1,10 +1,9 @@
 /*
 // $Id$
-// (C) Copyright 2002 Kana Software, Inc.
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -31,7 +30,7 @@ class TupleFunDef extends FunDefBase
 			"()",
 			"(<Member> [, <Member>]...)",
 			"Parenthesis operator constructs a tuple.  If there is only one member, the expression is equivalent to the member expression.",
-			FunDef.TypeParentheses,
+			Syntax.Parentheses,
 			Category.Tuple,
 			argTypes);
 		this.argTypes = argTypes;
@@ -42,8 +41,8 @@ class TupleFunDef extends FunDefBase
 	public int[] getParameterTypes() {
 		return argTypes;
 	}
-	public void unparse(Exp[] args, PrintWriter pw, ElementCallback callback) {
-		ExpBase.unparseList(pw, args, "(", ", ", ")", callback);
+	public void unparse(Exp[] args, PrintWriter pw) {
+		ExpBase.unparseList(pw, args, "(", ", ", ")");
 	}
 	public Hierarchy getHierarchy(Exp[] args) {
 		// _Tuple(<Member1>[,<MemberI>]...), which is written

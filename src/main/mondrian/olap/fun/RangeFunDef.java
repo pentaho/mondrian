@@ -1,10 +1,9 @@
 /*
 // $Id$
-// (C) Copyright 2002 Kana Software, Inc.
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -27,12 +26,12 @@ class RangeFunDef extends FunDefBase {
 			":",
 			"{<Member> : <Member>}",
 			"Infix colon operator returns the set of members between a given pair of members.",
-			FunDef.TypeInfix,
+			Syntax.Infix,
 			Category.Set,
 			new int[] {Category.Member, Category.Member});
 	}
-	public void unparse(Exp[] args, PrintWriter pw, ElementCallback callback) {
-		ExpBase.unparseList(pw, args, "{", " : ", "}", callback);
+	public void unparse(Exp[] args, PrintWriter pw) {
+		ExpBase.unparseList(pw, args, "{", " : ", "}");
 	}
 	public int getReturnType() {
 		return Category.Set;

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2003 Kana Software, Inc. and others.
+// (C) Copyright 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -44,7 +44,7 @@ class RolapHierarchy extends HierarchyBase
 	private String sharedHierarchy;
 
 	String foreignKey;
-	private FunCall aggregateChildrenExpression;
+	private Exp aggregateChildrenExpression;
 
 	RolapHierarchy(RolapDimension dimension, String subName, boolean hasAll)
 	{
@@ -357,7 +357,8 @@ class RolapHierarchy extends HierarchyBase
 	synchronized Exp getAggregateChildrenExpression() {
 		if (aggregateChildrenExpression == null) {
 			aggregateChildrenExpression = new FunCall("$AggregateChildren",
-					new Exp[] {this}, FunDef.TypeInternal);
+                    Syntax.Internal, new Exp[] {this}).resolve(
+                            Util.createSimpleResolver(FunTable.instance()));
 		}
 		return aggregateChildrenExpression;
 	}

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1998-2002 Kana Software, Inc. and others.
+// (C) Copyright 1998-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -21,21 +21,9 @@ public abstract class QueryPart implements Walkable
 	QueryPart() {
 	}
 
-	public void unparse(PrintWriter pw, ElementCallback callback)
+	public void unparse(PrintWriter pw)
 	{
-		String toString = null;
-		if (this instanceof OlapElement) {
-			toString = callback.registerItself((OlapElement)this);
-		}
-		if (toString == null) {
-			toString = toString();
-		}
-		if (callback.isPlatoMdx() &&
-			this instanceof Member &&
-			callback.findHiddenName(toString) != null) {
-			toString = callback.findHiddenName(toString);
-		}
-		pw.print(toString);
+        pw.print(toString());
 	}
 
 	/** Replace the <code>ordinal</code>th child (as it appeared in the array

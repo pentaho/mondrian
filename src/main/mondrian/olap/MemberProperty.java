@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2000-2002 Kana Software, Inc. and others.
+// (C) Copyright 2000-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -38,8 +38,8 @@ public class MemberProperty extends QueryPart {
 		return x2;
 	}
 
-	void resolve(Query q) {
-		exp = exp.resolve(q);
+	void resolve(Exp.Resolver resolver) {
+		exp = resolver.resolveChild(exp);
 	}
 
 	public Object[] getChildren()
@@ -52,9 +52,9 @@ public class MemberProperty extends QueryPart {
 		exp = (Exp) with;
 	}
 
-	public void unparse(PrintWriter pw, ElementCallback callback) {
+	public void unparse(PrintWriter pw) {
 		pw.print(name + " = ");
-		exp.unparse(pw, callback);
+		exp.unparse(pw);
 	}
 
 	/** Retrieves a property by name from an array. **/

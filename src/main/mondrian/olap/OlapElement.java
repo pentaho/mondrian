@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1998-2002 Kana Software, Inc. and others.
+// (C) Copyright 1998-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -22,8 +22,7 @@ public interface OlapElement extends Exp
 	String getUniqueName();
 	String getName();
 	String getDescription();
-	// todo: replace with 'visit'
-	void unparse(PrintWriter pw, ElementCallback callback);
+	void unparse(PrintWriter pw);
 	void accept(Visitor visitor);
 	void childrenAccept(Visitor visitor);
 	/** Looks up a child element, returning null if it does not exist. */

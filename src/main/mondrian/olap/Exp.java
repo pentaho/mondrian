@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1999-2002 Kana Software, Inc. and others.
+// (C) Copyright 1999-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -57,8 +57,8 @@ public interface Exp {
 	 **/
 	Dimension getDimension();
 	Hierarchy getHierarchy();
-	void unparse(PrintWriter pw, ElementCallback callback);
-	Exp resolve(Query q);
+	void unparse(PrintWriter pw);
+	Exp resolve(Resolver resolver);
 	boolean usesDimension(Dimension dimension);
 	/**
 	 * Adds 'exp' as the right child of the CrossJoin whose left child has
@@ -69,6 +69,24 @@ public interface Exp {
 	int addAtPosition(Exp e, int iPosition);
 	Object evaluate(Evaluator evaluator);
 	Object evaluateScalar(Evaluator evaluator);
+
+    /**
+     * Provides context necessary to resolve identifiers to objects, function
+     * calls to specific functions.
+     *
+     * <p>An expression calls {@link #resolveChild} on each of its children,
+     * which in turn calls {@link Exp#resolve}.
+     */
+    interface Resolver {
+        Query getQuery();
+        Exp resolveChild(Exp exp);
+        Parameter resolveChild(Parameter parameter);
+        void resolveChild(MemberProperty memberProperty);
+        void resolveChild(QueryAxis axis);
+        void resolveChild(Formula formula);
+        boolean requiresExpression();
+        FunTable getFunTable();
+    }
 }
 
 // End Exp.java

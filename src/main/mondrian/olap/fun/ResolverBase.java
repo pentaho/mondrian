@@ -1,10 +1,9 @@
 /*
 // $Id$
-// (C) Copyright 2002 Kana Software, Inc.
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -12,8 +11,7 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.Exp;
-import mondrian.olap.FunDef;
+import mondrian.olap.Syntax;
 
 /**
  * <code>ResolverBase</code> provides a skeleton implementation of
@@ -24,30 +22,28 @@ import mondrian.olap.FunDef;
  * @version $Id$
  **/
 abstract class ResolverBase extends FunUtil implements Resolver {
-	String name;
-	String signature;
-	String description;
-	int syntacticType;
-	ResolverBase(
-			String name, String signature, String description,
-			int syntacticType) {
+	final String name;
+	final String signature;
+	final String description;
+	final Syntax syntax;
+	ResolverBase(String name, String signature, String description,
+            Syntax syntax) {
 		this.name = name;
 		this.signature = signature;
 		this.description = description;
-		this.syntacticType = syntacticType;
+		this.syntax = syntax;
 	}
 	public String getName() {
 		return name;
 	}
-	public FunDef resolve(
-			int syntacticType, Exp[] args, int[] conversionCount) {
-		if (syntacticType == this.syntacticType) {
-			return resolve(args, conversionCount);
-		} else {
-			return null;
-		}
-	}
-	protected abstract FunDef resolve(Exp[] args, int[] conversionCount);
+
+    public Syntax getSyntax() {
+        return syntax;
+    }
+
+    public boolean requiresExpression(int k) {
+        return false;
+    }
 }
 
 // End ResolverBase.java

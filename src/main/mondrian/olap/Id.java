@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 1998-2003 Kana Software, Inc. and others.
+// (C) Copyright 1998-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -87,7 +87,7 @@ public class Id
 		append(s, false);
 	}
 
-	public Exp resolve(Query q)
+	public Exp resolve(Resolver resolver)
 	{
 		if (names.size() == 1) {
 			final String s = (String) names.elementAt(0);
@@ -96,10 +96,10 @@ public class Id
 			}
 		}
 		final String[] namesArray = toStringArray();
-		return Util.lookup(q,namesArray);
+		return Util.lookup(resolver.getQuery(), namesArray);
 	}
 
-	public void unparse(PrintWriter pw, ElementCallback callBackObj)
+	public void unparse(PrintWriter pw)
 	{
 		for (int i = 0, n = names.size(); i < n; i++) {
 			String s = (String) names.elementAt(i);

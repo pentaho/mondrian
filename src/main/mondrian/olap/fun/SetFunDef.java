@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2003 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -26,12 +26,12 @@ import java.util.List;
  * @version $Id$
  **/
 class SetFunDef extends FunDefBase {
-	SetFunDef(Resolver resolver, int syntacticType, int[] argTypes) {
-		super(resolver, syntacticType, Category.Set, argTypes);
+	SetFunDef(Resolver resolver, int[] argTypes) {
+		super(resolver, Category.Set, argTypes);
 	}
 
-	public void unparse(Exp[] args, PrintWriter pw, ElementCallback callback) {
-		ExpBase.unparseList(pw, args, "{", ", ", "}", callback);
+	public void unparse(Exp[] args, PrintWriter pw) {
+		ExpBase.unparseList(pw, args, "{", ", ", "}");
 	}
 	public Hierarchy getHierarchy(Exp[] args) {
 		// All of the members in {<Member1>[,<MemberI>]...} must have the same

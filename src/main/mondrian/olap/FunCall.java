@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 1998-2003 Kana Software, Inc. and others.
+// (C) Copyright 1998-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -26,29 +26,25 @@ public class FunCall extends ExpBase
 	/** Definition, set after resolve. **/
 	private FunDef funDef;
 
-	/** As {@link FunDef#getSyntacticType}. **/
-	private int syntacticType;
+	/** As {@link FunDef#getSyntax}. **/
+	private Syntax syntax;
 
 	public FunCall(String fun, Exp[] args) {
-		this(fun, args, FunDef.TypeFunction);
+		this(fun, Syntax.Function, args);
 	}
 
-	public FunCall(String fun, Exp[] args, int syntacticType)
+	public FunCall(String fun, Syntax syntax, Exp[] args)
 	{
 		this.fun = fun;
 		this.args = args;
-		this.syntacticType = syntacticType;
-		switch (syntacticType) {
-		case FunDef.TypeBraces:
+		this.syntax = syntax;
+		if (syntax == Syntax.Braces) {
 			Util.assertTrue(fun.equals("{}"));
-			break;
-		case FunDef.TypeParentheses:
+        } else if (syntax == Syntax.Parentheses) {
 			Util.assertTrue(fun.equals("()"));
-			break;
-		case FunDef.TypeInternal:
+        } else if (syntax == Syntax.Internal) {
 			Util.assertTrue(fun.startsWith("$"));
-			break;
-		default:
+        } else {
 			Util.assertTrue(!fun.startsWith("$") &&
 						!fun.equals("{}") &&
 						!fun.equals("()"));
@@ -56,19 +52,19 @@ public class FunCall extends ExpBase
 	}
 
 	public Object clone() {
-		return new FunCall(fun, ExpBase.cloneArray(args), syntacticType);
+		return new FunCall(fun, syntax, ExpBase.cloneArray(args));
 	}
 	public String getFunName() {
 		return fun;
 	}
-	public int getSyntacticType() {
-		return syntacticType;
+	public Syntax getSyntax() {
+		return syntax;
 	}
 	public final boolean isCallTo(String funName) {
 		return fun.equalsIgnoreCase(funName);
 	}
 	public boolean isCallToTuple() {
-		return getSyntacticType() == FunDef.TypeParentheses;
+		return getSyntax() == Syntax.Parentheses;
 	}
 	public boolean isCallToCrossJoin() {
 		return fun.equalsIgnoreCase("CROSSJOIN") || fun.equals("*");
@@ -107,40 +103,26 @@ public class FunCall extends ExpBase
 		return ExpBase.arrayUsesDimension(args, dimension);
 	}
 
-	private void ensureHaveDef() {
-		if (funDef == null) {
-			funDef = FunTable.instance().getDef(this);
-			int[] types = funDef.getParameterTypes();
-			Util.assertTrue(types.length == args.length);
-			for (int i = 0; i < args.length; i++) {
-				Exp arg = args[i];
-				args[i] = FunTable.instance().convert(arg, types[i]);
-			}
-		}
-	}
-
-	public FunDef getFunDef() {
-		ensureHaveDef();
+    public FunDef getFunDef() {
 		return funDef;
 	}
 
 	public final int getType() {
-		ensureHaveDef();
 		return funDef.getReturnType();
 	}
 
 	public Hierarchy getHierarchy() {
-		ensureHaveDef();
 		return funDef.getHierarchy(args);
 	}
 
-	public Exp resolve(Query q) {
+	public Exp resolve(Resolver resolver) {
 		for (int i = 0; i < args.length; i++) {
-			args[i] = args[i].resolve(q);
+			args[i] = resolver.resolveChild(args[i]);
 		}
+        funDef = resolver.getFunTable().getDef(this, resolver);
 		if (this.isCallToParameter()) {
-			Parameter param = q.createOrLookupParam(this);
-			return param.resolve(q);
+			Parameter param = resolver.getQuery().createOrLookupParam(this);
+			return resolver.resolveChild(param);
 		} else if (this.isCallTo("StrToTuple") ||
 				   this.isCallTo("StrToSet")) {
 			if (args.length <= 1) {
@@ -158,13 +140,18 @@ public class FunCall extends ExpBase
 				}
 			}
 		}
-		return this;
+        int[] types = funDef.getParameterTypes();
+        Util.assertTrue(types.length == args.length);
+        for (int i = 0; i < args.length; i++) {
+            Exp arg = args[i];
+            args[i] = FunTable.instance().convert(arg, types[i], resolver);
+        }
+        return this;
 	}
 
-	public void unparse(PrintWriter pw, ElementCallback callback)
+	public void unparse(PrintWriter pw)
 	{
-		ensureHaveDef();
-		funDef.unparse(args, pw, callback);
+		funDef.unparse(args, pw);
 	}
 
 	/**
@@ -187,7 +174,7 @@ public class FunCall extends ExpBase
 				//   CrossJoin(CrossJoin(ltree, e), rtree)
 				// so that 'e' is the 'iPosition'th hierarchy from the left.
 				args[0] = new FunCall(
-						"CrossJoin", new Exp[] {left, e}, FunDef.TypeFunction);
+						"CrossJoin", Syntax.Function, new Exp[] {left, e});
 				return -1; // added successfully
 			} else {
 				Util.assertTrue(
@@ -232,7 +219,7 @@ public class FunCall extends ExpBase
 			args = newArgs;
 			return -1;
 		} else {
-			if (getSyntacticType() == FunDef.TypeBraces &&
+			if (getSyntax() == Syntax.Braces &&
 				args[0] instanceof FunCall &&
 				((FunCall)args[0]).isCallToTuple()){
 				// DO not add to the tuple, return -1 to create new CrossJoin
@@ -246,16 +233,6 @@ public class FunCall extends ExpBase
 	public Object evaluate(Evaluator evaluator) {
 		return evaluator.xx(this);
 	}
-
-	/**
-	 * Returns a description of the signature of this function call, for
-	 * example, "CoalesceEmpty(<Numeric Expression>, <String Expression>)".
-	 **/
-	public String getSignature() {
-		return getSignature(
-			fun, getSyntacticType(), Category.Unknown, getTypes(args));
-	}
 }
-
 
 // End FunCall.java

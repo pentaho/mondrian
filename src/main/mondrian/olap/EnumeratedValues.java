@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 1998-2003 Kana Software, Inc. and others.
+// (C) Copyright 1998-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -189,6 +189,17 @@ public class EnumeratedValues implements Cloneable
 		return true;
 	}
 
+    /**
+     * Returns the name associated with an ordinal; the return value
+     * is null if the ordinal is not a member of the enumeration.
+     *
+     * @pre isImmutable()
+     */
+    public final Value getValue(int ordinal) {
+        Util.assertPrecondition(isImmutable());
+        return ordinalToValueMap[ordinal - min];
+    }
+
 	/**
 	 * Returns the name associated with an ordinal; the return value
 	 * is null if the ordinal is not a member of the enumeration.
@@ -233,7 +244,7 @@ public class EnumeratedValues implements Cloneable
     }
 
     /**
-     * Returns the ordinal associated with a name.
+     * Returns the value associated with a name.
      *
      * @throws Error if the name is not a member of the enumeration
      */

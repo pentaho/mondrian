@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 1998-2003 Kana Software, Inc. and others.
+// (C) Copyright 1998-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -85,7 +85,7 @@ public class Literal extends ExpBase
 		return this;
 	}
 
-	public void unparse(PrintWriter pw, ElementCallback callback) {
+	public void unparse(PrintWriter pw) {
 		switch (type) {
 		case Category.Symbol:
 		case Category.Numeric:
@@ -103,7 +103,7 @@ public class Literal extends ExpBase
 	public int getType() { return type; }
 	public Hierarchy getHierarchy() { return null; }
 
-	public Exp resolve(Query q) {
+	public Exp resolve(Resolver resolver) {
 		return this;
 	}
 

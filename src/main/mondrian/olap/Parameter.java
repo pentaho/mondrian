@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2000-2002 Kana Software, Inc. and others.
+// (C) Copyright 2000-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -99,7 +99,7 @@ public class Parameter extends ExpBase {
 			mdxHierarchy.getDimension() == dimension;
 	}
 
-	public Exp resolve(Query query)
+	public Exp resolve(Resolver resolver)
 	{
 		// There must be some Parameter with this name registered with the
 		// Query.  After clone(), there will be many copies of the same
@@ -107,7 +107,7 @@ public class Parameter extends ExpBase {
 		// So if this object is not the registered vesion, that's fine, go with
 		// the other one.  The registered one will be resolved after everything
 		// else in the query has been resolved.
-		Parameter p = query.lookupParam( name );
+		Parameter p = resolver.getQuery().lookupParam(name);
 		Util.assertTrue(
 			p != null, "parameter '" + name + "' not registered");
 		if (p != this) {
@@ -225,35 +225,30 @@ public class Parameter extends ExpBase {
 		return new Parameter(name, category, hierarchy, exp, description);
 	}
 
-	public void unparse(PrintWriter pw, ElementCallback callback)
+	public void unparse(PrintWriter pw)
 	{
-		if (callback.isPlatoMdx()) {
-			exp.unparse(pw, callback);
-		} else {
-			// reconstructing query for the webUI
-			if (printCount++ > 0) {
-				pw.print("ParamRef(" + Util.quoteForMdx(name) + ")");
-			} else {
-				pw.print("Parameter(" + Util.quoteForMdx(name) + ", ");
-				switch (category) {
-				case Category.String:
-				case Category.Numeric:
-					pw.print(getParameterType());
-					break;
-				case Category.Member:
-					hierarchy.unparse(pw, callback);
-					break;
-				default:
-					throw Util.newInternal("bad case " + category);
-				}
-				pw.print(", ");
-				exp.unparse(pw, callback);
-				if (description != null) {
-					pw.print(", " + Util.quoteForMdx(description));
-				}
-				pw.print(")");
-			}
-		}
+        if (printCount++ > 0) {
+            pw.print("ParamRef(" + Util.quoteForMdx(name) + ")");
+        } else {
+            pw.print("Parameter(" + Util.quoteForMdx(name) + ", ");
+            switch (category) {
+            case Category.String:
+            case Category.Numeric:
+                pw.print(getParameterType());
+                break;
+            case Category.Member:
+                hierarchy.unparse(pw);
+                break;
+            default:
+                throw Util.newInternal("bad case " + category);
+            }
+            pw.print(", ");
+            exp.unparse(pw);
+            if (description != null) {
+                pw.print(", " + Util.quoteForMdx(description));
+            }
+            pw.print(")");
+        }
 	}
 
 	// For the purposes of type inference and expression substitution, a
