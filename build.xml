@@ -362,11 +362,13 @@ in {mondrian.foodmart.jdbcURL}.">
       <zipfileset
           dir="."
           prefix="${dist.name}"
-          includes="**/*.java,
+          includes="
+**/*.java,
 **/*.cup,
 **/*.html,
 **/*.css,
 ${java.dir}/**/*.properties,
+${java.dir}/mondrian/olap/MondrianResource.xml,
 ${java.dir}/mondrian/resource/Resource.xml,
 ${java.dir}/mondrian/olap/Mondrian.xml,
 ${java.dir}/mondrian/xom/Meta.xml,
@@ -377,16 +379,17 @@ ${webapp.dir}/WEB-INF/web.xml,
 ${webapp.dir}/**/*.jsp,
 ${webapp.dir}/WEB-INF/*.xsl,
 ${webapp.dir}/WEB-INF/*.tld,
-resource/*.xml,
-sresource/*.xsl,
+resource/*.xsl,
 build.xml,
 build.bat,
 build.properties,
+mondrian.properties,
 LICENSE.html,
 README.txt,
 VERSION.txt,
 ${demo.dir}/FoodMart.xml"
-          excludes="${javadoc.dir}/**,
+          excludes="
+${javadoc.dir}/**,
 **/*~,
 ${generated.java.files}" />
     </zip>
