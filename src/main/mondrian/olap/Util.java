@@ -15,6 +15,8 @@ import mondrian.resource.ChainableThrowable;
 
 import java.io.*;
 import java.util.*;
+import java.net.URL;
+import java.net.MalformedURLException;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -547,6 +549,28 @@ public class Util extends mondrian.xom.XOMUtil
 	}
 
 	/**
+	 * Creates a file-protocol URL for the given file.
+	 **/
+	public static URL toURL(File file) throws MalformedURLException {
+		String path = file.getAbsolutePath();
+		// This is a bunch of weird code that is required to
+		// make a valid URL on the Windows platform, due
+		// to inconsistencies in what getAbsolutePath returns.
+		String fs = System.getProperty("file.separator");
+		if (fs.length() == 1) {
+			char sep = fs.charAt(0);
+			if (sep != '/') {
+				path = path.replace(sep, '/');
+			}
+			if (path.charAt(0) != '/') {
+				path = '/' + path;
+			}
+		}
+		path = "file://" + path;
+		return new URL(path);
+	}
+
+	/**
 	 * <code>PropertyList</code> is an order-preserving list of key-value
 	 * pairs. Lookup is case-insensitive, but the case of keys is preserved.
 	 **/
@@ -601,7 +625,7 @@ public class Util extends mondrian.xom.XOMUtil
 			}
 			return sb.toString();
 		}
-	};
+	}
 
 	/**
 	 * Converts an OLE DB connect string into a {@link PropertyList}.

@@ -47,6 +47,7 @@ public class DriverManager {
 			String connectString, ServletContext servletContext, boolean fresh) {
 		Util.PropertyList properties = Util.parseConnectString(connectString);
 		if (servletContext != null) {
+			MondrianProperties.instance().populate(servletContext);
 			fixup(properties, servletContext);
 		}
 		return getConnection(properties, fresh);

@@ -38,7 +38,10 @@ public class RolapConnection extends ConnectionBase {
 	RolapSchema schema;
 	private SchemaReader schemaReader;
 	protected Role role;
-  private Locale locale = Locale.US;
+	private Locale locale = Locale.US;
+	/** Names of classes of drivers we've loaded (or have tried to load).
+	 * @synchronization Lock the {@link RolapConnection} class. */
+	private static final HashSet loadedDrivers = new HashSet();
 
 	/**
 	 * Creates a connection.
@@ -137,14 +140,17 @@ public class RolapConnection extends ConnectionBase {
 		this.schemaReader = schema.getSchemaReader();
 	}
 
-	public static void loadDrivers(String jdbcDrivers) {
+	public static synchronized void loadDrivers(String jdbcDrivers) {
 		StringTokenizer tok = new StringTokenizer(jdbcDrivers, ",");
 		while (tok.hasMoreTokens()) {
 			String jdbcDriver = tok.nextToken();
-			try {
-				Class.forName(jdbcDriver);
-			} catch (ClassNotFoundException e) {
-				System.out.println("Could not find driver " + jdbcDriver);
+			if (loadedDrivers.add(jdbcDriver)) {
+				try {
+					Class.forName(jdbcDriver);
+					System.out.println("Mondrian: JDBC driver " + jdbcDriver + " loaded successfully");
+				} catch (ClassNotFoundException e) {
+					System.out.println("Mondrian: Warning: JDBC driver " + jdbcDriver + " not found");
+				}
 			}
 		}
 	}

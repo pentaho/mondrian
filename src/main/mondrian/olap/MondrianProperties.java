@@ -11,9 +11,11 @@
 */
 package mondrian.olap;
 
+import javax.servlet.ServletContext;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -35,33 +37,64 @@ public class MondrianProperties extends PropertiesPlus {
 	 * Properties, drawn from {@link System#getProperties}, plus the contents
 	 * of "mondrian.properties" if it exists. A singleton.
 	 */
-	private static MondrianProperties properties;
+	private static MondrianProperties instance;
 
 	public static synchronized MondrianProperties instance() {
-		if (properties == null) {
-			properties = new MondrianProperties();
-			// read properties from the file "mondrian.properties", if it
-			// exists
-			File file = new File("mondrian.properties");
-//			System.out.println("looking in " + file.getAbsolutePath());
-			if (file.exists()) {
-				try {
-					properties.load(new FileInputStream(file));
-				} catch (IOException e) {
-					throw Util.newInternal(e, "while reading from " + file);
-				}
-			}
-			// copy in all system properties which start with "mondrian."
-			for (Enumeration keys = System.getProperties().keys();
-					keys.hasMoreElements(); ) {
-				String key = (String) keys.nextElement();
-				String value = System.getProperty(key);
-				if (key.startsWith("mondrian.")) {
-					properties.setProperty(key, value);
-				}
+		if (instance == null) {
+			instance = new MondrianProperties();
+			instance.populate(null);
+		}
+		return instance;
+	}
+
+	/**
+	 * Loads this property set from: the file "mondrian.properties" (if it
+	 * exists); the "mondrian.properties" in the JAR (if we're in a servlet);
+	 * and from the system properties.
+	 *
+	 * @param servletContext May be null
+	 */
+	public void populate(ServletContext servletContext) {
+		// Read properties file "mondrian.properties", if it exists.
+		File file = new File("mondrian.properties");
+		try {
+			final URL url = Util.toURL(file);
+			load(url);
+		} catch (MalformedURLException e) {
+			System.out.println("Mondrian: " + file.getAbsolutePath() + " could not be loaded (" + e + ")");
+		}
+		// If we're in a servlet, read "mondrian.properties" from JAR file.
+		if (servletContext != null) {
+			try {
+				final URL resource = servletContext.getResource("mondrian.properties");
+				load(resource);
+			} catch (MalformedURLException e) {
+				System.out.println("Mondrian: mondrian.properties could not be loaded from servlet context (" + e + ")");
 			}
 		}
-		return properties;
+		// copy in all system properties which start with "mondrian."
+		for (Enumeration keys = System.getProperties().keys();
+				keys.hasMoreElements(); ) {
+			String key = (String) keys.nextElement();
+			String value = System.getProperty(key);
+			int count = 0;
+			if (key.startsWith("mondrian.")) {
+				setProperty(key, value);
+				count++;
+			}
+			System.out.println("Mondrian: loaded " + count + " system properties");
+		}
+	}
+
+	/** Tries to load properties from a URL. Does not fail, just prints success
+	 * or failure to {@link System#out}. */
+	private void load(final URL url) {
+		try {
+			load(url.openStream());
+			System.out.println("Mondrian: " + url + " loaded");
+		} catch (IOException e) {
+			System.out.println("Mondrian: " + url + " could not be loaded (" + e + ")");
+		}
 	}
 
 	/** Retrieves the value of the {@link #QueryLimit} property,
@@ -81,12 +114,18 @@ public class MondrianProperties extends PropertiesPlus {
 	/** Property {@value}. */
 	public static final String TraceLevel = "mondrian.trace.level";
 
-	/** Retrieves the value of the {@link #JdbcDrivers} property. */
+	/** Retrieves the value of the {@link #JdbcDrivers} property,
+	 * default value {@link #JdbcDrivers_Default}. */
 	public String getJdbcDrivers() {
-		return getProperty(JdbcDrivers, "org.hsqldb.jdbcDriver");
+		return getProperty(JdbcDrivers, JdbcDrivers_Default);
 	}
 	/** Property {@value}. */
 	public static final String JdbcDrivers = "mondrian.jdbcDrivers";
+	/** Values is {@value}. */
+	public static final String JdbcDrivers_Default = "sun.jdbc.odbc.JdbcOdbcDriver," +
+			"org.hsqldb.jdbcDriver," +
+			"oracle.jdbc.OracleDriver," +
+			"com.mysql.jdbc.Driver";
 
 	// mondrian.rolap properties
 
