@@ -605,7 +605,7 @@ public class Query extends QueryPart implements NameResolver {
 					axes[i] = oldAxes[i];
 				}
 				axes[oldAxes.length] = new QueryAxis(
-					false, null, this.getAxisName(axis),
+					false, null, getAxisName(axis),
 					QueryAxis.subtotalsUndefined);
 			}
 
@@ -1143,9 +1143,14 @@ public class Query extends QueryPart implements NameResolver {
   public void swapAxes() {
     if ( axes.length == 2 ) {
       Exp e0 = axes[0].set;
+      boolean nonEmpty0 = axes[0].nonEmpty;
       Exp e1 = axes[1].set;
+      boolean nonEmpty1 = axes[1].nonEmpty;
       axes[1].set = e0;
+      axes[1].nonEmpty = nonEmpty0;
       axes[0].set = e1;
+      axes[0].nonEmpty = nonEmpty1;
+      // showSubtotals ???
     }
   }
 
