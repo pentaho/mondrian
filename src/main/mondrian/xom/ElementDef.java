@@ -587,20 +587,27 @@ public abstract class ElementDef implements NodeDef, Serializable, Cloneable
                                                      NodeDef[] values2,
                                                      PrintWriter out, int indent)
     {
+        int length1 = 0;
+        int length2 = 0;
+        if (values1 != null)
+            length1 = values1.length;
+        if (values2 != null)
+            length2 = values2.length;
         // Check array sizes
-        if(values1.length != values2.length) {
+        //  a null array does not differ from an empty array
+        if(length1 != length2) {
             if(out != null) {
                 displayIndent(out, indent);
                 out.println("Array " + name + ": size mismatch: "
-                            + values1.length + " vs "
-                            + values2.length + ".");
+                            + length1 + " vs "
+                            + length2 + ".");
             }
             return false;
         }
 
         // Check each member of the array
         boolean diff = true;
-        for(int i=0; i<values1.length; i++)
+        for(int i=0; i< length1; i++)
             diff = diff && displayElementDiff(name + "[" + i + "]",
                                               values1[i], values2[i],
                                               out, indent);
