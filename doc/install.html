@@ -395,50 +395,27 @@ Import terminated successfully without warnings.</pre>
 <h3><a name="4_3_hsqldb">4.3. Hypersonic SQL (hsqldb)</a></h3>
 <p>Create and populate the schema  by running the scripts <code>FoodMartTables.sql</code>,
     <code>FoodMartData.sql</code> and <code>FoodMartIndexes.sql</code> in <code>${project.location}/demo/</code>.</p>
+
 <h3><a name="4_4_MySQL">4.4. MySQL</a></h3>
 <p>First, <a href="#MySQL">install MySQL</a>. Then
-<a href="http://www.mysql.com/doc/en/Adding_users.html">create a user</a> and a
-database:</p>
+<a href="http://www.mysql.com/doc/en/Adding_users.html">create a user</a> and a database:</p>
 <blockquote>
   <pre>C:\mysql\bin&gt; <b>mysql</b>
-mysql&gt; <b>GRANT ALL PRIVILEGES ON *.* TO foodmart@localhost
-    </b>-&gt;<b> IDENTIFIED BY 'foodmart';</b>
+mysql&gt; <b>GRANT ALL PRIVILEGES ON *.* TO foodmart@localhost IDENTIFIED BY 'foodmart';</b>
 Query OK, 0 rows affected (0.06 sec)
-
-mysql&gt; <b>create database foodmart;
-</b>Query OK, 1 row affected (0.00 sec)
-
-mysql&gt; <b>use foodmart</b>
-Database changed
-
-mysql&gt; <b>connect foodmart</b>
-Connection id: 5
-Current database: foodmart</pre>
 </blockquote>
-<p>Change the datasets for MySQL syntax:</p>
-<ul>
-  <li>Change all <code>varchar</code>
-        columns in <code>FoodMartTables.sql</code> to
-        <code>varchar(30)</code></li>
-  <li>Change all
-        <code>false</code>/<code>true</code> values in <code>
-        FoodMartData.sql</code> to <code>0</code>/<code>1</code>.</li>
-</ul>
+
+<p>(Note that on Red Hat Linux (including Fedora) you must replace
+<code>foodmart@localhost</code> with
+<code>foodmart@localhost.localdomain</code>, because of a bug in the 
+system utility <code>hostname</code>)</p>
+
 <p>Create the tables, load the data, run sanity checks, create indexes:</p>
-<blockquote>
-  <pre>mysql&gt; <b>source c:/mondrian/demo/FoodMartTables.sql
-</b>Query OK, 1 row affected (0.00 sec)
-(15 times)
-
-mysql&gt; <b>source c:/mondrian/demo/FoodMartData.sql</b>
-Query OK, 1 row affected (0.00 sec)
-(295,789 times)
-
-mysql&gt; <b>commit;
-</b>Query OK, 0 rows affected (0.00 sec)
-
-mysql&gt; <b>show tables;
-</b>+---------------------+
+<blockquote><pre>
+  mysql&gt; <b>source c:/mondrian/demo/mysql/foodmart.sql</b>
+  mysql&gt; <b>commit;</b>
+  mysql&gt; <b>show tables;</b>
++---------------------+
 | Tables_in_foodmart  |
 +---------------------+
 | customer            |
@@ -459,8 +436,8 @@ mysql&gt; <b>show tables;
 +---------------------+
 15 rows in set (0.02 sec)
 
-mysql&gt; <b>select * from days;
-</b>+------+-----------+
+mysql&gt; <b>select * from days;</b>
++------+-----------+
 | day  | week_day  |
 +------+-----------+
 | 1    | Sunday    |
@@ -494,18 +471,16 @@ mysql&gt; <b>select customer.gender as c0,
 2 rows in set (9 min 45.88 sec)
 
 mysql&gt; <b>exit</b></pre>
-</blockquote>
+</pre></blockquote>
 
-<p>In build.xml, set the property <code>
-  mondrian.foodmart.jdbcURL</code>. A typical value is <code>
-jdbc:mysql://localhost/foodmart?user=root&amp;password=</code>, but because the
-value is in an xml file, you will have to escape the '&amp;' as '&amp;#38;', for
+<p>Set the property <code> mondrian.foodmart.jdbcURL</code>. A typical value is <code>
+jdbc:mysql://localhost/foodmart?user=root&amp;password=</code>.
+If you set this explicitly in build.xml, you will have to escape the '&amp;' as '&amp;#38;', for
 example:</p><blockquote>
-
 <pre>&lt;property name=&quot;mondrian.foodmart.jdbcURL&quot;
     value=&quot;jdbc:mysql://localhost/foodmart?user=root&amp;#38;password=&quot;/&gt;</pre>
-
 </blockquote>
+
 <h3><a name="4_5_PostgreSQL">4.5. PostgreSQL</a></h3>
 <p>As <a href="#4_3_hsqldb">hsqldb</a>, except for the following:</p>
 <ul>
@@ -544,11 +519,12 @@ mondrian test</pre>
     <li>Make sure your database's JDBC driver appears in the <code>JdbcDrivers</code> property of your connect string</li>
     <li>Check the catalog URL in <code>mondrian.test.connectString</code> and
     <code>mondrian.foodmart.catalogURL</code></li>
-    <li>Check the JDBC connect strings in <code>mondrian.test.connectString</code>
-    and <code>mondrian.foodmart.jdbcURL</code>.</li>
+    <li>Check the JDBC connect URL in <code>mondrian.foodmart.jdbcURL</code></li>
+    <li>Check the connect string in <code>mondrian.test.connectString</code></li>
+    <li>Note that any ampersands must be url-quoted,  since this string is copied into <code>mondrian.war(war.xml)</code></li>
   </ul>
   </li>
-  <li>Run <code>build deploy-webapp</code> (or <code>mondrian deploy-to-tomcat</code>,
+  <li>Run <code>build deploy-war</code> (or <code>mondrian deploy-to-tomcat</code>,
   if this is a a runtime environment).</li>
   <li>Start up tomcat. (If this is a build environment, <code>build start.tomcat</code> is an easy way to do this.)</li>
   <li>Hit <a href="http://localhost:8080/mondrian" target="_new">http://localhost:8080/mondrian</a>.</li>
