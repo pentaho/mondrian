@@ -410,7 +410,7 @@ Query OK, 0 rows affected (0.06 sec)
 <code>foodmart@localhost.localdomain</code>, because of a bug in the 
 system utility <code>hostname</code>)</p>
 
-<p>Create the tables, load the data, run sanity checks, create indexes:</p>
+<p>Create the tables and indexes, load the data, run sanity checks:</p>
 <blockquote><pre>
   mysql&gt; <b>source c:/mondrian/demo/mysql/foodmart.sql</b>
   mysql&gt; <b>commit;</b>
@@ -449,11 +449,6 @@ mysql&gt; <b>select * from days;</b>
 | 7    | Saturday  |
 +------+-----------+
 7 rows in set (0.06 sec)
-
-mysql&gt; <b>source c:/mondrian/demo/FoodMartIndexes.sql</b>
-Query OK, 10281 rows affected (0.63 sec)
-Records: 10281 Duplicates: 0 Warnings: 0
-...
 
 mysql&gt; <b>select customer.gender as c0,
 </b>-&gt; <b>sum(sales_fact_1997.unit_sales) as c1,
