@@ -3280,7 +3280,8 @@ public class BasicQueryTest extends FoodMartTestCase {
     public void testDifferentCalculationsForDifferentLevels() {
         runQueryCheckResult(
                 "WITH MEMBER Measures.[Average Units Ordered] AS" + nl +
-                "  'AVG(DESCENDANTS([Store].CURRENTMEMBER, [Store].[Store Name]), [Measures].[Units Ordered])'" + nl +
+                "  'AVG(DESCENDANTS([Store].CURRENTMEMBER, [Store].[Store Name]), [Measures].[Units Ordered])'," + nl +
+				"  FORMAT_STRING='#.00'" + nl +    
                 "SELECT {[Measures].[Units ordered], Measures.[Average Units Ordered]} ON COLUMNS," + nl +
                 "  [Store].[Store State].MEMBERS ON ROWS" + nl +
                 "FROM Warehouse",
@@ -3318,9 +3319,9 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "Row #7: 66307.0" + nl +
                 "Row #7: 16576.75" + nl +
                 "Row #8: 44906.0" + nl +
-                "Row #8: 22453.0" + nl +
+                "Row #8: 22453.00" + nl +
                 "Row #9: 116025.0" + nl +
-                "Row #9: 16575.0" + nl);
+                "Row #9: 16575.00" + nl);
     }
 
     /**

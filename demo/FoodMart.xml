@@ -216,8 +216,8 @@ lname
   <Measure name="Supply Time" column="supply_time" aggregator="sum"/>
   <Measure name="Warehouse Cost" column="warehouse_cost" aggregator="sum"/>
   <Measure name="Warehouse Sales" column="warehouse_sales" aggregator="sum"/>
-  <Measure name="Units Shipped" column="units_shipped" aggregator="sum"/>
-  <Measure name="Units Ordered" column="units_ordered" aggregator="sum"/>
+  <Measure name="Units Shipped" column="units_shipped" aggregator="sum" formatString="#.0"/>
+  <Measure name="Units Ordered" column="units_ordered" aggregator="sum" formatString="#.0"/>
   <Measure name="Warehouse Profit" column="&quot;warehouse_sales&quot;-&quot;inventory_fact_1997&quot;.&quot;warehouse_cost&quot;" aggregator="sum"/>
 </Cube>
 
