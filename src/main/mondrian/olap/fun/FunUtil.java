@@ -579,7 +579,7 @@ public class FunUtil extends Util {
         // MSAS exhibits the following behavior. If the value of all members is
         // null, then the first (or last) member of the set is returned for percent
         // operations.
-        if (isPercent && nullCount == numMembers) {
+        if (numMembers > 0 && isPercent && nullCount == numMembers) {
             if (isTop) {
                 return members.subList(0, 1);
             }
