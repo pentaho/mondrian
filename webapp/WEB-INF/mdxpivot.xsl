@@ -114,10 +114,13 @@ td.cell-odd {
 <xsl:template match="row-heading">
   <th align="left" nowrap="nowrap" class="row-heading-{@style}" colspan="{@colspan}" rowspan="{@rowspan}">
     <!--xsl:value-of select="@depth"/ -->
+    <xsl:variable name="n"><xsl:value-of select="@depth"/></xsl:variable>
+    <div style="margin-left: {$n}em">
     <a>
       <xsl:attribute name="href">mdxquery?query=pivotQuery&amp;operation=expand&amp;member=<xsl:value-of select="@uname"/>&amp;redirect=/pivot.jsp</xsl:attribute>
       <xsl:value-of select="@caption"/>
     </a>
+    </div>
   </th>
 </xsl:template>
 
