@@ -16,7 +16,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * An <code>XmlaServlet</code> responds to XML for Analysis SOAP requests.
@@ -39,14 +44,47 @@ public class XmlaServlet extends HttpServlet {
     }
 
     public void process(HttpServletRequest request, HttpServletResponse response) {
-        final String soapRequest = request.getParameter("SOAPRequest");
+        String soapRequest = request.getParameter("SOAPRequest");
+        if (soapRequest == null) {
+            try {
+                soapRequest = toString(request.getInputStream());
+            } catch (IOException e) {
+                return;
+            }
+        }
+        if (true) {
+            System.out.println("Pathinfo=" + request.getPathInfo());
+            final Map map = request.getParameterMap();
+            for (Iterator iterator = map.keySet().iterator(); iterator.hasNext();) {
+                String att = (String) iterator.next();
+                System.out.println(att + "=" + map.get(att));
+            }
+            final Enumeration headerNames = request.getHeaderNames();
+            while (headerNames.hasMoreElements()) {
+                String header = (String) headerNames.nextElement();
+                System.out.println("Header " + header + "=" + request.getHeader(header));
+            }
+            System.out.println("Request: " + soapRequest);
+        }
         final PrintWriter printWriter;
         try {
             printWriter = response.getWriter();
         } catch (IOException e) {
             return;
         }
+        mediator.threadServletContext.set(getServletContext());
         mediator.process(soapRequest, printWriter);
+    }
+
+    private static String toString(InputStream is) throws IOException {
+        final InputStreamReader reader = new InputStreamReader(is);
+        char[] buf = new char[2048];
+        StringBuffer sb = new StringBuffer();
+        int n;
+        while ((n = reader.read(buf)) > 0) {
+            sb.append(buf, 0, n);
+        }
+        return sb.toString();
     }
 }
 

@@ -10,8 +10,7 @@
 */
 
 package mondrian.olap;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * <code>EnumeratedValues</code> is a helper class for declaring a set of
@@ -251,6 +250,20 @@ public class EnumeratedValues implements Cloneable
      */
     public String[] getNames() {
         return (String[]) valuesByName.keySet().toArray(emptyStringArray);
+    }
+
+    /**
+     * Returns the members of this enumeration, sorted by name.
+     */
+    public List getValuesSortedByName() {
+        ArrayList list = new ArrayList();
+        final String[] names = getNames();
+        Arrays.sort(names);
+        for (int i = 0; i < names.length; i++) {
+            String name = names[i];
+            list.add(getValue(name));
+        }
+        return list;
     }
 
 	/**

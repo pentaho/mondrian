@@ -90,6 +90,7 @@ public class XmlaTest extends TestCase {
     }
 
     private String wrap(String request) {
+        request = Pattern.compile("^").matcher(request).replaceAll("        ");
         return "<SOAP-ENV:Envelope" + nl +
                 "    xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"" + nl +
                 "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
@@ -121,30 +122,97 @@ public class XmlaTest extends TestCase {
 
     // tests follow
 
-    public void _testDataSources() {
-        String s = executeRequest("<Discover>" + nl +
-                " <RequestType>");
-        assertEquals("foo", s);
+    public void testDiscoverDataSources() {
+        assertRequestYields(wrap(
+                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "    <RequestType>DISCOVER_DATASOURCES</RequestType>" + nl +
+                "    <Restrictions>" + nl +
+                "        <RestrictionList/>" + nl +
+                "    </Restrictions>" + nl +
+                "    <Properties>" + nl +
+                "        <PropertyList/>" + nl +
+                "    </Properties>" + nl +
+                "</Discover>"),
+
+                "<?xml version=\"1.0\"?>" + nl +
+                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "  <SOAP-ENV:Body>" + nl +
+                "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
+                "      <return>" + nl +
+                "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
+                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
+                "          <row>" + nl +
+                "            <DataSourceName>Local Mondrian server</DataSourceName>" + nl +
+                "            <DataSourceDescription>Mondrian server on local machine</DataSourceDescription>" + nl +
+                "            <URL>http://localhost/mondrian/xmla.jsp</URL>" + nl +
+                "            <DataSourceInfo>Provider=Mondrian</DataSourceInfo>" + nl +
+                "            <ProviderName>Mondrian XML for Analysis</ProviderName>" + nl +
+                "            <ProviderType>" + nl +
+                "              <MDP/>" + nl +
+                "            </ProviderType>" + nl +
+                "            <AuthenticationMode>Unauthenticated</AuthenticationMode>" + nl +
+                "          </row>" + nl +
+                "        </root>" + nl +
+                "      </return>" + nl +
+                "    </DiscoverResponse>" + nl +
+                "  </SOAP-ENV:Body>" + nl +
+                "</SOAP-ENV:Envelope>");
     }
 
-    public void testCubes() {
+    public void testDiscoverCatalogs() {
         assertRequestYields(wrap(
-                "        <Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "            SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "            <RequestType>MDSCHEMA_CUBES</RequestType>" + nl +
-                "            <Restrictions>" + nl +
-                "                <RestrictionList>" + nl +
-                "                    <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
-                "                </RestrictionList>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Properties>" + nl +
-                "                <PropertyList>" + nl +
-                "                    <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "                    <Catalog>FoodMart</Catalog>" + nl +
-                "                    <Format>Tabular</Format>" + nl +
-                "                </PropertyList>" + nl +
-                "            </Properties>" + nl +
-                "        </Discover>"),
+                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "    <RequestType>DBSCHEMA_CATALOGS</RequestType>" + nl +
+                "    <Restrictions>" + nl +
+                "        <RestrictionList/>" + nl +
+                "    </Restrictions>" + nl +
+                "    <Properties>" + nl +
+                "        <PropertyList>" + nl +
+                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "            <Catalog>FoodMart</Catalog>" + nl +
+                "            <Format>Tabular</Format>" + nl +
+                "        </PropertyList>" + nl +
+                "    </Properties>" + nl +
+                "</Discover>"),
+
+                "<?xml version=\"1.0\"?>" + nl +
+                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "  <SOAP-ENV:Body>" + nl +
+                "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
+                "      <return>" + nl +
+                "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
+                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
+                "          <row>" + nl +
+                "            <CATALOG_NAME>FoodMart</CATALOG_NAME>" + nl +
+                "            <DESCRIPTION/>" + nl +
+                "          </row>" + nl +
+                "        </root>" + nl +
+                "      </return>" + nl +
+                "    </DiscoverResponse>" + nl +
+                "  </SOAP-ENV:Body>" + nl +
+                "</SOAP-ENV:Envelope>");
+    }
+
+    public void testDiscoverCubes() {
+        assertRequestYields(wrap(
+                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "    <RequestType>MDSCHEMA_CUBES</RequestType>" + nl +
+                "    <Restrictions>" + nl +
+                "        <RestrictionList>" + nl +
+                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
+                "        </RestrictionList>" + nl +
+                "    </Restrictions>" + nl +
+                "    <Properties>" + nl +
+                "        <PropertyList>" + nl +
+                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "            <Catalog>FoodMart</Catalog>" + nl +
+                "            <Format>Tabular</Format>" + nl +
+                "        </PropertyList>" + nl +
+                "    </Properties>" + nl +
+                "</Discover>"),
 
                 "<?xml version=\"1.0\"?>" + nl +
                 "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
@@ -205,24 +273,24 @@ public class XmlaTest extends TestCase {
                 "</SOAP-ENV:Envelope>");
     }
 
-    public void testCubesRestricted() {
+    public void testDiscoverCubesRestricted() {
         assertRequestYields(wrap(
-                "        <Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "            SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "            <RequestType>MDSCHEMA_CUBES</RequestType>" + nl +
-                "            <Restrictions>" + nl +
-                "                <RestrictionList>" + nl +
-                "                    <CUBE_NAME>Sales</CUBE_NAME>" + nl +
-                "                </RestrictionList>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Properties>" + nl +
-                "                <PropertyList>" + nl +
-                "                    <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "                    <Catalog>FoodMart</Catalog>" + nl +
-                "                    <Format>Tabular</Format>" + nl +
-                "                </PropertyList>" + nl +
-                "            </Properties>" + nl +
-                "        </Discover>"),
+                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "    <RequestType>MDSCHEMA_CUBES</RequestType>" + nl +
+                "    <Restrictions>" + nl +
+                "        <RestrictionList>" + nl +
+                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
+                "        </RestrictionList>" + nl +
+                "    </Restrictions>" + nl +
+                "    <Properties>" + nl +
+                "        <PropertyList>" + nl +
+                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "            <Catalog>FoodMart</Catalog>" + nl +
+                "            <Format>Tabular</Format>" + nl +
+                "        </PropertyList>" + nl +
+                "    </Properties>" + nl +
+                "</Discover>"),
 
                 "<?xml version=\"1.0\"?>" + nl +
                 "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
@@ -247,105 +315,146 @@ public class XmlaTest extends TestCase {
                 "</SOAP-ENV:Envelope>");
     }
 
-    public void testCubesRestrictedOnUnrestrictableColumnFails() {
+    public void testDiscoverCubesRestrictedOnUnrestrictableColumnFails() {
         assertRequestMatches(wrap(
-                "        <Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "            SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "            <RequestType>MDSCHEMA_CUBES</RequestType>" + nl +
-                "            <Restrictions>" + nl +
-                "                <RestrictionList>" + nl +
-                "                    <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
-                "                    <IS_WRITE_ENABLED>true</IS_WRITE_ENABLED>" + nl +
-                "                </RestrictionList>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Properties>" + nl +
-                "                <PropertyList>" + nl +
-                "                    <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "                    <Catalog>FoodMart</Catalog>" + nl +
-                "                    <Format>Tabular</Format>" + nl +
-                "                </PropertyList>" + nl +
-                "            </Properties>" + nl +
-                "        </Discover>"),
+                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "    <RequestType>MDSCHEMA_CUBES</RequestType>" + nl +
+                "    <Restrictions>" + nl +
+                "        <RestrictionList>" + nl +
+                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
+                "            <IS_WRITE_ENABLED>true</IS_WRITE_ENABLED>" + nl +
+                "        </RestrictionList>" + nl +
+                "    </Restrictions>" + nl +
+                "    <Properties>" + nl +
+                "        <PropertyList>" + nl +
+                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "            <Catalog>FoodMart</Catalog>" + nl +
+                "            <Format>Tabular</Format>" + nl +
+                "        </PropertyList>" + nl +
+                "    </Properties>" + nl +
+                "</Discover>"),
 
                 "(?s).*Rowset 'MDSCHEMA_CUBES' column 'IS_WRITE_ENABLED' does not allow restrictions.*");
     }
 
-    public void testCubesRestrictedOnBadColumn() {
+    public void testDiscoverCubesRestrictedOnBadColumn() {
         assertRequestMatches(wrap(
-                "        <Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "            SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "            <RequestType>MDSCHEMA_CUBES</RequestType>" + nl +
-                "            <Restrictions>" + nl +
-                "                <RestrictionList>" + nl +
-                "                    <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
-                "                    <NON_EXISTENT_COLUMN>FooBar</NON_EXISTENT_COLUMN>" + nl +
-                "                </RestrictionList>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Properties>" + nl +
-                "                <PropertyList>" + nl +
-                "                    <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "                    <Catalog>FoodMart</Catalog>" + nl +
-                "                    <Format>Tabular</Format>" + nl +
-                "                </PropertyList>" + nl +
-                "            </Properties>" + nl +
-                "        </Discover>"),
+                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "    <RequestType>MDSCHEMA_CUBES</RequestType>" + nl +
+                "    <Restrictions>" + nl +
+                "        <RestrictionList>" + nl +
+                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
+                "            <NON_EXISTENT_COLUMN>FooBar</NON_EXISTENT_COLUMN>" + nl +
+                "        </RestrictionList>" + nl +
+                "    </Restrictions>" + nl +
+                "    <Properties>" + nl +
+                "        <PropertyList>" + nl +
+                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "            <Catalog>FoodMart</Catalog>" + nl +
+                "            <Format>Tabular</Format>" + nl +
+                "        </PropertyList>" + nl +
+                "    </Properties>" + nl +
+                "</Discover>"),
 
                 "(?s).*Rowset 'MDSCHEMA_CUBES' does not contain column 'NON_EXISTENT_COLUMN'.*");
     }
 
-    public void testProperties() {
+    /**
+     * Tests the {@link RowsetDefinition#DISCOVER_ENUMERATORS} rowset.
+     */
+    public void testDiscoverEnumerators() {
         assertRequestMatches(wrap(
-                "        <Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "            SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "            <RequestType>DISCOVER_PROPERTIES</RequestType>" + nl +
-                "            <Restrictions>" + nl +
-                "                <RestrictionList>" + nl +
-                "                </RestrictionList>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Properties>" + nl +
-                "                <PropertyList>" + nl +
-                "                    <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "                    <Format>Tabular</Format>" + nl +
-                "                </PropertyList>" + nl +
-                "            </Properties>" + nl +
-                "        </Discover>"),
+                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "    <RequestType>DISCOVER_ENUMERATORS</RequestType>" + nl +
+                "    <Restrictions>" + nl +
+                "        <RestrictionList/>" + nl +
+                "    </Restrictions>" + nl +
+                "    <Properties>" + nl +
+                "        <PropertyList/>" + nl +
+                "    </Properties>" + nl +
+                "</Discover>"),
 
                 "(?s).*" + nl +
                 "          <row>" + nl +
-                "            <PropertyName>Catalog</PropertyName>" + nl +
-                "            <PropertyDescription>Specifies the initial catalog or database on which to connect.</PropertyDescription>" + nl +
-                "            <PropertyType>String</PropertyType>" + nl +
-                "            <PropertyAccessType>Read/Write</PropertyAccessType>" + nl +
-                "            <IsRequired/>" + nl +
-                "            <Value/>" + nl +
+                "            <EnumName>AuthenticationMode</EnumName>" + nl +
+                "            <EnumDescription>Specification of what type of security mode the data source uses.</EnumDescription>" + nl +
+                "            <EnumType>EnumString</EnumType>" + nl +
+                "            <ElementName>Authenticated</ElementName>" + nl +
+                "            <ElementDescription>User ID and Password must be included in the information required for the connection.</ElementDescription>" + nl +
+                "            <ElementValue>1</ElementValue>" + nl +
                 "          </row>" + nl +
                 ".*");
+    }
+
+    /**
+     * Tests the {@link RowsetDefinition#DISCOVER_KEYWORDS} rowset.
+     */
+    public void testDiscoverKeywords() {
+        assertRequestMatches(wrap(
+                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "    <RequestType>DISCOVER_KEYWORDS</RequestType>" + nl +
+                "    <Restrictions>" + nl +
+                "        <RestrictionList/>" + nl +
+                "    </Restrictions>" + nl +
+                "    <Properties>" + nl +
+                "        <PropertyList>" + nl +
+                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "            <Format>Tabular</Format>" + nl +
+                "        </PropertyList>" + nl +
+                "    </Properties>" + nl +
+                "</Discover>"),
+
+                "(?s)" +
+                "<[?]xml version=\"1.0\"[?]>" + nl +
+                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "  <SOAP-ENV:Body>" + nl +
+                "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
+                "      <return>" + nl +
+                "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
+                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
+                ".*" + nl +
+                "          <row>" + nl +
+                "            <Keyword>AddCalculatedMembers</Keyword>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <Keyword>Action</Keyword>" + nl +
+                "          </row>" + nl +
+                ".*" + nl +
+                "        </root>" + nl +
+                "      </return>" + nl +
+                "    </DiscoverResponse>" + nl +
+                "  </SOAP-ENV:Body>" + nl +
+                "</SOAP-ENV:Envelope>");
     }
 
     /**
      * Tests the {@link RowsetDefinition#DISCOVER_LITERALS} rowset, and
      * multiple restrictions.
      */
-    public void testLiterals() {
+    public void testDiscoverLiterals() {
         assertRequestYields(wrap(
-                "        <Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "            SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "            <RequestType>DISCOVER_LITERALS</RequestType>" + nl +
-                "            <Restrictions>" + nl +
-                "                <RestrictionList>" + nl +
-                "                    <LiteralName>" + nl +
-                "                        <Value>DBLITERAL_QUOTE_PREFIX</Value>" + nl +
-                "                        <Value>DBLITERAL_QUOTE_SUFFIX</Value>" + nl +
-                "                    </LiteralName>" + nl +
-                "                </RestrictionList>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Properties>" + nl +
-                "                <PropertyList>" + nl +
-                "                    <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "                    <Format>Tabular</Format>" + nl +
-                "                </PropertyList>" + nl +
-                "            </Properties>" + nl +
-                "        </Discover>"),
+                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "    <RequestType>DISCOVER_LITERALS</RequestType>" + nl +
+                "    <Restrictions>" + nl +
+                "        <RestrictionList>" + nl +
+                "            <LiteralName>" + nl +
+                "                <Value>DBLITERAL_QUOTE_PREFIX</Value>" + nl +
+                "                <Value>DBLITERAL_QUOTE_SUFFIX</Value>" + nl +
+                "            </LiteralName>" + nl +
+                "        </RestrictionList>" + nl +
+                "    </Restrictions>" + nl +
+                "    <Properties>" + nl +
+                "        <PropertyList>" + nl +
+                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "            <Format>Tabular</Format>" + nl +
+                "        </PropertyList>" + nl +
+                "    </Properties>" + nl +
+                "</Discover>"),
 
                 "<?xml version=\"1.0\"?>" + nl +
                 "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
@@ -371,23 +480,60 @@ public class XmlaTest extends TestCase {
                 "</SOAP-ENV:Envelope>");
     }
 
-    public void testPropertiesUnrestricted() {
+    /**
+     * Tests the {@link RowsetDefinition#DISCOVER_PROPERTIES} rowset, with no
+     * restrictions.
+     */
+    public void testDiscoverProperties() {
+        assertRequestMatches(wrap(
+                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "    <RequestType>DISCOVER_PROPERTIES</RequestType>" + nl +
+                "    <Restrictions>" + nl +
+                "        <RestrictionList>" + nl +
+                "        </RestrictionList>" + nl +
+                "    </Restrictions>" + nl +
+                "    <Properties>" + nl +
+                "        <PropertyList>" + nl +
+                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "            <Format>Tabular</Format>" + nl +
+                "        </PropertyList>" + nl +
+                "    </Properties>" + nl +
+                "</Discover>"),
+
+                "(?s).*" + nl +
+                "          <row>" + nl +
+                "            <PropertyName>Catalog</PropertyName>" + nl +
+                "            <PropertyDescription>Specifies the initial catalog or database on which to connect.</PropertyDescription>" + nl +
+                "            <PropertyType>string</PropertyType>" + nl +
+                "            <PropertyAccessType>Read/Write</PropertyAccessType>" + nl +
+                "            <IsRequired/>" + nl +
+                "            <Value/>" + nl +
+                "          </row>" + nl +
+                ".*");
+    }
+
+    /**
+     * Tests the {@link RowsetDefinition#DISCOVER_PROPERTIES} rowset, with no
+     * restrictions.
+     */
+    public void testDiscoverPropertiesUnrestricted() {
         assertRequestYields(wrap(
-                "        <Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "            SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "            <RequestType>DISCOVER_PROPERTIES</RequestType>" + nl +
-                "            <Restrictions>" + nl +
-                "                <RestrictionList>" + nl +
-                "                    <PropertyName>EndRange</PropertyName>" + nl +
-                "                </RestrictionList>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Properties>" + nl +
-                "                <PropertyList>" + nl +
-                "                    <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "                    <Format>Tabular</Format>" + nl +
-                "                </PropertyList>" + nl +
-                "            </Properties>" + nl +
-                "        </Discover>"),
+                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "    <RequestType>DISCOVER_PROPERTIES</RequestType>" + nl +
+                "    <Restrictions>" + nl +
+                "        <RestrictionList>" + nl +
+                "            <PropertyName>EndRange</PropertyName>" + nl +
+                "        </RestrictionList>" + nl +
+                "    </Restrictions>" + nl +
+                "    <Properties>" + nl +
+                "        <PropertyList>" + nl +
+                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "            <Format>Tabular</Format>" + nl +
+                "        </PropertyList>" + nl +
+                "    </Properties>" + nl +
+                "</Discover>"),
 
                 "<?xml version=\"1.0\"?>" + nl +
                 "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
@@ -403,6 +549,251 @@ public class XmlaTest extends TestCase {
                 "            <PropertyAccessType>Write</PropertyAccessType>" + nl +
                 "            <IsRequired/>" + nl +
                 "            <Value/>" + nl +
+                "          </row>" + nl +
+                "        </root>" + nl +
+                "      </return>" + nl +
+                "    </DiscoverResponse>" + nl +
+                "  </SOAP-ENV:Body>" + nl +
+                "</SOAP-ENV:Envelope>");
+    }
+
+    /**
+     * Tests the {@link RowsetDefinition#DISCOVER_SCHEMA_ROWSETS} rowset, with
+     * no restrictions.
+     */
+    public void testDiscoverSchemaRowsets() {
+        assertRequestYields(wrap(
+                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "    <RequestType>DISCOVER_SCHEMA_ROWSETS</RequestType>" + nl +
+                "    <Restrictions>" + nl +
+                "        <RestrictionList/>" + nl +
+                "    </Restrictions>" + nl +
+                "    <Properties>" + nl +
+                "        <PropertyList>" + nl +
+                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "            <Format>Tabular</Format>" + nl +
+                "        </PropertyList>" + nl +
+                "    </Properties>" + nl +
+                "</Discover>"),
+
+                "<?xml version=\"1.0\"?>" + nl +
+                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "  <SOAP-ENV:Body>" + nl +
+                "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
+                "      <return>" + nl +
+                "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
+                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
+                "          <row>" + nl +
+                "            <SchemaName>DBSCHEMA_CATALOGS</SchemaName>" + nl +
+                "            <Restrictions>" + nl +
+                "              <CATALOG_NAME type=\"string\"/>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Description>Returns information about literals supported by the provider.</Description>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <SchemaName>DBSCHEMA_COLUMNS</SchemaName>" + nl +
+                "            <Restrictions>" + nl +
+                "              <TABLE_CATALOG type=\"string\"/>" + nl +
+                "              <TABLE_SCHEMA type=\"string\"/>" + nl +
+                "              <TABLE_NAME type=\"string\"/>" + nl +
+                "              <COLUMN_NAME type=\"string\"/>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Description/>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <SchemaName>DBSCHEMA_PROVIDER_TYPES</SchemaName>" + nl +
+                "            <Restrictions>" + nl +
+                "              <DATA_TYPE type=\"unsignedInteger\"/>" + nl +
+                "              <BEST_MATCH type=\"boolean\"/>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Description/>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <SchemaName>DBSCHEMA_TABLES</SchemaName>" + nl +
+                "            <Restrictions>" + nl +
+                "              <TABLE_CATALOG type=\"string\"/>" + nl +
+                "              <TABLE_SCHEMA type=\"string\"/>" + nl +
+                "              <TABLE_NAME type=\"string\"/>" + nl +
+                "              <TABLE_TYPE type=\"string\"/>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Description/>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <SchemaName>DBSCHEMA_TABLES_INFO</SchemaName>" + nl +
+                "            <Restrictions>" + nl +
+                "              <TABLE_CATALOG type=\"string\"/>" + nl +
+                "              <TABLE_SCHEMA type=\"string\"/>" + nl +
+                "              <TABLE_NAME type=\"string\"/>" + nl +
+                "              <TABLE_TYPE type=\"string\"/>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Description/>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <SchemaName>DISCOVER_DATASOURCES</SchemaName>" + nl +
+                "            <Restrictions>" + nl +
+                "              <DataSourceName type=\"string\"/>" + nl +
+                "              <URL type=\"string\"/>" + nl +
+                "              <ProviderName type=\"string\"/>" + nl +
+                "              <ProviderType type=\"string\"/>" + nl +
+                "              <AuthenticationMode type=\"string\"/>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Description>Returns a list of XML for Analysis data sources available on the server or Web Service.</Description>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <SchemaName>DISCOVER_ENUMERATORS</SchemaName>" + nl +
+                "            <Restrictions>" + nl +
+                "              <EnumName type=\"string\"/>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Description>Returns a list of names, data types, and enumeration values for enumerators supported by the provider of a specific data source.</Description>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <SchemaName>DISCOVER_KEYWORDS</SchemaName>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Keyword type=\"string\"/>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Description>Returns an XML list of keywords reserved by the provider.</Description>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <SchemaName>DISCOVER_LITERALS</SchemaName>" + nl +
+                "            <Restrictions>" + nl +
+                "              <LiteralName type=\"string\"/>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Description>Returns information about literals supported by the provider.</Description>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <SchemaName>DISCOVER_PROPERTIES</SchemaName>" + nl +
+                "            <Restrictions>" + nl +
+                "              <PropertyName type=\"string\"/>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Description>Returns a list of information and values about the requested properties that are supported by the specified data source provider.</Description>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <SchemaName>DISCOVER_SCHEMA_ROWSETS</SchemaName>" + nl +
+                "            <Restrictions>" + nl +
+                "              <SchemaName type=\"string\"/>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Description>Returns the names, values, and other information of all supported RequestType enumeration values.</Description>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <SchemaName>MDSCHEMA_ACTIONS</SchemaName>" + nl +
+                "            <Restrictions>" + nl +
+                "              <CUBE_NAME type=\"string\"/>" + nl +
+                "              <COORDINATE type=\"string\"/>" + nl +
+                "              <COORDINATE_TYPE type=\"string\"/>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Description/>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <SchemaName>MDSCHEMA_CUBES</SchemaName>" + nl +
+                "            <Restrictions>" + nl +
+                "              <CATALOG_NAME type=\"string\"/>" + nl +
+                "              <SCHEMA_NAME type=\"string\"/>" + nl +
+                "              <CUBE_NAME type=\"string\"/>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Description/>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <SchemaName>MDSCHEMA_DIMENSIONS</SchemaName>" + nl +
+                "            <Restrictions>" + nl +
+                "              <CATALOG_NAME type=\"string\"/>" + nl +
+                "              <SCHEMA_NAME type=\"string\"/>" + nl +
+                "              <CUBE_NAME type=\"string\"/>" + nl +
+                "              <DIMENSION_NAME type=\"string\"/>" + nl +
+                "              <DIMENSION_UNIQUE_NAME type=\"string\"/>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Description/>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <SchemaName>MDSCHEMA_FUNCTIONS</SchemaName>" + nl +
+                "            <Restrictions>" + nl +
+                "              <LIBRARY_NAME type=\"string\"/>" + nl +
+                "              <INTERFACE_NAME type=\"string\"/>" + nl +
+                "              <FUNCTION_NAME type=\"string\"/>" + nl +
+                "              <ORIGIN type=\"integer\"/>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Description/>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <SchemaName>MDSCHEMA_HIERARCHIES</SchemaName>" + nl +
+                "            <Restrictions>" + nl +
+                "              <CATALOG_NAME type=\"string\"/>" + nl +
+                "              <SCHEMA_NAME type=\"string\"/>" + nl +
+                "              <CUBE_NAME type=\"string\"/>" + nl +
+                "              <DIMENSION_UNIQUE_NAME type=\"string\"/>" + nl +
+                "              <HIERARCHY_NAME type=\"string\"/>" + nl +
+                "              <HIERARCHY_UNIQUE_NAME type=\"string\"/>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Description/>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <SchemaName>MDSCHEMA_LEVELS</SchemaName>" + nl +
+                "            <Restrictions>" + nl +
+                "              <CATALOG_NAME type=\"string\"/>" + nl +
+                "              <SCHEMA_NAME type=\"string\"/>" + nl +
+                "              <CUBE_NAME type=\"string\"/>" + nl +
+                "              <DIMENSION_UNIQUE_NAME type=\"string\"/>" + nl +
+                "              <HIERARCHY_UNIQUE_NAME type=\"string\"/>" + nl +
+                "              <LEVEL_NAME type=\"string\"/>" + nl +
+                "              <LEVEL_UNIQUE_NAME type=\"string\"/>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Description/>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <SchemaName>MDSCHEMA_MEASURES</SchemaName>" + nl +
+                "            <Restrictions>" + nl +
+                "              <CATALOG_NAME type=\"string\"/>" + nl +
+                "              <SCHEMA_NAME type=\"string\"/>" + nl +
+                "              <CUBE_NAME type=\"string\"/>" + nl +
+                "              <MEASURE_NAME type=\"string\"/>" + nl +
+                "              <MEASURE_UNIQUE_NAME type=\"string\"/>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Description/>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <SchemaName>MDSCHEMA_MEMBERS</SchemaName>" + nl +
+                "            <Restrictions>" + nl +
+                "              <CATALOG_NAME type=\"string\"/>" + nl +
+                "              <SCHEMA_NAME type=\"string\"/>" + nl +
+                "              <CUBE_NAME type=\"string\"/>" + nl +
+                "              <DIMENSION_UNIQUE_NAME type=\"string\"/>" + nl +
+                "              <HIERARCHY_UNIQUE_NAME type=\"string\"/>" + nl +
+                "              <LEVEL_UNIQUE_NAME type=\"string\"/>" + nl +
+                "              <LEVEL_NUMBER type=\"unsignedInteger\"/>" + nl +
+                "              <MEMBER_NAME type=\"string\"/>" + nl +
+                "              <MEMBER_UNIQUE_NAME type=\"string\"/>" + nl +
+                "              <MEMBER_CAPTION type=\"string\"/>" + nl +
+                "              <MEMBER_TYPE type=\"integer\"/>" + nl +
+                "              <TREE_OP type=\"integer\"/>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Description/>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <SchemaName>MDSCHEMA_PROPERTIES</SchemaName>" + nl +
+                "            <Restrictions>" + nl +
+                "              <CATALOG_NAME type=\"string\"/>" + nl +
+                "              <SCHEMA_NAME type=\"string\"/>" + nl +
+                "              <CUBE_NAME type=\"string\"/>" + nl +
+                "              <DIMENSION_UNIQUE_NAME type=\"string\"/>" + nl +
+                "              <HIERARCHY_UNIQUE_NAME type=\"string\"/>" + nl +
+                "              <LEVEL_UNIQUE_NAME type=\"string\"/>" + nl +
+                "              <MEMBER_UNIQUE_NAME type=\"string\"/>" + nl +
+                "              <PROPERTY_NAME type=\"string\"/>" + nl +
+                "              <PROPERTY_TYPE type=\"integer\"/>" + nl +
+                "              <PROPERTY_CONTENT_TYPE type=\"integer\"/>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Description/>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <SchemaName>MDSCHEMA_SETS</SchemaName>" + nl +
+                "            <Restrictions>" + nl +
+                "              <CATALOG_NAME type=\"string\"/>" + nl +
+                "              <SCHEMA_NAME type=\"string\"/>" + nl +
+                "              <CUBE_NAME type=\"string\"/>" + nl +
+                "              <SET_NAME type=\"string\"/>" + nl +
+                "              <SCOPE type=\"integer\"/>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Description/>" + nl +
                 "          </row>" + nl +
                 "        </root>" + nl +
                 "      </return>" + nl +
@@ -518,11 +909,63 @@ public class XmlaTest extends TestCase {
     }
 
     /**
-     * select {[Gender].[F].PrevMember} on columns from Sales
-     * If axis is empty, we can't deduce the hierarchies on it.
+     * Tests that we get the right metadata about a query's axes if the
+     * axis is empty. We can't deduce the hierarchies on it by simply looking
+     * at the first element on the axis, because there is none, so we need to
+     * look at the parse tree instead.
+     *
+     * TODO: implement
      */
-    public void testSelectEmptyAxis() {
+    public void _testSelectEmptyAxis() {
+        assertRequestYields(wrap(
+                "<Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\" " + nl +
+                "  SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "  <Command>" + nl +
+                "    <Statement>select {[Gender].[F].PrevMember} on Columns from Sales</Statement>" + nl +
+                "  </Command>" + nl +
+                "  <Properties>" + nl +
+                "    <PropertyList>" + nl +
+                "      <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "      <Catalog>FoodMart</Catalog>" + nl +
+                "      <Format>Multidimensional</Format>" + nl +
+                "      <AxisFormat>TupleFormat</AxisFormat>" + nl +
+                "    </PropertyList>" + nl +
+                "  </Properties>" + nl +
+                "</Execute>"),
 
+                "<?xml version=\"1.0\"?>" + nl +
+                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "  <SOAP-ENV:Body>" + nl +
+                "    <OLAPInfo>" + nl +
+                "      <CubeInfo>" + nl +
+                "        <Cube>" + nl +
+                "          <CubeName>Sales</CubeName>" + nl +
+                "        </Cube>" + nl +
+                "      </CubeInfo>" + nl +
+                "      <AxesInfo>" + nl +
+                "        <AxisInfo name=\"Axis0\">" + nl +
+                "          <HierarchyInfo name=\"Measures\">" + nl +
+                "            <UName name=\"[Gender].[MEMBER_UNIQUE_NAME]\"/>" + nl +
+                "            <Caption name=\"[Gender].[MEMBER_CAPTION]\"/>" + nl +
+                "            <LName name=\"[Gender].[LEVEL_UNIQUE_NAME]\"/>" + nl +
+                "            <LNum name=\"[Gender].[LEVEL_NUMBER]\"/>" + nl +
+                "          </HierarchyInfo>" + nl +
+                "        </AxisInfo>" + nl +
+                "      </AxesInfo>" + nl +
+                "      <CellInfo>" + nl +
+                "        <Value name=\"VALUE\"/>" + nl +
+                "        <FmtValue name=\"FORMATTED_VALUE\"/>" + nl +
+                "        <FormatString name=\"FORMAT_STRING\"/>" + nl +
+                "      </CellInfo>" + nl +
+                "    </OLAPInfo>" + nl +
+                "    <Axes>" + nl +
+                "      <Axis name=\"Axis0\">" + nl +
+                "        <Tuples/>" + nl +
+                "      </Axis>" + nl +
+                "    </Axes>" + nl +
+                "    <CellData/>" + nl +
+                "  </SOAP-ENV:Body>" + nl +
+                "</SOAP-ENV:Envelope>");
     }
 }
 

@@ -20,7 +20,19 @@ import mondrian.olap.EnumeratedValues;
  * @since May 2, 2003
  * @version $Id$
  **/
-class Enumeration {
+class Enumeration extends EnumeratedValues {
+    public final String name;
+    public final String description;
+    public final RowsetDefinition.Type type;
+
+    public Enumeration(String name, String description,
+            RowsetDefinition.Type type, EnumeratedValues.Value[] values) {
+        super(values);
+        this.name = name;
+        this.description = description;
+        this.type = type;
+    }
+
     public static final class Methods extends EnumeratedValues.BasicValue {
         public static final Methods discover = new Methods("Discover", 1);
         public static final Methods execute = new Methods("Execute", 2);
@@ -29,7 +41,10 @@ class Enumeration {
         private Methods(String name, int ordinal) {
             super(name, ordinal, null);
         }
-        public static final EnumeratedValues enumeration = new EnumeratedValues(
+        public static final Enumeration enumeration = new Enumeration(
+                "Methods",
+                "Set of methods for which a property is applicable",
+                RowsetDefinition.Type.Enumeration,
                 new Methods[] {discover, execute, discoverAndExecute}
         );
     }
@@ -42,7 +57,10 @@ class Enumeration {
         private Access(String name, int ordinal) {
             super(name, ordinal, null);
         }
-        public static final EnumeratedValues enumeration = new EnumeratedValues(
+        public static final Enumeration enumeration = new Enumeration(
+                "Access",
+                "The read/write behavior of a property",
+                RowsetDefinition.Type.Enumeration,
                 new Access[] {read, write, readWrite}
         );
     }
@@ -108,7 +126,10 @@ class Enumeration {
         public static final AuthenticationMode Unauthenticated = new AuthenticationMode("Unauthenticated", 0, "no user ID or password needs to be sent.");
         public static final AuthenticationMode Authenticated = new AuthenticationMode("Authenticated", 1, "User ID and Password must be included in the information required for the connection.");
         public static final AuthenticationMode Integrated = new AuthenticationMode("Integrated", 2, "the data source uses the underlying security to determine authorization, such as Integrated Security provided by Microsoft Internet Information Services (IIS).");
-        public static final EnumeratedValues enumeration = new EnumeratedValues(
+        public static final Enumeration enumeration = new Enumeration(
+                "AuthenticationMode",
+                "Specification of what type of security mode the data source uses.",
+                RowsetDefinition.Type.EnumString,
                 new AuthenticationMode[] {Unauthenticated, Authenticated, Integrated}
         );
     }
@@ -120,7 +141,10 @@ class Enumeration {
         public static final ProviderType TDP = new ProviderType("TDP", 0, "tabular data provider.");
         public static final ProviderType MDP = new ProviderType("MDP", 1, "multidimensional data provider.");
         public static final ProviderType DMP = new ProviderType("DMP", 2, "data mining provider. A DMP provider implements the OLE DB for Data Mining specification.");
-        public static final EnumeratedValues enumeration = new EnumeratedValues(
+        public static final Enumeration enumeration = new Enumeration(
+                "ProviderType",
+                "The types of data supported by the provider.",
+                RowsetDefinition.Type.Array,
                 new ProviderType[] {TDP, MDP, DMP}
         );
     }
@@ -175,10 +199,23 @@ class Enumeration {
 
         static final EnumeratedValues enumeration = new EnumeratedValues(
                 new Literal[] {
+                    new Literal("DBLITERAL_CATALOG_NAME", DBLITERAL_CATALOG_NAME, null, -1, ".", "0123456789", "A catalog name in a text command."),
+                    new Literal("DBLITERAL_CATALOG_SEPARATOR", DBLITERAL_CATALOG_SEPARATOR, ".", 0, null, null, null),
+                    new Literal("DBLITERAL_COLUMN_ALIAS", DBLITERAL_COLUMN_ALIAS, null, -1, "'\"[]", "0123456789", null),
+                    new Literal("DBLITERAL_COLUMN_NAME", DBLITERAL_COLUMN_NAME, null, -1, ".", "0123456789", null),
+                    new Literal("DBLITERAL_CORRELATION_NAME", DBLITERAL_CORRELATION_NAME, null, -1, "'\"[]", "0123456789", null),
+                    new Literal("DBLITERAL_CUBE_NAME", DBLITERAL_CUBE_NAME, null, -1, ".", "0123456789", null),
+                    new Literal("DBLITERAL_DIMENSION_NAME", DBLITERAL_DIMENSION_NAME, null, -1, ".", "0123456789", null),
+                    new Literal("DBLITERAL_HIERARCHY_NAME", DBLITERAL_HIERARCHY_NAME, null, -1, ".", "0123456789", null),
+                    new Literal("DBLITERAL_LEVEL_NAME", DBLITERAL_LEVEL_NAME, null, -1, ".", "0123456789", null),
+                    new Literal("DBLITERAL_MEMBER_NAME", DBLITERAL_MEMBER_NAME, null, -1, ".", "0123456789", null),
+                    new Literal("DBLITERAL_PROCEDURE_NAME", DBLITERAL_PROCEDURE_NAME, null, -1, ".", "0123456789", null),
+                    new Literal("DBLITERAL_PROPERTY_NAME", DBLITERAL_PROPERTY_NAME, null, -1, ".", "0123456789", null),
                     new Literal("DBLITERAL_QUOTE_PREFIX", DBLITERAL_QUOTE_PREFIX, "[", -1, null, null, "The character used in a text command as the opening quote for quoting identifiers that contain special characters."),
                     new Literal("DBLITERAL_QUOTE_SUFFIX", DBLITERAL_QUOTE_SUFFIX, "]", -1, null, null, "The character used in a text command as the closing quote for quoting identifiers that contain special characters. 1.x providers that use the same character as the prefix and suffix may not return this literal value and can set the lt member of the DBLITERAL structure to DBLITERAL_INVALID if requested."),
-                    new Literal("DBLITERAL_CATALOG_NAME", DBLITERAL_CATALOG_NAME, null, -1, null, null, "A catalog name in a text command."),
+                    new Literal("DBLITERAL_TABLE_NAME", DBLITERAL_TABLE_NAME, null, -1, ".", "0123456789", null),
                     new Literal("DBLITERAL_TEXT_COMMAND", DBLITERAL_TEXT_COMMAND, null, -1, null, null, "A text command, such as an SQL statement."),
+                    new Literal("DBLITERAL_USER_NAME", DBLITERAL_USER_NAME, null, 0, null, null, null),
                 });
     }
 }

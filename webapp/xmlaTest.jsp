@@ -29,6 +29,8 @@
         pw.flush();
         return sw.toString();
     }
+
+    private static final HashMap requestMap = new XmlaTest("foo").getRequests();
 %>
 <html>
 <head>
@@ -69,7 +71,6 @@ text-align:right;
 <body>
 
 <%
-    HashMap requestMap = new XmlaTest("foo").getRequests();
     String[] requestKeys = (String[]) requestMap.keySet().toArray(new String[0]);
     Arrays.sort(requestKeys);
     String defaultRequest = (String) requestMap.get("testCubes");
@@ -81,9 +82,14 @@ text-align:right;
         whichRequest = requestKeys.length - 1;
     }
     defaultRequest = (String) requestMap.get(requestKeys[whichRequest]);
+    String postURL = request.getParameter("postURL");
+    if (postURL == null) {
+        postURL = "xmla.jsp";
+    }
 %>
 
 <form id='requestChooser' method='POST' action='xmlaTest.jsp'>
+  <input type='hidden' name='postURL' value='<%= postURL %>'/>
   <table>
     <tr>
       <td>
@@ -111,7 +117,9 @@ text-align:right;
   </table>
 </form>
 
-<form id='form' method='POST' action='xmla.jsp'>
+
+<form id='form' method='POST' action='<%= postURL %>'>
+  <input type='hidden' name='postURL' value='<%= postURL %>'/>
   <table>
     <tr>
       <td>Request</td>
@@ -134,5 +142,23 @@ text-align:right;
     </tr>
   </table>
 </form>
+
+<p>&nbsp;</p>
+
+<form id='postForm' method='POST' action='xmlaTest.jsp'>
+  <table border='1'>
+    <tr>
+      <td>Target URL:</td>
+      <td><%= postURL %></td>
+    </tr>
+    <tr>
+      <td>New target URL:</td>
+      <td><input size='55' name='postURL' value='<%= postURL %>'/><br/>
+          <input type='submit' value='Change'/>
+      </td>
+    </tr>
+  </table>
+</form>
+
 </body>
 </html>

@@ -4,9 +4,9 @@ import mondrian.olap.*;
 import mondrian.util.SAXHandler;
 import org.xml.sax.SAXException;
 
+import javax.servlet.ServletContext;
 import java.lang.reflect.Field;
-import java.util.Properties;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * <code>RowsetDefinition</code> defines a rowset, including the columns it
@@ -43,13 +43,14 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
     public static final int MDSCHEMA_MEMBERS = 17;
     public static final int MDSCHEMA_PROPERTIES = 18;
     public static final int MDSCHEMA_SETS = 19;
-    public static final int OTHER = 20;
+    public static final int MDSCHEMA_LEVELS = 20;
+    public static final int OTHER = 21;
     public static final EnumeratedValues enumeration = new EnumeratedValues(
             new RowsetDefinition[] {
-                DatasourcesRowset.definition,
+                DiscoverDatasourcesRowset.definition,
+                DiscoverEnumeratorsRowset.definition,
                 DiscoverPropertiesRowset.definition,
                 DiscoverSchemaRowsetsRowset.definition,
-                DiscoverEnumeratorsRowset.definition,
                 DiscoverKeywordsRowset.definition,
                 DiscoverLiteralsRowset.definition,
                 DbschemaCatalogsRowset.definition,
@@ -62,6 +63,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 MdschemaDimensionsRowset.definition,
                 MdschemaFunctionsRowset.definition,
                 MdschemaHierarchiesRowset.definition,
+                MdschemaLevelsRowset.definition,
                 MdschemaMeasuresRowset.definition,
                 MdschemaMembersRowset.definition,
                 MdschemaPropertiesRowset.definition,
@@ -69,35 +71,53 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             }
     );
 
-    RowsetDefinition(String name, int ordinal, Column[] columnDefinitions) {
-        super(name, ordinal, null);
+    RowsetDefinition(String name, int ordinal, String description, Column[] columnDefinitions) {
+        super(name, ordinal, description);
         this.columnDefinitions = columnDefinitions;
+    }
+
+    public static RowsetDefinition getValue(String name) {
+        return (RowsetDefinition) enumeration.getValue(name);
+    }
+
+    public abstract Rowset getRowset(HashMap restrictions, Properties properties);
+
+    public Column lookupColumn(String name) {
+        for (int i = 0; i < columnDefinitions.length; i++) {
+            Column columnDefinition = columnDefinitions[i];
+            if (columnDefinition.name.equals(name)) {
+                return columnDefinition;
+            }
+        }
+        return null;
     }
 
     static class Type extends EnumeratedValues.BasicValue {
         public static final int String_ORDINAL = 0;
-        public static final Type String = new Type("String", String_ORDINAL);
+        public static final Type String = new Type("string", String_ORDINAL, "string");
         public static final int StringArray_ORDINAL = 1;
-        public static final Type StringArray = new Type("StringArray", StringArray_ORDINAL);
+        public static final Type StringArray = new Type("StringArray", StringArray_ORDINAL, "string");
         public static final int Array_ORDINAL = 2;
-        public static final Type Array = new Type("Array", Array_ORDINAL);
+        public static final Type Array = new Type("Array", Array_ORDINAL, "string");
         public static final int Enumeration_ORDINAL = 3;
-        public static final Type Enumeration = new Type("Enumeration", Enumeration_ORDINAL);
+        public static final Type Enumeration = new Type("Enumeration", Enumeration_ORDINAL, "string");
         public static final int EnumerationArray_ORDINAL = 4;
-        public static final Type EnumerationArray = new Type("EnumerationArray", EnumerationArray_ORDINAL);
+        public static final Type EnumerationArray = new Type("EnumerationArray", EnumerationArray_ORDINAL, "string");
         public static final int EnumString_ORDINAL = 5;
-        public static final Type EnumString = new Type("EnumString", EnumString_ORDINAL);
+        public static final Type EnumString = new Type("EnumString", EnumString_ORDINAL, "string");
         public static final int Boolean_ORDINAL = 6;
-        public static final Type Boolean = new Type("Boolean", Boolean_ORDINAL);
+        public static final Type Boolean = new Type("Boolean", Boolean_ORDINAL, "boolean");
         public static final int StringSometimesArray_ORDINAL = 7;
-        public static final Type StringSometimesArray = new Type("StringSometimesArray", StringSometimesArray_ORDINAL);
+        public static final Type StringSometimesArray = new Type("StringSometimesArray", StringSometimesArray_ORDINAL, "string");
         public static final int Integer_ORDINAL = 8;
-        public static final Type Integer = new Type("Integer", Integer_ORDINAL);
+        public static final Type Integer = new Type("Integer", Integer_ORDINAL, "integer");
         public static final int UnsignedInteger_ORDINAL = 9;
-        public static final Type UnsignedInteger = new Type("UnsignedInteger", UnsignedInteger_ORDINAL);
+        public static final Type UnsignedInteger = new Type("UnsignedInteger", UnsignedInteger_ORDINAL, "unsignedInteger");
+        public final String columnType;
 
-        public Type(String name, int ordinal) {
+        public Type(String name, int ordinal, String columnType) {
             super(name, ordinal, null);
+            this.columnType = columnType;
         }
 
         public static final EnumeratedValues enumeration = new EnumeratedValues(
@@ -119,7 +139,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
     static class Column {
         final String name;
         final Type type;
-        final EnumeratedValues enumeratedType;
+        final Enumeration enumeratedType;
         final String description;
         final boolean restriction;
         final boolean nullable;
@@ -136,7 +156,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
          * @pre type != null
          * @pre (type == Type.Enumeration || type == Type.EnumerationArray || type == Type.EnumString) == (enumeratedType != null)
          */
-        Column(String name, Type type, EnumeratedValues enumeratedType,
+        Column(String name, Type type, Enumeration enumeratedType,
                 boolean restriction, boolean nullable, String description) {
             Util.assertPrecondition(type != null, "Type.instance.isValid(type)");
             Util.assertPrecondition((type == Type.Enumeration || type == Type.EnumerationArray || type == Type.EnumString) == (enumeratedType != null), "(type == Type.Enumeration || type == Type.EnumerationArray || type == Type.EnumString) == (enumeratedType != null)");
@@ -168,31 +188,36 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         }
     }
 
-    static class DatasourcesRowset extends Rowset {
+    // -------------------------------------------------------------------------
+    // From this point on, just rowset classess.
+
+    static class DiscoverDatasourcesRowset extends Rowset {
         private static final Column DataSourceName = new Column("DataSourceName", Type.String, null, true, false,
-                                    "The name of the data source, such as FoodMart 2000.");
+                "The name of the data source, such as FoodMart 2000.");
         private static final Column DataSourceDescription = new Column("DataSourceDescription", Type.String, null, false, true,
-                                    "A description of the data source, as entered by the publisher.");
+                "A description of the data source, as entered by the publisher.");
         private static final Column URL = new Column("URL", Type.String, null, true, true,
-                                    "The unique path that shows where to invoke the XML for Analysis methods for that data source.");
+                "The unique path that shows where to invoke the XML for Analysis methods for that data source.");
         private static final Column DataSourceInfo = new Column("DataSourceInfo", Type.String, null, false, true,
-                                    "A string containing any additional information required to connect to the data source. This can include the Initial Catalog property or other information for the provider." + nl +
-                        "Example: \"Provider=MSOLAP;Data Source=Local;\"");
+                "A string containing any additional information required to connect to the data source. This can include the Initial Catalog property or other information for the provider." + nl +
+                "Example: \"Provider=MSOLAP;Data Source=Local;\"");
         private static final Column ProviderName = new Column("ProviderName", Type.String, null, true, true,
-                                    "The name of the provider behind the data source. " + nl +
-                        "Example: \"MSDASQL\"");
+                "The name of the provider behind the data source. " + nl +
+                "Example: \"MSDASQL\"");
         private static final Column ProviderType = new Column("ProviderType", Type.EnumerationArray, Enumeration.ProviderType.enumeration, true, false,
-                                    "The types of data supported by the provider. May include one or more of the following types. Example follows this table." + nl +
-                        "TDP: tabular data provider." + nl +
-                        "MDP: multidimensional data provider." + nl +
-                        "DMP: data mining provider. A DMP provider implements the OLE DB for Data Mining specification.");
+                "The types of data supported by the provider. May include one or more of the following types. Example follows this table." + nl +
+                "TDP: tabular data provider." + nl +
+                "MDP: multidimensional data provider." + nl +
+                "DMP: data mining provider. A DMP provider implements the OLE DB for Data Mining specification.");
         private static final Column AuthenticationMode = new Column("AuthenticationMode", Type.EnumString, Enumeration.AuthenticationMode.enumeration, true, false,
-                                    "Specification of what type of security mode the data source uses. Values can be one of the following:" + nl +
-                        "Unauthenticated: no user ID or password needs to be sent." + nl +
-                        "Authenticated: User ID and Password must be included in the information required for the connection." + nl +
-                        "Integrated: the data source uses the underlying security to determine authorization, such as Integrated Security provided by Microsoft Internet Information Services (IIS).");
+                "Specification of what type of security mode the data source uses. Values can be one of the following:" + nl +
+                "Unauthenticated: no user ID or password needs to be sent." + nl +
+                "Authenticated: User ID and Password must be included in the information required for the connection." + nl +
+                "Integrated: the data source uses the underlying security to determine authorization, such as Integrated Security provided by Microsoft Internet Information Services (IIS).");
         static final RowsetDefinition definition = new RowsetDefinition(
-                "DISCOVER_DATASOURCES", DISCOVER_DATASOURCES, new Column[] {
+                "DISCOVER_DATASOURCES", DISCOVER_DATASOURCES,
+                "Returns a list of XML for Analysis data sources available on the server or Web Service.",
+                new Column[] {
                     DataSourceName,
                     DataSourceDescription,
                     URL,
@@ -202,75 +227,78 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     AuthenticationMode,
                 }) {
             public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new DatasourcesRowset(restrictions, properties);
+                return new DiscoverDatasourcesRowset(restrictions, properties);
             }
         };
 
-        public DatasourcesRowset(HashMap restrictions, Properties properties) {
+        public DiscoverDatasourcesRowset(HashMap restrictions, Properties properties) {
             super(definition, restrictions, properties);
         }
 
         public void unparse(SAXHandler saxHandler) throws SAXException {
-//            Connection connection = XmlaMediator.getConnection(properties);
             Row row = new Row();
-            row.set(DataSourceName.name, null);
-            row.set(DataSourceDescription.name, null);
-            row.set(URL.name, null);
-            row.set(DataSourceInfo.name, null);
-            row.set(ProviderType.name, null);
-            row.set(AuthenticationMode.name, null);
+            row.set(DataSourceName.name, "Local Mondrian server");
+            row.set(DataSourceDescription.name, "Mondrian server on local machine");
+            row.set(URL.name, "http://localhost/mondrian/xmla.jsp");
+            row.set(DataSourceInfo.name, "Provider=Mondrian");
+            row.set(ProviderName.name, "Mondrian XML for Analysis");
+            row.set(ProviderType.name, new String[] {"MDP"});
+            row.set(AuthenticationMode.name, "Unauthenticated");
             emit(row, saxHandler);
         }
     }
 
-    static class SchemaRowsetsRowset extends Rowset {
+    static class DiscoverSchemaRowsetsRowset extends Rowset {
+        private static final Column SchemaName = new Column("SchemaName", Type.StringArray, null, true, false, "The name of the schema/request. This returns the values in the RequestTypes enumeration, plus any additional types supported by the provider. The provider defines rowset structures for the additional types");
+        private static final Column Restrictions = new Column("Restrictions", Type.Array,null, false, true, "An array of the restrictions suppoted by provider. An example follows this table.");
+        private static final Column Description = new Column("Description", Type.String, null, false, true, "A localizable description of the schema");
         private static RowsetDefinition definition = new RowsetDefinition(
-                "DISCOVER_DATASOURCES", DISCOVER_DATASOURCES, new Column[] {
-                    new Column(
-                            "SchemaName",
-                            Type.EnumerationArray,
-                            null, true, false, "The name of the schema/request. This returns the values in the RequestTypes enumeration, plus any additional types suppoted by the provider. The provider defines rowset structures for the additional types"
-                    ),
-                    new Column(
-                            "Restrictions",
-                            Type.Array,
-                            null, false, true, "An array of the restrictions suppoted by provider. An example follows this table."
-                    ),
-                    new Column(
-                            "Description",
-                            Type.String,
-                            null, false, true, "A localizable description of the schema"
-                    ),
+                "DISCOVER_SCHEMA_ROWSETS", DISCOVER_SCHEMA_ROWSETS,
+                "Returns the names, values, and other information of all supported RequestType enumeration values.",
+                new Column[] {
+                    SchemaName,
+                    Restrictions,
+                    Description,
                 }) {
             public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new SchemaRowsetsRowset(restrictions, properties);
+                return new DiscoverSchemaRowsetsRowset(restrictions, properties);
             }
-
         };
 
-        public SchemaRowsetsRowset(HashMap restrictions, Properties properties) {
+        public DiscoverSchemaRowsetsRowset(HashMap restrictions, Properties properties) {
             super(definition, restrictions, properties);
         }
 
         public void unparse(SAXHandler saxHandler) throws SAXException {
-            emit(enumeration, saxHandler);
-        }
-    }
-
-    public static RowsetDefinition getValue(String name) {
-        return (RowsetDefinition) enumeration.getValue(name);
-    }
-
-    public abstract Rowset getRowset(HashMap restrictions, Properties properties);
-
-    public Column lookupColumn(String name) {
-        for (int i = 0; i < columnDefinitions.length; i++) {
-            Column columnDefinition = columnDefinitions[i];
-            if (columnDefinition.name.equals(name)) {
-                return columnDefinition;
+            final RowsetDefinition[] rowsetDefinitions = (RowsetDefinition[])
+                    enumeration.getValuesSortedByName().
+                    toArray(new RowsetDefinition[0]);
+            for (int i = 0; i < rowsetDefinitions.length; i++) {
+                RowsetDefinition rowsetDefinition = rowsetDefinitions[i];
+                Row row = new Row();
+                row.set(SchemaName.name, rowsetDefinition.name_);
+                row.set(Restrictions.name, getRestrictions(rowsetDefinition));
+                row.set(Description.name, rowsetDefinition.description_);
+                emit(row, saxHandler);
             }
         }
-        return null;
+
+        private Rowset.XmlElement[] getRestrictions(RowsetDefinition rowsetDefinition) {
+            ArrayList restrictionList = new ArrayList();
+            final Column[] columns = rowsetDefinition.columnDefinitions;
+            for (int j = 0; j < columns.length; j++) {
+                Column column = columns[j];
+                if (column.restriction) {
+                    restrictionList.add(
+                            new Rowset.XmlElement(column.name, new String[] {
+                                "type", column.type.columnType}));
+                }
+            }
+            final Rowset.XmlElement[] restrictions = (Rowset.XmlElement[])
+                    restrictionList.toArray(
+                            new Rowset.XmlElement[restrictionList.size()]);
+            return restrictions;
+        }
     }
 
     static class DiscoverPropertiesRowset extends Rowset {
@@ -278,20 +306,22 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, restrictions, properties);
         }
 
-        public static final Column PropertyName = new Column("PropertyName", Type.StringSometimesArray, null, true, false,
+        private static final Column PropertyName = new Column("PropertyName", Type.StringSometimesArray, null, true, false,
                 "The name of the property.");
-        public static final Column PropertyDescription = new Column("PropertyDescription", Type.String, null, false, true,
+        private static final Column PropertyDescription = new Column("PropertyDescription", Type.String, null, false, true,
                 "A localizable text description of the property.");
-        public static final Column PropertyType = new Column("PropertyType", Type.String, null, false, true,
+        private static final Column PropertyType = new Column("PropertyType", Type.String, null, false, true,
                 "The XML data type of the property.");
-        public static final Column PropertyAccessType = new Column("PropertyAccessType", Type.EnumString, Enumeration.Access.enumeration, false, false,
+        private static final Column PropertyAccessType = new Column("PropertyAccessType", Type.EnumString, Enumeration.Access.enumeration, false, false,
                 "Access for the property. The value can be Read, Write, or ReadWrite.");
-        public static final Column IsRequired = new Column("IsRequired", Type.Boolean, null, false, true,
+        private static final Column IsRequired = new Column("IsRequired", Type.Boolean, null, false, true,
                 "True if a property is required, false if it is not required.");
-        public static final Column Value = new Column("Value", Type.String, null, false, true,
+        private static final Column Value = new Column("Value", Type.String, null, false, true,
                 "The current value of the property.");
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "DISCOVER_PROPERTIES", DISCOVER_PROPERTIES, new Column[] {
+                "DISCOVER_PROPERTIES", DISCOVER_PROPERTIES,
+                "Returns a list of information and values about the requested properties that are supported by the specified data source provider.",
+                new Column[] {
                     PropertyName,
                     PropertyDescription,
                     PropertyType,
@@ -320,45 +350,34 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         }
     }
 
-    static class DiscoverSchemaRowsetsRowset extends Rowset {
-        DiscoverSchemaRowsetsRowset(HashMap restrictions, Properties properties) {
-            super(definition, restrictions, properties);
-        }
-
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "DISCOVER_SCHEMA_ROWSETS", DISCOVER_SCHEMA_ROWSETS, new Column[] {
-                }) {
-            public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new DiscoverSchemaRowsetsRowset(restrictions, properties);
-            }
-        };
-
-        public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
-        }
-    }
-
     static class DiscoverEnumeratorsRowset extends Rowset {
         DiscoverEnumeratorsRowset(HashMap restrictions, Properties properties) {
             super(definition, restrictions, properties);
         }
 
+        private static final Column EnumName = new Column("EnumName", Type.StringArray, null, true, false,
+                "The name of the enumerator that contains a set of values.");
+        private static final Column EnumDescription = new Column("EnumDescription", Type.String, null, false, true,
+                "A localizable description of the enumerator.");
+        private static final Column EnumType = new Column("EnumType", Type.String, null, false, false,
+                "The data type of the Enum values.");
+        private static final Column ElementName = new Column("ElementName", Type.String, null, false, false,
+                "The name of one of the value elements in the enumerator set." + nl +
+                "Example: TDP");
+        private static final Column ElementDescription = new Column("ElementDescription", Type.String, null, false, true,
+                "A localizable description of the element (optional).");
+        private static final Column ElementValue = new Column("ElementValue", Type.String, null, false, true, "The value of the element." + nl +
+                "Example: 01");
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "DISCOVER_ENUMERATORS", DISCOVER_ENUMERATORS, new Column[] {
-                    new Column("EnumName", Type.StringArray, null, true, false,
-                            "The name of the enumerator that contains a set of values."),
-                    new Column("EnumDescription", Type.String, null, false, true,
-                            "A localizable description of the enumerator."),
-                    new Column("EnumType", Type.String, null, false, false,
-                            "The data type of the Enum values."),
-                    new Column("ElementName", Type.String, null, false, false,
-                            "The name of one of the value elements in the enumerator set." + nl +
-                "Example: TDP"),
-                    new Column("ElementDescription", Type.String, null, false, true,
-                            "A localizable description of the element (optional)."),
-                    new Column(
-                            "ElementValue", Type.String, null, false, true, "The value of the element." + nl +
-                "Example: 01"),
+                "DISCOVER_ENUMERATORS", DISCOVER_ENUMERATORS,
+                "Returns a list of names, data types, and enumeration values for enumerators supported by the provider of a specific data source.",
+                new Column[] {
+                    EnumName,
+                    EnumDescription,
+                    EnumType,
+                    ElementName,
+                    ElementDescription,
+                    ElementValue,
                 }) {
             public Rowset getRowset(HashMap restrictions, Properties properties) {
                 return new DiscoverEnumeratorsRowset(restrictions, properties);
@@ -366,7 +385,56 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         };
 
         public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
+            Enumeration[] enumerators = getEnumerators();
+            for (int i = 0; i < enumerators.length; i++) {
+                Enumeration enumerator = enumerators[i];
+                final String[] valueNames = enumerator.getNames();
+                for (int j = 0; j < valueNames.length; j++) {
+                    String valueName = valueNames[j];
+                    final EnumeratedValues.Value value = enumerator.getValue(valueName);
+                    Row row = new Row();
+                    row.set(EnumName.name, enumerator.name);
+                    row.set(EnumDescription.name, enumerator.description);
+                    row.set(EnumType.name, enumerator.type);
+                    row.set(ElementName.name, value.getName());
+                    row.set(ElementDescription.name, value.getDescription());
+                    switch (enumerator.type.ordinal_) {
+                    case RowsetDefinition.Type.String_ORDINAL:
+                    case RowsetDefinition.Type.StringArray_ORDINAL:
+                        // these don't have ordinals
+                        break;
+                    default:
+                        row.set(ElementValue.name, value.getOrdinal());
+                        break;
+                    }
+                    emit(row, saxHandler);
+                }
+            }
+        }
+
+        private static Enumeration[] getEnumerators() {
+            HashSet enumeratorSet = new HashSet();
+            final String[] rowsetNames = RowsetDefinition.enumeration.getNames();
+            for (int i = 0; i < rowsetNames.length; i++) {
+                String rowsetName = rowsetNames[i];
+                final RowsetDefinition rowsetDefinition = (RowsetDefinition)
+                        RowsetDefinition.enumeration.getValue(rowsetName);
+                for (int j = 0; j < rowsetDefinition.columnDefinitions.length; j++) {
+                    Column column = rowsetDefinition.columnDefinitions[j];
+                    if (column.enumeratedType != null) {
+                        enumeratorSet.add(column.enumeratedType);
+                    }
+                }
+            }
+            final Enumeration[] enumerators = (Enumeration[])
+                    enumeratorSet.toArray(new Enumeration[enumeratorSet.size()]);
+            Arrays.sort(enumerators, new Comparator() {
+                public int compare(Object o1, Object o2) {
+                    return ((Enumeration) o1).name.compareTo(
+                            ((Enumeration) o2).name);
+                }
+            });
+            return enumerators;
         }
     }
 
@@ -375,19 +443,88 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, restrictions, properties);
         }
 
+        private static final Column Keyword = new Column("Keyword", Type.StringSometimesArray, null, true, false,
+                "A list of all the keywords reserved by a provider." + nl +
+                "Example: AND");
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "DISCOVER_KEYWORDS", DISCOVER_KEYWORDS, new Column[] {
-                    new Column("Keyword", Type.StringSometimesArray, null, true, false,
-                            "A list of all the keywords reserved by a provider." + nl +
-                "Example: AND"),
+                "DISCOVER_KEYWORDS", DISCOVER_KEYWORDS,
+                "Returns an XML list of keywords reserved by the provider.",
+                new Column[] {
+                    Keyword,
                 }) {
             public Rowset getRowset(HashMap restrictions, Properties properties) {
                 return new DiscoverKeywordsRowset(restrictions, properties);
             }
         };
 
+        private static final String[] keywords = new String[] {
+            "$AdjustedProbability", "$Distance", "$Probability",
+			"$ProbabilityStDev", "$ProbabilityStdDeV", "$ProbabilityVariance",
+			"$StDev", "$StdDeV", "$Support", "$Variance",
+			"AddCalculatedMembers", "Action", "After", "Aggregate", "All",
+			"Alter", "Ancestor", "And", "Append", "As", "ASC", "Axis",
+			"Automatic", "Back_Color", "BASC", "BDESC", "Before",
+			"Before_And_After", "Before_And_Self", "Before_Self_After",
+			"BottomCount", "BottomPercent", "BottomSum", "Break", "Boolean",
+			"Cache", "Calculated", "Call", "Case", "Catalog_Name", "Cell",
+			"Cell_Ordinal", "Cells", "Chapters", "Children",
+			"Children_Cardinality", "ClosingPeriod", "Cluster",
+			"ClusterDistance", "ClusterProbability", "Clusters",
+			"CoalesceEmpty", "Column_Values", "Columns", "Content",
+			"Contingent", "Continuous", "Correlation", "Cousin", "Covariance",
+			"CovarianceN", "Create", "CreatePropertySet", "CrossJoin", "Cube",
+			"Cube_Name", "CurrentMember", "CurrentCube", "Custom", "Cyclical",
+			"DefaultMember", "Default_Member", "DESC", "Descendents",
+			"Description", "Dimension", "Dimension_Unique_Name", "Dimensions",
+			"Discrete", "Discretized", "DrillDownLevel",
+			"DrillDownLevelBottom", "DrillDownLevelTop", "DrillDownMember",
+			"DrillDownMemberBottom", "DrillDownMemberTop", "DrillTrough",
+			"DrillUpLevel", "DrillUpMember", "Drop", "Else", "Empty", "End",
+			"Equal_Areas", "Exclude_Null", "ExcludeEmpty", "Exclusive",
+			"Expression", "Filter", "FirstChild", "FirstRowset",
+			"FirstSibling", "Flattened", "Font_Flags", "Font_Name",
+			"Font_size", "Fore_Color", "Format_String", "Formatted_Value",
+			"Formula", "From", "Generate", "Global", "Head", "Hierarchize",
+			"Hierarchy", "Hierary_Unique_name", "IIF", "IsEmpty",
+			"Include_Null", "Include_Statistics", "Inclusive", "Input_Only",
+			"IsDescendant", "Item", "Lag", "LastChild", "LastPeriods",
+			"LastSibling", "Lead", "Level", "Level_Unique_Name", "Levels",
+			"LinRegIntercept", "LinRegR2", "LinRegPoint", "LinRegSlope",
+			"LinRegVariance", "Long", "MaxRows", "Median", "Member",
+			"Member_Caption", "Member_Guid", "Member_Name", "Member_Ordinal",
+			"Member_Type", "Member_Unique_Name", "Members",
+			"Microsoft_Clustering", "Microsoft_Decision_Trees", "Mining",
+			"Model", "Model_Existence_Only", "Models", "Move", "MTD", "Name",
+			"Nest", "NextMember", "Non", "Normal", "Not", "Ntext", "Nvarchar",
+			"OLAP", "On", "OpeningPeriod", "OpenQuery", "Or", "Ordered",
+			"Ordinal", "Pages", "Pages", "ParallelPeriod", "Parent",
+			"Parent_Level", "Parent_Unique_Name", "PeriodsToDate", "PMML",
+			"Predict", "Predict_Only", "PredictAdjustedProbability",
+			"PredictHistogram", "Prediction", "PredictionScore",
+			"PredictProbability", "PredictProbabilityStDev",
+			"PredictProbabilityVariance", "PredictStDev", "PredictSupport",
+			"PredictVariance", "PrevMember", "Probability",
+			"Probability_StDev", "Probability_StdDev", "Probability_Variance",
+			"Properties", "Property", "QTD", "RangeMax", "RangeMid",
+			"RangeMin", "Rank", "Recursive", "Refresh", "Related", "Rename",
+			"Rollup", "Rows", "Schema_Name", "Sections", "Select", "Self",
+			"Self_And_After", "Sequence_Time", "Server", "Session", "Set",
+			"SetToArray", "SetToStr", "Shape", "Skip", "Solve_Order", "Sort",
+			"StdDev", "Stdev", "StripCalculatedMembers", "StrToSet",
+			"StrToTuple", "SubSet", "Support", "Tail", "Text", "Thresholds",
+			"ToggleDrillState", "TopCount", "TopPercent", "TopSum",
+			"TupleToStr", "Under", "Uniform", "UniqueName", "Use", "Value",
+			"Value", "Var", "Variance", "VarP", "VarianceP", "VisualTotals",
+			"When", "Where", "With", "WTD", "Xor",
+        };
+
         public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
+            for (int i = 0; i < keywords.length; i++) {
+                String keyword = keywords[i];
+                Row row = new Row();
+                row.set(Keyword.name, keyword);
+                emit(row, saxHandler);
+            }
         }
     }
 
@@ -397,7 +534,9 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         }
 
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "DISCOVER_LITERALS", DISCOVER_LITERALS, new Column[] {
+                "DISCOVER_LITERALS", DISCOVER_LITERALS,
+                "Returns information about literals supported by the provider.",
+                new Column[] {
                     new Column("LiteralName", Type.StringSometimesArray, null, true, false,
                             "The name of the literal described in the row." + nl +
                 "Example: DBLITERAL_LIKE_PERCENT"),
@@ -428,8 +567,15 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, restrictions, properties);
         }
 
+        private static final Column CatalogName = new Column("CATALOG_NAME", Type.String, null, true, false, "Catalog name. Cannot be NULL.");
+        private static final Column Description = new Column("DESCRIPTION", Type.String, null, false, true, "Human-readable description of the catalog.");
+
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "DBSCHEMA_CATALOGS", DBSCHEMA_CATALOGS, new Column[] {
+                "DBSCHEMA_CATALOGS", DBSCHEMA_CATALOGS,
+                "Returns information about literals supported by the provider.",
+                new Column[] {
+                    CatalogName,
+                    Description,
                 }) {
             public Rowset getRowset(HashMap restrictions, Properties properties) {
                 return new DbschemaCatalogsRowset(restrictions, properties);
@@ -437,7 +583,37 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         };
 
         public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
+            Connection connection = getConnection();
+            if (connection == null) {
+                return;
+            }
+            Row row = new Row();
+            // What Mondrian calls a "Schema", XMLA calls a "Catalog"
+            final Schema schema = connection.getSchema();
+            row.set(CatalogName.name, schema.getName());
+            emit(row, saxHandler);
+        }
+
+        private Connection getConnection() {
+            String connectString = MondrianProperties.instance().getTestConnectString();
+            if (connectString == null || connectString.equals("")) {
+                return null;
+            }
+            final Util.PropertyList connectProperties = Util.parseConnectString(connectString);
+            String jdbcURL = MondrianProperties.instance().getFoodmartJdbcURL();
+            if (jdbcURL != null) {
+                connectProperties.put("Jdbc", jdbcURL);
+            }
+            final ServletContext servletContext = (ServletContext)
+                    XmlaMediator.threadServletContext.get();
+            if (servletContext == null) {
+                // We're not running in a web server, so use a relative pathname
+                // for the catalog.
+                connectProperties.put("Catalog", "file:demo/FoodMart.xml");
+            }
+            final Connection connection = DriverManager.getConnection(
+                    connectProperties.toString(), servletContext, false);
+            return connection;
         }
     }
 
@@ -446,8 +622,16 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, restrictions, properties);
         }
 
+        private static final Column TableCatalog = new Column("TABLE_CATALOG", Type.String, null, true, false, null);
+        private static final Column TableSchema = new Column("TABLE_SCHEMA", Type.String, null, true, false, null);
+        private static final Column TableName = new Column("TABLE_NAME", Type.String, null, true, false, null);
+        private static final Column ColumnName = new Column("COLUMN_NAME", Type.String, null, true, false, null);
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "DBSCHEMA_COLUMNS", DBSCHEMA_COLUMNS, new Column[] {
+                "DBSCHEMA_COLUMNS", DBSCHEMA_COLUMNS, null, new Column[] {
+                    TableCatalog,
+                    TableSchema,
+                    TableName,
+                    ColumnName,
                 }) {
             public Rowset getRowset(HashMap restrictions, Properties properties) {
                 return new DbschemaColumnsRowset(restrictions, properties);
@@ -464,8 +648,12 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, restrictions, properties);
         }
 
+        private static final Column DataType = new Column("DATA_TYPE", Type.UnsignedInteger, null, true, false, null);
+        private static final Column BestMatch = new Column("BEST_MATCH", Type.Boolean, null, true, false, null);
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "DBSCHEMA_PROVIDER_TYPES", DBSCHEMA_PROVIDER_TYPES, new Column[] {
+                "DBSCHEMA_PROVIDER_TYPES", DBSCHEMA_PROVIDER_TYPES, null, new Column[] {
+                    DataType,
+                    BestMatch,
                 }) {
             public Rowset getRowset(HashMap restrictions, Properties properties) {
                 return new DbschemaProviderTypesRowset(restrictions, properties);
@@ -482,8 +670,16 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, restrictions, properties);
         }
 
+        private static final Column TableCatalog = new Column("TABLE_CATALOG", Type.String, null, true, false, null);
+        private static final Column TableSchema = new Column("TABLE_SCHEMA", Type.String, null, true, false, null);
+        private static final Column TableName = new Column("TABLE_NAME", Type.String, null, true, false, null);
+        private static final Column TableType = new Column("TABLE_TYPE", Type.String, null, true, false, null);
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "DBSCHEMA_TABLES", DBSCHEMA_TABLES, new Column[] {
+                "DBSCHEMA_TABLES", DBSCHEMA_TABLES, null, new Column[] {
+                    TableCatalog,
+                    TableSchema,
+                    TableName,
+                    TableType,
                 }) {
             public Rowset getRowset(HashMap restrictions, Properties properties) {
                 return new DbschemaTablesRowset(restrictions, properties);
@@ -500,8 +696,16 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, restrictions, properties);
         }
 
+        private static final Column TableCatalog = new Column("TABLE_CATALOG", Type.String, null, true, false, null);
+        private static final Column TableSchema = new Column("TABLE_SCHEMA", Type.String, null, true, false, null);
+        private static final Column TableName = new Column("TABLE_NAME", Type.String, null, true, false, null);
+        private static final Column TableType = new Column("TABLE_TYPE", Type.String, null, true, false, null);
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "DBSCHEMA_TABLES_INFO", DBSCHEMA_TABLES_INFO, new Column[] {
+                "DBSCHEMA_TABLES_INFO", DBSCHEMA_TABLES_INFO, null, new Column[] {
+                    TableCatalog,
+                    TableSchema,
+                    TableName,
+                    TableType,
                 }) {
             public Rowset getRowset(HashMap restrictions, Properties properties) {
                 return new DbschemaTablesInfoRowset(restrictions, properties);
@@ -518,8 +722,14 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, restrictions, properties);
         }
 
+        private static final Column CubeName = new Column("CUBE_NAME", Type.String, null, true, false, null);
+        private static final Column Coordinate = new Column("COORDINATE", Type.String, null, true, false, null);
+        private static final Column CoordinateType = new Column("COORDINATE_TYPE", Type.String, null, true, false, null);
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_ACTIONS", MDSCHEMA_ACTIONS, new Column[] {
+                "MDSCHEMA_ACTIONS", MDSCHEMA_ACTIONS, null, new Column[] {
+                    CubeName,
+                    Coordinate,
+                    CoordinateType,
                 }) {
             public Rowset getRowset(HashMap restrictions, Properties properties) {
                 return new MdschemaActionsRowset(restrictions, properties);
@@ -536,26 +746,26 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, restrictions, properties);
         }
 
-        private static final String CATALOG_NAME = "CATALOG_NAME";
-        private static final String SCHEMA_NAME = "SCHEMA_NAME";
-        private static final String CUBE_NAME = "CUBE_NAME";
-        private static final String IS_DRILLTHROUGH_ENABLED = "IS_DRILLTHROUGH_ENABLED";
-        private static final String IS_WRITE_ENABLED = "IS_WRITE_ENABLED";
-        private static final String IS_LINKABLE = "IS_LINKABLE";
-        private static final String IS_SQL_ALLOWED = "IS_SQL_ALLOWED";
+        private static final Column CatalogName = new Column("CATALOG_NAME", Type.String, null, true, false, null);
+        private static final Column SchemaName = new Column("SCHEMA_NAME", Type.String, null, true, true, null);
+        private static final Column CubeName = new Column("CUBE_NAME", Type.String, null, true, false, null);
+        private static final Column IsDrillthroughEnabled = new Column("IS_DRILLTHROUGH_ENABLED", Type.Boolean, null, false, false,
+                "Describes whether DRILLTHROUGH can be performed on the members of a cube");
+        private static final Column IsWriteEnabled = new Column("IS_WRITE_ENABLED", Type.Boolean, null, false, false,
+                "Describes whether a cube is write-enabled");
+        private static final Column IsLinkable = new Column("IS_LINKABLE", Type.Boolean, null, false, false,
+                "Describes whether a cube can be used in a linked cube");
+        private static final Column IsSqlAllowed = new Column("IS_SQL_ALLOWED", Type.Boolean, null, false, false,
+                "Describes whether or not SQL can be used on the cube");
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_CUBES", MDSCHEMA_CUBES, new Column[] {
-                    new Column(CATALOG_NAME, Type.String, null, true, false, null),
-                    new Column(SCHEMA_NAME, Type.String, null, true, true, null),
-                    new Column(CUBE_NAME, Type.String, null, true, false, null),
-                    new Column(IS_DRILLTHROUGH_ENABLED, Type.Boolean, null, false, false,
-                            "Describes whether DRILLTHROUGH can be performed on the members of a cube"),
-                    new Column(IS_WRITE_ENABLED, Type.Boolean, null, false, false,
-                            "Describes whether a cube is write-enabled"),
-                    new Column(IS_LINKABLE, Type.Boolean, null, false, false,
-                            "Describes whether a cube can be used in a linked cube"),
-                    new Column(IS_SQL_ALLOWED, Type.Boolean, null, false, false,
-                            "Describes whether or not SQL can be used on the cube"),
+                "MDSCHEMA_CUBES", MDSCHEMA_CUBES, null, new Column[] {
+                    CatalogName,
+                    SchemaName,
+                    CubeName,
+                    IsDrillthroughEnabled,
+                    IsWriteEnabled,
+                    IsLinkable,
+                    IsSqlAllowed,
                 }) {
             public Rowset getRowset(HashMap restrictions, Properties properties) {
                 return new MdschemaCubesRowset(restrictions, properties);
@@ -568,13 +778,13 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             for (int i = 0; i < cubes.length; i++) {
                 Cube cube = cubes[i];
                 Row row = new Row();
-                row.set(CATALOG_NAME, connection.getCatalogName());
-                row.set(SCHEMA_NAME, cube.getSchema().getName());
-                row.set(CUBE_NAME, cube.getName());
-                row.set(IS_DRILLTHROUGH_ENABLED, true);
-                row.set(IS_WRITE_ENABLED, false);
-                row.set(IS_LINKABLE, false);
-                row.set(IS_SQL_ALLOWED, false);
+                row.set(CatalogName.name, connection.getCatalogName());
+                row.set(SchemaName.name, cube.getSchema().getName());
+                row.set(CubeName.name, cube.getName());
+                row.set(IsDrillthroughEnabled.name, true);
+                row.set(IsWriteEnabled.name, false);
+                row.set(IsLinkable.name, false);
+                row.set(IsSqlAllowed.name, false);
                 emit(row, saxHandler);
             }
         }
@@ -585,8 +795,18 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, restrictions, properties);
         }
 
+        private static final Column CatalogName = new Column("CATALOG_NAME", Type.String, null, true, false, null);
+        private static final Column SchemaName = new Column("SCHEMA_NAME", Type.String, null, true, true, null);
+        private static final Column CubeName = new Column("CUBE_NAME", Type.String, null, true, false, null);
+        private static final Column DimensionName = new Column("DIMENSION_NAME", Type.String, null, true, false, null);
+        private static final Column DimensionUniqueName = new Column("DIMENSION_UNIQUE_NAME", Type.String, null, true, false, null);
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_DIMENSIONS", MDSCHEMA_DIMENSIONS, new Column[] {
+                "MDSCHEMA_DIMENSIONS", MDSCHEMA_DIMENSIONS, null, new Column[] {
+                    CatalogName,
+                    SchemaName,
+                    CubeName,
+                    DimensionName,
+                    DimensionUniqueName,
                 }) {
             public Rowset getRowset(HashMap restrictions, Properties properties) {
                 return new MdschemaDimensionsRowset(restrictions, properties);
@@ -602,9 +822,16 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         MdschemaFunctionsRowset(HashMap restrictions, Properties properties) {
             super(definition, restrictions, properties);
         }
-
+        private static final Column LibraryName = new Column("LIBRARY_NAME", Type.String, null, true, true, null);
+        private static final Column InterfaceName = new Column("INTERFACE_NAME", Type.String, null, true, true, null);
+        private static final Column FunctionName = new Column("FUNCTION_NAME", Type.String, null, true, true, null);
+        private static final Column Origin = new Column("ORIGIN", Type.Integer, null, true, true, null);
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_FUNCTIONS", MDSCHEMA_FUNCTIONS, new Column[] {
+                "MDSCHEMA_FUNCTIONS", MDSCHEMA_FUNCTIONS, null, new Column[] {
+                    LibraryName,
+                    InterfaceName,
+                    FunctionName,
+                    Origin,
                 }) {
             public Rowset getRowset(HashMap restrictions, Properties properties) {
                 return new MdschemaFunctionsRowset(restrictions, properties);
@@ -621,8 +848,52 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, restrictions, properties);
         }
 
+        private static final Column CatalogName = new Column("CATALOG_NAME", Type.String, null, true, false, null);
+        private static final Column SchemaName = new Column("SCHEMA_NAME", Type.String, null, true, true, null);
+        private static final Column CubeName = new Column("CUBE_NAME", Type.String, null, true, false, null);
+        private static final Column DimensionUniqueName = new Column("DIMENSION_UNIQUE_NAME", Type.String, null, true, false, null);
+        private static final Column HierarchyName = new Column("HIERARCHY_NAME", Type.String, null, true, false, null);
+        private static final Column HierarchyUniqueName = new Column("HIERARCHY_UNIQUE_NAME", Type.String, null, true, false, null);
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_HIERARCHIES", MDSCHEMA_HIERARCHIES, new Column[] {
+                "MDSCHEMA_HIERARCHIES", MDSCHEMA_HIERARCHIES, null, new Column[] {
+                    CatalogName,
+                    SchemaName,
+                    CubeName,
+                    DimensionUniqueName,
+                    HierarchyName,
+                    HierarchyUniqueName,
+                }) {
+            public Rowset getRowset(HashMap restrictions, Properties properties) {
+                return new MdschemaHierarchiesRowset(restrictions, properties);
+            }
+        };
+
+        public void unparse(SAXHandler saxHandler) throws SAXException {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    static class MdschemaLevelsRowset extends Rowset {
+        MdschemaLevelsRowset(HashMap restrictions, Properties properties) {
+            super(definition, restrictions, properties);
+        }
+
+        private static final Column CatalogName = new Column("CATALOG_NAME", Type.String, null, true, false, null);
+        private static final Column SchemaName = new Column("SCHEMA_NAME", Type.String, null, true, true, null);
+        private static final Column CubeName = new Column("CUBE_NAME", Type.String, null, true, false, null);
+        private static final Column DimensionUniqueName = new Column("DIMENSION_UNIQUE_NAME", Type.String, null, true, false, null);
+        private static final Column HierarchyUniqueName = new Column("HIERARCHY_UNIQUE_NAME", Type.String, null, true, false, null);
+        private static final Column LevelName = new Column("LEVEL_NAME", Type.String, null, true, false, null);
+        private static final Column LevelUniqueName = new Column("LEVEL_UNIQUE_NAME", Type.String, null, true, false, null);
+        public static final RowsetDefinition definition = new RowsetDefinition(
+                "MDSCHEMA_LEVELS", MDSCHEMA_LEVELS, null, new Column[] {
+                    CatalogName,
+                    SchemaName,
+                    CubeName,
+                    DimensionUniqueName,
+                    HierarchyUniqueName,
+                    LevelName,
+                    LevelUniqueName,
                 }) {
             public Rowset getRowset(HashMap restrictions, Properties properties) {
                 return new MdschemaHierarchiesRowset(restrictions, properties);
@@ -639,8 +910,18 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, restrictions, properties);
         }
 
+        private static final Column CatalogName = new Column("CATALOG_NAME", Type.String, null, true, false, null);
+        private static final Column SchemaName = new Column("SCHEMA_NAME", Type.String, null, true, true, null);
+        private static final Column CubeName = new Column("CUBE_NAME", Type.String, null, true, false, null);
+        private static final Column MeasureName = new Column("MEASURE_NAME", Type.String, null, true, false, null);
+        private static final Column MeasureUniqueName = new Column("MEASURE_UNIQUE_NAME", Type.String, null, true, false, null);
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_MEASURES", MDSCHEMA_MEASURES, new Column[] {
+                "MDSCHEMA_MEASURES", MDSCHEMA_MEASURES, null, new Column[] {
+                    CatalogName,
+                    SchemaName,
+                    CubeName,
+                    MeasureName,
+                    MeasureUniqueName,
                 }) {
             public Rowset getRowset(HashMap restrictions, Properties properties) {
                 return new MdschemaMeasuresRowset(restrictions, properties);
@@ -657,8 +938,32 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, restrictions, properties);
         }
 
+        private static final Column CatalogName = new Column("CATALOG_NAME", Type.String, null, true, false, null);
+        private static final Column SchemaName = new Column("SCHEMA_NAME", Type.String, null, true, true, null);
+        private static final Column CubeName = new Column("CUBE_NAME", Type.String, null, true, false, null);
+        private static final Column DimensionUniqueName = new Column("DIMENSION_UNIQUE_NAME", Type.String, null, true, false, null);
+        private static final Column HierarchyUniqueName = new Column("HIERARCHY_UNIQUE_NAME", Type.String, null, true, false, null);
+        private static final Column LevelUniqueName = new Column("LEVEL_UNIQUE_NAME", Type.String, null, true, false, null);
+        private static final Column LevelNumber = new Column("LEVEL_NUMBER", Type.UnsignedInteger, null, true, false, null);
+        private static final Column MemberName = new Column("MEMBER_NAME", Type.String, null, true, false, null);
+        private static final Column MemberUniqueName = new Column("MEMBER_UNIQUE_NAME", Type.String, null, true, false, null);
+        private static final Column MemberCaption = new Column("MEMBER_CAPTION", Type.String, null, true, false, null);
+        private static final Column MemberType = new Column("MEMBER_TYPE", Type.Integer, null, true, false, null);
+        private static final Column TreeOp = new Column("TREE_OP", Type.Integer, null, true, false, null);
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_MEMBERS", MDSCHEMA_MEMBERS, new Column[] {
+                "MDSCHEMA_MEMBERS", MDSCHEMA_MEMBERS, null, new Column[] {
+                    CatalogName,
+                    SchemaName,
+                    CubeName,
+                    DimensionUniqueName,
+                    HierarchyUniqueName,
+                    LevelUniqueName,
+                    LevelNumber,
+                    MemberName,
+                    MemberUniqueName,
+                    MemberCaption,
+                    MemberType,
+                    TreeOp,
                 }) {
             public Rowset getRowset(HashMap restrictions, Properties properties) {
                 return new MdschemaMembersRowset(restrictions, properties);
@@ -675,8 +980,18 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, restrictions, properties);
         }
 
+        private static final Column CatalogName = new Column("CATALOG_NAME", Type.String, null, true, false, null);
+        private static final Column SchemaName = new Column("SCHEMA_NAME", Type.String, null, true, true, null);
+        private static final Column CubeName = new Column("CUBE_NAME", Type.String, null, true, false, null);
+        private static final Column SetName = new Column("SET_NAME", Type.String, null, true, false, null);
+        private static final Column Scope = new Column("SCOPE", Type.Integer, null, true, false, null);
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_SETS", MDSCHEMA_SETS, new Column[] {
+                "MDSCHEMA_SETS", MDSCHEMA_SETS, null, new Column[] {
+                    CatalogName,
+                    SchemaName,
+                    CubeName,
+                    SetName,
+                    Scope,
                 }) {
             public Rowset getRowset(HashMap restrictions, Properties properties) {
                 return new MdschemaSetsRowset(restrictions, properties);
@@ -693,8 +1008,28 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             super(definition, restrictions, properties);
         }
 
+        private static final Column CatalogName = new Column("CATALOG_NAME", Type.String, null, true, false, null);
+        private static final Column SchemaName = new Column("SCHEMA_NAME", Type.String, null, true, true, null);
+        private static final Column CubeName = new Column("CUBE_NAME", Type.String, null, true, false, null);
+        private static final Column DimensionUniqueName = new Column("DIMENSION_UNIQUE_NAME", Type.String, null, true, false, null);
+        private static final Column HierarchyUniqueName = new Column("HIERARCHY_UNIQUE_NAME", Type.String, null, true, false, null);
+        private static final Column LevelUniqueName = new Column("LEVEL_UNIQUE_NAME", Type.String, null, true, false, null);
+        private static final Column MemberUniqueName = new Column("MEMBER_UNIQUE_NAME", Type.String, null, true, false, null);
+        private static final Column PropertyName = new Column("PROPERTY_NAME", Type.String, null, true, false, null);
+        private static final Column PropertyType = new Column("PROPERTY_TYPE", Type.Integer, null, true, false, null);
+        private static final Column PropertyContentType = new Column("PROPERTY_CONTENT_TYPE", Type.Integer, null, true, false, null);
         public static final RowsetDefinition definition = new RowsetDefinition(
-                "MDSCHEMA_PROPERTIES", MDSCHEMA_PROPERTIES, new Column[] {
+                "MDSCHEMA_PROPERTIES", MDSCHEMA_PROPERTIES, null, new Column[] {
+                    CatalogName,
+                    SchemaName,
+                    CubeName,
+                    DimensionUniqueName,
+                    HierarchyUniqueName,
+                    LevelUniqueName,
+                    MemberUniqueName,
+                    PropertyName,
+                    PropertyType,
+                    PropertyContentType,
                 }) {
             public Rowset getRowset(HashMap restrictions, Properties properties) {
                 return new MdschemaPropertiesRowset(restrictions, properties);

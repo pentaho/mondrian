@@ -35,6 +35,7 @@ import java.util.Properties;
  */
 public class XmlaMediator {
     private static final String XMLA_NS = "urn:schemas-microsoft-com:xml-analysis";
+    static ThreadLocal threadServletContext = new ThreadLocal();
 
     /**
      * Processes a request.
@@ -208,18 +209,27 @@ public class XmlaMediator {
                 Axis axis = axes[i];
                 saxHandler.startElement("AxisInfo", new String[] {
                     "name", "Axis" + i});
+                Hierarchy[] hierarchies;
                 if (axis.positions.length > 0) {
                     final Position position = axis.positions[0];
+                    hierarchies = new Hierarchy[position.members.length];
                     for (int j = 0; j < position.members.length; j++) {
                         Member member = position.members[j];
-                        saxHandler.startElement("HierarchyInfo", new String[] {
-                            "name", member.getHierarchy().getName()});
-                        for (int k = 0; k < props.length; k++) {
-                            saxHandler.element(props[k], new String[] {
-                                "name", member.getHierarchy().getUniqueName() + ".[" + propLongs[k] + "]"});
-                        }
-                        saxHandler.endElement(); // HierarchyInfo
+                        hierarchies[j] = member.getHierarchy();
                     }
+                } else {
+                    hierarchies = new Hierarchy[0];
+                    final QueryAxis queryAxis = this.result.getQuery().axes[i];
+                    // todo:
+                }
+                for (int j = 0; j < hierarchies.length; j++) {
+                    saxHandler.startElement("HierarchyInfo", new String[] {
+                        "name", hierarchies[j].getName()});
+                    for (int k = 0; k < props.length; k++) {
+                        saxHandler.element(props[k], new String[] {
+                            "name", hierarchies[j].getUniqueName() + ".[" + propLongs[k] + "]"});
+                    }
+                    saxHandler.endElement(); // HierarchyInfo
                 }
                 saxHandler.endElement(); // AxisInfo
             }
@@ -326,10 +336,14 @@ public class XmlaMediator {
                 "xmlns:xsd", "http://www.w3.org/2001/XMLSchema"});
             // todo: schema definition
             saxHandler.endElement();
-            rowset.unparse(saxHandler);
-            saxHandler.endElement();
-            saxHandler.endElement();
-            saxHandler.endElement();
+            try {
+                rowset.unparse(saxHandler);
+            } finally {
+                // keep the tags balanced, even if there's an error
+                saxHandler.endElement();
+                saxHandler.endElement();
+                saxHandler.endElement();
+            }
         } catch (SAXException e) {
             throw Util.newError(e, "Error while processing '" + requestType + "' discovery request");
         }
