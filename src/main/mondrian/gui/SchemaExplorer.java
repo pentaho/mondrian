@@ -13,7 +13,6 @@
  *  
  */
 
-
 package mondrian.gui;
 
 import java.awt.BorderLayout;
@@ -55,27 +54,31 @@ import mondrian.olap.MondrianDef.Schema;
  *
  * @author  sean
   */
-public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionListener, CellEditorListener{
+public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionListener, CellEditorListener
+{
 	private MondrianDef.Schema schema;
 	private SchemaTreeModel model;
 	private SchemaTreeCellRenderer renderer;
 	private File schemaFile;
 	private JTreeUpdater updater;
-    
+	private final ClassLoader myClassLoader;
+
 	/** Creates new form SchemaExplorer */
-	public SchemaExplorer() {
+	public SchemaExplorer()
+	{
+		myClassLoader = this.getClass().getClassLoader();
 		initComponents();
 	}
-    
-	public SchemaExplorer(File f) {
+
+	public SchemaExplorer(File f)
+	{
 		this();
-		try {
-			mondrian.xom.Parser xmlParser =
-					mondrian.xom.XOMUtil.createDefaultParser();
+		try
+		{
+			mondrian.xom.Parser xmlParser = mondrian.xom.XOMUtil.createDefaultParser();
 			this.schemaFile = f;
-            
-			schema = new MondrianDef.Schema(
-					xmlParser.parse(schemaFile.toURL()));
+
+			schema = new MondrianDef.Schema(xmlParser.parse(schemaFile.toURL()));
 
 			renderer = new SchemaTreeCellRenderer();
 			model = new SchemaTreeModel(schema);
@@ -87,7 +90,9 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 			propertyTable.setDefaultEditor(Object.class, spce);
 			SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
 			propertyTable.setDefaultRenderer(Object.class, spcr);
-		} catch (Exception ex) {
+		}
+		catch (Exception ex)
+		{
 			ex.printStackTrace();
 		}
 	}
@@ -95,7 +100,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 	/** This method is called from within the constructor to
 	 * initialize the form.
 	 */
-	private void initComponents() {
+	private void initComponents()
+	{
 		jSplitPane1 = new JSplitPane();
 		jPanel1 = new JPanel();
 		jScrollPane2 = new JScrollPane();
@@ -120,16 +126,18 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 		jPanel1.setLayout(new BorderLayout());
 
 		propertyTable.setModel(new DefaultTableModel(new Object[][] {
-		}, new String[] { "Property", "Value" }) {
-			Class[] types =
-				new Class[] { java.lang.String.class, java.lang.Object.class };
+		}, new String[] { "Property", "Value" })
+		{
+			Class[] types = new Class[] { java.lang.String.class, java.lang.Object.class };
 			boolean[] canEdit = new boolean[] { false, true };
 
-			public Class getColumnClass(int columnIndex) {
+			public Class getColumnClass(int columnIndex)
+			{
 				return types[columnIndex];
 			}
 
-			public boolean isCellEditable(int rowIndex, int columnIndex) {
+			public boolean isCellEditable(int rowIndex, int columnIndex)
+			{
 				return canEdit[columnIndex];
 			}
 		});
@@ -157,66 +165,64 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 		//========================================================
 		// actions
 		//========================================================
-		addCube = new AbstractAction("Add cube") 
-		{ 
+		addCube = new AbstractAction("Add cube")
+		{
 			public void actionPerformed(ActionEvent e)
 			{
 				addCube(e);
 			}
 		};
-		addDimension = new AbstractAction("Add Dimension") 
-		{ 
+		addDimension = new AbstractAction("Add Dimension")
+		{
 			public void actionPerformed(ActionEvent e)
 			{
 				addDimension(e);
 			}
 		};
-		addMeasure = new AbstractAction("Add Measure") 
-		{ 
+		addMeasure = new AbstractAction("Add Measure")
+		{
 			public void actionPerformed(ActionEvent e)
 			{
 				addMeasure(e);
 			}
-		};		
-		addLevel = new AbstractAction("Add Level") 
-		{ 
+		};
+		addLevel = new AbstractAction("Add Level")
+		{
 			public void actionPerformed(ActionEvent e)
 			{
 				addLevel(e);
 			}
-		};		
-		addProperty = new AbstractAction("Add Property") 
-		{ 
+		};
+		addProperty = new AbstractAction("Add Property")
+		{
 			public void actionPerformed(ActionEvent e)
 			{
 				addProperty(e);
 			}
-		};					
-		
-        ResourceBundle resources
-            = ResourceBundle.getBundle("mondrian.gui.resources.gui");
-		
+		};
+
+		ResourceBundle resources = ResourceBundle.getBundle("mondrian.gui.resources.gui");
+
 		//========================================================
 		// toolbar buttons
 		//========================================================		
-		addCubeButton.setIcon(new ImageIcon(resources.getString("addCube")));
+		addCubeButton.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("addCube"))));
 		addCubeButton.setToolTipText("Add Cube");
 		addCubeButton.addActionListener(addCube);
 
-		addDimensionButton.setIcon(new ImageIcon(resources.getString("addDimension")));
+		addDimensionButton.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("addDimension"))));
 		addDimensionButton.setToolTipText("Add Dimension");
 		addDimensionButton.addActionListener(addDimension);
 
-
-		addMeasureButton.setIcon(new ImageIcon(resources.getString("addMeasure")));
+		addMeasureButton.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("addMeasure"))));
 		addMeasureButton.setToolTipText("Add Measure");
 		addMeasureButton.addActionListener(addMeasure);
 
-		addLevelButton.setIcon(new ImageIcon(resources.getString("addLevel")));
+		addLevelButton.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("addLevel"))));
 		addLevelButton.setToolTipText("Add Level");
 		addLevelButton.addActionListener(addLevel);
 
-		addPropertyButton.setIcon(new ImageIcon(resources.getString("addProperty")));
+		addPropertyButton.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("addProperty"))));
 		addPropertyButton.setToolTipText("Add Property");
 		addPropertyButton.addActionListener(addProperty);
 
@@ -253,7 +259,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 		//========================================================
 		this.add(jSplitPane1, java.awt.BorderLayout.CENTER);
 		this.add(jToolBar1, java.awt.BorderLayout.NORTH);
-		
+
 		updater = new JTreeUpdater(tree);
 
 	}
@@ -261,22 +267,25 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 	/**
 	 * @param evt
 	 */
-	protected void addCube(ActionEvent evt) {
+	protected void addCube(ActionEvent evt)
+	{
 		MondrianDef.Schema schema = (Schema) tree.getModel().getRoot();
-		MondrianDef.Cube cube =new MondrianDef.Cube();
-		cube.name = "New Cube"+schema.cubes.length;;
+		MondrianDef.Cube cube = new MondrianDef.Cube();
+		cube.name = "New Cube " + schema.cubes.length;
+
 		cube.dimensions = new MondrianDef.Dimension[0];
 		cube.measures = new MondrianDef.Measure[0];
 		cube.fact = new MondrianDef.Table();
 
 		//add cube to schema
-		mondrian.xom.NodeDef[] temp = null;		
+		mondrian.xom.NodeDef[] temp = null;
 		temp = schema.cubes;
-		schema.cubes = new MondrianDef.Cube[temp.length+1];
-		for(int _i=0; _i<temp.length; _i++)
-			schema.cubes[_i] = (MondrianDef.Cube)temp[_i];
-				
-		schema.cubes[schema.cubes.length-1] = cube;
+		schema.cubes = new MondrianDef.Cube[temp.length + 1];
+		for (int _i = 0; _i < temp.length; _i++)
+		{
+			schema.cubes[_i] = (MondrianDef.Cube) temp[_i];
+		}
+		schema.cubes[schema.cubes.length - 1] = cube;
 		refreshTree(tree.getSelectionPath());
 
 	}
@@ -284,45 +293,49 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 	/**
 	 * Updates the tree display after an Add / Delete operation.
 	 */
-	private void refreshTree(TreePath path) {
+	private void refreshTree(TreePath path)
+	{
 		updater.update();
 	}
 
 	/**
 	 * @param evt
 	 */
-	protected void addMeasure(ActionEvent evt) {
+	protected void addMeasure(ActionEvent evt)
+	{
 		Object path = tree.getSelectionPath().getLastPathComponent();
-		if( ! (path instanceof MondrianDef.Cube) ) return;		
+		if (!(path instanceof MondrianDef.Cube))
+			return;
 		MondrianDef.Cube cube = (MondrianDef.Cube) path;
-		
+
 		MondrianDef.Measure measure = new MondrianDef.Measure();
-		measure.name = "New Measure"+cube.measures.length;
+		measure.name = "New Measure " + cube.measures.length;
 		//add cube to schema
-		mondrian.xom.NodeDef[] temp;		
-		
+		mondrian.xom.NodeDef[] temp;
+
 		temp = cube.measures;
-		cube.measures = new MondrianDef.Measure[temp.length+1];
-		for(int i=0; i<temp.length; i++)
+		cube.measures = new MondrianDef.Measure[temp.length + 1];
+		for (int i = 0; i < temp.length; i++)
 			cube.measures[i] = (MondrianDef.Measure) temp[i];
-				
-		cube.measures[cube.measures.length-1] = measure;
-		
+
+		cube.measures[cube.measures.length - 1] = measure;
+
 		refreshTree(tree.getSelectionPath());
 	}
 
 	/**
 	 * @param evt
 	 */
-	protected void addDimension(ActionEvent evt) {
-		MondrianDef.Schema schema = (Schema) tree.getModel().getRoot();
+	protected void addDimension(ActionEvent evt)
+	{
 		Object path = tree.getSelectionPath().getLastPathComponent();
-		if( ! (path instanceof MondrianDef.Cube) ) return;		
+		if (!(path instanceof MondrianDef.Cube))
+			return;
 
 		MondrianDef.Cube cube = (MondrianDef.Cube) path;
-		
+
 		MondrianDef.Dimension dimension = new MondrianDef.Dimension();
-		dimension.name = "New Dimension"+cube.dimensions.length;
+		dimension.name = "New Dimension " + cube.dimensions.length;
 		dimension.hierarchies = new MondrianDef.Hierarchy[1];
 		dimension.hierarchies[0] = new MondrianDef.Hierarchy();
 		dimension.hierarchies[0].hasAll = new Boolean(false);
@@ -331,13 +344,13 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 		dimension.hierarchies[0].relation = new MondrianDef.Join();
 
 		//add cube to schema
-		mondrian.xom.NodeDef[] temp = null;		
+		mondrian.xom.NodeDef[] temp = null;
 		temp = cube.dimensions;
-		cube.dimensions = new MondrianDef.CubeDimension[temp.length+1];
-		for(int i=0; i<temp.length; i++)
-			cube.dimensions[i] = (MondrianDef.CubeDimension)temp[i];
-				
-		cube.dimensions[cube.dimensions.length-1] = dimension;
+		cube.dimensions = new MondrianDef.CubeDimension[temp.length + 1];
+		for (int i = 0; i < temp.length; i++)
+			cube.dimensions[i] = (MondrianDef.CubeDimension) temp[i];
+
+		cube.dimensions[cube.dimensions.length - 1] = dimension;
 
 		refreshTree(tree.getSelectionPath());
 	}
@@ -345,16 +358,17 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 	/**
 	 * @param evt
 	 */
-	protected void addLevel(ActionEvent evt) {
-		MondrianDef.Schema schema = (Schema) tree.getModel().getRoot();
+	protected void addLevel(ActionEvent evt)
+	{
 		Object path = tree.getSelectionPath().getLastPathComponent();
-		if( ! (path instanceof MondrianDef.Hierarchy) ) return;		
+		if (!(path instanceof MondrianDef.Hierarchy))
+			return;
 
 		MondrianDef.Hierarchy hierarchy = (MondrianDef.Hierarchy) path;
-		
+
 		MondrianDef.Level level = new MondrianDef.Level();
 		level.uniqueMembers = new Boolean(false);
-		level.name = "New Level"+hierarchy.levels.length;
+		level.name = "New Level " + hierarchy.levels.length;
 		level.properties = new MondrianDef.Property[0];
 		level.nameExp = new MondrianDef.NameExpression();
 		level.nameExp.expressions = new MondrianDef.SQL[1];
@@ -365,13 +379,13 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 		//dimension.hierarchies[0].memberReaderParameters[0] = new MondrianDef.Parameter();
 
 		//add cube to schema
-		mondrian.xom.NodeDef[] temp = null;		
+		mondrian.xom.NodeDef[] temp = null;
 		temp = hierarchy.levels;
-		hierarchy.levels = new MondrianDef.Level[temp.length+1];
-		for(int i=0; i<temp.length; i++)
-			hierarchy.levels[i] = (MondrianDef.Level)temp[i];
-				
-		hierarchy.levels[hierarchy.levels.length-1] = level;
+		hierarchy.levels = new MondrianDef.Level[temp.length + 1];
+		for (int i = 0; i < temp.length; i++)
+			hierarchy.levels[i] = (MondrianDef.Level) temp[i];
+
+		hierarchy.levels[hierarchy.levels.length - 1] = level;
 
 		refreshTree(tree.getSelectionPath());
 	}
@@ -379,138 +393,187 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 	/**
 	 * @param evt
 	 */
-	protected void addProperty(ActionEvent evt) {
-		MondrianDef.Schema schema = (Schema) tree.getModel().getRoot();
+	protected void addProperty(ActionEvent evt)
+	{
 		Object path = tree.getSelectionPath().getLastPathComponent();
-		if( ! (path instanceof MondrianDef.Level) ) return;		
+		if (!(path instanceof MondrianDef.Level))
+			return;
 
 		MondrianDef.Level level = (MondrianDef.Level) path;
-		
+
 		MondrianDef.Property property = new MondrianDef.Property();
+		property.name = "New Property " + level.properties.length;
 
 		//add cube to schema
-		mondrian.xom.NodeDef[] temp = null;		
+		mondrian.xom.NodeDef[] temp = null;
 		temp = level.properties;
-		level.properties = new MondrianDef.Property[temp.length+1];
-		for(int i=0; i<temp.length; i++)
-		level.properties[i] = (MondrianDef.Property)temp[i];
-				
-		level.properties[level.properties.length-1] = property;
+		level.properties = new MondrianDef.Property[temp.length + 1];
+		for (int i = 0; i < temp.length; i++)
+			level.properties[i] = (MondrianDef.Property) temp[i];
+
+		level.properties[level.properties.length - 1] = property;
 
 		refreshTree(tree.getSelectionPath());
 	}
-	public MondrianDef.Schema getSchema() {
+	public MondrianDef.Schema getSchema()
+	{
 		return this.schema;
 	}
-    
-    /**
-     * returns the schema file
-     * @return File
-     */
-	public File getSchemaFile() {
+
+	/**
+	 * returns the schema file
+	 * @return File
+	 */
+	public File getSchemaFile()
+	{
 		return this.schemaFile;
 	}
-    
-    /**
-     * sets the schema file
-     * @param File
-     */    
-	public void setSchemaFile(File f) {
+
+	/**
+	 * sets the schema file
+	 * @param File
+	 */
+	public void setSchemaFile(File f)
+	{
 		this.schemaFile = f;
 	}
-    
+
 	/**
 	 * Called whenever the value of the selection changes.
 	 * @param e the event that characterizes the change.
 	 *
 	 */
-	public void valueChanged(TreeSelectionEvent e) {
+	public void valueChanged(TreeSelectionEvent e)
+	{
 		Object o = e.getPath().getLastPathComponent();
 		String[] pNames = DEF_DEFAULT;
-		if (o instanceof MondrianDef.Column) {
-			pNames = DEF_COLUMN;  
+		if (o instanceof MondrianDef.Column)
+		{
+			pNames = DEF_COLUMN;
 			targetLabel.setText(LBL_COLUMN);
-		} else if (o instanceof MondrianDef.Cube) {
-			pNames = DEF_CUBE;  
+		}
+		else if (o instanceof MondrianDef.Cube)
+		{
+			pNames = DEF_CUBE;
 			targetLabel.setText(LBL_CUBE);
-		} else if (o instanceof MondrianDef.Dimension) {
-			pNames = DEF_DIMENSION;  
+		}
+		else if (o instanceof MondrianDef.Dimension)
+		{
+			pNames = DEF_DIMENSION;
 			targetLabel.setText(LBL_DIMENSION);
-		} else if (o instanceof MondrianDef.DimensionUsage) {
-			pNames = DEF_DIMENSION_USAGE;  
+		}
+		else if (o instanceof MondrianDef.DimensionUsage)
+		{
+			pNames = DEF_DIMENSION_USAGE;
 			targetLabel.setText(LBL_DIMENSION_USAGE);
-		} else if (o instanceof MondrianDef.ExpressionView) {
-			pNames = DEF_EXPRESSION_VIEW;  
+		}
+		else if (o instanceof MondrianDef.ExpressionView)
+		{
+			pNames = DEF_EXPRESSION_VIEW;
 			targetLabel.setText(LBL_EXPRESSION_VIEW);
-		} else if (o instanceof MondrianDef.Hierarchy) {
-			pNames = DEF_HIERARCHY;  
+		}
+		else if (o instanceof MondrianDef.Hierarchy)
+		{
+			pNames = DEF_HIERARCHY;
 			targetLabel.setText(LBL_HIERARCHY);
-		} else if (o instanceof MondrianDef.Join) {
-			pNames = DEF_JOIN;  
+		}
+		else if (o instanceof MondrianDef.Join)
+		{
+			pNames = DEF_JOIN;
 			targetLabel.setText(LBL_JOIN);
-		} else if (o instanceof MondrianDef.Level) {
-			pNames = DEF_LEVEL;  
+		}
+		else if (o instanceof MondrianDef.Level)
+		{
+			pNames = DEF_LEVEL;
 			targetLabel.setText(LBL_LEVEL);
-		} else if (o instanceof MondrianDef.Measure) {
-			pNames = DEF_MEASURE;  
+		}
+		else if (o instanceof MondrianDef.Measure)
+		{
+			pNames = DEF_MEASURE;
 			targetLabel.setText(LBL_MEASURE);
-		} else if (o instanceof MondrianDef.Parameter) {
-			pNames = DEF_PARAMETER;                
+		}
+		else if (o instanceof MondrianDef.Parameter)
+		{
+			pNames = DEF_PARAMETER;
 			targetLabel.setText(LBL_PARAMETER);
-		} else if (o instanceof MondrianDef.Property) {
+		}
+		else if (o instanceof MondrianDef.Property)
+		{
 			pNames = DEF_PROPERTY;
 			targetLabel.setText(LBL_PROPERTY);
-		} else if (o instanceof MondrianDef.Schema) {
+		}
+		else if (o instanceof MondrianDef.Schema)
+		{
 			pNames = DEF_SCHEMA;
 			targetLabel.setText(LBL_SCHEMA);
-		} else if (o instanceof MondrianDef.SQL) {
+		}
+		else if (o instanceof MondrianDef.SQL)
+		{
 			pNames = DEF_SQL;
 			targetLabel.setText(LBL_SQL);
-		} else if (o instanceof MondrianDef.Table) {
+		}
+		else if (o instanceof MondrianDef.Table)
+		{
 			pNames = DEF_TABLE;
 			targetLabel.setText(LBL_TABLE);
-		} else if (o instanceof MondrianDef.View) {
+		}
+		else if (o instanceof MondrianDef.View)
+		{
 			pNames = DEF_VIEW;
 			targetLabel.setText(LBL_VIEW);
-		} else if (o instanceof MondrianDef.VirtualCube) {
+		}
+		else if (o instanceof MondrianDef.VirtualCube)
+		{
 			pNames = DEF_VIRTUAL_CUBE;
 			targetLabel.setText(LBL_VIRTUAL_CUBE);
-		} else if (o instanceof MondrianDef.VirtualCubeDimension) {
+		}
+		else if (o instanceof MondrianDef.VirtualCubeDimension)
+		{
 			pNames = DEF_VIRTUAL_CUBE_DIMENSION;
 			targetLabel.setText(LBL_VIRTUAL_CUBE_DIMENSION);
-		} else if (o instanceof MondrianDef.VirtualCubeMeasure) {
+		}
+		else if (o instanceof MondrianDef.VirtualCubeMeasure)
+		{
 			pNames = DEF_VIRTUAL_CUBE_MEASURE;
 			targetLabel.setText(LBL_VIRTUAL_CUBE_MEASURE);
-		} else {
+		}
+		else
+		{
 			targetLabel.setText(LBL_UNKNOWN_TYPE);
 		}
-		PropertyTableModel ptm = new PropertyTableModel(o,pNames); 
+		PropertyTableModel ptm = new PropertyTableModel(o, pNames);
 		propertyTable.setModel(ptm);
-		
-		for (int i=0; i < propertyTable.getRowCount(); i++) {
-			TableCellRenderer renderer = propertyTable.getCellRenderer( i, 1);
+
+		for (int i = 0; i < propertyTable.getRowCount(); i++)
+		{
+			TableCellRenderer renderer = propertyTable.getCellRenderer(i, 1);
 			Component comp = renderer.getTableCellRendererComponent(propertyTable, propertyTable.getValueAt(i, 1), false, false, i, 1);
-			try {
+			try
+			{
 				int height = comp.getMaximumSize().height;
 				propertyTable.setRowHeight(i, height);
 			}
-			catch(Exception ea) {}
+			catch (Exception ea)
+			{
+			}
 
 		}
 
-	}    
-    
+	}
+
 	/**
 	 * @see javax.swing.event.CellEditorListener#editingCanceled(ChangeEvent)
 	 */
-	public void editingCanceled(ChangeEvent e) {
+	public void editingCanceled(ChangeEvent e)
+	{
 		updater.update();
 	}
 
 	/**
 	 * @see javax.swing.event.CellEditorListener#editingStopped(ChangeEvent)
 	 */
-	public void editingStopped(ChangeEvent e) {
+	public void editingStopped(ChangeEvent e)
+	{
 		updater.update();
 	}
 
@@ -527,16 +590,25 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 				{
 					jPopupMenu.removeAll();
 					Object pathSelected = path.getLastPathComponent();
-					if( pathSelected instanceof MondrianDef.Schema ) {
+					if (pathSelected instanceof MondrianDef.Schema)
+					{
 						jPopupMenu.add(addCube);
-					} else if( pathSelected instanceof MondrianDef.Cube ) {
+					}
+					else if (pathSelected instanceof MondrianDef.Cube)
+					{
 						jPopupMenu.add(addDimension);
 						jPopupMenu.add(addMeasure);
-					} else if( pathSelected instanceof MondrianDef.Hierarchy ) {
+					}
+					else if (pathSelected instanceof MondrianDef.Hierarchy)
+					{
 						jPopupMenu.add(addLevel);
-					} else if( pathSelected instanceof MondrianDef.Level ) {
+					}
+					else if (pathSelected instanceof MondrianDef.Level)
+					{
 						jPopupMenu.add(addProperty);
-					} else {
+					}
+					else
+					{
 						return;
 					}
 					jPopupMenu.show(tree, x, y);
@@ -546,25 +618,25 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 	}
 
 	public static final String[] DEF_DEFAULT = {};
-	public static final String[] DEF_VIRTUAL_CUBE = {"name"};
-	public static final String[] DEF_VIRTUAL_CUBE_MEASURE = {"name", "cubeName"};
-	public static final String[] DEF_VIRTUAL_CUBE_DIMENSION = {"cubeName"};
-	public static final String[] DEF_VIEW = {"alias"};
-	public static final String[] DEF_TABLE = {"name", "alias", "schema"};
-	public static final String[] DEF_RELATION = {"name"};
-	public static final String[] DEF_SQL = {"cdata", "dialect"};
+	public static final String[] DEF_VIRTUAL_CUBE = { "name" };
+	public static final String[] DEF_VIRTUAL_CUBE_MEASURE = { "name", "cubeName" };
+	public static final String[] DEF_VIRTUAL_CUBE_DIMENSION = { "cubeName" };
+	public static final String[] DEF_VIEW = { "alias" };
+	public static final String[] DEF_TABLE = { "name", "alias", "schema" };
+	public static final String[] DEF_RELATION = { "name" };
+	public static final String[] DEF_SQL = { "cdata", "dialect" };
 	public static final String[] DEF_SCHEMA = {};
-	public static final String[] DEF_PROPERTY = {"name", "column", "type"};
-	public static final String[] DEF_PARAMETER = {"name", "value"};
-	public static final String[] DEF_MEASURE = {"name", "aggregator", "column", "formatString"};
-	public static final String[] DEF_LEVEL = {"name", "column", "nameExp", "ordinalColumn", "ordinalExp", "table", "type", "uniqueMembers"};
-	public static final String[] DEF_JOIN = {"left", "leftAlias", "leftKey", "right", "rightAlias", "rightKey"};
-	public static final String[] DEF_HIERARCHY = {"hasAll", "defaultMember", "memberReaderClass", "primaryKey", "primaryKeyTable", "relation"};
+	public static final String[] DEF_PROPERTY = { "name", "column", "type" };
+	public static final String[] DEF_PARAMETER = { "name", "value" };
+	public static final String[] DEF_MEASURE = { "name", "aggregator", "column", "formatString" };
+	public static final String[] DEF_LEVEL = { "name", "column", "nameExp", "ordinalColumn", "ordinalExp", "table", "type", "uniqueMembers" };
+	public static final String[] DEF_JOIN = { "left", "leftAlias", "leftKey", "right", "rightAlias", "rightKey" };
+	public static final String[] DEF_HIERARCHY = { "hasAll", "defaultMember", "memberReaderClass", "primaryKey", "primaryKeyTable", "relation" };
 	public static final String[] DEF_EXPRESSION_VIEW = {};
-	public static final String[] DEF_DIMENSION_USAGE = {"name", "foreignKey", "source"};
-	public static final String[] DEF_DIMENSION = {"name", "foreignKey"};
-	public static final String[] DEF_CUBE = {"name", "fact"};
-	public static final String[] DEF_COLUMN = {"name", "table"};
+	public static final String[] DEF_DIMENSION_USAGE = { "name", "foreignKey", "source" };
+	public static final String[] DEF_DIMENSION = { "name", "foreignKey" };
+	public static final String[] DEF_CUBE = { "name", "fact" };
+	public static final String[] DEF_COLUMN = { "name", "table" };
 
 	private static final String LBL_COLUMN = "Column";
 	private static final String LBL_CUBE = "Cube";
@@ -610,6 +682,5 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 	private JButton copyButton;
 	private JToolBar jToolBar1;
 	private JPopupMenu jPopupMenu;
-    
 
 }
