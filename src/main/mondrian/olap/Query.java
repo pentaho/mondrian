@@ -1310,6 +1310,29 @@ public class Query extends QueryPart {
 		this.formulas = (Formula[]) formulaList.toArray(new Formula[0]);
 	}
 
+	/**
+	 * Check, whether a formula can be removed from the query.
+	 */
+	public boolean canRemoveFormula(String uniqueName)
+	{
+		Formula formula = findFormula(uniqueName);
+		if (formula == null)
+			return false;
+
+		OlapElement mdxElement = formula.getElement();
+		//search the query tree to see if this formula expression is used
+		//anywhere (on the axes or in another formula)
+		Walker walker = new Walker(this);
+		while (walker.hasMoreElements()) {
+			Object queryElement = walker.nextElement();
+			if (!queryElement.equals(mdxElement)) {
+				continue;
+			}
+			return false;
+		}
+		return true;
+	}
+
 	/** finds calculated member or set in array of formulas */
 	public Formula findFormula(String uniqueName)
 	{
