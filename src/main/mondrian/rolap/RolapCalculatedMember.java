@@ -43,6 +43,10 @@ class RolapCalculatedMember extends RolapMember {
 		return true;
 	}
 
+	public boolean isCalculatedInQuery() {
+		return true;
+	}
+
 	Exp getExpression() {
 		return formula.getExpression();
 	}
