@@ -38,7 +38,7 @@ class RolapCalculatedMember extends RolapMember {
 
     // override RolapMember
     int getSolveOrder() {
-        return 0;
+        return formula.getSolveOrder();
     }
 
     public Object getPropertyValue(String name) {

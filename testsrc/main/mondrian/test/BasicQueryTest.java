@@ -751,6 +751,45 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "Row #3: 60.07%" + nl);
     }
 
+    public void testSolveOrderNonMeasure() {
+        runQueryCheckResult(
+                "WITH" + nl +
+                "   MEMBER [Product].[ProdCalc] as '1', SOLVE_ORDER=1" + nl +
+                "   MEMBER [Measures].[MeasuresCalc] as '2', SOLVE_ORDER=2" + nl +
+                "   MEMBER [Time].[TimeCalc] as '3', SOLVE_ORDER=3" + nl +
+                "SELECT" + nl +
+                "   { [Product].[ProdCalc] } ON columns," + nl +
+                "   {( [Time].[TimeCalc], [Measures].[MeasuresCalc] )} ON rows" + nl +
+                "FROM Sales",
+
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Product].[ProdCalc]}" + nl +
+                "Axis #2:" + nl +
+                "{[Time].[TimeCalc], [Measures].[MeasuresCalc]}" + nl +
+                "Row #0: 3" + nl);
+    }
+
+    public void testSolveOrderNonMeasure2() {
+        runQueryCheckResult(
+                "WITH" + nl +
+                "   MEMBER [Store].[StoreCalc] as '0', SOLVE_ORDER=0" + nl +
+                "   MEMBER [Product].[ProdCalc] as '1', SOLVE_ORDER=1" + nl +
+                "SELECT" + nl +
+                "   { [Product].[ProdCalc] } ON columns," + nl +
+                "   { [Store].[StoreCalc] } ON rows" + nl +
+                "FROM Sales",
+
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Product].[ProdCalc]}" + nl +
+                "Axis #2:" + nl +
+                "{[Store].[StoreCalc]}" + nl +
+                "Row #0: 1" + nl);
+    }
+
     public void testCalculatedMemberWhichIsNotAMeasure() {
         String query = "WITH MEMBER [Product].[BigSeller] AS" + nl +
                 "  'IIf([Product].[Drink].[Alcoholic Beverages].[Beer and Wine] > 100, \"Yes\",\"No\")'" + nl +

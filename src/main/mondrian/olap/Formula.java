@@ -243,7 +243,7 @@ public class Formula extends QueryPart {
         return exp;
     }
 
-    Exp getMemberProperty(String name) {
+    private Exp getMemberProperty(String name) {
         return MemberProperty.get(memberProperties, name);
     }
 
@@ -255,6 +255,20 @@ public class Formula extends QueryPart {
      */
     public Member getMdxMember() {
         return mdxMember;
+    }
+
+    /**
+     * Returns the solve order. (Not valid if this formula defines a set.)
+     *
+     * @pre isMember()
+     * @post return != null
+     */
+    public int getSolveOrder() {
+        Exp exp = getMemberProperty(Property.PROPERTY_SOLVE_ORDER);
+        if (exp != null && exp.getType() == Category.Numeric)
+            return ((Literal)exp).getIntValue();
+        else
+            return 0;
     }
 
     /**

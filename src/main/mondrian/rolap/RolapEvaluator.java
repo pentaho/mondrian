@@ -152,42 +152,42 @@ class RolapEvaluator implements Evaluator
     }
     public Object evaluateCurrent()
     {
-        RolapMember minSolveMember = getMinSolveMember();
-        if (minSolveMember != null) {
+        RolapMember maxSolveMember = getMaxSolveMember();
+        if (maxSolveMember != null) {
             // There is at least one calculated member. Expand the first one
-            // with the lowest solve order.
+            // with the highest solve order.
             RolapMember defaultMember = (RolapMember)
-                    minSolveMember.getHierarchy().getDefaultMember();
+                    maxSolveMember.getHierarchy().getDefaultMember();
             Util.assertTrue(
-                    defaultMember != minSolveMember,
+                    defaultMember != maxSolveMember,
                     "default member must not be calculated");
             RolapEvaluator evaluator = (RolapEvaluator) push(defaultMember);
-            evaluator.setExpanding(minSolveMember);
+            evaluator.setExpanding(maxSolveMember);
             //((RolapEvaluator) evaluator).cellReader = new CachingCellReader(cellReader);
-            return minSolveMember.getExpression().evaluateScalar(evaluator);
+            return maxSolveMember.getExpression().evaluateScalar(evaluator);
         }
         return cellReader.get(this);
     }
 
     /**
      * Returns the member in the current context which is (a) calculated, and
-     * (b) has the lowest solve order; returns null if there are no calculated
+     * (b) has the highest solve order; returns null if there are no calculated
      * members.
      */
-    private RolapMember getMinSolveMember() {
-        int minSolve = Integer.MAX_VALUE;
-        RolapMember minSolveMember = null;
+    private RolapMember getMaxSolveMember() {
+        int maxSolve = Integer.MIN_VALUE;
+        RolapMember maxSolveMember = null;
         for (int i = 0, count = currentMembers.length; i < count; i++) {
             final RolapMember currentMember = currentMembers[i];
             if (currentMember.isCalculated()) {
                 int solve = currentMember.getSolveOrder();
-                if (solve < minSolve) {
-                    minSolve = solve;
-                    minSolveMember = currentMember;
+                if (solve > maxSolve) {
+                    maxSolve = solve;
+                    maxSolveMember = currentMember;
                 }
             }
         }
-        return minSolveMember;
+        return maxSolveMember;
     }
 
     private void setExpanding(Member member)

@@ -48,6 +48,8 @@ public abstract class Property {
     public static final String PROPERTY_FORMATTED_VALUE = "FORMATTED_VALUE";
     /** Cell property for XML/A. */
     public static final String PROPERTY_FORMAT_STRING = "FORMAT_STRING";
+    /** Calculated member property */
+    public static final String PROPERTY_SOLVE_ORDER = "SOLVE_ORDER";
     /**
      * Name of the system property which determines whether to show a member
      * (especially a measure or calculated member) in a user interface such as
