@@ -61,7 +61,7 @@ public class MondrianJolapConnectionFactory extends RefObjectSupport
 		propertyList.put("Catalog", "file:///e:/mondrian/demo/FoodMart.xml");
 		propertyList.put("JdbcDrivers", "sun.jdbc.odbc.JdbcOdbcDriver,oracle.jdbc.OracleDriver,com.mysql.jdbc.Driver");
 		mondrian.olap.Connection mondrianConnection =
-				DriverManager.getConnection(propertyList);
+				DriverManager.getConnection(propertyList, true);
 		return new MondrianJolapConnection(mondrianConnection);
 	}
 
