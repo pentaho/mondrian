@@ -14,10 +14,7 @@ package mondrian.rolap;
 import mondrian.olap.Level;
 import mondrian.olap.Util;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.WeakHashMap;
+import java.util.*;
 
 /**
  * <code>SmartMemberReader</code> implements {@link MemberReader} by keeping a
@@ -418,6 +415,48 @@ class SmartMemberReader implements MemberReader, MemberCache
 	{
 		return source.getMemberCount();
 	}
+
+	public int compare(RolapMember m1, RolapMember m2, boolean siblingsAreEqual) {
+		if (m1 == m2) {
+			return 0;
+		}
+		if (m1.getParentMember() == m2.getParentMember()) {
+			// including case where both parents are null
+			if (siblingsAreEqual) {
+				return 0;
+			} else {
+				RolapMember[] children = getMemberChildren(new RolapMember[] {
+					(RolapMember) m1.getParentMember()});
+				int pos1 = -1, pos2 = -1;
+				for (int i = 0; i < children.length; i++) {
+					RolapMember child = children[i];
+					if (child == m1) {
+						pos1 = i;
+					}
+					if (child == m2) {
+						pos2 = i;
+					}
+				}
+				if (pos1 == -1) {
+					throw Util.newInternal(m1 + " not found among siblings");
+				}
+				if (pos2 == -1) {
+					throw Util.newInternal(m2 + " not found among siblings");
+				}
+				Util.assertTrue(pos1 != pos2);
+				return pos1 < pos2 ? -1 : 1;
+			}
+		}
+		int levelDepth1 = m1.getLevel().getDepth(),
+			levelDepth2 = m2.getLevel().getDepth();
+		if (levelDepth1 < levelDepth2) {
+			return compare(m1, (RolapMember) m2.getParentMember(), false);
+		} else if (levelDepth1 > levelDepth2) {
+			return compare((RolapMember) m1.getParentMember(), m2, false);
+		} else {
+			return compare((RolapMember) m1.getParentMember(), (RolapMember) m2.getParentMember(), false);
+		}
+	}
 }
 
 class SiblingIterator //implements Iterator
@@ -496,6 +535,6 @@ class SiblingIterator //implements Iterator
 		}
 		return this.siblings[this.position];
 	}
-};
+}
 
 // End SmartMemberReader.java

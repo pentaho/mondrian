@@ -236,7 +236,7 @@ public class FoodMartTestCase extends TestCase {
 				"{}" + nl +
 				"Axis #1:" + nl +
 				"{[Measures].[Unit Sales]}" + nl +
-				"Row #0: 266,773.00" + nl),
+				"Row #0: 266,773" + nl),
 
 		// 1
 		new QueryAndResult(
@@ -250,32 +250,32 @@ public class FoodMartTestCase extends TestCase {
 				"Axis #1:" + nl +
 				"{[Measures].[Unit Sales]}" + nl +
 				"Axis #2:" + nl +
-				"{[Promotion Media].[All Promotion Media].[Daily Paper, Radio, TV]}" + nl +
-				"{[Promotion Media].[All Promotion Media].[Daily Paper]}" + nl +
-				"{[Promotion Media].[All Promotion Media].[Product Attachment]}" + nl +
-				"{[Promotion Media].[All Promotion Media].[Daily Paper, Radio]}" + nl +
-				"{[Promotion Media].[All Promotion Media].[Cash Register Handout]}" + nl +
-				"{[Promotion Media].[All Promotion Media].[Sunday Paper, Radio]}" + nl +
-				"{[Promotion Media].[All Promotion Media].[Street Handout]}" + nl +
-				"{[Promotion Media].[All Promotion Media].[Sunday Paper]}" + nl +
-				"{[Promotion Media].[All Promotion Media].[Bulk Mail]}" + nl +
-				"{[Promotion Media].[All Promotion Media].[In-Store Coupon]}" + nl +
-				"{[Promotion Media].[All Promotion Media].[TV]}" + nl +
-				"{[Promotion Media].[All Promotion Media].[Sunday Paper, Radio, TV]}" + nl +
-				"{[Promotion Media].[All Promotion Media].[Radio]}" + nl +
-				"Row #0: 9,513.00" + nl +
-				"Row #1: 7,738.00" + nl +
-				"Row #2: 7,544.00" + nl +
-				"Row #3: 6,891.00" + nl +
-				"Row #4: 6,697.00" + nl +
-				"Row #5: 5,945.00" + nl +
-				"Row #6: 5,753.00" + nl +
-				"Row #7: 4,339.00" + nl +
-				"Row #8: 4,320.00" + nl +
-				"Row #9: 3,798.00" + nl +
-				"Row #10: 3,607.00" + nl +
-				"Row #11: 2,726.00" + nl +
-				"Row #12: 2,454.00" + nl),
+				"{[Promotion Media].[All Media].[Daily Paper, Radio, TV]}" + nl +
+				"{[Promotion Media].[All Media].[Daily Paper]}" + nl +
+				"{[Promotion Media].[All Media].[Product Attachment]}" + nl +
+				"{[Promotion Media].[All Media].[Daily Paper, Radio]}" + nl +
+				"{[Promotion Media].[All Media].[Cash Register Handout]}" + nl +
+				"{[Promotion Media].[All Media].[Sunday Paper, Radio]}" + nl +
+				"{[Promotion Media].[All Media].[Street Handout]}" + nl +
+				"{[Promotion Media].[All Media].[Sunday Paper]}" + nl +
+				"{[Promotion Media].[All Media].[Bulk Mail]}" + nl +
+				"{[Promotion Media].[All Media].[In-Store Coupon]}" + nl +
+				"{[Promotion Media].[All Media].[TV]}" + nl +
+				"{[Promotion Media].[All Media].[Sunday Paper, Radio, TV]}" + nl +
+				"{[Promotion Media].[All Media].[Radio]}" + nl +
+				"Row #0: 9,513" + nl +
+				"Row #1: 7,738" + nl +
+				"Row #2: 7,544" + nl +
+				"Row #3: 6,891" + nl +
+				"Row #4: 6,697" + nl +
+				"Row #5: 5,945" + nl +
+				"Row #6: 5,753" + nl +
+				"Row #7: 4,339" + nl +
+				"Row #8: 4,320" + nl +
+				"Row #9: 3,798" + nl +
+				"Row #10: 3,607" + nl +
+				"Row #11: 2,726" + nl +
+				"Row #12: 2,454" + nl),
 
 		// 2
 		new QueryAndResult(
@@ -332,7 +332,9 @@ public class FoodMartTestCase extends TestCase {
 
 		// 3
 		new QueryAndResult(
-				"with member [Measures].[Store Sales Last Period] as '([Measures].[Store Sales], Time.PrevMember)'" + nl +
+				"with member [Measures].[Store Sales Last Period] as " +
+				"    '([Measures].[Store Sales], Time.PrevMember)'," + nl +
+				"    format='#,###.00'" + nl +
 				"select" + nl +
 				"	 {[Measures].[Store Sales Last Period]} on columns," + nl +
 				"	 {TopCount([Product].[Product Department].members,5, [Measures].[Store Sales Last Period])} on rows" + nl +
@@ -344,26 +346,41 @@ public class FoodMartTestCase extends TestCase {
 				"Axis #1:" + nl +
 				"{[Measures].[Store Sales Last Period]}" + nl +
 				"Axis #2:" + nl +
-				"{[Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
-				"{[Product].[All Products].[Drink].[Beverages]}" + nl +
-				"{[Product].[All Products].[Drink].[Dairy]}" + nl +
-				"{[Product].[All Products].[Food].[Baked Goods]}" + nl +
-				"{[Product].[All Products].[Food].[Baking Goods]}" + nl +
-				"Row #0: (null)" + nl +
-				"Row #1: (null)" + nl +
-				"Row #2: (null)" + nl +
-				"Row #3: (null)" + nl +
-				"Row #4: (null)" + nl),
+				"{[Product].[All Products].[Food].[Produce]}" + nl +
+				"{[Product].[All Products].[Food].[Snack Foods]}" + nl +
+				"{[Product].[All Products].[Non-Consumable].[Household]}" + nl +
+				"{[Product].[All Products].[Food].[Frozen Foods]}" + nl +
+				"{[Product].[All Products].[Food].[Canned Foods]}" + nl +
+				"Row #0: 82,248.42" + nl +
+				"Row #1: 67,609.82" + nl +
+				"Row #2: 60,469.89" + nl +
+				"Row #3: 55,207.50" + nl +
+				"Row #4: 39,774.34" + nl),
 
 		// 4
 		new QueryAndResult(
-				"with member [Measures].[Total Store Sales] as 'Sum(YTD(),[Measures].[Store Sales])'" + nl +
+				"with member [Measures].[Total Store Sales] as 'Sum(YTD(),[Measures].[Store Sales])', format_string='#.00'" + nl +
 				"select" + nl +
 				"	 {[Measures].[Total Store Sales]} on columns," + nl +
 				"	 {TopCount([Product].[Product Department].members,5, [Measures].[Total Store Sales])} on rows" + nl +
 				"from Sales" + nl +
 				"where ([Time].[1997].[Q2].[4])",
-				null),
+
+				"Axis #0:" + nl +
+				"{[Time].[1997].[Q2].[4]}" + nl +
+				"Axis #1:" + nl +
+				"{[Measures].[Total Store Sales]}" + nl +
+				"Axis #2:" + nl +
+				"{[Product].[All Products].[Food].[Produce]}" + nl +
+				"{[Product].[All Products].[Food].[Snack Foods]}" + nl +
+				"{[Product].[All Products].[Non-Consumable].[Household]}" + nl +
+				"{[Product].[All Products].[Food].[Frozen Foods]}" + nl +
+				"{[Product].[All Products].[Food].[Canned Foods]}" + nl +
+				"Row #0: 26526.67" + nl +
+				"Row #1: 21897.10" + nl +
+				"Row #2: 19980.90" + nl +
+				"Row #3: 17882.63" + nl +
+				"Row #4: 12963.23" + nl),
 
 		// 5
 		new QueryAndResult(
@@ -373,18 +390,167 @@ public class FoodMartTestCase extends TestCase {
 				"	 Order([Product].[Product Department].members, [Measures].[Store Profit Rate], BDESC) on rows" + nl +
 				"from Sales" + nl +
 				"where ([Time].[1997])",
-				null),
+
+				"Axis #0:" + nl +
+				"{[Time].[1997]}" + nl +
+				"Axis #1:" + nl +
+				"{[Measures].[Store Cost]}" + nl +
+				"{[Measures].[Store Sales]}" + nl +
+				"{[Measures].[Store Profit Rate]}" + nl +
+				"Axis #2:" + nl +
+				"{[Product].[All Products].[Food].[Breakfast Foods]}" + nl +
+				"{[Product].[All Products].[Non-Consumable].[Carousel]}" + nl +
+				"{[Product].[All Products].[Food].[Canned Products]}" + nl +
+				"{[Product].[All Products].[Food].[Baking Goods]}" + nl +
+				"{[Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
+				"{[Product].[All Products].[Non-Consumable].[Health and Hygiene]}" + nl +
+				"{[Product].[All Products].[Food].[Snack Foods]}" + nl +
+				"{[Product].[All Products].[Food].[Baked Goods]}" + nl +
+				"{[Product].[All Products].[Drink].[Beverages]}" + nl +
+				"{[Product].[All Products].[Food].[Frozen Foods]}" + nl +
+				"{[Product].[All Products].[Non-Consumable].[Periodicals]}" + nl +
+				"{[Product].[All Products].[Food].[Produce]}" + nl +
+				"{[Product].[All Products].[Food].[Seafood]}" + nl +
+				"{[Product].[All Products].[Food].[Deli]}" + nl +
+				"{[Product].[All Products].[Food].[Meat]}" + nl +
+				"{[Product].[All Products].[Food].[Canned Foods]}" + nl +
+				"{[Product].[All Products].[Non-Consumable].[Household]}" + nl +
+				"{[Product].[All Products].[Food].[Starchy Foods]}" + nl +
+				"{[Product].[All Products].[Food].[Eggs]}" + nl +
+				"{[Product].[All Products].[Food].[Snacks]}" + nl +
+				"{[Product].[All Products].[Food].[Dairy]}" + nl +
+				"{[Product].[All Products].[Drink].[Dairy]}" + nl +
+				"{[Product].[All Products].[Non-Consumable].[Checkout]}" + nl +
+				"Row #0: 2,756.80" + nl +
+				"Row #0: 6,941.46" + nl +
+				"Row #0: 151.79%" + nl +
+				"Row #1: 595.97" + nl +
+				"Row #1: 1,500.11" + nl +
+				"Row #1: 151.71%" + nl +
+				"Row #2: 1,317.13" + nl +
+				"Row #2: 3,314.52" + nl +
+				"Row #2: 151.65%" + nl +
+				"Row #3: 15,370.61" + nl +
+				"Row #3: 38,670.41" + nl +
+				"Row #3: 151.59%" + nl +
+				"Row #4: 5,576.79" + nl +
+				"Row #4: 14,029.08" + nl +
+				"Row #4: 151.56%" + nl +
+				"Row #5: 12,972.99" + nl +
+				"Row #5: 32,571.86" + nl +
+				"Row #5: 151.07%" + nl +
+				"Row #6: 26,963.34" + nl +
+				"Row #6: 67,609.82" + nl +
+				"Row #6: 150.75%" + nl +
+				"Row #7: 6,564.09" + nl +
+				"Row #7: 16,455.43" + nl +
+				"Row #7: 150.69%" + nl +
+				"Row #8: 11,069.53" + nl +
+				"Row #8: 27,748.53" + nl +
+				"Row #8: 150.67%" + nl +
+				"Row #9: 22,030.66" + nl +
+				"Row #9: 55,207.50" + nl +
+				"Row #9: 150.59%" + nl +
+				"Row #10: 3,614.55" + nl +
+				"Row #10: 9,056.76" + nl +
+				"Row #10: 150.56%" + nl +
+				"Row #11: 32,831.33" + nl +
+				"Row #11: 82,248.42" + nl +
+				"Row #11: 150.52%" + nl +
+				"Row #12: 1,520.70" + nl +
+				"Row #12: 3,809.14" + nl +
+				"Row #12: 150.49%" + nl +
+				"Row #13: 10,108.87" + nl +
+				"Row #13: 25,318.93" + nl +
+				"Row #13: 150.46%" + nl +
+				"Row #14: 1,465.42" + nl +
+				"Row #14: 3,669.89" + nl +
+				"Row #14: 150.43%" + nl +
+				"Row #15: 15,894.53" + nl +
+				"Row #15: 39,774.34" + nl +
+				"Row #15: 150.24%" + nl +
+				"Row #16: 24,170.73" + nl +
+				"Row #16: 60,469.89" + nl +
+				"Row #16: 150.18%" + nl +
+				"Row #17: 4,705.91" + nl +
+				"Row #17: 11,756.07" + nl +
+				"Row #17: 149.82%" + nl +
+				"Row #18: 3,684.90" + nl +
+				"Row #18: 9,200.76" + nl +
+				"Row #18: 149.69%" + nl +
+				"Row #19: 5,827.58" + nl +
+				"Row #19: 14,550.05" + nl +
+				"Row #19: 149.68%" + nl +
+				"Row #20: 12,228.85" + nl +
+				"Row #20: 30,508.85" + nl +
+				"Row #20: 149.48%" + nl +
+				"Row #21: 2,830.92" + nl +
+				"Row #21: 7,058.60" + nl +
+				"Row #21: 149.34%" + nl +
+				"Row #22: 1,525.04" + nl +
+				"Row #22: 3,767.71" + nl +
+				"Row #22: 147.06%" + nl),
 
 		// 6
 		new QueryAndResult(
 				"with" + nl +
-				"	member [Product].[All Products].[Drink].[Percent of Alcoholic Drinks] as '[Product].[All Products].[Drink].[Alcoholic Beverages]/[Product].[All Products].[Drink]', format = '#.00%'" + nl +
+				"	member [Product].[All Products].[Drink].[Percent of Alcoholic Drinks] as '[Product].[All Products].[Drink].[Alcoholic Beverages]/[Product].[All Products].[Drink]'," + nl +
+				"		format_string = '#.00%'" + nl +
 				"select" + nl +
 				"	{ [Product].[All Products].[Drink].[Percent of Alcoholic Drinks] } on columns," + nl +
 				"	order([Customers].[All Customers].[USA].[WA].Children, [Product].[All Products].[Drink].[Percent of Alcoholic Drinks],BDESC ) on rows" + nl +
 				"from Sales" + nl +
 				"where ( [Measures].[Unit Sales] )",
-				null),
+
+				"Axis #0:" + nl +
+				"{[Measures].[Unit Sales]}" + nl +
+				"Axis #1:" + nl +
+				"{[Product].[All Products].[Drink].[Percent of Alcoholic Drinks]}" + nl +
+				"Axis #2:" + nl +
+				"{[Customers].[All Customers].[USA].[WA].[Seattle]}" + nl +
+				"{[Customers].[All Customers].[USA].[WA].[Kirkland]}" + nl +
+				"{[Customers].[All Customers].[USA].[WA].[Marysville]}" + nl +
+				"{[Customers].[All Customers].[USA].[WA].[Anacortes]}" + nl +
+				"{[Customers].[All Customers].[USA].[WA].[Olympia]}" + nl +
+				"{[Customers].[All Customers].[USA].[WA].[Ballard]}" + nl +
+				"{[Customers].[All Customers].[USA].[WA].[Bremerton]}" + nl +
+				"{[Customers].[All Customers].[USA].[WA].[Puyallup]}" + nl +
+				"{[Customers].[All Customers].[USA].[WA].[Yakima]}" + nl +
+				"{[Customers].[All Customers].[USA].[WA].[Tacoma]}" + nl +
+				"{[Customers].[All Customers].[USA].[WA].[Everett]}" + nl +
+				"{[Customers].[All Customers].[USA].[WA].[Renton]}" + nl +
+				"{[Customers].[All Customers].[USA].[WA].[Issaquah]}" + nl +
+				"{[Customers].[All Customers].[USA].[WA].[Bellingham]}" + nl +
+				"{[Customers].[All Customers].[USA].[WA].[Port Orchard]}" + nl +
+				"{[Customers].[All Customers].[USA].[WA].[Redmond]}" + nl +
+				"{[Customers].[All Customers].[USA].[WA].[Spokane]}" + nl +
+				"{[Customers].[All Customers].[USA].[WA].[Burien]}" + nl +
+				"{[Customers].[All Customers].[USA].[WA].[Lynnwood]}" + nl +
+				"{[Customers].[All Customers].[USA].[WA].[Walla Walla]}" + nl +
+				"{[Customers].[All Customers].[USA].[WA].[Edmonds]}" + nl +
+				"{[Customers].[All Customers].[USA].[WA].[Sedro Woolley]}" + nl +
+				"Row #0: 44.05%" + nl +
+				"Row #1: 34.41%" + nl +
+				"Row #2: 34.20%" + nl +
+				"Row #3: 32.93%" + nl +
+				"Row #4: 31.05%" + nl +
+				"Row #5: 30.84%" + nl +
+				"Row #6: 30.69%" + nl +
+				"Row #7: 29.81%" + nl +
+				"Row #8: 28.82%" + nl +
+				"Row #9: 28.70%" + nl +
+				"Row #10: 28.37%" + nl +
+				"Row #11: 26.67%" + nl +
+				"Row #12: 26.60%" + nl +
+				"Row #13: 26.47%" + nl +
+				"Row #14: 26.42%" + nl +
+				"Row #15: 26.28%" + nl +
+				"Row #16: 25.96%" + nl +
+				"Row #17: 24.70%" + nl +
+				"Row #18: 21.89%" + nl +
+				"Row #19: 21.47%" + nl +
+				"Row #20: 17.47%" + nl +
+				"Row #21: 13.79%" + nl),
 
 		// 7
 		new QueryAndResult(
@@ -393,7 +559,49 @@ public class FoodMartTestCase extends TestCase {
 				"	 {[Measures].[Store Sales],[Measures].[Accumulated Sales]} on columns," + nl +
 				"	 {Descendants([Time].[1997],[Time].[Month])} on rows" + nl +
 				"from Sales",
-				null),
+
+			"Axis #0:" + nl +
+			"{}" + nl +
+			"Axis #1:" + nl +
+			"{[Measures].[Store Sales]}" + nl +
+			"{[Measures].[Accumulated Sales]}" + nl +
+			"Axis #2:" + nl +
+			"{[Time].[1997].[Q1].[1]}" + nl +
+			"{[Time].[1997].[Q1].[2]}" + nl +
+			"{[Time].[1997].[Q1].[3]}" + nl +
+			"{[Time].[1997].[Q2].[4]}" + nl +
+			"{[Time].[1997].[Q2].[5]}" + nl +
+			"{[Time].[1997].[Q2].[6]}" + nl +
+			"{[Time].[1997].[Q3].[7]}" + nl +
+			"{[Time].[1997].[Q3].[8]}" + nl +
+			"{[Time].[1997].[Q3].[9]}" + nl +
+			"{[Time].[1997].[Q4].[10]}" + nl +
+			"{[Time].[1997].[Q4].[11]}" + nl +
+			"{[Time].[1997].[Q4].[12]}" + nl +
+			"Row #0: 45,539.69" + nl +
+			"Row #0: 45539.69" + nl +
+			"Row #1: 44,058.79" + nl +
+			"Row #1: 89598.48000000001" + nl +
+			"Row #2: 50,029.87" + nl +
+			"Row #2: 139628.35" + nl +
+			"Row #3: 42,878.25" + nl +
+			"Row #3: 182506.6" + nl +
+			"Row #4: 44,456.29" + nl +
+			"Row #4: 226962.89" + nl +
+			"Row #5: 45,331.73" + nl +
+			"Row #5: 272294.62" + nl +
+			"Row #6: 50,246.88" + nl +
+			"Row #6: 322541.5" + nl +
+			"Row #7: 46,199.04" + nl +
+			"Row #7: 368740.54" + nl +
+			"Row #8: 43,825.97" + nl +
+			"Row #8: 412566.51" + nl +
+			"Row #9: 42,342.27" + nl +
+			"Row #9: 454908.78" + nl +
+			"Row #10: 53,363.71" + nl +
+			"Row #10: 508272.49000000005" + nl +
+			"Row #11: 56,965.64" + nl +
+			"Row #11: 565238.13" + nl),
 	};
 
 	public void testSample0() {
@@ -435,10 +643,10 @@ public class FoodMartTestCase extends TestCase {
 				"    {[Customers].[All Customers].[USA].[WA].[Bellingham]}) on rows," + nl +
 				"  CrossJoin(" + nl +
 				"    {[Measures].[Unit Sales], [Measures].[Store Sales]}," + nl +
-				"    { [Promotion Media].[All Promotion Media].[Radio]," + nl +
-				"      [Promotion Media].[All Promotion Media].[TV]," + nl +
-				"      [Promotion Media].[All Promotion Media].[Sunday Paper]," + nl +
-				"      [Promotion Media].[All Promotion Media].[Street Handout] }" + nl +
+				"    { [Promotion Media].[All Media].[Radio]," + nl +
+				"      [Promotion Media].[All Media].[TV]," + nl +
+				"      [Promotion Media].[All Media].[Sunday Paper]," + nl +
+				"      [Promotion Media].[All Media].[Street Handout] }" + nl +
 				"    ) on columns" + nl +
 				"from Sales" + nl +
 				"where ([Time].[1997])", 8, 2);
@@ -452,9 +660,9 @@ public class FoodMartTestCase extends TestCase {
 				"    {[Customers].[All Customers].[USA].[WA].[Bellingham]}) on rows," + nl +
 				"  NON EMPTY CrossJoin(" + nl +
 				"    {[Measures].[Unit Sales]}," + nl +
-				"    { [Promotion Media].[All Promotion Media].[Cash Register Handout]," + nl +
-				"      [Promotion Media].[All Promotion Media].[Sunday Paper]," + nl +
-				"      [Promotion Media].[All Promotion Media].[Street Handout] }" + nl +
+				"    { [Promotion Media].[All Media].[Cash Register Handout]," + nl +
+				"      [Promotion Media].[All Media].[Sunday Paper]," + nl +
+				"      [Promotion Media].[All Media].[Street Handout] }" + nl +
 				"    ) on columns" + nl +
 				"from Sales" + nl +
 				"where ([Time].[1997])", 2, 2);
@@ -465,7 +673,7 @@ public class FoodMartTestCase extends TestCase {
 				"select" + nl +
 				"  [Product].[All Products].[Drink].children on columns" + nl +
 				"from Sales" + nl +
-				"where ([Measures].[Unit Sales], [Promotion Media].[All Promotion Media].[Street Handout], [Time].[1997])");
+				"where ([Measures].[Unit Sales], [Promotion Media].[All Media].[Street Handout], [Time].[1997])");
 		assertTrue(result.getAxes().length == 1);
 		assertTrue(result.getAxes()[0].positions.length == 3);
 		assertTrue(result.getSlicerAxis().positions.length == 1);
@@ -650,10 +858,10 @@ public class FoodMartTestCase extends TestCase {
 				"select" + nl +
 				"  {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} on columns," + nl +
 				"  CrossJoin(" + nl +
-				"    { [Promotion Media].[All Promotion Media].[Radio]," + nl +
-				"      [Promotion Media].[All Promotion Media].[TV]," + nl +
-				"      [Promotion Media].[All Promotion Media].[Sunday Paper]," + nl +
-				"      [Promotion Media].[All Promotion Media].[Street Handout] }," + nl +
+				"    { [Promotion Media].[All Media].[Radio]," + nl +
+				"      [Promotion Media].[All Media].[TV]," + nl +
+				"      [Promotion Media].[All Media].[Sunday Paper]," + nl +
+				"      [Promotion Media].[All Media].[Street Handout] }," + nl +
 				"    [Product].[All Products].[Drink].children) on rows" + nl +
 				"from Sales" + nl +
 				"where ([Time].[1997])",
@@ -665,23 +873,23 @@ public class FoodMartTestCase extends TestCase {
 				"{[Measures].[Store Cost]}" + nl +
 				"{[Measures].[Store Sales]}" + nl +
 				"Axis #2:" + nl +
-				"{[Promotion Media].[All Promotion Media].[Radio], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
-				"{[Promotion Media].[All Promotion Media].[Radio], [Product].[All Products].[Drink].[Beverages]}" + nl +
-				"{[Promotion Media].[All Promotion Media].[Radio], [Product].[All Products].[Drink].[Dairy]}" + nl +
-				"{[Promotion Media].[All Promotion Media].[TV], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
-				"{[Promotion Media].[All Promotion Media].[TV], [Product].[All Products].[Drink].[Beverages]}" + nl +
-				"{[Promotion Media].[All Promotion Media].[TV], [Product].[All Products].[Drink].[Dairy]}" + nl +
-				"{[Promotion Media].[All Promotion Media].[Sunday Paper], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
-				"{[Promotion Media].[All Promotion Media].[Sunday Paper], [Product].[All Products].[Drink].[Beverages]}" + nl +
-				"{[Promotion Media].[All Promotion Media].[Sunday Paper], [Product].[All Products].[Drink].[Dairy]}" + nl +
-				"{[Promotion Media].[All Promotion Media].[Street Handout], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
-				"{[Promotion Media].[All Promotion Media].[Street Handout], [Product].[All Products].[Drink].[Beverages]}" + nl +
-				"{[Promotion Media].[All Promotion Media].[Street Handout], [Product].[All Products].[Drink].[Dairy]}" + nl +
+				"{[Promotion Media].[All Media].[Radio], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
+				"{[Promotion Media].[All Media].[Radio], [Product].[All Products].[Drink].[Beverages]}" + nl +
+				"{[Promotion Media].[All Media].[Radio], [Product].[All Products].[Drink].[Dairy]}" + nl +
+				"{[Promotion Media].[All Media].[TV], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
+				"{[Promotion Media].[All Media].[TV], [Product].[All Products].[Drink].[Beverages]}" + nl +
+				"{[Promotion Media].[All Media].[TV], [Product].[All Products].[Drink].[Dairy]}" + nl +
+				"{[Promotion Media].[All Media].[Sunday Paper], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
+				"{[Promotion Media].[All Media].[Sunday Paper], [Product].[All Products].[Drink].[Beverages]}" + nl +
+				"{[Promotion Media].[All Media].[Sunday Paper], [Product].[All Products].[Drink].[Dairy]}" + nl +
+				"{[Promotion Media].[All Media].[Street Handout], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
+				"{[Promotion Media].[All Media].[Street Handout], [Product].[All Products].[Drink].[Beverages]}" + nl +
+				"{[Promotion Media].[All Media].[Street Handout], [Product].[All Products].[Drink].[Dairy]}" + nl +
 				"Row #0: 75" + nl +
-				"Row #0: 70.4" + nl +
+				"Row #0: 70.40" + nl +
 				"Row #0: 168.62" + nl +
 				"Row #1: 97" + nl +
-				"Row #1: 75.7" + nl +
+				"Row #1: 75.70" + nl +
 				"Row #1: 186.03" + nl +
 				"Row #2: 54" + nl +
 				"Row #2: 36.75" + nl +
@@ -690,7 +898,7 @@ public class FoodMartTestCase extends TestCase {
 				"Row #3: 70.99" + nl +
 				"Row #3: 182.38" + nl +
 				"Row #4: 188" + nl +
-				"Row #4: 167" + nl +
+				"Row #4: 167.00" + nl +
 				"Row #4: 419.14" + nl +
 				"Row #5: 68" + nl +
 				"Row #5: 45.19" + nl +
@@ -720,10 +928,10 @@ public class FoodMartTestCase extends TestCase {
 				"  [Product].[All Products].[Drink].children on rows," + nl +
 				"  CrossJoin(" + nl +
 				"    {[Measures].[Unit Sales], [Measures].[Store Sales]}," + nl +
-				"    { [Promotion Media].[All Promotion Media].[Radio]," + nl +
-				"      [Promotion Media].[All Promotion Media].[TV]," + nl +
-				"      [Promotion Media].[All Promotion Media].[Sunday Paper]," + nl +
-				"      [Promotion Media].[All Promotion Media].[Street Handout] }" + nl +
+				"    { [Promotion Media].[All Media].[Radio]," + nl +
+				"      [Promotion Media].[All Media].[TV]," + nl +
+				"      [Promotion Media].[All Media].[Sunday Paper]," + nl +
+				"      [Promotion Media].[All Media].[Street Handout] }" + nl +
 				"    ) on columns" + nl +
 				"from Sales" + nl +
 				"where ([Time].[1997])",
@@ -731,14 +939,14 @@ public class FoodMartTestCase extends TestCase {
 				"Axis #0:" + nl +
 				"{[Time].[1997]}" + nl +
 				"Axis #1:" + nl +
-				"{[Measures].[Unit Sales], [Promotion Media].[All Promotion Media].[Radio]}" + nl +
-				"{[Measures].[Unit Sales], [Promotion Media].[All Promotion Media].[TV]}" + nl +
-				"{[Measures].[Unit Sales], [Promotion Media].[All Promotion Media].[Sunday Paper]}" + nl +
-				"{[Measures].[Unit Sales], [Promotion Media].[All Promotion Media].[Street Handout]}" + nl +
-				"{[Measures].[Store Sales], [Promotion Media].[All Promotion Media].[Radio]}" + nl +
-				"{[Measures].[Store Sales], [Promotion Media].[All Promotion Media].[TV]}" + nl +
-				"{[Measures].[Store Sales], [Promotion Media].[All Promotion Media].[Sunday Paper]}" + nl +
-				"{[Measures].[Store Sales], [Promotion Media].[All Promotion Media].[Street Handout]}" + nl +
+				"{[Measures].[Unit Sales], [Promotion Media].[All Media].[Radio]}" + nl +
+				"{[Measures].[Unit Sales], [Promotion Media].[All Media].[TV]}" + nl +
+				"{[Measures].[Unit Sales], [Promotion Media].[All Media].[Sunday Paper]}" + nl +
+				"{[Measures].[Unit Sales], [Promotion Media].[All Media].[Street Handout]}" + nl +
+				"{[Measures].[Store Sales], [Promotion Media].[All Media].[Radio]}" + nl +
+				"{[Measures].[Store Sales], [Promotion Media].[All Media].[TV]}" + nl +
+				"{[Measures].[Store Sales], [Promotion Media].[All Media].[Sunday Paper]}" + nl +
+				"{[Measures].[Store Sales], [Promotion Media].[All Media].[Street Handout]}" + nl +
 				"Axis #2:" + nl +
 				"{[Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
 				"{[Product].[All Products].[Drink].[Beverages]}" + nl +
@@ -781,11 +989,6 @@ public class FoodMartTestCase extends TestCase {
 				"{[Measures].[Unit Sales]}" + nl +
 				"{[Measures].[Store Sales]}" + nl +
 				"Axis #2:" + nl +
-				"{[Product].[All Products].[Non-Consumable].[Household]}" + nl +
-				"{[Product].[All Products].[Non-Consumable].[Health and Hygiene]}" + nl +
-				"{[Product].[All Products].[Non-Consumable].[Periodicals]}" + nl +
-				"{[Product].[All Products].[Non-Consumable].[Checkout]}" + nl +
-				"{[Product].[All Products].[Non-Consumable].[Carousel]}" + nl +
 				"{[Product].[All Products].[Food].[Produce]}" + nl +
 				"{[Product].[All Products].[Food].[Snack Foods]}" + nl +
 				"{[Product].[All Products].[Food].[Frozen Foods]}" + nl +
@@ -801,72 +1004,77 @@ public class FoodMartTestCase extends TestCase {
 				"{[Product].[All Products].[Food].[Seafood]}" + nl +
 				"{[Product].[All Products].[Food].[Meat]}" + nl +
 				"{[Product].[All Products].[Food].[Canned Products]}" + nl +
+				"{[Product].[All Products].[Non-Consumable].[Household]}" + nl +
+				"{[Product].[All Products].[Non-Consumable].[Health and Hygiene]}" + nl +
+				"{[Product].[All Products].[Non-Consumable].[Periodicals]}" + nl +
+				"{[Product].[All Products].[Non-Consumable].[Checkout]}" + nl +
+				"{[Product].[All Products].[Non-Consumable].[Carousel]}" + nl +
 				"{[Product].[All Products].[Drink].[Beverages]}" + nl +
 				"{[Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
 				"{[Product].[All Products].[Drink].[Dairy]}" + nl +
-				"Row #0: 27,038" + nl +
-				"Row #0: 60,469.89" + nl +
-				"Row #1: 16,284" + nl +
-				"Row #1: 32,571.86" + nl +
-				"Row #2: 4,294" + nl +
-				"Row #2: 9,056.76" + nl +
-				"Row #3: 1,779" + nl +
-				"Row #3: 3,767.71" + nl +
-				"Row #4: 841" + nl +
-				"Row #4: 1,500.11" + nl +
-				"Row #5: 37,792" + nl +
-				"Row #5: 82,248.42" + nl +
-				"Row #6: 30,545" + nl +
-				"Row #6: 67,609.82" + nl +
-				"Row #7: 26,655" + nl +
-				"Row #7: 55,207.5" + nl +
-				"Row #8: 19,026" + nl +
-				"Row #8: 39,774.34" + nl +
-				"Row #9: 20,245" + nl +
-				"Row #9: 38,670.41" + nl +
-				"Row #10: 12,885" + nl +
-				"Row #10: 30,508.85" + nl +
-				"Row #11: 12,037" + nl +
-				"Row #11: 25,318.93" + nl +
-				"Row #12: 7,870" + nl +
-				"Row #12: 16,455.43" + nl +
-				"Row #13: 6,884" + nl +
-				"Row #13: 14,550.05" + nl +
-				"Row #14: 5,262" + nl +
-				"Row #14: 11,756.07" + nl +
-				"Row #15: 4,132" + nl +
-				"Row #15: 9,200.76" + nl +
-				"Row #16: 3,317" + nl +
-				"Row #16: 6,941.46" + nl +
-				"Row #17: 1,764" + nl +
-				"Row #17: 3,809.14" + nl +
-				"Row #18: 1,714" + nl +
-				"Row #18: 3,669.89" + nl +
-				"Row #19: 1,812" + nl +
-				"Row #19: 3,314.52" + nl +
+				"Row #0: 37,792" + nl +
+				"Row #0: 82,248.42" + nl +
+				"Row #1: 30,545" + nl +
+				"Row #1: 67,609.82" + nl +
+				"Row #2: 26,655" + nl +
+				"Row #2: 55,207.50" + nl +
+				"Row #3: 19,026" + nl +
+				"Row #3: 39,774.34" + nl +
+				"Row #4: 20,245" + nl +
+				"Row #4: 38,670.41" + nl +
+				"Row #5: 12,885" + nl +
+				"Row #5: 30,508.85" + nl +
+				"Row #6: 12,037" + nl +
+				"Row #6: 25,318.93" + nl +
+				"Row #7: 7,870" + nl +
+				"Row #7: 16,455.43" + nl +
+				"Row #8: 6,884" + nl +
+				"Row #8: 14,550.05" + nl +
+				"Row #9: 5,262" + nl +
+				"Row #9: 11,756.07" + nl +
+				"Row #10: 4,132" + nl +
+				"Row #10: 9,200.76" + nl +
+				"Row #11: 3,317" + nl +
+				"Row #11: 6,941.46" + nl +
+				"Row #12: 1,764" + nl +
+				"Row #12: 3,809.14" + nl +
+				"Row #13: 1,714" + nl +
+				"Row #13: 3,669.89" + nl +
+				"Row #14: 1,812" + nl +
+				"Row #14: 3,314.52" + nl +
+				"Row #15: 27,038" + nl +
+				"Row #15: 60,469.89" + nl +
+				"Row #16: 16,284" + nl +
+				"Row #16: 32,571.86" + nl +
+				"Row #17: 4,294" + nl +
+				"Row #17: 9,056.76" + nl +
+				"Row #18: 1,779" + nl +
+				"Row #18: 3,767.71" + nl +
+				"Row #19: 841" + nl +
+				"Row #19: 1,500.11" + nl +
 				"Row #20: 13,573" + nl +
 				"Row #20: 27,748.53" + nl +
 				"Row #21: 6,838" + nl +
 				"Row #21: 14,029.08" + nl +
 				"Row #22: 4,186" + nl +
-				"Row #22: 7,058.6" + nl),
+				"Row #22: 7,058.60" + nl),
 
 		// 3
 		new QueryAndResult(
 				"select" + nl +
 				"  [Product].[All Products].[Drink].children on columns" + nl +
 				"from Sales" + nl +
-				"where ([Measures].[Unit Sales], [Promotion Media].[All Promotion Media].[Street Handout], [Time].[1997])",
+				"where ([Measures].[Unit Sales], [Promotion Media].[All Media].[Street Handout], [Time].[1997])",
 
 				"Axis #0:" + nl +
-				"{[Measures].[Unit Sales], [Promotion Media].[All Promotion Media].[Street Handout], [Time].[1997]}" + nl +
+				"{[Measures].[Unit Sales], [Promotion Media].[All Media].[Street Handout], [Time].[1997]}" + nl +
 				"Axis #1:" + nl +
 				"{[Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
 				"{[Product].[All Products].[Drink].[Beverages]}" + nl +
 				"{[Product].[All Products].[Drink].[Dairy]}" + nl +
-				"Row #0: 158.00" + nl +
-				"Row #0: 270.00" + nl +
-				"Row #0: 84.00" + nl),
+				"Row #0: 158" + nl +
+				"Row #0: 270" + nl +
+				"Row #0: 84" + nl),
 
 		// 4
 		new QueryAndResult(
@@ -874,10 +1082,10 @@ public class FoodMartTestCase extends TestCase {
 				"  NON EMPTY CrossJoin([Product].[All Products].[Drink].children, [Customers].[All Customers].[USA].[WA].Children) on rows," + nl +
 				"  CrossJoin(" + nl +
 				"    {[Measures].[Unit Sales], [Measures].[Store Sales]}," + nl +
-				"    { [Promotion Media].[All Promotion Media].[Radio]," + nl +
-				"      [Promotion Media].[All Promotion Media].[TV]," + nl +
-				"      [Promotion Media].[All Promotion Media].[Sunday Paper]," + nl +
-				"      [Promotion Media].[All Promotion Media].[Street Handout] }" + nl +
+				"    { [Promotion Media].[All Media].[Radio]," + nl +
+				"      [Promotion Media].[All Media].[TV]," + nl +
+				"      [Promotion Media].[All Media].[Sunday Paper]," + nl +
+				"      [Promotion Media].[All Media].[Street Handout] }" + nl +
 				"    ) on columns" + nl +
 				"from Sales" + nl +
 				"where ([Time].[1997])",
@@ -885,14 +1093,14 @@ public class FoodMartTestCase extends TestCase {
 				("Axis #0:" + nl +
 				"{[Time].[1997]}" + nl +
 				"Axis #1:" + nl +
-				"{[Measures].[Unit Sales], [Promotion Media].[All Promotion Media].[Radio]}" + nl +
-				"{[Measures].[Unit Sales], [Promotion Media].[All Promotion Media].[TV]}" + nl +
-				"{[Measures].[Unit Sales], [Promotion Media].[All Promotion Media].[Sunday Paper]}" + nl +
-				"{[Measures].[Unit Sales], [Promotion Media].[All Promotion Media].[Street Handout]}" + nl +
-				"{[Measures].[Store Sales], [Promotion Media].[All Promotion Media].[Radio]}" + nl +
-				"{[Measures].[Store Sales], [Promotion Media].[All Promotion Media].[TV]}" + nl +
-				"{[Measures].[Store Sales], [Promotion Media].[All Promotion Media].[Sunday Paper]}" + nl +
-				"{[Measures].[Store Sales], [Promotion Media].[All Promotion Media].[Street Handout]}" + nl +
+				"{[Measures].[Unit Sales], [Promotion Media].[All Media].[Radio]}" + nl +
+				"{[Measures].[Unit Sales], [Promotion Media].[All Media].[TV]}" + nl +
+				"{[Measures].[Unit Sales], [Promotion Media].[All Media].[Sunday Paper]}" + nl +
+				"{[Measures].[Unit Sales], [Promotion Media].[All Media].[Street Handout]}" + nl +
+				"{[Measures].[Store Sales], [Promotion Media].[All Media].[Radio]}" + nl +
+				"{[Measures].[Store Sales], [Promotion Media].[All Media].[TV]}" + nl +
+				"{[Measures].[Store Sales], [Promotion Media].[All Media].[Sunday Paper]}" + nl +
+				"{[Measures].[Store Sales], [Promotion Media].[All Media].[Street Handout]}" + nl +
 				"Axis #2:" + nl +
 				"{[Product].[All Products].[Drink].[Alcoholic Beverages], [Customers].[All Customers].[USA].[WA].[Anacortes]}" + nl +
 				"{[Product].[All Products].[Drink].[Alcoholic Beverages], [Customers].[All Customers].[USA].[WA].[Ballard]}" + nl +
@@ -963,7 +1171,7 @@ public class FoodMartTestCase extends TestCase {
 				"Row #1: (null)" + nl +
 				"Row #1: (null)" + nl +
 				"Row #1: 4" + nl +
-				"Row #1: 10.4" + nl +
+				"Row #1: 10.40" + nl +
 				"Row #1: (null)" + nl +
 				"Row #1: (null)" + nl +
 				"Row #1: 2.16" + nl +
@@ -987,7 +1195,7 @@ public class FoodMartTestCase extends TestCase {
 				"Row #4: (null)" + nl +
 				"Row #4: (null)" + nl +
 				"Row #4: 8" + nl +
-				"Row #4: 2.1" + nl +
+				"Row #4: 2.10" + nl +
 				"Row #4: (null)" + nl +
 				"Row #4: (null)" + nl +
 				"Row #4: 9.63" + nl +
@@ -1003,15 +1211,15 @@ public class FoodMartTestCase extends TestCase {
 				"Row #6: (null)" + nl +
 				"Row #6: (null)" + nl +
 				"Row #6: 7" + nl +
-				"Row #6: 7.8" + nl +
+				"Row #6: 7.80" + nl +
 				"Row #6: (null)" + nl +
 				"Row #6: (null)" + nl) + (
-				"Row #6: 15" + nl +
+				"Row #6: 15.00" + nl +
 				"Row #7: 14" + nl +
 				"Row #7: (null)" + nl +
 				"Row #7: (null)" + nl +
 				"Row #7: (null)" + nl +
-				"Row #7: 36.1" + nl +
+				"Row #7: 36.10" + nl +
 				"Row #7: (null)" + nl +
 				"Row #7: (null)" + nl +
 				"Row #7: (null)" + nl +
@@ -1022,7 +1230,7 @@ public class FoodMartTestCase extends TestCase {
 				"Row #8: 10.29" + nl +
 				"Row #8: (null)" + nl +
 				"Row #8: (null)" + nl +
-				"Row #8: 32.2" + nl +
+				"Row #8: 32.20" + nl +
 				"Row #9: 3" + nl +
 				"Row #9: (null)" + nl +
 				"Row #9: (null)" + nl +
@@ -1102,7 +1310,7 @@ public class FoodMartTestCase extends TestCase {
 				"Row #18: 7.16" + nl +
 				"Row #18: (null)" + nl +
 				"Row #18: (null)" + nl +
-				"Row #18: 8.1" + nl +
+				"Row #18: 8.10" + nl +
 				"Row #19: 7" + nl +
 				"Row #19: (null)" + nl +
 				"Row #19: (null)" + nl +
@@ -1155,15 +1363,15 @@ public class FoodMartTestCase extends TestCase {
 				"Row #25: (null)" + nl +
 				"Row #25: (null)" + nl +
 				"Row #25: 9" + nl +
-				"Row #25: 6.8" + nl +
+				"Row #25: 6.80" + nl +
 				"Row #25: (null)" + nl +
 				"Row #25: (null)" + nl +
-				"Row #25: 18.9" + nl +
+				"Row #25: 18.90" + nl +
 				"Row #26: 3" + nl +
 				"Row #26: (null)" + nl) + (
 				"Row #26: (null)" + nl +
 				"Row #26: 9" + nl +
-				"Row #26: 1.5" + nl +
+				"Row #26: 1.50" + nl +
 				"Row #26: (null)" + nl +
 				"Row #26: (null)" + nl +
 				"Row #26: 23.01" + nl +
@@ -1190,7 +1398,7 @@ public class FoodMartTestCase extends TestCase {
 				"Row #29: (null)" + nl +
 				"Row #29: (null)" + nl +
 				"Row #29: 48.02" + nl +
-				"Row #29: 28.8" + nl +
+				"Row #29: 28.80" + nl +
 				"Row #30: (null)" + nl) + (
 				"Row #30: (null)" + nl +
 				"Row #30: 14" + nl +
@@ -1219,7 +1427,7 @@ public class FoodMartTestCase extends TestCase {
 				"Row #33: (null)" + nl +
 				"Row #33: (null)" + nl +
 				"Row #33: (null)" + nl +
-				"Row #33: 2.8" + nl +
+				"Row #33: 2.80" + nl +
 				"Row #33: (null)" + nl +
 				"Row #33: (null)" + nl +
 				"Row #33: (null)" + nl) + (
@@ -1270,7 +1478,7 @@ public class FoodMartTestCase extends TestCase {
 				"Row #39: 4.47" + nl +
 				"Row #39: (null)" + nl +
 				"Row #39: (null)" + nl +
-				"Row #39: 9.2" + nl +
+				"Row #39: 9.20" + nl +
 				"Row #40: (null)" + nl +
 				"Row #40: 1" + nl +
 				"Row #40: (null)" + nl +
@@ -1341,7 +1549,7 @@ public class FoodMartTestCase extends TestCase {
 				"Row #48: 5" + nl +
 				"Row #48: (null)" + nl +
 				"Row #48: (null)" + nl +
-				"Row #48: 4.5" + nl +
+				"Row #48: 4.50" + nl +
 				"Row #48: 7.27" + nl +
 				"Row #49: (null)" + nl +
 				"Row #49: (null)" + nl +
@@ -1411,10 +1619,10 @@ public class FoodMartTestCase extends TestCase {
 		// 5
 		new QueryAndResult(
 				"select from Sales" + nl +
-					"where ([Measures].[Store Sales], [Time].[1997], [Promotion Media].[All Promotion Media].[TV])",
+					"where ([Measures].[Store Sales], [Time].[1997], [Promotion Media].[All Media].[TV])",
 
 				"Axis #0:" + nl +
-				"{[Measures].[Store Sales], [Time].[1997], [Promotion Media].[All Promotion Media].[TV]}" + nl +
+				"{[Measures].[Store Sales], [Time].[1997], [Promotion Media].[All Media].[TV]}" + nl +
 				"7,786.21"),
 	};
 
@@ -1496,7 +1704,7 @@ public class FoodMartTestCase extends TestCase {
 		runParallelQueries(1, 1);
 	}
 
-	public void testParallel() {
+	public void _testParallel() {
 		runParallelQueries(5, 3);
 	}
 

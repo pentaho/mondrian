@@ -72,14 +72,15 @@ class RolapHierarchy extends HierarchyBase
 		this.subName = subName;
 		this.hasAll = hasAll;
 		this.levels = new RolapLevel[0];
-		if (hasAll) {
-			Util.discard(newLevel("(All)", null, null, RolapLevel.ALL));
-		}
 		this.name = dimension.getName();
 		this.uniqueName = dimension.getUniqueName();
 		if (this.subName != null) {
 			this.name += "." + subName; // e.g. "Time.Weekly"
 			this.uniqueName = Util.makeFqName(name); // e.g. "[Time.Weekly]"
+		}
+		if (hasAll) {
+			Util.discard(newLevel("(All)", null, null, RolapLevel.ALL));
+			this.allMemberName = "All " + name + "s";
 		}
 	}
 
@@ -110,6 +111,9 @@ class RolapHierarchy extends HierarchyBase
 		}
 		this.xmlHierarchy = xmlHierarchy;
 		if (hasAll) {
+			if (xmlHierarchy.allMemberName != null) {
+				this.allMemberName = xmlHierarchy.allMemberName;
+			}
 			this.levels = new RolapLevel[xmlHierarchy.levels.length + 1];
 			this.levels[0] = new RolapLevel(
 					this, 0, "(All)", null, null, new RolapProperty[0], RolapLevel.ALL);

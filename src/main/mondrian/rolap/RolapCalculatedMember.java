@@ -23,13 +23,23 @@ import mondrian.olap.*;
 public class RolapCalculatedMember extends RolapMember {
 	private Formula formula;
 
+	static final String[] FORMAT_PROPERTIES = {
+		"format", "format_string", "FORMAT", "FORMAT_STRING"
+	};
+
 	RolapCalculatedMember(
 		RolapMember parentMember, RolapLevel level, String name,
 		Formula formula)
 	{
 		super(parentMember, level, name);
 		this.formula = formula;
-		Exp formatExp = formula.getMemberProperty("format");
+		Exp formatExp = null;
+		for (int i = 0; i < FORMAT_PROPERTIES.length; i++) {
+			formatExp = formula.getMemberProperty(FORMAT_PROPERTIES[i]);
+			if (formatExp != null) {
+				break;
+			}
+		}
 		if (formatExp == null) {
 			formatExp = Literal.emptyString;
 		}

@@ -62,13 +62,8 @@ class RolapMember extends MemberBase
 
 	public int compareHierarchically(Member o)
 	{
-		RolapMember other = (RolapMember) o;
-		if (this.parentMember == other.parentMember) {
-			// including case where both parents are null
-			return 0;
-		} else {
-			return this.ordinal - other.ordinal;
-		}
+		MemberReader reader = ((RolapHierarchy) getHierarchy()).memberReader;
+		return reader.compare(this, (RolapMember) o, true);
 	}
 
 	public Member[] getMemberChildren() {
@@ -90,14 +85,14 @@ class RolapMember extends MemberBase
 	}
 	/** The name of the property which holds the parsed format string. Internal. **/
 	public static final String PROPERTY_FORMAT_EXP = "$format_exp";
-	public void setProperty(String name, Object value) {
+	public synchronized void setProperty(String name, Object value) {
 		if (mapPropertyNameToValue.isEmpty()) {
 			// the empty map is shared and immutable; create our own
 			mapPropertyNameToValue = new HashMap();
 		}
 		mapPropertyNameToValue.put(name, value);
 	}
-	public Object getPropertyValue(String name) {
+	public synchronized Object getPropertyValue(String name) {
 		return mapPropertyNameToValue.get(name);
 	}
 	public Property[] getProperties() {

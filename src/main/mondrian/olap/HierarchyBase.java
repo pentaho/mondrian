@@ -14,7 +14,7 @@ package mondrian.olap;
 import java.io.PrintWriter;
 
 /**
- * todo:
+ * Skeleton implementation for {@link Hierarchy}.
  *
  * @author jhyde
  * @since 6 August, 2001
@@ -41,6 +41,7 @@ public abstract class HierarchyBase
 	protected String description;
 	protected LevelBase[] levels;
 	protected boolean hasAll;
+	protected String allMemberName;
 
 	// implement MdxElement
 	public String getUniqueName() { return uniqueName; }
@@ -129,12 +130,8 @@ public abstract class HierarchyBase
 
 	public String getAllMemberName()
 	{
-		boolean alreadyPlural = name.equals("Customers") ||
-			name.equals("Promotions") ||
-			name.equals("Promotion Media");
-		return "All " + name + (alreadyPlural ? "" : "s");
+		return allMemberName;
 	}
 }
-
 
 // End HierarchyBase.java

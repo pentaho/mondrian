@@ -573,6 +573,10 @@ class SqlMemberSource implements MemberReader
 	{
 		throw new UnsupportedOperationException();
 	}
+
+	public int compare(RolapMember m1, RolapMember m2, boolean siblingsAreEqual) {
+		throw new UnsupportedOperationException();
+	}
 }
 
 // End SqlMemberSource.java

@@ -214,6 +214,34 @@ class CacheMemberReader implements MemberReader, MemberCache
 	{
 		return members.length;
 	}
+
+	public int compare(RolapMember m1, RolapMember m2, boolean siblingsAreEqual) {
+		if (m1 == m2) {
+			return 0;
+		}
+		if (siblingsAreEqual && m1.getParentMember() == m2.getParentMember()) {
+			return 0;
+		}
+		// Members are stored in hierarchical order.
+		int pos1 = -1, pos2 = -1;
+		for (int i = 0; i < members.length; i++) {
+			RolapMember member = members[i];
+			if (member == m1) {
+				pos1 = i;
+			}
+			if (member == m2) {
+				pos2 = i;
+			}
+		}
+		if (pos1 == -1) {
+			throw Util.newInternal(m1 + " not found among members");
+		}
+		if (pos2 == -1) {
+			throw Util.newInternal(m2 + " not found among members");
+		}
+		Util.assertTrue(pos1 != pos2);
+		return pos1 < pos2 ? -1 : 1;
+	}
 }
 
 // End CacheMemberReader.java

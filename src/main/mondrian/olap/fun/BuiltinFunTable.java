@@ -167,26 +167,26 @@ public class BuiltinFunTable extends FunTable {
 			// '[Time].CurrentMember.PrevMember'.
 			switch (to) {
 			case Exp.CatHierarchy:
-				// "<Dimension>.DefaultMember.Hierarchy"
+				// "<Dimension>.CurrentMember.Hierarchy"
 				return new FunCall(
 						"Hierarchy", new Exp[]{
 						new FunCall(
-								"DefaultMember",
+								"CurrentMember",
 								new Exp[]{fromExp},
 								FunDef.TypeProperty)},
 						FunDef.TypeProperty);
 			case Exp.CatLevel:
-				// "<Dimension>.DefaultMember.Level"
+				// "<Dimension>.CurrentMember.Level"
 				return new FunCall(
 						"Level", new Exp[]{
 						new FunCall(
-								"DefaultMember",
+								"CurrentMember",
 								new Exp[]{fromExp},
 								FunDef.TypeProperty)},
 						FunDef.TypeProperty);
 			case Exp.CatMember:
-				// "<Dimension>.DefaultMember"
-				return new FunCall("DefaultMember", new Exp[]{fromExp}, FunDef.TypeProperty);
+				// "<Dimension>.CurrentMember"
+				return new FunCall("CurrentMember", new Exp[]{fromExp}, FunDef.TypeProperty);
 			default:
 				return null;
 			}
@@ -563,7 +563,7 @@ public class BuiltinFunTable extends FunTable {
 
 			public void testBasic9(FoodMartTestCase test) {
 				String s = test.executeExpr(
-						"[Gender].[All Genders].[F].Hierarchy");
+						"[Gender].[All Gender].[F].Hierarchy");
 				test.assertEquals("[Gender]", s);
 			}
 
@@ -575,13 +575,13 @@ public class BuiltinFunTable extends FunTable {
 
 			public void testHierarchyAll(FoodMartTestCase test) {
 				String s = test.executeExpr(
-						"[Gender].[All Genders].Hierarchy");
+						"[Gender].[All Gender].Hierarchy");
 				test.assertEquals("[Gender]", s);
 			}
 
 			public void testHierarchyNull(FoodMartTestCase test) {
 				String s = test.executeExpr(
-						"[Gender].[All Genders].Parent.Hierarchy");
+						"[Gender].[All Gender].Parent.Hierarchy");
 				test.assertEquals("[Gender]", s); // MSOLAP gives "#ERR"
 			}
 		});
@@ -723,7 +723,7 @@ public class BuiltinFunTable extends FunTable {
 				// valid (they do not match) - in the Ancestor function"
 				test.assertAxisThrows(
 						"Ancestor([Gender].[M],[Store].[Store Country])",
-						"member '[Gender].[All Genders].[M]' is not in the same hierarchy as level '[Store].[Store Country]'");
+						"member '[Gender].[All Gender].[M]' is not in the same hierarchy as level '[Store].[Store Country]'");
 			}
 
 			public void testAncestorAllLevel(FoodMartTestCase test) {
@@ -895,7 +895,7 @@ public class BuiltinFunTable extends FunTable {
 			public void testCousinWrongHierarchy(FoodMartTestCase test) {
 				test.assertAxisThrows(
 						"Cousin([Time].[1997], [Gender].[M])",
-						"Members '[Time].[1997]' and '[Gender].[All Genders].[M]' are not compatible as cousins");
+						"Members '[Time].[1997]' and '[Gender].[All Gender].[M]' are not compatible as cousins");
 			}
 		});
 		define(new FunDefBase("CurrentMember", "<Dimension>.CurrentMember", "Returns the current member along a dimension during an iteration.", "pmd") {
@@ -971,13 +971,13 @@ public class BuiltinFunTable extends FunTable {
 
 			public void testFirstChildAll(FoodMartTestCase test) {
 				Member member = test.executeAxis(
-						"[Gender].[All Genders].FirstChild");
+						"[Gender].[All Gender].FirstChild");
 				test.assertEquals("F", member.getName());
 			}
 
 			public void testFirstChildOfChildless(FoodMartTestCase test) {
 				Member member = test.executeAxis(
-						"[Gender].[All Genders].[F].FirstChild");
+						"[Gender].[All Gender].[F].FirstChild");
 				test.assertNull(member);
 			}
 		});
@@ -1012,7 +1012,7 @@ public class BuiltinFunTable extends FunTable {
 
 			public void testFirstSiblingAll(FoodMartTestCase test) {
 				Member member = test.executeAxis(
-						"[Gender].[All Genders].FirstSibling");
+						"[Gender].[All Gender].FirstSibling");
 				test.assertTrue(member.isAll());
 			}
 
@@ -1099,7 +1099,7 @@ public class BuiltinFunTable extends FunTable {
 
 			public void testLastChildAll(FoodMartTestCase test) {
 				Member member = test.executeAxis(
-						"[Gender].[All Genders].LastChild");
+						"[Gender].[All Gender].LastChild");
 				test.assertEquals("M", member.getName());
 			}
 
@@ -1140,7 +1140,7 @@ public class BuiltinFunTable extends FunTable {
 
 			public void testLastSiblingAll(FoodMartTestCase test) {
 				Member member = test.executeAxis(
-						"[Gender].[All Genders].LastSibling");
+						"[Gender].[All Gender].LastSibling");
 				test.assertTrue(member.isAll());
 			}
 
@@ -1309,7 +1309,7 @@ public class BuiltinFunTable extends FunTable {
 					else {
 						int retval = 0;
 						for (int i = 0; i < members.size(); i++) {
-							if ((members.elementAt(i) != Util.nullValue) && (members.elementAt(i) != null)) { 
+							if ((members.elementAt(i) != Util.nullValue) && (members.elementAt(i) != null)) {
 								retval++;
 							}
 						}
@@ -1355,7 +1355,7 @@ public class BuiltinFunTable extends FunTable {
 					ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
 					//todo: ignore nulls, do we need to ignore the vector?
 					return median(evaluator.push(), members, exp);
-					
+
 				}
 				public void testMedian(FoodMartTestCase test) {
 					String result = test.executeExpr(
@@ -1464,8 +1464,8 @@ public class BuiltinFunTable extends FunTable {
 				public void testBottomCount(FoodMartTestCase test) {
 					Axis axis = test.executeAxis2(
 							"BottomCount({[Promotion Media].[Media Type].members}, 2, [Measures].[Unit Sales])");
-					String expected = "[Promotion Media].[All Promotion Media].[Radio]" + nl +
-							"[Promotion Media].[All Promotion Media].[Sunday Paper, Radio, TV]";
+					String expected = "[Promotion Media].[All Media].[Radio]" + nl +
+							"[Promotion Media].[All Media].[Sunday Paper, Radio, TV]";
 					test.assertEquals(expected, test.toString(axis.positions));
 				}
 				//todo: test unordered
@@ -1480,13 +1480,13 @@ public class BuiltinFunTable extends FunTable {
 					ExpBase exp = (ExpBase) getArg(evaluator, args, 2);
 					Double n = getDoubleArg(evaluator, args, 1);
 					return topOrBottom(evaluator.push(), members, exp, false, true, n.doubleValue());
-					
+
 				}
 				public void testBottomPercent(FoodMartTestCase test) {
 					Axis axis = test.executeAxis2(
 							"BottomPercent({[Promotion Media].[Media Type].members}, 1, [Measures].[Unit Sales])");
-					String expected = "[Promotion Media].[All Promotion Media].[Radio]" + nl +
-							"[Promotion Media].[All Promotion Media].[Sunday Paper, Radio, TV]";
+					String expected = "[Promotion Media].[All Media].[Radio]" + nl +
+							"[Promotion Media].[All Media].[Sunday Paper, Radio, TV]";
 					test.assertEquals(expected, test.toString(axis.positions));
 				}
 				//todo: test precision
@@ -1501,13 +1501,13 @@ public class BuiltinFunTable extends FunTable {
 					ExpBase exp = (ExpBase) getArg(evaluator, args, 2);
 					Double n = getDoubleArg(evaluator, args, 1);
 					return topOrBottom(evaluator.push(), members, exp, false, false, n.doubleValue());
-					
+
 				}
 				public void testBottomSum(FoodMartTestCase test) {
 					Axis axis = test.executeAxis2(
 							"BottomSum({[Promotion Media].[Media Type].members}, 5000, [Measures].[Unit Sales])");
-					String expected = "[Promotion Media].[All Promotion Media].[Radio]" + nl +
-							"[Promotion Media].[All Promotion Media].[Sunday Paper, Radio, TV]";
+					String expected = "[Promotion Media].[All Media].[Radio]" + nl +
+							"[Promotion Media].[All Media].[Sunday Paper, Radio, TV]";
 					test.assertEquals(expected, test.toString(axis.positions));
 				}
 			}));
@@ -1653,7 +1653,7 @@ public class BuiltinFunTable extends FunTable {
 			 * on axis, E.g. select filter([Customers].members, [Unit Sales] > 100)
 			 * from sales where ([Time].[1998])
 			 **/
-			public void testFilterWithSilcer(FoodMartTestCase test) {
+			public void testFilterWithSlicer(FoodMartTestCase test) {
 				Result result = test.execute(
 						"select {[Measures].[Unit Sales]} on columns," + nl +
 						" filter([Customers].[USA].children," + nl +
@@ -1664,7 +1664,7 @@ public class BuiltinFunTable extends FunTable {
 				// if slicer were ignored, there would be 3 rows
 				test.assertEquals(1, rows.positions.length);
 				Cell cell = result.getCell(new int[] {0,0});
-				test.assertEquals("30,114.00", cell.getFormattedValue());
+				test.assertEquals("30,114", cell.getFormattedValue());
 			}
 			public void testFilterCompound(FoodMartTestCase test) {
 				Result result = test.execute(
@@ -1729,13 +1729,152 @@ public class BuiltinFunTable extends FunTable {
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Vector members = (Vector) getArg(evaluator, args, 0);
-						ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+						ExpBase exp = (ExpBase) getArgNoEval(args, 1);
 						String order = (String) getArg(evaluator, args, 2, "ASC");
-						sort(
-								evaluator, members, exp,
-								order.equals("DESC") || order.equals("BDESC"),
-								order.equals("BASC") || order.equals("BDESC"));
+						boolean desc = order.equals("DESC") || order.equals("BDESC");
+						boolean brk = order.equals("BASC") || order.equals("BDESC");
+						sort(evaluator, members, exp, desc, brk);
 						return members;
+					}
+					public void testOrder(FoodMartTestCase test) {
+						test.runQueryCheckResult(
+								"select {[Measures].[Unit Sales]} on columns," + nl +
+								" order({" + nl +
+								"  [Product].[All Products].[Drink]," + nl +
+								"  [Product].[All Products].[Drink].[Beverages]," + nl +
+								"  [Product].[All Products].[Drink].[Dairy]," + nl +
+								"  [Product].[All Products].[Food]," + nl +
+								"  [Product].[All Products].[Food].[Baked Goods]," + nl +
+								"  [Product].[All Products].[Food].[Eggs]," + nl +
+								"  [Product].[All Products]}," + nl +
+								" [Measures].[Unit Sales]) on rows" + nl +
+								"from Sales",
+
+								"Axis #0:" + nl +
+								"{}" + nl +
+								"Axis #1:" + nl +
+								"{[Measures].[Unit Sales]}" + nl +
+								"Axis #2:" + nl +
+								"{[Product].[All Products]}" + nl +
+								"{[Product].[All Products].[Drink]}" + nl +
+								"{[Product].[All Products].[Drink].[Dairy]}" + nl +
+								"{[Product].[All Products].[Drink].[Beverages]}" + nl +
+								"{[Product].[All Products].[Food]}" + nl +
+								"{[Product].[All Products].[Food].[Eggs]}" + nl +
+								"{[Product].[All Products].[Food].[Baked Goods]}" + nl +
+								"Row #0: 266,773" + nl +
+								"Row #1: 24,597" + nl +
+								"Row #2: 4,186" + nl +
+								"Row #3: 13,573" + nl +
+								"Row #4: 191,940" + nl +
+								"Row #5: 4,132" + nl +
+								"Row #6: 7,870" + nl);
+					}
+					public void testOrderParentsMissing(FoodMartTestCase test) {
+						// Paradoxically, [Alcoholic Beverages] comes before
+						// [Eggs] even though it has a larger value, because
+						// its parent [Drink] has a smaller value than [Food].
+						test.runQueryCheckResult(
+								"select {[Measures].[Unit Sales]} on columns," +
+								" order({" + nl +
+								"  [Product].[All Products].[Drink].[Alcoholic Beverages]," + nl +
+								"  [Product].[All Products].[Food].[Eggs]}," + nl +
+								" [Measures].[Unit Sales], ASC) on rows" + nl +
+								"from Sales",
+
+								"Axis #0:" + nl +
+								"{}" + nl +
+								"Axis #1:" + nl +
+								"{[Measures].[Unit Sales]}" + nl +
+								"Axis #2:" + nl +
+								"{[Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
+								"{[Product].[All Products].[Food].[Eggs]}" + nl +
+								"Row #0: 6,838" + nl +
+								"Row #1: 4,132" + nl);
+					}
+					public void testOrderCrossJoinBreak(FoodMartTestCase test) {
+						test.runQueryCheckResult(
+								"select {[Measures].[Unit Sales]} on columns," + nl +
+								"  Order(" + nl +
+								"    CrossJoin(" + nl +
+								"      [Gender].children," + nl +
+								"      [Marital Status].children)," + nl +
+								"    [Measures].[Unit Sales]," + nl +
+								"    BDESC) on rows" + nl +
+								"from Sales" + nl +
+								"where [Time].[1997].[Q1]",
+
+								"Axis #0:" + nl +
+								"{[Time].[1997].[Q1]}" + nl +
+								"Axis #1:" + nl +
+								"{[Measures].[Unit Sales]}" + nl +
+								"Axis #2:" + nl +
+								"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M]}" + nl +
+								"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S]}" + nl +
+								"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M]}" + nl +
+								"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S]}" + nl +
+								"Row #0: 17,097" + nl +
+								"Row #1: 16,845" + nl +
+								"Row #2: 16,536" + nl +
+								"Row #3: 15,813" + nl);
+					}
+					public void testOrderCrossJoin(FoodMartTestCase test) {
+						// Note:
+						// 1. [Alcoholic Beverages] collates before [Eggs] and
+						//    [Seafood] because its parent, [Drink], is less
+						//    than [Food]
+						// 2. [Seattle] generally sorts after [CA] and [OR]
+						//    because invisible parent [WA] is greater.
+						test.runQueryCheckResult(
+								"select CrossJoin(" + nl +
+								"    {[Time].[1997]," + nl +
+								"     [Time].[1997].[Q1]}," + nl +
+								"    {[Measures].[Unit Sales]}) on columns," + nl +
+								"  Order(" + nl +
+								"    CrossJoin( " + nl +
+								"      {[Product].[All Products].[Food].[Eggs]," + nl +
+								"       [Product].[All Products].[Food].[Seafood]," + nl +
+								"       [Product].[All Products].[Drink].[Alcoholic Beverages]}," + nl +
+								"      {[Store].[USA].[WA].[Seattle]," + nl +
+								"       [Store].[USA].[CA]," + nl +
+								"       [Store].[USA].[OR]})," + nl +
+								"    ([Time].[1997].[Q1], [Measures].[Unit Sales])," + nl +
+								"    ASC) on rows" + nl +
+								"from Sales",
+
+								"Axis #0:" + nl +
+								"{}" + nl +
+								"Axis #1:" + nl +
+								"{[Time].[1997], [Measures].[Unit Sales]}" + nl +
+								"{[Time].[1997].[Q1], [Measures].[Unit Sales]}" + nl +
+								"Axis #2:" + nl +
+								"{[Product].[All Products].[Drink].[Alcoholic Beverages], [Store].[All Stores].[USA].[OR]}" + nl +
+								"{[Product].[All Products].[Drink].[Alcoholic Beverages], [Store].[All Stores].[USA].[CA]}" + nl +
+								"{[Product].[All Products].[Drink].[Alcoholic Beverages], [Store].[All Stores].[USA].[WA].[Seattle]}" + nl +
+								"{[Product].[All Products].[Food].[Seafood], [Store].[All Stores].[USA].[CA]}" + nl +
+								"{[Product].[All Products].[Food].[Seafood], [Store].[All Stores].[USA].[OR]}" + nl +
+								"{[Product].[All Products].[Food].[Seafood], [Store].[All Stores].[USA].[WA].[Seattle]}" + nl +
+								"{[Product].[All Products].[Food].[Eggs], [Store].[All Stores].[USA].[CA]}" + nl +
+								"{[Product].[All Products].[Food].[Eggs], [Store].[All Stores].[USA].[OR]}" + nl +
+								"{[Product].[All Products].[Food].[Eggs], [Store].[All Stores].[USA].[WA].[Seattle]}" + nl +
+								"Row #0: 1,680" + nl +
+								"Row #0: 393" + nl +
+								"Row #1: 1,936" + nl +
+								"Row #1: 431" + nl +
+								"Row #2: 635" + nl +
+								"Row #2: 142" + nl +
+								"Row #3: 441" + nl +
+								"Row #3: 91" + nl +
+								"Row #4: 451" + nl +
+								"Row #4: 107" + nl +
+								"Row #5: 217" + nl +
+								"Row #5: 44" + nl +
+								"Row #6: 1,116" + nl +
+								"Row #6: 240" + nl +
+								"Row #7: 1,119" + nl +
+								"Row #7: 251" + nl +
+								"Row #8: 373" + nl +
+								"Row #8: 57" + nl);
 					}
 				}));
 		define(new MultiResolver(
@@ -1909,8 +2048,8 @@ public class BuiltinFunTable extends FunTable {
 					public void testTopCount(FoodMartTestCase test) {
 						Axis axis = test.executeAxis2(
 								"TopCount({[Promotion Media].[Media Type].members}, 2, [Measures].[Unit Sales])");
-						String expected = "[Promotion Media].[All Promotion Media].[No Media]" + nl +
-								"[Promotion Media].[All Promotion Media].[Daily Paper, Radio, TV]";
+						String expected = "[Promotion Media].[All Media].[No Media]" + nl +
+								"[Promotion Media].[All Media].[Daily Paper, Radio, TV]";
 						test.assertEquals(expected, test.toString(axis.positions));
 					}
 				}));
@@ -1924,12 +2063,12 @@ public class BuiltinFunTable extends FunTable {
 					ExpBase exp = (ExpBase) getArg(evaluator, args, 2);
 					Double n = getDoubleArg(evaluator, args, 1);
 					return topOrBottom(evaluator.push(), members, exp, true, true, n.doubleValue());
-					
+
 				}
 				public void testTopPercent(FoodMartTestCase test) {
 					Axis axis = test.executeAxis2(
 							"TopPercent({[Promotion Media].[Media Type].members}, 70, [Measures].[Unit Sales])");
-					String expected = "[Promotion Media].[All Promotion Media].[No Media]";
+					String expected = "[Promotion Media].[All Media].[No Media]";
 					test.assertEquals(expected, test.toString(axis.positions));
 				}
 				//todo: test precision
@@ -1944,13 +2083,13 @@ public class BuiltinFunTable extends FunTable {
 					ExpBase exp = (ExpBase) getArg(evaluator, args, 2);
 					Double n = getDoubleArg(evaluator, args, 1);
 					return topOrBottom(evaluator.push(), members, exp, true, false, n.doubleValue());
-					
+
 				}
 				public void testTopSum(FoodMartTestCase test) {
 					Axis axis = test.executeAxis2(
 							"TopSum({[Promotion Media].[Media Type].members}, 200000, [Measures].[Unit Sales])");
-					String expected = "[Promotion Media].[All Promotion Media].[No Media]" + nl +
-							"[Promotion Media].[All Promotion Media].[Daily Paper, Radio, TV]";
+					String expected = "[Promotion Media].[All Media].[No Media]" + nl +
+							"[Promotion Media].[All Media].[Daily Paper, Radio, TV]";
 					test.assertEquals(expected, test.toString(axis.positions));
 				}
 			}));
@@ -2123,7 +2262,7 @@ public class BuiltinFunTable extends FunTable {
 			public void testMemberUniqueName(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"[Gender].DefaultMember.UniqueName");
-				test.assertEquals("[Gender].[All Genders]", s);
+				test.assertEquals("[Gender].[All Gender]", s);
 			}
 
 			public void testMemberUniqueNameOfNull(FoodMartTestCase test) {
@@ -2439,7 +2578,7 @@ public class BuiltinFunTable extends FunTable {
 				member = result.getAxes()[1].positions[17].members[0];
 				test.assertEquals("[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]", member.getUniqueName());
 				cell = result.getCell(new int[] {0,17});
-				test.assertEquals("2237.0", cell.getFormattedValue());
+				test.assertEquals("2,237", cell.getFormattedValue());
 				cell = result.getCell(new int[] {1,17});
 				test.assertEquals("0.16802205204566403", cell.getFormattedValue());
 				member = result.getAxes()[1].positions[3].members[0];

@@ -15,10 +15,7 @@ import mondrian.olap.*;
 import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.rolap.agg.AggregationManager;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.*;
 import java.io.PrintWriter;
 
 /**
@@ -32,7 +29,7 @@ class RolapResult extends ResultBase
 {
 	private RolapEvaluator evaluator;
 	private CellKey point;
-	Hashtable cellValues = new Hashtable();
+	HashMap cellValues;
 	AggregatingCellReader aggregatingReader;
 	BatchingCellReader batchingReader;
 
@@ -70,11 +67,11 @@ class RolapResult extends ResultBase
 					axis = query.axes[i];
 				}
 				evaluator.cellReader = batchingReader;
-				RolapAxis axisResult = executeAxis(evaluator, axis);
+				RolapAxis axisResult = executeAxis(evaluator.push(), axis);
 				batchingReader.loadAggregations();
 				batchingReader.clear();
 				evaluator.cellReader = aggregatingReader;
-				axisResult = executeAxis(evaluator, axis);
+				axisResult = executeAxis(evaluator.push(), axis);
 
 				if (i == -1) {
 					this.slicerAxis = axisResult;
@@ -91,7 +88,6 @@ class RolapResult extends ResultBase
 					this.axes[i] = axisResult;
 				}
 			}
-			this.cellValues = new Hashtable();
 			executeBody(query);
 		} finally {
 			CachePool.instance().unpin(pinnedSegments);
@@ -123,9 +119,25 @@ class RolapResult extends ResultBase
 		RolapCube cube = (RolapCube) query.getCube();
 		RolapMember measure = (RolapMember) getMember(
 			pos, cube.measuresHierarchy.getDimension());
-		// todo: set up evaluator's context better -- context dependent format
-		// strings are going to be just WRONG
+		// Set up evaluator's context, so that context-dependent format
+		// strings work properly.
 		Evaluator cellEvaluator = evaluator.push();
+		for (int i = -1; i < axes.length; i++) {
+			Axis axis;
+			int index;
+			if (i < 0) {
+				axis = slicerAxis;
+				index = 0;
+			} else {
+				axis = axes[i];
+				index = pos[i];
+			}
+			Position position = axis.positions[index];
+			for (int j = 0; j < position.members.length; j++) {
+				Member member = position.members[j];
+				cellEvaluator.setContext(member);
+			}
+		}
 		return new RolapCell(measure,value,cellEvaluator);
 	}
 	private RolapAxis executeAxis(Evaluator evaluator, QueryAxis axis)
@@ -166,7 +178,7 @@ class RolapResult extends ResultBase
 
 	private void executeBody(Query query)
 	{
-		cellValues = new Hashtable();
+		cellValues = new HashMap();
 		// first time, create a dummy evaluator which collects requests
 		this.evaluator.cellReader = this.batchingReader;
 		executeStripe(query.axes.length - 1);

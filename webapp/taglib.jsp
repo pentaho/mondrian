@@ -21,10 +21,10 @@
 select
   {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} on columns,
   CrossJoin(
-    { [Promotion Media].[All Promotion Media].[Radio],
-      [Promotion Media].[All Promotion Media].[TV],
-      [Promotion Media].[All Promotion Media].[Sunday Paper],
-      [Promotion Media].[All Promotion Media].[Street Handout] },
+    { [Promotion Media].[All Media].[Radio],
+      [Promotion Media].[All Media].[TV],
+      [Promotion Media].[All Media].[Sunday Paper],
+      [Promotion Media].[All Media].[Street Handout] },
     [Product].[All Products].[Drink].children) on rows
 from Sales
 where ([Time].[1997])
@@ -35,10 +35,10 @@ select
   [Product].[All Products].[Drink].children on rows,
   CrossJoin(
     {[Measures].[Unit Sales], [Measures].[Store Sales]},
-    { [Promotion Media].[All Promotion Media].[Radio],
-      [Promotion Media].[All Promotion Media].[TV],
-      [Promotion Media].[All Promotion Media].[Sunday Paper],
-      [Promotion Media].[All Promotion Media].[Street Handout] }
+    { [Promotion Media].[All Media].[Radio],
+      [Promotion Media].[All Media].[TV],
+      [Promotion Media].[All Media].[Sunday Paper],
+      [Promotion Media].[All Media].[Street Handout] }
     ) on columns
 from Sales
 where ([Time].[1997])
@@ -55,7 +55,7 @@ from Sales
 select
   [Product].[All Products].[Drink].children on columns
 from Sales
-where ([Measures].[Unit Sales], [Promotion Media].[All Promotion Media].[Street Handout], [Time].[1997])
+where ([Measures].[Unit Sales], [Promotion Media].[All Media].[Street Handout], [Time].[1997])
 </mdx:query>
 
 <mdx:query name="query5" resultCache="true">
@@ -63,10 +63,10 @@ select
   NON EMPTY CrossJoin([Product].[All Products].[Drink].children, [Customers].[All Customers].[USA].[WA].Children) on rows,
   CrossJoin(
     {[Measures].[Unit Sales], [Measures].[Store Sales]},
-    { [Promotion Media].[All Promotion Media].[Radio],
-      [Promotion Media].[All Promotion Media].[TV],
-      [Promotion Media].[All Promotion Media].[Sunday Paper],
-      [Promotion Media].[All Promotion Media].[Street Handout] }
+    { [Promotion Media].[All Media].[Radio],
+      [Promotion Media].[All Media].[TV],
+      [Promotion Media].[All Media].[Sunday Paper],
+      [Promotion Media].[All Media].[Street Handout] }
     ) on columns
 from Sales
 where ([Time].[1997])
@@ -74,7 +74,7 @@ where ([Time].[1997])
 
 <mdx:query name="query6" resultCache="true">
 select from Sales
-where ([Measures].[Store Sales], [Time].[1997], [Promotion Media].[All Promotion Media].[TV])
+where ([Measures].[Store Sales], [Time].[1997], [Promotion Media].[All Media].[TV])
 </mdx:query>
 
 

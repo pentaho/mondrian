@@ -1112,8 +1112,9 @@ comma_member_property_def_list_opt ::=
 		:}
 	;
 member_property_def_list ::=
-		member_property_definition {:
+		member_property_definition:m {:
 			RESULT = new ArrayList();
+			RESULT.add(m);
 		:}
 	|	member_property_definition:hd COMMA member_property_def_list:tl {:
 			RESULT = tl;

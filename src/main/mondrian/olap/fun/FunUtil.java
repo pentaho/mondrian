@@ -16,7 +16,6 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import mondrian.olap.*;
 import mondrian.test.FoodMartTestCase;
-import mondrian.test.TestContext;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -34,6 +33,10 @@ public class FunUtil extends Util {
 	public static RuntimeException newEvalException(
 			FunDef funDef, String message) {
 		return new MondrianEvaluationException(message);
+	}
+
+	static Exp getArgNoEval(Exp[] args, int index) {
+		return args[index];
 	}
 
 	static Object getArg(Evaluator evaluator, Exp[] args, int index) {
@@ -257,52 +260,64 @@ public class FunUtil extends Util {
 		return false;
 	}
 
+	/**
+	 * @pre exp != null
+	 */
 	static HashMap evaluateMembers(
-			Evaluator evaluator, ExpBase exp, Vector members) {
-		//if (exp == null) { //needed?
-		//	return evaluateMembers(evaluator.push(), members);
-		//}
-		//else {			
-			Member[] constantTuple = exp.isConstantTuple();
-			if (constantTuple == null) {
-				return _evaluateMembers(evaluator.push(), exp, members);
-			} else {
-				// exp is constant -- add it to the context before the loop, rather
-				// than at every step
-				return evaluateMembers(evaluator.push(constantTuple), members);
-			}
-		//}
+			Evaluator evaluator, ExpBase exp, Vector members, boolean parentsToo) {
+		Member[] constantTuple = exp.isConstantTuple();
+		if (constantTuple == null) {
+			return _evaluateMembers(evaluator.push(), exp, members, parentsToo);
+		} else {
+			// exp is constant -- add it to the context before the loop, rather
+			// than at every step
+			return evaluateMembers(evaluator.push(constantTuple), members, parentsToo);
+		}
 	}
 
 	private static HashMap _evaluateMembers(
-			Evaluator evaluator, ExpBase exp, Vector members) {
+			Evaluator evaluator, ExpBase exp, Vector members, boolean parentsToo) {
 		HashMap mapMemberToValue = new HashMap();
 		for (int i = 0, count = members.size(); i < count; i++) {
 			Member member = (Member) members.elementAt(i);
-			evaluator.setContext(member);
-			Object o = exp.evaluate(evaluator);
-			Object result;
-			if (o instanceof Member) {
-				evaluator.setContext((Member) o);
-				result = evaluator.evaluateCurrent();
-			} else if (o instanceof Member[]) {
-				evaluator.setContext((Member[]) o);
-				result = evaluator.evaluateCurrent();
-			} else {
-				result = o;
+			while (true) {
+				evaluator.setContext(member);
+				Object result = exp.evaluateScalar(evaluator);
+				mapMemberToValue.put(member, result);
+				if (!parentsToo) {
+					break;
+				}
+				member = member.getParentMember();
+				if (member == null) {
+					break;
+				}
+				if (mapMemberToValue.containsKey(member)) {
+					break;
+				}
 			}
-			mapMemberToValue.put(member, result);
 		}
 		return mapMemberToValue;
 	}
 
-	static HashMap evaluateMembers(Evaluator evaluator, Vector members) {
+	static HashMap evaluateMembers(Evaluator evaluator, Vector members, boolean parentsToo) {
 		HashMap mapMemberToValue = new HashMap();
 		for (int i = 0, count = members.size(); i < count; i++) {
 			Member member = (Member) members.elementAt(i);
-			evaluator.setContext(member);
-			Object result = evaluator.evaluateCurrent();
-			mapMemberToValue.put(member, result);
+			while (true) {
+				evaluator.setContext(member);
+				Object result = evaluator.evaluateCurrent();
+				mapMemberToValue.put(member, result);
+				if (!parentsToo) {
+					break;
+				}
+				member = member.getParentMember();
+				if (member == null) {
+					break;
+				}
+				if (mapMemberToValue.containsKey(member)) {
+					break;
+				}
+			}
 		}
 		return mapMemberToValue;
 	}
@@ -310,10 +325,48 @@ public class FunUtil extends Util {
 	static void sort(
 			Evaluator evaluator, Vector members, ExpBase exp, boolean desc,
 			boolean brk) {
-		HashMap mapMemberToValue = evaluateMembers(evaluator, exp, members);
-		Comparator comparator = new MemberComparator(
-				mapMemberToValue, desc, brk);
+		if (members.isEmpty()) {
+			return;
+		}
+		Object first = members.elementAt(0);
+		Comparator comparator;
+		if (first instanceof Member) {
+			final boolean parentsToo = !brk;
+			HashMap mapMemberToValue = evaluateMembers(evaluator, exp, members, parentsToo);
+			if (brk) {
+				comparator = new BreakMemberComparator(mapMemberToValue);
+			} else {
+				comparator = new HierarchicalMemberComparator(mapMemberToValue);
+			}
+		} else {
+			Util.assertTrue(first instanceof Member[]);
+			final int arity = ((Member[]) first).length;
+			if (brk) {
+				comparator = new BreakArrayComparator(evaluator, exp, arity);
+			} else {
+				comparator = new HierarchicalArrayComparator(evaluator, exp, arity);
+			}
+		}
+		if (desc) {
+			comparator = new ReverseComparator(comparator);
+		}
 		sort(comparator, members);
+	}
+
+	static int compareValues(Object value0, Object value1) {
+		if (value0 == value1) {
+			return 0;
+		} else if (value0 == Util.nullValue) {
+			return 1; // null == +infinity
+		} else if (value1 == Util.nullValue) {
+			return -1; // null == +infinity
+		} else if (value0 instanceof String) {
+			return ((String) value0).compareTo((String) value1);
+		} else if (value0 instanceof Number) {
+			return FunUtil.sign(((Number) value0).doubleValue(), ((Number) value1).doubleValue());
+		} else {
+			throw Util.newInternal("cannot compare " + value0);
+		}
 	}
 
 	static void sort(Comparator comparator, Vector vector) {
@@ -347,25 +400,37 @@ public class FunUtil extends Util {
 				mapMemberToValue.put(member, new Double(d / total * 100));
 			}
 		}
-		
+
 	}
 
 	/**
 	 * Handles TopSum, TopPercent, BottomSum, BottomPercent by
-	 * evaluating members, sorting appropriately, and returning a 
+	 * evaluating members, sorting appropriately, and returning a
 	 * truncated vector of members
 	 */
 	static Object topOrBottom (Evaluator evaluator, Vector members, ExpBase exp, boolean isTop, boolean isPercent, double target) {
-		HashMap mapMemberToValue = evaluateMembers(evaluator, exp, members);
-		Comparator comparator = new MemberComparator(
-				mapMemberToValue, isTop, true);
+		final boolean brk = true,
+			desc = isTop;
+		HashMap mapMemberToValue = evaluateMembers(evaluator, exp, members, false);
+		Comparator comparator;
+		if (brk) {
+			comparator = new BreakMemberComparator(mapMemberToValue);
+		} else {
+			comparator = new HierarchicalMemberComparator(mapMemberToValue);
+		}
+		if (isTop) {
+			comparator = new ReverseComparator(comparator);
+		}
 		sort(comparator, members);
 		if (isPercent) {
 			toPercent(members, mapMemberToValue);
 		}
-		int numMembers = members.size();
-		double runningTotal = 0; int i = 0;
-		for (; (i < numMembers) && (runningTotal < target); i++) {
+		double runningTotal = 0;
+		for (int i = 0, numMembers = members.size(); i < numMembers; i++) {
+			if (runningTotal >= target) {
+				members.setSize(i);
+				break;
+			}
 			Object o = mapMemberToValue.get(members.elementAt(i));
 			if (o instanceof Number) {
 				runningTotal += ((Number) o).doubleValue();
@@ -375,9 +440,9 @@ public class FunUtil extends Util {
 				throw Util.newInternal("got " + o + " when expecting Number");
 			}
 		}
-		members.setSize(i);
 		return members;
 	}
+
 	static class SetWrapper {
 		Vector v = new Vector();
 		public int errorCount = 0, nullCount = 0;
@@ -396,7 +461,7 @@ public class FunUtil extends Util {
 		}
 		Arrays.sort(asArray);
 		int median = (int) Math.floor(asArray.length / 2);
-		return new Double(asArray[median]); 
+		return new Double(asArray[median]);
 	}
 
 	static Object min(Evaluator evaluator, Vector members, ExpBase exp) {
@@ -411,8 +476,8 @@ public class FunUtil extends Util {
 			for (int i = 0; i < sw.v.size(); i++) {
 				double iValue = ((Double) sw.v.elementAt(i)).doubleValue();
 				if (iValue < min) { min = iValue; }
-			}			
-			return new Double(min); 
+			}
+			return new Double(min);
 		}
 	}
 
@@ -428,8 +493,8 @@ public class FunUtil extends Util {
 			for (int i = 0; i < sw.v.size(); i++) {
 				double iValue = ((Double) sw.v.elementAt(i)).doubleValue();
 				if (iValue > max) { max = iValue; }
-			}			
-			return new Double(max); 
+			}
+			return new Double(max);
 		}
 	}
 
@@ -443,13 +508,13 @@ public class FunUtil extends Util {
 		else {
 			double sum = 0.0;
 			for (int i = 0; i < sw.v.size(); i++) {
-				sum += ((Double) sw.v.elementAt(i)).doubleValue();	
-			}			
+				sum += ((Double) sw.v.elementAt(i)).doubleValue();
+			}
 			//todo: should look at context and optionally include nulls
-			return new Double(sum / sw.v.size()); 
+			return new Double(sum / sw.v.size());
 		}
 	}
-	
+
 	static Object sum(Evaluator evaluator, Vector members, ExpBase exp) {
 		SetWrapper sw = evaluateSet(evaluator, members, exp);
 		if (sw.errorCount > 0) {
@@ -464,16 +529,16 @@ public class FunUtil extends Util {
 		else {
 			double sum = 0.0;
 			for (int i = 0; i < sw.v.size(); i++) {
-				sum += ((Double) sw.v.elementAt(i)).doubleValue();	
-			}			
+				sum += ((Double) sw.v.elementAt(i)).doubleValue();
+			}
 			return new Double(sum);
 		}
 	}
 
 	/**
-	 * Evluates <code>exp</code> over <code>members</code> to generate a 
+	 * Evluates <code>exp</code> over <code>members</code> to generate a
 	 * <code>Vector</code> of <code>SetWrapper</code>, which contains a
-	 * <code>Double</code> value and meta information, unlike 
+	 * <code>Double</code> value and meta information, unlike
 	 * <code>evaluateMembers</code>, which only produces values
 	 */
 	static SetWrapper evaluateSet(Evaluator evaluator, Vector members, ExpBase exp) {
@@ -498,7 +563,9 @@ public class FunUtil extends Util {
 				// BatchingCellReader, we find out all the dependent cells we
 				// need
 				retval.errorCount++;
-			} else if (o instanceof BigDecimal) {
+			} else if (o instanceof Double) {
+				retval.v.add(o);
+			} else if (o instanceof Number) {
 				retval.v.add(new Double(((BigDecimal) o).doubleValue()));
 			} else {
 				retval.v.add(o);
@@ -513,6 +580,12 @@ public class FunUtil extends Util {
 				1;
 	}
 
+	static int sign(double d1, double d2) {
+		return d1 == d2 ? 0 :
+				d1 < d2 ? -1 :
+				1;
+	}
+
 	static Vector periodsToDate(
 			Evaluator evaluator, Level level, Member member) {
 		if (member == null) {
@@ -521,53 +594,6 @@ public class FunUtil extends Util {
 		}
 		Member[] members = level.getPeriodsToDate(member);
 		return toVector(members);
-	}
-
-	static class MemberComparator implements Comparator {
-		Map mapMemberToValue;
-		boolean desc;
-		boolean brk;
-
-		MemberComparator(Map mapMemberToValue, boolean desc, boolean brk) {
-			this.mapMemberToValue = mapMemberToValue;
-			this.desc = desc;
-			this.brk = brk;
-		}
-
-		// implement Comparator
-		public int compare(Object o, Object p) {
-			Member member0 = (Member) o,
-					member1 = (Member) p;
-			int c = compareInternal(member0, member1);
-			return desc ? -c : c;
-		}
-
-		private int compareInternal(Member member0, Member member1) {
-			int c;
-			if (!brk) {
-				c = member0.compareHierarchically(member1);
-				if (c != 0) {
-					return c;
-				}
-			}
-			Object value0 = mapMemberToValue.get(member0),
-					value1 = mapMemberToValue.get(member1);
-			if (value0 == value1) {
-				return 0;
-			} else if (value0 == Util.nullValue) {
-				return 1; // null == +infinity
-			} else if (value1 == Util.nullValue) {
-				return -1; // null == +infinity
-			} else if (value0 instanceof String) {
-				return ((String) value0).compareTo((String) value1);
-			} else if (value0 instanceof Double) {
-				return sign(((Double) value0).doubleValue() - ((Double) value1).doubleValue());
-			} else if (value0 instanceof BigDecimal) {
-				return ((BigDecimal) value0).compareTo((BigDecimal) value1);
-			} else {
-				throw getRes().newInternal("cannot compare " + value0);
-			}
-		}
 	}
 
 	/**
@@ -650,3 +676,214 @@ public class FunUtil extends Util {
 		}
 	}
 }
+
+abstract class MemberComparator implements Comparator {
+	Map mapMemberToValue;
+
+	MemberComparator(Map mapMemberToValue) {
+		this.mapMemberToValue = mapMemberToValue;
+	}
+
+	// implement Comparator
+	public int compare(Object o1, Object o2) {
+		Member m1 = (Member) o1,
+				m2 = (Member) o2;
+		int c = compareInternal(m1, m2);
+		if (false) {
+			System.out.println(
+					"compare " +
+					m1.getUniqueName() + "(" + mapMemberToValue.get(m1) + "), " +
+					m2.getUniqueName() + "(" + mapMemberToValue.get(m2) + ")" +
+					" yields " + c);
+		}
+		return c;
+	}
+
+	protected abstract int compareInternal(Member m1, Member m2);
+
+	protected int compareByValue(Member m1, Member m2) {
+		Object value0 = mapMemberToValue.get(m1),
+				value1 = mapMemberToValue.get(m2);
+		return FunUtil.compareValues(value0, value1);
+	}
+
+	protected int compareHierarchicallyButSiblingsByValue(Member m1, Member m2) {
+		if (m1 == m2) {
+			return 0;
+		}
+		while (true) {
+			int levelDepth1 = m1.getLevel().getDepth(),
+				levelDepth2 = m2.getLevel().getDepth();
+			if (levelDepth1 < levelDepth2) {
+				m2 = m2.getParentMember();
+				if (m1 == m2) {
+					return -1;
+				}
+			} else if (levelDepth1 > levelDepth2) {
+				m1 = m1.getParentMember();
+				if (m1 == m2) {
+					return 1;
+				}
+			} else {
+				Member prev1 = m1, prev2 = m2;
+				m1 = m1.getParentMember();
+				m2 = m2.getParentMember();
+				if (m1 == m2) {
+					// including case where both parents are null
+					return compareByValue(prev1, prev2);
+				}
+			}
+		}
+	}
+}
+
+class HierarchicalMemberComparator extends MemberComparator {
+	HierarchicalMemberComparator(Map mapMemberToValue) {
+		super(mapMemberToValue);
+	}
+
+	protected int compareInternal(Member m1, Member m2) {
+		return compareHierarchicallyButSiblingsByValue(m1, m2);
+	}
+}
+
+class BreakMemberComparator extends MemberComparator {
+	BreakMemberComparator(Map mapMemberToValue) {
+		super(mapMemberToValue);
+	}
+
+	protected int compareInternal(Member m1, Member m2) {
+		return compareByValue(m1, m2);
+	}
+}
+
+/**
+ * Compares tuples, which are represented as arrays of {@link Member}s.
+ */
+abstract class ArrayComparator implements Comparator {
+	Evaluator evaluator;
+	Exp exp;
+	int arity;
+	ArrayComparator(Evaluator evaluator, Exp exp, int arity) {
+		this.evaluator = evaluator;
+		this.exp = exp;
+		this.arity = arity;
+	}
+
+	private static String toString(Member[] a) {
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < a.length; i++) {
+			Member member = a[i];
+			if (i > 0) {
+				sb.append(",");
+			}
+			sb.append(member.getUniqueName());
+		}
+		return sb.toString();
+	}
+	public int compare(Object o1, Object o2) {
+		final Member[] a1 = (Member[]) o1;
+		final Member[] a2 = (Member[]) o2;
+		final int c = compare(a1, a2);
+		if (false) {
+			System.out.println(
+					"compare {" + toString(a1)+ "}, {" + toString(a2) + "}" +
+					" yields " + c);
+		}
+		return c;
+	}
+	protected abstract int compare(Member[] a1, Member[] a2);
+}
+
+class HierarchicalArrayComparator extends ArrayComparator {
+	HierarchicalArrayComparator(Evaluator evaluator, Exp exp, int arity) {
+		super(evaluator, exp, arity);
+	}
+	protected int compare(Member[] a1, Member[] a2) {
+		for (int i = 0; i < arity; i++) {
+			Member m1 = a1[i],
+					m2 = a2[i];
+			int c = compareHierarchicallyButSiblingsByValue(m1, m2);
+			if (c != 0) {
+				return c;
+			}
+			// compareHierarchicallyButSiblingsByValue imposes a total order
+			Util.assertTrue(m1 == m2);
+			evaluator.setContext(m1);
+		}
+		return 0;
+	}
+	protected int compareHierarchicallyButSiblingsByValue(Member m1, Member m2) {
+		if (m1 == m2) {
+			return 0;
+		}
+		while (true) {
+			int levelDepth1 = m1.getLevel().getDepth(),
+				levelDepth2 = m2.getLevel().getDepth();
+			if (levelDepth1 < levelDepth2) {
+				m2 = m2.getParentMember();
+				if (m1 == m2) {
+					return -1;
+				}
+			} else if (levelDepth1 > levelDepth2) {
+				m1 = m1.getParentMember();
+				if (m1 == m2) {
+					return 1;
+				}
+			} else {
+				Member prev1 = m1, prev2 = m2;
+				m1 = m1.getParentMember();
+				m2 = m2.getParentMember();
+				if (m1 == m2) {
+					// including case where both parents are null
+					int c = compareByValue(prev1, prev2);
+					if (c != 0) {
+						return c;
+					}
+					// todo: use ordinal not caption
+					return FunUtil.compareValues(prev1.getCaption(), prev2.getCaption());
+				}
+			}
+		}
+	}
+	private int compareByValue(Member m1, Member m2) {
+		int c;
+		Member old = evaluator.setContext(m1);
+		Object v1 = exp.evaluateScalar(evaluator);
+		evaluator.setContext(m2);
+		Object v2 = exp.evaluateScalar(evaluator);
+		// important to restore the evaluator state -- and this is faster
+		// than calling evaluator.push()
+		evaluator.setContext(old);
+		c = FunUtil.compareValues(v1, v2);
+		return c;
+	}
+}
+
+class BreakArrayComparator extends ArrayComparator {
+	BreakArrayComparator(Evaluator evaluator, Exp exp, int arity) {
+		super(evaluator, exp, arity);
+	}
+
+	protected int compare(Member[] a1, Member[] a2) {
+		evaluator.setContext(a1);
+		Object v1 = exp.evaluateScalar(evaluator);
+		evaluator.setContext(a2);
+		Object v2 = exp.evaluateScalar(evaluator);
+		return FunUtil.compareValues(v1, v2);
+	}
+}
+
+class ReverseComparator implements Comparator {
+	Comparator comparator;
+	ReverseComparator(Comparator comparator) {
+		this.comparator = comparator;
+	}
+
+	public int compare(Object o1, Object o2) {
+		int c = comparator.compare(o1, o2);
+		return -c;
+	}
+}
+
+// End FunUtil.java

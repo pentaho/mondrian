@@ -32,8 +32,16 @@ interface MemberReader extends MemberSource
 	RolapMember[] getMembersInLevel(
 		RolapLevel level, int startOrdinal, int endOrdinal);
 	RolapMember[] getPeriodsToDate(RolapLevel level, RolapMember member);
-};
-
-
+	/** Compares two members according to their order in a prefix ordered
+	 * traversal. If <code>siblingsAreEqual</code>, then two members with the
+	 * same parent will compare equal.
+	 *
+	 * @return less than zero if m1 occurs before m2,
+	 *     greater than zero if m1 occurs after m2,
+	 *     zero if m1 is equal to m2, or if <code>siblingsAreEqual</code> and
+	 *         m1 and m2 have the same parent
+	 */
+	int compare(RolapMember m1, RolapMember m2, boolean siblingsAreEqual);
+}
 
 // End MemberReader.java

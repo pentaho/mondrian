@@ -218,6 +218,15 @@ todo:
 		</Attribute>
 		<Attribute name="hasAll" type="Boolean" required="true">
 			<Doc>
+				Whether this hierarchy has an 'all' member.
+			</Doc>
+		</Attribute>
+		<Attribute name="allMemberName" required="false">
+			<Doc>
+				Name of the 'all' member. If this attribute is not specified,
+				the all member is named 'All <i>hierarchyName</i>', for
+				example, 'All Store'. Note that the 'all' level is always
+				called '(All)'.
 			</Doc>
 		</Attribute>
 		<Attribute name="primaryKey">

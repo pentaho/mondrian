@@ -102,19 +102,19 @@ WHERE "product"."product_class_id" = "product_class"."product_class_id"
 	<DimensionUsage name="Time" source="Time" foreignKey="time_id"/>
 	<DimensionUsage name="Product" source="Product" foreignKey="product_id"/>
 	<Dimension name="Promotion Media" foreignKey="promotion_id">
-		<Hierarchy hasAll="true" primaryKey="promotion_id">
+		<Hierarchy hasAll="true" allMemberName="All Media" primaryKey="promotion_id">
 			<Table name="promotion"/>
 			<Level name="Media Type" column="media_type" uniqueMembers="true"/>
 		</Hierarchy>
 	</Dimension>
 	<Dimension name="Promotions" foreignKey="promotion_id">
-		<Hierarchy hasAll="true" primaryKey="promotion_id">
+		<Hierarchy hasAll="true" allMemberName="All Promotions" primaryKey="promotion_id">
 			<Table name="promotion"/>
 			<Level name="Promotion Name" column="promotion_name" uniqueMembers="true"/>
 		</Hierarchy>
 	</Dimension>
 	<Dimension name="Customers" foreignKey="customer_id">
-		<Hierarchy hasAll="true" primaryKey="customer_id">
+		<Hierarchy hasAll="true" allMemberName="All Customers" primaryKey="customer_id">
 			<Table name="customer"/>
 			<Level name="Country" column="country" uniqueMembers="true"/>
 			<Level name="State Province" column="state_province" uniqueMembers="true"/>
@@ -151,13 +151,13 @@ CONCAT(`customer`.`fname`, " ", `customer`.`lname`)
 		</Hierarchy>
 	</Dimension>
 	<Dimension name="Gender" foreignKey="customer_id">
-		<Hierarchy hasAll="true" primaryKey="customer_id">
+		<Hierarchy hasAll="true" allMemberName="All Gender" primaryKey="customer_id">
 			<Table name="customer"/>
 			<Level name="Gender" column="gender" uniqueMembers="true"/>
 		</Hierarchy>
 	</Dimension>
 	<Dimension name="Marital Status" foreignKey="customer_id">
-		<Hierarchy hasAll="true" primaryKey="customer_id">
+		<Hierarchy hasAll="true" allMemberName="All Marital Status" primaryKey="customer_id">
 			<Table name="customer"/>
 			<Level name="Marital Status" column="marital_status" uniqueMembers="true"/>
 		</Hierarchy>
@@ -174,9 +174,9 @@ CONCAT(`customer`.`fname`, " ", `customer`.`lname`)
 			<Param name="expression" value="not used"/>
 		</Hierarchy>
 	</Dimension>
-	<Measure name="Unit Sales" column="unit_sales" aggregator="sum" formatString="#,###.00"/>
+	<Measure name="Unit Sales" column="unit_sales" aggregator="sum" formatString="Standard"/>
 	<Measure name="Store Cost" column="store_cost" aggregator="sum" formatString="#,###.00"/>
-	<Measure name="Store Sales" column="store_sales" aggregator="sum" formatString="#,###.##"/>
+	<Measure name="Store Sales" column="store_sales" aggregator="sum" formatString="#,###.00"/>
 	<Measure name="Sales Count" column="product_id" aggregator="count" formatString="#,###"/>
 	<Measure name="Store Sales Net" column="&quot;sales_fact_1997&quot;.&quot;store_sales&quot;-&quot;sales_fact_1997&quot;.&quot;store_cost&quot;" aggregator="sum" formatString="#,###.00"/>
 </Cube>
