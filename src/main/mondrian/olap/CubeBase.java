@@ -21,7 +21,6 @@ package mondrian.olap;
  **/
 public abstract class CubeBase extends OlapElementBase implements Cube {
 
-	protected Schema schema;
 	protected String name;
 	protected DimensionBase[] dimensions;
 
@@ -58,9 +57,6 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 	public Cube getCube() { return this; }
 	public int getType() {
 		return Category.Cube;
-	}
-	public Schema getSchema() {
-		return schema;
 	}
 	public boolean usesDimension(Dimension dimension) {
 		return false;

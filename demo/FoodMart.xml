@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Schema>
+<Schema name="FoodMart">
 <!--
   == $Id$
   == This software is subject to the terms of the Common Public License

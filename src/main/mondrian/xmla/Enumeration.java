@@ -29,16 +29,22 @@ class Enumeration {
         private Methods(String name, int ordinal) {
             super(name, ordinal, null);
         }
+        public static final EnumeratedValues enumeration = new EnumeratedValues(
+                new Methods[] {discover, execute, discoverAndExecute}
+        );
     }
 
     public static final class Access extends EnumeratedValues.BasicValue {
-        public static final Access read = new Access("R", 1);
-        public static final Access write = new Access("W", 2);
-        public static final Access readWrite = new Access("R/W", 3);
+        public static final Access read = new Access("Read", 1);
+        public static final Access write = new Access("Write", 2);
+        public static final Access readWrite = new Access("Read/Write", 3);
 
         private Access(String name, int ordinal) {
             super(name, ordinal, null);
         }
+        public static final EnumeratedValues enumeration = new EnumeratedValues(
+                new Access[] {read, write, readWrite}
+        );
     }
 
     public static final class Format extends EnumeratedValues.BasicValue {
@@ -93,6 +99,87 @@ class Enumeration {
         public StateSupport(String name, int ordinal, String description) {
             super(name, ordinal, description);
         }
+    }
+
+    static class AuthenticationMode extends EnumeratedValues.BasicValue {
+        private AuthenticationMode(String name, int ordinal, String description) {
+            super(name, ordinal, description);
+        }
+        public static final AuthenticationMode Unauthenticated = new AuthenticationMode("Unauthenticated", 0, "no user ID or password needs to be sent.");
+        public static final AuthenticationMode Authenticated = new AuthenticationMode("Authenticated", 1, "User ID and Password must be included in the information required for the connection.");
+        public static final AuthenticationMode Integrated = new AuthenticationMode("Integrated", 2, "the data source uses the underlying security to determine authorization, such as Integrated Security provided by Microsoft Internet Information Services (IIS).");
+        public static final EnumeratedValues enumeration = new EnumeratedValues(
+                new AuthenticationMode[] {Unauthenticated, Authenticated, Integrated}
+        );
+    }
+
+    static class ProviderType extends EnumeratedValues.BasicValue {
+        private ProviderType(String name, int ordinal, String description) {
+            super(name, ordinal, description);
+        }
+        public static final ProviderType TDP = new ProviderType("TDP", 0, "tabular data provider.");
+        public static final ProviderType MDP = new ProviderType("MDP", 1, "multidimensional data provider.");
+        public static final ProviderType DMP = new ProviderType("DMP", 2, "data mining provider. A DMP provider implements the OLE DB for Data Mining specification.");
+        public static final EnumeratedValues enumeration = new EnumeratedValues(
+                new ProviderType[] {TDP, MDP, DMP}
+        );
+    }
+
+    public static class Literal extends EnumeratedValues.BasicValue {
+        public final String literalName;
+        public final String literalValue;
+        public final String literalInvalidChars;
+        public final String literalInvalidStartingChars;
+        public final int literalMaxLength;
+
+        // Enum DBLITERALENUM and DBLITERALENUM20, OLEDB.H.
+        public static final int DBLITERAL_INVALID	= 0,
+        DBLITERAL_BINARY_LITERAL	= 1,
+        DBLITERAL_CATALOG_NAME	= 2,
+        DBLITERAL_CATALOG_SEPARATOR	= 3,
+        DBLITERAL_CHAR_LITERAL	= 4,
+        DBLITERAL_COLUMN_ALIAS	= 5,
+        DBLITERAL_COLUMN_NAME	= 6,
+        DBLITERAL_CORRELATION_NAME	= 7,
+        DBLITERAL_CURSOR_NAME	= 8,
+        DBLITERAL_ESCAPE_PERCENT	= 9,
+        DBLITERAL_ESCAPE_UNDERSCORE	= 10,
+        DBLITERAL_INDEX_NAME	= 11,
+        DBLITERAL_LIKE_PERCENT	= 12,
+        DBLITERAL_LIKE_UNDERSCORE	= 13,
+        DBLITERAL_PROCEDURE_NAME	= 14,
+        DBLITERAL_QUOTE	= 15,
+        DBLITERAL_QUOTE_PREFIX = DBLITERAL_QUOTE,
+        DBLITERAL_SCHEMA_NAME	= 16,
+        DBLITERAL_TABLE_NAME	= 17,
+        DBLITERAL_TEXT_COMMAND	= 18,
+        DBLITERAL_USER_NAME	= 19,
+        DBLITERAL_VIEW_NAME	= 20,
+        DBLITERAL_CUBE_NAME	= 21,
+        DBLITERAL_DIMENSION_NAME	= 22,
+        DBLITERAL_HIERARCHY_NAME	= 23,
+        DBLITERAL_LEVEL_NAME	= 24,
+        DBLITERAL_MEMBER_NAME	= 25,
+        DBLITERAL_PROPERTY_NAME	= 26,
+        DBLITERAL_SCHEMA_SEPARATOR	= 27,
+        DBLITERAL_QUOTE_SUFFIX	= 28;
+
+        Literal(String literalName, int ordinal, String literalValue, int literalMaxLength, String literalInvalidChars, String literalInvalidStartingChars, String description) {
+            super(literalName, ordinal, description);
+            this.literalName = literalName;
+            this.literalValue = literalValue;
+            this.literalInvalidChars = literalInvalidChars;
+            this.literalInvalidStartingChars = literalInvalidStartingChars;
+            this.literalMaxLength = literalMaxLength;
+        }
+
+        static final EnumeratedValues enumeration = new EnumeratedValues(
+                new Literal[] {
+                    new Literal("DBLITERAL_QUOTE_PREFIX", DBLITERAL_QUOTE_PREFIX, "[", -1, null, null, "The character used in a text command as the opening quote for quoting identifiers that contain special characters."),
+                    new Literal("DBLITERAL_QUOTE_SUFFIX", DBLITERAL_QUOTE_SUFFIX, "]", -1, null, null, "The character used in a text command as the closing quote for quoting identifiers that contain special characters. 1.x providers that use the same character as the prefix and suffix may not return this literal value and can set the lt member of the DBLITERAL structure to DBLITERAL_INVALID if requested."),
+                    new Literal("DBLITERAL_CATALOG_NAME", DBLITERAL_CATALOG_NAME, null, -1, null, null, "A catalog name in a text command."),
+                    new Literal("DBLITERAL_TEXT_COMMAND", DBLITERAL_TEXT_COMMAND, null, -1, null, null, "A text command, such as an SQL statement."),
+                });
     }
 }
 

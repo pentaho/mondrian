@@ -22,8 +22,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
-import java.util.Arrays;
 import java.util.Properties;
+import java.util.HashMap;
+import java.util.ArrayList;
 
 /**
  * An <code>XmlaMediator</code> responds to XML for Analysis requests.
@@ -34,7 +35,6 @@ import java.util.Properties;
  */
 public class XmlaMediator {
     private static final String XMLA_NS = "urn:schemas-microsoft-com:xml-analysis";
-    private static final String nl = System.getProperty("line.separator");
 
     /**
      * Processes a request.
@@ -82,7 +82,7 @@ public class XmlaMediator {
     private void processEnvelope(Element element, SAXHandler saxHandler) throws SAXException {
         String tagName = element.getTagName();
         Util.assertTrue(tagName.equals("SOAP-ENV:Envelope"));
-        final NodeList childNodes = element.getChildNodes();
+        //final NodeList childNodes = element.getChildNodes();
         saxHandler.startElement("SOAP-ENV:Envelope", new String[] {
             "xmlns:SOAP-ENV", "http://schemas.xmlsoap.org/soap/envelope/",
              "SOAP-ENV:encodingStyle", "http://schemas.xmlsoap.org/soap/encoding/",
@@ -113,7 +113,7 @@ public class XmlaMediator {
 
     private void processRequest(Element element, SAXHandler saxHandler) {
         String tagName = element.getTagName();
-        String tagNs = element.getNamespaceURI();
+        //String tagNs = element.getNamespaceURI();
         if (tagName.equals("Discover")) {
             discover(element, saxHandler);
         } else if (tagName.equals("Execute")) {
@@ -312,26 +312,10 @@ public class XmlaMediator {
         if (requestType == null) {
             throw Util.newError("<RequestType> parameter is required");
         }
-        Element restrictions = firstElement(discover, "Restrictions");
-        if (restrictions == null) {
-            throw Util.newError("<Restrictions> parameter is required (but may be empty)");
-        }
-        Element restrictionList = firstElement(restrictions, "RestrictionList");
-        Properties restrictionsProperties = new Properties();
-        if (restrictionList != null) {
-            NodeList childNodes = restrictionList.getChildNodes();
-            for (int i = 0, n = childNodes.getLength(); i < n; i++) {
-                Node childNode = childNodes.item(i);
-                if (childNode instanceof Element) {
-                    Element childElement = (Element) childNode;
-                    String childTag = childElement.getTagName();
-                    String childValue = getCDATA(childElement);
-                    restrictionsProperties.setProperty(childTag, childValue);
-                }
-            }
-        }
+        HashMap restrictionsProperties = getRestrictions(discover);
         Properties propertyProperties = getProperties(discover);
-        Rowset rowset = DiscoverRequestType.handle(requestType, restrictionsProperties, propertyProperties);
+        final RowsetDefinition rowsetDefinition = RowsetDefinition.getValue(requestType);
+        Rowset rowset = rowsetDefinition.getRowset(restrictionsProperties, propertyProperties);
         try {
             saxHandler.startElement("DiscoverResponse", new String[] {
                 "xmlns", "urn:schemas-microsoft-com:xml-analysis"});
@@ -349,6 +333,28 @@ public class XmlaMediator {
         } catch (SAXException e) {
             throw Util.newError(e, "Error while processing '" + requestType + "' discovery request");
         }
+    }
+
+    private HashMap getRestrictions(Element discover) {
+        Element restrictions = firstElement(discover, "Restrictions");
+        if (restrictions == null) {
+            throw Util.newError("<Restrictions> parameter is required (but may be empty)");
+        }
+        Element restrictionList = firstElement(restrictions, "RestrictionList");
+        HashMap restrictionsMap = new HashMap();
+        if (restrictionList != null) {
+            NodeList childNodes = restrictionList.getChildNodes();
+            for (int i = 0, n = childNodes.getLength(); i < n; i++) {
+                Node childNode = childNodes.item(i);
+                if (childNode instanceof Element) {
+                    Element childElement = (Element) childNode;
+                    String childTag = childElement.getTagName();
+                    Object childValue = getCDATA2(childElement);
+                    restrictionsMap.put(childTag, childValue);
+                }
+            }
+        }
+        return restrictionsMap;
     }
 
     /**
@@ -384,7 +390,7 @@ public class XmlaMediator {
      * @param properties
      * @return
      */
-    private static Connection getConnection(Properties properties) {
+    static Connection getConnection(Properties properties) {
         final String dataSourceInfo = properties.getProperty("DataSourceInfo");
         return DriverManager.getConnection(dataSourceInfo, null, false);
     }
@@ -434,580 +440,34 @@ public class XmlaMediator {
         }
     }
 
-    static class DiscoverRequestType extends EnumeratedValues {
-        /** Returns a list of XML for Analysis data sources
-         * available on the server or Web Service. (For an
-         * example of how these may be published, see
-         * "XML for Analysis Implementation Walkthrough"
-         * in the XML for Analysis specification.) */
-        public static final int DISCOVER_DATASOURCES = 0;
-        /** todo: Copy comments from xmla spec for this and others */
-        public static final int DISCOVER_PROPERTIES = 1;
-        public static final int DISCOVER_SCHEMA_ROWSETS = 2;
-        public static final int DISCOVER_ENUMERATORS = 3;
-        public static final int DISCOVER_KEYWORDS = 4;
-        public static final int DISCOVER_LITERALS = 5;
-        public static final int DBSCHEMA_CATALOGS = 6;
-        public static final int DBSCHEMA_COLUMNS = 7;
-        public static final int DBSCHEMA_PROVIDER_TYPES = 8;
-        public static final int DBSCHEMA_TABLES = 9;
-        public static final int DBSCHEMA_TABLES_INFO = 10;
-        public static final int MDSCHEMA_ACTIONS = 11;
-        public static final int MDSCHEMA_CUBES = 12;
-        public static final int MDSCHEMA_DIMENSIONS = 13;
-        public static final int MDSCHEMA_FUNCTIONS = 14;
-        public static final int MDSCHEMA_HIERARCHIES = 15;
-        public static final int MDSCHEMA_MEASURES = 16;
-        public static final int MDSCHEMA_MEMBERS = 17;
-        public static final int MDSCHEMA_PROPERTIES = 18;
-        public static final int MDSCHEMA_SETS = 19;
-        public static final int OTHER = 20;
-        public static final DiscoverRequestType instance = new DiscoverRequestType();
-
-        private DiscoverRequestType() {
-            super(new String[] {
-                "DISCOVER_DATASOURCES",
-                "DISCOVER_PROPERTIES",
-                "DISCOVER_SCHEMA_ROWSETS",
-                "DISCOVER_ENUMERATORS",
-                "DISCOVER_KEYWORDS",
-                "DISCOVER_LITERALS",
-                "DBSCHEMA_CATALOGS",
-                "DBSCHEMA_COLUMNS",
-                "DBSCHEMA_PROVIDER_TYPES",
-                "DBSCHEMA_TABLES",
-                "DBSCHEMA_TABLES_INFO",
-                "MDSCHEMA_ACTIONS",
-                "MDSCHEMA_CUBES",
-                "MDSCHEMA_DIMENSIONS",
-                "MDSCHEMA_FUNCTIONS",
-                "MDSCHEMA_HIERARCHIES",
-                "MDSCHEMA_MEASURES",
-                "MDSCHEMA_MEMBERS",
-                "MDSCHEMA_PROPERTIES",
-                "MDSCHEMA_SETS",
-                "OTHER",
-            });
-        }
-
-        private static Rowset handle(String requestType, Properties restrictions, Properties properties) {
-            int requestTypeOrdinal = instance.getOrdinal(requestType);
-            switch (requestTypeOrdinal) {
-            case DISCOVER_DATASOURCES:
-                return new DatasourcesRowset(restrictions, properties);
-            case DISCOVER_PROPERTIES:
-                return new DiscoverPropertiesRowset(restrictions, properties);
-            case DISCOVER_SCHEMA_ROWSETS:
-                return new SchemaRowsetsRowset(restrictions, properties);
-            case DISCOVER_ENUMERATORS:
-                return new DiscoverEnumeratorsRowset(restrictions, properties);
-            case DISCOVER_KEYWORDS:
-                return new DiscoverKeywordsRowset(restrictions, properties);
-            case DISCOVER_LITERALS:
-                return new DiscoverLiteralsRowset(restrictions, properties);
-            case DBSCHEMA_CATALOGS:
-                return new DbschemaCatalogsRowset(restrictions, properties);
-            case DBSCHEMA_COLUMNS:
-                return new DbschemaColumnsRowset(restrictions, properties);
-            case DBSCHEMA_PROVIDER_TYPES:
-                return new DbschemaProviderTypesRowset(restrictions, properties);
-            case DBSCHEMA_TABLES:
-                return new DbschemaTablesRowset(restrictions, properties);
-            case DBSCHEMA_TABLES_INFO:
-                return new DbschemaTablesInfoRowset(restrictions, properties);
-            case MDSCHEMA_ACTIONS:
-                return new MdschemaActionsRowset(restrictions, properties);
-            case MDSCHEMA_CUBES:
-                return new MdschemaCubesRowset(restrictions, properties);
-            case MDSCHEMA_DIMENSIONS:
-                return new MdschemaDimensionsRowset(restrictions, properties);
-            case MDSCHEMA_FUNCTIONS:
-                return new MdschemaFunctionsRowset(restrictions, properties);
-            case MDSCHEMA_HIERARCHIES:
-                return new MdschemaHierarchiesRowset(restrictions, properties);
-            case MDSCHEMA_MEASURES:
-                return new MdschemaMeasuresRowset(restrictions, properties);
-            case MDSCHEMA_MEMBERS:
-                return new MdschemaMembersRowset(restrictions, properties);
-            case MDSCHEMA_PROPERTIES:
-                return new MdschemaPropertiesRowset(restrictions, properties);
-            case MDSCHEMA_SETS:
-                return new MdschemaSetsRowset(restrictions, properties);
-            default:
-                throw instance.badValue(requestTypeOrdinal);
-            }
-        }
-
-        private static RowsetDefinition getDefinition(int ordinal) {
-            switch (ordinal) {
-            case DISCOVER_DATASOURCES:
-                return DatasourcesRowset.definition;
-            case DISCOVER_SCHEMA_ROWSETS:
-                return SchemaRowsetsRowset.definition;
-                // todo: DISCOVER_PROPERTIES rowset
-                // todo: DISCOVER_SCHEMA_ROWSETS rowset
-                // todo: DISCOVER_ENUMERATORS rowset
-                // todo: DISCOVER_KEYWORDS rowset
-                // todo: DISCOVER_LITERALS rowset
-            default:
-                throw instance.badValue(ordinal);
-            }
-        }
-    }
-
-    private static class DatasourcesRowset extends Rowset {
-        private static final RowsetDefinition.Column DataSourceName = new RowsetDefinition.Column("DataSourceName", RowsetDefinition.Type.String, null, true, false,
-                                    "The name of the data source, such as FoodMart 2000.");
-        private static final RowsetDefinition.Column DataSourceDescription = new RowsetDefinition.Column("DataSourceDescription", RowsetDefinition.Type.String, null, false, true,
-                                    "A description of the data source, as entered by the publisher.");
-        private static final RowsetDefinition.Column URL = new RowsetDefinition.Column("URL", RowsetDefinition.Type.String, null, true, true,
-                                    "The unique path that shows where to invoke the XML for Analysis methods for that data source.");
-        private static final RowsetDefinition.Column DataSourceInfo = new RowsetDefinition.Column("DataSourceInfo", RowsetDefinition.Type.String, null, false, true,
-                                    "A string containing any additional information required to connect to the data source. This can include the Initial Catalog property or other information for the provider." + nl +
-                        "Example: \"Provider=MSOLAP;Data Source=Local;\"");
-        private static final RowsetDefinition.Column ProviderName = new RowsetDefinition.Column("ProviderName", RowsetDefinition.Type.String, null, true, true,
-                                    "The name of the provider behind the data source. " + nl +
-                        "Example: \"MSDASQL\"");
-        private static final RowsetDefinition.Column ProviderType = new RowsetDefinition.Column("ProviderType", RowsetDefinition.Type.Array, XmlaMediator.ProviderType.enumeration, true, false,
-                                    "The types of data supported by the provider. May include one or more of the following types. Example follows this table." + nl +
-                        "TDP: tabular data provider." + nl +
-                        "MDP: multidimensional data provider." + nl +
-                        "DMP: data mining provider. A DMP provider implements the OLE DB for Data Mining specification.");
-        private static final RowsetDefinition.Column AuthenticationMode = new RowsetDefinition.Column("AuthenticationMode", RowsetDefinition.Type.EnumString, XmlaMediator.AuthenticationMode.enumeration, true, false,
-                                    "Specification of what type of security mode the data source uses. Values can be one of the following:" + nl +
-                        "Unauthenticated: no user ID or password needs to be sent." + nl +
-                        "Authenticated: User ID and Password must be included in the information required for the connection." + nl +
-                        "Integrated: the data source uses the underlying security to determine authorization, such as Integrated Security provided by Microsoft Internet Information Services (IIS).");
-        private static final RowsetDefinition definition = new RowsetDefinition(
-                "DISCOVER_DATASOURCES", new RowsetDefinition.Column[] {
-                    DataSourceName,
-                    DataSourceDescription,
-                    URL,
-                    DataSourceInfo,
-                    ProviderName,
-                    ProviderType,
-                    AuthenticationMode,
-                });
-
-        public DatasourcesRowset(Properties restrictions, Properties properties) {
-            super(restrictions, properties);
-        }
-
-        public void unparse(SAXHandler saxHandler) throws SAXException {
-            Connection connection = getConnection(properties);
-            Row row = new Row();
-            row.set(DataSourceName.name, null);
-            row.set(DataSourceDescription.name, null);
-            row.set(URL.name, null);
-            row.set(DataSourceInfo.name, null);
-            row.set(ProviderType.name, null);
-            row.set(AuthenticationMode.name, null);
-            emit(definition, row, saxHandler);
-        }
-    }
-
-    private static class ProviderType extends EnumeratedValues.BasicValue {
-        private ProviderType(String name, int ordinal, String description) {
-            super(name, ordinal, description);
-        }
-        public static final ProviderType TDP = new ProviderType("TDP", 0, "tabular data provider.");
-        public static final ProviderType MDP = new ProviderType("MDP", 1, "multidimensional data provider.");
-        public static final ProviderType DMP = new ProviderType("DMP", 2, "data mining provider. A DMP provider implements the OLE DB for Data Mining specification.");
-        public static final EnumeratedValues enumeration = new EnumeratedValues(
-                new ProviderType[] {TDP, MDP, DMP}
-        );
-    }
-    private static class AuthenticationMode extends EnumeratedValues.BasicValue {
-        private AuthenticationMode(String name, int ordinal, String description) {
-            super(name, ordinal, description);
-        }
-        public static final AuthenticationMode Unauthenticated = new AuthenticationMode("Unauthenticated", 0, "no user ID or password needs to be sent.");
-        public static final AuthenticationMode Authenticated = new AuthenticationMode("Authenticated", 1, "User ID and Password must be included in the information required for the connection.");
-        public static final AuthenticationMode Integrated = new AuthenticationMode("Integrated", 2, "the data source uses the underlying security to determine authorization, such as Integrated Security provided by Microsoft Internet Information Services (IIS).");
-        public static final EnumeratedValues enumeration = new EnumeratedValues(
-                new AuthenticationMode[] {Unauthenticated, Authenticated, Integrated}
-        );
-    }
-
-    private static class SchemaRowsetsRowset extends Rowset {
-        private static RowsetDefinition definition = new RowsetDefinition(
-                "DISCOVER_DATASOURCES", new RowsetDefinition.Column[] {
-                    new RowsetDefinition.Column(
-                            "SchemaName",
-                            RowsetDefinition.Type.EnumerationArray,
-                            null, true, false, "The name of the schema/request. This returns the values in the RequestTypes enumeration, plus any additional types suppoted by the provider. The provider defines rowset structures for the additional types"
-                    ),
-                    new RowsetDefinition.Column(
-                            "Restrictions",
-                            RowsetDefinition.Type.Array,
-                            null, false, true, "An array of the restrictions suppoted by provider. An example follows this table."
-                    ),
-                    new RowsetDefinition.Column(
-                            "Description",
-                            RowsetDefinition.Type.String,
-                            null, false, true, "A localizable description of the schema"
-                    ),
+    private Object getCDATA2(Element child) {
+        child.normalize();
+        NodeList childNodes = child.getChildNodes();
+        if (valuesExist(childNodes)) {
+            ArrayList list = new ArrayList();
+            for (int i = 0, n = childNodes.getLength(); i < n; i++) {
+                final Node node = childNodes.item(i);
+                if (node instanceof Element &&
+                        ((Element) node).getTagName().equals("Value")) {
+                    list.add(getCDATA((Element) node));
                 }
-        );
-
-        public SchemaRowsetsRowset(Properties restrictions, Properties properties) {
-            super(restrictions, properties);
+            }
+            return (String[]) list.toArray(new String[0]);
+        } else {
+            return getCDATA(child);
         }
+    }
 
-        public void unparse(SAXHandler saxHandler) throws SAXException {
-            String[] names = DiscoverRequestType.instance.getNames();
-            Arrays.sort(names);
-            for (int i = 0; i < names.length; i++) {
-                String name = names[i];
-                int ordinal = DiscoverRequestType.instance.getOrdinal(name);
-                RowsetDefinition rowsetDefinition = DiscoverRequestType.getDefinition(ordinal);
-                emit(definition, rowsetDefinition, saxHandler);
+    private static boolean valuesExist(NodeList childNodes) {
+        for (int i = 0, n = childNodes.getLength(); i < n; i++) {
+            final Node node = childNodes.item(i);
+            if (node instanceof Element &&
+                    ((Element) node).getTagName().equals("Value")) {
+                return true;
             }
         }
+        return false;
     }
-
-    static class DiscoverPropertiesRowset extends Rowset {
-        DiscoverPropertiesRowset(Properties restrictions, Properties properties) {
-            super(restrictions, properties);
-        }
-
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "DiscoverPropertiesRowset", new RowsetDefinition.Column[] {
-                    new RowsetDefinition.Column("PropertyName", RowsetDefinition.Type.StringSometimesArray, null, true, false,
-                            "The name of the property."),
-                    new RowsetDefinition.Column("PropertyDescription", RowsetDefinition.Type.String, null, false, true,
-                            "A localizable text description of the property."),
-                    new RowsetDefinition.Column("PropertyType", RowsetDefinition.Type.String, null, false, true,
-                            "The XML data type of the property."),
-                    new RowsetDefinition.Column("PropertyAccessType", RowsetDefinition.Type.EnumString, null, false, false,
-                            "Access for the property. The value can be Read, Write, or ReadWrite."),
-                    new RowsetDefinition.Column("IsRequired", RowsetDefinition.Type.Boolean, null, false, true,
-                            "True if a property is required, false if it is not required."),
-                    new RowsetDefinition.Column("Value", RowsetDefinition.Type.String, null, false, true,
-                            "The current value of the property."),
-                });
-
-        public void unparse(SAXHandler saxHandler) throws SAXException {
-            final String[] propertyNames = PropertyDefinition.enumeration.getNames();
-            for (int i = 0; i < propertyNames.length; i++) {
-                PropertyDefinition propertyDefinition = PropertyDefinition.getValue(propertyNames[i]);
-                Row row = new Row();
-                row.set("PropertyName", propertyDefinition.name_);
-                row.set("PropertyDescription", propertyDefinition.description_);
-                row.set("PropertyType", propertyDefinition.type);
-                emit(definition, propertyDefinition, saxHandler);
-            }
-        }
-    }
-
-    static class DiscoverSchemaRowsetsRowset extends Rowset {
-        DiscoverSchemaRowsetsRowset(Properties restrictions, Properties properties) {
-            super(restrictions, properties);
-        }
-
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "DiscoverSchemaRowsetsRowset", new RowsetDefinition.Column[] {
-                });
-
-        public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    static class DiscoverEnumeratorsRowset extends Rowset {
-        DiscoverEnumeratorsRowset(Properties restrictions, Properties properties) {
-            super(restrictions, properties);
-        }
-
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "DiscoverEnumeratorsRowset", new RowsetDefinition.Column[] {
-                    new RowsetDefinition.Column("EnumName", RowsetDefinition.Type.StringArray, null, true, false,
-                            "The name of the enumerator that contains a set of values."),
-                    new RowsetDefinition.Column("EnumDescription", RowsetDefinition.Type.String, null, false, true,
-                            "A localizable description of the enumerator."),
-                    new RowsetDefinition.Column("EnumType", RowsetDefinition.Type.String, null, false, false,
-                            "The data type of the Enum values."),
-                    new RowsetDefinition.Column("ElementName", RowsetDefinition.Type.String, null, false, false,
-                            "The name of one of the value elements in the enumerator set." + nl +
-                "Example: TDP"),
-                    new RowsetDefinition.Column("ElementDescription", RowsetDefinition.Type.String, null, false, true,
-                            "A localizable description of the element (optional)."),
-                    new RowsetDefinition.Column(
-                            "ElementValue", RowsetDefinition.Type.String, null, false, true, "The value of the element." + nl +
-                "Example: 01"),
-                });
-
-        public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    static class DiscoverKeywordsRowset extends Rowset {
-        DiscoverKeywordsRowset(Properties restrictions, Properties properties) {
-            super(restrictions, properties);
-        }
-
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "DiscoverKeywordsRowset", new RowsetDefinition.Column[] {
-                    new RowsetDefinition.Column("Keyword", RowsetDefinition.Type.StringSometimesArray, null, true, false,
-                            "A list of all the keywords reserved by a provider." + nl +
-                "Example: AND"),
-                });
-
-        public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    static class DiscoverLiteralsRowset extends Rowset {
-        DiscoverLiteralsRowset(Properties restrictions, Properties properties) {
-            super(restrictions, properties);
-        }
-
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "DiscoverLiteralsRowset", new RowsetDefinition.Column[] {
-                });
-
-        public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    static class DbschemaCatalogsRowset extends Rowset {
-        DbschemaCatalogsRowset(Properties restrictions, Properties properties) {
-            super(restrictions, properties);
-        }
-
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "DbschemaCatalogsRowset", new RowsetDefinition.Column[] {
-                });
-
-        public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    static class DbschemaColumnsRowset extends Rowset {
-        DbschemaColumnsRowset(Properties restrictions, Properties properties) {
-            super(restrictions, properties);
-        }
-
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "DbschemaColumnsRowset", new RowsetDefinition.Column[] {
-                });
-
-        public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    static class DbschemaProviderTypesRowset extends Rowset {
-        DbschemaProviderTypesRowset(Properties restrictions, Properties properties) {
-            super(restrictions, properties);
-        }
-
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "DbschemaProviderTypesRowset", new RowsetDefinition.Column[] {
-                });
-
-        public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    static class DbschemaTablesRowset extends Rowset {
-        DbschemaTablesRowset(Properties restrictions, Properties properties) {
-            super(restrictions, properties);
-        }
-
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "DbschemaTablesRowset", new RowsetDefinition.Column[] {
-                });
-
-        public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    static class DbschemaTablesInfoRowset extends Rowset {
-        DbschemaTablesInfoRowset(Properties restrictions, Properties properties) {
-            super(restrictions, properties);
-        }
-
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "DbschemaTablesInfoRowset", new RowsetDefinition.Column[] {
-                });
-
-        public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    static class MdschemaActionsRowset extends Rowset {
-        MdschemaActionsRowset(Properties restrictions, Properties properties) {
-            super(restrictions, properties);
-        }
-
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "MdschemaActionsRowset", new RowsetDefinition.Column[] {
-                });
-
-        public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    static class MdschemaCubesRowset extends Rowset {
-        MdschemaCubesRowset(Properties restrictions, Properties properties) {
-            super(restrictions, properties);
-        }
-
-        private static final String CATALOG_NAME = "CATALOG_NAME";
-        private static final String SCHEMA_NAME = "SCHEMA_NAME";
-        private static final String CUBE_NAME = "CUBE_NAME";
-        private static final String IS_DRILLTHROUGH_ENABLED = "IS_DRILLTHROUGH_ENABLED";
-        private static final String IS_WRITE_ENABLED = "IS_WRITE_ENABLED";
-        private static final String IS_LINKABLE = "IS_LINKABLE";
-        private static final String IS_SQL_ALLOWED = "IS_SQL_ALLOWED";
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "MdschemaCubesRowset", new RowsetDefinition.Column[] {
-                    new RowsetDefinition.Column(CATALOG_NAME, RowsetDefinition.Type.String, null, true, false, null),
-                    new RowsetDefinition.Column(SCHEMA_NAME, RowsetDefinition.Type.String, null, true, true, null),
-                    new RowsetDefinition.Column(CUBE_NAME, RowsetDefinition.Type.String, null, true, false, null),
-                    new RowsetDefinition.Column(IS_DRILLTHROUGH_ENABLED, RowsetDefinition.Type.Boolean, null, false, false,
-                            "Describes whether DRILLTHROUGH can be performed on the members of a cube"),
-                    new RowsetDefinition.Column(IS_WRITE_ENABLED, RowsetDefinition.Type.Boolean, null, false, false,
-                            "Describes whether a cube is write-enabled"),
-                    new RowsetDefinition.Column(IS_LINKABLE, RowsetDefinition.Type.Boolean, null, false, false,
-                            "Describes whether a cube can be used in a linked cube"),
-                    new RowsetDefinition.Column(IS_SQL_ALLOWED, RowsetDefinition.Type.Boolean, null, false, false,
-                            "Describes whether or not SQL can be used on the cube"),
-                });
-
-        public void unparse(SAXHandler saxHandler) throws SAXException {
-            final Connection connection = getConnection(properties);
-            final Cube[] cubes = connection.getSchema().getCubes();
-            for (int i = 0; i < cubes.length; i++) {
-                Cube cube = cubes[i];
-                Row row = new Row();
-                row.set(CATALOG_NAME, connection.getCatalogName());
-                row.set(SCHEMA_NAME, cube.getSchema());
-                row.set(CUBE_NAME, cube.getName());
-                row.set(IS_DRILLTHROUGH_ENABLED, true);
-                row.set(IS_WRITE_ENABLED, false);
-                row.set(IS_LINKABLE, false);
-                row.set(IS_SQL_ALLOWED, false);
-                emit(definition, row, saxHandler);
-            }
-        }
-    }
-
-    static class MdschemaDimensionsRowset extends Rowset {
-        MdschemaDimensionsRowset(Properties restrictions, Properties properties) {
-            super(restrictions, properties);
-        }
-
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "MdschemaDimensionsRowset", new RowsetDefinition.Column[] {
-                });
-
-        public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    static class MdschemaFunctionsRowset extends Rowset {
-        MdschemaFunctionsRowset(Properties restrictions, Properties properties) {
-            super(restrictions, properties);
-        }
-
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "MdschemaFunctionsRowset", new RowsetDefinition.Column[] {
-                });
-
-        public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    static class MdschemaHierarchiesRowset extends Rowset {
-        MdschemaHierarchiesRowset(Properties restrictions, Properties properties) {
-            super(restrictions, properties);
-        }
-
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "MdschemaHierarchiesRowset", new RowsetDefinition.Column[] {
-                });
-
-        public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    static class MdschemaMeasuresRowset extends Rowset {
-        MdschemaMeasuresRowset(Properties restrictions, Properties properties) {
-            super(restrictions, properties);
-        }
-
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "MdschemaMeasuresRowset", new RowsetDefinition.Column[] {
-                });
-
-        public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    static class MdschemaMembersRowset extends Rowset {
-        MdschemaMembersRowset(Properties restrictions, Properties properties) {
-            super(restrictions, properties);
-        }
-
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "MdschemaMembersRowset", new RowsetDefinition.Column[] {
-                });
-
-        public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    static class MdschemaSetsRowset extends Rowset {
-        MdschemaSetsRowset(Properties restrictions, Properties properties) {
-            super(restrictions, properties);
-        }
-
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "MdschemaSetsRowset", new RowsetDefinition.Column[] {
-                });
-
-        public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    static class MdschemaPropertiesRowset extends Rowset {
-        MdschemaPropertiesRowset(Properties restrictions, Properties properties) {
-            super(restrictions, properties);
-        }
-
-        public static final RowsetDefinition definition = new RowsetDefinition(
-                "MdschemaPropertiesRowset", new RowsetDefinition.Column[] {
-                });
-
-        public void unparse(SAXHandler saxHandler) throws SAXException {
-            unparseArray(saxHandler, new PropertyDefinition[] {
-                // todo: define standard properties
-            });
-        }
-
-        private void unparseArray(SAXHandler saxHandler, Object[] objects) throws SAXException {
-            for (int i = 0; i < objects.length; i++) {
-                Object object = objects[i];
-                emit(definition, object, saxHandler);
-            }
-        }
-    }
-
-
 }
+
+// End XmlaMediator.java

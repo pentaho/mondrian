@@ -29,6 +29,9 @@ Revision is $Id$
 		<Doc>
 			A schema is a collection of cubes and shared dimensions.
 		</Doc>
+		<Attribute name="name" required="true">
+			<Doc>Name of this schema</Doc>
+		</Attribute>
 		<Attribute name="defaultRole" required="false">
 			<Doc>The name of the default schema for connections to this schema</Doc>
 		</Attribute>

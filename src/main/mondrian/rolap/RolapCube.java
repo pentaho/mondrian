@@ -128,6 +128,10 @@ class RolapCube extends CubeBase
 		init();
 	}
 
+    public Schema getSchema() {
+        return schema;
+    }
+
 	/**
 	 * Returns the schema reader which enforces the appropriate access-control
 	 * context.

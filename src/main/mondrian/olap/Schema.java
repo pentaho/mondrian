@@ -15,6 +15,12 @@ package mondrian.olap;
  * A <code>Schema</code> is a collection of cubes, shared dimensions, and roles.
  */
 public interface Schema {
+    /**
+     * Returns the name of this schema.
+     * @post return != null
+     * @post return.length() > 0
+     */
+    String getName();
 	/**
 	 * Finds a cube called <code>cube</code> in this schema; if no cube
 	 * exists, <code>failIfNotFound</code> controls whether to raise an error

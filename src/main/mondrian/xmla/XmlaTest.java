@@ -15,6 +15,7 @@ import junit.framework.TestCase;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 /**
  * Unit test for Mondrian's XML for Analysis API (package
@@ -28,6 +29,7 @@ public class XmlaTest extends TestCase {
     private static final String nl = System.getProperty("line.separator");
     //private static final String dataSource = "Provider=MSOLAP;Data Source=local;";
     private static final String dataSource = "Provider=Mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;Catalog=file:/E:/mondrian/demo/FoodMart.xml;JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver;";
+    private static final String catalogName = "file:/E:/mondrian/demo/FoodMart.xml";
 
     public XmlaTest(String s) {
         super(s);
@@ -61,13 +63,13 @@ public class XmlaTest extends TestCase {
                 "            <RequestType>MDSCHEMA_CUBES</RequestType>" + nl +
                 "            <Restrictions>" + nl +
                 "                <RestrictionList>" + nl +
-                "                    <CATALOG_NAME>FoodMart 2000</CATALOG_NAME>" + nl +
+                "                    <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
                 "                </RestrictionList>" + nl +
                 "            </Restrictions>" + nl +
                 "            <Properties>" + nl +
                 "                <PropertyList>" + nl +
                 "                    <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "                    <Catalog>Foodmart 2000</Catalog>" + nl +
+                "                    <Catalog>FoodMart</Catalog>" + nl +
                 "                    <Format>Tabular</Format>" + nl +
                 "                </PropertyList>" + nl +
                 "            </Properties>" + nl +
@@ -81,8 +83,8 @@ public class XmlaTest extends TestCase {
                 "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
                 "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
                 "          <row>" + nl +
-                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
-                "            <SCHEMA_NAME/>" + nl +
+                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
+                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
                 "            <CUBE_NAME>Store</CUBE_NAME>" + nl +
                 "            <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>" + nl +
                 "            <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>" + nl +
@@ -90,8 +92,8 @@ public class XmlaTest extends TestCase {
                 "            <IS_SQL_ALLOWED>false</IS_SQL_ALLOWED>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
-                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
-                "            <SCHEMA_NAME/>" + nl +
+                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
+                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
                 "            <CUBE_NAME>Warehouse and Sales</CUBE_NAME>" + nl +
                 "            <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>" + nl +
                 "            <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>" + nl +
@@ -99,8 +101,8 @@ public class XmlaTest extends TestCase {
                 "            <IS_SQL_ALLOWED>false</IS_SQL_ALLOWED>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
-                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
-                "            <SCHEMA_NAME/>" + nl +
+                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
+                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
                 "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
                 "            <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>" + nl +
                 "            <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>" + nl +
@@ -108,8 +110,8 @@ public class XmlaTest extends TestCase {
                 "            <IS_SQL_ALLOWED>false</IS_SQL_ALLOWED>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
-                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
-                "            <SCHEMA_NAME/>" + nl +
+                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
+                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
                 "            <CUBE_NAME>HR</CUBE_NAME>" + nl +
                 "            <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>" + nl +
                 "            <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>" + nl +
@@ -117,8 +119,8 @@ public class XmlaTest extends TestCase {
                 "            <IS_SQL_ALLOWED>false</IS_SQL_ALLOWED>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
-                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
-                "            <SCHEMA_NAME/>" + nl +
+                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
+                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
                 "            <CUBE_NAME>Warehouse</CUBE_NAME>" + nl +
                 "            <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>" + nl +
                 "            <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>" + nl +
@@ -129,9 +131,7 @@ public class XmlaTest extends TestCase {
                 "      </return>" + nl +
                 "    </DiscoverResponse>" + nl +
                 "  </SOAP-ENV:Body>" + nl +
-                "</SOAP-ENV:Envelope>"
-
-        );
+                "</SOAP-ENV:Envelope>");
     }
 
     private String wrap(String request) {
@@ -144,6 +144,232 @@ public class XmlaTest extends TestCase {
                 "</SOAP-ENV:Envelope>";
     }
 
+    public void testCubesRestricted() {
+        assertRequestYields(wrap(
+                "        <Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "            SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "            <RequestType>MDSCHEMA_CUBES</RequestType>" + nl +
+                "            <Restrictions>" + nl +
+                "                <RestrictionList>" + nl +
+                "                    <CUBE_NAME>Sales</CUBE_NAME>" + nl +
+                "                </RestrictionList>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Properties>" + nl +
+                "                <PropertyList>" + nl +
+                "                    <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "                    <Catalog>FoodMart</Catalog>" + nl +
+                "                    <Format>Tabular</Format>" + nl +
+                "                </PropertyList>" + nl +
+                "            </Properties>" + nl +
+                "        </Discover>"),
+
+                "<?xml version=\"1.0\"?>" + nl +
+                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "  <SOAP-ENV:Body>" + nl +
+                "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
+                "      <return>" + nl +
+                "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
+                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
+                "          <row>" + nl +
+                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
+                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
+                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
+                "            <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>" + nl +
+                "            <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>" + nl +
+                "            <IS_LINKABLE>false</IS_LINKABLE>" + nl +
+                "            <IS_SQL_ALLOWED>false</IS_SQL_ALLOWED>" + nl +
+                "          </row>" + nl +
+                "        </root>" + nl +
+                "      </return>" + nl +
+                "    </DiscoverResponse>" + nl +
+                "  </SOAP-ENV:Body>" + nl +
+                "</SOAP-ENV:Envelope>");
+    }
+
+    public void testCubesRestrictedOnUnrestrictableColumnFails() {
+        assertRequestMatches(wrap(
+                "        <Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "            SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "            <RequestType>MDSCHEMA_CUBES</RequestType>" + nl +
+                "            <Restrictions>" + nl +
+                "                <RestrictionList>" + nl +
+                "                    <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
+                "                    <IS_WRITE_ENABLED>true</IS_WRITE_ENABLED>" + nl +
+                "                </RestrictionList>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Properties>" + nl +
+                "                <PropertyList>" + nl +
+                "                    <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "                    <Catalog>FoodMart</Catalog>" + nl +
+                "                    <Format>Tabular</Format>" + nl +
+                "                </PropertyList>" + nl +
+                "            </Properties>" + nl +
+                "        </Discover>"),
+
+                "(?s).*Rowset 'MDSCHEMA_CUBES' column 'IS_WRITE_ENABLED' does not allow restrictions.*");
+    }
+
+    /**
+     * Asserts that a string matches a pattern. If they are not
+     * an AssertionFailedError is thrown.
+     */
+    static public void assertMatches(String message, String pattern, String actual) {
+        if (actual != null && Pattern.matches(pattern, actual)) {
+            return;
+        }
+        String formatted= "";
+        if (message != null) {
+            formatted= message+" ";
+        }
+        fail(formatted+"expected pattern:<"+pattern+"> but was:<"+actual+">");
+    }
+
+    private void assertRequestMatches(String request, String responsePattern) {
+        final String response = executeRequest(request);
+        assertMatches("Request " + request, responsePattern, response);
+    }
+
+    public void testCubesRestrictedOnBadColumn() {
+        assertRequestMatches(wrap(
+                "        <Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "            SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "            <RequestType>MDSCHEMA_CUBES</RequestType>" + nl +
+                "            <Restrictions>" + nl +
+                "                <RestrictionList>" + nl +
+                "                    <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
+                "                    <NON_EXISTENT_COLUMN>FooBar</NON_EXISTENT_COLUMN>" + nl +
+                "                </RestrictionList>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Properties>" + nl +
+                "                <PropertyList>" + nl +
+                "                    <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "                    <Catalog>FoodMart</Catalog>" + nl +
+                "                    <Format>Tabular</Format>" + nl +
+                "                </PropertyList>" + nl +
+                "            </Properties>" + nl +
+                "        </Discover>"),
+
+                "(?s).*Rowset 'MDSCHEMA_CUBES' does not contain column 'NON_EXISTENT_COLUMN'.*");
+    }
+
+    public void testProperties() {
+        assertRequestMatches(wrap(
+                "        <Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "            SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "            <RequestType>DISCOVER_PROPERTIES</RequestType>" + nl +
+                "            <Restrictions>" + nl +
+                "                <RestrictionList>" + nl +
+                "                </RestrictionList>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Properties>" + nl +
+                "                <PropertyList>" + nl +
+                "                    <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "                    <Format>Tabular</Format>" + nl +
+                "                </PropertyList>" + nl +
+                "            </Properties>" + nl +
+                "        </Discover>"),
+
+                "(?s).*" + nl +
+                "          <row>" + nl +
+                "            <PropertyName>Catalog</PropertyName>" + nl +
+                "            <PropertyDescription>Specifies the initial catalog or database on which to connect.</PropertyDescription>" + nl +
+                "            <PropertyType>String</PropertyType>" + nl +
+                "            <PropertyAccessType>Read/Write</PropertyAccessType>" + nl +
+                "            <IsRequired/>" + nl +
+                "            <Value/>" + nl +
+                "          </row>" + nl +
+                ".*");
+    }
+
+    /**
+     * Tests the {@link RowsetDefinition#DISCOVER_LITERALS} rowset, and
+     * multiple restrictions.
+     */
+    public void testLiterals() {
+        assertRequestYields(wrap(
+                "        <Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "            SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "            <RequestType>DISCOVER_LITERALS</RequestType>" + nl +
+                "            <Restrictions>" + nl +
+                "                <RestrictionList>" + nl +
+                "                    <LiteralName>" + nl +
+                "                        <Value>DBLITERAL_QUOTE_PREFIX</Value>" + nl +
+                "                        <Value>DBLITERAL_QUOTE_SUFFIX</Value>" + nl +
+                "                    </LiteralName>" + nl +
+                "                </RestrictionList>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Properties>" + nl +
+                "                <PropertyList>" + nl +
+                "                    <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "                    <Format>Tabular</Format>" + nl +
+                "                </PropertyList>" + nl +
+                "            </Properties>" + nl +
+                "        </Discover>"),
+
+                "<?xml version=\"1.0\"?>" + nl +
+                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "  <SOAP-ENV:Body>" + nl +
+                "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
+                "      <return>" + nl +
+                "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
+                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
+                "          <row>" + nl +
+                "            <LiteralName>DBLITERAL_QUOTE_PREFIX</LiteralName>" + nl +
+                "            <LiteralValue>[</LiteralValue>" + nl +
+                "            <LiteralMaxLength>-1</LiteralMaxLength>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <LiteralName>DBLITERAL_QUOTE_SUFFIX</LiteralName>" + nl +
+                "            <LiteralValue>]</LiteralValue>" + nl +
+                "            <LiteralMaxLength>-1</LiteralMaxLength>" + nl +
+                "          </row>" + nl +
+                "        </root>" + nl +
+                "      </return>" + nl +
+                "    </DiscoverResponse>" + nl +
+                "  </SOAP-ENV:Body>" + nl +
+                "</SOAP-ENV:Envelope>");
+    }
+
+    public void testPropertiesUnrestricted() {
+        assertRequestYields(wrap(
+                "        <Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "            SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "            <RequestType>DISCOVER_PROPERTIES</RequestType>" + nl +
+                "            <Restrictions>" + nl +
+                "                <RestrictionList>" + nl +
+                "                    <PropertyName>EndRange</PropertyName>" + nl +
+                "                </RestrictionList>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Properties>" + nl +
+                "                <PropertyList>" + nl +
+                "                    <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "                    <Format>Tabular</Format>" + nl +
+                "                </PropertyList>" + nl +
+                "            </Properties>" + nl +
+                "        </Discover>"),
+
+                "<?xml version=\"1.0\"?>" + nl +
+                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "  <SOAP-ENV:Body>" + nl +
+                "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
+                "      <return>" + nl +
+                "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
+                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
+                "          <row>" + nl +
+                "            <PropertyName>EndRange</PropertyName>" + nl +
+                "            <PropertyDescription>An integer value corresponding to a CellOrdinal used to restrict an MDDataSet returned by a command to a specific range of cells. Used in conjunction with the BeginRange property. If unspecified, all cells are returned in the rowset. The value -1 means unspecified.</PropertyDescription>" + nl +
+                "            <PropertyType>Integer</PropertyType>" + nl +
+                "            <PropertyAccessType>Write</PropertyAccessType>" + nl +
+                "            <IsRequired/>" + nl +
+                "            <Value/>" + nl +
+                "          </row>" + nl +
+                "        </root>" + nl +
+                "      </return>" + nl +
+                "    </DiscoverResponse>" + nl +
+                "  </SOAP-ENV:Body>" + nl +
+                "</SOAP-ENV:Envelope>");
+    }
+
     public void testSelect() {
         assertRequestYields(wrap(
                 "<Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\" " + nl +
@@ -154,7 +380,7 @@ public class XmlaTest extends TestCase {
                 "  <Properties>" + nl +
                 "    <PropertyList>" + nl +
                 "      <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "      <Catalog>Foodmart 2000</Catalog>" + nl +
+                "      <Catalog>FoodMart</Catalog>" + nl +
                 "      <Format>Multidimensional</Format>" + nl +
                 "      <AxisFormat>TupleFormat</AxisFormat>" + nl +
                 "    </PropertyList>" + nl +

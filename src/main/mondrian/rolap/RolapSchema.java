@@ -33,6 +33,7 @@ import java.util.*;
  **/
 public class RolapSchema implements Schema
 {
+    private String name;
 	/**
 	 * Internal use only.
 	 */
@@ -97,8 +98,18 @@ public class RolapSchema implements Schema
 		}
 	}
 
+    public String getName() {
+        Util.assertPostcondition(name != null, "return != null");
+        Util.assertPostcondition(name.length() > 0, "return.length() > 0");
+        return name;
+    }
+
 	private void load(MondrianDef.Schema xmlSchema)
 	{
+        this.name = xmlSchema.name;
+        if (name == null || name.equals("")) {
+            throw Util.newError("<Schema> name must be set");
+        }
 		for (int i = 0; i < xmlSchema.cubes.length; i++) {
 			MondrianDef.Cube xmlCube = xmlSchema.cubes[i];
 			RolapCube cube = new RolapCube(this, xmlSchema, xmlCube);
