@@ -198,31 +198,33 @@ public class CachePool {
   	 * Records that an object has just been added to a cache, and pins it, in
 	 * an atomic operation.
   	 **/
-  	public synchronized void register(
+  	public void register(
 			Cacheable cacheable, int pinCount, Collection pinned) {
-		String id = cacheableId(cacheable);
-		double cost = cacheable.getCost();
-		if (mapCacheableIdToCost.put(id, new Double(cost)) != null) {
-			throw Util.newInternal("Cacheable '" + cacheable +
-					"' added to CachePool more than once");
-		}
-		cacheable.markAccessed(tick());
-		// Yes, add to queue even if pinCount > 0, because pin() assumes that
-		// the object is on the queue.
-		queue.add(new SoftCacheableReference(cacheable));
-		unpinnedCost += cost;
+          synchronized (this) {
+              String id = cacheableId(cacheable);
+              double cost = cacheable.getCost();
+              if (mapCacheableIdToCost.put(id, new Double(cost)) != null) {
+                  throw Util.newInternal("Cacheable '" + cacheable +
+                          "' added to CachePool more than once");
+              }
+              cacheable.markAccessed(tick());
+              // Yes, add to queue even if pinCount > 0, because pin() assumes that
+              // the object is on the queue.
+              queue.add(new SoftCacheableReference(cacheable));
+              unpinnedCost += cost;
 //		System.out.println("unpinnedCost a now " + unpinnedCost + ", pinnedCost=" + pinnedCost);
-		if (RolapUtil.debugOut != null) {
-			RolapUtil.debugOut.println(
-				"CachePool: register [" + cacheable +
-				"], cost=" + cost +
-				", size=" + size() +
-				", totalCost=" + unpinnedCost);
-		}
-		while (pinCount-- > 0) {
-            pin(cacheable, pinned);
-        }
-		flushIfNecessary();
+              if (RolapUtil.debugOut != null) {
+                  RolapUtil.debugOut.println(
+                      "CachePool: register [" + cacheable +
+                      "], cost=" + cost +
+                      ", size=" + size() +
+                      ", totalCost=" + unpinnedCost);
+              }
+              while (pinCount-- > 0) {
+                  pin(cacheable, pinned);
+              }
+          }
+          flushIfNecessary();
 	}
 
 	/**
@@ -365,14 +367,34 @@ public class CachePool {
 	}
 
 	/**
-	 * <b>Note to developers</b>: Must be called from a synchronized context.
+     * Removes unpinned items from the cache until the cost is below the limit.
+     *
+     * <p>This must <em>not</em> be called from a synchronized context. This is
+     * the locking strategy is to lock cacheables before licking the cachepool.
 	 */
-	private void flushIfNecessary()
-	{
-		while ((unpinnedCost + pinnedCost) > costLimit && !queue.isEmpty()) {
-			removeLast();
-		}
+	private void flushIfNecessary() {
+        Cacheable cacheable;
+        while ((cacheable = getOneToFlush()) != null) {
+            deregisterInternal(cacheable);
+        }
 	}
+
+    /**
+     * If the cache is over-full, returns a candidate for flushing;
+     * otherwise returns null.
+     */
+    private synchronized Cacheable getOneToFlush() {
+        if ((unpinnedCost + pinnedCost) > costLimit && !queue.isEmpty()) {
+            while (true) {
+                SoftCacheableReference ref = (SoftCacheableReference) queue.removeLast();
+                Cacheable cacheable = ref.getCacheable();
+                if (cacheable != null) {
+                    return cacheable;
+                }
+            }
+        }
+        return null;
+    }
 
 	/**
 	 * Returns the total cost of the objects in the cache.
@@ -478,36 +500,37 @@ public class CachePool {
 	/**
 	 * Unpins an object from the cache. See {@link #pin}.
 	 **/
-	synchronized void unpin(Cacheable cacheable)
+	void unpin(Cacheable cacheable)
 	{
-		double cost = checkRegistered(cacheable);
+        synchronized (this) {
+            double cost = checkRegistered(cacheable);
 //		printCacheables(RolapUtil.debugOut);
-		int pinCount = cacheable.getPinCount() - 1;
-		cacheable.setPinCount(pinCount);
-		Util.assertTrue(pinCount >= 0);
-		if (pinCount == 0) {
-			boolean existed = pinned.remove(cacheable);
-			Util.assertTrue(existed);
-			if (pinnedZombies.remove(cacheable)) {
-				// it was marked for death, so don't bother to queue it, just
-				// remove it immediately
-			} else {
-				queue.add(new SoftCacheableReference(cacheable));
-				unpinnedCost += cost;
-			}
-			pinnedCost -= cost;
+            int pinCount = cacheable.getPinCount() - 1;
+            cacheable.setPinCount(pinCount);
+            Util.assertTrue(pinCount >= 0);
+            if (pinCount == 0) {
+                boolean existed = pinned.remove(cacheable);
+                Util.assertTrue(existed);
+                if (pinnedZombies.remove(cacheable)) {
+                    // it was marked for death, so don't bother to queue it, just
+                    // remove it immediately
+                } else {
+                    queue.add(new SoftCacheableReference(cacheable));
+                    unpinnedCost += cost;
+                }
+                pinnedCost -= cost;
 //			System.out.println("unpinnedCost f now " + unpinnedCost + ", pinnedCost=" + pinnedCost);
-		}
-		totalPinCount--;
-		if (RolapUtil.debugOut != null) {
-			RolapUtil.debugOut.println(
-				"CachePool: unpin [" + cacheable +
-				"], pinCount=" + pinCount +
-				", count=" + queue.size() +
-				", totalPinCount=" + totalPinCount);
-		}
-		// we may just have pushed totalCost over the limit
-		flushIfNecessary();
+            }
+            totalPinCount--;
+            if (RolapUtil.debugOut != null) {
+                RolapUtil.debugOut.println(
+                    "CachePool: unpin [" + cacheable +
+                    "], pinCount=" + pinCount +
+                    ", count=" + queue.size() +
+                    ", totalPinCount=" + totalPinCount);
+            }
+        }
+        flushIfNecessary();
 	}
 
 	/**

@@ -306,37 +306,34 @@ public class SmartMemberReader implements MemberReader, MemberCache
 	}
 
 	// synchronization: Must synchronize, because modifies mapMemberToChildren.
-	// But locking protocol dictates that we lock CachePool before we lock this.
 	public void putChildren(RolapMember member, ArrayList children) {
 		ChildrenList childrenList = new ChildrenList(this, member, children);
 		CachePool.SoftCacheableReference ref = new CachePool.SoftCacheableReference(childrenList);
 		final CachePool cachePool = CachePool.instance();
-		synchronized (cachePool) {
-			if (cachePool.isRegistered(childrenList)) {
-				if (RolapUtil.debugOut != null) {
-					RolapUtil.debugOut.println("SmartMemberReader: putChildren: " +
-							childrenList + "was already in the cache " +
-							" (not an error, but a rare race condition)");
-				}
-			} else {
-				synchronized (this) {
-					CachePool.SoftCacheableReference oldRef =
-							(CachePool.SoftCacheableReference) mapMemberToChildren.put(member, ref);
-					if (oldRef != null) {
-						ChildrenList old = (ChildrenList) oldRef.getCacheableOrFail();
-                        if (RolapUtil.debugOut != null) {
-                            RolapUtil.debugOut.println("putChildren: remove " + oldRef + ", " + old);
-                        }
-                        // Temporarily put the old list back, while we
-                        // deregister it.
-                        mapMemberToChildren.put(member, oldRef);
-						cachePool.deregister(old, false);
-                        mapMemberToChildren.put(member, ref);
-					}
-					cachePool.register(childrenList);
-				}
-			}
-		}
+        if (cachePool.isRegistered(childrenList)) {
+            if (RolapUtil.debugOut != null) {
+                RolapUtil.debugOut.println("SmartMemberReader: putChildren: " +
+                        childrenList + "was already in the cache " +
+                        " (not an error, but a rare race condition)");
+            }
+        } else {
+            synchronized (this) {
+                CachePool.SoftCacheableReference oldRef =
+                        (CachePool.SoftCacheableReference) mapMemberToChildren.put(member, ref);
+                if (oldRef != null) {
+                    ChildrenList old = (ChildrenList) oldRef.getCacheableOrFail();
+                    if (RolapUtil.debugOut != null) {
+                        RolapUtil.debugOut.println("putChildren: remove " + oldRef + ", " + old);
+                    }
+                    // Temporarily put the old list back, while we
+                    // deregister it.
+                    mapMemberToChildren.put(member, oldRef);
+                    cachePool.deregister(old, false);
+                    mapMemberToChildren.put(member, ref);
+                }
+                cachePool.register(childrenList);
+            }
+        }
 	}
 
 	// synchronization: Must synchronize, because modifies mapMemberToChildren

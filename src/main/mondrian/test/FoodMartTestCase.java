@@ -328,7 +328,6 @@ class TestCaseForker {
 
 	public void run() {
 		ThreadGroup threadGroup = null;//new ThreadGroup("TestCaseForker thread group");
-		final TestCaseForker forker = this;
 		for (int i = 0; i < threads.length; i++) {
 			final int threadIndex = i;
 			this.threads[i] = new Thread(threadGroup, "thread #" + threadIndex) {
@@ -338,10 +337,6 @@ class TestCaseForker {
 					} catch (Throwable e) {
 						e.printStackTrace();
 						failures.add(e);
-					} finally {
-						synchronized (forker) {
-							forker.notify();
-						}
 					}
 				}
 			};
@@ -351,13 +346,12 @@ class TestCaseForker {
 		}
 		for (int i = 0; i < threads.length; i++) {
 			try {
-				synchronized (this) {
-					this.wait(timeoutMs);
-				}
+				threads[i].join(timeoutMs);
 			} catch (InterruptedException e) {
 				failures.add(
 						Util.newInternal(
 								e, "Interrupted after " + timeoutMs + "ms"));
+				break;
 			}
 		}
 		if (failures.size() > 0) {
