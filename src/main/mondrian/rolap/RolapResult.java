@@ -11,33 +11,12 @@
 */
 
 package mondrian.rolap;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.List;
-
-import mondrian.olap.Axis;
-import mondrian.olap.Cell;
-import mondrian.olap.CellFormatter;
-import mondrian.olap.Dimension;
-import mondrian.olap.Evaluator;
-import mondrian.olap.Exp;
-import mondrian.olap.FunCall;
-import mondrian.olap.Member;
-import mondrian.olap.Position;
-import mondrian.olap.Property;
-import mondrian.olap.Query;
-import mondrian.olap.QueryAxis;
-import mondrian.olap.ResultBase;
-import mondrian.olap.Syntax;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
-import mondrian.rolap.cache.CachePool;
+
+import java.util.*;
 
 /**
  * A <code>RolapResult</code> is the result of running a query.
@@ -55,7 +34,6 @@ class RolapResult extends ResultBase
 	FastBatchingCellReader batchingReader;
     private int[] modulos;
     private static final int MAX_AGGREGATION_PASS_COUNT = 5;
-    private Dimension measuresDim = null;
 
     RolapResult(Query query) {
 		this.query = query;
@@ -352,18 +330,8 @@ class RolapResult extends ResultBase
 
 class RolapAxis extends Axis
 {
-	private Hashtable mapPositionToIndex = new Hashtable();
 	RolapAxis(Position[] positions) {
 		this.positions = positions;
-		for (int i = 0; i < positions.length; i++) {
-			Position position = positions[i];
-			mapPositionToIndex.put(position,  new Integer(i));
-		}
-	}
-	int lookupPosition(Position position)
-	{
-		Integer index = (Integer) mapPositionToIndex.get(position);
-		return index == null ? -1 : index.intValue();
 	}
 };
 
@@ -445,8 +413,16 @@ class RolapCell implements Cell
 	 */
 	public String getDrillThroughSQL(boolean extendedContext) {
         RolapAggregationManager aggregationManager = AggregationManager.instance();
+        final RolapMember[] currentMembers = getEvaluator().currentMembers;
+        for (int i = 0; i < currentMembers.length; i++) {
+            RolapMember member = currentMembers[i];
+            final RolapLevel level = (RolapLevel) member.getLevel();
+            if (level.hasClosedPeer()) {
+                currentMembers[i] = (RolapMember) member.getDataMember();
+            }
+        }
         CellRequest cellRequest = RolapAggregationManager.makeRequest(
-                getEvaluator().currentMembers, extendedContext);
+            currentMembers, extendedContext);
 		if (cellRequest == null) {
 			return null;
 		}
@@ -454,9 +430,10 @@ class RolapCell implements Cell
 	}
 
 	/**
-	 * test if can drill through this cell
-	 * drill through is possible if the measure is a stored measure
-	 * and not possible for calculated measures
+	 * Returns whether it is possible to drill through this cell.
+	 * Drill-through is possible if the measure is a stored measure
+	 * and not possible for calculated measures.
+     *
 	 * @return true if can drill through
 	 */
 	public boolean canDrillThrough() {

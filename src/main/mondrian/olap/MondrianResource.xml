@@ -356,6 +356,14 @@
     <text>Failed to load formatter class ''{0}'' for level ''{1}''.</text>
 </exception>
 
+<exception id="40170" name="HierarchyMustHaveForeignKey">
+    <text>Hierarchy ''{0}'' in cube ''{1}'' must have a foreign key, since it is not based on the cube's fact table.</text>
+</exception>
+
+<exception id="40180" name="HierarchyInvalidForeignKey">
+    <text>Foreign key ''{0}'' of hierarchy ''{1}'' in cube ''{2}'' is not a column in the fact table.</text>
+</exception>
+
 
 <!-- ====================================================================== -->
 <!-- Loader -->

@@ -304,7 +304,18 @@ lname
           uniqueMembers="true"/>
     </Hierarchy>
   </Dimension>
-  <DimensionUsage name="Store Type" source="Store Type" foreignKey="store_id"/>
+
+  <Dimension name="Store Type" foreignKey="employee_id">
+    <Hierarchy hasAll="true" primaryKeyTable="employee" primaryKey="employee_id">
+      <Join leftKey="store_id" rightKey="store_id">
+        <Table name="employee"/>
+        <Table name="store"/>
+      </Join>
+      <Level name="Store Type" table="store" column="store_type"
+          uniqueMembers="true"/>
+    </Hierarchy>
+  </Dimension>
+
   <Dimension name="Position" foreignKey="employee_id">
     <Hierarchy hasAll="true" allMemberName="All Position"
         primaryKey="employee_id">
@@ -315,6 +326,7 @@ lname
           column="position_title" ordinalColumn="position_id"/>
     </Hierarchy>
   </Dimension>
+
   <Dimension name="Department" foreignKey="department_id">
     <Hierarchy hasAll="true" primaryKey="department_id">
       <Table name="department"/>
@@ -351,7 +363,6 @@ lname
     == The closed hierarchy has two levels: the detail level (here named
     == [Employee]) is equivalent to the base hierarchy; the [Closure] level
     == relates each descendant to all its ancestors.
-    -->
   <Dimension name="EmployeesClosure" foreignKey="employee_id">
       <Hierarchy hasAll="true" allMemberName="All Employees"
           primaryKey="employee_id" primaryKeyTable="employee_closure">
@@ -365,6 +376,7 @@ lname
             table="employee_closure" column="employee_id"/>
       </Hierarchy>
   </Dimension>
+    -->
 
   <Measure name="Org Salary" column="salary_paid" aggregator="sum"
       formatString="Currency"/>

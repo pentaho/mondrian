@@ -525,6 +525,8 @@ class SqlMemberSource implements MemberReader
                 Util.assertTrue(rootMembers.size() == 1);
                 allMember = (RolapMember) rootMembers.get(0);
             }
+            boolean parentChild = level.parentExp != null;
+
             // members[i] is the current member of level#i, and siblings[i]
             // is the current member of level#i plus its siblings
             RolapMember[] members = new RolapMember[levels.length];
@@ -544,8 +546,8 @@ class SqlMemberSource implements MemberReader
                 int column = 0;
                 RolapMember member = null;
                 for (int i = 0; i <= levelDepth; i++) {
-                    RolapLevel level2 = levels[i];
-                    if (level2.isAll()) {
+                    RolapLevel childLevel = levels[i];
+                    if (childLevel.isAll()) {
                         member = allMember;
                         continue;
                     }
@@ -553,22 +555,14 @@ class SqlMemberSource implements MemberReader
                     if (value == null) {
                         value = RolapUtil.sqlNullValue;
                     }
-                    RolapMember parent = member;
-                    Object key = cache.makeKey(parent, value);
+                    RolapMember parentMember = member;
+                    Object key = cache.makeKey(parentMember, value);
                     member = cache.getMember(key);
                     if (member == null) {
-                        member = new RolapMember(parent, level2, value);
-                        member.ordinal = lastOrdinal++;
-                        for (int j = 0; j < level2.properties.length; j++) {
-                            RolapProperty property = level2.properties[j];
-                            member.setProperty(
-                                    property.getName(),
-                                    resultSet.getObject(++column));
-                        }
-                        cache.putMember(key, member);
-                    } else {
-                        column += level2.properties.length;
+                        member = makeMember(parentMember, childLevel, value,
+                            parentChild, resultSet, key, column);
                     }
+                    column += childLevel.properties.length;
                     if (member != members[i]) {
                         // Flush list we've been building.
                         ArrayList children = siblings[i + 1];
@@ -759,29 +753,8 @@ class SqlMemberSource implements MemberReader
                 Object key = cache.makeKey(parentMember, value);
                 RolapMember member = cache.getMember(key);
                 if (member == null) {
-                    member = new RolapMember(parentMember, childLevel, value);
-                    member.ordinal = lastOrdinal++;
-                    if (parentChild) {
-                        // Create a 'public' and a 'data' member. The public member is
-                        // calculated, and its value is the aggregation of the data member and all
-                        // of the children. The children and the data member belong to the parent
-                        // member; the data member does not have any children.
-                        final RolapParentChildMember parentChildMember;
-                        if (childLevel.hasClosedPeer()) {
-                            parentChildMember = new RolapParentChildMember(
-                                parentMember, childLevel, value, member);
-                        } else {
-                            parentChildMember = new RolapParentChildMemberNoClosure(
-                                parentMember, childLevel, value, member);
-                        }
-                        member = parentChildMember;
-                    }
-                    for (int j = 0; j < childLevel.properties.length; j++) {
-                        RolapProperty property = childLevel.properties[j];
-                        member.setProperty(
-                                property.getName(), resultSet.getObject(j + 2));
-                    }
-                    cache.putMember(key, member);
+                    member = makeMember(parentMember, childLevel, value,
+                        parentChild, resultSet, key, 1);
                 }
                 if (value == RolapUtil.sqlNullValue) {
                     addAsOldestSibling(children, member);
@@ -802,6 +775,40 @@ class SqlMemberSource implements MemberReader
                 // ignore
             }
         }
+    }
+
+    private RolapMember makeMember(RolapMember parentMember,
+        RolapLevel childLevel,
+        Object value,
+        boolean parentChild,
+        ResultSet resultSet,
+        Object key,
+        int columnOffset) throws SQLException
+    {
+        RolapMember member = new RolapMember(parentMember, childLevel, value);
+        member.ordinal = lastOrdinal++;
+        if (parentChild) {
+            // Create a 'public' and a 'data' member. The public member is
+            // calculated, and its value is the aggregation of the data member and all
+            // of the children. The children and the data member belong to the parent
+            // member; the data member does not have any children.
+            final RolapParentChildMember parentChildMember;
+            if (childLevel.hasClosedPeer()) {
+                parentChildMember = new RolapParentChildMember(
+                    parentMember, childLevel, value, member);
+            } else {
+                parentChildMember = new RolapParentChildMemberNoClosure(
+                    parentMember, childLevel, value, member);
+            }
+            member = parentChildMember;
+        }
+        for (int j = 0; j < childLevel.properties.length; j++) {
+            RolapProperty property = childLevel.properties[j];
+            member.setProperty(
+                property.getName(), resultSet.getObject(columnOffset + j + 1));
+        }
+        cache.putMember(key, member);
+        return member;
     }
 
     /**

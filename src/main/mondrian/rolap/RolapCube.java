@@ -386,8 +386,19 @@ class RolapCube extends CubeBase
 			}
 			RolapStar.Table table = star.factTable;
 			if (!relation.equals(table.relation)) {
-                // HierarchyUsage should have checked this.
-                Util.assertTrue(hierarchyUsage.foreignKey != null);
+                // HierarchyUsage should have checked this.a
+                if (hierarchyUsage.foreignKey == null) {
+                    throw MondrianResource.instance()
+                        .newHierarchyMustHaveForeignKey(hierarchy.getName(),
+                            getName());
+                }
+                if (!star.factTable.containsColumn(hierarchyUsage.foreignKey)) {
+                    throw MondrianResource.instance()
+                        .newHierarchyInvalidForeignKey(
+                            hierarchyUsage.foreignKey,
+                            hierarchy.getName(),
+                            getName());
+                }
 				RolapStar.Condition joinCondition = new RolapStar.Condition(
 						new MondrianDef.Column(table.getAlias(), hierarchyUsage.foreignKey),
 						hierarchyUsage.joinExp);

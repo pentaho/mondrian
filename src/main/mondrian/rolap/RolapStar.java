@@ -11,28 +11,28 @@
 */
 
 package mondrian.rolap;
+import mondrian.olap.Member;
+import mondrian.olap.MondrianDef;
+import mondrian.olap.Util;
+import mondrian.olap.MondrianResource;
+import mondrian.rolap.agg.Aggregation;
+import mondrian.rolap.agg.CellRequest;
+import mondrian.rolap.sql.SqlQuery;
+
+import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.DatabaseMetaData;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import javax.sql.DataSource;
-
-import mondrian.olap.Member;
-import mondrian.olap.MondrianDef;
-import mondrian.olap.Util;
-import mondrian.rolap.RolapSchema.Pool;
-import mondrian.rolap.agg.Aggregation;
-import mondrian.rolap.agg.CellRequest;
-import mondrian.rolap.sql.SqlQuery;
 
 /**
  * A <code>RolapStar</code> is a star schema. It is the means to read cell
  * values.
  *
- * todo: put this in package which specicializes in relational aggregation,
+ * <p>todo: put this in package which specicializes in relational aggregation,
  * doesn't know anything about hierarchies etc.
  *
  * @author jhyde
@@ -52,26 +52,28 @@ public class RolapStar {
     /** Maps {@link Column} to {@link String} for each column which is a key
      * to a level. */
     final HashMap mapColumnToName = new HashMap();
-    
+
     /** holds all aggregations of this star */
 	ArrayList aggregations = new ArrayList();
 
     /**
-	 * Please use {@link Pool#getOrCreateStar} to create a {@link
-	 * RolapStar}.
-	 */
+	 * Creates a RolapStar. Please use
+     * {@link RolapSchema.RolapStarRegistry#getOrCreateStar} to create a
+     * {@link RolapStar}.
+     */
 	RolapStar(RolapSchema schema, DataSource dataSource) {
 		this.schema = schema;
 		this.dataSource = dataSource;
 	}
-	
+
 	void addAggregation(Aggregation agg) {
 		synchronized(aggregations) {
 			aggregations.add(agg);
 		}
 	}
+
 	/**
-	 * lookups an aggregation or creates one if it does not exist in an
+	 * Looks up an aggregation or creates one if it does not exist in an
 	 * atomic (synchronized) operation
 	 */
 	public Aggregation lookupOrCreateAggregation(RolapStar.Column[] columns) {
@@ -84,7 +86,7 @@ public class RolapStar {
 			return aggregation;
 		}
 	}
-	
+
 	/**
 	 * Looks for an existing aggregation over a given set of columns, or
 	 * returns <code>null</code> if there is none.
@@ -254,6 +256,27 @@ public class RolapStar {
      */
     public String getColumnName(Column column) {
         return (String) mapColumnToName.get(column);
+    }
+
+    private boolean containsColumn(String tableName, String columnName) {
+        final Connection jdbcConnection = getJdbcConnection();
+        try {
+            final DatabaseMetaData metaData = jdbcConnection.getMetaData();
+            final ResultSet columns =
+                metaData.getColumns(null, null, tableName, columnName);
+            final boolean hasNext = columns.next();
+            return hasNext;
+        } catch (SQLException e) {
+            throw MondrianResource.instance().newInternal(
+                "Error while retrieving metadata for table '" +
+                tableName + "', column '" + columnName + "'");
+        } finally {
+            try {
+                jdbcConnection.close();
+            } catch (SQLException e) {
+                // ignore
+            }
+        }
     }
 
     public static class Column
@@ -591,7 +614,17 @@ public class RolapStar {
 				child.print(pw, prefix + "  ");
 			}
 		}
-	}
+
+        public boolean containsColumn(String columnName) {
+            if (relation instanceof MondrianDef.Table) {
+                return star.containsColumn(((MondrianDef.Table) relation).name,
+                    columnName);
+            } else {
+                // todo: Deal with join and view.
+                return false;
+            }
+        }
+    }
 
 	public static class Condition {
 		MondrianDef.Expression left;

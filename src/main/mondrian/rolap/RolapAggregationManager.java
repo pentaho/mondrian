@@ -115,14 +115,20 @@ public abstract class RolapAggregationManager implements CellReader {
                 // available; this is always valid, and improves performance by
                 // enabling the database to compute aggregates.
                 if (level.hasClosedPeer()) {
-                    level = level.getClosedPeer();
-                    RolapHierarchy hierarchy =
-                        (RolapHierarchy) level.getHierarchy();
-                    final RolapMember allMember = (RolapMember)
-                        hierarchy.getDefaultMember();
-                    assert allMember.isAll();
-                    member = new RolapMember(allMember, level,
-                        ((RolapMember) member).key);
+                    if (member.getDataMember() == null) {
+                        // Member has no data member because it IS the data
+                        // member of a parent-child hierarchy member. Leave
+                        // it be. We don't want to aggregate.
+                    } else {
+                        level = level.getClosedPeer();
+                        RolapHierarchy hierarchy =
+                            (RolapHierarchy) level.getHierarchy();
+                        final RolapMember allMember = (RolapMember)
+                            hierarchy.getDefaultMember();
+                        assert allMember.isAll();
+                        member = new RolapMember(allMember, level,
+                            ((RolapMember) member).key);
+                    }
                 }
 				RolapStar.Column column = (RolapStar.Column) mapLevelToColumn.get(level);
 				if (column == null) {
