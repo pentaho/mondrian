@@ -22,6 +22,7 @@ import java.sql.Statement;
 import java.util.Hashtable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.io.PrintWriter;
 
 /**
@@ -36,12 +37,24 @@ import java.io.PrintWriter;
  * @version $Id$
  **/
 public class RolapStar {
-	public Connection jdbcConnection;
+	RolapConnection connection;
 	Measure[] measures;
 	public Table factTable;
 	Table[] tables;
 	/** todo: better, the dimensional model should hold the mapping **/
 	Hashtable mapLevelToColumn = new Hashtable();
+
+	/**
+	 * Please use {@link Pool#getOrCreateStar} to create a {@link
+	 * RolapStar}.
+	 */
+	RolapStar(RolapConnection connection) {
+		this.connection = connection;
+	}
+
+	public Connection getJdbcConnection() {
+		return connection.jdbcConnection;
+	}
 
 	/**
 	 * Reads a cell of <code>measure</code>, where <code>columns</code> are
@@ -56,7 +69,7 @@ public class RolapStar {
 		Util.assertTrue(columns.length == values.length);
 		SqlQuery sqlQuery;
 		try {
-			sqlQuery = new SqlQuery(jdbcConnection.getMetaData());
+			sqlQuery = new SqlQuery(connection.jdbcConnection.getMetaData());
 		} catch (SQLException e) {
 			throw Util.getRes().newInternal(e, "while computing single cell");
 		}
@@ -83,7 +96,7 @@ public class RolapStar {
 		ResultSet resultSet = null;
 		try {
 			resultSet = RolapUtil.executeQuery(
-					jdbcConnection, sql, "RolapStar.getCell");
+					connection.jdbcConnection, sql, "RolapStar.getCell");
 			Object o = null;
 			if (resultSet.next()) {
 				o = resultSet.getObject(1);
@@ -105,6 +118,22 @@ public class RolapStar {
 				// ignore
 			}
 		}
+	}
+
+	/**
+	 * Helper method, returns whether <code>relation</code> is a table named
+	 * <code>factTable.factSchema</code>.
+	 */
+	static boolean matchesTable(
+			MondrianDef.Relation relation, String schema, String table) {
+		if (relation instanceof MondrianDef.Table) {
+			MondrianDef.Table t = (MondrianDef.Table) relation;
+			if (t.name.equals(table) &&
+					Util.equals(t.schema, schema)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 //  	static class Segment
@@ -156,7 +185,7 @@ public class RolapStar {
 				SqlQuery sqlQuery;
 				try {
 					sqlQuery = new SqlQuery(
-						table.star.jdbcConnection.getMetaData());
+						table.star.connection.jdbcConnection.getMetaData());
 				} catch (SQLException e) {
 					throw Util.getRes().newInternal(
 						e,
@@ -185,7 +214,7 @@ public class RolapStar {
 				ResultSet resultSet = null;
 				try {
 					resultSet = RolapUtil.executeQuery(
-							table.star.jdbcConnection, sql,
+							table.star.connection.jdbcConnection, sql,
 							"RolapStar.Column.getCardinality");
 					Util.assertTrue(resultSet.next());
 					cardinality = resultSet.getInt(1);
@@ -216,9 +245,7 @@ public class RolapStar {
 	public static class Table
 	{
 		public RolapStar star;
-		private MondrianDef.Relation relation;
-        private String schema;
-        private String table;
+		MondrianDef.Relation relation;
 		public String primaryKey;
 		public String foreignKey;
 		ArrayList columns = new ArrayList();
@@ -234,13 +261,9 @@ public class RolapStar {
 				MondrianDef.Relation relation, Table parent,
 				Condition joinCondition) {
 			this.relation = relation;
-			if (relation instanceof MondrianDef.Table) {
-				MondrianDef.Table table = (MondrianDef.Table) relation;
-				this.schema = table.schema;
-				this.table = table.name;
-			} else {
-				throw Util.newInternal("todo:");
-			}
+			Util.assertTrue(
+					relation instanceof MondrianDef.Table,
+					"todo: allow dimension which is not a Table, " + relation);
 			this.parent = parent;
 			this.joinCondition = joinCondition;
 			Util.assertTrue((parent == null) == (joinCondition == null));
@@ -249,19 +272,65 @@ public class RolapStar {
 			return relation.getAlias();
 		}
 		/**
+		 * Extends this 'leg' of the star by adding <code>relation</code>
+		 * joined by <code>joinCondition</code>. If the same expression is
+		 * already present, does not create it again.
+		 */
+		synchronized Table addJoin(
+				MondrianDef.Relation relation,
+				RolapStar.Condition joinCondition) {
+			if (relation instanceof MondrianDef.Table) {
+				MondrianDef.Table table = (MondrianDef.Table) relation;
+				RolapStar.Table starTable = findChild(table);
+				if (starTable == null) {
+					starTable = new RolapStar.Table(table, this, joinCondition);
+					starTable.star = this.star;
+					this.children.add(starTable);
+				}
+				return starTable;
+			} else if (relation instanceof MondrianDef.Join) {
+				MondrianDef.Join join = (MondrianDef.Join) relation;
+				RolapStar.Table leftTable = addJoin(join.left, joinCondition);
+				String leftAlias = join.leftAlias;
+				if (leftAlias == null) {
+					leftAlias = join.left.getAlias();
+					if (leftAlias == null) {
+						throw Util.newError(
+								"missing leftKeyAlias in " + relation);
+					}
+				}
+				String rightAlias = join.rightAlias;
+				if (rightAlias == null) {
+					rightAlias = join.right.getAlias();
+					if (rightAlias == null) {
+						throw Util.newError(
+								"missing rightKeyAlias in " + relation);
+					}
+				}
+				joinCondition = new RolapStar.Condition(
+						leftAlias, join.leftKey, rightAlias, join.rightKey);
+				RolapStar.Table rightTable = leftTable.addJoin(
+						join.right, joinCondition);
+				return rightTable;
+			} else {
+				throw Util.newInternal("bad relation type " + relation);
+			}
+		}
+
+		/**
 		 * Returns a child table which maps onto a given relation, or null if
 		 * there is none.
 		 */
 		public Table findChild(MondrianDef.Table table) {
 			for (int i = 0; i < children.size(); i++) {
-				Table childTable = (Table) children.get(i);
-				if (childTable.table.equals(table.name) &&
-						Util.equals(childTable.schema, table.schema)) {
-					return childTable;
+				Table child = (Table) children.get(i);
+				if (matchesTable(child.relation, table.schema, table.name)) {
+					return child;
 				}
 			}
 			return null;
 		}
+
 		/**
 		 * Returns a descendant with a given alias, or null if none found.
 		 */
@@ -350,6 +419,52 @@ public class RolapStar {
 			return query.quoteIdentifier(table1, column1) +
 					" = " +
 				query.quoteIdentifier(table2, column2);
+		}
+	}
+
+	/**
+	 * <code>Pool</code> is a registry for {@link RolapStar}s. It is a
+	 * singleton.
+	 */
+	static class Pool {
+		private static Pool singleton;
+		private ArrayList stars = new ArrayList();
+
+		private Pool() {
+		}
+
+		/**
+		 * Returns the singleton instance, creating it if necessary.
+		 */
+		synchronized static Pool instance() {
+			if (singleton == null) {
+				singleton = new Pool();
+			}
+			return singleton;
+		}
+
+		/**
+		 * Looks up a {@link RolapStar}, creating it if it does not exist.
+		 *
+		 * <p> {@link RolapStar.Table#addJoin} works in a similar way.
+		 */
+		synchronized RolapStar getOrCreateStar(
+				RolapConnection connection, String factSchema,
+				String factTable, String alias) {
+			for (Iterator iterator = stars.iterator(); iterator.hasNext();) {
+				RolapStar star = (RolapStar) iterator.next();
+				if (star.connection == connection &&
+						matchesTable(star.factTable.relation, factSchema, factTable)) {
+					return star;
+				}
+			}
+			RolapStar star = new RolapStar(connection);
+			star.factTable = new Table(
+					new MondrianDef.Table(factSchema, factTable, alias),
+					null, null);
+			star.factTable.star = star;
+			stars.add(star);
+			return star;
 		}
 	}
 }

@@ -231,19 +231,13 @@ class RolapCube extends CubeBase
 		}
 		RolapStoredMeasure[] storedMeasures = new RolapStoredMeasure[v.size()];
 		v.copyInto(storedMeasures);
-		// create a star for each measure (todo: pool them)
+		// create measures (and stars for them, if necessary)
 		for (int i = 0; i < storedMeasures.length; i++) {
 			RolapStoredMeasure storedMeasure = storedMeasures[i];
-			RolapStar star = new RolapStar();
-			star.jdbcConnection =
-				((RolapConnection) getConnection()).jdbcConnection;
 			Vector tablesVector = new Vector();
-			// create a fact table
-			RolapStar.Table factTable = star.factTable = new RolapStar.Table(
-					new MondrianDef.Table(
-							this.factSchema, this.factTable, this.getAlias()),
-					null, null);
-			star.factTable.star = star;
+			RolapStar star = RolapStar.Pool.instance().getOrCreateStar(
+					(RolapConnection) getConnection(), this.factSchema,
+					this.factTable, this.getAlias());
 			RolapStar.Measure measure = new RolapStar.Measure();
 			measure.table = star.factTable;
 			measure.name = storedMeasure.column;
@@ -267,10 +261,10 @@ class RolapCube extends CubeBase
 						continue; // e.g. [Measures] hierarchy
 					}
 					RolapStar.Condition joinCondition = new RolapStar.Condition(
-							factTable.getAlias(), hierarchyUsage.foreignKey,
+							star.factTable.getAlias(), hierarchyUsage.foreignKey,
 							hierarchy.primaryKeyTable, hierarchy.primaryKey);
-					RolapStar.Table table = addJoin(
-							relation, factTable, joinCondition);
+					RolapStar.Table table = star.factTable.addJoin(
+							relation, joinCondition);
 					RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
 					for (int l = 0; l < levels.length; l++) {
 						RolapLevel level = levels[l];
@@ -287,7 +281,7 @@ class RolapCube extends CubeBase
 							column.name = nameColumn.name;
 							column.isNumeric = (level.flags & RolapLevel.NUMERIC) != 0;
 							table.columns.add(column);
-							factTable.star.mapLevelToColumn.put(level, column);
+							star.mapLevelToColumn.put(level, column);
 						} else {
 							Util.newInternal("bad exp type " + level.nameExp);
 						}
@@ -298,49 +292,6 @@ class RolapCube extends CubeBase
 			star.tables = new RolapStar.Table[tablesVector.size()];
 			tablesVector.copyInto(star.tables);
 			storedMeasure.star = star;
-		}
-	}
-
-	private static RolapStar.Table addJoin(
-			MondrianDef.Relation relation, RolapStar.Table parentTable,
-			RolapStar.Condition joinCondition) {
-		if (relation instanceof MondrianDef.Table) {
-			MondrianDef.Table table = (MondrianDef.Table) relation;
-			RolapStar.Table starTable = parentTable.findChild(table);
-			if (starTable == null) {
-				starTable = new RolapStar.Table(
-						table, parentTable, joinCondition);
-				starTable.star = parentTable.star;
-				parentTable.children.add(starTable);
-			}
-			return starTable;
-		} else if (relation instanceof MondrianDef.Join) {
-			MondrianDef.Join join = (MondrianDef.Join) relation;
-			RolapStar.Table leftTable = addJoin(
-					join.left, parentTable, joinCondition);
-			String leftAlias = join.leftAlias;
-			if (leftAlias == null) {
-				leftAlias = join.left.getAlias();
-				if (leftAlias == null) {
-					throw Util.newError(
-							"missing leftKeyAlias in " + relation);
-				}
-			}
-			String rightAlias = join.rightAlias;
-			if (rightAlias == null) {
-				rightAlias = join.right.getAlias();
-				if (rightAlias == null) {
-					throw Util.newError(
-							"missing rightKeyAlias in " + relation);
-				}
-			}
-			joinCondition = new RolapStar.Condition(
-					leftAlias, join.leftKey, rightAlias, join.rightKey);
-			RolapStar.Table rightTable = addJoin(
-					join.right, leftTable, joinCondition);
-			return rightTable;
-		} else {
-			throw Util.newInternal("bad relation type " + relation);
 		}
 	}
 

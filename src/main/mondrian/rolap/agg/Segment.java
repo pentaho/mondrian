@@ -214,7 +214,7 @@ public class Segment implements CachePool.Cacheable
 		SqlQuery sqlQuery;
 		try {
 			sqlQuery = new SqlQuery(
-				star.jdbcConnection.getMetaData());
+				star.getJdbcConnection().getMetaData());
 		} catch (SQLException e) {
 			throw Util.getRes().newInternal(e, "while loading segment");
 		}
@@ -246,7 +246,7 @@ public class Segment implements CachePool.Cacheable
 		ResultSet resultSet = null;
 		try {
 			resultSet = RolapUtil.executeQuery(
-					star.jdbcConnection, sql, "Segment.load");
+					star.getJdbcConnection(), sql, "Segment.load");
 			Vector rows = new Vector();
 			while (resultSet.next()) {
 				Object[] row = new Object[arity + 1];
