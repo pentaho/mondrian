@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2003 Kana Software, Inc. and others.
+// (C) Copyright 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -91,14 +91,16 @@ public class AggregationManager extends RolapAggregationManager {
 	}
 
 	public String getDrillThroughSQL(final CellRequest request) {
-        return generateSQL(new DrillThroughQuerySpec(request), false);
+        final DrillThroughQuerySpec spec = new DrillThroughQuerySpec(request);
+        return generateSQL(spec, false);
 	}
 
     /**
 	 * Generates the query to retrieve the cells for a list of segments.
 	 */
 	static String generateSQL(Segment[] segments) {
-		return generateSQL(new SegmentArrayQuerySpec(segments), true);
+        final SegmentArrayQuerySpec spec = new SegmentArrayQuerySpec(segments);
+        return generateSQL(spec, true);
 	}
 
     /**

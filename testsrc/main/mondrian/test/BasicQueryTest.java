@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2003 Julian Hyde
+// Copyright (C) 2003-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -463,9 +463,9 @@ public class BasicQueryTest extends FoodMartTestCase {
 				" {[Product].Children} on rows" + nl +
 				"from Sales");
 		String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL(false);
-    // the following replacement is for databases in ANSI mode
-    //  using '"' to quote identifiers
-    sql = sql.replace('"', '`');
+        // the following replacement is for databases in ANSI mode
+        //  using '"' to quote identifiers
+        sql = sql.replace('"', '`');
 		assertEquals("select `time_by_day`.`the_year` as `Year`," +
                 " `product_class`.`product_family` as `Product Family`," +
                 " `sales_fact_1997`.`unit_sales` as `Unit Sales` " +
@@ -833,7 +833,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"Row #0: 1" + nl;
 		runQueryCheckResult(query, desiredResult);
 	}
-	
+
 	/**
 	 * This one had the same problem. It wouldn't find the
 	 * [Store].[All Stores].[x] member because it has the same leaf
@@ -2318,10 +2318,11 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
 	public void testCatalogHierarchyBasedOnView() {
-	    RolapConnection conn = (RolapConnection) getConnection();
-	   	String jdbc_url = conn.getConnectInfo().get("Jdbc");
-	   	if (jdbc_url.toLowerCase().indexOf("mysql") >= 0 )
-	   		return; // Mysql cannot handle subselect
+        RolapConnection conn = (RolapConnection) getConnection();
+        String jdbc_url = conn.getConnectInfo().get("Jdbc");
+        if (jdbc_url.toLowerCase().indexOf("mysql") >= 0 ) {
+            return; // Mysql cannot handle subselect
+        }
 		Schema schema = getConnection().getSchema();
 		final Cube salesCube = schema.lookupCube("Sales", true);
 		schema.createDimension(
@@ -2353,9 +2354,9 @@ public class BasicQueryTest extends FoodMartTestCase {
 	public void testCatalogHierarchyBasedOnView2() {
 		RolapConnection conn = (RolapConnection) getConnection();
 		String jdbc_url = conn.getConnectInfo().get("Jdbc");
-		if (jdbc_url.toLowerCase().indexOf("mysql") >= 0 )
+		if (jdbc_url.toLowerCase().indexOf("mysql") >= 0) {
 			return; // Mysql cannot handle subselect
-
+        }
 		Schema schema = getConnection().getSchema();
 		final Cube salesCube = schema.lookupCube("Sales", true);
 		schema.createDimension(
@@ -2421,40 +2422,40 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
 	/**
-	 * 
+	 *
 	 * There are cross database order issues in this test.
-	 * 
+	 *
 	 * MySQL and Access show the rows as:
-	 * 
+	 *
 	 * [Store Size in SQFT].[All Store Size in SQFTs]
 	 * [Store Size in SQFT].[All Store Size in SQFTs].[null]
 	 * [Store Size in SQFT].[All Store Size in SQFTs].[<each distinct store size>]
-	 * 
+	 *
 	 * Postgres shows:
-	 * 
+	 *
 	 * [Store Size in SQFT].[All Store Size in SQFTs]
 	 * [Store Size in SQFT].[All Store Size in SQFTs].[<each distinct store size>]
 	 * [Store Size in SQFT].[All Store Size in SQFTs].[null]
-	 * 
-	 * The test failure is due to some inherent differences in the way Postgres orders NULLs in a result set, 
+	 *
+	 * The test failure is due to some inherent differences in the way Postgres orders NULLs in a result set,
 	 * compared with MySQL and Access.
-	 * 
+	 *
 	 * From the MySQL 4.X manual:
-	 * 
-	 * When doing an ORDER BY, NULL values are presented first if you do 
+	 *
+	 * When doing an ORDER BY, NULL values are presented first if you do
 	 * ORDER BY ... ASC and last if you do ORDER BY ... DESC.
-	 * 
+	 *
 	 * From the Postgres 8.0 manual:
-	 * 
-	 * The null value sorts higher than any other value. In other words, 
-	 * with ascending sort order, null values sort at the end, and with 
+	 *
+	 * The null value sorts higher than any other value. In other words,
+	 * with ascending sort order, null values sort at the end, and with
 	 * descending sort order, null values sort at the beginning.
-	 * 
+	 *
 	 * Oracle also sorts nulls high by default.
-	 * 
-	 * So, this test has expected results that vary depending on whether 
+	 *
+	 * So, this test has expected results that vary depending on whether
 	 * the database is being used sorts nulls high or low.
-	 * 
+	 *
 	 */
 	public void testMemberWithNullKey() {
 		Result result = runQuery(
@@ -2463,46 +2464,46 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"from Sales");
 		String resultString = toString(result);
 		resultString = Pattern.compile("\\.0\\]").matcher(resultString).replaceAll("]");
-		
+
 		// Try to detect whether nulls are sorted high, such as Postgres and Oracle.
 		// In practice, the different JDBC drivers do not report correctly in all
 		// instances.
-		
+
 		RolapConnection conn = (RolapConnection) getConnection();
 		boolean nullsSortHigh = false;
-		
+
 		// This did not seem to work consistently across drivers, so don't use it
 		// boolean nullsSortedAtEnd = false;
-		
+
 		try {
 			DatabaseMetaData dbMetadata = conn.getDataSource().getConnection().getMetaData();
 			nullsSortHigh = dbMetadata.nullsAreSortedHigh();
-			
-			// nullsSortedAtEnd = dbMetadata.nullsAreSortedAtEnd();  
+
+			// nullsSortedAtEnd = dbMetadata.nullsAreSortedAtEnd();
 		} catch (SQLException e) {
 			fail("Failed to get DatabaseMetaData to check nulls sort order");
 			return;
 		}
-		
-		// Oracle apparently does not report the correct metadata for its handling 
+
+		// Oracle apparently does not report the correct metadata for its handling
 		// of sorting nulls, so we have a specific case (yuck!)
-		
+
 		String jdbc_url = conn.getConnectInfo().get("Jdbc");
 		if (jdbc_url.toLowerCase().indexOf("oracle") >= 0 ) {
 			nullsSortHigh = true;
 		}
 
 		int row = 0;
-		
+
 		final String expected = "Axis #0:" + nl +
 						"{}" + nl +
 						"Axis #1:" + nl +
 						"{[Measures].[Unit Sales]}" + nl +
 						"Axis #2:" + nl +
 						"{[Store Size in SQFT].[All Store Size in SQFTs]}" + nl +
-						
-						// null is at the start in order under DBMSs that sort null low 
-						
+
+						// null is at the start in order under DBMSs that sort null low
+
 						(!nullsSortHigh ? "{[Store Size in SQFT].[All Store Size in SQFTs].[null]}" + nl : "") +
 						"{[Store Size in SQFT].[All Store Size in SQFTs].[20319]}" + nl +
 						"{[Store Size in SQFT].[All Store Size in SQFTs].[21215]}" + nl +
@@ -2524,9 +2525,9 @@ public class BasicQueryTest extends FoodMartTestCase {
 						"{[Store Size in SQFT].[All Store Size in SQFTs].[36509]}" + nl +
 						"{[Store Size in SQFT].[All Store Size in SQFTs].[38382]}" + nl +
 						"{[Store Size in SQFT].[All Store Size in SQFTs].[39696]}" + nl +
-						
-						// null is at the end in order for DBMSs that sort nulls high 
-						
+
+						// null is at the end in order for DBMSs that sort nulls high
+
 						(nullsSortHigh ? "{[Store Size in SQFT].[All Store Size in SQFTs].[null]}" + nl : "") +
 						"Row #" + row++ + ": 266,773" + nl +
 						(!nullsSortHigh ? "Row #" + row++ + ": 39,329" + nl : "" ) +
@@ -3358,7 +3359,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         runQueryCheckResult(
                 "WITH MEMBER Measures.[Average Units Ordered] AS" + nl +
                 "  'AVG(DESCENDANTS([Store].CURRENTMEMBER, [Store].[Store Name]), [Measures].[Units Ordered])'," + nl +
-				"  FORMAT_STRING='#.00'" + nl +    
+				"  FORMAT_STRING='#.00'" + nl +
                 "SELECT {[Measures].[Units ordered], Measures.[Average Units Ordered]} ON COLUMNS," + nl +
                 "  [Store].[Store State].MEMBERS ON ROWS" + nl +
                 "FROM Warehouse",
@@ -3990,7 +3991,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * On Hierarchize this member is compared to a month.
      * The month has a numeric key, while the calculated members
      * key type is string.
-     * No exeception must be thrown. 
+     * No exeception must be thrown.
      */
     public void testHierDifferentKeyClass() {
         Result result = runQuery(
@@ -3999,13 +4000,13 @@ public class BasicQueryTest extends FoodMartTestCase {
 		"select {[Measures].[Unit Sales], [Measures].[Store Cost]," +nl +
 		"[Measures].[Store Sales]} ON columns," +nl +
 		"Hierarchize(Union(Union({[Time].[1997], [Time].[1998]," +nl +
-		"[Time].[1997].[Q1].[xxx]}, [Time].[1997].Children)," +nl + 
-		"[Time].[1997].[Q1].Children)) ON rows from [Sales]");        		
+		"[Time].[1997].[Q1].[xxx]}, [Time].[1997].Children)," +nl +
+		"[Time].[1997].[Q1].Children)) ON rows from [Sales]");
         Axis a = result.getAxes()[1];
         assertEquals(10, a.positions.length);
     }
-    
- 
+
+
 	/**
 	 * Bug #1005995 - many totals of various dimensions
 	 */
@@ -4023,7 +4024,130 @@ public class BasicQueryTest extends FoodMartTestCase {
 				+ "Row #0: 565,238.13" + nl;
 		runQueryCheckResult(query, desiredResult);
 	}
- 
+
+    /**
+     * This test modifies the Sales cube to contain both the regular usage
+     * of the [Store] shared dimension, and another usage called [Other Store]
+     * which is connected to the [Unit Sales] column
+     */
+    public void testCubeWhichUsesSameSharedDimTwice() {
+        RolapConnection conn = (RolapConnection) getConnection();
+        Schema schema = conn.getSchema();
+        final Cube salesCube = schema.lookupCube("Sales", true);
+        // Create a second usage of the "Store" shared dimension called "Other
+        // Store". Attach it to the "unit_sales" column (which has values [1,
+        // 6] whereas store has values [1, 24].
+        schema.createDimension(
+                salesCube,
+                "<DimensionUsage name=\"Other Store\" source=\"Store\" foreignKey=\"unit_sales\" />");
+        Axis axis = executeAxis2("Sales", "[Other Store].members");
+        assertEquals(63, axis.positions.length);
+
+        axis = executeAxis2("Sales", "[Store].members");
+        assertEquals(63, axis.positions.length);
+
+        final String q1 = "select {[Measures].[Unit Sales]} on columns," + nl +
+            " NON EMPTY {[Other Store].members} on rows" + nl +
+            "from [Sales]";
+        runQueryCheckResult(q1,
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Unit Sales]}" + nl +
+                "Axis #2:" + nl +
+                "{[Other Store].[All Other Stores]}" + nl +
+                "{[Other Store].[All Other Stores].[Mexico]}" + nl +
+                "{[Other Store].[All Other Stores].[USA]}" + nl +
+                "{[Other Store].[All Other Stores].[Mexico].[Guerrero]}" + nl +
+                "{[Other Store].[All Other Stores].[Mexico].[Jalisco]}" + nl +
+                "{[Other Store].[All Other Stores].[Mexico].[Zacatecas]}" + nl +
+                "{[Other Store].[All Other Stores].[USA].[CA]}" + nl +
+                "{[Other Store].[All Other Stores].[USA].[WA]}" + nl +
+                "{[Other Store].[All Other Stores].[Mexico].[Guerrero].[Acapulco]}" + nl +
+                "{[Other Store].[All Other Stores].[Mexico].[Jalisco].[Guadalajara]}" + nl +
+                "{[Other Store].[All Other Stores].[Mexico].[Zacatecas].[Camacho]}" + nl +
+                "{[Other Store].[All Other Stores].[USA].[CA].[Beverly Hills]}" + nl +
+                "{[Other Store].[All Other Stores].[USA].[WA].[Bellingham]}" + nl +
+                "{[Other Store].[All Other Stores].[USA].[WA].[Bremerton]}" + nl +
+                "{[Other Store].[All Other Stores].[Mexico].[Guerrero].[Acapulco].[Store 1]}" + nl +
+                "{[Other Store].[All Other Stores].[Mexico].[Jalisco].[Guadalajara].[Store 5]}" + nl +
+                "{[Other Store].[All Other Stores].[Mexico].[Zacatecas].[Camacho].[Store 4]}" + nl +
+                "{[Other Store].[All Other Stores].[USA].[CA].[Beverly Hills].[Store 6]}" + nl +
+                "{[Other Store].[All Other Stores].[USA].[WA].[Bellingham].[Store 2]}" + nl +
+                "{[Other Store].[All Other Stores].[USA].[WA].[Bremerton].[Store 3]}" + nl +
+                "Row #0: 266,773" + nl +
+                "Row #1: 110,822" + nl +
+                "Row #2: 155,951" + nl +
+                "Row #3: 1,827" + nl +
+                "Row #4: 14,915" + nl +
+                "Row #5: 94,080" + nl +
+                "Row #6: 222" + nl +
+                "Row #7: 155,729" + nl +
+                "Row #8: 1,827" + nl +
+                "Row #9: 14,915" + nl +
+                "Row #10: 94,080" + nl +
+                "Row #11: 222" + nl +
+                "Row #12: 39,362" + nl +
+                "Row #13: 116,367" + nl +
+                "Row #14: 1,827" + nl +
+                "Row #15: 14,915" + nl +
+                "Row #16: 94,080" + nl +
+                "Row #17: 222" + nl +
+                "Row #18: 39,362" + nl +
+                "Row #19: 116,367" + nl);
+
+        final String q2 = "select {[Measures].[Unit Sales]} on columns," + nl +
+            " CrossJoin(" + nl +
+            "  {[Store].[USA], [Store].[USA].[CA], [Store].[USA].[OR].[Portland]}, " + nl +
+            "  {[Other Store].[USA], [Other Store].[USA].[CA], [Other Store].[USA].[OR].[Portland]}) on rows" + nl +
+            "from [Sales]";
+        runQueryCheckResult(q2,
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Unit Sales]}" + nl +
+                "Axis #2:" + nl +
+                "{[Store].[All Stores].[USA], [Other Store].[All Other Stores].[USA]}" + nl +
+                "{[Store].[All Stores].[USA], [Other Store].[All Other Stores].[USA].[CA]}" + nl +
+                "{[Store].[All Stores].[USA], [Other Store].[All Other Stores].[USA].[OR].[Portland]}" + nl +
+                "{[Store].[All Stores].[USA].[CA], [Other Store].[All Other Stores].[USA]}" + nl +
+                "{[Store].[All Stores].[USA].[CA], [Other Store].[All Other Stores].[USA].[CA]}" + nl +
+                "{[Store].[All Stores].[USA].[CA], [Other Store].[All Other Stores].[USA].[OR].[Portland]}" + nl +
+                "{[Store].[All Stores].[USA].[OR].[Portland], [Other Store].[All Other Stores].[USA]}" + nl +
+                "{[Store].[All Stores].[USA].[OR].[Portland], [Other Store].[All Other Stores].[USA].[CA]}" + nl +
+                "{[Store].[All Stores].[USA].[OR].[Portland], [Other Store].[All Other Stores].[USA].[OR].[Portland]}" + nl +
+                "Row #0: 155,951" + nl +
+                "Row #1: 222" + nl +
+                "Row #2: (null)" + nl +
+                "Row #3: 43,730" + nl +
+                "Row #4: 66" + nl +
+                "Row #5: (null)" + nl +
+                "Row #6: 15,134" + nl +
+                "Row #7: 24" + nl +
+                "Row #8: (null)" + nl);
+
+        Result result = runQuery(q2);
+        final Cell cell = result.getCell(new int[] {0, 0});
+        String sql = cell.getDrillThroughSQL(false);
+        // the following replacement is for databases in ANSI mode
+        //  using '"' to quote identifiers
+        sql = sql.replace('"', '`');
+        assertEquals("select `store`.`store_country` as `Store Country`," +
+                " `time_by_day`.`the_year` as `Year`," +
+                " `store_1`.`store_country` as `x0`," +
+                " `sales_fact_1997`.`unit_sales` as `Unit Sales` " +
+                "from `store` as `store`," +
+                " `sales_fact_1997` as `sales_fact_1997`," +
+                " `time_by_day` as `time_by_day`," +
+                " `store` as `store_1` " +
+                "where `sales_fact_1997`.`store_id` = `store`.`store_id`" +
+                " and `store`.`store_country` = 'USA'" +
+                " and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`" +
+                " and `time_by_day`.`the_year` = 1997" +
+                " and `sales_fact_1997`.`unit_sales` = `store_1`.`store_id`" +
+                " and `store_1`.`store_country` = 'USA'",
+                sql);
+    }
 }
 
 // End BasicQueryTest.java

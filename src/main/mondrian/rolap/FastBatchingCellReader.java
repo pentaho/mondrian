@@ -16,7 +16,7 @@ import java.util.*;
  *
  * <p>NOTE: When it doesn't know the answer, it lies by returning an error
  * object.  The calling code must be able to deal with that.</p>
- * 
+ *
  * <p>This class tries to minimize the amount of storage needed to record the
  * fact that a cell was requested</p>
  */
@@ -33,12 +33,14 @@ public class FastBatchingCellReader implements CellReader {
 	}
 
 	public Object get(Evaluator evaluator) {
-		RolapMember[] currentMembers = ((RolapEvaluator) evaluator).currentMembers;
+        final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator;
+        RolapMember[] currentMembers = rolapEvaluator.currentMembers;
 		CellRequest request = RolapAggregationManager.makeRequest(currentMembers, false);
-		if (request == null)
+		if (request == null) {
 			return Util.nullValue; // request out of bounds
-		// try to retrieve a cell and simultaneously pin the segment which
-		// contains it
+        }
+		// Try to retrieve a cell and simultaneously pin the segment which
+		// contains it.
 		Object o = aggMgr.getCellFromCache(request, pinnedSegments);
 
 		if (o == Boolean.TRUE) {
@@ -77,7 +79,9 @@ public class FastBatchingCellReader implements CellReader {
 			 ((Batch) it.next()).loadAggregation(evaluator);
 		batches.clear();
 		long t2 = System.currentTimeMillis();
-		//System.out.println("loadAggregation " + (t2 - t1));
+		if (false) {
+            System.out.println("loadAggregation " + (t2 - t1));
+        }
 		return true;
 	}
 
@@ -159,9 +163,11 @@ public class FastBatchingCellReader implements CellReader {
 				aggmgr.loadAggregation(measures, columns, constraintses, pinnedSegments, evaluator);
 			}
 			long t2 = System.currentTimeMillis();
-			//System.out.println("Batch.loadAggregation " + (t2 - t1));
+			if (false) {
+                System.out.println("Batch.loadAggregation " + (t2 - t1));
+            }
 		}
-		
+
 	    /**
 	     * Returns the first measure based upon a distinct aggregation, or null if
 	     * there is none.
@@ -177,7 +183,7 @@ public class FastBatchingCellReader implements CellReader {
 	        }
 	        return null;
 	    }
-		
+
 	}
 
 }

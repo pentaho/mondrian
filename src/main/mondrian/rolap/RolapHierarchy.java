@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2004 Kana Software, Inc. and others.
+// (C) Copyright 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -136,8 +136,7 @@ class RolapHierarchy extends HierarchyBase
         }
         this.primaryKey = xmlHierarchy.primaryKey;
 		this.foreignKey = xmlCubeDimension.foreignKey;
-		if (xmlHierarchy.caption != null &&
-            xmlHierarchy.caption.length() > 0) {
+		if (!Util.isEmpty(xmlHierarchy.caption)) {
 			setCaption(xmlHierarchy.caption);
         }
 	}
@@ -169,8 +168,8 @@ class RolapHierarchy extends HierarchyBase
 			((RolapLevel) levels[i]).init(cube);
 		}
 		if (this.memberReader == null) {
-			this.memberReader = getSchema()
-                .createMemberReader(sharedHierarchy, this, memberReaderClass);
+			this.memberReader = getSchema().createMemberReader(sharedHierarchy,
+                this, memberReaderClass);
 		}
 		if (this.getDimension().isMeasures() ||
             this.memberReaderClass != null) {
@@ -300,11 +299,11 @@ class RolapHierarchy extends HierarchyBase
 		final boolean failIfExists = false;
 		if (cube != null) {
 			HierarchyUsage hierarchyUsage = getSchema().getUsage(this,cube);
-			query.addFrom(cube.getFact(), failIfExists);
-			query.addFrom(hierarchyUsage.joinTable, failIfExists);
-			query.addWhere(
+			query.addFrom(cube.getFact(), null, failIfExists);
+			query.addFrom(hierarchyUsage.joinTable, null, failIfExists);
+            query.addWhere(
 					query.quoteIdentifier(
-							cube.getAlias(), hierarchyUsage.foreignKey) +
+                        cube.fact.getAlias(), hierarchyUsage.foreignKey) +
 					" = " +
 					hierarchyUsage.joinExp.getExpression(query));
 		}
@@ -322,7 +321,7 @@ class RolapHierarchy extends HierarchyBase
 				subRelation = relationSubset(relation, expression.getTableAlias());
 			}
 		}
-		query.addFrom(subRelation, failIfExists);
+		query.addFrom(subRelation, null, failIfExists);
 	}
 
 	/**
@@ -352,11 +351,12 @@ class RolapHierarchy extends HierarchyBase
 		}
 	}
 
-	HierarchyUsage createUsage(MondrianDef.Relation fact) {
+	HierarchyUsage createUsage(RolapCube cube) {
 		if (sharedHierarchy == null) {
+            MondrianDef.Relation fact = cube.fact;
 			return new PrivateHierarchyUsage(fact, this);
 		} else {
-			return new SharedHierarchyUsage(fact, sharedHierarchy);
+			return new SharedHierarchyUsage(cube, sharedHierarchy, foreignKey);
 		}
 	}
 

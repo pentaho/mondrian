@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2004 Kana Software, Inc. and others.
+// (C) Copyright 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -192,10 +192,10 @@ class RolapLevel extends LevelBase
             HideMemberCondition.lookup(xmlLevel.hideMemberIf),
             LevelType.lookup(xmlLevel.levelType));
 
-		if (xmlLevel.caption != null && xmlLevel.caption.length() > 0) {
+		if (!Util.isEmpty(xmlLevel.caption)) {
 			setCaption(xmlLevel.caption);
         }
-		if (xmlLevel.formatter != null && xmlLevel.formatter.length() > 0) {
+		if (!Util.isEmpty(xmlLevel.formatter)) {
 			// there is a special member formatter class
 			try {
 				Class clazz = Class.forName(xmlLevel.formatter);

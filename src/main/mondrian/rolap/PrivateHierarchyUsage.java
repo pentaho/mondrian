@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2003 Kana Software, Inc. and others.
+// Copyright (C) 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -26,11 +26,12 @@ class PrivateHierarchyUsage extends HierarchyUsage
 {
 	RolapHierarchy hierarchy;
 
-	PrivateHierarchyUsage(
-			MondrianDef.Relation fact, RolapHierarchy hierarchy) {
-		super(fact);
+	PrivateHierarchyUsage(MondrianDef.Relation fact, RolapHierarchy hierarchy)
+    {
+		super(fact, hierarchy.foreignKey);
 		this.hierarchy = hierarchy;
 	}
+
 	public boolean equals(Object o)
 	{
 		if (!(o instanceof PrivateHierarchyUsage)) {
@@ -40,6 +41,7 @@ class PrivateHierarchyUsage extends HierarchyUsage
 		return this.fact.equals(that.fact) &&
 				this.hierarchy.equals(that.hierarchy);
 	}
+
 	public int hashCode()
 	{
 		int h = fact.hashCode(),
@@ -47,6 +49,5 @@ class PrivateHierarchyUsage extends HierarchyUsage
 		return (h << 8) ^ i;
 	}
 }
-
 
 // End PrivateHierarchyUsage.java

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2003 Kana Software, Inc. and others.
+// Copyright (C) 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -14,6 +14,7 @@ package mondrian.rolap;
 
 import mondrian.olap.Evaluator;
 import mondrian.olap.Util;
+import mondrian.olap.Hierarchy;
 import mondrian.rolap.agg.CellRequest;
 
 import java.util.HashMap;
@@ -42,12 +43,11 @@ public abstract class RolapAggregationManager implements CellReader {
      *
      * @param members Set of members which constrain the cell
      * @param extendedContext If true, add non-constraining columns to the
-     *   query for levels below each current member. This additional context
-     *   makes the drill-through queries easier for humans to understand.
-	 **/
-	static CellRequest makeRequest(
-        RolapMember[] members,
-        boolean extendedContext)
+     * query for levels below each current member. This additional context
+     * makes the drill-through queries easier for humans to understand.
+     **/
+	static CellRequest makeRequest(RolapMember[] members,
+            boolean extendedContext)
     {
         boolean showNames = extendedContext;
 		if (!(members[0] instanceof RolapStoredMeasure)) {
@@ -62,10 +62,11 @@ public abstract class RolapAggregationManager implements CellReader {
 		HashMap mapLevelToColumn = (HashMap)
             star.mapCubeToMapLevelToColumn.get(measure.cube);
         HashMap mapLevelNameToColumn = (HashMap)
-            star.mapCubeToMapLevelNameToColumn.get(measure.cube);
+            star.mapCubeToMapLevelToNameColumn.get(measure.cube);
 		for (int i = 1; i < members.length; i++) {
 			RolapMember member = members[i];
 			RolapLevel previousLevel = null;
+            Hierarchy hierarchy = member.getHierarchy();
             if (extendedContext) {
                 // Add the key columns as non-constraining columns. For
                 // example, if they asked for [Gender].[M], [Store].[USA].[CA]
@@ -85,8 +86,8 @@ public abstract class RolapAggregationManager implements CellReader {
                 //   and [Nation] = 'USA'
                 //   and [State] = 'CA'
                 //
-                RolapLevel[] levels = (RolapLevel[])
-                    member.getHierarchy().getLevels();
+
+                RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
                 for (int j = levels.length - 1,
                         depth = member.getLevel().getDepth(); j > depth; j--) {
                     final RolapLevel level = levels[j];
@@ -135,8 +136,6 @@ public abstract class RolapAggregationManager implements CellReader {
                         // it be. We don't want to aggregate.
                     } else {
                         level = level.getClosedPeer();
-                        RolapHierarchy hierarchy =
-                            (RolapHierarchy) level.getHierarchy();
                         final RolapMember allMember = (RolapMember)
                             hierarchy.getDefaultMember();
                         assert allMember.isAll();
@@ -144,7 +143,8 @@ public abstract class RolapAggregationManager implements CellReader {
                             ((RolapMember) member).key);
                     }
                 }
-				RolapStar.Column column = (RolapStar.Column) mapLevelToColumn.get(level);
+				RolapStar.Column column =
+                    (RolapStar.Column) mapLevelToColumn.get(level);
 				if (column == null) {
 					// This hierarchy is not one which qualifies the starMeasure
                     // (this happens in virtual cubes). The starMeasure only has
@@ -179,20 +179,7 @@ public abstract class RolapAggregationManager implements CellReader {
 
 	public abstract Object getCellFromCache(CellRequest request);
 
-	/**
-	 * If an existing segment contains a cell value, it pins that segment, and
-	 * returns the value. Otherwise it returns null.
-	 **/
-	public Object getCellFromCache(RolapMember[] members, Set pinSet)
-	{
-		CellRequest request = makeRequest(members, false);
-		if (request == null) {
-			return Util.nullValue; // request out of bounds
-		}
-		return getCellFromCache(request, pinSet);
-	}
-
-	public abstract Object getCellFromCache(CellRequest request, Set pinSet);
+    public abstract Object getCellFromCache(CellRequest request, Set pinSet);
 
 	public Object getCell(RolapMember[] members)
 	{
@@ -207,7 +194,8 @@ public abstract class RolapAggregationManager implements CellReader {
 
 	// implement CellReader
 	public Object get(Evaluator evaluator) {
-		return getCell(((RolapEvaluator) evaluator).currentMembers);
+        final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator;
+        return getCell(rolapEvaluator.currentMembers);
 	}
 
 	public abstract String getDrillThroughSQL(CellRequest request);

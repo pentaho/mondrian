@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2003 Kana Software, Inc. and others.
+// Copyright (C) 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -92,7 +92,7 @@ public class RolapSchema implements Schema
 			if (schema == null) {
 				String dynProcName = connectInfo.get(RolapConnectionProperties.DynamicSchemaProcessor);
 				java.net.URL url = new java.net.URL(catalogName);
-				if ( dynProcName != null && dynProcName.length() >0 ) {
+				if (!Util.isEmpty(dynProcName)) {
 					try {
 						Class clazz = Class.forName(dynProcName);
 						Constructor ctor = clazz.getConstructor(new Class[0]);
@@ -322,7 +322,8 @@ public class RolapSchema implements Schema
 			// if a schema will be dynamically processed, caching is not possible
 			// a "http" URL schema is assumed to be dynamic and will not be cached either
 			String dynProc = connectInfo.get(RolapConnectionProperties.DynamicSchemaProcessor);
-			if ( (dynProc != null && dynProc.length() > 0) || catalogName.toLowerCase().startsWith("http")  ) {
+			if (!Util.isEmpty(dynProc) ||
+                catalogName.toLowerCase().startsWith("http")) {
 				// no caching
 				return new RolapSchema(catalogName, connectInfo);
 			}
@@ -368,7 +369,12 @@ public class RolapSchema implements Schema
 		}
 	}
 
-	public static void flushSchema(String catalogName, String jdbcConnectString, String jdbcUser, String dataSource) {
+	public static void flushSchema(
+        String catalogName,
+        String jdbcConnectString,
+        String jdbcUser,
+        String dataSource)
+    {
 		Pool.instance().remove(catalogName, jdbcConnectString, jdbcUser, dataSource);
 	}
 
@@ -418,14 +424,17 @@ public class RolapSchema implements Schema
 	 * @synchronization thread safe
 	 */
 	synchronized MemberReader createMemberReader(
-			String sharedName, RolapHierarchy hierarchy, String memberReaderClass) {
+        String sharedName,
+        RolapHierarchy hierarchy,
+        String memberReaderClass)
+    {
 		MemberReader reader;
 		if (sharedName != null) {
 			reader = (MemberReader) mapSharedHierarchyToReader.get(sharedName);
 			if (reader == null) {
 				reader = createMemberReader(hierarchy, memberReaderClass);
 				// share, for other uses of the same shared hierarchy
-				mapSharedHierarchyToReader.put(sharedName, reader);
+				if (false) mapSharedHierarchyToReader.put(sharedName, reader);
 				mapSharedHierarchyNameToHierarchy.put(sharedName, hierarchy);
 			} else {
 				final RolapHierarchy sharedHierarchy = (RolapHierarchy)
@@ -433,9 +442,9 @@ public class RolapSchema implements Schema
 				final RolapDimension sharedDimension = (RolapDimension)
 						sharedHierarchy.getDimension();
 				final RolapDimension dimension = (RolapDimension) hierarchy.getDimension();
-				Util.assertTrue(
-						dimension.getGlobalOrdinal() ==
-						sharedDimension.getGlobalOrdinal());
+//				Util.assertTrue(
+//						dimension.getGlobalOrdinal() ==
+//						sharedDimension.getGlobalOrdinal());
 			}
 		} else {
 			reader = createMemberReader(hierarchy, memberReaderClass);
@@ -485,8 +494,8 @@ public class RolapSchema implements Schema
 
             // The following code is disabled bcause
             // counting members is too slow. The test suite
-            // runs faster w/o this. So the optimization here
-            // is not to be too clever.
+            // runs faster without this. So the optimization here
+            // is not to be too clever!
 
             // Also, the CacheMemberReader is buggy.
 
@@ -508,7 +517,7 @@ public class RolapSchema implements Schema
 
 	synchronized HierarchyUsage getUsage(
 			RolapHierarchy hierarchy, RolapCube cube) {
-		HierarchyUsage usageKey = hierarchy.createUsage(cube.getFact()),
+		HierarchyUsage usageKey = hierarchy.createUsage(cube),
 			usage = (HierarchyUsage) hierarchyUsages.get(usageKey);
 		if (usage == null) {
 			hierarchyUsages.put(usageKey, usageKey);
@@ -587,8 +596,7 @@ public class RolapSchema implements Schema
 			}
 			DataSource dataSource = getInternalConnection().dataSource;
 			RolapStar star = new RolapStar(RolapSchema.this, dataSource);
-			star.factTable = new Table(fact, null, null);
-			star.factTable.star = star;
+			star.factTable = new Table(star, fact, null, null);
 			stars.add(star);
 			return star;
 		}

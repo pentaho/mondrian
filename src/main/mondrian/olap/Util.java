@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2004 Kana Software, Inc. and others.
+// (C) Copyright 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -77,12 +77,14 @@ public class Util extends mondrian.xom.XOMUtil
 		return sb.toString();
 	}
 
-	/** Returns true if two strings are equal, or are both null. **/
-	public static boolean equals(String s, String t) {
-		return s == null ?
-			t == null :
-			s.equals(t);
-	}
+    /**
+     * Returns true if two objects are equal, or are both null.
+     */
+    public static boolean equals(Object s, Object t) {
+        return s == null ?
+            t == null :
+            s.equals(t);
+    }
 
 	/** Does not modify the original string */
 	public static String replace(String s,String find,String replace)

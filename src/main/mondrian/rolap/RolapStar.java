@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2003 Kana Software, Inc. and others.
+// Copyright (C) 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -54,7 +54,7 @@ public class RolapStar {
     /**
      * As {@link #mapCubeToMapLevelToColumn}, but holds name columns.
      */
-    final HashMap mapCubeToMapLevelNameToColumn = new HashMap();
+    final HashMap mapCubeToMapLevelToNameColumn = new HashMap();
 
     /**
      * Maps {@link Column} to {@link String} for each column which is a key
@@ -115,7 +115,10 @@ public class RolapStar {
 			return null;
 		}
 	}
-	/** Return whether two arrays of columns are identical. **/
+
+	/**
+     * Returns whether two arrays of columns are identical.
+     **/
 	private static boolean equals(
 			RolapStar.Column[] columns1, RolapStar.Column[] columns2) {
 		int count = columns1.length;
@@ -133,8 +136,8 @@ public class RolapStar {
     /**
      * Allocates a connection to the underlying RDBMS.
      *
-     * The client MUST close this connection; use the <code>try ...
-     * finally</code> idiom to be sure of this.
+     * <p>The client MUST close connection returned by this method; use the
+     * <code>try ... finally</code> idiom to be sure of this.
      */
 	public Connection getJdbcConnection() {
 		Connection jdbcConnection;
@@ -181,6 +184,30 @@ public class RolapStar {
 		}
 		return null;
 	}
+
+    /**
+     * Returns a list of all aliases used in this star.
+     */
+    public ArrayList getAliasList() {
+        ArrayList aliasList = new ArrayList();
+        if (factTable != null) {
+            collectAliases(aliasList, factTable);
+        }
+        return aliasList;
+    }
+
+    /**
+     * Finds all of the table aliases in a table and its children.
+     */
+    private static void collectAliases(ArrayList aliasList, Table table) {
+        aliasList.add(table.getAlias());
+        for (int i = 0; i < table.children.size(); i++) {
+            Table child = (Table) table.children.get(i);
+            collectAliases(aliasList, child);
+        }
+    }
+
+
 	/**
 	 * Reads a cell of <code>measure</code>, where <code>columns</code> are
 	 * constrained to <code>values</code>.  <code>values</code> must be the
@@ -288,10 +315,13 @@ public class RolapStar {
         }
     }
 
-	public RolapSchema getSchema() {
-		return schema;
-	}
+    public RolapSchema getSchema() {
+        return schema;
+    }
 
+    /**
+     * A column in a star schema.
+     */
     public static class Column
 	{
 		public Table table;
@@ -301,9 +331,11 @@ public class RolapStar {
 
 		public Column() {
 		}
+
 		public String getExpression(SqlQuery query) {
 			return expression.getExpression(query);
 		}
+
 		String quoteValue(Object value)
 		{
 			String s;
@@ -345,10 +377,16 @@ public class RolapStar {
                         "while counting distinct values of column '" +
                         expression.getGenericExpression() + "'", e);
             }
-            if (sqlQuery.isAccess()) {
-                // Access doesn't like 'count(distinct)', so use,
-                // e.g. "select count(*) from (select distinct product_id
-                // from product)"
+            if (sqlQuery.allowsCountDistinct()) {
+                // e.g. "select count(distinct product_id) from product"
+                sqlQuery.addSelect(
+                    "count(distinct " + getExpression(sqlQuery) + ")");
+                // no need to join fact table here
+                table.addToFrom(sqlQuery, true, false);
+            } else if (sqlQuery.allowsFromQuery()) {
+                // Some databases (e.g. Access) don't like 'count(distinct)',
+                // so use, e.g., "select count(*) from (select distinct
+                // product_id from product)"
                 SqlQuery inner = sqlQuery.cloneEmpty();
                 inner.setDistinct(true);
                 inner.addSelect(getExpression(inner));
@@ -358,11 +396,9 @@ public class RolapStar {
                 sqlQuery.addSelect("count(*)");
                 sqlQuery.addFrom(inner, "init", failIfExists);
             } else {
-                // e.g. "select count(distinct product_id) from product"
-                sqlQuery.addSelect(
-                    "count(distinct " + getExpression(sqlQuery) + ")");
-                // no need to join fact table here
-                table.addToFrom(sqlQuery, true, false);
+                throw Util.newInternal("Cannot compute cardinality: this " +
+                    "database neither supports COUNT DISTINCT nor SELECT in " +
+                    "the FROM clause.");
             }
             String sql = sqlQuery.toString();
             ResultSet resultSet = null;
@@ -412,10 +448,11 @@ public class RolapStar {
             if (constraints.length == 1) {
                 final Object constraint = constraints[0];
                 Object key;
-                if (constraint instanceof RolapMember)
+                if (constraint instanceof RolapMember) {
                 	key = ((RolapMember)constraint).getSqlKey();
-                else
+                } else {
                 	key = constraint;
+                }
                 if (key != RolapUtil.sqlNullValue) {
                     return expr + " = " + quoteValue(constraint);
                 }
@@ -426,11 +463,11 @@ public class RolapStar {
             for (int i = 0; i < constraints.length; i++) {
                 final Object constraint = constraints[i];
                 Object key;
-                if (constraint instanceof RolapMember)
+                if (constraint instanceof RolapMember) {
                 	key = ((RolapMember)constraint).getSqlKey();
-                else
+                } else {
                 	key = constraint;
- 
+                }
                 if (key == RolapUtil.sqlNullValue) {
                     continue;
                 }
@@ -466,14 +503,31 @@ public class RolapStar {
         }
     }
 
+    /**
+     * Definition of a measure in a star schema.
+     *
+     * <p>A measure is basically just a column; except that its
+     * {@link #aggregator} defines how it is to be rolled up.
+     */
 	public static class Measure extends Column
 	{
 		public RolapAggregator aggregator;
 	};
 
+    /**
+     * Definition of a table in a star schema.
+     *
+     * <p>A 'table' is defined by a {@link MondrianDef.Relation} so may, in
+     * fact, be a view.
+     *
+     * <p>Every table in the star schema except the fact table has a parent
+     * table, and a condition which specifies how it is joined to its parent.
+     * So the star schema is, in effect, a hierarchy with the fact table at
+     * its root.
+     */
 	public static class Table
 	{
-		public RolapStar star;
+		public final RolapStar star;
 		MondrianDef.Relation relation;
 		public String primaryKey;
 		public String foreignKey;
@@ -482,26 +536,44 @@ public class RolapStar {
 		public ArrayList children = new ArrayList();
 		/** Condition with which it is connected to its parent. **/
 		Condition joinCondition;
+        private final String alias;
 
-        public Table(String schema, String table) {
-			this.relation = new MondrianDef.Table(schema, table, null);
-        }
-        public Table(
-				MondrianDef.Relation relation, Table parent,
-				Condition joinCondition) {
-			this.relation = relation;
+        public Table(RolapStar star, MondrianDef.Relation relation,
+            Table parent, Condition joinCondition)
+        {
+            this.star = star;
+            this.relation = relation;
 			Util.assertTrue(
 					relation instanceof MondrianDef.Table ||
 					relation instanceof MondrianDef.View,
 					"todo: allow dimension which is not a Table or View, [" +
 					relation + "]");
+            this.alias = chooseAlias();
 			this.parent = parent;
-			this.joinCondition = joinCondition;
+            final AliasReplacer aliasReplacer =
+                    new AliasReplacer(relation.getAlias(), this.alias);
+            this.joinCondition = aliasReplacer.visit(joinCondition);
 			Util.assertTrue((parent == null) == (joinCondition == null));
         }
-		public String getAlias() {
-			return relation.getAlias();
-		}
+
+        /** Chooses an alias which is unique within the star. */
+        private String chooseAlias() {
+            ArrayList aliasList = star.getAliasList();
+            for (int i = 0;; ++i) {
+                String candidateAlias = relation.getAlias();
+                if (i > 0) {
+                    candidateAlias += "_" + i;
+                }
+                if (!aliasList.contains(candidateAlias)) {
+                    return candidateAlias;
+                }
+            }
+        }
+
+        public String getAlias() {
+            return alias;
+        }
+
 		/**
 		 * Extends this 'leg' of the star by adding <code>relation</code>
 		 * joined by <code>joinCondition</code>. If the same expression is
@@ -512,10 +584,10 @@ public class RolapStar {
 				RolapStar.Condition joinCondition) {
 			if (relation instanceof MondrianDef.Table ||
 					relation instanceof MondrianDef.View) {
-				RolapStar.Table starTable = findChild(relation);
+				RolapStar.Table starTable = findChild(relation, joinCondition);
 				if (starTable == null) {
-					starTable = new RolapStar.Table(relation, this, joinCondition);
-					starTable.star = this.star;
+					starTable = new RolapStar.Table(star, relation, this,
+                        joinCondition);
 					this.children.add(starTable);
 				}
 				return starTable;
@@ -530,6 +602,10 @@ public class RolapStar {
 								"missing leftKeyAlias in " + relation);
 					}
 				}
+                assert leftTable.findAncestor(leftAlias) == leftTable;
+                // switch to uniquified alias
+                leftAlias = leftTable.getAlias();
+
 				String rightAlias = join.rightAlias;
 				if (rightAlias == null) {
 					rightAlias = join.right.getAlias();
@@ -553,13 +629,27 @@ public class RolapStar {
 		 * Returns a child relation which maps onto a given relation, or null if
 		 * there is none.
 		 */
-		public Table findChild(MondrianDef.Relation relation) {
+		public Table findChild(
+            MondrianDef.Relation relation,
+            Condition joinCondition)
+        {
 			for (int i = 0; i < children.size(); i++) {
 				Table child = (Table) children.get(i);
 				if (child.relation.equals(relation)) {
-					return child;
-				}
-			}
+                    Condition condition = joinCondition;
+                    if (!Util.equals(relation.getAlias(), child.alias)) {
+                        // Make the two conditions comparable, by replacing
+                        // occurrence of this table's alias with occurrences
+                        // of the child's alias.
+                        AliasReplacer aliasReplacer = new AliasReplacer(
+                                relation.getAlias(), child.alias);
+                        condition = aliasReplacer.visit(joinCondition);
+                    }
+                    if (child.joinCondition.equals(condition)) {
+                        return child;
+                    }
+                }
+            }
 			return null;
 		}
 
@@ -585,25 +675,28 @@ public class RolapStar {
 		 */
 		public Table findAncestor(String tableName) {
 			for (Table t = this; t != null; t = t.parent) {
-				if (t.getAlias().equals(tableName)) {
+				if (t.relation.getAlias().equals(tableName)) {
 					return t;
 				}
 			}
 			return null;
 		}
 
-		/**
-		 * Adds this table to the from clause of a query.
-		 *
-		 * @param query Query to add to
-		 * @param failIfExists Pass in false if you might have already added
-		 *     the table before and if that happens you want to do nothing.
-		 * @param joinToParent Pass in true if you are constraining a cell
-		 *     calculcation, false if you are retrieving members.
-		 */
-		public void addToFrom(
-				SqlQuery query, boolean failIfExists, boolean joinToParent) {
-			query.addFrom(relation, failIfExists);
+        /**
+         * Adds this table to the from clause of a query.
+         *
+         * @param query Query to add to
+         * @param failIfExists Pass in false if you might have already added
+         *     the table before and if that happens you want to do nothing.
+         * @param joinToParent Pass in true if you are constraining a cell
+         *     calculcation, false if you are retrieving members.
+         */
+        public void addToFrom(
+            SqlQuery query,
+            boolean failIfExists,
+            boolean joinToParent)
+        {
+            query.addFrom(relation, alias, failIfExists);
 			Util.assertTrue((parent == null) == (joinCondition == null));
 			if (joinToParent) {
 				if (parent != null) {
@@ -667,8 +760,73 @@ public class RolapStar {
 		String toString(SqlQuery query) {
 			return left.getExpression(query) + " = " + right.getExpression(query);
 		}
+
+        public int hashCode() {
+            int h = Util.hash(0, left.toString());
+            h = Util.hash(h, right.toString());
+            return h;
+        }
+
+        public boolean equals(Object obj) {
+            if (!(obj instanceof Condition)) {
+                return false;
+            }
+            Condition that = (Condition) obj;
+            return Util.equals(this.left.toString(), that.left.toString()) &&
+                Util.equals(this.right.toString(), that.right.toString());
+        }
 	}
 
+    /**
+     * Creates a copy of an expression, everywhere replacing one alias
+     * with another.
+     */
+    public static class AliasReplacer {
+        private final String oldAlias;
+        private final String newAlias;
+
+        public AliasReplacer(String oldAlias, String newAlias) {
+            this.oldAlias = oldAlias;
+            this.newAlias = newAlias;
+        }
+
+        private Condition visit(Condition condition)
+        {
+            if (condition == null) {
+                return null;
+            }
+            if (newAlias.equals(oldAlias)) {
+                return condition;
+            }
+            return new Condition(
+                    visit(condition.left),
+                    visit(condition.right));
+        }
+
+        public MondrianDef.Expression visit(
+                MondrianDef.Expression expression)
+        {
+            if (expression == null) {
+                return null;
+            }
+            if (newAlias.equals(oldAlias)) {
+                return expression;
+            }
+            if (expression instanceof MondrianDef.Column) {
+                MondrianDef.Column column =
+                        (MondrianDef.Column) expression;
+                return new MondrianDef.Column(visit(column.table),
+                        column.name);
+            } else {
+                throw Util.newInternal("need to implement " + expression);
+            }
+        }
+
+        private String visit(String table) {
+            return table.equals(oldAlias) ? newAlias :
+                    table;
+        }
+    }
 }
 
 // End RolapStar.java

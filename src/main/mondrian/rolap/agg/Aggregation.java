@@ -1,47 +1,37 @@
 /*
- // $Id$
- // This software is subject to the terms of the Common Public License
- // Agreement, available at the following URL:
- // http://www.opensource.org/licenses/cpl.html.
- // Copyright (C) 2001-2003 Kana Software, Inc. and others.
- // All Rights Reserved.
- // You must accept the terms of that agreement to use this software.
- //
- // jhyde, 28 August, 2001
+// $Id$
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2001-2005 Kana Software, Inc. and others.
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+//
+// jhyde, 28 August, 2001
  */
 
 package mondrian.rolap.agg;
+
+import mondrian.olap.Evaluator;
+import mondrian.olap.Member;
+import mondrian.olap.SchemaReader;
+import mondrian.olap.Util;
+import mondrian.rolap.RolapMember;
+import mondrian.rolap.RolapStar;
+import mondrian.rolap.cache.CachePool;
+import mondrian.rolap.sql.SqlQuery;
 
 import java.lang.ref.SoftReference;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-
-import mondrian.olap.Evaluator;
-import mondrian.olap.Level;
-import mondrian.olap.Member;
-import mondrian.olap.SchemaReader;
-import mondrian.olap.Util;
-import mondrian.rolap.RolapMember;
-import mondrian.rolap.RolapSchemaReader;
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.RolapUtil;
-import mondrian.rolap.cache.CachePool;
-import mondrian.rolap.sql.SqlQuery;
+import java.util.*;
 
 /**
  * A <code>Aggregation</code> is a pre-computed aggregation over a set of
  * columns.
  *
- * Rollup operations:<ul>
+ * <p>Rollup operations:<ul>
  * <li>drop an unrestricted column (e.g. state=*)</li>
  * <li>tighten any restriction (e.g. year={1997,1998} becomes
  *     year={1997})</li>
@@ -142,7 +132,8 @@ public class Aggregation {
 	 * Drops constraints, where the list of values is close to the values which
 	 * would be returned anyway.
 	 **/
-	public synchronized Object[][] optimizeConstraints(Object[][] constraintses, Evaluator evaluator) {
+	public synchronized Object[][] optimizeConstraints(
+            Object[][] constraintses, Evaluator evaluator) {
 		final int MAXLEN_ORACLE = 1000;
 		Util.assertTrue(constraintses.length == columns.length);
 		Object[][] newConstraintses = (Object[][]) constraintses.clone();
@@ -179,9 +170,9 @@ public class Aggregation {
 						break;
 					} else {
 						Member m = (Member) newConstraintses[i][j];
-						if (j == 0)
+						if (j == 0) {
 							parent = m.getParentMember();
-						else {
+                        } else {
 							if (parent != null
 									&& !parent.equals(m.getParentMember())) {
 								parent = null; // no common parent

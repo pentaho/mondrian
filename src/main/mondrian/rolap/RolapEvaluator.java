@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2003 Kana Software, Inc. and others.
+// Copyright (C) 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -40,7 +40,7 @@ class RolapEvaluator implements Evaluator
 	Evaluator parent;
 	CellReader cellReader;
 	int depth;
-	
+
 	Map expResultCache;
     private Member expandingMember;
 
@@ -173,7 +173,7 @@ class RolapEvaluator implements Evaluator
      * Returns the member in the current context which is (a) calculated, and
      * (b) has the lowest solve order; returns null if there are no calculated
      * members.
-     */ 
+     */
     private RolapMember getMinSolveMember() {
         int minSolve = Integer.MAX_VALUE;
         RolapMember minSolveMember = null;
@@ -359,7 +359,7 @@ class RolapEvaluator implements Evaluator
 	public void clearExpResultCache() {
 		expResultCache.clear();
 	}
-	
+
 	private boolean nonEmpty;
 	public boolean isNonEmpty() {
 		return nonEmpty;

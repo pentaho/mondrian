@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -383,7 +383,7 @@ public class SqlQuery
 			from.append(quoteIdentifier(alias));
 			fromAliases.add(alias);
 		}
-		if ( filter != null ) {
+		if (filter != null) {
 		  // append filter condition to where clause
 		  String wclause = "(" + filter + ")";
 		  addWhere(wclause);
@@ -397,33 +397,52 @@ public class SqlQuery
 	}
 
 	/**
+     * Adds a relation to a query, adding appropriate join conditions, unless
+     * it is already present.
+     *
+     * <p>Returns whether the relation was added to the query.
+     *
+     * @param relation Relation to add
+     * @param alias Alias of relation. If null, uses relation's alias.
+     * @param failIfExists Whether to fail if relation is already present
 	 * @return true, if relation *was* added to query
 	 */
-	public boolean addFrom(MondrianDef.Relation relation, boolean failIfExists) {
+	public boolean addFrom(MondrianDef.Relation relation, String alias,
+        boolean failIfExists)
+    {
 		if (relation instanceof MondrianDef.View) {
 			MondrianDef.View view = (MondrianDef.View) relation;
+            if (alias == null) {
+                alias = relation.getAlias();
+            }
 			String sqlString = chooseQuery(view.selects);
-			String alias = view.alias;
 			if (!fromAliases.contains(alias)) {
 				return addFromQuery(sqlString, alias, failIfExists);
 			}
 			return false;
 		} else if (relation instanceof MondrianDef.Table) {
 			MondrianDef.Table table = (MondrianDef.Table) relation;
-			return addFromTable(
-					table.schema, table.name, table.getAlias(), table.getFilter(), failIfExists);
+            if (alias == null) {
+                alias = relation.getAlias();
+            }
+			return addFromTable(table.schema, table.name, alias,
+                table.getFilter(), failIfExists);
 		} else if (relation instanceof MondrianDef.Join) {
 			MondrianDef.Join join = (MondrianDef.Join) relation;
 			boolean added = false;
-			if (addFrom(join.left, failIfExists))
+            final String leftAlias = join.getLeftAlias();
+            if (addFrom(join.left, leftAlias, failIfExists)) {
 				added = true;
-			if (addFrom(join.right, failIfExists))
+            }
+            final String rightAlias = join.getRightAlias();
+            if (addFrom(join.right, rightAlias, failIfExists)) {
 				added = true;
+            }
 			if (added)
 				addWhere(
-					quoteIdentifier(join.getLeftAlias(), join.leftKey) +
+					quoteIdentifier(leftAlias, join.leftKey) +
 					" = " +
-					quoteIdentifier(join.getRightAlias(), join.rightKey));
+					quoteIdentifier(rightAlias, join.rightKey));
 			return added;
 		} else {
 			throw Util.newInternal("bad relation type " + relation);

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2003 Julian Hyde
+// Copyright (C) 2003-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -406,15 +406,15 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "[Employees].[All Employees].[Sheri Nowmer]",
             "$39,431.67",
             "select `time_by_day`.`the_year` as `Year`," +
-            " `employee`.`employee_id` as `Employee Id (Key)`," +
+            " `employee_1`.`employee_id` as `Employee Id (Key)`," +
             " `salary`.`salary_paid` as `Org Salary` " +
             "from `time_by_day` as `time_by_day`," +
             " `salary` as `salary`," +
-            " `employee` as `employee` " +
+            " `employee` as `employee_1` " +
             "where `salary`.`pay_date` = `time_by_day`.`the_date`" +
             " and `time_by_day`.`the_year` = 1997" +
-            " and `salary`.`employee_id` = `employee`.`employee_id`" +
-            " and `employee`.`employee_id` = 1");
+            " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
+            " and `employee_1`.`employee_id` = 1");
 
         // Drill-through for row #2, [Employees].[All].[Sheri Nowmer].
         // Note that the SQL does not contain the employee_closure table.
@@ -425,15 +425,15 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "[Employees].[All Employees].[Derrick Whelply]",
             "$36,494.07",
             "select `time_by_day`.`the_year` as `Year`," +
-            " `employee`.`employee_id` as `Employee Id (Key)`," +
+            " `employee_1`.`employee_id` as `Employee Id (Key)`," +
             " `salary`.`salary_paid` as `Org Salary` " +
             "from `time_by_day` as `time_by_day`," +
             " `salary` as `salary`," +
-            " `employee` as `employee` " +
+            " `employee` as `employee_1` " +
             "where `salary`.`pay_date` = `time_by_day`.`the_date`" +
             " and `time_by_day`.`the_year` = 1997" +
-            " and `salary`.`employee_id` = `employee`.`employee_id`" +
-            " and `employee`.`employee_id` = 2");
+            " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
+            " and `employee_1`.`employee_id` = 2");
     }
 
     public void testParentChildDrillThroughWithContext() {
@@ -460,41 +460,41 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             " `store`.`store_country` as `Store Country`," +
             " `position`.`pay_type` as `Pay Type`," +
             " `store`.`store_type` as `Store Type`," +
-            " `employee`.`position_title` as `Position Title`," +
-            " `employee`.`management_role` as `Management Role`," +
+            " `employee_1`.`position_title` as `Position Title`," +
+            " `employee_1`.`management_role` as `Management Role`," +
             " `department`.`department_id` as `Department Description`," +
-            " `employee`.`employee_id` as `Employee Id (Key)`," +
-            " `employee`.`full_name` as `Employee Id`," +
+            " `employee_1`.`employee_id` as `Employee Id (Key)`," +
+            " `employee_1`.`full_name` as `Employee Id`," +
             " `salary`.`salary_paid` as `Org Salary` " +
             "from" +
             " `time_by_day` as `time_by_day`," +
             " `salary` as `salary`," +
             " `store` as `store`," +
-            " `employee` as `employee`," +
+            " `employee` as `employee_1`," +
             " `position` as `position`," +
             " `department` as `department` " +
             "where `salary`.`pay_date` = `time_by_day`.`the_date`" +
             " and `salary`.`pay_date` = `time_by_day`.`the_date`" +
             " and `salary`.`pay_date` = `time_by_day`.`the_date`" +
             " and `time_by_day`.`the_year` = 1997" +
-            " and `salary`.`employee_id` = `employee`.`employee_id`" +
-            " and `employee`.`store_id` = `store`.`store_id`" +
-            " and `salary`.`employee_id` = `employee`.`employee_id`" +
-            " and `employee`.`store_id` = `store`.`store_id`" +
-            " and `salary`.`employee_id` = `employee`.`employee_id`" +
-            " and `employee`.`store_id` = `store`.`store_id`" +
-            " and `salary`.`employee_id` = `employee`.`employee_id`" +
-            " and `employee`.`store_id` = `store`.`store_id`" +
-            " and `salary`.`employee_id` = `employee`.`employee_id`" +
-            " and `employee`.`position_id` = `position`.`position_id`" +
-            " and `salary`.`employee_id` = `employee`.`employee_id`" +
-            " and `employee`.`store_id` = `store`.`store_id`" +
-            " and `salary`.`employee_id` = `employee`.`employee_id`" +
-            " and `salary`.`employee_id` = `employee`.`employee_id`" +
+            " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
+            " and `employee_1`.`store_id` = `store`.`store_id`" +
+            " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
+            " and `employee_1`.`store_id` = `store`.`store_id`" +
+            " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
+            " and `employee_1`.`store_id` = `store`.`store_id`" +
+            " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
+            " and `employee_1`.`store_id` = `store`.`store_id`" +
+            " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
+            " and `employee_1`.`position_id` = `position`.`position_id`" +
+            " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
+            " and `employee_1`.`store_id` = `store`.`store_id`" +
+            " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
+            " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
             " and `salary`.`department_id` = `department`.`department_id`" +
-            " and `salary`.`employee_id` = `employee`.`employee_id`" +
-            " and `employee`.`employee_id` = 2" +
-            " and `salary`.`employee_id` = `employee`.`employee_id`");
+            " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
+            " and `employee_1`.`employee_id` = 2" +
+            " and `salary`.`employee_id` = `employee_1`.`employee_id`");
     }
 
     private void checkDrillThroughSql(Result result,
