@@ -105,7 +105,7 @@ public class Format {
     ".", // dateSeparator = "/" in en
     ":", // timeSeparator = ":" in en
     "EUR", // currencySymbol = "$" in en
-    "#.##0,00EUR", // currencyFormat = "$#,##0.##" in en
+    "#,##0.00\"EUR\"", // currencyFormat = "$#,##0.##" in en
     new String[] {
       "So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"},
     new String[] {
@@ -370,7 +370,7 @@ public class Format {
 		Format format = new Format(formatString, locale);
 		return format.format(o);
 	}
-		
+
 	private static class Token {
 		int code;
 		int flags;
@@ -1101,7 +1101,7 @@ public class Format {
 	 * based upon the locale of the end-user.  Use {@link Format#createLocale}
 	 * to make one.
 	 **/
-	public static class FormatLocale 
+	public static class FormatLocale
 	{
 		char thousandSeparator;
 		char decimalPlaceholder;
@@ -1229,12 +1229,12 @@ public class Format {
 //  		{
 //  			Integer year = new Integer (yearIn % 100 );
 //  			Integer quarter = new Integer( quarterIn );
-		
+
 //  			String strYear = ( year.intValue() < 10 )
 //  				? "0" + year.toString() : year.toString();
 //  			LocaleResource localeResource = FormatLocale.getResource();
 //  			String ret = localeResource.getcalendarQuarter(quarter.toString(), strYear);
-		
+
 //  			return ret;
 //  		}
 
@@ -1247,10 +1247,10 @@ public class Format {
 //  		{
 //  			Integer year = new Integer (yearIn % 100 );
 //  			Integer quarter = new Integer( quarterIn );
-		
+
 //  			String strYear = ( year.intValue() < 10 )
 //  				? "0" + year.toString() : year.toString();
-		
+
 //  			LocaleResource localeResource = FormatLocale.getResource();
 //  			String ret = localeResource.getfiscalQuarter(quarter.toString(),
 //  														  strYear);
@@ -1553,7 +1553,7 @@ public class Format {
 	 *
 	 * @param thousandSeparator the character used to separate thousands in
 	 *   numbers, or ',' by default.  For example, 12345 is '12,345 in English,
-	 *   '12.345 in French. 
+	 *   '12.345 in French.
 	 * @param decimalPlaceholder the character placed between the integer and
 	 *   the fractional part of decimal numbers, or '.' by default.  For
 	 *   example, 12.34 is '12.34' in English, '12,34' in French.
@@ -1704,8 +1704,8 @@ public class Format {
 					// this macro requires special-case code
 					if (macroTokens[i].name.equals("Currency")) {
 						// e.g. "$#,##0.00;($#,##0.00)"
-						formatString = locale.currencyFormat + ";(" +
-							locale.currencyFormat + ")";
+						formatString = locale.currencyFormat
+							+ ";(" +locale.currencyFormat + ")";
 					} else {
 						throw new Error(
 							"Format: internal: token " + macroTokens[i].name +
@@ -2129,7 +2129,7 @@ class FloatingDecimal {
 	 */
 	private static int
 	countBits( long v ){
-		// 
+		//
 		// the strategy is to shift until we get a non-zero sign bit
 		// then shift until we have no bits left, counting the difference.
 		// we do byte shifting as a hack. Hope it helps.
@@ -2188,13 +2188,13 @@ class FloatingDecimal {
 			q = p >> 1;
 			r = p - q;
 			FDBigInt bigq =	 b5p[q];
-			if ( bigq == null ) 
+			if ( bigq == null )
 				bigq = big5pow ( q );
 			if ( r < small5pow.length ){
 				return (b5p[p] = bigq.mult( small5pow[r] ) );
 			}else{
 				FDBigInt bigr = b5p[ r ];
-				if ( bigr == null ) 
+				if ( bigr == null )
 					bigr = big5pow( r );
 				return (b5p[p] = bigq.mult( bigr ) );
 			}
@@ -2202,11 +2202,11 @@ class FloatingDecimal {
 	}
 
 	/*
-	 * This is the easy subcase -- 
+	 * This is the easy subcase --
 	 * all the significant bits, after scaling, are held in lvalue.
 	 * negSign and decExponent tell us what processing and scaling
 	 * has already been done. Exceptional cases have already been
-	 * stripped out. 
+	 * stripped out.
 	 * In particular:
 	 * lvalue is a finite number (not Inf, nor NaN)
 	 * lvalue > 0L (not zero, nor negative).
@@ -2531,13 +2531,13 @@ class FloatingDecimal {
 		 *
 		 * First, scale the mantissa bits such that 1 <= d2 < 2.
 		 * We are then going to estimate
-		 *			log10(d2) ~=~  (d2-1.5)/1.5 + log(1.5) 
-		 * and so we can estimate 
+		 *			log10(d2) ~=~  (d2-1.5)/1.5 + log(1.5)
+		 * and so we can estimate
 		 *		log10(d) ~=~ log10(d2) + binExp * log10(2)
 		 * take the floor and call it decExp.
 		 * FIXME -- use more precise constants here. It costs no more.
 		 */
-		double d2 = Double.longBitsToDouble( 
+		double d2 = Double.longBitsToDouble(
 			expOne | ( fractBits &~ fractHOB ) );
 		decExp = (int)Math.floor(
 			(d2-1.5D)*0.289529654D + 0.176091259 + (double)binExp * 0.301029995663981 );
@@ -2562,7 +2562,7 @@ class FloatingDecimal {
 		 * bits from the mantissa of d ( hidden 1 added if necessary) followed
 		 * by (expShift+1-nFractBits) zeros. In the interest of compactness,
 		 * I will shift out those zeros before turning fractBits into a
-		 * FDBigInt. The resulting whole number will be 
+		 * FDBigInt. The resulting whole number will be
 		 *		d * 2^(nFractBits-1-binExp).
 		 */
 		fractBits >>>= (expShift+1-nFractBits);
@@ -2582,7 +2582,7 @@ class FloatingDecimal {
 			M2 -= 1;
 
 		if ( M2 < 0 ){
-			// oops. 
+			// oops.
 			// since we cannot scale M down far enough,
 			// we must scale the other values up.
 			B2 -= M2;
@@ -2976,7 +2976,19 @@ class FloatingDecimal {
 		int minExpDigits, // minimum digits in exponent
 		char thousandChar) // ',' or '.', or 0
 	{
-		char result[] = new char[nDigits + 10];
+		// char result[] = new char[nDigits + 10]; // crashes for 1.000.000,00
+		// let result be +1,234,567.00
+		// then we will need a result length of 13.
+		// this length does *not* depend from nDigits
+		//  it is : digitsLeftofDecimal = max (decExponent, maxDigitsRightOfDecimal)
+		//         +maxDigitsRightOfDecimal
+		//         +2  (for decimal point and sign
+		//         +(digitsLeftofDecimal-1)/3  (for the thousand separators)
+		int digitsLeftofDecimal = Math.max (decExponent, maxDigitsRightOfDecimal);
+		int resultLen =
+			2 + digitsLeftofDecimal + maxDigitsRightOfDecimal +
+			(digitsLeftofDecimal -1)/3;
+        char result[] = new char[resultLen];
 		int i = toJavaFormatString(
 			result, 0, minDigitsLeftOfDecimal, decimalChar,
 			minDigitsRightOfDecimal, maxDigitsRightOfDecimal, expChar, expSign,
@@ -3605,7 +3617,7 @@ class FDBigInt {
 				/*
 				 * Originally the following line read
 				 * "if ( sum !=0 && sum != -1 )"
-				 * but that would be wrong, because of the 
+				 * but that would be wrong, because of the
 				 * treatment of the two values as entirely unsigned,
 				 * it would be impossible for a carry-out to be interpreted
 				 * as -1 -- it would have to be a single-bit carry-out, or
