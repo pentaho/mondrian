@@ -450,6 +450,22 @@ public class FunUtil extends Util {
 	static class SetWrapper {
 		Vector v = new Vector();
 		public int errorCount = 0, nullCount = 0;
+			
+		//private double avg = Double.NaN;
+		//todo: parameterize inclusion of nulls
+		//by making this a method of the SetWrapper, we can cache the result
+		//this allows its reuse in Correlation
+//		public double getAverage() {
+//			if (avg == Double.NaN) {
+//				double sum = 0.0;
+//				for (int i = 0; i < v.size(); i++) {
+//					sum += ((Double) v.elementAt(i)).doubleValue();
+//				}
+//				//todo: should look at context and optionally include nulls
+//				avg = sum / v.size();
+//			}
+//			return avg;
+//		}
 	}
 
 	static Object median(Evaluator evaluator, Vector members, ExpBase exp) {
@@ -502,6 +518,82 @@ public class FunUtil extends Util {
 		}
 	}
 
+	static Object var(Evaluator evaluator, Vector members, ExpBase exp, boolean biased) {
+		SetWrapper sw = evaluateSet(evaluator, members, exp);
+		return _var(sw, biased);
+	}
+
+	private static Object _var(SetWrapper sw, boolean biased) {
+		if (sw.errorCount > 0) {
+			return new Double(Double.NaN);
+		} else if (sw.v.size() == 0) {
+			return Util.nullValue;
+		}
+		else {
+			double stdev = 0.0;
+			double avg = _avg(sw);
+			for (int i = 0; i < sw.v.size(); i++) {
+				stdev += Math.pow((((Double) sw.v.elementAt(i)).doubleValue() - avg),2);
+			}
+			int n = sw.v.size();
+			if (!biased) { n--; }
+			return new Double(stdev / n);
+		}
+	}
+	
+	static Object correlation(Evaluator evaluator, Vector members, ExpBase exp1, ExpBase exp2) {
+		SetWrapper sw1 = evaluateSet(evaluator, members, exp1);
+		SetWrapper sw2 = evaluateSet(evaluator, members, exp2);
+		Object covar = _covariance(sw1, sw2, false);
+		Object var1 = _var(sw1, false); //this should be false, yes?
+		Object var2 = _var(sw2, false);
+		if ((covar instanceof Double) && (var1 instanceof Double) && (var2 instanceof Double)) {
+			return new Double(((Double) covar).doubleValue() /
+				Math.sqrt(((Double) var1).doubleValue() * ((Double) var2).doubleValue()));
+		}
+		else {
+			return Util.nullValue;
+		}
+	} 
+				
+	static Object covariance(Evaluator evaluator, Vector members, ExpBase exp1, ExpBase exp2, boolean biased) {
+		SetWrapper sw1 = evaluateSet(evaluator.push(), members, exp1);
+		SetWrapper sw2 = evaluateSet(evaluator.push(), members, exp2);
+		//todo: because evaluateSet does not add nulls to the SetWrapper, this solution may
+		//lead to mismatched vectors and is therefore not robust
+//		return _covariance(sw1, sw2, biased);
+		return _covariance(sw1, sw2, biased);
+	}
+	
+	
+	private static Object _covariance(SetWrapper sw1, SetWrapper sw2, boolean biased) {
+		if (sw1.v.size() != sw2.v.size()) {
+			return Util.nullValue;
+		}
+		double avg1 = _avg(sw1);
+		double avg2 = _avg(sw2);
+		double covar = 0.0;
+		for (int i = 0; i < sw1.v.size(); i++) {
+			//all of this casting seems inefficient - can we make SetWrapper contain an array of double instead?
+			double diff1 = (((Double) sw1.v.elementAt(i)).doubleValue() - avg1);
+			double diff2 = (((Double) sw2.v.elementAt(i)).doubleValue() - avg2);
+			covar += (diff1 * diff2);
+		}
+		int n = sw1.v.size();
+		if (!biased) { n--; }
+		return new Double(covar / n);	
+	}
+	
+	static Object stdev(Evaluator evaluator, Vector members, ExpBase exp, boolean biased) {
+		Object o = var(evaluator, members, exp, biased);
+		if (o instanceof Double) {
+				return new Double(Math.sqrt(((Double) o).doubleValue()));
+		}
+		else {
+				return o;
+		}
+	}
+
 	static Object avg(Evaluator evaluator, Vector members, ExpBase exp) {
 		SetWrapper sw = evaluateSet(evaluator, members, exp);
 		if (sw.errorCount > 0) {
@@ -510,14 +602,21 @@ public class FunUtil extends Util {
 			return Util.nullValue;
 		}
 		else {
-			double sum = 0.0;
-			for (int i = 0; i < sw.v.size(); i++) {
-				sum += ((Double) sw.v.elementAt(i)).doubleValue();
-			}
-			//todo: should look at context and optionally include nulls
-			return new Double(sum / sw.v.size());
+			return new Double(_avg(sw));
 		}
 	}
+
+	//todo: parameterize inclusion of nulls
+	//also, maybe make _avg a method of setwrapper, so we can cache the result (i.e. for correl)
+	private static double _avg(SetWrapper sw) {
+		double sum = 0.0;
+		for (int i = 0; i < sw.v.size(); i++) {
+			sum += ((Double) sw.v.elementAt(i)).doubleValue();
+		}
+		//todo: should look at context and optionally include nulls
+		return sum / sw.v.size();
+	}
+
 
 	static Object sum(Evaluator evaluator, Vector members, ExpBase exp) {
 		SetWrapper sw = evaluateSet(evaluator, members, exp);
@@ -540,9 +639,9 @@ public class FunUtil extends Util {
 	}
 
 	/**
-	 * Evluates <code>exp</code> over <code>members</code> to generate a
-	 * <code>Vector</code> of <code>SetWrapper</code>, which contains a
-	 * <code>Double</code> value and meta information, unlike
+	 * Evaluates <code>exp</code> (if defined) over <code>members</code> to
+	 * generate a <code>Vector</code> of <code>SetWrapper</code>, which contains
+	 * a <code>Double</code> value and meta information, unlike
 	 * <code>evaluateMembers</code>, which only produces values
 	 */
 	static SetWrapper evaluateSet(Evaluator evaluator, Vector members, ExpBase exp) {

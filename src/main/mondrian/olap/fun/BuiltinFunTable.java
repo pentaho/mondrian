@@ -1295,7 +1295,21 @@ public class BuiltinFunTable extends FunTable {
 				}
 				//todo: testAvgWithNulls
 			}));
-		if (false) define(new FunDefBase("Correlation", "Correlation(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Returns the correlation of two series evaluated over a set.", "fn*"));
+		define(new MultiResolver(
+			"Correlation", "Correlation(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Returns the correlation of two series evaluated over a set.",			
+			new String[]{"fnxN","fnxNN"},
+			new FunkBase() {
+				public Object evaluate(Evaluator evaluator, Exp[] args) {
+					Vector members = (Vector) getArg(evaluator, args, 0);
+					ExpBase exp1 = (ExpBase) getArg(evaluator, args, 1);
+					ExpBase exp2 = (ExpBase) getArg(evaluator, args, 2);
+					return correlation(evaluator.push(), members, exp1, exp2);
+				}
+				public void testCorrelation(FoodMartTestCase test) {
+					String result = test.executeExpr("Correlation({[Store].[All Stores].[USA].children}, [Measures].[Unit Sales], [Measures].[Store Sales])");
+					test.assertEquals("0.9999063938016924", result);
+				}
+			}));
 		define(new MultiResolver(
 			"Count", "Count(<Set>[, EXCLUDEEMPTY | INCLUDEEMPTY])", "Returns the number of tuples in a set, empty cells included unless the optional EXCLUDEEMPTY flag is used.",
 			new String[]{"fnx", "fnxy"},
@@ -1323,8 +1337,36 @@ public class BuiltinFunTable extends FunTable {
 				}
 				//todo: testCountNull, testCountNoExp
 			}));
-		if (false) define(new FunDefBase("Covariance", "Covariance(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Returns the covariance of two series evaluated over a set (biased).", "fn*"));
-		if (false) define(new FunDefBase("CovarianceN", "CovarianceN(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Returns the covariance of two series evaluated over a set (unbiased).", "fn*"));
+		define(new MultiResolver(
+			"Covariance", "Covariance(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Returns the covariance of two series evaluated over a set (biased).",
+			new String[]{"fnxN","fnxNN"},
+			new FunkBase() {
+				public Object evaluate(Evaluator evaluator, Exp[] args) {
+					Vector members = (Vector) getArg(evaluator, args, 0);
+					ExpBase exp1 = (ExpBase) getArg(evaluator, args, 1);
+					ExpBase exp2 = (ExpBase) getArg(evaluator, args, 2);
+					return covariance(evaluator.push(), members, exp1, exp2, true);
+				}
+				public void testCovariance(FoodMartTestCase test) {
+					String result = test.executeExpr("Covariance({[Store].[All Stores].[USA].children}, [Measures].[Unit Sales], [Measures].[Store Sales])");
+					test.assertEquals("1.3557618990466664E9", result);
+				}
+			}));
+		define(new MultiResolver(
+			"CovarianceN", "CovarianceN(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Returns the covariance of two series evaluated over a set (unbiased).",
+			new String[]{"fnxN","fnxNN"},
+			new FunkBase() {
+				public Object evaluate(Evaluator evaluator, Exp[] args) {
+					Vector members = (Vector) getArg(evaluator, args, 0);
+					ExpBase exp1 = (ExpBase) getArg(evaluator, args, 1);
+					ExpBase exp2 = (ExpBase) getArg(evaluator, args, 2);
+					return covariance(evaluator.push(), members, exp1, exp2, false);
+				}
+				public void testCovarianceN(FoodMartTestCase test) {
+					String result = test.executeExpr("CovarianceN({[Store].[All Stores].[USA].children}, [Measures].[Unit Sales], [Measures].[Store Sales])");
+					test.assertEquals("2.0336428485699995E9", result);
+				}
+			}));
 		define(new FunDefBase("IIf", "IIf(<Logical Expression>, <Numeric Expression1>, <Numeric Expression2>)", "Returns one of two numeric values determined by a logical test.", "fnbnn"));
 		if (false) define(new FunDefBase("LinRegIntercept", "LinRegIntercept(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Calculates the linear regression of a set and returns the value of b in the regression line y = ax + b.", "fn*"));
 		if (false) define(new FunDefBase("LinRegPoint", "LinRegPoint(<Numeric Expression>, <Set>, <Numeric Expression>[, <Numeric Expression>])", "Calculates the linear regression of a set and returns the value of y in the regression line y = ax + b.", "fn*"));
@@ -1381,10 +1423,56 @@ public class BuiltinFunTable extends FunTable {
 			}));
 		define(new FunDefBase("Ordinal", "<Level>.Ordinal", "Returns the zero-based ordinal value associated with a level.", "pnl"));
 		if (false) define(new FunDefBase("Rank", "Rank(<Tuple>, <Set>)", "Returns the one-based rank of a tuple in a set.", "fn*"));
-		if (false) define(new FunDefBase("Stddev", "Stddev(<Set>[, <Numeric Expression>])", "Alias for Stdev.", "fn*"));
-		if (false) define(new FunDefBase("StddevP", "StddevP(<Set>[, <Numeric Expression>])", "Alias for StdevP.", "fn*"));
-		if (false) define(new FunDefBase("Stdev", "Stdev(<Set>[, <Numeric Expression>])", "Returns the standard deviation of a numeric expression evaluated over a set (unbiased).", "fn*"));
-		if (false) define(new FunDefBase("StdevP", "StdevP(<Set>[, <Numeric Expression>])", "Returns the standard deviation of a numeric expression evaluated over a set (biased).", "fn*"));
+		define(new MultiResolver(
+				"Stddev", "Stddev(<Set>[, <Numeric Expression>])", "Alias for Stdev.",
+				new String[]{"fnx", "fnxN"},
+				new FunkBase() {
+						public Object evaluate(Evaluator evaluator, Exp[] args) {
+							Vector members = (Vector) getArg(evaluator, args, 0);
+							ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+							return stdev(evaluator.push(), members, exp, false);
+						}
+				}));
+		define(new MultiResolver(
+				"Stdev", "Stdev(<Set>[, <Numeric Expression>])", "Returns the standard deviation of a numeric expression evaluated over a set (unbiased).",
+				new String[]{"fnx", "fnxN"},
+				new FunkBase() {
+					public Object evaluate(Evaluator evaluator, Exp[] args) {
+						Vector members = (Vector) getArg(evaluator, args, 0);
+						ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+						return stdev(evaluator.push(), members, exp, false);
+					}
+					public void testStdev(FoodMartTestCase test) {
+						String result = test.executeExpr(
+								"STDEV({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
+						test.assertEquals("65825.4547549297", result);
+					}
+				}));
+		define(new MultiResolver(
+				"StddevP", "StddevP(<Set>[, <Numeric Expression>])", "Alias for StdevP.",
+				new String[]{"fnx", "fnxN"},
+				new FunkBase() {
+					public Object evaluate(Evaluator evaluator, Exp[] args) {
+						Vector members = (Vector) getArg(evaluator, args, 0);
+						ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+						return stdev(evaluator.push(), members, exp, true);
+					}
+				}));
+		define(new MultiResolver(
+				"StdevP", "StdevP(<Set>[, <Numeric Expression>])", "Returns the standard deviation of a numeric expression evaluated over a set (biased).",
+				new String[]{"fnx", "fnxN"},
+				new FunkBase() {
+						public Object evaluate(Evaluator evaluator, Exp[] args) {
+							Vector members = (Vector) getArg(evaluator, args, 0);
+							ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+							return stdev(evaluator.push(), members, exp, true);
+						}
+					public void testStdevP(FoodMartTestCase test) {
+						String result = test.executeExpr(
+								"STDEVP({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
+						test.assertEquals("53746.25874541283", result);
+					}
+				}));		
 		define(new MultiResolver(
 				"Sum", "Sum(<Set>[, <Numeric Expression>])", "Returns the sum of a numeric expression evaluated over a set.",
 				new String[]{"fnx", "fnxN"},
@@ -1435,10 +1523,57 @@ public class BuiltinFunTable extends FunTable {
 				return new ValueFunDef(argTypes);
 			}
 		});
-		if (false) define(new FunDefBase("Var", "Var(<Set>[, <Numeric Expression>])", "Returns the variance of a numeric expression evaluated over a set (unbiased).", "fn*"));
-		if (false) define(new FunDefBase("Variance", "Variance(<Set>[, <Numeric Expression>])", "Alias for Var.", "fn*"));
-		if (false) define(new FunDefBase("VarianceP", "VarianceP(<Set>[, <Numeric Expression>])", "Alias for VarP.", "fn*"));
-		if (false) define(new FunDefBase("VarP", "VarP(<Set>[, <Numeric Expression>])", "Returns the variance of a numeric expression evaluated over a set (biased).", "fn*"));
+		define(new MultiResolver(
+				"Var", "Var(<Set>[, <Numeric Expression>])", "Returns the variance of a numeric expression evaluated over a set (unbiased).",
+				new String[]{"fnx", "fnxN"},
+				new FunkBase() {
+					public Object evaluate(Evaluator evaluator, Exp[] args) {
+						Vector members = (Vector) getArg(evaluator, args, 0);
+						ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+						return var(evaluator.push(), members, exp, false);
+					}
+					public void testVar(FoodMartTestCase test) {
+						String result = test.executeExpr(
+								"VAR({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
+						test.assertEquals("4.332990493693297E9", result);
+					}
+				}));
+		define(new MultiResolver(
+				"Variance", "Variance(<Set>[, <Numeric Expression>])", "Alias for Var.",
+				new String[]{"fnx", "fnxN"},
+				new FunkBase() {
+						public Object evaluate(Evaluator evaluator, Exp[] args) {
+							Vector members = (Vector) getArg(evaluator, args, 0);
+							ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+							return var(evaluator.push(), members, exp, false);
+						}
+				}));
+		define(new MultiResolver(
+				"VarianceP", "VarianceP(<Set>[, <Numeric Expression>])", "Alias for VarP.",
+				new String[]{"fnx", "fnxN"},
+				new FunkBase() {
+						public Object evaluate(Evaluator evaluator, Exp[] args) {
+							Vector members = (Vector) getArg(evaluator, args, 0);
+							ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+							return var(evaluator.push(), members, exp, true);
+						}
+				}));
+		define(new MultiResolver(
+				"VarP", "VarP(<Set>[, <Numeric Expression>])", "Returns the variance of a numeric expression evaluated over a set (biased).",
+				new String[]{"fnx", "fnxN"},
+				new FunkBase() {
+					public Object evaluate(Evaluator evaluator, Exp[] args) {
+						Vector members = (Vector) getArg(evaluator, args, 0);
+						ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+						return var(evaluator.push(), members, exp, true);
+					}
+					public void testVarP(FoodMartTestCase test) {
+						String result = test.executeExpr(
+								"VARP({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
+						test.assertEquals("2.888660329128865E9", result);
+					}
+				}));
+
 		//
 		// SET FUNCTIONS
 		if (false) define(new FunDefBase("AddCalculatedMembers", "AddCalculatedMembers(<Set>)", "Adds calculated members to a set.", "fx*"));
