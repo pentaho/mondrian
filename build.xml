@@ -3,7 +3,7 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == (C) Copyright 2001-2004 Kana Software, Inc. and others.
+  == (C) Copyright 2001-2005 Kana Software, Inc. and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
@@ -113,6 +113,7 @@ demo/mysql/FoodMartData.sql"/>
         <include name="**/*.jar"/>
     </fileset>
     <pathelement location="${testclasses.dir}"/>
+    <pathelement location="${driver.classpath}"/>
   </path>
 
   <path id="project.boot.classpath">
@@ -142,25 +143,15 @@ demo/mysql/FoodMartData.sql"/>
     ===================================================================
   -->
 
-  <!-- Comma-separated list of jdbc drivers. Typical drivers:
-       sun.jdbc.odbc.JdbcOdbcDriver, org.hsqldb.jdbcDriver,
-       oracle.jdbc.OracleDriver, com.mysql.jdbc.Driver. Remember to
-       include the driver on your CLASSPATH! -->
-  <property name="mondrian.jdbcDrivers"
-      value="sun.jdbc.odbc.JdbcOdbcDriver"/>
-  <!-- Connect string to the relational database. -->
-  <property name="mondrian.foodmart.jdbcURL.access"
-      value="jdbc:odbc:MondrianFoodMart"/>
-  <property name="mondrian.foodmart.jdbcURL.hsqldb"
-      value="jdbc:hsqldb:demo/hsql/FoodMart"/>
-  <property name="mondrian.foodmart.jdbcURL.mysql"
-      value="jdbc:mysql://localhost/foodmart?user=foodmart&#38;password=foodmart"/>
-  <property name="mondrian.foodmart.jdbcURL.oracle"
-      value="jdbc:oracle:oci8:foodmart/foodmart@realm1"/>
-  <property name="mondrian.foodmart.jdbcURL.postgres"
-      value="jdbc:??"/>
-  <property name="mondrian.foodmart.jdbcURL"
-      value="${mondrian.foodmart.jdbcURL.access}"/>
+  <!-- Comma-separated list of jdbc drivers. Override in build.properties. -->
+  <property name="mondrian.jdbcDrivers" value="sun.jdbc.odbc.JdbcOdbcDriver"/>
+
+  <!-- Connect string to the database. Override in build.properties. -->
+  <property name="mondrian.foodmart.jdbcURL" value="jdbc:odbc:MondrianFoodMart"/>
+
+  <!-- Classpath for JDBC drivers. Override in your build.properties. -->
+  <property name="driver.classpath" value=""/>
+
   <!-- URL of the catalog definition. -->
   <property name="mondrian.foodmart.catalogURL"
       value="file:///${project.location}/${demo.dir}/FoodMart.xml"/>
@@ -367,31 +358,6 @@ copy.properties"/>
   <!-- Same prerequisites as FoodMartTest -->
   <target name="test" description="Runs all JUnit tests.">
     <antcall target="test-dbms"/>
-  </target>
-
-  <target name="test-access" description="Runs all JUnit tests on Access.">
-    <antcall target="test-dbms">
-      <param name="mondrian.foodmart.jdbcURL" value="${mondrian.foodmart.jdbcURL.access}"/>
-    </antcall>
-  </target>
-
-  <target name="test-mysql" description="Runs all JUnit tests on MySQL.">
-    <antcall target="test-dbms">
-      <param name="mondrian.foodmart.jdbcURL" value="${mondrian.foodmart.jdbcURL.mysql}"/>
-    </antcall>
-  </target>
-
-  <target name="test-oracle" description="Runs all JUnit tests on Oracle.">
-    <antcall target="test-dbms">
-      <param name="mondrian.foodmart.jdbcURL" value="${mondrian.foodmart.jdbcURL.oracle}"/>
-      <param name="mondrian.jdbcDrivers" value="oracle.jdbc.OracleDriver"/>
-    </antcall>
-  </target>
-
-  <target name="test-postgres" description="Runs all JUnit tests on Postgres.">
-    <antcall target="test-dbms">
-      <param name="mondrian.foodmart.jdbcURL" value="${mondrian.foodmart.jdbcURL.postgres}"/>
-    </antcall>
   </target>
 
   <target name="test-dbms" depends="compile,compile.tests"
