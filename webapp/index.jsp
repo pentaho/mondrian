@@ -210,38 +210,81 @@ text-align:right;
 }
 
 </style>
+
 <title>JSP Page</title>
 </head>
 <body>
-    <form action="mdxquery">
+    <form action="index.jsp" method="post">
     <table>
         <tr>
             <td>
-                <select onchange="document.all.item('queryArea').innerHTML=this.value">
-                <% for (int i=0; i<queries.length; i++) { %>
-                    <option value="<%= queries[i] %>">Query #<%= i %></option>
-                <% } %>
+                <select name="whichquery">   
+		<% 
+
+		for (int i=0; i<queries.length; i++) { 
+
+			%>
+			<option 
+			<%
+			
+			if (request.getParameter("whichquery") != null) {
+				if (Integer.valueOf(request.getParameter("whichquery")).intValue() == i) {
+					out.print(" selected");
+				}
+			}
+			%>
+
+			value="<% out.print(i);%>">Sample Query #<%out.print(i);
+			 
+			%>
+
+			</option>
+                
+		<% 
+		} 		
+		%>
+
                 </select>
             </td>
         </tr>
+       
         <tr>
             <td>
-                <textarea id='queryArea' name="queryString" rows=10 cols=80><% if (request.getAttribute("queryString") != null) out.println(request.getAttribute("queryString")); %></textarea>
+                <input type="submit" value="show query">
+            </td>
+        </tr>
+	</table>
+	</form>
+
+	<form action="mdxquery">
+    	<table>
+        <tr>
+       	<td>
+        <tr>
+            <td>
+                <textarea id='queryArea' name="queryString" rows=10 cols=80><% 
+			if (request.getParameter("whichquery") != null) {
+				out.println(queries[Integer.valueOf(request.getParameter("whichquery")).intValue()]);
+			} 
+		%></textarea>
             </td>
         </tr>
         <tr>
             <td>
-                <input type="submit" value="Submit MDX Query">
+                <input type="submit" value="process MDX query">
             </td>
         </tr>
+
         <% if (request.getAttribute("result") != null) { %>
         <tr>
             <td valign=top>Results:
             <% out.println(request.getAttribute("result")); %>
             </td>
         </tr>
-        <% } %>
+        <% } %>	
+
     </table>
     </form>
+
 </body>
 </html>
