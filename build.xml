@@ -409,6 +409,7 @@ VERSION.txt,
 ${demo.dir}/FoodMart.xml"
           excludes="
 ${javadoc.dir}/**,
+**/_vti*/*,
 **/*~,
 **/junit-results/**,
 ${generated.java.files}" />
@@ -498,6 +499,7 @@ bin/mondrian.properties,
 bin/runtime.xml,
 bin/mondrian.bat,
 bin/mondrian.sh,
+bin/README.html,
 ${dist.src.file},
 ${war.file},
 LICENSE.html,
