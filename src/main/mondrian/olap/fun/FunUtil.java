@@ -99,7 +99,7 @@ public class FunUtil extends Util {
 		return allowedValues.getOrdinal(literal);
 	}
 
-	/** 
+	/**
 	 * returns defaultValue, if the expression can not be evaluated because
 	 * some required operands have not been loaded from the database yet.
 	 */
@@ -110,7 +110,7 @@ public class FunUtil extends Util {
 		return ((Boolean) o).booleanValue();
 	}
 
-	/** 
+	/**
 	 * returns null, if the expression can not be evaluated because
 	 * some required operands have not been loaded from the database yet.
 	 */
@@ -1018,14 +1018,14 @@ abstract class MemberComparator implements Comparator {
 			return 0;
 		}
 		while (true) {
-			int levelDepth1 = m1.getLevel().getDepth(),
-					levelDepth2 = m2.getLevel().getDepth();
-			if (levelDepth1 < levelDepth2) {
+			int depth1 = m1.getDepth(),
+				depth2 = m2.getDepth();
+			if (depth1 < depth2) {
 				m2 = m2.getParentMember();
 				if (FunUtil.equals(m1, m2)) {
 					return -1;
 				}
-			} else if (levelDepth1 > levelDepth2) {
+			} else if (depth1 > depth2) {
 				m1 = m1.getParentMember();
 				if (FunUtil.equals(m1, m2)) {
 					return 1;
@@ -1036,7 +1036,15 @@ abstract class MemberComparator implements Comparator {
 				m2 = m2.getParentMember();
 				if (FunUtil.equals(m1, m2)) {
 					// including case where both parents are null
-					return compareByValue(prev1, prev2);
+					int c = compareByValue(prev1, prev2);
+					if (c != 0)
+						return c;
+					// prev1 and prev2 are siblings.
+					// Order according to hierarchy, if the values do not differ.
+					// Needed to have a consistent sort if members with equal (null!)
+					//  values are compared.
+					c = prev1.compareTo(prev2);
+					return c; // desc ? -c : c;
 				}
 			}
 		}
