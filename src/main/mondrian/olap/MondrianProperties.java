@@ -174,7 +174,7 @@ public class MondrianProperties extends PropertiesPlus {
 	public static final String ResultLimit = "mondrian.result.limit";
 
 	// mondrian.rolap properties
-	
+
 	/** Retrieves the value of the {@link #CachePoolCostLimit} property,
 	 * default value {@link #CachePoolCostLimit_Default}. */
 	public int getCachePoolCostLimit() {
@@ -239,12 +239,18 @@ public class MondrianProperties extends PropertiesPlus {
 
 	// miscellaneous
 
-	/** Retrieves the value of the {@link #JdbcURL} property. */
+	/**
+     * Retrieves the value of the {@link #JdbcURL} property.
+     * The {@link #JdbcURL_Default default value} connects to an ODBC data
+     * source.
+     */
 	public String getFoodmartJdbcURL() {
-		return getProperty(JdbcURL, "jdbc:hsqldb:demo/hsql/FoodMart");
+		return getProperty(JdbcURL, JdbcURL_Default);
 	}
 	/** Property {@value}. */
 	public static final String JdbcURL = "mondrian.foodmart.jdbcURL";
+    /** Value is {@value}. */
+    public static final String JdbcURL_Default = "jdbc:odbc:MondrianFoodMart";
 
 	/**
 	 * Retrieves the value of the {@link #LargeDimensionThreshold} property.
