@@ -14,6 +14,7 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.rolap.agg.AggregationManager;
+import mondrian.rolap.agg.CellRequest;
 
 import java.util.*;
 import java.io.PrintWriter;
@@ -136,7 +137,7 @@ class RolapResult extends ResultBase
 				cellEvaluator.setContext(member);
 			}
 		}
-		return new RolapCell(measure,value,cellEvaluator);
+		return new RolapCell(measure,value,(RolapEvaluator) cellEvaluator);
 	}
 	private RolapAxis executeAxis(Evaluator evaluator, QueryAxis axis)
 	{
@@ -398,17 +399,22 @@ class RolapPosition extends Position
 	}
 };
 
+/**
+ * <code>RolapCell</code> implements {@link Cell} within a {@link RolapResult}.
+ */
 class RolapCell implements Cell
 {
-	protected Object value;
-	private String formattedValue;
+	protected final Object value;
+	private final String formattedValue;
+	private final RolapMember[] members;
 
-	RolapCell(RolapMember measure, Object value, Evaluator evaluator) {
+	RolapCell(RolapMember measure, Object value, RolapEvaluator evaluator) {
 		this.value = value;
 		this.formattedValue = computeFormattedValue(measure, value, evaluator);
+		this.members = (RolapMember[]) evaluator.currentMembers.clone();
 	}
 	static String computeFormattedValue(
-		RolapMember measure, Object value, Evaluator evaluator) {
+			RolapMember measure, Object value, Evaluator evaluator) {
 		return evaluator.format(value);
 	}
 	public Object getValue() {
@@ -422,6 +428,14 @@ class RolapCell implements Cell
 	}
 	public boolean isError() {
 		return value instanceof Throwable;
+	}
+	public String getDrillThroughSQL() {
+		final CellRequest cellRequest = AggregationManager.instance().makeRequest(members);
+		if (cellRequest == null) {
+			return null;
+		} else {
+			return AggregationManager.instance().getDrillThroughSQL(cellRequest);
+		}
 	}
 }
 

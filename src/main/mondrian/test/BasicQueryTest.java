@@ -452,6 +452,18 @@ public class BasicQueryTest extends FoodMartTestCase {
 		assertEquals("152", result.getCell(new int[] {0, rowCount - 1}).getFormattedValue());
 	}
 
+	public void testDrillThrough() {
+		Result result = runQuery(
+				"WITH MEMBER [Measures].[Price] AS '[Measures].[Store Sales] / [Measures].[Unit Sales]'" + nl +
+				"SELECT {[Measures].[Unit Sales], [Measures].[Price]} on columns," + nl +
+				" {[Product].Children} on rows" + nl +
+				"from Sales");
+		String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL();
+		assertEquals("select `time_by_day`.`the_year` as `c0`, `product_class`.`product_family` as `c1`, sum(`sales_fact_1997`.`unit_sales`) as `c2` from `time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997`, `product_class` as `product_class`, `product` as `product` where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` in (1997) and `sales_fact_1997`.`product_id` = `product`.`product_id` and `product`.`product_class_id` = `product_class`.`product_class_id` and `product_class`.`product_family` in ('Drink') group by `time_by_day`.`the_year`, `product_class`.`product_family`", sql);
+		sql = result.getCell(new int[] {1, 1}).getDrillThroughSQL();
+		assertNull(sql); // because it is a calculated member
+	}
+
 	public void testNonEmpty1() {
 		assertSize(
 				"select" + nl +

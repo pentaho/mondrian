@@ -55,6 +55,12 @@ public interface Cell {
 	 * Returns whether the cell's calculation returned an error.
 	 */
 	boolean isError();
+
+	/**
+	 * Returns a SQL query which calculates the value of this cell. The result
+	 * is null if the cell is based upon a calculated member.
+	 */
+	String getDrillThroughSQL();
 }
 
 // End Cell.java

@@ -74,13 +74,15 @@ public abstract class RolapAggregationManager implements CellReader {
 
 	/**
 	 * Creates a request to evaluate the cell identified by
-	 * <code>members</code>.  If any of the members is the null member, returns
-	 * null, since there is no cell.
+	 * <code>members</code>. If any of the members is the null member, returns
+	 * null, since there is no cell. If the measure is calculated, returns
+	 * null. 
 	 **/
-	CellRequest makeRequest(RolapMember[] members)
-	{
+	CellRequest makeRequest(RolapMember[] members) {
+		if (!(members[0] instanceof RolapStoredMeasure)) {
+			return null;
+		}
 		RolapStoredMeasure measure = (RolapStoredMeasure) members[0];
-		Util.assertTrue(measure instanceof RolapStoredMeasure);
 		final RolapStar.Measure starMeasure = (RolapStar.Measure)
 				measure.starMeasure;
 		Util.assertTrue(starMeasure != null);
@@ -169,6 +171,8 @@ public abstract class RolapAggregationManager implements CellReader {
 	public Object get(Evaluator evaluator) {
 		return getCell(((RolapEvaluator) evaluator).currentMembers);
 	}
+
+	public abstract String getDrillThroughSQL(CellRequest request);
 
 	public static class Batch
 	{

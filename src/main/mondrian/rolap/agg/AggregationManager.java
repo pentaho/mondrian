@@ -14,8 +14,10 @@ package mondrian.rolap.agg;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapAggregationManager;
 import mondrian.rolap.RolapStar;
+import mondrian.rolap.sql.SqlQuery;
 
 import java.util.*;
+import java.sql.SQLException;
 
 /**
  * <code>RolapAggregationManager</code> manages all {@link Aggregation}s
@@ -167,6 +169,147 @@ public class AggregationManager extends RolapAggregationManager {
 		}
 		return aggregation.get(
 				measure, request.getSingleValues(), pinSet);
+	}
+
+	public String getDrillThroughSQL(final CellRequest request) {
+		return generateSQL(new QuerySpec() {
+			public int getMeasureCount() {
+				return 1;
+			}
+
+			public RolapStar.Measure getMeasure(int i) {
+				Util.assertTrue(i == 0);
+				return request.getMeasure();
+			}
+
+			public RolapStar getStar() {
+				return request.getMeasure().table.star;
+			}
+
+			public RolapStar.Column[] getColumns() {
+				return request.getColumns();
+			}
+
+			public Object[] getConstraints(int i) {
+				final Object value = request.getValueList().get(i);
+				if (value == null) {
+					return new Object[0];
+				} else {
+					return new Object[] {value};
+				}
+			}
+		});
+	}
+
+	/**
+	 * Generates the query to retrieve the cells for a list of segments.
+	 */
+	static String generateSQL(Segment[] segments) {
+		return generateSQL(new SegmentArrayQuerySpec(segments));
+	}
+
+	private static String generateSQL(QuerySpec spec) {
+		RolapStar star = spec.getStar();
+		SqlQuery sqlQuery;
+		try {
+			sqlQuery = new SqlQuery(
+				star.getJdbcConnection().getMetaData());
+		} catch (SQLException e) {
+			throw Util.getRes().newInternal("while loading segment", e);
+		}
+		// add constraining dimensions
+		RolapStar.Column[] columns = spec.getColumns();
+		int arity = columns.length;
+		for (int i = 0; i < arity; i++) {
+			RolapStar.Column column = columns[i];
+			RolapStar.Table table = column.table;
+			if (table.isFunky()) {
+				// this is a funky dimension -- ignore for now
+				continue;
+			}
+			table.addToFrom(sqlQuery, false, true);
+			String expr = column.getExpression(sqlQuery);
+			Object[] constraints = spec.getConstraints(i);
+			if (constraints != null) {
+				sqlQuery.addWhere(
+					expr + " in " + column.quoteValues(constraints));
+			}
+			sqlQuery.addSelect(expr);
+			sqlQuery.addGroupBy(expr);
+		}
+		// add measures
+		for (int i = 0, measureCount = spec.getMeasureCount(); i < measureCount; i++) {
+			RolapStar.Measure measure = spec.getMeasure(i);
+			Util.assertTrue(measure.table == star.factTable);
+			star.factTable.addToFrom(sqlQuery, false, true);
+			sqlQuery.addSelect(
+				measure.aggregator + "(" + measure.getExpression(sqlQuery) + ")");
+		}
+		String sql = sqlQuery.toString();
+		return sql;
+	}
+
+	/**
+	 * Contains the information necessary to generate a SQL statement to
+	 * retrieve a set of cells.
+	 */
+	private interface QuerySpec {
+		int getMeasureCount();
+
+		RolapStar.Measure getMeasure(int i);
+
+		RolapStar getStar();
+
+		RolapStar.Column[] getColumns();
+
+		Object[] getConstraints(int i);
+	}
+
+	/**
+	 * Provides the information necessary to generate a SQL statement to
+	 * retrieve a list of segments.
+	 */
+	private static class SegmentArrayQuerySpec implements QuerySpec {
+		private final Segment[] segments;
+
+		SegmentArrayQuerySpec(Segment[] segments) {
+			this.segments = segments;
+			Util.assertPrecondition(segments.length > 0, "segments.length > 0");
+			for (int i = 0; i < segments.length; i++) {
+				Segment segment = segments[i];
+				Util.assertPrecondition(segment.aggregation == segments[0].aggregation);
+				int n = segment.axes.length;
+				Util.assertTrue(n == segments[0].axes.length);
+				for (int j = 0; j < segment.axes.length; j++) {
+					// We only require that the two arrays have the same
+					// contents, we but happen to know they are the same array,
+					// because we constructed them at the same time.
+					Util.assertTrue(
+							segment.axes[j].constraints ==
+							segments[0].axes[j].constraints);
+				}
+			}
+		}
+
+		public int getMeasureCount() {
+			return segments.length;
+		}
+
+		public RolapStar.Measure getMeasure(int i) {
+			return segments[i].measure;
+		}
+
+		public RolapStar getStar() {
+			return segments[0].aggregation.star;
+		}
+
+		public RolapStar.Column[] getColumns() {
+			return segments[0].aggregation.columns;
+		}
+
+		public Object[] getConstraints(int i) {
+			return segments[0].axes[i].constraints;
+		}
 	}
 }
 

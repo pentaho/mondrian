@@ -341,59 +341,12 @@ public class Segment implements CachePool.Cacheable
 	 * @pre segments[i].aggregation == aggregation
 	 **/
 	static void load(Segment[] segments, Collection pinnedSegments) {
+		String sql = AggregationManager.generateSQL(segments);
 		Segment segment0 = segments[0];
 		RolapStar star = segment0.aggregation.star;
 		RolapStar.Column[] columns = segment0.aggregation.columns;
 		int arity = columns.length;
-		SqlQuery sqlQuery;
-		try {
-			sqlQuery = new SqlQuery(
-				star.getJdbcConnection().getMetaData());
-		} catch (SQLException e) {
-			throw Util.getRes().newInternal("while loading segment", e);
-		}
-		// add constraining dimensions
-		for (int i = 0; i < arity; i++) {
-			Object[] constraints = segments[0].axes[i].constraints;
-			RolapStar.Column column = columns[i];
-			RolapStar.Table table = column.table;
-			if (table.isFunky()) {
-				// this is a funky dimension -- ignore for now
-				continue;
-			}
-			table.addToFrom(sqlQuery, false, true);
-			String expr = column.getExpression(sqlQuery);
-			if (constraints != null) {
-				sqlQuery.addWhere(
-					expr + " in " + column.quoteValues(constraints));
-			}
-			sqlQuery.addSelect(expr);
-			sqlQuery.addGroupBy(expr);
-		}
-		// add measures
-		for (int i = 0; i < segments.length; i++) {
-			Segment segment = segments[i];
-			RolapStar.Measure measure = segment.measure;
-			Util.assertTrue(measure.table == star.factTable);
-			if (i > 0) {
-				Util.assertTrue(segment.aggregation == segment0.aggregation);
-				int n = segment.axes.length;
-				Util.assertTrue(n == segment0.axes.length);
-				for (int j = 0; j < segment.axes.length; j++) {
-					// We only require that the two arrays have the same
-					// contents, we but happen to know they are the same array,
-					// because we constructed them at the same time.
-					Util.assertTrue(
-							segment.axes[j].constraints ==
-							segment0.axes[j].constraints);
-				}
-			}
-			star.factTable.addToFrom(sqlQuery, false, true);
-			sqlQuery.addSelect(
-				measure.aggregator + "(" + measure.getExpression(sqlQuery) + ")");
-		}
 		// execute
-		String sql = sqlQuery.toString();
 		ResultSet resultSet = null;
 		final int measureCount = segments.length;
 		try {
@@ -502,6 +455,8 @@ public class Segment implements CachePool.Cacheable
 			}
 		}
 	}
+
+	;
 
 	/**
 	 * Decides whether to use a sparse representation for this segment, using
