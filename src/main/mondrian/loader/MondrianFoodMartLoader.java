@@ -34,6 +34,8 @@ import java.util.HashMap;
 public class MondrianFoodMartLoader {
     private final String jdbcURL;
     private final String jdbcDrivers;
+    private final String userName;
+    private final String password;
     private boolean tables = false;
     private boolean indexes = false;
     private boolean data = false;
@@ -63,20 +65,34 @@ public class MondrianFoodMartLoader {
         }
         if (i >= args.length) {
             usage();
-            throw MondrianResource.instance().newMissingArg("jdbcURL");
-        }
-        jdbcURL = args[i++];
-        if (i >= args.length) {
-            usage();
             throw MondrianResource.instance().newMissingArg("jdbcDrivers");
         }
         jdbcDrivers = args[i++];
+        if (i >= args.length) {
+            usage();
+            throw MondrianResource.instance().newMissingArg("jdbcURL");
+        }
+        jdbcURL = args[i++];
+        if (i < args.length) {
+            userName = args[i++];
+            if (i == (args.length - 1)) {
+                password = args[i++];
+            } else {
+	            usage();
+	            throw MondrianResource.instance().newMissingArg("user name/password");
+            }
+        } else {
+        	userName = null;
+            password = null;
+        }
     }
 
     public void usage() {
-        System.out.println("Usage: MondrianFoodMartLoader [-verbose] [-tables] [-data] [-indexes] <jdbcURL> <jdbcDriver>");
+        System.out.println("Usage: MondrianFoodMartLoader [-verbose] [-tables] [-data] [-indexes] <jdbcDriver> <jdbcURL> [user] [password]");
         System.out.println("");
         System.out.println("  <jdbcURL>     JDBC connect string");
+        System.out.println("  [user]     	JDBC user name");
+        System.out.println("  [password]    JDBC password for user");
         System.out.println("  <jdbcDrivers> Comma-separated list of JDBC drivers.");
         System.out.println("                They must be on the classpath.");
         System.out.println("  -verbose      Verbose mode.");
@@ -95,7 +111,12 @@ public class MondrianFoodMartLoader {
 
     private void load() throws SQLException, IOException {
         RolapConnection.loadDrivers(jdbcDrivers);
-        connection = DriverManager.getConnection(jdbcURL);
+        
+        if (userName == null) {
+        	connection = DriverManager.getConnection(jdbcURL);
+        } else {
+        	connection = DriverManager.getConnection(jdbcURL, userName, password);
+        }
         final DatabaseMetaData metaData = connection.getMetaData();
         sqlQuery = new SqlQuery(metaData);
         try {
@@ -140,7 +161,7 @@ public class MondrianFoodMartLoader {
                     new Integer(lineNumber), line);
             }
             final String tableName = matcher.group(1); // e.g. "foo"
-            final String values = matcher.group(2); // e.g. "1, 'bar'"
+            //final String values = matcher.group(2); // e.g. "1, 'bar'"  Not needed now
 
             // Generate a statement appropriate for this database. Not very
             // efficient, but good enough.
@@ -155,7 +176,12 @@ public class MondrianFoodMartLoader {
             }
 
             ++tableRowCount;
-            statement.execute(line);
+            try {
+            	statement.execute(line);
+            } catch (SQLException e) {
+            	System.out.println("Error for line: " + line);
+            	throw e;
+            }
             if (!tableName.equals(prevTable)) {
                 System.out.println("Table " + prevTable +
                     ": loaded " + tableRowCount + " rows.");
@@ -276,13 +302,71 @@ public class MondrianFoodMartLoader {
     }
 
     private void createTables() {
+    	String booleanColumnType = "BIT";
+    	if (sqlQuery.isPostgres()) {
+    		booleanColumnType = "BOOLEAN";
+    	}
+        createTable("sales_fact_1997", new Column[] {
+          new Column("product_id", "INTEGER", "NOT NULL"),
+          new Column("time_id", "INTEGER", "NOT NULL"),
+          new Column("customer_id", "INTEGER", "NOT NULL"),
+          new Column("promotion_id", "INTEGER", "NOT NULL"),
+          new Column("store_id", "INTEGER", "NOT NULL"),
+          new Column("store_sales", "DECIMAL(10,2)", "NOT NULL"),
+          new Column("store_cost", "DECIMAL(10,2)", "NOT NULL"),
+          new Column("unit_sales", "BIGINT", "NOT NULL"),
+        });
+        createTable("sales_fact_1998", new Column[] {
+          new Column("product_id", "INTEGER", "NOT NULL"),
+          new Column("time_id", "INTEGER", "NOT NULL"),
+          new Column("customer_id", "INTEGER", "NOT NULL"),
+          new Column("promotion_id", "INTEGER", "NOT NULL"),
+          new Column("store_id", "INTEGER", "NOT NULL"),
+          new Column("store_sales", "DECIMAL(10,2)", "NOT NULL"),
+          new Column("store_cost", "DECIMAL(10,2)", "NOT NULL"),
+          new Column("unit_sales", "BIGINT", "NOT NULL"),
+        });
+        createTable("sales_fact_dec_1998", new Column[] {
+          new Column("product_id", "INTEGER", "NOT NULL"),
+          new Column("time_id", "INTEGER", "NOT NULL"),
+          new Column("customer_id", "INTEGER", "NOT NULL"),
+          new Column("promotion_id", "INTEGER", "NOT NULL"),
+          new Column("store_id", "INTEGER", "NOT NULL"),
+          new Column("store_sales", "DECIMAL(10,2)", "NOT NULL"),
+          new Column("store_cost", "DECIMAL(10,2)", "NOT NULL"),
+          new Column("unit_sales", "BIGINT", "NOT NULL"),
+        });
+        createTable("inventory_fact_1997", new Column[] {
+          new Column("product_id", "INTEGER", "NOT NULL"),
+          new Column("time_id", "INTEGER", ""),
+          new Column("warehouse_id", "INTEGER", ""),
+          new Column("store_id", "INTEGER", ""),
+          new Column("units_ordered", "INTEGER", ""),
+          new Column("units_shipped", "INTEGER", ""),
+          new Column("warehouse_sales", "DECIMAL(10,2)", ""),
+          new Column("warehouse_cost", "DECIMAL(10,2)", ""),
+          new Column("supply_time", "SMALLINT", ""),
+          new Column("store_invoice", "DECIMAL(10,2)", ""),
+        });
+        createTable("inventory_fact_1998", new Column[] {
+          new Column("product_id", "INTEGER", "NOT NULL"),
+          new Column("time_id", "INTEGER", ""),
+          new Column("warehouse_id", "INTEGER", ""),
+          new Column("store_id", "INTEGER", ""),
+          new Column("units_ordered", "INTEGER", ""),
+          new Column("units_shipped", "INTEGER", ""),
+          new Column("warehouse_sales", "DECIMAL(10,2)", ""),
+          new Column("warehouse_cost", "DECIMAL(10,2)", ""),
+          new Column("supply_time", "SMALLINT", ""),
+          new Column("store_invoice", "DECIMAL(10,2)", ""),
+        });
         createTable("account", new Column[] {
           new Column("account_id", "INTEGER", "NOT NULL"),
           new Column("account_parent", "INTEGER", ""),
           new Column("account_description", "VARCHAR(30)", ""),
           new Column("account_type", "VARCHAR(30)", "NOT NULL"),
           new Column("account_rollup", "VARCHAR(30)", "NOT NULL"),
-          new Column("Custom_Members", "VARCHAR(30)", ""),
+          new Column("Custom_Members", "VARCHAR(255)", ""),
         });
         createTable("category", new Column[] {
           new Column("category_id", "VARCHAR(30)", "NOT NULL"),
@@ -368,30 +452,6 @@ public class MondrianFoodMartLoader {
           new Column("currency_id", "INTEGER", "NOT NULL"),
           new Column("amount", "DECIMAL(10,2)", "NOT NULL"),
         });
-        createTable("inventory_fact_1997", new Column[] {
-          new Column("product_id", "INTEGER", "NOT NULL"),
-          new Column("time_id", "INTEGER", ""),
-          new Column("warehouse_id", "INTEGER", ""),
-          new Column("store_id", "INTEGER", ""),
-          new Column("units_ordered", "INTEGER", ""),
-          new Column("units_shipped", "INTEGER", ""),
-          new Column("warehouse_sales", "DECIMAL(10,2)", ""),
-          new Column("warehouse_cost", "DECIMAL(10,2)", ""),
-          new Column("supply_time", "SMALLINT", ""),
-          new Column("store_invoice", "DECIMAL(10,2)", ""),
-        });
-        createTable("inventory_fact_1998", new Column[] {
-          new Column("product_id", "INTEGER", "NOT NULL"),
-          new Column("time_id", "INTEGER", ""),
-          new Column("warehouse_id", "INTEGER", ""),
-          new Column("store_id", "INTEGER", ""),
-          new Column("units_ordered", "INTEGER", ""),
-          new Column("units_shipped", "INTEGER", ""),
-          new Column("warehouse_sales", "DECIMAL(10,2)", ""),
-          new Column("warehouse_cost", "DECIMAL(10,2)", ""),
-          new Column("supply_time", "SMALLINT", ""),
-          new Column("store_invoice", "DECIMAL(10,2)", ""),
-        });
         createTable("position", new Column[] {
           new Column("position_id", "INTEGER", "NOT NULL"),
           new Column("position_title", "VARCHAR(30)", "NOT NULL"),
@@ -409,8 +469,8 @@ public class MondrianFoodMartLoader {
           new Column("SRP", "DECIMAL(10,2)", ""),
           new Column("gross_weight", "REAL", ""),
           new Column("net_weight", "REAL", ""),
-          new Column("recyclable_package", "BIT", ""),
-          new Column("low_fat", "BIT", ""),
+          new Column("recyclable_package", booleanColumnType, ""),
+          new Column("low_fat", booleanColumnType, ""),
           new Column("units_per_case", "SMALLINT", ""),
           new Column("cases_per_pallet", "SMALLINT", ""),
           new Column("shelf_width", "REAL", ""),
@@ -470,36 +530,6 @@ public class MondrianFoodMartLoader {
           new Column("vacation_accrued", "INTEGER", "NOT NULL"),
           new Column("vacation_used", "INTEGER", "NOT NULL"),
         });
-        createTable("sales_fact_1997", new Column[] {
-          new Column("product_id", "INTEGER", "NOT NULL"),
-          new Column("time_id", "INTEGER", "NOT NULL"),
-          new Column("customer_id", "INTEGER", "NOT NULL"),
-          new Column("promotion_id", "INTEGER", "NOT NULL"),
-          new Column("store_id", "INTEGER", "NOT NULL"),
-          new Column("store_sales", "DECIMAL(10,2)", "NOT NULL"),
-          new Column("store_cost", "DECIMAL(10,2)", "NOT NULL"),
-          new Column("unit_sales", "BIGINT", "NOT NULL"),
-        });
-        createTable("sales_fact_1998", new Column[] {
-          new Column("product_id", "INTEGER", "NOT NULL"),
-          new Column("time_id", "INTEGER", "NOT NULL"),
-          new Column("customer_id", "INTEGER", "NOT NULL"),
-          new Column("promotion_id", "INTEGER", "NOT NULL"),
-          new Column("store_id", "INTEGER", "NOT NULL"),
-          new Column("store_sales", "DECIMAL(10,2)", "NOT NULL"),
-          new Column("store_cost", "DECIMAL(10,2)", "NOT NULL"),
-          new Column("unit_sales", "BIGINT", "NOT NULL"),
-        });
-        createTable("sales_fact_dec_1998", new Column[] {
-          new Column("product_id", "INTEGER", "NOT NULL"),
-          new Column("time_id", "INTEGER", "NOT NULL"),
-          new Column("customer_id", "INTEGER", "NOT NULL"),
-          new Column("promotion_id", "INTEGER", "NOT NULL"),
-          new Column("store_id", "INTEGER", "NOT NULL"),
-          new Column("store_sales", "DECIMAL(10,2)", "NOT NULL"),
-          new Column("store_cost", "DECIMAL(10,2)", "NOT NULL"),
-          new Column("unit_sales", "BIGINT", "NOT NULL"),
-        });
         createTable("store", new Column[] {
           new Column("store_id", "INTEGER", "NOT NULL"),
           new Column("store_type", "VARCHAR(30)", ""),
@@ -520,12 +550,38 @@ public class MondrianFoodMartLoader {
           new Column("grocery_sqft", "BIGINT", ""),
           new Column("frozen_sqft", "BIGINT", ""),
           new Column("meat_sqft", "BIGINT", ""),
-          new Column("coffee_bar", "BIT", ""),
-          new Column("video_store", "BIT", ""),
-          new Column("salad_bar", "BIT", ""),
-          new Column("prepared_food", "BIT", ""),
-          new Column("florist", "BIT", ""),
+          new Column("coffee_bar", booleanColumnType, ""),
+          new Column("video_store", booleanColumnType, ""),
+          new Column("salad_bar", booleanColumnType, ""),
+          new Column("prepared_food", booleanColumnType, ""),
+          new Column("florist", booleanColumnType, ""),
         });
+        createTable("store_ragged", new Column[] {
+	      new Column("store_id", "INTEGER", "NOT NULL"),
+	      new Column("store_type", "VARCHAR(30)", ""),
+	      new Column("region_id", "INTEGER", ""),
+	      new Column("store_name", "VARCHAR(30)", ""),
+	      new Column("store_number", "BIGINT", ""),
+	      new Column("store_street_address", "VARCHAR(30)", ""),
+	      new Column("store_city", "VARCHAR(30)", ""),
+	      new Column("store_state", "VARCHAR(30)", ""),
+	      new Column("store_postal_code", "VARCHAR(30)", ""),
+	      new Column("store_country", "VARCHAR(30)", ""),
+	      new Column("store_manager", "VARCHAR(30)", ""),
+	      new Column("store_phone", "VARCHAR(30)", ""),
+	      new Column("store_fax", "VARCHAR(30)", ""),
+	      new Column("first_opened_date", "TIMESTAMP", ""),
+	      new Column("last_remodel_date", "TIMESTAMP", ""),
+	      new Column("store_sqft", "BIGINT", ""),
+	      new Column("grocery_sqft", "BIGINT", ""),
+	      new Column("frozen_sqft", "BIGINT", ""),
+	      new Column("meat_sqft", "BIGINT", ""),
+	      new Column("coffee_bar", booleanColumnType, ""),
+	      new Column("video_store", booleanColumnType, ""),
+	      new Column("salad_bar", booleanColumnType, ""),
+	      new Column("prepared_food", booleanColumnType, ""),
+	      new Column("florist", booleanColumnType, ""),
+	    });
         createTable("time_by_day", new Column[] {
           new Column("time_id", "INTEGER", "NOT NULL"),
           new Column("the_date", "TIMESTAMP", ""),
