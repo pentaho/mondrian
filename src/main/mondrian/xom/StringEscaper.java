@@ -29,7 +29,7 @@ public class StringEscaper implements Cloneable
 	public static StringEscaper htmlEscaper;
 	public static StringEscaper urlArgEscaper;
 	public static StringEscaper urlEscaper;
-	
+
 	/**
 	 * Identity transform
 	 */
@@ -71,15 +71,17 @@ public class StringEscaper implements Cloneable
 		for (int i = 0; i < n; i++) {
 			char c = s.charAt(i);
 			String escape;
-			if (c >= translationTable.length) {
+			// codes >= 128 (e.g. Euro sign) are always escaped
+			if (c > 127) {
+				escape = "&#" + Integer.toString(c) + ";";
+			} else if (c >= translationTable.length) {
 				escape = null;
 			} else {
 				escape = translationTable[c];
 			}
 			if (escape == null) {
-				if (sb != null) {
+				if (sb != null)
 					sb.append(c);
-				}
 			} else {
 				if (sb == null) {
 					sb = new StringBuffer(n*2);
@@ -130,7 +132,7 @@ public class StringEscaper implements Cloneable
 		}
 		return clone;
 	}
-	
+
 	/**
 	 * Create a mutable escaper from an existing escaper, which may
 	 * already be immutable.
@@ -144,8 +146,8 @@ public class StringEscaper implements Cloneable
 		}
 		return clone;
 	}
-	
-	static 
+
+	static
 	{
 		htmlEscaper = new StringEscaper();
 		htmlEscaper.defineEscape('&',"&amp;");
@@ -161,7 +163,7 @@ public class StringEscaper implements Cloneable
 		xmlNumericEscaper.defineEscape('\'',"&#39;");
 		xmlNumericEscaper.defineEscape('<',"&#60;");
 		xmlNumericEscaper.defineEscape('>',"&#62;");
-		
+
 		urlArgEscaper = new StringEscaper();
 		urlArgEscaper.defineEscape('?',"%3f");
 		urlArgEscaper.defineEscape('&',"%26");
@@ -179,7 +181,7 @@ public class StringEscaper implements Cloneable
 		urlArgEscaper.makeImmutable();
 		urlEscaper.makeImmutable();
 	}
-	
+
 }
 
 // End StringEscaper.java
