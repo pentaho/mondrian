@@ -62,6 +62,7 @@ public abstract class ElementDef implements NodeDef, Serializable, Cloneable
 		// of the enclosure class.  Note that the lookup is case-sensitive
 		// even though XML tags are not.
 		String className = tag.substring(prefix.length(), tag.length());
+		className = XOMUtil.capitalize(className);
 		Class elemClass = null;
 		try {
 			elemClass = Class.forName(enclosure.getName() + "$"

@@ -32,7 +32,7 @@ public class MetaGenerator {
 	 * model.prefix is null, rather than null.
 	 */
 	private String prefix;
-	
+
 	private Hashtable keywordMap;
 	private Hashtable typeMap;
 	private Hashtable infoMap;
@@ -92,7 +92,7 @@ public class MetaGenerator {
 
 		// Class to use when importing elements.
 		public Class impClass;
-		public String impName;
+		public String impName; // e.g. "foo.MetaDef.Tag"
 
 		public String contentModel;
 
@@ -155,7 +155,7 @@ public class MetaGenerator {
 				code = null;
 				impClass = null;
 				impName = null;
-			} 
+			}
 			else if (elt instanceof MetaDef.Import) {
 				MetaDef.Import imp = (MetaDef.Import)elt;
 				name = imp.type;
@@ -178,12 +178,12 @@ public class MetaGenerator {
 //  						"Import " + name + " references Java Class "
 //  						+ imp.defPackage + "." + imp.defClass
 //  						+ "." + name + " that does not exist.");
-				}				
-			}
-			else
+				}
+			} else {
 				throw new XOMException("Illegal element type "
-										  + elt.getClass().getName());
-			className = name;
+									   + elt.getClass().getName());
+			}
+			className = XOMUtil.capitalize(name);
 
 			// Get the TypeInfo record for the superclass.  If we don't find
 			// it, we'll have to create it by looking up its definition.
@@ -211,7 +211,7 @@ public class MetaGenerator {
 				else if(content[0] instanceof MetaDef.Any)
 					newAny = true;
 			}
-			
+
 			// Make sure that <Any> or <CData> occurs only by itself.
 			if(!newAny && !newCData) {
 				for(int i=0; i<content.length; i++) {
@@ -222,24 +222,24 @@ public class MetaGenerator {
 							+ "content as well as other content.");
 				}
 			}
-			
+
 			// Do we have a superclass/supertype?
 			if(superInfo == null) {
 				// No supertype, so consider this type by itself.
 				allAttributes = attributes;
 				ovrAttributes = new MetaDef.Attribute[0];
 				newAttributes = allAttributes;
-				
+
 				if(newAny || newCData) {
 					isAny = newAny;
 					isCData = newCData;
 					allContent = new MetaDef.Content[0];
-				} 
+				}
 				else {
 					isAny = isCData = false;
 					allContent = content;
 				}
-				newContent = allContent;				
+				newContent = allContent;
 			}
 			else {
 				// Reconcile attributes.
@@ -248,11 +248,11 @@ public class MetaGenerator {
 				Vector allAttrs = new Vector();
 				Vector ovrAttrs = new Vector();
 				Vector newAttrs = new Vector();
-				
+
 				for(int i=0; i<superInfo.allAttributes.length; i++) {
 					attrHash.put(superInfo.allAttributes[i].name,
 								 superInfo.allAttributes[i]);
-				}				
+				}
 				for(int i=0; i<attributes.length; i++) {
 					// Does the attribute already exist?
 					MetaDef.Attribute inhAttr =
@@ -261,7 +261,7 @@ public class MetaGenerator {
 						// attribute doesn't exist, so add to all and new.
 						allAttrs.addElement(attributes[i]);
 						newAttrs.addElement(attributes[i]);
-					} 
+					}
 					else {
 						// attribute does exist.  Type must match exactly.
 						if(!(attributes[i].type.equals(inhAttr.type)))
@@ -270,20 +270,20 @@ public class MetaGenerator {
 								+ inhAttr.name + " of type " + inhAttr.type
 								+ " but redefines it to be of type "
 								+ attributes[i].type);
-						
+
 						// Add to overridden vector and overridden hashtable
 						ovrAttrs.addElement(attributes[i]);
 						ovrHash.put(attributes[i].name,
 									attributes[i]);
 					}
-				}						
+				}
 
 				// Add all non-overridden attributes to the allAttributes vector
 				for(int i=0; i<superInfo.allAttributes.length; i++) {
 					if(ovrHash.get(superInfo.allAttributes[i].name) == null)
 						allAttrs.addElement(superInfo.allAttributes[i]);
 				}
-				
+
 				// Add all overridden attributes to the allAttributes vector
 				for(int i=0; i<ovrAttrs.size(); i++)
 					allAttrs.addElement(ovrAttrs.elementAt(i));
@@ -315,7 +315,7 @@ public class MetaGenerator {
 					isCData = newCData;
 					allContent = new MetaDef.Content[0];
 					newContent = new MetaDef.Content[0];
-				} 
+				}
 				else if (superInfo.isAny || superInfo.isCData) {
 					if(content.length > 0)
 						throw new XOMException(
@@ -328,7 +328,7 @@ public class MetaGenerator {
 				}
 				else {
 					isAny = isCData = false;
-					
+
 					// Overriding of content is forbidden.
 					Hashtable contentHash = new Hashtable();
 					Vector allContentVec = new Vector();
@@ -353,15 +353,15 @@ public class MetaGenerator {
 						allContent[i] =
 							(MetaDef.Content)(allContentVec.elementAt(i));
 					newContent = content;
-				}				
+				}
 			}
 
 			// Add ourself to the hashtable if we're not already there
 			if(infoMap.get(name) == null)
-				infoMap.put(name, this);			
+				infoMap.put(name, this);
 		}
-		
-		public void writeJavaClass(PrintWriter out) 
+
+		public void writeJavaClass(PrintWriter out)
 			throws XOMException
 		{
 			// Documentation first
@@ -386,7 +386,7 @@ public class MetaGenerator {
 			out.println("\t\t{");
 			out.println("\t\t}");
 			out.println();
-			
+
 			// mondrian.xom.DOMWrapper Constructor
 			out.println("\t\tpublic " + className
 						+ "(mondrian.xom.DOMWrapper _def)");
@@ -441,19 +441,19 @@ public class MetaGenerator {
 				}
 
 				// This line is emitted to avoid unused warnings.
-				out.println("\t\t\t\t_parser = _parser;");			
+				out.println("\t\t\t\t_parser = _parser;");
 
 				// Define a temp array if any Array elements are used
 				if(hasContentType(allContent, MetaDef.Array.class)) {
 					out.println("\t\t\t\tmondrian.xom.NodeDef[] "
 								+ "_tempArray = null;");
 					out.println("\t\t\t\t_tempArray = _tempArray;");
-				}				
+				}
 
 				// Generate statements to read in all attributes.
 				for(int i=0; i<allAttributes.length; i++)
 					writeJavaGetAttribute(out, allAttributes[i]);
-				
+
 				// Generate statements to read in all content.
 				if(def instanceof MetaDef.Plugin)
 					writeJavaGetPluginContent(out, mixed);
@@ -461,7 +461,7 @@ public class MetaGenerator {
 					writeJavaGetAnyContent(out, mixed);
 				else if(isCData)
 					writeJavaGetCDataContent(out);
-				else					
+				else
 					for(int i=0; i<allContent.length; i++)
 						writeJavaGetContent(out, allContent[i]);
 
@@ -474,7 +474,7 @@ public class MetaGenerator {
 			// Finish the constructor
 			out.println("\t\t}");
 			out.println();
-			
+
 			// Declare all new attributes
 			for(int i=0; i<newAttributes.length; i++)
 				writeJavaDeclareAttribute(out, newAttributes[i]);
@@ -485,7 +485,7 @@ public class MetaGenerator {
 				out.println("\t\tpublic mondrian.xom.DOMWrapper _def;");
 			}
 			out.println();
-			
+
 			// Declare all new content
 			if(def instanceof MetaDef.Plugin)
 				writeJavaDeclarePluginContent(out, mixed);
@@ -503,7 +503,7 @@ public class MetaGenerator {
 			out.println("\t\t{");
 			out.println("\t\t\treturn \"" + className + "\";");
 			out.println("\t\t}");
-			out.println();			
+			out.println();
 
 			// Create the display() function
 			out.println("\t\tpublic void display(java.io.PrintWriter _out, "
@@ -535,7 +535,7 @@ public class MetaGenerator {
 						+ "mondrian.xom.XMLOutput _out, "
 				        + "int _indent)");
 			out.println("\t\t{");
-			out.println("\t\t\t_out.beginTag(\"" 
+			out.println("\t\t\t_out.beginTag(\""
 						+ tagName + "\", "
 						+ "new mondrian.xom.XMLAttrVector()");
 			for(int i=0; i<allAttributes.length; i++)
@@ -553,7 +553,7 @@ public class MetaGenerator {
 			else
 				for(int i=0; i<allContent.length; i++)
 					writeJavaDisplayXMLContent(out, allContent[i]);
-			
+
 			out.println("\t\t\t_out.endTag(\"" + tagName + "\");");
 			out.println("\t\t}");
 
@@ -565,15 +565,15 @@ public class MetaGenerator {
 			out.println("\t\t{");
 			out.println("\t\t\tboolean _diff = true;");
 			if(allAttributes.length > 0 ||
-			   allContent.length > 0 || isAny || isCData || 
+			   allContent.length > 0 || isAny || isCData ||
 			   def instanceof MetaDef.Plugin)
-				out.println("\t\t\t" + name + " _cother = ("
-							+ name + ")_other;");
+				out.println("\t\t\t" + className + " _cother = ("
+							+ className + ")_other;");
 			for(int i=0; i<newAttributes.length; i++)
 				writeJavaDisplayDiffAttribute(out, allAttributes[i]);
 			if(def instanceof MetaDef.Plugin)
 				writeJavaDisplayDiffPluginAttributes(out);
-			
+
 			if(def instanceof MetaDef.Plugin)
 				writeJavaDisplayDiffPluginContent(out);
 			else if(isAny)
@@ -584,7 +584,7 @@ public class MetaGenerator {
 				for(int i=0; i<allContent.length; i++)
 					writeJavaDisplayDiffContent(out, allContent[i]);
 			out.println("\t\t\treturn _diff;");
-			out.println("\t\t}");			
+			out.println("\t\t}");
 
 			// Add the code section, if defined
 			if(code != null)
@@ -593,9 +593,9 @@ public class MetaGenerator {
 			// Complete the class definition and finish with a blank.
 			out.println("\t}");
 			out.println();
-		}		
+		}
 	}
-	
+
 	/**
 	 * Get the name of any piece of content of any type.
 	 * @return the name of the piece of content.
@@ -606,30 +606,34 @@ public class MetaGenerator {
 	{
 		if(content instanceof MetaDef.Object) {
 			return ((MetaDef.Object)content).name;
-		} 
+		}
 		else if (content instanceof MetaDef.Array) {
 			return ((MetaDef.Array)content).name;
-		} 
+		}
 		else {
 			throw new XOMException(
 				"Content of type " + content.getClass().getName()
 				+ " does not have a name.");
-		}			
+		}
 	}
 
 	/**
 	 * Return the TypeInfo class associated with the given name.
+	 *
+	 * @post fail == false || return != null
+	 * @exception XOMException if the type has not been defined
 	 */
-	public TypeInfo getTypeInfo(String name)
+	public TypeInfo getTypeInfo(String name, boolean fail)
 		throws XOMException
 	{
-		TypeInfo info = (TypeInfo)(infoMap.get(name));
-		if(info == null)
+		TypeInfo info = (TypeInfo) infoMap.get(name);
+		if (info == null && fail == true) {
 			throw new XOMException(
 				"Type " + name + " does not exist.");
+		}
 		return info;
 	}
-	
+
 	/**
 	 * Construct a MetaGenerator from an XML file.  The XML should meet the
 	 * specifications of the Mining Meta Model.
@@ -684,7 +688,7 @@ public class MetaGenerator {
 		initTypeMap();
 		initSubclassMap();
 	}
-	
+
 	/**
 	 * Initialize the keyword map.  This class maps all Java keywords to safe
 	 * versions (prepended with an underscore) which may be used for generated
@@ -777,7 +781,7 @@ public class MetaGenerator {
 										  + elt.getClass().getName());
 			typeMap.put(name, elt);
 			allTypes.addElement(name);
-		}		
+		}
 
 		infoMap = new Hashtable();
 		for(int i=0; i<model.elements.length; i++) {
@@ -787,9 +791,9 @@ public class MetaGenerator {
 			// Construct the new TypeInfo object and add to the hashtable
 			TypeInfo info = new TypeInfo(elt);
 			infoMap.put(info.name, info);
-		}		
-	}	
-	
+		}
+	}
+
 	/**
 	 * In a few cases, a complete list of all subclasses of a class
 	 * object is required.  The subclass map maps each class object
@@ -800,7 +804,7 @@ public class MetaGenerator {
 		throws XOMException
 	{
 		subclassMap = new Hashtable();
-		
+
 		// First, iterate through all Class elements in the model,
 		// initializing a location in the hashtable for each.
 		for(int i=0; i<model.elements.length; i++) {
@@ -809,7 +813,7 @@ public class MetaGenerator {
 				MetaDef.Class _class = (MetaDef.Class)elt;
 				subclassMap.put(_class._class, new Vector());
 			}
-		}		
+		}
 
 		// Now, iterate through all Element elements in the model.
 		// For each one, go through all of its superclasses and add itself to
@@ -819,7 +823,7 @@ public class MetaGenerator {
 			MetaDef.Definition elt = model.elements[i];
 			if(elt instanceof MetaDef.Element) {
 				MetaDef.Element elem = (MetaDef.Element)elt;
-				TypeInfo info = getTypeInfo(elem.type);				
+				TypeInfo info = getTypeInfo(elem.type, true);
 				addToSubclassMap(elem, info);
 			}
 		}
@@ -843,7 +847,7 @@ public class MetaGenerator {
 
 			// Add to all superclasses as well
 			info = info.superInfo;
-		}				
+		}
 	}
 
 	/**
@@ -900,7 +904,7 @@ public class MetaGenerator {
 		writeDtd(dtdOut);
 		dtdOut.flush();
 		dtdWriter.close();
-		
+
 		if(!testMode)
 			System.out.println("Writing " + javaFile);
 		writeJava(javaOut);
@@ -910,13 +914,13 @@ public class MetaGenerator {
 		if(!testMode)
 			System.out.println("Done");
 	}
-	
+
 	public void writeDtd(PrintWriter out)
 		throws XOMException
 	{
 		// Write header information for the dtd
 		out.println("<!--");
-		out.println("     This dtd file was automatically generated from "		
+		out.println("     This dtd file was automatically generated from "
 			      + "mining model " + model.name + ".");
 		out.println("     Do not edit this file by hand.");
 		out.println("  -->");
@@ -924,7 +928,7 @@ public class MetaGenerator {
 
 		// Write toplevel documentation here
 		writeDtdDoc(out, model.doc);
-		
+
 		// For each CLASS definition, write an entity definition.  These must
 		// be done before regular elements because entities must be defined
 		// before use.
@@ -932,13 +936,13 @@ public class MetaGenerator {
 			if(model.elements[i] instanceof MetaDef.Class) {
 				writeDtdEntity(out, (MetaDef.Class)(model.elements[i]));
 			}
-		}		
-		
+		}
+
 		// Write each element in turn
 		for(int i=0; i<model.elements.length; i++)
 			writeDtdElement(out, model.elements[i]);
 	}
-	
+
 	public void writeJava(PrintWriter out)
 		throws XOMException
 	{
@@ -966,7 +970,7 @@ public class MetaGenerator {
 			extraDoc = "";
 
 		writeJavaDoc(out, 0, model.doc + extraDoc);
-		
+
 		// Begin the class.  Include a getXMLDefClass() function which
 		// simply returns this class.
 		out.println("public class " + model.className + " {");
@@ -981,7 +985,8 @@ public class MetaGenerator {
 		// used within this class.
 		out.println("\tpublic static String[] _elements = {");
 		for(int i=0; i<allTypes.size(); i++) {
-			out.print("\t\t\"" + allTypes.elementAt(i).toString() + "\"");
+			String type = (String) allTypes.elementAt(i);
+			out.print("\t\t\"" + type + "\"");
 			if(i<allTypes.size()-1)
 				out.println(",");
 			else
@@ -989,16 +994,16 @@ public class MetaGenerator {
 		}
 		out.println("\t};");
 		out.println();
-		
+
 		// Create an inner class for each Class/Object definition.
 		for(int i=0; i<model.elements.length; i++)
-			writeJavaElement(out, model.elements[i]);		
+			writeJavaElement(out, model.elements[i]);
 
 		// End the class
 		out.println();
 		out.println("}");
 	}
-	
+
 	/**
 	 * Writes an entity definition based on a defined Class.  Because entity
 	 * definitions must appear before use in a DTD, this function must be
@@ -1021,7 +1026,7 @@ public class MetaGenerator {
 			throw new AssertFailure(
 				"Missing subclass vector for class " + _class._class);
 		for(int i=0; i<subclassVec.size(); i++) {
-			MetaDef.Element elem = 
+			MetaDef.Element elem =
 				(MetaDef.Element)(subclassVec.elementAt(i));
 
 			// Print the dtd version of the element name
@@ -1036,7 +1041,7 @@ public class MetaGenerator {
 		out.println("\">");
 		out.println();
 	}
-	
+
 	private void writeDtdElement(PrintWriter out, MetaDef.Definition elt)
 		throws XOMException
 	{
@@ -1044,7 +1049,7 @@ public class MetaGenerator {
 		if(elt instanceof MetaDef.Element) {
 			// Get the info class for this element.
 			MetaDef.Element element = (MetaDef.Element)elt;
-			TypeInfo info = (TypeInfo)(infoMap.get(element.type));
+			TypeInfo info = getTypeInfo(element.type, false);
 			if(info == null)
 				throw new AssertFailure("Element type " + element.type + " is missing from the "
 								 + "type map.");
@@ -1071,7 +1076,7 @@ public class MetaGenerator {
 					}
 					out.print(")");
 				}
-			}			
+			}
 			out.println(">");
 
 			// Finally, attribute list
@@ -1081,7 +1086,7 @@ public class MetaGenerator {
 					writeDtdAttribute(out, info.allAttributes[i]);
 				out.println(">");
 			}
-			
+
 			// Finish with a blank
 			out.println();
 		}
@@ -1093,7 +1098,7 @@ public class MetaGenerator {
 			MetaDef.StringElement element = (MetaDef.StringElement)elt;
 			TypeInfo info = (TypeInfo)(infoMap.get(element.type));
 			if(info == null)
-				throw new AssertFailure("StringElement type " + element.type + 
+				throw new AssertFailure("StringElement type " + element.type +
 								 " is missing from the "
 								 + "type map.");
 
@@ -1110,7 +1115,7 @@ public class MetaGenerator {
 			MetaDef.Plugin plugin = (MetaDef.Plugin)elt;
 			TypeInfo info = (TypeInfo)(infoMap.get(plugin.type));
 			if(info == null)
-				throw new AssertFailure("Plugin element " + plugin.type + 
+				throw new AssertFailure("Plugin element " + plugin.type +
 								 " is missing from the "
 								 + "type map.");
 
@@ -1124,7 +1129,7 @@ public class MetaGenerator {
 			// Finally, attribute list.  Don't allow use of plugin reserved
 			// attributes defPackage and defClass.
 			out.println("<!ATTLIST " + info.tagName);
-			for(int i=0; i<info.allAttributes.length; i++) {				
+			for(int i=0; i<info.allAttributes.length; i++) {
 				if(info.allAttributes[i].name.equals("defPackage") ||
 				   info.allAttributes[i].name.equals("defClass"))
 					throw new XOMException(
@@ -1141,11 +1146,11 @@ public class MetaGenerator {
 			// Complete the attribute list
 			out.println(">");
 			out.println();
-		} 
+		}
 		else if (elt instanceof MetaDef.Import) {
 			// Get the info class for this element.
 			MetaDef.Import imp = (MetaDef.Import)elt;
-			TypeInfo info = getTypeInfo(imp.type);
+			TypeInfo info = getTypeInfo(imp.type, true);
 
 			// Imports can't really be handled, so just generate a placeholder
 			// ANY element for show.
@@ -1178,7 +1183,7 @@ public class MetaGenerator {
 		catch(IOException ex) {
 			throw new AssertFailure(ex);
 		}
-		
+
 		out.println("  -->");
 	}
 
@@ -1206,7 +1211,7 @@ public class MetaGenerator {
 		catch(IOException ex) {
 			throw new AssertFailure(ex);
 		}
-		
+
 		for(int i=0; i<indent; i++)
 			out.print("\t");
 		out.println(" *" + "/");
@@ -1233,7 +1238,7 @@ public class MetaGenerator {
 		for(int i=0; i<indent; i++)
 			out.print("\t");
 		out.println("/" + "/ END pass-through code block ---");
-	}	
+	}
 
 	private MetaDef.Definition getType(String name)
 		throws XOMException
@@ -1241,12 +1246,12 @@ public class MetaGenerator {
 		// The type mapping hash table maps element type names to their
 		// MetaDef.Definition objects.  First, look up the element type associated
 		// with the name.
-		MetaDef.Definition type = (MetaDef.Definition)(typeMap.get(name));
+		MetaDef.Definition type = (MetaDef.Definition) typeMap.get(name);
 		if(type == null)
 			throw new XOMException("Element type name " + name + " was never "
 									  + "defined.");
 		return type;
-	}	
+	}
 
 	/**
 	 * Deterimines if a name conflicts with a Java keyword.  If so, it returns
@@ -1264,7 +1269,7 @@ public class MetaGenerator {
 			return name;
 		else
 			return mappedName;
-	}	
+	}
 
 	private void writeDtdContent(PrintWriter out, MetaDef.Content content)
 		throws XOMException
@@ -1279,7 +1284,7 @@ public class MetaGenerator {
 			out.print(info.tagName);
 			if(!obj.required.booleanValue())
 				out.print("?");
-		} 
+		}
 		else if (content instanceof MetaDef.Array) {
 			MetaDef.Array array = (MetaDef.Array)content;
 			TypeInfo info = (TypeInfo)(infoMap.get(array.type));
@@ -1292,11 +1297,11 @@ public class MetaGenerator {
 				out.print("+");
 			else
 				out.print("*");
-		} 
+		}
 		else {
 			throw new XOMException("Unrecognized content type definition: "
 									  + content.getClass().getName());
-		}		
+		}
 	}
 
 	private void writeDtdAttribute(PrintWriter out, MetaDef.Attribute attr)
@@ -1318,8 +1323,8 @@ public class MetaGenerator {
 				out.print(attr.values[i]);
 				if(i < attr.values.length-1)
 					out.print("|");
-			}			
-			out.print(") ");				
+			}
+			out.print(") ");
 		}
 
 		// Default value
@@ -1328,7 +1333,7 @@ public class MetaGenerator {
 				out.println("#REQUIRED");
 			else
 				out.println("#IMPLIED");
-		} 
+		}
 		else {
 			out.print("\"" + attr._default + "\"");
 			out.println();
@@ -1365,7 +1370,7 @@ public class MetaGenerator {
 				throw new XOMException(
 					"Element type " + element.type + " was never defined.");
 			info.writeJavaClass(out);
-		} 
+		}
 		else if (elt instanceof MetaDef.Plugin) {
 			MetaDef.Plugin plugin = (MetaDef.Plugin)elt;
 			TypeInfo info = (TypeInfo)(infoMap.get(plugin.type));
@@ -1393,10 +1398,10 @@ public class MetaGenerator {
 						+ element.type + " = \""
 						+ element.type + "\";");
 			out.println();
-		} 
+		}
 		else if (elt instanceof MetaDef.Import) {
 			// Do nothing--imports are handled inline
-		}		
+		}
 		else {
 			throw new XOMException("Unrecognized element type definition: "
 									  + elt.getClass().getName());
@@ -1417,14 +1422,14 @@ public class MetaGenerator {
 					out.print(", ");
 			}
 			out.println("};");
-		}		
+		}
 
 		out.print("\t\t\t\t" + getDeclaredName(attr.name) + " = ");
 		out.print("(" + attr.type + ")_parser.getAttribute(");
 		out.print("\"" + attr.name + "\", \"" + attr.type + "\", ");
 		if(attr._default == null) {
-			if (attr.values.length == 0 && attr.type.equals("String") && 
-				attr.required.booleanValue() == true) 
+			if (attr.values.length == 0 && attr.type.equals("String") &&
+				attr.required.booleanValue() == true)
 				out.print("\"\", ");
 			else
 				out.print("null, ");
@@ -1441,14 +1446,14 @@ public class MetaGenerator {
 		else
 			out.print("false");
 		out.println(");");
-	}	
+	}
 
-	public void writeJavaDeclareAttribute(PrintWriter out, 
+	public void writeJavaDeclareAttribute(PrintWriter out,
 										  MetaDef.Attribute attr)
 		throws XOMException
 	{
 		// Generate the declaration, including a quick comment
-		out.print("\t\tpublic " + attr.type + " " 
+		out.print("\t\tpublic " + attr.type + " "
 				  + getDeclaredName(attr.name) + ";  /" + "/ ");
 		if(attr._default != null)
 			out.print("attribute default: " + attr._default);
@@ -1457,7 +1462,7 @@ public class MetaGenerator {
 		else
 			out.print("optional attribute");
 		out.println();
-	}	
+	}
 
 	public void writeJavaDisplayAttribute(PrintWriter out,
 										  MetaDef.Attribute attr)
@@ -1466,7 +1471,7 @@ public class MetaGenerator {
 		// Generate the display line
 		out.println("\t\t\tdisplayAttribute(_out, \"" + attr.name + "\", "
 					+ getDeclaredName(attr.name) + ", _indent+1);");
-	}	
+	}
 
 	public void writeJavaDisplayXMLAttribute(PrintWriter out,
 											 MetaDef.Attribute attr)
@@ -1475,7 +1480,7 @@ public class MetaGenerator {
 		out.println("\t\t\t\t.add(\"" + attr.name
 					+ "\", " + getDeclaredName(attr.name) + ")");
 	}
-	
+
 	public void writeJavaDisplayDiffAttribute(PrintWriter out,
 											  MetaDef.Attribute attr)
 		throws XOMException
@@ -1484,7 +1489,7 @@ public class MetaGenerator {
 					+ "\", " + getDeclaredName(attr.name)
 					+ ", _cother." + getDeclaredName(attr.name)
 					+ ", _out, _indent+1);");
-	}	
+	}
 
 	public void writeJavaGetContent(PrintWriter out,
 									MetaDef.Content content)
@@ -1493,31 +1498,29 @@ public class MetaGenerator {
 		if(content instanceof MetaDef.Object) {
 			// Get the object and its type
 			MetaDef.Object obj = (MetaDef.Object)content;
-			MetaDef.Definition type = null;
-			type = getType(obj.type);
-			String typeName = obj.type;
-			
-			out.print("\t\t\t\t" 
+			MetaDef.Definition type = getType(obj.type);
+			TypeInfo info = getTypeInfo(obj.type, true);
+
+			out.print("\t\t\t\t"
 					  + getDeclaredName(obj.name) + " = ");
 
 			// Behavior depends on the type
 			if (type != null && type instanceof MetaDef.Import) {
 				// Get the info object for the import
-				TypeInfo info = getTypeInfo(((MetaDef.Import)type).type);
-				typeName = info.impName;
-				
+				info = getTypeInfo(((MetaDef.Import)type).type, true);
+
 				// Call the class constructor directly.
-				out.print("(" + typeName + ")_parser.getElement(");
-				out.print(typeName + ".class, ");
+				out.print("(" + info.impName + ")_parser.getElement(");
+				out.print(info.impName + ".class, ");
 			}
 			else if (type != null && type instanceof MetaDef.StringElement) {
-				out.print("_parser.getString(" + typeName + ", ");
-			} 
-			else {
-				out.print("(" + typeName + ")_parser.getElement(");
-				out.print(typeName + ".class, ");
+				out.print("_parser.getString(" + info.className + ", ");
 			}
-			
+			else {
+				out.print("(" + info.className + ")_parser.getElement(");
+				out.print(info.className + ".class, ");
+			}
+
 			if(obj.required.booleanValue())
 				out.print("true");
 			else
@@ -1527,34 +1530,32 @@ public class MetaGenerator {
 		else if (content instanceof MetaDef.Array) {
 			// Get the object and its type
 			MetaDef.Array array = (MetaDef.Array)content;
-			MetaDef.Definition type = null;
-			type = getType(array.type);
-			String typeName = array.type;
+			MetaDef.Definition type = getType(array.type);
+			String typeName = getTypeInfo(array.type, true).className;
 
 			if (type instanceof MetaDef.Import) {
 				// Get the info object for the import
-				TypeInfo info = getTypeInfo(((MetaDef.Import)type).type);
-				typeName = info.impName;
-				
+				TypeInfo info = getTypeInfo(((MetaDef.Import)type).type, true);
+
 				// Construct the array
 				out.print("\t\t\t\t_tempArray = _parser.getArray(");
-				out.print(typeName + ".class, ");
+				out.print(info.impName + ".class, ");
 				out.println(array.min + ", " + array.max + ");");
 				out.println("\t\t\t\t"
 							+ getDeclaredName(array.name)
-							+ " = new " + typeName + "[_tempArray.length];");
-				out.println("\t\t\t\tfor(int _i=0; _i<" 
+							+ " = new " + info.impName + "[_tempArray.length];");
+				out.println("\t\t\t\tfor(int _i=0; _i<"
 							+ getDeclaredName(array.name)
 							+ ".length; _i++)");
 				out.println("\t\t\t\t\t" + getDeclaredName(array.name) + "[_i] = "
 							+ "(" + typeName + ")_tempArray[_i];");
 			}
 			else if (type instanceof MetaDef.StringElement) {
-				out.print("\t\t\t\t" + getDeclaredName(array.name) 
+				out.print("\t\t\t\t" + getDeclaredName(array.name)
 						  + " = _parser.getStringArray(");
 				out.println("\"" + typeName + "\", " + array.min
-							+ ", " + array.max + ");");				
-			} 
+							+ ", " + array.max + ");");
+			}
 			else {
 				out.print("\t\t\t\t_tempArray = _parser.getArray(");
 				out.print(typeName + ".class, ");
@@ -1562,18 +1563,18 @@ public class MetaGenerator {
 				out.println("\t\t\t\t"
 							+ getDeclaredName(array.name)
 							+ " = new " + typeName + "[_tempArray.length];");
-				out.println("\t\t\t\tfor(int _i=0; _i<" 
+				out.println("\t\t\t\tfor(int _i=0; _i<"
 							+ getDeclaredName(array.name)
 							+ ".length; _i++)");
 				out.println("\t\t\t\t\t" + getDeclaredName(array.name) + "[_i] = "
 							+ "(" + typeName + ")_tempArray[_i];");
-			}				
-		} 
+			}
+		}
 		else {
 			throw new XOMException("Unrecognized content type definition: "
 									  + content.getClass().getName());
 		}
-	}	
+	}
 
 	public void writeJavaGetAnyContent(PrintWriter out, boolean mixed)
 	{
@@ -1599,28 +1600,27 @@ public class MetaGenerator {
 										MetaDef.Content content)
 		throws XOMException
 	{
-		if(content instanceof MetaDef.Object) {			
+		if(content instanceof MetaDef.Object) {
 			// Write documentation (if any)
 			MetaDef.Object obj = (MetaDef.Object)content;
 			if(obj.doc != null)
 				writeJavaDoc(out, 2, obj.doc);
 
 			// Handle includes
-			MetaDef.Definition type = null;
-			type = getType(obj.type);
-			String typeName = obj.type;
+			MetaDef.Definition type = getType(obj.type);
+			String typeName = getTypeInfo(obj.type, true).className;
 
 			// Write content declaration.
 			if(type instanceof MetaDef.Import) {
 				// Get the info object for the import
-				TypeInfo info = getTypeInfo(((MetaDef.Import)type).type);
+				TypeInfo info = getTypeInfo(((MetaDef.Import)type).type, true);
 				typeName = info.impName;
 				out.print("\t\tpublic " + typeName + " "
 						  + getDeclaredName(obj.name) + ";  /" + "/");
-			}			
+			}
 			else if(type instanceof MetaDef.StringElement)
-				out.print("\t\tpublic String " 
-						  + getDeclaredName(obj.name) + ";  /" + "/");				
+				out.print("\t\tpublic String "
+						  + getDeclaredName(obj.name) + ";  /" + "/");
 			else
 				out.print("\t\tpublic " + typeName + " "
 						  + getDeclaredName(obj.name) + ";  /" + "/");
@@ -1637,23 +1637,23 @@ public class MetaGenerator {
 			if(array.doc != null)
 				writeJavaDoc(out, 2, array.doc);
 			MetaDef.Definition type = getType(array.type);
-			String typeName = array.type;
+			String typeName = getTypeInfo(array.type, true).className;
 
 			// Write content declaration.
 			if(type instanceof MetaDef.Import) {
 				// Get the info object for the import
-				TypeInfo info = getTypeInfo(((MetaDef.Import)type).type);
+				TypeInfo info = getTypeInfo(((MetaDef.Import)type).type, true);
 				typeName = info.impName;
 				out.print("\t\tpublic " + typeName + "[] "
 						  + getDeclaredName(array.name) + ";  /" + "/");
 			}
 			else if(type instanceof MetaDef.StringElement)
-				out.print("\t\tpublic String[] " 
+				out.print("\t\tpublic String[] "
 						  + getDeclaredName(array.name) + ";  /" + "/");
 			else
 				out.print("\t\tpublic " + typeName + "[] "
 						  + getDeclaredName(array.name) + ";  /" + "/");
-			
+
 			// Write a brief comment.
 			if(array.min.intValue() <= 0 &&
 			   array.max.intValue() <= 0)
@@ -1665,7 +1665,7 @@ public class MetaGenerator {
 					out.print("max " + array.max);
 				out.println();
 			}
-		} 
+		}
 		else {
 			throw new XOMException("Unrecognized content type definition: "
 									  + content.getClass().getName());
@@ -1689,19 +1689,19 @@ public class MetaGenerator {
 					(mixed ? "" : "(mondrian.xom.ElementDef[]) ") +
 					"children;");
 		out.println("\t\t}");
-	} 		
+	}
 
 	public void writeJavaDeclareCDataContent(PrintWriter out)
 	{
 		out.print("\t\tpublic String cdata;  /"
-				  + "/ All text goes here");		
+				  + "/ All text goes here");
 	}
-	
+
 	public void writeJavaDisplayContent(PrintWriter out,
 										MetaDef.Content content)
 		throws XOMException
 	{
-		if(content instanceof MetaDef.Object) {			
+		if(content instanceof MetaDef.Object) {
 			MetaDef.Object obj = (MetaDef.Object)content;
 			MetaDef.Definition type = getType(obj.type);
 
@@ -1738,26 +1738,26 @@ public class MetaGenerator {
 		// Display the fixed children array
 		out.println("\t\t\tdisplayElementArray(_out, \"children\""
 					+ ", children, _indent+1);");
-	} 		
+	}
 
 	public void writeJavaDisplayCDataContent(PrintWriter out)
 	{
 		// Display the text as "cdata"
 		out.println("\t\t\tdisplayString(_out, \"cdata\", "
 					+ "cdata, _indent+1);");
-	}			
+	}
 
 	public void writeJavaDisplayXMLContent(PrintWriter out,
 										   MetaDef.Content content)
 		throws XOMException
 	{
-		if(content instanceof MetaDef.Object) {			
+		if(content instanceof MetaDef.Object) {
 			MetaDef.Object obj = (MetaDef.Object)content;
 			MetaDef.Definition type = getType(obj.type);
 
 			if(type instanceof MetaDef.StringElement)
 				out.println("\t\t\tdisplayXMLString(_out, \""
-							+ getTypeInfo(obj.type).tagName + "\", "
+							+ getTypeInfo(obj.type, true).tagName + "\", "
 							+ getDeclaredName(obj.name) + ");");
 			else
 				out.println("\t\t\tdisplayXMLElement(_out, "
@@ -1769,8 +1769,8 @@ public class MetaGenerator {
 
 			if(type instanceof MetaDef.StringElement)
 				out.println("\t\t\tdisplayXMLStringArray(_out, \""
-							+ getTypeInfo(array.type).tagName + "\", "
-							+ getDeclaredName(array.name) + ");");				
+							+ getTypeInfo(array.type, true).tagName + "\", "
+							+ getDeclaredName(array.name) + ");");
 			else
 				out.println("\t\t\tdisplayXMLElementArray(_out, "
 							+ getDeclaredName(array.name) + ");");
@@ -1778,11 +1778,11 @@ public class MetaGenerator {
 		else if (content instanceof MetaDef.Any) {
 			// Display the fixed children array
 			out.println("\t\t\tdisplayXMLElementArray(_out, children);");
-		} 
+		}
 		else if (content instanceof MetaDef.CData) {
 			// Display the CDATA section
 			out.println("\t\t\t_out.cdata(cdata);");
-		}		
+		}
 		else {
 			throw new XOMException("Unrecognized content type definition: "
 									  + content.getClass().getName());
@@ -1793,19 +1793,19 @@ public class MetaGenerator {
 	{
 		// Display the fixed children array
 		out.println("\t\t\tdisplayXMLElementArray(_out, children);");
-	} 		
+	}
 
 	public void writeJavaDisplayXMLCDataContent(PrintWriter out)
 	{
 		// Display the CDATA section
 		out.println("\t\t\t_out.cdata(cdata);");
-	}	
+	}
 
 	public void writeJavaDisplayDiffContent(PrintWriter out,
 											MetaDef.Content content)
 		throws XOMException
 	{
-		if(content instanceof MetaDef.Object) {			
+		if(content instanceof MetaDef.Object) {
 			MetaDef.Object obj = (MetaDef.Object)content;
 			MetaDef.Definition type = getType(obj.type);
 
@@ -1814,13 +1814,13 @@ public class MetaGenerator {
 							+ obj.name + "\", "
 							+ getDeclaredName(obj.name) + ", "
 							+ "_cother." + getDeclaredName(obj.name) + ", "
-							+ "_out, _indent+1);");			
+							+ "_out, _indent+1);");
 			else
 				out.println("\t\t\t_diff = _diff && displayElementDiff(\""
 							+ obj.name + "\", "
 							+ getDeclaredName(obj.name) + ", "
 							+ "_cother." + getDeclaredName(obj.name) + ", "
-							+ "_out, _indent+1);");			
+							+ "_out, _indent+1);");
 		}
 		else if (content instanceof MetaDef.Array) {
 			MetaDef.Array array = (MetaDef.Array)content;
@@ -1850,21 +1850,21 @@ public class MetaGenerator {
 		// Display the fixed children array
 		out.println("\t\t\t_diff = _diff && displayElementArrayDiff(\"children\", "
 					+ "children, _cother.children, _out, _indent+1);");
-	} 		
+	}
 
 	public void writeJavaDisplayDiffCDataContent(PrintWriter out)
 	{
 		out.println("\t\t\t_diff = _diff && displayStringDiff(\"cdata\", "
-					+ "cdata, _cother.cdata, _out, _indent+1);");		
+					+ "cdata, _cother.cdata, _out, _indent+1);");
 	}
-	
+
 	public void writeJavaDeclarePluginAttributes(PrintWriter out)
 	{
 		writeJavaDoc(out, 2, "defPackage is a built-in attribute "
 					 + "defining the package of the plugin class.");
 		out.println("\t\tpublic String defPackage;");
 		out.println();
-			
+
 		writeJavaDoc(out, 2, "defClass is a built-in attribute "
 					 + "definition the plugin parser class.");
 		out.println("\t\tpublic String defClass;");
@@ -1878,14 +1878,14 @@ public class MetaGenerator {
 					+ "defPackage, _indent+1);");
 		out.println("\t\t\tdisplayAttribute(_out, \"defClass\", "
 					+ "defClass, _indent+1);");
-	}	
+	}
 
 	public void writeJavaDisplayXMLPluginAttributes(PrintWriter out)
 	{
 		out.println("\t\t\t\t.add(\"defPackage\", defPackage)");
 		out.println("\t\t\t\t.add(\"defClass\", defClass)");
 	}
-	
+
 	public void writeJavaDisplayDiffPluginAttributes(PrintWriter out)
 	{
 		out.println("\t\t\t_diff = _diff && displayAttributeDiff(\""
@@ -1894,8 +1894,8 @@ public class MetaGenerator {
 		out.println("\t\t\t_diff = _diff && displayAttributeDiff(\""
 					+ "defClass\", defClass, _cother.defClass"
 					+ ", _out, _indent+1);");
-	}	
-	
+	}
+
 	public void writeJavaGetPluginContent(PrintWriter out, boolean mixed)
 	{
 		if (mixed) {
@@ -1912,27 +1912,27 @@ public class MetaGenerator {
 		out.println("\t\tpublic mondrian.xom." +
 					(mixed ? "NodeDef" : "ElementDef") +
 					"[] children;  /" + "/holder for variable-type children");
-	} 
+	}
 
 	public void writeJavaDisplayPluginContent(PrintWriter out)
 	{
 		// Display the fixed children array
 		out.println("\t\t\tdisplayElementArray(_out, \"children\""
 					+ ", children, _indent+1);");
-	} 
+	}
 
 	public void writeJavaDisplayXMLPluginContent(PrintWriter out)
 	{
 		// Display the fixed children array
 		out.println("\t\t\tdisplayXMLElementArray(_out, children);");
-	} 
+	}
 
 	public void writeJavaDisplayDiffPluginContent(PrintWriter out)
 	{
 		// Display the fixed children array
 		out.println("\t\t\t_diff = _diff && displayElementArrayDiff(\"children\", "
 					+ "children, _cother.children, _out, _indent+1);");
-	} 
+	}
 
 	/**
 	 * Write the name of the dtd file and java class to standard output.
@@ -1943,7 +1943,7 @@ public class MetaGenerator {
 	{
 		if(testMode)
 			System.out.println(model.dtdName + " " + model.className);
-	}	
+	}
 
 	/**
 	 * Main function for MetaGenerator. Arguments:
@@ -1966,21 +1966,21 @@ public class MetaGenerator {
 			}
 			catch(IOException ex) {
 				// Do nothing
-			}			
+			}
 		}
 		if (firstArg < args.length && args[firstArg].equals("-test")) {
 			System.err.println("Ignoring package name.");
 			testMode = true;
 			firstArg++;
 		}
-		
+
 		if(args.length != 2 + firstArg) {
 			System.err.println(
-				"Usage: java MetaGenerator [-debug] [-test] " + 
+				"Usage: java MetaGenerator [-debug] [-test] " +
 				"<XML model file> <output directory>");
 			System.exit(2);
 		}
-		
+
 		try {
 			MetaGenerator generator = new MetaGenerator(
 				args[0+firstArg], testMode);
@@ -1998,8 +1998,8 @@ public class MetaGenerator {
 			System.err.println(ex.toString());
 			ex.printStackTrace();
 			System.exit(1);
-		}			
-	}	
+		}
+	}
 
 	/**
 	 * Display information about this generator for debug purposes.
@@ -2008,7 +2008,7 @@ public class MetaGenerator {
 	{
 		System.out.println("Model:");
 		System.out.println(model.toString());
-	}	
+	}
 }
 
 

@@ -45,7 +45,7 @@ public interface Resource {
 	 * @param locale The ISO locale code (e.g. <code>"en"</code>, or
 	 *    <code>"en_US"</code>, or <code>"en_US_WIN"</code>) of the messages
 	 **/
-	void init(ResourceDef.BaflResourceList resourceList, Locale locale); 
+	void init(ResourceDef.ResourceBundle resourceList, Locale locale);
 
 	/**
 	 * Returns the locale of the messages.

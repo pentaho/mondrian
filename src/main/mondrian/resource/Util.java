@@ -39,21 +39,21 @@ abstract class Util {
 	private static final Throwable[] emptyThrowableArray = new Throwable[0];
 
     /** loads URL into Document and returns set of resources **/
-	static ResourceDef.BaflResourceList load(URL url)
+	static ResourceDef.ResourceBundle load(URL url)
 		throws IOException
 	{
 		return load(url.openStream());
 	}
 
 	/** loads InputStream and returns set of resources **/
-	static ResourceDef.BaflResourceList load(InputStream inStream)
+	static ResourceDef.ResourceBundle load(InputStream inStream)
 		throws IOException
 	{
 		try {
 			Parser parser = XOMUtil.createDefaultParser();
 			DOMWrapper def = parser.parse(inStream);
-			ResourceDef.BaflResourceList xmlResourceList = new
-				ResourceDef.BaflResourceList(def);
+			ResourceDef.ResourceBundle xmlResourceList = new
+				ResourceDef.ResourceBundle(def);
 			return xmlResourceList;
 		} catch (XOMException err) {
 			throw new IOException(err.toString());
@@ -234,13 +234,106 @@ abstract class Util {
 		String s0;
 		s0 = replace(val, "\\", "\\\\");
 //		s0 = replace(val, "\"", "\\\"");
-//		s0 = replace(s0, "'", "\\'");
+		s0 = replace(s0, "'", "''");
 		s0 = replace(s0, "\n\r", "\\n");
 		s0 = replace(s0, "\n", "\\n");
 		s0 = replace(s0, "\r", "\\r");
 		s0 = replace(s0, "\t", "\\t");
 		return s0;
 	}
+
+	static final char fileSep = System.getProperty("file.separator").charAt(0);
+
+	static String fileNameToClassName(String fileName, String suffix) {
+		String s = fileName;
+		s = removeSuffix(s, suffix);
+		s = s.replace(fileSep, '.');
+		s = s.replace('/', '.');
+		int score = s.indexOf('_');
+		if (score >= 0) {
+			s = s.substring(0,score);
+		}
+		return s;
+	}
+
+	static String removeSuffix(String s, final String suffix) {
+		if (s.endsWith(suffix)) {
+			s = s.substring(0,s.length()-suffix.length());
+		}
+		return s;
+	}
+
+
+	/**
+	 * Given <code>happy/BirthdayResource_en_US.xml</code>,
+	 * returns the locale "en_US".
+	 */
+	static Locale fileNameToLocale(String fileName, String suffix) {
+		String s = removeSuffix(fileName, suffix);
+		int score = s.indexOf('_');
+		if (score <= 0) {
+			return null;
+		} else {
+			String localeName = s.substring(score + 1);
+			return parseLocale(localeName);
+		}
+	}
+
+	/**
+	 * Parses 'localeName' into a locale.
+	 */
+	private static Locale parseLocale(String localeName) {
+		int score1 = localeName.indexOf('_');
+		String language, country = "", variant = "";
+		if (score1 < 0) {
+			language = localeName;
+		} else {
+			language = localeName.substring(0, score1);
+			if (language.length() != 2) {
+				return null;
+			}
+			int score2 = localeName.indexOf('_',score1 + 1);
+			if (score2 < 0) {
+				country = localeName.substring(score1 + 1);
+				if (country.length() != 2) {
+					return null;
+				}
+			} else {
+				country = localeName.substring(score1 + 1, score2);
+				if (country.length() != 2) {
+					return null;
+				}
+				variant = localeName.substring(score2 + 1);
+			}
+		}
+		return new Locale(language,country,variant);
+	}
+
+	/**
+	 * Given "happy/BirthdayResource_fr_FR.properties" and ".properties",
+	 * returns "happy/BirthdayResource".
+	 */
+	static String fileNameSansLocale(String fileName, String suffix) {
+		String s = removeSuffix(fileName, suffix);
+		// If there are directory names, start reading after the last one.
+		int from = s.lastIndexOf(fileSep);
+		if (from < 0) {
+			from = 0;
+		}
+		while (from < s.length()) {
+			// See whether the rest of the filename after the current
+			// underscore is a valid locale name. If it is, return the
+			// segment of the filename before the current underscore.
+			int score = s.indexOf('_', from);
+			Locale locale = parseLocale(s.substring(score+1));
+			if (locale != null) {
+				return s.substring(0,score);
+			}
+			from = score + 1;
+		}
+		return s;
+	}
+
 	/**
 	 * Converts a chain of {@link Throwable}s into an array.
 	 **/

@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<!--
+  == $Id$
+  == Base resource file for MonRG example.
+  -->
+<resourceBundle locale="en_US">
+  <message name="HappyBirthday">
+    <text>Happy Birthday, {0}! You don't look {1,number}.</text>
+  </message>
+  <exception name="TooYoung" className="RuntimeException">
+    <text>{0} has not been born yet.</text>
+  </exception>
+</resourceBundle>

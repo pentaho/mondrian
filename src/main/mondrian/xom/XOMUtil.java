@@ -55,6 +55,16 @@ public abstract class XOMUtil extends XMLUtil {
 	{ }
 
 	/**
+	 * Converts the first letter of <code>name</code> to upper-case.
+	 */
+	static String capitalize(String name) {
+		if (name == null || name.length() < 1) {
+			return name;
+		}
+		return name.substring(0,1).toUpperCase() + name.substring(1);
+	}
+
+	/**
 	 * Copy the given array into a new Vector of the same size
 	 **/
 	public static Vector arrayToVector(Object [] array)

@@ -1,6 +1,8 @@
 <?xml version="1.0" ?>
-<?xml-stylesheet type="text/xsl" href="Resource.xsl" ?>
-<!DOCTYPE BaflResourceList SYSTEM "Resource.dtd">
+<!--
+<?xml-stylesheet type="text/xsl" href="../../../../resource/Resource.xsl" ?>
+ !DOCTYPE resourceBundle SYSTEM "Resource.dtd"
+  -->
 <!--
   == $Id$
   == This software is subject to the terms of the Common Public License
@@ -14,348 +16,243 @@
   == package. Class mondrian.olap.MondrianResource is generated from it.
   -->
 
-<BaflResourceList
-	packageName="mondrian.olap"
-	className="MondrianResource"
-	baseClass="mondrian.resource.ResourceBase"
-	argContext="true"
-	generateNew="true"
-	dynamic="true"
-	errorClass="mondrian.resource.Error"
-	label="MDX_RESOURCE_XML"
->
+<resourceBundle
+	static="false"
+	locale="en_US"
+	exceptionClassName="mondrian.resource.ChainableRuntimeException">
 
 <!-- ====================================================================== -->
 <!-- Internal errors 320,000 - 321,000 ==================================== -->
 <!-- ====================================================================== -->
 
-<BaflResourceText id="320000" type="e"
-	macroName="Internal">
-<![CDATA[
-Internal error: {0}
-]]>
-</BaflResourceText>
+<exception id="320000" name="Internal">
+    <text>Internal error: {0}</text>
+</exception>
 
 <!-- ====================================================================== -->
 <!-- MDX errors 321,000 - 355,000 ========================================= -->
 <!-- ====================================================================== -->
 
-<BaflResourceText id="321000" type="e"
-	macroName="MdxCubeNotFound">
-<![CDATA[
-MDX cube ''{0}'' not found or not processed
-]]>
-</BaflResourceText>
+<exception id="321000" name="MdxCubeNotFound">
+    <text>MDX cube ''{0}'' not found or not processed</text>
+</exception>
 
 <!-- {1} should be something like "level '[Time].[Quarter]'": generate it using
      MdxElement.getQualifiedName().  -->
-<BaflResourceText id="321010" type="e"
-	macroName="MdxChildObjectNotFound">
-<![CDATA[
-MDX object ''{0}'' not found in {1}
-]]>
-</BaflResourceText>
+<exception id="321010" name="MdxChildObjectNotFound">
+    <text>MDX object ''{0}'' not found in {1}</text>
+</exception>
 
-<BaflResourceText id="322000" type="i"
-	macroName="MdxCubeName">
-<![CDATA[cube ''{0}'']]>
-</BaflResourceText>
+<message id="322000" name="MdxCubeName">
+    <text>cube ''{0}''</text>
+</message>
 
-<BaflResourceText id="322010" type="i"
-	macroName="MdxHierarchyName">
-<![CDATA[hierarchy ''{0}'']]>
-</BaflResourceText>
+<message id="322010" name="MdxHierarchyName">
+    <text>hierarchy ''{0}''</text>
+</message>
 
-<BaflResourceText id="322020" type="i"
-	macroName="MdxDimensionName">
-<![CDATA[dimension ''{0}'']]>
-</BaflResourceText>
+<message id="322020" name="MdxDimensionName">
+    <text>dimension ''{0}''</text>
+</message>
 
-<BaflResourceText id="322030" type="i"
-	macroName="MdxLevelName">
-<![CDATA[level ''{0}'']]>
-</BaflResourceText>
+<message id="322030" name="MdxLevelName">
+    <text>level ''{0}''</text>
+</message>
 
-<BaflResourceText id="322040" type="i"
-	macroName="MdxMemberName">
-<![CDATA[member ''{0}'']]>
-</BaflResourceText>
+<message id="322040" name="MdxMemberName">
+    <text>member ''{0}''</text>
+</message>
 
-<BaflResourceText id="350000" type="e"
-	macroName="WhileParsingMdx">
-<![CDATA[
-Error while parsing MDX statement ''{0}''
-]]>
-</BaflResourceText>
+<exception id="350000" name="WhileParsingMdx">
+    <text>Error while parsing MDX statement ''{0}''</text>
+</exception>
 
-<BaflResourceText id="350010" type="e"
-	macroName="MdxFatalError">
-<![CDATA[
-MDX parser cannot recover from previous error(s)
-]]>
-</BaflResourceText>
+<exception id="350010" name="MdxFatalError">
+    <text>MDX parser cannot recover from previous error(s)</text>
+</exception>
 
-<BaflResourceText id="350020" type="e"
-	macroName="MdxError">
-<![CDATA[Error: {0}]]>
-</BaflResourceText>
+<exception id="350020" name="MdxError">
+    <text>Error: {0}</text>
+</exception>
 
-<BaflResourceText id="350030" type="e"
-	macroName="MdxSyntaxError">
-<![CDATA[Syntax error at token ''{0}'']]>
-</BaflResourceText>
+<exception id="350030" name="MdxSyntaxError">
+    <text>Syntax error at token ''{0}''</text>
+</exception>
 
-<BaflResourceText id="350040" type="e"
-	macroName="MdxSyntaxErrorAt">
-<![CDATA[Syntax error at line {1}, column {2}, token ''{0}'']]>
-</BaflResourceText>
+<exception id="350040" name="MdxSyntaxErrorAt">
+    <text>Syntax error at line {1}, column {2}, token ''{0}''</text>
+</exception>
 
-<BaflResourceText id="350050" type="i"
-	macroName="MdxFatalSyntaxError">
-<![CDATA[Couldn''t repair and continue parse]]>
-</BaflResourceText>
+<message id="350050" name="MdxFatalSyntaxError">
+    <text>Couldn''t repair and continue parse</text>
+</message>
 
-<BaflResourceText id="350060" type="e"
-	macroName="UserDoesNotHaveRightsTo">
-<![CDATA[
-User does not have rights to run query, which contains {0}
-]]>
-</BaflResourceText>
+<exception id="350060" name="UserDoesNotHaveRightsTo">
+    <text>User does not have rights to run query, which contains {0}</text>
+</exception>
 
-<BaflResourceText id="350070" type="e"
-	macroName="MdxCubeSlicerMemberError">
-<![CDATA[
-Failed to add Cube Slicer with member ''{0}'' for hierarchy ''{1}'' on cube ''{2}''
-]]>
-</BaflResourceText>
+<exception id="350070" name="MdxCubeSlicerMemberError">
+    <text>Failed to add Cube Slicer with member ''{0}'' for hierarchy ''{1}'' on cube ''{2}''</text>
+</exception>
 
-<BaflResourceText id="350080" type="e"
-	macroName="MdxCubeSlicerHierarchyError">
-<![CDATA[
-Failed to add Cube Slicer for hierarchy ''{0}'' on cube ''{1}''
-]]>
-</BaflResourceText>
+<exception id="350080" name="MdxCubeSlicerHierarchyError">
+    <text>Failed to add Cube Slicer for hierarchy ''{0}'' on cube ''{1}''</text>
+</exception>
 
-<BaflResourceText id="350090" type="e"
-	macroName="MdxOlapServerConnectError">
-<![CDATA[Connection error was received using connect string ''{0}'' on catalog ''{1}'']]>
-</BaflResourceText>
+<exception id="350090" name="MdxOlapServerConnectError">
+    <text>Connection error was received using connect string ''{0}'' on catalog ''{1}''</text>
+</exception>
 
-<BaflResourceText id="350100" type="e"
-	macroName="MdxInvalidMember">
-<![CDATA[Invalid member identifier ''{0}'']]>
-</BaflResourceText>
+<exception id="350100" name="MdxInvalidMember">
+    <text>Invalid member identifier ''{0}''</text>
+</exception>
 
-<BaflResourceText id="350110" type="e"
-	macroName="MdxCalculatedHierarchyError">
-<![CDATA[Hierarchy for calculated member ''{0}'' not found]]>
-</BaflResourceText>
+<exception id="350110" name="MdxCalculatedHierarchyError">
+    <text>Hierarchy for calculated member ''{0}'' not found</text>
+</exception>
 
-<BaflResourceText id="350120" type="e"
-	macroName="MdxAxisIsNotSet">
-<![CDATA[Axis ''{0}'' expression is not a set]]>
-</BaflResourceText>
+<exception id="350120" name="MdxAxisIsNotSet">
+    <text>Axis ''{0}'' expression is not a set</text>
+</exception>
 
-<BaflResourceText id="350130" type="e"
-	macroName="MdxMemberExpIsSet">
-<![CDATA[Member expression ''{0}'' must not be a set]]>
-</BaflResourceText>
+<exception id="350130" name="MdxMemberExpIsSet">
+    <text>Member expression ''{0}'' must not be a set</text>
+</exception>
 
-<BaflResourceText id="350140" type="e"
-	macroName="MdxSetExpNotSet">
-<![CDATA[Set expression ''{0}'' must be a set]]>
-</BaflResourceText>
+<exception id="350140" name="MdxSetExpNotSet">
+    <text>Set expression ''{0}'' must be a set</text>
+</exception>
 
-<BaflResourceText id="350150" type="e"
-	macroName="MdxFuncArgumentsNum">
-<![CDATA[Function ''{0}'' must have at least 2 arguments]]>
-</BaflResourceText>
+<exception id="350150" name="MdxFuncArgumentsNum">
+    <text>Function ''{0}'' must have at least 2 arguments</text>
+</exception>
 
-<BaflResourceText id="350160" type="e"
-	macroName="MdxFuncNotHier">
-<![CDATA[Argument ''{0,number}'' of function ''{1}'' must be a hierarchy]]>
-</BaflResourceText>
+<exception id="350160" name="MdxFuncNotHier">
+    <text>Argument ''{0,number}'' of function ''{1}'' must be a hierarchy</text>
+</exception>
 
-<BaflResourceText id="350170" type="e"
-	macroName="MdxFuncMethodNoArg">
-<![CDATA[Method function ''{0}'' must have at least one argument]]>
-</BaflResourceText>
+<exception id="350170" name="MdxFuncMethodNoArg">
+    <text>Method function ''{0}'' must have at least one argument</text>
+</exception>
 
-<BaflResourceText id="350180" type="e"
-	macroName="MdxFuncPropertyArg">
-<![CDATA[Property function ''{0}'' must not have arguments.  (To access a member of a property, like ''Members'', which returns a collection, write ''Members.Item(n)'' instead of ''Members(n)''.)]]>
-</BaflResourceText>
+<exception id="350180" name="MdxFuncPropertyArg">
+    <text>Property function ''{0}'' must not have arguments.  (To access a member of a property, like ''Members'', which returns a collection, write ''Members.Item(n)'' instead of ''Members(n)''.)</text>
+</exception>
 
-<BaflResourceText id="350190" type="e"
-	macroName="MdxFuncUnknown">
-<![CDATA[unknown overloaded function ''{0}'']]>
-</BaflResourceText>
+<exception id="350190" name="MdxFuncUnknown">
+    <text>unknown overloaded function ''{0}''</text>
+</exception>
 
-<BaflResourceText id="350200" type="e"
-	macroName="MdxDefaultHierNotFound">
-<![CDATA[Could not locate DefaultHierarchy for ''{0}'']]>
-</BaflResourceText>
+<exception id="350200" name="MdxDefaultHierNotFound">
+    <text>Could not locate DefaultHierarchy for ''{0}''</text>
+</exception>
 
-<BaflResourceText id="350210" type="e"
-	macroName="MdxDefaultMemNotFound">
-<![CDATA[Could not locate DefaultMember for ''{0}'']]>
-</BaflResourceText>
+<exception id="350210" name="MdxDefaultMemNotFound">
+    <text>Could not locate DefaultMember for ''{0}''</text>
+</exception>
 
-<BaflResourceText id="350215" type="e"
-	macroName="MdxMemberNotFound">
-<![CDATA[Could not locate member  ''{0}'' in query ''{1}'']]>
-</BaflResourceText>
+<exception id="350215" name="MdxMemberNotFound">
+    <text>Could not locate member  ''{0}'' in query ''{1}''</text>
+</exception>
 
-<BaflResourceText id="350220" type="e"
-	macroName="MdxParamArgInvalid">
-<![CDATA[Argument ''{0}'' of Parameter ''{1}'' has to be a quoted string]]>
-</BaflResourceText>
+<exception id="350220" name="MdxParamArgInvalid">
+    <text>Argument ''{0}'' of Parameter ''{1}'' has to be a quoted string</text>
+</exception>
 
-<BaflResourceText id="350230" type="e"
-	macroName="MdxParamTypeInvalid">
-<![CDATA[Type ''{0}'' of Parameter ''{1}'' has to be a quoted string or dimension]]>
-</BaflResourceText>
+<exception id="350230" name="MdxParamTypeInvalid">
+    <text>Type ''{0}'' of Parameter ''{1}'' has to be a quoted string or dimension</text>
+</exception>
 
-<BaflResourceText id="350240" type="e"
-	macroName="MdxParamMultipleDef">
-<![CDATA[Parameter ''{0}'' is defined ''{1,number}'' times]]>
-</BaflResourceText>
+<exception id="350240" name="MdxParamMultipleDef">
+    <text>Parameter ''{0}'' is defined ''{1,number}'' times</text>
+</exception>
 
-<BaflResourceText id="350250" type="e"
-	macroName="MdxParamValueNotFound">
-<![CDATA[Parameter''s ''{0}'' value not found]]>
-</BaflResourceText>
+<exception id="350250" name="MdxParamValueNotFound">
+    <text>Parameter''s ''{0}'' value not found</text>
+</exception>
 
-<BaflResourceText id="350255" type="e"
-	macroName="MdxParamNotFound">
-<![CDATA[Parameter ''{0}'' not found]]>
-</BaflResourceText>
+<exception id="350255" name="MdxParamNotFound">
+    <text>Parameter ''{0}'' not found</text>
+</exception>
 
-<BaflResourceText id="350260" type="e"
-	macroName="MdxHierarchyUsed">
-<![CDATA[Hierarchy ''{0}'' is already used]]>
-</BaflResourceText>
+<exception id="350260" name="MdxHierarchyUsed">
+    <text>Hierarchy ''{0}'' is already used</text>
+</exception>
 
-<BaflResourceText id="350270" type="e"
-	macroName="MdxHierarchyNotUsed">
-<![CDATA[Hierarchy ''{0}'' is not used]]>
-</BaflResourceText>
+<exception id="350270" name="MdxHierarchyNotUsed">
+    <text>Hierarchy ''{0}'' is not used</text>
+</exception>
 
-<BaflResourceText id="350280" type="e"
-	macroName="MdxCalcMemberCanNotHaveChildren">
-<![CDATA[Calculated MdxMember ''{0}'' can not have children]]>
-</BaflResourceText>
+<exception id="350280" name="MdxCalcMemberCanNotHaveChildren">
+    <text>Calculated MdxMember ''{0}'' can not have children</text>
+</exception>
 
-<BaflResourceText id="350290" type="e"
-	macroName="MdxFormulaNotFound">
-<![CDATA[Calculated {0} ''{1}'' has not been found in query ''{2}'']]>
-</BaflResourceText>
+<exception id="350290" name="MdxFormulaNotFound">
+    <text>Calculated {0} ''{1}'' has not been found in query ''{2}''</text>
+</exception>
 
-<BaflResourceText id="350300" type="e"
-	macroName="MdxFormulaAlreadyExists">
-<![CDATA[Calculated {0} ''{1}'' is already defined in query ''{2}'']]>
-</BaflResourceText>
+<exception id="350300" name="MdxFormulaAlreadyExists">
+    <text>Calculated {0} ''{1}'' is already defined in query ''{2}''</text>
+</exception>
 
-<BaflResourceText id="350310" type="e"
-	macroName="MdxCantFindMember">
-<![CDATA[
-Cannot find MDX member ''{0}''. Make sure it is indeed a member and not a level or a hierarchy.
-]]>
-</BaflResourceText>
+<exception id="350310" name="MdxCantFindMember">
+    <text>Cannot find MDX member ''{0}''. Make sure it is indeed a member and not a level or a hierarchy.</text>
+</exception>
 
-<BaflResourceText id="350320" type="i"
-	macroName="Member">
-<![CDATA[
-member
-]]>
-</BaflResourceText>
+<message id="350320" name="Member">
+    <text>member</text>
+</message>
 
-<BaflResourceText id="350325" type="i"
-	macroName="CalculatedMember">
-<![CDATA[
-calculated member
-]]>
-</BaflResourceText>
+<message id="350325" name="CalculatedMember">
+    <text>calculated member</text>
+</message>
 
-<BaflResourceText id="350330" type="i"
-	macroName="Set">
-<![CDATA[
-set
-]]>
-</BaflResourceText>
+<message id="350330" name="Set">
+    <text>set</text>
+</message>
 
-<BaflResourceText id="350335" type="i"
-	macroName="CalculatedSet">
-<![CDATA[
-calculated set
-]]>
-</BaflResourceText>
+<message id="350335" name="CalculatedSet">
+    <text>calculated set</text>
+</message>
 
-<BaflResourceText id="350340" type="e"
-	macroName="MdxCalculatedFormulaUsedOnAxis">
-<![CDATA[
-Cannot delete {0} ''{1}''. It is used on {2} axis.
-]]>
-</BaflResourceText>
+<exception id="350340" name="MdxCalculatedFormulaUsedOnAxis">
+    <text>Cannot delete {0} ''{1}''. It is used on {2} axis.</text>
+</exception>
 
-<BaflResourceText id="350350" type="e"
-	macroName="MdxCalculatedFormulaUsedOnSlicer">
-<![CDATA[
-Cannot delete {0} ''{1}''. It is used on slicer.
-]]>
-</BaflResourceText>
+<exception id="350350" name="MdxCalculatedFormulaUsedOnSlicer">
+    <text>Cannot delete {0} ''{1}''. It is used on slicer.</text>
+</exception>
 
-<BaflResourceText id="350360" type="e"
-	macroName="MdxCalculatedFormulaUsedInFormula">
-<![CDATA[
-Cannot delete {0} ''{1}''. It is used in definition of {2} ''{3}''.
-]]>
-</BaflResourceText>
+<exception id="350360" name="MdxCalculatedFormulaUsedInFormula">
+    <text>Cannot delete {0} ''{1}''. It is used in definition of {2} ''{3}''.</text>
+</exception>
 
-<BaflResourceText id="350370" type="e"
-	macroName="MdxCalculatedFormulaUsedInQuery">
-<![CDATA[
-Cannot delete {0} ''{1}''. It is used in query ''{2}''.
-]]>
-</BaflResourceText>
+<exception id="350370" name="MdxCalculatedFormulaUsedInQuery">
+    <text>Cannot delete {0} ''{1}''. It is used in query ''{2}''.</text>
+</exception>
 
-<BaflResourceText id="350380" type="e"
-	macroName="MdxTopBottomNRequireSortMember">
-<![CDATA[
-Top/Bottom functions require at least one sort Member.
-]]>
-</BaflResourceText>
+<exception id="350380" name="MdxTopBottomNRequireSortMember">
+    <text>Top/Bottom functions require at least one sort Member.</text>
+</exception>
 
-<BaflResourceText id="350390" type="e"
-	macroName="MdxTopBottomInvalidFunctionName">
-<![CDATA[
-Unknown Top/Bottom function name ''{0}''. Supported names are ''TopCount'', ''BottomCount'', ''TopPercent'', ''BottomPercent''.
-]]>
-</BaflResourceText>
+<exception id="350390" name="MdxTopBottomInvalidFunctionName">
+    <text>Unknown Top/Bottom function name ''{0}''. Supported names are ''TopCount'', ''BottomCount'', ''TopPercent'', ''BottomPercent''.</text>
+</exception>
 
-<BaflResourceText id="350400" type="e"
-	macroName="MdxAxisSortNotSupported">
-<![CDATA[
-Sort on axis ''{0}'' is not supported.
-]]>
-</BaflResourceText>
+<exception id="350400" name="MdxAxisSortNotSupported">
+    <text>Sort on axis ''{0}'' is not supported.</text>
+</exception>
 
-<BaflResourceText id="350410" type="e"
-	macroName="MdxAxisShowSubtotalsNotSupported">
-<![CDATA[
-Show/hide subtotals operation on axis ''{0,number}'' is not supported.
-]]>
-</BaflResourceText>
+<exception id="350410" name="MdxAxisShowSubtotalsNotSupported">
+    <text>Show/hide subtotals operation on axis ''{0,number}'' is not supported.</text>
+</exception>
 
-<BaflResourceText id="350420" type="e"
-	macroName="MdxAxisShowEmptyCellsNotSupported">
-<![CDATA[
-Show/hide empty cells operation on axis ''{0,number}'' is not supported.
-]]>
-</BaflResourceText>
+<exception id="350420" name="MdxAxisShowEmptyCellsNotSupported">
+    <text>Show/hide empty cells operation on axis ''{0,number}'' is not supported.</text>
+</exception>
 
 <!-- End of last error section ============================================ -->
 
-</BaflResourceList>
+</resourceBundle>
 
-<!-- End MondrianResource_en.xml -->
+<!-- End MondrianResource.xml -->

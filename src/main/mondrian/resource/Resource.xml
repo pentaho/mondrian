@@ -17,71 +17,33 @@ name="resource"
 dtdName="Resource.dtd"
 className="ResourceDef"
 packageName="mondrian.resource"
-root="BaflResourceList"
+root="resourceBundle"
 version="1.0"
 >
 
 <Doc>
-  This model specifies the elements which make up a Foundation resource file.
+  This model specifies the elements which make up a Mondrian resource file. See
+  {@link ResourceGenTask} for more information.
 </Doc>
 
-<Element type="BaflResourceList">
+<Element type="resourceBundle">
     <Doc>
-todo:
+		A <code>ResourceBundle</code> is a collection of resources.
+		The resource generator generates a class from a resource bundle
+		which has an accessor method for each resource.
     </Doc>
-	<Attribute name="packageName" required="true">
+	<Attribute name="locale" required="true">
 		<Doc>
-			The package of the java class to be generated, for example
-			<code>Broadbase.util</code>.
+			The locale of resources in this resource bundle,
+			for example, "en_US_Boston", "en_US", or "en".
 		</Doc>
 	</Attribute>
-	<Attribute name="className" required="true">
+	<Attribute name="exceptionClassName" required="false">
 		<Doc>
-			The name of the java class to be generated, for example
-			<code>ServerResource</code>.
+			Default class for exceptions.
 		</Doc>
 	</Attribute>
-	<Attribute name="contextParams"/>
-	<Attribute name="contextArgs"/>
-	<Attribute name="generateNew" type="Boolean" default="false">
-		<Doc>
-			Whether to generate a <code>Error
-			new<i>MessageName</i>(<i>args</i>)</code> and a <code>Error
-			new<i>MessageName</i>(Throwable, <i>args</i>)</code> method for
-			each message. These methods return <code>errorClass</code>.  The
-			methods are never generated for informational messages.
-		</Doc>
-	</Attribute>
-	<Attribute name="generateThrowProcess" type="Boolean" default="true">
-		<Doc>
-			Not used.
-		</Doc>
-	</Attribute>
-	<Attribute name="errorClass" default="mondrian.resource.Error">
-		<Doc>
-			See <code>generateNew</code>.
-		</Doc>
-	</Attribute>
-	<Attribute name="baseClass" required="false">
-		<Doc>
-			The fully-qualified name of the base class of the generated
-			resource class, for example
-			<code>"Broadbase.util.ResourceBase"</code>.
-		</Doc>
-	</Attribute>
-	<Attribute name="label" required="false">
-		<Doc>
-			The label by which <code>ResourceFinder</code> will retrieve this
-    		resource class, for example, <code> "SERVER_RESOURCE_XML"</code>.
-		</Doc>
-	</Attribute>
-	<Attribute name="locale" required="false">
-		<Doc>
-			The locale or language supported by this resource file, for example,
-			"en_US_Boston", "en_US", or "en".
-		</Doc>
-	</Attribute>
-    <Array name="resources" type="BaflResourceText"/>
+    <Array name="resources" type="resource"/>
     <Object name="code" type="Code">
         <Doc>
 			Text within this element is included in the generated class.
@@ -93,34 +55,49 @@ todo:
 	<CData/>
 </Element>
 
-<Element type="BaflResourceText" keepDef="true">
-    <Doc>
-todo:
-    </Doc>
-    <Attribute name="id" type="Integer" required="true"/>
-    <Attribute name="macroName" required="true"/>
-    <Attribute name="type" default="i">
-		<Value>i</Value>
-		<Value>e</Value>
-		<Value>n</Value>
-		<Value>w</Value>
+<Class class="resource" keepDef="true">
+	<Attribute name="name" required="true">
+		<Doc>
+			The name of this message or error, unique within this resource
+			bundle.
+		</Doc>
 	</Attribute>
-    <Attribute name="context" type="Boolean" default="false"/>
+	<Object name="text" type="text"/>
+	<Code>
+		abstract mondrian.xom.DOMWrapper getDef();
+	</Code>
+</Class>
+
+<Element type="message" class="resource" keepDef="true">
+    <Doc>
+A message.
+    </Doc>
+	<Code>
+		mondrian.xom.DOMWrapper getDef() { return _def; }
+	</Code>
+</Element>
+
+<Element type="text">
 	<CData/>
-	<Code><![CDATA[
-		public int getSeverity() {
-			if (type.equals("i")) {
-				return Resource.SEVERITY_INFO;
-			} else if (type.equals("w")) {
-				return Resource.SEVERITY_WARN;
-			} else if (type.equals("n")) {
-				return Resource.SEVERITY_NON_FATAL_ERR;
-			} else {
-				// "e" and everything else is an error
-				return Resource.SEVERITY_ERR;
-			}
-		}
-		]]>
+</Element>
+
+<Element type="exception" class="resource" keepDef="true">
+    <Doc>
+		An <code>exception</code> defines a message which is issued in response
+		to some invalid condition. It has a type, which must be derived from
+		{@link Throwable}. The generated <code>new<i>ExceptionName</i></code>
+		method creates an instance of this exception with the appropriate
+		parameters.
+	</Doc>
+	<Attribute name="className" required="false">
+		<Doc>
+			The name of the exception class. Must be fully qualified,
+			unless it is in the package <code>java.lang</code>. If not
+			specified, the resource bundle's default exception class is used.
+		</Doc>
+	</Attribute>
+	<Code>
+		mondrian.xom.DOMWrapper getDef() { return _def; }
 	</Code>
 </Element>
 

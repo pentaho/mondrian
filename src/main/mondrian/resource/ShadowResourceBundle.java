@@ -47,6 +47,7 @@ import java.io.IOException;
 public abstract class ShadowResourceBundle extends ResourceBundle {
 	private PropertyResourceBundle bundle;
 	private static final HashMap mapThreadToLocale = new HashMap();
+	protected static final Object[] emptyObjectArray = new Object[0];
 
 	/**
 	 * Creates a <code>ShadowResourceBundle</code>, and reads resources from
@@ -140,12 +141,20 @@ public abstract class ShadowResourceBundle extends ResourceBundle {
 	 *    ...
 	 * }</pre></blockquote>
 	 */
-	protected static ResourceBundle instance(String baseName, Locale locale) {
+	protected static ShadowResourceBundle instance(
+			String baseName, Locale locale) {
 		if (locale == null) {
 			locale = Locale.getDefault();
 		}
 		ResourceBundle bundle = ResourceBundle.getBundle(baseName, locale);
-		return bundle;
+		if (bundle instanceof PropertyResourceBundle) {
+			throw new ClassCastException(
+					"ShadowResourceBundle.instance('" + baseName + "','" +
+					locale + "') found " +
+					baseName + "_" + locale + ".properties but not " +
+					baseName + "_" + locale + ".class");
+		}
+		return (ShadowResourceBundle) bundle;
 	}
 
 	/** Sets the locale for the current thread. Used by {@link
