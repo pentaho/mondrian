@@ -617,7 +617,6 @@ public class FunUtil extends Util {
 		return sum / sw.v.size();
 	}
 
-
 	static Object sum(Evaluator evaluator, Vector members, ExpBase exp) {
 		SetWrapper sw = evaluateSet(evaluator, members, exp);
 		if (sw.errorCount > 0) {
@@ -689,14 +688,35 @@ public class FunUtil extends Util {
 				1;
 	}
 
-	static Vector periodsToDate(
+	static List periodsToDate(
 			Evaluator evaluator, Level level, Member member) {
 		if (member == null) {
 			member = evaluator.getContext(
 					level.getHierarchy().getDimension());
 		}
-		Member[] members = level.getPeriodsToDate(member);
-		return toVector(members);
+		Member m = member;
+		while (m != null) {
+			if (m.getLevel() == level) {
+				break;
+			}
+			m = m.getParentMember();
+		}
+		ArrayList members = new ArrayList();
+		level.getHierarchy().getMemberRange(level, m, member, members);
+		return members;
+	}
+
+	static List memberRange(Member startMember, Member endMember) {
+		final Level level = startMember.getLevel();
+		assertTrue(level == endMember.getLevel());
+		ArrayList members = new ArrayList();
+		level.getHierarchy().getMemberRange(level, startMember, endMember, members);
+		if (members.isEmpty()) {
+			// The result is empty, so maybe the members are reversed. This is
+			// cheaper than comparing the members before we call getMemberRange.
+			level.getHierarchy().getMemberRange(level, endMember, startMember, members);
+		}
+		return members;
 	}
 
 	/**

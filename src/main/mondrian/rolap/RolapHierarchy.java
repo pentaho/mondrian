@@ -14,6 +14,8 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.rolap.sql.SqlQuery;
 
+import java.util.List;
+
 /**
  * <code>RolapHierarchy</code> implements {@link Hierarchy} for a ROLAP database.
  *
@@ -355,10 +357,15 @@ class RolapHierarchy extends HierarchyBase
 		return memberReader.lookupMember(uniqueName, failIfNotFound);
 	}
 
-	String getAlias()
-	{
+	public void getMemberRange(Level level, Member startMember, Member endMember, List list) {
+		memberReader.getMemberRange((RolapLevel) level,
+				(RolapMember) startMember, (RolapMember) endMember, list);
+	}
+
+	String getAlias() {
 		return getName();
 	}
+
 	/**
 	 * Adds to the FROM clause of the query the tables necessary to access the
 	 * members of this hierarchy. If <code>expression</code> is not null, adds
@@ -450,7 +457,7 @@ class RolapHierarchy extends HierarchyBase
  * A <code>RolapNullMember</code> is the null member of its hierarchy.
  * Every hierarchy has precisely one. They are yielded by operations such as
  * <code>[Gender].[All].ParentMember</code>. Null members are usually omitted
- * from sets (in particular, by the "{" ... "}" operator).
+ * from sets (in particular, in the set constructor operator "{ ... }".
  */
 class RolapNullMember extends RolapMember {
 	RolapNullMember(RolapHierarchy hierarchy) {

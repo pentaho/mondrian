@@ -26,7 +26,6 @@ public interface Level extends OlapElement {
 	Level getParentLevel();
 	boolean isAll();
 	boolean areMembersUnique();
-	Member[] getPeriodsToDate(Member member);
 	int getLevelType();
 	static final int STANDARD = 0;
 	static final int YEARS = 1;

@@ -13,6 +13,8 @@
 package mondrian.rolap;
 import mondrian.olap.*;
 
+import java.util.List;
+
 /**
  * todo:
  *
@@ -31,7 +33,10 @@ interface MemberReader extends MemberSource
 	 * between <code>startOrdinal</code> and <code>endOrdinal</code>. **/
 	RolapMember[] getMembersInLevel(
 		RolapLevel level, int startOrdinal, int endOrdinal);
-	RolapMember[] getPeriodsToDate(RolapLevel level, RolapMember member);
+	/** Writes all members between <code>startMember</code> and
+	 * <code>endMember</code> into <code>list</code>. */
+	void getMemberRange(RolapLevel level, RolapMember startMember,
+						RolapMember endMember, List list);
 	/** Compares two members according to their order in a prefix ordered
 	 * traversal. If <code>siblingsAreEqual</code>, then two members with the
 	 * same parent will compare equal.

@@ -35,6 +35,7 @@ public class BuiltinFunTable extends FunTable {
 	private HashMap upperName2Resolvers;
 
 	private static final Resolver[] emptyResolvers = new Resolver[0];
+	private static final Vector emptyVector = new Vector();
 
 	/**
 	 * Creates a <code>BuiltinFunTable</code>. This method should only be
@@ -289,7 +290,7 @@ public class BuiltinFunTable extends FunTable {
 
 	/**
 	 * Returns whether we can convert an argument to a parameter tyoe.
-	 * @param from argument type
+	 * @param fromExp argument type
 	 * @param to   parameter type
 	 * @param conversionCount in/out count of number of conversions performed;
 	 *             is incremented if the conversion is non-trivial (for
@@ -1296,7 +1297,7 @@ public class BuiltinFunTable extends FunTable {
 				//todo: testAvgWithNulls
 			}));
 		define(new MultiResolver(
-			"Correlation", "Correlation(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Returns the correlation of two series evaluated over a set.",			
+			"Correlation", "Correlation(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Returns the correlation of two series evaluated over a set.",
 			new String[]{"fnxN","fnxNN"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
@@ -1472,7 +1473,7 @@ public class BuiltinFunTable extends FunTable {
 								"STDEVP({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
 						test.assertEquals("53746.25874541283", result);
 					}
-				}));		
+				}));
 		define(new MultiResolver(
 				"Sum", "Sum(<Set>[, <Numeric Expression>])", "Returns the sum of a numeric expression evaluated over a set.",
 				new String[]{"fnx", "fnxN"},
@@ -1852,10 +1853,10 @@ public class BuiltinFunTable extends FunTable {
 				new String[]{"fx", "fxm"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
-						return periodsToDate(
+						return new Vector(periodsToDate(
 								evaluator,
 								evaluator.getCube().getMonthLevel(),
-								getMemberArg(evaluator, args, 0, false));
+								getMemberArg(evaluator, args, 0, false)));
 					}
 				}));
 		define(new MultiResolver(
@@ -2019,7 +2020,7 @@ public class BuiltinFunTable extends FunTable {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Level level = getLevelArg(evaluator, args, 0, false);
 						Member member = getMemberArg(evaluator, args, 1, false);
-						return periodsToDate(evaluator, level, member);
+						return new Vector(periodsToDate(evaluator, level, member));
 					}
 				}));
 		define(new MultiResolver(
@@ -2027,10 +2028,10 @@ public class BuiltinFunTable extends FunTable {
 				new String[]{"fx", "fxm"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
-						return periodsToDate(
+						return new Vector(periodsToDate(
 								evaluator,
 								evaluator.getCube().getQuarterLevel(),
-								getMemberArg(evaluator, args, 0, false));
+								getMemberArg(evaluator, args, 0, false)));
 					}
 				}));
 		if (false) define(new FunDefBase("StripCalculatedMembers", "StripCalculatedMembers(<Set>)", "Removes calculated members from a set.", "fx*"));
@@ -2286,10 +2287,10 @@ public class BuiltinFunTable extends FunTable {
 				new String[]{"fx", "fxm"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
-						return periodsToDate(
+						return new Vector(periodsToDate(
 								evaluator,
 								evaluator.getCube().getWeekLevel(),
-								getMemberArg(evaluator, args, 0, false));
+								getMemberArg(evaluator, args, 0, false)));
 					}
 				}));
 		define(new MultiResolver(
@@ -2297,13 +2298,62 @@ public class BuiltinFunTable extends FunTable {
 				new String[]{"fx", "fxm"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
-						return periodsToDate(
+						return new Vector(periodsToDate(
 								evaluator,
 								evaluator.getCube().getYearLevel(),
-								getMemberArg(evaluator, args, 0, false));
+								getMemberArg(evaluator, args, 0, false)));
 					}
 				}));
-		define(new FunDefBase(":", "<Member>:<Member>", "Infix colon operator returns the set of members between a given pair of members.", "ixmm"));
+		define(new FunDefBase(
+				":", "<Member>:<Member>", "Infix colon operator returns the set of members between a given pair of members.", "ixmm") {
+			// implement FunDef
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				final Member member0 = getMemberArg(evaluator, args, 0, true);
+				final Member member1 = getMemberArg(evaluator, args, 1, true);
+				if (member0.isNull() || member1.isNull()) {
+					return emptyVector;
+				}
+				if (member0.getLevel() != member1.getLevel()) {
+					throw newEvalException(this, "Members must belong to the same level");
+				}
+				return new Vector(FunUtil.memberRange(member0, member1));
+			}
+
+			public void testRange(FoodMartTestCase test) {
+				final Axis axis = test.executeAxis2("[Time].[1997].[Q1].[2] : [Time].[1997].[Q2].[5]");
+				String expected = "[Time].[1997].[Q1].[2]" + nl +
+						"[Time].[1997].[Q1].[3]" + nl +
+						"[Time].[1997].[Q2].[4]" + nl +
+						"[Time].[1997].[Q2].[5]"; // not parents
+				test.assertEquals(expected, test.toString(axis.positions));
+			}
+			public void testRangeStartEqualsEnd(FoodMartTestCase test) {
+				final Axis axis = test.executeAxis2("[Time].[1997].[Q3].[7] : [Time].[1997].[Q3].[7]");
+				String expected = "[Time].[1997].[Q3].[7]";
+				test.assertEquals(expected, test.toString(axis.positions));
+			}
+			public void testRangeEndBeforeStart(FoodMartTestCase test) {
+				final Axis axis = test.executeAxis2("[Time].[1997].[Q3].[7] : [Time].[1997].[Q2].[5]");
+				String expected = "[Time].[1997].[Q2].[5]" + nl +
+						"[Time].[1997].[Q2].[6]" + nl +
+						"[Time].[1997].[Q3].[7]"; // same as if reversed
+				test.assertEquals(expected, test.toString(axis.positions));
+			}
+			public void testRangeBetweenDifferentLevelsIsError(FoodMartTestCase test) {
+				test.assertAxisThrows(
+						"[Time].[1997].[Q2] : [Time].[1997].[Q2].[5]",
+						"Members must belong to the same level");
+			}
+			public void testRangeBoundedByAll(FoodMartTestCase test) {
+				final Axis axis = test.executeAxis2("[Gender] : [Gender]");
+				String expected = "[Gender].[All Gender]";
+				test.assertEquals(expected, test.toString(axis.positions));
+			}
+			public void testRangeBoundedByNull(FoodMartTestCase test) {
+				final Axis axis = test.executeAxis2("[Gender].[F] : [Gender].[M].NextMember");
+				test.assertTrue(axis.positions.length == 0);
+			}
+		});
 
 		// special resolver for the "{...}" operator
 		define(new ResolverBase(

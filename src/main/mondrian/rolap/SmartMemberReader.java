@@ -160,7 +160,7 @@ class SmartMemberReader implements MemberReader, MemberCache
 	}
 
 	/**
-	 * A <code>ChildrenList</code> is held in the {@link mapMemberToChildren}
+	 * A <code>ChildrenList</code> is held in the {@link #mapMemberToChildren}
 	 * cache. It implements {@link CachePool.Cacheable}, so it can be removed
 	 * if it is not pulling its weight.
 	 *
@@ -251,7 +251,6 @@ class SmartMemberReader implements MemberReader, MemberCache
 			list.add(child);
 			result.add(child);
 		}
-		CachePool pool = CachePool.instance();
 		synchronized (this) {
 			for (Iterator keys = tempMap.keySet().iterator(); keys.hasNext();) {
 				RolapMember member = (RolapMember) keys.next();
@@ -343,37 +342,20 @@ class SmartMemberReader implements MemberReader, MemberCache
 		}
 	}
 
-//  	interface RolapMemberPredicate
-//  	{
-//  		boolean test(RolapMember member);
-//  	};
-
-//  	class OrdinalPredicate implements RolapMemberPredicate
-//  	{
-//  		OrdinalPredicate(int startOrdinal, int endOrdinal, RolapLevel level)
-//  		{
-//  			this.startOrdinal = startOrdinal;
-//  			this.endOrdinal = endOrdinal;
-//  			this.level = level;
-//  		}
-//  	};
-
-	public RolapMember[] getPeriodsToDate(RolapLevel level, RolapMember member)
-	{
-		int startOrdinal = -1;
-		RolapMember m = member;
+	public void getMemberRange(
+			RolapLevel level, RolapMember startMember, RolapMember endMember, List list) {
+		int startOrdinal = startMember.ordinal;
+		int endOrdinal = endMember.ordinal + 1;
+		RolapMember m = endMember;
 		while (m != null) {
-			if (m.getLevel() == level) {
-				startOrdinal = m.ordinal;
+			if (m.ordinal < startMember.ordinal) {
 				break;
 			}
-			m = (RolapMember) m.getParentMember();
 		}
-		if (startOrdinal == -1) {
-			return new RolapMember[0]; // level not found
+		final RolapMember[] descendants = getDescendants(m, startMember.getLevel(), startOrdinal, endOrdinal);
+		for (int i = 0; i < descendants.length; i++) {
+			list.add(descendants[i]);
 		}
-		int endOrdinal = member.ordinal + 1;
-		return getDescendants(m, level, startOrdinal, endOrdinal);
 	}
 
 	/**

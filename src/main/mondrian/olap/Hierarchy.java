@@ -55,6 +55,12 @@ public interface Hierarchy extends OlapElement {
 	 * Looks up a member by its unique name.
 	 **/
 	Member lookupMemberByUniqueName(String s, boolean failIfNotFound);
+	/**
+	 * Appends to <code>list</code> all members between <code>startMember</code>
+	 * and <code>endMember</code> (inclusive) which belong to
+	 * <code>level</code>.
+	 */
+	void getMemberRange(Level level, Member startMember, Member endMember, List list);
 }
 
 // End Hierarchy.java

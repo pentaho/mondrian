@@ -20,6 +20,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * A <code>SqlMemberSource</code> reads members from a SQL database. Good idea
@@ -566,9 +567,9 @@ class SqlMemberSource implements MemberReader
 		throw new UnsupportedOperationException();
 	}
 
-	// implement MemberReader
-	public RolapMember[] getPeriodsToDate(RolapLevel level, RolapMember member)
-	{
+	public void getMemberRange(
+			RolapLevel level, RolapMember startMember, RolapMember endMember,
+			List memberList) {
 		throw new UnsupportedOperationException();
 	}
 

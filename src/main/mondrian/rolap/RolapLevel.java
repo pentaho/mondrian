@@ -171,25 +171,20 @@ class RolapLevel extends LevelBase
 	{
 	}
 
-	public Member[] getMembers()
-	{
+	public Member[] getMembers() {
 		return ((RolapHierarchy) hierarchy).memberReader.getMembersInLevel(
 			this, 0, Integer.MAX_VALUE);
 	}
-	public Member[] getPeriodsToDate(Member member)
-	{
-		return ((RolapHierarchy) hierarchy).memberReader.getPeriodsToDate(
-			this, (RolapMember) member);
-	}
-	public boolean isAll()
-	{
+
+	public boolean isAll() {
 		return hierarchy.hasAll() && depth == 0;
 	}
-	public boolean areMembersUnique()
-	{
+
+	public boolean areMembersUnique() {
 		return depth == 0 ||
 			depth == 1 && hierarchy.hasAll();
 	}
+
 	public String getTableAlias() {
 		return nameExp.getTableAlias();
 	}
