@@ -2012,6 +2012,63 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"where ([Time].[1997])");
 	}
 
+    /** Bug 769114: Internal error ("not found") when executing
+     * Order(TopCount). */
+    public void testBug769114() {
+        runQueryCheckResult(
+                "select {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} ON columns," + nl +
+                " Order(TopCount({[Product].[Product Category].Members}, 10.0, [Measures].[Unit Sales]), [Measures].[Store Sales], ASC) ON rows" + nl +
+                "from [Sales]" + nl +
+                "where [Time].[1997]",
+                "Axis #0:" + nl +
+                "{[Time].[1997]}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Unit Sales]}" + nl +
+                "{[Measures].[Store Cost]}" + nl +
+                "{[Measures].[Store Sales]}" + nl +
+                "Axis #2:" + nl +
+                "{[Product].[All Products].[Food].[Baked Goods].[Bread]}" + nl +
+                "{[Product].[All Products].[Food].[Deli].[Meat]}" + nl +
+                "{[Product].[All Products].[Food].[Dairy].[Dairy]}" + nl +
+                "{[Product].[All Products].[Food].[Baking Goods].[Baking Goods]}" + nl +
+                "{[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies]}" + nl +
+                "{[Product].[All Products].[Food].[Canned Foods].[Canned Soup]}" + nl +
+                "{[Product].[All Products].[Food].[Frozen Foods].[Vegetables]}" + nl +
+                "{[Product].[All Products].[Food].[Snack Foods].[Snack Foods]}" + nl +
+                "{[Product].[All Products].[Food].[Produce].[Fruit]}" + nl +
+                "{[Product].[All Products].[Food].[Produce].[Vegetables]}" + nl +
+                "Row #0: 7,870" + nl +
+                "Row #0: 6,564.09" + nl +
+                "Row #0: 16,455.43" + nl +
+                "Row #1: 9,433" + nl +
+                "Row #1: 8,215.81" + nl +
+                "Row #1: 20,616.29" + nl +
+                "Row #2: 12,885" + nl +
+                "Row #2: 12,228.85" + nl +
+                "Row #2: 30,508.85" + nl +
+                "Row #3: 8,357" + nl +
+                "Row #3: 6,123.32" + nl +
+                "Row #3: 15,446.69" + nl +
+                "Row #4: 11,888" + nl +
+                "Row #4: 9,247.29" + nl +
+                "Row #4: 23,223.72" + nl +
+                "Row #5: 8,006" + nl +
+                "Row #5: 6,408.29" + nl +
+                "Row #5: 15,966.10" + nl +
+                "Row #6: 6,984" + nl +
+                "Row #6: 5,885.05" + nl +
+                "Row #6: 14,769.82" + nl +
+                "Row #7: 30,545" + nl +
+                "Row #7: 26,963.34" + nl +
+                "Row #7: 67,609.82" + nl +
+                "Row #8: 11,767" + nl +
+                "Row #8: 10,312.77" + nl +
+                "Row #8: 25,816.13" + nl +
+                "Row #9: 20,739" + nl +
+                "Row #9: 18,048.81" + nl +
+                "Row #9: 45,185.41" + nl);
+    }
+
 	public void testCatalogHierarchyBasedOnView() {
 		Schema schema = getConnection().getSchema();
 		final Cube salesCube = schema.lookupCube("Sales", true);

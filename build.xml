@@ -17,7 +17,7 @@
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
-  <property name="version" value="1.0-rc1"/>
+  <property name="version" value="1.0"/>
 
   <!--
     ===================================================================

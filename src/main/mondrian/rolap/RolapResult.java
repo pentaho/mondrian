@@ -16,11 +16,8 @@ import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 
-import java.util.*;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.io.PrintWriter;
+import java.util.*;
 
 /**
  * A <code>RolapResult</code> is the result of running a query.
@@ -37,8 +34,9 @@ class RolapResult extends ResultBase
 	AggregatingCellReader aggregatingReader;
 	BatchingCellReader batchingReader;
     private int[] modulos;
+    private static final int MAX_AGGREGATION_PASS_COUNT = 3;
 
-	RolapResult(Query query) {
+    RolapResult(Query query) {
 		this.query = query;
 		this.point = new CellKey(new int[query.axes.length]);
 		this.axes = new RolapAxis[query.axes.length];
@@ -69,10 +67,21 @@ class RolapResult extends ResultBase
 				} else {
 					axis = query.axes[i];
 				}
-				evaluator.cellReader = batchingReader;
-				RolapAxis axisResult = executeAxis(evaluator.push(), axis);
-				batchingReader.loadAggregations();
-				batchingReader.clear();
+                RolapAxis axisResult;
+                int attempt = 0;
+                while (true) {
+                    evaluator.cellReader = batchingReader;
+                    axisResult = executeAxis(evaluator.push(), axis);
+                    if (!batchingReader.loadAggregations()) {
+                        break;
+                    }
+                    if (attempt++ > MAX_AGGREGATION_PASS_COUNT) {
+                        throw Util.newInternal("Failed to load all aggregations after " +
+                                MAX_AGGREGATION_PASS_COUNT +
+                                "passes; there's probably a cycle");
+                    }
+                }
+
 				evaluator.cellReader = aggregatingReader;
 				axisResult = executeAxis(evaluator.push(), axis);
 
@@ -188,16 +197,14 @@ class RolapResult extends ResultBase
 			// Retrieve the aggregations collected.
 			//
 			//
-			if (batchingReader.keys.isEmpty()) {
-				// We got all of the cells we needed, so the result must be
-				// correct.
-				return;
-			}
-			if (count++ > 3) {
+            if (!batchingReader.loadAggregations()) {
+                // We got all of the cells we needed, so the result must be
+                // correct.
+                return;
+            }
+			if (count++ > MAX_AGGREGATION_PASS_COUNT) {
 				throw Util.newInternal("Query required more than " + count + " iterations");
 			}
-			batchingReader.loadAggregations();
-			batchingReader.clear();
 		}
 	}
 
@@ -229,11 +236,8 @@ class RolapResult extends ResultBase
 				this.key.add(null);
 			}
 		}
-		void clear()
-		{
-			this.keys.clear();
-		}
-		// implement CellReader
+
+        // implement CellReader
 		public Object get(Evaluator evaluator)
 		{
 			RolapMember[] currentMembers =
@@ -267,6 +271,8 @@ class RolapResult extends ResultBase
 		 * it loads (and pins) into <code>pinned</code>; the caller must pass
 		 * this to {@link CachePool#unpin(Collection)}.
 		 *
+         * @return Whether any aggregations were loaded
+         *
 		 * <h3>Design discussion</h3>
 		 *
 		 * <p>Do we group them by (a) level, or (b) the underlying columns they
@@ -283,8 +289,13 @@ class RolapResult extends ResultBase
 		 * <p>For each group, extend the aggregation definition a bit, if it
 		 * will help us roll up later.
 		 **/
-		void loadAggregations() {
+		boolean loadAggregations() {
+            if (keys.isEmpty()) {
+                return false;
+            }
 			AggregationManager.instance().loadAggregations(keys, pinnedSegments);
+            keys.clear();
+            return true;
 		}
 	}
 
