@@ -863,7 +863,12 @@ public class FunUtil extends Util {
 				m1 = m1.getParentMember();
 				m2 = m2.getParentMember();
 				if (equals(m1, m2)) {
-					// todo: use ordinal not caption
+					int i1 = prev1.getOrdinal();
+					int i2 = prev2.getOrdinal();
+					// use ordinals, if one is not dummy (!= -1)
+					if ( i1 >= 0 || i2 >= 0 ) {
+						return ( (i1 > i2)? 1 : -1 );
+				  }
 					return FunUtil.compareValues(prev1.getCaption(), prev2.getCaption());
 				}
 			}
@@ -1104,10 +1109,16 @@ class HierarchicalArrayComparator extends ArrayExpComparator {
 					// including case where both parents are null
 					int c = compareByValue(prev1, prev2);
 					if (c == 0) {
-						// todo: use ordinal not caption
-						c = FunUtil.compareValues(prev1.getCaption(), prev2.getCaption());
+						int i1 = prev1.getOrdinal();
+						int i2 = prev2.getOrdinal();
+			      // use ordinals, if one is not dummy (!= -1)
+						if ( i1 >= 0 || i2 >= 0 ) {
+							c = (i1 > i2) ? 1 : -1;
+						} else {
+  						c = FunUtil.compareValues(prev1.getCaption(), prev2.getCaption());
+					  }
 					}
-					return desc ? -c : c;
+						return desc ? -c : c;
 				}
 			}
 		}

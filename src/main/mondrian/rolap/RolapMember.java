@@ -161,6 +161,13 @@ class RolapMember extends MemberBase
 	Exp getExpression() {
 		return null;
 	}
+
+	/**
+	 * Returns the ordinal of the Rolap Member
+	 */
+	public int getOrdinal() {
+		return ordinal;
+  }
 }
 
 

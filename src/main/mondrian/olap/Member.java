@@ -128,6 +128,11 @@ public interface Member extends OlapElement {
 	 * Returns the definitions of the properties this member may have.
 	 */
 	Property[] getProperties();
+
+	/**
+	 * Returns the ordinal of the member.
+	 */
+	int getOrdinal();
 }
 
 // End Member.java

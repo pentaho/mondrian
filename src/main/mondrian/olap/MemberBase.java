@@ -182,6 +182,14 @@ public abstract class MemberBase
 		// don't generally traverse to children -- we could implement, if
 		// necessary
 	}
+
+	/**
+	 * Defaulty implementation returns -1.
+	 */
+	public int getOrdinal() {
+		return -1;
+  }
+
 }
 
 // End MemberBase.java
