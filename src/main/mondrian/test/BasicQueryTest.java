@@ -2051,7 +2051,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 		Connection connection = getConnection();
 		Query query = connection.parseQuery(
 				"with member [Measures].[Rendite] as " + nl +
-				" '([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]'," + nl +
+				" '(([Measures].[Store Sales] - [Measures].[Store Cost])) / [Measures].[Store Cost]'," + nl +
 				" format_string = iif(([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost] * 100 > " + nl +
 				"     Parameter (\"UpperLimit\", NUMERIC, 151, \"Obere Grenze\"), " + nl +
 				"   \"|#.00%|arrow='up'\"," + nl +
@@ -2063,10 +2063,12 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"from Sales");
 		final String s = query.toString();
 		// Parentheses are added to reflect operator precedence, but that's ok.
-		assertEquals("with member [Measures].[Rendite] as '((([Measures].[Store Sales] - [Measures].[Store Cost])) / [Measures].[Store Cost])', " +
-				"format_string = IIf(((((([Measures].[Store Sales] - [Measures].[Store Cost])) / [Measures].[Store Cost]) * 100.0) > Parameter(\"UpperLimit\", NUMERIC, 151.0, \"Obere Grenze\")), " +
+		// Note that the doubled parentheses in line #2 of the query have been
+		// reduced to a single level.
+		assertEquals("with member [Measures].[Rendite] as '(([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost])', " +
+				"format_string = IIf((((([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]) * 100.0) > Parameter(\"UpperLimit\", NUMERIC, 151.0, \"Obere Grenze\")), " +
 				"\"|#.00%|arrow='up'\", " +
-				"IIf(((((([Measures].[Store Sales] - [Measures].[Store Cost])) / [Measures].[Store Cost]) * 100.0) < Parameter(\"LowerLimit\", NUMERIC, 150.0, \"Untere Grenze\")), " +
+				"IIf((((([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]) * 100.0) < Parameter(\"LowerLimit\", NUMERIC, 150.0, \"Untere Grenze\")), " +
 				"\"|#.00%|arrow='down'\", \"|#.00%|arrow='right'\"))" + nl +
 				"select {[Measures].Members} ON columns" + nl +
 				"from [Sales]" + nl, s);
@@ -2074,9 +2076,6 @@ public class BasicQueryTest extends FoodMartTestCase {
 
 	public void testUnparse2() {
 		Connection connection = getConnection();
-		final String x = "with member [Measures].[Average Unit Sales] as '\"\"\"foo\"\"\"'" + nl +
-						"select {[Measures].[Average Unit Sales]} ON columns" + nl +
-						"from [Sales]";
 		Query query = connection.parseQuery(
 				"with member [Measures].[Foo] as '1', " +
 				"format_string='##0.00', " +

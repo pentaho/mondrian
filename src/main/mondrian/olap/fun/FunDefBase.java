@@ -142,13 +142,19 @@ class FunDefBase extends FunUtil implements FunDef {
 		String fun = getName();
 		switch (getSyntacticType()) {
 		case TypeInfix:
-			ExpBase.unparseList(
-				pw, args, "(", " " + fun + " ", ")", callback);
+			if (needParen(args)) {
+				ExpBase.unparseList(pw, args, "(", " " + fun + " ", ")", callback);
+			} else {
+				ExpBase.unparseList(pw, args, "", " " + fun + " ", "", callback);
+			}
 			return;
 
 		case TypePrefix:
-			ExpBase.unparseList(
-				pw, args, "(" + fun + " ", null, ")", callback);
+			if (needParen(args)) {
+				ExpBase.unparseList(pw, args, "(" + fun + " ", null, ")", callback);
+			} else {
+				ExpBase.unparseList(pw, args, "" + fun + " ", null, "", callback);
+			}
 			return;
 
 		case TypeFunction:
@@ -203,6 +209,12 @@ class FunDefBase extends FunUtil implements FunDef {
 			throw Util.newInternal(
 				"unknown syntactic type " + getSyntacticType());
 		}
+	}
+
+	private static boolean needParen(Exp[] args) {
+		return !(args.length == 1 &&
+				args[0] instanceof FunCall &&
+				((FunCall) args[0]).getSyntacticType() == TypeParentheses);
 	}
 }
 

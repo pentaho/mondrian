@@ -37,7 +37,14 @@ class ParenthesesFunDef extends FunDefBase
 		this.argType = argType;
 	}
 	public void unparse(Exp[] args, PrintWriter pw, ElementCallback callback) {
-		ExpBase.unparseList(pw, args, "(", ",", ")", callback);
+		if (args.length != 1) {
+			ExpBase.unparseList(pw, args, "(", ",", ")", callback);
+		} else {
+			// Don't use parentheses unless necessary. We add parentheses around
+			// expressions because we're not sure of operator precedence, so if
+			// we're not careful, the parentheses tend to multiply ad infinitum.
+			args[0].unparse(pw, callback);
+		}
 	}
 	public Hierarchy getHierarchy(Exp[] args) {
 		Util.assertTrue(args.length == 1);
