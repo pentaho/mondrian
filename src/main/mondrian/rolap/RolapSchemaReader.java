@@ -96,7 +96,7 @@ abstract class RolapSchemaReader implements SchemaReader {
 			// For members of parent-child hierarchy, members in the same level may have
 			// different depths.
 			int depth = 0;
-			for (Member m = member; m != null; m = m.getParentMember()) {
+			for (Member m = member.getParentMember(); m != null; m = m.getParentMember()) {
 				depth++;
 			}
 			return depth;
