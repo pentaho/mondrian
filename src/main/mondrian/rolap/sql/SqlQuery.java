@@ -254,7 +254,7 @@ public class SqlQuery
 	/** Whether "select * from (select * from t)" is OK. **/
 	public boolean allowsFromQuery() {
 		// older versions of AS400 do not allow FROM subqueries
-		return !(isMySQL() || isOldAS400());
+		return !(isMySQL() || isOldAS400() || isInformix());
 	}
 	/** Whether "select count(distinct x, y) from t" is OK. **/
 	public boolean allowsCompoundCountDistinct() {
