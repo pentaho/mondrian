@@ -106,6 +106,8 @@ public class Id
 				upper.equals("SELF_BEFORE_AFTER") ||
 				upper.equals("EXCLUDEEMPTY") ||
 				upper.equals("INCLUDEEMPTY") ||
+					upper.equals("PRE") ||
+					upper.equals("POST") ||
 				upper.equals("NULL") ){
 				return Literal.createSymbol(upper);
 			}

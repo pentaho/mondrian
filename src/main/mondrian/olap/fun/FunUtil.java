@@ -334,21 +334,37 @@ public class FunUtil extends Util {
 			final boolean parentsToo = !brk;
 			HashMap mapMemberToValue = evaluateMembers(evaluator, exp, members, parentsToo);
 			if (brk) {
-				comparator = new BreakMemberComparator(mapMemberToValue);
+				comparator = new BreakMemberComparator(mapMemberToValue, desc);
 			} else {
-				comparator = new HierarchicalMemberComparator(mapMemberToValue);
+				comparator = new HierarchicalMemberComparator(mapMemberToValue, desc);
 			}
 		} else {
 			Util.assertTrue(first instanceof Member[]);
 			final int arity = ((Member[]) first).length;
 			if (brk) {
 				comparator = new BreakArrayComparator(evaluator, exp, arity);
+				if (desc) {
+					comparator = new ReverseComparator(comparator);
+				}
 			} else {
-				comparator = new HierarchicalArrayComparator(evaluator, exp, arity);
+				comparator = new HierarchicalArrayComparator(evaluator, exp, arity, desc);
 			}
 		}
-		if (desc) {
-			comparator = new ReverseComparator(comparator);
+		sort(comparator, members);
+	}
+
+	static void hierarchize(Vector members, boolean post) {
+		if (members.isEmpty()) {
+			return;
+		}
+		Object first = members.elementAt(0);
+		Comparator comparator;
+		if (first instanceof Member) {
+			comparator = new HierarchizeComparator(post);
+		} else {
+			Util.assertTrue(first instanceof Member[]);
+			final int arity = ((Member[]) first).length;
+			comparator = new HierarchizeArrayComparator(arity, post);
 		}
 		sort(comparator, members);
 	}
@@ -413,18 +429,8 @@ public class FunUtil extends Util {
 	 * truncated vector of members
 	 */
 	static Object topOrBottom (Evaluator evaluator, Vector members, ExpBase exp, boolean isTop, boolean isPercent, double target) {
-		final boolean brk = true,
-			desc = isTop;
 		HashMap mapMemberToValue = evaluateMembers(evaluator, exp, members, false);
-		Comparator comparator;
-		if (brk) {
-			comparator = new BreakMemberComparator(mapMemberToValue);
-		} else {
-			comparator = new HierarchicalMemberComparator(mapMemberToValue);
-		}
-		if (isTop) {
-			comparator = new ReverseComparator(comparator);
-		}
+		Comparator comparator = new BreakMemberComparator(mapMemberToValue, isTop);
 		sort(comparator, members);
 		if (isPercent) {
 			toPercent(members, mapMemberToValue);
@@ -745,6 +751,34 @@ public class FunUtil extends Util {
 		return children[children.length - 1];
 	}
 
+	static int compareHierarchically(Member m1, Member m2, boolean post) {
+		if (m1 == m2) {
+			return 0;
+		}
+		while (true) {
+			int levelDepth1 = m1.getLevel().getDepth(),
+				levelDepth2 = m2.getLevel().getDepth();
+			if (levelDepth1 < levelDepth2) {
+				m2 = m2.getParentMember();
+				if (m1 == m2) {
+					return post ? 1 : -1;
+				}
+			} else if (levelDepth1 > levelDepth2) {
+				m1 = m1.getParentMember();
+				if (m1 == m2) {
+					return post ? -1 : 1;
+				}
+			} else {
+				Member prev1 = m1, prev2 = m2;
+				m1 = m1.getParentMember();
+				m2 = m2.getParentMember();
+				if (m1 == m2) {
+					// todo: use ordinal not caption
+					return FunUtil.compareValues(prev1.getCaption(), prev2.getCaption());
+				}
+			}
+		}
+	}
 	/**
 	 * Adds a test case for each method of this object whose signature looks
 	 * like 'public void testXxx()'.
@@ -802,9 +836,11 @@ public class FunUtil extends Util {
 
 abstract class MemberComparator implements Comparator {
 	Map mapMemberToValue;
+	private boolean desc;
 
-	MemberComparator(Map mapMemberToValue) {
+	MemberComparator(Map mapMemberToValue, boolean desc) {
 		this.mapMemberToValue = mapMemberToValue;
+		this.desc = desc;
 	}
 
 	// implement Comparator
@@ -825,9 +861,10 @@ abstract class MemberComparator implements Comparator {
 	protected abstract int compareInternal(Member m1, Member m2);
 
 	protected int compareByValue(Member m1, Member m2) {
-		Object value0 = mapMemberToValue.get(m1),
-				value1 = mapMemberToValue.get(m2);
-		return FunUtil.compareValues(value0, value1);
+		Object value1 = mapMemberToValue.get(m1),
+				value2 = mapMemberToValue.get(m2);
+		final int c = FunUtil.compareValues(value1, value2);
+		return desc ? -c : c;
 	}
 
 	protected int compareHierarchicallyButSiblingsByValue(Member m1, Member m2) {
@@ -861,8 +898,8 @@ abstract class MemberComparator implements Comparator {
 }
 
 class HierarchicalMemberComparator extends MemberComparator {
-	HierarchicalMemberComparator(Map mapMemberToValue) {
-		super(mapMemberToValue);
+	HierarchicalMemberComparator(Map mapMemberToValue, boolean desc) {
+		super(mapMemberToValue, desc);
 	}
 
 	protected int compareInternal(Member m1, Member m2) {
@@ -871,8 +908,8 @@ class HierarchicalMemberComparator extends MemberComparator {
 }
 
 class BreakMemberComparator extends MemberComparator {
-	BreakMemberComparator(Map mapMemberToValue) {
-		super(mapMemberToValue);
+	BreakMemberComparator(Map mapMemberToValue, boolean desc) {
+		super(mapMemberToValue, desc);
 	}
 
 	protected int compareInternal(Member m1, Member m2) {
@@ -884,12 +921,9 @@ class BreakMemberComparator extends MemberComparator {
  * Compares tuples, which are represented as arrays of {@link Member}s.
  */
 abstract class ArrayComparator implements Comparator {
-	Evaluator evaluator;
-	Exp exp;
 	int arity;
-	ArrayComparator(Evaluator evaluator, Exp exp, int arity) {
-		this.evaluator = evaluator;
-		this.exp = exp;
+
+	ArrayComparator(int arity) {
 		this.arity = arity;
 	}
 
@@ -904,6 +938,7 @@ abstract class ArrayComparator implements Comparator {
 		}
 		return sb.toString();
 	}
+
 	public int compare(Object o1, Object o2) {
 		final Member[] a1 = (Member[]) o1;
 		final Member[] a2 = (Member[]) o2;
@@ -915,12 +950,32 @@ abstract class ArrayComparator implements Comparator {
 		}
 		return c;
 	}
+
 	protected abstract int compare(Member[] a1, Member[] a2);
 }
 
-class HierarchicalArrayComparator extends ArrayComparator {
-	HierarchicalArrayComparator(Evaluator evaluator, Exp exp, int arity) {
+/**
+ * Extension to {@link ArrayComparator} which compares tuples by evaluating an
+ * expression.
+ */
+abstract class ArrayExpComparator extends ArrayComparator {
+	Evaluator evaluator;
+	Exp exp;
+
+	ArrayExpComparator(Evaluator evaluator, Exp exp, int arity) {
+		super(arity);
+		this.evaluator = evaluator;
+		this.exp = exp;
+	}
+
+}
+
+class HierarchicalArrayComparator extends ArrayExpComparator {
+	private boolean desc;
+
+	HierarchicalArrayComparator(Evaluator evaluator, Exp exp, int arity, boolean desc) {
 		super(evaluator, exp, arity);
+		this.desc = desc;
 	}
 	protected int compare(Member[] a1, Member[] a2) {
 		for (int i = 0; i < arity; i++) {
@@ -960,11 +1015,11 @@ class HierarchicalArrayComparator extends ArrayComparator {
 				if (m1 == m2) {
 					// including case where both parents are null
 					int c = compareByValue(prev1, prev2);
-					if (c != 0) {
-						return c;
+					if (c == 0) {
+						// todo: use ordinal not caption
+						c = FunUtil.compareValues(prev1.getCaption(), prev2.getCaption());
 					}
-					// todo: use ordinal not caption
-					return FunUtil.compareValues(prev1.getCaption(), prev2.getCaption());
+					return desc ? -c : c;
 				}
 			}
 		}
@@ -983,7 +1038,7 @@ class HierarchicalArrayComparator extends ArrayComparator {
 	}
 }
 
-class BreakArrayComparator extends ArrayComparator {
+class BreakArrayComparator extends ArrayExpComparator {
 	BreakArrayComparator(Evaluator evaluator, Exp exp, int arity) {
 		super(evaluator, exp, arity);
 	}
@@ -997,6 +1052,51 @@ class BreakArrayComparator extends ArrayComparator {
 	}
 }
 
+/**
+ * Compares arrays of {@link Member}s so as to convert them into hierarchical
+ * order. Applies lexicographic order to the array.
+ */
+class HierarchizeArrayComparator extends ArrayComparator {
+	private boolean post;
+
+	HierarchizeArrayComparator(int arity, boolean post) {
+		super(arity);
+		this.post = post;
+	}
+
+	protected int compare(Member[] a1, Member[] a2) {
+		for (int i = 0; i < arity; i++) {
+			Member m1 = a1[i],
+					m2 = a2[i];
+			int c = FunUtil.compareHierarchically(m1, m2, post);
+			if (c != 0) {
+				return c;
+			}
+			// compareHierarchically imposes a total order
+			Util.assertTrue(m1 == m2);
+		}
+		return 0;
+	}
+}
+
+/**
+ * Compares {@link Member}s so as to arrage them in prefix or postfix
+ * hierarchical order.
+ */
+class HierarchizeComparator implements Comparator {
+	private boolean post;
+
+	HierarchizeComparator(boolean post) {
+		this.post = post;
+	}
+	public int compare(Object o1, Object o2) {
+		return FunUtil.compareHierarchically((Member) o1, (Member) o2, post);
+	}
+}
+
+/**
+ * Reverses the order of a {@link Comparator}.
+ */
 class ReverseComparator implements Comparator {
 	Comparator comparator;
 	ReverseComparator(Comparator comparator) {
