@@ -2453,6 +2453,7 @@ public class BuiltinFunTable extends FunTable {
 				return toBoolean(!o0.equals(o1));
 			}
 		});
+
 		define(new FunDefBase("<", "<Numeric Expression> < <Numeric Expression>", "Returns whether an expression is less than another.", "ibnn") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Double o0 = getDoubleArg(evaluator, args, 0),
@@ -2462,6 +2463,16 @@ public class BuiltinFunTable extends FunTable {
 				return toBoolean(o0.compareTo(o1) < 0);
 			}
 		});
+		define(new FunDefBase("<", "<String Expression> < <String Expression>", "Returns whether an expression is less than another.", "ibSS") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				String o0 = getStringArg(evaluator, args, 0, null),
+				o1 = getStringArg(evaluator, args, 1, null);
+				if (o0 == null || o1 == null)
+					return null;
+				return toBoolean(o0.compareTo(o1) < 0);
+			}
+		});
+
 		define(new FunDefBase("<=", "<Numeric Expression> <= <Numeric Expression>", "Returns whether an expression is less than or equal to another.", "ibnn") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Double o0 = getDoubleArg(evaluator, args, 0),
@@ -2471,6 +2482,16 @@ public class BuiltinFunTable extends FunTable {
 				return toBoolean(o0.compareTo(o1) <= 0);
 			}
 		});
+		define(new FunDefBase("<=", "<String Expression> <= <String Expression>", "Returns whether an expression is less than or equal to another.", "ibSS") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				String o0 = getStringArg(evaluator, args, 0, null),
+				o1 = getStringArg(evaluator, args, 1, null);
+				if (o0 == null || o1 == null)
+					return null;
+				return toBoolean(o0.compareTo(o1) <= 0);
+			}
+		});
+		
 		define(new FunDefBase(">", "<Numeric Expression> > <Numeric Expression>", "Returns whether an expression is greater than another.", "ibnn") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Double o0 = getDoubleArg(evaluator, args, 0),
@@ -2480,11 +2501,30 @@ public class BuiltinFunTable extends FunTable {
 				return toBoolean(o0.compareTo(o1) > 0);
 			}
 		});
+		define(new FunDefBase(">", "<String Expression> > <String Expression>", "Returns whether an expression is greater than another.", "ibSS") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				String o0 = getStringArg(evaluator, args, 0, null),
+				o1 = getStringArg(evaluator, args, 1, null);
+				if (o0 == null || o1 == null)
+					return null;
+				return toBoolean(o0.compareTo(o1) > 0);
+			}
+		});
+		
 		define(new FunDefBase(">=", "<Numeric Expression> >= <Numeric Expression>", "Returns whether an expression is greater than or equal to another.", "ibnn") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Double o0 = getDoubleArg(evaluator, args, 0),
 						o1 = getDoubleArg(evaluator, args, 1);
 				if (o0.isNaN() || o1.isNaN())
+					return null;
+				return toBoolean(o0.compareTo(o1) >= 0);
+			}
+		});
+		define(new FunDefBase(">=", "<String Expression> >= <String Expression>", "Returns whether an expression is greater than or equal to another.", "ibSS") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				String o0 = getStringArg(evaluator, args, 0, null),
+				o1 = getStringArg(evaluator, args, 1, null);
+				if (o0 == null || o1 == null)
 					return null;
 				return toBoolean(o0.compareTo(o1) >= 0);
 			}
