@@ -14,6 +14,7 @@ package mondrian.resource;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Method;
 
 /**
  * A <code>ChainableError</code> is an an error which can be constructed from a
@@ -35,8 +36,8 @@ public class ChainableError extends Error implements ChainableThrowable
 	public ChainableError(Throwable cause, ResourceInstance instance)
 	{
 		super(instance.toString());
-		this.cause = cause;
 		this.instance = instance;
+		this.cause = cause;
 	}
 	/**
 	 * Implements {@link ChainableThrowable}.
@@ -45,13 +46,6 @@ public class ChainableError extends Error implements ChainableThrowable
 	public Throwable getCause()
 	{
 		return cause;
-	}
-	/**
-	 * This method was added to {@link Throwable} in JDK 1.4.
-	 */
-	public void initCause(Throwable cause)
-  	{
-		this.cause = cause;
 	}
 	public ResourceInstance getResourceInstance()
 	{

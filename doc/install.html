@@ -45,6 +45,7 @@
     <li><a href="#5_3_hsqldb">hsqldb</a></li>
     <li><a href="#5_4_MySQL">MySQL</a></li>
     <li><a href="#5_5_PostgreSQL">PostreSQL</a></li>
+    <li><a href="#5_6_IBM_DB2">IBM DB2</a></li>
   </ol></li>
   <li><a href="#6_Run_the_test_suite">Run the test suite</a>
   <li><a href="#8_Run_the_web_app">Run the web app</a>
@@ -113,6 +114,13 @@
     <td nowrap><i>Julian Hyde</i></td>
     <td><em>Add MySQL instructions.</em></td>
   </tr>
+  
+   <tr>
+    <td nowrap><i>September 23<sup>rd</sup>, 2002</i></td>
+    <td><em>8</em></td>
+    <td nowrap><i>Julian Hyde</i></td>
+    <td><em>Revised installation instructions for binary release.</em></td>
+  </tr>
 </table>
 
 <h2><a name="3_Setup_build_environment">3. Setup build environment</a></h2>
@@ -147,37 +155,30 @@ source-code server.</p>
 
 <p>Download the latest binary
 release <code> mondrian-0.<i>x</i>-bin.zip</code> from <a href="http://sourceforge.net/projects/mondrian">
-SourceForge</a>, and unzip it. The place you unzipped to, say say <code>C:\mondrian</code>, 
-or <code>/usr/mondrian-0.<i>x</i></code>, is your <dfn><font face="Verdana">project 
-location</font></dfn> (denoted by <code> <i>${project.location}</i></code>). Now 
+SourceForge</a>, and unzip it. The place you unzipped to &mdash; say <code>C:\mondrian</code> 
+or <code>/usr/mondrian-0.<i>x</i></code> &mdash; is your <dfn>project 
+location</dfn> (denoted by <code> <i>${project.location}</i></code>). Now 
 do the following steps:</p>
 
 <blockquote>
 <ol>
-<li><code>cd <i>${project.location}</i>/bin</code></li>
-<li>Change variables in <code> <i>${project.location}</i>/bin/junitStart.bat</code> to suit your environment.</li>   
-<li>Add the <code> <i>${project.location}</i>/bin</code> directory to your system 
-CLASSPATH.</li>   
-<li>Load the database, as described <a href="#5_Load_the_database">here</a>.</li>   
-<li>Type <code>startJunit.bat</code> to run the JUnit test suite. All of the 
+<li>Load the database, as described <a href="#5_Load_the_database">here</a>.</li>
+<li>Change variables in <code><i>${project.location}</i>/bin/mondrian.bat</code> 
+and <code><i>${project.location}</i>/bin/mondrian.properties</code> to suit your environment.</li>
+<li><code>cd <i>${project.location}</i>/bin</code></li>   
+<li>Type <code>mondrian.bat test</code> to run the JUnit test suite. All of the 
 tests should succeed.</li>   
-<li>To run the webapp, copy <code>mondrian.war</code> to <i><code>TOMCAT_HOME</code></i><code>/webapps</code>.</li>   
-<li>Start Tomcat and hit <a href="http://localhost:8080/mondrian">http://localhost:8080/mondrian</a>; this will 
-fail.</li>   
-<li>Stop Tomcat.</li>   
-
-<li>Modify <code>web.xml</code> in <code><i>TOMCAT_HOME</i>/webapps/mondrian/WEB-INF</code> dir to suit your environment.</li>
-<li>Start Tomcat and try <a href="http://localhost:8080/mondrian">http://localhost:8080/mondrian</a> again; 
-it should now work.</li>
+<li>To run the webapp in Tomcat, type <code>mondrian.bat deploy-to-tomcat</code>. 
+This will create <i><code>TOMCAT_HOME</i>/webapps/mondrian.war</code>.</li>   
+<li>Start Tomcat and hit <a href="http://localhost:8080/mondrian">http://localhost:8080/mondrian</a>.</li>
  </ol>
 </blockquote>
 
 <h3><a name="4_2_Download_the_latest_source_release">4.2. Download the 
 latest source release</a></h3>
 <p>Download the latest <code>mondrian-0.<i>x</i>-src.zip</code> from <a href="http://sourceforge.net/projects/mondrian">
-SourceForge</a>, and unzip. The place you unzipped to, say <code>C:\mondrian</code>, 
-or <code>/usr/mondrian-0.<i>x</i></code>, 
-is your <dfn><font face="Verdana">project location</font></dfn> (denoted by <code> <i>${project.location}</i></code>).</p>
+SourceForge</a>, and unzip. The place you unzipped to &mdash; <code>C:\mondrian</code> 
+or <code>/usr/mondrian-0.<i>x</i></code> &mdash; your <dfn>project location</dfn> (denoted by <code><i>${project.location}</i></code>).</p>
 
 <p>Now build the code, as follows:</p>
 
@@ -226,7 +227,7 @@ def:
 [xomgen] Done
 
 compile.java:
-[javac] Compiling 156 source files to C:\mondrian\classes
+[javac] Compiling 164 source files to C:\mondrian\classes
 
 compile.jsp.maybe:
 
@@ -280,7 +281,7 @@ SourceForge</a>, and unzip it to <code> <i>${project.location}</i></code>. If yo
 server, you should already have the latest data files.</p>
 <p>Now create a database. How you create and load the database depends upon 
 which database you are using.</p>
-<p> <i>(Did these instructions work for you? Have you managed to get mondrian 
+<p><i>(Did these instructions work for you? Have you managed to get mondrian 
 working on other databases/versions? Please 
 <a href="mailto:jhyde@users.sourceforge.net">let me know</a>.)</i></p>
 
@@ -359,7 +360,7 @@ Import terminated successfully without warnings.</pre>
 <a href="http://www.mysql.com/doc/en/Adding_users.html">create a user</a> and a 
 database:</p>
 <blockquote>
-  <pre><font face="Courier New">C:\mysql\bin&gt; <b>mysql</b>
+  <pre>C:\mysql\bin&gt; <b>mysql</b>
 mysql&gt; <b>GRANT ALL PRIVILEGES ON *.* TO foodmart@localhost
     </b>-&gt;<b> IDENTIFIED BY 'foodmart';</b>
 Query OK, 0 rows affected (0.06 sec)
@@ -372,7 +373,7 @@ Database changed
 
 mysql&gt; <b>connect foodmart</b>
 Connection id: 5
-Current database: foodmart</font></pre>
+Current database: foodmart</pre>
 </blockquote>
 <p>Change the datasets for MySQL syntax:</p>
 <ul>
@@ -385,7 +386,7 @@ Current database: foodmart</font></pre>
 </ul>
 <p>Create the tables, load the data, run sanity checks, create indexes:</p>
 <blockquote>
-  <pre><font face="Courier New">mysql&gt; <b>source c:/mondrian/demo/FoodMartTables.sql
+  <pre>mysql&gt; <b>source c:/mondrian/demo/FoodMartTables.sql
 </b>Query OK, 1 row affected (0.00 sec)
 (15 times)
 
@@ -437,7 +438,7 @@ Query OK, 10281 rows affected (0.63 sec)
 Records: 10281 Duplicates: 0 Warnings: 0
 ...
 
-mysql&gt; <b>exit</b></font></pre>
+mysql&gt; <b>exit</b></pre>
 </blockquote>
 
 <p>In build.xml, set the property <code>
@@ -456,22 +457,41 @@ example:</p><blockquote>
         FoodMartTables.sql</code>, change <code>DOUBLE</code> to <code>DOUBLE
     PRECISION</code>, and <code>BIT</code> to <code>SMALLINT</code>.</p>
 
-<h2><a name="6_Run_the_test_suite">6. Run the test suite</a></h2>
-<p>Edit the &quot;FoodMartTest&quot; target in <code>build.xml</code>.</p>
-<p>Run</p>
+<h3><a name="5_6_IBM_DB2">5.6. IBM DB2</a></h3>
+
+<p>There are unconfirmed reports of mondrian running on DB2. If you have 
+succeeded, please 
+<a href="mailto:jhyde@users.sourceforge.net">let me know</a>.</p>
+
+<h2><a name="6_Run_the_test_suite">6. Running the test suite</a></h2>
+<p>In a build environment,</p>
 <blockquote>
   <pre>cd <i>${project.location}</i>
 build test</pre>
 </blockquote>
+<p>In a runtime environment,</p>
+<blockquote>
+  <pre>cd <i>${project.location}</i>/bin
+mondrian test</pre>
+</blockquote>
 <h2><a name="8_Run_the_web_app">7. Run the web app</a></h2>
 <ol>
-  <li>First install Tomcat, as above.</li>
-  <li>Make sure the <code>web.xml</code> file in <code>${project.location}/</code><code>webapp/WEB-INF</code> 
-  is correct for your environment. In particular, check the paths in the init 
-  parameters to <code>MDXQueryServlet</code>.</li>
-  <li><code>build deploy-webapp</code>.</li>
-  <li>Start up tomcat. (<code>build start.tomcat</code> is an easy way to do this.)</li>
-  <li>Hit <a href="http://localhost:8080/mondrian" target="_new">http://localhost:8080/mondrian</a>.</li>
+  <li>First <a href="#Tomcat">install Tomcat</a>.</li>
+  <li>Make sure the values in <code>mondrian.properties</code> are correct for your environment. In particular:<ul>
+    <li>Make sure your database's JDBC driver is in <code>mondrian.jdbcDrivers</code></li>
+    <li>Check the catalog URL in <code>mondrian.test.connectString</code> and
+    <code>mondrian.foodmart.catalogURL</code></li>
+    <li>Check the JDBC connect strings in <code>mondrian.test.connectString</code> 
+    and <code>mondrian.foodmart.jdbcURL</code>.</li>
+  </ul>
+  </li>
+  <li>Run <code>build deploy-webapp</code> (or <code>mondrian deploy-to-tomcat</code>, 
+  if this is a a runtime environment).</li>
+  <li>Start up tomcat. (If this is a build environment, <code>build start.tomcat</code> is an easy way to do this.)</li>
+  <li>Hit <a href="http://localhost:8080/mondrian" target="_new">http://localhost:8080/mondrian</a>. 
+  Also try <a target="_new" href="http://localhost:8080/mondrian/taglib.jsp">http://localhost:8080/mondrian/taglib.jsp</a> 
+  and <a target="_new" href="http://localhost:8080/mondrian/morph.jsp">http://localhost:8080/mondrian/morph.jsp</a> 
+  (still under construction).</li>
 </ol>
 <h2><a name="8_Miscellaneous">8. Miscellaneous</a></h2>
 <h3><a name="8_1_Coding_guidelines">8.1. Coding guidelines</a></h3>
@@ -487,10 +507,12 @@ their first use as possible.</li>
   <li>Don't initialize variables with 'dummy' values just
 to shut up the compiler.</li>
   <li>Try to keep lines shorter than 80 characters.</li>
-  <li>Javadoc comments on
-methods are written in the active ('Collects garbage.') not imperative ('Collect
-garbage.')</li>
-  <li>When editing HTML documents, don't use an editor which reformats the
+  <li>Write Javadoc comments on
+methods  in the present active ('Collects garbage.'), <em><font face="Verdana">not</font></em> 
+  the imperative ('Collect
+garbage.'), passive ('Garbage is collected.'), or future active ('Will collect 
+  garbage.').</li>
+  <li>When editing HTML documents, please don't use an editor which reformats the
 HTML source (such as Word).</li>
 </ul>
 
@@ -517,10 +539,10 @@ sufficient to edit the corresponding line in <code><i>${project.location}</i>/bu
   <tr>
     <td><a name="JDK">JDK</a></td>
     <td>Yes</td>
-    <td>1.1 or later (I use version 1.3.1.)</td>
+    <td>1.2 or later (I use version 1.4.1.)</td>
     <td>Available from <a href="http://developer.java.sun.com/" target="_blank">http://developer.java.sun.com/</a>.
-      I downloaded <code>j2sdk-1_3_1_02-win.exe</code>, and extracted to <code>E:/jdk1.3.1_02</code>. Set
-      <code> JAVA_HOME</code> to same, and <code> CLASS_PATH</code> to <code>%JAVA_HOME%/lib/dt.jar</code>.</td>
+      I downloaded <code>j2sdk-1_4_1-windows-i586.exe</code>, and extracted to <code>E:/j2sdk1.4.1</code>. Set
+      <code>JAVA_HOME</code> to same.</td>
   </tr>
   <tr>
     <td><a name="Ant">Ant</a></td>

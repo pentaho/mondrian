@@ -782,8 +782,8 @@ interface TimeSchedule {
 class OnceTimeSchedule implements TimeSchedule {
 	Calendar time;
 	OnceTimeSchedule(Calendar time) {
-		ScheduleUtil.assert(time != null);
-		ScheduleUtil.assert(ScheduleUtil.isTime(time));
+		ScheduleUtil.assertTrue(time != null);
+		ScheduleUtil.assertTrue(ScheduleUtil.isTime(time));
 		this.time = time;
 	}
 	public Calendar nextOccurrence(Calendar after, boolean strict) {
@@ -820,7 +820,7 @@ class DailyDateSchedule implements DateSchedule {
 	int beginOrdinal;
 	DailyDateSchedule(Calendar begin, int period) {
 		this.period = period;
-		ScheduleUtil.assert(period > 0, "period must be positive");
+		ScheduleUtil.assertTrue(period > 0, "period must be positive");
 		this.beginOrdinal = ScheduleUtil.julianDay(
 				begin == null ? ScheduleUtil.epochDay : begin);
 	}
@@ -851,14 +851,14 @@ class WeeklyDateSchedule implements DateSchedule {
 
 	WeeklyDateSchedule(Calendar begin, int period, int daysOfWeekBitmap) {
 		this.period = period;
-		ScheduleUtil.assert(period > 0, "period must be positive");
+		ScheduleUtil.assertTrue(period > 0, "period must be positive");
 		this.beginOrdinal = ScheduleUtil.julianDay(
 				begin == null ? ScheduleUtil.epochDay : begin) / 7;
 		this.daysOfWeekBitmap = daysOfWeekBitmap;
-		ScheduleUtil.assert(
+		ScheduleUtil.assertTrue(
 				(daysOfWeekBitmap & Schedule.allDaysOfWeekBitmap) != 0,
 				"weekly schedule must have at least one day set");
-		ScheduleUtil.assert(
+		ScheduleUtil.assertTrue(
 				(daysOfWeekBitmap & Schedule.allDaysOfWeekBitmap) == daysOfWeekBitmap,
 				"weekly schedule has bad bits set: " + daysOfWeekBitmap);
 	}
@@ -897,13 +897,13 @@ class MonthlyByDayDateSchedule implements DateSchedule {
 	MonthlyByDayDateSchedule(
 			Calendar begin, int period, int daysOfMonthBitmap) {
 		this.period = period;
-		ScheduleUtil.assert(period > 0, "period must be positive");
+		ScheduleUtil.assertTrue(period > 0, "period must be positive");
 		this.beginMonth = begin == null ? 0 : monthOrdinal(begin);
 		this.daysOfMonthBitmap = daysOfMonthBitmap;
-		ScheduleUtil.assert(
+		ScheduleUtil.assertTrue(
 				(daysOfMonthBitmap & Schedule.allDaysOfMonthBitmap) != 0,
 				"monthly day schedule must have at least one day set");
-		ScheduleUtil.assert(
+		ScheduleUtil.assertTrue(
 				(daysOfMonthBitmap & Schedule.allDaysOfMonthBitmap) ==
 				daysOfMonthBitmap,
 				"monthly schedule has bad bits set: " + daysOfMonthBitmap);
@@ -962,21 +962,21 @@ class MonthlyByWeekDateSchedule implements DateSchedule {
 			Calendar begin, int period, int daysOfWeekBitmap,
 			int weeksOfMonthBitmap) {
 		this.period = period;
-		ScheduleUtil.assert(period > 0, "period must be positive");
+		ScheduleUtil.assertTrue(period > 0, "period must be positive");
 		this.beginMonth = begin == null ? 0 : monthOrdinal(begin);
 		this.daysOfWeekBitmap = daysOfWeekBitmap;
-		ScheduleUtil.assert(
+		ScheduleUtil.assertTrue(
 				(daysOfWeekBitmap & Schedule.allDaysOfWeekBitmap) != 0,
 				"weekly schedule must have at least one day set");
-		ScheduleUtil.assert(
+		ScheduleUtil.assertTrue(
 				(daysOfWeekBitmap & Schedule.allDaysOfWeekBitmap) ==
 				daysOfWeekBitmap,
 				"weekly schedule has bad bits set: " + daysOfWeekBitmap);
 		this.weeksOfMonthBitmap = weeksOfMonthBitmap;
-		ScheduleUtil.assert(
+		ScheduleUtil.assertTrue(
 				(weeksOfMonthBitmap & Schedule.allWeeksOfMonthBitmap) != 0,
 				"weeks of month schedule must have at least one week set");
-		ScheduleUtil.assert(
+		ScheduleUtil.assertTrue(
 				(weeksOfMonthBitmap & Schedule.allWeeksOfMonthBitmap) ==
 				weeksOfMonthBitmap,
 				"week of month schedule has bad bits set: " +
@@ -1039,12 +1039,12 @@ class ScheduleUtil {
 	static final Calendar epochDay = ScheduleUtil.createCalendar(new Date(0));
 	static final Calendar midnightTime = ScheduleUtil.createTimeCalendar(0,0,0);
 
-	public static void assert(boolean b) {
+	public static void assertTrue(boolean b) {
 		if (!b) {
 			throw new Error("assertion failed");
 		}
 	}
-	public static void assert(boolean b, String s) {
+	public static void assertTrue(boolean b, String s) {
 		if (!b) {
 			throw new Error("assertion failed: " + s);
 		}

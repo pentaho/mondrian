@@ -43,35 +43,35 @@ public class ChainableException
 	{
 		return cause;
 	}
-	/**
-	 * This method was added to {@link Throwable} in JDK 1.4.
-	 */
-	public void initCause(Throwable cause)
-  	{
-		this.cause = cause;
-	}
-	/**
-	 * Override getLocalizedMessage to handle chained exceptions.
-	 o/
-	public String getLocalizedMessage()
-	{
-		if(cause == null)
-			return super.getMessage();
-		else
-			return super.getMessage() + ": " + cause.getLocalizedMessage();
-	}
 
-	/**
-	 * Override getMessage to handle chained exceptions.
-	 o/
-	public String getMessage()
-	{
-		if(cause == null)
-			return super.getMessage();
-		else
-			return super.getMessage() + ": " + cause.getMessage();
-	}
-*/
+//	/**
+//	 * Override getLocalizedMessage to handle chained exceptions.
+//	 */
+//	public String getLocalizedMessage()
+//	{
+//		if(cause == null)
+//			return super.getMessage();
+//		else
+//			return super.getMessage() + ": " + cause.getLocalizedMessage();
+//	}
+//
+//	/**
+//	 * Override getMessage to handle chained exceptions.
+//	 */
+//	public String getMessage()
+//	{
+//		if(cause == null)
+//			return super.getMessage();
+//		else
+//			return super.getMessage() + ": " + cause.getMessage();
+//	}
+//
+//	/**
+//	 * Override toString to handle chained exceptions.
+//	 */
+//	public String toString() {
+//		return Util.toString(this);
+//	}
 
 	/**
 	 * Return only the first message of this exception.  Ignore all
@@ -82,14 +82,6 @@ public class ChainableException
 	{
 		return super.getMessage();
 	}
-
-	/**
-	 * Override toString to handle chained exceptions.
-	 o/
-	public String toString() {
-		return Util.toString(this);
-	}
-	*/
 
 	public void printStackTrace(PrintWriter s) {
 		if (s instanceof Util.DummyPrintWriter) {

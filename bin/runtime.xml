@@ -11,7 +11,7 @@
   == Ant build-file used in runtime installation of mondrian.
   -->
 
-<project name="mondrian" default="compile">
+<project name="mondrian" default="test">
   <!-- Properties specified in mondrian.properties override those set in
        the environment. -->
   <property environment="myenv"/>
@@ -60,13 +60,14 @@ junit.jar"/>
     </war>
   </target>
 
-  <target name="deploy-to-tomcat" depends="war">
+  <target name="deploy-to-tomcat" depends="war" description="
+Builds mondrian.war and deploys it to Tomcat (${tomcat.home})">
     <delete dir="${tomcat.home}/webapps/mondrian"/>
     <copy file="${war.file}"
         todir="${tomcat.home}/webapps"/>
   </target>
 
-  <target name="junit">
+  <target name="junit" description="Runs unit tests.">
     <mkdir dir="junit-results"/>
     <junit printsummary="yes" fork="yes" haltonfailure="no" >
         <classpath>
@@ -88,5 +89,7 @@ junit.jar"/>
 
     <echo>See results at junit-results/html/index.html.</echo>
   </target>
+
+  <target name="test" description="Runs unit tests." depends="junit"/>
 
 </project>
