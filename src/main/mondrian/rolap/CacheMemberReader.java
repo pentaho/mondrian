@@ -35,7 +35,10 @@ class CacheMemberReader implements MemberReader, MemberCache
 	CacheMemberReader(MemberSource source)
 	{
 		this.source = source;
-		source.setCache(this);
+		if (false) {
+			// we don't want the reader to write back to our cache
+			Util.discard(source.setCache(this));
+		}
 		this.mapKeyToMember = new HashMap();
 		this.members = source.getMembers();
 		for (int i = 0; i < members.length; i++) {
@@ -49,11 +52,10 @@ class CacheMemberReader implements MemberReader, MemberCache
 		return source.getHierarchy();
 	}
 
-	// implement MemberSource
-	public void setCache(MemberCache cache)
-	{
-		throw Util.newInternal(
-			getClass() + " must be master of its own cache");
+	public boolean setCache(MemberCache cache) {
+		// we do not support cache writeback -- we must be masters of our
+		// own cache
+		return false;
 	}
 
 	// implement MemberReader
@@ -92,52 +94,22 @@ class CacheMemberReader implements MemberReader, MemberCache
 		return false;
 	}
 
-	public RolapMember lookupMember(String uniqueName, boolean failIfNotFound) {
-		return lookupMember(this, uniqueName, failIfNotFound);
+	public RolapMember lookupMember(String[] uniqueNameParts, boolean failIfNotFound) {
+		return RolapUtil.lookupMember(this, uniqueNameParts, failIfNotFound);
 	}
 
-	static RolapMember lookupMember(
-			MemberReader reader, String uniqueName, boolean failIfNotFound) {
-		String[] names = Util.explode(uniqueName);
-		RolapMember member = null;
-		for (int i = 0; i < names.length; i++) {
-			String name = names[i];
-			RolapMember[] children;
-			if (member == null) {
-				children = reader.getRootMembers();
-			} else {
-				children = reader.getMemberChildren(new RolapMember[] {member});
-				member = null;
-			}
-			for (int j = 0; j < children.length; j++) {
-				RolapMember child = children[j];
-				if (child.getName().equals(name)) {
-					member = child;
-					break;
-				}
-			}
-			if (member == null) {
-				break;
-			}
-		}
-		if (member == null && failIfNotFound) {
-			throw Util.getRes().newMdxCantFindMember(uniqueName);
-		}
-		return member;
-	}
-
-	public RolapMember[] getRootMembers() {
+	public List getRootMembers() {
 		ArrayList list = new ArrayList();
 		for (int i = 0; i < members.length; i++) {
 			if (members[i].getParentUniqueName() == null) {
 				list.add(members[i]);
 			}
 		}
-		return (RolapMember[]) list.toArray(RolapUtil.emptyMemberArray);
+		return list;
 	}
 
-	public RolapMember[] getMembersInLevel(
-		RolapLevel level, int startOrdinal, int endOrdinal) {
+	public List getMembersInLevel(
+			RolapLevel level, int startOrdinal, int endOrdinal) {
 		ArrayList list = new ArrayList();
 		int levelDepth = level.getDepth();
 		for (int i = 0; i < members.length; i++) {
@@ -148,23 +120,25 @@ class CacheMemberReader implements MemberReader, MemberCache
 				list.add(members[i]);
 			}
 		}
-		return (RolapMember[]) list.toArray(RolapUtil.emptyMemberArray);
+		return list;
 	}
 
-	public RolapMember[] getMemberChildren(RolapMember[] parentOlapMembers) {
-		// Find the children by simply scanning the array of all
-		// members. This won't be efficient when there are a lot of
-		// members.
-		ArrayList list = new ArrayList();
+	public void getMemberChildren(RolapMember parentMember, List children) {
 		for (int i = 0; i < members.length; i++) {
 			RolapMember member = members[i];
-			for (int j = 0; j < parentOlapMembers.length; j++) {
-				if (member.getParentMember() == parentOlapMembers[j]) {
-					list.add(member);
-				}
+			if (member.getParentMember() == parentMember) {
+				children.add(member);
 			}
 		}
-		return (RolapMember[]) list.toArray(RolapUtil.emptyMemberArray);
+	}
+
+	public void getMemberChildren(List parentMembers, List children) {
+		for (int i = 0; i < members.length; i++) {
+			RolapMember member = members[i];
+			if (parentMembers.contains(member.getParentMember())) {
+				children.add(member);
+			}
+		}
 	}
 
 	public RolapMember getLeadMember(RolapMember member, int n) {

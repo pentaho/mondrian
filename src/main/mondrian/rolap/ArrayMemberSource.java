@@ -15,6 +15,8 @@ import mondrian.olap.Util;
 
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.List;
+import java.util.Collections;
 
 /**
  * <code>ArrayMemberSource</code> implements a flat, static hierarchy. There is
@@ -33,37 +35,29 @@ abstract class ArrayMemberSource implements MemberSource
 		this.hierarchy = hierarchy;
 		this.members = members;
 	}
-	// implement MemberReader
-	public RolapHierarchy getHierarchy()
-	{
+	public RolapHierarchy getHierarchy() {
 		return hierarchy;
 	}
-
-	// implement MemberSource
-	public void setCache(MemberCache cache)
-	{
-		// we don't care about a cache -- we would not use it
+	public boolean setCache(MemberCache cache) {
+		return false; // we do not support cache writeback
 	}
-	// implement MemberReader
-	public RolapMember[] getMembers()
-	{
+	public RolapMember[] getMembers() {
 		return members;
 	}
-	// implement MemberReader
-	public int getMemberCount()
-	{
+	public int getMemberCount() {
 		return members.length;
 	}
-	public RolapMember[] getRootMembers()
-	{
-		return new RolapMember[0];
+	public List getRootMembers() {
+		return Collections.EMPTY_LIST;
 	}
-	public RolapMember[] getMemberChildren(RolapMember[] parentOlapMembers)
-	{
-		return new RolapMember[0];
+	public void getMemberChildren(RolapMember parentMember, List children) {
+		// there are no children
 	}
-
-	public RolapMember lookupMember(String uniqueName, boolean failIfNotFound) {
+	public void getMemberChildren(List parentMembers, List children) {
+		// there are no children
+	}
+	public RolapMember lookupMember(String[] uniqueNameParts, boolean failIfNotFound) {
+		String uniqueName = Util.implode(uniqueNameParts);
 		for (int i = 0; i < members.length; i++) {
 			RolapMember member = members[i];
 			if (member.getUniqueName().equals(uniqueName)) {
@@ -80,13 +74,10 @@ abstract class ArrayMemberSource implements MemberSource
 
 class HasBoughtDairySource extends ArrayMemberSource
 {
-	private RolapHierarchy hierarchy;
-
-	public HasBoughtDairySource(
-		RolapHierarchy hierarchy, Properties properties)
+	public HasBoughtDairySource(RolapHierarchy hierarchy, Properties properties)
 	{
 		super(hierarchy, new Thunk(hierarchy).getMembers());
-		this.hierarchy = hierarchy;
+		Util.discard(properties);
 	}
 
 	/**

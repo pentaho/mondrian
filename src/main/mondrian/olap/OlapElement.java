@@ -27,7 +27,7 @@ public interface OlapElement extends Exp
 	void accept(Visitor visitor);
 	void childrenAccept(Visitor visitor);
 	/** Looks up a child element, returning null if it does not exist. */
-	OlapElement lookupChild(NameResolver st, String s);
+	OlapElement lookupChild(SchemaReader schemaReader, String s);
 	/** Returns the name of this element qualified by its class, for example
 	 * "hierarchy 'Customers'". **/
 	String getQualifiedName();

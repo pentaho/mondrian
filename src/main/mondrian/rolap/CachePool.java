@@ -197,7 +197,8 @@ public class CachePool {
 		String id = cacheableId(cacheable);
 		double cost = cacheable.getCost();
 		if (mapCacheableIdToCost.put(id, new Double(cost)) != null) {
-			throw Util.newInternal(id + " added to CachePool more than once");
+			throw Util.newInternal("Cacheable '" + cacheable +
+					"' added to CachePool more than once");
 		}
 		cacheable.markAccessed(tick());
 		// Yes, add to queue even if pinCount > 0, because pin() assumes that
@@ -423,8 +424,10 @@ public class CachePool {
 	 * throws an error if it is not registered or if its cost is not the same
 	 * as the one provided to {@link #register} or {@link #notify}. Returns the
 	 * cost.
+	 *
+	 * @synchronization Must be called from synchronized context.
 	 */
-	double checkRegistered(Cacheable cacheable) {
+	private double checkRegistered(Cacheable cacheable) {
 		String id = cacheableId(cacheable);
 		Double registeredCost = (Double) mapCacheableIdToCost.get(id);
 		if (registeredCost == null) {
@@ -435,6 +438,14 @@ public class CachePool {
 			throw Util.newInternal(id + "'s cost has changed");
 		}
 		return cost;
+	}
+
+	/**
+	 * Returns whether <code>cacheable</code> is registered.
+	 */
+	synchronized boolean isRegistered(Cacheable cacheable) {
+		String id = cacheableId(cacheable);
+		return mapCacheableIdToCost.get(id) != null;
 	}
 
 	/**

@@ -154,10 +154,10 @@ dimensions have in common is the fact table, here <code>&quot;sales_fact_1997&qu
 As we shall see, the fact table holds the columns from which measures are 
 calculated, and contains references to the tables which hold the dimensions.</p>
 <blockquote>
-  <pre>  &lt;Cube name=&quot;Sales&quot;&gt;
-    &lt;Table name=&quot;sales_fact_1997&quot;/&gt;
-    ...
-  &lt;/Cube&gt;</pre>
+  <pre>&lt;Cube name=&quot;Sales&quot;&gt;
+  &lt;Table name=&quot;sales_fact_1997&quot;/&gt;
+  ...
+&lt;/Cube&gt;</pre>
 </blockquote>
 <p>The fact table is defined using the <a href="#XML_Table">&lt;Table&gt;</a> element. 
 If the fact table is not in the default schema, you can provide an explicit 
@@ -171,10 +171,10 @@ statements.</p>
 <h3>Measures</h3>
 <p>The Sales cube defines two measures, &quot;Unit Sales&quot; and &quot;Store Sales&quot;.</p>
 <blockquote>
-  <pre>    &lt;Measure name=&quot;Unit Sales&quot; column=&quot;unit_sales&quot;
-        aggregator=&quot;sum&quot; formatString=&quot;#,###&quot;/&gt;
-    &lt;Measure name=&quot;Store Sales&quot; column=&quot;store_sales&quot;
-        aggregator=&quot;sum&quot; formatString=&quot;#,###.00&quot;/&gt;</pre>
+  <pre>&lt;Measure name=&quot;Unit Sales&quot; column=&quot;unit_sales&quot;
+    aggregator=&quot;sum&quot; formatString=&quot;#,###&quot;/&gt;
+&lt;Measure name=&quot;Store Sales&quot; column=&quot;store_sales&quot;
+    aggregator=&quot;sum&quot; formatString=&quot;#,###.00&quot;/&gt;</pre>
 </blockquote>
 <p dir="ltr">Each measure (see <a href="#XML_Measure">&lt;Measure&gt;</a>) has a name, 
 a column in the fact table, and an aggregation function (usually &quot;sum&quot;).</p>
@@ -190,43 +190,41 @@ even more wild effects using <a href="#Format_strings">advanced format strings</
 <p>The Gender dimension consists of a single hierarchy, which has just one 
 level.</p>
 <blockquote>
-  <pre>    &lt;Dimension name=&quot;Gender&quot; foreignKey=&quot;customer_id&quot;&gt;
-      &lt;Hierarchy hasAll=&quot;true&quot; primaryKey=&quot;customer_id&quot;&gt;
-        &lt;Table name=&quot;customer&quot;/&gt;
-        &lt;Level name=&quot;Gender&quot; column=&quot;gender&quot; uniqueMembers=&quot;true&quot;/&gt;
-      &lt;/Hierarchy&gt;
-    &lt;/Dimension&gt;</pre>
+  <pre>&lt;Dimension name=&quot;Gender&quot; foreignKey=&quot;customer_id&quot;&gt;
+  &lt;Hierarchy hasAll=&quot;true&quot; primaryKey=&quot;customer_id&quot;&gt;
+    &lt;Table name=&quot;customer&quot;/&gt;
+    &lt;Level name=&quot;Gender&quot; column=&quot;gender&quot; uniqueMembers=&quot;true&quot;/&gt;
+  &lt;/Hierarchy&gt;
+&lt;/Dimension&gt;</pre>
 </blockquote>
 <p>For any given sale, the gender dimension is the gender of the customer who 
 made that purchase. This is expressed by joining from the fact table 
 &quot;sales_fact_1997.customer_id&quot; to the dimension table &quot;customer.customer_id&quot;</p>
-<p>Because <code>hasAll=&quot;true&quot;</code>, the system generates a special 'all' 
-level, containing a single member called ...</p>
 <p>The &quot;gender&quot; column contains two values, 'F' and 'M', so the Gender dimension 
-contains just two members</p>
-<p>&nbsp;</p>
+contains the member, <code>[Gender].[F]</code> and <code>[Gender].[M]</code>. Because <code>hasAll=&quot;true&quot;</code>, the system generates a special 'all' 
+level, containing a single member called <code>[All Genders]</code>.</p>
 <p>A dimension can contain more than one hierarchy:</p>
 <blockquote>
-  <pre>    &lt;Dimension name=&quot;Time&quot; foreignKey=&quot;time_id&quot;&gt;
-      &lt;Hierarchy hasAll=&quot;false&quot; primaryKey=&quot;time_id&quot;&gt;
-        &lt;Table name=&quot;time_by_day&quot;/&gt;
-        &lt;Level name=&quot;Year&quot; column=&quot;the_year&quot; type=&quot;Numeric&quot;
-            uniqueMembers=&quot;true&quot;/&gt;
-        &lt;Level name=&quot;Quarter&quot; column=&quot;quarter&quot;
-            uniqueMembers=&quot;false&quot;/&gt;
-        &lt;Level name=&quot;Month&quot; column=&quot;month_of_year&quot; type=&quot;Numeric&quot;
-            uniqueMembers=&quot;false&quot;/&gt;
-      &lt;/Hierarchy&gt;
-      &lt;Hierarchy name=&quot;Time Weekly&quot; hasAll=&quot;false&quot; primaryKey=&quot;time_id&quot;&gt;
-        &lt;Table name=&quot;time_by_week&quot;/&gt;
-        &lt;Level name=&quot;Year&quot; column=&quot;the_year&quot; type=&quot;Numeric&quot;
-            uniqueMembers=&quot;true&quot;/&gt;
-        &lt;Level name=&quot;Week&quot; column=&quot;week&quot;
-            uniqueMembers=&quot;false&quot;/&gt;
-        &lt;Level name=&quot;Day&quot; column=&quot;day_of_week&quot; type=&quot;String&quot;
-            uniqueMembers=&quot;false&quot;/&gt;
-      &lt;/Hierarchy&gt;
-    &lt;/Dimension&gt;</pre>
+  <pre>&lt;Dimension name=&quot;Time&quot; foreignKey=&quot;time_id&quot;&gt;
+  &lt;Hierarchy hasAll=&quot;false&quot; primaryKey=&quot;time_id&quot;&gt;
+    &lt;Table name=&quot;time_by_day&quot;/&gt;
+    &lt;Level name=&quot;Year&quot; column=&quot;the_year&quot; type=&quot;Numeric&quot;
+        uniqueMembers=&quot;true&quot;/&gt;
+    &lt;Level name=&quot;Quarter&quot; column=&quot;quarter&quot;
+        uniqueMembers=&quot;false&quot;/&gt;
+    &lt;Level name=&quot;Month&quot; column=&quot;month_of_year&quot; type=&quot;Numeric&quot;
+        uniqueMembers=&quot;false&quot;/&gt;
+  &lt;/Hierarchy&gt;
+  &lt;Hierarchy name=&quot;Time Weekly&quot; hasAll=&quot;false&quot; primaryKey=&quot;time_id&quot;&gt;
+    &lt;Table name=&quot;time_by_week&quot;/&gt;
+    &lt;Level name=&quot;Year&quot; column=&quot;the_year&quot; type=&quot;Numeric&quot;
+        uniqueMembers=&quot;true&quot;/&gt;
+    &lt;Level name=&quot;Week&quot; column=&quot;week&quot;
+        uniqueMembers=&quot;false&quot;/&gt;
+    &lt;Level name=&quot;Day&quot; column=&quot;day_of_week&quot; type=&quot;String&quot;
+        uniqueMembers=&quot;false&quot;/&gt;
+  &lt;/Hierarchy&gt;
+&lt;/Dimension&gt;</pre>
 </blockquote>
 <p>Notice that the first hierarchy doesn't have a name. By default, a hierarchy 
 has the same name as its dimension, so the first hierarchy is called &quot;Time&quot;.</p>
@@ -240,11 +238,15 @@ language enforces common sense, and does not allow you to use them both in the
 same query.</p>
 <p>A dimension can live in the fact table:</p>
 <blockquote>
-  <pre>    &lt;Dimension name=&quot;Xxx&quot;&gt;
-      &lt;Hierarchy hasAll=&quot;true&quot;&gt;
-        &lt;Level name=&quot;Xxx&quot; column=&quot;xxx&quot; uniqueMembers=&quot;true&quot;/&gt;
-      &lt;/Hierarchy&gt;
-    &lt;/Dimension&gt;</pre>
+  <pre>&lt;Cube name=&quot;Sales&quot;&gt;
+  &lt;Table name=&quot;sales_fact_1997&quot;/&gt;
+  ...
+  &lt;Dimension name=&quot;Payment method&quot;&gt;
+    &lt;Hierarchy hasAll=&quot;true&quot;&gt;
+      &lt;Level name=&quot;Payment method&quot; column=&quot;payment_method&quot; uniqueMembers=&quot;true&quot;/&gt;
+    &lt;/Hierarchy&gt;
+  &lt;/Dimension&gt;
+&lt;/Cube&gt;</pre>
 </blockquote>
 <p>Each dimension contains a single hierarchy, which is made up of levels</p>
 <p>Some more definitions:</p>
@@ -272,7 +274,95 @@ different paths.</p>
 which is parent of all other members of the hierarchy, and thus represents a 
 grand total. It is typically named 'All <i>something</i>', for example, 'All 
 stores'.</p>
-<h2><a name="Star_schemas">Star schemas</a></h2>
+<h2><a name="Star_schemas">Star and snowflake schemas</a></h2>
+<p>We saw earlier how to build a cube based upon a fact table, and dimensions in 
+the fact table (&quot;Payment method&quot;) and in a table joined to the fact table 
+(&quot;Gender&quot;). This is the most common kind of mapping, and is known as a <dfn>
+<font face="Verdana">star schema</font></dfn>.</p>
+<p>But a dimension can be based upon more than one table, provided that there is 
+a well-defined path to join these tables to the fact table. This kind of 
+dimension is known as a snowflake, and is defined using the <code>&lt;Join&gt;</code> 
+operator. For example:</p>
+<blockquote>
+  <pre>&lt;Cube name=&quot;Sales&quot;&gt;
+  ...
+  &lt;Dimension name=&quot;Product&quot; foreignKey=&quot;product_id&quot;&gt;
+    &lt;Hierarchy hasAll=&quot;true&quot; primaryKey=&quot;product_id&quot; primaryKeyTable=&quot;product&quot;&gt;
+      &lt;Join leftKey=&quot;product_class_id&quot; rightAlias=&quot;product_class&quot; rightKey=&quot;product_class_id&quot;&gt; 
+        &lt;Table name=&quot;product&quot;/&gt; 
+        &lt;Join leftKey=&quot;product_type_id&quot; rightKey=&quot;product_type_id&quot;&gt; 
+          &lt;Table name=&quot;product_class&quot;/&gt; 
+          &lt;Table name=&quot;product_type&quot;/&gt; 
+        &lt;/Join&gt; 
+      &lt;/Join&gt; 
+    &lt;/Hierarchy&gt;
+  &lt;/Dimension&gt;
+&lt;/Cube&gt;</pre>
+</blockquote>
+<p>This defines a <code>&quot;Product&quot;</code> dimension consisting of three tables. 
+The fact table joins to <code>&quot;product&quot;</code> (via the foreign key <code>&quot;product_id&quot;</code>), 
+which joins to <code>&quot;product_class&quot;</code> (via the foreign key <code>&quot;product_class_id&quot;</code>), 
+which joins to <code>&quot;product_type&quot;</code> (via the foreign key <code>&quot;product_type_id&quot;</code>). 
+We require a <code>&lt;Join&gt;</code> element nested within a <code>&lt;Join&gt;</code> 
+element because <code>&lt;Join&gt;</code> takes two operands; the operands can be 
+tables, joins, or even queries.</p>
+<p>The arrangement of the tables seems complex, the simple rule of thumb is to 
+order the tables by the number of rows they contain. The <code>&quot;product&quot;</code> 
+table has the most rows, so it joins to the fact table and appears first; <code>
+&quot;product_class&quot;</code> has fewer rows, and <code>&quot;product_type&quot;</code>, at the 
+tip of the snowflake, has least of all.</p>
+<p>Note that the outer <code>&lt;Join&gt;</code> element has a <code>rightAlias</code> 
+attribute. This is necessary because the right component of the join (the inner
+<code>&lt;Join&gt;</code> element) consists of more than one table. No <code>leftAlias</code> 
+attribute is necessary in this case, because the leftKey column unambiguously 
+comes from the <code>&quot;product&quot;</code> table.</p>
+<h3>Shared dimensions</h3>
+<p>When generating the SQL for a join, mondrian needs to know which column to 
+join to. If you are joining to a join, then you need to tell it which of the 
+tables in the join that column belongs to (usually it will be the first table in 
+the join).</p>
+<p>Because shared dimensions don't belong to a cube, you have to give them an 
+explicit table (or other data source). When you use them in a particular cube, 
+you specify the foreign key. This example shows the <code>Store Type</code> 
+dimension being joined to the <code>Sales</code> cube using the <code>
+sales_fact_1997.store_id</code> foreign key, and to the <code>Warehouse</code> 
+cube using the <code>warehouse.warehouse_store_id</code> foreign key:</p>
+<blockquote>
+  <pre>&lt;Dimension name=&quot;Store Type&quot;&gt;
+  &lt;Hierarchy hasAll=&quot;true&quot; primaryKey=&quot;store_id&quot;&gt;
+    &lt;Table name=&quot;store&quot;/&gt;
+    &lt;Level name=&quot;Store Type&quot; column=&quot;store_type&quot; uniqueMembers=&quot;true&quot;/&gt;
+  &lt;/Hierarchy&gt;
+&lt;/Dimension&gt;
+
+&lt;Cube name=&quot;Sales&quot;&gt;
+  &lt;Table name=&quot;sales_fact_1997&quot;/&gt;
+  ...
+  &lt;DimensionUsage name=&quot;Store Type&quot; source=&quot;Store Type&quot; foreignKey=&quot;store_id&quot;/&gt;
+&lt;/Cube&gt;  
+
+&lt;Cube name=&quot;Warehouse&quot;&gt;
+  &lt;Table name=&quot;warehouse&quot;/&gt;
+  ...
+  &lt;DimensionUsage name=&quot;Store Type&quot; source=&quot;Store Type&quot; foreignKey=&quot;warehouse_store_id&quot;/&gt;
+&lt;/Cube&gt;</pre>
+</blockquote>
+<h3>Join optimization</h3>
+<p>The table mapping in the schema tells Mondrian how to get the data, but 
+Mondrian is smart enough not to read the schema literally. It applies a number 
+of optimizations when generating queries:</p>
+<ul>
+  <li>If a dimension has a small number of members, Mondrian reads it into a 
+  cache on first use. See the
+  <a href="http://mondrian.sourceforge.net/api/mondrian/olap/MondrianProperties.html#getLargeDimensionThreshold()">
+  mondrian.rolap.LargeDimensionThreshold</a> property.</li>
+  <li>If a dimension (or, more precisely, the level of the dimension being 
+  accessed) is in the fact table, Mondrian does not perform a join.</li>
+  <li>If two dimensions access the same table via the same join path, Mondrian 
+  only joins them once. For example, <code>[Gender]</code> and <code>[Age]</code> 
+  might both be columns in the <code>customers</code> table, joined via <code>
+  sales_1997.cust_id = customers.cust_id</code>.</li>
+</ul>
 <h2><a name="Advanced_logical_constructs">Advanced logical constructs</a></h2>
 <h3><a name="Virtual_cubes">Virtual cubes</a></h3>
 <p>...</p>
@@ -289,9 +379,7 @@ accessing members. Hierarchies are usually based upon a dimension table (an
 'arm' of a star schema), and are therefore populated using SQL. But even if your 
 data doesn't reside in an RDBMS, you can make it appear as a hierarchy by 
 writing a Java class called a <dfn><font face="Verdana">custom member reader</font></dfn>.</p>
-<p>A custom member reader must implement the
-<a href="api/mondrian/rolap/MemberSource.html">interface 
-mondrian.rolap.MemberSource</a>. Here are a couple of examples:</p>
+<p>Here are a couple of examples:</p>
 <ol>
   <li><code>DateSource</code> (to be written) generates a time hierarchy. 
   Conventionally, data warehouse implementors generate a table containing a row 
@@ -306,8 +394,31 @@ mondrian.rolap.MemberSource</a>. Here are a couple of examples:</p>
   particular file is only created when, and if, that file's parent directory is 
   expanded.</li>
   <li><code>ExpressionMemberReader</code> (to be written) creates a hierarchy 
-  based upon an expression, for example</li>
+  based upon an expression.</li>
 </ol>
+<p>A custom member reader must implement 
+<a href="http://mondrian.sourceforge.net/api/mondrian/rolap/MemberSource.html">interface 
+mondrian.rolap.MemberSource</a>. If you need to implement a larger set of member 
+operations for fine-grained control, implement the derived
+<a href="http://mondrian.sourceforge.net/api/mondrian/rolap/MemberReader.html">
+interface mondrian.rolap.MemberReader</a>; otherwise, Mondrian wrap your reader 
+in a 
+<a href="http://mondrian.sourceforge.net/api/mondrian/rolap/MemberSource.html">mondrian.rolap.CacheMemberReader</a>. 
+Your member reader must have a 
+public constructor which takes <code>(<a href="http://mondrian.sourceforge.net/api/mondrian/rolap/RolapHierarchy.html">Hierarchy</a>,<a href="http://java.sun.com/j2se/1.4/docs/api/java/util/Properties.html">Properties</a>)</code> 
+parameters, and throws no checked exceptions.</p>
+<p>Member readers are declared using the <code>&lt;Hierarchy&gt;</code> element's
+<code>memberReaderClass</code> attribute; any <code>&lt;Param&gt;</code> child 
+elements are passed via the <code>properties</code> constructor parameter. Here is an example:</p>
+<blockquote>
+  <pre>&lt;Dimension name=&quot;Has bought dairy&quot;&gt;
+  &lt;Hierarchy hasAll=&quot;true&quot; memberReaderClass=&quot;mondrian.rolap.HasBoughtDairySource&quot;&gt;
+    &lt;Level name=&quot;Has bought dairy&quot; uniqueMembers=&quot;true&quot;/&gt;
+    &lt;Param name=&quot;expression&quot; value=&quot;not used&quot;/&gt;
+  &lt;/Hierarchy&gt;
+&lt;/Dimension&gt;
+</pre>
+</blockquote>
 <h3><a name="Cell_readers">Cell readers</a></h3>
 <p dir="ltr">Not implemented yet. Syntax would be something like</p>
 

@@ -13,7 +13,8 @@
 package mondrian.olap;
 
 /**
- * todo:
+ * <code>ConnectionBase</code> implements some of the methods in
+ * {@link Connection}.
  *
  * @author jhyde
  * @since 6 August, 2001
@@ -21,7 +22,6 @@ package mondrian.olap;
  **/
 public abstract class ConnectionBase implements Connection
 {
-	protected Role role;
 
 	public String getFullConnectString()
 	{
@@ -40,7 +40,7 @@ public abstract class ConnectionBase implements Connection
 		try {
 			boolean debug = false;
 			Parser parser = new Parser();
-			Query q = (Query) parser.parseInternal(this, s, debug);
+			Query q = parser.parseInternal(this, s, debug);
 			return q;
 		} catch (Throwable e) {
 			throw Util.newError(e, "Failed to parse query [" + s + "]");
@@ -51,15 +51,9 @@ public abstract class ConnectionBase implements Connection
 		Util.assertTrue(
 				s.startsWith("'") && s.endsWith("'"),
 				"only string literals are supported right now");
-		boolean symbol = false;
 		String s2 = s.substring(1, s.length() - 1);
 		return Literal.createString(s2);
 	}
-
-	public void setRole(Role role) {
-		this.role = role;
-	}
 }
-
 
 // End ConnectionBase.java

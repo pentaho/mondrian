@@ -183,46 +183,50 @@ public class Util extends mondrian.xom.XOMUtil
 	}
 
 	/**
-	 * Resolves a name such as '[Products]&#46;[Product
-	 * Department]&#46;[Produce]' by parsing out the components ('Products',
-	 * and so forth) and resolving them one at a time.
+	 * Resolves a name such as
+	 * '[Products]&#46;[Product Department]&#46;[Produce]' by resolving the
+	 * components ('Products', and so forth) one at a time.
+	 *
+	 * @param st {@link Cube} or {@link Query} to look in
+	 * @param names Exploded compound name, such as {"Products",
+	 *   "Product Department", "Produce"}
+	 * @param parent Parent element to search in
+	 * @param failIfNotFound If the element is not found, determines whether
+	 *   to return null or throw an error
+	 * @pre parent != null
+	 * @see #explode
 	 */
 	public static OlapElement lookupCompound(
-		NameResolver st, String s, OlapElement mdxElement)
+		NameResolver st, String[] names, OlapElement parent, boolean failIfNotFound)
 	{
-		return lookupCompound(st, explode(s), mdxElement);
-	}
-
-	public static OlapElement lookupCompound(
-		NameResolver st, String[] names, OlapElement mdxElement)
-	{
-		for (int i = 0; mdxElement != null && i < names.length; i++) {
-			String sub = names[i];
-			mdxElement = st.lookupChild(mdxElement, sub, false);
+		Util.assertPrecondition(parent != null, "parent != null");
+		for (int i = 0; i < names.length; i++) {
+			String name = names[i];
+			final OlapElement child = st.lookupChild(parent, name, false);
+			if (child == null) {
+				if (failIfNotFound) {
+					throw getRes().newMdxChildObjectNotFound(
+						name, parent.getQualifiedName());
+				} else {
+					return null;
+				}
+			}
+			parent = child;
 		}
-		return mdxElement;
+		return parent;
 	}
 
 	/**
-	 * As {@link #lookupCompound(NameResolver,String,OlapElement)}, but with
-	 * the option to fail instead of returning null.
+	 * Resolves a name such as '[Products]&#46;[Product
+	 * Department]&#46;[Produce]' by parsing out the components {'Products',
+	 * 'Product Department', 'Produce'} and resolving them one at a time.
+	 *
 	 */
-	public static OlapElement lookupCompound(
-		NameResolver st, String s, OlapElement mdxElement,
-		boolean failIfNotFound)
-	{
-		OlapElement e = lookupCompound(st, s, mdxElement);
-		if (e == null && failIfNotFound) {
-			throw getRes().newMdxChildObjectNotFound(
-				s, mdxElement.getQualifiedName());
-		}
-		return e;
-	}
 
 	public static Member lookupMemberCompound(
 		NameResolver st, String[] names, boolean failIfNotFound)
 	{
-		OlapElement mdxElem = lookupCompound(st, names, st.getCube());
+		OlapElement mdxElem = lookupCompound(st, names, st.getCube(), failIfNotFound);
 		if (mdxElem instanceof Member) {
 			return (Member) mdxElem;
 		} else if (failIfNotFound) {
@@ -235,12 +239,13 @@ public class Util extends mondrian.xom.XOMUtil
 	public static Member lookupMember(
 		NameResolver st, String s, boolean failIfNotFound)
 	{
-		Member member = st.lookupMemberFromCache(s);
-		if (member != null) {
-			return member;
+		if (st instanceof Query) {
+			Member member = ((Query) st).lookupMemberFromCache(s);
+			if (member != null) {
+				return member;
+			}
 		}
-		OlapElement mdxElem = lookupCompound(
-			st, s, st.getCube(), failIfNotFound);
+		OlapElement mdxElem = lookupCompound(st, explode(s), st.getCube(), failIfNotFound);
 		if (mdxElem instanceof Member) {
 			return (Member) mdxElem;
 		} else if (failIfNotFound) {
@@ -249,8 +254,82 @@ public class Util extends mondrian.xom.XOMUtil
 		return null;
 	}
 
-	;
+	/**
+	 * Finds a root member of a hierarchy with a given name.
+	 *
+	 * @param hierarchy
+	 * @param memberName
+	 * @return Member, or null if not found
+	 */
+	public static Member lookupHierarchyRootMember(
+			SchemaReader reader, Hierarchy hierarchy, String memberName) {
+		// Lookup member at first level.
+		Member[] rootMembers = reader.getHierarchyRootMembers(hierarchy);
+		for (int i = 0; i < rootMembers.length; i++) {
+			if (rootMembers[i].getName().equalsIgnoreCase(memberName)) {
+				return rootMembers[i];
+			}
+		}
+		// If the first level is 'all', lookup member at second level. For
+		// example, they could say '[USA]' instead of '[(All
+		// Customers)].[USA]'.
+		if (hierarchy.hasAll()) {
+			return lookupMemberChildByName(reader, rootMembers[0], memberName);
+		}
+		return null;
+	}
 
+	/**
+	 * Finds a child of a member with a given name.
+	 */
+	public static Member lookupMemberChildByName(
+			SchemaReader reader, Member member, String memberName) {
+		// calculated members may not have children
+		if (member.isCalculated()) {
+			throw Util.getRes().newMdxCalcMemberCanNotHaveChildren(
+				member.getUniqueName());
+		}
+		Member[] children = reader.getMemberChildren(member);
+		String childName = member.getUniqueName() + ".[" + memberName + "]";
+		for (int i = 0; i < children.length; i++){
+			if (childName.equals(children[i].getUniqueName()) ||
+				childName.equals(removeCarriageReturn(children[i].getUniqueName()))) {
+				return children[i];
+			}
+		}
+		return null;
+	}
+
+	private static String removeCarriageReturn(String s) {
+		return replace(s, "\r", "");
+	}
+
+	/**
+	 * @param member
+	 * @return
+	 */
+	public static int getMemberOrdinalInParent(SchemaReader reader, Member member) {
+		Member parent = member.getParentMember();
+		Member[] siblings;
+		if (parent == null) {
+			siblings = reader.getHierarchyRootMembers(member.getHierarchy());
+		} else {
+			siblings = reader.getMemberChildren(parent);
+		}
+		for (int i = 0; i < siblings.length; i++) {
+			if (siblings[i] == member) {
+				return i;
+			}
+		}
+		throw Util.newInternal(
+				"could not find member " + member + " amongst its siblings");
+	}
+
+	
+	/**
+	 * A <code>NullCellValue</code> is a placeholder value used when cells have
+	 * a null value. It is a singleton.
+	 */
 	public static class NullCellValue
 	{
 		public String toString()

@@ -35,9 +35,8 @@ class SetBase extends OlapElementBase implements Set {
 	public String getQualifiedName() { return null; }
 	public String getDescription() { return null; }
 
-	// from Exp
 	public int getType() {
-		return CatSet;
+		return Category.Set;
 	}
 	public boolean usesDimension(Dimension dimension) {
 		return false;
@@ -45,10 +44,10 @@ class SetBase extends OlapElementBase implements Set {
 	public Hierarchy getHierarchy() {
 		return exp.getHierarchy();
 	}
-	public OlapElement lookupChild(NameResolver st, String s) {
+	public OlapElement lookupChild(SchemaReader schemaReader, String s) {
 		return null;
 	}
-	public void setName(String newName) {
+	public void setName(String name) {
 		this.name = name;
 	}
 	public void accept(Visitor visitor) {

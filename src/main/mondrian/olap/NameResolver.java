@@ -31,22 +31,10 @@ public interface NameResolver {
 		OlapElement parent, String s, boolean failIfNotFound);
 
 	/**
-	 * Looks up a member by its fully-qualified name.
-	 **/
-	Member lookupMemberCompound(String[] names, boolean failIfNotFound);
-
-	/**
 	 * Looks up a member by its unique name. If you wish to look up a member by
-	 * its fully-qualified name, use {@link #lookupMemberCompound}.
+	 * its fully-qualified name, use {@link Util#lookupMemberCompound}.
 	 **/
 	Member lookupMemberByUniqueName(String s, boolean failIfNotFound);
-
-	/**
-	 * Looks up a member whose unique name is <code>s</code> from cache.  Does
-	 * not make a (potentially expensive) call to Plato.  If the member is not
-	 * in cache, returns null.
-	 **/
-	Member lookupMemberFromCache(String s);
 }
 
 // End NameResolver.java

@@ -64,68 +64,112 @@ public class MondrianProperties extends PropertiesPlus {
 		return properties;
 	}
 
+	/** Retrieves the value of the {@link #QueryLimit} property,
+	 * default value {@link #QueryLimit_Default}. */
 	public int getQueryLimit() {
-		return getIntProperty("mondrian.query.limit", 40);
+		return getIntProperty(QueryLimit, QueryLimit_Default);
 	}
+	/** Property {@value}. */
+	public static final String QueryLimit = "mondrian.query.limit";
+	/** Value is {@value}. */
+	public static final int QueryLimit_Default = 40;
 
+	/** Retrieves the value of the {@link #TraceLevel} property. */
 	public int getTraceLevel() {
-		return getIntProperty("mondrian.trace.level");
+		return getIntProperty(TraceLevel);
 	}
+	/** Property {@value}. */
+	public static final String TraceLevel = "mondrian.trace.level";
 
+	/** Retrieves the value of the {@link #JdbcDrivers} property. */
 	public String getJdbcDrivers() {
-		return getProperty("mondrian.jdbcDrivers", "org.hsqldb.jdbcDriver");
+		return getProperty(JdbcDrivers, "org.hsqldb.jdbcDriver");
 	}
+	/** Property {@value}. */
+	public static final String JdbcDrivers = "mondrian.jdbcDrivers";
 
 	// mondrian.rolap properties
 
+	/** Retrieves the value of the {@link #CachePoolCostLimit} property,
+	 * default value {@link #CachePoolCostLimit_Default}. */
 	public int getCachePoolCostLimit() {
-		return getIntProperty("mondrian.rolap.CachePool.costLimit", 10000);
+		return getIntProperty(CachePoolCostLimit, CachePoolCostLimit_Default);
 	}
+	/** Property {@value}. */
+	public static final String CachePoolCostLimit = "mondrian.rolap.CachePool.costLimit";
+	/** Value is {@value}. */
+	public static final int CachePoolCostLimit_Default = 10000;
 
+	/** Retrieves the value of the {@link #PrintCacheablesAfterQuery} property. */
 	public boolean getPrintCacheablesAfterQuery() {
-		return getBooleanProperty("mondrian.rolap.RolapResult.printCacheables");
+		return getBooleanProperty(PrintCacheablesAfterQuery);
 	}
+	/** Property {@value}. */
+	public static final String PrintCacheablesAfterQuery = "mondrian.rolap.RolapResult.printCacheables";
 
+	/** Retrieves the value of the {@link #FlushAfterQuery} property. */
 	public boolean getFlushAfterQuery() {
-		return getBooleanProperty("mondrian.rolap.RolapResult.flushAfterEachQuery");
+		return getBooleanProperty(FlushAfterQuery);
 	}
+	/** Property {@value}. */
+	public static final String FlushAfterQuery = "mondrian.rolap.RolapResult.flushAfterEachQuery";
 
 	// mondrian.test properties
 
+	/** Retrieves the value of the {@link #TestName} property. */
 	public String getTestName() {
-		return getProperty("mondrian.test.Name");
+		return getProperty(TestName);
 	}
+	/** Property {@value}. */
+	public static final String TestName = "mondrian.test.Name";
 
+	/** Retrieves the value of the {@link #TestClass} property. */
 	public String getTestClass() {
-		return getProperty("mondrian.test.Class");
+		return getProperty(TestClass);
 	}
+	/** Property {@value}. */
+	public static final String TestClass = "mondrian.test.Class";
 
+	/** Retrieves the value of the {@link #TestSuite} property. */
 	public String getTestSuite() {
-		return getProperty("mondrian.test.Suite");
+		return getProperty(TestSuite);
 	}
+	/** Property {@value}. */
+	public static final String TestSuite = "mondrian.test.Suite";
 
+	/** Retreives the value of the {@link #TestConnectString} property. */
 	public String getTestConnectString() {
-		return getProperty("mondrian.test.connectString");
+		return getProperty(TestConnectString);
 	}
+	/** Property {@value} */
+	public static final String TestConnectString = "mondrian.test.connectString";
+
 
 	// miscellaneous
 
+	/** Retrieves the value of the {@link #JdbcURL} property. */
 	public String getFoodmartJdbcURL() {
-		return getProperty("mondrian.foodmart.jdbcURL",
-				"jdbc:hsqldb:demo/hsql/FoodMart");
+		return getProperty(JdbcURL, "jdbc:hsqldb:demo/hsql/FoodMart");
 	}
+	/** Property {@value}. */
+	public static final String JdbcURL = "mondrian.foodmart.jdbcURL";
 
 	/**
+	 * Retrieves the value of the {@link #LargeDimensionThreshold} property.
 	 * If a dimension has more than this number of members, use a
 	 * smart member reader (see {@link mondrian.rolap.SmartMemberReader}).
-	 * Default is 100.
+	 * Default is {@link #LargeDimensionThreshold_Default}.
 	 */
 	public int getLargeDimensionThreshold() {
-		return getIntProperty(LargeDimensionThreshold, 100);
+		return getIntProperty(LargeDimensionThreshold, LargeDimensionThreshold_Default);
 	}
+	/** Property {@value}. */
 	public static final String LargeDimensionThreshold = "mondrian.rolap.LargeDimensionThreshold";
+	/** Value is {@value}. */
+	public static final int LargeDimensionThreshold_Default = 100;
 
 	/**
+	 * Retrieves the value of the {@link #SparseSegmentCountThreshold} property.
 	 * When storing collections of cell values, we have to choose between a
 	 * sparse and a dense representation, based upon the <code>possible</code>
 	 * and <code>actual</code> number of values.
@@ -137,8 +181,10 @@ public class MondrianProperties extends PropertiesPlus {
 	 *   {@link #getSparseSegmentDensityThreshold densityThreshold}</code>
 	 *
 	 * <p>The default values are
-	 * {@link #getSparseSegmentCountThreshold countThreshold} = 1000,
-	 * {@link #getSparseSegmentDensityThreshold} = 0.5.
+	 * {@link #SparseSegmentCountThreshold countThreshold} =
+	 * {@link #SparseSegmentCountThreshold_Default},
+	 * {@link #SparseSegmentDensityThreshold} =
+	 * {@link #SparseSegmentDensityThreshold_Default}.
 	 *
 	 * <p>At these default values, we use a dense representation
 	 * for (1000 possible, 0 actual), or (2000 possible, 500 actual), or
@@ -146,12 +192,22 @@ public class MondrianProperties extends PropertiesPlus {
 	 * possible values, and we will use a sparse representation.
 	 */
 	public int getSparseSegmentCountThreshold() {
-		return getIntProperty("mondrian.rolap.SparseSegmentValueThreshold", 1000);
+		return getIntProperty(SparseSegmentCountThreshold, SparseSegmentCountThreshold_Default);
 	}
-	/** @see #getSparseSegmentCountThreshold */
+	/** Property {@value}. */
+	public static final String SparseSegmentCountThreshold = "mondrian.rolap.SparseSegmentValueThreshold";
+	/** Value is {@value}. */
+	public static final int SparseSegmentCountThreshold_Default = 1000;
+
+	/** Retrieves the value of the {@link #SparseSegmentDensityThreshold} property.
+	 * @see #getSparseSegmentCountThreshold */
 	public double getSparseSegmentDensityThreshold() {
-		return getDoubleProperty("mondrian.rolap.SparseSegmentDensityThreshold", 0.5);
+		return getDoubleProperty(SparseSegmentDensityThreshold, SparseSegmentDensityThreshold_Default);
 	}
+	/** Property {@value}. */
+	public static final String SparseSegmentDensityThreshold = "mondrian.rolap.SparseSegmentDensityThreshold";
+	/** Value is {@value}. */
+	public static final double SparseSegmentDensityThreshold_Default = 0.5;
 }
 
 /**

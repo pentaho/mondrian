@@ -15,51 +15,49 @@ import java.util.Iterator;
 
 /**
  * <code>EnumeratedValues</code> is a helper class for declaring a set of
- * symbolic constants which have both names and possibly non-contiguous
- * ordinals associated with them.
+ * symbolic constants which have names, ordinals, and possibly descriptions.
+ * The ordinals do not have to be contiguous.
  *
- * <p>Typical usage (e.g. SQLTypes) is to define a class which declares a set
- * of constant values in the standard way, along with a static
- * <code>EnumeratedValues</code> member named enum.  The class static
- * initializer block should call enum.putName for each value, and then
- * enum.makeImmutable().  Users of the class can then map names to ordinals and
- * back via getEnum(), but may not modify enum, because it is initialized as
- * immutable.</p>
+ * <p>Typically, for a particular set of constants, you derive a class from this
+ * interface, and declare the constants as <code>public static final</code>
+ * members. Give it a private constructor, and a <code>public static final
+ * <i>ClassName</i> instance</code> member to hold the singleton instance.
+ * {@link Access} is a simple example of this.</p>
  **/
 public class EnumeratedValues implements Cloneable
 {
 	/** map symbol names to ordinal values */
-	private HashMap nameToOrdinalMap;
+	private HashMap nameToOrdinalMap = new HashMap();
+	/** map symbol names to descriptions */
+	private HashMap nameToDescriptionMap = new HashMap();
 
 	/** the smallest ordinal value */
-	private int min;
+	private int min = Integer.MAX_VALUE;
 	
 	/** the largest ordinal value */
-	private int max;
+	private int max = Integer.MIN_VALUE;
 
 	// the variables below are only set AFTER makeImmutable() has been called
 
 	/** an array mapping ordinal values to names; it is biased by the
 	 * min value */
 	private String [] ordinalToNameMap;
+	/** an array mapping ordinal values to desciptions; it is biased by the
+	 * min value */
+	private String [] ordinalToDescriptionMap;
 
 	/**
 	 * Creates a new empty, mutable enumeration.
 	 */
-	public EnumeratedValues()
-	{
-		nameToOrdinalMap = new HashMap();
-		this.min = Integer.MAX_VALUE;
-		this.max = Integer.MIN_VALUE;
+	public EnumeratedValues() {
 	}
 
 	/** Creates an enumeration, initialize it with an array of strings, and
 	 * freezes it. */
 	public EnumeratedValues(String[] names)
 	{
-		this();
 		for (int i = 0; i < names.length; i++) {
-			putName(i, names[i]);
+			register(i, names[i], names[i]);
 		}
 		makeImmutable();
 	}
@@ -68,9 +66,18 @@ public class EnumeratedValues implements Cloneable
 	 * and freezes it. */
 	public EnumeratedValues(String[] names, int[] codes)
 	{
-		this();
 		for (int i = 0; i < names.length; i++) {
-			putName(codes[i], names[i]);
+			register(codes[i], names[i], names[i]);
+		}
+		makeImmutable();
+	}
+
+	/** Create an enumeration, initializes it with arrays of code/name pairs,
+	 * and freezes it. */
+	public EnumeratedValues(String[] names, int[] codes, String[] descriptions)
+	{
+		for (int i = 0; i < names.length; i++) {
+			register(codes[i], names[i], descriptions[i]);
 		}
 		makeImmutable();
 	}
@@ -102,10 +109,12 @@ public class EnumeratedValues implements Cloneable
      *
 	 * @pre !isImmutable()
 	 */
-	public void putName(int ordinal,String name)
+	public void register(int ordinal,String name, String description)
 	{
 		Util.assertPrecondition(!isImmutable());
-		nameToOrdinalMap.put(name,new Integer(ordinal));
+		final Integer i = new Integer(ordinal);
+		nameToOrdinalMap.put(name,i);
+		nameToDescriptionMap.put(name,description);
 		min = Math.min(min,ordinal);
 		max = Math.max(max,ordinal);
 	}
@@ -115,12 +124,15 @@ public class EnumeratedValues implements Cloneable
 	 */
 	public void makeImmutable()
 	{
-		ordinalToNameMap = new String[1+max-min];
+		ordinalToNameMap = new String[1 + max - min];
+		ordinalToDescriptionMap = new String[1 + max - min];
 		for (Iterator names = nameToOrdinalMap.keySet().iterator();
                 names.hasNext(); ) {
 			String name = (String) names.next();
 			int ordinal = getOrdinal(name);
-			ordinalToNameMap[ordinal-min] = name;
+			ordinalToNameMap[ordinal - min] = name;
+			String description = (String) nameToDescriptionMap.get(name);
+			ordinalToDescriptionMap[ordinal - min] = description;
 		}
 	}
 
@@ -145,7 +157,19 @@ public class EnumeratedValues implements Cloneable
 		return max;
 	}
 
-	public final boolean isOrdinalValid(int ordinal)
+	/**
+	 * Returns whether <code>ordinal</code> is valid for this enumeration.
+	 * This method is particularly useful in pre- and post-conditions, for
+	 * example
+	 * <blockquote>
+	 * <pre>&#64;param axisCode Axis code, must be a {&#64;link AxisCode} value
+	 * &#64;pre AxisCode.instance.isValid(axisCode)</pre>
+	 * </blockquote>
+	 *
+	 * @param ordinal Suspected ordinal from this enumeration.
+	 * @return Whether <code>ordinal</code> is valid.
+	 */
+	public final boolean isValid(int ordinal)
 	{
 		if ((ordinal < min) || (ordinal > max)) {
 			return false;
@@ -165,13 +189,25 @@ public class EnumeratedValues implements Cloneable
 	public final String getName(int ordinal)
 	{
 		Util.assertPrecondition(isImmutable());
-		return ordinalToNameMap[ordinal-min];
+		return ordinalToNameMap[ordinal - min];
+	}
+
+	/**
+	 * Returns the description associated with an ordinal; the return value
+	 * is null if the ordinal is not a member of the enumeration.
+     *
+	 * @pre isImmutable()
+	 */
+	public final String getDescription(int ordinal)
+	{
+		Util.assertPrecondition(isImmutable());
+		return ordinalToDescriptionMap[ordinal - min];
 	}
 
 	/**
 	 * Returns the ordinal associated with a name
      *
-     * @throws {@link Error} if the name is not a member of the enumeration
+     * @throws Error if the name is not a member of the enumeration
 	 */
 	public final int getOrdinal(String name)
 	{
@@ -190,7 +226,6 @@ public class EnumeratedValues implements Cloneable
 	{
 		return (Integer) nameToOrdinalMap.get(name);
 	}
-
 }
 
 // End EnumeratedValues.java

@@ -27,7 +27,6 @@ class RolapCube extends CubeBase
 {
 	RolapSchema schema;
 	RolapHierarchy measuresHierarchy;
-	HashMap mapNameToMember = new HashMap();
 	/** For SQL generator. Fact table. */
 	MondrianDef.Relation fact;
 	/** To access all measures stored in the fact table. */
@@ -39,6 +38,8 @@ class RolapCube extends CubeBase
 	 * RolapDimension#topic_ordinals}
 	 */
 	int[] localDimensionOrdinals;
+	/** Schema reader which can see this cube and nothing else. */
+	private RolapSchemaReader schemaReader;
 
 	RolapCube(
 		RolapSchema schema, MondrianDef.Schema xmlSchema,
@@ -71,7 +72,7 @@ class RolapCube extends CubeBase
 					xmlMeasure.column, xmlMeasure.aggregator);
 		}
 		this.measuresHierarchy.memberReader = new CacheMemberReader(
-			new MeasureMemberSource(measuresHierarchy, measures));
+				new MeasureMemberSource(measuresHierarchy, measures));
 		init();
 	}
 
@@ -108,7 +109,7 @@ class RolapCube extends CubeBase
 			// cube.)
 			MondrianDef.VirtualCubeMeasure xmlMeasure =
 				xmlVirtualCube.measures[i];
-			Cube cube = schema.lookupCube(xmlMeasure.cubeName);
+			RolapCube cube = (RolapCube) schema.lookupCube(xmlMeasure.cubeName);
 			Member[] cubeMeasures = cube.getMeasures();
 			for (int j = 0; j < cubeMeasures.length; j++) {
 				if (cubeMeasures[j].getUniqueName().equals(xmlMeasure.name)) {
@@ -200,6 +201,21 @@ class RolapCube extends CubeBase
 					new RolapStoredMeasure(this, null, measuresLevel, "Store Cost", "store_cost", "sum", "Currency"),
 					new RolapStoredMeasure(this, null, measuresLevel, "Store Sales", "store_sales", "sum", "Currency")}));
 		init();
+	}
+
+	/**
+	 * Returns the schema reader which enforces the appropriate access-control
+	 * context.
+	 *
+	 * @post return != null
+	 */
+	synchronized SchemaReader getSchemaReader() {
+		if (schemaReader == null) {
+			final Role role = new Role();
+			role.grant(this, Access.ALL);
+			schemaReader = new RolapSchemaReader(role);
+		}
+		return schemaReader;
 	}
 
 	private RolapDimension newDimension(String name)
@@ -315,19 +331,13 @@ class RolapCube extends CubeBase
 		}
 	}
 
-	// implement NameResolver
-	public Member lookupMemberFromCache(String s)
-	{
-		return (Member) mapNameToMember.get(s);
-	}
-
-    public void lookupMembers(Collection memberNames, Map mapNameToMember) {
-		throw new UnsupportedOperationException();
-    }
-
-    public Member[] getMembersForQuery(String query, List calcMembers) {
+	public Member[] getMembersForQuery(String query, List calcMembers) {
         throw new UnsupportedOperationException();
     }
+
+	Member[] getMeasures() {
+		return getSchemaReader().getLevelMembers(dimensions[0].getHierarchies()[0].getLevels()[0]);
+	}
 
 	MondrianDef.Relation getFact() {
 		return fact;
@@ -370,6 +380,20 @@ class RolapCube extends CubeBase
 		localDimensionOrdinals[globalOrdinal] = localOrdinal;
 		registerDimension(dimension);
 		return dimension;
+	}
+
+	// implement NameResolver
+	public OlapElement lookupChild(
+			OlapElement parent, String s, boolean failIfNotFound) {
+		// use OlapElement's virtual lookup
+		OlapElement mdxElement = parent.lookupChild(getSchemaReader(), s);
+
+		// fail if we didn't find it
+		if (mdxElement == null && failIfNotFound) {
+			throw Util.getRes().newMdxChildObjectNotFound(
+				s, parent.getQualifiedName());
+		}
+		return mdxElement;
 	}
 }
 

@@ -25,6 +25,8 @@ import java.util.List;
  */
 class RolapHierarchy extends HierarchyBase
 {
+	/** The raw member reader. For a member reader which incorporates access
+	 * control, call {@link #getMemberReader(Role)}. */
 	MemberReader memberReader;
 	private MondrianDef.Hierarchy xmlHierarchy;
 	private RolapMember defaultMember;
@@ -128,7 +130,7 @@ class RolapHierarchy extends HierarchyBase
 	}
 
 	/**
-	 * @param cube optional
+	 * @param cube May be null
 	 */
 	void init(RolapCube cube)
 	{
@@ -270,13 +272,13 @@ class RolapHierarchy extends HierarchyBase
 	{
 		// use lazy initialization to get around bootstrap issues
 		if (defaultMember == null) {
-			RolapMember[] rootMembers = memberReader.getRootMembers();
-			if (rootMembers.length == 0) {
+			List rootMembers = memberReader.getRootMembers();
+			if (rootMembers.size() == 0) {
 				throw Util.newError(
 					"cannot get default member: hierarchy " + getUniqueName() +
 					" has no root members");
 			}
-			defaultMember = rootMembers[0];
+			defaultMember = (RolapMember) rootMembers.get(0);
 		}
 		return defaultMember;
 	}
@@ -299,48 +301,6 @@ class RolapHierarchy extends HierarchyBase
 			return new RolapMember(
 				(RolapMember) parent, (RolapLevel) level, name);
 		}
-	}
-
-	public Member[] getRootMembers()
-	{
-		return memberReader.getRootMembers();
-	}
-
-	public Member[] getChildMembers(Member parentOlapMember) {
-		return memberReader.getMemberChildren(
-			new RolapMember[] {(RolapMember) parentOlapMember});
-	}
-
-	public Member[] getChildMembers(Member[] parentOlapMembers)
-	{
-		if (parentOlapMembers.length == 0) {
-			return new RolapMember[0];
-		}
-		for (int i = 1; i < parentOlapMembers.length; i++) {
-			Util.assertTrue(
-				parentOlapMembers[i].getHierarchy() == this);
-		}
-		if (!(parentOlapMembers instanceof RolapMember[])) {
-			Member[] old = parentOlapMembers;
-			parentOlapMembers = new RolapMember[old.length];
-			System.arraycopy(old, 0, parentOlapMembers, 0, old.length);
-		}
-		return memberReader.getMemberChildren(
-			(RolapMember[]) parentOlapMembers);
-	}
-
-	public int getMembersCount(int nMaxMembers)
-	{
-		return memberReader.getMemberCount();
-	}
-
-	public Member lookupMemberByUniqueName(String uniqueName, boolean failIfNotFound) {
-		return memberReader.lookupMember(uniqueName, failIfNotFound);
-	}
-
-	public void getMemberRange(Level level, Member startMember, Member endMember, List list) {
-		memberReader.getMemberRange((RolapLevel) level,
-				(RolapMember) startMember, (RolapMember) endMember, list);
 	}
 
 	String getAlias() {

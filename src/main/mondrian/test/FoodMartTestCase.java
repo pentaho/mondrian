@@ -76,16 +76,31 @@ public class FoodMartTestCase extends TestCase {
 		}
 	}
 
+	/** Executes a query in a given connection. **/
+	public Result execute(Connection connection, String queryString) {
+		Query query = connection.parseQuery(queryString);
+		return connection.execute(query);
+	}
+
 	/**
 	 * Runs a query with a given expression on an axis, and returns the whole
 	 * axis.
 	 */
 	public Axis executeAxis2(String expression) {
-		Result result = TestContext.instance().executeFoodMart(
+		Result result = execute(
+				TestContext.instance().getFoodMartConnection(false),
 				"select {" + expression + "} on columns from Sales");
 		return result.getAxes()[0];
 	}
 
+	/**
+	 * Runs a query with a given expression on an axis, on a given connection,
+	 * and returns the whole axis.
+	 */
+	Axis executeAxis2(Connection connection, String expression) {
+		Result result = execute(connection, "select {" + expression + "} on columns from Sales");
+		return result.getAxes()[0];
+	}
 	/**
 	 * Runs a query with a given expression on an axis, and returns the single
 	 * member.
@@ -144,9 +159,17 @@ public class FoodMartTestCase extends TestCase {
 	 * throws an error which matches a particular pattern.
 	 */
 	public void assertAxisThrows(String expression, String pattern) {
+		assertAxisThrows(TestContext.instance().getFoodMartConnection(false),
+				expression, pattern);
+	}
+	/**
+	 * Runs a query with a given expression on an axis, and asserts that it
+	 * throws an error which matches a particular pattern.
+	 */
+	public void assertAxisThrows(Connection connection, String expression, String pattern) {
 		Throwable throwable = null;
 		try {
-			Result result = TestContext.instance().executeFoodMart(
+			Result result = execute(connection,
 					"select {" + expression + "} on columns from Sales");
 		} catch (Throwable e) {
 			throwable = e;
@@ -162,7 +185,17 @@ public class FoodMartTestCase extends TestCase {
 		Axis axis = executeAxis2(expression);
 		assertEquals(expected, toString(axis.positions));
 	}
-
+	/**
+	 * Runs a query with a given expression on an axis, and asserts that it
+	 * returns the expected string.
+	 */
+	public void assertAxisReturns(Connection connection, String expression, String expected) {
+		Axis axis = executeAxis2(connection, expression);
+		assertEquals(expected, toString(axis.positions));
+	}
+	/**
+	 * Converts a {@link Throwable} to a stack trace.
+	 */
 	private static String getStackTrace(Throwable e) {
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);

@@ -99,7 +99,7 @@ public class BuiltinFunTable extends FunTable {
 
 	static int decodeReturnType(String flags) {
 		final int returnType = decodeType(flags, 1);
-		if ((returnType & Exp.CatMask) != returnType) {
+		if ((returnType & Category.Mask) != returnType) {
 			throw Util.newInternal("bad return code flag in flags '" + flags + "'");
 		}
 		return returnType;
@@ -109,33 +109,33 @@ public class BuiltinFunTable extends FunTable {
 		char c = flags.charAt(offset);
 		switch (c) {
 		case 'a':
-			return Exp.CatArray;
+			return Category.Array;
 		case 'd':
-			return Exp.CatDimension;
+			return Category.Dimension;
 		case 'h':
-			return Exp.CatHierarchy;
+			return Category.Hierarchy;
 		case 'l':
-			return Exp.CatLevel;
+			return Category.Level;
 		case 'b':
-			return Exp.CatLogical;
+			return Category.Logical;
 		case 'm':
-			return Exp.CatMember;
+			return Category.Member;
 		case 'N':
-			return Exp.CatNumeric | Exp.CatConstant;
+			return Category.Numeric | Category.Constant;
 		case 'n':
-			return Exp.CatNumeric;
+			return Category.Numeric;
 		case 'x':
-			return Exp.CatSet;
+			return Category.Set;
 		case '#':
-			return Exp.CatString | Exp.CatConstant;
+			return Category.String | Category.Constant;
 		case 'S':
-			return Exp.CatString;
+			return Category.String;
 		case 't':
-			return Exp.CatTuple;
+			return Category.Tuple;
 		case 'v':
-			return Exp.CatValue;
+			return Category.Value;
 		case 'y':
-			return Exp.CatSymbol;
+			return Category.Symbol;
 		default:
 			throw Util.newInternal(
 					"unknown type code '" + c + "' in string '" + flags + "'");
@@ -159,15 +159,15 @@ public class BuiltinFunTable extends FunTable {
 			return fromExp;
 		}
 		switch (from) {
-		case Exp.CatArray:
+		case Category.Array:
 			return null;
-		case Exp.CatDimension:
+		case Category.Dimension:
 			// Seems funny that you can 'downcast' from a dimension, doesn't
 			// it? But we add an implicit 'CurrentMember', for example,
 			// '[Time].PrevMember' actually means
 			// '[Time].CurrentMember.PrevMember'.
 			switch (to) {
-			case Exp.CatHierarchy:
+			case Category.Hierarchy:
 				// "<Dimension>.CurrentMember.Hierarchy"
 				return new FunCall(
 						"Hierarchy", new Exp[]{
@@ -176,7 +176,7 @@ public class BuiltinFunTable extends FunTable {
 								new Exp[]{fromExp},
 								FunDef.TypeProperty)},
 						FunDef.TypeProperty);
-			case Exp.CatLevel:
+			case Category.Level:
 				// "<Dimension>.CurrentMember.Level"
 				return new FunCall(
 						"Level", new Exp[]{
@@ -185,104 +185,104 @@ public class BuiltinFunTable extends FunTable {
 								new Exp[]{fromExp},
 								FunDef.TypeProperty)},
 						FunDef.TypeProperty);
-			case Exp.CatMember:
+			case Category.Member:
 				// "<Dimension>.CurrentMember"
 				return new FunCall("CurrentMember", new Exp[]{fromExp}, FunDef.TypeProperty);
 			default:
 				return null;
 			}
-		case Exp.CatHierarchy:
+		case Category.Hierarchy:
 			switch (to) {
-			case Exp.CatDimension:
+			case Category.Dimension:
 				// "<Hierarchy>.Dimension"
 				return new FunCall("Dimension", new Exp[]{fromExp}, FunDef.TypeProperty);
 			default:
 				return null;
 			}
-		case Exp.CatLevel:
+		case Category.Level:
 			switch (to) {
-			case Exp.CatDimension:
+			case Category.Dimension:
 				// "<Level>.Dimension"
 				return new FunCall("Dimension", new Exp[]{fromExp}, FunDef.TypeProperty);
-			case Exp.CatHierarchy:
+			case Category.Hierarchy:
 				// "<Level>.Hierarchy"
 				return new FunCall("Hierarchy", new Exp[]{fromExp}, FunDef.TypeProperty);
 			default:
 				return null;
 			}
-		case Exp.CatLogical:
+		case Category.Logical:
 			return null;
-		case Exp.CatMember:
+		case Category.Member:
 			switch (to) {
-			case Exp.CatDimension:
+			case Category.Dimension:
 				// "<Member>.Dimension"
 				return new FunCall("Dimension", new Exp[]{fromExp}, FunDef.TypeProperty);
-			case Exp.CatHierarchy:
+			case Category.Hierarchy:
 				// "<Member>.Hierarchy"
 				return new FunCall("Hierarchy", new Exp[]{fromExp}, FunDef.TypeProperty);
-			case Exp.CatLevel:
+			case Category.Level:
 				// "<Member>.Level"
 				return new FunCall("Level", new Exp[]{fromExp}, FunDef.TypeProperty);
-			case Exp.CatNumeric | Exp.CatConstant:
-			case Exp.CatString | Exp.CatConstant: //todo: assert is a string member
+			case Category.Numeric | Category.Constant:
+			case Category.String | Category.Constant: //todo: assert is a string member
 				// "<Member>.Value"
 				return new FunCall("Value", new Exp[]{fromExp}, FunDef.TypeProperty);
-			case Exp.CatValue:
-			case Exp.CatNumeric:
-			case Exp.CatString:
+			case Category.Value:
+			case Category.Numeric:
+			case Category.String:
 				return fromExp;
 			default:
 				return null;
 			}
-		case Exp.CatNumeric | Exp.CatConstant:
+		case Category.Numeric | Category.Constant:
 			switch (to) {
-			case Exp.CatValue:
-			case Exp.CatNumeric:
+			case Category.Value:
+			case Category.Numeric:
 				return fromExp;
 			default:
 				return null;
 			}
-		case Exp.CatNumeric:
+		case Category.Numeric:
 			switch (to) {
-			case Exp.CatValue:
+			case Category.Value:
 				return fromExp;
-			case Exp.CatNumeric | Exp.CatConstant:
+			case Category.Numeric | Category.Constant:
 				return new FunCall("_Value", new Exp[] {fromExp}, FunDef.TypeFunction);
 			default:
 				return null;
 			}
-		case Exp.CatSet:
+		case Category.Set:
 			return null;
-		case Exp.CatString | Exp.CatConstant:
+		case Category.String | Category.Constant:
 			switch (to) {
-			case Exp.CatValue:
-			case Exp.CatString:
+			case Category.Value:
+			case Category.String:
 				return fromExp;
 			default:
 				return null;
 			}
-		case Exp.CatString:
+		case Category.String:
 			switch (to) {
-			case Exp.CatValue:
+			case Category.Value:
 				return fromExp;
-			case Exp.CatString | Exp.CatConstant:
+			case Category.String | Category.Constant:
 				return new FunCall("_Value", new Exp[] {fromExp}, FunDef.TypeFunction);
 			default:
 				return null;
 			}
-		case Exp.CatTuple:
+		case Category.Tuple:
 			switch (to) {
-			case Exp.CatValue:
+			case Category.Value:
 				return fromExp;
-			case Exp.CatNumeric:
-			case Exp.CatString:
+			case Category.Numeric:
+			case Category.String:
 				return new FunCall("_Value", new Exp[] {fromExp}, FunDef.TypeFunction);
 			default:
 				return null;
 			}
-		case Exp.CatValue:
+		case Category.Value:
 			return null;
-		case Exp.CatSymbol:
+		case Category.Symbol:
 			return null;
 		default:
 			throw Util.newInternal("unknown category " + from);
@@ -305,72 +305,72 @@ public class BuiltinFunTable extends FunTable {
 			return true;
 		}
 		switch (from) {
-		case Exp.CatArray:
+		case Category.Array:
 			return false;
-		case Exp.CatDimension:
+		case Category.Dimension:
 			// Seems funny that you can 'downcast' from a dimension, doesn't
 			// it? But we add an implicit 'CurrentMember', for example,
 			// '[Time].PrevMember' actually means
 			// '[Time].CurrentMember.PrevMember'.
-			if (to == Exp.CatHierarchy ||
-					to == Exp.CatLevel ||
-					to == Exp.CatMember) {
+			if (to == Category.Hierarchy ||
+					to == Category.Level ||
+					to == Category.Member) {
 				conversionCount[0]++;
 				return true;
 			} else {
 				return false;
 			}
-		case Exp.CatHierarchy:
-			if (to == Exp.CatDimension) {
+		case Category.Hierarchy:
+			if (to == Category.Dimension) {
 				conversionCount[0]++;
 				return true;
 			} else {
 				return false;
 			}
-		case Exp.CatLevel:
-			if (to == Exp.CatDimension ||
-					to == Exp.CatHierarchy) {
+		case Category.Level:
+			if (to == Category.Dimension ||
+					to == Category.Hierarchy) {
 				conversionCount[0]++;
 				return true;
 			} else {
 				return false;
 			}
-		case Exp.CatLogical:
+		case Category.Logical:
 			return false;
-		case Exp.CatMember:
-			if (to == Exp.CatDimension ||
-					to == Exp.CatHierarchy ||
-					to == Exp.CatLevel ||
-					to == Exp.CatNumeric) {
+		case Category.Member:
+			if (to == Category.Dimension ||
+					to == Category.Hierarchy ||
+					to == Category.Level ||
+					to == Category.Numeric) {
 				conversionCount[0]++;
 				return true;
-			} else if (to == Exp.CatValue ||
-					to == (Exp.CatNumeric | Exp.CatExpression) ||
-					to == (Exp.CatString | Exp.CatExpression)) {
+			} else if (to == Category.Value ||
+					to == (Category.Numeric | Category.Expression) ||
+					to == (Category.String | Category.Expression)) {
 				return true;
 			} else {
 				return false;
 			}
-		case Exp.CatNumeric | Exp.CatConstant:
-			return to == Exp.CatValue ||
-				to == Exp.CatNumeric;
-		case Exp.CatNumeric:
-			return to == Exp.CatValue ||
-				to == (Exp.CatNumeric | Exp.CatConstant);
-		case Exp.CatSet:
+		case Category.Numeric | Category.Constant:
+			return to == Category.Value ||
+				to == Category.Numeric;
+		case Category.Numeric:
+			return to == Category.Value ||
+				to == (Category.Numeric | Category.Constant);
+		case Category.Set:
 			return false;
-		case Exp.CatString | Exp.CatConstant:
-			return to == Exp.CatValue ||
-				to == Exp.CatString;
-		case Exp.CatString:
-			return to == Exp.CatValue ||
-				to == (Exp.CatString | Exp.CatConstant);
-		case Exp.CatTuple:
-			return to == Exp.CatValue ||
-				to == Exp.CatNumeric;
-		case Exp.CatValue:
+		case Category.String | Category.Constant:
+			return to == Category.Value ||
+				to == Category.String;
+		case Category.String:
+			return to == Category.Value ||
+				to == (Category.String | Category.Constant);
+		case Category.Tuple:
+			return to == Category.Value ||
+				to == Category.Numeric;
+		case Category.Value:
 			return false;
-		case Exp.CatSymbol:
+		case Category.Symbol:
 			return false;
 		default:
 			throw Util.newInternal("unknown category " + from);
@@ -521,7 +521,7 @@ public class BuiltinFunTable extends FunTable {
 				}
 				Cube cube = evaluator.getCube();
 				boolean fail = false;
-				OlapElement o = Util.lookupCompound(cube, s, cube, fail);
+				OlapElement o = lookupCompound(cube, explode(s), cube, fail);
 				if (o == null) {
 					throw newEvalException(
 							this, "Dimensions '" + s + "' not found");
@@ -633,10 +633,10 @@ public class BuiltinFunTable extends FunTable {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				String s = getStringArg(evaluator, args, 0, null);
 				Cube cube = evaluator.getCube();
-				boolean fail = false;
 				OlapElement o = null;
 				if (s.startsWith("[")) {
-					o = Util.lookupCompound(cube, s, cube, fail);
+					final boolean fail = false;
+					o = lookupCompound(cube, explode(s), cube, fail);
 				} else {
 					// lookupCompound barfs if "s" doesn't have matching
 					// brackets, so don't even try
@@ -738,7 +738,7 @@ public class BuiltinFunTable extends FunTable {
 				Dimension timeDimension = cube.getYearLevel().getDimension();
 				Member member = evaluator.getContext(timeDimension);
 				Level level = member.getLevel().getChildLevel();
-				return openClosingPeriod(this, member, level);
+				return openClosingPeriod(evaluator, this, member, level);
 			}
 			public void testClosingPeriodNoArgs(FoodMartTestCase test) {
 				// MSOLAP returns [1997].[Q4], because [Time].CurrentMember =
@@ -753,7 +753,7 @@ public class BuiltinFunTable extends FunTable {
 				Dimension timeDimension = cube.getYearLevel().getDimension();
 				Member member = evaluator.getContext(timeDimension);
 				Level level = getLevelArg(evaluator, args, 0, true);
-				return openClosingPeriod(this, member, level);
+				return openClosingPeriod(evaluator, this, member, level);
 			}
 			public void testClosingPeriodLevel(FoodMartTestCase test) {
 				Member member = test.executeAxis(
@@ -770,7 +770,7 @@ public class BuiltinFunTable extends FunTable {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Member member = getMemberArg(evaluator, args, 0, true);
 				Level level = member.getLevel().getChildLevel();
-				return openClosingPeriod(this, member, level);
+				return openClosingPeriod(evaluator, this, member, level);
 			}
 			public void testClosingPeriodMember(FoodMartTestCase test) {
 				Member member = test.executeAxis(
@@ -782,7 +782,7 @@ public class BuiltinFunTable extends FunTable {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Level level = getLevelArg(evaluator, args, 0, true);
 				Member member = getMemberArg(evaluator, args, 1, true);
-				return openClosingPeriod(this, member, level);
+				return openClosingPeriod(evaluator, this, member, level);
 			}
 			public void testClosingPeriod(FoodMartTestCase test) {
 				Member member = test.executeAxis(
@@ -800,13 +800,13 @@ public class BuiltinFunTable extends FunTable {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Member member1 = getMemberArg(evaluator, args, 0, true);
 				Member member2 = getMemberArg(evaluator, args, 1, true);
-				Member cousin = cousin(member1, member2);
+				Member cousin = cousin(evaluator.getSchemaReader(), member1, member2);
 				if (cousin == null) {
 					cousin = member1.getHierarchy().getNullMember();
 				}
 				return cousin;
 			}
-			private Member cousin(Member member1, Member member2) {
+			private Member cousin(SchemaReader schemaReader, Member member1, Member member2) {
 				if (member1.getHierarchy() != member2.getHierarchy()) {
 					throw newEvalException(
 							this,
@@ -816,38 +816,22 @@ public class BuiltinFunTable extends FunTable {
 				if (member1.getLevel().getDepth() < member2.getLevel().getDepth()) {
 					return null;
 				}
-				return cousin2(member1, member2);
+				return cousin2(schemaReader, member1, member2);
 			}
-			private Member cousin2(Member member1, Member member2) {
+			private Member cousin2(SchemaReader schemaReader, Member member1, Member member2) {
 				if (member1.getLevel() == member2.getLevel()) {
 					return member2;
 				}
-				Member uncle = cousin2(member1.getParentMember(), member2);
+				Member uncle = cousin2(schemaReader, member1.getParentMember(), member2);
 				if (uncle == null) {
 					return null;
 				}
-				int ordinal = getOrdinalInParent(member1);
-				Member[] cousins = uncle.getMemberChildren();
+				int ordinal = Util.getMemberOrdinalInParent(schemaReader, member1);
+				Member[] cousins = schemaReader.getMemberChildren(uncle);
 				if (cousins.length < ordinal) {
 					return null;
 				}
 				return cousins[ordinal];
-			}
-			private int getOrdinalInParent(Member member) {
-				Member parent = member.getParentMember();
-				Member[] siblings;
-				if (parent == null) {
-					siblings = member.getHierarchy().getRootMembers();
-				} else {
-					siblings = parent.getMemberChildren();
-				}
-				for (int i = 0; i < siblings.length; i++) {
-					if (siblings[i] == member) {
-						return i;
-					}
-				}
-				throw Util.newInternal(
-						"could not find member " + member + " amongst its siblings");
 			}
 
 			public void testCousin1(FoodMartTestCase test) {
@@ -954,7 +938,7 @@ public class BuiltinFunTable extends FunTable {
 		define(new FunDefBase("FirstChild", "<Member>.FirstChild", "Returns the first child of a member.", "pmm") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Member member = getMemberArg(evaluator, args, 0, true);
-				Member[] children = member.getMemberChildren();
+				Member[] children = evaluator.getSchemaReader().getMemberChildren(member);
 				if (children.length == 0) {
 					return member.getHierarchy().getNullMember();
 				} else {
@@ -990,9 +974,9 @@ public class BuiltinFunTable extends FunTable {
 					if (member.isNull()) {
 						return member;
 					}
-					children = member.getHierarchy().getRootMembers();
+					children = evaluator.getSchemaReader().getHierarchyRootMembers(member.getHierarchy());
 				} else {
-					children = parent.getMemberChildren();
+					children = evaluator.getSchemaReader().getMemberChildren(parent);
 				}
 				return children[0];
 			}
@@ -1039,7 +1023,7 @@ public class BuiltinFunTable extends FunTable {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Member member = getMemberArg(evaluator, args, 0, true);
 						int n = getIntArg(evaluator, args, 1);
-						return member.getLeadMember(-n);
+						return evaluator.getSchemaReader().getLeadMember(member, -n);
 					}
 
 					public void testLag(FoodMartTestCase test) {
@@ -1075,7 +1059,7 @@ public class BuiltinFunTable extends FunTable {
 		define(new FunDefBase("LastChild", "<Member>.LastChild", "Returns the last child of a member.", "pmm") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Member member = getMemberArg(evaluator, args, 0, true);
-				Member[] children = member.getMemberChildren();
+				Member[] children = evaluator.getSchemaReader().getMemberChildren(member);
 				if (children.length == 0) {
 					return member.getHierarchy().getNullMember();
 				} else {
@@ -1117,9 +1101,9 @@ public class BuiltinFunTable extends FunTable {
 					if (member.isNull()) {
 						return member;
 					}
-					children = member.getHierarchy().getRootMembers();
+					children = evaluator.getSchemaReader().getHierarchyRootMembers(member.getHierarchy());
 				} else {
-					children = parent.getMemberChildren();
+					children = evaluator.getSchemaReader().getMemberChildren(parent);
 				}
 				return children[children.length - 1];
 			}
@@ -1164,7 +1148,7 @@ public class BuiltinFunTable extends FunTable {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Member member = getMemberArg(evaluator, args, 0, true);
 						int n = getIntArg(evaluator, args, 1);
-						return member.getLeadMember(n);
+						return evaluator.getSchemaReader().getLeadMember(member, n);
 					}
 
 					public void testLead(FoodMartTestCase test) {
@@ -1192,7 +1176,7 @@ public class BuiltinFunTable extends FunTable {
 				"NextMember", "<Member>.NextMember", "Returns the next member in the level that contains a specified member.", "pmm") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Member member = getMemberArg(evaluator, args, 0, true);
-				return member.getLeadMember(+1);
+				return evaluator.getSchemaReader().getLeadMember(member, +1);
 			}
 
 			public void testBasic2(FoodMartTestCase test) {
@@ -1251,7 +1235,7 @@ public class BuiltinFunTable extends FunTable {
 		define(new FunDefBase("PrevMember", "<Member>.PrevMember", "Returns the previous member in the level that contains a specified member.", "pmm") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Member member = getMemberArg(evaluator, args, 0, true);
-				return member.getLeadMember(-1);
+				return evaluator.getSchemaReader().getLeadMember(member, -1);
 			}
 
 			public void testBasic(FoodMartTestCase test) {
@@ -1690,18 +1674,18 @@ public class BuiltinFunTable extends FunTable {
 		define(new ResolverBase("_Value", null, null, FunDef.TypeParentheses) {
 			public FunDef resolve(Exp[] args, int[] conversionCount) {
 				if (args.length == 1 &&
-						args[0].getType() == FunCall.CatTuple) {
-					return new ValueFunDef(new int[] {FunCall.CatTuple});
+						args[0].getType() == Category.Tuple) {
+					return new ValueFunDef(new int[] {Category.Tuple});
 				}
 				for (int i = 0; i < args.length; i++) {
 					Exp arg = args[i];
-					if (!canConvert(arg, FunCall.CatMember,  conversionCount)) {
+					if (!canConvert(arg, Category.Member,  conversionCount)) {
 						return null;
 					}
 				}
 				int[] argTypes = new int[args.length];
 				for (int i = 0; i < argTypes.length; i++) {
-					argTypes[i] = FunCall.CatMember;
+					argTypes[i] = Category.Member;
 				}
 				return new ValueFunDef(argTypes);
 			}
@@ -1826,7 +1810,7 @@ public class BuiltinFunTable extends FunTable {
 		define(new FunDefBase("Children", "<Member>.Children", "Returns the children of a member.", "pxm") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Member member = getMemberArg(evaluator, args, 0, true);
-				Member[] children = member.getMemberChildren();
+				Member[] children = evaluator.getSchemaReader().getMemberChildren(member);
 				return toVector(children);
 			}
 		});
@@ -1961,12 +1945,12 @@ public class BuiltinFunTable extends FunTable {
 						// Expand member to its children, until we get to the right
 						// level. We assume that all children are in the same
 						// level.
-						final Hierarchy hierarchy = member.getHierarchy();
+						final SchemaReader schemaReader = evaluator.getSchemaReader();
 						Member[] children = {member};
 						while (children.length > 0 &&
 								children[0].getLevel().getDepth() <
 								level.getDepth()) {
-							children = hierarchy.getChildMembers(children);
+							children = schemaReader.getMemberChildren(children);
 						}
 						return toVector(children);
 					}
@@ -1995,7 +1979,7 @@ public class BuiltinFunTable extends FunTable {
 							Member member = (Member) set0.elementAt(i);
 							drilledSet.addElement(member);
 							if (member.getDepth() == maxDepth) {
-								Member[] childMembers = member.getMemberChildren();
+								Member[] childMembers = evaluator.getSchemaReader().getMemberChildren(member);
 								for (int j = 0; j < childMembers.length; j++) {
 									drilledSet.addElement(childMembers[j]);
 								}
@@ -2200,20 +2184,20 @@ public class BuiltinFunTable extends FunTable {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Dimension dimension = (Dimension) getArg(evaluator, args, 0);
 				Hierarchy hierarchy = dimension.getHierarchy();
-				return addMembers(new Vector(), hierarchy);
+				return addMembers(evaluator.getSchemaReader(), new Vector(), hierarchy);
 			}
 		});
 		define(new FunDefBase("Members", "<Hierarchy>.Members", "Returns the set of all members in a hierarchy.", "pxh") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Hierarchy hierarchy =
 						(Hierarchy) getArg(evaluator, args, 0);
-				return addMembers(new Vector(), hierarchy);
+				return addMembers(evaluator.getSchemaReader(), new Vector(), hierarchy);
 			}
 		});
 		define(new FunDefBase("Members", "<Level>.Members", "Returns the set of all members in a level.", "pxl") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Level level = (Level) getArg(evaluator, args, 0);
-				return toVector(level.getMembers());
+				return toVector(evaluator.getSchemaReader().getLevelMembers(level));
 			}
 		});
 		define(new FunkResolver(
@@ -2585,7 +2569,7 @@ public class BuiltinFunTable extends FunTable {
 									}
 								} while (i < n);
 							} else {
-								Member[] children = m.getMemberChildren();
+								Member[] children = evaluator.getSchemaReader().getMemberChildren(m);
 								for (int j = 0; j < children.length; j++) {
 									if (k < 0) {
 										result.addElement(children[j]);
@@ -2841,7 +2825,7 @@ public class BuiltinFunTable extends FunTable {
 				if (member0.getLevel() != member1.getLevel()) {
 					throw newEvalException(this, "Members must belong to the same level");
 				}
-				return new Vector(FunUtil.memberRange(member0, member1));
+				return new Vector(FunUtil.memberRange(evaluator, member0, member1));
 			}
 
 			public void testRange(FoodMartTestCase test) {
@@ -2933,18 +2917,18 @@ public class BuiltinFunTable extends FunTable {
 				int[] parameterTypes = new int[args.length];
 				for (int i = 0; i < args.length; i++) {
 					if (canConvert(
-							args[i], Exp.CatMember, conversionCount)) {
-						parameterTypes[i] = Exp.CatMember;
+							args[i], Category.Member, conversionCount)) {
+						parameterTypes[i] = Category.Member;
 						continue;
 					}
 					if (canConvert(
-							args[i], Exp.CatSet, conversionCount)) {
-						parameterTypes[i] = Exp.CatSet;
+							args[i], Category.Set, conversionCount)) {
+						parameterTypes[i] = Category.Set;
 						continue;
 					}
 					if (canConvert(
-							args[i], Exp.CatTuple, conversionCount)) {
-						parameterTypes[i] = Exp.CatTuple;
+							args[i], Category.Tuple, conversionCount)) {
+						parameterTypes[i] = Category.Tuple;
 						continue;
 					}
 					return null;
@@ -3129,7 +3113,7 @@ public class BuiltinFunTable extends FunTable {
 				if (args.length < 1) {
 					return null;
 				}
-				final int[] types = {Exp.CatNumeric, Exp.CatString};
+				final int[] types = {Category.Numeric, Category.String};
 				for (int j = 0; j < types.length; j++) {
 					int type = types[j];
 					int matchingArgs = 0;
@@ -3163,7 +3147,7 @@ public class BuiltinFunTable extends FunTable {
 						mismatchingArgs = 0;
 				int returnType = args[1].getType();
 				for (int i = 0; i < clauseCount; i++) {
-					if (!canConvert(args[j++], Exp.CatLogical, conversionCount)) {
+					if (!canConvert(args[j++], Category.Logical, conversionCount)) {
 						mismatchingArgs++;
 					}
 					if (!canConvert(args[j++], returnType, conversionCount)) {
@@ -3308,10 +3292,10 @@ public class BuiltinFunTable extends FunTable {
 					   "Returns the value of a member property.",
 					   FunDef.TypeMethod) {
 			public FunDef resolve(Exp[] args, int[] conversionCount) {
-				final int[] argTypes = new int[]{Exp.CatMember, Exp.CatString};
+				final int[] argTypes = new int[]{Category.Member, Category.String};
 				if (args.length != 2 ||
-						args[0].getType() != Exp.CatMember ||
-						args[1].getType() != Exp.CatString) {
+						args[0].getType() != Category.Member ||
+						args[1].getType() != Category.String) {
 					return null;
 				}
 				int returnType;
@@ -3323,24 +3307,24 @@ public class BuiltinFunTable extends FunTable {
 							levels[levels.length - 1], propertyName);
 					if (property == null) {
 						// we'll likely get a runtime error
-						returnType = Exp.CatValue;
+						returnType = Category.Value;
 					} else {
 						switch (property.getType()) {
 						case Property.TYPE_BOOLEAN:
-							returnType = Exp.CatLogical;
+							returnType = Category.Logical;
 							break;
 						case Property.TYPE_NUMERIC:
-							returnType = Exp.CatNumeric;
+							returnType = Category.Numeric;
 							break;
 						case Property.TYPE_STRING:
-							returnType = Exp.CatString;
+							returnType = Category.String;
 							break;
 						default:
 							throw Util.newInternal("Unknown property type " + property.getType());
 						}
 					}
 				} else {
-					returnType = Exp.CatValue;
+					returnType = Category.Value;
 				}
 				return new PropertiesFunDef(name, signature, description, syntacticType, returnType, argTypes);
 			}
@@ -3404,7 +3388,7 @@ public class BuiltinFunTable extends FunTable {
 			protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
 				String parameterName;
 				if (args[0] instanceof Literal &&
-						args[0].getType() == Exp.CatString) {
+						args[0].getType() == Category.String) {
 					parameterName = (String) ((Literal) args[0]).getValue();
 				} else {
 					throw newEvalException(dummyFunDef, "Parameter name must be a string constant");
@@ -3413,22 +3397,22 @@ public class BuiltinFunTable extends FunTable {
 				Hierarchy hierarchy;
 				int type;
 				switch (typeArg.getType()) {
-				case Exp.CatHierarchy:
-				case Exp.CatDimension:
+				case Category.Hierarchy:
+				case Category.Dimension:
 					hierarchy = typeArg.getHierarchy();
 					if (hierarchy == null || !isConstantHierarchy(typeArg)) {
 						throw newEvalException(dummyFunDef, "Invalid hierarchy for parameter '" + parameterName + "'");
 					}
-					type = Exp.CatMember;
+					type = Category.Member;
 					break;
-				case Exp.CatSymbol:
+				case Category.Symbol:
 					hierarchy = null;
 					String s = (String) ((Literal) typeArg).getValue();
 					if (s.equalsIgnoreCase("NUMERIC")) {
-						type = Exp.CatNumeric;
+						type = Category.Numeric;
 						break;
 					} else if (s.equalsIgnoreCase("STRING")) {
-						type = Exp.CatString;
+						type = Category.String;
 						break;
 					}
 					// fall through and throw error
@@ -3440,10 +3424,10 @@ public class BuiltinFunTable extends FunTable {
 				}
 				Exp exp = args[2];
 				if (exp.getType() != type) {
-					String typeName = Exp.catEnum.getName(type).toUpperCase();
+					String typeName = Category.instance.getName(type).toUpperCase();
 					throw newEvalException(dummyFunDef, "Default value of parameter '" + parameterName + "' is inconsistent with its type, " + typeName);
 				}
-				if (type == Exp.CatMember) {
+				if (type == Category.Member) {
 					Hierarchy expHierarchy = exp.getHierarchy();
 					if (expHierarchy != hierarchy) {
 						throw newEvalException(dummyFunDef, "Default value of parameter '" + parameterName + "' must belong to the hierarchy " + hierarchy);
@@ -3452,7 +3436,7 @@ public class BuiltinFunTable extends FunTable {
 				String parameterDescription = null;
 				if (args.length > 3) {
 					if (args[3] instanceof Literal &&
-							args[3].getType() == Exp.CatString) {
+							args[3].getType() == Category.String) {
 						parameterDescription = (String) ((Literal) args[3]).getValue();
 					} else {
 						throw newEvalException(dummyFunDef, "Description of parameter '" + parameterName + "' must be a string constant");
@@ -3467,12 +3451,12 @@ public class BuiltinFunTable extends FunTable {
 			protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
 				String parameterName;
 				if (args[0] instanceof Literal &&
-						args[0].getType() == Exp.CatString) {
+						args[0].getType() == Category.String) {
 					parameterName = (String) ((Literal) args[0]).getValue();
 				} else {
 					throw newEvalException(dummyFunDef, "Parameter name must be a string constant");
 				}
-				return new ParameterFunDef(dummyFunDef, parameterName, null, Exp.CatUnknown, null, null);
+				return new ParameterFunDef(dummyFunDef, parameterName, null, Category.Unknown, null, null);
 			}
 		});
 

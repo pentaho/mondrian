@@ -113,6 +113,7 @@ public class Main {
 		suite.addTest(CachePool.suite());
 		suite.addTestSuite(TestAggregationManager.class);
 		suite.addTestSuite(ParameterTest.class);
+		suite.addTestSuite(AccessControlTest.class);
 		return suite;
 	}
 

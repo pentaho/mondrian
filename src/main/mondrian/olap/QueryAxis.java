@@ -14,13 +14,6 @@ package mondrian.olap;
 import java.io.*;
 
 public class QueryAxis extends QueryPart {
-	public static final int subtotalsUndefined = -1;
-	public static final int subtotalsHide = 0;
-	public static final int subtotalsShow = 1;
-	public static final EnumeratedValues subtotalsEnum = new EnumeratedValues(
-		new String[] {"undefined", "hide", "show"},
-		new int[] {-1, 0, 1});
-
 	public boolean nonEmpty;
 	public Exp set;
 	public String axisName;
@@ -53,7 +46,7 @@ public class QueryAxis extends QueryPart {
 
 	public QueryPart resolve(Query q)
 	{
-		set = (Exp) set.resolve(q);
+		set = set.resolve(q);
 		if (!set.isSet())
 		{
 			throw Util.getRes().newMdxAxisIsNotSet( axisName );
@@ -82,7 +75,7 @@ public class QueryAxis extends QueryPart {
 		// Plato can't handle missing axes, so for 'select {} on rows from
 		// Sales', pretend that the 'rows' axis is really 'columns'.
 		String name = callback.isPlatoMdx()
-			? Query.axisNames[axisOrdinal] : this.axisName;
+			? AxisOrdinal.instance.getName(axisOrdinal) : this.axisName;
 		pw.print(" ON " + name);
 	}
 
@@ -99,21 +92,34 @@ public class QueryAxis extends QueryPart {
 					FunDef.TypeProperty)});
 	}
 
-	protected void setShowSubtotals(boolean bShowSubtotals)
-	{
-		if (bShowSubtotals)
-			showSubtotals = subtotalsShow;
-		else 
-			showSubtotals = subtotalsHide;
+	void setShowSubtotals(boolean bShowSubtotals) {
+		showSubtotals = bShowSubtotals ? SubtotalVisibility.Show : SubtotalVisibility.Hide;
 	}
 
-	public int getShowSubtotals()
-	{return showSubtotals;}
+	public int getShowSubtotals() {
+		return showSubtotals;
+	}
 
-	public void resetShowHideSubtotals()
-	{this.showSubtotals = subtotalsUndefined;} 
+	public void resetShowHideSubtotals() {
+		this.showSubtotals = SubtotalVisibility.Undefined;
+	}
 
-	
+	/**
+	 * <code>SubtotalVisibility</code> enumerates the allowed values of
+	 * whether subtotals are visible.
+	 **/
+	public static class SubtotalVisibility extends EnumeratedValues {
+		/** The singleton instance of <code>SubtotalVisibility</code>. **/
+		public static final SubtotalVisibility instance = new SubtotalVisibility();
+
+		private SubtotalVisibility() {
+			super(new String[] {"undefined", "hide", "show"},
+					new int[] {Undefined, Hide, Show});
+		}
+		public static final int Undefined = -1;
+		public static final int Hide = 0;
+		public static final int Show = 1;
+	}
 }
 
 // End QueryAxis.java

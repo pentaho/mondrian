@@ -32,12 +32,12 @@ class TupleFunDef extends FunDefBase
 			"(<Member> [, <Member>]...)",
 			"Parenthesis operator constructs a tuple.  If there is only one member, the expression is equivalent to the member expression.",
 			FunDef.TypeParentheses,
-			Exp.CatTuple,
+			Category.Tuple,
 			argTypes);
 		this.argTypes = argTypes;
 	}
 	public int getReturnType() {
-		return Exp.CatTuple;
+		return Category.Tuple;
 	}
 	public int[] getParameterTypes() {
 		return argTypes;

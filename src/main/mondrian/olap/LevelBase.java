@@ -11,11 +11,9 @@
 */
 
 package mondrian.olap;
-import java.io.*;
-import java.util.*;
 
 /**
- * todo:
+ * Skeleton implementation of {@link Level}
  *
  * @author jhyde
  * @since 6 August, 2001
@@ -37,7 +35,9 @@ public abstract class LevelBase
 		return Util.getRes().getMdxLevelName(getUniqueName()); }
 
 	// from Exp
-	public int getType() { return CatLevel; }
+	public int getType() {
+		return Category.Level;
+	}
 	public int getLevelType() { return levelType; }
 	public String getUniqueName() { return uniqueName; }
 	public String getName() { return name; }
@@ -72,16 +72,10 @@ public abstract class LevelBase
 		return hierarchy.getName().equals("Measures");
 	}
 
-	public OlapElement lookupChild(NameResolver st, String s)
-	{
-		return lookupMember(st, s);
-	}
-
-	/** find a named member in this level */
-	Member lookupMember(NameResolver st, String name)
+	public OlapElement lookupChild(SchemaReader schemaReader, String s)
 	{
 		if (areMembersUnique()) {
-			return hierarchy.lookupRootMember(name);
+			return Util.lookupHierarchyRootMember(schemaReader, hierarchy, s);
 		} else {
 			return null;
 		}

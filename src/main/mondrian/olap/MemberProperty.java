@@ -11,7 +11,7 @@
 */
 
 package mondrian.olap;
-import java.io.*;
+import java.io.PrintWriter;
 
 /**
  * Member property or solve order specification.
@@ -40,7 +40,7 @@ public class MemberProperty extends QueryPart {
 
 	public QueryPart resolve(Query q)
 	{
-		exp = (Exp) exp.resolve(q);
+		exp = exp.resolve(q);
 		return this;
 	}
 
@@ -58,17 +58,17 @@ public class MemberProperty extends QueryPart {
 	public void unparse(PrintWriter pw, ElementCallback callback)
 	{
 		pw.print(name + " = ");
-		if (exp instanceof Literal && ((Literal) exp).type == Exp.CatString)
+		if (exp instanceof Literal && ((Literal) exp).type == Category.String)
 			pw.print("'");
 		unparseValue(pw, callback);
-		if (exp instanceof Literal && ((Literal) exp).type == Exp.CatString)
+		if (exp instanceof Literal && ((Literal) exp).type == Category.String)
 			pw.print("'");
 	}
 	
 	void unparseValue(PrintWriter pw, ElementCallback callback)
 	{
 		if (exp instanceof Literal &&
-			((Literal) exp).type == Exp.CatString) {
+			((Literal) exp).type == Category.String) {
 			exp.unparse(pw, callback);
 		} else if (name.equalsIgnoreCase("SOLVE_ORDER")) {
 			int i = ((Literal) exp).getIntValue();

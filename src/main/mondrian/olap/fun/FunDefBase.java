@@ -34,6 +34,7 @@ class FunDefBase extends FunUtil implements FunDef {
 			String name, String signature, String description,
 			int syntacticType, int returnType, int[] parameterTypes) {
 		this.name = name;
+		Util.discard(signature);
 		this.description = description;
 		this.flags = syntacticType;
 		this.returnType = returnType;
@@ -109,10 +110,10 @@ class FunDefBase extends FunUtil implements FunDef {
 	public Hierarchy getHierarchy(Exp[] args)
 	{
         switch (getReturnType()) {
-        case Exp.CatSet:
-        case Exp.CatTuple:
-        case Exp.CatMember:
-        case Exp.CatHierarchy:
+        case Category.Set:
+        case Category.Tuple:
+        case Category.Member:
+        case Category.Hierarchy:
             // In most cases, the hierarchy of the result is the same as that
             // of the 0th arg.
             int iArg = 0;

@@ -111,7 +111,8 @@ public interface FunDef extends Testable {
 	/**
 	 * Returns the hierarchy of the result of applying this function to
      * <code>args</code>, or null if no dimension is defined. Only applicable
-     * to functions which return a {@link Exp#CatSet} or {@link Exp#CatTuple}.
+     * to functions which return a {@link Category#Set} or
+	 * {@link Category#Tuple}.
 	 *
 	 * @see Exp#getHierarchy
 	 **/

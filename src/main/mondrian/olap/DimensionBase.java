@@ -35,7 +35,9 @@ public abstract class DimensionBase
 	public String getName() { return name; }
 	public String getDescription() { return description; }
 	public Hierarchy[] getHierarchies() { return hierarchies; }
-	public int getType() { return CatDimension; }
+	public int getType() {
+		return Category.Dimension;
+	}
 	public int getDimensionType() { return dimensionType; } 
 	public String getQualifiedName() {
 		return Util.getRes().getMdxDimensionName(getUniqueName());
@@ -48,9 +50,9 @@ public abstract class DimensionBase
 		return dimension == this;
 	}
 
-	public OlapElement lookupChild(NameResolver st, String s)
+	public OlapElement lookupChild(SchemaReader schemaReader, String s)
 	{
-		Hierarchy mdxHierarchy = lookupHierarchy(st, s);
+		Hierarchy mdxHierarchy = lookupHierarchy(s);
 		
 		// If the user is looking for [Marital Status].[Marital Status] we
 		// should not return mdxHierarchy "Marital Status", because he is
@@ -62,15 +64,14 @@ public abstract class DimensionBase
 		}
 
 		// Defer to the default hierarchy.
-		return getHierarchy().lookupChild(st, s);
+		return getHierarchy().lookupChild(schemaReader, s);
 	}
 
-	public Hierarchy lookupHierarchy(NameResolver st, String s)
+	private Hierarchy lookupHierarchy(String s)
 	{
-		Hierarchy[] mdxHierarchies = getHierarchies();
-		for (int i = 0; i < mdxHierarchies.length; i++) {
-			if (mdxHierarchies[i].getName().equalsIgnoreCase(s))
-				return mdxHierarchies[i];
+		for (int i = 0; i < hierarchies.length; i++) {
+			if (hierarchies[i].getName().equalsIgnoreCase(s))
+				return hierarchies[i];
 		}
 		return null;
 	}

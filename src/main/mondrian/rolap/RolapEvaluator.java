@@ -78,6 +78,10 @@ class RolapEvaluator implements Evaluator
 		return parent;
 	}
 
+	public SchemaReader getSchemaReader() {
+		return connection.getSchemaReader();
+	}
+
 	public Evaluator push(Member[] members) {
 		final RolapEvaluator evaluator = _push();
 		evaluator.setContext(members);

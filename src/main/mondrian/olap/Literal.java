@@ -30,7 +30,7 @@ public class Literal extends ExpBase
 	private Literal(String s, boolean isSymbol)
 	{
 		this.o = s;
-		this.type = isSymbol ? CatSymbol : CatString;
+		this.type = isSymbol ? Category.Symbol : Category.String;
 	}
 
 	public static Literal createString(String s) {
@@ -45,7 +45,7 @@ public class Literal extends ExpBase
 	}
 	private Literal(Double d) {
 		this.o = d;
-		this.type = CatNumeric;
+		this.type = Category.Numeric;
 	}
 	static Literal create(Double d) {
 		if (d.doubleValue() == 0.0) {
@@ -58,7 +58,7 @@ public class Literal extends ExpBase
 	}
 	private Literal(Integer i) {
 		this.o = i;
-		this.type = CatNumeric;
+		this.type = Category.Numeric;
 	}
 
 	public static Literal create(Integer i) {
@@ -77,11 +77,11 @@ public class Literal extends ExpBase
 
 	public void unparse(PrintWriter pw, ElementCallback callback) {
 		switch (type) {
-		case CatSymbol:
-		case CatNumeric:
+		case Category.Symbol:
+		case Category.Numeric:
 			pw.print(o);
 			break;
-		case CatString:
+		case Category.String:
 			pw.print(Util.quoteForMdx((String) o));
 			break;
 		default:

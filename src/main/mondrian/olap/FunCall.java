@@ -147,7 +147,7 @@ public class FunCall extends ExpBase
 				if (args[j] instanceof Dimension) {
 					// if arg is a dimension, switch to dimension's default
 					// hierarchy
-					args[j] = ((Dimension) args[j]).getHierarchy();
+					args[j] = args[j].getHierarchy();
 				} else if (args[j] instanceof Hierarchy) {
 					// nothing
 				} else {
@@ -250,7 +250,7 @@ public class FunCall extends ExpBase
 	 **/
 	public String getSignature() {
 		return getSignature(
-			fun, getSyntacticType(), Exp.CatUnknown, getTypes(args));
+			fun, getSyntacticType(), Category.Unknown, getTypes(args));
 	}
 }
 

@@ -11,8 +11,6 @@
 */
 
 package mondrian.olap;
-import java.io.*;
-import java.util.*;
 
 /**
  * <code>CubeBase</code> is an abstract implementation of {@link Cube}.
@@ -58,7 +56,9 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
  	public Hierarchy getHierarchy() { return null; }
 	public String getDescription() { return null; }
 	public Cube getCube() { return this; }
-	public int getType() { return CatCube; }
+	public int getType() {
+		return Category.Cube;
+	}
 	public Schema getSchema() {
 		return schema;
 	}
@@ -82,61 +82,29 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 		}
 		return null;
 	}
-	public OlapElement lookupChild(NameResolver st, String s)
+	public OlapElement lookupChild(SchemaReader schemaReader, String s)
 	{
-		Dimension mdxDimension = (Dimension)lookupDimension(st, s);
+		Dimension mdxDimension = (Dimension)lookupDimension(s);
 		if (mdxDimension != null) {
 			return mdxDimension;
 		}
 
 		//maybe this is not a dimension - maybe it's hierarchy, level or name
 		for (int i = 0; i < dimensions.length; i++) {
-			OlapElement mdxElement = dimensions[i].lookupChild(st, s);
+			OlapElement mdxElement = dimensions[i].lookupChild(schemaReader, s);
 			if (mdxElement != null)
 				return mdxElement;
 		}
 		return null;
 	}
 
-	public OlapElement lookupDimension(NameResolver st, String s)
+	public OlapElement lookupDimension(String s)
 	{
 		for (int i = 0; i < dimensions.length; i++) {
 			if (dimensions[i].getName().equalsIgnoreCase(s))
 				return dimensions[i];
 		}
 		return null;
-	}
-	Member obsolete_lookupMemberForFormula(Query q, Formula formula)
-	{
-		// first resolve the name, bit by bit
-		OlapElement mdxElement = this;
-		String[] names = formula.getNames();
-		for (int i = 0, n = names.length; i < n; i++) {
-			OlapElement parent = mdxElement;
-			String name = names[i];
-			mdxElement = q.lookupChild(parent, name, false);
-			if (mdxElement == null) {
-				// this part of the name was not found... define it
-				LevelBase level;
-				MemberBase parentMember = null;
-				if (parent instanceof MemberBase) {
-					parentMember = (MemberBase) parent;
-					level = (LevelBase) parentMember.level.getChildLevel();
-				} else {
-					HierarchyBase hierarchy = (HierarchyBase)
-						parent.getHierarchy();
-					if (hierarchy == null) {
-						String fullName = Util.quoteMdxIdentifier(names);
-						throw Util.getRes().newMdxCalculatedHierarchyError(
-							fullName);
-					}
-					level = hierarchy.levels[0];
-				}
-				mdxElement = level.hierarchy.createMember(
-					parentMember, level, name, formula);
-			}
-		}
-		return (Member) mdxElement;
 	}
 
 	protected Object[] getAllowedChildren( CubeAccess cubeAccess )
@@ -148,62 +116,10 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 	// ------------------------------------------------------------------------
 
 	// implement NameResolver
-	public OlapElement lookupChild(
-		OlapElement parent, String s, boolean failIfNotFound)
-	{
-		// use OlapElement's virtual lookup
-		OlapElement mdxElement = parent.lookupChild(this, s);
-
-		// fail if we didn't find it
-		if (mdxElement == null && failIfNotFound) {
-			throw Util.getRes().newMdxChildObjectNotFound(
-				s, parent.getQualifiedName());
-		}
-		return mdxElement;
-	}
-
-	public OlapElement lookup(String s)
-	{
-		return lookupChild(this, s);
-	}
-
-	public OlapElement lookup(String s, boolean failIfNotFound)
-	{
-		OlapElement e = lookup(s);
-		if (e == null && failIfNotFound) {
-			throw Util.getRes().newMdxChildObjectNotFound(
-				s, getQualifiedName());
-		}
-		return e;
-	}
-
-	public OlapElement lookupCompound(String s)
-	{
-		return Util.lookupCompound(this, s, this, true);
-	}
-
-	// implement NameResolver
-	public Member lookupMemberCompound(
-		String[] names, boolean failIfNotFound) {
-		return Util.lookupMemberCompound(this, names, failIfNotFound);
-	}
-
-	// implement NameResolver
-	public Member lookupMemberByUniqueName(
-		String s, boolean failIfNotFound)
-	{
+	public Member lookupMemberByUniqueName(String s, boolean failIfNotFound) {
 		return Util.lookupMember(this, s, failIfNotFound);
 	}
 
-	public Level lookupLevel(String s)
-	{
-		return (Level) lookupCompound(s);
-	}
-
-	public Dimension lookupDimension(String s)
-	{
-		return (Dimension) lookupCompound(s);
-	}
 	private Level getTimeLevel(int levelType)
 	{
 		for (int i = 0; i < dimensions.length; i++) {
@@ -238,14 +154,6 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 	{
 		return getTimeLevel(Level.WEEKS);
 	}
-	public Member[] getMeasures()
-	{
-		return dimensions[0].hierarchies[0].levels[0].getMembers();
-	}
-
-	private static final int MEMBER_BATCH_SIZE = 50;
-	
-
 	public void accept(Visitor visitor)
 	{
 		visitor.visit(this);

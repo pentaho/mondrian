@@ -57,6 +57,10 @@ public class RolapSchema implements Schema
 	 * RolapHierarchy the canonical instance of those hierarchies}.
 	 */
 	final HashMap mapSharedHierarchyNameToHierarchy = new HashMap();
+	/**
+	 * The default role for connections to this schema.
+	 */
+	Role defaultRole = createDefaultRole();
 
 	/**
 	 * Creates a {@link RolapSchema}. Use
@@ -297,12 +301,23 @@ public class RolapSchema implements Schema
 		}
 	}
 
+	public SchemaReader getSchemaReader() {
+		return new RolapSchemaReader(defaultRole);
+	}
+
 	/**
 	 * Connection for purposes of parsing and validation. Careful! It won't
 	 * have the correct locale or access-control profile.
 	 */
 	RolapConnection getInternalConnection() {
 		return internalConnection;
+	}
+
+	private Role createDefaultRole() {
+		Role role = new Role();
+		role.grant(this, Access.ALL);
+		role.makeImmutable();
+		return role;
 	}
 
 	/**

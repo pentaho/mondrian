@@ -34,12 +34,6 @@ public interface Cube extends OlapElement, NameResolver {
 	Hierarchy lookupHierarchy(String s, boolean unique);
 
 	/**
-	 * Finds a level whose unique name is <code>s</code>. For example,
-	 * "[Customers].[State]", not "Customers.State".
-	 **/
-	Level lookupLevel(String s);
-
-	/**
 	 * Returns Member[]. It builds Member[] by analyzing cellset, which
 	 * gets created by running mdx sQuery.  <code>query</code> has to be in the
 	 * format of something like "[with calculated members] select *members* on
@@ -47,17 +41,10 @@ public interface Cube extends OlapElement, NameResolver {
 	 **/
 	Member[] getMembersForQuery(String query, List calcMembers);
 
-	/**
-	 * Looks up a {@link Member} for each unique name in
-	 * <code>memberNames</code>, and places them in a map.
-	 **/
-	void lookupMembers(Collection memberNames, Map mapNameToMember);
-
 	Level getYearLevel();
 	Level getQuarterLevel();
 	Level getMonthLevel();
 	Level getWeekLevel();
-	Member[] getMeasures();
 }
 
 // End Cube.java

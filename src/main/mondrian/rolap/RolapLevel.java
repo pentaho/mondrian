@@ -171,11 +171,6 @@ class RolapLevel extends LevelBase
 	{
 	}
 
-	public Member[] getMembers() {
-		return ((RolapHierarchy) hierarchy).memberReader.getMembersInLevel(
-			this, 0, Integer.MAX_VALUE);
-	}
-
 	public boolean isAll() {
 		return hierarchy.hasAll() && depth == 0;
 	}

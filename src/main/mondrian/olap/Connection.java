@@ -55,9 +55,23 @@ public interface Connection {
 
 	/**
 	 * Sets the privileges for the this connection.
+	 *
+	 * @pre role != null
+	 * @pre role.isMutable()
 	 */
 	void setRole(Role role);
-}
 
+	/**
+	 * Returns the access-control profile for this connection.
+	 * @post role != null
+	 * @post role.isMutable()
+	 */
+	Role getRole();
+	/**
+	 * Returns a schema reader with access control appropriate to the current
+	 * role.
+	 */
+	SchemaReader getSchemaReader();
+}
 
 // End Connection.java

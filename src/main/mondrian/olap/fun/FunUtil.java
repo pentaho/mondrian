@@ -71,7 +71,7 @@ public class FunUtil extends Util {
 		}
 		Exp arg = args[i];
 		if (!(arg instanceof Literal) ||
-				arg.getType() != Exp.CatSymbol) {
+				arg.getType() != Category.Symbol) {
 			throw newEvalException(funDef, "Expected a symbol, found '" + arg + "'");
 		}
 		String s = (String) ((Literal) arg).getValue();
@@ -130,11 +130,10 @@ public class FunUtil extends Util {
 			return new Double(((Number) o).doubleValue());
 		} else if (o instanceof Throwable) {
 			return new Double(Double.NaN);
-		} else if (o instanceof Util.NullCellValue) {
+		} else if (o == Util.nullValue) {
 			return new Double(0);
 		} else {
-			throw Util.newInternal(
-					"arg " + o + " cannot be converted to Double");
+			throw Util.newInternal("arg " + o + " cannot be converted to Double");
 		}
 	}
 
@@ -254,6 +253,11 @@ public class FunUtil extends Util {
 		}
 	}
 
+	/** @deprecated */
+	static SchemaReader getSchemaReader() {
+		return null;
+	}
+
 	static Vector toVector(Object[] array) {
 		Vector vector = new Vector();
 		return addArray(vector, array);
@@ -307,16 +311,16 @@ public class FunUtil extends Util {
 		return set;
 	}
 
-	static Vector addMembers(Vector vector, Hierarchy hierarchy) {
+	static Vector addMembers(SchemaReader schemaReader, Vector vector, Hierarchy hierarchy) {
 		Level[] levels = hierarchy.getLevels();
 		for (int i = 0; i < levels.length; i++) {
-			addMembers(vector, levels[i]);
+			addMembers(schemaReader, vector, levels[i]);
 		}
 		return vector;
 	}
 
-	static Vector addMembers(Vector vector, Level level) {
-		Member[] members = level.getMembers();
+	static Vector addMembers(SchemaReader schemaReader, Vector vector, Level level) {
+		Member[] members = schemaReader.getLevelMembers(level);
 		return addArray(vector, members);
 	}
 
@@ -814,19 +818,19 @@ public class FunUtil extends Util {
 			m = m.getParentMember();
 		}
 		ArrayList members = new ArrayList();
-		level.getHierarchy().getMemberRange(level, m, member, members);
+		evaluator.getSchemaReader().getMemberRange(level, m, member, members);
 		return members;
 	}
 
-	static List memberRange(Member startMember, Member endMember) {
+	static List memberRange(Evaluator evaluator, Member startMember, Member endMember) {
 		final Level level = startMember.getLevel();
 		assertTrue(level == endMember.getLevel());
 		ArrayList members = new ArrayList();
-		level.getHierarchy().getMemberRange(level, startMember, endMember, members);
+		evaluator.getSchemaReader().getMemberRange(level, startMember, endMember, members);
 		if (members.isEmpty()) {
 			// The result is empty, so maybe the members are reversed. This is
 			// cheaper than comparing the members before we call getMemberRange.
-			level.getHierarchy().getMemberRange(level, endMember, startMember, members);
+			evaluator.getSchemaReader().getMemberRange(level, endMember, startMember, members);
 		}
 		return members;
 	}
@@ -834,7 +838,7 @@ public class FunUtil extends Util {
 	/**
 	 * Helper for <code>OpeningPeriod</code> and <code>ClosingPeriod</code>.
 	 */
-	static Object openClosingPeriod(FunDef funDef, Member member, Level level) {
+	static Object openClosingPeriod(Evaluator evaluator, FunDef funDef, Member member, Level level) {
 		if (member.getHierarchy() != level.getHierarchy()) {
 			throw newEvalException(
 					funDef,
@@ -847,12 +851,10 @@ public class FunUtil extends Util {
 		// Expand member to its children, until we get to the right
 		// level. We assume that all children are in the same
 		// level.
-		final Hierarchy hierarchy = member.getHierarchy();
 		Member[] children = {member};
 		while (children.length > 0 &&
-				children[0].getLevel().getDepth() <
-				level.getDepth()) {
-			children = hierarchy.getChildMembers(children);
+				children[0].getLevel().getDepth() < level.getDepth()) {
+			children = evaluator.getSchemaReader().getMemberChildren(children);
 		}
 		return children[children.length - 1];
 	}
@@ -978,22 +980,22 @@ abstract class MemberComparator implements Comparator {
 
 	protected int compareHierarchicallyButSiblingsByValue(Member m1, Member m2) {
 		//if (m1 == m2) {
-    if (m1.equals(m2)) {
+		if (m1.equals(m2)) {
 			return 0;
 		}
 		while (true) {
 			int levelDepth1 = m1.getLevel().getDepth(),
-				levelDepth2 = m2.getLevel().getDepth();
+					levelDepth2 = m2.getLevel().getDepth();
 			if (levelDepth1 < levelDepth2) {
 				m2 = m2.getParentMember();
 				//if (m1 == m2) {
-          if (m1.equals(m2)) {
+				if (m1.equals(m2)) {
 					return -1;
 				}
 			} else if (levelDepth1 > levelDepth2) {
 				m1 = m1.getParentMember();
 				//if (m1 == m2) {
-        if (m1.equals(m2)) {
+				if (m1.equals(m2)) {
 					return 1;
 				}
 			} else {
@@ -1001,7 +1003,7 @@ abstract class MemberComparator implements Comparator {
 				m1 = m1.getParentMember();
 				m2 = m2.getParentMember();
 				//if (m1 == m2) {
-        if (m1.equals(m2)) {
+				if (m1.equals(m2)) {
 					// including case where both parents are null
 					return compareByValue(prev1, prev2);
 				}

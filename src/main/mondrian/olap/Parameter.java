@@ -17,7 +17,7 @@ import java.io.PrintWriter;
 
 public class Parameter extends ExpBase {
 	String name;
-	int category; // CatString, CatNumeric, or CatMember
+	int category; // Category.String, Category.Numeric, or Category.Member
 	Hierarchy hierarchy;
 	Exp exp;
 	String description;
@@ -122,36 +122,39 @@ public class Parameter extends ExpBase {
 
 	/**
 	 * todo: Remove this method, and require the client to call
-	 * {@link Connection#parseExpression}
+	 * {@link Connection#parseExpression}. Currently, we do not check access.
 	 */
 	public void setValue(String value, NameResolver st)
 	{
 		switch (category) {
-		case CatNumeric:
+		case Category.Numeric:
 			exp = Literal.create(new Double(value));
 			break;
-		case CatString:
+		case Category.String:
 			exp = Literal.createString(value);
 			break;
-		case CatMember:
+		case Category.Member:
 			exp = Util.lookupMember(st, value, false);
+			break;
+		default:
+			throw Util.newInternal("bad category " + category);
 		}
 	}
-	
-  /**
-   * returns the parameters value
-   * @return one of String, Double, Member
-   */
+
+	/**
+	 * returns the parameters value
+	 * @return one of String, Double, Member
+	 */
 	public Object getValue() {
-    switch (category) {
-    case CatNumeric:
-    case CatString:
-      return ((Literal)exp).getValue();
-    default:
-      return (Member)exp;
-    }
+		switch (category) {
+		case Category.Numeric:
+		case Category.String:
+			return ((Literal)exp).getValue();
+		default:
+			return (Member)exp;
+		}
 	}
-	
+
 
   /**
    * sets the parameters value
@@ -159,10 +162,10 @@ public class Parameter extends ExpBase {
    */
 	public void setValue(Object value) {
     switch (category) {
-    case CatNumeric:
+    case Category.Numeric:
       exp = Literal.create((Double)value);
       break;
-    case CatString:
+    case Category.String:
       exp = Literal.createString((String)value);
       break;
     default:
@@ -174,7 +177,7 @@ public class Parameter extends ExpBase {
 	 * Returns "STRING", "NUMERIC" or "MEMBER"
 	 */
 	public String getParameterType() {
-		return Exp.catEnum.getName(category).toUpperCase();
+		return Category.instance.getName(category).toUpperCase();
 	}
 
 	public String getDescription() {
@@ -214,11 +217,11 @@ public class Parameter extends ExpBase {
 			} else {
 				pw.print("Parameter(" + Util.quoteForMdx(name) + ", ");
 				switch (category) {
-				case CatString:
-				case CatNumeric:
+				case Category.String:
+				case Category.Numeric:
 					pw.print(getParameterType());
 					break;
-				case CatMember:
+				case Category.Member:
 					hierarchy.unparse(pw, callback);
 					break;
 				default:

@@ -57,7 +57,7 @@ class RolapResult extends ResultBase
 								"{}", new Exp[] {query.slicer},
 								FunDef.TypeBraces),
 							"slicer",
-							QueryAxis.subtotalsUndefined);
+							QueryAxis.SubtotalVisibility.Undefined);
 					} else {
 						axis = null;
 					}

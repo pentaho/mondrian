@@ -30,19 +30,22 @@ import mondrian.olap.*;
  * are contiguous and zero-based. Zero is always the <code>[Measures]</code>
  * dimension.
  *
- * <p> I'd like to clean up this model. Dimensions may be either shared or
- * private to a particular cube. A hierarchy always belongs to a dimension.
- * The link from a hierarchy to its dimension is clear, but the link from a
- * dimension to a cube depends upon the current context. We currently (I think)
- * create a {@link RolapDimension} for each <em>usage</em>, and this has a
- * {@link Dimension#getCube} method.
+ * <p> A dimension may be either shared or private to a particular cube. The
+ * dimension object doesn't actually know which; {@link Schema} has a list of
+ * shared hierarchies ({@link Schema#getSharedHierarchies}), and {@link Cube}
+ * has a list of dimensions ({@link Cube#getDimensions}).
  *
- * <p> Shared hierarchies belong to a schema, and member readers belong to them
- * ({@link RolapSchema#mapSharedHierarchyToReader} holds the mapping).
- * This causes a problem with shared member readers. The same member
- * objects are returned regardless of which cube you are reading from, so
- * if you call a member's {@link #getCube} method you may receive the wrong
- * answer.
+ * <p>If a dimension is shared between several cubes, the {@link Dimension}
+ * objects which represent them may (or may not be) the same. (That's why
+ * there's no <code>getCube()</code> method.)
+ *
+ * <p>Furthermore, since members are created by a
+ * {@link MemberReader} which belongs to the {@link RolapHierarchy}, you will
+ * the members will be the same too. For example, if you query
+ * <code>[Product].[Beer]</code> from the <code>Sales</code> and
+ * <code>Warehouse</code> cubes, you will get the same {@link RolapMember}
+ * object. ({@link RolapSchema#mapSharedHierarchyToReader} holds the mapping. I
+ * don't know whether it's still necessary.)
  *
  * @author jhyde
  * @since 10 August, 2001
@@ -50,7 +53,7 @@ import mondrian.olap.*;
  */
 class RolapDimension extends DimensionBase
 {
-	/** Generator for {@link #ordinal}. **/
+	/** Generator for {@link #globalOrdinal}. **/
 	static int nextOrdinal = 1; // 0 is reserved for [Measures]
 	RolapSchema schema;
 
@@ -129,6 +132,10 @@ class RolapDimension extends DimensionBase
 
 	public int getOrdinal(Cube cube) {
 		return ((RolapCube) cube).localDimensionOrdinals[globalOrdinal];
+	}
+
+	public Schema getSchema() {
+		return schema;
 	}
 
 	/**

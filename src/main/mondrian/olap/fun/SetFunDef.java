@@ -27,7 +27,7 @@ import java.util.Vector;
  **/
 class SetFunDef extends FunDefBase {
 	SetFunDef(Resolver resolver, int syntacticType, int[] argTypes) {
-		super(resolver, syntacticType, Exp.CatSet, argTypes);
+		super(resolver, syntacticType, Category.Set, argTypes);
 	}
 
 	public void unparse(Exp[] args, PrintWriter pw, ElementCallback callback) {

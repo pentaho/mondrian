@@ -12,9 +12,6 @@
 
 package mondrian.olap;
 import java.util.Vector;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Collections;
 
 /**
  * <code>MemberBase</code> is a partial implementation of {@link Member}.
@@ -35,20 +32,12 @@ public abstract class MemberBase
 	protected int memberType;
 	protected String parentUniqueName;
 
-	/**
-	 * If a level has <code>LARGE_LEVEL_THRESHOLD</code> or more members, it
-	 * is considered a <em>large level</em>.  This means that the PivotTable
-	 * service will not bring all of the members back to the client, but
-	 * instead bring them back in chunks.
-	 */
-	public static final int LARGE_LEVEL_THRESHOLD = 1000;
-
 	// implement Exp, OlapElement, Member
 	public String getQualifiedName() {
 		return Util.getRes().getMdxMemberName(uniqueName);
 	}
 	public final int getType() {
-		return CatMember;
+		return Category.Member;
 	}
 	public final String getName() {
 		return name;
@@ -89,28 +78,8 @@ public abstract class MemberBase
 	public final boolean isNull() {
 		return memberType == NULL_MEMBER_TYPE;
 	}
-	public OlapElement lookupChild(NameResolver st, String s) {
-		return lookupChildMember(s);
-	}
-
-	// implement Member
-	public Member lookupChildMember(String s)
-	{
-		// calculated members may not have children
-		if (isCalculated()) {
-			throw Util.getRes().newMdxCalcMemberCanNotHaveChildren(
-				getUniqueName());
-		}
-		Member[] children = getMemberChildren();
-		String childName = getUniqueName() + ".[" + s + "]";
-		for (int i = 0; i < children.length; i++){
-			if (childName.equals(children[i].getUniqueName()) ||
-				childName.equals(
-					removeCarriageReturn(children[i].getUniqueName()))) {
-				return children[i];
-			}
-		}
-		return null;
+	public OlapElement lookupChild(SchemaReader schemaReader, String s) {
+		return Util.lookupMemberChildByName(schemaReader, this, s);
 	}
 
 	// implement Member
@@ -123,9 +92,12 @@ public abstract class MemberBase
 			return parentMember;
 		} else {
 			boolean failIfNotFound = true;
-			return parentMember = (MemberBase)
-				getHierarchy().lookupMemberByUniqueName(
-					parentUniqueName, failIfNotFound);
+			final Hierarchy hierarchy = getHierarchy();
+			final SchemaReader schemaReader = hierarchy.getDimension().getSchema().getSchemaReader();
+			String[] parentUniqueNameParts = Util.explode(parentUniqueName);
+			parentMember = (MemberBase) schemaReader.getMemberByUniqueName(
+					hierarchy, parentUniqueNameParts, failIfNotFound);
+			return parentMember;
 		}
 	}
 
@@ -161,12 +133,7 @@ public abstract class MemberBase
 			return false; // have reached root
 		} else {
 			// try candidate's parentMember
-			if (parentMember == null) {
-				parentMember = (MemberBase)
-					getHierarchy().lookupMemberByUniqueName(
-						parentUniqueName, false);
-			}
-			return parentMember.isChildOrEqualTo(uniqueName);
+			return ((MemberBase) getParentMember()).isChildOrEqualTo(uniqueName);
 		}
 	}
 
@@ -209,17 +176,6 @@ public abstract class MemberBase
 		Member[] mdxAncestorMembers = new Member[v.size()];
 		v.copyInto(mdxAncestorMembers);
 		return mdxAncestorMembers;
-	}
-
-	String removeCarriageReturn(String s)
-	{
-		String retString = "";
-		for (int i = 0; i < s.length(); i++){
-			if (s.charAt(i) == '\r')
-				continue;
-			retString += s.charAt(i);
-		}
-		return retString;
 	}
 
 	public void accept(Visitor visitor)

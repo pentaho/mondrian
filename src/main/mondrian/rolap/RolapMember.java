@@ -64,21 +64,6 @@ class RolapMember extends MemberBase
 		this(parentMember, level, value, value.toString());
 	}
 
-	public int compareHierarchically(Member o)
-	{
-		MemberReader reader = ((RolapHierarchy) getHierarchy()).memberReader;
-		return reader.compare(this, (RolapMember) o, true);
-	}
-
-	public Member[] getMemberChildren() {
-		return getHierarchy().getChildMembers(this);
-	}
-
-	public Member getLeadMember(int n)
-	{
-		return ((RolapHierarchy) getHierarchy()).memberReader.getLeadMember(
-			this, n);
-	}
 	public boolean isCalculatedInQuery()
 	{
 		return false;

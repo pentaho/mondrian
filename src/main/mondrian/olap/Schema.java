@@ -39,6 +39,10 @@ public interface Schema {
 	 **/
 	Dimension createDimension(Cube cube, String xml);
 
+	/**
+	 * Creates a {@link SchemaReader} without any access control.
+	 */
+	SchemaReader getSchemaReader();
 }
 
 // End Schema.java

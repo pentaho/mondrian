@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -17,7 +17,11 @@ import javax.olap.OLAPException;
 import java.util.Iterator;
 
 /**
- * A <code>Converter</code> is ...
+ * A <code>Converter</code> translates Mondrian JOLAP constructs into their
+ * equivalent raw Mondrian constructs.
+ *
+ * For example, {@link #createQuery}
+ * converts a {@link MondrianCubeView} into a {@link Query}.
  *
  * @author jhyde
  * @since Dec 25, 2002
@@ -36,7 +40,7 @@ class Converter {
 		if (mondrianJolapCube == null) {
 			throw new OLAPException("Cube view " + cubeView + " does not have a cube");
 		}
-		final Query query = new Query(cubeView.connection.connection,
+		final Query query = new Query(cubeView.connection.mondrianConnection,
 				mondrianJolapCube.cube, new Formula[0], queryAxes, slicer,
 				cellProps, parameters);
 		return query;
@@ -78,7 +82,7 @@ class Converter {
 				}
 			}
 		}
-		return new QueryAxis(false, exp, Query.axisNames[axisIndex], QueryAxis.subtotalsUndefined);
+		return new QueryAxis(false, exp, AxisOrdinal.instance.getName(axisIndex), QueryAxis.SubtotalVisibility.Undefined);
 	}
 
 	private Exp convert(MondrianSegment segment) throws OLAPException {

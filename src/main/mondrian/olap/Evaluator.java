@@ -63,6 +63,11 @@ public interface Evaluator {
 	 * highest solve order has precedence.
 	 */
 	Object getProperty(String name);
+	/**
+	 * Returns a {@link SchemaReader} appropriate for the current access-control
+	 * context.
+	 */
+	SchemaReader getSchemaReader();
 }
 
 // End Evaluator.java

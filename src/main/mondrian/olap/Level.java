@@ -15,13 +15,14 @@
 package mondrian.olap;
 
 /**
- * Wrapper around an ADO MD level.
+ * A <code>Level</code> is a group of {@link Member}s in a {@link Hierarchy},
+ * all with the same attributes and at the same depth in the hierarchy.
  **/
 public interface Level extends OlapElement {
 
 	int getDepth();
 	Hierarchy getHierarchy();
-	Member[] getMembers();
+
 	Level getChildLevel();
 	Level getParentLevel();
 	boolean isAll();

@@ -11,7 +11,6 @@
 */
 
 package mondrian.olap;
-import java.io.PrintWriter;
 
 /**
  * Skeleton implementation for {@link Hierarchy}.
@@ -56,56 +55,35 @@ public abstract class HierarchyBase
 	}
 	public Level[] getLevels() { return levels; }
 	public Hierarchy getHierarchy() { return this; }
-	public int getType() { return CatHierarchy; }
+	public int getType() {
+		return Category.Hierarchy;
+	}
 	public boolean hasAll() { return hasAll; }
 
 	/** find a child object */
-	public OlapElement lookupChild(NameResolver st, String s)
+	public OlapElement lookupChild(SchemaReader schemaReader, String s)
 	{
 		Level mdxLevel = lookupLevel(s);
 		if (mdxLevel != null) {
 			return mdxLevel;
 		}
-		return lookupRootMember(s);
-	}
-
-	// implement Hierarchy
-	public Member[] getRootMembers()
-	{
-		return levels[0].getMembers();
-	}
-
-	public Member lookupRootMember(String s)
-	{
-		// Lookup member at first level.
-		Member[] rootMembers = getRootMembers();
-		for (int i = 0; i < rootMembers.length; i++) {
-			if (rootMembers[i].getName().equalsIgnoreCase(s)) {
-				return rootMembers[i];
-			}
-		}
-		// If the first level is 'all', lookup member at second level. For
-		// example, they could say '[USA]' instead of '[(All
-		// Customers)].[USA]'.
-		if (hasAll()) {
-			return rootMembers[0].lookupChildMember(s);
-		}
-		return null;
+		return Util.lookupHierarchyRootMember(schemaReader, this, s);
 	}
 
 	// implement Hierarchy
 	public Level lookupLevel(String s)
 	{
-		Level[] mdxLevels = getLevels();
-		for (int i = 0; i < mdxLevels.length; i++) {
-			if (mdxLevels[i].getName().equalsIgnoreCase(s)) {
-				return mdxLevels[i];
+		for (int i = 0; i < levels.length; i++) {
+			if (levels[i].getName().equalsIgnoreCase(s)) {
+				return levels[i];
 			}
 		}
 		return null;
 	}
 
-	public Object[] getChildren() { return getLevels(); }
+	public Object[] getChildren() {
+		return getLevels();
+	}
 
 	protected Object[] getAllowedChildren(CubeAccess cubeAccess)
 	{

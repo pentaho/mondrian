@@ -11,8 +11,6 @@
 */
 
 package mondrian.olap;
-import java.io.*;
-import java.util.*;
 
 /**
  * A <code>Member</code> is a 'point' on a dimension of a cube. Examples are
@@ -90,15 +88,6 @@ public interface Member extends OlapElement {
 	boolean isNull();
 
 	/**
-	 * Returns a negative integer, zero, or a positive integer if this object
-	 * comes earlier than <code>other</code> in a prefix traversal (that is, it
-	 * is an ancestor or a earlier sibling of an ancestor, or a descendent of
-	 * an earlier sibling), is a sibling, or comes later in a prefix
-	 * traversal.
-	 **/
-	int compareHierarchically(Member other);
-
-	/**
 	 * Returns whether <code>member</code> is equal to, a child, or a
 	 * descendent of this <code>Member</code>.
 	 **/
@@ -108,16 +97,6 @@ public interface Member extends OlapElement {
 	 * member</code> clause in an mdx query or a calculated member defined in
 	 * cube. */
 	boolean isCalculated();
-
-	/**
-	 * Returns a member <code>n</code> further along in the same level.
-	 */
-	Member getLeadMember(int n);
-
-	/**
-	 * Finds a child member in this member.
-	 **/
-	Member lookupChildMember(String s);
 
 	/**
 	 * Returns array of all members, which are ancestor to <code>this</code>.
@@ -146,10 +125,6 @@ public interface Member extends OlapElement {
 	 * Returns the definitions of the properties this member may have.
 	 */
 	Property[] getProperties();
-	/**
-	 * Returns direct children of this member.
-	 **/
-	Member[] getMemberChildren();
 }
 
 // End Member.java

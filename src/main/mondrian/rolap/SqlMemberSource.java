@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// (C) Copyright 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -11,7 +11,6 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.Member;
 import mondrian.olap.MondrianDef;
 import mondrian.olap.Util;
 import mondrian.rolap.sql.SqlQuery;
@@ -23,8 +22,9 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * A <code>SqlMemberSource</code> reads members from a SQL database. Good idea
- * to put a {@link CacheMemberReader} on top of this.
+ * A <code>SqlMemberSource</code> reads members from a SQL database.
+ *
+ * <p>It's a good idea to put a {@link CacheMemberReader} on top of this.
  *
  * @author jhyde
  * @since 21 December, 2001
@@ -62,9 +62,10 @@ class SqlMemberSource implements MemberReader
 	}
 
 	// implement MemberSource
-	public void setCache(MemberCache cache)
+	public boolean setCache(MemberCache cache)
 	{
 		this.cache = cache;
+		return true; // yes, we support cache writeback
 	}
 
 	// implement MemberSource
@@ -78,7 +79,7 @@ class SqlMemberSource implements MemberReader
 		return count;
 	}
 
-	public RolapMember lookupMember(String uniqueName, boolean failIfNotFound) {
+	public RolapMember lookupMember(String[] uniqueNameParts, boolean failIfNotFound) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -350,11 +351,20 @@ class SqlMemberSource implements MemberReader
 	}
 
 	// implement MemberReader
-	public RolapMember[] getMembersInLevel(
+	public List getMembersInLevel(
 		RolapLevel level, int startOrdinal, int endOrdinal)
 	{
 		if (level.isAll()) {
-			return (RolapMember[]) hierarchy.getRootMembers();
+			final String allMemberName = hierarchy.getAllMemberName();
+			Object key = cache.makeKey(null, allMemberName);
+			RolapMember root = cache.getMember(key);
+			if (root == null) {
+				root = new RolapMember(null, level, null, allMemberName);
+				cache.putMember(key, root);
+			}
+			ArrayList list = new ArrayList(1);
+			list.add(root);
+			return list;
 		}
 		ResultSet resultSet = null;
 		final RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
@@ -366,9 +376,9 @@ class SqlMemberSource implements MemberReader
 			final int levelDepth = level.getDepth();
 			RolapMember allMember = null;
 			if (hierarchy.hasAll()) {
-				Member[] rootMembers = hierarchy.getRootMembers();
-				Util.assertTrue(rootMembers.length == 1);
-				allMember = (RolapMember) rootMembers[0];
+				final List rootMembers = getRootMembers();
+				Util.assertTrue(rootMembers.size() == 1);
+				allMember = (RolapMember) rootMembers.get(0);
 			}
 			// members[i] is the current member of level#i, and siblings[i]
 			// is the current member of level#i plus its siblings
@@ -436,7 +446,7 @@ class SqlMemberSource implements MemberReader
 					cache.putChildren(member, list);
 				}
 			}
-			return RolapUtil.toArray(list);
+			return list;
 		} catch (Throwable e) {
 			throw Util.getRes().newInternal(
 					"while populating member cache with members for level '" +
@@ -454,15 +464,9 @@ class SqlMemberSource implements MemberReader
 	}
 
 	// implement MemberSource
-	public RolapMember[] getRootMembers()
-	{
-		RolapLevel level0 = (RolapLevel) hierarchy.getLevels()[0];
-		if (hierarchy.hasAll()) {
-			RolapMember root = new RolapMember(
-				null, level0, null, hierarchy.getAllMemberName());
-			return new RolapMember[] {root};
-		}
-		return getMembersInLevel(level0, 0, Integer.MAX_VALUE);
+	public List getRootMembers() {
+		return getMembersInLevel((RolapLevel) hierarchy.getLevels()[0], 0,
+				Integer.MAX_VALUE);
 	}
 
 	/**
@@ -510,17 +514,14 @@ class SqlMemberSource implements MemberReader
 		return sqlQuery.toString();
 	}
 
-	// implement MemberSource
-	public RolapMember[] getMemberChildren(RolapMember[] parentMembers)
+	public void getMemberChildren(List parentMembers, List children)
 	{
-		ArrayList list = new ArrayList();
-		for (int i = 0; i < parentMembers.length; i++) {
-			getMemberChildren(list, parentMembers[i]);
+		for (int i = 0; i < parentMembers.size(); i++) {
+			getMemberChildren((RolapMember) parentMembers.get(i), children);
 		}
-		return RolapUtil.toArray(list);
 	}
 
-	private void getMemberChildren(ArrayList list, RolapMember parentMember)
+	public void getMemberChildren(RolapMember parentMember, List children)
 	{
 		ResultSet resultSet = null;
 		RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
@@ -545,7 +546,7 @@ class SqlMemberSource implements MemberReader
 					member = new RolapMember(parentMember, childLevel, value);
 					cache.putMember(key, member);
 				}
-				list.add(member);
+				children.add(member);
 			}
 		} catch (SQLException e) {
 			throw Util.getRes().newInternal(

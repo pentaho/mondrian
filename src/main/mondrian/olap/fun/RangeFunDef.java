@@ -28,17 +28,17 @@ class RangeFunDef extends FunDefBase {
 			"{<Member> : <Member>}",
 			"Infix colon operator returns the set of members between a given pair of members.",
 			FunDef.TypeInfix,
-			Exp.CatSet,
-			new int[] {Exp.CatMember, Exp.CatMember});
+			Category.Set,
+			new int[] {Category.Member, Category.Member});
 	}
 	public void unparse(Exp[] args, PrintWriter pw, ElementCallback callback) {
 		ExpBase.unparseList(pw, args, "{", " : ", "}", callback);
 	}
 	public int getReturnType() {
-		return Exp.CatSet;
+		return Category.Set;
 	}
 	public int[] getParameterTypes() {
-		return new int[] {Exp.CatMember, Exp.CatMember};
+		return new int[] {Category.Member, Category.Member};
 	}
 }
 

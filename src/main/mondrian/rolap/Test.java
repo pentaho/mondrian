@@ -11,12 +11,11 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.MondrianResource;
-import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
 
 import java.io.PrintWriter;
 import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  * todo:
@@ -117,14 +116,14 @@ public class Test {
 		pw.println("Count=" + reader.getMemberCount());
 
 		pw.print("Root member(s)=");
-		RolapMember[] rootMembers = reader.getRootMembers();
+		RolapMember[] rootMembers = RolapUtil.toArray(reader.getRootMembers());
 		print(rootMembers);
 		pw.println();
 
 		RolapLevel[] levels = (RolapLevel[]) rootMembers[0].getHierarchy().getLevels();
 		RolapLevel level = levels[levels.length > 1 ? 1 : 0];
 		pw.print("Members at level " + level.getUniqueName() + " are ");
-		RolapMember[] members = reader.getMembersInLevel(level, 0, Integer.MAX_VALUE);
+		RolapMember[] members = RolapUtil.toArray(reader.getMembersInLevel(level, 0, Integer.MAX_VALUE));
 		print(members);
 		pw.println();
 
@@ -135,19 +134,19 @@ public class Test {
 			firstChildren.addElement(member);
 			pw.print("\t");
 			print(member);
-			RolapMember[] children = reader.getMemberChildren(
-				new RolapMember[] {member});
-			if (children == null) {
+			ArrayList children = new ArrayList();
+			reader.getMemberChildren(member, children);
+			if (children.isEmpty()) {
 				break;
 			}
-			pw.print(" (" + children.length + " children)");
-			RolapMember leadMember = (RolapMember) member.getLeadMember(5);
+			pw.print(" (" + children.size() + " children)");
+			RolapMember leadMember = reader.getLeadMember(member, 5);
 			pw.print(", lead(5)=");
 			print(leadMember);
-			if (children.length > 1) {
-				member = children[1];
-			} else if (children.length > 0) {
-				member = children[0];
+			if (children.size() > 1) {
+				member = (RolapMember) children.get(1);
+			} else if (children.size() > 0) {
+				member = (RolapMember) children.get(0);
 			} else {
 				member = null;
 			}

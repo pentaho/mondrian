@@ -73,26 +73,21 @@ public abstract class ExpBase
 	public final boolean isSet()
 	{
 		int cat = getType();
-		return cat == CatSet || cat == CatTuple;
+		return cat == Category.Set || cat == Category.Tuple;
 	}
 
 	public final boolean isMember()
 	{
-		return getType() == CatMember;
+		return getType() == Category.Member;
 	}
 
 	public final boolean isElement()
 	{
 		int category = getType();
 		return isMember() ||
-			category == CatHierarchy ||
-			category == CatLevel ||
-			category == CatDimension;
-	}
-
-	public final boolean isParameter()
-	{
-		return getType() == CatParameter;
+			category == Category.Hierarchy ||
+			category == Category.Level ||
+			category == Category.Dimension;
 	}
 
 	public final boolean isEmptySet()
@@ -181,13 +176,13 @@ public abstract class ExpBase
 			return getTypeDescription(argTypes[0]) + "." + name;
 		case FunDef.TypeFunction:
 			// e.g. "StripCalculatedMembers(<Set>)"
-			return (returnType == CatUnknown ? "" :
+			return (returnType == Category.Unknown ? "" :
 					getTypeDescription(returnType) + " ") +
 				name + "(" + getTypeDescriptionCommaList(argTypes, 0) +
 				")";
 		case FunDef.TypeMethod:
 			// e.g. "<Member>.Lead(<Numeric Expression>)"
-			return (returnType == CatUnknown ? "" :
+			return (returnType == Category.Unknown ? "" :
 					getTypeDescription(returnType) + " ") +
 				getTypeDescription(argTypes[0]) + "." +
 				name + "(" + getTypeDescriptionCommaList(argTypes, 1) +
@@ -198,7 +193,7 @@ public abstract class ExpBase
 			return "(" + getTypeDescriptionCommaList(argTypes, 0) + ")";
 		case FunDef.TypeCase:
 			String s = getTypeDescription(argTypes[0]);
-			if (argTypes[0] == CatLogical) {
+			if (argTypes[0] == Category.Logical) {
 				return "CASE WHEN " + s + " THEN <Expression> ... END";
 			} else {
 				return "CASE " + s + " WHEN " + s + " THEN <Expression> ... END";
@@ -209,40 +204,7 @@ public abstract class ExpBase
 	}
 
 	private static String getTypeDescription(int type) {
-		switch (type & CatMask) {
-		case CatUnknown:
-			return "<Unknown>";
-		case CatArray:
-			return "<Array>";
-		case CatDimension:
-			return "<Dimension>";
-		case CatHierarchy:
-			return "<Hierarchy>";
-		case CatLevel:
-			return "<Level>";
-		case CatLogical:
-			return "<Logical Expression>";
-		case CatMember:
-			return "<Member>";
-		case CatNumeric:
-			return "<Numeric Expression>";
-		case CatSet:
-			return "<Set>";
-		case CatString:
-			return "<String Expression>";
-		case CatTuple:
-			return "<Tuple>";
-		case CatSymbol:
-			return "<Symbol>";
-		case CatParameter:
-			return "<Parameter>";
-		case CatCube:
-			return "<Cube>";
-		case CatValue:
-			return "<Value>";
-        default:
-            throw Util.newInternal("unknown expression type " + type);
-		}
+		return "<" + Category.instance.getDescription(type & Category.Mask) + ">";
 	}
 
 	private static String getTypeDescriptionCommaList(int[] types, int start)

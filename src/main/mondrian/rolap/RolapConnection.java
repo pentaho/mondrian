@@ -51,10 +51,8 @@ public class RolapConnection extends ConnectionBase {
 	String jdbcConnectString;
 	String catalogName;
 	RolapSchema schema;
-
-	public Schema getSchema() {
-		return schema;
-	}
+	private SchemaReader schemaReader;
+	protected Role role;
 
 	/**
 	 * Creates a connection.
@@ -112,8 +110,9 @@ public class RolapConnection extends ConnectionBase {
 					catalogName, jdbcConnectString, jdbcUser, connectInfo);
 		}
 		this.schema = schema;
+		this.role = schema.defaultRole;
+		this.schemaReader = schema.getSchemaReader();
 	}
-
 
 	public static void loadDrivers(String jdbcDrivers) {
 		StringTokenizer tok = new StringTokenizer(jdbcDrivers, ",");
@@ -138,6 +137,10 @@ public class RolapConnection extends ConnectionBase {
 		}
 	}
 
+	public Schema getSchema() {
+		return schema;
+	}
+
 	public String getConnectString()
 	{
 		return connectInfo.toString();
@@ -150,6 +153,11 @@ public class RolapConnection extends ConnectionBase {
 	{
 		return Locale.US;
 	}
+
+	public SchemaReader getSchemaReader() {
+		return schemaReader;
+	}
+
 	public Result execute(Query query)
 	{
 		try {
@@ -165,6 +173,20 @@ public class RolapConnection extends ConnectionBase {
 			throw Util.newError(e, "Error while executing query [" +
 					query.getQueryString() + "]");
 		}
+	}
+
+	public void setRole(Role role) {
+		Util.assertPrecondition(role != null, "role != null");
+		Util.assertPrecondition(!role.isMutable(), "!role.isMutable()");
+		this.role = role;
+		this.schemaReader = new RolapSchemaReader(getRole());
+
+	}
+
+	public Role getRole() {
+		Util.assertPostcondition(role != null, "role != null");
+		Util.assertPostcondition(!role.isMutable(), "!role.isMutable()");
+		return role;
 	}
 }
 

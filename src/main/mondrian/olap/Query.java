@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1998-2002 Kana Software, Inc. and others.
+// (C) Copyright 1998-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -16,28 +16,16 @@ import java.io.StringWriter;
 import java.util.*;
 
 /**
- * MDX query.
+ * <code>Query</code> is an MDX query.
+ *
+ * <p>It is created by calling {@link Connection#parseQuery},
+ * and executed by calling {@link Connection#execute},
+ * to return a {@link Result}.
+ *
+ * <p><code>Query</code> contains several methods to manipulate the parse tree
+ * of the query; {@link #swapAxes} and {@link #drillDown} are examples.
  **/
 public class Query extends QueryPart implements NameResolver {
-	// enum axisType
-	public static final int noAxis = -2;
-	public static final int slicerAxis = -1;
-	public static final int xAxis = 0;
-	public static final int yAxis = 1;
-	public static final EnumeratedValues axisEnum = new EnumeratedValues(
-		new String[] {"none", "slicer", "x", "y"},
-		new int[] {-2, -1, 0, 1});
-
-	// enum sortDirection
-  public static final int ascDirection = 0; // ascending inside hierarchy
-  public static final int descDirection = 1; // descending inside hierarchy
-  public static final int bascDirection = 2; // ascending disregarding hierarchy
-  public static final int bdescDirection = 3; // descending disregarding hierarchy
-  public static final int noneDirection = -1;
-  public static final EnumeratedValues directionEnum = new EnumeratedValues(
-		new String[] {"none", "ascending", "descending", 
-                           "nonhierarchized ascending", "nonhierarchized descending"},
-    new int[] {-1, 0, 1, 2, 3} );
 
 	//hidden string
 	public static final String hidden = "hidden_";
@@ -114,14 +102,10 @@ public class Query extends QueryPart implements NameResolver {
 		return toWebUIMdx();
 	}
 
-	public static final String[] axisNames = {
-		"COLUMNS", "ROWS", "PAGES", "CHAPTERS", "SECTIONS"
-	};
-
 	private void normalizeAxes()
 	{
 		for (int i = 0; i < axes.length; i++) {
-			String correctName = axisNames[i];
+			String correctName = AxisOrdinal.instance.getName(i);
 			if (!axes[i].axisName.equalsIgnoreCase(correctName)) {
 				for (int j = i + 1; j < axes.length; j++) {
 					if (axes[j].axisName.equalsIgnoreCase(correctName)) {
@@ -295,16 +279,15 @@ public class Query extends QueryPart implements NameResolver {
 	 */
 	public int getLogicalAxis(int iPhysicalAxis)
 	{
-		if (iPhysicalAxis == slicerAxis || iPhysicalAxis == axes.length) {
-			return slicerAxis; // slicer is never permuted
+		if (iPhysicalAxis == AxisOrdinal.SLICER || iPhysicalAxis == axes.length) {
+			return AxisOrdinal.SLICER; // slicer is never permuted
 		}
 		String axisName = axes[iPhysicalAxis].axisName;
-		for (int i = 0; i < axisNames.length; i++) {
-			if (axisName.equalsIgnoreCase(axisNames[i])) {
-				return i;
-			}
+		final Integer ordinal = AxisOrdinal.instance.findOrdinal(axisName);
+		if (ordinal != null) {
+			return ordinal.intValue();
 		}
-		return noAxis;
+		return AxisOrdinal.NONE;
 	}
 
 	/** The inverse of {@link #getLogicalAxis}. */
@@ -313,74 +296,42 @@ public class Query extends QueryPart implements NameResolver {
 		if (iLogicalAxis < 0) {
 			return iLogicalAxis;
 		}
-		String axisName = axisNames[iLogicalAxis];
+		String axisName = AxisOrdinal.instance.getName(iLogicalAxis);
 		for (int i = 0; i < axes.length; i++) {
 			if (axes[i].axisName.equalsIgnoreCase(axisName)) {
 				return i;
 			}
 		}
-		return noAxis;
+		return AxisOrdinal.NONE;
 	}
 
-	/** Convert an axis name, such as "x" or "ROWS" into an axis code. */
-	public static int getAxisCode(String axisName)
-	{
-		if (axisName.equalsIgnoreCase("slicer")) {
-			return slicerAxis;
-		} else if (axisName.equals("none")) {
-			return noAxis;
-		} else if (axisName.equals("x")) {
-			axisName = "COLUMNS";
-		} else if (axisName.equals("y")) {
-			axisName = "ROWS";
-		}
-		for (int i = 0; i < axisNames.length; i++) {
-			if (axisNames[i].equalsIgnoreCase(axisName)) {
-				return i;
-			}
-		}
-		return noAxis;
-	}
-
-	/** Inverse of {@link #getAxisCode} */
-	public static String getAxisName(int iAxis)
-	{
-		switch (iAxis) {
-		case noAxis:
-			return "NONE";
-		case slicerAxis:
-			return "SLICER";
-		default:
-			return axisNames[iAxis];
-		}
-	}
-
-	/** constructs hidden unique name based on given uName. It is used for
-	 * formatting existing measures */
+	/** Constructs hidden unique name based on given uName. It is used for
+	 * formatting existing measures. */
 	public static String getHiddenMemberUniqueName(String uName)
 	{
 		int i = uName.lastIndexOf("].[");
-		return uName.substring(0, i + 3) + Query.hidden + uName.substring(i+3);
+		return uName.substring(0, i + 3) + hidden + uName.substring(i+3);
 	}
 
 	/** checks for hidden string in name and strips it out. It looks only for
 	 * first occurence */
 	public static String stripHiddenName(String name)
 	{
-		if (name.indexOf(Query.hidden) != -1)
-			return name.substring(0, name.indexOf(Query.hidden)) +
-				name.substring(name.indexOf(Query.hidden) +
-							   Query.hidden.length());
+		final int i = name.indexOf(hidden);
+		if (i >= 0) {
+			return name.substring(0, i) + name.substring(i + hidden.length());
+		}
 		return name;
 	}
 
-	public static String getHiddenMemberFormulaDefinition(String uName)
-	{return uName;}
+	public static String getHiddenMemberFormulaDefinition(String uName) {
+		return uName;
+	}
 
-	/** @return query string as it was send from webUI or workBench
-	 */
-	public String toString()
-	{ return toWebUIMdx();}
+	/** Returns the MDX query string. */
+	public String toString() {
+		return toWebUIMdx();
+	}
 
 	public Object[] getChildren()
 	{
@@ -402,7 +353,7 @@ public class Query extends QueryPart implements NameResolver {
 	public void replaceChild(int i, QueryPart with)
 	{
 		int i0 = i;
-		if( i < axes.length ){
+		if (i < axes.length) {
 			if (with == null) {
 				// We need to remove the axis.  Copy the array, omitting
 				// element i.
@@ -473,11 +424,16 @@ public class Query extends QueryPart implements NameResolver {
         return Arrays.asList(mdxDimensions).iterator();
 	}
 
-	public void addLevelToAxis(int iAxis, Level level)
-	{
-		Util.assertTrue(iAxis < axes.length, "axis ordinal out of range");
-		QueryAxis axis = axes[iAxis];
-		axis.addLevel(level);
+	/**
+	 * Adds a level to an axis expression.
+	 *
+	 * @pre AxisOrdinal.instance().isValid(axis)
+	 * @pre axis &lt; axes.length
+	 */
+	public void addLevelToAxis(int axis, Level level) {
+		Util.assertPrecondition(AxisOrdinal.instance.isValid(axis), "AxisOrdinal.instance.isValid(axis)");
+		Util.assertPrecondition(axis < axes.length, "axis < axes.length");
+		axes[axis].addLevel(level);
 	}
 
 	/**
@@ -571,7 +527,7 @@ public class Query extends QueryPart implements NameResolver {
 	private void putInAxisPosition(Exp exp, int axis, int iPositionOnAxis)
 	{
 		switch (axis) {
-		case slicerAxis:
+		case AxisOrdinal.SLICER:
 			// slicer shall contain at most one tuple
 			if (slicer == null) {
 				setSlicer(exp);
@@ -590,8 +546,8 @@ public class Query extends QueryPart implements NameResolver {
 					axes[i] = oldAxes[i];
 				}
 				axes[oldAxes.length] = new QueryAxis(
-					false, null, getAxisName(axis),
-					QueryAxis.subtotalsUndefined);
+					false, null, AxisOrdinal.instance.getName(axis),
+					QueryAxis.SubtotalVisibility.Undefined);
 			}
 
 			Exp axisExp = axes[axis].set;
@@ -766,8 +722,8 @@ public class Query extends QueryPart implements NameResolver {
 	/**
 	 * Moves <code>hierarchy</code> from <code>fromAxis</code>, to
 	 * <code>toAxis</code> at <code>position</code> (-1 means last position).
-	 * The hierarchy is added if <code>fromAxis</code> is {@link #noAxis}, and
-	 * removed if <code>toAxis</code> is {@link #noAxis}.
+	 * The hierarchy is added if <code>fromAxis</code> is {@link AxisOrdinal#NONE},
+	 * and removed if <code>toAxis</code> is {@link AxisOrdinal#NONE}.
 	 *
 	 * <p>If the target axis is the slicer, selects the [All] member;
 	 * otherwise, if the hierarchy is already on an axis, keep the same
@@ -782,7 +738,7 @@ public class Query extends QueryPart implements NameResolver {
 
 		// Find the hierarchy in its current position.
 		Walker walker = findHierarchy(hierarchy.getHierarchy());
-		if (fromAxis == noAxis) {
+		if (fromAxis == AxisOrdinal.NONE) {
 			if (walker != null) {
 				throw Util.getRes().newMdxHierarchyUsed(hierarchy.getUniqueName());
 			}
@@ -804,7 +760,7 @@ public class Query extends QueryPart implements NameResolver {
 				if (toAxis > iAxis) {
 					--toAxis;
 				}
-			} else if (parent instanceof Query && fromAxis == slicerAxis) {
+			} else if (parent instanceof Query && fromAxis == AxisOrdinal.SLICER) {
 				// Hierachy sits on the slicer and it's the only hierachy on
 				// the slicer (otherwise the parent would be _Tuple with at
 				// least 2 children) and it is being removed - Simply delete
@@ -824,7 +780,7 @@ public class Query extends QueryPart implements NameResolver {
 				grandparent.replaceChild(iParentOrdinal, (QueryPart) otherExp);
 			} else if (parent instanceof FunCall &&
 					   ((FunCall)parent).isCallToTuple() &&
-					   fromAxis == slicerAxis ){
+					   fromAxis == AxisOrdinal.SLICER ){
 				int iOrdinal = walker.getOrdinal();
 				((FunCall)slicer).removeChild( iOrdinal );
 			} else if (parent instanceof Parameter) {
@@ -834,7 +790,7 @@ public class Query extends QueryPart implements NameResolver {
 				int iParentOrdinal = walker.getAncestorOrdinal(1);
 				if( grandparent instanceof FunCall &&
 					   ((FunCall)grandparent).isCallToTuple() &&
-					   fromAxis == slicerAxis ){
+					   fromAxis == AxisOrdinal.SLICER ){
 					((FunCall)slicer).removeChild( iParentOrdinal );
 					if( ((FunCall)slicer).args.length == 0 ){
 						// the slicer is empty now
@@ -863,15 +819,15 @@ public class Query extends QueryPart implements NameResolver {
 
 		// Move to slicer?
 		switch (toAxis) {
-		case slicerAxis:
+		case AxisOrdinal.SLICER:
 			// we do not care of expression is already a Member, because it's a
 			// very rare case; we have to make a new expression containing
 			// default
 			e = new FunCall("DefaultMember", new Exp[] {hierarchy}, FunDef.TypeProperty);
 			putInAxisPosition(e, toAxis, iPositionOnAxis);
 			break;
-		case xAxis:
-		case yAxis:
+		case AxisOrdinal.COLUMNS:
+		case AxisOrdinal.ROWS:
 			// If this hierarchy is new, create an expression to display the
 			// children of the default member (which is, we hope, the root
 			// member).
@@ -883,7 +839,7 @@ public class Query extends QueryPart implements NameResolver {
 									FunDef.TypeProperty);
 					e = new FunCall("{}", new Exp[] {e}, FunDef.TypeBraces);
 				}
-			} else if (fromAxis == slicerAxis) {
+			} else if (fromAxis == AxisOrdinal.SLICER) {
 				// Expressions on slicers are stored as DefaultMember.  We need
 				// to convert it to $Brace expression first (curly braces
 				// needed).
@@ -894,7 +850,7 @@ public class Query extends QueryPart implements NameResolver {
 			putInAxisPosition(e, toAxis, iPositionOnAxis);
 			break;
 
-		case noAxis:
+		case AxisOrdinal.NONE:
 			// Discard hierarchy.  Nothing to do.
 			break;
 
@@ -911,13 +867,18 @@ public class Query extends QueryPart implements NameResolver {
      * 'members' are the members to be displayed.  They may be from different
      * levels - for example, {[USA], [USA].[California]} - and their order is
      * important.
+	 *
+	 * @pre AxisOrdinal.instance().isValid(axis)
+	 * @pre axis &lt; axes.length
 	 **/
 	public void filterHierarchy(
 		Hierarchy hierarchy, int /*axisType*/ axis, Member[] members)
 	{
+		Util.assertPrecondition(AxisOrdinal.instance.isValid(axis), "AxisOrdinal.instance.isValid(axis)");
+		Util.assertPrecondition(axis < axes.length, "axis < axes.length");
 		// Check that there can be only one filter per hierarchy applied on
 		// slicer.
-		if (axis == slicerAxis && members.length > 1) {
+		if (axis == AxisOrdinal.SLICER && members.length > 1) {
 			throw Util.getRes().newInternal(
 				"there can be only one filter per hierarchy on slicer");
 		}
@@ -934,7 +895,7 @@ public class Query extends QueryPart implements NameResolver {
 		if (walker == null) {
 			// Hierarchy is not currently used.  Put it at the last position on
 			// the desired axis, then filter it.
-			moveHierarchy(hierarchy, noAxis, axis, -1, true);
+			moveHierarchy(hierarchy, AxisOrdinal.NONE, axis, -1, true);
 			walker = findHierarchy(hierarchy.getHierarchy());
 			Util.assertTrue(walker != null, "hierarchy wasn't added");
 		}
@@ -976,9 +937,8 @@ public class Query extends QueryPart implements NameResolver {
 				: new FunCall("{}", exps, FunDef.TypeBraces);
 			parent.replaceChild(iOrdinal, (QueryPart) exp);
 		} else {
-			throw Util.newInternal(
-				"findHierarchy returned a " +
-				Exp.catEnum.getName(e.getType()).toUpperCase());
+			throw Util.newInternal("findHierarchy returned a " +
+					Category.instance.getName(e.getType()));
 		}
 	}
 
@@ -1006,42 +966,46 @@ public class Query extends QueryPart implements NameResolver {
 	}
 
 
-	/** Sort.  'axis' is the axis to sort; direction is one of {ascending,
-     * descending, none}; specification is the expression to sort on.  For
-     * example, the y-axis can be sorted by [Time].[Quarter] (its name), or by
-     * {[Measures].[Unit Sales], [Stores].[California]} (Unit Sales in
-     * California).  In general, the latter specification identifies a single
-     * column (or row, for x-axis sorting) for each hierarchy on the other
-     * axis. This function always removes previous sort on iAxis. If direcion
-	 * is "none" then axis becomes sorted in natural order (no explicit
-	 * sorting)*/
-	public void sort(
-		int /*axisType*/ axis, int /*sortDirection*/ direction,
-		Member[] members)
-	{
-		Util.assertTrue(axis < axes.length, "Bad axis code");
+	/**
+	 * Sort.
+	 *
+	 * <p>This function always removes previous sort on <code>axis</code>.
+	 * If <code>direction</code> is "none" then axis becomes sorted in natural
+	 * order (no explicit sorting).
+	 *
+	 * @param axis is the axis to sort, a member of {@link AxisOrdinal}
+	 * @param direction is the direction to sort, a member of {@link SortDirection}
+	 * @param members is tuple of members to sort on.  For
+     *   example, the y-axis can be sorted by [Time].[Quarter] (its name), or by
+     *   {[Measures].[Unit Sales], [Stores].[California]} (Unit Sales in
+     *   California).  In general, the latter specification identifies a single
+     *   column (or row, for x-axis sorting) for each hierarchy on the other
+     *   axis.
+	 *
+	 * @pre AxisOrdinal.instance().isValid(axis)
+	 * @pre axis &lt; axes.length
+	 * @pre SortDirection.instance.isValid(direction)
+	 */
+	public void sort(int axis, int direction, Member[] members) {
+		Util.assertPrecondition(AxisOrdinal.instance.isValid(axis), "AxisOrdinal.instance.isValid(axis)");
+		Util.assertPrecondition(axis < axes.length, "axis < axes.length");
+		Util.assertPrecondition(SortDirection.instance().isValid(direction), "SortDirection.instance().isValid(direction)");
+
 		// Find and remove any existing sorts on this axis.
 		removeSortFromAxis(axis);
 
 		//apply new sort
-		String sDirection;
-		switch (direction) {
-		case ascDirection: sDirection = "ASC"; break;
-		case descDirection: sDirection = "DESC"; break;
-    case bascDirection: sDirection = "BASC"; break;
-    case bdescDirection: sDirection = "BDESC"; break;
-		case noneDirection: /*we already removed the sort*/ return;
-		default:
-				throw Util.getRes().newInternal("bad direction code " + direction);
+		if (direction == SortDirection.NONE) {
+			return; // we already removed the sort
 		}
-
+		String sDirection = SortDirection.instance().getName(direction);
 		Exp e = axes[axis].set;
 
-		if (members.length == 0)
+		if (members.length == 0) {
 			// No members to sort on means use default sort order.  As
 			// we've already removed any sorters, we're done.
 			return;
-		else {
+		} else {
 			FunCall funOrder = new FunCall(
 				"Order",
 				new Exp[] {
@@ -1057,11 +1021,15 @@ public class Query extends QueryPart implements NameResolver {
 		}
 	}
 
-	/** Finds and removes existing sorts and TopBottomN functions from axis*/
-	public void removeSortFromAxis(int /*axisType*/ axis)
-	{
-		// Find and remove any existing sorts on this axis.
-		Util.assertTrue(axis < axes.length, "Bad axis code");
+	/**
+	 * Finds and removes existing sorts and top/bottom functions from axis.
+	 *
+	 * @pre AxisOrdinal.instance().isValid(axis)
+	 * @pre axis &lt; axes.length
+	 */
+	public void removeSortFromAxis(int axis) {
+		Util.assertPrecondition(AxisOrdinal.instance.isValid(axis), "AxisOrdinal.instance.isValid(axis)");
+		Util.assertPrecondition(axis < axes.length, "axis < axes.length");
 		Walker walker = new Walker((QueryPart) axes[axis].set);
 		while (walker.hasMoreElements()) {
 			Object o = walker.nextElement();
@@ -1083,18 +1051,33 @@ public class Query extends QueryPart implements NameResolver {
 	}
 
 
-	/** Calls removeSortFromAxis first and then applies TopBottomN function to
-	 * the axis */
+	/**
+	 * Calls {@link #removeSortFromAxis} first and then applies top/bottom
+	 * function to the axis.
+	 *
+	 * @param axis Axis ordinal
+	 * @param fName Name of function
+	 * @param n Number of members top/bottom should return
+	 * @param members Members to sort on
+	 *
+	 * @pre AxisOrdinal.instance().isValid(axis)
+	 * @pre axis &lt; axes.length
+	 * @pre fName != null
+	 * @pre isValidTopBottomNName(fName)
+	 * @pre members != null
+	 * @pre members.length > 0
+	 */
 	public void applyTopBottomN(
-		int /*axisType*/ axis, String /*function's name*/ fName,
-		Integer /*N*/ n, /*sorting members*/ Member[] members)
-	{
-		Util.assertTrue(fName != null, "TopBottomN function name" +
-						  " can not be null");
-		Util.assertTrue(axis < axes.length, "Bad axis code");
-		if (members.length == 0) throw Util.getRes().newMdxTopBottomNRequireSortMember();
-
-		if (!isValidTopBottomNName(fName)) throw Util.getRes().newMdxTopBottomInvalidFunctionName(fName);
+			int axis, String fName, Integer n, Member[] members) {
+		Util.assertPrecondition(fName != null, "fName != null");
+		Util.assertPrecondition(AxisOrdinal.instance.isValid(axis), "AxisOrdinal.instance.isValid(axis)");
+		Util.assertPrecondition(axis < axes.length, "axis < axes.length");
+		Util.assertPrecondition(members != null, "members != null");
+		Util.assertPrecondition(members.length > 0, "members.length > 0");
+		Util.assertPrecondition(isValidTopBottomNName(fName), "isValidTopBottomNName(fName)");
+		if (!isValidTopBottomNName(fName)) {
+			throw Util.getRes().newMdxTopBottomInvalidFunctionName(fName);
+		}
 
 		// Find and remove any existing sorts on this axis.
 		removeSortFromAxis(axis);
@@ -1111,43 +1094,42 @@ public class Query extends QueryPart implements NameResolver {
 		axes[axis].set = funOrder;
 	}
 
-	boolean isValidTopBottomNName(String fName)
-	{
-		if (fName.equalsIgnoreCase("TopCount") ||
+	public static boolean isValidTopBottomNName(String fName) {
+		return fName.equalsIgnoreCase("TopCount") ||
 			fName.equalsIgnoreCase("BottomCount") ||
 			fName.equalsIgnoreCase("TopPercent") ||
-			fName.equalsIgnoreCase("BottomPercent"))
-			return true;
-		return false;
+			fName.equalsIgnoreCase("BottomPercent");
 	}
-  
-  /**
-   * swap the x- and y- axis
-   * do nothing, if the number of axes is != 2
-   */
-  public void swapAxes() {
-    if ( axes.length == 2 ) {
-      Exp e0 = axes[0].set;
-      boolean nonEmpty0 = axes[0].nonEmpty;
-      Exp e1 = axes[1].set;
-      boolean nonEmpty1 = axes[1].nonEmpty;
-      axes[1].set = e0;
-      axes[1].nonEmpty = nonEmpty0;
-      axes[0].set = e1;
-      axes[0].nonEmpty = nonEmpty1;
-      // showSubtotals ???
-    }
-  }
 
-	/** Returns filtered sQuery based on user's grant privileges. {@link
-	 * CubeAccess} contains a list of forbidden hiearchies, and limited
-	 * members. oFilterAxesMembers[0] will contain array of mdxMembers, which
-	 * would have to be applied after query execution. (it is very hard to
-	 * apply limited members on expressions like [Food].children)
-	 * */
+	/**
+	 * Swaps the x- and y- axes.
+	 * Does nothing if the number of axes != 2.
+	 */
+	public void swapAxes() {
+		if (axes.length == 2) {
+			Exp e0 = axes[0].set;
+			boolean nonEmpty0 = axes[0].nonEmpty;
+			Exp e1 = axes[1].set;
+			boolean nonEmpty1 = axes[1].nonEmpty;
+			axes[1].set = e0;
+			axes[1].nonEmpty = nonEmpty0;
+			axes[0].set = e1;
+			axes[0].nonEmpty = nonEmpty1;
+			// showSubtotals ???
+		}
+	}
+
+	/**
+	 * Returns filtered sQuery based on user's grant privileges.
+	 *
+	 * @param cubeAccess Contains a list of forbidden hiearchies, and limited
+	 *   members.
+	 * @param oFilterAxesMembers An output parameter; its 0th element will
+	 *   contain a list of {@link Member}s, which would have to be applied after
+	 *   query execution.
+	 **/
 	public String processFilterQuery(
-		CubeAccess cubeAccess, ArrayList oFilterAxesMembers[])
-	{
+		CubeAccess cubeAccess, ArrayList oFilterAxesMembers[]) {
 		if (!cubeAccess.hasRestrictions()){
 			return this.toPlatoMdx();
 		}
@@ -1159,7 +1141,8 @@ public class Query extends QueryPart implements NameResolver {
 		return query.toPlatoMdx();
 	}
 
-	/** Apply {@link CubeAccess} permissions to the query by filtering
+	/**
+	 * Applies {@link CubeAccess} permissions to the query by filtering
 	 * hierarchies, putting limits on the slicer, etc.  If some of the
 	 * permissions can not be applied (user used expression like currentYear,
 	 * which can not be computed prior to running query) the function returns
@@ -1192,14 +1175,14 @@ public class Query extends QueryPart implements NameResolver {
 				Walker walker = findHierarchy(limitedHierarchy);
 				if (walker == null) {
 					//put limitedMember on the slicer
-					filterHierarchy(limitedHierarchy, slicerAxis, mdxMember);
+					filterHierarchy(limitedHierarchy, AxisOrdinal.SLICER, mdxMember);
 				} else {
 					// the hierarchy is used somewhere in query
 					// if it is used on the slicer, we should modify the slicer
 					// to include it. If it is used on one of the axes, it
 					// we will parse returned results
 					int axis = getAxisCodeForWalker(walker);
-					if (axis == slicerAxis){
+					if (axis == AxisOrdinal.SLICER){
 						Object foundNode = walker.currentElement();
 						Member foundMember = null;
 						if (foundNode instanceof Member){
@@ -1222,11 +1205,11 @@ public class Query extends QueryPart implements NameResolver {
 							// slicer. let's remove it from there and add
 							// member
 							moveHierarchy(
-								limitedHierarchy, slicerAxis, noAxis, 0, true);
+								limitedHierarchy, AxisOrdinal.SLICER, AxisOrdinal.NONE, 0, true);
 							filterHierarchy(
-								limitedHierarchy, slicerAxis, mdxMember);
+								limitedHierarchy, AxisOrdinal.SLICER, mdxMember);
 						}
-					} else if (axis == xAxis || axis == yAxis) {
+					} else if (axis == AxisOrdinal.COLUMNS || axis == AxisOrdinal.ROWS) {
 						if (walker.currentElement() instanceof Member) {
 							// try to apply the limitation before executing
 							// query
@@ -1273,14 +1256,14 @@ public class Query extends QueryPart implements NameResolver {
 		}
 		if (parent instanceof Axis) {
 			if (((QueryAxis) parent).axisName.equals("columns")) {
-				return xAxis;
+				return AxisOrdinal.COLUMNS;
 			}
-			return yAxis;
+			return AxisOrdinal.ROWS;
 		} else if (parent instanceof FunCall &&
 				   ((FunCall) parent).isCallToTuple()) {
-			return slicerAxis;
+			return AxisOrdinal.SLICER;
 		}
-		return noAxis;
+		return AxisOrdinal.NONE;
 	}
 
 	private void applyLimitOnMember(
@@ -1392,47 +1375,31 @@ public class Query extends QueryPart implements NameResolver {
 	public Cube getCube() {
 		return mdxCube;
 	}
-//  	public OlapElement get(OlapElement e) {
-//  		return mdxCube.get(e);
-//  	}
-//  	public Dimension get(Dimension dimension, Cube parent) {
-//  		return mdxCube.get(dimension, parent);
-//  	}
-//  	public Hierarchy get(Hierarchy hierarchy, Dimension parent) {
-//  		return mdxCube.get(hierarchy, parent);
-//  	}
-//  	public Level get(Level level, Hierarchy parent) {
-//  		return mdxCube.get(level, parent);
-//  	}
-//  	public Member get(Member member, Level parent) {
-//  		return mdxCube.get(member, parent);
-//  	}
 
 	// implement NameResolver
 	public OlapElement lookupChild(
-		OlapElement parent, String s, boolean failIfNotFound)
-	{
-		OlapElement mdxElement = null;
+		OlapElement parent, String s, boolean failIfNotFound) {
 		// first look in cube
-		mdxElement = mdxCube.lookupChild(parent, s, false);
-		if (mdxElement != null)
+		OlapElement mdxElement = mdxCube.lookupChild(parent, s, false);
+		if (mdxElement != null) {
 			return mdxElement;
-
+		}
 		// then look in defined members
 		Iterator definedMembers = getDefinedMembers().iterator();
 		while (definedMembers.hasNext()) {
 			Member mdxMember = (Member) definedMembers.next();
-			if (mdxMember.getName().equalsIgnoreCase(s)) //member might be
-				// referenced without dimension name in the query - bug21327
+			if (mdxMember.getName().equalsIgnoreCase(s)) {
+				// allow member to be referenced without dimension name
 				return mdxMember;
+			}
 		}
 
 		// then in defined sets
 		for (int i = 0; i < formulas.length; i++) {
 			Formula formula = formulas[i];
-			if (formula.isMember)
+			if (formula.isMember) {
 				continue;		// have already done these
-
+			}
 			if (formula.names[0].equals(s)) {
 				return formula.mdxSet;
 			}
@@ -1447,18 +1414,6 @@ public class Query extends QueryPart implements NameResolver {
 	}
 
 	// implement NameResolver
-	public Member lookupMember(String s, boolean failIfNotFound) {
-		return Util.lookupMember(this,s,failIfNotFound);
-	}
-
-	// implement NameResolver
-	public Member lookupMemberCompound(
-		String[] names, boolean failIfNotFound)
-	{
-		return Util.lookupMemberCompound(this, names, failIfNotFound);
-	}
-
-	// implement NameResolver
 	public Member lookupMemberByUniqueName(String s, boolean failIfNotFound)
 	{
 		Member member = lookupMemberFromCache(s);
@@ -1468,7 +1423,10 @@ public class Query extends QueryPart implements NameResolver {
 		return member;
 	}
 
-	// implement NameResolver
+	/**
+	 * Looks up a member whose unique name is <code>s</code> from cache.
+	 * If the member is not in cache, returns null.
+	 **/
 	public Member lookupMemberFromCache(String s) {
 		// first look in defined members
 		Iterator definedMembers = getDefinedMembers().iterator();
@@ -1478,8 +1436,7 @@ public class Query extends QueryPart implements NameResolver {
 				return mdxMember;
 			}
 		}
-		// then look in cube
-		return mdxCube.lookupMemberFromCache(s);
+		return null;
 	}
 
 	/** Return an array of the formulas used in this query. */
@@ -1587,7 +1544,7 @@ public class Query extends QueryPart implements NameResolver {
 	public void setAxisShowEmptyCells(int axis, boolean showEmpty)
 	{
 		if (axis >= axes.length) {
-			throw Util.getRes().newMdxAxisShowEmptyCellsNotSupported(
+			throw Util.getRes().newMdxAxisShowSubtotalsNotSupported(
 					new Integer(axis));
 		}
 		axes[axis].nonEmpty = !showEmpty;
@@ -1679,7 +1636,7 @@ public class Query extends QueryPart implements NameResolver {
 		if (axis >= axes.length) {
 			throw Util.getRes().newMdxAxisShowSubtotalsNotSupported(new Integer(axis));
 		}
-		if (axis == Query.slicerAxis) {
+		if (axis == AxisOrdinal.SLICER) {
 			return collectHierarchies((QueryPart) slicer);
 		} else {
 			return collectHierarchies(axes[axis]);

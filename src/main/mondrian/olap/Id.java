@@ -50,7 +50,7 @@ public class Id
 
 	public int getType()
 	{
-		return CatUnknown;
+		return Category.Unknown;
 	}
 
 	public boolean usesDimension(Dimension dimension)
@@ -86,51 +86,58 @@ public class Id
 	{
 		append(s, false);
 	}
-	
+
 	public Exp resolve(Query q)
 	{
 		if (names.size() == 1) {
-			String upper = ((String) names.elementAt(0)).toUpperCase();
-			if (upper.equals("ASC") ||
-					upper.equals("DESC") ||
-					upper.equals("BASC") ||
-					upper.equals("BDESC") ||
-					upper.equals("ALL") ||
-					upper.equals("RECURSIVE") ||
-					upper.equals("SELF") ||
-					upper.equals("AFTER") ||
-					upper.equals("BEFORE") ||
-					upper.equals("BEFORE_AND_AFTER") ||
-					upper.equals("SELF_AND_AFTER") ||
-					upper.equals("SELF_AND_BEFORE") ||
-					upper.equals("SELF_BEFORE_AFTER") ||
-					upper.equals("EXCLUDEEMPTY") ||
-					upper.equals("INCLUDEEMPTY") ||
-					upper.equals("PRE") ||
-					upper.equals("POST") ||
-					upper.equals("NULL") ||
-					upper.equals("NUMERIC") ||
-					upper.equals("STRING")) {
-				return Literal.createSymbol(upper);
+			final String s = (String) names.elementAt(0);
+			if (isReserved(s)) {
+				return Literal.createSymbol(s.toUpperCase());
 			}
 		}
-		// let's assume that this compound presents a unique mdx name and let's
-		// try to look it up in a cube. if we fail we can lookup piece by piece
-		StringWriter sw = new StringWriter();
-		PrintWriter pw = new PrintWriter(sw);
-		unparse(pw, new ElementCallback());
-		String fullName = sw.toString();
-		Member member = q.lookupMember(fullName, false);
-		if (member != null) {
-			return member;
+		final String[] namesArray = toStringArray();
+		// First, look for a calculated member defined in the query.
+		final String fullName = toString();
+		OlapElement olapElement = q.lookupMemberFromCache(fullName);
+		if (olapElement == null) {
+			// Now look for any kind of object (member, level, hierarchy,
+			// dimension) in the cube.
+			olapElement = Util.lookupCompound(q, namesArray, q.getCube(), false);
 		}
-		// let's resolve it bit by bit
-		OlapElement mdxElement = q.getCube();
-		for (int i = 0, n = names.size(); i < n; i++) {
-			String name = (String) names.elementAt(i);
-			mdxElement = q.lookupChild(mdxElement, name, true);
+		if (olapElement != null) {
+			Role role = q.getConnection().getRole();
+			if (!role.canAccess(olapElement)) {
+				olapElement = null;
+			}
 		}
-		return mdxElement;
+		if (olapElement == null) {
+			throw Util.getRes().newMdxChildObjectNotFound(fullName, q.getCube().getQualifiedName());
+		}
+		return olapElement;
+	}
+
+	private boolean isReserved(String s) {
+		String upper = s.toUpperCase();
+		return upper.equals("ASC") ||
+				upper.equals("DESC") ||
+				upper.equals("BASC") ||
+				upper.equals("BDESC") ||
+				upper.equals("ALL") ||
+				upper.equals("RECURSIVE") ||
+				upper.equals("SELF") ||
+				upper.equals("AFTER") ||
+				upper.equals("BEFORE") ||
+				upper.equals("BEFORE_AND_AFTER") ||
+				upper.equals("SELF_AND_AFTER") ||
+				upper.equals("SELF_AND_BEFORE") ||
+				upper.equals("SELF_BEFORE_AFTER") ||
+				upper.equals("EXCLUDEEMPTY") ||
+				upper.equals("INCLUDEEMPTY") ||
+				upper.equals("PRE") ||
+				upper.equals("POST") ||
+				upper.equals("NULL") ||
+				upper.equals("NUMERIC") ||
+				upper.equals("STRING");
 	}
 
 	public void unparse(PrintWriter pw, ElementCallback callBackObj)

@@ -23,6 +23,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Vector;
+import java.util.List;
 
 /**
  * todo:
@@ -97,9 +98,39 @@ public class RolapUtil {
 		return members;
 	}
 
-	static final RolapMember[] toArray(ArrayList v)
+	static final RolapMember[] toArray(List v)
 	{
 		return (RolapMember[]) v.toArray(emptyMemberArray);
+	}
+
+	static RolapMember lookupMember(
+			MemberReader reader, String[] uniqueNameParts, boolean failIfNotFound) {
+		RolapMember member = null;
+		for (int i = 0; i < uniqueNameParts.length; i++) {
+			String name = uniqueNameParts[i];
+			List children;
+			if (member == null) {
+				children = reader.getRootMembers();
+			} else {
+				children = new ArrayList();
+				reader.getMemberChildren(member, children);
+				member = null;
+			}
+			for (int j = 0, n = children.size(); j < n; j++) {
+				RolapMember child = (RolapMember) children.get(j);
+				if (child.getName().equals(name)) {
+					member = child;
+					break;
+				}
+			}
+			if (member == null) {
+				break;
+			}
+		}
+		if (member == null && failIfNotFound) {
+			throw Util.getRes().newMdxCantFindMember(Util.implode(uniqueNameParts));
+		}
+		return member;
 	}
 
 	/**

@@ -94,7 +94,7 @@
 	 */
 	Member[] getAncestorsAndSiblings(Member member) {
 		LinkedList list = new LinkedList();
-		Member[] children = member.getMemberChildren();
+		Member[] children = getSchemaReader(member).getMemberChildren(member);
 		if (children != null && children.length > 0) {
 			member = children[0];
 		}
@@ -113,10 +113,12 @@
 		if (parent != null) {
 			getAncestorsAndSiblings(parent, list);
 			parentPos = list.indexOf(parent);
-			siblings = parent.getMemberChildren();
+			siblings = getSchemaReader(member).getMemberChildren(parent);
 		} else {
 			parentPos = -1;
-			siblings = member.getHierarchy().getRootMembers();
+			final Hierarchy hierarchy = member.getHierarchy();
+			final Schema schema = hierarchy.getDimension().getSchema();
+			siblings = schema.getSchemaReader().getHierarchyRootMembers(hierarchy);
 		}
 		for (int i = 0; i < siblings.length; i++) {
 			Member sibling = siblings[i];
@@ -195,7 +197,8 @@
 					out.write("</li>");
 					out.newLine();
 				}
-				Member[] allMeasures = hierarchy.getRootMembers();
+				final SchemaReader schemaReader = hierarchy.getDimension().getSchema().getSchemaReader();
+				Member[] allMeasures = schemaReader.getHierarchyRootMembers(hierarchy);
 				for (int j = 0; j < allMeasures.length; j++) {
 					Member measure = allMeasures[j];
 					if (membersList.contains(measure)) {
@@ -212,6 +215,9 @@
 		}
 		out.write("</ul>");
 		out.newLine();
+	}
+	SchemaReader getSchemaReader(OlapElement element) {
+		return null;
 	}
 	Hierarchy[] getHierarchiesOnAxis(Result result, int axis) {
 		Axis resultAxis = getAxis(result,axis);

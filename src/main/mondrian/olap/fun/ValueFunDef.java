@@ -33,12 +33,12 @@ class ValueFunDef extends FunDefBase {
 			"_Value([<Member>, ...])",
 			"Pseudo-function which evaluates a tuple.",
 			FunDef.TypeParentheses,
-			Exp.CatNumeric,
+			Category.Numeric,
 			argTypes);
 		this.argTypes = argTypes;
 	}
 	public int getReturnType() {
-		return Exp.CatTuple;
+		return Category.Tuple;
 	}
 	public int[] getParameterTypes() {
 		return argTypes;

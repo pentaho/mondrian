@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -12,27 +12,19 @@
 package mondrian.jolap;
 
 import mondrian.olap.DriverManager;
-import mondrian.olap.Hierarchy;
 import mondrian.olap.Util;
-import mondrian.olap.Dimension;
 import mondrian.util.BarfingInvocationHandler;
 
-import javax.jmi.reflect.RefPackage;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
 import javax.olap.OLAPException;
-import javax.olap.metadata.Schema;
-import javax.olap.metadata.Cube;
-import javax.olap.query.querycoremodel.CubeView;
-import javax.olap.query.querycoremodel.DimensionView;
-import javax.olap.query.querycoremodel.EdgeView;
-import javax.olap.query.querycoremodel.MeasureView;
-import javax.olap.resource.*;
+import javax.olap.resource.Connection;
+import javax.olap.resource.ConnectionFactory;
+import javax.olap.resource.ConnectionSpec;
+import javax.olap.resource.ResourceAdapterMetaData;
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.List;
 
 /**
  * <code>MondrianJolapConnectionFactory</code> creates JOLAP connections to
@@ -137,79 +129,6 @@ class MondrianJolapConnectionSpec implements ConnectionSpec {
 	}
 	public String getJdbcDrivers() {
 		return propertyList.get("jdbcDrivers");
-	}
-}
-
-class MondrianJolapConnection extends RefObjectSupport implements Connection {
-	mondrian.olap.Connection connection;
-
-	MondrianJolapConnection(mondrian.olap.Connection connection) {
-		this.connection = connection;
-	}
-	public void close() throws OLAPException {
-		connection.close();
-	}
-
-	public ConnectionMetaData getMetaData() throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
-
-	public RefPackage getTopLevelPackage() throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
-
-	public List getSchema() throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
-
-	public Schema getCurrentSchema() throws OLAPException {
-		return null; // todo:
-	}
-
-	public void setCurrentSchema(Schema schema) throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
-
-	public List getDimensions() throws OLAPException {
-		final mondrian.olap.Schema schema = connection.getSchema();
-		final Hierarchy[] sharedHierarchies = schema.getSharedHierarchies();
-		final ArrayList list = new ArrayList();
-		for (int i = 0; i < sharedHierarchies.length; i++) {
-			list.add(new MondrianJolapDimension(
-					getCurrentSchema(), sharedHierarchies[i].getDimension()));
-		}
-		return list;
-	}
-
-	public List getCubes() throws OLAPException {
-		final mondrian.olap.Schema schema = connection.getSchema();
-		final mondrian.olap.Cube[] cubes = schema.getCubes();
-		final ArrayList list = new ArrayList();
-		for (int i = 0; i < cubes.length; i++) {
-			mondrian.olap.Cube cube = cubes[i];
-			list.add(new MondrianJolapCube(getCurrentSchema(), cube));
-		}
-		return list;
-	}
-
-	public CubeView createCubeView() throws OLAPException {
-		return createCubeView(null);
-	}
-
-	public CubeView createCubeView(Cube cube) throws OLAPException {
-		return new MondrianCubeView(this, cube);
-	}
-
-	public DimensionView createDimensionView() throws OLAPException {
-		return new MondrianDimensionView();
-	}
-
-	public EdgeView createEdgeView() throws OLAPException {
-		throw new UnsupportedOperationException();
-	}
-
-	public MeasureView createMeasureView() throws OLAPException {
-		return new MondrianDimensionView();
 	}
 }
 

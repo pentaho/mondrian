@@ -1173,7 +1173,7 @@ set_name ::= compound_id ;
 // <axis_specification> ::= [NON EMPTY] <set> [<dim_props>] ON <axis_name>
 axis_specification ::=
 		non_empty_opt:b expression:s dim_props_opt ON axis_name:a {:
-			RESULT = new QueryAxis(b.booleanValue(), s, a, QueryAxis.subtotalsUndefined);
+			RESULT = new QueryAxis(b.booleanValue(), s, a, QueryAxis.SubtotalVisibility.Undefined);
 		:}
 	;
 non_empty_opt ::=
