@@ -12,17 +12,25 @@
 
 package mondrian.web.servlet;
 
-import mondrian.olap.*;
-import mondrian.web.taglib.ResultCache;
-import mondrian.xom.StringEscaper;
+import java.io.IOException;
+import java.util.Enumeration;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Enumeration;
+
+import mondrian.olap.Cell;
+import mondrian.olap.DriverManager;
+import mondrian.olap.Member;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Position;
+import mondrian.olap.Query;
+import mondrian.olap.Result;
+import mondrian.olap.Util;
+import mondrian.web.taglib.ResultCache;
+import mondrian.xom.StringEscaper;
 
 /**
  * <code>MDXQueryServlet</code> is a servlet which receives MDX queries,
@@ -76,20 +84,28 @@ public class MDXQueryServlet extends HttpServlet {
 			mdxConnection = DriverManager.getConnection(connectString, getServletContext(), false);
 			Query q = mdxConnection.parseQuery(queryString);
 			Result result = mdxConnection.execute(q);
+/*
             if (result.getAxes().length != 2) {
                 throw Util.newError("Can only handle queries with 2 axes; this query has " +
                         result.getAxes().length + "axes");
             }
+*/            
 			Position slicers[] = result.getSlicerAxis().positions;
 			html.append("<table class='resulttable' cellspacing=1 border=0>");
 			final String nl = System.getProperty("line.separator");
 			html.append(nl);
 
-			final Position[] columns = result.getAxes()[0].positions,
-					rows = result.getAxes()[1].positions;
-			final int columnWidth = columns.length == 1 ? 0 : columns[0].members.length,
-					rowWidth = rows.length == 1 ? 0 : rows[0].members.length;
+			Position[] columns = result.getAxes()[0].positions;
+			Position[] rows = null;
+			if( result.getAxes().length == 2 )
+				rows = result.getAxes()[1].positions;
 
+			int columnWidth = columns[0].members.length;
+			//int columnWidth = columns.length == 1 ? 0 : columns[0].members.length;
+			int rowWidth = 0;
+			if( result.getAxes().length == 2 )
+					rowWidth = result.getAxes()[1].positions[0].members.length;
+	
 			for (int j=0; j<columnWidth; j++) {
 				if (j == 0) {
 					// Print the top-left cell, and fill it with slicer members.
