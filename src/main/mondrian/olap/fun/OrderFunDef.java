@@ -48,6 +48,10 @@ class OrderFunDef extends FunDefBase
                 new String[]{"fxxvy", "fxxv"});
         }
 
+        public String[] getReservedWords() {
+            return OrderFunDef.Flags.instance.getNames();
+        }
+
         protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
             int order = getLiteralArg(args, 2, Flags.ASC, Flags.instance, dummyFunDef);
             final boolean desc = Flags.isDescending(order);

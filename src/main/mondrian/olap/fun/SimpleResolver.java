@@ -36,6 +36,10 @@ class SimpleResolver implements Resolver {
         return funDef.getSyntax();
     }
 
+    public String[] getReservedWords() {
+        return FunUtil.emptyStringArray;
+    }
+
 	public FunDef resolve(Exp[] args, int[] conversionCount) {
 		int[] parameterTypes = funDef.getParameterTypes();
 		if (parameterTypes.length != args.length) {

@@ -24,7 +24,7 @@ import java.util.ArrayList;
  */
 class DrilldownMemberFunDef extends FunDefBase {
     private final boolean recursive;
-    static final String[] reservedNames = new String[] {"RECURSIVE"};
+    static final String[] reservedWords = new String[] {"RECURSIVE"};
 
     DrilldownMemberFunDef(FunDef funDef, boolean recursive) {
         super(funDef);
@@ -130,9 +130,13 @@ class DrilldownMemberFunDef extends FunDefBase {
         }
 
         protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-            boolean recursive = getLiteralArg(args, 2, "", reservedNames,
+            boolean recursive = getLiteralArg(args, 2, "", reservedWords,
                 dummyFunDef).equals("RECURSIVE");
             return new DrilldownMemberFunDef(dummyFunDef, recursive);
+        }
+
+        public String[] getReservedWords() {
+            return reservedWords;
         }
     }
 }

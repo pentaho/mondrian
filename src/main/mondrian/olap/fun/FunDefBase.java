@@ -21,7 +21,7 @@ import java.io.PrintWriter;
  * @since 26 February, 2002
  * @version $Id$
  **/
-class FunDefBase extends FunUtil implements FunDef {
+public class FunDefBase extends FunUtil implements FunDef {
 	protected int flags;
     private String name;
     private String description;
@@ -39,7 +39,7 @@ class FunDefBase extends FunUtil implements FunDef {
 		this.returnType = returnType;
 		this.parameterTypes = parameterTypes;
 	}
-	FunDefBase(
+	protected FunDefBase(
 			String name, String signature, String description, String flags) {
 		this(name,
 			signature,
@@ -125,11 +125,11 @@ class FunDefBase extends FunUtil implements FunDef {
 				return true;
 		return false;
 	}
-	
+
 	/**
 	 * computes the dependsOn() for functions like Tupel and Filter.
 	 * The result of these functions depend on <code>dimension</dimension>
-	 * if all of their arguments depend on it. 
+	 * if all of their arguments depend on it.
 	 * <p>
 	 * Derived classes may overload dependsOn() and call this method
 	 * instead of the default implementation.

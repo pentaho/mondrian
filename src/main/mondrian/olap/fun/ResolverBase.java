@@ -26,6 +26,7 @@ abstract class ResolverBase extends FunUtil implements Resolver {
 	final String signature;
 	final String description;
 	final Syntax syntax;
+
 	ResolverBase(String name, String signature, String description,
             Syntax syntax) {
 		this.name = name;
@@ -33,6 +34,7 @@ abstract class ResolverBase extends FunUtil implements Resolver {
 		this.description = description;
 		this.syntax = syntax;
 	}
+
 	public String getName() {
 		return name;
 	}
@@ -43,6 +45,10 @@ abstract class ResolverBase extends FunUtil implements Resolver {
 
     public boolean requiresExpression(int k) {
         return false;
+    }
+
+    public String[] getReservedWords() {
+        return emptyStringArray;
     }
 }
 

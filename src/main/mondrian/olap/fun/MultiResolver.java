@@ -28,7 +28,7 @@ abstract class MultiResolver extends FunUtil implements Resolver {
 	String[] signatures;
 	Syntax syntax;
 
-	MultiResolver(String name, String signature, String description,
+    MultiResolver(String name, String signature, String description,
             String[] signatures) {
 		this.name = name;
 		this.description = description;
@@ -47,6 +47,10 @@ abstract class MultiResolver extends FunUtil implements Resolver {
 
     public Syntax getSyntax() {
         return syntax;
+    }
+
+    public String[] getReservedWords() {
+        return emptyStringArray;
     }
 
 	public FunDef resolve(Exp[] args, int[] conversionCount) {

@@ -24,8 +24,9 @@ import java.util.Set;
  **/
 public class FunUtil extends Util {
 	static final String nl = System.getProperty("line.separator");
+    static final String[] emptyStringArray = new String[0];
 
-	public static RuntimeException newEvalException(
+    public static RuntimeException newEvalException(
 			FunDef funDef, String message) {
 		return new MondrianEvaluationException(message);
 	}
@@ -154,7 +155,7 @@ public class FunUtil extends Util {
 
 	private static final Double nullValue = new Double(0);
 
-	static Double getDoubleArg(Evaluator evaluator, Exp[] args, int index) {
+	protected static Double getDoubleArg(Evaluator evaluator, Exp[] args, int index) {
 		return getDoubleArg(evaluator, args, index, nullValue);
 	}
 
@@ -325,10 +326,6 @@ public class FunUtil extends Util {
 				left.add(o);
 			}
 		}
-	}
-
-	static Boolean toBoolean(boolean b) {
-		return b ? Boolean.TRUE : Boolean.FALSE;
 	}
 
     static List addMembers(SchemaReader schemaReader, List members, Hierarchy hierarchy) {

@@ -165,5 +165,9 @@ class DescendantsFunDef extends FunDefBase
             return new DescendantsFunDef(dummyFunDef, flagFinal,
                 depthSpecifiedFinal, depthLimitFinal);
         }
+
+        public String[] getReservedWords() {
+            return Flags.instance.getNames();
+        }
     }
 }
