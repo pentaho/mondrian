@@ -1935,29 +1935,56 @@ public class BuiltinFunTable extends FunTable {
 						if (v1.isEmpty()) {
 							return v0;
 						}
+						if (v0.isEmpty()) {
+							return v0;
+						}
 						HashSet set1 = toHashSet(v1);
 						Vector result = new Vector();
 						int i = 0, n = v0.size();
 						while (i < n) {
-							Member m = (Member) v0.elementAt(i++);
-							result.addElement(m);
-							if (!set1.contains(m)) {
-								continue;
+							Object o = v0.elementAt(i++);
+							result.addElement(o);
+							Member m = null;
+							int k = -1;
+							if (o instanceof Member) {
+								if (!set1.contains(o)) {
+									continue;
+								}
+								m = (Member) o;
+								k = -1;
+							} else {
+								Util.assertTrue(o instanceof Member[]);
+								Member[] members = (Member[]) o;
+								for (int j = 0; j < members.length; j++) {
+									Member member = members[j];
+									if (set1.contains(member)) {
+										k = j;
+										m = member;
+										break;
+									}
+								}
+								if (k == -1) {
+									continue;
+								}
 							}
 							boolean isDrilledDown = false;
 							if (i < n) {
-								Member next = (Member) v0.elementAt(i);
+								Object next = v0.elementAt(i);
+								Member nextMember = (k < 0) ? (Member) next :
+									((Member[]) next)[k];
 								boolean strict = true;
-								if (isAncestorOf(m, next, strict)) {
+								if (isAncestorOf(m, nextMember, strict)) {
 									isDrilledDown = true;
 								}
 							}
 							if (isDrilledDown) {
 								// skip descendants of this member
 								do {
-									Member next = (Member) v0.elementAt(i);
+									Object next = (Member) v0.elementAt(i);
+									Member nextMember = (k < 0) ? (Member) next :
+										((Member[]) next)[k];
 									boolean strict = true;
-									if (isAncestorOf(m, next, strict)) {
+									if (isAncestorOf(m, nextMember, strict)) {
 										i++;
 									} else {
 										break;
@@ -1966,7 +1993,13 @@ public class BuiltinFunTable extends FunTable {
 							} else {
 								Member[] children = m.getMemberChildren();
 								for (int j = 0; j < children.length; j++) {
-									result.addElement(children[j]);
+									if (k < 0) {
+										result.addElement(children[j]);
+									} else {
+										Member[] members = (Member[]) ((Member[]) o).clone();
+										members[k] = children[j];
+										result.addElement(members);
+									}
 								}
 							}
 						}
@@ -2023,6 +2056,23 @@ public class BuiltinFunTable extends FunTable {
 						String expected = "[Time].[1997].[Q1]" + nl +
 								"[Time].[1997].[Q2]" + nl +
 								"[Time].[1997].[Q3]";
+						test.assertEquals(expected, test.toString(axis.positions));
+					}
+					// bug 634860
+					public void testToggleDrillStateTuple(FoodMartTestCase test) {
+                        Axis axis = test.executeAxis2(
+								"ToggleDrillState(" + nl +
+								"{([Store].[All Stores].[USA].[CA]," +
+								"  [Product].[All Products].[Drink].[Alcoholic Beverages])," + nl +
+								" ([Store].[All Stores].[USA]," +
+								"  [Product].[All Products].[Drink])}," + nl +
+								"{[Store].[All stores].[USA].[CA]})");
+						String expected = "{[Store].[All Stores].[USA].[CA], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
+								"{[Store].[All Stores].[USA].[CA].[Beverly Hills], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
+								"{[Store].[All Stores].[USA].[CA].[Los Angeles], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
+								"{[Store].[All Stores].[USA].[CA].[San Diego], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
+								"{[Store].[All Stores].[USA].[CA].[San Francisco], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
+								"{[Store].[All Stores].[USA], [Product].[All Products].[Drink]}";
 						test.assertEquals(expected, test.toString(axis.positions));
 					}
 				}));
