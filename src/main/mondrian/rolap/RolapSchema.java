@@ -12,6 +12,7 @@
 
 package mondrian.rolap;
 import mondrian.olap.*;
+import mondrian.rolap.RolapStar.Table;
 import mondrian.xom.DOMWrapper;
 import mondrian.xom.Parser;
 import mondrian.xom.XOMException;
@@ -19,8 +20,12 @@ import mondrian.xom.XOMUtil;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Properties;
+
+import javax.sql.DataSource;
 
 /**
  * A <code>RolapSchema</code> is a collection of {@link RolapCube}s and
@@ -484,6 +489,40 @@ public class RolapSchema implements Schema
 		String description;
 	}
 
+	/**
+	 * <code>RolapStarRegistry</code> is a registry for {@link RolapStar}s. 
+	 */
+	class RolapStarRegistry {
+		private ArrayList stars = new ArrayList();
+
+		RolapStarRegistry() {
+		}
+
+		/**
+		 * Looks up a {@link RolapStar}, creating it if it does not exist.
+		 *
+		 * <p> {@link RolapStar.Table#addJoin} works in a similar way.
+		 */
+		synchronized RolapStar getOrCreateStar(MondrianDef.Relation fact) {
+			for (Iterator iterator = stars.iterator(); iterator.hasNext();) {
+				RolapStar star = (RolapStar) iterator.next();
+				if (star.factTable.relation.equals(fact)) {
+					return star;
+				}
+			}
+			DataSource dataSource = getInternalConnection().dataSource;
+			RolapStar star = new RolapStar(RolapSchema.this, dataSource);
+			star.factTable = new Table(fact, null, null);
+			star.factTable.star = star;
+			stars.add(star);
+			return star;
+		}
+	}
+	private RolapStarRegistry rolapStarRegistry = new RolapStarRegistry();
+	public RolapStarRegistry getRolapStarRegistry() {
+	  return rolapStarRegistry;
+	}
+	
 }
 
 // End RolapSchema.java

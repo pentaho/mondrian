@@ -549,49 +549,6 @@ public class RolapStar {
 		}
 	}
 
-	/**
-	 * <code>Pool</code> is a registry for {@link RolapStar}s. It is a
-	 * singleton.
-	 */
-	static class Pool {
-		private static Pool singleton;
-		private ArrayList stars = new ArrayList();
-
-		private Pool() {
-		}
-
-		/**
-		 * Returns the singleton instance, creating it if necessary.
-		 */
-		synchronized static Pool instance() {
-			if (singleton == null) {
-				singleton = new Pool();
-			}
-			return singleton;
-		}
-
-		/**
-		 * Looks up a {@link RolapStar}, creating it if it does not exist.
-		 *
-		 * <p> {@link RolapStar.Table#addJoin} works in a similar way.
-		 */
-		synchronized RolapStar getOrCreateStar(
-				RolapSchema schema, MondrianDef.Relation fact) {
-			for (Iterator iterator = stars.iterator(); iterator.hasNext();) {
-				RolapStar star = (RolapStar) iterator.next();
-				if (star.schema == schema &&
-						star.factTable.relation.equals(fact)) {
-					return star;
-				}
-			}
-			DataSource dataSource = schema.getInternalConnection().dataSource;
-			RolapStar star = new RolapStar(schema, dataSource);
-			star.factTable = new Table(fact, null, null);
-			star.factTable.star = star;
-			stars.add(star);
-			return star;
-		}
-	}
 }
 
 // End RolapStar.java

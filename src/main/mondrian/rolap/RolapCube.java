@@ -205,8 +205,8 @@ class RolapCube extends CubeBase
 		}
 		RolapStoredMeasure[] storedMeasures = (RolapStoredMeasure[])
 				list.toArray(new RolapStoredMeasure[list.size()]);
-		RolapStar star = RolapStar.Pool.instance().getOrCreateStar(
-				schema, this.fact);
+		RolapStar star = schema.getRolapStarRegistry().getOrCreateStar(
+				this.fact);
 		// create measures (and stars for them, if necessary)
 		for (int i = 0; i < storedMeasures.length; i++) {
 			RolapStoredMeasure storedMeasure = storedMeasures[i];
@@ -227,8 +227,8 @@ class RolapCube extends CubeBase
 	}
 
 	private void registerDimension(RolapDimension dimension) {
-		RolapStar star = RolapStar.Pool.instance().getOrCreateStar(
-				schema, this.fact);
+		RolapStar star = schema.getRolapStarRegistry().getOrCreateStar(
+				this.fact);
 		RolapHierarchy[] hierarchies = (RolapHierarchy[])
 				dimension.getHierarchies();
 		HashMap mapLevelToColumn = (HashMap) star.mapCubeToMapLevelToColumn.get(this);
