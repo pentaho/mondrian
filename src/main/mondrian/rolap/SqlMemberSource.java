@@ -39,19 +39,7 @@ class SqlMemberSource implements MemberReader
 	private MemberCache cache;
 	private int lastOrdinal = 0;
 
-	private static Object sqlNullValue = new Object() {
-		public boolean equals(Object o) {
-			return o == this;
-		}
-		public int hashCode() {
-			return super.hashCode();
-		}
-		public String toString() {
-			return "null";
-		}
-	};
-
-	SqlMemberSource(RolapHierarchy hierarchy)
+    SqlMemberSource(RolapHierarchy hierarchy)
 	{
 		this.hierarchy = hierarchy;
 		this.dataSource =
@@ -312,7 +300,7 @@ class SqlMemberSource implements MemberReader
                     }
                     Object value = resultSet.getObject(column + 1);
                     if (value == null) {
-                        value = sqlNullValue;
+                        value = RolapUtil.sqlNullValue;
                     }
                     RolapMember parent = member;
                     MemberKey key = new MemberKey(parent, value);
@@ -320,7 +308,7 @@ class SqlMemberSource implements MemberReader
                     if (member == null) {
                         member = new RolapMember(parent, level, value);
                         member.ordinal = lastOrdinal++;
-                        if (value == sqlNullValue) {
+                        if (value == RolapUtil.sqlNullValue) {
                             addAsOldestSibling(list, member);
                         } else {
                             list.add(member);
@@ -489,7 +477,8 @@ class SqlMemberSource implements MemberReader
         }
     }
 
-    private List getMembersInLevel(RolapLevel level, Connection jdbcConnection, final RolapLevel[] levels) {
+    private List getMembersInLevel(RolapLevel level, Connection jdbcConnection,
+            final RolapLevel[] levels) {
         String sql = makeLevelSql(level, jdbcConnection);
         ResultSet resultSet = null;
         try {
@@ -518,7 +507,7 @@ class SqlMemberSource implements MemberReader
                     }
                     Object value = resultSet.getObject(++column);
                     if (value == null) {
-                        value = sqlNullValue;
+                        value = RolapUtil.sqlNullValue;
                     }
                     RolapMember parent = member;
                     Object key = cache.makeKey(parent, value);
@@ -556,7 +545,7 @@ class SqlMemberSource implements MemberReader
                         // If we're building a list of siblings at this level,
                         // we haven't seen this one before, so add it.
                         if (siblings[i] != null) {
-                            if (value == sqlNullValue) {
+                            if (value == RolapUtil.sqlNullValue) {
                                 addAsOldestSibling(siblings[i], member);
                             } else {
                                 siblings[i].add(member);
@@ -709,7 +698,7 @@ class SqlMemberSource implements MemberReader
             while (resultSet.next()) {
                 Object value = resultSet.getObject(1);
                 if (value == null) {
-                    value = sqlNullValue;
+                    value = RolapUtil.sqlNullValue;
                 }
                 Object key = cache.makeKey(parentMember, value);
                 RolapMember member = cache.getMember(key);
@@ -732,7 +721,7 @@ class SqlMemberSource implements MemberReader
                     }
                     cache.putMember(key, member);
                 }
-                if (value == sqlNullValue) {
+                if (value == RolapUtil.sqlNullValue) {
                     addAsOldestSibling(children, member);
                 } else {
                     children.add(member);
@@ -870,9 +859,18 @@ class SqlMemberSource implements MemberReader
 		throw new UnsupportedOperationException();
 	}
 
+    public void getMemberDescendants(RolapMember member, List result,
+            RolapLevel level, boolean before, boolean self, boolean after) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Member of a parent-child dimension.
+     */
 	private static class RolapParentChildMember extends RolapMember {
 		private final RolapMember dataMember;
-		public RolapParentChildMember(RolapMember parentMember, RolapLevel childLevel, Object value, RolapMember dataMember) {
+		public RolapParentChildMember(RolapMember parentMember,
+                RolapLevel childLevel, Object value, RolapMember dataMember) {
 			super(parentMember, childLevel, value);
 			this.dataMember = dataMember;
 		}
@@ -880,14 +878,16 @@ class SqlMemberSource implements MemberReader
 			return true;
 		}
 		Exp getExpression() {
-			return ((RolapHierarchy) super.getHierarchy()).getAggregateChildrenExpression();
+            final RolapHierarchy hierarchy = (RolapHierarchy) getHierarchy();
+            return hierarchy.getAggregateChildrenExpression();
 		}
 
 		public Object getPropertyValue(String name) {
 			if (name.equals(Property.PROPERTY_CONTRIBUTING_CHILDREN)) {
 				List list = new ArrayList();
 				list.add(dataMember);
-				((RolapHierarchy) super.getHierarchy()).memberReader.getMemberChildren(this, list);
+                RolapHierarchy hierarchy = (RolapHierarchy) getHierarchy();
+                hierarchy.memberReader.getMemberChildren(this, list);
 				return list;
 			} else {
 				return super.getPropertyValue(name);

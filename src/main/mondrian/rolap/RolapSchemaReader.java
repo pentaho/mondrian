@@ -113,7 +113,8 @@ abstract class RolapSchemaReader implements SchemaReader {
 
 	public Member[] getMemberChildren(Member member) {
 		ArrayList children = new ArrayList();
-        final MemberReader memberReader = getMemberReader(member.getHierarchy());
+        final Hierarchy hierarchy = member.getHierarchy();
+        final MemberReader memberReader = getMemberReader(hierarchy);
         memberReader.getMemberChildren((RolapMember) member, children);
 		return RolapUtil.toArray(children);
 	}
@@ -122,7 +123,8 @@ abstract class RolapSchemaReader implements SchemaReader {
 		if (members.length == 0) {
 			return RolapUtil.emptyMemberArray;
 		} else {
-			final MemberReader memberReader = getMemberReader(members[0].getHierarchy());
+            final Hierarchy hierarchy = members[0].getHierarchy();
+            final MemberReader memberReader = getMemberReader(hierarchy);
 			ArrayList children = new ArrayList();
 			for (int i = 0; i < members.length; i++) {
 				memberReader.getMemberChildren((RolapMember) members[i], children);
@@ -131,7 +133,16 @@ abstract class RolapSchemaReader implements SchemaReader {
 		}
 	}
 
-	public abstract Cube getCube();
+    public void getMemberDescendants(Member member, List result, Level level,
+            boolean before, boolean self, boolean after) {
+        Util.assertPrecondition(level != null, "level != null");
+        final Hierarchy hierarchy = member.getHierarchy();
+        final MemberReader memberReader = getMemberReader(hierarchy);
+        memberReader.getMemberDescendants((RolapMember) member, result,
+                (RolapLevel) level, before, self, after);
+    }
+
+    public abstract Cube getCube();
 
 	public OlapElement getElementChild(OlapElement parent, String name) {
 		return parent.lookupChild(this, name);

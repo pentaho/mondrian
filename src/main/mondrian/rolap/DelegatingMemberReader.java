@@ -11,6 +11,9 @@
 */
 package mondrian.rolap;
 
+import mondrian.olap.Member;
+import mondrian.olap.Level;
+
 import java.util.List;
 
 /**
@@ -45,7 +48,13 @@ class DelegatingMemberReader implements MemberReader {
 		return memberReader.compare(m1, m2, siblingsAreEqual);
 	}
 
-	public RolapHierarchy getHierarchy() {
+    public void getMemberDescendants(RolapMember member, List result,
+            RolapLevel level, boolean before, boolean self, boolean after) {
+        memberReader.getMemberDescendants(member, result, level, before, self,
+                after);
+    }
+
+    public RolapHierarchy getHierarchy() {
 		return memberReader.getHierarchy();
 	}
 

@@ -51,18 +51,37 @@ public interface SchemaReader {
 	 * @post return != null
 	 **/
 	Member[] getMemberChildren(Member[] members);
+    /**
+     * Returns the direct and indirect children of a member.
+     *
+     * @param member Member whose children to find
+     * @param result List to which to append results
+     * @param level Level relative to which to write results; must belong to
+     *   the same hierarchy as <code>member</code>
+     * @param before Whether to output members above <code>level</code>
+     * @param self Whether to output members at <code>level</code>
+     * @param after Whether to output members below <code>level</code>
+     */
+    void getMemberDescendants(Member member, List result, Level level,
+            boolean before, boolean self, boolean after);
 	/**
-	 * Returns the depth of a member. This may not be the same as
-	 * <code>member.{@link Member#getLevel getLevel}().{@link Level#getDepth getDepth}()</code>
-	 * for 2 reasons:<ol>
+	 * Returns the depth of a member.
+     *
+     * <p>This may not be the same as
+	 * <code>member.{@link Member#getLevel getLevel}().
+     * {@link Level#getDepth getDepth}()</code>
+	 * for three reasons:<ol>
 	 * <li><b>Access control</b>. The most senior <em>visible</em> member has
 	 *   level 0. If the client is not allowed to see the "All" and "Nation"
 	 *   levels of the "Store" hierarchy, then members of the "State" level will
 	 *   have depth 0.</li>
 	 * <li><b>Parent-child hierarchies</b>. Suppose Fred reports to Wilma, and
-	 * Wilma reports to no one. "All Employees" has depth 0, Wilma has depth 1,
-	 * and Fred has depth 2. Fred and Wilma are both in the "Employees" level,
-	 * which has depth 1.</li>
+	 *   Wilma reports to no one. "All Employees" has depth 0, Wilma has depth
+     *   1, and Fred has depth 2. Fred and Wilma are both in the "Employees"
+     *   level, which has depth 1.</li>
+     * <li><b>Ragged hierarchies</b>. If Israel has only one, hidden, province
+     * then the depth of Tel Aviv, Israel is 2, whereas the depth of another
+     * city, San Francisco, CA, USA is 3.</li>
 	 * </ol>
 	 */
 	int getMemberDepth(Member member);

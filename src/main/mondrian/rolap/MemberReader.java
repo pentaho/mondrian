@@ -21,8 +21,8 @@ import java.util.List;
  *
  * <p><code>MemberReader</code> is an extension of {@link MemberSource}, which
  * implements only the very basic operations. {@link CacheMemberReader} is an
- * adapter which converts a {@link MemberSource} into a {@link MemberReader} and
- * does caching too.
+ * adapter which converts a {@link MemberSource} into a {@link MemberReader}
+ * and does caching too.
  *
  * @author jhyde
  * @since 10 August, 2001
@@ -64,6 +64,20 @@ interface MemberReader extends MemberSource
 	 *         m1 and m2 have the same parent
 	 */
 	int compare(RolapMember m1, RolapMember m2, boolean siblingsAreEqual);
+
+    /**
+     * Returns the direct and indirect children of a member.
+     *
+     * @param member Member whose children to find
+     * @param result List to which to append results
+     * @param level Level relative to which to write results; must belong to
+     *   the same hierarchy as <code>member</code>
+     * @param before Whether to output members above <code>level</code>
+     * @param self Whether to output members at <code>level</code>
+     * @param after Whether to output members below <code>level</code>
+     */
+    void getMemberDescendants(RolapMember member, List result,
+            RolapLevel level, boolean before, boolean self, boolean after);
 }
 
 // End MemberReader.java

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2003 Kana Software, Inc. and others.
+// (C) Copyright 2001-2004 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -14,18 +14,16 @@ package mondrian.rolap;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 
-import javax.sql.DataSource;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.*;
-
-import org.apache.commons.pool.ObjectPool;
-import org.apache.commons.pool.impl.GenericObjectPool;
-import org.apache.commons.dbcp.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Vector;
 
 /**
  * Utility methods for classes in the <code>mondrian.rolap</code> package.
@@ -41,8 +39,22 @@ public class RolapUtil {
 	/** Special cell value indicates that the value is not in cache yet. **/
 	static RuntimeException valueNotReadyException = new RuntimeException(
 			"value not ready");
+    /**
+     * Special value represents a null key.
+     */
+	public static final Object sqlNullValue = new Object() {
+		public boolean equals(Object o) {
+			return o == this;
+		}
+		public int hashCode() {
+			return super.hashCode();
+		}
+		public String toString() {
+			return "null";
+		}
+	};
 
-	/**
+    /**
 	 * Encloses a value in single-quotes, to make a SQL string value. Examples:
 	 * <code>singleQuoteForSql(null)</code> yields <code>NULL</code>;
 	 * <code>singleQuoteForSql("don't")</code> yields <code>'don''t'</code>.
@@ -314,7 +326,71 @@ public class RolapUtil {
 		return querySemaphore;
 	}
 
+    static void getMemberDescendants(MemberReader memberReader,
+            RolapMember ancestor, RolapLevel level, List result,
+            boolean before, boolean self, boolean after) {
+        // We find the descendants of a member by making breadth-first passes
+        // down the hierarchy. Initially the list just contains the ancestor.
+        // Then we find its children. We add those children to the result if
+        // they fulfill the before/self/after conditions relative to the level.
+        //
+        // We add a child to the "fertileMembers" list if some of its children
+        // might be in the result. Again, this depends upon the
+        // before/self/after conditions.
+        //
+        // Note that for some member readers -- notably the
+        // RestrictedMemberReader, when it is reading a ragged hierarchy -- the
+        // children of a member do not always belong to the same level. For
+        // example, the children of USA include WA (a state) and Washington
+        // (a city). This is why we repeat the before/self/after logic for
+        // each member.
+        final int levelDepth = level.getDepth();
+        ArrayList members = new ArrayList();
+        members.add(ancestor);
+        // Each pass, "fertileMembers" has the same contents as "members",
+        // except that we omit members whose children we are not interested
+        // in. We allocate it once, and clear it each pass, to save a little
+        // memory allocation.
+        ArrayList fertileMembers = new ArrayList();
+        do {
+            fertileMembers.clear();
+            for (int i = 0; i < members.size(); i++) {
+                RolapMember member = (RolapMember) members.get(i);
+                final int currentDepth = member.getLevel().getDepth();
+                if (currentDepth == levelDepth) {
+                    if (self) {
+                        result.add(member);
+                    }
+                    if (after) {
+                        // we are interested in member's children
+                        fertileMembers.add(member);
+                    }
+                } else if (currentDepth < levelDepth) {
+                    if (before) {
+                        result.add(member);
+                    }
+                    fertileMembers.add(member);
+                } else {
+                    if (after) {
+                        result.add(member);
+                        fertileMembers.add(member);
+                    }
+                }
+            }
+            members.clear();
+            memberReader.getMemberChildren(fertileMembers, members);
+        }
+        while (members.size() > 0);
+    }
 
+    /**
+     * A <code>Semaphore</code> is a primitive for process synchronization.
+     *
+     * <p>Given a semaphore initialized with <code>count</code>, no more than
+     * <code>count</code> threads can acquire the semaphore using the
+     * {@link #enter} method. Waiting threads block until enough threads have
+     * called {@link #leave}.
+     */
     static class Semaphore {
 		private int count;
 		Semaphore(int count) {

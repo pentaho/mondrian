@@ -119,14 +119,12 @@ class RolapHierarchy extends HierarchyBase
 			if (subName != null) {
 				this.sharedHierarchy += "." + subName; // e.g. "Time.Weekly"
 			}
-		}
-		if (xmlHierarchy.relation != null &&
-				xmlHierarchy.memberReaderClass != null) {
-			throw Util.newError(
-					"Hierarchy '" + getUniqueName() +
-					"' must not have more than one source " +
-					" (memberReaderClass, <Table>, <Join> or <View>)");
-		}
+        }
+        if (xmlHierarchy.relation != null &&
+                xmlHierarchy.memberReaderClass != null) {
+            throw MondrianResource.instance()
+                    .newHierarchyMustNotHaveMoreThanOneSource(getUniqueName());
+        }
 		this.foreignKey = xmlCubeDimension.foreignKey;
 	}
 

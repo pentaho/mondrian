@@ -480,10 +480,10 @@ public class BasicQueryTest extends FoodMartTestCase {
                 " `product_class` as `product_class`," +
                 " `product` as `product` " +
                 "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`" +
-                " and `time_by_day`.`the_year` in (1997)" +
+                " and `time_by_day`.`the_year` = 1997" +
                 " and `sales_fact_1997`.`product_id` = `product`.`product_id`" +
                 " and `product`.`product_class_id` = `product_class`.`product_class_id`" +
-                " and `product_class`.`product_family` in ('Drink')", sql);
+                " and `product_class`.`product_family` = 'Drink'", sql);
 		sql = result.getCell(new int[] {1, 1}).getDrillThroughSQL(false);
         assertNull(sql); // because it is a calculated member
 	}
@@ -550,7 +550,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 " and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`" +
                 " and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`" +
                 " and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`" +
-                " and `time_by_day`.`the_year` in (1997)" +
+                " and `time_by_day`.`the_year` = 1997" +
                 " and `sales_fact_1997`.`product_id` = `product`.`product_id`" +
                 " and `sales_fact_1997`.`product_id` = `product`.`product_id`" +
                 " and `sales_fact_1997`.`product_id` = `product`.`product_id`" +
@@ -561,7 +561,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 " and `product`.`product_class_id` = `product_class`.`product_class_id`" +
                 " and `sales_fact_1997`.`product_id` = `product`.`product_id`" +
                 " and `product`.`product_class_id` = `product_class`.`product_class_id`" +
-                " and `product_class`.`product_family` in ('Drink')" +
+                " and `product_class`.`product_family` = 'Drink'" +
                 " and `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id`" +
                 " and `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id`" +
                 " and `sales_fact_1997`.`customer_id` = `customer`.`customer_id`" +
@@ -2408,7 +2408,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 						"{[Store Size in SQFT].[All Store Size in SQFTs].[38382]}" + nl +
 						"{[Store Size in SQFT].[All Store Size in SQFTs].[39696]}" + nl +
 						"Row #0: 266,773" + nl +
-						"Row #1: (null)" + nl +
+						"Row #1: 39,329" + nl +
 						"Row #2: 26,079" + nl +
 						"Row #3: 25,011" + nl +
 						"Row #4: 2,117" + nl +

@@ -1289,25 +1289,17 @@ public class BuiltinFunTable extends FunTable {
                                 (flagFinal & DescendantsFlags.BEFORE) ==
                                 DescendantsFlags.BEFORE;
                         List result = new ArrayList();
-                        final SchemaReader schemaReader = evaluator.getSchemaReader();
+                        final SchemaReader schemaReader =
+                                evaluator.getSchemaReader();
                         if (depthSpecifiedFinal) {
-                            // Expand member to its children, until we get to the right
-                            // level. We assume that all children are in the same
-                            // level.
                             descendantsByDepth(member, result, schemaReader,
-                                    depthLimitFinal, self, before, after);
+                                    depthLimitFinal, before, self, after);
 						} else {
-                            final Level level;
-                            if (args.length > 1) {
-                                level = getLevelArg(evaluator, args, 1, true);
-                            } else {
-                                level = member.getLevel();
-                            }
-                            // Expand member to its children, until we get to the right
-                            // level. We assume that all children are in the same
-                            // level.
-                            descendantsByLevel(schemaReader, member, level,
-                                    result, self, before, after);
+                            final Level level = args.length > 1 ?
+                                getLevelArg(evaluator, args, 1, true) :
+                                member.getLevel();
+                            schemaReader.getMemberDescendants(member, result,
+                                    level, before, self, after);
                         }
                         return result;
 					}
@@ -2486,43 +2478,9 @@ public class BuiltinFunTable extends FunTable {
                 }));
 	}
 
-    private static void descendantsByLevel(final SchemaReader schemaReader,
-            final Member member, final Level level, final List result,
-            final boolean self, final boolean before, final boolean after) {
-        Member[] children = {member};
-        while (true) {
-            final Member firstChild = children[0];
-            final int currentDepth = firstChild.getLevel().getDepth();
-            final int targetDepth = level.getDepth();
-            if (currentDepth == targetDepth) {
-                if (self) {
-                    Util.addAll(result, children);
-                }
-                if (!after) {
-                    break; // no more results after this level
-                }
-            } else if (currentDepth < targetDepth) {
-                if (before) {
-                    Util.addAll(result, children);
-                }
-            } else {
-                if (after) {
-                    Util.addAll(result, children);
-                } else {
-                    break; // no more results after this level
-                }
-            }
-
-            children = schemaReader.getMemberChildren(children);
-            if (children.length == 0) {
-                break;
-            }
-        }
-    }
-
     private static void descendantsByDepth(Member member, List result,
             final SchemaReader schemaReader, final int depthLimitFinal,
-            final boolean self, final boolean before, final boolean after) {
+            final boolean before, final boolean self, final boolean after) {
         Member[] children = {member};
         for (int depth = 0;; ++depth) {
             if (depth == depthLimitFinal) {

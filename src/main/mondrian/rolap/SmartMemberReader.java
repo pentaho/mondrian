@@ -13,10 +13,12 @@
 package mondrian.rolap;
 import mondrian.olap.Level;
 import mondrian.olap.Util;
-import mondrian.rolap.cache.*;
+import mondrian.rolap.cache.CachePool;
+import mondrian.rolap.cache.Cacheable;
+import mondrian.rolap.cache.SoftCacheableReference;
 
-import java.util.*;
 import java.lang.ref.SoftReference;
+import java.util.*;
 
 /**
  * <code>SmartMemberReader</code> implements {@link MemberReader} by keeping a
@@ -217,11 +219,11 @@ public class SmartMemberReader implements MemberReader, MemberCache
 
 	/**
 	 * A <code>ChildrenList</code> is held in the {@link #mapMemberToChildren}
-	 * cache. It implements {@link CachePool.Cacheable}, so it can be removed
+	 * cache. It implements {@link Cacheable}, so it can be removed
 	 * if it is not pulling its weight.
 	 *
 	 * <p><b>Note to developers</b>: this class must obey the contract for
-	 * objects which implement {@link CachePool.Cacheable}.
+	 * objects which implement {@link Cacheable}.
 	 **/
 	private static class ChildrenList implements Cacheable
 	{
@@ -333,13 +335,17 @@ public class SmartMemberReader implements MemberReader, MemberCache
 	 */
 	public boolean isSorted(List members) {
 		final int count = members.size();
-		if (count > 0 && members.get(0) == null) {
+        if (count == 0) {
+            return true;
+        }
+        RolapMember m1 = (RolapMember) members.get(0);
+		if (m1 == null) {
 			// Special case check for 0th element, just in case length == 1.
 			return false;
 		}
 		for (int i = 1; i < count; i++) {
-			RolapMember m0 = (RolapMember) members.get(i - 1),
-					m1 = (RolapMember) members.get(i);
+			RolapMember m0 = m1;
+            m1 = (RolapMember) members.get(i);
 			if (m1 == null ||
 					compare(m0, m1, false) >= 0) {
 				return false;
@@ -549,9 +555,20 @@ public class SmartMemberReader implements MemberReader, MemberCache
 			return compare((RolapMember) m1.getParentMember(), (RolapMember) m2.getParentMember(), false);
 		}
 	}
+
+    public void getMemberDescendants(RolapMember member, List result,
+            RolapLevel level, boolean before, boolean self, boolean after) {
+        RolapUtil.getMemberDescendants(this, member, level, result,
+                before, self, after);
+    }
 }
 
-class SiblingIterator //implements Iterator
+/**
+ * <code>SiblingIterator</code> helps traverse a hierarchy of members, by
+ * remembering the position at each level. Each SiblingIterator has a parent,
+ * to which it defers when the last child of the current member is reached.
+ */
+class SiblingIterator
 {
 	MemberReader reader;
 	SiblingIterator parentIterator;

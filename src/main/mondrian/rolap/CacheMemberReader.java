@@ -187,6 +187,13 @@ class CacheMemberReader implements MemberReader, MemberCache
 		Util.assertTrue(members[m2.ordinal] == m2);
 		return m1.ordinal < m2.ordinal ? -1 : 1;
 	}
+
+    public void getMemberDescendants(RolapMember member, List result,
+            RolapLevel level, boolean before, boolean self, boolean after) {
+        RolapUtil.getMemberDescendants(this, member, level, result, before,
+                self, after);
+    }
+
 }
 
 // End CacheMemberReader.java

@@ -51,7 +51,13 @@ public class DelegatingSchemaReader implements SchemaReader {
 		return schemaReader.getMemberChildren(members);
 	}
 
-	public int getMemberDepth(Member member) {
+    public void getMemberDescendants(Member member, List result, Level level,
+            boolean before, boolean self, boolean after) {
+        schemaReader.getMemberDescendants(member, result, level,
+                before, self, after);
+    }
+
+    public int getMemberDepth(Member member) {
 		return schemaReader.getMemberDepth(member);
 	}
 
