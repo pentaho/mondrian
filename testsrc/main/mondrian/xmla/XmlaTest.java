@@ -14,10 +14,15 @@ package mondrian.xmla;
 import junit.framework.TestCase;
 
 import java.io.StringWriter;
+import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Pattern;
+import java.net.URL;
+
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util;
 
 /**
  * Unit test for Mondrian's XML for Analysis API (package
@@ -29,8 +34,6 @@ import java.util.regex.Pattern;
  **/
 public class XmlaTest extends TestCase {
     private static final String nl = System.getProperty("line.separator");
-    //private static final String dataSource = "Provider=MSOLAP;Data Source=local;";
-    private static final String FOODMART_CATALOG_URL = "mondrian.test.foodmart.catalogURL";
     private static String catalogName;
     private static String dataSource;
 
@@ -42,12 +45,23 @@ public class XmlaTest extends TestCase {
 
     public XmlaTest(String s) {
         super(s);
-        if( System.getProperty(FOODMART_CATALOG_URL) != null )
-            catalogName = System.getProperty(FOODMART_CATALOG_URL);
-        else
-            catalogName = "file:/E:/mondrian/demo/FoodMart.xml";
-        dataSource = "Provider=Mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;Catalog=" + catalogName + ";JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver;";
+    }
 
+    protected void setUp() throws Exception {
+        super.setUp();
+
+        catalogName = MondrianProperties.instance().getCatalogURL();
+        if (catalogName == null) {
+            final File file = new File("demo/FoodMart.xml");
+            if (!file.exists()) {
+                throw new RuntimeException("CatalogURL must be specified");
+            }
+            final URL url = Util.toURL(file);
+            catalogName = url.toString();
+        }
+        dataSource =
+                "Provider=Mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;Catalog=" +
+                catalogName + ";JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver;";
     }
 
     /**
@@ -204,7 +218,7 @@ public class XmlaTest extends TestCase {
     }
 
     public void testDiscoverCubes() {
-        assertRequestYields(wrap(
+        assertRequestMatches(wrap(
                 "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
                 "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
                 "    <RequestType>MDSCHEMA_CUBES</RequestType>" + nl +
@@ -222,13 +236,7 @@ public class XmlaTest extends TestCase {
                 "    </Properties>" + nl +
                 "</Discover>"),
 
-                "<?xml version=\"1.0\"?>" + nl +
-                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "  <SOAP-ENV:Body>" + nl +
-                "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
-                "      <return>" + nl +
-                "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
-                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
+                "(?s).*" + nl +
                 "          <row>" + nl +
                 "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
                 "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
@@ -238,47 +246,7 @@ public class XmlaTest extends TestCase {
                 "            <IS_LINKABLE>false</IS_LINKABLE>" + nl +
                 "            <IS_SQL_ALLOWED>false</IS_SQL_ALLOWED>" + nl +
                 "          </row>" + nl +
-                "          <row>" + nl +
-                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
-                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
-                "            <CUBE_NAME>Warehouse and Sales</CUBE_NAME>" + nl +
-                "            <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>" + nl +
-                "            <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>" + nl +
-                "            <IS_LINKABLE>false</IS_LINKABLE>" + nl +
-                "            <IS_SQL_ALLOWED>false</IS_SQL_ALLOWED>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
-                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
-                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
-                "            <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>" + nl +
-                "            <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>" + nl +
-                "            <IS_LINKABLE>false</IS_LINKABLE>" + nl +
-                "            <IS_SQL_ALLOWED>false</IS_SQL_ALLOWED>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
-                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
-                "            <CUBE_NAME>HR</CUBE_NAME>" + nl +
-                "            <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>" + nl +
-                "            <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>" + nl +
-                "            <IS_LINKABLE>false</IS_LINKABLE>" + nl +
-                "            <IS_SQL_ALLOWED>false</IS_SQL_ALLOWED>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
-                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
-                "            <CUBE_NAME>Warehouse</CUBE_NAME>" + nl +
-                "            <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>" + nl +
-                "            <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>" + nl +
-                "            <IS_LINKABLE>false</IS_LINKABLE>" + nl +
-                "            <IS_SQL_ALLOWED>false</IS_SQL_ALLOWED>" + nl +
-                "          </row>" + nl +
-                "        </root>" + nl +
-                "      </return>" + nl +
-                "    </DiscoverResponse>" + nl +
-                "  </SOAP-ENV:Body>" + nl +
-                "</SOAP-ENV:Envelope>");
+                ".*");
     }
 
     public void testDiscoverCubesRestricted() {

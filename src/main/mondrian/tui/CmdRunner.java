@@ -111,11 +111,7 @@ public class CmdRunner {
     }
 
     private static String getPropertyValue(String propertyName) {
-        if (propertyName.equals(MondrianProperties.CatalogUrl)) {
-            return System.getProperty(MondrianProperties.CatalogUrl);
-        } else {
-            return MondrianProperties.instance().getProperty(propertyName);
-        }
+        return MondrianProperties.instance().getProperty(propertyName);
     }
 
     public static void listProperty(String propertyName, StringBuffer buf) {
@@ -134,11 +130,7 @@ public class CmdRunner {
     public static boolean setProperty(String name, String value) {
         String oldValue = getPropertyValue(name);
         if (! Util.equals(oldValue, value)) {
-            if (name.equals(MondrianProperties.CatalogUrl)) {
-                System.setProperty(MondrianProperties.CatalogUrl, value);
-            } else {
-                MondrianProperties.instance().setProperty(name, value);
-            }
+            MondrianProperties.instance().setProperty(name, value);
             return true;
         } else {
             return false;
@@ -1037,7 +1029,6 @@ public class CmdRunner {
         } else if (tokens.length == 2) {
             String funcname = tokens[1];
             List funInfoList = FunTable.instance().getFunInfoList();
-            Category cat = Category.instance();
             List matches = new ArrayList();
 
             Iterator it = funInfoList.iterator();

@@ -80,15 +80,15 @@ public class MondrianProperties extends PropertiesPlus {
                     load(url);
                 }
             } catch (MalformedURLException e) {
-                LOGGER.error("Mondrian: file '" 
-                    + file.getAbsolutePath() 
-                    + "' could not be loaded (" 
-                    + e 
+                LOGGER.error("Mondrian: file '"
+                    + file.getAbsolutePath()
+                    + "' could not be loaded ("
+                    + e
                     + ")");
             }
         } else if (populateCount == 0 && false) {
-            LOGGER.warn("Mondrian: Warning: file '" 
-                + file.getAbsolutePath() 
+            LOGGER.warn("Mondrian: Warning: file '"
+                + file.getAbsolutePath()
                 + "' not found");
         }
 
@@ -102,14 +102,14 @@ public class MondrianProperties extends PropertiesPlus {
                     load(resourceUrl);
                 }
                 else if (populateCount == 0 && false) {
-                    LOGGER.warn("Mondrian: Warning: servlet resource '" 
-                        + mondrianDotProperties 
+                    LOGGER.warn("Mondrian: Warning: servlet resource '"
+                        + mondrianDotProperties
                         + "' not found");
                 }
             } catch (MalformedURLException e) {
-                LOGGER.error("Mondrian: '" + mondrianDotProperties 
-                    + "' could not be loaded from servlet context (" 
-                    + e 
+                LOGGER.error("Mondrian: '" + mondrianDotProperties
+                    + "' could not be loaded from servlet context ("
+                    + e
                     + ")");
             }
         }
@@ -125,8 +125,8 @@ public class MondrianProperties extends PropertiesPlus {
             }
         }
         if (populateCount++ == 0) {
-            LOGGER.info("Mondrian: loaded " 
-                + count 
+            LOGGER.info("Mondrian: loaded "
+                + count
                 + " system properties");
         }
     }
@@ -137,16 +137,16 @@ public class MondrianProperties extends PropertiesPlus {
         try {
             load(url.openStream());
             if (populateCount == 0) {
-                LOGGER.info("Mondrian: properties loaded from '" 
-                    + url 
+                LOGGER.info("Mondrian: properties loaded from '"
+                    + url
                     + "'");
             }
         } catch (IOException e) {
-            LOGGER.error("Mondrian: error while loading properties " 
-                + "from '" 
-                + url 
-                + "' (" 
-                + e 
+            LOGGER.error("Mondrian: error while loading properties "
+                + "from '"
+                + url
+                + "' ("
+                + e
                 + ")");
         }
     }
@@ -179,10 +179,10 @@ public class MondrianProperties extends PropertiesPlus {
     /** Property {@value}. */
     public static final String JdbcDrivers = "mondrian.jdbcDrivers";
     /** Values is {@value}. */
-    public static final String JdbcDrivers_Default = 
-            "sun.jdbc.odbc.JdbcOdbcDriver," 
-            + "org.hsqldb.jdbcDriver," 
-            + "oracle.jdbc.OracleDriver," 
+    public static final String JdbcDrivers_Default =
+            "sun.jdbc.odbc.JdbcOdbcDriver,"
+            + "org.hsqldb.jdbcDriver,"
+            + "oracle.jdbc.OracleDriver,"
             + "com.mysql.jdbc.Driver";
 
     /** Retrieves the value of the {@link #ResultLimit} property. */
@@ -209,7 +209,7 @@ public class MondrianProperties extends PropertiesPlus {
         return getBooleanProperty(PrintCacheablesAfterQuery);
     }
     /** Property {@value}. */
-    public static final String PrintCacheablesAfterQuery = 
+    public static final String PrintCacheablesAfterQuery =
                 "mondrian.rolap.RolapResult.printCacheables";
 
     /** Retrieves the value of the {@link #FlushAfterQuery} property. */
@@ -217,7 +217,7 @@ public class MondrianProperties extends PropertiesPlus {
         return getBooleanProperty(FlushAfterQuery);
     }
     /** Property {@value}. */
-    public static final String FlushAfterQuery = 
+    public static final String FlushAfterQuery =
                 "mondrian.rolap.RolapResult.flushAfterEachQuery";
 
     // mondrian.test properties
@@ -255,7 +255,7 @@ public class MondrianProperties extends PropertiesPlus {
         return getProperty(TestConnectString);
     }
     /** Property {@value} */
-    public static final String TestConnectString = 
+    public static final String TestConnectString =
                 "mondrian.test.connectString";
 
 
@@ -284,7 +284,7 @@ public class MondrianProperties extends PropertiesPlus {
         return getIntProperty(LargeDimensionThreshold, LargeDimensionThreshold_Default);
     }
     /** Property {@value}. */
-    public static final String LargeDimensionThreshold = 
+    public static final String LargeDimensionThreshold =
                 "mondrian.rolap.LargeDimensionThreshold";
     /** Value is {@value}. */
     public static final int LargeDimensionThreshold_Default = 100;
@@ -316,7 +316,7 @@ public class MondrianProperties extends PropertiesPlus {
         return getIntProperty(SparseSegmentCountThreshold, SparseSegmentCountThreshold_Default);
     }
     /** Property {@value}. */
-    public static final String SparseSegmentCountThreshold = 
+    public static final String SparseSegmentCountThreshold =
                 "mondrian.rolap.SparseSegmentValueThreshold";
     /** Value is {@value}. */
     public static final int SparseSegmentCountThreshold_Default = 1000;
@@ -327,18 +327,18 @@ public class MondrianProperties extends PropertiesPlus {
         return getDoubleProperty(SparseSegmentDensityThreshold, SparseSegmentDensityThreshold_Default);
     }
     /** Property {@value}. */
-    public static final String SparseSegmentDensityThreshold = 
+    public static final String SparseSegmentDensityThreshold =
                 "mondrian.rolap.SparseSegmentDensityThreshold";
     /** Value is {@value}. */
     public static final double SparseSegmentDensityThreshold_Default = 0.5;
 
-    public static final String QueryFilePattern = 
+    public static final String QueryFilePattern =
                 "mondrian.test.QueryFilePattern";
     public String getQueryFilePattern() {
         return getProperty(QueryFilePattern);
     }
 
-    public static final String QueryFileDirectory = 
+    public static final String QueryFileDirectory =
                 "mondrian.test.QueryFileDirectory";
     public String getQueryFileDirectory() {
         return getProperty(QueryFileDirectory);
@@ -370,13 +370,16 @@ public class MondrianProperties extends PropertiesPlus {
     }
 
     /**
-     * Retrieves the URL of the catalog to be used by CmdRunner.
-     *
-     * <p>The value always comes from {@link System#props}, but the property is
-     * declared in the {@link MondrianProperties} class for uniformity.
+     * Retrieves the URL of the catalog to be used by CmdRunner and XML/A Test.
      */
     public String getCatalogURL() {
-        return System.getProperty(CatalogUrl);
+        return getProperty("mondrian.catalogURL");
+    }
+    /**
+     * Sets the catalog URL. Writes to {@link System#getProperties()}.
+     */
+    public void setCatalogURL() {
+
     }
     /** Property {@value}. */
     public static final String CatalogUrl = "mondrian.catalogURL";
