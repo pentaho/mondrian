@@ -71,6 +71,8 @@ ${lib.dir}/optional.jar,
 ${lib.dir}/xalan.jar,
 ${lib.dir}/xercesImpl.jar,
 ${lib.dir}/xml-apis.jar,
+${lib.dir}/commons-dbcp.jar,
+${lib.dir}/commons-pool.jar,
 demo/mysql/FoodMartDropTables.sql,
 demo/mysql/FoodMartData.sql"/>
 
@@ -594,6 +596,7 @@ build mondrian.war as in the runtime environment.">
       <fileset dir="${junit.home}" includes="junit.jar"/>
       <fileset dir="${ant.home}/lib" includes="ant.jar,optional.jar"/>
       <fileset dir="${xalan.home}/bin" includes="xalan.jar,xml-apis.jar,xercesImpl.jar"/>
+      <fileset dir="${catalina.home}/common/lib" includes="commons-dbcp.jar,commons-pool.jar"/>
     </copy>
   </target>
 
@@ -621,6 +624,8 @@ ant.jar,
 jmi.jar,
 mof.jar,
 optional.jar,
+commons-pool.jar,
+commons-dbcp.jar,
 " excludes="
 javacup.jar,
 junit.jar,
