@@ -11,169 +11,185 @@
 // jhyde, 6 August, 2001
 --%>
 <%
+	final String nl = System.getProperty("line.separator");
 	String[] queries = new String[] {
 		// #0
-		"select {[Measures].[Unit Sales]} on columns\r\n" +
+		"select {[Measures].[Unit Sales]} on columns" + nl +
 		" from Sales",
 
 		// mdx sample #1
-		"select\r\n" +
-		"	 {[Measures].[Unit Sales]} on columns,\r\n" +
-		"	 order(except([Promotion Media].[Media Type].members,{[Promotion Media].[Media Type].[No Media]}),[Measures].[Unit Sales],DESC) on rows\r\n" +
+		"select" + nl +
+		"	 {[Measures].[Unit Sales]} on columns," + nl +
+		"	 order(except([Promotion Media].[Media Type].members,{[Promotion Media].[Media Type].[No Media]}),[Measures].[Unit Sales],DESC) on rows" + nl +
 		"from Sales",
 
 		// mdx sample #2
-		"select\r\n" +
-		"	 { [Measures].[Units Shipped], [Measures].[Units Ordered] } on columns,\r\n" +
-		"	 NON EMPTY [Store].[Store Name].members on rows\r\n" +
+		"select" + nl +
+		"	 { [Measures].[Units Shipped], [Measures].[Units Ordered] } on columns," + nl +
+		"	 NON EMPTY [Store].[Store Name].members on rows" + nl +
 		"from Warehouse",
 
 		// mdx sample #3
-		"with member [Measures].[Store Sales Last Period] as '([Measures].[Store Sales], Time.PrevMember)'\r\n" +
-		"select\r\n" +
-		"	 {[Measures].[Store Sales Last Period]} on columns,\r\n" +
-		"	 {TopCount([Product].[Product Department].members,5, [Measures].[Store Sales Last Period])} on rows\r\n" +
-		"from Sales\r\n" +
+		"with member [Measures].[Store Sales Last Period] as '([Measures].[Store Sales], Time.PrevMember)'" + nl +
+		"select" + nl +
+		"	 {[Measures].[Store Sales Last Period]} on columns," + nl +
+		"	 {TopCount([Product].[Product Department].members,5, [Measures].[Store Sales Last Period])} on rows" + nl +
+		"from Sales" + nl +
 		"where ([Time].[1998])",
 
 		// mdx sample #4
-		"with member [Measures].[Total Store Sales] as 'Sum(YTD(),[Measures].[Store Sales])'\r\n" +
-		"select\r\n" +
-		"	 {[Measures].[Total Store Sales]} on columns,\r\n" +
-		"	 {TopCount([Product].[Product Department].members,5, [Measures].[Total Store Sales])} on rows\r\n" +
-		"from Sales\r\n" +
+		"with member [Measures].[Total Store Sales] as 'Sum(YTD(),[Measures].[Store Sales])'" + nl +
+		"select" + nl +
+		"	 {[Measures].[Total Store Sales]} on columns," + nl +
+		"	 {TopCount([Product].[Product Department].members,5, [Measures].[Total Store Sales])} on rows" + nl +
+		"from Sales" + nl +
 		"where ([Time].[1997].[Q2].[4])",
 
 		// mdx sample #5
-		"with member [Measures].[Store Profit Rate] as '([Measures].[Store Sales]-[Measures].[Store Cost])/[Measures].[Store Cost]', format = '#.00%'\r\n" +
-		"select\r\n" +
-		"	 {[Measures].[Store Cost],[Measures].[Store Sales],[Measures].[Store Profit Rate]} on columns,\r\n" +
-		"	 Order([Product].[Product Department].members, [Measures].[Store Profit Rate], BDESC) on rows\r\n" +
-		"from Sales\r\n" +
+		"with member [Measures].[Store Profit Rate] as '([Measures].[Store Sales]-[Measures].[Store Cost])/[Measures].[Store Cost]', format = '#.00%'" + nl +
+		"select" + nl +
+		"	 {[Measures].[Store Cost],[Measures].[Store Sales],[Measures].[Store Profit Rate]} on columns," + nl +
+		"	 Order([Product].[Product Department].members, [Measures].[Store Profit Rate], BDESC) on rows" + nl +
+		"from Sales" + nl +
 		"where ([Time].[1997])",
 
 		// mdx sample #6
-		"with\r\n" +
-		"	member [Product].[All Products].[Drink].[Percent of Alcoholic Drinks] as '[Product].[All Products].[Drink].[Alcoholic Beverages]/[Product].[All Products].[Drink]', format = '#.00%'\r\n" +
-		"select\r\n" +
-		"	{ [Product].[All Products].[Drink].[Percent of Alcoholic Drinks] } on columns,\r\n" +
-		"	order([Customers].[All Customers].[USA].[WA].Children, [Product].[All Products].[Drink].[Percent of Alcoholic Drinks],BDESC ) on rows\r\n" +
-		"from Sales\r\n" +
+		"with" + nl +
+		"	member [Product].[All Products].[Drink].[Percent of Alcoholic Drinks] as '[Product].[All Products].[Drink].[Alcoholic Beverages]/[Product].[All Products].[Drink]', format = '#.00%'" + nl +
+		"select" + nl +
+		"	{ [Product].[All Products].[Drink].[Percent of Alcoholic Drinks] } on columns," + nl +
+		"	order([Customers].[All Customers].[USA].[WA].Children, [Product].[All Products].[Drink].[Percent of Alcoholic Drinks],BDESC ) on rows" + nl +
+		"from Sales" + nl +
 		"where ( [Measures].[Unit Sales] )",
 
 		// mdx sample #7
-		"with member [Measures].[Accumulated Sales] as 'Sum(YTD(),[Measures].[Store Sales])'\r\n" +
-		"select\r\n" +
-		"	 {[Measures].[Store Sales],[Measures].[Accumulated Sales]} on columns,\r\n" +
-		"	 {Descendants([Time].[1997],[Time].[Month])} on rows\r\n" +
+		"with member [Measures].[Accumulated Sales] as 'Sum(YTD(),[Measures].[Store Sales])'" + nl +
+		"select" + nl +
+		"	 {[Measures].[Store Sales],[Measures].[Accumulated Sales]} on columns," + nl +
+		"	 {Descendants([Time].[1997],[Time].[Month])} on rows" + nl +
 		"from Sales",
 
 		// #8
-		"select\r\n" +
-		" {[Measures].[Unit Sales], [Measures].[Ever]} on columns,\r\n" +
-		" [Gender].members on rows\r\n" +
+		"select" + nl +
+		" {[Measures].[Unit Sales], [Measures].[Ever]} on columns," + nl +
+		" [Gender].members on rows" + nl +
 		"from Sales",
 
 		// #9
-		"with\r\n" +
-		"  member [Product].[Non dairy] as '[Product].[All Products] - [Product].[Food].[Dairy]'\r\n" +
-		"  member [Measures].[Dairy ever] as 'sum([Time].members, ([Measures].[Unit Sales],[Product].[Food].[Dairy]))'\r\n" +
-		"  set [Customers who never bought dairy] as 'filter([Customers].members, [Measures].[Dairy ever] = 0)'\r\n" +
-		"select\r\n" +
-		" {[Measures].[Unit Sales], [Measures].[Dairy ever]}  on columns,\r\n" +
-		"  [Customers who never bought dairy] on rows\r\n" +
+		"with" + nl +
+		"  member [Product].[Non dairy] as '[Product].[All Products] - [Product].[Food].[Dairy]'" + nl +
+		"  member [Measures].[Dairy ever] as 'sum([Time].members, ([Measures].[Unit Sales],[Product].[Food].[Dairy]))'" + nl +
+		"  set [Customers who never bought dairy] as 'filter([Customers].members, [Measures].[Dairy ever] = 0)'" + nl +
+		"select" + nl +
+		" {[Measures].[Unit Sales], [Measures].[Dairy ever]}  on columns," + nl +
+		"  [Customers who never bought dairy] on rows" + nl +
 		"from Sales\r\n",
 
 		// #10
-		"select {[Has bought dairy].members} on columns,\r\n" +
-		" {[Customers].[USA]} on rows\r\n" +
-		"from Sales\r\n" +
+		"select {[Has bought dairy].members} on columns," + nl +
+		" {[Customers].[USA]} on rows" + nl +
+		"from Sales" + nl +
 		"where ([Measures].[Unit Sales])",
 
 		// #11
-		"WITH\r\n" +
-		"   MEMBER [Measures].[StoreType] AS \r\n" +
-		"   '[Store].CurrentMember.Properties(\"Store Type\")',\r\n" +
-		"   SOLVE_ORDER = 2\r\n" +
-		"   MEMBER [Measures].[ProfitPct] AS \r\n" +
-		"   'Val((Measures.[Store Sales] - Measures.[Store Cost]) / Measures.[Store Sales])',\r\n" +
-		"   SOLVE_ORDER = 1, FORMAT_STRING = 'Percent'\r\n" +
-		"SELECT\r\n" +
-		"   { [Store].[Store Name].Members} ON COLUMNS,\r\n" +
-		"   { [Measures].[Store Sales], [Measures].[Store Cost], [Measures].[StoreType],\r\n" +
-		"   [Measures].[ProfitPct] } ON ROWS\r\n" +
+		"WITH" + nl +
+		"   MEMBER [Measures].[StoreType] AS " + nl +
+		"   '[Store].CurrentMember.Properties(\"Store Type\")'," + nl +
+		"   SOLVE_ORDER = 2" + nl +
+		"   MEMBER [Measures].[ProfitPct] AS " + nl +
+		"   'Val((Measures.[Store Sales] - Measures.[Store Cost]) / Measures.[Store Sales])'," + nl +
+		"   SOLVE_ORDER = 1, FORMAT_STRING = 'Percent'" + nl +
+		"SELECT" + nl +
+		"   { [Store].[Store Name].Members} ON COLUMNS," + nl +
+		"   { [Measures].[Store Sales], [Measures].[Store Cost], [Measures].[StoreType]," + nl +
+		"   [Measures].[ProfitPct] } ON ROWS" + nl +
 		"FROM Sales",
 
 		// #12
-		"WITH\r\n" +
-		"   MEMBER [Product].[Beer and Wine].[BigSeller] AS\r\n" +
-		"  'IIf([Product].[Beer and Wine] > 100, \"Yes\",\"No\")'\r\n" +
-		"SELECT\r\n" +
-		"   {[Product].[BigSeller]} ON COLUMNS,\r\n" +
-		"   {Store.[Store Name].Members} ON ROWS\r\n" +
+		"WITH" + nl +
+		"   MEMBER [Product].[Beer and Wine].[BigSeller] AS" + nl +
+		"  'IIf([Product].[Beer and Wine] > 100, \"Yes\",\"No\")'" + nl +
+		"SELECT" + nl +
+		"   {[Product].[BigSeller]} ON COLUMNS," + nl +
+		"   {Store.[Store Name].Members} ON ROWS" + nl +
 		"FROM Sales",
 
 		// #13
-		"WITH\r\n" +
-		"   MEMBER [Measures].[ProfitPct] AS \r\n" +
-		"   'Val((Measures.[Store Sales] - Measures.[Store Cost]) / Measures.[Store Sales])',\r\n" +
-		"   SOLVE_ORDER = 1, FORMAT_STRING = 'Percent'\r\n" +
-		"   MEMBER [Measures].[ProfitValue] AS \r\n" +
-		"   '[Measures].[Store Sales] * [Measures].[ProfitPct]',\r\n" +
-		"   SOLVE_ORDER = 2, FORMAT_STRING = 'Currency'\r\n" +
-		"SELECT\r\n" +
-		"   { [Store].[Store Name].Members} ON COLUMNS,\r\n" +
-		"   { [Measures].[Store Sales], [Measures].[Store Cost], [Measures].[ProfitValue],\r\n" +
-		"   [Measures].[ProfitPct] } ON ROWS\r\n" +
+		"WITH" + nl +
+		"   MEMBER [Measures].[ProfitPct] AS " + nl +
+		"   'Val((Measures.[Store Sales] - Measures.[Store Cost]) / Measures.[Store Sales])'," + nl +
+		"   SOLVE_ORDER = 1, FORMAT_STRING = 'Percent'" + nl +
+		"   MEMBER [Measures].[ProfitValue] AS " + nl +
+		"   '[Measures].[Store Sales] * [Measures].[ProfitPct]'," + nl +
+		"   SOLVE_ORDER = 2, FORMAT_STRING = 'Currency'" + nl +
+		"SELECT" + nl +
+		"   { [Store].[Store Name].Members} ON COLUMNS," + nl +
+		"   { [Measures].[Store Sales], [Measures].[Store Cost], [Measures].[ProfitValue]," + nl +
+		"   [Measures].[ProfitPct] } ON ROWS" + nl +
 		"FROM Sales",
 
 		// #14: cyclical calculated members
-		"WITH\r\n" +
-		"   MEMBER [Product].[X] AS '[Product].[Y]'\r\n" +
-		"   MEMBER [Product].[Y] '[Product].[X]'\r\n" +
-		"SELECT\r\n" +
-		"   {[Product].[X]} ON COLUMNS,\r\n" +
-		"   {Store.[Store Name].Members} ON ROWS\r\n" +
+		"WITH" + nl +
+		"   MEMBER [Product].[X] AS '[Product].[Y]'" + nl +
+		"   MEMBER [Product].[Y] '[Product].[X]'" + nl +
+		"SELECT" + nl +
+		"   {[Product].[X]} ON COLUMNS," + nl +
+		"   {Store.[Store Name].Members} ON ROWS" + nl +
 		"FROM Sales",
 
 		// #15
-		"WITH MEMBER MEASURES.ProfitPercent AS\r\n" +
-		"     '([Measures].[Store Sales]-[Measures].[Store Cost])/([Measures].[Store Cost])',\r\n" +
-		" FORMAT_STRING = '#.00%', SOLVE_ORDER = 1\r\n" +
-		" MEMBER [Time].[First Half 97] AS  '[Time].[1997].[Q1] + [Time].[1997].[Q2]'\r\n" +
-		" MEMBER [Time].[Second Half 97] AS '[Time].[1997].[Q3] + [Time].[1997].[Q4]'\r\n" +
-		" SELECT {[Time].[First Half 97],\r\n" +
-		"     [Time].[Second Half 97],\r\n" +
-		"     [Time].[1997].CHILDREN} ON COLUMNS,\r\n" +
-		" {[Store].[Store Country].[USA].CHILDREN} ON ROWS\r\n" +
-		" FROM [Sales]\r\n" +
+		"WITH MEMBER MEASURES.ProfitPercent AS" + nl +
+		"     '([Measures].[Store Sales]-[Measures].[Store Cost])/([Measures].[Store Cost])'," + nl +
+		" FORMAT_STRING = '#.00%', SOLVE_ORDER = 1" + nl +
+		" MEMBER [Time].[First Half 97] AS  '[Time].[1997].[Q1] + [Time].[1997].[Q2]'" + nl +
+		" MEMBER [Time].[Second Half 97] AS '[Time].[1997].[Q3] + [Time].[1997].[Q4]'" + nl +
+		" SELECT {[Time].[First Half 97]," + nl +
+		"     [Time].[Second Half 97]," + nl +
+		"     [Time].[1997].CHILDREN} ON COLUMNS," + nl +
+		" {[Store].[Store Country].[USA].CHILDREN} ON ROWS" + nl +
+		" FROM [Sales]" + nl +
 		" WHERE (MEASURES.ProfitPercent)",
 
 		// #16 (= mdx sample #7, but uses virtual cube)
-		"with member [Measures].[Accumulated Sales] as 'Sum(YTD(),[Measures].[Store Sales])'\r\n" +
-		"select\r\n" +
-		"	 {[Measures].[Store Sales],[Measures].[Accumulated Sales]} on columns,\r\n" +
-		"	 {Descendants([Time].[1997],[Time].[Month])} on rows\r\n" +
+		"with member [Measures].[Accumulated Sales] as 'Sum(YTD(),[Measures].[Store Sales])'" + nl +
+		"select" + nl +
+		"	 {[Measures].[Store Sales],[Measures].[Accumulated Sales]} on columns," + nl +
+		"	 {Descendants([Time].[1997],[Time].[Month])} on rows" + nl +
 		"from [Warehouse and Sales]",
 
 		// #17 Virtual cube. Note that Unit Sales is independent of Warehouse.
 		"select CrossJoin(\r\n"+
-		"  {[Warehouse].DefaultMember, [Warehouse].[USA].children},\r\n" +
-		"  {[Measures].[Unit Sales], [Measures].[Units Shipped]}) on columns,\r\n" +
-		" [Time].children on rows\r\n" +
+		"  {[Warehouse].DefaultMember, [Warehouse].[USA].children}," + nl +
+		"  {[Measures].[Unit Sales], [Measures].[Units Shipped]}) on columns," + nl +
+		" [Time].children on rows" + nl +
 		"from [Warehouse and Sales]",
 
 		// #18 bug: should allow dimension to be used as shorthand for member
-		"select {[Measures].[Unit Sales]} on columns,\r\n" +
-		" {[Store], [Store].children} on rows\r\n" +
+		"select {[Measures].[Unit Sales]} on columns," + nl +
+		" {[Store], [Store].children} on rows" + nl +
 		"from [Sales]",
 
 		// #19 bug: should allow 'members(n)' (and do it efficiently)
-		"select {[Measures].[Unit Sales]} on columns,\r\n" +
-		" {[Customers].members(0)} on rows\r\n" +
+		"select {[Measures].[Unit Sales]} on columns," + nl +
+		" {[Customers].members(0)} on rows" + nl +
 		"from [Sales]",
-	};
 
+		// #20 crossjoins on rows and columns, and a slicer
+		"select" + nl +
+		"  CrossJoin(" + nl +
+		"    {[Measures].[Unit Sales], [Measures].[Store Sales]}," + nl +
+		"    {[Time].[1997].[Q2].children}) on columns, " + nl +
+		"  CrossJoin(" + nl +
+		"    CrossJoin(" + nl +
+		"      [Gender].members," + nl +
+		"      [Marital Status].members)," + nl +
+		"   {[Store], [Store].children}) on rows" + nl +
+		"from [Sales]" + nl +
+		"where (" + nl +
+		" [Product].[Food]," + nl +
+		" [Education Level].[High School Degree]," + nl +
+		" [Promotions].DefaultMember)",
+	};
 %>
 
 <html>
@@ -218,15 +234,15 @@ text-align:right;
     <table>
         <tr>
             <td>
-                <select name="whichquery">   
-		<% 
+                <select name="whichquery">
+		<%
 
-		for (int i=0; i<queries.length; i++) { 
+		for (int i=0; i<queries.length; i++) {
 
 			%>
-			<option 
+			<option
 			<%
-			
+
 			if (request.getParameter("whichquery") != null) {
 				if (Integer.valueOf(request.getParameter("whichquery")).intValue() == i) {
 					out.print(" selected");
@@ -235,19 +251,19 @@ text-align:right;
 			%>
 
 			value="<% out.print(i);%>">Sample Query #<%out.print(i);
-			 
+
 			%>
 
 			</option>
-                
-		<% 
-		} 		
+
+		<%
+		}
 		%>
 
                 </select>
             </td>
         </tr>
-       
+
         <tr>
             <td>
                 <input type="submit" value="show query">
@@ -262,10 +278,10 @@ text-align:right;
        	<td>
         <tr>
             <td>
-                <textarea id='queryArea' name="queryString" rows=10 cols=80><% 
+                <textarea id='queryArea' name="queryString" rows=10 cols=80><%
 			if (request.getParameter("whichquery") != null) {
 				out.println(queries[Integer.valueOf(request.getParameter("whichquery")).intValue()]);
-			} 
+			}
 		%></textarea>
             </td>
         </tr>
@@ -281,7 +297,7 @@ text-align:right;
             <% out.println(request.getAttribute("result")); %>
             </td>
         </tr>
-        <% } %>	
+        <% } %>
 
     </table>
     </form>

@@ -81,45 +81,72 @@ public class MDXQueryServlet extends HttpServlet {
 	    mdxConnection = DriverManager.getConnection(connectString, null, false);
 	    Query q = mdxConnection.parseQuery(queryString);
 	    Result result = mdxConnection.execute(q);
-	    
-	    Position slicers[] = result.getSlicerAxis().positions;
-	    html.append("<table class='resulttable' cellspacing=1 border=0><tr><td nowrap class='slicer'>");
-	    for (int i=0; i<slicers.length; i++) {
-		Position position = slicers[i];		       
-		for (int j = 0; j < position.members.length; j++) {
-		    Member member = position.members[j];
-		    html.append(member.getUniqueName());
-		}
-	    }
-	    html.append("&nbsp;</td>");
 
-	    Position columns[] = result.getAxes()[0].positions;
-	    for (int i=0; i<columns.length; i++) {
-		Position position = columns[i];		       
-		for (int j = 0; j < position.members.length; j++) {
-		    Member member = position.members[j];
-		    html.append("<td nowrap class='columnheading'>" + member.getUniqueName() + "</td>");
+	    Position slicers[] = result.getSlicerAxis().positions;
+	    html.append("<table class='resulttable' cellspacing=1 border=0>");
+		final String nl = System.getProperty("line.separator");
+		html.append(nl);
+
+		final Position[] columns = result.getAxes()[0].positions,
+				rows = result.getAxes()[1].positions;
+		final int columnWidth = columns.length == 1 ? 0 : columns[0].members.length,
+				rowWidth = rows.length == 1 ? 0 : rows[0].members.length;
+
+		for (int j=0; j<columnWidth; j++) {
+			if (j == 0) {
+				// Print the top-left cell, and fill it with slicer members.
+				html.append("<tr><td nowrap class='slicer' rowspan='" +
+						columnWidth + "' colspan='" + rowWidth + "'>");
+				for (int i=0; i<slicers.length; i++) {
+					Position position = slicers[i];
+					for (int k = 0; k < position.members.length; k++) {
+						if (k > 0) {
+							html.append("<br/>");
+						}
+						Member member = position.members[k];
+						html.append(member.getUniqueName());
+					}
+				}
+				html.append("&nbsp;</td>" + nl);
+			} else {
+				html.append("<tr>");
+			}
+			// Print the column headings.
+			for (int i=0; i<columns.length; i++) {
+				Member member = columns[i].members[j];
+				int width = 1;
+				while ((i + 1) < columns.length &&
+						columns[i + 1].members[j] == member) {
+					i++;
+					width++;
+				}
+				html.append("<td nowrap class='columnheading' colspan='" +
+						width + "'>" + member.getUniqueName() + "</td>");
+			}
+			html.append("</tr>" + nl);
 		}
-	    }
-	    html.append("</tr>");
-			
-	    if (result.getAxes().length > 1) {
-		for (int i=0; i<result.getAxes()[1].positions.length; i++) {
-		    //TODO: fix this to iterate over multiple members if they exist for this position
-		    Member m = result.getAxes()[1].positions[i].members[0];
-		    html.append("<tr><td nowrap class='rowheading'>" + m.getUniqueName() + "</td>");
-		    for (int j=0; j<result.getAxes()[0].positions.length; j++) {
-			Cell cell = result.getCell(new int[]{j,i});
-			html.append("<td class='cell'>" + cell.getFormattedValue() + "</td>");
-		    }
-		    html.append("</tr>");
+
+		if (result.getAxes().length > 1) {
+			for (int i=0; i<rows.length; i++) {
+				html.append("<tr>");
+				final Position row = rows[i];
+				for (int j = 0; j < row.members.length; j++) {
+					Member member = row.members[j];
+					html.append("<td nowrap class='rowheading'>" +
+							member.getUniqueName() + "</td>");
+				}
+				for (int j=0; j<columns.length; j++) {
+					Cell cell = result.getCell(new int[]{j,i});
+					html.append("<td class='cell'>" + cell.getFormattedValue() + "</td>");
+				}
+				html.append("</tr>");
+			}
+		} else {
+			for (int i=0; i<columns.length; i++) {
+				Cell cell = result.getCell(new int[]{i});
+				html.append("<tr><td></td><td class='cell'>" + cell.getFormattedValue() + "</td></tr>");
+			}
 		}
-	    } else {
-		for (int i=0; i<result.getAxes()[0].positions.length; i++) {
-		    Cell cell = result.getCell(new int[]{i});
-		    html.append("<tr><td></td><td class='cell'>" + cell.getFormattedValue() + "</td></tr>");
-		}
-	    }
 
 	    html.append("</table>");
 	} catch (Throwable e) {

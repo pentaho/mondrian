@@ -1663,16 +1663,108 @@ public class BuiltinFunTable extends FunTable {
 
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Vector set0 = (Vector) getArg(evaluator, args, 0),
-						set1 = (Vector) getArg(evaluator, args, 1),
-						result = new Vector();
-				for (int i = 0, m = set0.size(); i < m; i++) {
-					Member o0 = (Member) set0.elementAt(i);
-					for (int j = 0, n = set1.size(); j < n; j++) {
-						Member o1 = (Member) set1.elementAt(j);
-						result.addElement(new Member[]{o0, o1});
+						set1 = (Vector) getArg(evaluator, args, 1);
+				if (set0.isEmpty() || set1.isEmpty()) {
+					return emptyVector;
+				}
+				int arity0 = 1,
+					arity1 = 1;
+				if (set0.elementAt(0) instanceof Member[]) {
+					arity0 = ((Member[]) set0.elementAt(0)).length;
+				}
+				if (set1.elementAt(0) instanceof Member[]) {
+					arity1 = ((Member[]) set1.elementAt(0)).length;
+				}
+				Vector result = new Vector();
+				if (arity0 == 1 && arity1 == 1) {
+					// Simpler routine if we know neither side is an array.
+					for (int i = 0, m = set0.size(); i < m; i++) {
+						Member o0 = (Member) set0.elementAt(i);
+						for (int j = 0, n = set1.size(); j < n; j++) {
+							Member o1 = (Member) set1.elementAt(j);
+							result.addElement(new Member[]{o0, o1});
+						}
+					}
+				} else {
+					// More complex routine if one or both sides are arrays
+					// (probably the product of nested CrossJoins).
+					Member[] row = new Member[arity0 + arity1];
+					for (int i = 0, m = set0.size(); i < m; i++) {
+						int x = 0;
+						Object o0 = set0.elementAt(i);
+						if (o0 instanceof Member) {
+							row[x++] = (Member) o0;
+						} else {
+							assertTrue(o0 instanceof Member[]);
+							final Member[] members = (Member[]) o0;
+							for (int k = 0; k < members.length; k++) {
+								row[x++] = members[k];
+							}
+						}
+						for (int j = 0, n = set1.size(); j < n; j++) {
+							Object o1 = set1.elementAt(j);
+							if (o1 instanceof Member) {
+								row[x++] = (Member) o1;
+							} else {
+								assertTrue(o1 instanceof Member[]);
+								final Member[] members = (Member[]) o1;
+								for (int k = 0; k < members.length; k++) {
+									row[x++] = members[k];
+								}
+							}
+							result.addElement(row.clone());
+							x = arity0;
+						}
 					}
 				}
 				return result;
+			}
+
+			public void testCrossjoinNested(FoodMartTestCase test) {
+				final Axis axis = test.executeAxis2(
+						"  CrossJoin(" + nl +
+						"    CrossJoin(" + nl +
+						"      [Gender].members," + nl +
+						"      [Marital Status].members)," + nl +
+						"   {[Store], [Store].children})");
+				test.assertEquals(
+						"{[Gender].[All Gender], [Marital Status].[All Marital Status], [Store].[All Stores]}" + nl +
+						"{[Gender].[All Gender], [Marital Status].[All Marital Status], [Store].[All Stores].[Canada]}" + nl +
+						"{[Gender].[All Gender], [Marital Status].[All Marital Status], [Store].[All Stores].[Mexico]}" + nl +
+						"{[Gender].[All Gender], [Marital Status].[All Marital Status], [Store].[All Stores].[USA]}" + nl +
+						"{[Gender].[All Gender], [Marital Status].[All Marital Status].[M], [Store].[All Stores]}" + nl +
+						"{[Gender].[All Gender], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[Canada]}" + nl +
+						"{[Gender].[All Gender], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[Mexico]}" + nl +
+						"{[Gender].[All Gender], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[USA]}" + nl +
+						"{[Gender].[All Gender], [Marital Status].[All Marital Status].[S], [Store].[All Stores]}" + nl +
+						"{[Gender].[All Gender], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Canada]}" + nl +
+						"{[Gender].[All Gender], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Mexico]}" + nl +
+						"{[Gender].[All Gender], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[USA]}" + nl +
+						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status], [Store].[All Stores]}" + nl +
+						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status], [Store].[All Stores].[Canada]}" + nl +
+						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status], [Store].[All Stores].[Mexico]}" + nl +
+						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status], [Store].[All Stores].[USA]}" + nl +
+						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M], [Store].[All Stores]}" + nl +
+						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[Canada]}" + nl +
+						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[Mexico]}" + nl +
+						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[USA]}" + nl +
+						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S], [Store].[All Stores]}" + nl +
+						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Canada]}" + nl +
+						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Mexico]}" + nl +
+						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[USA]}" + nl +
+						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status], [Store].[All Stores]}" + nl +
+						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status], [Store].[All Stores].[Canada]}" + nl +
+						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status], [Store].[All Stores].[Mexico]}" + nl +
+						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status], [Store].[All Stores].[USA]}" + nl +
+						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M], [Store].[All Stores]}" + nl +
+						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[Canada]}" + nl +
+						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[Mexico]}" + nl +
+						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[USA]}" + nl +
+						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores]}" + nl +
+						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Canada]}" + nl +
+						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Mexico]}" + nl +
+						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[USA]}",
+						test.toString(axis.positions));
 			}
 		});
 		define(new MultiResolver(
