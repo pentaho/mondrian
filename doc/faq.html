@@ -40,11 +40,15 @@
   <li><a href="#Modeling">Modeling</a><ul>
     <li><a href="#measures_not_stored_in_the_fact_table">Measures not in the fact table</a></li>
   </ul></li>
+  <li><a href="#Build_install">Build/install</a></li>
   <li><a href="#Performance">Performance</a><ul>
     <li><a href="#cache_refresh">When I change the data in the RDBMS, the result 
     doesn't change even if i refresh the browser. Why is this?</a></li>
   </ul></li>
 </ul>
+
+<hr noshade color="#000000" size="1">
+
 <h2><a name="Applications">How do I use Mondrian in my application?</a></h2>
 <p>There are several ways. If you have a fixed set of queries which you'd like 
 to display as HTML tables, use the tab library. <a href="../webapp/taglib.jsp">
@@ -146,7 +150,7 @@ it. If you can think of ways that Mondrian can be improved, roll up your sleeves
 and help make it better. If you use Mondrian in your application, consider 
 sharing your work so that everyone can use it.</p>
 
-<hr/>
+<hr noshade color="#000000">
 
 <h2><a name="Modeling">Modeling</a></h2>
 
@@ -160,7 +164,34 @@ sharing your work so that everyone can use it.</p>
 
 <p>Note that you will need to use shared dimensions for the cubes to join implicitly.</p>
 
-<hr>
+<hr noshade color="#000000" size="1">
+
+<h2><a name="Build_install">Build/install</a></h2>
+<h3><a name="compilation_errors">I get compilation errors? Why is this?</a></h3>
+<p>For example:</p>
+<blockquote>
+<p><code>&quot;SchemaTreeModel.java&quot;: Error #: 302 : cannot access class 
+MondrianDef.Schema; java.io.IOException: class not found: class 
+MondrianDef.Schema at line 29, column 14</code></p>
+</blockquote>
+<p>You can't just compile the source code using your IDE; you must build using 
+ant, as described in the <a href="install.html">build instructions</a>. This is 
+because several Java classes, such as <code>mondrian.olap.MondrianDef</code> (as 
+in this case), <code>mondrian.olap.MondrianResource</code> and <code>
+mondrian.olap.Parser</code> are generated from other files. I recommend that you 
+do <code>ant clean</code> before trying to build again.</p>
+<p>Another example:</p>
+<blockquote>
+<p><code>&quot;NamedObject.java&quot;: Error #: 704 : cannot access directory 
+javax\jmi\reflect at line 4, column 1</code></p>
+</blockquote>
+<p>You don't have the correct JAR files (in this case, <code>lib/jmi.jar</code>) 
+on your classpath. Again, you should have followed the <a href="install.html">
+build instructions</a>. This problem often happens when people try to build 
+using an IDE. You must use ant for the first ever build, but you may be able to 
+setup your IDE to do incremental builds.</p>
+
+<hr noshade color="#000000" size="1">
 
 <h2><a name="Performance">Performance</a></h2>
 <h3><a name="cache_refresh">When I change the data in the RDBMS, the result 
@@ -180,7 +211,7 @@ following piece of code, which flushes the entire contents:</p>
 <p>See <a href="components.html#caching">caching design</a> for more 
 information.</p>
 
-<hr>
+<hr noshade color="#000000" size="1">
 
 <table border="0" class="clsStd" width="100%" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0">
   <tr>
