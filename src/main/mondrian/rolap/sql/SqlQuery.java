@@ -398,8 +398,10 @@ public class SqlQuery
 		} else if (relation instanceof MondrianDef.Join) {
 			MondrianDef.Join join = (MondrianDef.Join) relation;
 			boolean added = false;
-			added = added || addFrom(join.left, failIfExists);
-			added = added || addFrom(join.right, failIfExists);
+			if (addFrom(join.left, failIfExists))
+				added = true;
+			if (addFrom(join.right, failIfExists))
+				added = true;
 			if (added)
 				addWhere(
 					quoteIdentifier(join.getLeftAlias(), join.leftKey) +
