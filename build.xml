@@ -509,7 +509,7 @@ mondrian/resource/**/*.class"/>
     <javadoc sourcepath="${java.dir}"
         classpathref="project.classpath"
         destdir="${javadoc.dir}"
-        packagenames="mondrian.*"
+        packagenames="mondrian.*,javax.*,org.omg.cwm.*"
         overview="${java.dir}/overview.html"
         footer="&lt;a href=&quot;http://sourceforge.net/projects/mondrian&quot;&gt;&lt;img src=&quot;http://sourceforge.net/sflogo.php?group_id=35302&#38;type=1&quot; width=&quot;88&quot; height=&quot;31&quot; border=&quot;0&quot; alt=&quot;SourceForge.net_Logo&quot;&gt;&lt;/a&gt;"
         author="true">
