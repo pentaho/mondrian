@@ -110,7 +110,7 @@ public class ParameterTest extends FoodMartTestCase {
 				" {Parameter(\"P\",[Gender],[Gender].[M],\"Which gender?\")," + nl +
 				"  Parameter(\"P\",[Gender],[Gender].[F],\"Which gender?\")} on columns" + nl +
 				"from Sales",
-				"Parameter 'P' is defined '2' times");
+				"Parameter 'P' is defined more than once");
 	}
 	public void testParameterMetadata() {
 		Connection connection = getConnection();

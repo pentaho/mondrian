@@ -1223,6 +1223,11 @@ public class XmlaTest extends TestCase {
                 "        <FmtValue>86,837</FmtValue>" + nl +
                 "        <FormatString>#,###</FormatString>" + nl +
                 "      </Cell>" + nl +
+                "      <Cell CellOrdinal=\"4\">" + nl +
+                "        <Value>5581</Value>" + nl +
+                "        <FmtValue>5,581</FmtValue>" + nl +
+                "        <FormatString>#,###</FormatString>" + nl +
+                "      </Cell>" + nl +
                 "    </CellData>" + nl +
                 "  </SOAP-ENV:Body>" + nl +
                 "</SOAP-ENV:Envelope>");
@@ -1293,8 +1298,8 @@ public class XmlaTest extends TestCase {
                 "<Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\" " + nl +
                 "  SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
                 "  <Command>" + nl +
-                "    <Statement>SELECT {[Measures].members * [1997].children} ON COLUMNS," + nl +
-                " {[Store].[USA].children * [Position].[All Position].children} DIMENSION PROPERTIES [Store].[Store SQFT] ON ROWS" + nl +
+                "    <Statement>SELECT {[Measures].[Org Salary], [Measures].[Count]} ON COLUMNS," + nl +
+                "  {[Store].[USA].children * [Pay Type].Members} DIMENSION PROPERTIES [Store].[Store SQFT] ON ROWS" + nl +
                 "FROM [HR]</Statement>" + nl +
                 "  </Command>" + nl +
                 "  <Properties>" + nl +
@@ -1313,7 +1318,7 @@ public class XmlaTest extends TestCase {
                 "    <OLAPInfo>" + nl +
                 "      <CubeInfo>" + nl +
                 "        <Cube>" + nl +
-                "          <CubeName>Sales</CubeName>" + nl +
+                "          <CubeName>HR</CubeName>" + nl +
                 "        </Cube>" + nl +
                 "      </CubeInfo>" + nl +
                 "      <AxesInfo>" + nl +
@@ -1323,6 +1328,20 @@ public class XmlaTest extends TestCase {
                 "            <Caption name=\"[Measures].[MEMBER_CAPTION]\"/>" + nl +
                 "            <LName name=\"[Measures].[LEVEL_UNIQUE_NAME]\"/>" + nl +
                 "            <LNum name=\"[Measures].[LEVEL_NUMBER]\"/>" + nl +
+                "          </HierarchyInfo>" + nl +
+                "        </AxisInfo>" + nl +
+                "        <AxisInfo name=\"Axis1\">" + nl +
+                "          <HierarchyInfo name=\"Store\">" + nl +
+                "            <UName name=\"[Store].[MEMBER_UNIQUE_NAME]\"/>" + nl +
+                "            <Caption name=\"[Store].[MEMBER_CAPTION]\"/>" + nl +
+                "            <LName name=\"[Store].[LEVEL_UNIQUE_NAME]\"/>" + nl +
+                "            <LNum name=\"[Store].[LEVEL_NUMBER]\"/>" + nl +
+                "          </HierarchyInfo>" + nl +
+                "          <HierarchyInfo name=\"Pay Type\">" + nl +
+                "            <UName name=\"[Pay Type].[MEMBER_UNIQUE_NAME]\"/>" + nl +
+                "            <Caption name=\"[Pay Type].[MEMBER_CAPTION]\"/>" + nl +
+                "            <LName name=\"[Pay Type].[LEVEL_UNIQUE_NAME]\"/>" + nl +
+                "            <LNum name=\"[Pay Type].[LEVEL_NUMBER]\"/>" + nl +
                 "          </HierarchyInfo>" + nl +
                 "        </AxisInfo>" + nl +
                 "      </AxesInfo>" + nl +
@@ -1337,42 +1356,148 @@ public class XmlaTest extends TestCase {
                 "        <Tuples>" + nl +
                 "          <Tuple>" + nl +
                 "            <Member Hierarchy=\"Measures\">" + nl +
-                "              <UName>[Measures].[Unit Sales]</UName>" + nl +
-                "              <Caption>Unit Sales</Caption>" + nl +
+                "              <UName>[Measures].[Org Salary]</UName>" + nl +
+                "              <Caption>Org Salary</Caption>" + nl +
                 "              <LName>[Measures].[MeasuresLevel]</LName>" + nl +
                 "              <LNum>0</LNum>" + nl +
                 "            </Member>" + nl +
                 "          </Tuple>" + nl +
                 "          <Tuple>" + nl +
                 "            <Member Hierarchy=\"Measures\">" + nl +
-                "              <UName>[Measures].[Store Cost]</UName>" + nl +
-                "              <Caption>Store Cost</Caption>" + nl +
+                "              <UName>[Measures].[Count]</UName>" + nl +
+                "              <Caption>Count</Caption>" + nl +
                 "              <LName>[Measures].[MeasuresLevel]</LName>" + nl +
                 "              <LNum>0</LNum>" + nl +
                 "            </Member>" + nl +
                 "          </Tuple>" + nl +
+                "        </Tuples>" + nl +
+                "      </Axis>" + nl +
+                "      <Axis name=\"Axis1\">" + nl +
+                "        <Tuples>" + nl +
                 "          <Tuple>" + nl +
-                "            <Member Hierarchy=\"Measures\">" + nl +
-                "              <UName>[Measures].[Store Sales]</UName>" + nl +
-                "              <Caption>Store Sales</Caption>" + nl +
-                "              <LName>[Measures].[MeasuresLevel]</LName>" + nl +
+                "            <Member Hierarchy=\"Store\">" + nl +
+                "              <UName>[Store].[All Stores].[USA].[CA]</UName>" + nl +
+                "              <Caption>CA</Caption>" + nl +
+                "              <LName>[Store].[Store State]</LName>" + nl +
+                "              <LNum>2</LNum>" + nl +
+                "            </Member>" + nl +
+                "            <Member Hierarchy=\"Pay Type\">" + nl +
+                "              <UName>[Pay Type].[All Pay Types]</UName>" + nl +
+                "              <Caption>All Pay Types</Caption>" + nl +
+                "              <LName>[Pay Type].[(All)]</LName>" + nl +
                 "              <LNum>0</LNum>" + nl +
                 "            </Member>" + nl +
                 "          </Tuple>" + nl +
                 "          <Tuple>" + nl +
-                "            <Member Hierarchy=\"Measures\">" + nl +
-                "              <UName>[Measures].[Sales Count]</UName>" + nl +
-                "              <Caption>Sales Count</Caption>" + nl +
-                "              <LName>[Measures].[MeasuresLevel]</LName>" + nl +
+                "            <Member Hierarchy=\"Store\">" + nl +
+                "              <UName>[Store].[All Stores].[USA].[CA]</UName>" + nl +
+                "              <Caption>CA</Caption>" + nl +
+                "              <LName>[Store].[Store State]</LName>" + nl +
+                "              <LNum>2</LNum>" + nl +
+                "            </Member>" + nl +
+                "            <Member Hierarchy=\"Pay Type\">" + nl +
+                "              <UName>[Pay Type].[All Pay Types].[Hourly]</UName>" + nl +
+                "              <Caption>Hourly</Caption>" + nl +
+                "              <LName>[Pay Type].[Pay Type]</LName>" + nl +
+                "              <LNum>1</LNum>" + nl +
+                "            </Member>" + nl +
+                "          </Tuple>" + nl +
+                "          <Tuple>" + nl +
+                "            <Member Hierarchy=\"Store\">" + nl +
+                "              <UName>[Store].[All Stores].[USA].[CA]</UName>" + nl +
+                "              <Caption>CA</Caption>" + nl +
+                "              <LName>[Store].[Store State]</LName>" + nl +
+                "              <LNum>2</LNum>" + nl +
+                "            </Member>" + nl +
+                "            <Member Hierarchy=\"Pay Type\">" + nl +
+                "              <UName>[Pay Type].[All Pay Types].[Monthly]</UName>" + nl +
+                "              <Caption>Monthly</Caption>" + nl +
+                "              <LName>[Pay Type].[Pay Type]</LName>" + nl +
+                "              <LNum>1</LNum>" + nl +
+                "            </Member>" + nl +
+                "          </Tuple>" + nl +
+                "          <Tuple>" + nl +
+                "            <Member Hierarchy=\"Store\">" + nl +
+                "              <UName>[Store].[All Stores].[USA].[OR]</UName>" + nl +
+                "              <Caption>OR</Caption>" + nl +
+                "              <LName>[Store].[Store State]</LName>" + nl +
+                "              <LNum>2</LNum>" + nl +
+                "            </Member>" + nl +
+                "            <Member Hierarchy=\"Pay Type\">" + nl +
+                "              <UName>[Pay Type].[All Pay Types]</UName>" + nl +
+                "              <Caption>All Pay Types</Caption>" + nl +
+                "              <LName>[Pay Type].[(All)]</LName>" + nl +
                 "              <LNum>0</LNum>" + nl +
                 "            </Member>" + nl +
                 "          </Tuple>" + nl +
                 "          <Tuple>" + nl +
-                "            <Member Hierarchy=\"Measures\">" + nl +
-                "              <UName>[Measures].[Customer Count]</UName>" + nl +
-                "              <Caption>Customer Count</Caption>" + nl +
-                "              <LName>[Measures].[MeasuresLevel]</LName>" + nl +
+                "            <Member Hierarchy=\"Store\">" + nl +
+                "              <UName>[Store].[All Stores].[USA].[OR]</UName>" + nl +
+                "              <Caption>OR</Caption>" + nl +
+                "              <LName>[Store].[Store State]</LName>" + nl +
+                "              <LNum>2</LNum>" + nl +
+                "            </Member>" + nl +
+                "            <Member Hierarchy=\"Pay Type\">" + nl +
+                "              <UName>[Pay Type].[All Pay Types].[Hourly]</UName>" + nl +
+                "              <Caption>Hourly</Caption>" + nl +
+                "              <LName>[Pay Type].[Pay Type]</LName>" + nl +
+                "              <LNum>1</LNum>" + nl +
+                "            </Member>" + nl +
+                "          </Tuple>" + nl +
+                "          <Tuple>" + nl +
+                "            <Member Hierarchy=\"Store\">" + nl +
+                "              <UName>[Store].[All Stores].[USA].[OR]</UName>" + nl +
+                "              <Caption>OR</Caption>" + nl +
+                "              <LName>[Store].[Store State]</LName>" + nl +
+                "              <LNum>2</LNum>" + nl +
+                "            </Member>" + nl +
+                "            <Member Hierarchy=\"Pay Type\">" + nl +
+                "              <UName>[Pay Type].[All Pay Types].[Monthly]</UName>" + nl +
+                "              <Caption>Monthly</Caption>" + nl +
+                "              <LName>[Pay Type].[Pay Type]</LName>" + nl +
+                "              <LNum>1</LNum>" + nl +
+                "            </Member>" + nl +
+                "          </Tuple>" + nl +
+                "          <Tuple>" + nl +
+                "            <Member Hierarchy=\"Store\">" + nl +
+                "              <UName>[Store].[All Stores].[USA].[WA]</UName>" + nl +
+                "              <Caption>WA</Caption>" + nl +
+                "              <LName>[Store].[Store State]</LName>" + nl +
+                "              <LNum>2</LNum>" + nl +
+                "            </Member>" + nl +
+                "            <Member Hierarchy=\"Pay Type\">" + nl +
+                "              <UName>[Pay Type].[All Pay Types]</UName>" + nl +
+                "              <Caption>All Pay Types</Caption>" + nl +
+                "              <LName>[Pay Type].[(All)]</LName>" + nl +
                 "              <LNum>0</LNum>" + nl +
+                "            </Member>" + nl +
+                "          </Tuple>" + nl +
+                "          <Tuple>" + nl +
+                "            <Member Hierarchy=\"Store\">" + nl +
+                "              <UName>[Store].[All Stores].[USA].[WA]</UName>" + nl +
+                "              <Caption>WA</Caption>" + nl +
+                "              <LName>[Store].[Store State]</LName>" + nl +
+                "              <LNum>2</LNum>" + nl +
+                "            </Member>" + nl +
+                "            <Member Hierarchy=\"Pay Type\">" + nl +
+                "              <UName>[Pay Type].[All Pay Types].[Hourly]</UName>" + nl +
+                "              <Caption>Hourly</Caption>" + nl +
+                "              <LName>[Pay Type].[Pay Type]</LName>" + nl +
+                "              <LNum>1</LNum>" + nl +
+                "            </Member>" + nl +
+                "          </Tuple>" + nl +
+                "          <Tuple>" + nl +
+                "            <Member Hierarchy=\"Store\">" + nl +
+                "              <UName>[Store].[All Stores].[USA].[WA]</UName>" + nl +
+                "              <Caption>WA</Caption>" + nl +
+                "              <LName>[Store].[Store State]</LName>" + nl +
+                "              <LNum>2</LNum>" + nl +
+                "            </Member>" + nl +
+                "            <Member Hierarchy=\"Pay Type\">" + nl +
+                "              <UName>[Pay Type].[All Pay Types].[Monthly]</UName>" + nl +
+                "              <Caption>Monthly</Caption>" + nl +
+                "              <LName>[Pay Type].[Pay Type]</LName>" + nl +
+                "              <LNum>1</LNum>" + nl +
                 "            </Member>" + nl +
                 "          </Tuple>" + nl +
                 "        </Tuples>" + nl +
@@ -1380,24 +1505,94 @@ public class XmlaTest extends TestCase {
                 "    </Axes>" + nl +
                 "    <CellData>" + nl +
                 "      <Cell CellOrdinal=\"0\">" + nl +
-                "        <Value>266773.0</Value>" + nl +
-                "        <FmtValue>266,773</FmtValue>" + nl +
-                "        <FormatString>Standard</FormatString>" + nl +
+                "        <Value>14861.5006</Value>" + nl +
+                "        <FmtValue>$14,861.50</FmtValue>" + nl +
+                "        <FormatString>Currency</FormatString>" + nl +
                 "      </Cell>" + nl +
                 "      <Cell CellOrdinal=\"1\">" + nl +
-                "        <Value>225627.2336</Value>" + nl +
-                "        <FmtValue>225,627.23</FmtValue>" + nl +
-                "        <FormatString>#,###.00</FormatString>" + nl +
+                "        <Value>2316</Value>" + nl +
+                "        <FmtValue>2,316</FmtValue>" + nl +
+                "        <FormatString>#,#</FormatString>" + nl +
                 "      </Cell>" + nl +
                 "      <Cell CellOrdinal=\"2\">" + nl +
-                "        <Value>565238.1300</Value>" + nl +
-                "        <FmtValue>565,238.13</FmtValue>" + nl +
-                "        <FormatString>#,###.00</FormatString>" + nl +
+                "        <Value>3261.2206</Value>" + nl +
+                "        <FmtValue>$3,261.22</FmtValue>" + nl +
+                "        <FormatString>Currency</FormatString>" + nl +
                 "      </Cell>" + nl +
                 "      <Cell CellOrdinal=\"3\">" + nl +
-                "        <Value>86837</Value>" + nl +
-                "        <FmtValue>86,837</FmtValue>" + nl +
-                "        <FormatString>#,###</FormatString>" + nl +
+                "        <Value>972</Value>" + nl +
+                "        <FmtValue>972</FmtValue>" + nl +
+                "        <FormatString>#,#</FormatString>" + nl +
+                "      </Cell>" + nl +
+                "      <Cell CellOrdinal=\"4\">" + nl +
+                "        <Value>11600.2800</Value>" + nl +
+                "        <FmtValue>$11,600.28</FmtValue>" + nl +
+                "        <FormatString>Currency</FormatString>" + nl +
+                "      </Cell>" + nl +
+                "      <Cell CellOrdinal=\"5\">" + nl +
+                "        <Value>1344</Value>" + nl +
+                "        <FmtValue>1,344</FmtValue>" + nl +
+                "        <FormatString>#,#</FormatString>" + nl +
+                "      </Cell>" + nl +
+                "      <Cell CellOrdinal=\"6\">" + nl +
+                "        <Value>7848.9727</Value>" + nl +
+                "        <FmtValue>$7,848.97</FmtValue>" + nl +
+                "        <FormatString>Currency</FormatString>" + nl +
+                "      </Cell>" + nl +
+                "      <Cell CellOrdinal=\"7\">" + nl +
+                "        <Value>1632</Value>" + nl +
+                "        <FmtValue>1,632</FmtValue>" + nl +
+                "        <FormatString>#,#</FormatString>" + nl +
+                "      </Cell>" + nl +
+                "      <Cell CellOrdinal=\"8\">" + nl +
+                "        <Value>2663.8927</Value>" + nl +
+                "        <FmtValue>$2,663.89</FmtValue>" + nl +
+                "        <FormatString>Currency</FormatString>" + nl +
+                "      </Cell>" + nl +
+                "      <Cell CellOrdinal=\"9\">" + nl +
+                "        <Value>792</Value>" + nl +
+                "        <FmtValue>792</FmtValue>" + nl +
+                "        <FormatString>#,#</FormatString>" + nl +
+                "      </Cell>" + nl +
+                "      <Cell CellOrdinal=\"10\">" + nl +
+                "        <Value>5185.0800</Value>" + nl +
+                "        <FmtValue>$5,185.08</FmtValue>" + nl +
+                "        <FormatString>Currency</FormatString>" + nl +
+                "      </Cell>" + nl +
+                "      <Cell CellOrdinal=\"11\">" + nl +
+                "        <Value>840</Value>" + nl +
+                "        <FmtValue>840</FmtValue>" + nl +
+                "        <FormatString>#,#</FormatString>" + nl +
+                "      </Cell>" + nl +
+                "      <Cell CellOrdinal=\"12\">" + nl +
+                "        <Value>16721.1979</Value>" + nl +
+                "        <FmtValue>$16,721.20</FmtValue>" + nl +
+                "        <FormatString>Currency</FormatString>" + nl +
+                "      </Cell>" + nl +
+                "      <Cell CellOrdinal=\"13\">" + nl +
+                "        <Value>3444</Value>" + nl +
+                "        <FmtValue>3,444</FmtValue>" + nl +
+                "        <FormatString>#,#</FormatString>" + nl +
+                "      </Cell>" + nl +
+                "      <Cell CellOrdinal=\"14\">" + nl +
+                "        <Value>5481.6379</Value>" + nl +
+                "        <FmtValue>$5,481.64</FmtValue>" + nl +
+                "        <FormatString>Currency</FormatString>" + nl +
+                "      </Cell>" + nl +
+                "      <Cell CellOrdinal=\"15\">" + nl +
+                "        <Value>1632</Value>" + nl +
+                "        <FmtValue>1,632</FmtValue>" + nl +
+                "        <FormatString>#,#</FormatString>" + nl +
+                "      </Cell>" + nl +
+                "      <Cell CellOrdinal=\"16\">" + nl +
+                "        <Value>11239.5600</Value>" + nl +
+                "        <FmtValue>$11,239.56</FmtValue>" + nl +
+                "        <FormatString>Currency</FormatString>" + nl +
+                "      </Cell>" + nl +
+                "      <Cell CellOrdinal=\"17\">" + nl +
+                "        <Value>1812</Value>" + nl +
+                "        <FmtValue>1,812</FmtValue>" + nl +
+                "        <FormatString>#,#</FormatString>" + nl +
                 "      </Cell>" + nl +
                 "    </CellData>" + nl +
                 "  </SOAP-ENV:Body>" + nl +
