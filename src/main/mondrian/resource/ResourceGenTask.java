@@ -12,16 +12,12 @@
 
 package mondrian.resource;
 
-import org.apache.tools.ant.Task;
-import org.apache.tools.ant.TaskContainer;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Task;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Locale;
-import java.util.StringTokenizer;
-import java.net.URL;
 
 /**
  * A <code>ResourceGenTask</code> is an ANT task to invoke the mondrian
@@ -227,7 +223,7 @@ public class ResourceGenTask extends Task {
 		}
 		/** Sets <a href="#className">className</a>. **/
 		public void setClassName(String className) {
-			this.baseClassName = baseClassName;
+			this.className = className;
 		}
 		/** Sets <a href="#baseClassName">baseClassName</a>. **/
 		public void setBaseClassName(String baseClassName) {
