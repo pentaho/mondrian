@@ -73,6 +73,7 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
             setText(((MondrianDef.Parameter)value).name);
         } else if (value instanceof MondrianDef.Property) {
             setText(((MondrianDef.Property)value).name);
+            super.setIcon(new ImageIcon("images/property24.gif"));
         } else if (value instanceof MondrianDef.Relation) {
             setText("Relation");
             //setText(((MondrianDef.Relation)value).name);

@@ -102,6 +102,16 @@ public class SchemaTreeModel implements TreeModel {
             } else {
                 return null;
             }
+        } else if (parent instanceof MondrianDef.Parameter) {
+            MondrianDef.Parameter p = (MondrianDef.Parameter)parent;
+            return null;
+        } else if (parent instanceof MondrianDef.Level) {
+            MondrianDef.Level l = (MondrianDef.Level)parent;
+            if (l.properties.length > index) {
+                return l.properties[index];
+            } else {
+                return null;
+            }
         } else {
             return null;
         }
@@ -135,6 +145,9 @@ public class SchemaTreeModel implements TreeModel {
         } else if (parent instanceof MondrianDef.Hierarchy) {
             MondrianDef.Hierarchy h = (MondrianDef.Hierarchy)parent;
             return h.memberReaderParameters.length + h.levels.length;
+        } else if (parent instanceof MondrianDef.Level) {
+            MondrianDef.Level l = (MondrianDef.Level)parent;
+            return l.properties.length;
         } else {
             return 0;
         }
@@ -240,6 +253,17 @@ public class SchemaTreeModel implements TreeModel {
                         return i + h.levels.length;
                 }
                 return -1;                
+            } else {
+                return -1;
+            }
+        } else if (parent instanceof MondrianDef.Level) {
+            MondrianDef.Level l = (MondrianDef.Level)parent;
+            if (child instanceof MondrianDef.Property) {
+                for (int i=0; i<l.properties.length; i++) {
+                    if (l.properties[i].equals(child))
+                        return i;
+                }
+                return -1;
             } else {
                 return -1;
             }
