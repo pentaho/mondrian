@@ -13,15 +13,15 @@
 package mondrian.rolap;
 import mondrian.olap.Util;
 
-import java.util.ArrayList;
-import java.util.Vector;
-import java.util.Date;
-import java.lang.reflect.Array;
 import java.io.*;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.lang.reflect.Array;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Vector;
 
 /**
  * todo:
@@ -33,6 +33,10 @@ import java.sql.SQLException;
 public class RolapUtil {
 	static final RolapMember[] emptyMemberArray = new RolapMember[0];
 	public static PrintWriter debugOut;
+	private static Semaphore querySemaphore;
+	/** Special cell value indicates that the value is not in cache yet. **/
+	static RuntimeException valueNotReadyException = new RuntimeException(
+			"value not ready");
 
 	/**
 	 * Encloses a value in single-quotes, to make a SQL string value. Examples:
@@ -119,6 +123,7 @@ public class RolapUtil {
 	public static ResultSet executeQuery(
 			Connection jdbcConnection, String sql, String component)
 			throws SQLException {
+		getQuerySemaphore().enter();
 		Statement statement = null;
 		ResultSet resultSet = null;
 		String status = "failed";
@@ -148,9 +153,9 @@ public class RolapUtil {
 			if (RolapUtil.debugOut != null) {
 				RolapUtil.debugOut.println(status);
 			}
+			getQuerySemaphore().leave();
 		}
 	}
-
 
 	/**
 	 * Writes to a string and also to an underlying writer.
@@ -228,6 +233,49 @@ public class RolapUtil {
 		}
 		debugOut = new PrintWriter(tw);
 		return tw;
+	}
+
+	/**
+	 * Gets the semaphore which controls how many people can run queries
+	 * simultaneously.
+	 */
+	static synchronized Semaphore getQuerySemaphore() {
+		if (querySemaphore == null) {
+			int queryCount = Util.getProperties().getIntProperty("mondrian.query.limit", 40);
+			querySemaphore = new Semaphore(queryCount);
+		}
+		return querySemaphore;
+	}
+
+	static class Semaphore {
+		private int count;
+		Semaphore(int count) {
+			if (count < 0) {
+				count = Integer.MAX_VALUE;
+			}
+			this.count = count;
+		}
+		synchronized void enter() {
+			if (count == Integer.MAX_VALUE) {
+				return;
+			}
+			if (count == 0) {
+				try {
+					wait();
+				} catch (InterruptedException e) {
+					throw Util.newInternal(e, "while waiting for semaphore");
+				}
+			}
+			Util.assertTrue(count > 0);
+			count--;
+		}
+		synchronized void leave() {
+			if (count == Integer.MAX_VALUE) {
+				return;
+			}
+			count++;
+			notify();
+		}
 	}
 }
 

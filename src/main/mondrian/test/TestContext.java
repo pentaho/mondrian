@@ -79,7 +79,7 @@ public class TestContext {
 		if (foodMartConnectString == null) {
 			URL catalogUrl = convertPathToURL(new File("demo/FoodMart.xml"));
 			String jdbcURL = Util.getProperties().getProperty(
-					"mondrian.test.jdbcURL", "jdbc:hsqldb:demo/hsql/FoodMart");
+					"mondrian.foodmart.jdbcURL", "jdbc:hsqldb:demo/hsql/FoodMart");
 			foodMartConnectString = "Provider=mondrian;" +
 					"Jdbc=" + jdbcURL + ";" +
 					"Catalog=" + catalogUrl;

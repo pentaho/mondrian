@@ -177,7 +177,7 @@ public class FoodMartTestCase extends TestCase {
 		for (int i = 0; i < positions.length; i++) {
 			Position position = positions[i];
 			if (i > 0) {
-				sb.append(", ");
+				sb.append(nl);
 			}
 			if (position.members.length != 1) {
 				sb.append("{");
@@ -650,7 +650,7 @@ public class FoodMartTestCase extends TestCase {
 								executeCount[0]++;
 							} catch (Throwable e) {
 								e.printStackTrace();
-								Util.newInternal(
+								throw Util.newInternal(
 										e,
 										"Thread #" + i +
 										" failed while executing query #" +
