@@ -57,10 +57,24 @@ public interface Cell {
 	boolean isError();
 
 	/**
-	 * Returns a SQL query which calculates the value of this cell. The result
-	 * is null if the cell is based upon a calculated member.
+	 * Returns a SQL query that, when executed, returns drill through data
+	 * for this Cell.
+	 * If the parameter extendedContext is true, then the
+	 * query will include all the levels (i.e. columns) of non-constraining members
+	 * (i.e. members which are at the "All" level).
+	 * If the parameter extendedContext is false, the query will exclude
+	 * the levels (coulmns) of non-constraining members.
+	 * The result is null if the cell is based upon a calculated member.
+	 * 
 	 */
-	String getDrillThroughSQL();
+	String getDrillThroughSQL(boolean extendedContext);
+
+	/**
+	 * Returns true if drill through is possible for this Cell.
+	 * Returns false if the Cell is based on a calculated measure.
+	 * @return true if can drill through on this cell
+	 */
+	boolean canDrillThrough();
 
     /**
      * Returns the value of a property.

@@ -236,7 +236,7 @@ public class AggregationManager extends RolapAggregationManager {
 			public Object[] getConstraints(int i) {
 				final Object value = request.getValueList().get(i);
 				if (value == null) {
-					return new Object[0];
+					return null;
 				} else {
 					return new Object[] {value};
 				}

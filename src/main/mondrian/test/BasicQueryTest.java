@@ -459,9 +459,20 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"SELECT {[Measures].[Unit Sales], [Measures].[Price]} on columns," + nl +
 				" {[Product].Children} on rows" + nl +
 				"from Sales");
-		String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL();
-		assertEquals("select `time_by_day`.`the_year` as `c0`, `product_class`.`product_family` as `c1`, sum(`sales_fact_1997`.`unit_sales`) as `c2` from `time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997`, `product_class` as `product_class`, `product` as `product` where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` in (1997) and `sales_fact_1997`.`product_id` = `product`.`product_id` and `product`.`product_class_id` = `product_class`.`product_class_id` and `product_class`.`product_family` in ('Drink') group by `time_by_day`.`the_year`, `product_class`.`product_family`", sql);
-		sql = result.getCell(new int[] {1, 1}).getDrillThroughSQL();
+		String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL(false);
+		assertEquals("select `time_by_day`.`the_year` as `Year`, `product_class`.`product_family` as `Product Family`, sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales` from `time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997`, `product_class` as `product_class`, `product` as `product` where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` in (1997) and `sales_fact_1997`.`product_id` = `product`.`product_id` and `product`.`product_class_id` = `product_class`.`product_class_id` and `product_class`.`product_family` in ('Drink') group by `time_by_day`.`the_year`, `product_class`.`product_family`", sql);
+		sql = result.getCell(new int[] {1, 1}).getDrillThroughSQL(false);
+		assertNull(sql); // because it is a calculated member
+	}
+	public void testDrillThrough2() {
+		Result result = runQuery(
+				"WITH MEMBER [Measures].[Price] AS '[Measures].[Store Sales] / [Measures].[Unit Sales]'" + nl +
+				"SELECT {[Measures].[Unit Sales], [Measures].[Price]} on columns," + nl +
+				" {[Product].Children} on rows" + nl +
+				"from Sales");
+		String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL(true);
+		assertEquals("select `store`.`store_country` as `Store Country`, `store`.`store_state` as `Store State`, `store`.`store_city` as `Store City`, `store`.`store_name` as `Store Name`, `store`.`store_sqft` as `Store Sqft`, `store`.`store_type` as `Store Type`, `time_by_day`.`the_year` as `Year`, `product_class`.`product_family` as `Product Family`, `promotion`.`media_type` as `Media Type`, `promotion`.`promotion_name` as `Promotion Name`, `customer`.`country` as `Country`, `customer`.`state_province` as `State Province`, `customer`.`city` as `City`, CONCAT(`customer`.`fname`, \" \", `customer`.`lname`) as `Name`, `customer`.`education` as `Education Level`, `customer`.`gender` as `Gender`, `customer`.`marital_status` as `Marital Status`, `customer`.`yearly_income` as `Yearly Income`, sum(`sales_fact_1997`.`unit_sales`) as `Unit Sales` from `store` as `store`, `sales_fact_1997` as `sales_fact_1997`, `time_by_day` as `time_by_day`, `product_class` as `product_class`, `product` as `product`, `promotion` as `promotion`, `customer` as `customer` where `sales_fact_1997`.`store_id` = `store`.`store_id` and `sales_fact_1997`.`store_id` = `store`.`store_id` and `sales_fact_1997`.`store_id` = `store`.`store_id` and `sales_fact_1997`.`store_id` = `store`.`store_id` and `sales_fact_1997`.`store_id` = `store`.`store_id` and `sales_fact_1997`.`store_id` = `store`.`store_id` and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` in (1997) and `sales_fact_1997`.`product_id` = `product`.`product_id` and `product`.`product_class_id` = `product_class`.`product_class_id` and `product_class`.`product_family` in ('Drink') and `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` and `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` group by `store`.`store_country`, `store`.`store_state`, `store`.`store_city`, `store`.`store_name`, `store`.`store_sqft`, `store`.`store_type`, `time_by_day`.`the_year`, `product_class`.`product_family`, `promotion`.`media_type`, `promotion`.`promotion_name`, `customer`.`country`, `customer`.`state_province`, `customer`.`city`, CONCAT(`customer`.`fname`, \" \", `customer`.`lname`), `customer`.`education`, `customer`.`gender`, `customer`.`marital_status`, `customer`.`yearly_income`", sql);
+		sql = result.getCell(new int[] {1, 1}).getDrillThroughSQL(true);
 		assertNull(sql); // because it is a calculated member
 	}
 
@@ -2288,11 +2299,11 @@ public class BasicQueryTest extends FoodMartTestCase {
      * substrings in strings or for supporting case-insensitive string
      * comparisons. However, since MDX can take advantage of external function
      * libraries, this question is easily resolved using string manipulation and
-     * comparison functions from the Microsoft Visual Basic® for Applications
+     * comparison functions from the Microsoft Visual Basic? for Applications
      * (VBA) external function library.
      *
      * <p>For example, you want to report the unit sales of all fruit-based
-     * products—not only the sales of fruit, but canned fruit, fruit snacks,
+     * products?not only the sales of fruit, but canned fruit, fruit snacks,
      * fruit juices, and so on. By using the LCase and InStr VBA functions, the
      * following results are easily accomplished in a single MDX query, without
      * complex set construction or explicit member names within the query.
@@ -2403,7 +2414,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      *
      * <p>As an aside, a named set cannot be used in this situation to replace
      * the duplicate Order function calls. Named sets are evaluated once, when a
-     * query is parsed—since the set can change based on the fact that the set
+     * query is parsed?since the set can change based on the fact that the set
      * can be different for each store member because the set is evaluated for
      * the children of multiple parents, the set does not change with respect to
      * its use in the Sum function. Since the named set is only evaluated once,
@@ -2548,7 +2559,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      *
      * <p>Member properties are a good way of adding secondary business
      * information to members in a dimension. However, getting that information
-     * out can be confusing—member properties are not readily apparent in a
+     * out can be confusing?member properties are not readily apparent in a
      * typical MDX query.
      *
      * <p>Member properties can be retrieved in one of two ways. The easiest
@@ -3105,7 +3116,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * forecast of warehouse sales, from the Warehouse cube in the FoodMart 2000
      * database, for drink products. The standard forecast is double the
      * warehouse sales of the previous year, while the dynamic forecast varies
-     * from month to month—the forecast for January is 120 percent of previous
+     * from month to month?the forecast for January is 120 percent of previous
      * sales, while the forecast for July is 260 percent of previous sales.
      *
      * <p>The most flexible way of handling this type of report is the use of

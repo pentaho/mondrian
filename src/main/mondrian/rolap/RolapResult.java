@@ -17,6 +17,8 @@ import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.io.PrintWriter;
 
 /**
@@ -484,14 +486,97 @@ class RolapCell implements Cell
 	public boolean isError() {
 		return value instanceof Throwable;
 	}
-	public String getDrillThroughSQL() {
-        RolapEvaluator evaluator = getEvaluator();
-        final CellRequest cellRequest = AggregationManager.instance().makeRequest(evaluator.currentMembers);
+	
+	/**
+	 * Create an sql query that, when executed, will return the drill through
+	 * data for this cell. If the parameter extendedContext is true, then the
+	 * query will include all the levels (i.e. columns) of non-constraining members
+	 * (i.e. members which are at the "All" level).
+	 * If the parameter extendedContext is false, the query will exclude
+	 * the levels (coulmns) of non-constraining members.
+	 */	
+	public String getDrillThroughSQL(boolean extendedContext) {
+		final RolapEvaluator evaluator = getEvaluator();
+		final RolapMember[] currentMembers = evaluator.currentMembers;
+		// create a list of column names
+		List columnList = new ArrayList();
+		// loop on each member to discover names
+		for (int i = 1; i < currentMembers.length; i++) {
+			if ( currentMembers[i].isAll() ) {
+				if ( extendedContext ) {
+					// if extendedContext, then also add "All" members
+					// so we add all level names to list of column names
+					RolapLevel rl = (RolapLevel) currentMembers[i].getLevel();
+					while ( (rl = (RolapLevel) rl.getChildLevel()) != null ) {
+						// add name of level to list
+						columnList.add(rl.getName());
+					}
+				}				
+			}
+			else {
+				// its not an All member...
+				// add level names in child-to-parent order same as MakeRequest
+				for (RolapMember m = currentMembers[i]; m != null;
+								m = (RolapMember) m.getParentMember()) {
+					if (!m.isAll()) {
+						columnList.add(m.getLevel().getName());
+					}
+				}
+			}
+		}
+		// add measure name to column list names
+		columnList.add(currentMembers[0].getName());
+
+		CellRequest cellRequest;
+		if ( extendedContext ) {
+			cellRequest = AggregationManager.instance().makeDrillThroughRequest(currentMembers);
+		}
+		else {
+			cellRequest = AggregationManager.instance().makeRequest(currentMembers);
+		}
 		if (cellRequest == null) {
 			return null;
 		} else {
-			return AggregationManager.instance().getDrillThroughSQL(cellRequest);
+			// get sql query
+			String sql = AggregationManager.instance().getDrillThroughSQL(cellRequest);
+			//	replace c0 c1 etc. with column names
+			// A problem with matching for c0 c1 is that someone might have a column named abc1
+			// all columns are quoted, so we have to include quotes in the match, which means using the right quote for the right database
+			// but at this point there is no connection to discover the quote char, so, use a regular expression character class
+			// possible chars are " ' ` [ or nothing.
+			// Match a word like c0 quoted with any of possible quote chars, save as group
+			Pattern re = Pattern.compile("(\\b[\\\"\\'\\`\\[]?c[0-9]+[\\\"\\'\\`\\]]?\\b)");
+			Matcher pm = re.matcher(sql);
+			
+			for ( int i = 0; i < columnList.size(); i++ ) {
+				if ( ! pm.find() ) {
+					// a not successful find should not happen
+					continue;
+				}
+				String s = pm.group(1);
+				// replace c0 with colulmn name in the group
+				s = s.replaceFirst("c[0-9]+", (String) columnList.get(i));
+				// replace the group in the main string
+				sql = pm.replaceFirst(s);
+				// give matcher the new string
+				pm.reset(sql);
+			}
+			
+			return sql;
 		}
+	}
+	
+	/**
+	 * test if can drill through this cell
+	 * drill through is possible if the measure is a stored measure
+	 * and not possible for calculated measures
+	 * @return true if can drill through
+	 */
+	public boolean canDrillThrough() {
+		// get current members
+		final RolapMember[] currentMembers = getEvaluator().currentMembers;
+		// first member is the measure, test if it is stored measure, return true if it is, false if not
+		return (currentMembers[0] instanceof RolapStoredMeasure);
 	}
 
     private RolapEvaluator getEvaluator() {
