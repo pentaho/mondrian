@@ -30,8 +30,10 @@ import java.util.regex.Pattern;
 public class XmlaTest extends TestCase {
     private static final String nl = System.getProperty("line.separator");
     //private static final String dataSource = "Provider=MSOLAP;Data Source=local;";
-    private static final String dataSource = "Provider=Mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;Catalog=file:/E:/mondrian/demo/FoodMart.xml;JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver;";
-    private static final String catalogName = "file:/E:/mondrian/demo/FoodMart.xml";
+	private static final String FOODMART_CATALOG_URL = "mondrian.test.foodmart.catalogURL";
+    private static String catalogName;
+	private static String dataSource;
+
     /**
      * Usually null, when {@link #getRequests} sets it, {@link #executeRequest}
      * writes request strings into it and returns null.
@@ -40,6 +42,12 @@ public class XmlaTest extends TestCase {
 
     public XmlaTest(String s) {
         super(s);
+		if( System.getProperty(FOODMART_CATALOG_URL) != null )
+		    catalogName = System.getProperty(FOODMART_CATALOG_URL);
+		else
+		    catalogName = "file:/E:/mondrian/demo/FoodMart.xml";
+		dataSource = "Provider=Mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;Catalog=" + catalogName + ";JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver;";
+
     }
 
     /**
@@ -456,7 +464,7 @@ public class XmlaTest extends TestCase {
                 "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
                 "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
                 "          <row>" + nl +
-                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
+                "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
                 "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
                 "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
                 "            <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>" + nl +
@@ -470,7 +478,7 @@ public class XmlaTest extends TestCase {
                 "            <TREE_OP/>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
-                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
+                "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
                 "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
                 "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
                 "            <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>" + nl +
@@ -484,7 +492,7 @@ public class XmlaTest extends TestCase {
                 "            <TREE_OP/>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
-                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
+                "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
                 "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
                 "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
                 "            <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>" + nl +
@@ -537,7 +545,7 @@ public class XmlaTest extends TestCase {
                 "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
                 "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
                 "          <row>" + nl +
-                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
+                "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
                 "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
                 "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
                 "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
@@ -551,7 +559,7 @@ public class XmlaTest extends TestCase {
                 "            <TREE_OP/>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
-                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
+                "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
                 "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
                 "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
                 "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
@@ -565,7 +573,7 @@ public class XmlaTest extends TestCase {
                 "            <TREE_OP/>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
-                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
+                "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
                 "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
                 "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
                 "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
@@ -579,7 +587,7 @@ public class XmlaTest extends TestCase {
                 "            <TREE_OP/>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
-                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
+                "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
                 "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
                 "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
                 "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
@@ -593,7 +601,7 @@ public class XmlaTest extends TestCase {
                 "            <TREE_OP/>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
-                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
+                "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
                 "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
                 "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
                 "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
@@ -607,7 +615,7 @@ public class XmlaTest extends TestCase {
                 "            <TREE_OP/>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
-                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
+                "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
                 "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
                 "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
                 "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
@@ -621,7 +629,7 @@ public class XmlaTest extends TestCase {
                 "            <TREE_OP/>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
-                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
+                "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
                 "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
                 "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
                 "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +

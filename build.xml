@@ -299,11 +299,14 @@ copy.properties"/>
       description="Runs a few queries using the FoodMart schema.">
     <java classpathref="project.classpath" classname="mondrian.test.Main"
         fork="yes">
-      <jvmarg value="-Dmondrian.jdbcDrivers=${mondrian.jdbcDrivers}"/>
+
+      <sysproperty key="mondrian.jdbcDrivers"	value="${mondrian.jdbcDrivers}"/>
+      <sysproperty key="mondrian.test.foodmart.catalogURL"	value="${mondrian.foodmart.catalogURL}"/>
 
       <!-- mondrian.test.connectString is the mondrian connect-string.
            Provider must be 'mondrian'. Jdbc is the  Catalog is the  -->
-      <jvmarg value="-Dmondrian.test.connectString=Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}';JdbcUser='${mondrian.foodmart.jdbcUser}';JdbcPassword='${mondrian.foodmart.jdbcPassword}'"/>
+      <sysproperty key="mondrian.test.connectString"	value="Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}';JdbcUser='${mondrian.foodmart.jdbcUser}';JdbcPassword='${mondrian.foodmart.jdbcPassword}'"/>
+      
     </java>
   </target>
 
@@ -347,6 +350,8 @@ in {mondrian.foodmart.jdbcURL}.">
 
       <sysproperty key="mondrian.jdbcDrivers"     	value="${mondrian.jdbcDrivers}"/>
       <sysproperty key="mondrian.foodmart.jdbcURL"	value="${mondrian.foodmart.jdbcURL}"/>
+      <sysproperty key="mondrian.test.foodmart.catalogURL"	value="${mondrian.foodmart.catalogURL}"/>
+
       <sysproperty key="mondrian.test.connectString"	value="Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}'"/>
 
     </java>
