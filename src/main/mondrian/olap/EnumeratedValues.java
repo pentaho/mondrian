@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1998-2003 Kana Software, Inc. and others.
+// (C) Copyright 1998-2004 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -354,6 +354,26 @@ public class EnumeratedValues implements Cloneable
          */
         public boolean equals(String s) {
             return super.equals(s);
+        }
+
+        /**
+         * Returns an error indicating that we did not expect to find this
+         * value in this context. Typical use is in a <code>switch</code>
+         * statement:
+         *
+         * <blockquote><pre>
+         * switch (fruit) {
+         * case Fruit.AppleORDINAL:
+         *     return 1;
+         * case Fruir.OrangeORDINAL:
+         *     return 2;
+         * default:
+         *     throw fruit.unexpected();
+         * }</pre></blockquote>
+         */
+        public RuntimeException unexpected() {
+            return Util.newInternal("Value " + name_ + " of class " +
+                    getClass() + " unexpected here");
         }
     }
 

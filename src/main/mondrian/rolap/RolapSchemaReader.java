@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2003 Julian Hyde <jhyde@users.sf.net>
+// (C) Copyright 2003-2004 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -72,9 +72,15 @@ abstract class RolapSchemaReader implements SchemaReader {
 	}
 
 	public Member getMemberParent(Member member) {
-		final Member parentMember = member.getParentMember();
+		Member parentMember = member.getParentMember();
+        // Skip over hidden parents.
+        while (parentMember != null && parentMember.isHidden()) {
+            parentMember = parentMember.getParentMember();
+        }
+        // Skip over non-accessible parents.
 		if (parentMember != null) {
-			final Role.HierarchyAccess hierarchyAccess = role.getAccessDetails(member.getHierarchy());
+			final Role.HierarchyAccess hierarchyAccess =
+                    role.getAccessDetails(member.getHierarchy());
 			if (hierarchyAccess != null &&
 					hierarchyAccess.getAccess(parentMember) == Access.NONE) {
 				return null;
@@ -107,8 +113,8 @@ abstract class RolapSchemaReader implements SchemaReader {
 
 	public Member[] getMemberChildren(Member member) {
 		ArrayList children = new ArrayList();
-		getMemberReader(member.getHierarchy()).getMemberChildren(
-				(RolapMember) member, children);
+        final MemberReader memberReader = getMemberReader(member.getHierarchy());
+        memberReader.getMemberChildren((RolapMember) member, children);
 		return RolapUtil.toArray(children);
 	}
 
@@ -140,7 +146,8 @@ abstract class RolapSchemaReader implements SchemaReader {
 	}
 
 	public Member[] getLevelMembers(Level level) {
-		final List membersInLevel = getMemberReader(level.getHierarchy()).getMembersInLevel(
+        final MemberReader memberReader = getMemberReader(level.getHierarchy());
+        final List membersInLevel = memberReader.getMembersInLevel(
 					(RolapLevel) level, 0, Integer.MAX_VALUE);
 		return RolapUtil.toArray(membersInLevel);
 	}
@@ -172,6 +179,7 @@ abstract class RolapSchemaReader implements SchemaReader {
 	}
 
 	public Member getHierarchyDefaultMember(Hierarchy hierarchy) {
+        Util.assertPrecondition(hierarchy != null, "hierarchy != null");
 		RolapMember member = (RolapMember) hierarchy.getDefaultMember();
 		final Role.HierarchyAccess hierarchyAccess = role.getAccessDetails(hierarchy);
 		if (hierarchyAccess != null) {
@@ -220,6 +228,11 @@ abstract class RolapSchemaReader implements SchemaReader {
             return childLevel != null &&
                     role.getAccess(childLevel) != Access.NONE;
         }
+    }
+
+    public boolean isVisible(Member member) {
+        return !member.isHidden() &&
+                role.canAccess(member);
     }
 }
 

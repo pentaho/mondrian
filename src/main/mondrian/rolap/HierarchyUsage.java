@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2003 Kana Software, Inc. and others.
+// (C) Copyright 2002-2004 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -11,10 +11,7 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.Hierarchy;
-import mondrian.olap.MondrianDef;
-import mondrian.olap.Util;
-import mondrian.olap.Level;
+import mondrian.olap.*;
 
 /**
  * A <code>HierarchyUsage</code> is the usage of a hierarchy in the context
@@ -99,14 +96,14 @@ abstract class HierarchyUsage
 		final boolean inFactTable = joinTable.equals(cube.getFact());
 		if (!inFactTable) {
 			if (joinExp == null) {
-				throw Util.newError(
-						"must specify primaryKey for hierarchy " +
-						hierarchy.getUniqueName());
+				throw MondrianResource.instance()
+                        .newMustSpecifyPrimaryKeyForHierarchy(
+                                hierarchy.getUniqueName());
 			}
 			if (foreignKey == null) {
-				throw Util.newError(
-						"must specify foreignKey for hierarchy " +
-						hierarchy.getUniqueName());
+                throw MondrianResource.instance()
+                        .newMustSpecifyPrimaryKeyForHierarchy(
+                                hierarchy.getUniqueName());
 			}
 		}
 	}

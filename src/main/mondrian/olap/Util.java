@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2003 Kana Software, Inc. and others.
+// (C) Copyright 2001-2004 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -345,18 +345,13 @@ public class Util extends mondrian.xom.XOMUtil
 	public static Member lookupMemberChildByName(
 			SchemaReader reader, Member member, String memberName) {
 		Member[] children = reader.getMemberChildren(member);
-		String childName = member.getUniqueName() + ".[" + memberName + "]";
 		for (int i = 0; i < children.length; i++){
-			if (childName.equals(children[i].getUniqueName()) ||
-				childName.equals(removeCarriageReturn(children[i].getUniqueName()))) {
-				return children[i];
+            final Member child = children[i];
+            if (memberName.equals(child.getName())) {
+				return child;
 			}
 		}
 		return null;
-	}
-
-	private static String removeCarriageReturn(String s) {
-		return replace(s, "\r", "");
 	}
 
 	/**

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// (C) Copyright 2001-2004 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -43,7 +43,7 @@ public abstract class ConnectionBase implements Connection
 			Query q = parser.parseInternal(this, s, debug);
 			return q;
 		} catch (Throwable e) {
-			throw Util.newError(e, "Failed to parse query [" + s + "]");
+            throw MondrianResource.instance().newFailedToParseQuery(s, e);
 		}
 	}
 

@@ -1,24 +1,28 @@
 /*
- * Copyright 2003 by Alphablox Corp. All rights reserved.
- *
- * Created by gjohnson
- * Last change: $Modtime: $
- * Last author: $Author$
- * Revision: $Revision$
- */
+// $Id$
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// (C) Copyright 2003-2004 Julian Hyde
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+// Copyright 2003 by Alphablox Corp. All rights reserved.
+*/
 
 package mondrian.olap.fun;
 
-import java.util.regex.Pattern;
-import java.util.Iterator;
-
-import junit.framework.TestCase;
 import junit.framework.Assert;
-import junit.framework.TestSuite;
-import junit.framework.Test;
-import mondrian.test.FoodMartTestCase;
+import junit.framework.TestCase;
 import mondrian.olap.*;
+import mondrian.test.FoodMartTestCase;
 
+/**
+ * <code>FunctionTest</code> tests the functions defined in
+ * {@link BuiltinFunTable}.
+ *
+ * @author gjohnson
+ * @version $Id$
+ */
 public class FunctionTest extends TestCase {
     static final String nl = System.getProperty("line.separator");
     private static final String months = "[Time].[1997].[Q1].[1]" + nl +
@@ -1318,10 +1322,9 @@ public class FunctionTest extends TestCase {
                 "");
     }
 
-
     public void testSetContainingLevelFails() {
         mTest.assertAxisThrows("[Store].[Store City]",
-                "no function matches signature '{<Level>}'");
+                "No function matches signature '{<Level>}'");
     }
 
     public void testBug715177() {

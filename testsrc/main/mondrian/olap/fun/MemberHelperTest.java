@@ -1,11 +1,13 @@
 /*
- * Copyright 2003 by Alphablox Corp. All rights reserved.
- *
- * Created by gjohnson
- * Last change: $Modtime: $
- * Last author: $Author$
- * Revision: $Revision$
- */
+// $Id$
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// (C) Copyright 2004-2004 Julian Hyde
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+// Copyright 2003 by Alphablox Corp. All rights reserved.
+*/
 
 package mondrian.olap.fun;
 
@@ -14,6 +16,12 @@ import java.io.PrintWriter;
 import junit.framework.TestCase;
 import mondrian.olap.*;
 
+/**
+ * <code>MemberHelperTest</code> tests {@link MemberHelper}.
+ *
+ * @author gjohnson
+ * @version $Id$
+ */
 public class MemberHelperTest extends TestCase {
     public MemberHelperTest(String name) {
         super(name);
@@ -102,163 +110,167 @@ public class MemberHelperTest extends TestCase {
         }
 
         public Member[] getAncestorMembers() {
-            return new Member[0];  //To change body of implemented methods use File | Settings | File Templates.
+            return new Member[0];
         }
 
         public String getCaption() {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
+            return null;
         }
 
         public Hierarchy getHierarchy() {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
+            return null;
         }
 
         public Level getLevel() {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
+            return null;
         }
 
         public int getMemberType() {
-            return 0;  //To change body of implemented methods use File | Settings | File Templates.
+            return 0;
         }
 
         public int getOrdinal() {
-            return 0;  //To change body of implemented methods use File | Settings | File Templates.
+            return 0;
         }
 
         public Member getParentMember() {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
+            return null;
         }
 
         public String getParentUniqueName() {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
+            return null;
         }
 
         public Property[] getProperties() {
-            return new Property[0];  //To change body of implemented methods use File | Settings | File Templates.
+            return new Property[0];
         }
 
         public Object getPropertyValue(String propertyName) {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
+            return null;
         }
 
         public boolean isAll() {
-            return false;  //To change body of implemented methods use File | Settings | File Templates.
+            return false;
         }
 
         public boolean isCalculated() {
-            return false;  //To change body of implemented methods use File | Settings | File Templates.
+            return false;
         }
 
         public boolean isCalculatedInQuery() {
-            return false;  //To change body of implemented methods use File | Settings | File Templates.
+            return false;
         }
 
         public boolean isChildOrEqualTo(Member member) {
-            return false;  //To change body of implemented methods use File | Settings | File Templates.
+            return false;
         }
 
         public boolean isMeasure() {
-            return false;  //To change body of implemented methods use File | Settings | File Templates.
+            return false;
         }
 
         public boolean isNull() {
-            return false;  //To change body of implemented methods use File | Settings | File Templates.
+            return false;
         }
 
         public void setName(String name) {
-            //To change body of implemented methods use File | Settings | File Templates.
+
         }
 
         public void setProperty(String name, Object value) {
-            //To change body of implemented methods use File | Settings | File Templates.
+
         }
 
         public void accept(Visitor visitor) {
-            //To change body of implemented methods use File | Settings | File Templates.
+
         }
 
         public void childrenAccept(Visitor visitor) {
-            //To change body of implemented methods use File | Settings | File Templates.
+
         }
 
         public String getDescription() {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
+            return null;
         }
 
         public String getName() {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
+            return null;
         }
 
         public String getQualifiedName() {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
+            return null;
         }
 
         public String getUniqueName() {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
+            return null;
         }
 
         public OlapElement lookupChild(SchemaReader schemaReader, String s) {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
+            return null;
         }
 
         public void unparse(PrintWriter pw) {
-            //To change body of implemented methods use File | Settings | File Templates.
+
         }
 
         public int addAtPosition(Exp e, int iPosition) {
-            return 0;  //To change body of implemented methods use File | Settings | File Templates.
+            return 0;
         }
 
         public Object clone() {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
+            return null;
         }
 
         public boolean dependsOn(Dimension dimension) {
-            return false;  //To change body of implemented methods use File | Settings | File Templates.
+            return false;
         }
 
         public Object evaluate(Evaluator evaluator) {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
+            return null;
         }
 
         public Object evaluateScalar(Evaluator evaluator) {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
+            return null;
         }
 
         public Dimension getDimension() {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
+            return null;
         }
 
         public int getType() {
-            return 0;  //To change body of implemented methods use File | Settings | File Templates.
+            return 0;
         }
 
         public boolean isElement() {
-            return false;  //To change body of implemented methods use File | Settings | File Templates.
+            return false;
         }
 
         public boolean isEmptySet() {
-            return false;  //To change body of implemented methods use File | Settings | File Templates.
+            return false;
         }
 
         public boolean isMember() {
-            return false;  //To change body of implemented methods use File | Settings | File Templates.
+            return false;
         }
 
         public boolean isSet() {
-            return false;  //To change body of implemented methods use File | Settings | File Templates.
+            return false;
         }
 
         public Exp resolve(Exp.Resolver resolver) {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
+            return null;
         }
 
         public boolean usesDimension(Dimension dimension) {
-            return false;  //To change body of implemented methods use File | Settings | File Templates.
+            return false;
         }
 
         public int compareTo(Object o) {
-            return 0;  //To change body of implemented methods use File | Settings | File Templates.
+            return 0;
+        }
+
+        public boolean isHidden() {
+            return false;
         }
     }
 }

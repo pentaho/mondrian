@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2004 Kana Software, Inc. and others.
+// (C) Copyright 2001-2004 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -45,7 +45,7 @@ class RolapLevel extends LevelBase
 	/** Value which indicates a null parent in a parent-child hierarchy. */
 	String nullParentValue;
     /** Condition under which members are hidden. */
-    private final HideMemberCondition hideMemberCondition;
+    final HideMemberCondition hideMemberCondition;
 
     /**
 	 * Creates a level.
@@ -243,15 +243,19 @@ class RolapLevel extends LevelBase
         private HideMemberCondition(String name, int ordinal) {
             super(name, ordinal, null);
         }
+
+        public static final int NeverORDINAL = 0;
         /** A member always appears. */
         public static final HideMemberCondition Never =
-                new HideMemberCondition("Never", 0);
+                new HideMemberCondition("Never", NeverORDINAL);
+        public static final int IfBlankNameORDINAL = 1;
         /** A member doesn't appear if its name is null or empty. */
         public static final HideMemberCondition IfBlankName =
-                new HideMemberCondition("IfBlankName", 1);
+                new HideMemberCondition("IfBlankName", IfBlankNameORDINAL);
+        public static final int IfParentsNameORDINAL = 2;
         /** A member appears unless its name matches its parent's. */
         public static final HideMemberCondition IfParentsName =
-                new HideMemberCondition("IfParentsName", 2);
+                new HideMemberCondition("IfParentsName", IfParentsNameORDINAL);
         public static final EnumeratedValues enumeration =
                 new EnumeratedValues(
                         new HideMemberCondition[] {

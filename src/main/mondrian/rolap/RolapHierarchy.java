@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2003 Kana Software, Inc. and others.
+// (C) Copyright 2001-2004 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -25,8 +25,11 @@ import java.util.List;
  */
 class RolapHierarchy extends HierarchyBase
 {
-	/** The raw member reader. For a member reader which incorporates access
-	 * control, call {@link #getMemberReader(Role)}. */
+	/**
+     * The raw member reader. For a member reader which incorporates access
+	 * control and deals with hidden members (if the hierarchy is ragged), use
+     * {@link #getMemberReader(Role)}.
+     */
 	MemberReader memberReader;
 	MondrianDef.Hierarchy xmlHierarchy;
 	private RolapMember defaultMember;
@@ -59,18 +62,21 @@ class RolapHierarchy extends HierarchyBase
 			this.uniqueName = Util.makeFqName(name); // e.g. "[Time.Weekly]"
 		}
 		if (hasAll) {
-			Util.discard(newLevel("(All)", RolapLevel.ALL | RolapLevel.UNIQUE));
+			Util.discard(newLevel("(All)",
+                    RolapLevel.ALL | RolapLevel.UNIQUE));
 			this.allMemberName = "All " + name + "s";
 		}
 	}
 
-	/**
-	 * @param cube optional
-	 */
-	RolapHierarchy(
-			RolapCube cube, RolapDimension dimension,
-			MondrianDef.Hierarchy xmlHierarchy,
-			MondrianDef.CubeDimension xmlCubeDimension)
+    /**
+     * Creates a <code>RolapHierarchy</code>.
+     *
+     * @param cube Cube this hierarchy belongs to, or null if this is a shared
+     *     hierarchy
+     */
+    RolapHierarchy(RolapCube cube, RolapDimension dimension,
+            MondrianDef.Hierarchy xmlHierarchy,
+            MondrianDef.CubeDimension xmlCubeDimension)
 	{
 		this(dimension, xmlHierarchy.name, xmlHierarchy.hasAll.booleanValue());
 		if (xmlHierarchy.relation == null &&
@@ -94,7 +100,8 @@ class RolapHierarchy extends HierarchyBase
 				final MondrianDef.Level xmlLevel = xmlHierarchy.levels[i];
 				if (xmlLevel.getKeyExp() == null &&
 						xmlHierarchy.memberReaderClass == null) {
-					throw Util.newError("Level '" + xmlLevel.name + "' must have a name expression (a 'column' attribute or an <Expression> child)");
+					throw MondrianResource.instance()
+                            .newLevelMustHaveNameExpression(xmlLevel.name);
 				}
 				levels[i + 1] = new RolapLevel(this, i + 1, xmlLevel);
 			}
@@ -338,20 +345,40 @@ class RolapHierarchy extends HierarchyBase
 	 * @post return != null
 	 */
 	MemberReader getMemberReader(Role role) {
-		final int access = role.getAccess(this);
-		switch (access) {
+        final int access = role.getAccess(this);
+        switch (access) {
 		case Access.NONE:
-			throw Util.newInternal("Illegal access to members of hierarchy " + this);
+			throw Util.newInternal("Illegal access to members of hierarchy " +
+                    this);
 		case Access.ALL:
-			return memberReader;
+            if (isRagged()) {
+                return new RestrictedMemberReader(memberReader, role);
+            } else {
+                return memberReader;
+            }
 		case Access.CUSTOM:
 			return new RestrictedMemberReader(memberReader, role);
 		default:
-			throw Util.newInternal("Bad case " + access);
+			throw Access.instance().badValue(access);
 		}
 	}
 
-	/**
+    /**
+     * A hierarchy is ragged if it contains one or more levels with hidden
+     * members.
+     */
+    boolean isRagged() {
+        for (int i = 0; i < levels.length; i++) {
+            RolapLevel level = (RolapLevel) levels[i];
+            if (level.hideMemberCondition !=
+                    RolapLevel.HideMemberCondition.Never) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
 	 * Returns an expression which will compute a member's value by aggregating
 	 * its children.
 	 *

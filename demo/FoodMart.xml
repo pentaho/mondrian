@@ -5,7 +5,7 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == Copyright (C) 2000-2003 Kana Software, Inc. and others.
+  == (C) Copyright 2000-2004 Kana Software, Inc. and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   ==
@@ -312,6 +312,107 @@ CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)
 		formula="(employees.currentmember.datamember, [Measures].[Org Salary])"/>
 	<CalculatedMember name="Avg Salary" dimension="[Measures]" formatString="Currency"
 		formula="[Measures].[Org Salary]/[Measures].[Number of Employees]"/>
+</Cube>
+
+<!-- Cube with one ragged hierarchy (otherwise the same as the "Sales"
+     cube). -->
+<Cube name="Sales Ragged">
+	<Table name="sales_fact_1997"/>
+	<Dimension name="Store" foreignKey="store_id">
+		<Hierarchy hasAll="true" primaryKey="store_id">
+			<Table name="store_ragged"/>
+			<Level name="Store Country" column="store_country" uniqueMembers="true" hideMemberIf="Never"/>
+			<Level name="Store State" column="store_state" uniqueMembers="true" hideMemberIf="IfParentsName"/>
+			<Level name="Store City" column="store_city" uniqueMembers="false" hideMemberIf="IfBlankName"/>
+			<Level name="Store Name" column="store_name" uniqueMembers="true" hideMemberIf="Never">
+				<Property name="Store Type" column="store_type"/>
+				<Property name="Store Manager" column="store_manager"/>
+				<Property name="Store Sqft" column="store_sqft" type="Numeric"/>
+				<Property name="Grocery Sqft" column="grocery_sqft" type="Numeric"/>
+				<Property name="Frozen Sqft" column="frozen_sqft" type="Numeric"/>
+				<Property name="Meat Sqft" column="meat_sqft" type="Numeric"/>
+				<Property name="Has coffee bar" column="coffee_bar" type="Boolean"/>
+				<Property name="Street address" column="store_street_address" type="String"/>
+			</Level>
+		</Hierarchy>
+	</Dimension>
+
+	<DimensionUsage name="Store Size in SQFT" source="Store Size in SQFT" foreignKey="store_id"/>
+	<DimensionUsage name="Store Type" source="Store Type" foreignKey="store_id"/>
+	<DimensionUsage name="Time" source="Time" foreignKey="time_id"/>
+	<DimensionUsage name="Product" source="Product" foreignKey="product_id"/>
+	<Dimension name="Promotion Media" foreignKey="promotion_id">
+		<Hierarchy hasAll="true" allMemberName="All Media" primaryKey="promotion_id">
+			<Table name="promotion"/>
+			<Level name="Media Type" column="media_type" uniqueMembers="true"/>
+		</Hierarchy>
+	</Dimension>
+	<Dimension name="Promotions" foreignKey="promotion_id">
+		<Hierarchy hasAll="true" allMemberName="All Promotions" primaryKey="promotion_id">
+			<Table name="promotion"/>
+			<Level name="Promotion Name" column="promotion_name" uniqueMembers="true"/>
+		</Hierarchy>
+	</Dimension>
+	<Dimension name="Customers" foreignKey="customer_id">
+		<Hierarchy hasAll="true" allMemberName="All Customers" primaryKey="customer_id">
+			<Table name="customer"/>
+			<Level name="Country" column="country" uniqueMembers="true"/>
+			<Level name="State Province" column="state_province" uniqueMembers="true"/>
+			<Level name="City" column="city" uniqueMembers="false"/>
+			<Level name="Name" uniqueMembers="true">
+				<KeyExpression>
+					<SQL dialect="oracle">
+"fname" || ' ' || "lname"
+					</SQL>
+					<SQL dialect="access">
+fname + ' ' + lname
+					</SQL>
+					<SQL dialect="postgres">
+"fname" || ' ' || "lname"
+					</SQL>
+					<SQL dialect="mysql">
+CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)
+					</SQL>
+					<SQL dialect="generic">
+"lname"
+					</SQL>
+				</KeyExpression>
+				<Property name="Gender" column="gender"/>
+				<Property name="Marital Status" column="marital_status"/>
+				<Property name="Education" column="education"/>
+				<Property name="Yearly Income" column="yearly_income"/>
+			</Level>
+		</Hierarchy>
+	</Dimension>
+	<Dimension name="Education Level" foreignKey="customer_id">
+		<Hierarchy hasAll="true" primaryKey="customer_id">
+			<Table name="customer"/>
+			<Level name="Education Level" column="education" uniqueMembers="true"/>
+		</Hierarchy>
+	</Dimension>
+	<Dimension name="Gender" foreignKey="customer_id">
+		<Hierarchy hasAll="true" allMemberName="All Gender" primaryKey="customer_id">
+			<Table name="customer"/>
+			<Level name="Gender" column="gender" uniqueMembers="true"/>
+		</Hierarchy>
+	</Dimension>
+	<Dimension name="Marital Status" foreignKey="customer_id">
+		<Hierarchy hasAll="true" allMemberName="All Marital Status" primaryKey="customer_id">
+			<Table name="customer"/>
+			<Level name="Marital Status" column="marital_status" uniqueMembers="true"/>
+		</Hierarchy>
+	</Dimension>
+	<Dimension name="Yearly Income" foreignKey="customer_id">
+		<Hierarchy hasAll="true" primaryKey="customer_id">
+			<Table name="customer"/>
+			<Level name="Yearly Income" column="yearly_income" uniqueMembers="true"/>
+		</Hierarchy>
+	</Dimension>
+	<Measure name="Unit Sales" column="unit_sales" aggregator="sum" formatString="Standard"/>
+	<Measure name="Store Cost" column="store_cost" aggregator="sum" formatString="#,###.00"/>
+	<Measure name="Store Sales" column="store_sales" aggregator="sum" formatString="#,###.00"/>
+	<Measure name="Sales Count" column="product_id" aggregator="count" formatString="#,###"/>
+	<Measure name="Customer Count" column="customer_id" aggregator="distinct count" formatString="#,###"/>
 </Cube>
 
 <VirtualCube name="Warehouse and Sales">

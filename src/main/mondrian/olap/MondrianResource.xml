@@ -8,7 +8,7 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == (C) Copyright 2000-2002 Kana Software, Inc. and others.
+  == (C) Copyright 2000-2004 Kana Software, Inc. and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   ==
@@ -69,6 +69,10 @@
 
 <exception id="350010" name="MdxFatalError">
     <text>MDX parser cannot recover from previous error(s)</text>
+</exception>
+
+<exception id="350015" name="FailedToParseQuery">
+    <text>Failed to parse query ''{0}''</text>
 </exception>
 
 <exception id="350020" name="MdxError">
@@ -255,6 +259,14 @@
     <text>Show/hide empty cells operation on axis ''{0,number}'' is not supported.</text>
 </exception>
 
+<exception id="350430" name="NoFunctionMatchesSignature">
+    <text>No function matches signature ''{0}''</text>
+</exception>
+
+<exception id="350440" name="MoreThanOneFunctionMatchesSignature">
+    <text>More than one function matches signature ''{0}''</text>
+</exception>
+
 <!-- ====================================================================== -->
 <!-- Catalog errors -->
 
@@ -265,6 +277,19 @@
 <exception id="400030" name="TimeLevelInNonTimeHierarchy">
     <text>Level ''{0}'' does not belong to a time hierarchy, so its level-type must be ''Standard''.</text>
 </exception>
+
+<exception id="400040" name="MustSpecifyPrimaryKeyForHierarchy">
+    <text>Must specify a primary key for hierarchy ''{0}''.</text>
+</exception>
+
+<exception id="400050" name="MustSpecifyForeignKeyForHierarchy">
+    <text>Must specify a foreign key for hierarchy ''{0}''.</text>
+</exception>
+
+<exception id="400060" name="LevelMustHaveNameExpression">
+    <text>Level ''{0}}'' must have a name expression (a ''column'' attribute or an &lt;Expression&gt; child</text>
+</exception>
+
 
 
 <!-- End of last error section ============================================ -->

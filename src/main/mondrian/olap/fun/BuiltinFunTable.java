@@ -432,17 +432,16 @@ public class BuiltinFunTable extends FunTable {
 		}
 		switch (matchCount) {
 		case 0:
-			throw Util.newInternal("no function matches signature '" +
-                    signature + "'");
+			throw MondrianResource.instance().newNoFunctionMatchesSignature(
+                    signature);
 		case 1:
             final String matchKey = makeResolverKey(matchDef.getName(),
                     matchDef.getSyntax());
             Util.assertTrue(matchKey.equals(key), matchKey);
 			return matchDef;
 		default:
-			throw Util.newInternal(
-                    "more than one function matches signature '" + signature +
-					"'");
+			throw MondrianResource.instance()
+                    .newMoreThanOneFunctionMatchesSignature(signature);
 		}
 	}
 
@@ -670,9 +669,13 @@ public class BuiltinFunTable extends FunTable {
 					return member;
 				}
 				Member[] members = member.getAncestorMembers();
+                final SchemaReader schemaReader = evaluator.getSchemaReader();
 				for (int i = 0; i < members.length; i++) {
-					if (members[i].getLevel().equals(level))
-						return members[i];
+                    final Member ancestorMember = members[i];
+                    if (ancestorMember.getLevel().equals(level) &&
+                            schemaReader.isVisible(ancestorMember)) {
+						return ancestorMember;
+                    }
 				}
 				return member.getHierarchy().getNullMember(); // not found
 			}
@@ -823,13 +826,15 @@ public class BuiltinFunTable extends FunTable {
 				Member member = getMemberArg(evaluator, args, 0, true);
 				Member parent = member.getParentMember();
 				Member[] children;
-				if (parent == null) {
+                final SchemaReader schemaReader = evaluator.getSchemaReader();
+                if (parent == null) {
 					if (member.isNull()) {
 						return member;
 					}
-					children = evaluator.getSchemaReader().getHierarchyRootMembers(member.getHierarchy());
+					children = schemaReader.getHierarchyRootMembers(
+                            member.getHierarchy());
 				} else {
-					children = evaluator.getSchemaReader().getMemberChildren(parent);
+					children = schemaReader.getMemberChildren(parent);
 				}
 				return children[children.length - 1];
 			}
@@ -862,9 +867,8 @@ public class BuiltinFunTable extends FunTable {
 		define(new FunDefBase("Parent", "<Member>.Parent", "Returns the parent of a member.", "pmm") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Member member = getMemberArg(evaluator, args, 0, true);
-				Member parent = member.getParentMember();
-				if (parent == null ||
-						!evaluator.getSchemaReader().getRole().canAccess(parent)) {
+				Member parent = evaluator.getSchemaReader().getMemberParent(member);
+				if (parent == null) {
 					parent = member.getHierarchy().getNullMember();
 				}
 				return parent;
@@ -1265,65 +1269,47 @@ public class BuiltinFunTable extends FunTable {
 					}
 				}
 				if (args.length >= 3) {
-					flag = getLiteralArg(args, 2, DescendantsFlags.SELF, DescendantsFlags.instance, dummyFunDef);
+					flag = getLiteralArg(args, 2, DescendantsFlags.SELF,
+                            DescendantsFlags.instance, dummyFunDef);
 				}
-				final int depthLimitFinal = depthLimit < 0 ? Integer.MAX_VALUE : depthLimit;
+				final int depthLimitFinal = depthLimit < 0 ?
+                        Integer.MAX_VALUE : depthLimit;
 				final int flagFinal = flag;
 				final boolean depthSpecifiedFinal = depthSpecified;
 				return new FunDefBase(dummyFunDef) {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Member member = getMemberArg(evaluator, args, 0, true);
-						Level level;
-						if (depthSpecifiedFinal) {
-							level = null;
-						} else if (args.length > 1) {
-							level = getLevelArg(evaluator, args, 1, true);
+                        final boolean self =
+                                (flagFinal & DescendantsFlags.SELF) ==
+                                DescendantsFlags.SELF;
+                        final boolean after =
+                                (flagFinal & DescendantsFlags.AFTER) ==
+                                DescendantsFlags.AFTER;
+                        final boolean before =
+                                (flagFinal & DescendantsFlags.BEFORE) ==
+                                DescendantsFlags.BEFORE;
+                        List result = new ArrayList();
+                        final SchemaReader schemaReader = evaluator.getSchemaReader();
+                        if (depthSpecifiedFinal) {
+                            // Expand member to its children, until we get to the right
+                            // level. We assume that all children are in the same
+                            // level.
+                            descendantsByDepth(member, result, schemaReader,
+                                    depthLimitFinal, self, before, after);
 						} else {
-							level = member.getLevel();
-						}
-						// Expand member to its children, until we get to the right
-						// level. We assume that all children are in the same
-						// level.
-						final SchemaReader schemaReader = evaluator.getSchemaReader();
-						Member[] children = {member};
-						int depth = 0;
-						List result = new ArrayList();
-						while (true) {
-							final int currentDepth;
-							final int targetDepth;
-							if (level == null) {
-								currentDepth = depth++;
-								targetDepth = depthLimitFinal;
-							} else {
-								final Member firstChild = children[0];
-								currentDepth = firstChild.getLevel().getDepth();
-								targetDepth = level.getDepth();
-							}
-							if (currentDepth == targetDepth) {
-								if ((flagFinal & DescendantsFlags.SELF) == DescendantsFlags.SELF) {
-									Util.addAll(result, children);
-								}
-								if ((flagFinal & DescendantsFlags.AFTER) != DescendantsFlags.AFTER) {
-									break; // no more results after this level
-								}
-							} else if (currentDepth < targetDepth) {
-								if ((flagFinal & DescendantsFlags.BEFORE) == DescendantsFlags.BEFORE) {
-									Util.addAll(result, children);
-								}
-							} else {
-								if ((flagFinal & DescendantsFlags.AFTER) == DescendantsFlags.AFTER) {
-									Util.addAll(result, children);
-								} else {
-									break; // no more results after this level
-								}
-							}
-
-							children = schemaReader.getMemberChildren(children);
-							if (children.length == 0) {
-								break;
-							}
-						}
-						return result;
+                            final Level level;
+                            if (args.length > 1) {
+                                level = getLevelArg(evaluator, args, 1, true);
+                            } else {
+                                level = member.getLevel();
+                            }
+                            // Expand member to its children, until we get to the right
+                            // level. We assume that all children are in the same
+                            // level.
+                            descendantsByLevel(schemaReader, member, level,
+                                    result, self, before, after);
+                        }
+                        return result;
 					}
 				};
 			}
@@ -2499,6 +2485,71 @@ public class BuiltinFunTable extends FunTable {
                     }
                 }));
 	}
+
+    private static void descendantsByLevel(final SchemaReader schemaReader,
+            final Member member, final Level level, final List result,
+            final boolean self, final boolean before, final boolean after) {
+        Member[] children = {member};
+        while (true) {
+            final Member firstChild = children[0];
+            final int currentDepth = firstChild.getLevel().getDepth();
+            final int targetDepth = level.getDepth();
+            if (currentDepth == targetDepth) {
+                if (self) {
+                    Util.addAll(result, children);
+                }
+                if (!after) {
+                    break; // no more results after this level
+                }
+            } else if (currentDepth < targetDepth) {
+                if (before) {
+                    Util.addAll(result, children);
+                }
+            } else {
+                if (after) {
+                    Util.addAll(result, children);
+                } else {
+                    break; // no more results after this level
+                }
+            }
+
+            children = schemaReader.getMemberChildren(children);
+            if (children.length == 0) {
+                break;
+            }
+        }
+    }
+
+    private static void descendantsByDepth(Member member, List result,
+            final SchemaReader schemaReader, final int depthLimitFinal,
+            final boolean self, final boolean before, final boolean after) {
+        Member[] children = {member};
+        for (int depth = 0;; ++depth) {
+            if (depth == depthLimitFinal) {
+                if (self) {
+                    Util.addAll(result, children);
+                }
+                if (!after) {
+                    break; // no more results after this level
+                }
+            } else if (depth < depthLimitFinal) {
+                if (before) {
+                    Util.addAll(result, children);
+                }
+            } else {
+                if (after) {
+                    Util.addAll(result, children);
+                } else {
+                    break; // no more results after this level
+                }
+            }
+
+            children = schemaReader.getMemberChildren(children);
+            if (children.length == 0) {
+                break;
+            }
+        }
+    }
 
     private static boolean isConstantHierarchy(Exp typeArg) {
 		if (typeArg instanceof Hierarchy) {

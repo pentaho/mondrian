@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2003 Kana Software, Inc. and others.
+// (C) Copyright 2001-2004 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -208,6 +208,29 @@ class RolapMember extends MemberBase
 
 	}
 
+    public boolean isHidden() {
+        final RolapLevel rolapLevel = (RolapLevel) level;
+        switch (rolapLevel.hideMemberCondition.ordinal_) {
+        case RolapLevel.HideMemberCondition.NeverORDINAL:
+            return false;
+        case RolapLevel.HideMemberCondition.IfBlankNameORDINAL: {
+            final String name = getName();
+            return name == null || name.equals("");
+        }
+        case RolapLevel.HideMemberCondition.IfParentsNameORDINAL: {
+            final Member parentMember = getParentMember();
+            if (parentMember == null) {
+                return false;
+            }
+            final String parentName = parentMember.getName();
+            final String name = getName();
+            return (parentName == null ? "" : parentName).equals(
+                    name == null ? "" : name);
+        }
+        default:
+            throw rolapLevel.hideMemberCondition.unexpected();
+        }
+    }
 }
 
 

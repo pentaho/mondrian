@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2003 Kana Software, Inc. and others.
+// Copyright 2002-2004 (C) Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -156,6 +156,9 @@ public class Role {
 		return toAccess(access);
 	}
 
+    /**
+     * Represents the access that a role has to a particular hierarchy.
+     */
 	public static class HierarchyAccess {
 		private Hierarchy hierarchy;
 		private Level topLevel;
@@ -163,11 +166,18 @@ public class Role {
 		private Level bottomLevel;
 		private HashMap memberGrants = new HashMap();
 
-		HierarchyAccess(Hierarchy hierarchy, int access, Level topLevel, Level bottomLevel) {
+        /**
+         * Creates a <code>HierarchyAccess</code>
+         *
+         * @pre Access.instance().isValid(access)
+         */
+		HierarchyAccess(Hierarchy hierarchy, int access, Level topLevel,
+                Level bottomLevel) {
 			this.hierarchy = hierarchy;
 			this.access = access;
 			this.topLevel = topLevel;
 			this.bottomLevel = bottomLevel;
+            Util.assertPrecondition(Access.instance().isValid(access));
 		}
 
 		public Object clone() {
