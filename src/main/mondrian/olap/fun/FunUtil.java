@@ -833,7 +833,8 @@ public class FunUtil extends Util {
 	}
 
 	static int compareHierarchically(Member m1, Member m2, boolean post) {
-		if (m1 == m2) {
+		//if (m1 == m2) {
+    if (m1.equals(m2)) {
 			return 0;
 		}
 		while (true) {
@@ -841,19 +842,22 @@ public class FunUtil extends Util {
 				levelDepth2 = m2.getLevel().getDepth();
 			if (levelDepth1 < levelDepth2) {
 				m2 = m2.getParentMember();
-				if (m1 == m2) {
+				//if (m1 == m2) {
+        if (m1.equals(m2)) {
 					return post ? 1 : -1;
 				}
 			} else if (levelDepth1 > levelDepth2) {
 				m1 = m1.getParentMember();
-				if (m1 == m2) {
+        //if (m1 == m2) {
+        if (m1.equals(m2)) {
 					return post ? -1 : 1;
 				}
 			} else {
 				Member prev1 = m1, prev2 = m2;
 				m1 = m1.getParentMember();
 				m2 = m2.getParentMember();
-				if (m1 == m2) {
+        //if (m1 == m2) {
+        if (m1.equals(m2)) {
 					// todo: use ordinal not caption
 					return FunUtil.compareValues(prev1.getCaption(), prev2.getCaption());
 				}
@@ -948,7 +952,8 @@ abstract class MemberComparator implements Comparator {
 	}
 
 	protected int compareHierarchicallyButSiblingsByValue(Member m1, Member m2) {
-		if (m1 == m2) {
+		//if (m1 == m2) {
+    if (m1.equals(m2)) {
 			return 0;
 		}
 		while (true) {
@@ -956,19 +961,22 @@ abstract class MemberComparator implements Comparator {
 				levelDepth2 = m2.getLevel().getDepth();
 			if (levelDepth1 < levelDepth2) {
 				m2 = m2.getParentMember();
-				if (m1 == m2) {
+				//if (m1 == m2) {
+          if (m1.equals(m2)) {
 					return -1;
 				}
 			} else if (levelDepth1 > levelDepth2) {
 				m1 = m1.getParentMember();
-				if (m1 == m2) {
+				//if (m1 == m2) {
+        if (m1.equals(m2)) {
 					return 1;
 				}
 			} else {
 				Member prev1 = m1, prev2 = m2;
 				m1 = m1.getParentMember();
 				m2 = m2.getParentMember();
-				if (m1 == m2) {
+				//if (m1 == m2) {
+        if (m1.equals(m2)) {
 					// including case where both parents are null
 					return compareByValue(prev1, prev2);
 				}
@@ -1066,13 +1074,15 @@ class HierarchicalArrayComparator extends ArrayExpComparator {
 				return c;
 			}
 			// compareHierarchicallyButSiblingsByValue imposes a total order
-			Util.assertTrue(m1 == m2);
+			//Util.assertTrue(m1 == m2);
+      Util.assertTrue(m1.equals(m2));
 			evaluator.setContext(m1);
 		}
 		return 0;
 	}
 	protected int compareHierarchicallyButSiblingsByValue(Member m1, Member m2) {
-		if (m1 == m2) {
+		//if (m1 == m2) {
+    if (m1.equals(m2)) {
 			return 0;
 		}
 		while (true) {
@@ -1080,19 +1090,22 @@ class HierarchicalArrayComparator extends ArrayExpComparator {
 				levelDepth2 = m2.getLevel().getDepth();
 			if (levelDepth1 < levelDepth2) {
 				m2 = m2.getParentMember();
-				if (m1 == m2) {
+				//if (m1 == m2) {
+          if (m1.equals(m2)) {
 					return -1;
 				}
 			} else if (levelDepth1 > levelDepth2) {
 				m1 = m1.getParentMember();
-				if (m1 == m2) {
+				//if (m1 == m2) {
+        if (m1.equals(m2)) {
 					return 1;
 				}
 			} else {
 				Member prev1 = m1, prev2 = m2;
 				m1 = m1.getParentMember();
 				m2 = m2.getParentMember();
-				if (m1 == m2) {
+				//if (m1 == m2) {
+        if (m1.equals(m2)) {
 					// including case where both parents are null
 					int c = compareByValue(prev1, prev2);
 					if (c == 0) {
@@ -1153,7 +1166,8 @@ class HierarchizeArrayComparator extends ArrayComparator {
 				return c;
 			}
 			// compareHierarchically imposes a total order
-			Util.assertTrue(m1 == m2);
+			//Util.assertTrue(m1 == m2);
+      Util.assertTrue(m1.equals(m2));
 		}
 		return 0;
 	}
