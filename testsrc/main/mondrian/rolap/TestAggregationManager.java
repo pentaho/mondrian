@@ -9,24 +9,27 @@
 //
 // jhyde, 28 September, 2002
 */
-package mondrian.rolap.agg;
+package mondrian.rolap;
+
+import java.lang.reflect.Proxy;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.sql.DataSource;
 
 import junit.framework.TestCase;
 import mondrian.olap.Connection;
 import mondrian.olap.Cube;
 import mondrian.olap.Member;
 import mondrian.olap.Util;
-import mondrian.rolap.RolapAggregationManager;
-import mondrian.rolap.RolapStar;
+import mondrian.rolap.agg.AggregationManager;
+import mondrian.rolap.agg.CellRequest;
 import mondrian.test.TestContext;
 import mondrian.util.DelegatingInvocationHandler;
-
-import javax.sql.DataSource;
-import java.lang.reflect.Proxy;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 
 /**
  * Unit test for {@link AggregationManager}.
@@ -45,8 +48,10 @@ public class TestAggregationManager extends TestCase {
 		final RolapAggregationManager aggMan = AggregationManager.instance();
 		Object value = aggMan.getCellFromCache(request);
 		assertNull(value); // before load, the cell is not found
-		ArrayList pinnedSegments = new ArrayList();
-		aggMan.loadAggregations(createBatch(new CellRequest[] {request}), pinnedSegments);
+		Set pinnedSegments = new HashSet();
+		FastBatchingCellReader fbcr = new FastBatchingCellReader(getCube("Sales"), pinnedSegments);
+		fbcr.recordCellRequest(request);
+		fbcr.loadAggregations();
 		value = aggMan.getCellFromCache(request); // after load, cell is found
 		assertTrue(value instanceof Number);
 		assertEquals(131558, ((Number) value).intValue());
@@ -138,17 +143,6 @@ public class TestAggregationManager extends TestCase {
 		assertTrue(s, s.indexOf(pattern) >= 0);
 	}
 
-	private ArrayList createBatch(CellRequest[] requests) {
-		ArrayList batches = new ArrayList();
-		RolapAggregationManager.Batch batch = new RolapAggregationManager.Batch();
-		batches.add(batch);
-		for (int i = 0; i < requests.length; i++) {
-			CellRequest request = requests[i];
-			batch.requests.add(request);
-		}
-		return batches;
-	}
-
 	/**
 	 * If a hierarchy lives in the fact table, we should not generate a join.
 	 */
@@ -171,7 +165,7 @@ public class TestAggregationManager extends TestCase {
 
 	private void assertRequestSql(CellRequest[] requests, final String pattern, final String trigger) {
 		final RolapAggregationManager aggMan = AggregationManager.instance();
-		ArrayList pinnedSegments = new ArrayList();
+		Set pinnedSegments = new HashSet();
 		RolapStar star = requests[0].getMeasure().table.star;
         String database = null;
 		try {
@@ -192,7 +186,10 @@ public class TestAggregationManager extends TestCase {
         star.setDataSource(dataSource);
 		Bomb bomb;
 		try {
-			aggMan.loadAggregations(createBatch(requests), pinnedSegments);
+			FastBatchingCellReader fbcr = new FastBatchingCellReader(getCube("Sales"), pinnedSegments);
+			for (int i = 0; i < requests.length; i++)
+				fbcr.recordCellRequest(requests[i]);
+			fbcr.loadAggregations();
 			bomb = null;
 		} catch (Bomb e) {
 			bomb = e;
@@ -240,6 +237,12 @@ public class TestAggregationManager extends TestCase {
 		return request;
 	}
 
+	private RolapCube getCube(final String cube) {
+		final Connection connection = TestContext.instance().getFoodMartConnection(false);
+		final boolean fail = true;
+		return (RolapCube) connection.getSchema().lookupCube(cube, fail);
+	}
+	
 
     public static class DataSourceHandler extends DelegatingInvocationHandler {
         private final DataSource dataSource;

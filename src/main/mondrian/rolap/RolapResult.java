@@ -227,97 +227,6 @@ class RolapResult extends ResultBase
 	}
 
 	/**
-	 * A <code>BatchingCellReader</code> doesn't really read cells: when asked
-	 * to look up the values of stored measures, it lies, and records the fact
-	 * that the value was asked for.  Later, we can look over the values which
-	 * are required, fetch them in an efficient way, and re-run the evaluation
-	 * with a real evaluator.
-	 *
-	 * <p>NOTE: When it doesn't know the answer, it lies by returning an error
-	 * object.  The calling code must be able to deal with that.</p>
-	 **/
-	private static class BatchingCellReader implements CellReader
-	{
-		RolapCube cube;
-		HashSet keys;
-		HashSet pinnedSegments;
-		ArrayList key; // contains [RolapMember 0, ..., RolapMember n - 1]
-
-		BatchingCellReader(RolapCube cube, HashSet pinnedSegments)
-		{
-			this.cube = cube;
-			this.keys = new HashSet();
-			this.pinnedSegments = pinnedSegments;
-			int dimensionCount = cube.getDimensions().length;
-			this.key = new ArrayList(dimensionCount);
-			for (int i = 0; i < dimensionCount; i++) {
-				this.key.add(null);
-			}
-		}
-
-        // implement CellReader
-		public Object get(Evaluator evaluator)
-		{
-			RolapMember[] currentMembers =
-				((RolapEvaluator) evaluator).currentMembers;
-			// try to retrieve a cell and simultaneously pin the segment which
-			// contains it
-			Object o = AggregationManager.instance().getCellFromCache(
-				currentMembers, pinnedSegments);
-			if (o == Boolean.TRUE) {
-				// Aggregation is being loaded. (todo: Use better value, or
-				// throw special exception)
-				return RolapUtil.valueNotReadyException;
-			}
-			if (o != null) {
-				return o;
-			}
-			// if there is no such cell, record that we need to fetch it, and
-			// return 'error'
-			for (int i = 0, count = currentMembers.length; i < count; i++) {
-				key.set(i, currentMembers[i]);
-			}
-			if (!keys.contains(key)) {
-				ArrayList clone = (ArrayList) key.clone();
-				keys.add(clone);
-			}
-			return RolapUtil.valueNotReadyException;
-		}
-
-		/**
-		 * Loads the aggregations which we will need. Writes the aggregations
-		 * it loads (and pins) into <code>pinned</code>; the caller must pass
-		 * this to {@link CachePool#unpin(Collection)}.
-		 *
-         * @return Whether any aggregations were loaded
-         *
-		 * <h3>Design discussion</h3>
-		 *
-		 * <p>Do we group them by (a) level, or (b) the underlying columns they
-		 * access.  I think the columns.
-		 *
-		 * <p>Maybe some or all of the group can be derived by rolling up.  We
-		 * should probably roll up if possible (the danger is that we end up
-		 * with a fragmented aggregation, which we hit many times).
-		 *
-		 * <p>If we roll up, do we also store?  I think so.  Then we can let the
-		 * caching policy kick in.  (It gets interesting if we roll up, but do
-		 * not store, part of an aggregation.)
-		 *
-		 * <p>For each group, extend the aggregation definition a bit, if it
-		 * will help us roll up later.
-		 **/
-		boolean loadAggregations() {
-            if (keys.isEmpty()) {
-                return false;
-            }
-			AggregationManager.instance().loadAggregations(keys, pinnedSegments);
-            keys.clear();
-            return true;
-		}
-	}
-
-	/**
 	 * An <code>AggregatingCellReader</code> reads cell values from the
 	 * {@link RolapAggregationManager}.
 	 **/
@@ -536,7 +445,7 @@ class RolapCell implements Cell
 	 */
 	public String getDrillThroughSQL(boolean extendedContext) {
         RolapAggregationManager aggregationManager = AggregationManager.instance();
-        CellRequest cellRequest = aggregationManager.makeRequest(
+        CellRequest cellRequest = RolapAggregationManager.makeRequest(
                 getEvaluator().currentMembers, extendedContext);
 		if (cellRequest == null) {
 			return null;

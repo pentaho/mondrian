@@ -20,7 +20,7 @@ import mondrian.olap.UtilTestCase;
 import mondrian.olap.fun.FunctionTest;
 import mondrian.rolap.RolapUtil;
 import mondrian.rolap.RolapConnectionTest;
-import mondrian.rolap.agg.TestAggregationManager;
+import mondrian.rolap.TestAggregationManager;
 import mondrian.util.ScheduleTest;
 import mondrian.xmla.XmlaTest;
 import mondrian.test.comp.ResultComparatorTest;

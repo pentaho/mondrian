@@ -33,44 +33,6 @@ import java.util.*;
  **/
 public abstract class RolapAggregationManager implements CellReader {
 
-	/**
-	 * Looks through a set of requests and loads aggregations
-	 * accordingly.
-	 *
-	 * @param keySet A set whose keys are {@link ArrayList}s
-	 *     which contain {@link mondrian.olap.Member}s
-	 * @param pinnedSegments Writes each loaded aggregation into here. The client must
-	 *     call {@link CachePool#unpin} on this list.
-	 **/
-	public void loadAggregations(Set keySet, Collection pinnedSegments)
-	{
-		RolapMember[] members = RolapUtil.emptyMemberArray;
-		Hashtable mapColumnSetToBatch = new Hashtable();
-		ArrayList batches = new ArrayList();
-		for (Iterator keys = keySet.iterator(); keys.hasNext(); ) {
-			ArrayList key = (ArrayList) keys.next();
-			members = (RolapMember[]) key.toArray(members);
-			CellRequest request = makeRequest(members, false);
-			if (request == null) {
-				continue; // invalid location -- ignore it
-			}
-			ArrayList columnList = request.getBatchKey();
-			Batch batch = (Batch) mapColumnSetToBatch.get(columnList);
-			if (batch == null) {
-				batch = new Batch();
-				mapColumnSetToBatch.put(columnList, batch);
-				batches.add(batch);
-			}
-			batch.requests.add(request);
-		}
-		loadAggregations(batches, pinnedSegments);
-		for (Iterator segmentIter = pinnedSegments.iterator(); segmentIter.hasNext();) {
-			Segment segment = (Segment) segmentIter.next();
-			segment.waitUntilLoaded();
-		}
-	}
-
-	public abstract void loadAggregations(ArrayList batches, Collection pinnedSegments);
 
 	/**
 	 * Creates a request to evaluate the cell identified by
@@ -83,7 +45,7 @@ public abstract class RolapAggregationManager implements CellReader {
      *   query for levels below each current member. This additional context
      *   makes the drill-through queries easier for humans to understand.
 	 **/
-	CellRequest makeRequest(RolapMember[] members, boolean extendedContext) {
+	static CellRequest makeRequest(RolapMember[] members, boolean extendedContext) {
 		if (!(members[0] instanceof RolapStoredMeasure)) {
 			return null;
 		}
@@ -209,10 +171,6 @@ public abstract class RolapAggregationManager implements CellReader {
 
 	public abstract String getDrillThroughSQL(CellRequest request);
 
-	public static class Batch
-	{
-		public ArrayList requests = new ArrayList();
-	}
 }
 
 // End RolapAggregationManager.java

@@ -23,18 +23,18 @@ import java.util.*;
 public class FastBatchingCellReader implements CellReader {
 
 	RolapCube cube;
-	HashSet pinnedSegments;
+	Set pinnedSegments;
 	Map batches = new HashMap();
 	RolapAggregationManager aggMgr = AggregationManager.instance();
 
-	FastBatchingCellReader(RolapCube cube, HashSet pinnedSegments) {
+	public FastBatchingCellReader(RolapCube cube, Set pinnedSegments) {
 		this.cube = cube;
 		this.pinnedSegments = pinnedSegments;
 	}
 
 	public Object get(Evaluator evaluator) {
 		RolapMember[] currentMembers = ((RolapEvaluator) evaluator).currentMembers;
-		CellRequest request = aggMgr.makeRequest(currentMembers, false);
+		CellRequest request = RolapAggregationManager.makeRequest(currentMembers, false);
 		if (request == null)
 			return Util.nullValue; // request out of bounds
 		// try to retrieve a cell and simultaneously pin the segment which
@@ -132,8 +132,7 @@ public class FastBatchingCellReader implements CellReader {
 			// distinct aggregations out.
 			while (true) {
 				// Scan for a measure based upon a distinct aggregation.
-				RolapStar.Measure distinctMeasure =
-					AggregationManager.getFirstDistinctMeasure(measuresList);
+				RolapStar.Measure distinctMeasure =	getFirstDistinctMeasure(measuresList);
 				if (distinctMeasure == null) {
 					break;
 				}
@@ -162,6 +161,23 @@ public class FastBatchingCellReader implements CellReader {
 			long t2 = System.currentTimeMillis();
 			//System.out.println("Batch.loadAggregation " + (t2 - t1));
 		}
+		
+	    /**
+	     * Returns the first measure based upon a distinct aggregation, or null if
+	     * there is none.
+	     * @param measuresList
+	     * @return
+	     */
+	    RolapStar.Measure getFirstDistinctMeasure(ArrayList measuresList) {
+	        for (int i = 0; i < measuresList.size(); i++) {
+	            RolapStar.Measure measure = (RolapStar.Measure) measuresList.get(i);
+	            if (measure.aggregator.distinct) {
+	                return measure;
+	            }
+	        }
+	        return null;
+	    }
+		
 	}
 
 }
