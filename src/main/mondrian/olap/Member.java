@@ -53,8 +53,6 @@ public interface Member extends OlapElement, Comparable {
 	 */
 	String getParentUniqueName();
 
-	String getCaption();
-
   	/**
   	 * Returns the type of member. Values are {@link #UNKNOWN_MEMBER_TYPE},
 	 * {@link #REGULAR_MEMBER_TYPE}, {@link #ALL_MEMBER_TYPE}, {@link

@@ -309,6 +309,11 @@ class SqlMemberSource implements MemberReader
                     null, (RolapLevel) hierarchy.getLevels()[0],
                     null, hierarchy.getAllMemberName(),
                     Member.ALL_MEMBER_TYPE);
+                // assign "all member" caption
+                if (hierarchy.xmlHierarchy.allMemberCaption != null && 
+                		hierarchy.xmlHierarchy.allMemberCaption.length() > 0)
+                	root.setCaption(hierarchy.xmlHierarchy.allMemberCaption );
+ 
                 root.ordinal = lastOrdinal++;
                 list.add(root);
             }

@@ -126,6 +126,15 @@ class RolapHierarchy extends HierarchyBase
                     .newHierarchyMustNotHaveMoreThanOneSource(getUniqueName());
         }
 		this.foreignKey = xmlCubeDimension.foreignKey;
+		if (xmlHierarchy.caption != null && xmlHierarchy.caption.length() > 0)
+			setCaption(xmlHierarchy.caption);
+		else {
+			// inherit caption from dimension, if there is a special assignment
+			String dimCaption = dimension.getCaption();
+			if (!dimension.getName().equals(dimCaption))
+				setCaption(dimCaption);
+		}
+
 	}
 
     public boolean equals(Object o) {

@@ -26,35 +26,36 @@
 <ol>
   <li><a href="#What_is_a_schema">What is a schema?</a></li>
   <li><a href="#Schema_files">Schema files</a></li>
-  <li><a href="#Cubes_and_dimensions">Cubes and dimensions</a></li>
-  <li><a href="#Star_schemas">Star schemas</a><ol>
-  <li><a href="#Shared_dimensions">Shared dimensions</a></li>
-  <li><a href="#Join_optimization">Join optimization</a></li>
-</ol>
-  </li>
-  <li><a href="#Advanced_logical_constructs">Advanced logical constructs</a><ol>
-    <li><a href="#Virtual_cubes">Virtual cubes</a></li>
-    <li><a href="#Shared_dimensions">Shared dimensions</a></li>
-    <li><a href="#Parent_child_hierarchies">Parent-child hierarchies</a></li>
-    <li><a href="#Member_properties">Member properties</a></li>
-  </ol>
-  </li>
-  <li><a href="#Advanced_physical_constructs">Advanced physical constructs</a><ol>
-    <li><a href="#Member_readers">Member readers</a></li>
-    <li><a href="#Cell_readers">Cell readers</a></li>
-    <li><a href="#Cell_formatter">Cell formatter</a></li>
-    <li><a href="#Member_formatter">Member formatter</a></li>
-  </ol>
-  </li>
-  <li><a href="#Access_control">Access-control</a><ol>
-  <li><a href="#Defining_roles">Defining a role</a></li>
-  <li><a href="#Setting_a_connections_role">Setting a connection's role</a></li>
-</ol>
-  </li>
-  <li><a href="#Other_stuff">Other stuff</a><ol>
+  <li><a href="#Cubes_and_dimensions">Logical model</a></li>
+  <li><a href="#Star_schemas">Star and snowflake schemas</a>
+  <ol>
+      <li><a href="#Shared_dimensions">Shared dimensions</a></li>
+      <li><a href="#Join_optimization">Join optimization</a></li>
+  </ol></li>
+  <li><a href="#Advanced_logical_constructs">Advanced logical constructs</a>
+  <ol>
+      <li><a href="#Virtual_cubes">Virtual cubes</a></li>
+      <li><a href="#Shared_dimensions">Shared dimensions</a></li>
+      <li><a href="#Parent_child_hierarchies">Parent-child hierarchies</a></li>
+      <li><a href="#Member_properties">Member properties</a></li>
+  </ol></li>
+  <li><a href="#Advanced_physical_constructs">Advanced physical constructs</a>
+  <ol>
+      <li><a href="#Member_readers">Member readers</a></li>
+      <li><a href="#Cell_readers">Cell readers</a></li>
+      <li><a href="#Cell_formatter">Cell formatter</a></li>
+      <li><a href="#Member_formatter">Member formatter</a></li>
+      <li><a href="#I18n">Internationalization</a></li>
+  </ol></li>
+  <li><a href="#Access_control">Access-control</a>
+  <ol>
+    <li><a href="#Defining_roles">Defining a role</a></li>
+    <li><a href="#Setting_a_connections_role">Setting a connection's role</a></li>
+  </ol></li>
+  <li><a href="#Other_stuff">Other stuff</a>
+  <ol>
   <li><a href="#Format_strings">Format strings</a></li>
-</ol>
-  </li>
+  </ol></li>
   <li><a href="#Appendix_A_XML_elements">Appendix A: XML elements</a></li>
 </ol>
 <h2><a name="What_is_a_schema">What is a schema?</a></h2>
@@ -539,7 +540,6 @@ interface mondrian.olap.CellFormatter</a></code>.</p>
 <h3><a name="Member_formatter">Member formatter</a></h3>
 <p>A member formatter attribute demotes a java class to format a member's display value
 returned by <code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/Member.html#getCaption()">getCaption()</a></code>.</p>
-<Level column="BUCHDAT" name="Buchungsdatum" uniqueMembers="false" formatter="com.tonbeller.bii.gwg.mondrian.MFBuchdat"/>
 <blockquote>
   <pre dir="ltr">&lt;<a href="#XML_Level">Level</a> column=&quot;column&quot; name=&quot;name&quot; formatter=&quot;com.foo.MyMemberFormatter&quot;&gt;</pre>
 </blockquote>
@@ -548,7 +548,31 @@ returned by <code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/Mem
 <a href="http://mondrian.sourceforge.net/api/mondrian/olap/MemberFormatter.html">
 interface mondrian.olap.MemberFormatter</a></code>.</p>
 
+<h3><a name="#I18n">Internationalization</a></h3>
+<p>Internationalized applications based on Mondrian could use multiple, language dependent schemas.<br/>
+If so, the MDX statements would be language dependent too. This might be more difficult to maintain.<br/>
+Instead of holding several copies of schema and MDX we provide a way to dynamically handle Mondrian schemas.<br/>
+Calling <code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/DriverManager.html#getConnection(mondrian.olap.Util.PropertyList, boolean)">DriverManager.getConnection()</a></code>
+we can provide a property "DynamicSchemaProcessor" denoting the name of a class to implement the
+<code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/DynamicSchemaProcessor.html">DynamicSchemaProcessor</a></code> interface.<br/>
+So any transformation can be applied to a Mondrian schema at runtime. A "dynamic" schema will not be cached by Mondrian.
+</p><p>
+To keep the MDX expressions free from language dependent names, it is a good idea to use the "caption" attribute,
+which is supported for any Olap element.<br/>
+</p><p>
+<b><u>Examples</u></b><br/>
+If your DynamicSchemaProcessor would support JSTL-like resolving of variables,<br>
+you might use <code>caption</code> or <code>allMemberCaption</code> attributes as follows.
 
+<blockquote>
+  <pre dir="ltr">&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Gender&quot; foreignKey=&quot;customer_id&quot; caption=&quot;${GENDER}&quot;&gt;</pre>
+  <pre dir="ltr">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All Genders&quot; primaryKey=&quot;customer_id&quot; allMemberCaption=&quot;${GENDER}&quot;&gt;</pre>
+  <pre dir="ltr">&lt;<a href="#XML_Level">Level</a> name=&quot;Gender&quot; column=&quot;gender&quot; uniqueMembers=&quot;true&quot; caption=&quot;${GENDER}&quot;&gt;</pre>
+  <pre dir="ltr">&lt;<a href="#XML_Measure">Measure</a> name=&quot;Unit Sales&quot; column=&quot;unit_sales&quot; caption=&quot;${UNITSALES}&quot;&gt;</pre>
+</blockquote>
+
+A hierarchy with no <code>caption</code> defined would inherit the <code>caption</code> attribute from the dimension parent.
+</p>
 <h2><a name="Access_control">Access-control</a></h2>
 
 <p>You've got all this great data, but you don't everyone to be able to read all

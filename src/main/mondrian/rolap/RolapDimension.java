@@ -86,6 +86,10 @@ class RolapDimension extends DimensionBase {
 		if (cube != null) {
 			Util.assertTrue(cube.schema == schema);
 		}
+		
+		if (xmlDimension.caption != null && xmlDimension.caption.length() >0 )
+			setCaption(xmlDimension.caption);
+
 		this.hierarchies = new RolapHierarchy[xmlDimension.hierarchies.length];
 		for (int i = 0; i < xmlDimension.hierarchies.length; i++) {
 			hierarchies[i] = new RolapHierarchy(cube, this, xmlDimension.hierarchies[i],

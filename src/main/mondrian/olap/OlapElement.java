@@ -30,6 +30,7 @@ public interface OlapElement extends Exp
 	/** Returns the name of this element qualified by its class, for example
 	 * "hierarchy 'Customers'". **/
 	String getQualifiedName();
+	String getCaption();
 }
 
 // End OlapElement.java

@@ -84,6 +84,7 @@ public abstract class Property {
 	public PropertyFormatter getFormatter() {
 		return null;
 	}
+	public abstract String getCaption();
 }
 
 // End Property.java

@@ -231,6 +231,12 @@ todo:
             <Value>StandardDimension</Value>
             <Value>TimeDimension</Value>
         </Attribute>
+        <Attribute name="caption" required="false">
+			<Doc>
+				A string being displayed instead of the dimensions's name.
+			</Doc>
+		</Attribute>
+        
 		<Array name="hierarchies" type="Hierarchy"><Doc></Doc></Array>
 		<Code>
 			// implement CubeDimension
@@ -278,6 +284,11 @@ todo:
 				called '(All)'.
 			</Doc>
 		</Attribute>
+		<Attribute name="allMemberCaption" required="false">
+			<Doc>
+				A string being displayed instead as the all member's name.
+			</Doc>
+		</Attribute>
 		<Attribute name="primaryKey">
 			<Doc>
 				The name of the column which identifies members, and
@@ -301,6 +312,12 @@ todo:
 				{@link Broadbase.olap.RolapConnection.MemberReader}.
 			</Doc>
 		</Attribute>
+        <Attribute name="caption" required="false">
+			<Doc>
+				A string being displayed instead of the hierarchie's name.
+			</Doc>
+		</Attribute>
+		
 		<Object name="relation" type="Relation">
 			<Doc>
 				The {@link MondrianDef.Table table},
@@ -405,10 +422,16 @@ todo:
 		</Attribute>
 		<Attribute name="formatter" required="false">
 			<Doc>
-				Name of a formatter class for the member labels beeing displayed.
+				Name of a formatter class for the member labels being displayed.
 				The class must implement the mondrian.olap.MemberFormatter interface.
 			</Doc>
 		</Attribute>
+		<Attribute name="caption" required="false">
+			<Doc>
+				A string being displayed instead of the level's name.
+			</Doc>
+		</Attribute>
+		
 		<Object name="keyExp" type="KeyExpression" required="false">
 			<Doc>
 				The SQL expression used to populate this level's key.
@@ -489,10 +512,16 @@ todo:
 		</Attribute>
 		<Attribute name="formatter" required="false">
 			<Doc>
-				Name of a formatter class for the appropriate property value beeing displayed.
+				Name of a formatter class for the appropriate property value being displayed.
 				The class must implement the mondrian.olap.PropertyFormatter interface.
 			</Doc>
 		</Attribute>
+		<Attribute name="caption" required="false">
+			<Doc>
+				A string being displayed instead of the name.
+			</Doc>
+		</Attribute>
+		
 		
 	</Element>
 
@@ -520,13 +549,13 @@ todo:
 		</Attribute>
 		<Attribute name="formatter" required="false">
 			<Doc>
-				Name of a formatter class for the appropriate cell beeing displayed.
+				Name of a formatter class for the appropriate cell being displayed.
 				The class must implement the mondrian.olap.CellFormatter interface.
 			</Doc>
 		</Attribute>
 		<Attribute name="caption" required="false">
 			<Doc>
-				A string beeing displayed instead of the name.
+				A string being displayed instead of the name.
 			</Doc>
 		</Attribute>
 	</Element>
