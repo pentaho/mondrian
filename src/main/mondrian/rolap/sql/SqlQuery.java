@@ -282,7 +282,7 @@ public class SqlQuery
 		String best;
 		if (isOracle()) {
 			best = "oracle";
-		} else if (isMSSql()) {
+		} else if (isMSSql() || isMSSQL()) {
 			best = "mssql";
 		} else if (isMySQL()) {
 			best = "mysql";
@@ -290,8 +290,8 @@ public class SqlQuery
 			best = "access";
 		} else if (isPostgres()) {
 			best = "postgres";
-        } else if (isMSSQL()) {
-            best = "mssql";
+        } else if (isSybase()) {
+            best = "sybase";
 		} else {
 			best = "generic";
 		}
