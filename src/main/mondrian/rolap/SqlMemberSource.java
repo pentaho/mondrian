@@ -572,7 +572,7 @@ class SqlMemberSource implements MemberReader
                 final ArrayList children = siblings[i + 1];
                 if (member != null &&
                         children != null) {
-                    cache.putChildren(member, list);
+                    cache.putChildren(member, children);
                 }
             }
             return list;
