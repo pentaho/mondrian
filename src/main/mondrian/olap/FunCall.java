@@ -45,7 +45,7 @@ public class FunCall extends ExpBase {
     private final Syntax syntax;
 
     /**
-     * The type of the return value. Set during {@link #resolve(Validator)}.
+     * The type of the return value. Set during {@link #accept(Validator)}.
      */
     private Type type;
 
@@ -135,11 +135,6 @@ public class FunCall extends ExpBase {
         return fun.equalsIgnoreCase("CROSSJOIN") || fun.equals("*");
     }
 
-    public boolean isCallToParameter() {
-        return fun.equalsIgnoreCase("Parameter") ||
-            fun.equalsIgnoreCase("ParamRef");
-    }
-
     public Object[] getChildren() {
         return args;
     }
@@ -176,43 +171,13 @@ public class FunCall extends ExpBase {
         return type;
     }
 
-    public Exp resolve(Validator resolver) {
-        final FunTable funTable = resolver.getFunTable();
+    public Exp accept(Validator validator) {
+        final FunTable funTable = validator.getFunTable();
         for (int i = 0; i < args.length; i++) {
-            args[i] = resolver.resolveChild(args[i]);
+            args[i] = validator.validate(args[i]);
         }
-        funDef = funTable.getDef(this, resolver);
-        if (this.isCallToParameter()) {
-            Parameter param = resolver.createOrLookupParam(this);
-            return resolver.resolveChild(param);
-        } else if (this.isCallTo("StrToTuple") ||
-                   this.isCallTo("StrToSet")) {
-            if (args.length <= 1) {
-                throw Util.getRes().newMdxFuncArgumentsNum(fun);
-            }
-            for (int j = 1; j < args.length; j++) {
-                if (args[j] instanceof Dimension) {
-                    // if arg is a dimension, switch to dimension's default
-                    // hierarchy
-                    args[j] = ((Dimension) args[j]).getHierarchy();
-                } else if (args[j] instanceof Hierarchy) {
-                    // nothing
-                } else {
-                    throw Util.getRes().newMdxFuncNotHier(new Integer(j+1), fun);
-                }
-            }
-        }
-        int[] types = funDef.getParameterTypes();
-        Util.assertTrue(types.length == args.length);
-        for (int i = 0; i < args.length; i++) {
-            Exp arg = args[i];
-            args[i] = funTable.convert(arg, types[i], resolver);
-        }
-        type = funDef.getResultType(resolver, args);
-        if (type == null) {
-            throw Util.newInternal("could not derive type");
-        }
-        return this;
+        funDef = funTable.getDef(this, validator);
+        return funDef.validateCall(validator, this);
     }
 
     public void unparse(PrintWriter pw) {
@@ -300,6 +265,12 @@ public class FunCall extends ExpBase {
         return funDef.dependsOn(args, dimension);
     }
 
+    /**
+     * Sets the return type of this call.
+     */
+    public void setType(Type type) {
+        this.type = type;
+    }
 }
 
 // End FunCall.java

@@ -52,7 +52,7 @@ public class BuiltinFunTable extends FunTable {
     public BuiltinFunTable() {
         init();
         valueFunCall = new FunCall("_Value", Syntax.Function, new Exp[0])
-            .resolve(dummyResolver);
+            .accept(dummyResolver);
         LinReg.valueFunCall = valueFunCall;
     }
 
@@ -114,7 +114,7 @@ public class BuiltinFunTable extends FunTable {
         if (exp == null) {
             throw Util.newInternal("cannot convert " + fromExp + " to " + to);
         }
-        return resolver.resolveChild(exp);
+        return resolver.validate(exp);
     }
 
     private static Exp convert_(Exp fromExp, int to) {
@@ -1703,7 +1703,6 @@ public class BuiltinFunTable extends FunTable {
                 "Distinct(<Set>)",
                 "Eliminates duplicate tuples from a set.",
                 "fxx") {
-            // implement FunDef
             public Object evaluate(Evaluator evaluator, Exp[] args) {
                 List list = (List) getArg(evaluator, args, 0);
                 HashSet hashSet = new HashSet(list.size());
@@ -2108,6 +2107,28 @@ public class BuiltinFunTable extends FunTable {
                 "StrToSet(<String Expression>)",
                 "Constructs a set from a string expression.",
                 "fxS") {
+            public Exp validateCall(Validator validator, FunCall call) {
+                final Exp[] args = call.getArgs();
+                final int argCount = args.length;
+                if (argCount <= 1) {
+                    throw Util.getRes().newMdxFuncArgumentsNum(getName());
+                }
+                for (int i = 1; i < argCount; i++) {
+                    final Exp arg = args[i];
+                    if (arg instanceof Dimension) {
+                        // if arg is a dimension, switch to dimension's default
+                        // hierarchy
+                        args[i] = ((Dimension) arg).getHierarchy();
+                    } else if (arg instanceof Hierarchy) {
+                        // nothing
+                    } else {
+                        throw Util.getRes().newMdxFuncNotHier(
+                                new Integer(i + 1), getName());
+                    }
+                }
+                return super.validateCall(validator, call);
+            }
+
             public Type getResultType(Validator validator, Exp[] args) {
                 if (args.length == 1) {
                     // This is a call to the standard version of StrToSet,
@@ -2738,6 +2759,28 @@ public class BuiltinFunTable extends FunTable {
                 "StrToTuple(<String Expression>)",
                 "Constructs a tuple from a string.",
                 "ftS") {
+            public Exp validateCall(Validator validator, FunCall call) {
+                final Exp[] args = call.getArgs();
+                final int argCount = args.length;
+                if (argCount <= 1) {
+                    throw Util.getRes().newMdxFuncArgumentsNum(getName());
+                }
+                for (int i = 1; i < argCount; i++) {
+                    final Exp arg = args[i];
+                    if (arg instanceof Dimension) {
+                        // if arg is a dimension, switch to dimension's default
+                        // hierarchy
+                        args[i] = ((Dimension) arg).getHierarchy();
+                    } else if (arg instanceof Hierarchy) {
+                        // nothing
+                    } else {
+                        throw Util.getRes().newMdxFuncNotHier(
+                                new Integer(i + 1), getName());
+                    }
+                }
+                return super.validateCall(validator, call);
+            }
+
             public Type getResultType(Validator validator, Exp[] args) {
                 if (args.length == 1) {
                     // This is a call to the standard version of StrToTuple,
@@ -2944,97 +2987,9 @@ public class BuiltinFunTable extends FunTable {
 
         //
         // PARAMETER FUNCTIONS
-        define(new MultiResolver(
-                "Parameter",
-                "Parameter(<Name>, <Type>, <DefaultValue>, <Description>)",
-                "Returns default value of parameter.",
-                new String[] {
-                    "fS#yS#", "fS#yS", // Parameter(string const, symbol, string[, string const]): string
-                    "fn#yn#", "fn#yn", // Parameter(string const, symbol, numeric[, string const]): numeric
-                    "fm#hm#", "fm#hm",  // Parameter(string const, hierarchy constant, member[, string const]): member
-                }) {
-            public String[] getReservedWords() {
-                return new String[] {"NUMERIC","STRING"};
-            }
+        define(new ParameterFunDef.ParameterResolver());
 
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                String parameterName;
-                if (args[0] instanceof Literal &&
-                        args[0].getCategory() == Category.String) {
-                    parameterName = (String) ((Literal) args[0]).getValue();
-                } else {
-                    throw newEvalException(dummyFunDef, "Parameter name must be a string constant");
-                }
-                Exp typeArg = args[1];
-                Hierarchy hierarchy;
-                int type;
-                switch (typeArg.getCategory()) {
-                case Category.Hierarchy:
-                case Category.Dimension:
-                    hierarchy = typeArg.getTypeX().getHierarchy();
-                    if (hierarchy == null || !isConstantHierarchy(typeArg)) {
-                        throw newEvalException(dummyFunDef, "Invalid hierarchy for parameter '" + parameterName + "'");
-                    }
-                    type = Category.Member;
-                    break;
-                case Category.Symbol:
-                    hierarchy = null;
-                    String s = (String) ((Literal) typeArg).getValue();
-                    if (s.equalsIgnoreCase("NUMERIC")) {
-                        type = Category.Numeric;
-                        break;
-                    } else if (s.equalsIgnoreCase("STRING")) {
-                        type = Category.String;
-                        break;
-                    }
-                    // fall through and throw error
-                default:
-                    // Error is internal because the function call has already been
-                    // type-checked.
-                    throw newEvalException(dummyFunDef,
-                            "Invalid type for parameter '" + parameterName + "'; expecting NUMERIC, STRING or a hierarchy");
-                }
-                Exp exp = args[2];
-                if (exp.getCategory() != type) {
-                    String typeName = Category.instance.getName(type).toUpperCase();
-                    throw newEvalException(dummyFunDef, "Default value of parameter '" + parameterName + "' is inconsistent with its type, " + typeName);
-                }
-                if (type == Category.Member) {
-                    Hierarchy expHierarchy = exp.getTypeX().getHierarchy();
-                    if (expHierarchy != hierarchy) {
-                        throw newEvalException(dummyFunDef, "Default value of parameter '" + parameterName + "' must belong to the hierarchy " + hierarchy);
-                    }
-                }
-                String parameterDescription = null;
-                if (args.length > 3) {
-                    if (args[3] instanceof Literal &&
-                            args[3].getCategory() == Category.String) {
-                        parameterDescription = (String) ((Literal) args[3]).getValue();
-                    } else {
-                        throw newEvalException(dummyFunDef, "Description of parameter '" + parameterName + "' must be a string constant");
-                    }
-                }
-
-                return new ParameterFunDef(dummyFunDef, parameterName, hierarchy, type, exp, parameterDescription);
-            }
-        });
-
-        define(new MultiResolver(
-                "ParamRef",
-                "ParamRef(<Name>)",
-                "Returns current value of parameter. If it's null, returns default.",
-                new String[] {"fv#"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                String parameterName;
-                if (args[0] instanceof Literal &&
-                        args[0].getCategory() == Category.String) {
-                    parameterName = (String) ((Literal) args[0]).getValue();
-                } else {
-                    throw newEvalException(dummyFunDef, "Parameter name must be a string constant");
-                }
-                return new ParameterFunDef(dummyFunDef, parameterName, null, Category.Unknown, null, null);
-            }
-        });
+        define(new ParameterFunDef.ParamRefResolver());
 
         //
         // OPERATORS
@@ -3443,33 +3398,6 @@ public class BuiltinFunTable extends FunTable {
         }
     }
 
-    private static boolean isConstantHierarchy(Exp typeArg) {
-        if (typeArg instanceof Hierarchy) {
-            // e.g. "[Time].[By Week]"
-            return true;
-        }
-        if (typeArg instanceof Dimension) {
-            // e.g. "[Time]"
-            return true;
-        }
-        if (typeArg instanceof FunCall) {
-            // e.g. "[Time].CurrentMember.Hierarchy". They probably wrote
-            // "[Time]", and the automatic type conversion did the rest.
-            FunCall hierarchyCall = (FunCall) typeArg;
-            if (hierarchyCall.getFunName().equals("Hierarchy") &&
-                    hierarchyCall.getArgLength() > 0 &&
-                    hierarchyCall.getArg(0) instanceof FunCall) {
-                FunCall currentMemberCall = (FunCall) hierarchyCall.getArg(0);
-                if (currentMemberCall.getFunName().equals("CurrentMember") &&
-                        currentMemberCall.getArgLength() > 0 &&
-                        currentMemberCall.getArg(0) instanceof Dimension) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     /**
      * Returns a read-only version of the name-to-resolvers map. Used by the
      * testing framework.
@@ -3477,7 +3405,6 @@ public class BuiltinFunTable extends FunTable {
     protected static Map getNameToResolversMap() {
         return Collections.unmodifiableMap(((BuiltinFunTable)instance()).mapNameToResolvers);
     }
-
 }
 
 // End BuiltinFunTable.java

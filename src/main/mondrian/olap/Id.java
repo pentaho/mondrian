@@ -79,14 +79,14 @@ public class Id
         append(s, false);
     }
 
-    public Exp resolve(Validator resolver) {
+    public Exp accept(Validator validator) {
         if (names.length == 1) {
             final String s = names[0];
             if (FunTable.instance().isReserved(s)) {
                 return Literal.createSymbol(s.toUpperCase());
             }
         }
-        return Util.lookup(resolver.getQuery(), names);
+        return Util.lookup(validator.getQuery(), names);
     }
 
     public void unparse(PrintWriter pw) {

@@ -69,9 +69,21 @@ public class Query extends QueryPart {
      */
     public Exp slicer;
 
-    private Parameter[] parameters; // stores definitions of parameters
+    /**
+     * Definitions of all parameters used in this query.
+     */
+    private Parameter[] parameters;
+
+    /**
+     * Cell properties. Not currently used.
+     */
     private final QueryPart[] cellProps;
-    private final Cube mdxCube;
+
+    /**
+     * Cube this query belongs to.
+     */
+    private final Cube cube;
+
     private final Connection connection;
 
     /** Constructs a Query. */
@@ -101,7 +113,7 @@ public class Query extends QueryPart {
             QueryPart[] cellProps,
             Parameter[] parameters) {
         this.connection = connection;
-        this.mdxCube = mdxCube;
+        this.cube = mdxCube;
         this.formulas = formulas;
         this.axes = axes;
         normalizeAxes();
@@ -152,18 +164,18 @@ public class Query extends QueryPart {
     }
 
 
-    public Validator createResolver() {
-        return new StackResolver(BuiltinFunTable.instance());
+    public Validator createValidator() {
+        return new StackValidator(BuiltinFunTable.instance());
     }
 
     public Object clone() throws CloneNotSupportedException {
         return new Query(connection,
-                         mdxCube,
-                         Formula.cloneArray(formulas),
-                         QueryAxis.cloneArray(axes),
-                         (slicer == null) ? null : (Exp) slicer.clone(),
-                         null,
-                         Parameter.cloneArray(parameters));
+                cube,
+                Formula.cloneArray(formulas),
+                QueryAxis.cloneArray(axes),
+                (slicer == null) ? null : (Exp) slicer.clone(),
+                cellProps,
+                Parameter.cloneArray(parameters));
     }
 
     public Query safeClone() {
@@ -215,7 +227,7 @@ public class Query extends QueryPart {
      * tree in any way.
      */
     public void resolve() {
-        resolve(createResolver()); // resolve self and children
+        resolve(createValidator()); // resolve self and children
     }
 
     /**
@@ -233,23 +245,23 @@ public class Query extends QueryPart {
                 formulas[i].createElement(resolver.getQuery());
             }
             for (int i = 0; i < formulas.length; i++) {
-                resolver.resolveChild(formulas[i]);
+                resolver.validate(formulas[i]);
             }
         }
 
         if (axes != null) {
             for (int i = 0; i < axes.length; i++) {
-                resolver.resolveChild(axes[i]);
+                resolver.validate(axes[i]);
             }
         }
         if (slicer != null) {
-            setSlicer(resolver.resolveChild(slicer));
+            setSlicer(resolver.validate(slicer));
         }
 
         // Now that out Parameters have been created (from FunCall's to
         // Parameter() and ParamRef()), resolve them.
         for (int i = 0; i < parameters.length; i++) {
-            parameters[i] = resolver.resolveChild(parameters[i]);
+            parameters[i] = resolver.validate(parameters[i]);
         }
         resolveParameters();
 
@@ -304,8 +316,8 @@ public class Query extends QueryPart {
                 }
             }
         }
-        if (mdxCube != null) {
-            pw.println("from [" + mdxCube.getName() + "]");
+        if (cube != null) {
+            pw.println("from [" + cube.getName() + "]");
         }
         if (slicer != null) {
             pw.print("where ");
@@ -485,7 +497,7 @@ public class Query extends QueryPart {
     /** Returns an enumeration, each item of which is an Ob containing a
      * dimension which does not appear in any Axis or in the slicer. */
     public Iterator unusedDimensions() {
-        Dimension[] mdxDimensions = mdxCube.getDimensions();
+        Dimension[] mdxDimensions = cube.getDimensions();
         return Arrays.asList(mdxDimensions).iterator();
     }
 
@@ -622,14 +634,14 @@ public class Query extends QueryPart {
     }
 
     public Cube getCube() {
-        return mdxCube;
+        return cube;
     }
 
     public SchemaReader getSchemaReader(boolean accessControlled) {
         final Role role = accessControlled
             ? getConnection().getRole()
             : null;
-        final SchemaReader cubeSchemaReader = mdxCube.getSchemaReader(role);
+        final SchemaReader cubeSchemaReader = cube.getSchemaReader(role);
         return new QuerySchemaReader(cubeSchemaReader);
     }
 
@@ -813,13 +825,13 @@ public class Query extends QueryPart {
      * be wrong, but can cause resolution to be an <code>O(2^N)</code>
      * operation.)
      */
-    private class StackResolver implements Validator {
+    private class StackValidator implements Validator {
         private final Stack stack = new Stack();
         private final FunTable funTable;
         private boolean haveCollectedParameters;
         private java.util.Set resolvedNodes = new HashSet();
 
-        public StackResolver(FunTable funTable) {
+        public StackValidator(FunTable funTable) {
             this.funTable = funTable;
         }
 
@@ -827,13 +839,13 @@ public class Query extends QueryPart {
             return Query.this;
         }
 
-        public Exp resolveChild(Exp exp) {
+        public Exp validate(Exp exp) {
             if (!resolvedNodes.add(exp)) {
                 return exp; // already resolved
             }
             stack.push(exp);
             try {
-                final Exp resolved = exp.resolve(this);
+                final Exp resolved = exp.accept(this);
                 resolvedNodes.add(resolved);
                 return resolved;
             } finally {
@@ -841,13 +853,13 @@ public class Query extends QueryPart {
             }
         }
 
-        public Parameter resolveChild(Parameter parameter) {
+        public Parameter validate(Parameter parameter) {
             if (!resolvedNodes.add(parameter)) {
                 return parameter; // already resolved
             }
             stack.push(parameter);
             try {
-                final Parameter resolved = (Parameter) parameter.resolve(this);
+                final Parameter resolved = (Parameter) parameter.accept(this);
                 resolvedNodes.add(resolved);
                 return resolved;
             } finally {
@@ -855,7 +867,7 @@ public class Query extends QueryPart {
             }
         }
 
-        public void resolveChild(MemberProperty memberProperty) {
+        public void validate(MemberProperty memberProperty) {
             if (!resolvedNodes.add(memberProperty)) {
                 return; // already resolved
             }
@@ -867,7 +879,7 @@ public class Query extends QueryPart {
             }
         }
 
-        public void resolveChild(QueryAxis axis) {
+        public void validate(QueryAxis axis) {
             if (!resolvedNodes.add(axis)) {
                 return; // already resolved
             }
@@ -879,13 +891,13 @@ public class Query extends QueryPart {
             }
         }
 
-        public void resolveChild(Formula formula) {
+        public void validate(Formula formula) {
             if (!resolvedNodes.add(formula)) {
                 return; // already resolved
             }
             stack.push(formula);
             try {
-                formula.resolve(this);
+                formula.accept(this);
             } finally {
                 stack.pop();
             }
@@ -926,7 +938,7 @@ public class Query extends QueryPart {
             String name = (String) ((Literal) funCall.getArg(0)).getValue();
             Parameter param = lookupParam(name);
             ParameterFunDef funDef = (ParameterFunDef) funCall.getFunDef();
-            if (funDef.isDefinition()) {
+            if (funDef.getName().equals("Parameter")) {
                 if (param != null) {
                     if (param.getDefineCount() > 0) {
                         throw Util.newInternal("Parameter '" + name +
@@ -999,7 +1011,7 @@ public class Query extends QueryPart {
                         // Because we're resolving out out of the proper order,
                         // the resolver doesn't hold the correct ancestral
                         // context, but it should be OK.
-                        final Parameter param = (Parameter) resolveChild(call);
+                        final Parameter param = (Parameter) validate(call);
                         param.resetDefineCount();
                     }
                 }
@@ -1098,7 +1110,7 @@ public class Query extends QueryPart {
             switch (category) {
             case Category.Unknown:
             case Category.Member:
-                if (parent == mdxCube) {
+                if (parent == cube) {
                     final Member calculatedMember = getCalculatedMember(names);
                     if (calculatedMember != null) {
                         return calculatedMember;
@@ -1120,7 +1132,7 @@ public class Query extends QueryPart {
                     // expression, then use the member defined in that formula.
                     final Formula formulaClone = (Formula) formula.clone();
                     formulaClone.createElement(Query.this);
-                    formulaClone.resolve(createResolver());
+                    formulaClone.accept(createValidator());
                     olapElement = formulaClone.getMdxMember();
                 }
             }

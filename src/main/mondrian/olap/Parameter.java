@@ -77,20 +77,18 @@ public class Parameter extends ExpBase {
         defineCount = 0;
     }
 
-    public Exp resolve(Validator resolver) {
+    public Exp accept(Validator validator) {
         // There must be some Parameter with this name registered with the
         // Query.  After clone(), there will be many copies of the same
         // parameter, and we rely on this method to bring them down to one.
         // So if this object is not the registered vesion, that's fine, go with
         // the other one.  The registered one will be resolved after everything
         // else in the query has been resolved.
-        Parameter p = resolver.getQuery().lookupParam(name);
+        Parameter p = validator.getQuery().lookupParam(name);
         if (p == null) {
             throw Util.newInternal("parameter '" + name + "' not registered");
         }
-        return (p != this)
-            ? p           // will resolve it later
-            : this;
+        return p;
     }
 
     public String getName() {

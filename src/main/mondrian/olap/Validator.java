@@ -13,8 +13,8 @@ package mondrian.olap;
  * Provides context necessary to resolve identifiers to objects, function
  * calls to specific functions.
  *
- * <p>An expression calls {@link #resolveChild} on each of its children,
- * which in turn calls {@link Exp#resolve}.
+ * <p>An expression calls {@link #validate} on each of its children,
+ * which in turn calls {@link Exp#accept}.
  *
  * @author jhyde
  * @version $Id$
@@ -26,29 +26,35 @@ public interface Validator {
     Query getQuery();
 
     /**
-     * Validates a child expression of the current expression.
+     * Validates an expression, and returns the expression it resolves to.
      */
-    Exp resolveChild(Exp exp);
+    Exp validate(Exp exp);
 
     /**
-     * Validates a child parameter of the current expression.
+     * Validates a parameter, and returns the new parameter it resolves to.
      */
-    Parameter resolveChild(Parameter parameter);
+    Parameter validate(Parameter parameter);
 
     /**
      * Validates a child member property.
+     *
+     * It must resolve to the same object (although sub-objects may change).
      */
-    void resolveChild(MemberProperty memberProperty);
+    void validate(MemberProperty memberProperty);
 
     /**
      * Validates an axis.
+     *
+     * It must resolve to the same object (although sub-objects may change).
      */
-    void resolveChild(QueryAxis axis);
+    void validate(QueryAxis axis);
 
     /**
      * Validates a formula.
-     */ 
-    void resolveChild(Formula formula);
+     *
+     * It must resolve to the same object (although sub-objects may change).
+     */
+    void validate(Formula formula);
 
     /**
      * Returns whether the current context requires an expression.

@@ -972,21 +972,21 @@ public class Util extends mondrian.xom.XOMUtil {
                 throw new UnsupportedOperationException();
             }
 
-            public Exp resolveChild(Exp exp) {
+            public Exp validate(Exp exp) {
                 return exp;
             }
 
-            public Parameter resolveChild(Parameter parameter) {
+            public Parameter validate(Parameter parameter) {
                 return parameter;
             }
 
-            public void resolveChild(MemberProperty memberProperty) {
+            public void validate(MemberProperty memberProperty) {
             }
 
-            public void resolveChild(QueryAxis axis) {
+            public void validate(QueryAxis axis) {
             }
 
-            public void resolveChild(Formula formula) {
+            public void validate(Formula formula) {
             }
 
             public boolean requiresExpression() {

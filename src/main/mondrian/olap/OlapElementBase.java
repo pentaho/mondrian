@@ -19,17 +19,16 @@ import org.apache.log4j.Logger;
  * {@link OlapElement}.
  *
  * @author jhyde
- * @since 6 August, 2001
  * @version $Id$
- **/
+ * @since 6 August, 2001
+ */
 public abstract class OlapElementBase
-    extends ExpBase
-    implements OlapElement
-{
+        extends ExpBase
+        implements OlapElement {
 
     static {
-      Util.assertTrue(System.getProperty("java.version").compareTo("1.1") > 0,
-      "require at least JDK 1.2, because JDK 1.1 had a severe performance bug when hashing long, similar strings");
+        Util.assertTrue(System.getProperty("java.version").compareTo("1.1") > 0,
+                "require at least JDK 1.2, because JDK 1.1 had a severe performance bug when hashing long, similar strings");
     }
 
     private String caption = null;
@@ -39,23 +38,20 @@ public abstract class OlapElementBase
 
     protected abstract Logger getLogger();
 
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
         return (o instanceof OlapElement) &&
-            equals((OlapElement) o);
+                equals((OlapElement) o);
     }
 
-    public boolean equals(OlapElement mdxElement)
-    {
+    public boolean equals(OlapElement mdxElement) {
         return getClass() == mdxElement.getClass() &&
-            getUniqueName().equalsIgnoreCase(mdxElement.getUniqueName());
+                getUniqueName().equalsIgnoreCase(mdxElement.getUniqueName());
     }
 
-    public int hashCode()
-    {
+    public int hashCode() {
         int i = (getClass().hashCode() << 8),
-            j = getUniqueName().hashCode(),
-            k = i ^ j;
+                j = getUniqueName().hashCode(),
+                k = i ^ j;
         return k;
     }
 
@@ -64,29 +60,28 @@ public abstract class OlapElementBase
         return getUniqueName();
     }
 
-    public Object evaluate(Evaluator evaluator)
-    {
+    public Object evaluate(Evaluator evaluator) {
         return evaluator.xx(this);
     }
 
-    public Exp resolve(Validator resolver)
-    {
+    public Exp accept(Validator validator) {
         return this;
     }
 
     // implement ExpBase
-    public Object clone()
-    {
+    public Object clone() {
         return this;
     }
 
     // return name as default for caption
     public String getCaption() {
-        if (caption != null)
+        if (caption != null) {
             return caption;
-        else
+        } else {
             return getName();
+        }
     }
+
     /**
      * @param caption The caption to set.
      */

@@ -36,7 +36,7 @@ public class Literal extends ExpBase {
      * @see #createSymbol
      */
     public static Literal createString(String s) {
-        return (s.equals("")) 
+        return (s.equals(""))
             ? emptyString
             : new Literal(s, false);
     }
@@ -128,7 +128,7 @@ public class Literal extends ExpBase {
         }
     }
 
-    public Exp resolve(Validator resolver) {
+    public Exp accept(Validator validator) {
         return this;
     }
 

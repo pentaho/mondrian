@@ -389,7 +389,7 @@ class RolapHierarchy extends HierarchyBase {
                 new Exp[] {this});
             Validator resolver =
                     Util.createSimpleResolver(FunTable.instance());
-            aggregateChildrenExpression = fc.resolve(resolver);
+            aggregateChildrenExpression = fc.accept(resolver);
         }
         return aggregateChildrenExpression;
     }

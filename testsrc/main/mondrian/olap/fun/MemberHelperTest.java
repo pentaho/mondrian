@@ -266,7 +266,7 @@ public class MemberHelperTest extends TestCase {
             return false;
         }
 
-        public Exp resolve(Validator resolver) {
+        public Exp accept(Validator validator) {
             return null;
         }
 

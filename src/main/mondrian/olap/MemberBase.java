@@ -191,8 +191,7 @@ public abstract class MemberBase
         return null;
     }
 
-
-    public Exp resolve(Validator resolver) {
+    public Exp accept(Validator validator) {
         return this;
     }
 

@@ -74,8 +74,8 @@ public class Formula extends QueryPart {
      * Resolves identifiers into objects.
      * @param resolver The query which contains this formula.
      */
-    void resolve(Validator resolver) {
-        exp = (ExpBase) resolver.resolveChild(exp);
+    void accept(Validator resolver) {
+        exp = (ExpBase) resolver.validate(exp);
         String id = Util.quoteMdxIdentifier(names);
         if (isMember) {
             if (!(!exp.isSet() ||
@@ -88,7 +88,7 @@ public class Formula extends QueryPart {
             }
         }
         for (int i = 0; i < memberProperties.length; i++) {
-            resolver.resolveChild(memberProperties[i]);
+            resolver.validate(memberProperties[i]);
         }
         // Get the format expression from the property list, or derive it from
         // the formula.

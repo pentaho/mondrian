@@ -181,6 +181,23 @@ public class FunDefBase extends FunUtil implements FunDef {
         return parameterTypes;
     }
 
+    public Exp validateCall(Validator validator, FunCall call) {
+        int[] types = getParameterTypes();
+        final Exp[] args = call.getArgs();
+        Util.assertTrue(types.length == args.length);
+        final FunTable funTable = validator.getFunTable();
+        for (int i = 0; i < args.length; i++) {
+            Exp arg = args[i];
+            args[i] = funTable.convert(arg, types[i], validator);
+        }
+        final Type type = getResultType(validator, args);
+        if (type == null) {
+            throw Util.newInternal("could not derive type");
+        }
+        call.setType(type);
+        return call;
+    }
+
     /**
      * Returns a first approximation as to the type of a function call,
      * assuming that the return type is in some way related to the type of
@@ -262,6 +279,10 @@ public class FunDefBase extends FunUtil implements FunDef {
                 name + "'");
     }
 
+    /**
+     * Returns the type of a call to this function with a given set of
+     * arguments.
+     **/
     public Type getResultType(Validator validator, Exp[] args) {
         return guessResultType(args, getReturnCategory(), this.name);
     }

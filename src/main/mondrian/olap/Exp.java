@@ -48,7 +48,18 @@ public interface Exp {
 
     void unparse(PrintWriter pw);
 
-    Exp resolve(Validator resolver);
+    /**
+     * Validates this expression.
+     *
+     * The validator acts in the role of 'visitor' (see Gang of Four
+     * 'visitor pattern'), and an expression in the role of 'visitee'.
+     *
+     * @param validator Validator contains validation context
+     *
+     * @return The validated expression; often but not always the same as
+     *   this expression
+     */
+    Exp accept(Validator validator);
 
     /**
      * true means that the result of this expression will be different

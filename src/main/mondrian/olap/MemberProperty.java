@@ -39,7 +39,7 @@ public class MemberProperty extends QueryPart {
     }
 
     void resolve(Validator resolver) {
-        exp = resolver.resolveChild(exp);
+        exp = resolver.validate(exp);
     }
 
     public Object[] getChildren() {

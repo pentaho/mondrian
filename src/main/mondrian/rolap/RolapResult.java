@@ -48,7 +48,7 @@ class RolapResult extends ResultBase {
                             (RolapCube) query.getCube(),
                             (RolapConnection) query.getConnection());
         AggregatingCellReader aggregatingReader = new AggregatingCellReader();
-        this.batchingReader = new FastBatchingCellReader( 
+        this.batchingReader = new FastBatchingCellReader(
                                     (RolapCube) query.getCube());
         this.cellValues = new HashMap();
 
@@ -61,7 +61,7 @@ class RolapResult extends ResultBase {
                             false,
                             new FunCall(
                                 "{}", Syntax.Braces, new Exp[] {query.slicer}
-                            ).resolve(query.createResolver()),
+                            ).accept(query.createValidator()),
                             "slicer",
                             QueryAxis.SubtotalVisibility.Undefined);
                     } else {
@@ -237,7 +237,7 @@ class RolapResult extends ResultBase {
      * {@link RolapAggregationManager}.
      **/
     private static class AggregatingCellReader implements CellReader {
-        private final RolapAggregationManager aggregationManager = 
+        private final RolapAggregationManager aggregationManager =
             AggregationManager.instance();
         /**
          * Overrides {@link CellReader#get}. Returns <code>null</code> if no

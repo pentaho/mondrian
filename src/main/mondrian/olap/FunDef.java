@@ -12,8 +12,6 @@
 
 package mondrian.olap;
 
-import mondrian.olap.type.Type;
-
 import java.io.PrintWriter;
 
 /**
@@ -51,10 +49,12 @@ public interface FunDef {
     int[] getParameterTypes();
 
     /**
-     * Returns the type of a call to this function with a given set of
-     * arguments.
-     **/
-    Type getResultType(Validator validator, Exp[] args);
+     * Validates a call to this function.
+     * <p/>
+     * If it returns the <code>call</code> argument (which is the usual case)
+     * it must call {@link FunCall#setType(mondrian.olap.type.Type)}.
+     */
+    Exp validateCall(Validator validator, FunCall call);
 
     /**
      * Returns an English description of the signature of the function, for

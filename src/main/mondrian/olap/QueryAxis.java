@@ -13,6 +13,12 @@
 package mondrian.olap;
 import java.io.PrintWriter;
 
+/**
+ * An axis in an MDX query. For example, the typical MDX query has two axes,
+ * which appear as the "ON COLUMNS" and "ON ROWS" clauses.
+ *
+ * @version $Id$
+ */
 public class QueryAxis extends QueryPart {
 
     static QueryAxis[] cloneArray(QueryAxis[] a) {
@@ -41,7 +47,7 @@ public class QueryAxis extends QueryPart {
     }
 
 
-    /** 
+    /**
      * NOTE: This must be public because JPivoi directly accesses this instance
      * variable.
      * Currently, the JPivoi usages are:
@@ -55,7 +61,7 @@ public class QueryAxis extends QueryPart {
      */
     public boolean nonEmpty;
 
-    /** 
+    /**
      * NOTE: This must be public because JPivoi directly accesses this instance
      * variable.
      * Currently, the JPivoi usages are:
@@ -75,10 +81,10 @@ public class QueryAxis extends QueryPart {
      * operation has been applied to axis*/
     private int  showSubtotals;
 
-    public QueryAxis(boolean nonEmpty, 
-                     Exp set, 
-                     String axisName, 
-                     int showSubtotals) {
+    public QueryAxis(boolean nonEmpty,
+            Exp set,
+            String axisName,
+            int showSubtotals) {
         this.nonEmpty = nonEmpty;
         this.set = set;
         this.axisName = axisName;
@@ -88,25 +94,43 @@ public class QueryAxis extends QueryPart {
     public Object clone() {
         return new QueryAxis(nonEmpty, (Exp) set.clone(), axisName, showSubtotals);
     }
+
     public String getAxisName() {
         return axisName;
     }
 
+    /**
+     * Returns whether the axis has the <code>NON EMPTY</code> property set.
+     */
     public boolean isNonEmpty() {
         return nonEmpty;
     }
+
+    /**
+     * Sets whether the axis has the <code>NON EMPTY</code> property set.
+     * See {@link #isNonEmpty()}.
+     */
     public void setNonEmpty(boolean nonEmpty) {
         this.nonEmpty = nonEmpty;
     }
+
+    /**
+     * Returns the expression which is used to compute the value of this axis.
+     */
     public Exp getSet() {
         return set;
     }
+
+    /**
+     * Sets the expression which is used to compute the value of this axis.
+     * See {@link #getSet()}.
+     */
     public void setSet(Exp set) {
         this.set = set;
     }
 
     public void resolve(Validator resolver) {
-        set = resolver.resolveChild(set);
+        set = resolver.validate(set);
         if (!set.isSet()) {
             throw Util.getRes().newMdxAxisIsNotSet( axisName );
         }
@@ -133,14 +157,14 @@ public class QueryAxis extends QueryPart {
 
     public void addLevel(Level level) {
         Util.assertTrue(level != null, "addLevel needs level");
-        set = new FunCall("Crossjoin", 
-                          Syntax.Function, 
-                          new Exp[] {
-                            set,
-                            new FunCall("Members", 
-                                        Syntax.Property, 
-                                        new Exp[] {level})
-                          });
+        set = new FunCall("Crossjoin",
+                Syntax.Function,
+                new Exp[]{
+                    set,
+                    new FunCall("Members",
+                            Syntax.Property,
+                            new Exp[]{level})
+                });
     }
 
     void setShowSubtotals(boolean bShowSubtotals) {
