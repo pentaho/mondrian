@@ -324,7 +324,9 @@ public class SmartMemberReader implements MemberReader, MemberCache
 							(CachePool.SoftCacheableReference) mapMemberToChildren.put(member, ref);
 					if (oldRef != null) {
 						ChildrenList old = (ChildrenList) oldRef.getCacheableOrFail();
-						RolapUtil.debugOut.println("putChildren: remove " + oldRef + ", " + old);
+                        if (RolapUtil.debugOut != null) {
+                            RolapUtil.debugOut.println("putChildren: remove " + oldRef + ", " + old);
+                        }
 						cachePool.deregister(old, false);
 					}
 					cachePool.register(childrenList);

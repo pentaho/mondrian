@@ -1434,7 +1434,7 @@ public class Format {
 		new MacroToken(
 			"Standard", "#,##0", "Uses a thousands separator."),
 		new MacroToken(
-			"Percent", "0%", "Multiplies the value by 100 with a percent sign at the end."),
+			"Percent", "0.00%", "Multiplies the value by 100 with a percent sign at the end."),
 		new MacroToken(
 			"Scientific", "0.00e+00", "Uses standard scientific notation."),
 		new MacroToken(

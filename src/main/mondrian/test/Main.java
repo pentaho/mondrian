@@ -96,7 +96,7 @@ public class Main {
 				suite.addTest((Test) o);
 			}
 		} else {
-			if (false) suite.addTestSuite(BasicQueryTest.class);
+			suite.addTestSuite(BasicQueryTest.class);
 			suite.addTest(BuiltinFunTable.suite());
 			suite.addTestSuite(Schedule.ScheduleTestCase.class);
 			suite.addTest(Util.suite());

@@ -2106,6 +2106,1128 @@ public class BasicQueryTest extends FoodMartTestCase {
 				s);
 	}
 
+    /**
+     * Basically, the LookupCube function can evaluate a single MDX statement
+     * against a cube other than the cube currently indicated by query context
+     * to retrieve a single string or numeric result.
+     *
+     * <p>For example, the Budget cube in the FoodMart 2000 database contains
+     * budget information that can be displayed by store. The Sales cube in the
+     * FoodMart 2000 database contains sales information that can be displayed
+     * by store. Since no virtual cube exists in the FoodMart 2000 database that
+     * joins the Sales and Budget cubes together, comparing the two sets of
+     * figures would be difficult at best.
+     *
+     * <p><b>Note<b> In many situations a virtual cube can be used to integrate
+     * data from multiple cubes, which will often provide a simpler and more
+     * efficient solution than the LookupCube function. This example uses the
+     * LookupCube function for purposes of illustration.
+     *
+     * <p>The following MDX query, however, uses the LookupCube function to
+     * retrieve unit sales information for each store from the Sales cube,
+     * presenting it side by side with the budget information from the Budget
+     * cube.
+     **/
+    public void _testLookupCube() {
+        runQueryCheckResult(
+                "WITH MEMBER Measures.[Store Unit Sales] AS " + nl +
+                " 'LookupCube(\"Sales\", \"(\" + MemberToStr(Store.CurrentMember) + \", Measures.[Unit Sales])\")'" + nl +
+                "SELECT" + nl +
+                " {Measures.Amount, Measures.[Store Unit Sales]} ON COLUMNS," + nl +
+                " Store.CA.CHILDREN ON ROWS" + nl +
+                "FROM Budget", "");
+    }
+
+    /**
+     * <p>Basket analysis is a topic better suited to data mining discussions, but
+     * some basic forms of basket analysis can be handled through the use of MDX
+     * queries.
+     *
+     * <p>For example, one method of basket analysis groups customers based on
+     * qualification. In the following example, a qualified customer is one who
+     * has more than $10,000 in store sales or more than 10 unit sales. The
+     * following table illustrates such a report, run against the Sales cube in
+     * FoodMart 2000 with qualified customers grouped by the Country and State
+     * Province levels of the Customers dimension. The count and store sales
+     * total of qualified customers is represented by the Qualified Count and
+     * Qualified Sales columns, respectively.
+     *
+     * <p>To accomplish this basic form of basket analysis, the following MDX
+     * query constructs two calculated members. The first calculated member uses
+     * the MDX Count, Filter, and Descendants functions to create the Qualified
+     * Count column, while the second calculated member uses the MDX Sum,
+     * Filter, and Descendants functions to create the Qualified Sales column.
+     *
+     * <p>The key to this MDX query is the use of Filter and Descendants together
+     * to screen out non-qualified customers. Once screened out, the Sum and
+     * Count MDX functions can then be used to provide aggregation data only on
+     * qualified customers.
+     */
+    public void testBasketAnalysis() {
+        runQueryCheckResult(
+                "WITH MEMBER [Measures].[Qualified Count] AS" + nl +
+                " 'COUNT(FILTER(DESCENDANTS(Customers.CURRENTMEMBER, [Customers].[Name])," + nl +
+                "               ([Measures].[Store Sales]) > 10000 OR ([Measures].[Unit Sales]) > 10))'" + nl +
+                "MEMBER [Measures].[Qualified Sales] AS" + nl +
+                " 'SUM(FILTER(DESCENDANTS(Customers.CURRENTMEMBER, [Customers].[Name])," + nl +
+                "             ([Measures].[Store Sales]) > 10000 OR ([Measures].[Unit Sales]) > 10)," + nl +
+                "      ([Measures].[Store Sales]))'" + nl +
+                "SELECT {[Measures].[Qualified Count], [Measures].[Qualified Sales]} ON COLUMNS," + nl +
+                "  DESCENDANTS([Customers].[All Customers], [State Province], SELF_AND_BEFORE) ON ROWS" + nl +
+                "FROM Sales",
+
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Qualified Count]}" + nl +
+                "{[Measures].[Qualified Sales]}" + nl +
+                "Axis #2:" + nl +
+                "{[Customers].[All Customers]}" + nl +
+                "{[Customers].[All Customers].[Canada]}" + nl +
+                "{[Customers].[All Customers].[Mexico]}" + nl +
+                "{[Customers].[All Customers].[USA]}" + nl +
+                "{[Customers].[All Customers].[Canada].[BC]}" + nl +
+                "{[Customers].[All Customers].[Mexico].[DF]}" + nl +
+                "{[Customers].[All Customers].[Mexico].[Guerrero]}" + nl +
+                "{[Customers].[All Customers].[Mexico].[Jalisco]}" + nl +
+                "{[Customers].[All Customers].[Mexico].[Mexico]}" + nl +
+                "{[Customers].[All Customers].[Mexico].[Oaxaca]}" + nl +
+                "{[Customers].[All Customers].[Mexico].[Sinaloa]}" + nl +
+                "{[Customers].[All Customers].[Mexico].[Veracruz]}" + nl +
+                "{[Customers].[All Customers].[Mexico].[Yucatan]}" + nl +
+                "{[Customers].[All Customers].[Mexico].[Zacatecas]}" + nl +
+                "{[Customers].[All Customers].[USA].[CA]}" + nl +
+                "{[Customers].[All Customers].[USA].[OR]}" + nl +
+                "{[Customers].[All Customers].[USA].[WA]}" + nl +
+                "Row #0: 4,719.00" + nl +
+                "Row #0: 553,587.77" + nl +
+                "Row #1: .00" + nl +
+                "Row #1: (null)" + nl +
+                "Row #2: .00" + nl +
+                "Row #2: (null)" + nl +
+                "Row #3: 4,719.00" + nl +
+                "Row #3: 553,587.77" + nl +
+                "Row #4: .00" + nl +
+                "Row #4: (null)" + nl +
+                "Row #5: .00" + nl +
+                "Row #5: (null)" + nl +
+                "Row #6: .00" + nl +
+                "Row #6: (null)" + nl +
+                "Row #7: .00" + nl +
+                "Row #7: (null)" + nl +
+                "Row #8: .00" + nl +
+                "Row #8: (null)" + nl +
+                "Row #9: .00" + nl +
+                "Row #9: (null)" + nl +
+                "Row #10: .00" + nl +
+                "Row #10: (null)" + nl +
+                "Row #11: .00" + nl +
+                "Row #11: (null)" + nl +
+                "Row #12: .00" + nl +
+                "Row #12: (null)" + nl +
+                "Row #13: .00" + nl +
+                "Row #13: (null)" + nl +
+                "Row #14: 2,149.00" + nl +
+                "Row #14: 151,509.69" + nl +
+                "Row #15: 1,008.00" + nl +
+                "Row #15: 141,899.84" + nl +
+                "Row #16: 1,562.00" + nl +
+                "Row #16: 260,178.24" + nl);
+    }
+
+    /**
+     * <b>How Can I Perform Complex String Comparisons?</b>
+     *
+     * <p>MDX can handle basic string comparisons, but does not include complex
+     * string comparison and manipulation functions, for example, for finding
+     * substrings in strings or for supporting case-insensitive string
+     * comparisons. However, since MDX can take advantage of external function
+     * libraries, this question is easily resolved using string manipulation and
+     * comparison functions from the Microsoft Visual Basic® for Applications
+     * (VBA) external function library.
+     *
+     * <p>For example, you want to report the unit sales of all fruit-based
+     * products—not only the sales of fruit, but canned fruit, fruit snacks,
+     * fruit juices, and so on. By using the LCase and InStr VBA functions, the
+     * following results are easily accomplished in a single MDX query, without
+     * complex set construction or explicit member names within the query.
+     *
+     * <p>The following MDX query demonstrates how to achieve the results
+     * displayed in the previous table. For each member in the Product
+     * dimension, the name of the member is converted to lowercase using the
+     * LCase VBA function. Then, the InStr VBA function is used to discover
+     * whether or not the name contains the word "fruit". This information is
+     * used to then construct a set, using the Filter MDX function, from only
+     * those members from the Product dimension that contain the substring
+     * "fruit" in their names.
+     */
+    public void _testStringComparisons() {
+        runQueryCheckResult(
+                "SELECT {Measures.[Unit Sales]} ON COLUMNS," + nl +
+                "  FILTER([Product].[Product Name].MEMBERS," + nl +
+                "         INSTR(LCASE([Product].CURRENTMEMBER.NAME), \"fruit\") <> 0) ON ROWS " + nl +
+                "FROM Sales", "");
+    }
+
+    /**
+     * <b>How Can I Show Percentages as Measures?</b>
+     *
+     * <p>Another common business question easily answered through MDX is the
+     * display of percent values created as available measures.
+     *
+     * <p>For example, the Sales cube in the FoodMart 2000 database contains
+     * unit sales for each store in a given city, state, and country, organized
+     * along the Sales dimension. A report is requested to show, for
+     * California, the percentage of total unit sales attained by each city
+     * with a store. The results are illustrated in the following table.
+     *
+     * <p>Because the parent of a member is typically another, aggregated
+     * member in a regular dimension, this is easily achieved by the
+     * construction of a calculated member, as demonstrated in the following MDX
+     * query, using the CurrentMember and Parent MDX functions.
+     */
+    public void testPercentagesAsMeasures() {
+        runQueryCheckResult( // todo: "Store.[USA].[CA]" should be "Store.CA"
+                "WITH MEMBER Measures.[Unit Sales Percent] AS" + nl +
+                "  '((Store.CURRENTMEMBER, Measures.[Unit Sales]) /" + nl +
+                "    (Store.CURRENTMEMBER.PARENT, Measures.[Unit Sales])) '," + nl +
+                "  FORMAT_STRING = 'Percent'" + nl +
+                "SELECT {Measures.[Unit Sales], Measures.[Unit Sales Percent]} ON COLUMNS," + nl +
+                "  ORDER(DESCENDANTS(Store.[USA].[CA], Store.[Store City], SELF), " + nl +
+                "        [Measures].[Unit Sales], ASC) ON ROWS" + nl +
+                "FROM Sales",
+
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Unit Sales]}" + nl +
+                "{[Measures].[Unit Sales Percent]}" + nl +
+                "Axis #2:" + nl +
+                "{[Store].[All Stores].[USA].[CA].[Alameda]}" + nl +
+                "{[Store].[All Stores].[USA].[CA].[San Francisco]}" + nl +
+                "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}" + nl +
+                "{[Store].[All Stores].[USA].[CA].[San Diego]}" + nl +
+                "{[Store].[All Stores].[USA].[CA].[Los Angeles]}" + nl +
+                "Row #0: (null)" + nl +
+                "Row #0: 0.00%" + nl +
+                "Row #1: 2,117" + nl +
+                "Row #1: 2.83%" + nl +
+                "Row #2: 21,333" + nl +
+                "Row #2: 28.54%" + nl +
+                "Row #3: 25,635" + nl +
+                "Row #3: 34.30%" + nl +
+                "Row #4: 25,663" + nl +
+                "Row #4: 34.33%" + nl);
+    }
+
+    /**
+     * <b>How Can I Show Cumulative Sums as Measures?</b>
+     *
+     * <p>Another common business request, cumulative sums, is useful for
+     * business reporting purposes. However, since aggregations are handled in a
+     * hierarchical fashion, cumulative sums present some unique challenges in
+     * Analysis Services.
+     *
+     * <p>The best way to create a cumulative sum is as a calculated measure in
+     * MDX, using the Rank, Head, Order, and Sum MDX functions together.
+     *
+     * <p>For example, the following table illustrates a report that shows two
+     * views of employee count in all stores and cities in California, sorted
+     * by employee count. The first column shows the aggregated counts for each
+     * store and city, while the second column shows aggregated counts for each
+     * store, but cumulative counts for each city.
+     *
+     * <p>The cumulative number of employees for San Diego represents the value
+     * of both Los Angeles and San Diego, the value for Beverly Hills represents
+     * the cumulative total of Los Angeles, San Diego, and Beverly Hills, and so
+     * on.
+     *
+     * <p>Since the members within the state of California have been ordered
+     * from highest to lowest number of employees, this form of cumulative sum
+     * measure provides a form of pareto analysis within each state.
+     *
+     * <p>To support this, the Order function is first used to reorder members
+     * accordingly for both the Rank and Head functions. Once reordered, the
+     * Rank function is used to supply the ranking of each tuple within the
+     * reordered set of members, progressing as each member in the Store
+     * dimension is examined. The value is then used to determine the number of
+     * tuples to retrieve from the set of reordered members using the Head
+     * function. Finally, the retrieved members are then added together using
+     * the Sum function to obtain a cumulative sum. The following MDX query
+     * demonstrates how all of this works in concert to provide cumulative sums.
+     *
+     * <p>As an aside, a named set cannot be used in this situation to replace
+     * the duplicate Order function calls. Named sets are evaluated once, when a
+     * query is parsed—since the set can change based on the fact that the set
+     * can be different for each store member because the set is evaluated for
+     * the children of multiple parents, the set does not change with respect to
+     * its use in the Sum function. Since the named set is only evaluated once,
+     * it would not satisfy the needs of this query.
+     */
+    public void _testCumlativeSums() {
+        runQueryCheckResult( // todo: "[Store].[USA].[CA]" should be "Store.CA"; implement "AS"
+                "WITH MEMBER Measures.[Cumulative No of Employees] AS" + nl +
+                "  'SUM(HEAD(ORDER({[Store].Siblings}, [Measures].[Number of Employees], BDESC) AS OrderedSiblings," + nl +
+                "            RANK([Store], OrderedSiblings))," + nl +
+                "       [Measures].[Number of Employees])'" + nl +
+                "SELECT {[Measures].[Number of Employees], [Measures].[Cumulative No of Employees]} ON COLUMNS," + nl +
+                "  ORDER(DESCENDANTS([Store].[USA].[CA], [Store State], AFTER), " + nl +
+                "        [Measures].[Number of Employees], BDESC) ON ROWS" + nl +
+                "FROM HR", "");
+    }
+
+    /**
+     * <b>How Can I Implement a Logical AND or OR Condition in a WHERE
+     * Clause?</b>
+     *
+     * <p>For SQL users, the use of AND and OR logical operators in the WHERE
+     * clause of a SQL statement is an essential tool for constructing business
+     * queries. However, the WHERE clause of an MDX statement serves a
+     * slightly different purpose, and understanding how the WHERE clause is
+     * used in MDX can assist in constructing such business queries.
+     *
+     * <p>The WHERE clause in MDX is used to further restrict the results of
+     * an MDX query, in effect providing another dimension on which the results
+     * of the query are further sliced. As such, only expressions that resolve
+     * to a single tuple are allowed. The WHERE clause implicitly supports a
+     * logical AND operation involving members across different dimensions, by
+     * including the members as part of a tuple. To support logical AND
+     * operations involving members within a single dimensions, as well as
+     * logical OR operations, a calculated member needs to be defined in
+     * addition to the use of the WHERE clause.
+     *
+     * <p>For example, the following MDX query illustrates the use of a
+     * calculated member to support a logical OR. The query returns unit sales
+     * by quarter and year for all food and drink related products sold in 1997,
+     * run against the Sales cube in the FoodMart 2000 database.
+     *
+     * <p>The calculated member simply adds the values of the Unit Sales
+     * measure for the Food and the Drink levels of the Product dimension
+     * together. The WHERE clause is then used to restrict return of
+     * information only to the calculated member, effectively implementing a
+     * logical OR to return information for all time periods that contain unit
+     * sales values for either food, drink, or both types of products.
+     *
+     * <p>You can use the Aggregate function in similar situations where all
+     * measures are not aggregated by summing. To return the same results in the
+     * above example using the Aggregate function, replace the definition for
+     * the calculated member with this definition:
+     *
+     * <blockquote><pre>'Aggregate({[Product].[Food], [Product].[Drink]})'</pre></blockquote>
+     */
+    public void testLogicalOps() {
+        runQueryCheckResult(
+                "WITH MEMBER [Product].[Food OR Drink] AS" + nl +
+                "  '([Product].[Food], Measures.[Unit Sales]) + ([Product].[Drink], Measures.[Unit Sales])'" + nl +
+                "SELECT {Measures.[Unit Sales]} ON COLUMNS," + nl +
+                "  DESCENDANTS(Time.[1997], [Quarter], SELF_AND_BEFORE) ON ROWS" + nl +
+                "FROM Sales" + nl +
+                "WHERE [Product].[Food OR Drink]",
+
+                "Axis #0:" + nl +
+                "{[Product].[Food OR Drink]}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Unit Sales]}" + nl +
+                "Axis #2:" + nl +
+                "{[Time].[1997]}" + nl +
+                "{[Time].[1997].[Q1]}" + nl +
+                "{[Time].[1997].[Q2]}" + nl +
+                "{[Time].[1997].[Q3]}" + nl +
+                "{[Time].[1997].[Q4]}" + nl +
+                "Row #0: 216,537" + nl +
+                "Row #1: 53,785" + nl +
+                "Row #2: 50,720" + nl +
+                "Row #3: 53,505" + nl +
+                "Row #4: 58,527" + nl);
+    }
+
+    /**
+     * <p>A logical AND, by contrast, can be supported by using two different
+     * techniques. If the members used to construct the logical AND reside on
+     * different dimensions, all that is required is a WHERE clause that uses
+     * a tuple representing all involved members. The following MDX query uses a
+     * WHERE clause that effectively restricts the query to retrieve unit
+     * sales for drink products in the USA, shown by quarter and year for 1997.
+     */
+    public void testLogicalAnd() {
+        runQueryCheckResult( // todo: "[Store].USA" should be "[Store].[USA]"
+                "SELECT {Measures.[Unit Sales]} ON COLUMNS," + nl +
+                "  DESCENDANTS([Time].[1997], [Quarter], SELF_AND_BEFORE) ON ROWS" + nl +
+                "FROM Sales" + nl +
+                "WHERE ([Product].[Drink], [Store].[USA])",
+
+                "Axis #0:" + nl +
+                "{[Product].[All Products].[Drink], [Store].[All Stores].[USA]}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Unit Sales]}" + nl +
+                "Axis #2:" + nl +
+                "{[Time].[1997]}" + nl +
+                "{[Time].[1997].[Q1]}" + nl +
+                "{[Time].[1997].[Q2]}" + nl +
+                "{[Time].[1997].[Q3]}" + nl +
+                "{[Time].[1997].[Q4]}" + nl +
+                "Row #0: 24,597" + nl +
+                "Row #1: 5,976" + nl +
+                "Row #2: 5,895" + nl +
+                "Row #3: 6,065" + nl +
+                "Row #4: 6,661" + nl);
+    }
+
+    /**
+     * <p>The WHERE clause in the previous MDX query effectively provides a
+     * logical AND operator, in which all unit sales for 1997 are returned only
+     * for drink products and only for those sold in stores in the USA.
+     *
+     * <p>If the members used to construct the logical AND condition reside on
+     * the same dimension, you can use a calculated member or a named set to
+     * filter out the unwanted members, as demonstrated in the following MDX
+     * query.
+     *
+     * <p>The named set, [Good AND Pearl Stores], restricts the displayed unit
+     * sales totals only to those stores that have sold both Good products and
+     * Pearl products.
+     */
+    public void _testSet() {
+        runQueryCheckResult(
+                "WITH SET [Good AND Pearl Stores] AS" + nl +
+                "  'FILTER(Store.Members," + nl +
+                "          ([Product].[Good], Measures.[Unit Sales]) > 0 AND " + nl +
+                "          ([Product].[Pearl], Measures.[Unit Sales]) > 0)'" + nl +
+                "SELECT DESCENDANTS([Time].[1997], [Quarter], SELF_AND_BEFORE) ON COLUMNS," + nl +
+                "  [Good AND Pearl Stores] ON ROWS" + nl +
+                "FROM Sales", "");
+    }
+
+    /**
+     * <b>How Can I Use Custom Member Properties in MDX?</b>
+     *
+     * <p>Member properties are a good way of adding secondary business
+     * information to members in a dimension. However, getting that information
+     * out can be confusing—member properties are not readily apparent in a
+     * typical MDX query.
+     *
+     * <p>Member properties can be retrieved in one of two ways. The easiest
+     * and most used method of retrieving member properties is to use the
+     * DIMENSION PROPERTIES MDX statement when constructing an axis in an MDX
+     * query.
+     *
+     * <p>For example, a member property in the Store dimension in the FoodMart
+     * 2000 database details the total square feet for each store. The following
+     * MDX query can retrieve this member property as part of the returned
+     * cellset.
+     */
+    public void _testCustomMemberProperties() {
+        runQueryCheckResult( // todo: implement "DIMENSION PROPERTIES" syntax
+                "SELECT {[Measures].[Units Shipped], [Measures].[Units Ordered]} ON COLUMNS," + nl +
+                "  NON EMPTY [Store].[Store Name].MEMBERS" + nl +
+                "    DIMENSION PROPERTIES [Store].[Store Name].[Store Sqft] ON ROWS" + nl +
+                "FROM Warehouse", "");
+    }
+
+    /**
+     * <p>The drawback to using the DIMENSION PROPERTIES statement is that,
+     * for most client applications, the member property is not readily
+     * apparent. If the previous MDX query is executed in the MDX sample
+     * application shipped with SQL Server 2000 Analysis Services, for example,
+     * you must double-click the name of the member in the grid to open the
+     * Member Properties dialog box, which displays all of the member properties
+     * shipped as part of the cellset, including the [Store].[Store Name].[Store
+     * Sqft] member property.
+     *
+     * <p>The other method of retrieving member properties involves the creation
+     * of a calculated member based on the member property. The following MDX
+     * query brings back the total square feet for each store as a measure,
+     * included in the COLUMNS axis.
+     *
+     * <p>The [Store SqFt] measure is constructed with the Properties MDX
+     * function to retrieve the [Store SQFT] member property for each member in
+     * the Store dimension. The benefit to this technique is that the calculated
+     * member is readily apparent and easily accessible in client applications
+     * that do not support member properties.
+     */
+    public void _testMemberPropertyAsCalcMember() {
+        runQueryCheckResult( // todo: implement <member>.PROPERTIES
+                "WITH MEMBER Measures.[Store SqFt] AS '[Store].CURRENTMEMBER.PROPERTIES(\"Store SQFT\")'" + nl +
+                "SELECT { [Measures].[Store SQFT], [Measures].[Units Shipped], [Measures].[Units Ordered] }  ON COLUMNS," + nl +
+                "  [Store].[Store Name].MEMBERS ON ROWS" + nl +
+                "FROM Warehouse", "");
+    }
+
+    /**
+     * <b>How Can I Drill Down More Than One Level Deep, or Skip Levels When
+     * Drilling Down?</b>
+     *
+     * <p>Drilling down is an essential ability for most OLAP products, and
+     * Analysis Services is no exception. Several functions exist that support
+     * drilling up and down the hierarchy of dimensions within a cube.
+     * Typically, drilling up and down the hierarchy is done one level at a
+     * time; think of this functionality as a zoom feature for OLAP data.
+     *
+     * <p>There are times, though, when the need to drill down more than one
+     * level at the same time, or even skip levels when displaying information
+     * about multiple levels, exists for a business scenario.
+     *
+     * <p>For example, you would like to show report results from a query of
+     * the Sales cube in the FoodMart 2000 sample database showing sales totals
+     * for individual cities and the subtotals for each country, as shown in the
+     * following table.
+     *
+     * <p>The Customers dimension, however, has Country, State Province, and
+     * City levels. In order to show the above report, you would have to show
+     * the Country level and then drill down two levels to show the City
+     * level, skipping the State Province level entirely.
+     *
+     * <p>However, the MDX ToggleDrillState and DrillDownMember functions
+     * provide drill down functionality only one level below a specified set. To
+     * drill down more than one level below a specified set, you need to use a
+     * combination of MDX functions, including Descendants, Generate, and
+     * Except. This technique essentially constructs a large set that includes
+     * all levels between both upper and lower desired levels, then uses a
+     * smaller set representing the undesired level or levels to remove the
+     * appropriate members from the larger set.
+     *
+     * <p>The MDX Descendants function is used to construct a set consisting of
+     * the descendants of each member in the Customers dimension. The
+     * descendants are determined using the MDX Descendants function, with the
+     * descendants of the City level and the level above, the State Province
+     * level, for each member of the Customers dimension being added to the
+     * set.
+     *
+     * <p>The MDX Generate function now creates a set consisting of all members
+     * at the Country level as well as the members of the set generated by the
+     * MDX Descendants function. Then, the MDX Except function is used to
+     * exclude all members at the State Province level, so the returned set
+     * contains members at the Country and City levels.
+     *
+     * <p>Note, however, that the previous MDX query will still order the
+     * members according to their hierarchy. Although the returned set contains
+     * members at the Country and City levels, the Country, State Province,
+     * and City levels determine the order of the members.
+     */
+    public void _testDrillingDownMoreThanOneLevel() {
+        runQueryCheckResult( // todo: implement "GENERATE"
+                "SELECT  {[Measures].[Unit Sales]} ON COLUMNS," + nl +
+                "  EXCEPT(GENERATE([Customers].[Country].MEMBERS," + nl +
+                "                  {DESCENDANTS([Customers].CURRENTMEMBER, [Customers].[City], SELF_AND_BEFORE)})," + nl +
+                "         {[Customers].[State Province].MEMBERS}) ON ROWS" + nl +
+                "FROM Sales", "");
+    }
+
+    /**
+     * <b>How Do I Get the Topmost Members of a Level Broken Out by an Ancestor
+     * Level?</b>
+     *
+     * <p>This type of MDX query is common when only the facts for the lowest
+     * level of a dimension within a cube are needed, but information about
+     * other levels within the same dimension may also be required to satisfy a
+     * specific business scenario.
+     *
+     * <p>For example, a report that shows the unit sales for the store with
+     * the highest unit sales from each country is needed for marketing
+     * purposes. The following table provides an example of this report, run
+     * against the Sales cube in the FoodMart 2000 sample database.
+     *
+     * <p>This looks simple enough, but the Country Name column provides
+     * unexpected difficulty. The values for the Store Country column are taken
+     * from the Store Country level of the Store dimension, so the Store
+     * Country column is constructed as a calculated member as part of the MDX
+     * query, using the MDX Ancestor and Name functions to return the country
+     * names for each store.
+     *
+     * <p>A combination of the MDX Generate, TopCount, and Descendants
+     * functions are used to create a set containing the top stores in unit
+     * sales for each country.
+     */
+    public void _testTopmost() {
+        runQueryCheckResult( // todo: implement "GENERATE"
+                "WITH MEMBER Measures.[Country Name] AS " + nl +
+                "  'Ancestor(Store.CurrentMember, [Store Country]).Name'" + nl +
+                "SELECT {Measures.[Country Name], Measures.[Unit Sales]} ON COLUMNS," + nl +
+                "  GENERATE([Store Country].MEMBERS, " + nl +
+                "    TOPCOUNT(DESCENDANTS([Store].CURRENTMEMBER, [Store].[Store Name])," + nl +
+                "      1, [Measures].[Unit Sales])) ON ROWS" + nl +
+                "FROM Sales", "");
+    }
+
+    /**
+     * <p>The MDX Descendants function is used to construct a set consisting of
+     * only those members at the Store Name level in the Store dimension. Then,
+     * the MDX TopCount function is used to return only the topmost store based
+     * on the Unit Sales measure. The MDX Generate function then constructs a
+     * set based on the topmost stores, following the hierarchy of the Store
+     * dimension.
+     *
+     * <p>Alternate techniques, such as using the MDX Crossjoin function, may
+     * not provide the desired results because non-related joins can occur.
+     * Since the Store Country and Store Name levels are within the same
+     * dimension, they cannot be cross-joined. Another dimension that provides
+     * the same regional hierarchy structure, such as the Customers dimension,
+     * can be employed with the Crossjoin function. But, using this technique
+     * can cause non-related joins and return unexpected results.
+     *
+     * <p>For example, the following MDX query uses the Crossjoin function to
+     * attempt to return the same desired results.
+     *
+     * <p>However, some unexpected surprises occur because the topmost member
+     * in the Store dimension is cross-joined with all of the children of the
+     * Customers dimension, as shown in the following table.
+     *
+     * <p>In this instance, the use of a calculated member to provide store
+     * country names is easier to understand and debug than attempting to
+     * cross-join across unrelated members
+     */
+    public void testTopmost2() {
+        runQueryCheckResult(
+                "SELECT {Measures.[Unit Sales]} ON COLUMNS," + nl +
+                "  CROSSJOIN(Customers.CHILDREN," + nl +
+                "    TOPCOUNT(DESCENDANTS([Store].CURRENTMEMBER, [Store].[Store Name])," + nl +
+                "             1, [Measures].[Unit Sales])) ON ROWS" + nl +
+                "FROM Sales",
+
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Unit Sales]}" + nl +
+                "Axis #2:" + nl +
+                "{[Customers].[All Customers].[Canada], [Store].[All Stores].[USA].[OR].[Salem].[Store 13]}" + nl +
+                "{[Customers].[All Customers].[Mexico], [Store].[All Stores].[USA].[OR].[Salem].[Store 13]}" + nl +
+                "{[Customers].[All Customers].[USA], [Store].[All Stores].[USA].[OR].[Salem].[Store 13]}" + nl +
+                "Row #0: (null)" + nl +
+                "Row #1: (null)" + nl +
+                "Row #2: 41,580" + nl);
+    }
+
+    /**
+     * <b>How Can I Rank or Reorder Members?</b>
+     *
+     * <p>One of the issues commonly encountered in business scenarios is the
+     * need to rank the members of a dimension according to their corresponding
+     * measure values. The Order MDX function allows you to order a set based on
+     * a string or numeric expression evaluated against the members of a set.
+     * Combined with other MDX functions, the Order function can support
+     * several different types of ranking.
+     *
+     * <p>For example, the Sales cube in the FoodMart 2000 database can be used
+     * to show unit sales for each store. However, the business scenario
+     * requires a report that ranks the stores from highest to lowest unit
+     * sales, individually, of nonconsumable products.
+     *
+     * <p>Because of the requirement that stores be sorted individually, the
+     * hierarchy must be broken (in other words, ignored) for the purpose of
+     * ranking the stores. The Order function is capable of sorting within the
+     * hierarchy, based on the topmost level represented in the set to be
+     * sorted, or, by breaking the hierarchy, sorting all of the members of the
+     * set as if they existed on the same level, with the same parent.
+     *
+     * <p>The following MDX query illustrates the use of the Order function to
+     * rank the members according to unit sales.
+     */
+    public void testRank() {
+        runQueryCheckResult(
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS, " + nl +
+                "  ORDER([Store].[Store Name].MEMBERS, (Measures.[Unit Sales]), BDESC) ON ROWS" + nl +
+                "FROM Sales" + nl +
+                "WHERE [Product].[Non-Consumable]",
+                "Axis #0:" + nl +
+                "{[Product].[All Products].[Non-Consumable]}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Unit Sales]}" + nl +
+                "Axis #2:" + nl +
+                "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13]}" + nl +
+                "{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}" + nl +
+                "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]}" + nl +
+                "{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]}" + nl +
+                "{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}" + nl +
+                "{[Store].[All Stores].[USA].[WA].[Seattle].[Store 15]}" + nl +
+                "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}" + nl +
+                "{[Store].[All Stores].[USA].[WA].[Spokane].[Store 16]}" + nl +
+                "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]}" + nl +
+                "{[Store].[All Stores].[USA].[WA].[Yakima].[Store 23]}" + nl +
+                "{[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]}" + nl +
+                "{[Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22]}" + nl +
+                "{[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}" + nl +
+                "{[Store].[All Stores].[Canada].[BC].[Vancouver].[Store 19]}" + nl +
+                "{[Store].[All Stores].[Canada].[BC].[Victoria].[Store 20]}" + nl +
+                "{[Store].[All Stores].[Mexico].[DF].[Mexico City].[Store 9]}" + nl +
+                "{[Store].[All Stores].[Mexico].[DF].[San Andres].[Store 21]}" + nl +
+                "{[Store].[All Stores].[Mexico].[Guerrero].[Acapulco].[Store 1]}" + nl +
+                "{[Store].[All Stores].[Mexico].[Jalisco].[Guadalajara].[Store 5]}" + nl +
+                "{[Store].[All Stores].[Mexico].[Veracruz].[Orizaba].[Store 10]}" + nl +
+                "{[Store].[All Stores].[Mexico].[Yucatan].[Merida].[Store 8]}" + nl +
+                "{[Store].[All Stores].[Mexico].[Zacatecas].[Camacho].[Store 4]}" + nl +
+                "{[Store].[All Stores].[Mexico].[Zacatecas].[Hidalgo].[Store 12]}" + nl +
+                "{[Store].[All Stores].[Mexico].[Zacatecas].[Hidalgo].[Store 18]}" + nl +
+                "{[Store].[All Stores].[USA].[CA].[Alameda].[HQ]}" + nl +
+                "Row #0: 7,940" + nl +
+                "Row #1: 6,712" + nl +
+                "Row #2: 5,076" + nl +
+                "Row #3: 4,947" + nl +
+                "Row #4: 4,706" + nl +
+                "Row #5: 4,639" + nl +
+                "Row #6: 4,479" + nl +
+                "Row #7: 4,428" + nl +
+                "Row #8: 3,950" + nl +
+                "Row #9: 2,140" + nl +
+                "Row #10: 442" + nl +
+                "Row #11: 390" + nl +
+                "Row #12: 387" + nl +
+                "Row #13: (null)" + nl +
+                "Row #14: (null)" + nl +
+                "Row #15: (null)" + nl +
+                "Row #16: (null)" + nl +
+                "Row #17: (null)" + nl +
+                "Row #18: (null)" + nl +
+                "Row #19: (null)" + nl +
+                "Row #20: (null)" + nl +
+                "Row #21: (null)" + nl +
+                "Row #22: (null)" + nl +
+                "Row #23: (null)" + nl +
+                "Row #24: (null)" + nl);
+    }
+
+    /**
+     * <b>How Can I Use Different Calculations for Different Levels in a
+     * Dimension?</b>
+     *
+     * <p>This type of MDX query frequently occurs when different aggregations
+     * are needed at different levels in a dimension. One easy way to support
+     * such functionality is through the use of a calculated measure, created as
+     * part of the query, which uses the MDX Descendants function in conjunction
+     * with one of the MDX aggregation functions to provide results.
+     *
+     * <p>For example, the Warehouse cube in the FoodMart 2000 database
+     * supplies the [Units Ordered] measure, aggregated through the Sum
+     * function. But, you would also like to see the average number of units
+     * ordered per store. The following table demonstrates the desired results.
+     *
+     * <p>By using the following MDX query, the desired results can be
+     * achieved. The calculated measure, [Average Units Ordered], supplies the
+     * average number of ordered units per store by using the Avg,
+     * CurrentMember, and Descendants MDX functions.
+     */
+    public void testDifferentCalculationsForDifferentLevels() {
+        runQueryCheckResult(
+                "WITH MEMBER Measures.[Average Units Ordered] AS" + nl +
+                "  'AVG(DESCENDANTS([Store].CURRENTMEMBER, [Store].[Store Name]), [Measures].[Units Ordered])'" + nl +
+                "SELECT {[Measures].[Units ordered], Measures.[Average Units Ordered]} ON COLUMNS," + nl +
+                "  [Store].[Store State].MEMBERS ON ROWS" + nl +
+                "FROM Warehouse",
+
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Units Ordered]}" + nl +
+                "{[Measures].[Average Units Ordered]}" + nl +
+                "Axis #2:" + nl +
+                "{[Store].[All Stores].[Canada].[BC]}" + nl +
+                "{[Store].[All Stores].[Mexico].[DF]}" + nl +
+                "{[Store].[All Stores].[Mexico].[Guerrero]}" + nl +
+                "{[Store].[All Stores].[Mexico].[Jalisco]}" + nl +
+                "{[Store].[All Stores].[Mexico].[Veracruz]}" + nl +
+                "{[Store].[All Stores].[Mexico].[Yucatan]}" + nl +
+                "{[Store].[All Stores].[Mexico].[Zacatecas]}" + nl +
+                "{[Store].[All Stores].[USA].[CA]}" + nl +
+                "{[Store].[All Stores].[USA].[OR]}" + nl +
+                "{[Store].[All Stores].[USA].[WA]}" + nl +
+                "Row #0: (null)" + nl +
+                "Row #0: (null)" + nl +
+                "Row #1: (null)" + nl +
+                "Row #1: (null)" + nl +
+                "Row #2: (null)" + nl +
+                "Row #2: (null)" + nl +
+                "Row #3: (null)" + nl +
+                "Row #3: (null)" + nl +
+                "Row #4: (null)" + nl +
+                "Row #4: (null)" + nl +
+                "Row #5: (null)" + nl +
+                "Row #5: (null)" + nl +
+                "Row #6: (null)" + nl +
+                "Row #6: (null)" + nl +
+                "Row #7: 66307.0" + nl +
+                "Row #7: 16576.75" + nl +
+                "Row #8: 44906.0" + nl +
+                "Row #8: 22453.0" + nl +
+                "Row #9: 116025.0" + nl +
+                "Row #9: 16575.0" + nl);
+    }
+
+    /**
+     * <p>This calculated measure is more powerful than it seems; if, for
+     * example, you then want to see the average number of units ordered for
+     * beer products in all of the stores in the California area, the following
+     * MDX query can be executed with the same calculated measure.
+     */
+    public void testDifferentCalculations2() {
+        runQueryCheckResult( // todo: "[Store].[USA].[CA]" should be "[Store].CA", "[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]" should be "[Product].[Beer]"
+                "WITH MEMBER Measures.[Average Units Ordered] AS" + nl +
+                "  'AVG(DESCENDANTS([Store].CURRENTMEMBER, [Store].[Store Name]), [Measures].[Units Ordered])'" + nl +
+                "SELECT {[Measures].[Units ordered], Measures.[Average Units Ordered]} ON COLUMNS," + nl +
+                "  [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].CHILDREN ON ROWS" + nl +
+                "FROM Warehouse" + nl +
+                "WHERE [Store].[USA].[CA]",
+
+                "Axis #0:" + nl +
+                "{[Store].[All Stores].[USA].[CA]}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Units Ordered]}" + nl +
+                "{[Measures].[Average Units Ordered]}" + nl +
+                "Axis #2:" + nl +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}" + nl +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}" + nl +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}" + nl +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}" + nl +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}" + nl +
+                "Row #0: (null)" + nl +
+                "Row #0: (null)" + nl +
+                "Row #1: 151.0" + nl +
+                "Row #1: 75.5" + nl +
+                "Row #2: 95.0" + nl +
+                "Row #2: 95.0" + nl +
+                "Row #3: (null)" + nl +
+                "Row #3: (null)" + nl +
+                "Row #4: 211.0" + nl +
+                "Row #4: 105.5" + nl);
+    }
+
+    /**
+     * <b>How Can I Use Different Calculations for Different Dimensions?</b>
+     *
+     * <p>Each measure in a cube uses the same aggregation function across all
+     * dimensions. However, there are times where a different aggregation
+     * function may be needed to represent a measure for reporting purposes. Two
+     * basic cases involve aggregating a single dimension using a different
+     * aggregation function than the one used for other dimensions.<ul>
+     *
+     * <li>Aggregating minimums, maximums, or averages along a time dimension</li>
+     *
+     * <li>Aggregating opening and closing period values along a time
+     * dimension</li></ul>
+     *
+     * <p>The first case involves some knowledge of the behavior of the time
+     * dimension specified in the cube. For instance, to create a calculated
+     * measure that contains the average, along a time dimension, of measures
+     * aggregated as sums along other dimensions, the average of the aggregated
+     * measures must be taken over the set of averaging time periods,
+     * constructed through the use of the Descendants MDX function. Minimum and
+     * maximum values are more easily calculated through the use of the Min and
+     * Max MDX functions, also combined with the Descendants function.
+     *
+     * <p>For example, the Warehouse cube in the FoodMart 2000 database
+     * contains information on ordered and shipped inventory; from it, a report
+     * is requested to show the average number of units shipped, by product, to
+     * each store. Information on units shipped is added on a monthly basis, so
+     * the aggregated measure [Units Shipped] is divided by the count of
+     * descendants, at the Month level, of the current member in the Time
+     * dimension. This calculation provides a measure representing the average
+     * number of units shipped per month, as demonstrated in the following MDX
+     * query.
+     */
+    public void _testDifferentCalculationsForDifferentDimensions() {
+        runQueryCheckResult( // todo: implement "NONEMPTYCROSSJOIN"
+                "WITH MEMBER [Measures].[Avg Units Shipped] AS" + nl +
+                "  '[Measures].[Units Shipped] / " + nl +
+                "    COUNT(DESCENDANTS([Time].CURRENTMEMBER, [Time].[Month], SELF))'" + nl +
+                "SELECT {Measures.[Units Shipped], Measures.[Avg Units Shipped]} ON COLUMNS," + nl +
+                "NONEMPTYCROSSJOIN(Store.CA.Children, Product.MEMBERS) ON ROWS" + nl +
+                "FROM Warehouse", "");
+    }
+
+    /**
+     * <p>The second case is easier to resolve, because MDX provides the
+     * OpeningPeriod and ClosingPeriod MDX functions specifically to support
+     * opening and closing period values.
+     *
+     * <p>For example, the Warehouse cube in the FoodMart 2000 database
+     * contains information on ordered and shipped inventory; from it, a report
+     * is requested to show on-hand inventory at the end of every month. Because
+     * the inventory on hand should equal ordered inventory minus shipped
+     * inventory, the ClosingPeriod MDX function can be used to create a
+     * calculated measure to supply the value of inventory on hand, as
+     * demonstrated in the following MDX query.
+     */
+    public void _testDifferentCalculationsForDifferentDimensions2() {
+        runQueryCheckResult(
+                "WITH MEMBER Measures.[Closing Balance] AS" + nl +
+                "  '([Measures].[Units Ordered], " + nl +
+                "    CLOSINGPERIOD([Time].[Month], [Time].CURRENTMEMBER)) -" + nl +
+                "   ([Measures].[Units Shipped], " + nl +
+                "    CLOSINGPERIOD([Time].[Month], [Time].CURRENTMEMBER))'" + nl +
+                "SELECT {[Measures].[Closing Balance]} ON COLUMNS," + nl +
+                "  Product.MEMBERS ON ROWS" + nl +
+                "FROM Warehouse", "");
+    }
+
+    /**
+     * <b>How Can I Use Date Ranges in MDX?</b>
+     *
+     * <p>Date ranges are a frequently encountered problem. Business questions
+     * use ranges of dates, but OLAP objects provide aggregated information in
+     * date levels.
+     *
+     * <p>Using the technique described here, you can establish date ranges in
+     * MDX queries at the level of granularity provided by a time dimension.
+     * Date ranges cannot be established below the granularity of the dimension
+     * without additional information. For example, if the lowest level of a
+     * time dimension represents months, you will not be able to establish a
+     * two-week date range without other information. Member properties can be
+     * added to supply specific dates for members; using such member properties,
+     * you can take advantage of the date and time functions provided by VBA and
+     * Excel external function libraries to establish date ranges.
+     *
+     * <p>The easiest way to specify a static date range is by using the colon
+     * (:) operator. This operator creates a naturally ordered set, using the
+     * members specified on either side of the operator as the endpoints for the
+     * ordered set. For example, to specify the first six months of 1998 from
+     * the Time dimension in FoodMart 2000, the MDX syntax would resemble:
+     *
+     * <blockquote><pre>[Time].[1998].[1]:[Time].[1998].[6]</pre></blockquote>
+     *
+     * <p>For example, the Sales cube uses a time dimension that supports Year,
+     * Quarter, and Month levels. To add a six-month and nine-month total, two
+     * calculated members are created in the following MDX query.
+     */
+    public void _testDateRange() {
+        runQueryCheckResult( // todo: implement "AddCalculatedMembers"
+                "WITH MEMBER [Time].[1997].[Six Month] AS" + nl +
+                "  'SUM([Time].[1]:[Time].[6])'" + nl +
+                "MEMBER [Time].[1997].[Nine Month] AS" + nl +
+                "  'SUM([Time].[1]:[Time].[9])'" + nl +
+                "SELECT AddCalculatedMembers([Time].[1997].Children) ON COLUMNS," + nl +
+                "  [Product].Children ON ROWS" + nl +
+                "FROM Sales", "");
+    }
+
+    /**
+     * <b>How Can I Use Rolling Date Ranges in MDX?</b>
+     *
+     * <p>There are several techniques that can be used in MDX to support
+     * rolling date ranges. All of these techniques tend to fall into two
+     * groups. The first group involves the use of relative hierarchical
+     * functions to construct named sets or calculated members, and the second
+     * group involves the use of absolute date functions from external function
+     * libraries to construct named sets or calculated members. Both groups are
+     * applicable in different business scenarios.
+     *
+     * <p>In the first group of techniques, typically a named set is
+     * constructed which contains a number of periods from a time dimension. For
+     * example, the following table illustrates a 12-month rolling period, in
+     * which the figures for unit sales of the previous 12 months are shown.
+     *
+     * <p>The following MDX query accomplishes this by using a number of MDX
+     * functions, including LastPeriods, Tail, Filter, Members, and Item, to
+     * construct a named set containing only those members across all other
+     * dimensions that share data with the time dimension at the Month level.
+     * The example assumes that there is at least one measure, such as [Unit
+     * Sales], with a value greater than zero in the current period. The Filter
+     * function creates a set of months with unit sales greater than zero, while
+     * the Tail function returns the last month in this set, the current month.
+     * The LastPeriods function, finally, is then used to retrieve the last 12
+     * periods at this level, including the current period.
+     */
+    public void _testRolling() {
+        runQueryCheckResult(
+                "WITH SET Rolling12 AS" + nl +
+                "  'LASTPERIODS(12, TAIL(FILTER([Time].[Month].MEMBERS, " + nl +
+                "    ([Customers].[All Customers], " + nl +
+                "    [Education Level].[All Education Level]," + nl +
+                "    [Gender].[All Gender]," + nl +
+                "    [Marital Status].[All Marital Status]," + nl +
+                "    [Product].[All Products], " + nl +
+                "    [Promotion Media].[All Media]," + nl +
+                "    [Promotions].[All Promotions]," + nl +
+                "    [Store].[All Stores]," + nl +
+                "    [Store Size in SQFT].[All Store Size in SQFT]," + nl +
+                "    [Store Type].[All Store Type]," + nl +
+                "    [Yearly Income].[All Yearly Income]," + nl +
+                "    Measures.[Unit Sales]) >0)," + nl +
+                "  1).ITEM(0).ITEM(0))'" + nl +
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS, " + nl +
+                "  Rolling12 ON ROWS" + nl +
+                "FROM Sales", "");
+    }
+
+    /**
+     * <b>How Can I Use Different Calculations for Different Time Periods?</b>
+     *
+     * <p>A few techniques can be used, depending on the structure of the cube
+     * being queried, to support different calculations for members depending
+     * on the time period. The following example includes the MDX IIf function,
+     * and is easy to use but difficult to maintain. This example works well for
+     * ad hoc queries, but is not the ideal technique for client applications in
+     * a production environment.
+     *
+     * <p>For example, the following table illustrates a standard and dynamic
+     * forecast of warehouse sales, from the Warehouse cube in the FoodMart 2000
+     * database, for drink products. The standard forecast is double the
+     * warehouse sales of the previous year, while the dynamic forecast varies
+     * from month to month—the forecast for January is 120 percent of previous
+     * sales, while the forecast for July is 260 percent of previous sales.
+     *
+     * <p>The most flexible way of handling this type of report is the use of
+     * nested MDX IIf functions to return a multiplier to be used on the members
+     * of the Products dimension, at the Drinks level. The following MDX query
+     * demonstrates this technique.
+     */
+    public void testDifferentCalcsForDifferentTimePeriods() {
+        runQueryCheckResult( // note: "[Product].[Drink Forecast - Standard]" was "[Drink Forecast - Standard]"
+                "WITH MEMBER [Product].[Drink Forecast - Standard] AS" + nl +
+                "  '[Product].[All Products].[Drink] * 2'" + nl +
+                "MEMBER [Product].[Drink Forecast - Dynamic] AS " + nl +
+                "  '[Product].[All Products].[Drink] * " + nl +
+                "   IIF([Time].CurrentMember.Name = \"1\", 1.2," + nl +
+                "     IIF([Time].CurrentMember.Name = \"2\", 1.3," + nl +
+                "       IIF([Time].CurrentMember.Name = \"3\", 1.4," + nl +
+                "         IIF([Time].CurrentMember.Name = \"4\", 1.6," + nl +
+                "           IIF([Time].CurrentMember.Name = \"5\", 2.1," + nl +
+                "             IIF([Time].CurrentMember.Name = \"6\", 2.4," + nl +
+                "               IIF([Time].CurrentMember.Name = \"7\", 2.6," + nl +
+                "                 IIF([Time].CurrentMember.Name = \"8\", 2.3," + nl +
+                "                   IIF([Time].CurrentMember.Name = \"9\", 1.9," + nl +
+                "                     IIF([Time].CurrentMember.Name = \"10\", 1.5," + nl +
+                "                       IIF([Time].CurrentMember.Name = \"11\", 1.4," + nl +
+                "                         IIF([Time].CurrentMember.Name = \"12\", 1.2, 1.0))))))))))))'" + nl +
+                "SELECT DESCENDANTS(Time.[1997], [Month], SELF) ON COLUMNS, " + nl +
+                "  {[Product].CHILDREN, [Product].[Drink Forecast - Standard], [Product].[Drink Forecast - Dynamic]} ON ROWS" + nl +
+                "FROM Warehouse",
+
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Time].[1997].[Q1].[1]}" + nl +
+                "{[Time].[1997].[Q1].[2]}" + nl +
+                "{[Time].[1997].[Q1].[3]}" + nl +
+                "{[Time].[1997].[Q2].[4]}" + nl +
+                "{[Time].[1997].[Q2].[5]}" + nl +
+                "{[Time].[1997].[Q2].[6]}" + nl +
+                "{[Time].[1997].[Q3].[7]}" + nl +
+                "{[Time].[1997].[Q3].[8]}" + nl +
+                "{[Time].[1997].[Q3].[9]}" + nl +
+                "{[Time].[1997].[Q4].[10]}" + nl +
+                "{[Time].[1997].[Q4].[11]}" + nl +
+                "{[Time].[1997].[Q4].[12]}" + nl +
+                "Axis #2:" + nl +
+                "{[Product].[All Products].[Drink]}" + nl +
+                "{[Product].[All Products].[Food]}" + nl +
+                "{[Product].[All Products].[Non-Consumable]}" + nl +
+                "{[Product].[Drink Forecast - Standard]}" + nl +
+                "{[Product].[Drink Forecast - Dynamic]}" + nl +
+                "Row #0: 881.8467" + nl +
+                "Row #0: 579.051" + nl +
+                "Row #0: 476.2922" + nl +
+                "Row #0: 618.722" + nl +
+                "Row #0: 778.8864" + nl +
+                "Row #0: 636.9348" + nl +
+                "Row #0: 937.8423" + nl +
+                "Row #0: 767.3325" + nl +
+                "Row #0: 920.7068" + nl +
+                "Row #0: 1007.764" + nl +
+                "Row #0: 820.8075" + nl +
+                "Row #0: 792.1672" + nl +
+                "Row #1: 8383.4455" + nl +
+                "Row #1: 4851.4058" + nl +
+                "Row #1: 5353.188" + nl +
+                "Row #1: 6061.829" + nl +
+                "Row #1: 6039.282" + nl +
+                "Row #1: 5259.2425" + nl +
+                "Row #1: 6902.0103" + nl +
+                "Row #1: 5790.7723" + nl +
+                "Row #1: 8167.0532" + nl +
+                "Row #1: 6188.7316" + nl +
+                "Row #1: 5344.8452" + nl +
+                "Row #1: 5025.7443" + nl +
+                "Row #2: 2040.3959" + nl +
+                "Row #2: 1269.8157" + nl +
+                "Row #2: 1460.6858" + nl +
+                "Row #2: 1696.7566" + nl +
+                "Row #2: 1397.0354" + nl +
+                "Row #2: 1578.1365" + nl +
+                "Row #2: 1671.0463" + nl +
+                "Row #2: 1609.4467" + nl +
+                "Row #2: 2059.6172" + nl +
+                "Row #2: 1617.4927" + nl +
+                "Row #2: 1909.7132" + nl +
+                "Row #2: 1382.3638" + nl +
+                "Row #3: 1763.6934" + nl +
+                "Row #3: 1158.102" + nl +
+                "Row #3: 952.5844" + nl +
+                "Row #3: 1237.444" + nl +
+                "Row #3: 1557.7728" + nl +
+                "Row #3: 1273.8696" + nl +
+                "Row #3: 1875.6846" + nl +
+                "Row #3: 1534.665" + nl +
+                "Row #3: 1841.4136" + nl +
+                "Row #3: 2015.528" + nl +
+                "Row #3: 1641.615" + nl +
+                "Row #3: 1584.3344" + nl +
+                "Row #4: 1058.21604" + nl +
+                "Row #4: 752.7663000000001" + nl +
+                "Row #4: 666.8090799999999" + nl +
+                "Row #4: 989.9552" + nl +
+                "Row #4: 1635.66144" + nl +
+                "Row #4: 1528.6435199999999" + nl +
+                "Row #4: 2438.38998" + nl +
+                "Row #4: 1764.8647499999997" + nl +
+                "Row #4: 1749.34292" + nl +
+                "Row #4: 1511.646" + nl +
+                "Row #4: 1149.1305" + nl +
+                "Row #4: 950.6006399999999" + nl);
+    }
+
+    /**
+     * <p>Other techniques, such as the addition of member properties to the
+     * Time or Product dimensions to support such calculations, are not as
+     * flexible but are much more efficient. The primary drawback to using such
+     * techniques is that the calculations are not easily altered for
+     * speculative analysis purposes. For client applications, however, where
+     * the calculations are static or slowly changing, using a member property
+     * is an excellent way of supplying such functionality to clients while
+     * keeping maintenance of calculation variables at the server level. The
+     * same MDX query, for example, could be rewritten to use a member property
+     * named [Dynamic Forecast Multiplier] as shown in the following MDX query.
+     */
+    public void _testDc4dtp2() {
+        runQueryCheckResult(
+                "WITH MEMBER [Product].[Drink Forecast - Standard] AS" + nl +
+                "  '[Product].[All Products].[Drink] * 2'" + nl +
+                "MEMBER [Product].[Drink Forecast - Dynamic] AS " + nl +
+                "  '[Product].[All Products].[Drink] * " + nl +
+                "   [Time].CURRENTMEMBER.PROPERTIES(\"Dynamic Forecast Multiplier\")'" + nl +
+                "SELECT DESCENDANTS(Time.[1997], [Month], SELF) ON COLUMNS, " + nl +
+                "  {[Product].CHILDREN, [Drink Forecast - Standard], [Drink Forecast - Dynamic]} ON ROWS" + nl +
+                "FROM Warehouse", "");
+    }
+
+    /**
+     * <b>How Can I Compare Time Periods in MDX?</b>
+     *
+     * <p>To answer such a common business question, MDX provides a number of
+     * functions specifically designed to navigate and aggregate information
+     * across time periods. For example, year-to-date (YTD) totals are directly
+     * supported through the YTD function in MDX. In combination with the MDX
+     * ParallelPeriod function, you can create calculated members to support
+     * direct comparison of totals across time periods.
+     *
+     * <p>For example, the following table represents a comparison of YTD unit
+     * sales between 1997 and 1998, run against the Sales cube in the FoodMart
+     * 2000 database.
+     *
+     * <p>The following MDX query uses three calculated members to illustrate
+     * how to use the YTD and ParallelPeriod functions in combination to compare
+     * time periods.
+     */
+    public void _testYtdGrowth() {
+        runQueryCheckResult( // todo: implement "ParallelPeriod"
+                "WITH MEMBER [Measures].[YTD Unit Sales] AS" + nl +
+                "  'COALESCEEMPTY(SUM(YTD(), [Measures].[Unit Sales]), 0)'" + nl +
+                "MEMBER [Measures].[Previous YTD Unit Sales] AS" + nl +
+                "  '(Measures.[YTD Unit Sales], PARALLELPERIOD([Time].[Year]))'" + nl +
+                "MEMBER [Measures].[YTD Growth] AS" + nl +
+                "  '[Measures].[YTD Unit Sales] - ([Measures].[Previous YTD Unit Sales])'" + nl +
+                "SELECT {[Time].[1998]} ON COLUMNS," + nl +
+                "  {[Measures].[YTD Unit Sales], [Measures].[Previous YTD Unit Sales], [Measures].[YTD Growth]} ON ROWS" + nl +
+                "FROM Sales ", "");
+    }
+
 	public void testParallelNot() {
 		runParallelQueries(1, 1);
 	}

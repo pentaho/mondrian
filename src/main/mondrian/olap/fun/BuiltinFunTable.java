@@ -2761,10 +2761,10 @@ public class BuiltinFunTable extends FunTable {
 						"Axis #0:" + nl +
 						"{}" + nl +
 						"Axis #1:" + nl +
-						"{[Time].[1997]}" + nl +
 						"{[Time].[1998]}" + nl +
-						"Row #0: 266,773" + nl +
-						"Row #0: (null)" + nl);
+						"{[Time].[1997]}" + nl +
+						"Row #0: (null)" + nl +
+						"Row #0: 266,773" + nl);
 			}
 			public void testOrderBug712702_Original(FoodMartTestCase test) {
 				test.runQueryCheckResult("with member [Measures].[Average Unit Sales] as 'Avg(Descendants([Time].CurrentMember, [Time].[Month]), " + nl +
