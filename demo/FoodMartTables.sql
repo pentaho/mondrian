@@ -9,7 +9,7 @@
 CREATE TABLE customer(
   customer_id INTEGER,
   ordinal INTEGER,
-  account_num DOUBLE,
+  account_num BIGINT,
   lname VARCHAR,
   fname VARCHAR,
   mi VARCHAR,
@@ -40,30 +40,30 @@ CREATE TABLE inventory_fact_1997(
   time_id INTEGER,
   warehouse_id INTEGER,
   store_id INTEGER,
-  units_ordered DOUBLE,
+  units_ordered BIGINT,
   units_shipped INTEGER,
-  warehouse_sales NUMERIC,
-  warehouse_cost NUMERIC,
+  warehouse_sales DECIMAL(10,2),
+  warehouse_cost DECIMAL(10,2),
   supply_time SMALLINT,
-  store_invoice NUMERIC);
+  store_invoice DECIMAL(10,2));
 CREATE TABLE inventory_fact_1998(
   product_id INTEGER,
   time_id INTEGER,
   warehouse_id INTEGER,
   store_id INTEGER,
-  units_ordered DOUBLE,
+  units_ordered BIGINT,
   units_shipped INTEGER,
-  warehouse_sales NUMERIC,
-  warehouse_cost NUMERIC,
+  warehouse_sales DECIMAL(10,2),
+  warehouse_cost DECIMAL(10,2),
   supply_time SMALLINT,
-  store_invoice NUMERIC);
+  store_invoice DECIMAL(10,2));
 CREATE TABLE product(
   product_class_id INTEGER,
   product_id INTEGER,
   brand_name VARCHAR,
   product_name VARCHAR,
-  SKU DOUBLE,
-  SRP NUMERIC,
+  SKU BIGINT,
+  SRP DECIMAL(10,2),
   gross_weight REAL,
   net_weight REAL,
   recyclable_package BIT,
@@ -84,7 +84,7 @@ CREATE TABLE promotion(
   promotion_district_id INTEGER,
   promotion_name VARCHAR,
   media_type VARCHAR,
-  cost DOUBLE,
+  cost BIGINT,
   start_date TIMESTAMP,
   end_date TIMESTAMP);
 CREATE TABLE region(
@@ -101,33 +101,33 @@ CREATE TABLE sales_fact_1997(
   customer_id INTEGER,
   promotion_id INTEGER,
   store_id INTEGER,
-  store_sales NUMERIC,
-  store_cost NUMERIC,
-  unit_sales DOUBLE);
+  store_sales DECIMAL(10,2),
+  store_cost DECIMAL(10,2),
+  unit_sales BIGINT);
 CREATE TABLE sales_fact_1998(
   product_id INTEGER,
   time_id INTEGER,
   customer_id INTEGER,
   promotion_id INTEGER,
   store_id INTEGER,
-  store_sales NUMERIC,
-  store_cost NUMERIC,
-  unit_sales DOUBLE);
+  store_sales DECIMAL(10,2),
+  store_cost DECIMAL(10,2),
+  unit_sales BIGINT);
 CREATE TABLE sales_fact_dec_1998(
   product_id INTEGER,
   time_id INTEGER,
   customer_id INTEGER,
   promotion_id INTEGER,
   store_id INTEGER,
-  store_sales NUMERIC,
-  store_cost NUMERIC,
-  unit_sales DOUBLE);
+  store_sales DECIMAL(10,2),
+  store_cost DECIMAL(10,2),
+  unit_sales BIGINT);
 CREATE TABLE store(
   store_id INTEGER,
   store_type VARCHAR,
   region_id INTEGER,
   store_name VARCHAR,
-  store_number DOUBLE,
+  store_number BIGINT,
   store_street_address VARCHAR,
   store_city VARCHAR,
   store_state VARCHAR,
@@ -138,10 +138,10 @@ CREATE TABLE store(
   store_fax VARCHAR,
   first_opened_date TIMESTAMP,
   last_remodel_date TIMESTAMP,
-  store_sqft DOUBLE,
-  grocery_sqft DOUBLE,
-  frozen_sqft DOUBLE,
-  meat_sqft DOUBLE,
+  store_sqft BIGINT,
+  grocery_sqft BIGINT,
+  frozen_sqft BIGINT,
+  meat_sqft BIGINT,
   coffee_bar BIT,
   video_store BIT,
   salad_bar BIT,
@@ -154,7 +154,7 @@ CREATE TABLE time_by_day(
   the_month VARCHAR,
   the_year SMALLINT,
   day_of_month SMALLINT,
-  week_of_year DOUBLE,
+  week_of_year BIGINT,
   month_of_year SMALLINT,
   quarter VARCHAR,
   fiscal_period VARCHAR);
