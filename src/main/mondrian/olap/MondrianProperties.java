@@ -311,6 +311,23 @@ public class MondrianProperties extends PropertiesPlus {
         return getProperty(QueryFileDirectory);
     }
 
+    public static final String Iterations = "mondrian.test.Iterations";
+    public static final int Iterations_Default = 1;
+    public int getIterations() {
+        return getIntProperty(Iterations, Iterations_Default);
+    }
+
+    public static final String VUsers = "mondrian.test.VUsers";
+    public static final int VUsers_Default = 1;
+    public int getVUsers() {
+        return getIntProperty(VUsers, VUsers_Default);
+    }
+
+    public static final String Warmup = "mondrian.test.Warmup";
+    public boolean getWarmup() {
+        return getBooleanProperty(Warmup);
+    }
+
     public static final String CachePoolType = "mondrian.rolap.CachePoolType";
     public static final String CachePoolType_Soft = "soft";
     public static final String CachePoolType_Mondrian = "mondrian";

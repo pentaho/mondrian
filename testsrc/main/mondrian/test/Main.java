@@ -12,14 +12,13 @@
 
 package mondrian.test;
 import junit.framework.*;
-import junit.textui.TestRunner;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.ParserTest;
 import mondrian.olap.Util;
 import mondrian.olap.UtilTestCase;
 import mondrian.olap.fun.FunctionTest;
 import mondrian.rolap.RolapUtil;
-import mondrian.rolap.RolapConnectionTest;
+//import mondrian.rolap.RolapConnectionTest;
 import mondrian.rolap.TestAggregationManager;
 import mondrian.util.ScheduleTest;
 import mondrian.xmla.XmlaTest;
@@ -58,14 +57,24 @@ public class Main extends TestSuite {
 	 * Creates and runs the root test suite.
 	 */
 	void run(String[] args) throws Exception {
+		final MondrianProperties properties = MondrianProperties.instance();
 		Test test = suite();
-        if (false) {
-            new MondrianHarness().run(test, new MondrianListener());
-        } else {
-            TestResult tres = TestRunner.run(test);
-            if (!tres.wasSuccessful())
-            	System.exit(1);
-        }
+		if (properties.getWarmup()) {
+			System.out.println("Starting warmup run...");
+			MondrianTestRunner runner = new MondrianTestRunner();
+	        TestResult tres = runner.doRun(test);
+	        if (!tres.wasSuccessful()) {
+				System.out.println("Warmup run failed. Regular tests will not be run.");
+	        	System.exit(1);
+	        }
+			System.out.println("Warmup run complete. Starting regular run...");
+		}
+		MondrianTestRunner runner = new MondrianTestRunner();
+		runner.setIterations(properties.getIterations());
+		runner.setVUsers(properties.getVUsers());
+        TestResult tres = runner.doRun(test);
+        if (!tres.wasSuccessful())
+        	System.exit(1);
 	}
 
 	/**
@@ -76,8 +85,8 @@ public class Main extends TestSuite {
 	public static Test suite() throws Exception {
 		RolapUtil.checkTracing();
 		MondrianProperties properties = MondrianProperties.instance();
-		String testName = properties.getTestName(),
-			testClass = properties.getTestClass();
+		String testName = properties.getTestName();
+		String testClass = properties.getTestClass();
 
         System.out.println("testName: " + testName);
         System.out.println("testClass: " + testClass);
@@ -112,13 +121,13 @@ public class Main extends TestSuite {
 			suite.addTestSuite(FunctionTest.class);
 			suite.addTestSuite(ScheduleTest.class);
 			suite.addTestSuite(UtilTestCase.class);
-			suite.addTestSuite(TestAggregationManager.class);
+			if (isRunOnce()) suite.addTestSuite(TestAggregationManager.class);
 			suite.addTestSuite(ParameterTest.class);
 			suite.addTestSuite(AccessControlTest.class);
             suite.addTestSuite(ParserTest.class);
 			suite.addTestSuite(ParentChildHierarchyTest.class);
             if (false) suite.addTestSuite(XmlaTest.class);
-            suite.addTestSuite(TestCalculatedMembers.class);
+            if (isRunOnce()) suite.addTestSuite(TestCalculatedMembers.class);
             suite.addTestSuite(RaggedHierarchyTest.class);
 		}
 		if (testName != null) {
@@ -130,6 +139,19 @@ public class Main extends TestSuite {
 		return suite;
 	}
 
+	/**
+	 * Check to see if the tests are running one user, one iteration.
+	 * Some tests are not thread safe so have to be skipped if this is not true.
+	 */
+	private static boolean isRunOnce() {
+		final MondrianProperties properties = MondrianProperties.instance();
+		return !properties.getWarmup() && properties.getVUsers() == 1
+				&& properties.getIterations() == 1;
+	}
+	
+	/**
+	 * Make a copy of a suite, filtering certain tests.
+	 */
 	private static TestSuite copySuite(TestSuite suite, Pattern testPattern) {
 		TestSuite newSuite = new TestSuite();
 		Enumeration tests = suite.tests();
@@ -138,7 +160,7 @@ public class Main extends TestSuite {
 			if (test instanceof TestCase) {
 				TestCase testCase = (TestCase) test;
 				final String testName = testCase.getName();
-				if (testPattern.matcher(testName).matches()) {
+				if (testPattern == null || testPattern.matcher(testName).matches()) {
 					newSuite.addTest(test);
 				}
 			} else if (test instanceof TestSuite) {
@@ -163,49 +185,6 @@ public class Main extends TestSuite {
 		Method method = clazz.getMethod("suite", new Class[0]);
 		Object o = method.invoke(null, new Object[0]);
 		suite.addTest((Test) o);
-	}
-}
-
-/**
- * <code>MondrianHarness</code> is a simple harness for JUnit tests.
- */
-class MondrianHarness {
-	/**
-	 * Runs a test.
-	 */
-	void run(Test test, TestListener listener) {
-		TestResult result = new TestResult();
-		result.addListener(listener);
-		test.run(result);
-	}
-}
-
-/**
- * <code>MondrianListener</code> is a simple listener.
- */
-class MondrianListener implements TestListener {
-	PrintWriter pw;
-	MondrianListener() {
-		this.pw = TestContext.instance().getWriter();
-	}
-	private void report(Test test, String s, Throwable throwable) {
-		pw.print(s + " in test '" + test + "': ");
-		String[] msgs = Util.convertStackToString(throwable);
-		for (int i = 0; i < msgs.length; i++) {
-			String msg = msgs[i];
-			pw.println(msg);
-		}
-	}
-	public void addError(Test test, Throwable throwable) {
-		report(test, "Error", throwable);
-	}
-	public void addFailure(Test test, AssertionFailedError error) {
-		report(test, "Failure", error);
-	}
-	public void endTest(Test test) {
-		pw.println(test + " succeeded.");
-	}
-	public void startTest(Test test) {
 	}
 }
 

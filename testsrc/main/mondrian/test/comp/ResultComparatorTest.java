@@ -91,24 +91,11 @@ import junit.framework.TestSuite;
  */
 public class ResultComparatorTest extends TestCase {
 
-    private Connection cxn;
     private File file;
 
     public ResultComparatorTest(File file) {
         super(file.getName());
         this.file = file;
-    }
-
-    public void setUp() {
-        cxn = TestContext.instance().getFoodMartConnection(false);
-    }
-
-    public void tearDown() {
-        if (cxn != null) {
-            cxn.close();
-        }
-        cxn = null;
-        file = null;
     }
 
     protected void runTest() throws Exception {
@@ -120,13 +107,18 @@ public class ResultComparatorTest extends TestCase {
         String queryString = XMLUtility.decodeEncodedString(queryNode.getFirstChild()
                 .getNodeValue());
 
-        Query query = cxn.parseQuery(queryString);
-        Result result = cxn.execute(query);
+        Connection cxn = TestContext.instance().getFoodMartConnection(false);
+        try {
+			Query query = cxn.parseQuery(queryString);
+			Result result = cxn.execute(query);
 
-        ResultComparator comp = new ResultComparator((Element) doc.getElementsByTagName("dataResult").item(0),
-                result);
+			ResultComparator comp = new ResultComparator((Element) doc.getElementsByTagName(
+					"dataResult").item(0), result);
 
-        comp.compareResults();
+			comp.compareResults();
+		} finally {
+            cxn.close();
+        }
     }
 
     public static TestSuite suite() {
