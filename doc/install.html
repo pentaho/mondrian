@@ -17,11 +17,11 @@
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
 <title>How to download, build and install Mondrian</title>
-<link rel="stylesheet" href="stylesheet.css" type="text/css" />
+<link rel="stylesheet" href="../../../open/mondrian/doc/stylesheet.css" type="text/css" />
 </head>
 
 <body>
-<h1>How to download, build and install Mondrian</h1>
+<h1>How to download and install Mondrian</h1>
 
 <h2><a name="1_Contents">1. Contents</a></h2>
 <ol>
@@ -56,7 +56,7 @@ release <code>mondrian-<i>version</i>-bin.zip</code> from
 	unzip it.</li>
 	<li>From the unzipped binary release, copy <code>mondrian.war</code> to
 	<code><i>TOMCAT_HOME</i>/webapps/mondrian.war</code>.</li>
-	<li>Install the <a href="#JDK">JDK</a> and <a href="#Tomcat">Tomcat</a>.</li>
+	<li>Install the Java SDK (1.4.2 or later) and Tomcat (5.0.25 or later).</li>
 	<li>Set up the FoodMart dataset, as described <a href="#3_Set_up_test_data">
 	below</a>.</li>
 	<li>Set up an ODBC data source to the Access database, as described 
@@ -78,21 +78,16 @@ accessing the source-control system and building the code in
 
 <h2><a name="3_Set_up_test_data">3. Set up test data</a></h2>
 
-<p>The test dataset is contained in two formats: a Microsoft Access database and in
-a SQL script of insert statements. Under Windows, using the Access
-database is easier to set up, because all you need to do is download
-the data and define an ODBC data source. If you want to test using a
-non Access database, or if you are not using Windows, you will need to
-create your own empty database and load it with the MondrianFoodMartLoader class.<br>
-</p>
+<p>The 'FoodMart' test dataset is part of the binary distribution. It is shipped in two formats: a Microsoft Access database 
+(<code>demo/access/MondrianFoodMart.mdb</code>) and in
+a SQL script of insert statements (<code>demo/FoodMartCreateData.sql</code>).</p>
 
-<p>First, download the dataset: get <code>mondrian-data.zip</code>
-from <a href="http://sourceforge.net/projects/mondrian">
-SourceForge</a>, and unzip it to <code> <i>${project.location}</i></code>.
-The files will
-be
-<code><i>${project.location}</i>/</code><code>demo/access/MondrianFoodMart.mdb</code>
-and <code><i>${project.location}</i>/</code><code>demo/FoodMartCreateData.zip</code>. </p>
+<p>Under Windows, using the Access
+database is easier to set up, because all you need to do define an ODBC data source. If you want to test using a
+non Access database, or if you are not using Windows, you will need to
+create your own empty database and load it using the MondrianFoodMartLoader 
+utility.<br>
+</p>
 
 <h3><a name="3_1_Access_setup">3.1. Microsoft Access</a></h3>
 
@@ -107,7 +102,7 @@ testing with just this database, or loading into another database.</p>
 menu item to open the ODBC Data Source Administrator.
 Next, create a System DSN called <code>MondrianFoodMart</code>
 pointing to
-<code><i>${project.location}</i>/demo/access/MondrianFoodMart.mdb</code>.
+<code><i>MONDRIAN_HOME</i>/demo/access/MondrianFoodMart.mdb</code>.
 (This allows Mondrian to access this data source using the
 JDBC connect string "<code>jdbc:odbc:MondrianFoodMart</code>".</p>
 
@@ -120,18 +115,18 @@ follows:</p>
   <p><code>java -cp 'mondrian.jar' mondrian.test.loader.MondrianFoodMartLoader<br>
 &nbsp;&nbsp;&nbsp; [-verbose] [-tables] [-data] [-indexes]<br>
 &nbsp;&nbsp;&nbsp; -jdbcDrivers=&lt;jdbcDrivers&gt;<br>
-&nbsp;&nbsp;&nbsp; -outputJdbcURL=&lt;jdbcURL&gt; <br>
+&nbsp;&nbsp;&nbsp; -outputJdbcURL=&lt;jdbcURL&gt;<br>
 &nbsp;&nbsp;&nbsp;
     [ [ [-outputJdbcUser=user] [-outputJdbcPassword=password] [-outputJdbcBatchSize=&lt;batch size&gt;] ]<br>
 &nbsp;&nbsp;&nbsp; | -outputDirectory=&lt;directory name&gt;<br>
 &nbsp;&nbsp;&nbsp;
     ]<br>
 &nbsp;&nbsp;&nbsp; [ [-inputJdbcURL=&lt;jdbcURL&gt; [-inputJdbcUser=user] [-inputJdbcPassword=password] ]<br>
-&nbsp;&nbsp;&nbsp; | [-inputfile=&lt;file name&gt;] <br>
+&nbsp;&nbsp;&nbsp; | [-inputfile=&lt;file name&gt;]<br>
 &nbsp;&nbsp;&nbsp; ]</code></p>
 </blockquote>
 
-<table style="text-align: left; width: 1010px; height: 274px;"
+<table style="text-align: left; "
  border="1" cellpadding="2" cellspacing="0">
   <tbody>
     <tr>
@@ -201,13 +196,13 @@ a SQL script (<code>[-inputfile=&lt;file name&gt;]</code>). But you have already
 loaded the data into one JDBC data source (say Microsoft Access), use the <code>
 -inputJdbcURL</code> and related options to copy data to another JDBC database.<p>The loader uses standard J2SE JDBC, the relevant JDBC driver JARs,
 and some classes out of Mondrian that do not rely on additional JARs.
-It has been tested against Oracle, Postgres, MySQL and Microsoft Access.<br>
-</p>
-<p><span style="font-weight: bold; text-decoration: underline;">Examples</span><br>
-</p>
+It has been tested against Oracle, Postgres, MySQL and Microsoft Access.</p>
+
+<h4>Examples</h4>
+
 <p>Create FoodMart tables for MySQL from the test dataset in the SQL
-scripts:<br>
-</p>
+scripts:</p>
+
 <blockquote>
   <p><code>$ java -cp 'mondrian.jar' mondrian.test.loader.MondrianFoodMartLoader<br>&nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes -jdbcDrivers=com.mysql.jdbc.Driver<br>&nbsp;&nbsp;&nbsp;&nbsp; -inputfile=/data/Mondrian/demo/FoodMartCreateData.sql <br>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL=jdbc:mysql://localhost/foodmart?user=root&amp;password=myAdmin</code><br>
 	</p>
@@ -312,25 +307,25 @@ to <code><i>TOMCAT_HOME</i>/common/lib</code>. (or <code><i>TOMCAT_HOME</i>/comm
 if your version of Tomcat has one). </p>
 
 <p>If you get the configuration wrong, a typical error is</p><blockquote>
-  <pre>java.lang.VerifyError: Cannot inherit from final class
-at java.lang.ClassLoader.defineClass0(Native Method)
-at java.lang.ClassLoader.defineClass(ClassLoader.java:502)
-at java.security.SecureClassLoader.defineClass(SecureClassLoader.java:123)
-at org.apache.catalina.loader.WebappClassLoader.findClassInternal(WebappClassLoader.java:1664)
-at org.apache.catalina.loader.WebappClassLoader.findClass(WebappClassLoader.java:953)
-at org.apache.catalina.loader.WebappClassLoader.loadClass(WebappClassLoader.java:1394)
-at org.apache.catalina.loader.WebappClassLoader.loadClass(WebappClassLoader.java:1274)
-at java.lang.ClassLoader.loadClassInternal(ClassLoader.java:315)
-at org.apache.xerces.impl.XMLNSDocumentScannerImpl.createContentDispatcher(Unknown Source)
-at org.apache.xerces.impl.XMLDocumentFragmentScannerImpl.&lt;init&gt;(XMLDocumentFragmentScannerImpl.java:249)
-at org.apache.xerces.impl.XMLDocumentScannerImpl.&lt;init&gt;(XMLDocumentScannerImpl.java:245)
-at org.apache.xerces.impl.XMLNSDocumentScannerImpl.&lt;init&gt;(Unknown Source)
-at org.apache.xerces.parsers.IntegratedParserConfiguration.createDocumentScanner(Unknown Source)
-at org.apache.xerces.parsers.DTDConfiguration.&lt;init&gt;(DTDConfiguration.java:367)
-at org.apache.xerces.parsers.StandardParserConfiguration.&lt;init&gt;(StandardParserConfiguration.java:198)
-at org.apache.xerces.parsers.IntegratedParserConfiguration.&lt;init&gt;(Unknown Source)
-at org.apache.xerces.parsers.IntegratedParserConfiguration.&lt;init&gt;(Unknown Source)
-at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)</pre></blockquote><p>This error occurred under JDK 1.3.1, Tomcat 4.1.18, Xalan 2.4.1. The
+  <p><code>java.lang.VerifyError: Cannot inherit from final class<br>
+&nbsp; at java.lang.ClassLoader.defineClass0(Native Method)<br>
+&nbsp; at java.lang.ClassLoader.defineClass(ClassLoader.java:502)<br>
+&nbsp; at java.security.SecureClassLoader.defineClass(SecureClassLoader.java:123)<br>
+&nbsp; at org.apache.catalina.loader.WebappClassLoader.findClassInternal(WebappClassLoader.java:1664)<br>
+&nbsp; at org.apache.catalina.loader.WebappClassLoader.findClass(WebappClassLoader.java:953)<br>
+&nbsp; at org.apache.catalina.loader.WebappClassLoader.loadClass(WebappClassLoader.java:1394)<br>
+&nbsp; at org.apache.catalina.loader.WebappClassLoader.loadClass(WebappClassLoader.java:1274)<br>
+&nbsp; at java.lang.ClassLoader.loadClassInternal(ClassLoader.java:315)<br>
+&nbsp; at org.apache.xerces.impl.XMLNSDocumentScannerImpl.createContentDispatcher(Unknown Source)<br>
+&nbsp; at org.apache.xerces.impl.XMLDocumentFragmentScannerImpl.&lt;init&gt;(XMLDocumentFragmentScannerImpl.java:249)<br>
+&nbsp; at org.apache.xerces.impl.XMLDocumentScannerImpl.&lt;init&gt;(XMLDocumentScannerImpl.java:245)<br>
+&nbsp; at org.apache.xerces.impl.XMLNSDocumentScannerImpl.&lt;init&gt;(Unknown Source)<br>
+&nbsp; at org.apache.xerces.parsers.IntegratedParserConfiguration.createDocumentScanner(Unknown Source)<br>
+&nbsp; at org.apache.xerces.parsers.DTDConfiguration.&lt;init&gt;(DTDConfiguration.java:367)<br>
+&nbsp; at org.apache.xerces.parsers.StandardParserConfiguration.&lt;init&gt;(StandardParserConfiguration.java:198)<br>
+&nbsp; at org.apache.xerces.parsers.IntegratedParserConfiguration.&lt;init&gt;(Unknown Source)<br>
+&nbsp; at org.apache.xerces.parsers.IntegratedParserConfiguration.&lt;init&gt;(Unknown Source)<br>
+&nbsp; at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)</code></p></blockquote><p>This error occurred under JDK 1.3.1, Tomcat 4.1.18, Xalan 2.4.1. The
 solutions to the error were (a) move to JDK 1.4 and remove <code>xml-apis.jar</code> and
 <code>xercesImpl.jar</code> from <code>mondrian.war</code>, or (b) revert to Xalan 2.3.1.</p><h2>
 <a name="Appendix_B_Patrick_Tallmans_installation_instructions">Appendix B. Patrick Tallman's  instructions

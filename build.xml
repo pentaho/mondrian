@@ -41,8 +41,6 @@
   <property name="demo.dir" value="demo"/>
   <property name="webapp.dir" value="webapp"/>
   <property name="dist.src.file" value="${dist.dir}/${dist.name}-src.zip"/>
-  <property name="dist.data.file" value="${dist.dir}/${name}-data.zip"/>
-  <property name="dist.data.mysql.file" value="${dist.dir}/${name}-data-mysql.zip"/>
   <property name="dist.bin.file" value="${dist.dir}/${dist.name}.zip"/>
   <property name="dist.doc.file" value="${dist.dir}/doc.tar.gz"/>
   <property name="jar.file" value="${lib.dir}/${name}.jar"/>
@@ -82,9 +80,8 @@ ${lib.dir}/jsp-api.jar,
 ${lib.dir}/commons-collections.jar,
 ${lib.dir}/commons-dbcp.jar,
 ${lib.dir}/commons-pool.jar,
-${testlib.dir}/junit.jar
-demo/mysql/FoodMartDropTables.sql,
-demo/mysql/FoodMartData.sql"/>
+${testlib.dir}/junit.jar,
+demo/FoodMartCreateData.sql"/>
 
   <path id="project.classpath">
     <pathelement location="${classes.dir}"/>
@@ -215,7 +212,8 @@ generate.resources,
 def,
 compile.jsp.maybe,
 compile.java,
-copy.properties"/>
+copy.properties,
+unzip-FoodMartCreateData"/>
 
   <target name="compile.xom">
     <javac
@@ -500,69 +498,27 @@ doc/deployDoc.sh" />
     </zip>
   </target>
 
-  <target name="data-zip">
-    <mkdir dir="${dist.dir}" />
-    <delete file="${dist.data.file}"/>
-    <zip
-        zipfile="${dist.data.file}"
-        update="true">
-      <!-- We do not use 'prefix="${dist.name}"', cuz we don't want to issue a
-           new data file each release. -->
-      <zipfileset
-          dir="."
-          includes="LICENSE.html,
-README.txt,
-VERSION.txt,
-demo/FoodMartData.sql,
-demo/FoodMartTables.sql,
-demo/FoodMartDropTables.sql,
-demo/FoodMartIndexes.sql,
-demo/mysql/FoodMartTables.sql,
-demo/oracle/FoodMartData.sql,
-demo/oracle/FoodMartDropTables.sql,
-demo/oracle/FoodMartTables.sql,
-demo/oracle/FoodMartIndexes.sql,
-demo/access/MondrianFoodMart.mdb,
-demo/**/*.pl,
-demo/**/*.sh"
-          excludes="demo/FoodMart.xml,
-**/*~"/>
-    </zip>
+  <target name="check-FoodMartCreateData-uptodate">
+    <condition property="FoodMartCreateData.uptodate">
+      <uptodate
+          srcfile="demo/FoodMartCreateData.zip"
+          targetfile="demo/FoodMartCreateData.sql"/>
+    </condition>
   </target>
 
-  <target name="data-mysql-zip">
-    <echo>(This may take up to 20 minutes. Please be patient.)</echo>
-    <mkdir dir="${dist.dir}" />
-    <delete file="${dist.data.mysql.file}"/>
-    <copy file="demo/FoodMartDropTables.sql" todir="demo/mysql/FoodMartDropTables.sql"/>
-    <tempfile property="mysql-temp-file"/>
-    <unzip src="demo/mysql/foodmart.zip" dest="${mysql-temp-file}">
-      <patternset includes="foodmart.sql"/>
+  <target name="unzip-FoodMartCreateData"
+      depends="check-FoodMartCreateData-uptodate"
+      unless="FoodMartCreateData.uptodate">
+    <unzip src="demo/FoodMartCreateData.zip" dest="demo">
+      <patternset includes="FoodMartCreateData.sql"/>
     </unzip>
-    <echo>mysql-temp-file=${mysql-temp-file}</echo>
-    <zip
-        zipfile="${dist.data.mysql.file}"
-        update="true">
-      <!-- We do not use 'prefix="${dist.name}"', cuz we don't want to issue a
-           new data file each release. -->
-      <zipfileset
-          dir="."
-          prefix="mondrian-data"
-          includes="LICENSE.html,
-README.txt,
-VERSION.txt,
-demo/mysql/INSTALL.txt"/>
-      <zipfileset
-          dir="${mysql-temp-file}"
-          prefix="mondrian-data/demo/mysql"
-          includes="foodmart.sql"/>
-    </zip>
-    <delete dir="${mysql-temp-file}"/>
+    <touch file="demo/FoodMartCreateData.sql"/>
   </target>
 
   <target name="release" depends="binzip"/>
 
-  <target name="binzip" depends="version,war,javadoc,srczip">
+  <target name="binzip"
+      depends="version,war,javadoc,srczip,unzip-FoodMartCreateData">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.bin.file}"/>
     <zip zipfile="${dist.bin.file}">
@@ -578,6 +534,9 @@ ${doc.dir}/api/**/*.xml,
 ${dist.src.file},
 ${war.file},
 lib/mondrian.dtd,
+demo/FoodMart.xml,
+demo/FoodMartCreateData.sql,
+demo/access/MondrianFoodMart.mdb,
 LICENSE.html,
 README.txt,
 VERSION.txt"
