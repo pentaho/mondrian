@@ -88,6 +88,9 @@ public class CachePool {
 	/**
 	 * Queue is a priority-queue. It is implemented in terms of a sorted
 	 * {@link ArrayList}; a heap-based implementation would be better.
+	 *
+	 * @synchronization Lock the cache pool before calling any method which
+	 * modifies the queue.
 	 */
 	private static class Queue {
 		private Comparator comparator;
@@ -98,6 +101,7 @@ public class CachePool {
 		int size() {
 			return list.size();
 		}
+		/** @synchronization lock the cache */
 		void add(Object o) {
 			for (int i = 0; i < list.size(); i++) {
 				Object o2 = list.get(i);
@@ -111,9 +115,11 @@ public class CachePool {
 		boolean isEmpty() {
 			return list.isEmpty();
 		}
+		/** @synchronization lock the cache */
 		Object removeLast() {
 			return list.remove(list.size() - 1);
 		}
+		/** @synchronization lock the cache */
 		boolean remove(Object o) {
 			return list.remove(o);
 		}
@@ -249,8 +255,12 @@ public class CachePool {
 		// Remove it from the queue. (If this method is called from the
 		// cacheable's finalize method, the soft reference to it will
 		// already have been nullifed.)
-		boolean existed = queue.remove(new SoftCacheableReference(cacheable));
-		Util.discard(existed);
+		final SoftCacheableReference ref = new SoftCacheableReference(cacheable);
+		synchronized (this) {
+			// Access to queue must be synchronized.
+			boolean existed = queue.remove(ref);
+			Util.discard(existed);
+		}
 	}
 
 	/**
