@@ -310,7 +310,7 @@ public class Workbench extends javax.swing.JFrame {
             java.io.File schemaFile = se.getSchemaFile();
             MondrianDef.Schema schema = se.getSchema();
             JFileChooser jfc = new JFileChooser();
-            Util.getProperties();
+            MondrianProperties.instance();
             jfc.setSelectedFile(schemaFile);
             if (jfc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
                 try {
@@ -332,7 +332,7 @@ public class Workbench extends javax.swing.JFrame {
             SchemaExplorer se = (SchemaExplorer)jf.getContentPane().getComponent(0);
             java.io.File schemaFile = se.getSchemaFile();
             MondrianDef.Schema schema = se.getSchema();
-            Util.getProperties();
+			MondrianProperties.instance();
             try {
                 mondrian.xom.XMLOutput out = new mondrian.xom.XMLOutput(new java.io.FileWriter(schemaFile));
                 schema.displayXML(out);
@@ -344,7 +344,7 @@ public class Workbench extends javax.swing.JFrame {
 
     private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMenuItemActionPerformed
         JFileChooser jfc = new JFileChooser();
-        Util.getProperties();
+		MondrianProperties.instance();
         if (jfc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             try {
                 

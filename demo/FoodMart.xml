@@ -168,6 +168,26 @@ CONCAT(`customer`.`fname`, " ", `customer`.`lname`)
 			<Level name="Yearly Income" column="yearly_income" uniqueMembers="true"/>
 		</Hierarchy>
 	</Dimension>
+
+    <Dimension name="Store2" foreignKey="store_id"> 
+        <Hierarchy hasAll="true" primaryKey="store_id" primaryKeyTable="store2">
+            <Join leftKey="hierarchy_id" rightKey="hierarchy_id"> 
+                <Table name="store2"/> 
+                <Table name="store_hierarchy"/> 
+            </Join> 
+            <Level name="Market Chain" table="store_hierarchy" column="the_market_chain" uniqueMembers="false"/>
+            <Level name="Group" table="store_hierarchy" column="the_group" uniqueMembers="false"/>
+            <Level name="Name" table="store2" column="kdnr" uniqueMembers="false"> 
+                <Property name="Bank" column="bank"/> 
+                <Property name="Strasse" column="strasse"/> 
+                <Property name="PLZ" table="store2" column="plz" type="Numeric"/> 
+                <Property name="Ort" table="store2" column="ort"/>
+                <Property name="BLZ" table="store2" column="blz"/>
+                <Property name="KtoNr" table="store2" column="ktonr"/> 
+            </Level> 
+        </Hierarchy> 
+    </Dimension> 
+
 	<Dimension name="Has bought dairy">
 		<Hierarchy hasAll="true" memberReaderClass="mondrian.rolap.HasBoughtDairySource">
 			<Level name="Has bought dairy" uniqueMembers="true"/>

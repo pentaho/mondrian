@@ -243,7 +243,9 @@ public class RolapSchema implements Schema
 		} else {
 			SqlMemberSource source = new SqlMemberSource(hierarchy);
 			int memberCount = source.getMemberCount();
-			if (memberCount > RolapHierarchy.LARGE_DIMENSION_THRESHOLD) {
+			int largeDimensionThreshold =
+					MondrianProperties.instance().getLargeDimensionThreshold();
+			if (memberCount > largeDimensionThreshold) {
 				return new SmartMemberReader(source);
 			} else {
 				return new CacheMemberReader(source);

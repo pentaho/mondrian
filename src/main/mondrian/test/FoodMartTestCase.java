@@ -41,7 +41,7 @@ public class FoodMartTestCase extends TestCase {
 	}
 
 	protected Connection getConnection() {
-		return TestContext.instance().getFoodMartConnection();
+		return TestContext.instance().getFoodMartConnection(false);
 	}
 
 	/**
@@ -883,7 +883,7 @@ public class FoodMartTestCase extends TestCase {
 		final Axis axis = executeAxis2("{[Product2].members}");
 		System.out.println(toString(axis.positions));
 	}
-	
+
 	public static final QueryAndResult[] taglibQueries = {
 		// 0
 		new QueryAndResult(
@@ -1767,7 +1767,7 @@ public class FoodMartTestCase extends TestCase {
 
 	/**
 	 * Bug 645744 happens when getting the children of a member crosses a table
-	 * boundary. The symptom 
+	 * boundary. The symptom
 	 */
 	public void testBug645744() {
 		// minimal test case
@@ -1869,6 +1869,83 @@ public class FoodMartTestCase extends TestCase {
 				"[Gender2].[All Gender].[M]",
 				toString(axis.positions));
 	}
+
+	public void testMemberWithNullKey() {
+		runQueryCheckResult(
+				"select {[Measures].[Unit Sales]} on columns," + nl +
+				"{[Store Size in SQFT].members} on rows" + nl +
+				"from Sales",
+
+				"Axis #0:" + nl +
+				"{}" + nl +
+				"Axis #1:" + nl +
+				"{[Measures].[Unit Sales]}" + nl +
+				"Axis #2:" + nl +
+				"{[Store Size in SQFT].[All Store Size in SQFTs]}" + nl +
+				"{[Store Size in SQFT].[All Store Size in SQFTs].[null]}" + nl +
+				"{[Store Size in SQFT].[All Store Size in SQFTs].[20319.0]}" + nl +
+				"{[Store Size in SQFT].[All Store Size in SQFTs].[21215.0]}" + nl +
+				"{[Store Size in SQFT].[All Store Size in SQFTs].[22478.0]}" + nl +
+				"{[Store Size in SQFT].[All Store Size in SQFTs].[23112.0]}" + nl +
+				"{[Store Size in SQFT].[All Store Size in SQFTs].[23593.0]}" + nl +
+				"{[Store Size in SQFT].[All Store Size in SQFTs].[23598.0]}" + nl +
+				"{[Store Size in SQFT].[All Store Size in SQFTs].[23688.0]}" + nl +
+				"{[Store Size in SQFT].[All Store Size in SQFTs].[23759.0]}" + nl +
+				"{[Store Size in SQFT].[All Store Size in SQFTs].[24597.0]}" + nl +
+				"{[Store Size in SQFT].[All Store Size in SQFTs].[27694.0]}" + nl +
+				"{[Store Size in SQFT].[All Store Size in SQFTs].[28206.0]}" + nl +
+				"{[Store Size in SQFT].[All Store Size in SQFTs].[30268.0]}" + nl +
+				"{[Store Size in SQFT].[All Store Size in SQFTs].[30584.0]}" + nl +
+				"{[Store Size in SQFT].[All Store Size in SQFTs].[30797.0]}" + nl +
+				"{[Store Size in SQFT].[All Store Size in SQFTs].[33858.0]}" + nl +
+				"{[Store Size in SQFT].[All Store Size in SQFTs].[34452.0]}" + nl +
+				"{[Store Size in SQFT].[All Store Size in SQFTs].[34791.0]}" + nl +
+				"{[Store Size in SQFT].[All Store Size in SQFTs].[36509.0]}" + nl +
+				"{[Store Size in SQFT].[All Store Size in SQFTs].[38382.0]}" + nl +
+				"{[Store Size in SQFT].[All Store Size in SQFTs].[39696.0]}" + nl +
+				"Row #0: 266,773" + nl +
+				"Row #1: (null)" + nl +
+				"Row #2: 26,079" + nl +
+				"Row #3: 25,011" + nl +
+				"Row #4: 2,117" + nl +
+				"Row #5: (null)" + nl +
+				"Row #6: (null)" + nl +
+				"Row #7: 25,663" + nl +
+				"Row #8: 21,333" + nl +
+				"Row #9: (null)" + nl +
+				"Row #10: (null)" + nl +
+				"Row #11: 41,580" + nl +
+				"Row #12: 2,237" + nl +
+				"Row #13: 23,591" + nl +
+				"Row #14: (null)" + nl +
+				"Row #15: (null)" + nl +
+				"Row #16: 35,257" + nl +
+				"Row #17: (null)" + nl +
+				"Row #18: (null)" + nl +
+				"Row #19: (null)" + nl +
+				"Row #20: (null)" + nl +
+				"Row #21: 24,576" + nl);
+	}
+
+	public void testMembersOfLargeDimensionTheHardWay() {
+		final MondrianProperties properties = MondrianProperties.instance();
+		int old = properties.getLargeDimensionThreshold();
+		try {
+			// prevent a CacheMemberReader from kicking in
+			properties.setProperty(MondrianProperties.LargeDimensionThreshold, "1");
+			final Connection connection =
+					TestContext.instance().getFoodMartConnection(true);
+			String queryString = "select {[Measures].[Unit Sales]} on columns," + nl +
+					"{[Customers].members} on rows" + nl +
+					"from Sales";
+			Query query = connection.parseQuery(queryString);
+			Result result = connection.execute(query);
+			assertEquals(10407, result.getAxes()[1].positions.length);
+		} finally {
+			properties.setProperty(MondrianProperties.LargeDimensionThreshold, old + "");
+		}
+	}
+
 	public void testParallelButSingle() {
 		runParallelQueries(1, 1);
 	}

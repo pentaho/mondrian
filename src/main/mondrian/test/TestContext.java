@@ -15,13 +15,9 @@ package mondrian.test;
 import mondrian.olap.*;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URL;
 import java.net.MalformedURLException;
-import java.util.Enumeration;
-import java.util.Properties;
+import java.net.URL;
 import java.util.StringTokenizer;
 
 /**
@@ -36,13 +32,12 @@ import java.util.StringTokenizer;
 public class TestContext {
 	private static TestContext instance; // the singleton
 	private PrintWriter pw;
-	/** Connect string for the FoodMart database. Set at {@link #init} time,
-	 * but the connection is not created until the first call to {@link
-	 * #getFoodMartConnection}.
-	 **/
+	/** Connect string for the FoodMart database. Set by the constructor,
+	 * but the connection is not created until the first call to
+	 * {@link #getFoodMartConnection}. **/
 	private String foodMartConnectString;
-	/** Connection to the FoodMart database. Set on the first call to {@link
-	 * #getFoodMartConnection}. **/
+	/** Connection to the FoodMart database. Set on the first call to
+	 * {@link #getFoodMartConnection}. **/
 	private Connection foodMartConnection;
 
 	/**
@@ -59,11 +54,10 @@ public class TestContext {
 		return instance;
 	}
 
-	/** Creates a TestContext. Called only from {@link #init}. **/
+	/** Creates a TestContext. Called only from {@link #instance()}. **/
 	private TestContext() {
 		this.pw = new PrintWriter(System.out, true);
-		String jdbcDrivers = Util.getProperties().getProperty(
-				"mondrian.jdbcDrivers", "org.hsqldb.jdbcDriver");
+		String jdbcDrivers = MondrianProperties.instance().getJdbcDrivers();
 		StringTokenizer tok = new java.util.StringTokenizer(jdbcDrivers, ",");
 		while (tok.hasMoreTokens()) {
 			String jdbcDriver = tok.nextToken();
@@ -74,12 +68,10 @@ public class TestContext {
 			}
 		}
 
-		foodMartConnectString = Util.getProperties().getProperty(
-                "mondrian.test.connectString");
+		foodMartConnectString = MondrianProperties.instance().getTestConnectString();
 		if (foodMartConnectString == null) {
 			URL catalogUrl = convertPathToURL(new File("demo/FoodMart.xml"));
-			String jdbcURL = Util.getProperties().getProperty(
-					"mondrian.foodmart.jdbcURL", "jdbc:hsqldb:demo/hsql/FoodMart");
+			String jdbcURL = MondrianProperties.instance().getFoodmartJdbcURL();
 			foodMartConnectString = "Provider=mondrian;" +
 					"Jdbc=" + jdbcURL + ";" +
 					"Catalog=" + catalogUrl;
@@ -113,17 +105,20 @@ public class TestContext {
 	}
 
 	/** Returns a connection to the FoodMart database. **/
-	public synchronized Connection getFoodMartConnection() {
-		if (foodMartConnection == null) {
+	public synchronized Connection getFoodMartConnection(boolean fresh) {
+		if (fresh) {
+			return DriverManager.getConnection(
+					foodMartConnectString, null, fresh);
+		} else if (foodMartConnection == null) {
 			foodMartConnection = DriverManager.getConnection(
-					foodMartConnectString, null, false);
+					foodMartConnectString, null, fresh);
 		}
 		return foodMartConnection;
 	}
 
 	/** Executes a query against the FoodMart database. **/
 	public Result executeFoodMart(String queryString) {
-		Connection connection = getFoodMartConnection();
+		Connection connection = getFoodMartConnection(false);
 		Query query = connection.parseQuery(queryString);
 		Result result = connection.execute(query);
 		return result;

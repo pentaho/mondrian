@@ -12,6 +12,7 @@
 
 package mondrian.rolap;
 import mondrian.olap.Util;
+import mondrian.olap.MondrianProperties;
 
 import java.util.*;
 import java.io.PrintWriter;
@@ -119,12 +120,6 @@ public class CachePool {
 		}
 	}
 
-	private static class Queue_obsolete extends TreeSet {
-		Queue_obsolete() {
-			super(new MyComparator());
-		}
-	}
-
 	private static class MyComparator implements Comparator {
 		public int compare(Object o1, Object o2)
 		{
@@ -151,8 +146,8 @@ public class CachePool {
 	public static synchronized CachePool instance()
 	{
 		if (instance == null) {
-			final int costLimit = Util.getProperties().getIntProperty(
-				"mondrian.rolap.CachePool.costLimit", 10000);
+			final int costLimit =
+					MondrianProperties.instance().getCachePoolCostLimit();
 			instance = new CachePool(costLimit);
 		}
 		return instance;
@@ -245,9 +240,10 @@ public class CachePool {
 	 * A {@link Cacheable} <em>must</em> call this from its
 	 * <code>finalize</code> method.
 	 */
-	public synchronized void deregister(
-			Cacheable cacheable, boolean fromFinalizer) {
-		deregisterInternal(cacheable);
+	public void deregister(Cacheable cacheable, boolean fromFinalizer) {
+		synchronized (this) {
+			deregisterInternal(cacheable);
+		}
 		// Remove it from the queue. (If this method is called from the
 		// cacheable's finalize method, the soft reference to it will
 		// already have been nullifed.)
@@ -280,10 +276,10 @@ public class CachePool {
 		cacheable.removeFromCache();
 		if (RolapUtil.debugOut != null) {
 			RolapUtil.debugOut.println(
-				"CachePool: deregister [" + cacheable +
+					"CachePool: deregister [" + cacheable +
 					"], registeredCost=" + cost +
-				", size=" + size() +
-				", totalCost=" + unpinnedCost);
+					", size=" + size() +
+					", totalCost=" + unpinnedCost);
 		}
 	}
 
@@ -615,20 +611,20 @@ public class CachePool {
 			final CacheableInt o8 = new CacheableInt(8);
 			c.register(o8, 1, list);
 			assertEquals(17, (int) c.getTotalCost());
-			assertEquals(3, (int) c.pinned.size());
+			assertEquals(3, c.pinned.size());
 			// unpin 3, still pinned, {3:1, 6:1, 8:1}
 			c.unpin(o3);
 			assertEquals(17, (int) c.getTotalCost());
-			assertEquals(3, (int) c.pinned.size());
+			assertEquals(3, c.pinned.size());
 			// unpin 3, it is now flushed, {6:1, 8:1}
 			c.unpin(o3);
 			assertEquals(14, (int) c.getTotalCost());
-			assertEquals(2, (int) c.pinned.size());
+			assertEquals(2, c.pinned.size());
 			// new element, {2:3, 6:1, 8:1}
 			final CacheableInt o2 = new CacheableInt(2);
 			c.register(o2, 3, list);
 			assertEquals(16, (int) c.getTotalCost());
-			assertEquals(3, (int) c.pinned.size());
+			assertEquals(3, c.pinned.size());
 			// unpin 6, it is flushed {2:3, 8:1}
 			c.unpin(o6);
 			assertEquals(10, (int) c.getTotalCost());
@@ -763,7 +759,7 @@ public class CachePool {
 }
 
 /**
- * Trivial {@link Cacheable} for testing purposes.
+ * Trivial {@link CachePool.Cacheable} for testing purposes.
  */
 class CacheableInt implements CachePool.Cacheable {
 	int pinCount;

@@ -12,6 +12,7 @@
 
 package mondrian.rolap;
 import mondrian.olap.Util;
+import mondrian.olap.MondrianProperties;
 
 import java.io.*;
 import java.lang.reflect.Array;
@@ -118,8 +119,7 @@ public class RolapUtil {
 	 * Enables tracing if "mondrian.trace.level" &gt; 0.
 	 */
 	public static void checkTracing() {
-		Util.PropertiesPlus properties = Util.getProperties();
-		int trace = properties.getIntProperty("mondrian.trace.level");
+		int trace = MondrianProperties.instance().getTraceLevel();
 		if (trace > 0) {
 			debugOut = new PrintWriter(System.out, true);
 		}
@@ -253,7 +253,7 @@ public class RolapUtil {
 	 */
 	static synchronized Semaphore getQuerySemaphore() {
 		if (querySemaphore == null) {
-			int queryCount = Util.getProperties().getIntProperty("mondrian.query.limit", 40);
+			int queryCount = MondrianProperties.instance().getQueryLimit();
 			querySemaphore = new Semaphore(queryCount);
 		}
 		return querySemaphore;

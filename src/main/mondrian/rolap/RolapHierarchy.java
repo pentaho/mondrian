@@ -41,25 +41,6 @@ class RolapHierarchy extends HierarchyBase
 	 **/
 	private String sharedHierarchy;
 
-	/**
-	 * If a dimension has more than this number of members, use a {@link
-	 * SmartMemberReader}.
-	 **/
-	static final int LARGE_DIMENSION_THRESHOLD = 100;
-
-//  	/** @deprecated **/
-//  	RolapHierarchy(String subName, boolean hasAll, RolapLevel[] levels)
-//  	{
-//  		this.subName = subName;
-//  		this.hasAll = hasAll;
-//  		if (hasAll) {
-//  			this.levels = new RolapLevel[levels.length + 1];
-//  			this.levels[0] = new RolapLevel(this, "(All)", null, null);
-//  			System.arraycopy(levels, 0, this.levels, 1, levels.length);
-//  		} else {
-//  			this.levels = levels;
-//  		}
-//  	}
 	String primaryKeyTableName;
 	String primaryKey;
 	String foreignKey;

@@ -97,7 +97,7 @@ public class TestAggregationManager extends TestCase {
 		String table = "store";
 		String column = "store_state";
 		String value = "CA";
-		final Connection connection = TestContext.instance().getFoodMartConnection();
+		final Connection connection = TestContext.instance().getFoodMartConnection(false);
 		final boolean fail = true;
 		Cube salesCube = connection.getSchema().lookupCube(cube, fail);
 		Member storeSqftMeasure = salesCube.lookupMemberByUniqueName(
@@ -209,7 +209,7 @@ public class TestAggregationManager extends TestCase {
 	}
 
 	private CellRequest createRequest(final String cube, final String measure, final String table, final String column, final String value) {
-		final Connection connection = TestContext.instance().getFoodMartConnection();
+		final Connection connection = TestContext.instance().getFoodMartConnection(false);
 		final boolean fail = true;
 		Cube salesCube = connection.getSchema().lookupCube(cube, fail);
 		Member storeSqftMeasure = salesCube.lookupMemberByUniqueName(
@@ -226,7 +226,7 @@ public class TestAggregationManager extends TestCase {
 	private CellRequest createRequest(
 			final String cube, final String measureName,
 			final String[] tables, final String[] columns, final String[] values) {
-		final Connection connection = TestContext.instance().getFoodMartConnection();
+		final Connection connection = TestContext.instance().getFoodMartConnection(false);
 		final boolean fail = true;
 		Cube salesCube = connection.getSchema().lookupCube(cube, fail);
 		Member measure = salesCube.lookupMemberByUniqueName(

@@ -792,8 +792,7 @@ public class FunUtil extends Util {
 	 * like 'public void testXxx({@link TestCase})'.
 	 */
 	public static void addTests(Object o, TestSuite suite) {
-		String testName = Util.getProperties().getProperty(
-				"mondrian.test.Name");
+		String testName = MondrianProperties.instance().getTestName();
 		for (Class clazz = o.getClass(); clazz != null; clazz = clazz.getSuperclass()) {
 			Method[] methods = clazz.getDeclaredMethods();
 			for (int i = 0; i < methods.length; i++) {

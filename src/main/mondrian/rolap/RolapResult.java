@@ -41,10 +41,8 @@ class RolapResult extends ResultBase
 				(RolapCube) query.getCube(),
 				(RolapConnection) query.getConnection());
 		this.aggregatingReader = new AggregatingCellReader();
-		final boolean alwaysFlush = Util.getProperties().getBooleanProperty(
-				"mondrian.rolap.RolapResult.flushAfterEachQuery");
-		final boolean printCacheables = Util.getProperties().getBooleanProperty(
-				"mondrian.rolap.RolapResult.printCacheables");
+		final boolean alwaysFlush = MondrianProperties.instance().getFlushAfterQuery();
+		final boolean printCacheables = MondrianProperties.instance().getPrintCacheablesAfterQuery();
 		HashSet pinnedSegments = new HashSet();
 		this.batchingReader = new BatchingCellReader(
 			(RolapCube) query.getCube(), pinnedSegments);
@@ -273,13 +271,11 @@ class RolapResult extends ResultBase
 
 		/** Loads the aggregations which we will need. Writes the aggregations
 		 * it loads (and pins) into <code>pinned</code>; the caller must pass
-		 * this to {@link CachePool#unpin(List)}. **/
-		void loadAggregations()
-		{
-			AggregationManager.instance().loadAggregations(
-					keys, pinnedSegments);
+		 * this to {@link CachePool#unpin(Collection)}. **/
+		void loadAggregations() {
+			AggregationManager.instance().loadAggregations(keys, pinnedSegments);
 		}
-	};
+	}
 
 	/**
 	 * An <code>AggregatingCellReader</code> reads cell values from the {@link
@@ -309,7 +305,7 @@ class RolapResult extends ResultBase
 			for (int i = 0; i < count; i++) {
 				RolapPosition position = (RolapPosition) _axis.positions[i];
 				for (int j = 0; j < position.members.length; j++) {
-					evaluator.setContext((RolapMember) position.members[j]);
+					evaluator.setContext(position.members[j]);
 				}
 				Object o;
 				try {
@@ -329,7 +325,7 @@ class RolapResult extends ResultBase
 				point.ordinals[axis] = i;
 				RolapPosition position = (RolapPosition) _axis.positions[i];
 				for (int j = 0; j < position.members.length; j++) {
-					evaluator.setContext((RolapMember) position.members[j]);
+					evaluator.setContext(position.members[j]);
 				}
 				executeStripe(axis - 1);
 			}
@@ -388,27 +384,20 @@ class RolapCell implements Cell
 	protected Object value;
 	private String formattedValue;
 
-	RolapCell(RolapMember measure, Object value, Evaluator evaluator)
-	{
+	RolapCell(RolapMember measure, Object value, Evaluator evaluator) {
 		this.value = value;
 		this.formattedValue = computeFormattedValue(measure, value, evaluator);
 	}
 	static String computeFormattedValue(
-		RolapMember measure, Object value, Evaluator evaluator)
-	{
+		RolapMember measure, Object value, Evaluator evaluator) {
 		return evaluator.format(value);
 	}
-
 	public Object getValue() {
 		return value;
 	}
-
-	// implement Cell
-	public String getFormattedValue()
-	{
+	public String getFormattedValue() {
 		return formattedValue;
 	}
-	// implement Cell
 	public boolean isNull() {
 		return value == Util.nullValue;
 	}

@@ -13,18 +13,18 @@
 package mondrian.test;
 import junit.framework.*;
 import junit.textui.TestRunner;
+import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.olap.fun.BuiltinFunTable;
-import mondrian.util.Schedule;
-import mondrian.rolap.RolapUtil;
 import mondrian.rolap.CachePool;
+import mondrian.rolap.RolapUtil;
 import mondrian.rolap.agg.TestAggregationManager;
+import mondrian.util.Schedule;
 
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Properties;
 
 /**
  * <code>Main</code> is the main test suite for Mondrian.
@@ -67,10 +67,10 @@ public class Main {
 	 */
 	public static Test suite() throws Exception {
 		RolapUtil.checkTracing();
-		Util.PropertiesPlus properties = Util.getProperties();
-		String testName = properties.getProperty("mondrian.test.Name"),
-			testClass = properties.getProperty("mondrian.test.Class"),
-			testSuite = properties.getProperty("mondrian.test.Suite");
+		MondrianProperties properties = MondrianProperties.instance();
+		String testName = properties.getTestName(),
+			testClass = properties.getTestClass(),
+			testSuite = properties.getTestSuite();
 		if (testClass != null) {
 			Class clazz = Class.forName(testClass);
 			if (testName != null) {

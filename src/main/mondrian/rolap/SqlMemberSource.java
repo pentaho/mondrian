@@ -37,13 +37,16 @@ class SqlMemberSource implements MemberReader
 	private MemberCache cache;
 
 	private static Object sqlNullValue = new Object() {
-			public boolean equals(Object o) {
-				return o == this;
-			}
-			public int hashCode() {
-				return super.hashCode();
-			}
-		};
+		public boolean equals(Object o) {
+			return o == this;
+		}
+		public int hashCode() {
+			return super.hashCode();
+		}
+		public String toString() {
+			return "null";
+		}
+	};
 
 	SqlMemberSource(RolapHierarchy hierarchy)
 	{
@@ -322,6 +325,7 @@ class SqlMemberSource implements MemberReader
 			"while generating query to retrieve members of level " + level);
   		RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
 		RolapLevel lastLevel = levels[levels.length - 1];
+		final boolean needGroup = level != lastLevel;
 		int levelDepth = level.getDepth();
 		for (int i = 0; i <= levelDepth; i++) {
   			RolapLevel level2 = levels[i];
@@ -331,16 +335,19 @@ class SqlMemberSource implements MemberReader
 			hierarchy.addToFrom(sqlQuery, level2.nameExp, null);
 			String q = level2.nameExp.getExpression(sqlQuery);
 			sqlQuery.addSelect(q);
-			if (level != lastLevel) {
+			if (needGroup) {
 				sqlQuery.addGroupBy(q);
 			}
 			hierarchy.addToFrom(sqlQuery, level2.ordinalExp, null);
 			sqlQuery.addOrderBy(level2.ordinalExp.getExpression(sqlQuery));
-		}
-		for (int i = 0; i < level.properties.length; i++) {
-			RolapProperty property = level.properties[i];
-			String q = property.exp.getExpression(sqlQuery);
-			sqlQuery.addSelect(q);
+			for (int j = 0; j < level2.properties.length; j++) {
+				RolapProperty property = level2.properties[j];
+				String q2 = property.exp.getExpression(sqlQuery);
+				sqlQuery.addSelect(q2);
+				if (needGroup) {
+					sqlQuery.addGroupBy(q2);
+				}
+			}
 		}
 		return sqlQuery.toString();
 	}
@@ -380,7 +387,7 @@ class SqlMemberSource implements MemberReader
 						member = allMember;
 						continue;
 					}
-					Object value = resultSet.getObject(column + 1);
+					Object value = resultSet.getObject(++column);
 					if (value == null) {
 						value = sqlNullValue;
 					}
@@ -390,13 +397,15 @@ class SqlMemberSource implements MemberReader
 					if (member == null) {
 						member = new RolapMember(parent, level2, value);
 						member.ordinal = ordinal;
-						for (int j = 0; j < level.properties.length; j++) {
-							RolapProperty property = level.properties[j];
+						for (int j = 0; j < level2.properties.length; j++) {
+							RolapProperty property = level2.properties[j];
 							member.setProperty(
 									property.getName(),
-									resultSet.getObject(column + 3 + j));
+									resultSet.getObject(++column));
 						}
 						cache.putMember(key, member);
+					} else {
+						column += level2.properties.length;
 					}
 					if (member != members[i]) {
 						// Flush list we've been building.
@@ -422,7 +431,6 @@ class SqlMemberSource implements MemberReader
 						}
 					}
 					ordinal++;
-					column++;
 				}
 				list.add(member);
 			}
@@ -536,6 +544,9 @@ class SqlMemberSource implements MemberReader
 			int ordinal = 0;
 			while (resultSet.next()) {
 				Object value = resultSet.getObject(1);
+				if (value == null) {
+					value = sqlNullValue;
+				}
 				Object key = cache.makeKey(parentMember, value);
 				RolapMember member = cache.getMember(key);
 				if (member == null) {

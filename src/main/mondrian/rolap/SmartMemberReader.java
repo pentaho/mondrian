@@ -31,7 +31,7 @@ import java.util.*;
  * @since 21 December, 2001
  * @version $Id$
  **/
-class SmartMemberReader implements MemberReader, MemberCache
+public class SmartMemberReader implements MemberReader, MemberCache
 {
 	private MemberReader source;
 	/** Maps {@link RolapMember} to a {@link ChildrenList} of its children, and
@@ -267,18 +267,24 @@ class SmartMemberReader implements MemberReader, MemberCache
 		return mapMemberToChildren.get(member) != null;
 	}
 
-	// synchronization: Must synchronize, because modifies mapMemberToChildren
-	public synchronized void putChildren(RolapMember member, ArrayList children) {
+	// synchronization: Must synchronize, because modifies mapMemberToChildren.
+	// But locking protocol dictates that we lock CachePool before we lock this.
+	public void putChildren(RolapMember member, ArrayList children) {
 		ChildrenList childrenList = new ChildrenList(this, member, children);
 		CachePool.SoftCacheableReference ref = new CachePool.SoftCacheableReference(childrenList);
-		CachePool.SoftCacheableReference oldRef =
-				(CachePool.SoftCacheableReference) mapMemberToChildren.put(member, ref);
-		if (oldRef != null) {
-			ChildrenList old = (ChildrenList) oldRef.getCacheableOrFail();
-			RolapUtil.debugOut.println("putChildren: remove " + oldRef + ", " + old);
-			CachePool.instance().deregister(old, false);
+		final CachePool cachePool = CachePool.instance();
+		synchronized (cachePool) {
+			synchronized (this) {
+				CachePool.SoftCacheableReference oldRef =
+						(CachePool.SoftCacheableReference) mapMemberToChildren.put(member, ref);
+				if (oldRef != null) {
+					ChildrenList old = (ChildrenList) oldRef.getCacheableOrFail();
+					RolapUtil.debugOut.println("putChildren: remove " + oldRef + ", " + old);
+					cachePool.deregister(old, false);
+				}
+				cachePool.register(childrenList);
+			}
 		}
-		CachePool.instance().register(childrenList);
 	}
 
 	// synchronization: Must synchronize, because modifies mapMemberToChildren
