@@ -161,18 +161,20 @@ public abstract class XOMUtil extends XMLUtil {
 	 **/
 	public static Parser createDefaultParser() throws XOMException
 	{
+//		String className = "mondrian.xom.wrappers.XercesDOMParser";
+		String className = "mondrian.xom.wrappers.JaxpDOMParser";
 		try {
-			Class clazz = Class.forName(
-				"mondrian.xom.wrappers.XercesDOMParser");
+			Class clazz = Class.forName(className);
 			return (Parser) clazz.newInstance();
 		} catch (ClassNotFoundException e) {
-			throw new XOMException(e, "while creating xml parser");
+			throw new XOMException(e, "while creating xml parser " + className);
 		} catch (IllegalAccessException e) {
-			throw new XOMException(e, "while creating xml parser");
+			throw new XOMException(e, "while creating xml parser" + className);
 		} catch (InstantiationException e) {
-			throw new XOMException(e, "while creating xml parser");
+			throw new XOMException(e, "while creating xml parser" + className);
+		} catch (VerifyError e) {
+			throw new XOMException(e, "while creating xml parser" + className);
 		}
-
 	}
 
 	/** * @see #makeParser **/
