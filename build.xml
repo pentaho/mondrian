@@ -451,19 +451,17 @@ in {mondrian.foodmart.jdbcURL}.">
           dir="."
           prefix="${dist.name}"
           includes="
-**/*.css,
-**/*.cup,
-**/*.gif,
-**/*.html,
-**/*.java,
-**/*.mf,
-**/*.xsl,
 ${java.dir}/**/*.properties,
 ${java.dir}/mondrian/olap/MondrianResource.xml,
 ${java.dir}/mondrian/resource/Resource.xml,
 ${java.dir}/mondrian/olap/Mondrian.xml,
 ${java.dir}/mondrian/xom/Meta.xml,
 ${java.dir}/javax/jmi/model/resources/mof.xml,
+${java.dir}/**/*.java,
+${java.dir}/**/*.cup,
+${java.dir}/**/*.gif,
+${java.dir}/**/*.html,
+${java.dir}/mondrian/resource/Resource.xsl,
 ${lib.dir}/mondrian-xom.jar,
 ${lib.dir}/mondrian-resource.jar,
 ${lib.dir}/javacup.jar,
@@ -471,10 +469,18 @@ ${lib.dir}/log4j-1.2.9.jar,
 ${lib.dir}/jmi.jar,
 ${lib.dir}/mof.jar,
 ${testsrc.dir}/queryFiles/**/*.xml,
+${testsrc.dir}/**/*.java,
+${testsrc.dir}/**/*.html,
+${testsrc.dir}/**/*.txt,
 ${webapp.dir}/WEB-INF/web*.xml,
 ${webapp.dir}/**/*.jsp,
 ${webapp.dir}/WEB-INF/*.xsl,
 ${webapp.dir}/WEB-INF/*.tld,
+doc/**/*.css,
+doc/**/*.gif,
+doc/**/*.html,
+misc/**/*.mf,
+misc/Meta.xsl,
 build.xml,
 build.bat,
 build.sh,
@@ -554,14 +560,6 @@ demo/mysql/INSTALL.txt"/>
     <delete dir="${mysql-temp-file}"/>
   </target>
 
-  <target name="export.foodmart.oracle">
-    <exec dir="${demo.dir}/oracle" executable="${env.ORACLE_HOME}/bin/exp">
-      <arg line="userid=foodmart/foodmart@realm1"/>
-      <arg line="file=FoodMart.dmp"/>
-      <arg line="owner=FOODMART"/>
-    </exec>
-  </target>
-
   <target name="release" depends="binzip"/>
 
   <target name="binzip" depends="version,war,javadoc,srczip">
@@ -572,12 +570,11 @@ demo/mysql/INSTALL.txt"/>
           dir="."
           prefix="${dist.name}"
           includes="
-${doc.dir}/**/*,
-bin/mondrian.properties,
-bin/runtime.xml,
-bin/mondrian.bat,
-bin/mondrian.sh,
-bin/README.html,
+${doc.dir}/**/*.jpg,
+${doc.dir}/**/*.png,
+${doc.dir}/**/*.html,
+${doc.dir}/**/*.css,
+${doc.dir}/api/**/*.xml,
 ${dist.src.file},
 ${war.file},
 lib/mondrian.dtd,
@@ -787,33 +784,6 @@ xalan.jar"/>
     <delete dir="${catalina.home}/webapps/mondrian"/>
     <copy file="${war.file}"
         todir="${catalina.home}/webapps"/>
-  </target>
-
-  <target name="setup-compile-farm">
-    <echo>Copy junit</echo>
-    <exec executable="pscp.exe">
-      <arg line="-unsafe -q -v -pw ${cf.password} -r"/>
-      <arg line="${junit.home}"/>
-      <arg line="${cf.user}:${cf.path}/junit3.7"/>
-    </exec>
-    <echo>Copy ant</echo>
-    <exec executable="pscp.exe">
-      <arg line="-unsafe -q -v -pw ${cf.password} -r"/>
-      <arg line="${ant.home}"/>
-      <arg line="${cf.user}:${cf.path}/jakarta-ant-1.5"/>
-    </exec>
-    <echo>Copy xalan</echo>
-    <exec executable="pscp.exe">
-      <arg line="-unsafe -q -v -pw ${cf.password} -r"/>
-      <arg line="${xalan.home}"/>
-      <arg line="${cf.user}:${cf.path}/xalan-j_2_4_D1"/>
-    </exec>
-    <echo>Copy tomcat</echo>
-    <exec executable="pscp.exe">
-      <arg line="-unsafe -q -v -pw ${cf.password} -r"/>
-      <arg line="${catalina.home}"/>
-      <arg line="${cf.user}:${cf.path}/jakarta-tomcat-4.0.4"/>
-    </exec>
   </target>
 
   <target name="workbench" depends="compile">

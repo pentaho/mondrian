@@ -26,25 +26,16 @@
 <h2><a name="1_Contents">1. Contents</a></h2>
 <ol>
   <li><a href="#1_Contents">Contents</a></li>
-  <li><a href="#2_Modification_history">Modification history</a></li>
-  <li><a href="#3_Getting_Mondrian">Download the  code</a>
-  <ol>
-    <li><a href="#3_1_Download_mondrian_war">Download mondrian.war</a></li>
-    <li><a href="#3_2_Download_the_latest_binary_release">Download the latest binary release</a></li>
-    <li><a href="#3_3_Download_the_latest_source_release">Download the latest source release</a></li>
-  </ol>
-  </li>
-  <li><a href="#4_Set_up_test_data">Load the database</a></li>
-  <ol>
+  <li><a href="#2_Download_the_code">Introduction</a></li>
+  <li><a href="#3_Set_up_test_data">Set up test data</a></li><ol>
     <li><a href="#4_1_Microsoft_Access">Microsoft Access</a></li>
-	<li><a href="#4_2_Non_Access_setup">Other database</a></li>
+	<li><a href="#3_2_Non_Access_setup">Other database</a></li>
   </ol>
-  <li><a href="#5_Configure_exec_environment">Configure execution environment</a></li>
-  <li><a href="#6_Run_the_web_app">Run the web app</a></li>
-  <li><a href="#7_Miscellaneous">Miscellaneous</a></li>
+  <li><a href="#4_Configure_exec_environment">Configure execution environment</a></li>
+  <li><a href="#5_Deploy_and_run_the_web_app">Run the web app</a></li>
+  <li><a href="#6_Miscellaneous">Miscellaneous</a></li>
   <ol>
-    <li><a href="#7_1_Cache_setup">Cache setup</a></li>
-    <li><a href="#8_2_Coding_guidelines">Coding guidelines</a></li>
+    <li><a href="#6_1_Cache_setup">Cache setup</a></li>
   </ol>
   <li><a href="#Appendix_A_Compatibility_issues">Appendix A. Compatibility issues</a></li>
   <ol>
@@ -55,110 +46,9 @@
 	B. Patrick Tallman's instructions for installing on Windows</a></li>
 </ol>
 
-<h2><a name="2_Modification_history">2. Modification history</a></h2>
-<table class="clsStd"
- style="border-collapse: collapse; width: 781px; height: 267px;"
- border="1" bordercolor="#111111" cellpadding="3" cellspacing="0">
-  <tbody>
-    <tr>
-      <th>Date</th>
-      <th>Revision</th>
-      <th>Author</th>
-      <th>Comment</th>
-    </tr>
-    <tr>
-      <td nowrap="nowrap">February 7th, 2002</td>
-      <td>1</td>
-      <td>Julian Hyde</td>
-      <td>Created</td>
-    </tr>
-    <tr>
-      <td>March 5th, 2002</td>
-      <td>2</td>
-      <td>Julian Hyde</td>
-      <td>Tomcat install</td>
-    </tr>
-    <tr>
-      <td>March 28th, 2002</td>
-      <td>3</td>
-      <td>Julian Hyde</td>
-      <td>Xalan, JUnit and Oracle.<br>
-Moved product info to an appendix.</td>
-    </tr>
-    <tr>
-      <td>July 26th, 2002</td>
-      <td>4</td>
-      <td>Julian Hyde</td>
-      <td>Upgrade to Ant 1.5, Tomcat 4.0.4.</td>
-    </tr>
-    <tr>
-      <td>August 1st, 2002</td>
-      <td>5</td>
-      <td>Julian Hyde</td>
-      <td>Clean up database instructions. Add 'Download the source
-code' section.</td>
-    </tr>
-    <tr>
-      <td nowrap="nowrap">August 21st, 2002</td>
-      <td>6</td>
-      <td nowrap="nowrap">Paul Dymecki</td>
-      <td>Add binary installation instructions in 4.1. Add run
-installation to section 5. </td>
-    </tr>
-    <tr>
-      <td nowrap="nowrap">August 23rd, 2002</td>
-      <td>7</td>
-      <td nowrap="nowrap">Julian Hyde</td>
-      <td>Add MySQL instructions.</td>
-    </tr>
-    <tr>
-      <td nowrap="nowrap">September 23rd, 2002</td>
-      <td>8</td>
-      <td nowrap="nowrap">Julian Hyde</td>
-      <td>Revised installation instructions for binary release.</td>
-    </tr>
-    <tr>
-      <td nowrap="nowrap">Februrary 12th, 2003</td>
-      <td>9</td>
-      <td nowrap="nowrap">Julian Hyde</td>
-      <td>New versions of Xalan, Tomcat, JDK.</td>
-    </tr>
-    <tr>
-      <td nowrap="nowrap">Februrary 3rd, 2004</td>
-      <td>10</td>
-      <td nowrap="nowrap">Andreas Voss</td>
-      <td>Cache instructions</td>
-    </tr>
-    <tr>
-      <td nowrap="nowrap">July 28th, 2004</td>
-      <td>11</td>
-      <td nowrap="nowrap">Julian Hyde</td>
-      <td>Patrick Tallman's installation instructions</td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;">Jan 29th, 2005<br>
-      </td>
-      <td style="vertical-align: top;">12<br>
-      </td>
-      <td style="vertical-align: top;">Sherman Wood<br>
-      </td>
-      <td style="vertical-align: top;">Revised to reflect new point
-release<br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;">Mar 9th, 2005</td>
-      <td style="vertical-align: top;">13</td>
-      <td style="vertical-align: top;">Julian Hyde</td>
-      <td style="vertical-align: top;">Moved parts of the installation guide 
-		into the developer's guide</td>
-    </tr>
-  </tbody>
-</table>
+<h2><a name="2_Download_the_code">2. Introduction</a></h2>
 
-<h2><a name="3_Getting_Mondrian">3. Download the code</a></h2>
-
-<p>The easiest way to get Mondrian running is as a binary release. Here is how:</p>
+<p>The easiest way to get Mondrian running is to download and install a binary release. Here is how:</p>
 <ol>
 	<li>Download the latest binary
 release <code>mondrian-<i>version</i>-bin.zip</code> from 
@@ -167,16 +57,26 @@ release <code>mondrian-<i>version</i>-bin.zip</code> from
 	<li>From the unzipped binary release, copy <code>mondrian.war</code> to
 	<code><i>TOMCAT_HOME</i>/webapps/mondrian.war</code>.</li>
 	<li>Install the <a href="#JDK">JDK</a> and <a href="#Tomcat">Tomcat</a>.</li>
-	<li>Set up the FoodMart dataset, as described <a href="#4_Set_up_test_data">
+	<li>Set up the FoodMart dataset, as described <a href="#3_Set_up_test_data">
 	below</a>.</li>
 	<li>Set up an ODBC data source to the Access database, as described 
 	<a
- href="#4_1_Access_setup">here</a>.<br></li>
+ href="#3_1_Access_setup">here</a>.<ul>
+		<li>NOTE: These instructions only work if you are running Windows. On 
+		other operating systems, you will need to
+		<a href="#3_2_Non_Access_setup">create and load a database</a>, which is 
+		a little more complicated.<br></li>
+	</ul>
+	</li>
 	<li>Start Tomcat and visit <a href="http://localhost:8080/mondrian">http://localhost:8080/mondrian</a> 
 	in your web browser.</li>
 </ol>
 
-<h2><a name="4_Set_up_test_data">4.Set up test data</a></h2>
+<p>If you are Mondrian developer, there are additional instructions for 
+accessing the source-control system and building the code in
+<a href="developer.html">the Developer's Guide</a>.</p>
+
+<h2><a name="3_Set_up_test_data">3. Set up test data</a></h2>
 
 <p>The test dataset is contained in two formats: a Microsoft Access database and in
 a SQL script of insert statements. Under Windows, using the Access
@@ -193,26 +93,44 @@ The files will
 be
 <code><i>${project.location}</i>/</code><code>demo/access/MondrianFoodMart.mdb</code>
 and <code><i>${project.location}</i>/</code><code>demo/FoodMartCreateData.zip</code>. </p>
-<h3><a name="4_1_Access_setup">4.1. If using Access, set up the
-ODBC datasource for
-the test dataset</a></h3>
+
+<h3><a name="3_1_Access_setup">3.1. Microsoft Access</a></h3>
+
+<p>If you are using Windows, Microsoft Access is the easiest database to 
+use for the test dataset. You just need to set up an ODBC datasource for
+the test dataset.</p>
 
 <p>The test dataset needs to be accessed by the unit tests if you are
 testing with just this database, or loading into another database.</p>
-<p>Under Windows, create a System ODBC DSN called <code>MondrianFoodMart</code>
+
+<p>Under the 'Administrative Tools' menu, click on the 'Data Sources (ODBC)' 
+menu item to open the ODBC Data Source Administrator.
+Next, create a System DSN called <code>MondrianFoodMart</code>
 pointing to
 <code><i>${project.location}</i>/demo/access/MondrianFoodMart.mdb</code>.
-The JDBC connect string will be <code>jdbc:odbc:MondrianFoodMart</code>.<br>
-</p>
+(This allows Mondrian to access this data source using the
+JDBC connect string "<code>jdbc:odbc:MondrianFoodMart</code>".</p>
 
-<h3><a name="4_2_Non_Access_setup">4.2. If not using Access, create and load the test database</a></h3>
+<h3><a name="3_2_Non_Access_setup">3.2. Other database</a></h3>
 
-<p>If you do not want to use the Access test dataset, you will
-need to create a database and load the test dataset from either the
-Access database or the SQL script using the
-MondrianFoodMartLoader class. </p>
+<p>If not using Access, use the MondrianFoodMartLoader
+utility to create a database, and load data from a SQL script. Its syntax is as 
+follows:</p>
 <blockquote>
-  <pre>MondrianFoodMartLoader [-verbose] [-tables] [-data] [-indexes]<br>	-jdbcDrivers=&lt;jdbcDrivers&gt;<br>	-outputJdbcURL=&lt;jdbcURL&gt; <br>        [ <br>		[[-outputJdbcUser=user] [-outputJdbcPassword=password] [-outputJdbcBatchSize=&lt;batch size&gt;]] |<br>	&nbsp;	-outputDirectory=&lt;directory name&gt;<br>	]<br>	[ [-inputJdbcURL=&lt;jdbcURL&gt; [-inputJdbcUser=user] [-inputJdbcPassword=password]] | [-inputfile=&lt;file name&gt;]]</blockquote>
+  <p><code>java -cp 'mondrian.jar' mondrian.test.loader.MondrianFoodMartLoader<br>
+&nbsp;&nbsp;&nbsp; [-verbose] [-tables] [-data] [-indexes]<br>
+&nbsp;&nbsp;&nbsp; -jdbcDrivers=&lt;jdbcDrivers&gt;<br>
+&nbsp;&nbsp;&nbsp; -outputJdbcURL=&lt;jdbcURL&gt; <br>
+&nbsp;&nbsp;&nbsp;
+    [ [ [-outputJdbcUser=user] [-outputJdbcPassword=password] [-outputJdbcBatchSize=&lt;batch size&gt;] ]<br>
+&nbsp;&nbsp;&nbsp; | -outputDirectory=&lt;directory name&gt;<br>
+&nbsp;&nbsp;&nbsp;
+    ]<br>
+&nbsp;&nbsp;&nbsp; [ [-inputJdbcURL=&lt;jdbcURL&gt; [-inputJdbcUser=user] [-inputJdbcPassword=password] ]<br>
+&nbsp;&nbsp;&nbsp; | [-inputfile=&lt;file name&gt;] <br>
+&nbsp;&nbsp;&nbsp; ]</code></p>
+</blockquote>
+
 <table style="text-align: left; width: 1010px; height: 274px;"
  border="1" cellpadding="2" cellspacing="0">
   <tbody>
@@ -225,119 +143,147 @@ MondrianFoodMartLoader class. </p>
       </td>
     </tr>
     <tr>
-      <td style="vertical-align: top;">jdbcURL<br>
-      </td>
-      <td style="vertical-align: top;">
-      <p>JDBC URL for related DB
-connection<br>
-      </p>
-      </td>
+      <td style="vertical-align: top;">jdbcURL</td>
+      <td style="vertical-align: top;"><p>JDBC URL for related DB connection</p></td>
     </tr>
     <tr>
-      <td style="vertical-align: top;">user<br>
-      </td>
-      <td style="vertical-align: top;">User name for related DB<br>
-      </td>
+      <td style="vertical-align: top;">user</td>
+      <td style="vertical-align: top;">User name for related DB</td>
     </tr>
     <tr>
-      <td style="vertical-align: top;">password<br>
-      </td>
-      <td style="vertical-align: top;">Password for related DB<br>
-      </td>
+      <td style="vertical-align: top;">password</td>
+      <td style="vertical-align: top;">Password for related DB</td>
     </tr>
     <tr>
-      <td style="vertical-align: top;">file name<br>
-      </td>
-      <td style="vertical-align: top;">Optional. If no input DB
-parameters are
-given, assumes data comes from this file of INSERT statements.<br>
-      </td>
+      <td style="vertical-align: top;">file name</td>
+      <td style="vertical-align: top;">Optional. If no input DB parameters are
+given, assumes data comes from this file of INSERT statements.</td>
     </tr>
     <tr>
-      <td style="vertical-align: top;">outputDirectory<br>
-      </td>
-      <td style="vertical-align: top;">Optional. Directory where DB
-creation
+      <td style="vertical-align: top;">outputDirectory</td>
+      <td style="vertical-align: top;">Optional. Directory where DB creation
 scripts will be placed. Statements are in a format that will work for
-the database type indicated by outputJdbcURL.<br>
-      </td>
+the database type indicated by outputJdbcURL.</td>
     </tr>
     <tr>
-      <td style="vertical-align: top;">batch size<br>
-      </td>
+      <td style="vertical-align: top;">batch size</td>
       <td style="vertical-align: top;">Size of batch for JDBC INSERT
 statement output. Defaults to 50. If set to 1, JDBC batches are not
-used.<br>
-      </td>
+used.</td>
     </tr>
     <tr>
-      <td style="vertical-align: top;">verbose<br>
-      </td>
-      <td style="vertical-align: top;">Verbose mode.<br>
-      </td>
+      <td style="vertical-align: top;">verbose</td>
+      <td style="vertical-align: top;">Verbose mode.</td>
     </tr>
     <tr>
-      <td style="vertical-align: top;">tables<br>
-      </td>
+      <td style="vertical-align: top;">tables</td>
       <td style="vertical-align: top;">Create tables in output JDBC, or
 generate CREATE TABLE statement file in output directory for all
 FoodMart tables, as appropriate for the output database type. If not
-given, the tables are assumed to exist, and will be deleted first.<br>
-      </td>
+given, the tables are assumed to exist, and will be deleted first.</td>
     </tr>
     <tr>
-      <td style="vertical-align: top;">data<br>
-      </td>
+      <td style="vertical-align: top;">data</td>
       <td style="vertical-align: top;">Load data from input (JDBC,
-insert statement file) to output (JDBC, insert statement file).<br>
-      </td>
+insert statement file) to output (JDBC, insert statement file).</td>
     </tr>
     <tr>
-      <td style="vertical-align: top;">indexes<br>
-      </td>
+      <td style="vertical-align: top;">indexes</td>
       <td style="vertical-align: top;">Create indexes in output JDBC,
 or generate CREATE INDEX statement file in output directory for all
-FoodMart tables, as appropriate for the output database type. </td>
+FoodMart tables, as appropriate for the output database type.</td>
     </tr>
   </tbody>
 </table>
-<p>The loader uses standard J2SE JDBC, the relevant JDBC driver JARs,
+
+<p>The usual source for the MondrianFoodMartLoader utility is
+a SQL script (<code>[-inputfile=&lt;file name&gt;]</code>). But you have already 
+loaded the data into one JDBC data source (say Microsoft Access), use the <code>
+-inputJdbcURL</code> and related options to copy data to another JDBC database.<p>The loader uses standard J2SE JDBC, the relevant JDBC driver JARs,
 and some classes out of Mondrian that do not rely on additional JARs.
-It has been tested against Oracle, Postgres and MySQL.<br>
+It has been tested against Oracle, Postgres, MySQL and Microsoft Access.<br>
 </p>
 <p><span style="font-weight: bold; text-decoration: underline;">Examples</span><br>
 </p>
 <p>Create FoodMart tables for MySQL from the test dataset in the SQL
-scripts<br>
+scripts:<br>
 </p>
 <blockquote>
-  <pre>$ java -cp 'mondrian.jar' mondrian.test.loader.MondrianFoodMartLoader<br>&nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes -jdbcDrivers=com.mysql.jdbc.Driver<br>&nbsp;&nbsp;&nbsp;&nbsp; -inputfile=/data/Mondrian/demo/FoodMartCreateData.sql <br>     -outputJdbcURL=jdbc:mysql://localhost/foodmart?user=root&amp;password=myAdmin<br></pre>
+  <p><code>$ java -cp 'mondrian.jar' mondrian.test.loader.MondrianFoodMartLoader<br>&nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes -jdbcDrivers=com.mysql.jdbc.Driver<br>&nbsp;&nbsp;&nbsp;&nbsp; -inputfile=/data/Mondrian/demo/FoodMartCreateData.sql <br>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL=jdbc:mysql://localhost/foodmart?user=root&amp;password=myAdmin</code><br>
+	</p>
 </blockquote>
 <p>Create FoodMart tables for PostgreSQL from the test dataset in the
 Access
-database</p>
+database:</p>
 <blockquote>
-  <pre>$ java -cp 'mondrian.jar' mondrian.test.loader.MondrianFoodMartLoader<br>     -verbose -tables -data -indexes -jdbcDrivers=org.postgresql.Driver,sun.jdbc.odbc.JdbcOdbcDriver<br>     -inputJdbcURL=jdbc:odbc:MondrianFoodMart <br>     -outputJdbcURL=jdbc:postgresql://localhost/foodmart -outputJdbcUser=postgres -outputJdbcPassword=password</pre>
+  <p><code>$ java -cp 'mondrian.jar' mondrian.test.loader.MondrianFoodMartLoader<br>
+&nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes -jdbcDrivers=org.postgresql.Driver,sun.jdbc.odbc.JdbcOdbcDriver<br>
+&nbsp;&nbsp;&nbsp;&nbsp;
+     -inputJdbcURL=jdbc:odbc:MondrianFoodMart<br>
+&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL=jdbc:postgresql://localhost/foodmart -outputJdbcUser=postgres -outputJdbcPassword=password</code></p>
 </blockquote>
 
-<h2><a name="5_Configure_exec_environment">5. Configure the execution environment for testing</a>
+<h2><a name="4_Configure_exec_environment">4. Configure the execution environment for testing</a>
 </h2>
 <p>The Mondrian Ant script uses the <code><i>${project.location}</i>/mondrian.properties</code>
 file for configuration. See below for an example.<br>
 </p>
 <blockquote>
-  <pre>###############################################################################<br># Used by the test suite<br># Uncomment the following lines to run subsets of the test suite.<br># "mondrian.test.Class" is the name of the main test class: it must either<br># implement "junit.framework.Test" or have a "public [static] Test suite()"<br># method. "mondrian.test.Name" is a pattern for the test methods to call.<br>#<br># If these parameters are not set, then the whole test suite is run.<br>#<br>#mondrian.test.Class=mondrian.test.BasicQueryTest<br>#mondrian.test.Name=testMemberWithNullKey<br><br>###############################################################################<br># Environment<br>#<br># Used by the webapp at build time<br>#<br>mondrian.test.connectString=\<br>Provider=mondrian;\<br>Jdbc=jdbc:postgresql://localhost/foodmart;\<br>JdbcUser=postgres;\<br>JdbcPassword=pgAdmin;\<br>Catalog=/WEB-INF/FoodMart.xml;\<br>JdbcDrivers=org.postgresql.Driver;\<br>RoleXX='California manager';<br><br>#<br>#&nbsp; This is the JDBC connection that will be used if you run "build test"<br>#<br>mondrian.foodmart.jdbcURL=jdbc:odbc:MondrianFoodMart<br><br>#<br>#&nbsp; These are the JDBC connections that will be used if you run "build test-XXX",<br>#&nbsp; ie. build test-postgres or build test-access<br>#<br><br>mondrian.foodmart.jdbcURL.oracle=jdbc:oracle:oci8:foodmart/foodmart@realm1<br>mondrian.foodmart.jdbcURL.access=jdbc:odbc:MondrianFoodMart<br>mondrian.foodmart.jdbcURL.hsqldb=jdbc:hsqldb:demo/hsql/FoodMart<br>mondrian.foodmart.jdbcURL.mysql=jdbc:mysql://localhost/foodmart?user=root&amp;password=myAdmin<br>mondrian.foodmart.jdbcURL.postgres=jdbc:postgresql://localhost/foodmart<br><br>#<br># Include all JDBC driver classes to be used by Mondrian<br>#<br>mondrian.jdbcDrivers=org.postgresql.Driver,sun.jdbc.odbc.JdbcOdbcDriver,com.mysql.jdbc.Driver<br><br>#<br># Set the following parameters if you cannot set the username/password via the JDBC URL.<br># Postgres and Oracle need this<br>#<br>mondrian.foodmart.jdbcUser=postgres<br>mondrian.foodmart.jdbcPassword=pgAdmin<br></pre>
-</blockquote>
-<p>Your JDBC driver(s) must be on the classpath. You will need to set
-your JDBC URL appropriately for your database.<br>
+  <p><code>###############################################################################<br>
+	# Used by the test suite<br>
+	# Uncomment the following lines to run subsets of the test suite.<br>
+	# "mondrian.test.Class" is the name of the main test class: it must either<br>
+	# implement "junit.framework.Test" or have a "public [static] Test suite()"<br>
+	# method. "mondrian.test.Name" is a pattern for the test methods to call.<br>
+#<br>
+	# If these parameters are not set, then the whole test suite is run.<br>
+#<br>
+#mondrian.test.Class=mondrian.test.BasicQueryTest<br>
+#mondrian.test.Name=testMemberWithNullKey<br>
+	<br><br>
+###############################################################################<br>
+	# Environment<br>
+#<br>
+	# Used by the webapp at build time<br>
+	#<br>
+mondrian.test.connectString=\<br>
+Provider=mondrian;\<br>
+Jdbc=jdbc:postgresql://localhost/foodmart;\<br>
+JdbcUser=postgres;\<br>
+JdbcPassword=pgAdmin;\<br>
+Catalog=/WEB-INF/FoodMart.xml;\<br>
+JdbcDrivers=org.postgresql.Driver;\<br>RoleXX='California manager';<br>
+	<br><br>
+#<br>
+	#&nbsp; This is the JDBC connection that will be used if you run "ant test"<br>
+#<br>
+mondrian.foodmart.jdbcURL=jdbc:odbc:MondrianFoodMart<br>
+	<br>
+#<br># Include all JDBC driver classes to be used by Mondrian<br>
+#<br>
+mondrian.jdbcDrivers=org.postgresql.Driver,sun.jdbc.odbc.JdbcOdbcDriver,com.mysql.jdbc.Driver<br>
+	<br>
+#<br>
+	# Set the following parameters if you cannot set the username/password via the JDBC URL.<br>
+	# Postgres and Oracle need this.<br>
+#<br>
+mondrian.foodmart.jdbcUser=postgres<br>
+mondrian.foodmart.jdbcPassword=pgAdmin</code><br>
 </p>
-<h2><a name="6_Run_the_web_app">6. Deploy and run the web app</a></h2><ol>
+</blockquote>
+
+<p>Your JDBC driver(s) must be on the classpath. You will need to set
+your JDBC URL appropriately for your database.</p>
+
+<h2><a name="5_Deploy_and_run_the_web_app">5. Deploy and run the web app</a></h2><ol>
   <li>First <a href="#Tomcat">install Tomcat</a>.</li><li>Make sure the values in <code>mondrian.properties</code> are correct for your environment. In particular:<ul>
     <li>Make sure your database's JDBC driver appears in the <code>JdbcDrivers</code> property of your connect string</li><li>Check the catalog URL in <code>mondrian.test.connectString</code> and
-    <code>mondrian.foodmart.catalogURL</code></li><li>Check the JDBC connect URL in <code>mondrian.foodmart.jdbcURL</code></li><li>Check the connect string in <code>mondrian.test.connectString</code></li><li>Note that any ampersands must be url-quoted,  since this string is copied into <code>mondrian.war(war.xml)</code></li></ul></li><li>Run <code>build deploy-war</code> (or <code>mondrian deploy-to-tomcat</code>,
-  if this is a a runtime environment).</li><li>Start up tomcat. (If this is a build environment, <code>build start.tomcat</code> is an easy way to do this.)</li><li>Hit <a href="http://localhost:8080/mondrian" target="_new">http://localhost:8080/mondrian</a>.</li></ol><h2>
-<a name="7_Miscellaneous">7. Miscellaneous</a></h2><h3>
-<a name="7_1_Cache_setup">7.1. Cache setup</a></h3><p>You will need to specify the amount of memory available to the cache
+    <code>mondrian.foodmart.catalogURL</code></li><li>Check the JDBC connect URL in <code>mondrian.foodmart.jdbcURL</code></li><li>Check the connect string in <code>mondrian.test.connectString</code></li><li>Note that any ampersands must be url-quoted,  since this string is copied into <code>mondrian.war(war.xml)</code></li></ul></li><li>Run 
+	<code>ant war</code></li>
+	<li>Copy <code>lib/mondrian.war</code> to <i></i><code><i>CATALINA_HOME</i>/webapps</code>.</li><li>
+	Start up tomcat.</li><li>Hit <a href="http://localhost:8080/mondrian" target="_new">http://localhost:8080/mondrian</a>.</li></ol><h2>
+<a name="6_Miscellaneous">6. Miscellaneous</a></h2><h3>
+<a name="6_1_Cache_setup">6.1. Cache setup</a></h3><p>You will need to specify the amount of memory available to the cache
 using the -Xms Java VM option, for example -Xms256m for 256 megs of ram
 for the Java VM.</p><h2><a name="Appendix_A_Compatibility_issues">Appendix A. Compatibility
 issues</a></h2><h3><a name="Appendix_A_1_Weblogic_6_1_and_Xerces">
