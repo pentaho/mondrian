@@ -4,7 +4,7 @@
                  java.io.PrintWriter,
                  java.io.StringWriter,
                  mondrian.xmla.XmlaUtil,
-                 java.util.HashMap,
+                 java.util.Map,
                  java.util.Arrays"%>
 <%@ page language="java" %>
 <%--
@@ -30,7 +30,7 @@
         return sw.toString();
     }
 
-    private static final HashMap requestMap = XmlaUtil.getRequestMap();
+    private static final Map requestMap = XmlaUtil.getRequestMap();
 %>
 <html>
 <head>

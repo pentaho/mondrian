@@ -51,8 +51,8 @@ public class XmlaUtil {
         // Deal with embedded & that can be in the JDBC URL
         String dataSource =
                 "Provider=Mondrian;"
-                + "Jdbc=" + url + ";"
                 + "Jdbc=" + url.replaceAll("&", "&amp;") + ";"
+                + "Catalog=" + catalogName + ";"
                 + "JdbcDrivers=" + driver +";";
         final HashMap map = new HashMap();
         String[] sampleRequests = getSampleRequests(catalogName, dataSource);
