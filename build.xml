@@ -79,9 +79,9 @@ demo/mysql/FoodMartData.sql"/>
   <path id="project.classpath">
     <pathelement location="${classes.dir}"/>
     <pathelement location="${lib.dir}/servlet.jar"/>
-    <pathelement location="${catalina.home}/common/lib/commons-dbcp.jar"/>
-    <pathelement location="${catalina.home}/common/lib/commons-collections.jar"/>
-    <pathelement location="${catalina.home}/common/lib/commons-pool.jar"/>
+    <pathelement location="${lib.dir}/commons-dbcp.jar"/>
+    <pathelement location="${lib.dir}/commons-collections.jar"/>
+    <pathelement location="${lib.dir}/commons-pool.jar"/>
     <pathelement location="${lib.dir}/javacup.jar"/>
     <pathelement location="${lib.dir}/mof.jar"/>
     <pathelement location="${lib.dir}/jmi.jar"/>
@@ -174,6 +174,7 @@ demo/mysql/FoodMartData.sql"/>
   </target>
 
   <target name="compile" depends="
+copy-jars,
 sniff,
 prepare,
 parser,
@@ -596,8 +597,31 @@ build mondrian.war as in the runtime environment.">
       <fileset dir="${junit.home}" includes="junit.jar"/>
       <fileset dir="${ant.home}/lib" includes="ant.jar,optional.jar"/>
       <fileset dir="${xalan.home}/bin" includes="xalan.jar,xml-apis.jar,xercesImpl.jar"/>
-      <fileset dir="${catalina.home}/common/lib" includes="commons-dbcp.jar,commons-pool.jar"/>
+      <fileset dir="${catalina.home}/common/lib" includes="commons-dbcp.jar,commons-pool.jar,commons-collections.jar"/>
     </copy>
+    
+  <extension id="commons-dbcp.ext" extensionName="org.apache.commons.dbcp"/>
+  <jarlib-resolve property="commons-dbcp.library" failOnError="false" checkExtension="false">
+    <extension refid="commons-dbcp.ext"/>
+    <location location="${lib.dir}/commons-dbcp.jar"/>
+    <url url="http://gump.covalent.net/jars/latest/jakarta-commons/commons-dbcp.jar" destfile="${lib.dir}/commons-dbcp.jar"/>
+  </jarlib-resolve>
+  
+  <extension id="commons-pool.ext" extensionName="org.apache.commons.pool"/>
+  <jarlib-resolve property="commons-pool.library" failOnError="false" checkExtension="false">
+    <extension refid="commons-pool.ext"/>
+    <location location="${lib.dir}/commons-pool.jar"/>
+    <url url="http://gump.covalent.net/jars/latest/jakarta-commons/commons-pool.jar" destfile="${lib.dir}/commons-pool.jar"/>
+  </jarlib-resolve>
+
+  <extension id="commons-collections.ext" extensionName="org.apache.commons.collections"/>
+  <jarlib-resolve property="commons-collections.library" failOnError="false" checkExtension="false">
+    <extension refid="commons-collections.ext"/>
+    <location location="${lib.dir}/commons-collections.jar"/>
+    <url url="http://gump.covalent.net/jars/latest/jakarta-commons/commons-collections.jar" destfile="${lib.dir}/commons-collections.jar"/>
+  </jarlib-resolve>
+
+
   </target>
 
   <target name="war" depends="jar,copy-jars" description="
