@@ -16,7 +16,7 @@
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
-  <property name="version" value="1.1.0"/>
+  <property name="version" value="1.1.1"/>
 
   <!--
     ===================================================================
@@ -533,6 +533,7 @@ ${doc.dir}/**/*.css,
 ${doc.dir}/api/**/*.xml,
 ${dist.src.file},
 ${war.file},
+${jar.file},
 lib/mondrian.dtd,
 demo/FoodMart.xml,
 demo/FoodMartCreateData.sql,
@@ -574,7 +575,7 @@ doc/**/*.xml"
     </tar>
   </target>
 
-  <target name="jar" depends="compile">
+  <target name="jar" depends="compile,compile.tests">
     <mkdir dir="${lib.dir}" />
     <zip
         zipfile="${jar.file}"
@@ -584,6 +585,10 @@ doc/**/*.xml"
           includes="
 **/*.class,
 **/*.properties"/>
+      <zipfileset
+          dir="${testclasses.dir}"
+          includes="
+mondrian/test/loader/**/*.class"/>
       <zipfileset
           dir="."
           includes="

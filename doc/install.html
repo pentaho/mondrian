@@ -17,7 +17,7 @@
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
 <title>How to download, build and install Mondrian</title>
-<link rel="stylesheet" href="../../../open/mondrian/doc/stylesheet.css" type="text/css" />
+<link rel="stylesheet" href="stylesheet.css" type="text/css" />
 </head>
 
 <body>
@@ -50,30 +50,20 @@
 
 <p>The easiest way to get Mondrian running is to download and install a binary release. Here is how:</p>
 <ol>
+	<li>Install the Java SDK (1.4.2 or later).</li>
 	<li>Download the latest binary
-release <code>mondrian-<i>version</i>-bin.zip</code> from 
+release <code>mondrian-<i>version</i>.zip</code> from 
 	<a href="http://sourceforge.net/projects/mondrian">SourceForge</a>, and 
 	unzip it.</li>
-	<li>From the unzipped binary release, copy <code>mondrian.war</code> to
-	<code><i>TOMCAT_HOME</i>/webapps/mondrian.war</code>.</li>
-	<li>Install the Java SDK (1.4.2 or later) and Tomcat (5.0.25 or later).</li>
-	<li>Set up the FoodMart dataset, as described <a href="#3_Set_up_test_data">
-	below</a>.</li>
-	<li>Set up an ODBC data source to the Access database, as described 
-	<a
- href="#3_1_Access_setup">here</a>.<ul>
-		<li>NOTE: These instructions only work if you are running Windows. On 
-		other operating systems, you will need to
-		<a href="#3_2_Non_Access_setup">create and load a database</a>, which is 
-		a little more complicated.<br></li>
-	</ul>
-	</li>
-	<li>Start Tomcat and visit <a href="http://localhost:8080/mondrian">http://localhost:8080/mondrian</a> 
-	in your web browser.</li>
+	<li>Set up the FoodMart dataset, as described in
+	<a href="#3_Set_up_test_data">
+	section 3</a>.</li>
+	<li>Set up and start the web application, as described in
+	<a href="#5_Deploy_and_run_the_web_app">section 5</a>.</li>
 </ol>
 
 <p>If you are Mondrian developer, there are additional instructions for 
-accessing the source-control system and building the code in
+accessing the Perforce source-control server and building the code in
 <a href="developer.html">the Developer's Guide</a>.</p>
 
 <h2><a name="3_Set_up_test_data">3. Set up test data</a></h2>
@@ -112,7 +102,7 @@ JDBC connect string "<code>jdbc:odbc:MondrianFoodMart</code>".</p>
 utility to create a database, and load data from a SQL script. Its syntax is as 
 follows:</p>
 <blockquote>
-  <p><code>java -cp 'mondrian.jar' mondrian.test.loader.MondrianFoodMartLoader<br>
+  <p><code>MondrianFoodMartLoader<br>
 &nbsp;&nbsp;&nbsp; [-verbose] [-tables] [-data] [-indexes]<br>
 &nbsp;&nbsp;&nbsp; -jdbcDrivers=&lt;jdbcDrivers&gt;<br>
 &nbsp;&nbsp;&nbsp; -outputJdbcURL=&lt;jdbcURL&gt;<br>
@@ -204,14 +194,14 @@ It has been tested against Oracle, Postgres, MySQL and Microsoft Access.</p>
 scripts:</p>
 
 <blockquote>
-  <p><code>$ java -cp 'mondrian.jar' mondrian.test.loader.MondrianFoodMartLoader<br>&nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes -jdbcDrivers=com.mysql.jdbc.Driver<br>&nbsp;&nbsp;&nbsp;&nbsp; -inputfile=/data/Mondrian/demo/FoodMartCreateData.sql <br>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL=jdbc:mysql://localhost/foodmart?user=root&amp;password=myAdmin</code><br>
+  <p><code>$ java -cp '/mondrian/lib/mondrian.jar' mondrian.test.loader.MondrianFoodMartLoader<br>&nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes -jdbcDrivers=com.mysql.jdbc.Driver<br>&nbsp;&nbsp;&nbsp;&nbsp; -inputfile=/mondrian/demo/FoodMartCreateData.sql <br>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL=jdbc:mysql://localhost/foodmart?user=root&amp;password=myAdmin</code><br>
 	</p>
 </blockquote>
 <p>Create FoodMart tables for PostgreSQL from the test dataset in the
 Access
 database:</p>
 <blockquote>
-  <p><code>$ java -cp 'mondrian.jar' mondrian.test.loader.MondrianFoodMartLoader<br>
+  <p><code>$ java -cp 'mondrian/lib/mondrian.jar' mondrian.test.loader.MondrianFoodMartLoader<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes -jdbcDrivers=org.postgresql.Driver,sun.jdbc.odbc.JdbcOdbcDriver<br>
 &nbsp;&nbsp;&nbsp;&nbsp;
      -inputJdbcURL=jdbc:odbc:MondrianFoodMart<br>
@@ -271,12 +261,13 @@ mondrian.foodmart.jdbcPassword=pgAdmin</code><br>
 your JDBC URL appropriately for your database.</p>
 
 <h2><a name="5_Deploy_and_run_the_web_app">5. Deploy and run the web app</a></h2><ol>
-  <li>First <a href="#Tomcat">install Tomcat</a>.</li><li>Make sure the values in <code>mondrian.properties</code> are correct for your environment. In particular:<ul>
+  <li>Install Tomcat (version 5.0.25 or later).</li>
+	<li>From the unzipped binary release, copy <code>lib/mondrian.war</code> to
+	<code><i>TOMCAT_HOME</i>/webapps/mondrian.war</code>.</li><li>Make sure the values in <code>mondrian.properties</code> are correct for your environment. In particular:<ul>
     <li>Make sure your database's JDBC driver appears in the <code>JdbcDrivers</code> property of your connect string</li><li>Check the catalog URL in <code>mondrian.test.connectString</code> and
-    <code>mondrian.foodmart.catalogURL</code></li><li>Check the JDBC connect URL in <code>mondrian.foodmart.jdbcURL</code></li><li>Check the connect string in <code>mondrian.test.connectString</code></li><li>Note that any ampersands must be url-quoted,  since this string is copied into <code>mondrian.war(war.xml)</code></li></ul></li><li>Run 
-	<code>ant war</code></li>
-	<li>Copy <code>lib/mondrian.war</code> to <i></i><code><i>CATALINA_HOME</i>/webapps</code>.</li><li>
-	Start up tomcat.</li><li>Hit <a href="http://localhost:8080/mondrian" target="_new">http://localhost:8080/mondrian</a>.</li></ol><h2>
+    <code>mondrian.foodmart.catalogURL</code></li><li>Check the JDBC connect URL in <code>mondrian.foodmart.jdbcURL</code></li><li>Check the connect string in <code>mondrian.test.connectString</code></li><li>Note that any ampersands must be url-quoted,  since this string is copied into <code>mondrian.war(war.xml)</code></li></ul></li>
+	<li>
+	Start up Tomcat.</li><li>Hit <a href="http://localhost:8080/mondrian" target="_new">http://localhost:8080/mondrian</a>.</li></ol><h2>
 <a name="6_Miscellaneous">6. Miscellaneous</a></h2><h3>
 <a name="6_1_Cache_setup">6.1. Cache setup</a></h3><p>You will need to specify the amount of memory available to the cache
 using the -Xms Java VM option, for example -Xms256m for 256 megs of ram
