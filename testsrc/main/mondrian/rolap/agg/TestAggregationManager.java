@@ -63,6 +63,7 @@ public class TestAggregationManager extends TestCase {
                 "from `customer` as `customer`," +
                 " `sales_fact_1997` as `sales_fact_1997` " +
                 "where `sales_fact_1997`.`customer_id` = `customer`.`customer_id` " +
+                "and `customer`.`gender` = 'F' " +
                 "group by `customer`.`gender`";
 		assertRequestSql(new CellRequest[] {request}, pattern, "select `customer`.`gender`");
 	}
@@ -156,6 +157,7 @@ public class TestAggregationManager extends TestCase {
 		final String pattern = "select `store`.`store_type` as `c0`," +
                 " sum(`store`.`store_sqft`) as `m0` " +
                 "from `store` as `store` " +
+                "where `store`.`store_type` = 'Supermarket' " +
                 "group by `store`.`store_type`";
 		assertRequestSql(new CellRequest[] {request}, pattern, "select `store`.`store_type` as `c0`");
 	}

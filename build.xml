@@ -373,7 +373,7 @@ copy.properties"/>
     </antcall>
   </target>
 
-  <target name="test-dbms" depends="compile"
+  <target name="test-dbms" depends="compile,compile.tests"
       description="
 Runs all JUnit tests, using the given database connection
 in {mondrian.foodmart.jdbcURL}.">
