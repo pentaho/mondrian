@@ -108,7 +108,7 @@ Revision is $Id$
         <Object name="fact" type="Relation" required="true">
             <Doc>
                 The fact table is the source of all measures in this cube. If
-                this is a <link class="Table"/> and the schema name is not
+                this is a <code>Table</code> and the schema name is not
                 present, table name is left unqualified.
             </Doc>
         </Object>
@@ -223,11 +223,10 @@ Revision is $Id$
     <Element type="Dimension" class="CubeDimension">
         <Doc>
             A <code>Dimension</code> is a collection of hierarchies. There are
-            two kinds: a <dfn>public</dfn> dimension belongs to a <link
-            class="Schema">schema</link>, and be used by several cubes; a
+            two kinds: a <dfn>public</dfn> dimension belongs to a
+            <code>Schema</code>, and be used by several cubes; a
             <dfn>private</dfn> dimension belongs to a
-            <link class="Cube">cube</link>. The
-            <link member="foreignKey">foreignKey</link> field is only
+            <code>Cube</code>. The <code>foreignKey</code> field is only
             applicable to private dimensions.
         </Doc>
         <Attribute name="name" required="true"><Doc></Doc></Attribute>
@@ -311,8 +310,7 @@ Revision is $Id$
                 The name of the column which identifies members, and
                 which is referenced by rows in the fact table.
                 If not specified, the key of the lowest level is used.
-                See also <link class="CubeDimension"
-                member="foreignKey">CubeDimension.foreignKey</link>.
+                See also <code>CubeDimension.foreignKey</code>.
             </Doc>
         </Attribute>
         <Attribute name="primaryKeyTable">
@@ -326,12 +324,13 @@ Revision is $Id$
         <Attribute name="memberReaderClass">
             <Doc>
                 Name of the custom member reader class. Must implement
-                {@link Broadbase.olap.RolapConnection.MemberReader}.
+                the <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/MemberReader.html">mondrian.rolap.MemberReader</a> interface.
             </Doc>
         </Attribute>
         <Attribute name="caption" required="false">
             <Doc>
-                A string being displayed instead of the hierarchie's name.
+                A string to be displayed in the user interface.
+                If not specified, the hierarchy's name is used.
             </Doc>
         </Attribute>
 
@@ -563,7 +562,7 @@ Revision is $Id$
         <Attribute name="formatString">
             <Doc>
                 Format string with which to format cells of this measure. For
-                more details, see {@link mondrian.util.Format}.
+                more details, see the <a href="http://mondrian.sourceforge.net/api/mondrian/util/Format.html">mondrian.util.Format</a> class.
             </Doc>
         </Attribute>
         <Attribute name="aggregator" required="true">
@@ -939,7 +938,7 @@ Revision is $Id$
 
     <Class class="Grant">
         <Attribute name="access" required="true">
-            <Doc>Values correspond to <link class="Access"/></Doc>
+            <Doc>Values correspond to <code>Access</code>.</Doc>
             <Value>all</Value>
             <Value>custom</Value>
             <Value>none</Value>
@@ -949,20 +948,20 @@ Revision is $Id$
 
     <Element class="Grant" type="SchemaGrant">
         <Doc>
-            <![CDATA[Grants (or denies) this role access to this schema.
+            Grants (or denies) this role access to this schema.
             <code>access</code> may be "all", "all_dimensions", or "none".
             If <code>access</code> is "all_dimensions", the role has access
             to all dimensions but still needs explicit access to cubes.
-            See {@link mondrian.olap.Role#grant(mondrian.olap.Schema,int)}.]]>
+            See <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Role.html#grant(mondrian.olap.Schema, int)">mondrian.olap.Role#grant(mondrian.olap.Schema,int)</a>.
         </Doc>
         <Array name="cubeGrants" type="CubeGrant"/>
     </Element>
 
     <Element class="Grant" type="CubeGrant">
         <Doc>
-            <![CDATA[Grants (or denies) this role access to a cube.
+            Grants (or denies) this role access to a cube.
             <code>access</code> may be "all" or "none".
-            See {@link mondrian.olap.Role#grant(mondrian.olap.Cube,int)}.]]>
+            See <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Role.html#grant(mondrian.olap.Cube, int)">mondrian.olap.Role#grant(mondrian.olap.Cube,int)</a>.
         </Doc>
         <Attribute name="cube" required="true">
             <Doc>The unique name of the cube</Doc>
@@ -973,12 +972,12 @@ Revision is $Id$
 
     <Element class="Grant" type="DimensionGrant">
         <Doc>
-            <![CDATA[Grants (or denies) this role access to a dimension.
+            Grants (or denies) this role access to a dimension.
             <code>access</code> may be "all" or "none".
             Note that a role is implicitly given access to a dimension when it
             is given acess to a cube.
             See also the "all_dimensions" option of the "SchemaGrant" element.
-            See {@link mondrian.olap.Role#grant(mondrian.olap.Dimension,int)}.]]>
+            See <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Role.html#grant(mondrian.olap.Dimension, int)">mondrian.olap.Role#grant(mondrian.olap.Dimension,int)</a>.
         </Doc>
         <Attribute name="dimension" required="true">
             <Doc>The unique name of the dimension</Doc>
@@ -987,12 +986,12 @@ Revision is $Id$
 
     <Element class="Grant" type="HierarchyGrant">
         <Doc>
-            <![CDATA[Grants (or denies) this role access to a hierarchy.
+            Grants (or denies) this role access to a hierarchy.
             <code>access</code> may be "all", "custom" or "none".
             If <code>access</code> is "custom", you may also specify the
             attributes <code>topLevel</code>, <code>bottomLevel</code>, and
             the member grants.
-            See {@link mondrian.olap.Role#grant(mondrian.olap.Hierarchy,int,mondrian.olap.Level,mondrian.olap.Level)}.]]>
+            See <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Role.html#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level)">mondrian.olap.Role#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level)</a>.
         </Doc>
         <Attribute name="hierarchy" required="true">
             <Doc>The unique name of the hierarchy</Doc>
@@ -1014,10 +1013,10 @@ Revision is $Id$
 
     <Element type="MemberGrant">
         <Doc>
-            <![CDATA[Grants (or denies) this role access to a member.
+            Grants (or denies) this role access to a member.
             The children of this member inherit that access.
             You can implicitly see a member if you can see any of its children.
-            See {@link mondrian.olap.Role#grant(Member,int)}.]]>
+            See <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Role.html#grant(mondrian.olap.Member, int)">mondrian.olap.Role#grant(mondrian.olap.Member,int)</a>.
         </Doc>
         <Attribute name="member" required="true">
             <Doc>The unique name of the member</Doc>
