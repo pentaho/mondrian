@@ -664,59 +664,60 @@ You should set pscp.user, pscp.password and pscp.path in build.properties">
     <target name="copy-jars" description="
 Copy .jar files into lib, so that the same files are available to
 build mondrian.war as in the runtime environment.">
+<!--
         <copy todir="${lib.dir}">
           <fileset dir="${ant.home}/lib" includes="ant.jar,optional.jar"/>
           <fileset dir="${xalan.home}/bin" includes="xalan.jar,xml-apis.jar,xercesImpl.jar"/>
           <fileset dir="${catalina.home}/common/lib" includes="commons-dbcp.jar,commons-pool.jar,commons-collections.jar"/>
         </copy>
-
+-->
         <extension id="junit.ext" extensionName="junit"/>
         <jarlib-resolve property="junit.library" failOnError="false" checkExtension="false">
             <extension refid="junit.ext"/>
             <location location="${testlib.dir}/junit.jar"/>
-            <url url="http://gump.covalent.net/jars/latest/junit/junit.jar" destfile="${testlib.dir}/junit.jar"/>
+            <url url="http://gump.covalent.net/jars/2004-05-16/junit/junit.jar" destfile="${testlib.dir}/junit.jar"/>
         </jarlib-resolve>
 
         <extension id="commons-dbcp.ext" extensionName="org.apache.commons.dbcp"/>
         <jarlib-resolve property="commons-dbcp.library" failOnError="false" checkExtension="false">
             <extension refid="commons-dbcp.ext"/>
             <location location="${lib.dir}/commons-dbcp.jar"/>
-            <url url="http://gump.covalent.net/jars/latest/jakarta-commons/commons-dbcp.jar" destfile="${lib.dir}/commons-dbcp.jar"/>
+            <url url="http://gump.covalent.net/jars/2004-05-16/jakarta-commons/commons-dbcp.jar" destfile="${lib.dir}/commons-dbcp.jar"/>
         </jarlib-resolve>
 
         <extension id="commons-pool.ext" extensionName="org.apache.commons.pool"/>
         <jarlib-resolve property="commons-pool.library" failOnError="false" checkExtension="false">
             <extension refid="commons-pool.ext"/>
             <location location="${lib.dir}/commons-pool.jar"/>
-            <url url="http://gump.covalent.net/jars/latest/jakarta-commons/commons-pool.jar" destfile="${lib.dir}/commons-pool.jar"/>
+            <url url="http://gump.covalent.net/jars/2004-05-16/jakarta-commons/commons-pool.jar" destfile="${lib.dir}/commons-pool.jar"/>
         </jarlib-resolve>
 
         <extension id="commons-collections.ext" extensionName="org.apache.commons.collections"/>
         <jarlib-resolve property="commons-collections.library" failOnError="false" checkExtension="false">
             <extension refid="commons-collections.ext"/>
             <location location="${lib.dir}/commons-collections.jar"/>
-            <url url="http://gump.covalent.net/jars/latest/jakarta-commons/commons-collections.jar" destfile="${lib.dir}/commons-collections.jar"/>
+            <url url="http://gump.covalent.net/jars/2004-05-16/jakarta-commons/commons-collections.jar" destfile="${lib.dir}/commons-collections.jar"/>
         </jarlib-resolve>
 
         <extension id="xalan.ext" extensionName="org.apache.xalan"/>
         <jarlib-resolve property="xalan.library" failOnError="false" checkExtension="false">
             <extension refid="xalan.ext"/>
             <location location="${lib.dir}/xalan.jar"/>
-            <url url="http://gump.covalent.net/jars/latest/xml-xalan/xalan.jar" destfile="${lib.dir}/xalan.jar"/>
+            <url url="http://gump.covalent.net/jars/2004-05-16/xml-xalan/xalan.jar" destfile="${lib.dir}/xalan.jar"/>
         </jarlib-resolve>
 
         <extension id="xml.ext" extensionName="org.xml"/>
         <jarlib-resolve property="xml.library" failOnError="false" checkExtension="false">
             <extension refid="xml.ext"/>
             <location location="${lib.dir}/xml-apis.jar"/>
-            <url url="http://gump.covalent.net/jars/latest/xml-commons/xml-apis.jar" destfile="${lib.dir}/xml-apis.jar"/>
+            <url url="http://gump.covalent.net/jars/2004-05-16/xml-commons/xml-apis.jar" destfile="${lib.dir}/xml-apis.jar"/>
         </jarlib-resolve>
 
         <extension id="xerces.ext" extensionName="org.apache.xerces"/>
         <jarlib-resolve property="xerces.library" failOnError="false" checkExtension="false">
             <extension refid="xerces.ext"/>
             <location location="${lib.dir}/xercesImpl.jar"/>
-            <url url="http://gump.covalent.net/jars/latest/xml-xerces2/xercesImpl.jar" destfile="${lib.dir}/xercesImpl.jar"/>
+            <url url="http://gump.covalent.net/jars/2004-05-16/xml-xerces2/xercesImpl.jar" destfile="${lib.dir}/xercesImpl.jar"/>
         </jarlib-resolve>
 
     </target>
