@@ -67,14 +67,14 @@ public class FastBatchingCellReader implements CellReader {
 		batch.add(request);
 	}
 
-	boolean loadAggregations() {
+	boolean loadAggregations(Evaluator evaluator) {
 		//System.out.println("requestCount = " + requestCount);
 		long t1 = System.currentTimeMillis();
 		requestCount = 0;
 		if (batches.isEmpty())
 			return false;
 		for (Iterator it = batches.values().iterator(); it.hasNext();)
-			 ((Batch) it.next()).loadAggregation();
+			 ((Batch) it.next()).loadAggregation(evaluator);
 		batches.clear();
 		long t2 = System.currentTimeMillis();
 		//System.out.println("loadAggregation " + (t2 - t1));
@@ -110,7 +110,7 @@ public class FastBatchingCellReader implements CellReader {
 			}
 		}
 
-		void loadAggregation() {
+		void loadAggregation(Evaluator evaluator) {
 			long t1 = System.currentTimeMillis();
 			AggregationManager aggmgr = (AggregationManager) AggregationManager.instance();
 			Object[][] constraintses = new Object[columns.length][];
@@ -150,13 +150,13 @@ public class FastBatchingCellReader implements CellReader {
 				}
 				RolapStar.Measure[] measures =
 					(RolapStar.Measure[]) distinctMeasuresList.toArray(new RolapStar.Measure[0]);
-				aggmgr.loadAggregation(measures, columns, constraintses, pinnedSegments);
+				aggmgr.loadAggregation(measures, columns, constraintses, pinnedSegments, evaluator);
 			}
 			final int measureCount = measuresList.size();
 			if (measureCount > 0) {
 				RolapStar.Measure[] measures =
 					(RolapStar.Measure[]) measuresList.toArray(new RolapStar.Measure[measureCount]);
-				aggmgr.loadAggregation(measures, columns, constraintses, pinnedSegments);
+				aggmgr.loadAggregation(measures, columns, constraintses, pinnedSegments, evaluator);
 			}
 			long t2 = System.currentTimeMillis();
 			//System.out.println("Batch.loadAggregation " + (t2 - t1));

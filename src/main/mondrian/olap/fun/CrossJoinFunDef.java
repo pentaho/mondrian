@@ -43,7 +43,7 @@ class CrossJoinFunDef extends FunDefBase {
         if ( limit > 0 && limit < size ) {
 			// result limit exceeded, throw an exception
         	String msg = "Crossjoin result limit(" +limit +") exceeded; size=" + size;
-			throw Util.newInternal(new ResultLimitExceeded(msg), msg);
+			throw new ResultLimitExceeded(msg);
 		}
 
         if (size > 1000 && evaluator.isNonEmpty()) {

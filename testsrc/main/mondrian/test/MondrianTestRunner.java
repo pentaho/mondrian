@@ -30,17 +30,14 @@ public class MondrianTestRunner extends BaseTestRunner {
 	public static final int SUCCESS_EXIT = 0;
 	public static final int FAILURE_EXIT = 1;
 	public static final int EXCEPTION_EXIT = 2;
-	
+
 	private String stopReason = "Normal termination.";
-	
+
 	/**
 	 * Constructs a TestRunner.
 	 */
 	public MondrianTestRunner() {
-		this(System.out);
-	}
-
-	/**
+		this(System.out);	}	/**
 	 * Constructs a TestRunner using the given stream for all the output
 	 */
 	public MondrianTestRunner(PrintStream writer) {
@@ -62,15 +59,9 @@ public class MondrianTestRunner extends BaseTestRunner {
 		return new StandardTestSuiteLoader();
 	}
 
-	public void testFailed(int status, Test test, Throwable t) {
-	}
-
-	public void testStarted(String testName) {
-	}
-
-	public void testEnded(String testName) {
-	}
-
+	public void testFailed(int status, Test test, Throwable t) {	}
+	public void testStarted(String testName) {	}
+	public void testEnded(String testName) {	}
 	/**
 	 * Creates the TestResult to be used for the test run.
 	 */
@@ -79,10 +70,12 @@ public class MondrianTestRunner extends BaseTestRunner {
 	}
 
 	public TestResult doRun(final Test suite) {
-		final TestResult result = createTestResult();
-		result.addListener(fPrinter);
+		final TestResult result = createTestResult();		result.addListener(fPrinter);
+        /*        // uncomment this block to get a list of the single tests with time used
+		final long[] longa = new long[1];		result.addListener(new TestListener() {			public void addError(Test arg0, Throwable arg1) {				// do nothing			}			public void addFailure(Test arg0, AssertionFailedError arg1) {				// do nothing			}			public void endTest(Test arg0) {				if (arg0 instanceof TestCase) {					long longb = System.currentTimeMillis() - longa[0];					System.out.println("endTest " + ((TestCase)arg0).getName() + " " + longb + " ms");				}			}			public void startTest(Test arg0) {				if (arg0 instanceof TestCase) {					longa[0] = System.currentTimeMillis();					System.out.println("startTest " + ((TestCase)arg0).getName());				}			}		}		);
+		*/
+
 		final long startTime = System.currentTimeMillis();
-		
 		// Set up a timit limit if specified
 		if (getTimeLimit() > 0) {
 			Timer timer = new Timer();

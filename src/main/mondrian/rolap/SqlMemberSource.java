@@ -327,7 +327,7 @@ class SqlMemberSource implements MemberReader
             	if ( limit > 0 && limit < ++nFetch ) {
 					// result limit exceeded, throw an exception
             		String msg = "SqlMemberSource.getMembers Fetch limit(" +limit +") exceeded; sql=[" + sql + "]";
-					throw Util.newInternal(new ResultLimitExceeded(msg), msg);
+					throw new ResultLimitExceeded(msg);
 				}
 
                 int column = 0;
@@ -540,7 +540,7 @@ class SqlMemberSource implements MemberReader
             	if ( limit > 0 && limit < ++nFetch ) {
 					// result limit exceeded, throw an exception
             		String msg = "SqlMemberSource.getMembersInLevel Fetch limit(" +limit +") exceeded; sql=[" + sql + "]";
-					throw Util.newInternal(new ResultLimitExceeded(msg), msg);
+					throw new ResultLimitExceeded(msg);
 				}
 
                 int column = 0;
@@ -743,7 +743,7 @@ class SqlMemberSource implements MemberReader
             	if ( limit > 0 && limit < ++nFetch ) {
 					// result limit exceeded, throw an exception
             		String msg = "SqlMemberSource.getMemberChildren Fetch limit(" +limit +") exceeded; sql=[" + sql + "]";
-					throw Util.newInternal(new ResultLimitExceeded(msg), msg);
+					throw new ResultLimitExceeded(msg);
 				}
 
                 Object value = resultSet.getObject(1);

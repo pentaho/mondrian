@@ -288,6 +288,10 @@ public class RolapStar {
         }
     }
 
+	public RolapSchema getSchema() {
+		return schema;
+	}
+
     public static class Column
 	{
 		public Table table;
@@ -302,7 +306,11 @@ public class RolapStar {
 		}
 		String quoteValue(Object value)
 		{
-			String s = value.toString();
+			String s;
+			if (value instanceof RolapMember)
+				s = ((RolapMember)value).getSqlKey().toString();
+			else
+				s = value.toString();
 			if (isNumeric) {
 				return s;
 			} else {
@@ -403,8 +411,12 @@ public class RolapStar {
         public String createInExpr(String expr, Object[] constraints) {
             if (constraints.length == 1) {
                 final Object constraint = constraints[0];
-                if (constraint != RolapUtil.sqlNullValue) {
-                    // One value, not null, for example "x = 1".
+                Object key;
+                if (constraint instanceof RolapMember)
+                	key = ((RolapMember)constraint).getSqlKey();
+                else
+                	key = constraint;
+                if (key != RolapUtil.sqlNullValue) {
                     return expr + " = " + quoteValue(constraint);
                 }
             }
@@ -413,7 +425,13 @@ public class RolapStar {
             sb.append(" in (");
             for (int i = 0; i < constraints.length; i++) {
                 final Object constraint = constraints[i];
-                if (constraint == RolapUtil.sqlNullValue) {
+                Object key;
+                if (constraint instanceof RolapMember)
+                	key = ((RolapMember)constraint).getSqlKey();
+                else
+                	key = constraint;
+ 
+                if (key == RolapUtil.sqlNullValue) {
                     continue;
                 }
                 if (notNullCount > 0) {

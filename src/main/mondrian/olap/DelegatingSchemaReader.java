@@ -118,6 +118,10 @@ public class DelegatingSchemaReader implements SchemaReader {
     public Cube[] getCubes() {
         return schemaReader.getCubes();
     }
+
+	public int getChildrenCountFromCache(Member member) {
+		return schemaReader.getChildrenCountFromCache(member);
+	}
 }
 
 // End DelegatingSchemaReader.java

@@ -35,10 +35,14 @@ public interface SchemaReader {
 	 * hierarchy is access-controlled, returns the most senior visible members.
 	 **/
 	Member[] getHierarchyRootMembers(Hierarchy hierarchy);
+
 	/**
-	 * Returns the parent of a member, null if the parent is inaccessible.
+	 * Returns number of children parent of a member, 
+	 *  if the information can be retrieved from cache.
+	 * Otherwise  -1 is returned
 	 */
-	Member getMemberParent(Member member);
+	int getChildrenCountFromCache(Member member);
+	
 	/**
 	 * Returns direct children of <code>member</code>.
 	 * @pre member != null
@@ -62,6 +66,14 @@ public interface SchemaReader {
      * @param self Whether to output members at <code>level</code>
      * @param after Whether to output members below <code>level</code>
      */
+
+	Member getMemberParent(Member member);
+	/**
+	 * Returns direct children of <code>member</code>.
+	 * @pre member != null
+	 * @post return != null
+	 **/
+	
     void getMemberDescendants(Member member, List result, Level level,
             boolean before, boolean self, boolean after);
 	/**

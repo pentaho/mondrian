@@ -51,7 +51,7 @@ public class TestAggregationManager extends TestCase {
 		Set pinnedSegments = new HashSet();
 		FastBatchingCellReader fbcr = new FastBatchingCellReader(getCube("Sales"), pinnedSegments);
 		fbcr.recordCellRequest(request);
-		fbcr.loadAggregations();
+		fbcr.loadAggregations(null);
 		value = aggMan.getCellFromCache(request); // after load, cell is found
 		assertTrue(value instanceof Number);
 		assertEquals(131558, ((Number) value).intValue());
@@ -189,7 +189,7 @@ public class TestAggregationManager extends TestCase {
 			FastBatchingCellReader fbcr = new FastBatchingCellReader(getCube("Sales"), pinnedSegments);
 			for (int i = 0; i < requests.length; i++)
 				fbcr.recordCellRequest(requests[i]);
-			fbcr.loadAggregations();
+			fbcr.loadAggregations(null);
 			bomb = null;
 		} catch (Bomb e) {
 			bomb = e;

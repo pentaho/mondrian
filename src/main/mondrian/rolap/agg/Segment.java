@@ -24,6 +24,7 @@ import mondrian.olap.EnumeratedValues;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.rolap.CellKey;
+import mondrian.rolap.RolapMember;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.RolapUtil;
 
@@ -175,7 +176,11 @@ public class Segment
 					if (j > 0) {
 						pw.print(", ");
 					}
-					Object o = constraints[j];
+					Object o;
+					if ( constraints[j] instanceof RolapMember)
+						o = ((RolapMember) constraints[j]).getSqlKey();
+					else
+						o = constraints[j];
 					pw.print(o);
 				}
 				pw.print("}");

@@ -12,7 +12,7 @@ package mondrian.olap;
 /**
  * this Throwable will indicate, that the ResultLimit was exceeded
  */
-public class ResultLimitExceeded extends Throwable {
+public class ResultLimitExceeded extends MondrianException {
 	public ResultLimitExceeded(String message) {
 		super(message);
 	}

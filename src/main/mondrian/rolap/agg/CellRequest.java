@@ -13,6 +13,7 @@
 package mondrian.rolap.agg;
 
 import mondrian.olap.Util;
+import mondrian.rolap.RolapMember;
 import mondrian.rolap.RolapStar;
 
 import java.util.ArrayList;
@@ -85,7 +86,10 @@ public class CellRequest {
 			if (value instanceof Object[]) {
 				throw Util.newInternal("multi value in cell request");
 			}
-			a[i] = value;
+			if (value instanceof RolapMember)
+				a[i] = ((RolapMember)value).getSqlKey();
+			else
+				a[i] = value;
 		}
 		return a;
 	}

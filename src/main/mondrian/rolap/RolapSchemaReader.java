@@ -25,7 +25,7 @@ import java.util.List;
  * @since Feb 24, 2003
  * @version $Id$
  **/
-abstract class RolapSchemaReader implements SchemaReader {
+public abstract class RolapSchemaReader implements SchemaReader {
 	private Role role;
 	private HashMap hierarchyReaders = new HashMap();
     private RolapSchema schema;
@@ -120,6 +120,23 @@ abstract class RolapSchemaReader implements SchemaReader {
         final MemberReader memberReader = getMemberReader(hierarchy);
         memberReader.getMemberChildren((RolapMember) member, children);
 		return RolapUtil.toArray(children);
+	}
+
+    /**
+     * check, whether members children are cached, and
+     * if yes - return children counnt
+     * if no  - return -1
+     */
+	public int getChildrenCountFromCache(Member member) {
+        final Hierarchy hierarchy = member.getHierarchy();
+        final MemberReader memberReader = getMemberReader(hierarchy);
+        if( !(memberReader instanceof MemberCache))
+        	return -1;
+        if (!((MemberCache)memberReader).hasChildren((RolapMember)member))
+        	return -1;
+		ArrayList children = new ArrayList();
+        memberReader.getMemberChildren((RolapMember) member, children);
+		return children.size();
 	}
 
 	public Member[] getMemberChildren(Member[] members) {

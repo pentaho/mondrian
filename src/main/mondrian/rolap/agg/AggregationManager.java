@@ -11,6 +11,7 @@
 */
 
 package mondrian.rolap.agg;
+import mondrian.olap.Evaluator;
 import mondrian.olap.MondrianDef;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapAggregationManager;
@@ -48,11 +49,15 @@ public class AggregationManager extends RolapAggregationManager {
 
     public void loadAggregation(
 		RolapStar.Measure[] measures, RolapStar.Column[] columns,
-		Object[][] constraintses, Collection pinnedSegments)
+		Object[][] constraintses, Collection pinnedSegments, Evaluator evaluator)
 	{
 		RolapStar star = measures[0].table.star;
 		Aggregation aggregation = star.lookupOrCreateAggregation(columns);
-		constraintses = aggregation.optimizeConstraints(constraintses);
+
+		// try to eliminate unneccessary constraints
+        // for Oracle: prevent an IN-clause with more than 1000 elements
+		constraintses = aggregation.optimizeConstraints(constraintses, evaluator);
+
 		aggregation.load(measures, constraintses, pinnedSegments);
 	}
 
@@ -259,9 +264,7 @@ public class AggregationManager extends RolapAggregationManager {
 					// We only require that the two arrays have the same
 					// contents, we but happen to know they are the same array,
 					// because we constructed them at the same time.
-					Util.assertTrue(
-							segment.axes[j].constraints ==
-							segments[0].axes[j].constraints);
+					Util.assertTrue(segment.axes[j].constraints == segments[0].axes[j].constraints);
 				}
 			}
 		}
@@ -374,7 +377,7 @@ public class AggregationManager extends RolapAggregationManager {
             }
         }
     }
-    
+
 }
 
 // End RolapAggregationManager.java

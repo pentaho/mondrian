@@ -151,7 +151,9 @@ public abstract class RolapAggregationManager implements CellReader {
                     // a value for the 'all' member of the hierarchy.
 					return null;
 				}
-                request.addConstrainedColumn(column, m.key);
+				// use the member as constraint, this will give us some
+				//  optimization potential
+                request.addConstrainedColumn(column, m);
                 if (showNames && level.nameExp != null) {
                     RolapStar.Column nameColumn = (RolapStar.Column)
                         mapLevelNameToColumn.get(level);
