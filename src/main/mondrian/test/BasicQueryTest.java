@@ -11,10 +11,19 @@
 */
 package mondrian.test;
 
-import mondrian.olap.*;
-import mondrian.rolap.CachePool;
-
 import java.util.regex.Pattern;
+
+import mondrian.olap.Axis;
+import mondrian.olap.Cell;
+import mondrian.olap.Connection;
+import mondrian.olap.Cube;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Query;
+import mondrian.olap.Result;
+import mondrian.olap.Schema;
+import mondrian.olap.Util;
+import mondrian.rolap.CachePool;
+import mondrian.rolap.agg.AggregationManager;
 
 /**
  * <code>BasicQueryTest</code> is a test case which tests simple queries against
@@ -722,7 +731,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"Row #2: Deluxe Supermarket" + nl +
 				"Row #2: Small Grocery" + nl +
 				"Row #2: Mid-Size Grocery" + nl +
-				"Row #3: NaN%" + nl +
+				"Row #3: (null)" + nl +
 				"Row #3: 60.07%" + nl +
 				"Row #3: 60.09%" + nl +
 				"Row #3: 60.11%" + nl +
@@ -1935,7 +1944,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * {@link ArrayIndexOutOfBoundsException}
      */
     public void testBug804903() {
-        CachePool.instance().flush();
+		AggregationManager.instance().flushCachePool();
         runQueryCheckResult(
                 "select {[Measures].[Customer Count]} ON columns," + nl +
                 "  {([Promotion Media].[All Media], [Product].[All Products])} ON rows" + nl +
@@ -2692,7 +2701,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "{[Store].[All Stores].[USA].[CA].[San Diego]}" + nl +
                 "{[Store].[All Stores].[USA].[CA].[Los Angeles]}" + nl +
                 "Row #0: (null)" + nl +
-                "Row #0: 0.00%" + nl +
+                "Row #0: (null)" + nl +
                 "Row #1: 2,117" + nl +
                 "Row #1: 2.83%" + nl +
                 "Row #2: 21,333" + nl +
@@ -3642,7 +3651,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 							try {
 								runQueryCheckResult(queries[queryIndex]);
                                 if (flush && i == 0) {
-                                    CachePool.instance().flush();
+									AggregationManager.instance().flushCachePool();
                                 }
 								executeCount[0]++;
 							} catch (Throwable e) {

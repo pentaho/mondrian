@@ -358,8 +358,17 @@ public class CachePool {
 	 * Flushes all unpinned objects in the cache. Objects which are still
 	 * pinned are marked, so they will be removed immediately that they are
 	 * unpinned.
+	 * @deprecated this method may cause dead locks, use AggregationManager.flushCache() instead
 	 */
 	public synchronized void flush() {
+		internalFlush();
+	}
+
+    /**
+     * used by AggregationManager to flush the cache - not for
+     * public use.
+     */
+	public synchronized void internalFlush() {
 		while (removeLast() != null) {
 		}
 		// Mark the still-pinned objects for death.

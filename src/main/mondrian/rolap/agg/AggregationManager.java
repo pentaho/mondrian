@@ -17,11 +17,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import mondrian.olap.MondrianDef;
 import mondrian.olap.Util;
+import mondrian.rolap.CachePool;
 import mondrian.rolap.RolapAggregationManager;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.sql.SqlQuery;
@@ -44,7 +44,7 @@ public class AggregationManager extends RolapAggregationManager {
 	}
 
  	/** Returns or creates the singleton. **/
-	public static synchronized RolapAggregationManager instance()
+	public static synchronized AggregationManager instance()
 	{
 		if (instance == null) {
 			instance = new AggregationManager();
@@ -511,6 +511,25 @@ public class AggregationManager extends RolapAggregationManager {
                 return new Object[] {value};
             }
         }
+    }
+    
+    /**
+     * aquires locks to all aggregations before flushing 
+     * the cache.
+     *
+     */
+    public synchronized void flushCachePool() {
+    	flushCachePool(aggregations.iterator());
+    }
+    private void flushCachePool(Iterator iter) {
+    	if (iter.hasNext()) {
+    		Object lock = iter.next();
+    		synchronized(lock) {
+    			flushCachePool(iter); 
+    		}
+    	}
+    	else
+    		CachePool.instance().internalFlush();
     }
 }
 
