@@ -59,9 +59,14 @@ abstract class HierarchyUsage
 		// Three ways that a hierarchy can be joined to the fact table.
 		if (dimensionUsage != null && dimensionUsage.level != null) {
 			// 1. Specify an explicit 'level' attribute in a <DimensionUsage>.
-			RolapLevel joinLevel = (RolapLevel) Util.lookupHierarchyLevel(hierarchy, dimensionUsage.level);
+			RolapLevel joinLevel = (RolapLevel)
+                    Util.lookupHierarchyLevel(hierarchy, dimensionUsage.level);
 			if (joinLevel == null) {
-				throw Util.newError("Level '" + dimensionUsage.level + "' not found");
+                throw MondrianResource.instance()
+                        .newDimensionUsageHasUnknownLevel(
+                                hierarchy.getUniqueName(),
+                                cube.getUniqueName(),
+                                dimensionUsage.level);
 			}
 			setJoinTable(hierarchy, joinLevel.keyExp.getTableAlias());
 			joinExp = joinLevel.keyExp;
@@ -73,15 +78,15 @@ abstract class HierarchyUsage
 			if (hierarchy.xmlHierarchy.primaryKeyTable == null) {
 				joinTable = hierarchy.getUniqueTable();
 				if (joinTable == null) {
-					throw Util.newError(
-							"must specify primaryKeyTable for hierarchy " +
-							hierarchy.getUniqueName() +
-							", because it has more than one table");
+                    throw MondrianResource.instance()
+                            .newMustSpecifyPrimaryKeyTableForHierarchy(
+                                    hierarchy.getUniqueName());
 				}
 			} else {
 				setJoinTable(hierarchy, hierarchy.xmlHierarchy.primaryKeyTable);
 			}
-			joinExp = new MondrianDef.Column(joinTable.getAlias(), hierarchy.xmlHierarchy.primaryKey);
+			joinExp = new MondrianDef.Column(joinTable.getAlias(),
+                    hierarchy.xmlHierarchy.primaryKey);
 		} else {
 			// 3. If neither of the above, the join is assumed to be to key of
 			//    the last level.
@@ -98,12 +103,14 @@ abstract class HierarchyUsage
 			if (joinExp == null) {
 				throw MondrianResource.instance()
                         .newMustSpecifyPrimaryKeyForHierarchy(
-                                hierarchy.getUniqueName());
+                                hierarchy.getUniqueName(),
+                                cube.getUniqueName());
 			}
 			if (foreignKey == null) {
                 throw MondrianResource.instance()
-                        .newMustSpecifyPrimaryKeyForHierarchy(
-                                hierarchy.getUniqueName());
+                        .newMustSpecifyForeignKeyForHierarchy(
+                                hierarchy.getUniqueName(),
+                                cube.getUniqueName());
 			}
 		}
 	}

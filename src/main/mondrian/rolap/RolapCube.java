@@ -242,6 +242,8 @@ class RolapCube extends CubeBase
 			}
 			RolapStar.Table table = star.factTable;
 			if (!relation.equals(table.relation)) {
+                // HierarchyUsage should have checked this.
+                Util.assertTrue(hierarchyUsage.foreignKey != null);
 				RolapStar.Condition joinCondition = new RolapStar.Condition(
 						new MondrianDef.Column(table.getAlias(), hierarchyUsage.foreignKey),
 						hierarchyUsage.joinExp);

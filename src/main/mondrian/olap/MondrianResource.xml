@@ -279,15 +279,33 @@
 </exception>
 
 <exception id="400040" name="MustSpecifyPrimaryKeyForHierarchy">
-    <text>Must specify a primary key for hierarchy ''{0}''.</text>
+    <text>In usage of hierarchy ''{0}'' in cube ''{1}'', you must specify a primary key.</text>
 </exception>
 
-<exception id="400050" name="MustSpecifyForeignKeyForHierarchy">
-    <text>Must specify a foreign key for hierarchy ''{0}''.</text>
+<exception id="400050" name="MustSpecifyPrimaryKeyTableForHierarchy">
+    <text>Must specify a primary key table for hierarchy ''{0}'', because it has more than one table.</text>
 </exception>
 
-<exception id="400060" name="LevelMustHaveNameExpression">
-    <text>Level ''{0}}'' must have a name expression (a ''column'' attribute or an &lt;Expression&gt; child</text>
+<exception id="400060" name="MustSpecifyForeignKeyForHierarchy">
+    <text>In usage of hierarchy ''{0}'' in cube ''{1}'', you must specify a foreign key, because the hierarchy table is different from the fact table.</text>
+</exception>
+
+<exception id="400070" name="LevelMustHaveNameExpression">
+    <text>Level ''{0}'' must have a name expression (a ''column'' attribute or an &lt;Expression&gt; child</text>
+</exception>
+
+<!-- The 'foreignKey' attribute of is only applicable to private dimensions
+     or to dimension usages. -->
+<exception id="400080" name="PublicDimensionMustNotHaveForeignKey">
+    <text>Dimension ''{0}'' has a foreign key. This attribute is only valid in private dimensions and dimension usages.</text>
+</exception>
+
+<exception id="400090" name="HierarchyMustNotHaveMoreThanOneSource">
+    <text>Hierarchy ''{0}'' has more than one source (memberReaderClass, &lt;Table&gt;, &lt;Join&gt; or &lt;View&gt;)</text>
+</exception>
+
+<exception id="40100" name="DimensionUsageHasUnknownLevel">
+    <text>In usage of dimension ''{0}'' in cube ''{1}'', the level ''{2}'' is unknown</text>
 </exception>
 
 

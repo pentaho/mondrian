@@ -110,6 +110,15 @@ public class RolapSchema implements Schema
         if (name == null || name.equals("")) {
             throw Util.newError("<Schema> name must be set");
         }
+        // Validate public dimensions.
+        for (int i = 0; i < xmlSchema.dimensions.length; i++) {
+            MondrianDef.Dimension xmlDimension = xmlSchema.dimensions[i];
+            if (xmlDimension.foreignKey != null) {
+                throw MondrianResource.instance()
+                        .newPublicDimensionMustNotHaveForeignKey(
+                                xmlDimension.name);
+            }
+        }
 		for (int i = 0; i < xmlSchema.cubes.length; i++) {
 			MondrianDef.Cube xmlCube = xmlSchema.cubes[i];
 			RolapCube cube = new RolapCube(this, xmlSchema, xmlCube);

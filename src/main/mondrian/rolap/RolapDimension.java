@@ -74,9 +74,9 @@ class RolapDimension extends DimensionBase
 	/**
 	 * @pre schema != null
 	 */
-	RolapDimension(
-			RolapSchema schema, RolapCube cube, MondrianDef.Dimension xmlDimension,
-		MondrianDef.CubeDimension xmlCubeDimension)
+	RolapDimension(RolapSchema schema, RolapCube cube, 
+            MondrianDef.Dimension xmlDimension,
+            MondrianDef.CubeDimension xmlCubeDimension)
 	{
 		this(schema, xmlDimension.name, chooseOrdinal(cube, xmlCubeDimension));
 		Util.assertPrecondition(schema != null);
