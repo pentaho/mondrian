@@ -71,7 +71,7 @@ public class FunCall extends ExpBase
 		return getSyntacticType() == FunDef.TypeParentheses;
 	}
 	public boolean isCallToCrossJoin() {
-		return fun.equalsIgnoreCase("CROSSJOIN");
+		return fun.equalsIgnoreCase("CROSSJOIN") || fun.equals("*");
 	}
 	public boolean isCallToParameter() {
 		return fun.equalsIgnoreCase("Parameter") ||

@@ -464,6 +464,7 @@ public class Query extends QueryPart {
 					FunCall funCall = (FunCall) parent;
 					if (!funCall.isCallToTuple() &&
 						!funCall.isCallToCrossJoin() &&
+						!funCall.isCallTo("Generate") &&
 						funCall.args[0] != o) {
 						walker.prune();
 						continue;
@@ -507,6 +508,7 @@ public class Query extends QueryPart {
 					FunCall funCall = (FunCall) parent;
 					if (!funCall.isCallToTuple() &&
 						!funCall.isCallToCrossJoin() &&
+						!funCall.isCallTo("Generate") &&
 						funCall.args[0] != o) {
 						walker.prune();
 						continue;
