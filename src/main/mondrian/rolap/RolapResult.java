@@ -244,7 +244,7 @@ class RolapResult extends ResultBase
 		void loadAggregations()
 		{
 			AggregationManager.instance().loadAggregations(
-				cube.getDimensions().length, keys, pinnedSegments);
+					keys, pinnedSegments);
 		}
 	};
 

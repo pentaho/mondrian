@@ -10,47 +10,50 @@
 // jhyde, 21 March, 2002
 */
 
-package mondrian.rolap;
+package mondrian.rolap.agg;
 
 import mondrian.olap.Util;
+import mondrian.rolap.RolapStar;
 
 import java.util.ArrayList;
 
 /**
- * A <code>CellRequest</code> contains the context necessary to get a cell value from a star.
+ * A <code>CellRequest</code> contains the context necessary to get a cell
+ * value from a star.
  *
  * @author jhyde
  * @since 21 March, 2002
  * @version $Id$
  **/
-public class CellRequest
-{
+public class CellRequest {
 	private RolapStar.Measure measure;
 	private ArrayList columnList = new ArrayList();
 	private ArrayList valueList = new ArrayList();
-	CellRequest(RolapStar.Measure measure)
-	{
+
+	/** Creates a {@link CellRequest}. **/
+	public CellRequest(RolapStar.Measure measure) {
 		this.measure = measure;
 		this.columnList.add(measure);
 	}
-	void addConstrainedColumn(RolapStar.Column column, Object[] values)
-	{
+
+	public void addConstrainedColumn(RolapStar.Column column, Object[] values) {
 		columnList.add(column);
 		valueList.add(values);
 	}
-	void addConstrainedColumn(RolapStar.Column column, Object value)
-	{
+
+	public void addConstrainedColumn(RolapStar.Column column, Object value) {
 		columnList.add(column);
 		valueList.add(value);
 	}
-	void addColumn(RolapStar.Column column)
-	{
+
+	void addColumn(RolapStar.Column column) {
 		addConstrainedColumn(column, null);
 	}
-	public RolapStar.Measure getMeasure()
-	{
+
+	public RolapStar.Measure getMeasure() {
 		return measure;
 	}
+
 	public RolapStar.Column[] getColumns() {
 		// ignore the measure, the 0th element of columnList
 		RolapStar.Column[] a = new RolapStar.Column[columnList.size() - 1];
@@ -59,15 +62,18 @@ public class CellRequest
 		}
 		return a;
 	}
+
 	/** Returns a list which identifies which batch this request will
 	 * belong to. The list contains the measure as well as the
 	 * columns. **/
-	ArrayList getBatchKey() {
+	public ArrayList getBatchKey() {
 		return columnList;
 	}
+
 	public ArrayList getValueList() {
 		return valueList;
 	}
+
 	public Object[] getSingleValues() {
 		Object[] a = new Object[valueList.size()];
 		for (int i = 0, n = valueList.size(); i < n; i++) {
@@ -80,3 +86,5 @@ public class CellRequest
 		return a;
 	}
 }
+
+// End CellRequest.java

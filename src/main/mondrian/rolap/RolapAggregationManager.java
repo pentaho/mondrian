@@ -14,6 +14,7 @@ package mondrian.rolap;
 
 import mondrian.olap.Util;
 import mondrian.olap.Evaluator;
+import mondrian.rolap.agg.CellRequest;
 
 import java.util.*;
 
@@ -42,7 +43,7 @@ public abstract class RolapAggregationManager implements CellReader {
 	 * @param pinned Writes each loaded aggregation into here. The client must
 	 *     call {@link CachePool#unpin} on this list.
 	 **/
-	public void loadAggregations(int arity, Set keySet, Collection pinnedSegments)
+	public void loadAggregations(Set keySet, Collection pinnedSegments)
 	{
 		RolapMember[] members = RolapUtil.emptyMemberArray;
 		Hashtable mapColumnSetToBatch = new Hashtable();

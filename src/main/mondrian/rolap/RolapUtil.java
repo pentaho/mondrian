@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Vector;
 import java.util.Date;
 import java.lang.reflect.Array;
-import java.io.PrintWriter;
+import java.io.*;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Connection;
@@ -150,7 +150,85 @@ public class RolapUtil {
 			}
 		}
 	}
-}
 
+
+	/**
+	 * Writes to a string and also to an underlying writer.
+	 */
+	public static class TeeWriter extends FilterWriter {
+		StringWriter buf = new StringWriter();
+		public TeeWriter(Writer out) {
+			super(out);
+		}
+
+		/**
+		 * Returns everything which has been written so far.
+		 */
+		public String toString() {
+			return buf.toString();
+		}
+
+		/**
+		 * Returns the underlying writer.
+		 */
+		public Writer getWriter() {
+			return out;
+		}
+
+		public void write(int c) throws IOException {
+			super.write(c);
+			buf.write(c);
+		}
+
+		public void write(char cbuf[]) throws IOException {
+			super.write(cbuf);
+			buf.write(cbuf);
+		}
+
+		public void write(char cbuf[], int off, int len) throws IOException {
+			super.write(cbuf, off, len);
+			buf.write(cbuf, off, len);
+		}
+
+		public void write(String str) throws IOException {
+			super.write(str);
+			buf.write(str);
+		}
+
+		public void write(String str, int off, int len) throws IOException {
+			super.write(str, off, len);
+			buf.write(str, off, len);
+		}
+	}
+
+	/**
+	 * Writer which throws away all input.
+	 */
+	private static class NullWriter extends Writer {
+		public void write(char cbuf[], int off, int len) throws IOException {
+		}
+
+		public void flush() throws IOException {
+		}
+
+		public void close() throws IOException {
+		}
+	}
+
+	/**
+	 * Creates a {@link TeeWriter} which captures everything which goes through
+	 * {@link #debugOut} from now on.
+	 */
+	public static synchronized TeeWriter startTracing() {
+		TeeWriter tw;
+		if (debugOut == null) {
+			tw = new TeeWriter(new NullWriter());
+		} else {
+			tw = new TeeWriter(RolapUtil.debugOut);
+		}
+		debugOut = new PrintWriter(tw);
+		return tw;
+	}
+}
 
 // End RolapUtil.java

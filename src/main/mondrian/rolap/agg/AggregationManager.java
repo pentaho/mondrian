@@ -12,7 +12,6 @@
 
 package mondrian.rolap.agg;
 import mondrian.olap.Util;
-import mondrian.rolap.CellRequest;
 import mondrian.rolap.RolapAggregationManager;
 import mondrian.rolap.RolapStar;
 

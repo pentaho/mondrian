@@ -231,7 +231,6 @@ class RolapCube extends CubeBase
 		// create measures (and stars for them, if necessary)
 		for (int i = 0; i < storedMeasures.length; i++) {
 			RolapStoredMeasure storedMeasure = storedMeasures[i];
-			ArrayList tables = new ArrayList();
 			RolapStar star = RolapStar.Pool.instance().getOrCreateStar(
 					(RolapConnection) getConnection(), this.factSchema,
 					this.factTable, this.getAlias());
@@ -284,11 +283,8 @@ class RolapCube extends CubeBase
 							Util.newInternal("bad exp type " + level.nameExp);
 						}
 					}
-					tables.add(table);
 				}
 			}
-			star.tables = (RolapStar.Table[]) tables.toArray(
-					new RolapStar.Table[tables.size()]);
 		}
 	}
 

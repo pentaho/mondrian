@@ -11,19 +11,19 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.Util;
+import mondrian.olap.Member;
 import mondrian.olap.MondrianDef;
+import mondrian.olap.Util;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.rolap.agg.CellRequest;
 
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Hashtable;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Hashtable;
 import java.util.Iterator;
-import java.io.PrintWriter;
 
 /**
  * A <code>RolapStar</code> is a star schema. It is the means to read cell
@@ -40,7 +40,6 @@ public class RolapStar {
 	RolapConnection connection;
 	Measure[] measures;
 	public Table factTable;
-	Table[] tables;
 	/** todo: better, the dimensional model should hold the mapping **/
 	Hashtable mapLevelToColumn = new Hashtable();
 
@@ -56,6 +55,28 @@ public class RolapStar {
 		return connection.jdbcConnection;
 	}
 
+	/**
+	 * Retrieves the {@link RolapStar.Measure} in which a measure is stored.
+	 */
+	public static Measure getStarMeasure(Member member) {
+		return (Measure) ((RolapStoredMeasure) member).starMeasure;
+	}
+
+	/**
+	 * Retrieves a named column, returns null if not found.
+	 */
+	public Column lookupColumn(String tableAlias, String columnName) {
+		final Table table = factTable.findDescendant(tableAlias);
+		if (table != null) {
+			for (int i = 0; i < table.columns.size(); i++) {
+				Column column = (Column) table.columns.get(i);
+				if (column.name.equals(columnName)) {
+					return column;
+				}
+			}
+		}
+		return null;
+	}
 	/**
 	 * Reads a cell of <code>measure</code>, where <code>columns</code> are
 	 * constrained to <code>values</code>.  <code>values</code> must be the
