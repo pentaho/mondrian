@@ -455,9 +455,13 @@ public class Util extends mondrian.xom.XOMUtil
 
 
 	/**
-	 * Converts an OLE DB connect string such as "Provider=MSOLAP;
-	 * DataSource=LOCALHOST;" into a {@link PropertyList} containing (key,
-	 * value) pairs {("Provider","MSOLAP"), ("DataSource", "LOCALHOST")}.
+	 * Converts an OLE DB connect string into a {@link PropertyList}.
+	 *
+	 * <p> For example, <code>"Provider=MSOLAP; DataSource=LOCALHOST;"</code>
+	 * becomes the set of (key, value) pairs <code>{("Provider","MSOLAP"),
+	 * ("DataSource", "LOCALHOST")}</code>. Another example is
+	 * <code>Provider='sqloledb';Data Source='MySqlServer';Initial
+	 * Catalog='Pubs';Integrated Security='SSPI';</code>.
 	 *
 	 * <p>Syntax Notes (quotes are not implemented)<ul>
 	 *

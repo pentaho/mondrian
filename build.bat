@@ -43,7 +43,7 @@
 @goto end
 :x200
 
-@set CLASSPATH=%SRCROOT%/classes;%SRCROOT%/lib/javacup.jar;%SRCROOT%/lib/boot.jar;%XALAN_HOME%/bin/xml-apis.jar;%XALAN_HOME%/lib/xercesImpl.jar
+@set CLASSPATH=%SRCROOT%/classes;%SRCROOT%/lib/javacup.jar;%SRCROOT%/lib/boot.jar;%XALAN_HOME%/bin/xml-apis.jar;%XALAN_HOME%/bin/xercesImpl.jar
 
 @rem To use Oracle, uncomment this line and modify appropriately
 @rem set ORACLE_HOME=%HOME_DRIVE%:/oracle/ora81

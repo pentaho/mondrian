@@ -97,7 +97,7 @@
 <p>Here are the steps to setup a build environment.</p>
 
 <ol>
-  <li>Install <a href="#JDK">JDK 1.3.1</a>.</li>
+  <li>Install <a href="#JDK">JDK</a>.</li>
   <li>Install <a href="#Ant">Ant</a>.</li>
   <li>Install <a href="#Tomcat">Tomcat</a>.</li>
   <li>Install <a href="#Xalan">Xalan</a>.</li>
@@ -114,6 +114,11 @@
 </ol>
 
 <h2><a name="4_Download_the_source_code">4. Download the source code</a></h2>
+
+<p>Two ways to do this.</p>
+
+<h3><a name="4_1_Download_the_latest_release_from_SourceForge">4.1. Download the 
+latest release from SourceForge</a></h3>
 <p>Download <code>mondrian-0.3-src.zip</code> and <code>mondrian-0.3-data.zip</code> 
 (or later versions) from <a href="http://sourceforge.net/projects/mondrian">
 Sourceforge</a>, and unzip them. For example, if you unzip to <code>Z:\</code>, 
@@ -121,12 +126,30 @@ you will end up with a file structure including
 <code>Z:\mondrian-0.3\build.xml</code> and
 <code>Z:\mondrian-0.3\demo\FoodMartData.sql</code>.</p>
 
-<p>If you are a mondrian developer, create a perforce client. The perforce 
-server's port is 66.123.172.226:1666. Use a view specification like this 
-(substituting the name of your perforce client for CLIENT):</p>
-<blockquote>
-  <pre>//open/mondrian/... //CLIENT/mondrian/...</pre>
-</blockquote>
+<h3><a name="4_2_Connect_to_the_Perforce_source_code_server">4.2. Connect to the 
+Perforce source code server</a></h3>
+
+<p>If you are a mondrian developer, and need to access the latest source code 
+and check in changes, you should connect to the source code server:</p>
+<ol>
+  <li>Download the perforce client from
+  <a href="http://www.perforce.com/perforce/loadprog.html">
+  http://www.perforce.com/perforce/loadprog.html</a></li>
+  <li>If you have Windows, start the perforce UI (P4Win). (If you are not 
+  running windows, you will have to use the command-line interface to do the 
+  following; 'p4 help' should get you started.)</li>
+  <li>Create a perforce user for yourself (generally people use their 
+  SourceForge usernames).</li>
+  <li>Create a perforce client (called &lt;&lt;username&gt;&gt; or 
+  &lt;&lt;username&gt;&gt;.&lt;&lt;hostname&gt;&gt;), with a root something like 'C:\' or 'D:\work' and 
+  view specification of<blockquote>
+    <pre>//open/mondrian/... //&lt;&lt;clientname&gt;&gt;/mondrian/...</pre>
+  </blockquote>
+  </li>
+  <li>Sync to head revision.</li>
+  <li>Email me the name of the perforce user so I can give you write access to 
+  the perforce depot.</li>
+</ol>
 
 <h2><a name="5_Build">5. Build</a></h2>
 <p>As follows:</p>
@@ -146,8 +169,52 @@ that file.
     The JDBC connect string will be <code>jdbc:odbc:MondrianFoodMart</code>.</p>
 <h3>6.2. Oracle</h3>
 <p>Version 8.1.7 or higher.</p>
-<p>Create the dataset by importing <code>${project.location}/demo/oracle/FoodMart.dmp</code>. 
-(You don't need to run <code>FoodMartTables.sql</code> and <code>
+<p>Create the dataset by importing <code>${project.location}/demo/oracle/FoodMart.dmp</code>:<blockquote>
+
+<pre>$ <b>sqlplus system/manager</b>
+SQL> <b>create user foodmart identified by foodmart;</b>
+
+User created.
+
+SQL> <b>grant connect, resource to foodmart;</b>
+
+Grant succeeded.
+
+SQL> <b>exit</b>
+Disconnected from Oracle8i Enterprise Edition Release 8.1.7.3.0 - Production
+With the Partitioning option
+JServer Release 8.1.7.3.0 - Production
+$ <b>imp foodmart/foodmart full=y file=C:/mondrian/demo/oracle/FoodMart.dmp</b>
+
+Import: Release 8.1.7.3.0 - Production on Mon Aug 5 11:37:35 2002
+
+(c) Copyright 2000 Oracle Corporation.  All rights reserved.
+
+
+Connected to: Oracle8i Enterprise Edition Release 8.1.7.3.0 - Production
+With the Partitioning option
+JServer Release 8.1.7.3.0 - Production
+
+Export file created by EXPORT:V08.01.07 via conventional path
+import done in WE8ISO8859P1 character set and WE8ISO8859P1 NCHAR character set
+. importing FOODMART's objects into FOODMART
+. . importing table                     "customer"      10281 rows imported
+. . importing table                         "days"          7 rows imported
+. . importing table          "inventory_fact_1997"       4070 rows imported
+. . importing table          "inventory_fact_1998"       7282 rows imported
+. . importing table                      "product"       1560 rows imported
+. . importing table                "product_class"        110 rows imported
+. . importing table                    "promotion"       1864 rows imported
+. . importing table                       "region"        110 rows imported
+. . importing table              "sales_fact_1997"      86837 rows imported
+. . importing table              "sales_fact_1998"     164558 rows imported
+. . importing table          "sales_fact_dec_1998"      18325 rows imported
+. . importing table                        "store"         24 rows imported
+. . importing table                  "time_by_day"        730 rows imported
+. . importing table                    "warehouse"         24 rows imported
+. . importing table              "warehouse_class"          6 rows imported
+Import terminated successfully without warnings.</pre>
+</blockquote>. (You don't need to run <code>FoodMartTables.sql</code> and <code>
 FoodMartIndexes.sql</code> in that folder.)</p>
 <p>Setup your environment as follows:</p>
 <ol>

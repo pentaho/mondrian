@@ -16,7 +16,7 @@
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
-  <property name="version" value="0.2"/>
+  <property name="version" value="0.3"/>
 
   <!--
     ===================================================================
@@ -72,7 +72,9 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
   </path>
 
   <taskdef name="javacup" classname="java_cup.JavaCUPTask"/>
-  <taskdef name="xomgen" classname="mondrian.xom.XOMGenTask"/>
+  <taskdef name="xomgen" classname="mondrian.xom.XOMGenTask">
+    <classpath refid="project.boot.classpath"/>
+  </taskdef>
 
   <target name="sniff"
         description="Figures out which components are available">
@@ -226,25 +228,28 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
 
   <target name="srczip">
     <mkdir dir="${dist.dir}" />
+    <delete file="${dist.src.file}"/>
     <zip
         zipfile="${dist.src.file}"
         update="true">
       <zipfileset
           dir="."
           prefix="${dist.name}"
-          includes="**/*.java, **/*.cup, **/*.html, **/*.css, ${java.dir}/mondrian/resource/Resource.xml, ${java.dir}/mondrian/olap/Mondrian.xml, ${java.dir}/mondrian/xom/Meta.xml, ${lib.dir}/javacup.jar, ${lib.dir}/boot.jar, ${webapp.dir}/WEB-INF/web.xml, ${webapp.dir}/**/*.jsp, ${webapp.dir}/WEB-INF/*.xsl, ${webapp.dir}/WEB-INF/*.tld, resource/*.xml, resource/*.xsl, build.xml, build.bat, build.properties, deploy_env.properties, LICENSE.html, README.txt, VERSION.txt, ${demo.dir}/FoodMart.xml"
+          includes="**/*.java, **/*.cup, **/*.html, **/*.css, ${java.dir}/mondrian/resource/Resource.xml, ${java.dir}/mondrian/olap/Mondrian.xml, ${java.dir}/mondrian/xom/Meta.xml, ${java.dir}/javax/jmi/model/resources/mof.xml, ${lib.dir}/javacup.jar, ${lib.dir}/boot.jar, ${webapp.dir}/WEB-INF/web.xml, ${webapp.dir}/**/*.jsp, ${webapp.dir}/WEB-INF/*.xsl, ${webapp.dir}/WEB-INF/*.tld, resource/*.xml, resource/*.xsl, build.xml, build.bat, build.properties, deploy_env.properties, LICENSE.html, README.txt, VERSION.txt, ${demo.dir}/FoodMart.xml"
           excludes="${javadoc.dir}/**, **/*~, ${generated.java.files}" />
     </zip>
   </target>
 
   <target name="datazip">
     <mkdir dir="${dist.dir}" />
+    <delete file="${dist.data.file}"/>
     <zip
         zipfile="${dist.data.file}"
         update="true">
+	  <!-- We do not use 'prefix="${dist.name}"', cuz we don't want to issue a
+           new data file each release. -->
       <zipfileset
           dir="."
-          prefix="${dist.name}"
           includes="LICENSE.html, README.txt, VERSION.txt, demo/FoodMartData.sql, demo/FoodMartTables.sql, demo/FoodMartIndexes.sql, demo/oracle/FoodMartData.sql, demo/oracle/FoodMartTables.sql, demo/oracle/FoodMartIndexes.sql, demo/oracle/FoodMart.dmp, demo/access/MondrianFoodMart.mdb, demo/**/*.pl, demo/**/*.sh"
           excludes="demo/FoodMart.xml, **/*~"/>
     </zip>
@@ -302,6 +307,7 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
 
   <target name="javadoc">
     <mkdir dir="${javadoc.dir}" />
+    <delete quiet="true" file="${javadoc.dir}/index.html"/>
     <javadoc sourcepath="${java.dir}"
         destdir="${javadoc.dir}"
         packagenames="mondrian.*"
@@ -315,10 +321,22 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
         todir="${javadoc.dir}/mondrian/olap"/>
   </target>
 
+  <target name="upload-javadoc" depends="javadoc" description="
+Copies javadoc to sourceforge, where it will be accessible via
+http://mondrian.sourceforge.net/api/index.html.
+You should set pscp.user, pscp.password and pscp.path in build.properties">
+    <exec executable="pscp.exe">
+      <arg line="-pw ${pscp.password}"/>
+      <arg line="-r ${javadoc.dir}"/>
+      <arg line="${pscp.user}:${pscp.path}"/>
+    </exec>
+  </target>
+
   <target name="webapp" depends="compile">
     <filter filtersfile="deploy_env.properties"/>
     <mkdir dir="${dist.dir}" />
     <delete file="${war.file}"/>
+    <delete file="${dist.dir}/web.xml"/>
     <copy file="${webapp.dir}/WEB-INF/web.xml"
 	    filtering="true" todir="${dist.dir}"/>
     <war warfile="${war.file}"
@@ -339,18 +357,25 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
 
   <!-- targets to start and stop tomcat -->
 
+  <!-- I had to take the 'C:' off these paths, otherwise the path got truncated
+       to just the first element. Any ideas, anyone? -->
   <path id="tomcat.classpath">
-    <pathelement location="${jdk.home}/lib/tools.jar"/>
-    <pathelement location="${tomcat.home}/bin/bootstrap.jar"/>
+    <pathelement path="/jdk1.3.1_02/lib/tools.jar"/>
+    <pathelement path="/jakarta-tomcat-4.0.3/localhost/work/classes"/>
+    <pathelement path="/jakarta-tomcat-4.0.3/bin/bootstrap.jar"/>
   </path>
 
   <target name="start.tomcat">
+    <property name="foo" refid="tomcat.classpath"/>
+    <echo message="classpath is ${foo}"/>
     <java classpathref="tomcat.classpath"
           classname="org.apache.catalina.startup.Bootstrap"
+          dir="${tomcat.home}/bin"
           fork="yes">
-      <jvmarg value="-Dcatalina.base=${tomcat.home}"/>
-      <jvmarg value="-Dcatalina.home=${tomcat.home}"/>
-      <jvmarg value="-Djava.io.tmpdir=${tomcat.home}/temp"/>
+      <sysproperty key="catalina.base" value=".."/>
+      <sysproperty key="catalina.home" value=".."/>
+      <sysproperty key="java.io.tmpdir" value="../temp"/>
+      <sysproperty key="java.endorsed.dirs" value="../bin;../common/lib"/>
       <arg value="start"/>
     </java>
   </target>
@@ -358,10 +383,12 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
   <target name="debug.tomcat">
     <java classpathref="tomcat.classpath"
           classname="org.apache.catalina.startup.Bootstrap"
+          dir="${tomcat.home}/bin"
           fork="yes">
-      <jvmarg value="-Dcatalina.base=${tomcat.home}"/>
-      <jvmarg value="-Dcatalina.home=${tomcat.home}"/>
-      <jvmarg value="-Djava.io.tmpdir=${tomcat.home}/temp"/>
+      <sysproperty key="catalina.base" value=".."/>
+      <sysproperty key="catalina.home" value=".."/>
+      <sysproperty key="java.io.tmpdir" value="../temp"/>
+      <sysproperty key="java.endorsed.dirs" value="../bin;../common/lib"/>
       <jvmarg value="-Xdebug"/>
       <jvmarg value="-Xrunjdwp:transport=dt_socket,address=5000,server=y,suspend=n"/>
       <arg value="start"/>
@@ -371,10 +398,12 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
   <target name="stop.tomcat">
     <java classpathref="tomcat.classpath"
           classname="org.apache.catalina.startup.Bootstrap"
+          dir="${tomcat.home}/bin"
           fork="yes">
-      <jvmarg value="-Dcatalina.base=${tomcat.home}"/>
-      <jvmarg value="-Dcatalina.home=${tomcat.home}"/>
-      <jvmarg value="-Djava.io.tmpdir=${tomcat.home}/temp"/>
+      <sysproperty key="catalina.base" value=".."/>
+      <sysproperty key="catalina.home" value=".."/>
+      <sysproperty key="java.io.tmpdir" value="../temp"/>
+      <sysproperty key="java.endorsed.dirs" value="../bin;../common/lib"/>
       <arg value="stop"/>
     </java>
   </target>
