@@ -199,7 +199,7 @@ public class AccessControlTest extends FoodMartTestCase {
 		Hierarchy storeHierarchy = salesCube.lookupHierarchy("Store", false);
 		role.grant(schema, Access.ALL_DIMENSIONS);
 		role.grant(salesCube, Access.ALL);
-		Level nationLevel = storeHierarchy.lookupLevel("Store Country");
+		Level nationLevel = Util.lookupHierarchyLevel(storeHierarchy, "Store Country");
 		role.grant(storeHierarchy, Access.CUSTOM, nationLevel, null);
 		role.grant(schemaReader.getMemberByUniqueName(Util.explode("[Store].[All Stores].[USA].[OR]"), fail), Access.ALL);
 		role.grant(schemaReader.getMemberByUniqueName(Util.explode("[Store].[All Stores].[USA]"), fail), Access.NONE);
@@ -208,8 +208,8 @@ public class AccessControlTest extends FoodMartTestCase {
 		role.grant(schemaReader.getMemberByUniqueName(Util.explode("[Store].[All Stores].[Mexico]"), fail), Access.ALL);
 		role.grant(schemaReader.getMemberByUniqueName(Util.explode("[Store].[All Stores].[Canada]"), fail), Access.NONE);
 		Hierarchy customersHierarchy = salesCube.lookupHierarchy("Customers", false);
-		Level stateProvinceLevel = customersHierarchy.lookupLevel("State Province");
-		Level customersCityLevel = customersHierarchy.lookupLevel("City");
+		Level stateProvinceLevel = Util.lookupHierarchyLevel(customersHierarchy, "State Province");
+		Level customersCityLevel = Util.lookupHierarchyLevel(customersHierarchy, "City");
 		role.grant(customersHierarchy, Access.CUSTOM, stateProvinceLevel, customersCityLevel);
 		role.grant(schemaReader.getMemberByUniqueName(Util.explode("[Customers].[All Customers]"), fail), Access.ALL);
 		role.makeImmutable();

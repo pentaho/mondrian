@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2003 Julian Hyde
+// Copyright (C) 2003-2003 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -39,12 +39,20 @@ public class DelegatingSchemaReader implements SchemaReader {
 		return schemaReader.getHierarchyRootMembers(hierarchy);
 	}
 
+	public Member getMemberParent(Member member) {
+		return schemaReader.getMemberParent(member);
+	}
+
 	public Member[] getMemberChildren(Member member) {
 		return schemaReader.getMemberChildren(member);
 	}
 
 	public Member[] getMemberChildren(Member[] members) {
 		return schemaReader.getMemberChildren(members);
+	}
+
+	public int getMemberDepth(Member member) {
+		return schemaReader.getMemberDepth(member);
 	}
 
 	public Member getMemberByUniqueName(String[] uniqueNameParts, boolean failIfNotFound) {
@@ -73,6 +81,10 @@ public class DelegatingSchemaReader implements SchemaReader {
 
 	public Level[] getHierarchyLevels(Hierarchy hierarchy) {
 		return schemaReader.getHierarchyLevels(hierarchy);
+	}
+
+	public Member getHierarchyDefaultMember(Hierarchy hierarchy) {
+		return schemaReader.getHierarchyDefaultMember(hierarchy);
 	}
 }
 

@@ -171,7 +171,7 @@
 						out.newLine();
 					}
 					Member ancestor = ancestors[j];
-					for (int k = 0, depth = ancestor.getDepth(); k < depth; k++) {
+					for (int k = 0, depth = ancestor.getLevel().getDepth(); k < depth; k++) {
 						out.write("&nbsp;&nbsp;&nbsp;");
 					}
 					if (ancestor == member) {

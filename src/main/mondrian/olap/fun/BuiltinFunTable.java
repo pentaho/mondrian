@@ -918,12 +918,12 @@ public class BuiltinFunTable extends FunTable {
 		define(new FunDefBase("DefaultMember", "<Dimension>.DefaultMember", "Returns the default member of a dimension.", "pmd") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Dimension dimension = getDimensionArg(evaluator, args, 0, true);
-				return dimension.getHierarchy().getDefaultMember();
+				return evaluator.getSchemaReader().getHierarchyDefaultMember(
+						dimension.getHierarchy());
 			}
 
 			public void testDimensionDefaultMember(FoodMartTestCase test) {
-				Member member = test.executeAxis(
-						"[Measures].DefaultMember");
+				Member member = test.executeAxis("[Measures].DefaultMember");
 				test.assertEquals("Unit Sales", member.getName());
 			}
 		});
@@ -1976,7 +1976,7 @@ public class BuiltinFunTable extends FunTable {
 
 						for (int i = 0, m = set0.size(); i < m; i++) {
 							Member member = (Member) set0.elementAt(i);
-							depthArray[i] = member.getDepth();
+							depthArray[i] = member.getLevel().getDepth();
 							// Object o0 = set0.elementAt(i);
 							//   depthVector.addElement(new Object[] {o0});
 						}
@@ -1985,7 +1985,7 @@ public class BuiltinFunTable extends FunTable {
 						for (int i = 0, m = set0.size(); i < m; i++) {
 							Member member = (Member) set0.elementAt(i);
 							drilledSet.addElement(member);
-							if (member.getDepth() == maxDepth) {
+							if (member.getLevel().getDepth() == maxDepth) {
 								Member[] childMembers = evaluator.getSchemaReader().getMemberChildren(member);
 								for (int j = 0; j < childMembers.length; j++) {
 									drilledSet.addElement(childMembers[j]);

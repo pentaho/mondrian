@@ -283,7 +283,7 @@ public class DOMBuilder {
 	private Element createMemberElem(String name, Element parent, Member m) {
 		Element e = elem(name, parent);
 		e.setAttribute("caption", m.getCaption());
-		e.setAttribute("depth", Integer.toString(m.getDepth()));
+		e.setAttribute("depth", Integer.toString(m.getLevel().getDepth()));
 		//e.setAttribute("name", m.getName());
 		//e.setAttribute("qname", m.getQualifiedName());
 		e.setAttribute("uname", m.getUniqueName());

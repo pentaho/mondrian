@@ -135,9 +135,8 @@ public class RolapConnection extends ConnectionBase {
 		if (role == null) {
 			role = schema.defaultRole;
 		}
+		setRole(role);
 		this.schema = schema;
-		this.role = role;
-		this.schemaReader = schema.getSchemaReader();
 	}
 
 	public static synchronized void loadDrivers(String jdbcDrivers) {
@@ -220,12 +219,11 @@ public class RolapConnection extends ConnectionBase {
 		Util.assertPrecondition(role != null, "role != null");
 		Util.assertPrecondition(!role.isMutable(), "!role.isMutable()");
 		this.role = role;
-		this.schemaReader = new RolapSchemaReader(getRole()) {
+		this.schemaReader = new RolapSchemaReader(role) {
 			public Cube getCube() {
 				throw new UnsupportedOperationException();
 			}
 		};
-
 	}
 
 	public Role getRole() {

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1999-2002 Kana Software, Inc. and others.
+// Copyright (C) 1999-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -34,6 +34,13 @@ package mondrian.olap;
  **/
 public interface Member extends OlapElement {
 
+	/**
+	 * Returns this member's parent, or null (not the 'null member', as
+	 * returned by {@link Hierarchy#getNullMember}) if it has no parent.
+	 *
+	 * <p>In an access-control context, a member may have no <em>visible</em>
+	 * parents, so use {@link SchemaReader#getMemberParent}.
+	 */
 	Member getParentMember();
 
 	Level getLevel();
@@ -75,8 +82,6 @@ public interface Member extends OlapElement {
 	 * a query.
 	 **/
 	void setName(String name);
-
-	int getDepth();
 
 	/** Returns whether this is the 'all' member. */
 	boolean isAll();

@@ -328,6 +328,21 @@ public class Util extends mondrian.xom.XOMUtil
 	}
 
 	/**
+	 * Finds a named level in this hierarchy. Returns null if there is no
+	 * such level.
+	 */
+	public static Level lookupHierarchyLevel(Hierarchy hierarchy, String s) {
+		final Level[] levels = hierarchy.getLevels();
+		for (int i = 0; i < levels.length; i++) {
+			if (levels[i].getName().equalsIgnoreCase(s)) {
+				return levels[i];
+			}
+		}
+		return null;
+	}
+
+
+	/**
 	 * Finds a child of a member with a given name.
 	 */
 	public static Member lookupMemberChildByName(

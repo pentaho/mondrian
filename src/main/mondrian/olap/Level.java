@@ -1,13 +1,11 @@
 /*
 // $Id$
-//
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1999-2002 Kana Software, Inc. and others.
+// Copyright (C) 1999-2002 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
 //
 // jhyde, 1 March, 1999
 */
@@ -20,6 +18,17 @@ package mondrian.olap;
  **/
 public interface Level extends OlapElement {
 
+	/**
+	 * Returns the depth of this level.
+	 *
+	 * <p>Note #1: In an access-controlled context, the first visible level of
+	 * a hierarchy (as returned by {@link SchemaReader#getHierarchyLevels}) may
+	 * not have a depth of 0.</p>
+	 *
+	 * <p>Note #2: In a parent-child hierarchy, the depth of a member (as
+	 * returned by {@link SchemaReader#getMemberDepth}) may not be the same as
+	 * the depth of its level.
+	 */
 	int getDepth();
 	Hierarchy getHierarchy();
 

@@ -69,22 +69,11 @@ public abstract class HierarchyBase
 	/** find a child object */
 	public OlapElement lookupChild(SchemaReader schemaReader, String s)
 	{
-		Level mdxLevel = lookupLevel(s);
+		Level mdxLevel = Util.lookupHierarchyLevel(this, s);
 		if (mdxLevel != null) {
 			return mdxLevel;
 		}
 		return Util.lookupHierarchyRootMember(schemaReader, this, s);
-	}
-
-	// implement Hierarchy
-	public Level lookupLevel(String s)
-	{
-		for (int i = 0; i < levels.length; i++) {
-			if (levels[i].getName().equalsIgnoreCase(s)) {
-				return levels[i];
-			}
-		}
-		return null;
 	}
 
 	public Object[] getChildren() {

@@ -71,6 +71,30 @@ abstract class RolapSchemaReader implements SchemaReader {
 		return getMemberReader(hierarchy).compare((RolapMember) m1, (RolapMember) m2, true);
 	}
 
+	public Member getMemberParent(Member member) {
+		final Member parentMember = member.getParentMember();
+		if (parentMember != null) {
+			final Role.HierarchyAccess hierarchyAccess = role.getAccessDetails(member.getHierarchy());
+			if (hierarchyAccess != null &&
+					hierarchyAccess.getAccess(parentMember) == Access.NONE) {
+				return null;
+			}
+		}
+		return parentMember;
+	}
+
+	public int getMemberDepth(Member member) {
+		final Role.HierarchyAccess hierarchyAccess = role.getAccessDetails(member.getHierarchy());
+		int memberDepth = member.getLevel().getDepth();
+		if (hierarchyAccess != null) {
+			final Level topLevel = hierarchyAccess.getTopLevel();
+			if (topLevel != null) {
+				memberDepth -= topLevel.getDepth();
+			}
+		}
+		return memberDepth;
+	}
+
 	public Member[] getMemberChildren(Member member) {
 		ArrayList children = new ArrayList();
 		getMemberReader(member.getHierarchy()).getMemberChildren(
@@ -112,6 +136,7 @@ abstract class RolapSchemaReader implements SchemaReader {
 	}
 
 	public Level[] getHierarchyLevels(Hierarchy hierarchy) {
+		Util.assertPrecondition(hierarchy != null, "hierarchy != null");
 		final Role.HierarchyAccess hierarchyAccess = role.getAccessDetails(hierarchy);
 		final Level[] levels = hierarchy.getLevels();
 		if (hierarchyAccess == null) {
@@ -132,7 +157,42 @@ abstract class RolapSchemaReader implements SchemaReader {
 		final int levelCount = bottomLevel.getDepth() - topLevel.getDepth() + 1;
 		Level[] restrictedLevels = new Level[levelCount];
 		System.arraycopy(levels, topLevel.getDepth(), restrictedLevels, 0, levelCount);
+		Util.assertPostcondition(restrictedLevels.length >= 1, "return.length >= 1");
 		return restrictedLevels;
+	}
+
+	public Member getHierarchyDefaultMember(Hierarchy hierarchy) {
+		RolapMember member = (RolapMember) hierarchy.getDefaultMember();
+		final Role.HierarchyAccess hierarchyAccess = role.getAccessDetails(hierarchy);
+		if (hierarchyAccess != null) {
+			final Level level = member.getLevel();
+			final int levelDepth = level.getDepth();
+			final Level topLevel = hierarchyAccess.getTopLevel();
+			final MemberReader unrestrictedMemberReader = ((RolapHierarchy) hierarchy).memberReader;
+			if (topLevel != null &&
+					topLevel.getDepth() > levelDepth) {
+				// Find the first child of the first child... until we get to
+				// a level we can see.
+				ArrayList children = new ArrayList();
+				do {
+					unrestrictedMemberReader.getMemberChildren(member, children);
+					Util.assertTrue(children.size() > 0);
+					member = (RolapMember) children.get(0);
+					children.clear();
+				} while (member.getLevel() != topLevel);
+				return member;
+			}
+			final Level bottomLevel = hierarchyAccess.getBottomLevel();
+			if (bottomLevel != null &&
+					bottomLevel.getDepth() < levelDepth) {
+				do {
+					member = (RolapMember) member.getParentMember();
+					Util.assertTrue(member != null);
+				} while (member.getLevel() != bottomLevel);
+				return member;
+			}
+		}
+		return member;
 	}
 }
 

@@ -644,7 +644,7 @@ public class Query extends QueryPart {
 								"CurrentMember",
 								new Exp[] {hierarchy},
 								FunDef.TypeProperty),
-							hierarchy.lookupLevel("(All)"),
+							Util.lookupHierarchyLevel(hierarchy, "(All)"),
 							Literal.createSymbol("SELF_BEFORE_AFTER")
 						})
 				});
@@ -1612,11 +1612,11 @@ public class Query extends QueryPart {
 				//we need to put only members with biggest depth
 				int nMaxDepth = 0;
 				for (int i = 0; i < mdxMembers.length; i++){
-					if (nMaxDepth < mdxMembers[i].getDepth())
-						nMaxDepth = mdxMembers[i].getDepth();
+					if (nMaxDepth < mdxMembers[i].getLevel().getDepth())
+						nMaxDepth = mdxMembers[i].getLevel().getDepth();
 				}
 				for (int i = 0; i < mdxMembers.length; i++){
-					if (nMaxDepth == mdxMembers[i].getDepth()) {
+					if (nMaxDepth == mdxMembers[i].getLevel().getDepth()) {
 						set.add(mdxMembers[i]);
 					}
 				}

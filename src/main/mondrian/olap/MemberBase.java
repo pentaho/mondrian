@@ -60,9 +60,6 @@ public abstract class MemberBase
 	public final Level getLevel() {
 		return level;
 	}
-	public final int getDepth() {
-		return level.depth;
-	}
 	public final int getMemberType() {
 		return memberType;
 	}

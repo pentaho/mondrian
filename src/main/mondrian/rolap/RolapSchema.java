@@ -117,6 +117,13 @@ public class RolapSchema implements Schema
 			Role role = createRole(xmlRole);
 			mapNameToRole.put(xmlRole.name, role);
 		}
+		if (xmlSchema.defaultRole != null) {
+			Role role = lookupRole(xmlSchema.defaultRole);
+			if (role == null) {
+				throw Util.newError("Role '" + xmlSchema.defaultRole + "' not found");
+			}
+			defaultRole = role;
+		}
 	}
 
 	private Role createRole(MondrianDef.Role xmlRole) {
