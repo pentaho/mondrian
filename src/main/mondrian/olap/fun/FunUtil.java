@@ -467,10 +467,15 @@ public class FunUtil extends Util {
 	}
 
 	static int compareValues(Object value0, Object value1) {
-		if (value0 == value1) {
+		if (value0 == value1)
 			return 0;
-		} else if (value0 instanceof RuntimeException ||
-				value1 instanceof RuntimeException) {
+		// null is less than anything else
+		if (value0 == null)
+			return -1;
+		if (value1 == null)
+			return 1;
+		if (value0 instanceof RuntimeException ||
+			value1 instanceof RuntimeException) {
 			// one of the values is not in cache; continue as best as we can
 			return 0;
 		} else if (value0 == Util.nullValue) {
@@ -764,9 +769,9 @@ public class FunUtil extends Util {
 		SetWrapper retval = new SetWrapper();
 		for (Iterator it = members.iterator(); it.hasNext();) {
 			Object obj = it.next();
-			if (obj instanceof Member[]) 
+			if (obj instanceof Member[])
 				evaluator.setContext((Member[])obj);
-			else 
+			else
 				evaluator.setContext((Member)obj);
 			Object o = exp.evaluateScalar(evaluator);
 			if (o == null || o == Util.nullValue) {
