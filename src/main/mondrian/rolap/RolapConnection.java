@@ -14,13 +14,30 @@ package mondrian.rolap;
 import mondrian.olap.*;
 
 import java.sql.SQLException;
-import java.util.Locale;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.StringTokenizer;
+import java.util.*;
 
 /**
- * A <code>RolapConnection</code> is a connection to a mondrian database.
+ * A <code>RolapConnection</code> is a connection to a Mondrian OLAP Server.
+ *
+ * <h2><a name="properties">Allowable properties</a></h2>
+ *
+ * <table border="1">
+ * <tr><th>Property</th><th>Description</th></tr>
+ * <tr><td>Provider</td><td>Must be 'Mondrian'</td></tr>
+ * <tr><td>Catalog</td><td>The URL of the catalog, an XML file which describes
+ *   the schema: cubes, hierarchies, and so forth. Catalogs are described
+ *   <a target="_top" href="http://apoptosis.dyndns.org:8080/open/mondrian/doc/schema.html">here</a>.</td></tr>
+ * <tr><td>Jdbc</td><td>URL of the JDBC database where the data is
+ *   stored.</td></tr>
+ * <tr><td>JdbcUser</td><td>User to log on to the JDBC database. (You
+ *   don't need to specify this parameter if it is already specified in
+ *   the JDBC URL.)</td></tr>
+ * <tr><td>JdbcPassword</td><td>Password to log on to the JDBC database. (You
+ *   don't need to specify this parameter if it is already specified in
+ *   the JDBC URL.)</td></tr>
+ * <tr><td>JdbcDrivers</td><td>A comma-separated list of JDBC driver classes,
+ *   for example, <code>sun.jdbc.odbc.JdbcOdbcDriver,oracle.jdbc.OracleDriver</code>.</td></tr>
+ * </table>
  *
  * @see RolapSchema
  * @see DriverManager
@@ -39,6 +56,11 @@ public class RolapConnection extends ConnectionBase {
 		return schema;
 	}
 
+	/**
+	 * Creates a connection.
+	 * @param connectInfo Connection properties, as described
+	 *   <a href="#properties">here</a>.
+	 */
 	public RolapConnection(Util.PropertyList connectInfo) {
 		this(connectInfo, null);
 	}
@@ -46,9 +68,15 @@ public class RolapConnection extends ConnectionBase {
 	/**
 	 * Creates a RolapConnection.
 	 *
-	 * <p>Only {@link RolapSchema.Pool#get} calls this with schema != null (to
+	 * <p>Only {@link mondrian.rolap.RolapSchema.Pool#get} calls this with schema != null (to
 	 * create a schema's internal connection). Other uses retrieve a schema
 	 * from the cache based upon the <code>Catalog</code> property.
+	 *
+	 * @param connectInfo Connection properties, as described
+	 *   <a href="#properties">here</a>.
+	 * @param schema Schema for the connection. Must be null unless this is to
+	 *   be an internal connection.
+	 * @pre connectInfo != null
 	 */
 	RolapConnection(Util.PropertyList connectInfo, RolapSchema schema) {
 		this.connectInfo = connectInfo;
@@ -61,9 +89,18 @@ public class RolapConnection extends ConnectionBase {
 			loadDrivers(jdbcDrivers);
 		}
 		loadDrivers(MondrianProperties.instance().getJdbcDrivers());
+		Properties jdbcProperties = new Properties();
+		String jdbcUser = connectInfo.get("JdbcUser");
+		if (jdbcUser != null) {
+			jdbcProperties.setProperty("user", jdbcUser);
+		}
+		String jdbcPassword = connectInfo.get("JdbcPassword");
+		if (jdbcPassword != null) {
+			jdbcProperties.setProperty("password", jdbcPassword);
+		}
 		try {
 			this.jdbcConnection = java.sql.DriverManager.getConnection(
-				jdbcConnectString);
+				jdbcConnectString, jdbcProperties);
 		} catch (SQLException e) {
 			throw Util.getRes().newInternal(
 					"while creating RolapSchema (" + connectInfo.toString() + ")", e);
@@ -72,7 +109,7 @@ public class RolapConnection extends ConnectionBase {
 			// If RolapSchema.Pool.get were to call this with schema == null,
 			// we would loop.
 			schema = RolapSchema.Pool.instance().get(
-					catalogName, jdbcConnectString, connectInfo);
+					catalogName, jdbcConnectString, jdbcUser, connectInfo);
 		}
 		this.schema = schema;
 	}

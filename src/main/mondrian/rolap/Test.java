@@ -44,11 +44,9 @@ public class Test {
 	Test(String[] args)
 	{
 		pw = new PrintWriter(System.out, true);
-		String connectString = "Data Source=LOCALHOST;Provider=msolap;",
-			catalogName = "Foodmart";
+		String connectString = "Data Source=LOCALHOST;Provider=msolap;Catalog=Foodmart";
         boolean fresh = true;
-		connection = (RolapConnection) DriverManager.getConnection(
-            connectString, catalogName, fresh);
+		connection = (RolapConnection) DriverManager.getConnection(connectString, null, fresh);
 	}
 	void convertFoodMart() throws java.sql.SQLException
 	{

@@ -336,12 +336,11 @@ Import terminated successfully without warnings.</pre>
   environment.</li>
   <li>Append <code>%ORACLE_HOME%/jdbc/lib/classes12.zip</code> to <code>
   CLASSPATH</code> in <code>build.bat</code>, or in your environment.</li>
-  <li>In <code>build.xml</code>, make sure that the property <code>
-  mondrian.jdbcDrivers</code> includes <code>oracle.jdbc.OracleDriver</code>.</li>
-  <li>In <code>build.xml</code>, set the properties <code>
-  mondrian.foodmart.jdbcURL</code> and <code>
-  mondrian.foodmart.jdbcURL.oracle</code>. They should probably include a username and 
+  <li>In <code>build.xml</code>, set the properties
+  <code>mondrian.foodmart.jdbcURL</code> and
+  <code>mondrian.foodmart.jdbcURL.oracle</code>. They should probably include a username and 
   password, for example <code>jdbc:oracle:oci8:foodmart/foodmart@myoracle</code>.</li>
+  <li>Make sure that the <code>JdbcDrivers</code> property of the connect string includes <code>oracle.jdbc.OracleDriver</code>.</li>
 </ol>
 
 <h3><a name="5_3_hsqldb">5.3. Hypersonic SQL (hsqldb)</a></h3>
@@ -485,7 +484,7 @@ mondrian test</pre>
 <ol>
   <li>First <a href="#Tomcat">install Tomcat</a>.</li>
   <li>Make sure the values in <code>mondrian.properties</code> are correct for your environment. In particular:<ul>
-    <li>Make sure your database's JDBC driver is in <code>mondrian.jdbcDrivers</code></li>
+    <li>Make sure your database's JDBC driver appears in the <code>JdbcDrivers</code> property of your connect string</li>
     <li>Check the catalog URL in <code>mondrian.test.connectString</code> and
     <code>mondrian.foodmart.catalogURL</code></li>
     <li>Check the JDBC connect strings in <code>mondrian.test.connectString</code> 
@@ -645,8 +644,7 @@ The MySql service was started successfully.</code></pre>
   <a href="http://www.mysql.com/downloads/api-jdbc-stable.html">MySQL
   Connector/J 2.0.14</a>; extracted <code>mysql-connector-java-2.0.14-bin.jar</code> to <code>
   <a href="file:///C:/MySQL/lib">C:\MySQL\lib</a></code> and appended it to my CLASSPATH (by editing <code>build.bat</code>); and appended <code>
-  com.mysql.jdbc.Driver</code> to my <code>mondrian.jdbcDrivers</code> 
-  property. 
+  com.mysql.jdbc.Driver</code> to the <code>JdbcDrivers</code> property of my connect string. 
     </td>
   </tr>
   <tr>

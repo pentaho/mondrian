@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.StringTokenizer;
 
 /**
  * <code>TestContext</code> is a singleton class which contains the information
@@ -57,14 +56,59 @@ public class TestContext {
 	/** Creates a TestContext. Called only from {@link #instance()}. **/
 	private TestContext() {
 		this.pw = new PrintWriter(System.out, true);
-		foodMartConnectString = MondrianProperties.instance().getTestConnectString();
-		if (foodMartConnectString == null) {
-			URL catalogUrl = convertPathToURL(new File("demo/FoodMart.xml"));
-			String jdbcURL = MondrianProperties.instance().getFoodmartJdbcURL();
-			foodMartConnectString = "Provider=mondrian;" +
-					"Jdbc=" + jdbcURL + ";" +
-					"Catalog=" + catalogUrl;
+		foodMartConnectString = getConnectString();
+	}
+
+	/**
+	 * Constructs a connect string by which the unit tests can talk to the
+	 * FoodMart database.
+	 *
+	 * The algorithm is as follows:<ul>
+	 * <li>Starts with {@link MondrianProperties#getTestConnectString}, if it is
+	 *     set.</li>
+	 * <li>If {@link MondrianProperties#getFoodmartJdbcURL} is set, this
+	 *     overrides the <code>Jdbc</code> property.</li>
+	 * <li>If the <code>catalog</code> URL is unset or invalid, it assumes that
+	 *     we are at the root of the source tree, and references
+	 *     <code>demo/FoodMart.xml</code></li>.
+	 * </ul>
+	 */
+	private static String getConnectString() {
+		String connectString = MondrianProperties.instance().getTestConnectString();
+		final Util.PropertyList connectProperties;
+		if (connectString == null) {
+			connectProperties = new Util.PropertyList();
+			connectProperties.put("Provider","mondrian");
+		} else {
+			 connectProperties = Util.parseConnectString(connectString);
 		}
+		String jdbcURL = MondrianProperties.instance().getFoodmartJdbcURL();
+		if (jdbcURL != null) {
+			connectProperties.put("Jdbc", jdbcURL);
+		}
+		// Find the catalog. Use the URL specified in the connect string, if
+		// it is specified and is valid. Otherwise, reference FoodMart.xml
+		// assuming we are at the root of the source tree.
+		URL catalogURL = null;
+		String catalog = connectProperties.get("catalog");
+		if (catalog != null) {
+			try {
+				catalogURL = new URL(catalog);
+			} catch (MalformedURLException e) {
+				// ignore
+			}
+		}
+		if (catalogURL == null) {
+			// Works if we are running in root directory of source tree
+			File file = new File("demo/FoodMart.xml");
+			if (!file.exists()) {
+				// Works if we are running in bin directory of runtime env
+				file = new File("../demo/FoodMart.xml");
+			}
+			catalogURL = convertPathToURL(file);
+		}
+		connectProperties.put("catalog", catalogURL.toString());
+		return connectProperties.toString();
 	}
 
 	/**

@@ -11,13 +11,6 @@
 */
 package mondrian.web.taglib;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.StringTokenizer;
-
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.xml.transform.Templates;
@@ -25,10 +18,8 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
-
-import mondrian.olap.Connection;
-import mondrian.olap.DriverManager;
-import mondrian.olap.MondrianResource;
+import java.io.InputStream;
+import java.util.HashMap;
 
 /**
  * holds compiled stylesheets
@@ -78,19 +69,6 @@ public class ApplResources implements Listener.ApplicationContext {
 	// implement ApplicationContext
 	public void init(ServletContextEvent event) {
 		this.context = event.getServletContext();
-
-		// static initialization taken from MDXQueryServlet
-		String jdbcDrivers = context.getInitParameter("jdbcDrivers");
-		StringTokenizer tok = new StringTokenizer(jdbcDrivers, ", ");
-		while (tok.hasMoreTokens()) {
-			String jdbcDriver = tok.nextToken();
-			try {
-				Class.forName(jdbcDriver);
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			}
-		}
-
 		context.setAttribute(ATTRNAME, this);
 	}
 	

@@ -128,14 +128,14 @@ public class RolapSchema implements Schema
 		private Pool() {
 		}
 
-		public static Pool instance() {
+		static Pool instance() {
 			return pool;
 		}
 
 		synchronized RolapSchema get(
 				String catalogName, String jdbcConnectString,
-				Util.PropertyList connectInfo) {
-			final String key = catalogName + ":" + jdbcConnectString;
+				String jdbcUser, Util.PropertyList connectInfo) {
+			final String key = makeKey(catalogName, jdbcConnectString, jdbcUser);
 			RolapSchema schema = (RolapSchema) mapUrlToSchema.get(key);
 			if (schema == null) {
 				schema = new RolapSchema(catalogName, connectInfo);
@@ -147,13 +147,27 @@ public class RolapSchema implements Schema
 			}
 			return schema;
 		}
-		synchronized void remove(String catalogName, String jdbcConnectString) {
-			mapUrlToSchema.remove(catalogName + ":" + jdbcConnectString);
+
+		synchronized void remove(String catalogName, String jdbcConnectString, String jdbcUser) {
+			mapUrlToSchema.remove(makeKey(catalogName, jdbcConnectString, jdbcUser));
 		}
+
+		/**
+		 * Creates a key with which to identify a schema in the cache.
+		 */
+		private static String makeKey(
+				String catalogName, String jdbcConnectString, String jdbcUser) {
+			String key = catalogName + ":" + jdbcConnectString;
+			if (jdbcUser != null) {
+				key += ":" + jdbcUser;
+			}
+			return key;
+		}
+
 	}
 
-	public static void flushSchema(String catalogName, String jdbcConnectString) {
-		Pool.instance().remove(catalogName, jdbcConnectString);
+	public static void flushSchema(String catalogName, String jdbcConnectString, String jdbcUser) {
+		Pool.instance().remove(catalogName, jdbcConnectString, jdbcUser);
 	}
 
 	public Cube lookupCube(String cube,boolean failIfNotFound)

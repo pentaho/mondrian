@@ -34,6 +34,7 @@
   <li><a href="#Extensiblity">How can Mondrian be extended?</a></li>
   <li><a href="#Scalability">Can Mondrian handle large datasets?</a></li>
   <li><a href="#Tracing">How do I enable tracing?</a></li>
+  <li>What is the syntax of a Mondrian connect string?</li>
   <li><a href="#Roadmap">Where is Mondrian going in the future?</a></li>
   <li><a href="#Further_reading">Where can I find out more? (Further reading)</a></li>
   <li><a href="#Feedback">Mondrian is wonderful! How can I possibly thank you?</a></li>
@@ -96,6 +97,10 @@ statement, like this:</p>
   when you re-start Tomcat. The output goes to the console from which you 
   started Tomcat.</li>
 </ul>
+<h2><a name="Connect_string">What is the syntax of a Mondrian connect string?</a></h2>
+<p>The syntax of the connect string is described in the Javadoc for the method
+<a href="http://mondrian.sourceforge.net/api/mondrian/rolap/RolapConnection.html#RolapConnection(mondrian.olap.Util.PropertyList,boolean)">
+mondrian.olap.DriverManager.getConnection(String connectString, boolean fresh)</a>.</p>
 <h2><a name="Roadmap">Where is Mondrian going in the future?</a></h2>
 <ol>
   <li>Presentation layer (see <a href="http://sourceforge.net/projects/jpivot">

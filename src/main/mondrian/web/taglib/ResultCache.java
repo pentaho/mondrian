@@ -11,21 +11,14 @@
 */
 package mondrian.web.taglib;
 
-import java.io.IOException;
-import java.util.Locale;
+import mondrian.olap.*;
+import org.w3c.dom.Document;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionBindingEvent;
 import javax.servlet.http.HttpSessionBindingListener;
 import javax.xml.parsers.ParserConfigurationException;
-
-import mondrian.olap.Connection;
-import mondrian.olap.DriverManager;
-import mondrian.olap.MondrianResource;
-import mondrian.olap.Query;
-import mondrian.olap.Result;
-import org.w3c.dom.Document;
 
 /**
  * holds a query/result pair in the users session
@@ -38,7 +31,6 @@ public class ResultCache implements HttpSessionBindingListener {
 	private Document document = null;
 	private ServletContext servletContext;
 	private Connection connection;
-	private MondrianResource resource;
 
 	private ResultCache(ServletContext context) {
 		this.servletContext = context;
@@ -53,8 +45,7 @@ public class ResultCache implements HttpSessionBindingListener {
 	public static ResultCache getInstance(
 		HttpSession session,
 		ServletContext servletContext,
-		String name)
-		throws IOException {
+		String name) {
 		String fqname = ATTR_NAME + name;
 		ResultCache resultCache = (ResultCache) session.getAttribute(fqname);
 		if (resultCache == null) {
@@ -119,11 +110,10 @@ public class ResultCache implements HttpSessionBindingListener {
 	 * create a new connection to Mondrian
 	 */
 	public void valueBound(HttpSessionBindingEvent ev) {
-		this.resource = MondrianResource.instance();
 		String connectString =
 			servletContext.getInitParameter("connectString");
 		this.connection =
-			DriverManager.getConnection(connectString, null, false);
+			DriverManager.getConnection(connectString, servletContext, false);
 	}
 
     /**

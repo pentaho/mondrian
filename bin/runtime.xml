@@ -3,7 +3,7 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == (C) Copyright 2002 Kana Software, Inc. and others.
+  == (C) Copyright 2002-2003 Kana Software, Inc. and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   == jhyde, 20 September, 2002
@@ -21,6 +21,7 @@
   <property name="lib.location" location="${project.location}/lib"/>
   <property name="war.file" value="${lib.location}/${name}.war"/>
   <property name="webapp.location" location="${project.location}/webapp"/>
+  <property name="demo.location" location="${project.location}/demo"/>
   <property name="weblogic.home" value="${myenv.WEBLOGIC_HOME}"/>
   <property name="tomcat.home" value="${myenv.TOMCAT_HOME}"/>
 
@@ -48,8 +49,9 @@ Assumes that lib contains mondrian.jar, ant.jar, junit.jar etc.">
         filtering="true" todir="${lib.location}"/>
     <war warfile="${war.file}"
         webxml="${lib.location}/web.xml">
-      <fileset dir="${webapp.location}"
-          excludes="${webapp.location}/WEB-INF/web.xml"/>
+      <webinf dir="${webapp.location}/WEB-INF" excludes="web.xml"/>
+      <webinf dir="${demo.location}" includes="FoodMart.xml"/>
+      <fileset dir="${webapp.location}" excludes="WEB-INF/**/*"/>
       <lib dir="${lib.location}" includes="
 ${name}.jar,
 javacup.jar,

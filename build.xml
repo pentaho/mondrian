@@ -561,7 +561,9 @@ and lib contains ant.jar, junit.jar etc. (use 'copy-jars' target)">
         filtering="true" todir="${lib.dir}"/>
     <war warfile="${war.file}"
         webxml="${lib.dir}/web.xml">
-      <fileset dir="${webapp.dir}" excludes="${webapp.dir}/WEB-INF/web.xml"/>
+      <webinf dir="${webapp.dir}/WEB-INF" excludes="web.xml"/>
+      <webinf dir="${demo.dir}" includes="FoodMart.xml"/>
+      <fileset dir="${webapp.dir}" excludes="WEB-INF/**/*"/>
       <lib dir="${lib.dir}" includes="
 ${name}.jar,
 javacup.jar,
