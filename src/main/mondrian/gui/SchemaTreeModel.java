@@ -6,11 +6,12 @@
 
 package mondrian.gui;
 
-import javax.swing.tree.*;
+import java.util.Vector;
 
-import java.util.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 
-import mondrian.olap.*;
+import mondrian.olap.MondrianDef;
 
 /**
  *
@@ -34,16 +35,6 @@ public class SchemaTreeModel extends DefaultTreeModel {
 		this.schema = s;
 	}
     
-	/** Adds a listener for the <code>TreeModelEvent</code>
-	 * posted after the tree changes.
-	 *
-	 * @param   l       the listener to add
-	 * @see     #removeTreeModelListener
-	 *
-	 */
-	//public void addTreeModelListener(TreeModelListener l) {
-	 //   treeModelListeners.addElement(l);
-	//}
     
 	/** Returns the child of <code>parent</code> at index <code>index</code>
 	 * in the parent's
@@ -60,7 +51,6 @@ public class SchemaTreeModel extends DefaultTreeModel {
 	public Object getChild(Object parent, int index) {
 		if (parent instanceof MondrianDef.Column) {
 			MondrianDef.Column c = (MondrianDef.Column)parent;
-			return null;
 		} else if (parent instanceof MondrianDef.Cube) {
 			MondrianDef.Cube c = (MondrianDef.Cube)parent;
 			//return children in this order: dimensions, measures
@@ -68,25 +58,18 @@ public class SchemaTreeModel extends DefaultTreeModel {
 				return c.dimensions[index];
 			} else if (c.measures.length + c.dimensions.length > index) {
 				return c.measures[index - c.dimensions.length];
-			} else {
-				return null;
 			}
 		} else if (parent instanceof MondrianDef.Dimension) {
 			MondrianDef.Dimension d = (MondrianDef.Dimension)parent;
 			if (d.hierarchies.length > index) {
 				return d.hierarchies[index];
-			} else {
-				return null;
 			}
 		} else if (parent instanceof MondrianDef.DimensionUsage) {
 			MondrianDef.DimensionUsage c = (MondrianDef.DimensionUsage)parent;
-			return null;
 		} else if (parent instanceof MondrianDef.ExpressionView) {
 			MondrianDef.ExpressionView ev = (MondrianDef.ExpressionView)parent;
 			if (ev.expressions.length > index) {
 				return ev.expressions[index];
-			} else {
-				return null;
 			}
 		} else if (parent instanceof MondrianDef.Hierarchy) {
 			MondrianDef.Hierarchy h = (MondrianDef.Hierarchy)parent;
@@ -95,28 +78,20 @@ public class SchemaTreeModel extends DefaultTreeModel {
 				return h.levels[index];
 			} else if (h.memberReaderParameters.length + h.levels.length > index) {
 				return h.memberReaderParameters[index];
-			} else {
-				return null;
 			}
 		} else if (parent instanceof MondrianDef.Join) {
 			MondrianDef.Join j = (MondrianDef.Join)parent;
-			return null;
 		} else if (parent instanceof MondrianDef.Level) {
 			MondrianDef.Level l = (MondrianDef.Level)parent;
 			if (l.properties.length > index) {
 				return l.properties[index];
-			} else {
-				return null;
 			}
 		} else if (parent instanceof MondrianDef.Measure) {
 			MondrianDef.Measure m = (MondrianDef.Measure)parent;
-			return null;
 		} else if (parent instanceof MondrianDef.Parameter) {
 			MondrianDef.Parameter p = (MondrianDef.Parameter)parent;
-			return null;
 		} else if (parent instanceof MondrianDef.Property) {
 			MondrianDef.Property p = (MondrianDef.Property)parent;
-			return null;
 		} else if (parent instanceof MondrianDef.Schema) {
 			MondrianDef.Schema s = (MondrianDef.Schema)parent;
 			//return children in this order: cubes, virtual cubes, dimensions
@@ -126,21 +101,15 @@ public class SchemaTreeModel extends DefaultTreeModel {
 				return s.virtualCubes[index - s.cubes.length];
 			} else if (s.dimensions.length + s.virtualCubes.length + s.cubes.length > index) {
 				return s.dimensions[index - s.cubes.length - s.virtualCubes.length];
-			} else {
-				return null;
 			}
 		} else if (parent instanceof MondrianDef.SQL) {
 			MondrianDef.SQL s = (MondrianDef.SQL)parent;
-			return null;
 		} else if (parent instanceof MondrianDef.Table) {
 			MondrianDef.Table t = (MondrianDef.Table)parent;
-			return null;
 		} else if (parent instanceof MondrianDef.View) {
 			MondrianDef.View v = (MondrianDef.View)parent;
 			if (v.selects.length > index) {
 				return v.selects[index];
-			} else {
-				return null;
 			}
 		} else if (parent instanceof MondrianDef.VirtualCube) {
 			MondrianDef.VirtualCube c = (MondrianDef.VirtualCube)parent;
@@ -149,18 +118,13 @@ public class SchemaTreeModel extends DefaultTreeModel {
 				return c.dimensions[index];
 			} else if (c.measures.length + c.dimensions.length > index) {
 				return c.measures[index - c.dimensions.length];
-			} else {
-				return null;
 			}
 		} else if (parent instanceof MondrianDef.VirtualCubeDimension) {
 			MondrianDef.VirtualCubeDimension vcd = (MondrianDef.VirtualCubeDimension)parent;
-			return null;
 		} else if (parent instanceof MondrianDef.VirtualCubeMeasure) {
 			MondrianDef.VirtualCubeMeasure vcd = (MondrianDef.VirtualCubeMeasure)parent;
-			return null;
-		} else {
-			return null;
 		}
+		return null;
 	}
     
 	/** Returns the number of children of <code>parent</code>.
@@ -378,31 +342,4 @@ public class SchemaTreeModel extends DefaultTreeModel {
 		return getChildCount(node) == 0;
 	}
     
-	/** Removes a listener previously added with
-	 * <code>addTreeModelListener</code>.
-	 *
-	 * @see     #addTreeModelListener
-	 * @param   l       the listener to remove
-	 *
-	 */
-   // public void removeTreeModelListener(TreeModelListener l) {
-   //     treeModelListeners.removeElement(l);
-   // }
-    
-	/** Messaged when the user has altered the value for the item identified
-	 * by <code>path</code> to <code>newValue</code>.
-	 * If <code>newValue</code> signifies a truly new value
-	 * the model should post a <code>treeNodesChanged</code> event.
-	 *
-	 * @param path path to the node that the user has altered
-	 * @param newValue the new value from the TreeCellEditor
-	 *
-	 */
-	//public void valueForPathChanged(TreePath path, Object newValue) {
-	//}
-
-	void fireTreeChanged(TreePath path) {
-		fireTreeNodesChanged(this,new Object[] { path }, null, null);
-	}
-
 }

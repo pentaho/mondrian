@@ -23,11 +23,11 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Properties;
+import java.util.ResourceBundle;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JInternalFrame;
-
 
 import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
@@ -61,7 +61,10 @@ public class Workbench extends javax.swing.JFrame {
 		loadWorkbenchProperties(); 	
 		initDataSource();
         initComponents();
-        ImageIcon icon = new javax.swing.ImageIcon("images/cube16.gif");
+        ResourceBundle resources
+            = ResourceBundle.getBundle("mondrian.gui.resources.gui");
+        
+        ImageIcon icon = new javax.swing.ImageIcon(resources.getString("cube"));
         
         this.setIconImage(icon.getImage());
     }
