@@ -137,6 +137,38 @@ public class Parameter extends ExpBase {
 			exp = Util.lookupMember(st, value, false);
 		}
 	}
+	
+  /**
+   * returns the parameters value
+   * @return one of String, Double, Member
+   */
+	public Object getValue() {
+    switch (category) {
+    case CatNumeric:
+    case CatString:
+      return ((Literal)exp).getValue();
+    default:
+      return (Member)exp;
+    }
+	}
+	
+
+  /**
+   * sets the parameters value
+   * @param value one of String, Double, Member
+   */
+	public void setValue(Object value) {
+    switch (category) {
+    case CatNumeric:
+      exp = Literal.create((Double)value);
+      break;
+    case CatString:
+      exp = Literal.createString((String)value);
+      break;
+    default:
+      exp = (Member)value;
+    }
+	}
 
 	/**
 	 * Returns "STRING", "NUMERIC" or "MEMBER"
