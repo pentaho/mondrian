@@ -7,28 +7,42 @@
 @rem You must accept the terms of that agreement to use this software.
 
 @set SRCROOT=%~dp0
+
+@if exist "%HOME_DRIVE%" goto x001
 @set HOME_DRIVE=E
+:x001
+
+@if exist "%JAVA_HOME%" goto x002
 @set JAVA_HOME=%HOME_DRIVE%:/j2sdk1.4.1_01
+@if exist "%JAVA_HOME%" goto x002
+@echo JAVA_HOME (%JAVA_HOME%) does not exist
+@goto end
+:x002
+
 @set PATH=%JAVA_HOME%/bin;%PATH%
 
+@if exist "%ANT_HOME%" goto x010
 @set ANT_HOME=%HOME_DRIVE%:\jakarta-ant-1.5
 @if exist "%ANT_HOME%" goto x010
 @echo ANT_HOME (%ANT_HOME%) does not exist
 @goto end
 :x010
 
+@if exist "%XALAN_HOME%" goto x030
 @set XALAN_HOME=%HOME_DRIVE%:/xalan-j_2_4_1
 @if exist "%XALAN_HOME%" goto x030
 @echo XALAN_HOME (%XALAN_HOME%) does not exist
 @goto end
 :x030
 
+@if exist "%JUNIT_HOME%" goto x040
 @set JUNIT_HOME=%HOME_DRIVE%:/junit3.7
 @if exist "%JUNIT_HOME%" goto x040
 @echo JUNIT_HOME (%JUNIT_HOME%) does not exist
 @goto end
 :x040
 
+@if exist "%CATALINA_HOME%" goto x050
 @set CATALINA_HOME=%HOME_DRIVE%:\jakarta-tomcat-4.1.18
 @if exist "%CATALINA_HOME%" goto x050
 @echo CATALINA_HOME (%CATALINA_HOME%) does not exist
