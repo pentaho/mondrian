@@ -441,7 +441,7 @@ public class ResourceGen
 			pw.println("/**");
 			pw.println(" * This class was generated");
 			pw.println(" * by " + ResourceGen.class);
-			pw.println(" * from " + getFile());
+			pw.println(" * from " + getFile().toString().replace('\\', '/'));
 			pw.println(" * on " + new Date().toString() + ".");
 			pw.println(" * It contains a list of messages, and methods to");
 			pw.println(" * retrieve and format those messages.");
