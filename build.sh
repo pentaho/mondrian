@@ -3,7 +3,7 @@
 # This software is subject to the terms of the Common Public License
 # Agreement, available at the following URL:
 # http://www.opensource.org/licenses/cpl.html.
-# (C) Copyright 2003 Julian Hyde
+# Copyright (C) 2003 Julian Hyde
 # All Rights Reserved.
 # You must accept the terms of that agreement to use this software.
 
@@ -36,9 +36,9 @@ if [ ! -d "${JUNIT_HOME}" ]; then
   exit 1
 fi
 
-export TOMCAT_HOME="${PREFIX}/jakarta-tomcat-4.1.18"
-if [ ! -d "${TOMCAT_HOME}" ]; then
-  echo "TOMCAT_HOME (${TOMCAT_HOME}) does not exist"
+export CATALINA_HOME="${PREFIX}/jakarta-tomcat-4.1.18"
+if [ ! -d "${CATALINA_HOME}" ]; then
+  echo "CATALINA_HOME (${CATALINA_HOME}) does not exist"
   exit 1
 fi
 

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1998-2002 Kana Software, Inc. and others.
+// Copyright (C) 1998-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -91,36 +91,12 @@ public class Id
 	{
 		if (names.size() == 1) {
 			final String s = (String) names.elementAt(0);
-			if (isReserved(s)) {
+			if (FunTable.instance().isReserved(s)) {
 				return Literal.createSymbol(s.toUpperCase());
 			}
 		}
 		final String[] namesArray = toStringArray();
 		return Util.lookup(q,namesArray);
-	}
-
-	private boolean isReserved(String s) {
-		String upper = s.toUpperCase();
-		return upper.equals("ASC") ||
-				upper.equals("DESC") ||
-				upper.equals("BASC") ||
-				upper.equals("BDESC") ||
-				upper.equals("ALL") ||
-				upper.equals("RECURSIVE") ||
-				upper.equals("SELF") ||
-				upper.equals("AFTER") ||
-				upper.equals("BEFORE") ||
-				upper.equals("BEFORE_AND_AFTER") ||
-				upper.equals("SELF_AND_AFTER") ||
-				upper.equals("SELF_AND_BEFORE") ||
-				upper.equals("SELF_BEFORE_AFTER") ||
-				upper.equals("EXCLUDEEMPTY") ||
-				upper.equals("INCLUDEEMPTY") ||
-				upper.equals("PRE") ||
-				upper.equals("POST") ||
-				upper.equals("NULL") ||
-				upper.equals("NUMERIC") ||
-				upper.equals("STRING");
 	}
 
 	public void unparse(PrintWriter pw, ElementCallback callBackObj)

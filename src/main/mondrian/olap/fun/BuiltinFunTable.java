@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2003 Kana Software, Inc. and others.
+// Copyright (C) 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -32,8 +32,27 @@ public class BuiltinFunTable extends FunTable {
 	private HashMap upperName2Resolvers;
 
 	private static final Resolver[] emptyResolvers = new Resolver[0];
-	private static final Vector emptyVector = new Vector();
 	private static final FunCall valueFunCall = new FunCall("_Value", new Exp[0], FunDef.TypeFunction);
+	private static final String nl = FunUtil.nl;
+	private static final String months = "[Time].[1997].[Q1].[1]" + nl +
+							"[Time].[1997].[Q1].[2]" + nl +
+							"[Time].[1997].[Q1].[3]" + nl +
+							"[Time].[1997].[Q2].[4]" + nl +
+							"[Time].[1997].[Q2].[5]" + nl +
+							"[Time].[1997].[Q2].[6]" + nl +
+							"[Time].[1997].[Q3].[7]" + nl +
+							"[Time].[1997].[Q3].[8]" + nl +
+							"[Time].[1997].[Q3].[9]" + nl +
+							"[Time].[1997].[Q4].[10]" + nl +
+							"[Time].[1997].[Q4].[11]" + nl +
+							"[Time].[1997].[Q4].[12]";
+	private static final String quarters = "[Time].[1997].[Q1]" + nl +
+							"[Time].[1997].[Q2]" + nl +
+							"[Time].[1997].[Q3]" + nl +
+							"[Time].[1997].[Q4]";
+	private static final String year1997 = "[Time].[1997]";
+	private final HashSet reservedWords = new HashSet();
+	private static final Resolver[] emptyResolverArray = new Resolver[0];
 
 	/**
 	 * Creates a <code>BuiltinFunTable</code>. This method should only be
@@ -44,29 +63,27 @@ public class BuiltinFunTable extends FunTable {
 	}
 
 	/** Calls {@link #defineFunctions} to load function definitions into a
-	 * vector, then indexes that collection. **/
+	 * List, then indexes that collection. **/
 	private void init() {
-		v = new Vector();
+		resolvers = new ArrayList();
 		defineFunctions();
 		// Map upper-case function names to resolvers.
 		upperName2Resolvers = new HashMap();
-		for (int i = 0, n = v.size(); i < n; i++) {
-			Resolver resolver = (Resolver) v.elementAt(i);
+		for (int i = 0, n = resolvers.size(); i < n; i++) {
+			Resolver resolver = (Resolver) resolvers.get(i);
 			String key = resolver.getName().toUpperCase();
-			Vector v2 = (Vector) upperName2Resolvers.get(key);
+			List v2 = (List) upperName2Resolvers.get(key);
 			if (v2 == null) {
-				v2 = new Vector();
+				v2 = new ArrayList();
 				upperName2Resolvers.put(key, v2);
 			}
-			v2.addElement(resolver);
+			v2.add(resolver);
 		}
-		// Convert the vectors into arrays.
+		// Convert the Lists into arrays.
 		for (Iterator keys = upperName2Resolvers.keySet().iterator(); keys.hasNext();) {
 			String key = (String) keys.next();
-			Vector v2 = (Vector) upperName2Resolvers.get(key);
-			Resolver[] resolvers = new Resolver[v2.size()];
-			v2.copyInto(resolvers);
-			upperName2Resolvers.put(key, resolvers);
+			List v2 = (List) upperName2Resolvers.get(key);
+			upperName2Resolvers.put(key, v2.toArray(emptyResolverArray));
 		}
 	}
 
@@ -75,7 +92,7 @@ public class BuiltinFunTable extends FunTable {
 	}
 
 	protected void define(Resolver resolver) {
-		v.addElement(resolver);
+		resolvers.add(resolver);
 	}
 
 	static int decodeSyntacticType(String flags) {
@@ -91,6 +108,8 @@ public class BuiltinFunTable extends FunTable {
 			return FunDef.TypeInfix;
 		case 'P':
 			return FunDef.TypePrefix;
+		case 'I':
+			return FunDef.TypeInternal;
 		default:
 			throw Util.newInternal(
 					"unknown syntax code '" + c + "' in string '" + flags + "'");
@@ -439,10 +458,39 @@ public class BuiltinFunTable extends FunTable {
 		}
 	}
 
+	public boolean isReserved(String s) {
+		return reservedWords.contains(s.toUpperCase());
+	}
+
+	/**
+	 * Defines a reserved word.
+	 */
+	public void defineReserved(String s) {
+		reservedWords.add(s.toUpperCase());
+	}
+
+	/**
+	 * Defines a set of reserved words.
+	 */
+	public void defineReserved(String[] a) {
+		for (int i = 0; i < a.length; i++) {
+			defineReserved(a[i]);
+		}
+	}
+
+	/**
+	 * Defines every name in an enumeration as a reserved word.
+	 */
+	public void defineReserved(EnumeratedValues values) {
+		defineReserved(values.getNames());
+	}
+
 	/**
 	 * Derived class can override this method to add more functions.
 	 **/
 	protected void defineFunctions() {
+		defineReserved("NULL");
+
 		// first char: p=Property, m=Method, i=Infix, P=Prefix
 		// 2nd:
 
@@ -1258,13 +1306,14 @@ public class BuiltinFunTable extends FunTable {
 				new String[] {"fnx", "fnxn"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
-						Vector members = (Vector) getArg(evaluator, args, 0);
+						List members = (List) getArg(evaluator, args, 0);
 						ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 						String aggregator = (String) evaluator.getProperty(Property.PROPERTY_AGGREGATION_TYPE);
+						String rollup = getRollup(aggregator);
 						if (aggregator == null) {
 							throw newEvalException(null, "Could not find an aggregator in the current evaluation context");
 						}
-						return aggregate(evaluator.push(), aggregator, members, exp);
+						return aggregate(evaluator.push(), rollup, members, exp);
 					}
 					public void testAggregate(FoodMartTestCase test) {
 						test.runQueryCheckResult(
@@ -1373,12 +1422,27 @@ public class BuiltinFunTable extends FunTable {
 								"Row #2: 8,173.22" + nl);
 					}
 				}));
+		define(new FunkResolver("$AggregateChildren", "$AggregateChildren(<Hierarchy>)", "Equivalent to 'Aggregate(<Hierarchy>.CurrentMember.Children); for internal use.",
+				new String[] {"Inh"},
+				new FunkBase() {
+					public Object evaluate(Evaluator evaluator, Exp[] args) {
+						Hierarchy hierarchy = getHierarchyArg(evaluator, args, 0, true);
+						Member member = evaluator.getParent().getContext(hierarchy.getDimension());
+						List members = (List) member.getPropertyValue(Property.PROPERTY_CONTRIBUTING_CHILDREN);
+						String aggregator = (String) evaluator.getProperty(Property.PROPERTY_AGGREGATION_TYPE);
+						String rollup = getRollup(aggregator);
+						if (aggregator == null) {
+							throw newEvalException(null, "Could not find an aggregator in the current evaluation context");
+						}
+						return aggregate(evaluator.push(), rollup, members, valueFunCall);
+					}
+				}));
 		define(new FunkResolver(
 			"Avg", "Avg(<Set>[, <Numeric Expression>])", "Returns the average value of a numeric expression evaluated over a set.",
 			new String[]{"fnx", "fnxn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
-					Vector members = (Vector) getArg(evaluator, args, 0);
+					List members = (List) getArg(evaluator, args, 0);
 					ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 					return avg(evaluator.push(), members, exp);
 				}
@@ -1394,7 +1458,7 @@ public class BuiltinFunTable extends FunTable {
 			new String[]{"fnxn","fnxnn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
-					Vector members = (Vector) getArg(evaluator, args, 0);
+					List members = (List) getArg(evaluator, args, 0);
 					ExpBase exp1 = (ExpBase) getArg(evaluator, args, 1);
 					ExpBase exp2 = (ExpBase) getArg(evaluator, args, 2, valueFunCall);
 					return correlation(evaluator.push(), members, exp1, exp2);
@@ -1404,12 +1468,14 @@ public class BuiltinFunTable extends FunTable {
 					test.assertEquals("999,906", result);
 				}
 			}));
+
+		defineReserved(new String[] {"EXCLUDEEMPTY","INCLUDEEMPTY"});
 		define(new FunkResolver(
 			"Count", "Count(<Set>[, EXCLUDEEMPTY | INCLUDEEMPTY])", "Returns the number of tuples in a set, empty cells included unless the optional EXCLUDEEMPTY flag is used.",
 			new String[]{"fnx", "fnxy"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
-					Vector members = (Vector) getArg(evaluator, args, 0);
+					List members = (List) getArg(evaluator, args, 0);
 					String empties = getLiteralArg(args, 1, "INCLUDEEMPTY", new String[] {"INCLUDEEMPTY", "EXCLUDEEMPTY"}, null);
 					final boolean includeEmpty = empties.equals("INCLUDEEMPTY");
 					return count(members, includeEmpty);
@@ -1426,7 +1492,7 @@ public class BuiltinFunTable extends FunTable {
 			new String[]{"fnxn","fnxnn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
-					Vector members = (Vector) getArg(evaluator, args, 0);
+					List members = (List) getArg(evaluator, args, 0);
 					ExpBase exp1 = (ExpBase) getArg(evaluator, args, 1);
 					ExpBase exp2 = (ExpBase) getArg(evaluator, args, 2);
 					return covariance(evaluator.push(), members, exp1, exp2, true);
@@ -1441,7 +1507,7 @@ public class BuiltinFunTable extends FunTable {
 			new String[]{"fnxn","fnxnn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
-					Vector members = (Vector) getArg(evaluator, args, 0);
+					List members = (List) getArg(evaluator, args, 0);
 					ExpBase exp1 = (ExpBase) getArg(evaluator, args, 1);
 					ExpBase exp2 = (ExpBase) getArg(evaluator, args, 2, valueFunCall);
 					return covariance(evaluator.push(), members, exp1, exp2, false);
@@ -1462,7 +1528,7 @@ public class BuiltinFunTable extends FunTable {
 			new String[]{"fnx", "fnxn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
-					Vector members = (Vector) getArg(evaluator, args, 0);
+					List members = (List) getArg(evaluator, args, 0);
 					ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 					return max(evaluator.push(), members, exp);
 				}
@@ -1477,9 +1543,9 @@ public class BuiltinFunTable extends FunTable {
 			new String[]{"fnx", "fnxn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
-					Vector members = (Vector) getArg(evaluator, args, 0);
+					List members = (List) getArg(evaluator, args, 0);
 					ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
-					//todo: ignore nulls, do we need to ignore the vector?
+					//todo: ignore nulls, do we need to ignore the List?
 					return median(evaluator.push(), members, exp);
 
 				}
@@ -1567,7 +1633,7 @@ public class BuiltinFunTable extends FunTable {
 			new String[]{"fnx", "fnxn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
-					Vector members = (Vector) getArg(evaluator, args, 0);
+					List members = (List) getArg(evaluator, args, 0);
 					ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 					return min(evaluator.push(), members, exp);
 				}
@@ -1584,7 +1650,7 @@ public class BuiltinFunTable extends FunTable {
 				new String[]{"fnx", "fnxn"},
 				new FunkBase() {
 						public Object evaluate(Evaluator evaluator, Exp[] args) {
-							Vector members = (Vector) getArg(evaluator, args, 0);
+							List members = (List) getArg(evaluator, args, 0);
 							ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 							return stdev(evaluator.push(), members, exp, false);
 						}
@@ -1594,7 +1660,7 @@ public class BuiltinFunTable extends FunTable {
 				new String[]{"fnx", "fnxn"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
-						Vector members = (Vector) getArg(evaluator, args, 0);
+						List members = (List) getArg(evaluator, args, 0);
 						ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 						return stdev(evaluator.push(), members, exp, false);
 					}
@@ -1609,7 +1675,7 @@ public class BuiltinFunTable extends FunTable {
 				new String[]{"fnx", "fnxn"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
-						Vector members = (Vector) getArg(evaluator, args, 0);
+						List members = (List) getArg(evaluator, args, 0);
 						ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 						return stdev(evaluator.push(), members, exp, true);
 					}
@@ -1619,7 +1685,7 @@ public class BuiltinFunTable extends FunTable {
 				new String[]{"fnx", "fnxn"},
 				new FunkBase() {
 						public Object evaluate(Evaluator evaluator, Exp[] args) {
-							Vector members = (Vector) getArg(evaluator, args, 0);
+							List members = (List) getArg(evaluator, args, 0);
 							ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 							return stdev(evaluator.push(), members, exp, true);
 						}
@@ -1634,7 +1700,7 @@ public class BuiltinFunTable extends FunTable {
 				new String[]{"fnx", "fnxn"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
-						Vector members = (Vector) getArg(evaluator, args, 0);
+						List members = (List) getArg(evaluator, args, 0);
 						ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 						return sum(evaluator.push(), members, exp);
 					}
@@ -1689,7 +1755,7 @@ public class BuiltinFunTable extends FunTable {
 				new String[]{"fnx", "fnxn"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
-						Vector members = (Vector) getArg(evaluator, args, 0);
+						List members = (List) getArg(evaluator, args, 0);
 						ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 						return var(evaluator.push(), members, exp, false);
 					}
@@ -1704,7 +1770,7 @@ public class BuiltinFunTable extends FunTable {
 				new String[]{"fnx", "fnxn"},
 				new FunkBase() {
 						public Object evaluate(Evaluator evaluator, Exp[] args) {
-							Vector members = (Vector) getArg(evaluator, args, 0);
+							List members = (List) getArg(evaluator, args, 0);
 							ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 							return var(evaluator.push(), members, exp, false);
 						}
@@ -1714,7 +1780,7 @@ public class BuiltinFunTable extends FunTable {
 				new String[]{"fnx", "fnxn"},
 				new FunkBase() {
 						public Object evaluate(Evaluator evaluator, Exp[] args) {
-							Vector members = (Vector) getArg(evaluator, args, 0);
+							List members = (List) getArg(evaluator, args, 0);
 							ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 							return var(evaluator.push(), members, exp, true);
 						}
@@ -1724,7 +1790,7 @@ public class BuiltinFunTable extends FunTable {
 				new String[]{"fnx", "fnxn"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
-						Vector members = (Vector) getArg(evaluator, args, 0);
+						List members = (List) getArg(evaluator, args, 0);
 						ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 						return var(evaluator.push(), members, exp, true);
 					}
@@ -1745,17 +1811,17 @@ public class BuiltinFunTable extends FunTable {
 			new String[]{"fxxnn", "fxxn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
-					Vector set = (Vector) getArg(evaluator, args, 0);
+					List list = (List) getArg(evaluator, args, 0);
 					int n = getIntArg(evaluator, args, 1);
 					ExpBase exp = (ExpBase) getArg(evaluator, args, 2, null);
 					if (exp != null) {
 						boolean desc = false, brk = true;
-						sort(evaluator, set, exp, desc, brk);
+						sort(evaluator, list, exp, desc, brk);
 					}
-					if (n < set.size()) {
-						set.setSize(n);
+					if (n < list.size()) {
+						list = list.subList(0, n);
 					}
-					return set;
+					return list;
 				}
 				public void testBottomCount(FoodMartTestCase test) {
 					test.assertAxisReturns("BottomCount({[Promotion Media].[Media Type].members}, 2, [Measures].[Unit Sales])",
@@ -1770,7 +1836,7 @@ public class BuiltinFunTable extends FunTable {
 			new String[]{"fxxnn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
-					Vector members = (Vector) getArg(evaluator, args, 0);
+					List members = (List) getArg(evaluator, args, 0);
 					ExpBase exp = (ExpBase) getArg(evaluator, args, 2);
 					Double n = getDoubleArg(evaluator, args, 1);
 					return topOrBottom(evaluator.push(), members, exp, false, true, n.doubleValue());
@@ -1789,7 +1855,7 @@ public class BuiltinFunTable extends FunTable {
 			new String[]{"fxxnn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
-					Vector members = (Vector) getArg(evaluator, args, 0);
+					List members = (List) getArg(evaluator, args, 0);
 					ExpBase exp = (ExpBase) getArg(evaluator, args, 2);
 					Double n = getDoubleArg(evaluator, args, 1);
 					return topOrBottom(evaluator.push(), members, exp, false, false, n.doubleValue());
@@ -1805,7 +1871,7 @@ public class BuiltinFunTable extends FunTable {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Member member = getMemberArg(evaluator, args, 0, true);
 				Member[] children = evaluator.getSchemaReader().getMemberChildren(member);
-				return toVector(children);
+				return Arrays.asList(children);
 			}
 		});
 		define(new FunDefBase("Crossjoin", "Crossjoin(<Set1>, <Set2>)", "Returns the cross product of two sets.", "fxxx") {
@@ -1816,30 +1882,30 @@ public class BuiltinFunTable extends FunTable {
 			}
 
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				Vector set0 = (Vector) getArg(evaluator, args, 0),
-						set1 = (Vector) getArg(evaluator, args, 1);
+				List set0 = (List) getArg(evaluator, args, 0),
+						set1 = (List) getArg(evaluator, args, 1);
 				if (set0.isEmpty() || set1.isEmpty()) {
-					return emptyVector;
+					return Collections.EMPTY_LIST;
 				}
 				boolean neitherSideIsTuple = true;
 				int arity0 = 1,
 					arity1 = 1;
-				if (set0.elementAt(0) instanceof Member[]) {
-					arity0 = ((Member[]) set0.elementAt(0)).length;
+				if (set0.get(0) instanceof Member[]) {
+					arity0 = ((Member[]) set0.get(0)).length;
 					neitherSideIsTuple = false;
 				}
-				if (set1.elementAt(0) instanceof Member[]) {
-					arity1 = ((Member[]) set1.elementAt(0)).length;
+				if (set1.get(0) instanceof Member[]) {
+					arity1 = ((Member[]) set1.get(0)).length;
 					neitherSideIsTuple = false;
 				}
-				Vector result = new Vector();
+				List result = new ArrayList();
 				if (neitherSideIsTuple) {
 					// Simpler routine if we know neither side contains tuples.
 					for (int i = 0, m = set0.size(); i < m; i++) {
-						Member o0 = (Member) set0.elementAt(i);
+						Member o0 = (Member) set0.get(i);
 						for (int j = 0, n = set1.size(); j < n; j++) {
-							Member o1 = (Member) set1.elementAt(j);
-							result.addElement(new Member[]{o0, o1});
+							Member o1 = (Member) set1.get(j);
+							result.add(new Member[]{o0, o1});
 						}
 					}
 				} else {
@@ -1848,7 +1914,7 @@ public class BuiltinFunTable extends FunTable {
 					Member[] row = new Member[arity0 + arity1];
 					for (int i = 0, m = set0.size(); i < m; i++) {
 						int x = 0;
-						Object o0 = set0.elementAt(i);
+						Object o0 = set0.get(i);
 						if (o0 instanceof Member) {
 							row[x++] = (Member) o0;
 						} else {
@@ -1859,7 +1925,7 @@ public class BuiltinFunTable extends FunTable {
 							}
 						}
 						for (int j = 0, n = set1.size(); j < n; j++) {
-							Object o1 = set1.elementAt(j);
+							Object o1 = set1.get(j);
 							if (o1 instanceof Member) {
 								row[x++] = (Member) o1;
 							} else {
@@ -1869,7 +1935,7 @@ public class BuiltinFunTable extends FunTable {
 									row[x++] = members[k];
 								}
 							}
-							result.addElement(row.clone());
+							result.add(row.clone());
 							x = arity0;
 						}
 					}
@@ -1933,36 +1999,162 @@ public class BuiltinFunTable extends FunTable {
 						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[USA]}");
 			}
 		});
-		define(new MultiResolver(
-				"Descendants", "Descendants(<Member>, <Level>[, <Desc_flag>])", "Returns the set of descendants of a member at a specified level, optionally including or excluding descendants in other levels.",
-				new String[]{"fxml", "fxmls"}) {
-			protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-				String descFlag = getLiteralArg(args, 2, "SELF", new String[] {"SELF","AFTER","BEFORE","BEFORE_AND_AFTER","SELF_AND_AFTER","SELF_AND_BEFORE","SELF_BEFORE_AFTER","LEAVES"}, dummyFunDef);
-				if (!descFlag.equals("SELF")) {
-					throw newEvalException(null, "SELF is the only value of Desc_flag currently supported");
-				}
 
+		defineReserved(DescendantsFlags.instance);
+		define(new MultiResolver(
+				"Descendants", "Descendants(<Member>[, <Level>[, <Desc_flag>]])", "Returns the set of descendants of a member at a specified level, optionally including or excluding descendants in other levels.",
+				new String[]{"fxm", "fxml", "fxmly", "fxmn", "fxmny"}) {
+			protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+				int depthLimit = -1; // unlimited
+				boolean depthSpecified = false;
+				int flag = DescendantsFlags.SELF;
+				if (args.length == 1) {
+					depthLimit = -1;
+					flag = DescendantsFlags.SELF_BEFORE_AFTER;
+				}
+				if (args.length >= 2) {
+					if (args[1] instanceof Literal) {
+						Literal literal = (Literal) args[1];
+						if (literal.getValue() instanceof Number) {
+							Number number = (Number) literal.getValue();
+							depthLimit = number.intValue();
+							depthSpecified = true;
+						}
+					}
+				}
+				if (args.length >= 3) {
+					flag = getLiteralArg(args, 2, DescendantsFlags.SELF, DescendantsFlags.instance, dummyFunDef);
+				}
+				final int depthLimitFinal = depthLimit < 0 ? Integer.MAX_VALUE : depthLimit;
+				final int flagFinal = flag;
+				final boolean depthSpecifiedFinal = depthSpecified;
 				return new FunDefBase(dummyFunDef) {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Member member = getMemberArg(evaluator, args, 0, true);
-						Level level = getLevelArg(evaluator, args, 1, true);
-						if (member.getLevel().getDepth() > level.getDepth()) {
-							return new Member[0];
+						Level level;
+						if (depthSpecifiedFinal) {
+							level = null;
+						} else if (args.length > 1) {
+							level = getLevelArg(evaluator, args, 1, true);
+						} else {
+							level = member.getLevel();
 						}
 						// Expand member to its children, until we get to the right
 						// level. We assume that all children are in the same
 						// level.
 						final SchemaReader schemaReader = evaluator.getSchemaReader();
 						Member[] children = {member};
-						while (children.length > 0 &&
-								children[0].getLevel().getDepth() <
-								level.getDepth()) {
+						int depth = 0;
+						List result = new ArrayList();
+						while (true) {
+							final int currentDepth;
+							final int targetDepth;
+							if (level == null) {
+								currentDepth = depth++;
+								targetDepth = depthLimitFinal;
+							} else {
+								final Member firstChild = children[0];
+								currentDepth = firstChild.getLevel().getDepth();
+								targetDepth = level.getDepth();
+							}
+							if (currentDepth == targetDepth) {
+								if ((flagFinal & DescendantsFlags.SELF) == DescendantsFlags.SELF) {
+									Util.addAll(result, children);
+								}
+								if ((flagFinal & DescendantsFlags.AFTER) != DescendantsFlags.AFTER) {
+									break; // no more results after this level
+								}
+							} else if (currentDepth < targetDepth) {
+								if ((flagFinal & DescendantsFlags.BEFORE) == DescendantsFlags.BEFORE) {
+									Util.addAll(result, children);
+								}
+							} else {
+								if ((flagFinal & DescendantsFlags.AFTER) == DescendantsFlags.AFTER) {
+									Util.addAll(result, children);
+								} else {
+									break; // no more results after this level
+								}
+							}
+
 							children = schemaReader.getMemberChildren(children);
+							if (children.length == 0) {
+								break;
+							}
 						}
-						return toVector(children);
+						return result;
 					}
 				};
-			}});
+			}
+			public void testDescendantsM(FoodMartTestCase test) {
+				test.assertAxisReturns("Descendants([Time].[1997].[Q1])",
+						"[Time].[1997].[Q1]" + nl +
+						"[Time].[1997].[Q1].[1]" + nl +
+						"[Time].[1997].[Q1].[2]" + nl +
+						"[Time].[1997].[Q1].[3]");
+			}
+			public void testDescendantsML(FoodMartTestCase test) {
+				test.assertAxisReturns("Descendants([Time].[1997], [Time].[Month])",
+						months);
+			}
+			public void testDescendantsMLSelf(FoodMartTestCase test) {
+				test.assertAxisReturns("Descendants([Time].[1997], [Time].[Quarter], SELF)",
+						quarters);
+			}
+			public void testDescendantsMLSelfBefore(FoodMartTestCase test) {
+				test.assertAxisReturns("Descendants([Time].[1997], [Time].[Quarter], SELF_AND_BEFORE)",
+						year1997 + nl + quarters);
+			}
+			public void testDescendantsMLSelfBeforeAfter(FoodMartTestCase test) {
+				test.assertAxisReturns("Descendants([Time].[1997], [Time].[Quarter], SELF_BEFORE_AFTER)",
+						year1997 + nl + quarters + nl + months);
+			}
+			public void testDescendantsMLBefore(FoodMartTestCase test) {
+				test.assertAxisReturns("Descendants([Time].[1997], [Time].[Quarter], BEFORE)",
+						year1997);
+			}
+			public void testDescendantsMLBeforeAfter(FoodMartTestCase test) {
+				test.assertAxisReturns("Descendants([Time].[1997], [Time].[Quarter], BEFORE_AND_AFTER)",
+						year1997 + nl + months);
+			}
+			public void testDescendantsMLAfter(FoodMartTestCase test) {
+				test.assertAxisReturns("Descendants([Time].[1997], [Time].[Quarter], AFTER)",
+						months);
+			}
+			public void testDescendantsMLAfterEnd(FoodMartTestCase test) {
+				test.assertAxisReturns("Descendants([Time].[1997], [Time].[Month], AFTER)",
+						"");
+			}
+			public void _testDescendantsMLLeaves(FoodMartTestCase test) {
+				test.assertAxisReturns("Descendants([Time].[1997], [Time].[Month], LEAVES)", "foo");
+			}
+			public void testDescendantsM0(FoodMartTestCase test) {
+				test.assertAxisReturns("Descendants([Time].[1997], 0)",
+						year1997);
+			}
+			public void testDescendantsM2(FoodMartTestCase test) {
+				test.assertAxisReturns("Descendants([Time].[1997], 2)",
+						months);
+			}
+			public void testDescendantsMNY(FoodMartTestCase test) {
+				test.assertAxisReturns("Descendants([Time].[1997], 1, BEFORE_AND_AFTER)",
+						year1997 + nl + months);
+			}
+			public void testDescendantsParentChild(FoodMartTestCase test) {
+				test.assertAxisReturns("HR", "Descendants([Employees], 2)",
+						"[Employees].[All Employees].[Sheri Nowmer].[Derrick Whelply]" + nl +
+						"[Employees].[All Employees].[Sheri Nowmer].[Michael Spence]" + nl +
+						"[Employees].[All Employees].[Sheri Nowmer].[Maya Gutierrez]" + nl +
+						"[Employees].[All Employees].[Sheri Nowmer].[Roberta Damstra]" + nl +
+						"[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki]" + nl +
+						"[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz]" + nl +
+						"[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold]");
+			}
+			public void testDescendantsParentChildBefore(FoodMartTestCase test) {
+				test.assertAxisReturns("HR", "Descendants([Employees], 2, BEFORE)",
+						"[Employees].[All Employees]" + nl +
+						"[Employees].[All Employees].[Sheri Nowmer]");
+			}
+		});
 		if (false) define(new FunDefBase("Distinct", "Distinct(<Set>)", "Eliminates duplicate tuples from a set.", "fxx"));
 
 		define(new FunkResolver("DrilldownLevel", "DrilldownLevel(<Set>[, <Level>]) or DrilldownLevel(<Set>, , <Index>)", "Drills down the members of a set, at a specified level, to one level below. Alternatively, drills down on a specified dimension in the set.",
@@ -1970,25 +2162,25 @@ public class BuiltinFunTable extends FunTable {
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						//todo add fssl functionality
-						Vector set0 = (Vector) getArg(evaluator, args, 0);
+						List set0 = (List) getArg(evaluator, args, 0);
 						int[] depthArray = new int[set0.size()];
-						Vector drilledSet = new Vector();
+						List drilledSet = new ArrayList();
 
 						for (int i = 0, m = set0.size(); i < m; i++) {
-							Member member = (Member) set0.elementAt(i);
+							Member member = (Member) set0.get(i);
 							depthArray[i] = member.getLevel().getDepth();
-							// Object o0 = set0.elementAt(i);
-							//   depthVector.addElement(new Object[] {o0});
+							// Object o0 = set0.get(i);
+							//   depthList.addElement(new Object[] {o0});
 						}
 						Arrays.sort(depthArray);
 						int maxDepth = depthArray[depthArray.length - 1];
 						for (int i = 0, m = set0.size(); i < m; i++) {
-							Member member = (Member) set0.elementAt(i);
-							drilledSet.addElement(member);
+							Member member = (Member) set0.get(i);
+							drilledSet.add(member);
 							if (member.getLevel().getDepth() == maxDepth) {
 								Member[] childMembers = evaluator.getSchemaReader().getMemberChildren(member);
 								for (int j = 0; j < childMembers.length; j++) {
-									drilledSet.addElement(childMembers[j]);
+									drilledSet.add(childMembers[j]);
 								}
 							}
 						}
@@ -2010,13 +2202,14 @@ public class BuiltinFunTable extends FunTable {
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						// todo: implement ALL
-						HashSet set2 = toHashSet((Vector) getArg(evaluator, args, 1));
-						Vector set1 = (Vector) getArg(evaluator, args, 0);
-						Vector result = new Vector();
+						HashSet set = new HashSet();
+						set.addAll((List) getArg(evaluator, args, 1));
+						List set1 = (List) getArg(evaluator, args, 0);
+						List result = new ArrayList();
 						for (int i = 0, count = set1.size(); i < count; i++) {
-							Object o = set1.elementAt(i);
-							if (!set2.contains(o)) {
-								result.addElement(o);
+							Object o = set1.get(i);
+							if (!set.contains(o)) {
+								result.add(o);
 							}
 						}
 						return result;
@@ -2026,12 +2219,12 @@ public class BuiltinFunTable extends FunTable {
 
 		define(new FunDefBase("Filter", "Filter(<Set>, <Search Condition>)", "Returns the set resulting from filtering a set based on a search condition.", "fxxb") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				Vector members = (Vector) getArg(evaluator, args, 0);
+				List members = (List) getArg(evaluator, args, 0);
 				Exp exp = args[1];
-				Vector result = new Vector();
+				List result = new ArrayList();
 				Evaluator evaluator2 = evaluator.push();
 				for (int i = 0, count = members.size(); i < count; i++) {
-					Object o = members.elementAt(i);
+					Object o = members.get(i);
 					if (o instanceof Member) {
 						evaluator2.setContext((Member) o);
 					} else if (o instanceof Member[]) {
@@ -2090,6 +2283,7 @@ public class BuiltinFunTable extends FunTable {
 		if (false) define(new FunDefBase("Generate", "Generate(<Set1>, <Set2>[, ALL])", "Applies a set to each member of another set and joins the resulting sets by union.", "fx*"));
 		if (false) define(new FunDefBase("Head", "Head(<Set>[, < Numeric Expression >])", "Returns the first specified number of elements in a set.", "fx*"));
 
+		defineReserved(new String[] {"PRE","POST"});
 		define(new MultiResolver(
 				"Hierarchize", "Hierarchize(<Set>[, POST])", "Orders the members of a set in a hierarchy.",
 				new String[] {"fxx", "fxxy"}) {
@@ -2098,7 +2292,7 @@ public class BuiltinFunTable extends FunTable {
 				final boolean post = order.equals("POST");
 				return new FunDefBase(dummyFunDef) {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
-						Vector members = (Vector) getArg(evaluator, args, 0);
+						List members = (List) getArg(evaluator, args, 0);
 						hierarchize(members, post);
 						return members;
 					}
@@ -2191,20 +2385,20 @@ public class BuiltinFunTable extends FunTable {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Dimension dimension = (Dimension) getArg(evaluator, args, 0);
 				Hierarchy hierarchy = dimension.getHierarchy();
-				return addMembers(evaluator.getSchemaReader(), new Vector(), hierarchy);
+				return addMembers(evaluator.getSchemaReader(), new ArrayList(), hierarchy);
 			}
 		});
 		define(new FunDefBase("Members", "<Hierarchy>.Members", "Returns the set of all members in a hierarchy.", "pxh") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Hierarchy hierarchy =
 						(Hierarchy) getArg(evaluator, args, 0);
-				return addMembers(evaluator.getSchemaReader(), new Vector(), hierarchy);
+				return addMembers(evaluator.getSchemaReader(), new ArrayList(), hierarchy);
 			}
 		});
 		define(new FunDefBase("Members", "<Level>.Members", "Returns the set of all members in a level.", "pxl") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Level level = (Level) getArg(evaluator, args, 0);
-				return toVector(evaluator.getSchemaReader().getLevelMembers(level));
+				return Arrays.asList(evaluator.getSchemaReader().getLevelMembers(level));
 			}
 		});
 		define(new FunkResolver(
@@ -2212,22 +2406,24 @@ public class BuiltinFunTable extends FunTable {
 				new String[]{"fx", "fxm"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
-						return new Vector(periodsToDate(
+						return periodsToDate(
 								evaluator,
 								evaluator.getCube().getMonthLevel(),
-								getMemberArg(evaluator, args, 0, false)));
+								getMemberArg(evaluator, args, 0, false));
 					}
 				}));
+
+		defineReserved(OrderFlags.instance);
 		define(new MultiResolver(
 				"Order", "Order(<Set>, <Value Expression>[, ASC | DESC | BASC | BDESC])", "Arranges members of a set, optionally preserving or breaking the hierarchy.",
 				new String[]{"fxxvy", "fxxv"}) {
 			protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-				String order = getLiteralArg(args, 2, "ASC", new String[] {"ASC","DESC","BASC","BDESC"}, dummyFunDef);
-				final boolean desc = order.equals("DESC") || order.equals("BDESC");
-				final boolean brk = order.equals("BASC") || order.equals("BDESC");
+				int order = getLiteralArg(args, 2, OrderFlags.ASC, OrderFlags.instance, dummyFunDef);
+				final boolean desc = OrderFlags.isDescending(order);
+				final boolean brk = OrderFlags.isBreak(order);
 				return new FunDefBase(dummyFunDef) {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
-						Vector members = (Vector) getArg(evaluator, args, 0);
+						List members = (List) getArg(evaluator, args, 0);
 						ExpBase exp = (ExpBase) getArgNoEval(args, 1);
 						sort(evaluator, members, exp, desc, brk);
 						return members;
@@ -2469,7 +2665,7 @@ public class BuiltinFunTable extends FunTable {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Level level = getLevelArg(evaluator, args, 0, false);
 						Member member = getMemberArg(evaluator, args, 1, false);
-						return new Vector(periodsToDate(evaluator, level, member));
+						return periodsToDate(evaluator, level, member);
 					}
 				}));
 		define(new FunkResolver(
@@ -2477,10 +2673,10 @@ public class BuiltinFunTable extends FunTable {
 				new String[]{"fx", "fxm"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
-						return new Vector(periodsToDate(
+						return periodsToDate(
 								evaluator,
 								evaluator.getCube().getQuarterLevel(),
-								getMemberArg(evaluator, args, 0, false)));
+								getMemberArg(evaluator, args, 0, false));
 					}
 				}));
 		if (false) define(new FunDefBase("StripCalculatedMembers", "StripCalculatedMembers(<Set>)", "Removes calculated members from a set.", "fx*"));
@@ -2506,13 +2702,15 @@ public class BuiltinFunTable extends FunTable {
 		});
 		if (false) define(new FunDefBase("Subset", "Subset(<Set>, <Start>[, <Count>])", "Returns a subset of elements from a set.", "fx*"));
 		if (false) define(new FunDefBase("Tail", "Tail(<Set>[, <Count>])", "Returns a subset from the end of a set.", "fx*"));
+
+		defineReserved("RECURSIVE");
 		define(new FunkResolver(
 				"ToggleDrillState", "ToggleDrillState(<Set1>, <Set2>[, RECURSIVE])", "Toggles the drill state of members. This function is a combination of DrillupMember and DrilldownMember.",
 				new String[]{"fxxx", "fxxx#"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
-						Vector v0 = (Vector) getArg(evaluator, args, 0),
-								v1 = (Vector) getArg(evaluator, args, 1);
+						List v0 = (List) getArg(evaluator, args, 0),
+								v1 = (List) getArg(evaluator, args, 1);
 						if (args.length > 2) {
 							throw Util.newInternal(
 									"ToggleDrillState(RECURSIVE) not supported");
@@ -2523,12 +2721,14 @@ public class BuiltinFunTable extends FunTable {
 						if (v0.isEmpty()) {
 							return v0;
 						}
-						HashSet set1 = toHashSet(v1);
-						Vector result = new Vector();
+						HashSet set = new HashSet();
+						set.addAll(v1);
+						HashSet set1 = set;
+						List result = new ArrayList();
 						int i = 0, n = v0.size();
 						while (i < n) {
-							Object o = v0.elementAt(i++);
-							result.addElement(o);
+							Object o = v0.get(i++);
+							result.add(o);
 							Member m = null;
 							int k = -1;
 							if (o instanceof Member) {
@@ -2554,7 +2754,7 @@ public class BuiltinFunTable extends FunTable {
 							}
 							boolean isDrilledDown = false;
 							if (i < n) {
-								Object next = v0.elementAt(i);
+								Object next = v0.get(i);
 								Member nextMember = (k < 0) ? (Member) next :
 									((Member[]) next)[k];
 								boolean strict = true;
@@ -2565,7 +2765,7 @@ public class BuiltinFunTable extends FunTable {
 							if (isDrilledDown) {
 								// skip descendants of this member
 								do {
-									Object next = v0.elementAt(i);
+									Object next = v0.get(i);
 									Member nextMember = (k < 0) ? (Member) next :
 										((Member[]) next)[k];
 									boolean strict = true;
@@ -2579,11 +2779,11 @@ public class BuiltinFunTable extends FunTable {
 								Member[] children = evaluator.getSchemaReader().getMemberChildren(m);
 								for (int j = 0; j < children.length; j++) {
 									if (k < 0) {
-										result.addElement(children[j]);
+										result.add(children[j]);
 									} else {
 										Member[] members = (Member[]) ((Member[]) o).clone();
 										members[k] = children[j];
-										result.addElement(members);
+										result.add(members);
 									}
 								}
 							}
@@ -2663,17 +2863,17 @@ public class BuiltinFunTable extends FunTable {
 				new String[]{"fxxnn", "fxxn"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
-						Vector set = (Vector) getArg(evaluator, args, 0);
+						List list = (List) getArg(evaluator, args, 0);
 						int n = getIntArg(evaluator, args, 1);
 						ExpBase exp = (ExpBase) getArg(evaluator, args, 2, null);
 						if (exp != null) {
 							boolean desc = true, brk = true;
-							sort(evaluator, set, exp, desc, brk);
+							sort(evaluator, list, exp, desc, brk);
 						}
-						if (n < set.size()) {
-							set.setSize(n);
+						if (n < list.size()) {
+							list = list.subList(0, n);
 						}
-						return set;
+						return list;
 					}
 					public void testTopCount(FoodMartTestCase test) {
 						test.assertAxisReturns("TopCount({[Promotion Media].[Media Type].members}, 2, [Measures].[Unit Sales])",
@@ -2687,7 +2887,7 @@ public class BuiltinFunTable extends FunTable {
 			new String[]{"fxxnn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
-					Vector members = (Vector) getArg(evaluator, args, 0);
+					List members = (List) getArg(evaluator, args, 0);
 					ExpBase exp = (ExpBase) getArg(evaluator, args, 2);
 					Double n = getDoubleArg(evaluator, args, 1);
 					return topOrBottom(evaluator.push(), members, exp, true, true, n.doubleValue());
@@ -2705,7 +2905,7 @@ public class BuiltinFunTable extends FunTable {
 			new String[]{"fxxnn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
-					Vector members = (Vector) getArg(evaluator, args, 0);
+					List members = (List) getArg(evaluator, args, 0);
 					ExpBase exp = (ExpBase) getArg(evaluator, args, 2);
 					Double n = getDoubleArg(evaluator, args, 1);
 					return topOrBottom(evaluator.push(), members, exp, true, false, n.doubleValue());
@@ -2718,6 +2918,7 @@ public class BuiltinFunTable extends FunTable {
 				}
 			}));
 
+		defineReserved(new String[] {"ALL", "DISTINCT"});
 		define(new MultiResolver(
 				"Union", "Union(<Set1>, <Set2>[, ALL])", "Returns the union of two sets, optionally retaining duplicates.",
 				new String[] {"fxxx", "fxxxy"}) {
@@ -2727,17 +2928,17 @@ public class BuiltinFunTable extends FunTable {
 				checkCompatible(args[0], args[1], dummyFunDef);
 				return new FunDefBase(dummyFunDef) {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
-						Vector left = (Vector) getArg(evaluator, args, 0),
-								right = (Vector) getArg(evaluator, args, 1);
+						List left = (List) getArg(evaluator, args, 0),
+								right = (List) getArg(evaluator, args, 1);
 						if (all) {
 							if (left == null || left.isEmpty()) {
 								return right;
 							}
-							add(left, right);
+							left.addAll(right);
 							return left;
 						} else {
 							HashSet added = new HashSet();
-							Vector result = new Vector();
+							List result = new ArrayList();
 							addUnique(result, left, added);
 							addUnique(result, right, added);
 							return result;
@@ -2804,10 +3005,10 @@ public class BuiltinFunTable extends FunTable {
 				new String[]{"fx", "fxm"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
-						return new Vector(periodsToDate(
+						return periodsToDate(
 								evaluator,
 								evaluator.getCube().getWeekLevel(),
-								getMemberArg(evaluator, args, 0, false)));
+								getMemberArg(evaluator, args, 0, false));
 					}
 				}));
 		define(new FunkResolver(
@@ -2815,10 +3016,10 @@ public class BuiltinFunTable extends FunTable {
 				new String[]{"fx", "fxm"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
-						return new Vector(periodsToDate(
+						return periodsToDate(
 								evaluator,
 								evaluator.getCube().getYearLevel(),
-								getMemberArg(evaluator, args, 0, false)));
+								getMemberArg(evaluator, args, 0, false));
 					}
 				}));
 		define(new FunDefBase(
@@ -2828,12 +3029,12 @@ public class BuiltinFunTable extends FunTable {
 				final Member member0 = getMemberArg(evaluator, args, 0, true);
 				final Member member1 = getMemberArg(evaluator, args, 1, true);
 				if (member0.isNull() || member1.isNull()) {
-					return emptyVector;
+					return Collections.EMPTY_LIST;
 				}
 				if (member0.getLevel() != member1.getLevel()) {
 					throw newEvalException(this, "Members must belong to the same level");
 				}
-				return new Vector(FunUtil.memberRange(evaluator, member0, member1));
+				return FunUtil.memberRange(evaluator, member0, member1);
 			}
 
 			public void testRange(FoodMartTestCase test) {
@@ -3387,6 +3588,7 @@ public class BuiltinFunTable extends FunTable {
 
 		//
 		// PARAMETER FUNCTIONS
+		defineReserved(new String[] {"NUMERIC","STRING"});
 		define(new MultiResolver("Parameter", "Parameter(<Name>, <Type>, <DefaultValue>, <Description>)", "Returns default value of parameter.",
 				new String[] {
 					"fS#yS#", "fs#yS", // Parameter(string const, symbol, string[, string const]): string
@@ -3750,6 +3952,19 @@ public class BuiltinFunTable extends FunTable {
 		});
 	}
 
+	/**
+	 * Returns the appropriate rollup operator for a given aggregation operator.
+	 * @pre aggregator != null
+	 * @post return != null
+	 */
+	private static String getRollup(String aggregator) {
+		if (aggregator.equals("count")) {
+			return "sum";
+		} else {
+			return aggregator;
+		}
+	}
+
 	private static boolean isConstantHierarchy(Exp typeArg) {
 		if (typeArg instanceof Hierarchy) {
 			// e.g. "[Time].[By Week]"
@@ -3843,6 +4058,43 @@ public class BuiltinFunTable extends FunTable {
 		}
 	}
 
+	private static class DescendantsFlags extends EnumeratedValues {
+		static final DescendantsFlags instance = new DescendantsFlags();
+		private DescendantsFlags() {
+			super(
+					new String[] {
+						"SELF","AFTER","BEFORE","BEFORE_AND_AFTER","SELF_AND_AFTER",
+						"SELF_AND_BEFORE","SELF_BEFORE_AFTER","LEAVES"},
+					new int[] {
+						SELF,AFTER,BEFORE,BEFORE_AND_AFTER,SELF_AND_AFTER,
+						SELF_AND_BEFORE,SELF_BEFORE_AFTER,LEAVES});
+		}
+		public static final int SELF = 1;
+		public static final int AFTER = 2;
+		public static final int BEFORE = 4;
+		public static final int BEFORE_AND_AFTER = BEFORE | AFTER;
+		public static final int SELF_AND_AFTER = SELF | AFTER;
+		public static final int SELF_AND_BEFORE = SELF | BEFORE;
+		public static final int SELF_BEFORE_AFTER = SELF | BEFORE | AFTER;
+		public static final int LEAVES = 8;
+	}
+
+	private static class OrderFlags extends EnumeratedValues {
+		static final OrderFlags instance = new OrderFlags();
+		private OrderFlags() {
+			super(new String[] {"ASC","DESC","BASC","BDESC"});
+		}
+		public static final int ASC = 0;
+		public static final int DESC = 1;
+		public static final int BASC = 2;
+		public static final int BDESC = 3;
+		public static final boolean isDescending(int value) {
+			return (value & DESC) == DESC;
+		}
+		public static final boolean isBreak(int value) {
+			return (value & BASC) == BASC;
+		}
+	}
 }
 
 // End BuiltinFunTable.java

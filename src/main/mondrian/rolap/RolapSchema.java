@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// Copyright (C) 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -102,9 +102,6 @@ public class RolapSchema implements Schema
 		for (int i = 0; i < xmlSchema.cubes.length; i++) {
 			MondrianDef.Cube xmlCube = xmlSchema.cubes[i];
 			RolapCube cube = new RolapCube(this, xmlSchema, xmlCube);
-			if (false && xmlCube.name.equals("Sales")) {
-				cube = new RolapCube(this);
-			}
 			mapNameToCube.put(xmlCube.name, cube);
 		}
 		for (int i = 0; i < xmlSchema.virtualCubes.length; i++) {
@@ -308,11 +305,7 @@ public class RolapSchema implements Schema
 		return (RolapHierarchy) mapSharedHierarchyNameToHierarchy.get(name);
 	}
 
-	/**
-	 * Finds a role called 'role' in the current catalog, or return null if no
-	 * role exists.
-	 */
-	protected Role lookupRole(String role) {
+	public Role lookupRole(String role) {
 		return (Role) mapNameToRole.get(role);
 	}
 

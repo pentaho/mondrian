@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// Copyright (C) 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 // jhyde, 23 September, 2002
@@ -16,7 +16,6 @@ a:link {
   text-decoration: none;
   font-size: 12px;
   line-height: 14px;
-  font-family: verdana, arial, helvetica, sans-serif;
 }
 
 a:visited {
@@ -24,7 +23,6 @@ a:visited {
   text-decoration: none;
   font-size: 12px;
   line-height: 14px;
-  font-family: verdana, arial, helvetica, sans-serif;
 }
 
 a.nav:link {
@@ -219,7 +217,7 @@ textarea {
   font-family: verdana, arial, helvetica, sans-serif;
 }
 
-p {
+p, td, th {
   color: #333333;
   text-decoration: none;
   font-size: 12px;
@@ -337,7 +335,11 @@ PRE {
   padding:5pt;
 }
 
-PRE.clsCode, CODE.clsText { font-family:'courier new',courier,serif; font-size:130%; }
+PRE.clsCode, CODE.clsText {
+  color: #990000;
+  font-family:'courier new',courier,serif;
+  font-size:130%;
+}
 
 PRE.clsSyntax { font-family:verdana,arial,helvetica,sans-serif; font-size:120%; }
 

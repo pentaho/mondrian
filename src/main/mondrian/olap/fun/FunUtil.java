@@ -1,10 +1,9 @@
 /*
 // $Id$
-// (C) Copyright 2002 Kana Software, Inc.
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// Copyright (C) 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -89,6 +88,15 @@ public class FunUtil extends Util {
 		throw newEvalException(funDef, "Allowed values are: {" + sb + "}");
 	}
 
+	/** Returns the ordinal of a literal argument. If the argument does not
+	 * belong to the supplied enumeration, returns -1. */
+	static int getLiteralArg(Exp[] args, int i, int defaultValue, EnumeratedValues allowedValues, FunDef funDef) {
+		final String literal = getLiteralArg(args, i, allowedValues.getName(defaultValue), allowedValues.getNames(), funDef);
+		if (literal == null) {
+			return -1;
+		}
+		return allowedValues.getOrdinal(literal);
+	}
 
 	static boolean getBooleanArg(Evaluator evaluator, Exp[] args, int index) {
 		Object o = getArg(evaluator, args, index);
@@ -258,18 +266,6 @@ public class FunUtil extends Util {
 		return null;
 	}
 
-	static Vector toVector(Object[] array) {
-		Vector vector = new Vector();
-		return addArray(vector, array);
-	}
-
-	static Vector addArray(Vector vector, Object[] array) {
-		for (int i = 0; i < array.length; i++) {
-			vector.addElement(array[i]);
-		}
-		return vector;
-	}
-
 	/** Adds every element of <code>right</code> to <code>left</code>. **/
 	static void add(Vector left, Vector right) {
 		if (right == null) {
@@ -283,18 +279,18 @@ public class FunUtil extends Util {
 
 	/** Adds every element of <code>right</code> which is not in <code>set</code>
 	 * to both <code>set</code> and <code>left</code>. **/
-	static void addUnique(Vector left, Vector right, Set set) {
+	static void addUnique(List left, List right, Set set) {
 		if (right == null) {
 			return;
 		}
 		for (int i = 0, n = right.size(); i < n; i++) {
-			Object o = right.elementAt(i),
+			Object o = right.get(i),
 					p = o;
 			if (o instanceof Object[]) {
 				p = new ArrayHolder((Object[]) o);
 			}
 			if (set.add(p)) {
-				left.addElement(o);
+				left.add(o);
 			}
 		}
 	}
@@ -311,17 +307,18 @@ public class FunUtil extends Util {
 		return set;
 	}
 
-	static Vector addMembers(SchemaReader schemaReader, Vector vector, Hierarchy hierarchy) {
+	static List addMembers(SchemaReader schemaReader, List members, Hierarchy hierarchy) {
 		Level[] levels = schemaReader.getHierarchyLevels(hierarchy); // only accessible levels
 		for (int i = 0; i < levels.length; i++) {
-			addMembers(schemaReader, vector, levels[i]);
+			addMembers(schemaReader, members, levels[i]);
 		}
-		return vector;
+		return members;
 	}
 
-	static Vector addMembers(SchemaReader schemaReader, Vector vector, Level level) {
-		Member[] members = schemaReader.getLevelMembers(level);
-		return addArray(vector, members);
+	static List addMembers(SchemaReader schemaReader, List members, Level level) {
+		Member[] levelMembers = schemaReader.getLevelMembers(level);
+		addAll(members, levelMembers);
+		return members;
 	}
 
 	/**
@@ -349,7 +346,7 @@ public class FunUtil extends Util {
 	 * @pre exp != null
 	 */
 	static HashMap evaluateMembers(
-			Evaluator evaluator, ExpBase exp, Vector members, boolean parentsToo) {
+			Evaluator evaluator, ExpBase exp, List members, boolean parentsToo) {
 		Member[] constantTuple = exp.isConstantTuple();
 		if (constantTuple == null) {
 			return _evaluateMembers(evaluator.push(), exp, members, parentsToo);
@@ -361,10 +358,10 @@ public class FunUtil extends Util {
 	}
 
 	private static HashMap _evaluateMembers(
-			Evaluator evaluator, ExpBase exp, Vector members, boolean parentsToo) {
+			Evaluator evaluator, ExpBase exp, List members, boolean parentsToo) {
 		HashMap mapMemberToValue = new HashMap();
 		for (int i = 0, count = members.size(); i < count; i++) {
-			Member member = (Member) members.elementAt(i);
+			Member member = (Member) members.get(i);
 			while (true) {
 				evaluator.setContext(member);
 				Object result = exp.evaluateScalar(evaluator);
@@ -384,10 +381,10 @@ public class FunUtil extends Util {
 		return mapMemberToValue;
 	}
 
-	static HashMap evaluateMembers(Evaluator evaluator, Vector members, boolean parentsToo) {
+	static HashMap evaluateMembers(Evaluator evaluator, List members, boolean parentsToo) {
 		HashMap mapMemberToValue = new HashMap();
 		for (int i = 0, count = members.size(); i < count; i++) {
-			Member member = (Member) members.elementAt(i);
+			Member member = (Member) members.get(i);
 			while (true) {
 				evaluator.setContext(member);
 				Object result = evaluator.evaluateCurrent();
@@ -408,12 +405,12 @@ public class FunUtil extends Util {
 	}
 
 	static void sort(
-			Evaluator evaluator, Vector members, ExpBase exp, boolean desc,
+			Evaluator evaluator, List members, ExpBase exp, boolean desc,
 			boolean brk) {
 		if (members.isEmpty()) {
 			return;
 		}
-		Object first = members.elementAt(0);
+		Object first = members.get(0);
 		Comparator comparator;
 		if (first instanceof Member) {
 			final boolean parentsToo = !brk;
@@ -435,14 +432,14 @@ public class FunUtil extends Util {
 				comparator = new HierarchicalArrayComparator(evaluator, exp, arity, desc);
 			}
 		}
-		sort(comparator, members);
+		Collections.sort(members, comparator);
 	}
 
-	static void hierarchize(Vector members, boolean post) {
+	static void hierarchize(List members, boolean post) {
 		if (members.isEmpty()) {
 			return;
 		}
-		Object first = members.elementAt(0);
+		Object first = members.get(0);
 		Comparator comparator;
 		if (first instanceof Member) {
 			comparator = new HierarchizeComparator(post);
@@ -451,7 +448,7 @@ public class FunUtil extends Util {
 			final int arity = ((Member[]) first).length;
 			comparator = new HierarchizeArrayComparator(arity, post);
 		}
-		sort(comparator, members);
+		Collections.sort(members, comparator);
 	}
 
 	static int compareValues(Object value0, Object value1) {
@@ -474,31 +471,22 @@ public class FunUtil extends Util {
 		}
 	}
 
-	static void sort(Comparator comparator, Vector vector) {
-		Object[] objects = new Object[vector.size()];
-		vector.copyInto(objects);
-		Arrays.sort(objects, comparator);
-		for (int i = 0; i < vector.size(); i++) {
-			vector.setElementAt(objects[i], i);
-		}
-	}
-
 	/**
 	 * Turns the mapped values into relative values (percentages) for easy
 	 * use by the general topOrBottom function. This might also be a useful
 	 * function in itself.
 	 */
-	static void toPercent (Vector members, HashMap mapMemberToValue) {
+	static void toPercent (List members, HashMap mapMemberToValue) {
 		double total = 0;
 		int numMembers = members.size();
 		for (int i = 0; i < numMembers; i++) {
-			Object o = mapMemberToValue.get(members.elementAt(i));
+			Object o = mapMemberToValue.get(members.get(i));
 			if (o instanceof Number) {
 				total += ((Number) o).doubleValue();
 			}
 		}
 		for (int i = 0; i < numMembers; i++) {
-			Object member = members.elementAt(i);
+			Object member = members.get(i);
 			Object o = mapMemberToValue.get(member);
 			if (o instanceof Number) {
 				double d = ((Number) o).doubleValue();
@@ -513,20 +501,20 @@ public class FunUtil extends Util {
 	 * evaluating members, sorting appropriately, and returning a
 	 * truncated vector of members
 	 */
-	static Object topOrBottom (Evaluator evaluator, Vector members, ExpBase exp, boolean isTop, boolean isPercent, double target) {
+	static Object topOrBottom (Evaluator evaluator, List members, ExpBase exp, boolean isTop, boolean isPercent, double target) {
 		HashMap mapMemberToValue = evaluateMembers(evaluator, exp, members, false);
 		Comparator comparator = new BreakMemberComparator(mapMemberToValue, isTop);
-		sort(comparator, members);
+		Collections.sort(members, comparator);
 		if (isPercent) {
 			toPercent(members, mapMemberToValue);
 		}
 		double runningTotal = 0;
 		for (int i = 0, numMembers = members.size(); i < numMembers; i++) {
 			if (runningTotal >= target) {
-				members.setSize(i);
+				members = members.subList(0, i);
 				break;
 			}
-			Object o = mapMemberToValue.get(members.elementAt(i));
+			Object o = mapMemberToValue.get(members.get(i));
 			if (o instanceof Number) {
 				runningTotal += ((Number) o).doubleValue();
 			} else if (o instanceof Exception) {
@@ -549,17 +537,17 @@ public class FunUtil extends Util {
 //		public double getAverage() {
 //			if (avg == Double.NaN) {
 //				double sum = 0.0;
-//				for (int i = 0; i < v.size(); i++) {
-//					sum += ((Double) v.elementAt(i)).doubleValue();
+//				for (int i = 0; i < resolvers.size(); i++) {
+//					sum += ((Double) resolvers.elementAt(i)).doubleValue();
 //				}
 //				//todo: should look at context and optionally include nulls
-//				avg = sum / v.size();
+//				avg = sum / resolvers.size();
 //			}
 //			return avg;
 //		}
 	}
 
-	static Object median(Evaluator evaluator, Vector members, ExpBase exp) {
+	static Object median(Evaluator evaluator, List members, ExpBase exp) {
 		SetWrapper sw = evaluateSet(evaluator, members, exp);
 		if (sw.errorCount > 0) {
 			return new Double(Double.NaN);
@@ -575,7 +563,7 @@ public class FunUtil extends Util {
 		return new Double(asArray[median]);
 	}
 
-	static Object min(Evaluator evaluator, Vector members, ExpBase exp) {
+	static Object min(Evaluator evaluator, List members, ExpBase exp) {
 		SetWrapper sw = evaluateSet(evaluator, members, exp);
 		if (sw.errorCount > 0) {
 			return new Double(Double.NaN);
@@ -592,7 +580,7 @@ public class FunUtil extends Util {
 		}
 	}
 
-	static Object max(Evaluator evaluator, Vector members, ExpBase exp) {
+	static Object max(Evaluator evaluator, List members, ExpBase exp) {
 		SetWrapper sw = evaluateSet(evaluator, members, exp);
 		if (sw.errorCount > 0) {
 			return new Double(Double.NaN);
@@ -609,7 +597,7 @@ public class FunUtil extends Util {
 		}
 	}
 
-	static Object var(Evaluator evaluator, Vector members, ExpBase exp, boolean biased) {
+	static Object var(Evaluator evaluator, List members, ExpBase exp, boolean biased) {
 		SetWrapper sw = evaluateSet(evaluator, members, exp);
 		return _var(sw, biased);
 	}
@@ -632,7 +620,7 @@ public class FunUtil extends Util {
 		}
 	}
 	
-	static Object correlation(Evaluator evaluator, Vector members, ExpBase exp1, ExpBase exp2) {
+	static Object correlation(Evaluator evaluator, List members, ExpBase exp1, ExpBase exp2) {
 		SetWrapper sw1 = evaluateSet(evaluator, members, exp1);
 		SetWrapper sw2 = evaluateSet(evaluator, members, exp2);
 		Object covar = _covariance(sw1, sw2, false);
@@ -647,7 +635,7 @@ public class FunUtil extends Util {
 		}
 	} 
 				
-	static Object covariance(Evaluator evaluator, Vector members, ExpBase exp1, ExpBase exp2, boolean biased) {
+	static Object covariance(Evaluator evaluator, List members, ExpBase exp1, ExpBase exp2, boolean biased) {
 		SetWrapper sw1 = evaluateSet(evaluator.push(), members, exp1);
 		SetWrapper sw2 = evaluateSet(evaluator.push(), members, exp2);
 		//todo: because evaluateSet does not add nulls to the SetWrapper, this solution may
@@ -674,7 +662,7 @@ public class FunUtil extends Util {
 		return new Double(covar / n);	
 	}
 	
-	static Object stdev(Evaluator evaluator, Vector members, ExpBase exp, boolean biased) {
+	static Object stdev(Evaluator evaluator, List members, ExpBase exp, boolean biased) {
 		Object o = var(evaluator, members, exp, biased);
 		if (o instanceof Double) {
 			return new Double(Math.sqrt(((Double) o).doubleValue()));
@@ -683,7 +671,7 @@ public class FunUtil extends Util {
 		}
 	}
 
-	static Object avg(Evaluator evaluator, Vector members, ExpBase exp) {
+	static Object avg(Evaluator evaluator, List members, ExpBase exp) {
 		SetWrapper sw = evaluateSet(evaluator, members, exp);
 		if (sw.errorCount > 0) {
 			return new Double(Double.NaN);
@@ -706,7 +694,7 @@ public class FunUtil extends Util {
 		return sum / sw.v.size();
 	}
 
-	static Object sum(Evaluator evaluator, Vector members, ExpBase exp) {
+	static Object sum(Evaluator evaluator, List members, ExpBase exp) {
 		SetWrapper sw = evaluateSet(evaluator, members, exp);
 		if (sw.errorCount > 0) {
 			if (false) {
@@ -726,13 +714,13 @@ public class FunUtil extends Util {
 		}
 	}
 
-	static Object count(Vector members, boolean includeEmpty) {
+	static Object count(List members, boolean includeEmpty) {
 		if (includeEmpty) {
 			return new Double(members.size());
 		} else {
 			int retval = 0;
 			for (int i = 0; i < members.size(); i++) {
-				final Object member = members.elementAt(i);
+				final Object member = members.get(i);
 				if (member != Util.nullValue && member != null) {
 					retval++;
 				}
@@ -742,7 +730,7 @@ public class FunUtil extends Util {
 	}
 
 	static Object aggregate(
-			Evaluator evaluator, String aggregator, Vector members, ExpBase exp) {
+			Evaluator evaluator, String aggregator, List members, ExpBase exp) {
 		if (aggregator.equals("sum")) {
 			return sum(evaluator, members, exp);
 		} else if (aggregator.equals("count")) {
@@ -766,12 +754,12 @@ public class FunUtil extends Util {
 	 *
 	 * @pre exp != null
 	 */
-	static SetWrapper evaluateSet(Evaluator evaluator, Vector members, ExpBase exp) {
+	static SetWrapper evaluateSet(Evaluator evaluator, List members, ExpBase exp) {
 		Util.assertPrecondition(exp != null, "exp != null");
 		// todo: treat constant exps as evaluateMembers() does
 		SetWrapper retval = new SetWrapper();
 		for (int i = 0, count = members.size(); i < count; i++) {
-			Member member = (Member) members.elementAt(i);
+			Member member = (Member) members.get(i);
 			evaluator.setContext(member);
 			Object o = exp.evaluateScalar(evaluator);
 			if (o == null || o == Util.nullValue) {
@@ -784,7 +772,7 @@ public class FunUtil extends Util {
 			} else if (o instanceof Double) {
 				retval.v.add(o);
 			} else if (o instanceof Number) {
-				retval.v.add(new Double(((BigDecimal) o).doubleValue()));
+				retval.v.add(new Double(((Number) o).doubleValue()));
 			} else {
 				retval.v.add(o);
 			}

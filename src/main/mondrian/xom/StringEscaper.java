@@ -139,8 +139,7 @@ public class StringEscaper implements Cloneable
 	{
 		StringEscaper clone = (StringEscaper) clone();
 		if (clone.translationVector == null) {
-			clone.translationVector = XOMUtil.arrayToVector(
-				clone.translationTable);
+			clone.translationVector = XOMUtil.toVector(clone.translationTable);
 			clone.translationTable = null;
 		}
 		return clone;

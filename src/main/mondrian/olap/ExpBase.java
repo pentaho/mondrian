@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1999-2002 Kana Software, Inc. and others.
+// Copyright (C) 1999-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -175,6 +175,7 @@ public abstract class ExpBase
 			// e.g. "<Set>.Current"
 			return getTypeDescription(argTypes[0]) + "." + name;
 		case FunDef.TypeFunction:
+		case FunDef.TypeInternal:
 			// e.g. "StripCalculatedMembers(<Set>)"
 			return (returnType == Category.Unknown ? "" :
 					getTypeDescription(returnType) + " ") +

@@ -45,6 +45,7 @@ public class EnumeratedValues implements Cloneable
 	/** an array mapping ordinal values to desciptions; it is biased by the
 	 * min value */
 	private String [] ordinalToDescriptionMap;
+	private static final String[] emptyStringArray = new String[0];
 
 	/**
 	 * Creates a new empty, mutable enumeration.
@@ -235,6 +236,13 @@ public class EnumeratedValues implements Cloneable
 		return Util.newInternal("bad value " + ordinal + "(" +
 				getName(ordinal) + ") for enumeration '" +
 				getClass().getName() + "'");
+	}
+
+	/**
+	 * Returns the names in this enumeration, in no particular order.
+	 */ 
+	public String[] getNames() {
+		return (String[]) nameToOrdinalMap.keySet().toArray(emptyStringArray);
 	}
 }
 

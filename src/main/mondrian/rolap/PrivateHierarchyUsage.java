@@ -1,10 +1,9 @@
 /*
 // $Id$
-// (C) Copyright 2002 Kana Software, Inc.
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// Copyright (C) 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -12,11 +11,12 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.Util;
 import mondrian.olap.MondrianDef;
 
 /**
- * <code>PrivateHierarchyUsage</code> todo:
+ * <code>PrivateHierarchyUsage</code> represents the usage of a private
+ * hierarchy by a cube. (Since the hierarchy is private, there can be only one
+ * such usage.)
  *
  * @author jhyde
  * @since 21 March, 2002

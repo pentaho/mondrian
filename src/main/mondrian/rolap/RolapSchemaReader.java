@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2003 Julian Hyde
+// Copyright (C) 2003-2003 Julian Hyde <jhyde@users.sf.net>
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -85,14 +85,24 @@ abstract class RolapSchemaReader implements SchemaReader {
 
 	public int getMemberDepth(Member member) {
 		final Role.HierarchyAccess hierarchyAccess = role.getAccessDetails(member.getHierarchy());
-		int memberDepth = member.getLevel().getDepth();
 		if (hierarchyAccess != null) {
+			int memberDepth = member.getLevel().getDepth();
 			final Level topLevel = hierarchyAccess.getTopLevel();
 			if (topLevel != null) {
 				memberDepth -= topLevel.getDepth();
 			}
+			return memberDepth;
+		} else if (((RolapLevel) member.getLevel()).parentExp != null) {
+			// For members of parent-child hierarchy, members in the same level may have
+			// different depths.
+			int depth = 0;
+			for (Member m = member; m != null; m = m.getParentMember()) {
+				depth++;
+			}
+			return depth;
+		} else {
+			return member.getLevel().getDepth();
 		}
-		return memberDepth;
 	}
 
 	public Member[] getMemberChildren(Member member) {

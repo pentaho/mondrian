@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// Copyright (C) 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -75,7 +75,7 @@ class RolapDimension extends DimensionBase
 			RolapSchema schema, RolapCube cube, MondrianDef.Dimension xmlDimension,
 		MondrianDef.CubeDimension xmlCubeDimension)
 	{
-		this(schema, xmlDimension.name, chooseOrdinal(schema, xmlCubeDimension));
+		this(schema, xmlDimension.name, chooseOrdinal(cube, xmlCubeDimension));
 		Util.assertPrecondition(schema != null);
 		if (cube != null) {
 			Util.assertTrue(cube.schema == schema);
@@ -87,15 +87,22 @@ class RolapDimension extends DimensionBase
 		}
 	}
 
+	/**
+	 * Assigns an ordinal for a dimension usage; also assigns the join-level
+	 * of the usage.
+	 */
 	private static int chooseOrdinal(
-			RolapSchema schema, MondrianDef.CubeDimension xmlCubeDimension) {
+			RolapCube cube, MondrianDef.CubeDimension xmlCubeDimension) {
 		if (xmlCubeDimension.name.equals(MEASURES_NAME)) {
 			return 0;
 		}
 		if (xmlCubeDimension instanceof MondrianDef.DimensionUsage) {
+			RolapSchema schema = cube.schema;
 			MondrianDef.DimensionUsage usage = (MondrianDef.DimensionUsage) xmlCubeDimension;
 			RolapHierarchy hierarchy = schema.getSharedHierarchy(usage.source);
 			if (hierarchy != null) {
+				HierarchyUsage hierarchyUsage = schema.getUsage(hierarchy, cube);
+				hierarchyUsage.init(cube, hierarchy, usage);
 				return ((RolapDimension) hierarchy.getDimension()).getGlobalOrdinal();
 			}
 		}
@@ -103,7 +110,7 @@ class RolapDimension extends DimensionBase
 	}
 
 	/**
-	 * @param cube optional
+	 * Initializes a dimension within the context of a cube.
 	 */
 	void init(RolapCube cube)
 	{
@@ -114,18 +121,14 @@ class RolapDimension extends DimensionBase
 		}
 	}
 
-	RolapHierarchy newHierarchy(
-		String subName, boolean hasAll, String sql, String primaryKey,
-		String foreignKey)
+	RolapHierarchy newHierarchy(String subName, boolean hasAll)
 	{
-		RolapHierarchy hierarchy = new RolapHierarchy(
-			this, subName, hasAll, sql, primaryKey, foreignKey);
+		RolapHierarchy hierarchy = new RolapHierarchy(this, subName, hasAll);
 		this.hierarchies = (RolapHierarchy[]) RolapUtil.addElement(
 			this.hierarchies, hierarchy);
 		return hierarchy;
 	}
 
-	// implement Exp
 	public Hierarchy getHierarchy() {
 		return hierarchies[0];
 	}
@@ -139,7 +142,7 @@ class RolapDimension extends DimensionBase
 	}
 
 	/**
-	 * See #nextOrdinal
+	 * See {@link #nextOrdinal}.
 	 */
 	int getGlobalOrdinal() {
 		return globalOrdinal;

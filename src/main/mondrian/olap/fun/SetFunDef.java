@@ -1,10 +1,9 @@
 /*
 // $Id$
-// (C) Copyright 2002 Kana Software, Inc.
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// Copyright (C) 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -15,7 +14,8 @@ package mondrian.olap.fun;
 import mondrian.olap.*;
 
 import java.io.PrintWriter;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <code>SetFunDef</code> implements the 'set' function (whose syntax is the
@@ -42,7 +42,7 @@ class SetFunDef extends FunDefBase {
 			args[0].getHierarchy();
 	}
 	public Object evaluate(Evaluator evaluator, Exp[] args) {
-		Vector vector = null;
+		List list = null;
 		for (int i = 0; i < args.length; i++) {
 			ExpBase arg = (ExpBase) args[i];
 			Object o;
@@ -56,19 +56,19 @@ class SetFunDef extends FunDefBase {
 					o = arg.evaluate(evaluator);
 				}
 			}
-			if (o instanceof Vector) {
-				Vector vector2 = (Vector) o;
-				if (vector == null) {
-					vector = vector2;
+			if (o instanceof List) {
+				List list2 = (List) o;
+				if (list == null) {
+					list = list2;
 				} else {
-					for (int j = 0, count = vector2.size(); j <
+					for (int j = 0, count = list2.size(); j <
 							 count; j++) {
-						Object o2 = vector2.elementAt(j);
+						Object o2 = list2.get(j);
 						if (o2 instanceof Member &&
 								((Member) o2).isNull()) {
 							continue;
 						}
-						vector.addElement(o2);
+						list.add(o2);
 					}
 				}
 			} else {
@@ -76,13 +76,13 @@ class SetFunDef extends FunDefBase {
 						((Member) o).isNull()) {
 					continue;
 				}
-				if (vector == null) {
-					vector = new Vector();
+				if (list == null) {
+					list = new ArrayList();
 				}
-				vector.addElement(o);
+				list.add(o);
 			}
 		}
-		return vector;
+		return list;
 	}
 }
 

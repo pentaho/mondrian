@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// Copyright (C) 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -54,7 +54,9 @@ public class Listener implements ServletContextListener {
 	}
 
 	public void contextDestroyed(ServletContextEvent event) {
-		applicationContext.destroy(event);
+		if (applicationContext != null) {
+			applicationContext.destroy(event);
+		}
 	}
 
 	interface ApplicationContext {

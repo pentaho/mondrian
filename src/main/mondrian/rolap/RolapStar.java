@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// Copyright (C) 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -22,7 +22,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Iterator;
 
 /**
@@ -41,8 +41,11 @@ public class RolapStar {
 	java.sql.Connection jdbcConnection;
 	Measure[] measures;
 	public Table factTable;
-	/** todo: better, the dimensional model should hold the mapping **/
-	Hashtable mapLevelToColumn = new Hashtable();
+	/** Maps {@link RolapCube} to a {@link HashMap} which maps
+	 * {@link RolapLevel} to {@link Column}. The double indirection is
+	 * necessary because in different cubes, a shared hierarchy might be joined
+	 * onto the fact table at different levels. */
+	HashMap mapCubeToMapLevelToColumn = new HashMap();
 
 	/**
 	 * Please use {@link Pool#getOrCreateStar} to create a {@link
@@ -207,7 +210,7 @@ public class RolapStar {
 						joinToParent = false;
 					table.addToFrom(inner, failIfExists, joinToParent);
 					sqlQuery.addSelect("count(*)");
-					sqlQuery.addFrom(inner, "foo", failIfExists);
+					sqlQuery.addFrom(inner, "init", failIfExists);
 				} else {
 					// e.g. "select count(distinct product_id) from product"
 					sqlQuery.addSelect(
@@ -315,7 +318,8 @@ public class RolapStar {
 					}
 				}
 				joinCondition = new RolapStar.Condition(
-						leftAlias, join.leftKey, rightAlias, join.rightKey);
+						new MondrianDef.Column(leftAlias, join.leftKey),
+						new MondrianDef.Column(rightAlias, join.rightKey));
 				RolapStar.Table rightTable = leftTable.addJoin(
 						join.right, joinCondition);
 				return rightTable;
@@ -419,25 +423,18 @@ public class RolapStar {
 	}
 
 	public static class Condition {
-		String table1;
-		String column1;
-		String table2;
-		String column2;
+		MondrianDef.Expression left;
+		MondrianDef.Expression right;
+
 		Condition(
-				String table1, String column1, String table2, String column2) {
-			Util.assertTrue(table1 != null);
-			Util.assertTrue(column1 != null);
-			Util.assertTrue(table2 != null);
-			Util.assertTrue(column2 != null);
-			this.table1 = table1;
-			this.column1 = column1;
-			this.table2 = table2;
-			this.column2 = column2;
+				MondrianDef.Expression left, MondrianDef.Expression right) {
+			Util.assertPrecondition(left != null);
+			Util.assertPrecondition(right != null);
+			this.left = left;
+			this.right = right;
 		}
 		String toString(SqlQuery query) {
-			return query.quoteIdentifier(table1, column1) +
-					" = " +
-				query.quoteIdentifier(table2, column2);
+			return left.getExpression(query) + " = " + right.getExpression(query);
 		}
 	}
 

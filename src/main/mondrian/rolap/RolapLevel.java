@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// Copyright (C) 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -12,7 +12,6 @@
 
 package mondrian.rolap;
 import mondrian.olap.*;
-import mondrian.rolap.sql.SqlQuery;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -26,44 +25,66 @@ import java.util.Iterator;
  */
 class RolapLevel extends LevelBase
 {
-	/** The column or expression which yields the level's name. */
-	MondrianDef.Expression nameExp;
+	/** The column or expression which yields the level's key. */
+	final MondrianDef.Expression keyExp;
 	/** The column or expression which yields the level's ordinal. */
-	MondrianDef.Expression ordinalExp;
+	final MondrianDef.Expression ordinalExp;
 	/** For SQL generator. Whether values of "column" are unique globally
 	 * unique (as opposed to unique only within the context of the parent
 	 * member). **/
-	boolean unique;
+	final boolean unique;
 	int flags;
 	static final int NUMERIC = 1;
 	static final int ALL = 2;
+	static final int UNIQUE = 4;
 	RolapProperty[] properties;
 	RolapProperty[] inheritedProperties;
+	/** The expression which joins to the parent member in a parent-child
+	 * hierarchy, or null if this is a regular hierarchy. */
+	final MondrianDef.Expression parentExp;
+	/** Value which indicates a null parent in a parent-child hierarchy. */
+	String nullParentValue;
+	private static final RolapProperty[] emptyPropertyArray = new RolapProperty[0];
 
 	/**
 	 * Creates a level.
 	 *
+	 * @pre parentExp != null || nullParentValue == null
 	 * @pre properties != null
 	 */
 	RolapLevel(
 			RolapHierarchy hierarchy, int depth, String name,
-			MondrianDef.Expression nameExp, MondrianDef.Expression ordinalExp,
+			MondrianDef.Expression keyExp,
+			MondrianDef.Expression ordinalExp,
+			MondrianDef.Expression parentExp, String nullParentValue,
 			RolapProperty[] properties, int flags) {
 		Util.assertPrecondition(properties != null);
 		this.hierarchy = hierarchy;
 		this.name = name;
 		this.uniqueName = Util.makeFqName(hierarchy, name);
-		if (nameExp instanceof MondrianDef.Column) {
-			checkColumn((MondrianDef.Column) nameExp);
+		if (keyExp instanceof MondrianDef.Column) {
+			checkColumn((MondrianDef.Column) keyExp);
 		}
-		this.nameExp = nameExp;
-		if (ordinalExp instanceof MondrianDef.Column) {
-			checkColumn((MondrianDef.Column) ordinalExp);
+		this.flags = flags;
+		final boolean isAll = (flags & ALL) == ALL;
+		this.unique = (flags & UNIQUE) == UNIQUE;
+		this.depth = depth;
+		this.keyExp = keyExp;
+		if (ordinalExp != null) {
+			if (ordinalExp instanceof MondrianDef.Column) {
+				checkColumn((MondrianDef.Column) ordinalExp);
+			}
+			this.ordinalExp = ordinalExp;
+		} else {
+			this.ordinalExp = this.keyExp;
 		}
-		this.ordinalExp = ordinalExp;
-		if (ordinalExp == null) {
-			this.ordinalExp = nameExp;
+		this.parentExp = parentExp;
+		if (parentExp != null) {
+			Util.assertTrue(!isAll, "'All' level '" + this + "' must not be parent-child");
+			Util.assertTrue(unique, "Parent-child level '" + this + "' must have uniqueMembers=\"true\"");
 		}
+		this.nullParentValue = nullParentValue;
+		Util.assertPrecondition(parentExp != null || nullParentValue == null, "parentExp != null || nullParentValue == null");
 		for (int i = 0; i < properties.length; i++) {
 			RolapProperty property = properties[i];
 			if (property.exp instanceof MondrianDef.Column) {
@@ -91,9 +112,7 @@ class RolapLevel extends LevelBase
 			}
 		}
 		this.inheritedProperties = (RolapProperty[]) list.toArray(
-				new RolapProperty[0]);
-		this.flags = flags;
-		this.depth = depth;
+				emptyPropertyArray);
 		this.levelType = Level.STANDARD;
 		if (hierarchy.getDimension().getDimensionType() == Dimension.TIME) {
 			if (name.equals("Year")) {
@@ -121,22 +140,29 @@ class RolapLevel extends LevelBase
 	RolapLevel(RolapHierarchy hierarchy, int depth, MondrianDef.Level xmlLevel)
 	{
 		this(
-				hierarchy, depth, xmlLevel.name, xmlLevel.getNameExp(),
-				xmlLevel.getOrdinalExp(), createProperties(xmlLevel),
-				xmlLevel.type.equals("Numeric") ? NUMERIC : 0);
+				hierarchy, depth, xmlLevel.name, xmlLevel.getKeyExp(),
+				xmlLevel.getOrdinalExp(),
+				xmlLevel.getParentExp(), xmlLevel.nullParentValue,
+				createProperties(xmlLevel),
+				(xmlLevel.type.equals("Numeric") ? NUMERIC : 0) |
+				(xmlLevel.uniqueMembers.booleanValue() ? UNIQUE : 0));
 	}
 
 	static RolapProperty[] createProperties(MondrianDef.Level xmlLevel) {
-		RolapProperty[] properties = new RolapProperty[
-				xmlLevel.properties.length];
+		ArrayList list = new ArrayList();
+		final MondrianDef.Expression nameExp = xmlLevel.getNameExp();
+		if (nameExp != null) {
+			list.add(new RolapProperty(
+					Property.PROPERTY_NAME, Property.TYPE_STRING, nameExp));
+		}
 		for (int i = 0; i < xmlLevel.properties.length; i++) {
 			MondrianDef.Property property = xmlLevel.properties[i];
-			properties[i] = new RolapProperty(
+			list.add(new RolapProperty(
 					property.name,
 					convertPropertyTypeNameToCode(property.type),
-					xmlLevel.getPropertyExp(i));
+					xmlLevel.getPropertyExp(i)));
 		}
-		return properties;
+		return (RolapProperty[]) list.toArray(emptyPropertyArray);
 	}
 
 	private static int convertPropertyTypeNameToCode(String type) {
@@ -181,7 +207,7 @@ class RolapLevel extends LevelBase
 	}
 
 	public String getTableAlias() {
-		return nameExp.getTableAlias();
+		return keyExp.getTableAlias();
 	}
 
 	public Property[] getProperties() {

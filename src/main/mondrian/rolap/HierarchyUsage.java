@@ -1,10 +1,9 @@
 /*
 // $Id$
-// (C) Copyright 2002 Kana Software, Inc.
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// Copyright (C) 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -12,9 +11,10 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.MondrianDef;
 import mondrian.olap.Hierarchy;
+import mondrian.olap.MondrianDef;
 import mondrian.olap.Util;
+import mondrian.olap.Level;
 
 /**
  * A <code>HierarchyUsage</code> is the usage of a hierarchy in the context
@@ -43,18 +43,81 @@ abstract class HierarchyUsage
 	 * used.
 	 */
 	protected MondrianDef.Relation fact;
-	/** The foreign key by which {@link #hierarchy} should be joined to
-	 * {@link #factTable}. **/
+	/** The foreign key by which this {@link Hierarchy} is joined to
+	 * {@link #fact}. **/
 	String foreignKey;
-	/** The primary key column by which {@link hierarchy} should be joined to
-	 * {@link #fact}. */
-	String primaryKey;
-	/** Name of dimension table which contains the primary key for the
-	 * hierarchy. (Usually the table of the lowest level of the hierarchy.) */
-	MondrianDef.Relation primaryKeyTable;
+	/** Dimension table which contains the primary key for the hierarchy.
+	 * (Usually the table of the lowest level of the hierarchy.) */
+	MondrianDef.Relation joinTable;
+	/** The expression (usually a {@link MondrianDef.Column}) by which the
+	 * hierarchy which is joined to the fact table. */
+	MondrianDef.Expression joinExp;
 
 	HierarchyUsage(MondrianDef.Relation fact) {
 		this.fact = fact;
+	}
+
+	void init(RolapCube cube, RolapHierarchy hierarchy,
+			 MondrianDef.DimensionUsage dimensionUsage) {
+		// Three ways that a hierarchy can be joined to the fact table.
+		if (dimensionUsage != null && dimensionUsage.level != null) {
+			// 1. Specify an explicit 'level' attribute in a <DimensionUsage>.
+			RolapLevel joinLevel = (RolapLevel) Util.lookupHierarchyLevel(hierarchy, dimensionUsage.level);
+			if (joinLevel == null) {
+				throw Util.newError("Level '" + dimensionUsage.level + "' not found");
+			}
+			setJoinTable(hierarchy, joinLevel.keyExp.getTableAlias());
+			joinExp = joinLevel.keyExp;
+		} else if (hierarchy.xmlHierarchy != null &&
+				hierarchy.xmlHierarchy.primaryKey != null) {
+			// 2. Specify a "primaryKey" attribute of in <Hierarchy>. You must
+			//    also specify the "primaryKeyTable" attribute if the hierarchy
+			//    is a join (hence has more than one table).
+			if (hierarchy.xmlHierarchy.primaryKeyTable == null) {
+				joinTable = hierarchy.getUniqueTable();
+				if (joinTable == null) {
+					throw Util.newError(
+							"must specify primaryKeyTable for hierarchy " +
+							hierarchy.getUniqueName() +
+							", because it has more than one table");
+				}
+			} else {
+				setJoinTable(hierarchy, hierarchy.xmlHierarchy.primaryKeyTable);
+			}
+			joinExp = new MondrianDef.Column(joinTable.getAlias(), hierarchy.xmlHierarchy.primaryKey);
+		} else {
+			// 3. If neither of the above, the join is assumed to be to key of
+			//    the last level.
+			final Level[] levels = hierarchy.getLevels();
+			RolapLevel joinLevel = (RolapLevel) levels[levels.length - 1];
+			setJoinTable(hierarchy, joinLevel.keyExp.getTableAlias());
+			joinExp = joinLevel.keyExp;
+		}
+		foreignKey = hierarchy.foreignKey;
+		// Unless this hierarchy is drawing from the fact table, we need
+		// a join expresion and a foreign key.
+		final boolean inFactTable = joinTable.equals(cube.getFact());
+		if (!inFactTable) {
+			if (joinExp == null) {
+				throw Util.newError(
+						"must specify primaryKey for hierarchy " +
+						hierarchy.getUniqueName());
+			}
+			if (foreignKey == null) {
+				throw Util.newError(
+						"must specify foreignKey for hierarchy " +
+						hierarchy.getUniqueName());
+			}
+		}
+	}
+
+	private void setJoinTable(RolapHierarchy hierarchy, final String tableName) {
+		joinTable = hierarchy.xmlHierarchy.relation.find(tableName);
+		if (joinTable == null) {
+			throw Util.newError(
+					"no table '" + tableName +
+					"' found in hierarchy " + hierarchy.getUniqueName());
+		}
 	}
 }
 

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// Copyright (C) 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -13,12 +13,11 @@
 package mondrian.rolap;
 import mondrian.olap.*;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
- * todo:
+ * A <code>RolapMember</code> is a member of a {@link RolapHierarchy}. There are
+ * sub-classes for {@link RolapStoredMeasure}, {@link RolapCalculatedMember}.
  *
  * @author jhyde
  * @since 10 August, 2001
@@ -42,47 +41,74 @@ class RolapMember extends MemberBase
 	private static final Map emptyMap = Collections.unmodifiableMap(new HashMap(0));
 
 	RolapMember(
-		RolapMember parentMember, RolapLevel level, Object key, String name)
-	{
+			RolapMember parentMember, RolapLevel level, Object key, String name) {
 		this.parentMember = parentMember;
 		this.parentUniqueName = parentMember == null ? null:
 			parentMember.getUniqueName();
 		this.level = level;
-		this.name = name;
-		this.caption = name;
 		this.key = key;
 		this.ordinal = -1;
 		this.memberType = 1; // adMemberRegular
+		if (name != null &&
+				!(key != null && name.equals(key.toString()))) {
+			// Save memory by only saving the name as a property if it's different from
+			// the key.
+			setProperty(Property.PROPERTY_NAME, name);
+		} else {
+			setUniqueName();
+		}
+	}
+
+	private void setUniqueName() {
 		this.uniqueName = (parentMember == null)
-			? Util.makeFqName(getHierarchy(), name)
-			: Util.makeFqName(parentMember, name);
+			? Util.makeFqName(getHierarchy(), getName())
+			: Util.makeFqName(parentMember, getName());
 	}
 
-	RolapMember(
-		RolapMember parentMember, RolapLevel level, Object value)
-	{
-		this(parentMember, level, value, value.toString());
+	RolapMember(RolapMember parentMember, RolapLevel level, Object value) {
+		this(parentMember, level, value, null);
 	}
 
-	public boolean isCalculatedInQuery()
-	{
+	public boolean isCalculatedInQuery() {
 		return false;
 	}
-	public void setName(String name)
-	{
+
+	public String getName() {
+		final String name = (String) getPropertyValue(Property.PROPERTY_NAME);
+		if (name != null) {
+			return name;
+		}
+		return key.toString();
+	}
+
+	public void setName(String name) {
 		throw new Error("unsupported");
 	}
-	/** Sets a property of this member to a given value. */
+	/**
+	 * Sets a property of this member to a given value.
+	 * <p>WARNING: Setting system properties such as "$name" may have nasty
+	 * side-effects.
+	 */
 	public synchronized void setProperty(String name, Object value) {
 		if (mapPropertyNameToValue.isEmpty()) {
 			// the empty map is shared and immutable; create our own
 			mapPropertyNameToValue = new HashMap();
 		}
 		mapPropertyNameToValue.put(name, value);
+		if (name.equals(Property.PROPERTY_NAME)) {
+			setUniqueName();
+		}
 	}
 
-	public synchronized Object getPropertyValue(String name) {
-		return mapPropertyNameToValue.get(name);
+	public Object getPropertyValue(String name) {
+		if (name.equals(Property.PROPERTY_CONTRIBUTING_CHILDREN)) {
+			List list = new ArrayList();
+			((RolapHierarchy) getHierarchy()).memberReader.getMemberChildren(this, list);
+			return list;
+		}
+		synchronized (this) {
+			return mapPropertyNameToValue.get(name);
+		}
 	}
 	public Property[] getProperties() {
 		return level.getInheritedProperties();
@@ -108,8 +134,26 @@ class RolapMember extends MemberBase
 	int getSolveOrder() {
 		return -1;
 	}
-};
 
+	/**
+	 * Returns whether this member is calculated using an expression.
+	 * (<code>member.{@link #isCalculated}()</code> is equivalent to
+	 * <code>member.{@link #getExpression}() != null</code>.)
+	 */
+	public boolean isCalculated() {
+		return false;
+	}
+
+	/**
+	 * Returns the expression by which this member is calculated. The expression
+	 * is not null if and only if the member is not calculated.
+	 *
+	 * @post (return != null) == (isCalculated())
+	 */
+	Exp getExpression() {
+		return null;
+	}
+}
 
 
 // End RolapMember.java

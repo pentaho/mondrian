@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// Copyright (C) 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -37,11 +37,9 @@ public abstract class RolapAggregationManager implements CellReader {
 	 * Looks through a set of requests and loads aggregations
 	 * accordingly.
 	 *
-	 * @param arity The number of dimensions in the cube, and the number of
-	 *     members in each key.
 	 * @param keySet A set whose keys are {@link ArrayList}s
 	 *     which contain {@link mondrian.olap.Member}s
-	 * @param pinned Writes each loaded aggregation into here. The client must
+	 * @param pinnedSegments Writes each loaded aggregation into here. The client must
 	 *     call {@link CachePool#unpin} on this list.
 	 **/
 	public void loadAggregations(Set keySet, Collection pinnedSegments)
@@ -81,15 +79,17 @@ public abstract class RolapAggregationManager implements CellReader {
 	 **/
 	CellRequest makeRequest(RolapMember[] members)
 	{
-		RolapMeasure measure = (RolapMeasure) members[0];
+		RolapStoredMeasure measure = (RolapStoredMeasure) members[0];
 		Util.assertTrue(measure instanceof RolapStoredMeasure);
 		final RolapStar.Measure starMeasure = (RolapStar.Measure)
 				measure.starMeasure;
 		Util.assertTrue(starMeasure != null);
 		RolapStar star = starMeasure.table.star;
 		CellRequest request = new CellRequest(starMeasure);
+		HashMap mapLevelToColumn = (HashMap) star.mapCubeToMapLevelToColumn.get(measure.cube);
 		for (int i = 1; i < members.length; i++) {
 			RolapMember member = members[i];
+			RolapLevel previousLevel = null;
 			for (RolapMember m = member; m != null; m = (RolapMember)
 					 m.getParentMember()) {
 				if (m.key == null) {
@@ -103,8 +103,15 @@ public abstract class RolapAggregationManager implements CellReader {
 					}
 				}
 				RolapLevel level = (RolapLevel) m.getLevel();
-				RolapStar.Column column = (RolapStar.Column)
-					star.mapLevelToColumn.get(level);
+				if (level == previousLevel) {
+					// We are looking at a parent in a parent-child hierarchy,
+					// for example, we have moved from Fred to Fred's boss,
+					// Wilma. We don't want to include Wilma's key in the
+					// request.
+					continue;
+				}
+				previousLevel = level;
+				RolapStar.Column column = (RolapStar.Column) mapLevelToColumn.get(level);
 				if (column == null) {
 					// This hierarchy is not one which qualifies the starMeasure (this happens in
 					// virtual cubes). The starMeasure only has a value for the 'all' member of

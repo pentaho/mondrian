@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1998-2002 Kana Software, Inc. and others.
+// Copyright (C) 1998-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -102,9 +102,8 @@ public class Main {
 			suite.addTest(CachePool.suite());
 			suite.addTestSuite(TestAggregationManager.class);
 			suite.addTestSuite(ParameterTest.class);
-			if (false) {
-				suite.addTestSuite(AccessControlTest.class);
-			}
+			suite.addTestSuite(AccessControlTest.class);
+			//suite.addTestSuite(ParentChildHierarchyTest.class);
 		}
 		if (testName != null) {
 			// Filter the suite, so that only tests whose names match

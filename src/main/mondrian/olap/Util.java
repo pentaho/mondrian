@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// Copyright (C) 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -347,11 +347,6 @@ public class Util extends mondrian.xom.XOMUtil
 	 */
 	public static Member lookupMemberChildByName(
 			SchemaReader reader, Member member, String memberName) {
-		// calculated members may not have children
-		if (member.isCalculated()) {
-			throw Util.getRes().newMdxCalcMemberCanNotHaveChildren(
-				member.getUniqueName());
-		}
 		Member[] children = reader.getMemberChildren(member);
 		String childName = member.getUniqueName() + ".[" + memberName + "]";
 		for (int i = 0; i < children.length; i++){

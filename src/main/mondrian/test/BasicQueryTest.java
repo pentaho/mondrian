@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2003 Julian Hyde
+// Copyright (C) 2003-2003 Julian Hyde <jhyde@users.sf.net>
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -783,7 +783,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 	}
 
 	public void _testProduct2() {
-		final Axis axis = executeAxis2("{[Product2].members}");
+		final Axis axis = executeAxis2("Sales", "{[Product2].members}");
 		System.out.println(toString(axis.positions));
 	}
 
@@ -1630,6 +1630,28 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"Row #5: <i>6557.00</i>" + nl +
 				"Row #6: <b>150555.00</b>" + nl);
 	}
+
+	public void testFormatOfNulls() {
+		runQueryCheckResult(
+				"with member [Measures].[Foo] as '([Measures].[Store Sales])'," + nl +
+				" format_string = '$#,##0.00;($#,##0.00);ZERO;NULL;Nil'" + nl +
+				"select" + nl +
+				" {[Measures].[Foo]} on columns," + nl +
+				" {[Customers].[Country].members} on rows" + nl +
+				"from Sales",
+				"Axis #0:" + nl +
+				"{}" + nl +
+				"Axis #1:" + nl +
+				"{[Measures].[Foo]}" + nl +
+				"Axis #2:" + nl +
+				"{[Customers].[All Customers].[Canada]}" + nl +
+				"{[Customers].[All Customers].[Mexico]}" + nl +
+				"{[Customers].[All Customers].[USA]}" + nl +
+				"Row #0: NULL" + nl +
+				"Row #1: NULL" + nl +
+				"Row #2: $565,238.13" + nl);
+	}
+
 	/**
 	 * If a measure (in this case, <code>[Measures].[Sales Count]</code>)
 	 * occurs only within a format expression, bug 684593 causes an internal
@@ -1867,7 +1889,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"    <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>" + nl +
 				"  </Hierarchy>" + nl +
 				"</Dimension>");
-		final Axis axis = executeAxis2("[Gender2].members");
+		final Axis axis = executeAxis2("Sales", "[Gender2].members");
 		assertEquals("[Gender2].[All Gender]" + nl +
 				"[Gender2].[All Gender].[F]" + nl +
 				"[Gender2].[All Gender].[M]",
@@ -1980,6 +2002,32 @@ public class BasicQueryTest extends FoodMartTestCase {
 		assertEquals(expected, resultString);
 	}
 
+	/**
+	 * Slicer contains <code>[Promotion Media].[Daily Paper]</code>, but
+	 * filter expression is in terms of <code>[Promotion Media].[Radio]</code>.
+	 */
+	public void testSlicerOverride() {
+		runQueryCheckResult(
+				"with member [Measures].[Radio Unit Sales] as " + nl +
+				" '([Measures].[Unit Sales], [Promotion Media].[Radio])'" + nl +
+				"select {[Measures].[Unit Sales], [Measures].[Radio Unit Sales]} on columns," + nl +
+				" filter([Product].[Product Department].members, [Promotion Media].[Radio] > 50) on rows" + nl +
+				"from Sales" + nl +
+				"where ([Promotion Media].[Daily Paper], [Time].[1997].[Q1])",
+				"Axis #0:" + nl +
+				"{[Promotion Media].[All Media].[Daily Paper], [Time].[1997].[Q1]}" + nl +
+				"Axis #1:" + nl +
+				"{[Measures].[Unit Sales]}" + nl +
+				"{[Measures].[Radio Unit Sales]}" + nl +
+				"Axis #2:" + nl +
+				"{[Product].[All Products].[Food].[Produce]}" + nl +
+				"{[Product].[All Products].[Food].[Snack Foods]}" + nl +
+				"Row #0: 692" + nl +
+				"Row #0: 87" + nl +
+				"Row #1: 447" + nl +
+				"Row #1: 63" + nl);
+	}
+
 	public void testMembersOfLargeDimensionTheHardWay() {
 		final MondrianProperties properties = MondrianProperties.instance();
 		int old = properties.getLargeDimensionThreshold();
@@ -2003,7 +2051,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 		runParallelQueries(1, 1);
 	}
 
-	public void _testParallelSomewhat() {
+	public void testParallelSomewhat() {
 		runParallelQueries(3, 2);
 	}
 

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// Copyright (C) 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -31,6 +31,14 @@ public abstract class Property {
 	 * automatically set for stored measures, based upon their SQL
 	 * aggregation. **/
 	public static final String PROPERTY_AGGREGATION_TYPE = "$aggregation_type";
+	/** The name of the property which holds a member's name. */
+	public static final String PROPERTY_NAME = "$name";
+	/** The name of the property which holds a member's caption. */
+	public static final String PROPERTY_CAPTION = "$caption";
+	/** The name of the property which, for a member of a parent-child hierarchy,
+	holds a {@link java.util.List} of its data member and all of its children
+	(including non-visible children). */
+	public static final String PROPERTY_CONTRIBUTING_CHILDREN = "$contributingChildren";
 
 	/**
 	 * A list of the names of properties which have special meaning to the
@@ -39,6 +47,9 @@ public abstract class Property {
 	public static final String[] systemPropertyNames = {
 		PROPERTY_FORMAT_EXP,
 		PROPERTY_AGGREGATION_TYPE,
+		PROPERTY_NAME,
+		PROPERTY_CAPTION,
+		PROPERTY_CONTRIBUTING_CHILDREN,
 	};
 
 	protected Property(String name, int type) {

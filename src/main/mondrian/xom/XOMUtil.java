@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// Copyright (C) 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -12,6 +12,8 @@
 
 package mondrian.xom;
 import java.util.Vector;
+import java.util.List;
+import java.util.ArrayList;
 import java.io.File;
 import java.io.StringWriter;
 import java.lang.reflect.Array;
@@ -65,15 +67,30 @@ public abstract class XOMUtil extends XMLUtil {
 	}
 
 	/**
-	 * Copy the given array into a new Vector of the same size
+	 * Converts an array into a vector.
 	 **/
-	public static Vector arrayToVector(Object [] array)
-	{
+	public static final Vector toVector(Object[] array) {
 		Vector v = new Vector(array.length);
+		addAll(v, array);
+		return v;
+	}
+
+	/**
+	 * Adds every element of an array to a vector.
+	 */
+	public static final void addAll(Vector v, Object[] array) {
 		for (int i = 0; i < array.length; i++) {
 			v.addElement(array[i]);
 		}
-		return v;
+	}
+
+	/**
+	 * Adds every element of an array to a list.
+	 */
+	public static final void addAll(List v, Object[] array) {
+		for (int i = 0; i < array.length; i++) {
+			v.add(array[i]);
+		}
 	}
 
 	/**

@@ -5,7 +5,7 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == (C) Copyright 2001-2002 Kana Software, Inc. and others.
+  == Copyright (C) 2001-2003 Kana Software, Inc. and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   ==
@@ -170,6 +170,12 @@ todo:
 			<Doc>Name of the source dimension. Must be a dimension in
 			this schema. Case-sensitive.</Doc>
 		</Attribute>
+		<Attribute name="level" required="false">
+			<Doc>
+				Name of the level to join to. If not specified, joins to the
+				lowest level of the dimension.
+			</Doc>
+		</Attribute>
 		<Code><![CDATA[
 			// implement CubeDimension
 			public Dimension getDimension(Schema schema) {
@@ -195,7 +201,7 @@ todo:
 			<link member="foreignKey">foreignKey</link> field is only
 			applicable to private dimensions.
 		</Doc>
-		<Attribute name="name"><Doc></Doc></Attribute>
+		<Attribute name="name" required="true"><Doc></Doc></Attribute>
 		<Array name="hierarchies" type="Hierarchy"><Doc></Doc></Array>
 		<Code>
 			// implement CubeDimension
@@ -236,8 +242,9 @@ todo:
 		<Attribute name="primaryKey">
 			<Doc>
 				The name of the column which identifies members, and
-				which is referenced by rows in the fact table. See
-				also <link class="CubeDimension"
+				which is referenced by rows in the fact table.
+				If not specified, the key of the lowest level is used.
+				See also <link class="CubeDimension"
 				member="foreignKey">CubeDimension.foreignKey</link>.
 			</Doc>
 		</Attribute>
@@ -276,13 +283,36 @@ todo:
 				the name of that table; otherwise, it is required.
 			</Doc>
 		</Attribute>
-		<Attribute name="column"><Doc>todo:</Doc></Attribute>
+		<Attribute name="column">
+			<Doc>
+				The name of the column which holds the unique identifier of
+				this level.
+			</Doc>
+		</Attribute>
+		<Attribute name="nameColumn">
+			<Doc>
+				The name of the column which holds the user identifier of
+				this level.
+			</Doc>
+		</Attribute>
 		<Attribute name="ordinalColumn" required="false">
 			<Doc>
 				The name of the column which holds member
 				ordinals. Only applicable for the last level in a
 				hierarchy. If this column is not specified, the
 				hierarchy cannot be implemented in ROLAP mode.
+			</Doc>
+		</Attribute>
+		<Attribute name="parentColumn" required="false">
+			<Doc>
+				The name of the column which references the parent member in
+				a parent-child hierarchy.
+			</Doc>
+		</Attribute>
+		<Attribute name="nullParentValue" required="false">
+			<Doc>
+				Value which identifies null parents in a parent-child
+				hierarchy. Typical values are 'NULL' and '0'.
 			</Doc>
 		</Attribute>
 		<Attribute name="type" default="String">
@@ -297,23 +327,44 @@ todo:
 				first level's members are always unique.
 			</Doc>
 		</Attribute>
-		<Object name="nameExp" type="Expression" required="false">
+		<Object name="keyExp" type="KeyExpression" required="false">
 			<Doc>
-				The SQL expression used to populate this level's name.
+				The SQL expression used to populate this level's key.
 			</Doc>
 		</Object>
-		<Object name="ordinalExp" type="Expression" required="false">
+		<Object name="nameExp" type="NameExpression" required="false">
+			<Doc>
+				The SQL expression used to populate this level's name. If not
+				specified, the level's key is used.
+			</Doc>
+		</Object>
+		<Object name="ordinalExp" type="OrdinalExpression" required="false">
 			<Doc>
 				The SQL expression used to populate this level's ordinal.
 			</Doc>
 		</Object>
+		<Object name="parentExp" type="ParentExpression" required="false">
+			<Doc>
+				The SQL expression used to join to the parent member in a
+				parent-child hierarchy.
+			</Doc>
+		</Object>
 		<Array name="properties" type="Property" min="0"/>
 		<Code>
+			public Expression getKeyExp() {
+				if (keyExp != null) {
+					return keyExp;
+				} else if (column != null) {
+					return new Column(table, column);
+				} else {
+					return null;
+				}
+			}
 			public Expression getNameExp() {
 				if (nameExp != null) {
 					return nameExp;
-				} else if (column != null) {
-					return new Column(table, column);
+				} else if (nameColumn != null) {
+					return new Column(table, nameColumn);
 				} else {
 					return null;
 				}
@@ -323,6 +374,15 @@ todo:
 					return ordinalExp;
 				} else if (ordinalColumn != null) {
 					return new Column(table, ordinalColumn);
+				} else {
+					return null;
+				}
+			}
+			public Expression getParentExp() {
+				if (parentExp != null) {
+					return parentExp;
+				} else if (parentColumn != null) {
+					return new Column(table, parentColumn);
 				} else {
 					return null;
 				}
@@ -348,16 +408,20 @@ todo:
 	</Element>
 
 	<Element type="Measure">
-		<Attribute name="name"><Doc></Doc></Attribute>
-		<Attribute name="column"><Doc>todo:</Doc></Attribute>
+		<Attribute name="name" required="true">
+			<Doc>Name of this measure.</Doc>
+		</Attribute>
+		<Attribute name="column" required="true">
+			<Doc>Column which is source of this measure's valies.</Doc>
+		</Attribute>
 		<Attribute name="formatString">
 			<Doc>
 				Format string with which to format cells of this measure. For
 				more details, see {@link mondrian.util.Format}.
 			</Doc>
 		</Attribute>
-		<Attribute name="aggregator">
-			<Doc>todo:</Doc>
+		<Attribute name="aggregator" required="true">
+			<Doc>Aggregation function.</Doc>
 			<Value>sum</Value>
 			<Value>count</Value>
 			<Value>min</Value>
@@ -592,7 +656,7 @@ todo:
 		</Code>
 	</Element>
 
-	<Element type="ExpressionView" class="Expression">
+	<Class class="ExpressionView" superclass="Expression">
 		<Doc>
 			A collection of SQL expressions, one per dialect.
 		</Doc>
@@ -616,7 +680,12 @@ todo:
 				return null;
 			}]]>
 		</Code>
-	</Element>
+	</Class>
+
+	<Element type="KeyExpression" class="ExpressionView"/>
+	<Element type="ParentExpression" class="ExpressionView"/>
+	<Element type="OrdinalExpression" class="ExpressionView"/>
+	<Element type="NameExpression" class="ExpressionView"/>
 
 	<!-- Access control =================================================== -->
 	<Element type="Role">

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// Copyright (C) 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -111,11 +111,11 @@ public class RolapConnection extends ConnectionBase {
 						new InitialContext().lookup(dataSource);
 				this.jdbcConnection = dataSourceObject.getConnection();
 			} catch (SQLException e) {
-				throw Util.newInternal(
-						e, "Error while creating connection from data source (" + dataSource + ")");
+				throw Util.newInternal(e,
+						"Error while creating connection from data source (" + dataSource + ")");
 			} catch (NamingException e) {
-				throw Util.newInternal(
-						e, "Error while looking up data source (" + dataSource + ")");
+				throw Util.newInternal(e,
+						"Error while looking up data source (" + dataSource + ")");
 			}
 		}
 		Role role = null;
@@ -124,7 +124,7 @@ public class RolapConnection extends ConnectionBase {
 			// we would loop.
 			schema = RolapSchema.Pool.instance().get(
 					catalogName, jdbcConnectString, jdbcUser, dataSource, connectInfo);
-			String roleName = connectInfo.get("Role");
+			String roleName = connectInfo.get(RolapConnectionProperties.Role);
 			if (roleName != null) {
 				role = schema.lookupRole(roleName);
 				if (role == null) {

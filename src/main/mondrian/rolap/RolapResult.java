@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// Copyright (C) 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -151,14 +151,14 @@ class RolapResult extends ResultBase
 			Exp exp = axis.set;
 			Object value = exp.evaluate(evaluator);
 			if (value == null) {
-				value = new Vector();
+				value = Collections.EMPTY_LIST;
 			}
-			Util.assertTrue(value instanceof Vector);
-			Vector vector = (Vector) value;
+			Util.assertTrue(value instanceof List);
+			List vector = (List) value;
 			positions = new Position[vector.size()];
 			for (int i = 0; i < vector.size(); i++) {
 				RolapPosition position = new RolapPosition();
-				Object o = vector.elementAt(i);
+				Object o = vector.get(i);
 				if (o instanceof Object[]) {
 					Object[] a = (Object[]) o;
 					position.members = new Member[a.length];
@@ -289,11 +289,12 @@ class RolapResult extends ResultBase
 	}
 
 	/**
-	 * An <code>AggregatingCellReader</code> reads cell values from the {@link
-	 * RolapAggregationManager}.
+	 * An <code>AggregatingCellReader</code> reads cell values from the
+	 * {@link RolapAggregationManager}.
 	 **/
 	private static class AggregatingCellReader implements CellReader
 	{
+		private final RolapAggregationManager aggregationManager = AggregationManager.instance();
 		/**
 		 * Overrides {@link CellReader#get}. Returns <code>null</code> if no
 		 * aggregation contains the required cell.
@@ -301,10 +302,8 @@ class RolapResult extends ResultBase
 		// implement CellReader
 		public Object get(Evaluator evaluator)
 		{
-			RolapMember[] currentMembers =
-				((RolapEvaluator) evaluator).currentMembers;
-			return AggregationManager.instance().getCellFromCache(
-				currentMembers);
+			RolapMember[] currentMembers = ((RolapEvaluator) evaluator).currentMembers;
+			return aggregationManager.getCellFromCache(currentMembers);
 		}
 	};
 

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// Copyright (C) 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -15,8 +15,20 @@ import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.util.Format;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.HashMap;
+
 /**
- * todo:
+ * <code>RolapEvaluator</code> evaluates expressions in a dimensional
+ * environment.
+ *
+ * <p>The context contains a member (which may be the default member)
+ * for every dimension in the current cube. Certain operations, such as
+ * evaluating a calculated member or a tuple, change the current context. The
+ * evaluator's {@link #push} method creates a clone of the current evaluator
+ * so that you can revert to the original context once the operation has
+ * completed.
  *
  * @author jhyde
  * @since 10 August, 2001
@@ -143,13 +155,13 @@ class RolapEvaluator implements Evaluator
 	public Object evaluateCurrent()
 	{
 		int minSolve = Integer.MAX_VALUE;
-		RolapCalculatedMember minSolveMember = null;
+		RolapMember minSolveMember = null;
 		for (int i = 0, count = currentMembers.length; i < count; i++) {
-			if (currentMembers[i] instanceof RolapCalculatedMember) {
+			if (currentMembers[i].isCalculated()) {
 				int solve = currentMembers[i].getSolveOrder();
 				if (solve < minSolve) {
 					minSolve = solve;
-					minSolveMember = (RolapCalculatedMember) currentMembers[i];
+					minSolveMember = currentMembers[i];
 				}
 			}
 		}
@@ -162,7 +174,8 @@ class RolapEvaluator implements Evaluator
 					defaultMember != minSolveMember,
 					"default member must not be calculated");
 			Evaluator evaluator = push(defaultMember);
-			return minSolveMember.formula.getExpression().evaluateScalar(evaluator);
+//			((RolapEvaluator) evaluator).cellReader = new CachingCellReader(cellReader);
+			return minSolveMember.getExpression().evaluateScalar(evaluator);
 		}
 		return cellReader.get(this);
 	}
@@ -255,17 +268,37 @@ class RolapEvaluator implements Evaluator
 		}
 	}
 
-	class MeasureCellReader implements CellReader
-	{
-		public Object get(Evaluator evaluator)
-		{
-			RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator;
-			RolapStoredMeasure measure = (RolapStoredMeasure)
-				rolapEvaluator.currentMembers[0];
-			CellReader cellReader = measure.getCellReader();
-			return cellReader.get(evaluator);
+	/**
+	 * <code>CachingCellReader</code> stores the results of cell-requests in a
+	 * cache.
+	 *
+	 * <p>The caching strategy is naive. It caches in a <em>static object</em>, and
+	 * never flushes its cache. We should cache sets of members -- say, those with
+	 * the same dimensionality -- in the aggregation manager.
+	 *
+	 * <p>We also ought to be able to control on a per-measure basis whether to do
+	 * caching.
+	 */
+	private static class CachingCellReader implements CellReader {
+		private final CellReader cellReader;
+		private static final HashMap cellCache = new HashMap();
+
+		CachingCellReader(CellReader cellReader) {
+			this.cellReader = cellReader;
+		}
+		public Object get(Evaluator evaluator) {
+			final RolapMember[] currentMembers = ((RolapEvaluator) evaluator).currentMembers;
+			final List key = Arrays.asList(currentMembers);
+			Object value = cellCache.get(key);
+			if (value == null) {
+				value = cellReader.get(evaluator);
+				if (value != RolapUtil.valueNotReadyException) {
+					cellCache.put(key, value);
+				}
+			}
+			return value;
 		}
 	}
-};
+}
 
 // End RolapEvaluator.java

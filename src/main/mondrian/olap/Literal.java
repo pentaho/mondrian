@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1998-2002 Kana Software, Inc. and others.
+// Copyright (C) 1998-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -24,8 +24,10 @@ public class Literal extends ExpBase
 	public static final Literal emptyString = new Literal("", false);
 	public static final Literal zero = new Literal(new Integer(0));
 	public static final Literal one = new Literal(new Integer(1));
+	public static final Literal negativeOne = new Literal(new Integer(-1));
 	public static final Literal doubleZero = new Literal(new Double(0.0));
 	public static final Literal doubleOne = new Literal(new Double(1.0));
+	public static final Literal doubleNegativeOne = new Literal(new Double(-1.0));
 
 	private Literal(String s, boolean isSymbol)
 	{
@@ -33,6 +35,10 @@ public class Literal extends ExpBase
 		this.type = isSymbol ? Category.Symbol : Category.String;
 	}
 
+	/**
+	 * Creates a string literal.
+	 * @see #createSymbol
+	 */ 
 	public static Literal createString(String s) {
 		if (s.equals("")) {
 			return emptyString;
@@ -40,7 +46,11 @@ public class Literal extends ExpBase
 			return new Literal(s, false);
 		}
 	}
-	static Literal createSymbol(String s) {
+	/**
+	 * Creates a symbol.
+	 * @see #createString
+	 */
+	public static Literal createSymbol(String s) {
 		return new Literal(s, true);
 	}
 	private Literal(Double d) {
@@ -93,20 +103,20 @@ public class Literal extends ExpBase
 	public int getType() { return type; }
 	public Hierarchy getHierarchy() { return null; }
 
-	public Exp resolve(Query q)
-	{
+	public Exp resolve(Query q) {
 		return this;
 	}
 
-	public boolean usesDimension(Dimension dimension)
-	{
+	public boolean usesDimension(Dimension dimension) {
 		return false;
 	}
 
-	// implement Exp
-	public Object evaluate(Evaluator evaluator)
-	{
+	public Object evaluate(Evaluator evaluator) {
 		return evaluator.xx(this);
+	}
+
+	public Object evaluateScalar(Evaluator evaluator) {
+		return o;
 	}
 
 	public Object getValue() {
@@ -114,10 +124,8 @@ public class Literal extends ExpBase
 	}
 
 	public int getIntValue() {
-		if (o instanceof Integer) {
-			return ((Integer) o).intValue();
-		} else if (o instanceof Double) {
-			return ((Double) o).intValue();
+		if (o instanceof Number) {
+			return ((Number) o).intValue();
 		} else {
 			throw Util.newInternal("cannot convert " + o + " to int");
 		}

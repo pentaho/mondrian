@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1999-2002 Kana Software, Inc. and others.
+// Copyright (C) 1999-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -38,6 +38,8 @@ public interface FunDef extends Testable {
 	 *      <code>(ARG,...)</code>; that is, parentheses for grouping
 	 *     expressions, and the tuple construction operator.</dd>
 	 * <dt>{@link #TypeCase}</dt><dd>invoked <code>CASE ... END</code>.</dd>
+	 * <dt>{@link #TypeInternal}</dt><dd>a function which cannot be specified
+	 *     syntactically.</dd>
 	 * </dl>
 	 **/
 	int getSyntacticType();
@@ -58,6 +60,8 @@ public interface FunDef extends Testable {
 	int TypeParentheses = 6;
 	/** @see #getSyntacticType **/
 	int TypeCase = 7;
+	/** @see #getSyntacticType */
+	int TypeInternal = 8;
 
 	int TypeMask = 0xFF;
 	int TypePropertyQuoted = TypeProperty | 0x100;

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// Copyright (C) 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -28,7 +28,7 @@ class RolapHierarchy extends HierarchyBase
 	/** The raw member reader. For a member reader which incorporates access
 	 * control, call {@link #getMemberReader(Role)}. */
 	MemberReader memberReader;
-	private MondrianDef.Hierarchy xmlHierarchy;
+	MondrianDef.Hierarchy xmlHierarchy;
 	private RolapMember defaultMember;
 	private RolapNullMember nullMember;
 	/**
@@ -43,11 +43,10 @@ class RolapHierarchy extends HierarchyBase
 	 **/
 	private String sharedHierarchy;
 
-	String primaryKeyTableName;
-	String primaryKey;
 	String foreignKey;
+	private FunCall aggregateChildrenExpression;
 
-	private RolapHierarchy(RolapDimension dimension, String subName, boolean hasAll)
+	RolapHierarchy(RolapDimension dimension, String subName, boolean hasAll)
 	{
 		this.dimension = dimension;
 		this.subName = subName;
@@ -60,20 +59,9 @@ class RolapHierarchy extends HierarchyBase
 			this.uniqueName = Util.makeFqName(name); // e.g. "[Time.Weekly]"
 		}
 		if (hasAll) {
-			Util.discard(newLevel("(All)", null, null, RolapLevel.ALL));
+			Util.discard(newLevel("(All)", RolapLevel.ALL | RolapLevel.UNIQUE));
 			this.allMemberName = "All " + name + "s";
 		}
-	}
-
-	RolapHierarchy(
-		RolapDimension dimension, String subName, boolean hasAll,
-		String sql, String primaryKey, String foreignKey)
-	{
-		this(dimension, subName, hasAll);
-		Util.assertTrue(sql == null);
-		this.primaryKeyTableName = null;
-		this.primaryKey = primaryKey;
-		this.foreignKey = foreignKey;
 	}
 
 	/**
@@ -97,10 +85,14 @@ class RolapHierarchy extends HierarchyBase
 			}
 			this.levels = new RolapLevel[xmlHierarchy.levels.length + 1];
 			this.levels[0] = new RolapLevel(
-					this, 0, "(All)", null, null, new RolapProperty[0], RolapLevel.ALL);
+					this, 0, "(All)", null, null, null, null, new RolapProperty[0], RolapLevel.ALL | RolapLevel.UNIQUE);
 			for (int i = 0; i < xmlHierarchy.levels.length; i++) {
-				levels[i + 1] = new RolapLevel(
-					this, i + 1, xmlHierarchy.levels[i]);
+				final MondrianDef.Level xmlLevel = xmlHierarchy.levels[i];
+				if (xmlLevel.getKeyExp() == null &&
+						xmlHierarchy.memberReaderClass == null) {
+					throw Util.newError("Level '" + xmlLevel.name + "' must have a name expression (a 'column' attribute or an <Expression> child)");
+				}
+				levels[i + 1] = new RolapLevel(this, i + 1, xmlLevel);
 			}
 		} else {
 			this.levels = new RolapLevel[xmlHierarchy.levels.length];
@@ -124,13 +116,11 @@ class RolapHierarchy extends HierarchyBase
 					"' must not have more than one source " +
 					" (memberReaderClass, <Table>, <Join> or <View>)");
 		}
-		this.primaryKeyTableName = xmlHierarchy.primaryKeyTable;
-		this.primaryKey = xmlHierarchy.primaryKey;
 		this.foreignKey = xmlCubeDimension.foreignKey;
 	}
 
 	/**
-	 * @param cube May be null
+	 * Initializes a hierarchy within the context of a cube.
 	 */
 	void init(RolapCube cube)
 	{
@@ -143,79 +133,22 @@ class RolapHierarchy extends HierarchyBase
 		}
 		if (this.getDimension().isMeasures() ||
 				this.xmlHierarchy.memberReaderClass != null) {
-			Util.assertTrue(primaryKeyTableName == null);
-			Util.assertTrue(primaryKey == null);
 			Util.assertTrue(foreignKey == null);
 			return;
 		}
-		if (cube == null || !cube.isVirtual()) {
+		if (!cube.isVirtual()) {
 			// virtual cubes don't create usages
 			HierarchyUsage usage = getSchema().getUsage(this,cube);
-			if (primaryKeyTableName == null) {
-				usage.primaryKeyTable = getUniqueTable();
-				if (usage.primaryKeyTable == null) {
-					throw Util.newError(
-							"must specify primaryKeyTableName for hierarchy " +
-							getUniqueName() +
-							", because it has more than one table");
-				}
-			} else {
-				usage.primaryKeyTable = xmlHierarchy.relation.find(primaryKeyTableName);
-				if (usage.primaryKeyTable == null) {
-					throw Util.newError(
-							"no table '" + primaryKeyTableName +
-							"' found in hierarchy " + getUniqueName());
-				}
-			}
-			final boolean inFactTable = usage.primaryKeyTable.equals(cube.getFact());
-			if (primaryKey == null && !inFactTable) {
-				throw Util.newError(
-						"must specify primaryKey for hierarchy " +
-						getUniqueName());
-			}
-			usage.primaryKey = primaryKey;
-			if (foreignKey == null && !inFactTable) {
-				throw Util.newError(
-						"must specify foreignKey for hierarchy " +
-						getUniqueName());
-			}
-			usage.foreignKey = foreignKey;
+			usage.init(cube, this, null);
 		}
 	}
 
-	RolapLevel newLevel(
-			String name, MondrianDef.Expression nameExp,
-			MondrianDef.Expression ordinalExp, int flags) {
+	RolapLevel newLevel(String name, int flags) {
 		RolapLevel level = new RolapLevel(
-				this, this.levels.length, name, nameExp, ordinalExp,
-				new RolapProperty[0], flags);
+				this, this.levels.length, name, null, null,
+				null, null, new RolapProperty[0], flags);
 		this.levels = (RolapLevel[]) RolapUtil.addElement(this.levels, level);
 		return level;
-	}
-
-	RolapLevel newLevel(
-			String name, String table, String column, String ordinalColumn, int flags) {
-		return newLevel(
-				name,
-				new MondrianDef.Column(table, column),
-				new MondrianDef.Column(table, ordinalColumn),
-				flags);
-	}
-
-	RolapLevel newLevel(String name, String table, String column, String ordinalColumn) {
-		return newLevel(
-				name,
-				new MondrianDef.Column(table, column),
-				new MondrianDef.Column(table, ordinalColumn),
-				0);
-	}
-
-	RolapLevel newLevel(String name, String table, String column) {
-		return newLevel(name, new MondrianDef.Column(table, column), null, 0);
-	}
-
-	RolapLevel newLevel(String name) {
-		return newLevel(name, null, null, 0);
 	}
 
 	/**
@@ -333,13 +266,12 @@ class RolapHierarchy extends HierarchyBase
 		if (cube != null) {
 			HierarchyUsage hierarchyUsage = getSchema().getUsage(this,cube);
 			query.addFrom(cube.getFact(), failIfExists);
-			query.addFrom(hierarchyUsage.primaryKeyTable, failIfExists);
+			query.addFrom(hierarchyUsage.joinTable, failIfExists);
 			query.addWhere(
 					query.quoteIdentifier(
 							cube.getAlias(), hierarchyUsage.foreignKey) +
 					" = " +
-					query.quoteIdentifier(
-							hierarchyUsage.primaryKeyTable.getAlias(), hierarchyUsage.primaryKey));
+					hierarchyUsage.joinExp.getExpression(query));
 		}
 		MondrianDef.Relation relation = xmlHierarchy.relation;
 		if (relation instanceof MondrianDef.Join) {
@@ -412,6 +344,22 @@ class RolapHierarchy extends HierarchyBase
 		default:
 			throw Util.newInternal("Bad case " + access);
 		}
+	}
+
+	/**
+	 * Returns an expression which will compute a member's value by aggregating
+	 * its children.
+	 *
+	 * <p>It is efficient to share one expression between all calculated members in
+	 * a parent-child hierarchy, so we only need need to validate the expression
+	 * once.
+	 */
+	synchronized Exp getAggregateChildrenExpression() {
+		if (aggregateChildrenExpression == null) {
+			aggregateChildrenExpression = new FunCall("$AggregateChildren",
+					new Exp[] {this}, FunDef.TypeInternal);
+		}
+		return aggregateChildrenExpression;
 	}
 }
 

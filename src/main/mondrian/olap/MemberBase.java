@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// Copyright (C) 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -26,8 +26,6 @@ public abstract class MemberBase
 {
 	protected MemberBase parentMember;
 	protected LevelBase level;
-	protected String name;
-	protected String caption;
 	protected String uniqueName;
 	protected int memberType;
 	protected String parentUniqueName;
@@ -39,14 +37,16 @@ public abstract class MemberBase
 	public final int getType() {
 		return Category.Member;
 	}
-	public final String getName() {
-		return name;
-	}
+	public abstract String getName();
 	public final String getUniqueName() {
 		return uniqueName;
 	}
 	public final String getCaption() {
-		return caption;
+		final String caption = (String) getPropertyValue(Property.PROPERTY_CAPTION);
+		if (caption != null) {
+			return caption;
+		}
+		return getName();
 	}
 	public final String getParentUniqueName() {
 		return parentUniqueName;

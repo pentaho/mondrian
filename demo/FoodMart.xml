@@ -1,13 +1,18 @@
+<?xml version="1.0"?>
+<Schema>
 <!--
   == $Id$
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == (C) Copyright 2000-2002 Kana Software, Inc. and others.
+  == Copyright (C) 2000-2003 Kana Software, Inc. and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
+  ==
+  == todo:
+  == 1. <CalculatedMember/>
+  == 2. <Measure aggregator="distinct count"/>
   -->
-<Schema>
 
 <!-- Shared dimensions -->
 
@@ -120,7 +125,7 @@ WHERE "product"."product_class_id" = "product_class"."product_class_id"
 			<Level name="State Province" column="state_province" uniqueMembers="true"/>
 			<Level name="City" column="city" uniqueMembers="false"/>
 			<Level name="Name" uniqueMembers="true">
-				<ExpressionView>
+				<KeyExpression>
 					<SQL dialect="oracle">
 "fname" || ' ' || "lname"
 					</SQL>
@@ -136,7 +141,7 @@ CONCAT(`customer`.`fname`, " ", `customer`.`lname`)
 					<SQL dialect="generic">
 "lname"
 					</SQL>
-				</ExpressionView>
+				</KeyExpression>
 				<Property name="Gender" column="gender"/>
 				<Property name="Marital Status" column="marital_status"/>
 				<Property name="Education" column="education"/>
@@ -227,6 +232,87 @@ CONCAT(`customer`.`fname`, " ", `customer`.`lname`)
 
 </Cube>
 
+<Cube name="HR">
+	<Table name="salary"/>
+	<!-- Use private "Time" dimension because key is different than public
+	     "Time" dimension. -->
+	<Dimension name="Time" foreignKey="pay_date">
+		<Hierarchy hasAll="false" primaryKey="the_date">
+			<Table name="time_by_day"/>
+			<Level name="Year" column="the_year" type="Numeric" uniqueMembers="true"/>
+			<Level name="Quarter" column="quarter" uniqueMembers="false"/>
+			<Level name="Month" column="month_of_year" uniqueMembers="false" type="Numeric"/>
+		</Hierarchy>
+	</Dimension>
+
+	<Dimension name="Store" foreignKey="employee_id" >
+		<Hierarchy hasAll="true" primaryKey="employee_id" primaryKeyTable="employee">
+			<Join leftKey="store_id" rightKey="store_id">
+				<Table name="employee"/>
+				<Table name="store"/>
+			</Join>
+			<Level name="Store Country" table="store" column="store_country" uniqueMembers="true"/>
+			<Level name="Store State" table="store" column="store_state" uniqueMembers="true"/>
+			<Level name="Store City" table="store" column="store_city" uniqueMembers="false"/>
+			<Level name="Store Name" table="store" column="store_name" uniqueMembers="true">
+				<Property name="Store Type" table="store" column="store_type"/>
+				<Property name="Store Manager" table="store" column="store_manager"/>
+				<Property name="Store Sqft" table="store" column="store_sqft" type="Numeric"/>
+				<Property name="Grocery Sqft" table="store" column="grocery_sqft" type="Numeric"/>
+				<Property name="Frozen Sqft" table="store" column="frozen_sqft" type="Numeric"/>
+				<Property name="Meat Sqft" table="store" column="meat_sqft" type="Numeric"/>
+				<Property name="Has coffee bar" table="store" column="coffee_bar" type="Boolean"/>
+				<Property name="Street address" table="store" column="store_street_address" type="String"/>
+			</Level>
+		</Hierarchy>
+	</Dimension>
+
+	<Dimension name="Pay Type" foreignKey="employee_id">
+		<Hierarchy hasAll="true" primaryKey="employee_id" primaryKeyTable="employee">
+			<Join leftKey="position_id" rightKey="position_id">
+				<Table name="employee"/>
+				<Table name="position"/>
+			</Join>
+			<Level name="Pay Type" table="position" column="pay_type" uniqueMembers="true"/>
+		</Hierarchy>
+	</Dimension>
+	<DimensionUsage name="Store Type" source="Store Type" foreignKey="store_id"/>
+	<Dimension name="Position" foreignKey="employee_id">
+		<Hierarchy hasAll="true" primaryKey="employee_id">
+			<Table name="employee"/>
+			<Level name="Management Role" uniqueMembers="true" column="management_role"/>
+			<Level name="Position Title" uniqueMembers="false" column="position_title"/>
+		</Hierarchy>
+	</Dimension>
+	<Dimension name="Department" foreignKey="department_id">
+		<Hierarchy hasAll="true" primaryKey="department_id">
+			<Table name="department"/>
+			<Level name="Department Description" uniqueMembers="true" column="department_id"/>
+		</Hierarchy>
+	</Dimension>
+	<Dimension name="Employees" foreignKey="employee_id">
+		<Hierarchy hasAll="true" allMemberName="All Employees" primaryKey="employee_id">
+			<Table name="employee"/>
+			<Level name="Employee Id" type="Numeric" uniqueMembers="true" column="employee_id" parentColumn="supervisor_id" nameColumn="full_name" nullParentValue="0">
+				<Property name="Marital Status" column="marital_status"/>
+				<Property name="Position Title" column="position_title"/>
+				<Property name="Gender" column="gender"/>
+				<Property name="Salary" column="salary"/>
+				<Property name="Education Level" column="education_level"/>
+				<Property name="Management Role" column="management_role"/>
+			</Level>
+		</Hierarchy>
+	</Dimension>
+	<Measure name="Org Salary" column="salary_paid" aggregator="sum" formatString="Currency" />
+	<Measure name="Count" column="employee_id" aggregator="count" formatString="#,#"/>
+	<!-- todo: change aggregator="distinct count"-->
+	<Measure name="Number of Employees" column="employee_id" aggregator="count" formatString="#,#"/>
+	<CalculatedMember name="Employee Salary" dimension="[Measures]" formatString="Currency"
+		formula="(employees.currentmember.datamember, [Measures].[Org Salary])"/>
+	<CalculatedMember name="Avg Salary" dimension="[Measures]" formatString="Currency"
+		formula="[Measures].[Org Salary]/[Measures].[Number of Employees]"/>
+</Cube>
+
 <VirtualCube name="Warehouse and Sales">
 	<VirtualCubeDimension name="Time"/>
 	<VirtualCubeDimension name="Store"/>
@@ -235,6 +321,7 @@ CONCAT(`customer`.`fname`, " ", `customer`.`lname`)
 	<VirtualCubeMeasure cubeName="Sales" name="[Measures].[Unit Sales]"/>
 	<VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Units Shipped]"/>
 </VirtualCube>
+
 
 <!-- A California manager can only see customers and stores in California.
  They cannot drill down on Gender. -->

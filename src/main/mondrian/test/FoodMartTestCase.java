@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2003 Kana Software, Inc. and others.
+// Copyright (C) 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -86,10 +86,10 @@ public class FoodMartTestCase extends TestCase {
 	 * Runs a query with a given expression on an axis, and returns the whole
 	 * axis.
 	 */
-	public Axis executeAxis2(String expression) {
+	public Axis executeAxis2(String cube, String expression) {
 		Result result = execute(
 				TestContext.instance().getFoodMartConnection(false),
-				"select {" + expression + "} on columns from Sales");
+				"select {" + expression + "} on columns from " + cube);
 		return result.getAxes()[0];
 	}
 
@@ -178,11 +178,18 @@ public class FoodMartTestCase extends TestCase {
 	}
 
 	/**
+	 * Runs a query on the "Sales" cube with a given expression on an axis, and
+	 * asserts that it returns the expected string.
+	 */
+	public void assertAxisReturns(String expression, String expected) {
+		assertAxisReturns("Sales", expression, expected);
+	}
+	/**
 	 * Runs a query with a given expression on an axis, and asserts that it
 	 * returns the expected string.
 	 */
-	public void assertAxisReturns(String expression, String expected) {
-		Axis axis = executeAxis2(expression);
+	public void assertAxisReturns(String cube, String expression, String expected) {
+		Axis axis = executeAxis2(cube, expression);
 		assertEquals(expected, toString(axis.positions));
 	}
 	/**

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1998-2002 Kana Software, Inc. and others.
+// Copyright (C) 1998-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -44,6 +44,9 @@ public class FunCall extends ExpBase
 			break;
 		case FunDef.TypeParentheses:
 			Util.assertTrue(fun.equals("()"));
+			break;
+		case FunDef.TypeInternal:
+			Util.assertTrue(fun.startsWith("$"));
 			break;
 		default:
 			Util.assertTrue(!fun.startsWith("$") &&

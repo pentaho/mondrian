@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// Copyright (C) 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -56,8 +56,8 @@ class RolapCube extends CubeBase
 		this.dimensions = new RolapDimension[xmlCube.dimensions.length + 1];
 		RolapDimension measuresDimension = new RolapDimension(schema, Dimension.MEASURES_NAME, 0);
 		this.dimensions[0] = measuresDimension;
-		this.measuresHierarchy = measuresDimension.newHierarchy(null, false, null, null, null);
-		RolapLevel measuresLevel = this.measuresHierarchy.newLevel("MeasuresLevel");
+		this.measuresHierarchy = measuresDimension.newHierarchy(null, false);
+		RolapLevel measuresLevel = this.measuresHierarchy.newLevel("MeasuresLevel", 0);
 		for (int i = 0; i < xmlCube.dimensions.length; i++) {
 			MondrianDef.CubeDimension xmlCubeDimension = xmlCube.dimensions[i];
 			MondrianDef.Dimension xmlDimension = xmlCubeDimension.getDimension(xmlSchema);
@@ -91,8 +91,8 @@ class RolapCube extends CubeBase
 		RolapDimension measuresDimension = new RolapDimension(
 			schema, Dimension.MEASURES_NAME, 0);
 		this.dimensions[0] = measuresDimension;
-		this.measuresHierarchy = measuresDimension.newHierarchy(null, false, null, null, null);
-		this.measuresHierarchy.newLevel("MeasuresLevel");
+		this.measuresHierarchy = measuresDimension.newHierarchy(null, false);
+		this.measuresHierarchy.newLevel("MeasuresLevel", 0);
 		for (int i = 0; i < xmlVirtualCube.dimensions.length; i++) {
 			MondrianDef.VirtualCubeDimension xmlCubeDimension =
 				xmlVirtualCube.dimensions[i];
@@ -125,81 +125,6 @@ class RolapCube extends CubeBase
 		}
 		this.measuresHierarchy.memberReader = new CacheMemberReader(
 			new MeasureMemberSource(measuresHierarchy, measures));
-		init();
-	}
-
-	RolapCube(RolapSchema schema)
-	{
-		this.schema = schema;
-		this.name = "Sales";
-		this.fact = new MondrianDef.Table(null, "sales_fact_1997", "fact");
-		this.dimensions = new RolapDimension[0];
-		RolapDimension dimension;
-		RolapHierarchy hierarchy;
-		RolapLevel level;
-		dimension = newDimension("Measures");
-		hierarchy = dimension.newHierarchy(null, false, null, null, null);
-		this.measuresHierarchy = hierarchy;
-		level = hierarchy.newLevel("MeasuresLevel");
-		RolapLevel measuresLevel = level;
-		dimension = newDimension("Store");
-		hierarchy = dimension.newHierarchy(
-			null, true, "SELECT * FROM \"store\"", "store_id", "store_id");
-		level = hierarchy.newLevel("Store Country", "store", "store_country");
-		level = hierarchy.newLevel("Store State", "store", "store_state");
-		level = hierarchy.newLevel("Store City", "store", "store_city");
-		level = hierarchy.newLevel("Store Name", "store", "store_name");
-		dimension = newDimension("Time");
-		hierarchy = dimension.newHierarchy(
-			null, false,
-			"SELECT * FROM \"time_by_day\"", "time_id", "time_id");
-		level = hierarchy.newLevel("Year", "time_by_day", "the_year", null, RolapLevel.NUMERIC);
-		level = hierarchy.newLevel("Quarter", "time_by_day", "quarter");
-		level = hierarchy.newLevel("Month", "time_by_day", "month_of_year", null, RolapLevel.NUMERIC);
-		dimension = newDimension("Product");
-		hierarchy = dimension.newHierarchy(
-			null, true,
-			"SELECT * FROM \"product\", \"product_class\" " +
-			"WHERE \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\"",
-			"product_id", "product_id");
-		level = hierarchy.newLevel("Product Family", "product", "product_family");
-		level = hierarchy.newLevel("Product Department", "product", "product_department");
-		level = hierarchy.newLevel("Product Category", "product", "product_category");
-		level = hierarchy.newLevel("Product Subcategory", "product", "product_subcategory");
-		level = hierarchy.newLevel("Brand Name", "product", "brand_name");
-		level = hierarchy.newLevel("Product Name", "product", "product_name");
-		dimension = newDimension("Promotion Media");
-		hierarchy = dimension.newHierarchy(null, true, "SELECT * FROM \"promotion\"", "promotion_id", "promotion_id");
-		level = hierarchy.newLevel("Media Type", "promotion", "media_type");
-		dimension = newDimension("Promotions");
-		hierarchy = dimension.newHierarchy(null, true, "SELECT * FROM \"promotion\"", "promotion_id", "promotion_id");
-		level = hierarchy.newLevel("Promotion Name", "promotion", "promotion_name");
-		dimension = newDimension("Customers");
-		hierarchy = dimension.newHierarchy(null, true, "SELECT *, \"fname\" + ' ' + \"lname\" as \"name\" FROM \"customer\"", "customer_id", "customer_id");
-		level = hierarchy.newLevel("Country", "customer", "country");
-		level = hierarchy.newLevel("State Province", "customer", "state_province");
-		level = hierarchy.newLevel("City", "customer", "city");
-		level = hierarchy.newLevel("Name", "customer", "name");
-		dimension = newDimension("Education Level");
-		hierarchy = dimension.newHierarchy(null, true, "SELECT * FROM \"customer\"", "customer_id", "customer_id");
-		level = hierarchy.newLevel("Education Level", "customer", "education");
-		dimension = newDimension("Gender");
-		hierarchy = dimension.newHierarchy(null, true, "SELECT * FROM \"customer\"", "customer_id", "customer_id");
-		level = hierarchy.newLevel("Gender", "customer", "gender");
-		dimension = newDimension("Marital Status");
-		hierarchy = dimension.newHierarchy(null, true, "SELECT * FROM \"customer\"", "customer_id", "customer_id");
-		level = hierarchy.newLevel("Marital Status", "customer", "marital_status");
-		dimension = newDimension("Yearly Income");
-		hierarchy = dimension.newHierarchy(null, true, "SELECT * FROM \"customer\"", "customer_id", "customer_id");
-		level = hierarchy.newLevel("Yearly Income", "customer", "yearly_income");
-
-		this.measuresHierarchy.memberReader = new CacheMemberReader(
-			new MeasureMemberSource(
-				measuresHierarchy,
-				new RolapMember[] {
-					new RolapStoredMeasure(this, null, measuresLevel, "Unit Sales", "unit_sales", "sum", "#"),
-					new RolapStoredMeasure(this, null, measuresLevel, "Store Cost", "store_cost", "sum", "Currency"),
-					new RolapStoredMeasure(this, null, measuresLevel, "Store Sales", "store_sales", "sum", "Currency")}));
 		init();
 	}
 
@@ -298,6 +223,11 @@ class RolapCube extends CubeBase
 				schema, this.fact);
 		RolapHierarchy[] hierarchies = (RolapHierarchy[])
 				dimension.getHierarchies();
+		HashMap mapLevelToColumn = (HashMap) star.mapCubeToMapLevelToColumn.get(this);
+		if (mapLevelToColumn == null) {
+			mapLevelToColumn = new HashMap();
+			star.mapCubeToMapLevelToColumn.put(this, mapLevelToColumn);
+		}
 		for (int k = 0; k < hierarchies.length; k++) {
 			RolapHierarchy hierarchy = hierarchies[k];
 			HierarchyUsage hierarchyUsage = schema.getUsage(hierarchy,this);
@@ -308,20 +238,19 @@ class RolapCube extends CubeBase
 			RolapStar.Table table = star.factTable;
 			if (!relation.equals(table.relation)) {
 				RolapStar.Condition joinCondition = new RolapStar.Condition(
-						table.getAlias(), hierarchyUsage.foreignKey,
-						hierarchyUsage.primaryKeyTable.getAlias(),
-						hierarchyUsage.primaryKey);
+						new MondrianDef.Column(table.getAlias(), hierarchyUsage.foreignKey),
+						hierarchyUsage.joinExp);
 				table = table.addJoin(relation, joinCondition);
 			}
 			RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
 			for (int l = 0; l < levels.length; l++) {
 				RolapLevel level = levels[l];
-				if (level.nameExp == null) {
+				if (level.keyExp == null) {
 					continue;
 				} else {
 					RolapStar.Column column = new RolapStar.Column();
-					if (level.nameExp instanceof MondrianDef.Column) {
-						String tableName = ((MondrianDef.Column) level.nameExp).table;
+					if (level.keyExp instanceof MondrianDef.Column) {
+						String tableName = ((MondrianDef.Column) level.keyExp).table;
 						column.table = table.findAncestor(tableName);
 						if (column.table == null) {
 							throw Util.newError(
@@ -333,10 +262,10 @@ class RolapCube extends CubeBase
 					} else {
 						column.table = table;
 					}
-					column.expression = level.nameExp;
+					column.expression = level.keyExp;
 					column.isNumeric = (level.flags & RolapLevel.NUMERIC) != 0;
 					table.columns.add(column);
-					star.mapLevelToColumn.put(level, column);
+					mapLevelToColumn.put(level, column);
 				}
 			}
 		}
