@@ -230,7 +230,14 @@ class RolapEvaluator implements Evaluator
 		}
 		return o;
 	}
-	private String getFormatString()
+    /**
+     * Returns the format string for this cell. This is computed by evaluating
+     * the format expression in the current context, and therefore different
+     * cells may have different format strings.
+     *
+     * @post return != null
+     */
+	String getFormatString()
 	{
 		Exp formatExp = (Exp) getProperty(Property.PROPERTY_FORMAT_EXP);
 		if (formatExp == null) {

@@ -169,8 +169,8 @@ public class FoodMartTestCase extends TestCase {
 	public void assertAxisThrows(Connection connection, String expression, String pattern) {
 		Throwable throwable = null;
 		try {
-			Result result = execute(connection,
-					"select {" + expression + "} on columns from Sales");
+			Util.discard(execute(connection,
+					"select {" + expression + "} on columns from Sales"));
 		} catch (Throwable e) {
 			throwable = e;
 		}
@@ -286,6 +286,15 @@ public class FoodMartTestCase extends TestCase {
 		return sw.toString();
 	}
 
+
+    static class QueryAndResult {
+        String query;
+        String result;
+        QueryAndResult(String query, String result) {
+            this.query = query;
+            this.result = result;
+        }
+    }
 }
 
 /**
@@ -358,15 +367,6 @@ class TestCaseForker {
 			}
 			testCase.fail(failures.size() + " threads failed");
 		}
-	}
-}
-
-class QueryAndResult {
-	String query;
-	String result;
-	QueryAndResult(String query, String result) {
-		this.query = query;
-		this.result = result;
 	}
 }
 

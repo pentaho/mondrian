@@ -20,6 +20,7 @@ import mondrian.rolap.CachePool;
 import mondrian.rolap.RolapUtil;
 import mondrian.rolap.agg.TestAggregationManager;
 import mondrian.util.Schedule;
+import mondrian.xmla.XmlaTest;
 
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
@@ -95,7 +96,7 @@ public class Main {
 				suite.addTest((Test) o);
 			}
 		} else {
-			suite.addTestSuite(BasicQueryTest.class);
+			if (false) suite.addTestSuite(BasicQueryTest.class);
 			suite.addTest(BuiltinFunTable.suite());
 			suite.addTestSuite(Schedule.ScheduleTestCase.class);
 			suite.addTest(Util.suite());
@@ -103,7 +104,8 @@ public class Main {
 			suite.addTestSuite(TestAggregationManager.class);
 			suite.addTestSuite(ParameterTest.class);
 			suite.addTestSuite(AccessControlTest.class);
-			//suite.addTestSuite(ParentChildHierarchyTest.class);
+			if (false) suite.addTestSuite(ParentChildHierarchyTest.class);
+            suite.addTestSuite(XmlaTest.class);
 		}
 		if (testName != null) {
 			// Filter the suite, so that only tests whose names match

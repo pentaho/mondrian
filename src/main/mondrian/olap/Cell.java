@@ -61,6 +61,12 @@ public interface Cell {
 	 * is null if the cell is based upon a calculated member.
 	 */
 	String getDrillThroughSQL();
+
+    /**
+     * Returns the value of a property.
+     */
+    Object getPropertyValue(String propertyName);
+
 }
 
 // End Cell.java

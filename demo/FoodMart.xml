@@ -184,7 +184,9 @@ CONCAT(`customer`.`fname`, " ", `customer`.`lname`)
 	<Measure name="Store Cost" column="store_cost" aggregator="sum" formatString="#,###.00"/>
 	<Measure name="Store Sales" column="store_sales" aggregator="sum" formatString="#,###.00"/>
 	<Measure name="Sales Count" column="product_id" aggregator="count" formatString="#,###"/>
+<!--
 	<Measure name="Store Sales Net" column="&quot;sales_fact_1997&quot;.&quot;store_sales&quot;-&quot;sales_fact_1997&quot;.&quot;store_cost&quot;" aggregator="sum" formatString="#,###.00"/>
+  -->
 </Cube>
 
 <Cube name="Warehouse">

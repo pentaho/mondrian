@@ -40,7 +40,7 @@ class RolapMember extends MemberBase
 	private Map mapPropertyNameToValue = emptyMap;
 	private static final Map emptyMap = Collections.unmodifiableMap(new HashMap(0));
 
-	RolapMember(
+    RolapMember(
 			RolapMember parentMember, RolapLevel level, Object key, String name) {
 		this.parentMember = parentMember;
 		this.parentUniqueName = parentMember == null ? null:
@@ -105,7 +105,15 @@ class RolapMember extends MemberBase
 			List list = new ArrayList();
 			((RolapHierarchy) getHierarchy()).memberReader.getMemberChildren(this, list);
 			return list;
-		}
+		} else if (name.equals(Property.PROPERTY_MEMBER_UNIQUE_NAME)) {
+            return getUniqueName();
+        } else if (name.equals(Property.PROPERTY_MEMBER_CAPTION)) {
+            return getCaption();
+        } else if (name.equals(Property.PROPERTY_LEVEL_UNIQUE_NAME)) {
+            return getLevel().getUniqueName();
+        } else if (name.equals(Property.PROPERTY_LEVEL_NUMBER)) {
+            return new Integer(getLevel().getDepth());
+        }
 		synchronized (this) {
 			return mapPropertyNameToValue.get(name);
 		}

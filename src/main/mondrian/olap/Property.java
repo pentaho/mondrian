@@ -39,7 +39,12 @@ public abstract class Property {
 	holds a {@link java.util.List} of its data member and all of its children
 	(including non-visible children). */
 	public static final String PROPERTY_CONTRIBUTING_CHILDREN = "$contributingChildren";
-
+    /** Cell property for XML/A. */
+    public static final String PROPERTY_VALUE = "VALUE";
+    /** Cell property for XML/A. */
+    public static final String PROPERTY_FORMATTED_VALUE = "FORMATTED_VALUE";
+    /** Cell property for XML/A. */
+    public static final String PROPERTY_FORMAT_STRING = "FORMAT_STRING";
 	/**
 	 * A list of the names of properties which have special meaning to the
 	 * Mondrian system.
@@ -51,8 +56,22 @@ public abstract class Property {
 		PROPERTY_CAPTION,
 		PROPERTY_CONTRIBUTING_CHILDREN,
 	};
+    /**
+	 * The various property names which define a format string.
+	 */
+	static final String[] FORMAT_PROPERTIES = {
+		"format", "format_string", "FORMAT", PROPERTY_FORMAT_STRING,
+	};
+    /** Member property for XML/A. */
+    public static final String PROPERTY_MEMBER_UNIQUE_NAME = "MEMBER_UNIQUE_NAME";
+    /** Member property for XML/A. */
+    public static final String PROPERTY_MEMBER_CAPTION = "MEMBER_CAPTION";
+    /** Member property for XML/A. */
+    public static final String PROPERTY_LEVEL_UNIQUE_NAME = "LEVEL_UNIQUE_NAME";
+    /** Member property for XML/A. */
+    public static final String PROPERTY_LEVEL_NUMBER = "LEVEL_NUMBER";
 
-	protected Property(String name, int type) {
+    protected Property(String name, int type) {
 		this.name = name;
 		this.type = type;
 	}

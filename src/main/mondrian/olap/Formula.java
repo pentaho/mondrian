@@ -32,14 +32,8 @@ public class Formula extends QueryPart {
 
    Member mdxMember;
    Set mdxSet;
-	/**
-	 * The various property names which define a format string.
-	 */
-	static final String[] FORMAT_PROPERTIES = {
-		"format", "format_string", "FORMAT", "FORMAT_STRING"
-	};
 
-   /** Construct formula specifying a set. */
+    /** Construct formula specifying a set. */
    Formula(String[] names, Exp exp) {
       this(false, names, (ExpBase) exp, new MemberProperty[0]);
    }
@@ -265,8 +259,8 @@ public class Formula extends QueryPart {
 	 * first member it finds.
 	 */
 	private Exp getFormatExp() {
-		for (int i = 0; i < FORMAT_PROPERTIES.length; i++) {
-			Exp formatExp = getMemberProperty(FORMAT_PROPERTIES[i]);
+		for (int i = 0; i < Property.FORMAT_PROPERTIES.length; i++) {
+			Exp formatExp = getMemberProperty(Property.FORMAT_PROPERTIES[i]);
 			if (formatExp != null) {
 				return formatExp;
 			}

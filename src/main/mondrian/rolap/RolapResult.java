@@ -33,6 +33,7 @@ class RolapResult extends ResultBase
 	HashMap cellValues;
 	AggregatingCellReader aggregatingReader;
 	BatchingCellReader batchingReader;
+    private int[] modulos;
 
 	RolapResult(Query query) {
 		this.query = query;
@@ -87,6 +88,23 @@ class RolapResult extends ResultBase
 					this.axes[i] = axisResult;
 				}
 			}
+            // Suppose the result is 4 x 3 x 2, then modulo = {1, 4, 12, 24}.
+            //
+            // Then the ordinal of cell (3, 2, 1)
+            //  = (modulo[0] * 3) + (modulo[1] * 2) + (modulo[2] * 1)
+            //  = (1 * 3) + (4 * 2) + (12 * 1)
+            //  = 23
+            //
+            // Reverse calculation:
+            // p[0] = (23 % modulo[1]) / modulo[0] = (23 % 4) / 1 = 3
+            // p[1] = (23 % modulo[2]) / modulo[1] = (23 % 12) / 4 = 2
+            // p[2] = (23 % modulo[3]) / modulo[2] = (23 % 24) / 12 = 1
+            this.modulos = new int[axes.length + 1];
+            int modulo = modulos[0] = 1;
+            for (int i = 0; i < axes.length; i++) {
+                modulo *= axes[i].positions.length;
+                modulos[i + 1] = modulo;
+            }
 			executeBody(query);
 		} finally {
 			CachePool.instance().unpin(pinnedSegments);
@@ -115,31 +133,10 @@ class RolapResult extends ResultBase
 		if (value == null) {
 			value = Util.nullValue;
 		}
-		RolapCube cube = (RolapCube) query.getCube();
-		RolapMember measure = (RolapMember) getMember(
-			pos, cube.measuresHierarchy.getDimension());
-		// Set up evaluator's context, so that context-dependent format
-		// strings work properly.
-		Evaluator cellEvaluator = evaluator.push();
-		for (int i = -1; i < axes.length; i++) {
-			Axis axis;
-			int index;
-			if (i < 0) {
-				axis = slicerAxis;
-				index = 0;
-			} else {
-				axis = axes[i];
-				index = pos[i];
-			}
-			Position position = axis.positions[index];
-			for (int j = 0; j < position.members.length; j++) {
-				Member member = position.members[j];
-				cellEvaluator.setContext(member);
-			}
-		}
-		return new RolapCell(measure,value,(RolapEvaluator) cellEvaluator);
+        return new RolapCell(this, getCellOrdinal(pos), value);
 	}
-	private RolapAxis executeAxis(Evaluator evaluator, QueryAxis axis)
+
+    private RolapAxis executeAxis(Evaluator evaluator, QueryAxis axis)
 	{
 		Position[] positions;
 		if (axis == null) {
@@ -175,16 +172,15 @@ class RolapResult extends ResultBase
 		return new RolapAxis(positions);
 	}
 
-	private void executeBody(Query query)
-	{
+	private void executeBody(Query query) {
 		// Compute the cells several times. The first time, use a dummy
 		// evaluator which collects requests.
 		int count = 0;
-		while (true) {
+        while (true) {
 			cellValues = new HashMap();
 			//
 			this.evaluator.cellReader = this.batchingReader;
-			executeStripe(query.axes.length - 1);
+			executeStripe(query.axes.length - 1, (RolapEvaluator) evaluator.push());
 
 			// Retrieve the aggregations collected.
 			//
@@ -308,7 +304,7 @@ class RolapResult extends ResultBase
 		}
 	};
 
-	private void executeStripe(int axis)
+	private void executeStripe(int axis, RolapEvaluator evaluator)
 	{
 		if (axis < 0) {
 			RolapAxis _axis = (RolapAxis) slicerAxis;
@@ -347,11 +343,70 @@ class RolapResult extends ResultBase
 				for (int j = 0; j < position.members.length; j++) {
 					evaluator.setContext(position.members[j]);
 				}
-				executeStripe(axis - 1);
+				executeStripe(axis - 1, evaluator);
 			}
 		}
 	}
-};
+
+    /**
+     * Converts a cell ordinal to a set of cell coordinates. Converse of
+     * {@link #getCellOrdinal}. For example, if this result is 10 x 10 x 10,
+     * then cell ordinal 537 has coordinates (5, 3, 7).
+     */
+    public int[] getCellPos(int cellOrdinal) {
+        int[] pos = new int[axes.length];
+        for (int j = 0; j < axes.length; j++) {
+            pos[j] = (cellOrdinal % modulos[j + 1]) / modulos[j];
+        }
+        return pos;
+    }
+
+    /**
+     * Converts a set of cell coordinates to a cell ordinal. Converse of
+     * {@link #getCellPos}.
+     */
+    int getCellOrdinal(int[] pos) {
+        int ordinal = 0;
+        for (int j = 0; j < axes.length; j++) {
+            ordinal += pos[j] * modulos[j];
+        }
+        return ordinal;
+    }
+
+    RolapEvaluator getCellEvaluator(int[] pos) {
+        final RolapEvaluator cellEvaluator = (RolapEvaluator) evaluator.push();
+        for (int i = 0; i < pos.length; i++) {
+            Position position = axes[i].positions[pos[i]];
+            for (int j = 0; j < position.members.length; j++) {
+                cellEvaluator.setContext(position.members[j]);
+            }
+        }
+        return cellEvaluator;
+    }
+
+    Evaluator getEvaluator(int[] pos) {
+        // Set up evaluator's context, so that context-dependent format
+        // strings work properly.
+        Evaluator cellEvaluator = evaluator.push();
+        for (int i = -1; i < axes.length; i++) {
+            Axis axis;
+            int index;
+            if (i < 0) {
+                axis = slicerAxis;
+                index = 0;
+            } else {
+                axis = axes[i];
+                index = pos[i];
+            }
+            Position position = axis.positions[index];
+            for (int j = 0; j < position.members.length; j++) {
+                Member member = position.members[j];
+                cellEvaluator.setContext(member);
+            }
+        }
+        return cellEvaluator;
+    }
+}
 
 class RolapAxis extends Axis
 {
@@ -404,24 +459,23 @@ class RolapPosition extends Position
  */
 class RolapCell implements Cell
 {
-	protected final Object value;
-	private final String formattedValue;
-	private final RolapMember[] members;
+    private final RolapResult result;
+    protected final Object value;
+    private final int ordinal;
 
-	RolapCell(RolapMember measure, Object value, RolapEvaluator evaluator) {
-		this.value = value;
-		this.formattedValue = computeFormattedValue(measure, value, evaluator);
-		this.members = (RolapMember[]) evaluator.currentMembers.clone();
+	RolapCell(RolapResult result, int ordinal, Object value) {
+        this.result = result;
+        this.value = value;
+        this.ordinal = ordinal;
 	}
-	static String computeFormattedValue(
-			RolapMember measure, Object value, Evaluator evaluator) {
-		return evaluator.format(value);
-	}
-	public Object getValue() {
+
+    public Object getValue() {
 		return value;
 	}
 	public String getFormattedValue() {
-		return formattedValue;
+        final int[] pos = result.getCellPos(ordinal);
+        final Evaluator evaluator = result.getEvaluator(pos);
+        return evaluator.format(value);
 	}
 	public boolean isNull() {
 		return value == Util.nullValue;
@@ -430,13 +484,31 @@ class RolapCell implements Cell
 		return value instanceof Throwable;
 	}
 	public String getDrillThroughSQL() {
-		final CellRequest cellRequest = AggregationManager.instance().makeRequest(members);
+        RolapEvaluator evaluator = getEvaluator();
+        final CellRequest cellRequest = AggregationManager.instance().makeRequest(evaluator.currentMembers);
 		if (cellRequest == null) {
 			return null;
 		} else {
 			return AggregationManager.instance().getDrillThroughSQL(cellRequest);
 		}
 	}
+
+    private RolapEvaluator getEvaluator() {
+        final int[] pos = result.getCellPos(ordinal);
+        return result.getCellEvaluator(pos);
+    }
+
+    public Object getPropertyValue(String propertyName) {
+        if (propertyName.equals(Property.PROPERTY_VALUE)) {
+            return getValue();
+        } else if (propertyName.equals(Property.PROPERTY_FORMAT_STRING)) {
+            return getEvaluator().getFormatString();
+        } else if (propertyName.equals(Property.PROPERTY_FORMATTED_VALUE)) {
+            return getFormattedValue();
+        } else {
+            return getEvaluator().getProperty(propertyName);
+        }
+    }
 }
 
 // End RolapResult.java
