@@ -67,8 +67,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         jScrollPane1 = new javax.swing.JScrollPane();
         tree = new javax.swing.JTree();
         jToolBar1 = new javax.swing.JToolBar();
-        saveButton = new javax.swing.JButton();
-        jPanel4 = new javax.swing.JPanel();
         addCubeButton = new javax.swing.JButton();
         addDimensionButton = new javax.swing.JButton();
         addMeasureButton = new javax.swing.JButton();
@@ -84,7 +82,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         jSplitPane1.setDividerLocation(200);
         jPanel1.setLayout(new java.awt.BorderLayout());
 
-        jScrollPane2.setName("null");
         propertyTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -131,19 +128,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
         add(jSplitPane1, java.awt.BorderLayout.CENTER);
 
-        saveButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/Save24.gif")));
-        saveButton.setToolTipText("Save");
-        saveButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveButtonActionPerformed(evt);
-            }
-        });
-
-        jToolBar1.add(saveButton);
-
-        jPanel4.setMaximumSize(new java.awt.Dimension(10, 32767));
-        jToolBar1.add(jPanel4);
-
         addCubeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/addCube24.gif")));
         addCubeButton.setToolTipText("Add Cube");
         jToolBar1.add(addCubeButton);
@@ -183,21 +167,18 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
     }//GEN-END:initComponents
 
-    private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-        JFileChooser jfc = new JFileChooser();
-        Util.getProperties();
-        jfc.setSelectedFile(schemaFile);
-        if (jfc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            try {
-                XMLOutput out = new XMLOutput(new FileWriter(jfc.getSelectedFile()));
-                this.schema.displayXML(out);
-                schemaFile = jfc.getSelectedFile();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }
-    }//GEN-LAST:event_saveButtonActionPerformed
-
+    public MondrianDef.Schema getSchema() {
+        return this.schema;
+    }
+    
+    public File getSchemaFile() {
+        return this.schemaFile;
+    }
+    
+    public void setSchemaFile(File f) {
+        this.schemaFile = f;
+    }
+    
     /**
      * Called whenever the value of the selection changes.
      * @param e the event that characterizes the change.
@@ -211,8 +192,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             propertyTable.setModel(ptm);
             targetLabel.setText("Column");
         } else if (o instanceof MondrianDef.Cube) {
-            MondrianDef.Cube c = (MondrianDef.Cube)o;
-            PropertyTableModel ptm = new PropertyTableModel(c, new String[]{"name", "factSchema", "factTable"});
+            MondrianDef.Cube c = (MondrianDef.Cube)o;           
+            PropertyTableModel ptm = new PropertyTableModel(c, new String[]{"name", "fact"});
             propertyTable.setModel(ptm);
             targetLabel.setText("Cube");
         } else if (o instanceof MondrianDef.Dimension) {
@@ -227,7 +208,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             targetLabel.setText("Dimension Usage");
         } else if (o instanceof MondrianDef.ExpressionView) {
             MondrianDef.ExpressionView ev = (MondrianDef.ExpressionView)o;
-            PropertyTableModel ptm = new PropertyTableModel(ev, new String[]{"name", "foreignKey", "source"});
+            PropertyTableModel ptm = new PropertyTableModel(ev, new String[]{});
             propertyTable.setModel(ptm);
             targetLabel.setText("Expression View");
         } else if (o instanceof MondrianDef.Hierarchy) {
@@ -317,7 +298,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JTable propertyTable;
     private javax.swing.JPanel jPanel2;
@@ -333,7 +313,6 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
     private javax.swing.JButton addDimensionButton;
     private javax.swing.JButton cutButton;
     private javax.swing.JButton addMeasureButton;
-    private javax.swing.JButton saveButton;
     private javax.swing.JButton addCubeButton;
     private javax.swing.JButton copyButton;
     private javax.swing.JToolBar jToolBar1;

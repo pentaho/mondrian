@@ -1,26 +1,51 @@
 /*
-// $Id$
-// This software is subject to the terms of the Common Public License
-// Agreement, available at the following URL:
-// http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
-// All Rights Reserved.
-// You must accept the terms of that agreement to use this software.
-//
-// jhyde, 2 October, 2002
-*/
+ * SchemaPropertyCellRenderer.java
+ *
+ * Created on October 3, 2002, 2:00 PM
+ */
+
 package mondrian.gui;
 
 import javax.swing.*;
-import javax.swing.table.TableCellRenderer;
+import javax.swing.table.*;
 import java.awt.*;
 
-public class SchemaPropertyCellRenderer implements TableCellRenderer {
-	public Component getTableCellRendererComponent(
-			JTable table, Object value, boolean isSelected, boolean hasFocus,
-			int row, int column) {
-		return null;
-	}
-}
+/**
+ *
+ * @author  sean
+ */
+public class SchemaPropertyCellRenderer extends javax.swing.table.DefaultTableCellRenderer {
+    JLabel stringRenderer;
+    JCheckBox booleanRenderer;
+    JLabel integerRenderer;
 
-// End SchemaPropertyCellRenderer.java
+    /** Creates a new instance of SchemaPropertyCellRenderer */
+    public SchemaPropertyCellRenderer() {
+    
+        stringRenderer = new JLabel();
+        stringRenderer.setFont(Font.decode("Dialog"));
+        booleanRenderer = new JCheckBox();
+        booleanRenderer.setBackground(Color.white);
+        integerRenderer = new JLabel();
+        integerRenderer.setHorizontalAlignment(JTextField.RIGHT);
+        integerRenderer.setFont(Font.decode("Courier"));
+    }
+    
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        if (column == 1) {
+            if (value instanceof String) {
+                stringRenderer.setText((String)value);               
+                return stringRenderer;
+            } else if (value instanceof Boolean) {
+                booleanRenderer.setSelected(((Boolean)value).booleanValue());
+                return booleanRenderer;
+            } else if (value instanceof Integer) {
+                integerRenderer.setText((String)value);
+                return integerRenderer;
+            }            
+        }
+        
+        return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        
+    }
+}

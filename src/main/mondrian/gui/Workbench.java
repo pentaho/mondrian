@@ -42,8 +42,15 @@ public class Workbench extends javax.swing.JFrame {
      */
     private void initComponents() {//GEN-BEGIN:initComponents
         desktopPane = new javax.swing.JDesktopPane();
+        jToolBar1 = new javax.swing.JToolBar();
+        toolbarNewButton = new javax.swing.JButton();
+        toolbarOpenButton = new javax.swing.JButton();
+        toolbarSaveButton = new javax.swing.JButton();
+        toolbarSaveAsButton = new javax.swing.JButton();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
+        newMenu = new javax.swing.JMenu();
+        newSchemaMenuItem = new javax.swing.JMenuItem();
         openMenuItem = new javax.swing.JMenuItem();
         saveMenuItem = new javax.swing.JMenuItem();
         saveAsMenuItem = new javax.swing.JMenuItem();
@@ -68,7 +75,59 @@ public class Workbench extends javax.swing.JFrame {
 
         getContentPane().add(desktopPane, java.awt.BorderLayout.CENTER);
 
+        toolbarNewButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/New16.gif")));
+        toolbarNewButton.setToolTipText("New");
+        toolbarNewButton.setRolloverEnabled(true);
+        jToolBar1.add(toolbarNewButton);
+
+        toolbarOpenButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/Open16.gif")));
+        toolbarOpenButton.setToolTipText("New");
+        toolbarOpenButton.setRolloverEnabled(true);
+        toolbarOpenButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openMenuItemActionPerformed(evt);
+            }
+        });
+
+        jToolBar1.add(toolbarOpenButton);
+
+        toolbarSaveButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/Save16.gif")));
+        toolbarSaveButton.setToolTipText("New");
+        toolbarSaveButton.setRolloverEnabled(true);
+        toolbarSaveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveMenuItemActionPerformed(evt);
+            }
+        });
+
+        jToolBar1.add(toolbarSaveButton);
+
+        toolbarSaveAsButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/SaveAs16.gif")));
+        toolbarSaveAsButton.setToolTipText("New");
+        toolbarSaveAsButton.setRolloverEnabled(true);
+        toolbarSaveAsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveAsMenuItemActionPerformed(evt);
+            }
+        });
+
+        jToolBar1.add(toolbarSaveAsButton);
+
+        getContentPane().add(jToolBar1, java.awt.BorderLayout.NORTH);
+
         fileMenu.setText("File");
+        newMenu.setText("New");
+        newSchemaMenuItem.setText("ROLAP Schema");
+        newSchemaMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newSchemaMenuItemActionPerformed(evt);
+            }
+        });
+
+        newMenu.add(newSchemaMenuItem);
+
+        fileMenu.add(newMenu);
+
         openMenuItem.setText("Open");
         openMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -88,6 +147,12 @@ public class Workbench extends javax.swing.JFrame {
         fileMenu.add(saveMenuItem);
 
         saveAsMenuItem.setText("Save As ...");
+        saveAsMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveAsMenuItemActionPerformed(evt);
+            }
+        });
+
         fileMenu.add(saveAsMenuItem);
 
         fileMenu.add(jSeparator1);
@@ -141,8 +206,47 @@ public class Workbench extends javax.swing.JFrame {
         pack();
     }//GEN-END:initComponents
 
+    private void newSchemaMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newSchemaMenuItemActionPerformed
+        // Add your handling code here:
+    }//GEN-LAST:event_newSchemaMenuItemActionPerformed
+
+    private void saveAsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsMenuItemActionPerformed
+        JInternalFrame jf = desktopPane.getSelectedFrame();
+        if (jf.getContentPane().getComponent(0) instanceof SchemaExplorer) {
+            SchemaExplorer se = (SchemaExplorer)jf.getContentPane().getComponent(0);
+            java.io.File schemaFile = se.getSchemaFile();
+            MondrianDef.Schema schema = se.getSchema();
+            JFileChooser jfc = new JFileChooser();
+            Util.getProperties();
+            jfc.setSelectedFile(schemaFile);
+            if (jfc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+                try {
+                    schemaFile = jfc.getSelectedFile();
+                    mondrian.xom.XMLOutput out = new mondrian.xom.XMLOutput(new java.io.FileWriter(jfc.getSelectedFile()));
+                    schema.displayXML(out);
+                    se.setSchemaFile(schemaFile);
+                    jf.setTitle("Schema - " + schemaFile.getName());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }   
+        }
+    }//GEN-LAST:event_saveAsMenuItemActionPerformed
+
     private void saveMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveMenuItemActionPerformed
-    
+        JInternalFrame jf = desktopPane.getSelectedFrame();
+        if (jf.getContentPane().getComponent(0) instanceof SchemaExplorer) {
+            SchemaExplorer se = (SchemaExplorer)jf.getContentPane().getComponent(0);
+            java.io.File schemaFile = se.getSchemaFile();
+            MondrianDef.Schema schema = se.getSchema();
+            Util.getProperties();
+            try {
+                mondrian.xom.XMLOutput out = new mondrian.xom.XMLOutput(new java.io.FileWriter(schemaFile));
+                schema.displayXML(out);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
     }//GEN-LAST:event_saveMenuItemActionPerformed
 
     private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMenuItemActionPerformed
@@ -194,23 +298,30 @@ public class Workbench extends javax.swing.JFrame {
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton toolbarSaveAsButton;
     private javax.swing.JMenuItem openMenuItem;
     private javax.swing.JMenu fileMenu;
+    private javax.swing.JButton toolbarOpenButton;
+    private javax.swing.JButton toolbarNewButton;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JMenuItem cutMenuItem;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem saveMenuItem;
     private javax.swing.JCheckBoxMenuItem viewCubesMenuItem;
+    private javax.swing.JButton toolbarSaveButton;
     private javax.swing.JMenuItem copyMenuItem;
     private javax.swing.JDesktopPane desktopPane;
     private javax.swing.JMenu viewMenu;
+    private javax.swing.JMenu newMenu;
     private javax.swing.JMenuItem deleteMenuItem;
+    private javax.swing.JMenuItem newSchemaMenuItem;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JCheckBoxMenuItem viewMeasuresMenuItem;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem pasteMenuItem;
     private javax.swing.JCheckBoxMenuItem viewDimensionsMenuItem;
     private javax.swing.JMenuItem saveAsMenuItem;
+    private javax.swing.JToolBar jToolBar1;
     // End of variables declaration//GEN-END:variables
     
 }
