@@ -19,6 +19,7 @@ import java.util.Hashtable;
 import java.util.Vector;
 import java.util.Properties;
 import java.sql.*;
+import java.io.PrintWriter;
 
 /**
  * <code>RolapCube</code> implements {@link Cube} for a ROLAP database.
@@ -54,8 +55,7 @@ class RolapCube extends CubeBase
 		RolapDimension measuresDimension = new RolapDimension(this, 0, "Measures");
 		this.dimensions[0] = measuresDimension;
 		this.measuresHierarchy = measuresDimension.newHierarchy(null, false, null, null, null);
-		RolapLevel measuresLevel = this.measuresHierarchy.newLevel(
-			"MeasuresLevel", null);
+		RolapLevel measuresLevel = this.measuresHierarchy.newLevel("MeasuresLevel");
 		for (int i = 0; i < xmlCube.dimensions.length; i++) {
 			MondrianDef.CubeDimension xmlCubeDimension = xmlCube.dimensions[i];
 			MondrianDef.Dimension xmlDimension = xmlCubeDimension.getDimension(xmlSchema);
@@ -89,7 +89,7 @@ class RolapCube extends CubeBase
 			this, 0, "Measures");
 		this.dimensions[0] = measuresDimension;
 		this.measuresHierarchy = measuresDimension.newHierarchy(null, false, null, null, null);
-		this.measuresHierarchy.newLevel("MeasuresLevel", null);
+		this.measuresHierarchy.newLevel("MeasuresLevel");
 		for (int i = 0; i < xmlVirtualCube.dimensions.length; i++) {
 			MondrianDef.VirtualCubeDimension xmlCubeDimension =
 				xmlVirtualCube.dimensions[i];
@@ -137,58 +137,58 @@ class RolapCube extends CubeBase
 		dimension = newDimension("Measures");
 		hierarchy = dimension.newHierarchy(null, false, null, null, null);
 		this.measuresHierarchy = hierarchy;
-		level = hierarchy.newLevel("MeasuresLevel", null);
+		level = hierarchy.newLevel("MeasuresLevel");
 		RolapLevel measuresLevel = level;
 		dimension = newDimension("Store");
 		hierarchy = dimension.newHierarchy(
 			null, true, "SELECT * FROM \"store\"", "store_id", "store_id");
-		level = hierarchy.newLevel("Store Country", "store_country");
-		level = hierarchy.newLevel("Store State", "store_state");
-		level = hierarchy.newLevel("Store City", "store_city");
-		level = hierarchy.newLevel("Store Name", "store_name");
+		level = hierarchy.newLevel("Store Country", "store", "store_country");
+		level = hierarchy.newLevel("Store State", "store", "store_state");
+		level = hierarchy.newLevel("Store City", "store", "store_city");
+		level = hierarchy.newLevel("Store Name", "store", "store_name");
 		dimension = newDimension("Time");
 		hierarchy = dimension.newHierarchy(
 			null, false,
 			"SELECT * FROM \"time_by_day\"", "time_id", "time_id");
-		level = hierarchy.newLevel("Year", "the_year", null, RolapLevel.NUMERIC);
-		level = hierarchy.newLevel("Quarter", "quarter");
-		level = hierarchy.newLevel("Month", "month_of_year", null, RolapLevel.NUMERIC);
+		level = hierarchy.newLevel("Year", "time_by_day", "the_year", null, RolapLevel.NUMERIC);
+		level = hierarchy.newLevel("Quarter", "time_by_day", "quarter");
+		level = hierarchy.newLevel("Month", "time_by_day", "month_of_year", null, RolapLevel.NUMERIC);
 		dimension = newDimension("Product");
 		hierarchy = dimension.newHierarchy(
 			null, true,
 			"SELECT * FROM \"product\", \"product_class\" " +
 			"WHERE \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\"",
 			"product_id", "product_id");
-		level = hierarchy.newLevel("Product Family", "product_family");
-		level = hierarchy.newLevel("Product Department", "product_department");
-		level = hierarchy.newLevel("Product Category", "product_category");
-		level = hierarchy.newLevel("Product Subcategory", "product_subcategory");
-		level = hierarchy.newLevel("Brand Name", "brand_name");
-		level = hierarchy.newLevel("Product Name", "product_name");
+		level = hierarchy.newLevel("Product Family", "product", "product_family");
+		level = hierarchy.newLevel("Product Department", "product", "product_department");
+		level = hierarchy.newLevel("Product Category", "product", "product_category");
+		level = hierarchy.newLevel("Product Subcategory", "product", "product_subcategory");
+		level = hierarchy.newLevel("Brand Name", "product", "brand_name");
+		level = hierarchy.newLevel("Product Name", "product", "product_name");
 		dimension = newDimension("Promotion Media");
 		hierarchy = dimension.newHierarchy(null, true, "SELECT * FROM \"promotion\"", "promotion_id", "promotion_id");
-		level = hierarchy.newLevel("Media Type", "media_type");
+		level = hierarchy.newLevel("Media Type", "promotion", "media_type");
 		dimension = newDimension("Promotions");
 		hierarchy = dimension.newHierarchy(null, true, "SELECT * FROM \"promotion\"", "promotion_id", "promotion_id");
-		level = hierarchy.newLevel("Promotion Name", "promotion_name");
+		level = hierarchy.newLevel("Promotion Name", "promotion", "promotion_name");
 		dimension = newDimension("Customers");
 		hierarchy = dimension.newHierarchy(null, true, "SELECT *, \"fname\" + ' ' + \"lname\" as \"name\" FROM \"customer\"", "customer_id", "customer_id");
-		level = hierarchy.newLevel("Country", "country");
-		level = hierarchy.newLevel("State Province", "state_province");
-		level = hierarchy.newLevel("City", "city");
-		level = hierarchy.newLevel("Name", "name");
+		level = hierarchy.newLevel("Country", "customer", "country");
+		level = hierarchy.newLevel("State Province", "customer", "state_province");
+		level = hierarchy.newLevel("City", "customer", "city");
+		level = hierarchy.newLevel("Name", "customer", "name");
 		dimension = newDimension("Education Level");
 		hierarchy = dimension.newHierarchy(null, true, "SELECT * FROM \"customer\"", "customer_id", "customer_id");
-		level = hierarchy.newLevel("Education Level", "education");
+		level = hierarchy.newLevel("Education Level", "customer", "education");
 		dimension = newDimension("Gender");
 		hierarchy = dimension.newHierarchy(null, true, "SELECT * FROM \"customer\"", "customer_id", "customer_id");
-		level = hierarchy.newLevel("Gender", "gender");
+		level = hierarchy.newLevel("Gender", "customer", "gender");
 		dimension = newDimension("Marital Status");
 		hierarchy = dimension.newHierarchy(null, true, "SELECT * FROM \"customer\"", "customer_id", "customer_id");
-		level = hierarchy.newLevel("Marital Status", "marital_status");
+		level = hierarchy.newLevel("Marital Status", "customer", "marital_status");
 		dimension = newDimension("Yearly Income");
 		hierarchy = dimension.newHierarchy(null, true, "SELECT * FROM \"customer\"", "customer_id", "customer_id");
-		level = hierarchy.newLevel("Yearly Income", "yearly_income");
+		level = hierarchy.newLevel("Yearly Income", "customer", "yearly_income");
 
 		this.measuresHierarchy.memberReader = new CacheMemberReader(
 			new MeasureMemberSource(
@@ -239,62 +239,116 @@ class RolapCube extends CubeBase
 				((RolapConnection) getConnection()).jdbcConnection;
 			Vector tablesVector = new Vector();
 			// create a fact table
-			star.factTable = new RolapStar.Table();
+			RolapStar.Table factTable = star.factTable = new RolapStar.Table(
+					new MondrianDef.Table(
+							this.factSchema, this.factTable, this.getAlias()),
+					null, null);
 			star.factTable.star = star;
-			star.factTable.alias = this.getAlias();
-			star.factTable.setTable(this.factSchema, this.factTable);
-			star.factTable.columns = new RolapStar.Column[1];
 			RolapStar.Measure measure = new RolapStar.Measure();
 			measure.table = star.factTable;
 			measure.name = storedMeasure.column;
 			measure.aggregator = storedMeasure.aggregator;
 			measure.isNumeric = true;
-			star.factTable.columns[0] = measure;
+			star.factTable.columns.add(measure);
 			// create dimension tables
 			RolapDimension[] dimensions =
 				(RolapDimension[]) this.getDimensions();
 			for (int j = 0; j < dimensions.length; j++) {
 				RolapDimension dimension = dimensions[j];
-				RolapHierarchy[] hierarchies =
-					(RolapHierarchy[]) dimension.getHierarchies();
+				RolapHierarchy[] hierarchies = (RolapHierarchy[])
+						dimension.getHierarchies();
 				for (int k = 0; k < hierarchies.length; k++) {
 					RolapHierarchy hierarchy = hierarchies[k];
+					HierarchyUsage hierarchyUsage = hierarchy.getUsage(this);
 					// assume there's one 'table' per hierarchy
-					RolapStar.Table table = new RolapStar.Table();
-					RolapLevel[] levels =
-						(RolapLevel[]) hierarchy.getLevels();
-					table.star = star;
-					table.alias = hierarchy.getAlias();
-                    if (hierarchy.getQuery() != null) {
-                        table.setQuery(hierarchy.getQuery());
-                    } else {
-                        table.setTable(hierarchy.getSchema(), hierarchy.getTable());
-                    }
-					table.primaryKey = hierarchy.primaryKey;
-					HierarchyUsage hierarchyUsage = hierarchy.getUsage(
-						this.factSchema, this.factTable);
-					table.foreignKey = hierarchyUsage.foreignKey;
-					table.columns = new RolapStar.Column[levels.length];
-					tablesVector.addElement(table);
+					// todo: allow snow-flakes
+					MondrianDef.Relation relation = hierarchy.getRelation();
+					if (relation == null) {
+						continue; // e.g. [Measures] hierarchy
+					}
+					RolapStar.Condition joinCondition = new RolapStar.Condition(
+							factTable.getAlias(), hierarchyUsage.foreignKey,
+							hierarchy.primaryKeyTable, hierarchy.primaryKey);
+					RolapStar.Table table = addJoin(
+							relation, factTable, joinCondition);
+					RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
 					for (int l = 0; l < levels.length; l++) {
 						RolapLevel level = levels[l];
-						if (level.column == null) {
+						if (level.nameExp == null) {
 							continue;
+						} else if (level.nameExp
+								instanceof MondrianDef.Column) {
+							MondrianDef.Column nameColumn =
+									(MondrianDef.Column) level.nameExp;
+							RolapStar.Column column = new RolapStar.Column();
+							RolapStar.Table levelTable = table.findDescendant(
+									nameColumn.table);
+							column.table = levelTable;
+							column.name = nameColumn.name;
+							column.isNumeric = (level.flags & RolapLevel.NUMERIC) != 0;
+							table.columns.add(column);
+							factTable.star.mapLevelToColumn.put(level, column);
+						} else {
+							Util.newInternal("bad exp type " + level.nameExp);
 						}
-						RolapStar.Column column = new RolapStar.Column();
-						column.table = table;
-						column.name = level.column;
-						column.isNumeric = (level.flags & RolapLevel.NUMERIC)
-							!= 0;
-						table.columns[l] = column;
-						star.mapLevelToColumn.put(level, column);
 					}
+					tablesVector.addElement(table);
 				}
 			}
 			star.tables = new RolapStar.Table[tablesVector.size()];
 			tablesVector.copyInto(star.tables);
 			storedMeasure.star = star;
 		}
+	}
+
+	private static RolapStar.Table addJoin(
+			MondrianDef.Relation relation, RolapStar.Table parentTable,
+			RolapStar.Condition joinCondition) {
+		if (relation instanceof MondrianDef.Table) {
+			MondrianDef.Table table = (MondrianDef.Table) relation;
+			RolapStar.Table starTable = parentTable.findChild(table);
+			if (starTable == null) {
+				starTable = new RolapStar.Table(
+						table, parentTable, joinCondition);
+				starTable.star = parentTable.star;
+				parentTable.children.add(starTable);
+			}
+			return starTable;
+		} else if (relation instanceof MondrianDef.Join) {
+			MondrianDef.Join join = (MondrianDef.Join) relation;
+			RolapStar.Table leftTable = addJoin(
+					join.left, parentTable, joinCondition);
+			String leftAlias = join.leftAlias;
+			if (leftAlias == null) {
+				leftAlias = join.left.getAlias();
+				if (leftAlias == null) {
+					throw Util.newError(
+							"missing leftKeyAlias in " + relation);
+				}
+			}
+			String rightAlias = join.rightAlias;
+			if (rightAlias == null) {
+				rightAlias = join.right.getAlias();
+				if (rightAlias == null) {
+					throw Util.newError(
+							"missing rightKeyAlias in " + relation);
+				}
+			}
+			joinCondition = new RolapStar.Condition(
+					leftAlias, join.leftKey, rightAlias, join.rightKey);
+			RolapStar.Table rightTable = addJoin(
+					join.right, leftTable, joinCondition);
+			return rightTable;
+		} else {
+			throw Util.newInternal("bad relation type " + relation);
+		}
+	}
+
+	void addToFrom(SqlQuery query) {
+		boolean failIfExists = false;
+		query.addFrom(
+				new MondrianDef.Table(factSchema, factTable, getAlias()),
+				failIfExists);
 	}
 
 	// implement NameResolver
@@ -362,17 +416,12 @@ class OldAvidCellReader implements CellReader
 			hierarchy.memberReader.qualifyQuery(sqlQuery, member);
 		}
 		String sql = sqlQuery.toString();
-		Statement statement = null;
 		ResultSet resultSet = null;
 		try {
-			if (RolapUtil.debugOut != null) {
-				RolapUtil.debugOut.println(
-					"AvidCellReader: executing sql [" + sql + "]");
-			}
 			java.sql.Connection connection =
 				((RolapConnection) cube.getConnection()).jdbcConnection;
-			statement = connection.createStatement();
-			resultSet = statement.executeQuery(sql);
+			resultSet = RolapUtil.executeQuery(
+					connection, sql, "AvidCellReader.get");
 			Object o = null;
 			if (resultSet.next()) {
 				o = resultSet.getObject(1);
@@ -388,9 +437,6 @@ class OldAvidCellReader implements CellReader
 			try {
 				if (resultSet != null) {
 					resultSet.close();
-				}
-				if (statement != null) {
-					statement.close();
 				}
 			} catch (SQLException e) {
 				// ignore

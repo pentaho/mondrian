@@ -80,6 +80,13 @@ public class Util extends mondrian.xom.XOMUtil
 		return sb.toString();
 	}
 
+	/** Returns true if two strings are equal, or are both null. **/
+	public static boolean equals(String s, String t) {
+		return s == null ?
+			t == null :
+			s.equals(t);
+	}
+
 	/** Does not modify the original string */
 	public static String replace(String s,String find,String replace)
 	{
@@ -289,6 +296,34 @@ public class Util extends mondrian.xom.XOMUtil
 
 	public static Error newInternal(Throwable e, String message) {
 		return getRes().newInternal(e, message);
+	}
+
+	/** Creates a non-internal error. Currently implemented in terms of
+	 * internal errors, but later we will create resourced messages. **/
+	public static Error newError(String message) {
+		return getRes().newInternal(message);
+	}
+
+	/** Creates a non-internal error. Currently implemented in terms of
+	 * internal errors, but later we will create resourced messages. **/
+	public static Error newError(Throwable e, String message) {
+		return getRes().newInternal(e, message);
+	}
+
+	/**
+	 * Checks that a precondition (declared using the javadoc <code>@pre</code>
+	 * tag) is satisfied.
+	 */
+	public static void assertPrecondition(boolean b) {
+		assertTrue(b);
+	}
+
+	/**
+	 * Checks that a postcondition (declared using the javadoc
+	 * <code>@post</code> tag) is satisfied.
+	 */
+	public static void assertPostcondition(boolean b) {
+		assertTrue(b);
 	}
 
 	public static void setThreadRes(MondrianResource resource)

@@ -16,6 +16,7 @@ import junit.textui.TestRunner;
 import mondrian.olap.Util;
 import mondrian.olap.fun.BuiltinFunTable;
 import mondrian.util.Schedule;
+import mondrian.rolap.RolapUtil;
 
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
@@ -67,7 +68,11 @@ public class Main extends TestCase {
 	 * automatically by JUnit test-harnesses; see {@link TestSuite}.
 	 */
 	public static Test suite() throws Exception {
-		Properties properties = Util.getProperties();
+		Util.PropertiesPlus properties = Util.getProperties();
+		int trace = properties.getIntProperty("mondrian.trace.level");
+		if (trace > 0) {
+			RolapUtil.debugOut = new PrintWriter(System.out, true);
+		}
 		String testName = properties.getProperty("mondrian.test.Name"),
 			testClass = properties.getProperty("mondrian.test.Class"),
 			testSuite = properties.getProperty("mondrian.test.Suite");

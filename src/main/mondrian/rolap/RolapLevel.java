@@ -12,6 +12,7 @@
 
 package mondrian.rolap;
 import mondrian.olap.*;
+import mondrian.rolap.sql.SqlQuery;
 
 /**
  * <code>RolapLevel</code> implements {@link Level} for a ROLAP database.
@@ -22,10 +23,10 @@ import mondrian.olap.*;
  */
 class RolapLevel extends LevelBase
 {
-	/** For SQL generator. Column which holds key values. */
-	String column;
-	/** For SQL generator. Column which holds the member ordinal. **/
-	String ordinalColumn;
+	/** The column or expression which yields the level's name. */
+	MondrianDef.Expression nameExp;
+	/** The column or expression which yields the level's ordinal. */
+	MondrianDef.Expression ordinalExp;
 	/** For SQL generator. Whether values of "column" are unique globally
 	 * unique (as opposed to unique only within the context of the parent
 	 * member). **/
@@ -35,14 +36,21 @@ class RolapLevel extends LevelBase
 	static final int ALL = 2;
 
 	RolapLevel(
-		RolapHierarchy hierarchy, int depth, String name, String column,
-		String ordinalColumn, int flags)
+		RolapHierarchy hierarchy, int depth, String name,
+		MondrianDef.Expression nameExp, MondrianDef.Expression ordinalExp,
+		int flags)
 	{
 		this.hierarchy = hierarchy;
 		this.name = name;
 		this.uniqueName = Util.makeFqName(hierarchy, name);
-		this.column = column;
-		this.ordinalColumn = ordinalColumn;
+		if (nameExp instanceof MondrianDef.Column) {
+			checkColumn((MondrianDef.Column) nameExp);
+		}
+		this.nameExp = nameExp;
+		if (ordinalExp instanceof MondrianDef.Column) {
+			checkColumn((MondrianDef.Column) ordinalExp);
+		}
+		this.ordinalExp = ordinalExp;
 		this.flags = flags;
 		this.depth = depth;
 		this.levelType = Level.STANDARD;
@@ -60,9 +68,24 @@ class RolapLevel extends LevelBase
 	RolapLevel(RolapHierarchy hierarchy, int depth, MondrianDef.Level xmlLevel)
 	{
 		this(
-			hierarchy, depth, xmlLevel.name, xmlLevel.column,
-			xmlLevel.ordinalColumn,
-			xmlLevel.type.equals("Numeric") ? NUMERIC : 0);
+				hierarchy, depth, xmlLevel.name, xmlLevel.getNameExp(),
+				xmlLevel.getOrdinalExp(),
+				xmlLevel.type.equals("Numeric") ? NUMERIC : 0);
+	}
+
+	private void checkColumn(MondrianDef.Column nameColumn) {
+		final RolapHierarchy rolapHierarchy = (RolapHierarchy) hierarchy;
+		if (nameColumn.table == null) {
+			nameColumn.table = rolapHierarchy.getUniqueTableName();
+			if (nameColumn.table == null) {
+				throw Util.newInternal(
+						"must specify a table for level " +
+						getUniqueName() +
+						" because hierarchy has more than one table");
+			}
+		} else {
+			Util.assertTrue(rolapHierarchy.tableExists(nameColumn.table));
+		}
 	}
 
 	void init()
@@ -88,8 +111,9 @@ class RolapLevel extends LevelBase
 		return depth == 0 ||
 			depth == 1 && hierarchy.hasAll();
 	}
-};
-
-
+	public String getTableAlias() {
+		return nameExp.getTableAlias();
+	}
+}
 
 // End RolapLevel.java

@@ -79,7 +79,7 @@ public abstract class RolapAggregationManager implements CellReader {
 		RolapStar star = (RolapStar) measure.star;
 		Util.assertTrue(star != null);
 		CellRequest request = new CellRequest(
-			(RolapStar.Measure) star.factTable.columns[0]); // yeuck
+			(RolapStar.Measure) star.factTable.columns.get(0)); // yeuck!!
 		for (int i = 1; i < members.length; i++) {
 			RolapMember member = members[i];
 			for (RolapMember m = member; m != null; m = (RolapMember)

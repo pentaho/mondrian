@@ -12,7 +12,8 @@
 <!-- Shared dimensions -->
 
 	<Dimension name="Store">
-		<Hierarchy hasAll="true" table="store" primaryKey="store_id">
+		<Hierarchy hasAll="true" primaryKey="store_id">
+			<Table name="store"/>
 			<Level name="Store Country" column="store_country" uniqueMembers="true"/>
 			<Level name="Store State" column="store_state" uniqueMembers="true"/>
 			<Level name="Store City" column="store_city" uniqueMembers="false"/>
@@ -21,19 +22,22 @@
 	</Dimension>
 
 	<Dimension name="Store Size in SQFT">
-		<Hierarchy hasAll="true" table="store" primaryKey="store_id">
+		<Hierarchy hasAll="true" primaryKey="store_id">
+			<Table name="store"/>
 			<Level name="Store Sqft" column="store_sqft" type="Numeric" uniqueMembers="true"/>
 		</Hierarchy>
 	</Dimension>
 
 	<Dimension name="Store Type">
-		<Hierarchy hasAll="true" table="store" primaryKey="store_id">
+		<Hierarchy hasAll="true" primaryKey="store_id">
+			<Table name="store"/>
 			<Level name="Store Type" column="store_type" uniqueMembers="true"/>
 		</Hierarchy>
 	</Dimension>
 
 	<Dimension name="Time" foreignKey="time_id">
-		<Hierarchy hasAll="false" table="time_by_day" primaryKey="time_id">
+		<Hierarchy hasAll="false" primaryKey="time_id">
+			<Table name="time_by_day"/>
 			<Level name="Year" column="the_year" type="Numeric" uniqueMembers="true"/>
 			<Level name="Quarter" column="quarter" uniqueMembers="false"/>
 			<Level name="Month" column="month_of_year" uniqueMembers="false" type="Numeric"/>
@@ -41,7 +45,12 @@
 	</Dimension>
 
 	<Dimension name="Product" foreignKey="product_id">
-		<Hierarchy hasAll="true" primaryKey="product_id">
+		<Hierarchy hasAll="true" primaryKey="product_id" primaryKeyTable="product">
+			<Join leftKey="product_class_id" rightKey="product_class_id">
+				<Table name="product"/>
+				<Table name="product_class"/>
+			</Join>
+<!--
 			<Query>
 				<SQL dialect="generic">
 SELECT *
@@ -55,11 +64,19 @@ WHERE "product"."product_class_id" = "product_class"."product_class_id"
 			<Level name="Product Subcategory" column="product_subcategory" uniqueMembers="false"/>
 			<Level name="Brand Name" column="brand_name" uniqueMembers="false"/>
 			<Level name="Product Name" column="product_name" uniqueMembers="true"/>
+-->
+			<Level name="Product Family" table="product_class" column="product_family" uniqueMembers="true"/>
+			<Level name="Product Department" table="product_class" column="product_department" uniqueMembers="false"/>
+			<Level name="Product Category" table="product_class" column="product_category" uniqueMembers="false"/>
+			<Level name="Product Subcategory" table="product_class" column="product_subcategory" uniqueMembers="false"/>
+			<Level name="Brand Name" table="product" column="brand_name" uniqueMembers="false"/>
+			<Level name="Product Name" table="product" column="product_name" uniqueMembers="true"/>
 		</Hierarchy>
 	</Dimension>
 
 	<Dimension name="Warehouse">
-		<Hierarchy hasAll="true" table="warehouse" primaryKey="warehouse_id">
+		<Hierarchy hasAll="true" primaryKey="warehouse_id">
+			<Table name="warehouse"/>
 			<Level name="Country" column="warehouse_country" uniqueMembers="true"/>
 			<Level name="State Province" column="warehouse_state_province" uniqueMembers="true"/>
 			<Level name="City" column="warehouse_city" uniqueMembers="false"/>
@@ -75,17 +92,43 @@ WHERE "product"."product_class_id" = "product_class"."product_class_id"
 	<DimensionUsage name="Time" source="Time" foreignKey="time_id"/>
 	<DimensionUsage name="Product" source="Product" foreignKey="product_id"/>
 	<Dimension name="Promotion Media" foreignKey="promotion_id">
-		<Hierarchy hasAll="true" table="promotion" primaryKey="promotion_id">
+		<Hierarchy hasAll="true" primaryKey="promotion_id">
+			<Table name="promotion"/>
 			<Level name="Media Type" column="media_type" uniqueMembers="true"/>
 		</Hierarchy>
 	</Dimension>
 	<Dimension name="Promotions" foreignKey="promotion_id">
-		<Hierarchy hasAll="true" table="promotion" primaryKey="promotion_id">
+		<Hierarchy hasAll="true" primaryKey="promotion_id">
+			<Table name="promotion"/>
 			<Level name="Promotion Name" column="promotion_name" uniqueMembers="true"/>
 		</Hierarchy>
 	</Dimension>
 	<Dimension name="Customers" foreignKey="customer_id">
 		<Hierarchy hasAll="true" primaryKey="customer_id">
+			<Table name="customer"/>
+			<Level name="Country" column="country" uniqueMembers="true"/>
+			<Level name="State Province" column="state_province" uniqueMembers="true"/>
+			<Level name="City" column="city" uniqueMembers="false"/>
+			<Level name="Name" ordinalColumn="ordinal" uniqueMembers="true">
+				<ExpressionView>
+					<SQL dialect="oracle">
+"fname" || ' ' || "lname"
+					</SQL>
+					<SQL dialect="access">
+[fname] + ' ' + [lname]
+					</SQL>
+					<SQL dialect="postgres">
+"fname" || ' ' || "lname"
+					</SQL>
+					<SQL dialect="mysql">
+CONCAT(`customer`.`fname`, " ", `customer`.`lname`)
+					</SQL>
+					<SQL dialect="generic">
+"lname"
+					</SQL>
+				</ExpressionView>
+			</Level>
+<!--
 			<Query>
 				<SQL dialect="oracle">
 SELECT "customer".*, "fname" || ' ' || "lname" as "name" FROM "customer"
@@ -104,25 +147,30 @@ SELECT * FROM "customer"
 			<Level name="State Province" column="state_province" uniqueMembers="true"/>
 			<Level name="City" column="city" uniqueMembers="false"/>
 			<Level name="Name" column="name" ordinalColumn="ordinal" uniqueMembers="true"/>
+-->
 		</Hierarchy>
 	</Dimension>
 	<Dimension name="Education Level" foreignKey="customer_id">
-		<Hierarchy hasAll="true" table="customer" primaryKey="customer_id">
+		<Hierarchy hasAll="true" primaryKey="customer_id">
+			<Table name="customer"/>
 			<Level name="Education Level" column="education" uniqueMembers="true"/>
 		</Hierarchy>
 	</Dimension>
 	<Dimension name="Gender" foreignKey="customer_id">
-		<Hierarchy hasAll="true" table="customer" primaryKey="customer_id">
+		<Hierarchy hasAll="true" primaryKey="customer_id">
+			<Table name="customer"/>
 			<Level name="Gender" column="gender" uniqueMembers="true"/>
 		</Hierarchy>
 	</Dimension>
 	<Dimension name="Marital Status" foreignKey="customer_id">
-		<Hierarchy hasAll="true" table="customer" primaryKey="customer_id">
+		<Hierarchy hasAll="true" primaryKey="customer_id">
+			<Table name="customer"/>
 			<Level name="Marital Status" column="marital_status" uniqueMembers="true"/>
 		</Hierarchy>
 	</Dimension>
 	<Dimension name="Yearly Income" foreignKey="customer_id">
-		<Hierarchy hasAll="true" table="customer" primaryKey="customer_id">
+		<Hierarchy hasAll="true" primaryKey="customer_id">
+			<Table name="customer"/>
 			<Level name="Yearly Income" column="yearly_income" uniqueMembers="true"/>
 		</Hierarchy>
 	</Dimension>

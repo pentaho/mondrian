@@ -185,10 +185,11 @@ todo:
 		<Doc>
 			A <code>Dimension</code> is a collection of hierarchies. There are
 			two kinds: a <dfn>public</dfn> dimension belongs to a <link
-			class="Schema"/>, and be used by several cubes; a
-			<dfn>private</dfn> dimension belongs to a <link class="Cube"/>. The
-			<link member="foreignKey"/> field is only applicable to private
-			dimensions.
+			class="Schema">schema</link>, and be used by several cubes; a
+			<dfn>private</dfn> dimension belongs to a
+			<link class="Cube">cube</link>. The
+			<link member="foreignKey">foreignKey</link> field is only
+			applicable to private dimensions.
 		</Doc>
 		<Attribute name="name"><Doc></Doc></Attribute>
 		<Array name="hierarchies" type="Hierarchy"><Doc></Doc></Array>
@@ -204,8 +205,8 @@ todo:
 		<Doc>
 			Defines a hierarchy.
 			
-			<p/> You must specify precisely one of <code>sql</code>,
-			<code>table</code>, and <code>memberReaderClass</code>.
+			<p/>You must specify precisely one of <code>&lt;Relation&gt;</code>
+			 and <code>memberReaderClass</code>.
 		</Doc>
 		<Attribute name="name" required="false">
 			<Doc>
@@ -213,15 +214,8 @@ todo:
 				has the same name as its dimension.
 			</Doc>
 		</Attribute>
-		<Attribute name="hasAll" type="Boolean" required="true"><Doc></Doc></Attribute>
-		<Attribute name="table" required="false">
+		<Attribute name="hasAll" type="Boolean" required="true">
 			<Doc>
-				Name of table to populate the hierarchy.
-			</Doc>
-		</Attribute>
-		<Attribute name="schema" required="false">
-			<Doc>
-				Optional qualifier for <code>table</code>.
 			</Doc>
 		</Attribute>
 		<Attribute name="primaryKey">
@@ -229,7 +223,14 @@ todo:
 				The name of the column which identifies members, and
 				which is referenced by rows in the fact table. See
 				also <link class="CubeDimension"
-				member="foreignKey"/>.
+				member="foreignKey">CubeDimension.foreignKey</link>.
+			</Doc>
+		</Attribute>
+		<Attribute name="primaryKeyTable">
+			<Doc>
+				The name of the table which contains <code>primaryKey</code>.
+				If the hierarchy has only one table, defaults to that;
+				it is required.
 			</Doc>
 		</Attribute>
 		<Attribute name="defaultMember"><Doc></Doc></Attribute>
@@ -239,9 +240,10 @@ todo:
 				{@link Broadbase.olap.RolapConnection.MemberReader}.
 			</Doc>
 		</Attribute>
-		<Object name="querySet" type="Query">
+		<Object name="relation" type="Relation">
 			<Doc>
-				SQL statement to populate the hierarchy.
+				The {@link #Table table}, {@link #Join set of tables}, or
+				{@link #View SQL statement} which populates this hierarchy.
 			</Doc>
 		</Object>
 		<Array name="levels" type="Level"><Doc></Doc></Array>
@@ -250,6 +252,13 @@ todo:
 
 	<Element type="Level">
 		<Attribute name="name"><Doc></Doc></Attribute>
+		<Attribute name="table" required="false">
+			<Doc>
+				The name of the table that the column comes from. If
+				this hierarchy is based upon just one table, defaults to
+				the name of that table; otherwise, it is required.
+			</Doc>
+		</Attribute>
 		<Attribute name="column"><Doc>todo:</Doc></Attribute>
 		<Attribute name="ordinalColumn" required="false">
 			<Doc>
@@ -271,6 +280,36 @@ todo:
 				first level's members are always unique.
 			</Doc>
 		</Attribute>
+		<Object name="nameExp" type="Expression" required="false">
+			<Doc>
+				The SQL expression used to populate this level's name.
+			</Doc>
+		</Object>
+		<Object name="ordinalExp" type="Expression" required="false">
+			<Doc>
+				The SQL expression used to populate this level's ordinal.
+			</Doc>
+		</Object>
+		<Code>
+			public Expression getNameExp() {
+				if (nameExp != null) {
+					return nameExp;
+				} else if (column != null) {
+					return new Column(table, column);
+				} else {
+					return null;
+				}
+			}
+			public Expression getOrdinalExp() {
+				if (ordinalExp != null) {
+					return ordinalExp;
+				} else if (ordinalColumn != null) {
+					return new Column(table, ordinalColumn);
+				} else {
+					return null;
+				}
+			}
+		</Code>
 	</Element>
 
 	<Element type="Measure">
@@ -294,17 +333,41 @@ todo:
 		<Attribute name="value"/>
 	</Element>
 
-	<Element type="Query">
+	<Class class="Relation">
+		<Doc>A table or a join</Doc>
+		<Code>
+			public abstract Relation find(String seekAlias);
+ 			public abstract String getAlias();
+		</Code>
+	</Class>
+
+	<Element type="View" class="Relation">
 		<Doc>
 			A collection of SQL statements, one per dialect.
 		</Doc>
+		<Attribute name="alias" required="true"/>
 		<Array name="selects" type="SQL" min="1"/>
+		<Code>
+			public String toString() {
+				return selects[0].cdata;
+			}
+			public Relation find(String seekAlias) {
+				if (seekAlias.equals(alias)) {
+					return this;
+				} else {
+					return null;
+				}
+			}
+ 			public String getAlias() {
+				return alias;
+			}
+			</Code>
 	</Element>
 
 	<Element type="SQL">
 		<Attribute name="dialect" default="generic">
 			<Doc>
-				Dialect of SQL the query is intended for.
+				Dialect of SQL the view is intended for.
 			</Doc>
 			<Value>generic</Value>
 			<Value>oracle</Value>
@@ -315,6 +378,172 @@ todo:
 			<Value>mssql</Value>
 		</Attribute>
 		<CData/>
+	</Element>
+
+	<Element type="Join" class="Relation">
+		<Attribute name="leftAlias">
+			<Doc>
+				Defaults to left's alias if left is a table, otherwise
+				required.
+			</Doc>
+		</Attribute>
+		<Attribute name="leftKey" required="true"/>
+		<Attribute name="rightAlias">
+			<Doc>
+				Defaults to right's alias if right is a table, otherwise
+				required.
+			</Doc>
+		</Attribute>
+		<Attribute name="rightKey" required="true"/>
+		<Object name="left" type="Relation" required="true"/>
+		<Object name="right" type="Relation" required="true"/>
+		<Code>
+			/**
+			  * Returns the alias of the left join key, defaulting to left's
+			  * alias if left is a table.
+			  **/
+			public String getLeftAlias() {
+				if (leftAlias != null) {
+					return leftAlias;
+				}
+				if (left instanceof Table) {
+					return ((Table) left).getAlias();
+				}
+				throw Util.newInternal(
+					"alias is required because " + left + " is not a table");
+			}
+			/**
+			  * Returns the alias of the right join key, defaulting to right's
+			  * alias if right is a table.
+			  **/
+			public String getRightAlias() {
+				if (rightAlias != null) {
+					return rightAlias;
+				}
+				if (right instanceof Table) {
+					return ((Table) right).getAlias();
+				}
+				throw Util.newInternal(
+					"alias is required because " + right + " is not a table");
+			}
+			public String toString() {
+				return "(" + left + ") join (" + right + ") on " +
+					leftAlias + "." + leftKey + " = " +
+					rightAlias + "." + rightKey;
+			}
+			public Relation find(String seekAlias) {
+				Relation relation = left.find(seekAlias);
+				if (relation == null) {
+					relation = right.find(seekAlias);
+				}
+				return relation;
+			}
+ 			public String getAlias() {
+				throw Util.newInternal("join does not have alias");
+			}
+		</Code>
+	</Element>
+
+	<Element type="Table" class="Relation">
+		<Attribute name="name" required="true"/>
+		<Attribute name="schema">
+			<Doc>
+				Optional qualifier for <code>table</code>.
+			</Doc>
+		</Attribute>
+		<Attribute name="alias">
+			<Doc>
+				Alias to be used with this table when it is used to
+				form queries. If not specified, defaults to the table
+				name, but in any case, must be unique within the
+				schema. (You can use the same table in different
+				hierarchies, but it must have different aliases.)
+			</Doc>
+		</Attribute>
+		<Code>
+			/** Convenience contructor. **/
+			public Table(String schema, String name, String alias) {
+				this();
+				this.schema = schema;
+				this.name = name;
+				this.alias = alias;
+			}
+			/** Returns the alias or, if it is null, the table name. **/
+			public String getAlias() {
+				if (alias != null) {
+					return alias;
+				}
+				return name;
+			}
+			public String toString() {
+				if (schema == null) {
+					return name;
+				} else {
+					return schema + "." + name;
+				}
+			}
+			public Relation find(String seekAlias) {
+				if (seekAlias.equals(getAlias())) {
+					return this;
+				} else {
+					return null;
+				}
+			}
+		</Code>
+	</Element>
+
+	<Class class="Expression">
+		<Code>
+			public abstract String getExpression(mondrian.rolap.sql.SqlQuery query);
+			public abstract String getTableAlias();
+		</Code>
+	</Class>
+
+	<Element type="Column" class="Expression">
+		<Attribute name="table">
+			<Doc>
+				Alias of the table which contains this column. Not required if
+				the query only has one table.
+			</Doc>
+		</Attribute>
+		<Attribute name="name" required="true">
+			<Doc>
+				Name of the column.
+			</Doc>
+		</Attribute>
+		<Code>
+			/** Convenience contructor. **/
+			public Column(String table, String name) {
+				this();
+				Util.assertTrue(name != null);
+				this.table = table;
+				this.name = name;
+			}
+			public String getExpression(mondrian.rolap.sql.SqlQuery query) {
+				return query.quoteIdentifier(table, name);
+			}
+			public String getTableAlias() {
+				return table;
+			}
+		</Code>
+	</Element>
+
+	<Element type="ExpressionView" class="Expression">
+		<Doc>
+			A collection of SQL expressions, one per dialect.
+		</Doc>
+		<Array name="expressions" type="SQL" min="1"/>
+		<Code>
+			public String toString() {
+				return expressions[0].cdata;
+			}
+			public String getExpression(mondrian.rolap.sql.SqlQuery query) {
+				return query.chooseQuery(expressions);
+			}
+			public String getTableAlias() {
+				return null;
+			}
+		</Code>
 	</Element>
 
 </Model>

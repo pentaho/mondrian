@@ -65,7 +65,7 @@ class SqlMemberSource implements MemberReader
 	{
 		RolapLevel lastLevel = (RolapLevel) hierarchy.getLevels()[
 			hierarchy.getLevels().length - 1];
-		return lastLevel.ordinalColumn != null;
+		return lastLevel.ordinalExp != null;
 	}
 
 	// implement MemberSource
@@ -76,23 +76,28 @@ class SqlMemberSource implements MemberReader
 		if (member.isAll()) {
 			return;
 		}
-		hierarchy.addToFrom(sqlQuery);
+		hierarchy.addToFrom(
+				sqlQuery, (RolapLevel) member.getLevel(),
+				(RolapCube) member.getCube());
+/*
+		// addToFrom() does this...
+
 		RolapCube cube = (RolapCube) member.getCube();
 		HierarchyUsage hierarchyUsage = hierarchy.getUsage(
 			cube.factSchema, cube.factTable);
 		sqlQuery.addWhere(
 			sqlQuery.quoteIdentifier(
-				hierarchy.getAlias(), hierarchy.primaryKey) +
+				hierarchy.primaryKeyTable, hierarchy.primaryKey) +
 			" = " +
 			sqlQuery.quoteIdentifier(
 				cube.getAlias(), hierarchyUsage.foreignKey));
+*/
 		for (RolapMember m = member; m != null; m = (RolapMember)
 				 m.getParentMember()) {
 			RolapLevel level = (RolapLevel) m.getLevel();
-			if (level.column != null) {
+			if (level.nameExp != null) {
 				sqlQuery.addWhere(
-					sqlQuery.quoteIdentifier(
-						hierarchy.getAlias(), level.column) +
+					level.nameExp.getExpression(sqlQuery) +
 					" = " +
 					m.quoteKeyForSql());
 			}
@@ -118,20 +123,14 @@ class SqlMemberSource implements MemberReader
 		if (level.isAll()) {
 			return 1;
 		}
-		Statement statement = null;
 		ResultSet resultSet = null;
 		String sql = makeLevelMemberCountSql(level);
 		try {
-			if (RolapUtil.debugOut != null) {
-				RolapUtil.debugOut.println(
-					"SqlMemberSource.getLevelMemberCount: executing sql [" +
-					sql + "]");
-			}
 			RolapCube cube = (RolapCube) hierarchy.getCube();
 			java.sql.Connection connection =
 				((RolapConnection) cube.getConnection()).jdbcConnection;
-			statement = connection.createStatement();
-			resultSet = statement.executeQuery(sql);
+			resultSet = RolapUtil.executeQuery(
+					connection, sql, "SqlMemberSource.getLevelMemberCount");
 			Util.assertTrue(resultSet.next());
 			return resultSet.getInt(1);
 		} catch (SQLException e) {
@@ -142,9 +141,6 @@ class SqlMemberSource implements MemberReader
 			try {
 				if (resultSet != null) {
 					resultSet.close();
-				}
-				if (statement != null) {
-					statement.close();
 				}
 			} catch (SQLException e) {
 				// ignore
@@ -195,11 +191,10 @@ class SqlMemberSource implements MemberReader
 		if (levelDepth == levels.length) {
 			// "select count(*) from schema.customer"
 			sqlQuery.addSelect("count(*)");
-			hierarchy.addToFrom(sqlQuery);
+			hierarchy.addToFrom(sqlQuery, level, null);
 			return sqlQuery.toString();
 		}
-		boolean isMySQL = sqlQuery.isMySQL();
-		if (isMySQL) {
+		if (!sqlQuery.allowsFromQuery()) {
 			// "select count(distinct c1, c2) from table"
 			String columnList = "";
 			for (int i = levelDepth; i >= 0; i--) {
@@ -208,15 +203,24 @@ class SqlMemberSource implements MemberReader
 					continue;
 				}
 				if (columnList != "") {
+					if (!sqlQuery.allowsCompoundCountDistinct()) {
+						// I don't know know of a database where this would
+						// happen. MySQL does not allow SELECT-in-FROM, but it
+						// does allow compound COUNT DISTINCT.
+						throw Util.newInternal(
+								"Cannot generate query to count members of level '" +
+								level.getUniqueName() +
+								"': database supports neither SELECT-in-FROM nor compound COUNT DISTINCT");
+					}
 					columnList += ", ";
 				}
-				columnList += sqlQuery.quoteIdentifier(level2.column);
+				hierarchy.addToFrom(sqlQuery, level2, null);
+				columnList += level2.nameExp.getExpression(sqlQuery);
 				if (level2.unique) {
 					break; // no further qualification needed
 				}
 			}
 			sqlQuery.addSelect("count(DISTINCT " + columnList + ")");
-			hierarchy.addToFrom(sqlQuery);
 			return sqlQuery.toString();
 		} else {
 			sqlQuery.setDistinct(true);
@@ -225,18 +229,19 @@ class SqlMemberSource implements MemberReader
 				if (level2.isAll()) {
 					continue;
 				}
-				sqlQuery.addSelect(sqlQuery.quoteIdentifier(level2.column));
+				hierarchy.addToFrom(sqlQuery, level2, null);
+				sqlQuery.addSelect(level2.nameExp.getExpression(sqlQuery));
 				if (level2.unique) {
 					break; // no further qualification needed
 				}
 			}
-			hierarchy.addToFrom(sqlQuery);
 			SqlQuery outerQuery = newQuery(
 					"while generating query to count members in level " + level);
 			outerQuery.addSelect("count(*)");
 			// Note: the "foo" is for Postgres, which requires
 			// FROM-queries to have an alias
-			outerQuery.addFromQuery(sqlQuery.toString(), "foo");
+			boolean failIfExists = true;
+			outerQuery.addFrom(sqlQuery, "foo", failIfExists);
 			return outerQuery.toString();
 		}
     }
@@ -244,21 +249,15 @@ class SqlMemberSource implements MemberReader
 	// implement MemberSource
 	public RolapMember[] getMembers()
 	{
-		Statement statement = null;
 		ResultSet resultSet = null;
 		String sql = makeKeysSql();
 		RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
 		try {
-			if (RolapUtil.debugOut != null) {
-				RolapUtil.debugOut.println(
-					"SqlMemberSource.getMembers: executing sql [" +
-					sql + "]");
-			}
 			RolapCube cube = (RolapCube) hierarchy.getCube();
 			java.sql.Connection connection =
 				((RolapConnection) cube.getConnection()).jdbcConnection;
-			statement = connection.createStatement();
-			resultSet = statement.executeQuery(sql);
+			resultSet = RolapUtil.executeQuery(
+					connection, sql, "SqlMemberSource.getMembers");
 			ArrayList list = new ArrayList();
 			HashMap map = new HashMap();
 			RolapMember root = null;
@@ -304,9 +303,6 @@ class SqlMemberSource implements MemberReader
 				if (resultSet != null) {
 					resultSet.close();
 				}
-				if (statement != null) {
-					statement.close();
-				}
 			} catch (SQLException e) {
 				// ignore
 			}
@@ -324,9 +320,9 @@ class SqlMemberSource implements MemberReader
 			if (level.isAll()) {
 				continue;
 			}
-			sqlQuery.addSelect(sqlQuery.quoteIdentifier(level.column));
+			hierarchy.addToFrom(sqlQuery, level, null);
+			sqlQuery.addSelect(level.nameExp.getExpression(sqlQuery));
 		}
-		hierarchy.addToFrom(sqlQuery);
 		return sqlQuery.toString();
 	}
 
@@ -366,13 +362,14 @@ class SqlMemberSource implements MemberReader
 	{
 		SqlQuery sqlQuery = newQuery(
 			"while generating query to retrieve members of level " + level);
+		hierarchy.addToFrom(sqlQuery, level, null);
   		RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
   		for (int i = level.getDepth(); i >= 0; i--) {
   			RolapLevel level2 = levels[i];
   			if (level2.isAll()) {
   				continue;
   			}
-			String q = sqlQuery.quoteIdentifier(level2.column);
+			String q = level2.nameExp.getExpression(sqlQuery);
 			sqlQuery.addSelect(q);
 			if (level.getDepth() < levels.length - 1) {
 				sqlQuery.addGroupBy(q);
@@ -382,8 +379,8 @@ class SqlMemberSource implements MemberReader
 			}
 		}
 		RolapLevel lastLevel = levels[levels.length - 1];
-		if (lastLevel.ordinalColumn != null) {
-			String q = sqlQuery.quoteIdentifier(lastLevel.ordinalColumn);
+		if (lastLevel.ordinalExp != null) {
+			String q = lastLevel.ordinalExp.getExpression(sqlQuery);
 			int distanceToLeaf = levels.length - 1 - level.getDepth();
 			if (distanceToLeaf > 0) {
 				q = "min(" + q + ")";
@@ -398,7 +395,6 @@ class SqlMemberSource implements MemberReader
 			}
 			sqlQuery.addSelect(q);
  		}
-		hierarchy.addToFrom(sqlQuery);
 		return sqlQuery.toString();
 	}
 
@@ -406,22 +402,16 @@ class SqlMemberSource implements MemberReader
 	public RolapMember[] getMembersInLevel(
 		RolapLevel level, int startOrdinal, int endOrdinal)
 	{
-		Statement statement = null;
 		ResultSet resultSet = null;
 		RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
 		boolean rolap = canDoRolap();
 		String sql = makeLevelSql(level);
 		try {
-			if (RolapUtil.debugOut != null) {
-				RolapUtil.debugOut.println(
-					"SqlMemberSource.getMembersInLevel: executing sql [" +
-					sql + "]");
-			}
 			RolapCube cube = (RolapCube) hierarchy.getCube();
 			java.sql.Connection connection =
 				((RolapConnection) cube.getConnection()).jdbcConnection;
-			statement = connection.createStatement();
-			resultSet = statement.executeQuery(sql);
+			resultSet = RolapUtil.executeQuery(
+					connection, sql, "SqlMemberSource.getMembersInLevel");
 			ArrayList list = new ArrayList();
 			int ordinal = 0;
 			while (resultSet.next()) {
@@ -465,9 +455,6 @@ class SqlMemberSource implements MemberReader
 				if (resultSet != null) {
 					resultSet.close();
 				}
-				if (statement != null) {
-					statement.close();
-				}
 			} catch (SQLException e) {
 				// ignore
 			}
@@ -509,7 +496,7 @@ class SqlMemberSource implements MemberReader
   			if (level.isAll()) {
   				continue;
   			}
-			String q = sqlQuery.quoteIdentifier(level.column);
+			String q = level.nameExp.getExpression(sqlQuery);
 			sqlQuery.addWhere(q + " = " + m.quoteKeyForSql());
 			if (level.unique) {
 				break; // no further qualification needed
@@ -518,14 +505,15 @@ class SqlMemberSource implements MemberReader
 
 		RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
 		RolapLevel level = levels[member.getLevel().getDepth() + 1];
-		String q = sqlQuery.quoteIdentifier(level.column);
+		hierarchy.addToFrom(sqlQuery, level, null);
+		String q = level.nameExp.getExpression(sqlQuery);
 		sqlQuery.addSelect(q);
 		sqlQuery.addGroupBy(q);
 
 		RolapLevel lastLevel = levels[levels.length - 1];
 		int distanceToLeaf = levels.length - 1 - member.getLevel().getDepth();
-		if (lastLevel.ordinalColumn != null) {
-			q = sqlQuery.quoteIdentifier(lastLevel.ordinalColumn);
+		if (lastLevel.ordinalExp != null) {
+			q = lastLevel.ordinalExp.getExpression(sqlQuery);
 			if (distanceToLeaf > 0) {
 				q = "min(" + q + ")";
 				int levelCount = levels.length;
@@ -539,7 +527,6 @@ class SqlMemberSource implements MemberReader
 			}
 			sqlQuery.addSelect(q);
 		}
-		hierarchy.addToFrom(sqlQuery);
 		return sqlQuery.toString();
 	}
 
@@ -556,7 +543,6 @@ class SqlMemberSource implements MemberReader
 
 	private void getMemberChildren(ArrayList list, RolapMember parentMember)
 	{
-		Statement statement = null;
 		ResultSet resultSet = null;
 		RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
 		int childDepth = parentMember.getLevel().getDepth() + 1;
@@ -567,16 +553,11 @@ class SqlMemberSource implements MemberReader
 		RolapLevel childLevel = levels[childDepth];
 		String sql = makeChildMemberSql(parentMember);
 		try {
-			if (RolapUtil.debugOut != null) {
-				RolapUtil.debugOut.println(
-					"SqlMemberSource.getMemberChildren: executing sql [" +
-					sql + "]");
-			}
 			RolapCube cube = (RolapCube) hierarchy.getCube();
 			java.sql.Connection connection =
 				((RolapConnection) cube.getConnection()).jdbcConnection;
-			statement = connection.createStatement();
-			resultSet = statement.executeQuery(sql);
+			resultSet = RolapUtil.executeQuery(
+					connection, sql, "SqlMemberSource.getMemberChildren");
 			while (resultSet.next()) {
 				Object value = resultSet.getObject(1);
 				Object key = cache.makeKey(parentMember, value);
@@ -596,9 +577,6 @@ class SqlMemberSource implements MemberReader
 			try {
 				if (resultSet != null) {
 					resultSet.close();
-				}
-				if (statement != null) {
-					statement.close();
 				}
 			} catch (SQLException e) {
 				// ignore

@@ -194,39 +194,34 @@ class HasBoughtDairySource extends ArrayMemberSource
 			boolean b = member.getName().equals("True");
 			String productForeignKey = null, // productHierarchy.foreignKey
 				customerForeignKey = null; // customerHierarchy.foreignKey
-			StringBuffer sb = new StringBuffer(
-				"(select distinct " +
-				sqlQuery.quoteIdentifier(
-					cube.getAlias(), customerForeignKey) +
-				" from (" + productHierarchy.getQuery() + ") as " +
-				sqlQuery.quoteIdentifier(productHierarchy.getAlias()) +
-				", " +
-				sqlQuery.quoteIdentifier(cube.factSchema, cube.factTable) +
-				" as " +
-				sqlQuery.quoteIdentifier(cube.getAlias()) +
-				" where " +
-				sqlQuery.quoteIdentifier(
-					cube.getAlias(), productForeignKey) +
-				" = " +
-				sqlQuery.quoteIdentifier(
-					productHierarchy.getAlias(),
-					productHierarchy.primaryKey));
+			java.sql.Connection jdbcConnection =
+				((RolapConnection) cube.getConnection()).jdbcConnection;
+			SqlQuery sqlQuery2 = null;
+			try {
+				sqlQuery2 = new SqlQuery(jdbcConnection.getMetaData());
+			} catch (SQLException e) {
+				throw Util.newInternal(
+						e, "while reading member data for " + this);
+			}
+			sqlQuery2.setDistinct(true);
+			sqlQuery2.addSelect(sqlQuery2.quoteIdentifier(
+					cube.getAlias(), customerForeignKey));
+			productHierarchy.addToFrom(
+					sqlQuery2, null, (RolapCube) productHierarchy.getCube());
+			cube.addToFrom(sqlQuery2);
 			for (RolapMember m = dairyMember; m != null; m = (RolapMember)
 					 m.getParentMember()) {
 				RolapLevel level = (RolapLevel) m.getLevel();
-				if (level.column != null) {
-					sb.append(
-						" and " +
-						sqlQuery.quoteIdentifier(
-							productHierarchy.getAlias(), level.column) +
+				if (level.nameExp != null) {
+					sqlQuery2.addWhere(
+						level.nameExp.getExpression(sqlQuery) +
 						" = " +
 						m.quoteKeyForSql());
 				}
 			}
-			sb.append(")");
 			sqlQuery.addJoin(
 				b ? "inner" : "left",
-				sb.toString(),
+				sqlQuery2.toString(),
 				"lookup",
 				sqlQuery.quoteIdentifier(
 					"lookup", customerForeignKey) +
@@ -241,6 +236,6 @@ class HasBoughtDairySource extends ArrayMemberSource
 			}
 		}
 	}
-};
+}
 
 // End ArrayMemberSource.java

@@ -15,8 +15,13 @@ import mondrian.olap.Util;
 
 import java.util.ArrayList;
 import java.util.Vector;
+import java.util.Date;
 import java.lang.reflect.Array;
 import java.io.PrintWriter;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 /**
  * todo:
@@ -105,6 +110,46 @@ public class RolapUtil {
 		return a2;
 	}
 
+	/**
+	 * Executes a query, printing to the trace log if tracing is enabled.
+	 * If the query fails, it throws the same {@link SQLException}, and closes
+	 * the result set. If it succeeds, the caller must close the returned
+	 * {@link ResultSet}.
+	 */
+	public static ResultSet executeQuery(
+			Connection jdbcConnection, String sql, String component)
+			throws SQLException {
+		Statement statement = null;
+		ResultSet resultSet = null;
+		String status = "failed";
+		if (RolapUtil.debugOut != null) {
+			RolapUtil.debugOut.print(
+				component + ": executing sql [" + sql + "]");
+			RolapUtil.debugOut.flush();
+		}
+		try {
+			statement = jdbcConnection.createStatement();
+			Date date = new Date();
+			resultSet = statement.executeQuery(sql);
+			long time = (new Date().getTime() - date.getTime());
+			status = ", " + time + " ms";
+			return resultSet;
+		} catch (SQLException e) {
+			status = ", failed (" + e + ")";
+			throw (SQLException) e.fillInStackTrace();
+		} finally {
+			if (RolapUtil.debugOut != null) {
+				RolapUtil.debugOut.println(status);
+			}
+			try {
+				if (statement != null) {
+					statement.close();
+				}
+			} catch (SQLException e) {
+				// ignore
+			}
+		}
+	}
 }
 
 

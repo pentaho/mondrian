@@ -37,7 +37,7 @@ class MeasureMemberSource extends ArrayMemberSource
 	{
 		RolapStoredMeasure measure = (RolapStoredMeasure) member;
 		RolapCube cube = (RolapCube) member.getCube();
-		sqlQuery.addFromTable(cube.factSchema, cube.factTable, cube.getAlias());
+		cube.addToFrom(sqlQuery);
 		sqlQuery.addSelect(
 			measure.aggregator + "(" +
 			sqlQuery.quoteIdentifier(

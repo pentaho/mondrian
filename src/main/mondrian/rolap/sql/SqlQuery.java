@@ -17,6 +17,7 @@ import mondrian.olap.MondrianDef;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 /**
  * <code>SqlQuery</code> allows us to build a <code>select</code>
@@ -75,6 +76,7 @@ public class SqlQuery
 		whereCount = 0,
 		groupByCount = 0,
 		havingCount = 0;
+	public ArrayList fromAliases = new ArrayList();
 
 	/**
 	 * Creates a <code>SqlQuery</code>
@@ -181,6 +183,14 @@ public class SqlQuery
 	protected boolean allowsAs() {
 		return !isOracle();
 	}
+	/** Whether "select * from (select * from t)" is OK. **/
+	public boolean allowsFromQuery() {
+		return !isMySQL();
+	}
+	/** Whether "select count(distinct x, y) from t" is OK. **/
+	public boolean allowsCompoundCountDistinct() {
+		return isMySQL();
+	}
 
 	/**
 	 * Chooses the variant within an array of {@link MondrianDef.SQL} which
@@ -210,15 +220,24 @@ public class SqlQuery
 			}
 		}
 		if (generic == null) {
-			throw Util.newInternal("Query has no 'generic' variant");
+			throw Util.newError("View has no 'generic' variant");
 		}
 		return generic;
 	}
 
-	public void addFromQuery(String query, String alias)
-	{
-		if (alias == null && requiresAliasForFromItems()) {
-			alias = "t" + fromCount;
+	/**
+	 * @pre alias != null
+	 */
+	public void addFromQuery(
+			String query, String alias, boolean failIfExists) {
+		Util.assertPrecondition(alias != null);
+		if (fromAliases.contains(alias)) {
+			if (failIfExists) {
+				throw Util.newInternal(
+						"query already contains alias '" + alias + "'");
+			} else {
+				return;
+			}
 		}
 		if (fromCount++ == 0) {
 			from.append(" from ");
@@ -236,12 +255,28 @@ public class SqlQuery
 				from.append(" ");
 			}
 			from.append(quoteIdentifier(alias));
+			fromAliases.add(alias);
 		}
 	}
-	public void addFromTable(String schema, String table, String alias)
-	{
-		if (alias == null && requiresAliasForFromItems()) {
-			alias = "t" + fromCount;
+
+	/**
+	 * Adds <code>[schema.]table AS alias</code> to the FROM clause.
+	 *
+	 * @param schema schema name; may be null
+	 * @param table table name
+	 * @param alias table alias, may not be null
+	 *
+	 * @pre alias != null
+	 */
+	private void addFromTable(
+			String schema, String table, String alias, boolean failIfExists) {
+		if (fromAliases.contains(alias)) {
+			if (failIfExists) {
+				throw Util.newInternal(
+						"query already contains alias '" + alias + "'");
+			} else {
+				return;
+			}
 		}
 		if (fromCount++ == 0) {
 			from.append(" from ");
@@ -257,18 +292,52 @@ public class SqlQuery
 				from.append(" ");
 			}
 			from.append(quoteIdentifier(alias));
+			fromAliases.add(alias);
 		}
 	}
-	public void addFrom(SqlQuery sqlQuery, String alias)
+
+	public void addFrom(SqlQuery sqlQuery, String alias, boolean failIfExists)
 	{
-		addFromQuery(sqlQuery.toString(), alias);
+		addFromQuery(sqlQuery.toString(), alias, failIfExists);
 	}
+
+	public void addFrom(MondrianDef.Relation relation, boolean failIfExists) {
+		if (relation instanceof MondrianDef.View) {
+			MondrianDef.View view = (MondrianDef.View) relation;
+			String sqlString = chooseQuery(view.selects);
+			String alias = view.alias;
+			if (!fromAliases.contains(alias)) {
+				addFromQuery(sqlString, alias, failIfExists);
+			}
+		} else if (relation instanceof MondrianDef.Table) {
+			MondrianDef.Table table = (MondrianDef.Table) relation;
+			addFromTable(
+					table.schema, table.name, table.getAlias(), failIfExists);
+		} else if (relation instanceof MondrianDef.Join) {
+			MondrianDef.Join join = (MondrianDef.Join) relation;
+			addFrom(join.left, failIfExists);
+			addFrom(join.right, failIfExists);
+			addWhere(
+					quoteIdentifier(join.getLeftAlias(), join.leftKey) +
+					" = " +
+					quoteIdentifier(join.getRightAlias(), join.rightKey));
+		} else {
+			throw Util.newInternal("bad relation type " + relation);
+		}
+	}
+	/**
+	 * @pre alias != null
+	 */
 	public void addJoin(
 			String type, String query, String alias, String condition) {
+		Util.assertPrecondition(alias != null);
+		Util.assertPrecondition(condition != null);
+		Util.assertTrue(!fromAliases.contains(alias));
 		Util.assertTrue(fromCount > 0);
 		from.append(
 			" " + type + " join " + query + " as " +
 			quoteIdentifier(alias) + " on " + condition);
+		fromAliases.add(alias);
 	}
 	/** Adds an expression to the select clause, automatically creating a
 	 * column alias. **/

@@ -218,7 +218,6 @@ public class Segment implements CachePool.Cacheable
 		} catch (SQLException e) {
 			throw Util.getRes().newInternal(e, "while loading segment");
 		}
-		Hashtable tablesAdded = new Hashtable();
 		// add constraining dimensions
 		for (int i = 0; i < arity; i++) {
 			Object[] constraints = axes[i].constraints;
@@ -228,45 +227,26 @@ public class Segment implements CachePool.Cacheable
 				// this is a funky dimension -- ignore for now
 				continue;
 			}
-			if (tablesAdded.get(table) == null) {
-				tablesAdded.put(table,table);
-				table.addToFrom(sqlQuery);
-				sqlQuery.addWhere(
-					sqlQuery.quoteIdentifier(table.alias, table.primaryKey) +
-					" = " +
-					sqlQuery.quoteIdentifier(
-						star.factTable.alias, table.foreignKey));
-			}
+			table.addToFrom(sqlQuery, false, true);
+			String expr = column.getExpression(sqlQuery);
 			if (constraints != null) {
 				sqlQuery.addWhere(
-					sqlQuery.quoteIdentifier(table.alias, column.name) +
-					" in " +
-					column.quoteValues(constraints));
+					expr + " in " + column.quoteValues(constraints));
 			}
-			sqlQuery.addSelect(
-				sqlQuery.quoteIdentifier(table.alias, column.name));
-			sqlQuery.addGroupBy(
-				sqlQuery.quoteIdentifier(table.alias, column.name));
+			sqlQuery.addSelect(expr);
+			sqlQuery.addGroupBy(expr);
 		}
 		// add measure
 		Util.assertTrue(measure.table == star.factTable);
-		tablesAdded.put(star.factTable,star.factTable);
-		star.factTable.addToFrom(sqlQuery);
+		star.factTable.addToFrom(sqlQuery, false, true);
 		sqlQuery.addSelect(
-			measure.aggregator + "(" +
-			sqlQuery.quoteIdentifier(star.factTable.alias, measure.name) +
-			")");
+			measure.aggregator + "(" + measure.getExpression(sqlQuery) + ")");
 		// execute
 		String sql = sqlQuery.toString();
-		Statement statement = null;
 		ResultSet resultSet = null;
 		try {
-			if (RolapUtil.debugOut != null) {
-				RolapUtil.debugOut.println(
-					"RolapStar.getSegment: executing sql [" + sql + "]");
-			}
-			statement = star.jdbcConnection.createStatement();
-			resultSet = statement.executeQuery(sql);
+			resultSet = RolapUtil.executeQuery(
+					star.jdbcConnection, sql, "Segment.load");
 			Vector rows = new Vector();
 			while (resultSet.next()) {
 				Object[] row = new Object[arity + 1];
@@ -328,14 +308,11 @@ public class Segment implements CachePool.Cacheable
 			return data;
 		} catch (SQLException e) {
 			throw Util.getRes().newInternal(
-				e, "while computing cell; sql=[" + sql + "]");
+				e, "while loading segment; sql=[" + sql + "]");
 		} finally {
 			try {
 				if (resultSet != null) {
 					resultSet.close();
-				}
-				if (statement != null) {
-					statement.close();
 				}
 			} catch (SQLException e) {
 				// ignore

@@ -20,6 +20,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Hashtable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.io.PrintWriter;
 
 /**
  * A <code>RolapStar</code> is a star schema. It is the means to read cell
@@ -53,20 +56,15 @@ public class RolapStar {
 		Util.assertTrue(columns.length == values.length);
 		SqlQuery sqlQuery;
 		try {
-			sqlQuery = new SqlQuery(
-				jdbcConnection.getMetaData());
+			sqlQuery = new SqlQuery(jdbcConnection.getMetaData());
 		} catch (SQLException e) {
 			throw Util.getRes().newInternal(e, "while computing single cell");
 		}
-		Hashtable tablesAdded = new Hashtable();
 		// add measure
 		Util.assertTrue(measure.table == factTable);
-		tablesAdded.put(factTable,factTable);
-		factTable.addToFrom(sqlQuery);
+		factTable.addToFrom(sqlQuery, true, true);
 		sqlQuery.addSelect(
-			measure.aggregator + "(" +
-			sqlQuery.quoteIdentifier(factTable.alias, measure.name) +
-			")");
+			measure.aggregator + "(" + measure.getExpression(sqlQuery) + ")");
 		// add constraining dimensions
 		for (int i = 0; i < columns.length; i++) {
 			Object value = values[i];
@@ -79,31 +77,13 @@ public class RolapStar {
 				// this is a funky dimension -- ignore for now
 				continue;
 			}
-			if (tablesAdded.get(table) == null) {
-				tablesAdded.put(table,table);
-				table.addToFrom(sqlQuery);
-				sqlQuery.addWhere(
-					sqlQuery.quoteIdentifier(
-						table.alias, table.primaryKey) +
-					" = " +
-					sqlQuery.quoteIdentifier(
-						factTable.alias, table.foreignKey));
-				sqlQuery.addWhere(
-					sqlQuery.quoteIdentifier(table.alias, column.name) +
-					" = " +
-					column.quoteValue(value));
-			}
+			table.addToFrom(sqlQuery, true, true);
 		}
 		String sql = sqlQuery.toString();
-		Statement statement = null;
 		ResultSet resultSet = null;
 		try {
-			if (RolapUtil.debugOut != null) {
-				RolapUtil.debugOut.println(
-					"RolapStar.getCell: executing sql [" + sql + "]");
-			}
-			statement = jdbcConnection.createStatement();
-			resultSet = statement.executeQuery(sql);
+			resultSet = RolapUtil.executeQuery(
+					jdbcConnection, sql, "RolapStar.getCell");
 			Object o = null;
 			if (resultSet.next()) {
 				o = resultSet.getObject(1);
@@ -119,9 +99,6 @@ public class RolapStar {
 			try {
 				if (resultSet != null) {
 					resultSet.close();
-				}
-				if (statement != null) {
-					statement.close();
 				}
 			} catch (SQLException e) {
 				// ignore
@@ -141,8 +118,6 @@ public class RolapStar {
 //  		Vector values = new Vector();
 //  	};
 
-	;
-
 	public static class Column
 	{
 		public Table table;
@@ -150,6 +125,9 @@ public class RolapStar {
 		boolean isNumeric;
 		int cardinality = -1;
 
+		public String getExpression(SqlQuery query) {
+			return query.quoteIdentifier(table.getAlias(), name);
+		}
 		String quoteValue(Object value)
 		{
 			String s = value.toString();
@@ -190,29 +168,24 @@ public class RolapStar {
 					// from product)"
 					SqlQuery inner = sqlQuery.cloneEmpty();
 					inner.setDistinct(true);
-					inner.addSelect(inner.quoteIdentifier(name));
-					table.addToFrom(inner);
+					inner.addSelect(getExpression(inner));
+					boolean failIfExists = true,
+						joinToParent = false;
+					table.addToFrom(inner, failIfExists, joinToParent);
 					sqlQuery.addSelect("count(*)");
-					sqlQuery.addFrom(inner, null);
+					sqlQuery.addFrom(inner, "foo", failIfExists);
 				} else {
 					// e.g. "select count(distinct product_id) from product"
 					sqlQuery.addSelect(
-						"count(distinct " +
-						sqlQuery.quoteIdentifier(name) +
-						")");
-					table.addToFrom(sqlQuery);
+						"count(distinct " + getExpression(sqlQuery) + ")");
+					table.addToFrom(sqlQuery, true, true);
 				}
 				String sql = sqlQuery.toString();
-				if (RolapUtil.debugOut != null) {
-					RolapUtil.debugOut.println(
-						"RolapStar.Column.getCardinality: executing sql [" +
-						sql + "]");
-				}
-				Statement statement = null;
 				ResultSet resultSet = null;
 				try {
-					statement = table.star.jdbcConnection.createStatement();
-					resultSet = statement.executeQuery(sql);
+					resultSet = RolapUtil.executeQuery(
+							table.star.jdbcConnection, sql,
+							"RolapStar.Column.getCardinality");
 					Util.assertTrue(resultSet.next());
 					cardinality = resultSet.getInt(1);
 				} catch (SQLException e) {
@@ -224,9 +197,6 @@ public class RolapStar {
 						if (resultSet != null) {
 							resultSet.close();
 						}
-						if (statement != null) {
-							statement.close();
-						}
 					} catch (SQLException e) {
 						// ignore
 					}
@@ -234,42 +204,152 @@ public class RolapStar {
 			}
 			return cardinality;
 		}
-	};
+	}
+
 	public static class Measure extends Column
 	{
 		public String aggregator;
 	};
+
 	public static class Table
 	{
 		public RolapStar star;
-		public String alias;
-		private MondrianDef.SQL[] selects;
+		private MondrianDef.Relation relation;
         private String schema;
         private String table;
 		public String primaryKey;
 		public String foreignKey;
-		Column[] columns;
+		ArrayList columns = new ArrayList();
+		public Table parent;
+		public ArrayList children = new ArrayList();
+		/** Condition with which it is connected to its parent. **/
+		Condition joinCondition;
 
-        void setTable(String schema, String table) {
-            this.schema = schema;
-            this.table = table;
+        public Table(String schema, String table) {
+			this.relation = new MondrianDef.Table(schema, table, null);
         }
-        void setQuery(MondrianDef.SQL[] selects) {
-            this.selects = selects;
-        }
-		public void addToFrom(SqlQuery query) {
-			if (selects != null) {
-				String sqlString = query.chooseQuery(selects);
-				query.addFromQuery(sqlString, alias);
+        public Table(
+				MondrianDef.Relation relation, Table parent,
+				Condition joinCondition) {
+			this.relation = relation;
+			if (relation instanceof MondrianDef.Table) {
+				MondrianDef.Table table = (MondrianDef.Table) relation;
+				this.schema = table.schema;
+				this.table = table.name;
 			} else {
-				query.addFromTable(schema,table,alias);
+				throw Util.newInternal("todo:");
+			}
+			this.parent = parent;
+			this.joinCondition = joinCondition;
+			Util.assertTrue((parent == null) == (joinCondition == null));
+        }
+		public String getAlias() {
+			return relation.getAlias();
+		}
+		/**
+		 * Returns a child table which maps onto a given relation, or null if
+		 * there is none.
+		 */
+		public Table findChild(MondrianDef.Table table) {
+			for (int i = 0; i < children.size(); i++) {
+				Table childTable = (Table) children.get(i);
+				if (childTable.table.equals(table.name) &&
+						Util.equals(childTable.schema, table.schema)) {
+					return childTable;
+				}
+			}
+			return null;
+		}
+		/**
+		 * Returns a descendant with a given alias, or null if none found.
+		 */
+		public Table findDescendant(String seekAlias) {
+			if (getAlias().equals(seekAlias)) {
+				return this;
+			}
+			for (int i = 0, n = children.size(); i < n; i++) {
+				Table child = (Table) children.get(i);
+				Table found = child.findDescendant(seekAlias);
+				if (found != null) {
+					return found;
+				}
+			}
+			return null;
+		}
+
+		/**
+		 * Adds this table to the from clause of a query.
+		 *
+		 * @param query Query to add to
+		 * @param failIfExists Pass in false if you might have already added
+		 *     the table before and if that happens you want to do nothing.
+		 * @param joinToParent Pass in true if you are constraining a cell
+		 *     calculcation, false if you are retrieving members.
+		 */
+		public void addToFrom(
+				SqlQuery query, boolean failIfExists, boolean joinToParent) {
+			query.addFrom(relation, failIfExists);
+			Util.assertTrue((parent == null) == (joinCondition == null));
+			if (joinToParent) {
+				if (parent != null) {
+					parent.addToFrom(query, failIfExists, joinToParent);
+				}
+				if (joinCondition != null) {
+					query.addWhere(joinCondition.toString(query));
+				}
 			}
 		}
-		public boolean isFunky() {
-			return selects == null && table == null;
-		}
-	};
-}
 
+		public boolean isFunky() {
+			return relation == null;
+		}
+		/**
+		 * Prints this table and its children.
+		 */
+		void print(PrintWriter pw, String prefix) {
+			pw.print(prefix);
+			pw.print("Table: alias=[" + this.getAlias());
+			if (this.relation != null) {
+				pw.print("] relation=[" + relation);
+			}
+			pw.print("] columns=[");
+			for (int i = 0, n = columns.size(); i < n; i++) {
+				Column column = (Column) columns.get(i);
+				if (i > 0) {
+					pw.print(",");
+				}
+				pw.print(column.name);
+			}
+			pw.println("]");
+			for (int i = 0; i < children.size(); i++) {
+				Table child = (Table) children.get(i);
+				child.print(pw, prefix + "  ");
+			}
+		}
+	}
+
+	public static class Condition {
+		String table1;
+		String column1;
+		String table2;
+		String column2;
+		Condition(
+				String table1, String column1, String table2, String column2) {
+			Util.assertTrue(table1 != null);
+			Util.assertTrue(column1 != null);
+			Util.assertTrue(table2 != null);
+			Util.assertTrue(column2 != null);
+			this.table1 = table1;
+			this.column1 = column1;
+			this.table2 = table2;
+			this.column2 = column2;
+		}
+		String toString(SqlQuery query) {
+			return query.quoteIdentifier(table1, column1) +
+					" = " +
+				query.quoteIdentifier(table2, column2);
+		}
+	}
+}
 
 // End RolapStar.java
