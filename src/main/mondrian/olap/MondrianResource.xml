@@ -353,6 +353,25 @@
 </exception>
 
 
+<!-- ====================================================================== -->
+<!-- Loader -->
+
+<exception id="500010" name="CreateTableFailed">
+    <text>Mondrian loader could not create table ''{0}''.</text>
+</exception>
+
+<exception id="500020" name="CreateIndexFailed">
+    <text>Mondrian loader could not create index ''{0}'' on table ''{1}''.</text>
+</exception>
+
+<exception id="500030" name="MissingArg">
+    <text>Argument ''{0}}'' must be specified.</text>
+</exception>
+
+<exception id="500040" name="InvalidInsertLine">
+    <text>Input line is not a valid INSERT statement; line {0,number}: {1}.</text>
+</exception>
+
 <!-- End of last error section ============================================ -->
 
 </resourceBundle>
