@@ -1766,6 +1766,42 @@ public class FoodMartTestCase extends TestCase {
 	}
 
 	/**
+	 * Bug 645744 happens when getting the children of a member crosses a table
+	 * boundary. The symptom 
+	 */
+	public void testBug645744() {
+		// minimal test case
+		runQueryCheckResult(
+				"select {[Measures].[Unit Sales]} ON columns," + nl +
+ 				"{[Product].[All Products].[Drink].[Beverages].[Drinks].[Flavored Drinks].children} ON rows" + nl +
+				"from [Sales]",
+
+				"Axis #0:" + nl +
+				"{}" + nl +
+				"Axis #1:" + nl +
+				"{[Measures].[Unit Sales]}" + nl +
+				"Axis #2:" + nl +
+				"{[Product].[All Products].[Drink].[Beverages].[Drinks].[Flavored Drinks].[Excellent]}" + nl +
+				"{[Product].[All Products].[Drink].[Beverages].[Drinks].[Flavored Drinks].[Fabulous]}" + nl +
+				"{[Product].[All Products].[Drink].[Beverages].[Drinks].[Flavored Drinks].[Skinner]}" + nl +
+				"{[Product].[All Products].[Drink].[Beverages].[Drinks].[Flavored Drinks].[Token]}" + nl +
+				"{[Product].[All Products].[Drink].[Beverages].[Drinks].[Flavored Drinks].[Washington]}" + nl +
+				"Row #0: 468" + nl +
+				"Row #1: 469" + nl +
+				"Row #2: 506" + nl +
+				"Row #3: 466" + nl +
+				"Row #4: 560" + nl);
+
+		// shorter test case
+		runQuery(
+				"select {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} ON columns,"+
+				"ToggleDrillState({"+
+				"([Promotion Media].[All Media].[Radio], [Product].[All Products].[Drink].[Beverages].[Drinks].[Flavored Drinks])"+
+				"}, {[Product].[All Products].[Drink].[Beverages].[Drinks].[Flavored Drinks]}) ON rows "+
+				"from [Sales] where ([Time].[1997])");
+	}
+
+	/**
 	 * The bug happened when a cell which was in cache was compared with a cell
 	 * which was not in cache. The compare method could not deal with the
 	 * {@link RuntimeException} which indicates that the cell is not in cache.

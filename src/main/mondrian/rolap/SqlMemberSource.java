@@ -485,6 +485,7 @@ class SqlMemberSource implements MemberReader
   			if (level.isAll()) {
   				continue;
   			}
+			hierarchy.addToFrom(sqlQuery, level.nameExp, null);
 			String q = level.nameExp.getExpression(sqlQuery);
 			sqlQuery.addWhere(q + " = " + m.quoteKeyForSql());
 			if (level.unique) {
