@@ -43,6 +43,8 @@ class RolapResult extends ResultBase
 		this.axes = new RolapAxis[query.axes.length];
 		this.evaluator = new RolapEvaluator((RolapCube) query.getCube());
 		this.aggregatingReader = new AggregatingCellReader();
+		final boolean alwaysFlush = Util.getProperties().getBooleanProperty(
+				"mondrian.rolap.RolapResult.flushAfterEachQuery");
 		HashSet pinnedSegments = new HashSet();
 		this.batchingReader = new BatchingCellReader(
 			(RolapCube) query.getCube(), pinnedSegments);
@@ -90,6 +92,9 @@ class RolapResult extends ResultBase
 			executeBody(query);
 		} finally {
 			CachePool.instance().unpin(pinnedSegments);
+			if (alwaysFlush) {
+				CachePool.instance().flush();
+			}
 		}
 	}
 

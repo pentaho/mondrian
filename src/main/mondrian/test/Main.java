@@ -17,6 +17,7 @@ import mondrian.olap.Util;
 import mondrian.olap.fun.BuiltinFunTable;
 import mondrian.util.Schedule;
 import mondrian.rolap.RolapUtil;
+import mondrian.rolap.CachePool;
 
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
@@ -115,6 +116,7 @@ public class Main extends TestCase {
 		suite.addTest(BuiltinFunTable.instance().suite());
 		suite.addTestSuite(Schedule.ScheduleTestCase.class);
 		suite.addTest(Util.suite());
+		suite.addTest(CachePool.suite());
 		return suite;
 	}
 

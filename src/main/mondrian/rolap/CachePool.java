@@ -12,11 +12,12 @@
 
 package mondrian.rolap;
 import mondrian.olap.Util;
-import java.util.Iterator;
-import java.util.TreeSet;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Collection;
+
+import java.util.*;
+
+import junit.framework.TestSuite;
+import junit.framework.Test;
+import junit.framework.TestCase;
 
 /**
  * A <code>CachePool</code> manages the objects in a collection of
@@ -44,14 +45,19 @@ public class CachePool {
 	private static final double decayReciprocal = 1.0 / decay; // slightly > 1
 	private double tick = 0;
 	private double totalDecay = 1;
-	private double totalCost = 0;
+	/** Total cost of all unpinned objects. **/
+	private double unpinnedCost = 0;
 	private double costLimit = 0;
 	/** Total cost of all objects in {@link #pinned}. **/
 	private double pinnedCost;
-	/** Total number of pins for all objects in cache. **/
+	/** Priority queue of unpinned objects, sorted so that those with the a
+	 * high cost/low benefit are at the head. **/
 	private TreeSet queue;
 	/** Set of objects whose pin count is greater than zero. **/
 	private HashSet pinned;
+	/** Set of objects which were pinned when we last flushed and are still
+	 * pinned. As soon as they are unpinned, we will flush them. */
+	private HashSet pinnedZombies;
 	/** Sum of all objects' pin counts. For consistency checking. **/
 	private int totalPinCount;
 	/** Singleton. **/
@@ -81,6 +87,7 @@ public class CachePool {
 				}
 			});
 		this.pinned = new HashSet();
+		this.pinnedZombies = new HashSet();
 	}
 
  	/** Returns or creates the singleton. **/
@@ -135,7 +142,7 @@ public class CachePool {
 		cacheable.markAccessed(tick());
 		queue.add(cacheable);
 		double cost = cacheable.getCost();
-		totalCost += cost;
+		unpinnedCost += cost;
 		while (pinCount-- > 0) {
 			pin(cacheable, pinned);
 		}
@@ -145,7 +152,7 @@ public class CachePool {
 				"CachePool: add [" + cacheable +
 				"], cost=" + cost +
 				", size=" + size() +
-				", totalCost=" + totalCost);
+				", totalCost=" + unpinnedCost);
 		}
 	}
 
@@ -155,7 +162,7 @@ public class CachePool {
 	void remove(Cacheable cacheable)
 	{
 		double cost = cacheable.getCost();
-		totalCost -= cost;
+		unpinnedCost -= cost;
 		Util.assertTrue(cacheable.getPinCount() == 0);
 		cacheable.removeFromCache();
 		boolean existed = queue.remove(cacheable);
@@ -168,7 +175,7 @@ public class CachePool {
 				"CachePool: remove [" + cacheable +
 				"], cost=" + cost +
 				", size=" + size() +
-				", totalCost=" + totalCost);
+				", totalCost=" + unpinnedCost);
 		}
 	}
 
@@ -186,17 +193,31 @@ public class CachePool {
 	 **/
 	void notify(Cacheable cacheable, double previousCost)
 	{
-		totalCost -= previousCost;
+		unpinnedCost -= previousCost;
 		double newCost = cacheable.getCost();
-		totalCost += newCost;
+		unpinnedCost += newCost;
 		boolean existed = queue.remove(cacheable);
 		Util.assertTrue(existed);
 		queue.add(cacheable);
 	}
 
+	/**
+	 * Flushes all unpinned objects in the cache. Objects which are still
+	 * pinned are marked, so they will be removed immediately that they are
+	 * unpinned.
+	 */
+	public void flush() {
+		while (!queue.isEmpty()) {
+			Cacheable cacheable = (Cacheable) queue.last();
+			remove(cacheable);
+		}
+		// Mark the still-pinned objects for death.
+		pinnedZombies.addAll(pinned);
+	}
+
 	private void flushIfNecessary()
 	{
-		while (totalCost > costLimit) {
+		while ((unpinnedCost + pinnedCost) > costLimit && !queue.isEmpty()) {
 			Cacheable cacheable = (Cacheable) queue.last();
 			remove(cacheable);
 		}
@@ -207,7 +228,7 @@ public class CachePool {
 	 **/
 	double getTotalCost()
 	{
-		return totalCost;
+		return pinnedCost + unpinnedCost;
 	}
 
 	/**
@@ -241,7 +262,7 @@ public class CachePool {
 					"could not find [" + cacheable + "] in queue");
 			}
 			double cost = cacheable.getCost();
-			totalCost -= cost;
+			unpinnedCost -= cost;
 			pinnedCost += cost;
 		}
 		cacheable.setPinCount(++pinCount);
@@ -266,9 +287,14 @@ public class CachePool {
 		if (pinCount == 1) {
 			boolean existed = pinned.remove(cacheable);
 			Util.assertTrue(existed);
-			queue.add(cacheable);
 			double cost = cacheable.getCost();
-			totalCost += cost;
+			if (pinnedZombies.remove(cacheable)) {
+				// it was marked for death, so don't bother to queue it, just
+				// remove it immediately
+			} else {
+				queue.add(cacheable);
+				unpinnedCost += cost;
+			}
 			pinnedCost -= cost;
 		}
 		cacheable.setPinCount(--pinCount);
@@ -301,7 +327,7 @@ public class CachePool {
 	 **/
 	void validate()
 	{
-		Util.assertTrue(totalCost <= costLimit);
+		Util.assertTrue(unpinnedCost <= costLimit);
 		double maxScore = 0,
 			totalCost = 0,
 			pinnedCost = 0;
@@ -316,7 +342,7 @@ public class CachePool {
 			maxScore = score;
 			totalCost += cost;
 		}
-		Util.assertTrue(totalCost == this.totalCost);
+		Util.assertTrue(totalCost == this.unpinnedCost);
 		for (Iterator elements = pinned.iterator(); elements.hasNext(); ) {
 			Cacheable cacheable = (Cacheable) elements.next();
 			double cost = cacheable.getCost();
@@ -326,17 +352,94 @@ public class CachePool {
 			totalPinCount += pinCount;
 		}
 		Util.assertTrue(pinnedCost == this.pinnedCost);
+		// "pinnedZombies" is a subset of "pinned"
+		for (Iterator zombies = pinnedZombies.iterator(); zombies.hasNext();) {
+			Cacheable zombie = (Cacheable) zombies.next();
+			Util.assertTrue(pinned.contains(zombie));
+		}
 	}
 
+	/**
+	 * Creates a JUnit testcase to test this class.
+	 */
+	public static Test suite() throws Exception {
+		TestSuite suite = new TestSuite();
+		suite.addTestSuite(CachePoolTestCase.class);
+		return suite;
+	}
+
+	public static class CachePoolTestCase extends TestCase {
+		public CachePoolTestCase(String s) {
+			super(s);
+		}
+		public void test() {
+			CachePool c = new CachePool(10);
+			ArrayList list = new ArrayList();
+			// add object of cost 3, now {3:1}
+			final CacheableInt o3 = new CacheableInt(3);
+			c.register(o3, 1, list);
+			assertEquals(1, c.size());
+			// add object of cost 6, now {3:1, 6:1}
+			final CacheableInt o6 = new CacheableInt(6);
+			c.register(o6, 1, list);
+			assertEquals(9, (int) c.pinnedCost);
+			assertEquals(9, (int) c.getTotalCost());
+			// pin an already-pinned object, now {3:2, 6:1}
+			c.pin(o3, list);
+			assertEquals(9, (int) c.pinnedCost);
+			assertEquals(9, (int) c.getTotalCost());
+			assertEquals(2, c.pinned.size());
+			assertEquals(2, o3.getPinCount());
+			// pin a new object, taking us over the threshold, {3:2, 6:1, 8:1}
+			final CacheableInt o8 = new CacheableInt(8);
+			c.register(o8, 1, list);
+			assertEquals(17, (int) c.getTotalCost());
+			assertEquals(3, (int) c.pinned.size());
+			// unpin 3, still pinned, {3:1, 6:1, 8:1}
+			c.unpin(o3);
+			assertEquals(17, (int) c.getTotalCost());
+			assertEquals(3, (int) c.pinned.size());
+			// unpin 3, it is now flushed, {6:1, 8:1}
+			c.unpin(o3);
+			assertEquals(14, (int) c.getTotalCost());
+			assertEquals(2, (int) c.pinned.size());
+			// new element, {2:3, 6:1, 8:1}
+			final CacheableInt o2 = new CacheableInt(2);
+			c.register(o2, 3, list);
+			assertEquals(16, (int) c.getTotalCost());
+			assertEquals(3, (int) c.pinned.size());
+			// unpin 6, it is flushed {2:3, 8:1}
+			c.unpin(o6);
+			assertEquals(10, (int) c.getTotalCost());
+			// unpin the others, nothing is removed, since we're at the limit
+			// {2:0, 8:0}
+			c.unpin(o2);
+			c.unpin(o2);
+			c.unpin(o2);
+			c.unpin(o8);
+			assertEquals(10, (int) c.getTotalCost());
+			// add a 5, and the big 8 goes, {2:0, 5:0}
+			final CacheableInt o5 = new CacheableInt(5);
+			c.register(o5, 0, list);
+			assertEquals(7, (int) c.getTotalCost());
+			// pin 5, flush, the 2 goes, 5 stays, {5:1}
+			c.pin(o5, list);
+			c.flush();
+			assertEquals(5, (int) c.getTotalCost());
+			// add 3 unpinned, it stays {3:0, 5:0}
+			c.register(o3, 0, list);
+			assertEquals(8, (int) c.getTotalCost());
+			// unpin 5, it goes because it is due to be flushed {3:0}
+			c.unpin(o5);
+			assertEquals(3, (int) c.getTotalCost());
+		}
+	}
+
+	/**
+	 * An object must implement <code>Cacheable</code> to be stored in a cache.
+	 */
 	public interface Cacheable
 	{
-//  		/** Retrieves the cache that this object belongs to. **/
-//  		Cache getCache();
-//  		/** You must call this method when the object is first put in the
-//  		 * cache. **/
-//  		void registerInCachePool();
-//  		/** Retrieves the key used to place this object in the cache. **/
-//  		Object getKey();
 		/** Removes the object from its cache. The {@link CachePool} calls this
 		 * method when an object's cost exceeds its benefit. **/
 		void removeFromCache();
@@ -361,15 +464,42 @@ public class CachePool {
 		 * than zero, it is not a candidate for being removed from the
 		 * cache. **/
 		int getPinCount();
-	};
+	}
 
-//  	interface Queue
-//  	{
-//  		Object last();
-//  		Iterator elements();
-//  		Object remove(Object o);
-//  		void add(Object o);
-//  	};
+}
+
+/**
+ * Trivial {@link Cacheable} for testing purposes.
+ */
+class CacheableInt implements CachePool.Cacheable {
+	int pinCount;
+	int x;
+
+	CacheableInt(int x) {
+		this.x = x;
+	}
+
+	public void removeFromCache() {
+	}
+
+	public void markAccessed(double recency) {
+	}
+
+	public double getScore() {
+		return x;
+	}
+
+	public double getCost() {
+		return x;
+	}
+
+	public void setPinCount(int pinCount) {
+		this.pinCount = pinCount;
+	}
+
+	public int getPinCount() {
+		return pinCount;
+	}
 }
 
 // End CachePool.java
