@@ -337,12 +337,12 @@ class RolapEvaluator implements Evaluator
 		return key;
 	}
 
-	public Object getExpResult(Exp exp) {
+	public Object getCachedResult(Exp exp) {
 		Object key = getExpResultCacheKey(exp);
 		return expResultCache.get(key);
 	}
 
-	public void setExpResult(Exp exp, Object result) {
+	public void setCachedResult(Exp exp, Object result) {
 		Object key = getExpResultCacheKey(exp);
 		expResultCache.put(key, result);
 	}
@@ -350,6 +350,15 @@ class RolapEvaluator implements Evaluator
 	public void clearExpResultCache() {
 		expResultCache.clear();
 	}
+	
+	private boolean nonEmpty;
+	public boolean isNonEmpty() {
+		return nonEmpty;
+	}
+	public void setNonEmpty(boolean b) {
+		nonEmpty = b;
+	}
+
 }
 
 // End RolapEvaluator.java

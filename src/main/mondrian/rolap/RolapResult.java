@@ -163,7 +163,9 @@ class RolapResult extends ResultBase
 			positions = new Position[] {position};
 		} else {
 			Exp exp = axis.set;
+			evaluator.setNonEmpty(axis.nonEmpty);
 			Object value = exp.evaluate(evaluator);
+			evaluator.setNonEmpty(false);
 			if (value == null) {
 				value = Collections.EMPTY_LIST;
 			}

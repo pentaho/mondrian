@@ -76,11 +76,24 @@ public interface Evaluator {
 	 * independent dimensions are not part of the key.
 	 * @see Exp#dependsOn
 	 */
-	Object getExpResult(Exp key);
+	Object getCachedResult(Exp key);
 	/**
-	 * @see #getExpResult
+	 * @see #getCachedResult
 	 */
-	void setExpResult(Exp key, Object value);
+	void setCachedResult(Exp key, Object value);
+	
+	/**
+	 * set to true for an axis that is NON EMPTY. May be used by expression
+	 * evaluators to optimize their result. For example a top-level crossjoin
+	 * may be optimized by removing all non-empty set elements before performing
+	 * the crossjoin. 
+	 * I.e. nonempty(crossjoin(a,b)) == nonempty(crossjoin(nonempty(a), nonempty(b));
+	 */
+	boolean isNonEmpty();
+	/**
+	 * allows expressions to modify non empty flag to evaluate their children.
+	 */
+	void setNonEmpty(boolean nonEmpty);
 }
 
 // End Evaluator.java

@@ -3770,6 +3770,28 @@ public class BasicQueryTest extends FoodMartTestCase {
 		Axis a = result.getAxes()[1];
 		assertEquals(12, a.positions.length);
 	}
+
+    /**
+     * This results in an OutOfMemoryException
+     */
+    public void testNonEmptyCrossJoin() {
+        CachePool.instance().flush();
+        Result result = runQuery(
+        "select {[Measures].[Store Sales]} on columns," + nl +
+        "  NON EMPTY Crossjoin(" + nl +
+        "    [Customers].[Name].Members," + nl +
+        "    [Product].[Product Name].Members" + nl +
+        "  ) ON rows" + nl +
+        "from [Sales]" + nl +
+        "where (" + nl +
+        "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]," + nl +
+        "  [Time].[1997].[Q1].[1]" + nl +
+        ")" + nl);
+        // ok if no OutOfMemoryException occurs
+        Axis a = result.getAxes()[1];
+        assertEquals(67, a.positions.length);
+    }
+	
 }
 
 // End BasicQueryTest.java
