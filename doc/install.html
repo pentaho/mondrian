@@ -4,7 +4,7 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == (C) Copyright 2001-2002 Kana Software, Inc. and others.
+  == (C) Copyright 2001-2003 Kana Software, Inc. and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   == jhyde, 24 September, 2002
@@ -277,7 +277,7 @@ working on other databases/versions? Please
 
 <h3><a name="5_1_Microsoft_Access">5.1. Microsoft Access</a></h3>
 <p>Start ODBC Administrator, and create a System ODBC DSN called <code>MondrianFoodMart</code> pointing to 
-<code><i>${project.location}</i>/demo/access/FoodMart.mdb</code>.
+<code><i>${project.location}</i>/demo/access/MondrianFoodMart.mdb</code>.
     The JDBC connect string will be <code>jdbc:odbc:MondrianFoodMart</code>.</p>
 <h3><a name="5_2_Oracle">5.2. Oracle</a></h3>
 <p>Version 8.1.7 or higher.</p>
@@ -327,6 +327,8 @@ import done in WE8ISO8859P1 character set and WE8ISO8859P1 NCHAR character set
 . . importing table              "warehouse_class"          6 rows imported
 Import terminated successfully without warnings.</pre>
 </blockquote></p>
+
+<p>Note: the schema in <code>FoodMart.dmp</code> was created by running <code>demo/oracle/FoodMartTables.sql</code>, <code>demo/FoodMartData.sql</code>, then <code>demo/oracle/FoodMartIndexes.sql</code> in SQLPlus. To avoid straining my rollback segment, I used the SQLPlus command <code>set autocommit 100</code>.</p>
 
 <p>Setup your environment as follows:</p>
 <ol>
