@@ -241,6 +241,9 @@ class RolapCube extends CubeBase
 
 	void register()
 	{
+		if (isVirtual()) {
+			return;
+		}
 		ArrayList list = new ArrayList();
 		Member[] measures = getMeasures();
 		for (int i = 0; i < measures.length; i++) {

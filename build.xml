@@ -576,17 +576,18 @@ junit.jar"/>
 
   <!-- targets to start and stop tomcat -->
 
-  <!-- I had to take the 'C:' off these paths, otherwise the path got truncated
-       to just the first element. Any ideas, anyone? -->
   <path id="tomcat.classpath">
-    <pathelement path="/jdk1.3.1_02/lib/tools.jar"/>
-    <pathelement path="/jakarta-tomcat-4.0.3/localhost/work/classes"/>
-    <pathelement path="/jakarta-tomcat-4.0.3/bin/bootstrap.jar"/>
-    <pathelement path="/oracle/ora81/jdbc/lib/classes12.zip"/>
-    <pathelement path="/MySQL/lib/mysql-connector-java-2.0.14-bin.jar"/>
+    <pathelement location="${tomcat.home}/lib/tools.jar"/>
+    <pathelement location="${tomcat.home}/localhost/work/classes"/>
+    <pathelement location="${tomcat.home}/bin/bootstrap.jar"/>
+	<!-- Add your JDBC driver(s) here. -->
+    <pathelement location="${myenv.ORACLE_HOME}/jdbc/lib/classes12.zip"/>
+    <pathelement location="${myenv.MYSQL_HOME}/lib/mysql-connector-java-2.0.14-bin.jar"/>
   </path>
 
-  <target name="start.tomcat">
+  <target name="start.tomcat" description="
+Convenience target to start Tomcat. You can still use
+TOMCAT_HOME/bin/startup.bat">
     <property name="foo" refid="tomcat.classpath"/>
     <echo message="classpath is ${foo}"/>
     <java classpathref="tomcat.classpath"
@@ -601,7 +602,9 @@ junit.jar"/>
     </java>
   </target>
 
-  <target name="debug.tomcat">
+  <target name="debug.tomcat" description="
+Convenience target to start Tomcat in debug mode. You can still use
+TOMCAT_HOME/bin/startup.bat or startup.sh.">
     <java classpathref="tomcat.classpath"
           classname="org.apache.catalina.startup.Bootstrap"
           dir="${tomcat.home}/bin"
@@ -616,7 +619,9 @@ junit.jar"/>
     </java>
   </target>
 
-  <target name="stop.tomcat">
+  <target name="stop.tomcat" description="
+Convenience target to stop Tomcat. You can still use
+TOMCAT_HOME/bin/shutdown.bat or shutdown.sh.">
     <java classpathref="tomcat.classpath"
           classname="org.apache.catalina.startup.Bootstrap"
           dir="${tomcat.home}/bin"

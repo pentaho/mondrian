@@ -141,9 +141,10 @@ class CacheMemberReader implements MemberReader, MemberCache
 		RolapLevel level, int startOrdinal, int endOrdinal)
 	{
 		ArrayList list = new ArrayList();
+		int levelDepth = level.getDepth();
 		for (int i = 0; i < members.length; i++) {
 			RolapMember member = members[i];
-			if (member.getLevel() == level &&
+			if (member.getLevel().getDepth() == levelDepth &&
 				startOrdinal <= member.ordinal &&
 				member.ordinal < endOrdinal) {
 				list.add(members[i]);
