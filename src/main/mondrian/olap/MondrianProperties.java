@@ -11,6 +11,8 @@
 */
 package mondrian.olap;
 
+import mondrian.util.PropertiesPlus;
+
 import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
@@ -77,26 +79,25 @@ public class MondrianProperties extends PropertiesPlus {
                 System.out.println("Mondrian: file '" + file.getAbsolutePath() +
                         "' could not be loaded (" + e + ")");
             }
-        }
-        /*
-        else if (populateCount == 0) {
+        } else if (populateCount == 0 && false) {
             System.out.println("Mondrian: Warning: file '" +
                     file.getAbsolutePath() + "' not found");
         }
-        */
-        // If we're in a servlet, read "mondrian.properties" from WEB-INF directory.
+
+        // If we're in a servlet, read "mondrian.properties" from WEB-INF
+        // directory.
         if (servletContext != null) {
             try {
-                final URL resourceUrl = servletContext.getResource("/WEB-INF/" + mondrianDotProperties);
+                final URL resourceUrl = servletContext.getResource(
+                        "/WEB-INF/" + mondrianDotProperties);
                 if (resourceUrl != null) {
                     load(resourceUrl);
                 }
-                /*
-                else if (populateCount == 0) {
-                    System.out.println("Mondrian: Warning: servlet resource '" +
+                else if (populateCount == 0 && false) {
+                    System.out.println(
+                            "Mondrian: Warning: servlet resource '" +
                             mondrianDotProperties + "' not found");
                 }
-                */
             } catch (MalformedURLException e) {
                 System.out.println("Mondrian: '" + mondrianDotProperties +
                         "' could not be loaded from servlet context (" + e +
@@ -115,7 +116,8 @@ public class MondrianProperties extends PropertiesPlus {
             }
         }
         if (populateCount++ == 0) {
-            System.out.println("Mondrian: loaded " + count + " system properties");
+            System.out.println("Mondrian: loaded " + count +
+                    " system properties");
         }
     }
 
@@ -125,10 +127,12 @@ public class MondrianProperties extends PropertiesPlus {
         try {
             load(url.openStream());
             if (populateCount == 0) {
-                System.out.println("Mondrian: properties loaded from '" + url + "'");
+                System.out.println("Mondrian: properties loaded from '" + url +
+                        "'");
             }
         } catch (IOException e) {
-            System.out.println("Mondrian: error while loading properties from '" + url + "' (" + e + ")");
+            System.out.println("Mondrian: error while loading properties " +
+                    "from '" + url + "' (" + e + ")");
         }
     }
 
@@ -165,8 +169,7 @@ public class MondrianProperties extends PropertiesPlus {
             "oracle.jdbc.OracleDriver," +
             "com.mysql.jdbc.Driver";
 
-    /** Retrieves the value of the {@link #ResultLimit} property,
-     */
+    /** Retrieves the value of the {@link #ResultLimit} property. */
     public int getResultLimit() {
         return getIntProperty(ResultLimit, 0);
     }
@@ -331,7 +334,8 @@ public class MondrianProperties extends PropertiesPlus {
 
     public static final String TimeLimit = "mondrian.test.TimeLimit";
     public static final int TimeLimit_Default = 0;
-    /** Returns the time limit in seconds */
+    /** Returns the time limit for the test run in seconds. If the test is
+     * running after that time, it is terminated. */
     public int getTimeLimit() {
         return getIntProperty(TimeLimit, TimeLimit_Default);
     }
@@ -341,82 +345,17 @@ public class MondrianProperties extends PropertiesPlus {
         return getBooleanProperty(Warmup);
     }
 
-    public static final String CachePoolType = "mondrian.rolap.CachePoolType";
-    public static final String CachePoolType_Soft = "soft";
-    public static final String CachePoolType_Mondrian = "mondrian";
-    public static final String CachePoolType_Hard = "hard";
-
     /**
-     * The cache pool type. Legal values are {@link #CachePoolType_Soft},
-     * {@link #CachePoolType_Hard} and {@link #CachePoolType_Mondrian}.
-     * <p>
-     * A <code>CachePoolType_Soft</code> cache pool uses a soft reference HashMap for the
-     * cache pool. Its behavior is driven by the Java garbage collector. See
-     * {@link mondrian.rolap.cache.SoftCachePool} for more information.
-     * <p>
-     * The <code>CachePoolType_Hard</code> keeps cache entries in memory until
-     * the cache is flushed. See {@link mondrian.rolap.cache.HardCachePool} for
-     * more information.
-     * <p>
-     * The <code>CachePoolType_Mondrian</code> uses a cost-based metric for keeping
-     * cache entries in the pool. See {@link mondrian.rolap.cache.MondrianCachePool} for
-     * more information.
+     * Retrieves the URL of the catalog to be used by CmdRunner.
+     *
+     * <p>The value always comes from {@link System#props}, but the property is
+     * declared in the {@link MondrianProperties} class for uniformity.
      */
-    public String getCachePoolType() {
-        return getProperty(CachePoolType, CachePoolType_Soft);
+    public String getCatalogURL() {
+        return System.getProperty(CatalogUrl);
     }
-}
-
-/**
- * <code>PropertiesPlus</code> adds a couple of convenience methods to
- * {@link java.util.Properties}.
- **/
-class PropertiesPlus extends Properties {
-    /**
-     * Retrieves an integer property. Returns -1 if the property is not
-     * found, or if its value is not an integer.
-     */
-    public int getIntProperty(String key) {
-        return getIntProperty(key, -1);
-    }
-    /**
-     * Retrieves an integer property. Returns <code>default</code> if the
-     * property is not found.
-     */
-    public int getIntProperty(String key, int defaultValue) {
-        String value = getProperty(key);
-        if (value == null) {
-            return defaultValue;
-        }
-        int i = Integer.valueOf(value).intValue();
-        return i;
-    }
-    /**
-     * Retrieves a double-precision property. Returns <code>default</code> if
-     * the property is not found.
-     */
-    public double getDoubleProperty(String key, double defaultValue) {
-        String value = getProperty(key);
-        if (value == null) {
-            return defaultValue;
-        }
-        double d = Double.valueOf(value).doubleValue();
-        return d;
-    }
-    /**
-     * Retrieves a boolean property. Returns <code>true</code> if the
-     * property exists, and its value is <code>1</code>, <code>true</code>
-     * or <code>yes</code>; returns <code>false</code> otherwise.
-     */
-    public boolean getBooleanProperty(String key) {
-        String value = getProperty(key);
-        if (value == null) {
-            return false;
-        }
-        return value.equalsIgnoreCase("1") ||
-            value.equalsIgnoreCase("true") ||
-            value.equalsIgnoreCase("yes");
-    }
+    /** Property {@value}. */
+    public static final String CatalogUrl = "mondrian.catalogURL";
 }
 
 // End MondrianProperties.java

@@ -16,6 +16,7 @@ import mondrian.olap.fun.FunInfo;
 import org.apache.log4j.Logger;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Level;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -35,10 +36,6 @@ public class CmdRunner {
 
     private static boolean RELOAD_CONNECTION = true;
 
-    /** Name of the property "mondrian.catalogURL". */
-    public static final String CATALOG_URL = "mondrian.catalogURL";
-
-
     /** List of all properties of interest to this utility. */
     private static final String[] propertyNames = {
         MondrianProperties.QueryLimit,
@@ -48,7 +45,7 @@ public class CmdRunner {
         MondrianProperties.ResultLimit,
         MondrianProperties.TestConnectString,
         MondrianProperties.JdbcURL,
-        CmdRunner.CATALOG_URL,
+        MondrianProperties.CatalogUrl,
         MondrianProperties.LargeDimensionThreshold,
         MondrianProperties.SparseSegmentCountThreshold,
         MondrianProperties.SparseSegmentDensityThreshold,
@@ -114,8 +111,8 @@ public class CmdRunner {
     }
 
     private static String getPropertyValue(String propertyName) {
-        if (propertyName.equals(CmdRunner.CATALOG_URL)) {
-            return System.getProperty(CmdRunner.CATALOG_URL);
+        if (propertyName.equals(MondrianProperties.CatalogUrl)) {
+            return System.getProperty(MondrianProperties.CatalogUrl);
         } else {
             return MondrianProperties.instance().getProperty(propertyName);
         }
@@ -137,8 +134,8 @@ public class CmdRunner {
     public static boolean setProperty(String name, String value) {
         String oldValue = getPropertyValue(name);
         if (! Util.equals(oldValue, value)) {
-            if (name.equals(CmdRunner.CATALOG_URL)) {
-                System.setProperty(CmdRunner.CATALOG_URL, value);
+            if (name.equals(MondrianProperties.CatalogUrl)) {
+                System.setProperty(MondrianProperties.CatalogUrl, value);
             } else {
                 MondrianProperties.instance().setProperty(name, value);
             }
@@ -296,7 +293,7 @@ public class CmdRunner {
         return MondrianProperties.instance().getFoodmartJdbcURL();
     }
     protected static String getCatalogURLProperty() {
-        return System.getProperty(CmdRunner.CATALOG_URL);
+        return MondrianProperties.instance().getCatalogURL();
     }
     protected static String getJdbcDriversProperty() {
         return MondrianProperties.instance().getJdbcDrivers();
@@ -329,7 +326,7 @@ public class CmdRunner {
     protected void commandLoop(String mdxCmd, boolean interactive)
         throws IOException {
 
-        StringBufferInputStream is = new StringBufferInputStream(mdxCmd);
+        InputStream is = new ByteArrayInputStream(mdxCmd.getBytes());
         commandLoop(is, interactive);
     }
 
