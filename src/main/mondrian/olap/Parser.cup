@@ -497,44 +497,44 @@ cube_name ::= compound_id ;
 value_expression ::=
 		term5
 	|	value_expression:x OR term5:y {:
-			RESULT = new FunCall("OR", new Exp[] {x, y}, Syntax.Infix);
+			RESULT = new FunCall("OR", Syntax.Infix, new Exp[] {x, y});
 		:}
 	|	value_expression:x XOR term5:y {:
-			RESULT = new FunCall("XOR", new Exp[] {x, y}, Syntax.Infix);
+			RESULT = new FunCall("XOR", Syntax.Infix, new Exp[] {x, y});
 		:}
 	;
 
 term5 ::= 
 		term4
 	|	term5:x AND term4:y {:
-			RESULT = new FunCall("AND", new Exp[] {x, y}, Syntax.Infix);
+			RESULT = new FunCall("AND", Syntax.Infix, new Exp[] {x, y});
 		:}
 	;
 
 term4 ::=
 		term3
 	|	NOT term4:p {:
-			RESULT = new FunCall("NOT", new Exp[] {p}, Syntax.Prefix);
+			RESULT = new FunCall("NOT", Syntax.Prefix, new Exp[] {p});
 		:}
 	;
 
 term3 ::=
 		term2
 	|	term3:x comp_op:op term2:y {: // e.g. 1 < 5
-			RESULT = new FunCall(op, new Exp[] {x, y}, Syntax.Infix);
+			RESULT = new FunCall(op, Syntax.Infix, new Exp[] {x, y});
 		:}
 	;
 
 term2 ::=
 		term
 	|	term2:x PLUS term:y {:
-			RESULT = new FunCall("+", new Exp[] {x, y}, Syntax.Infix);
+			RESULT = new FunCall("+", Syntax.Infix, new Exp[] {x, y});
 		:}
 	|	term2:x MINUS term:y {:
-			RESULT = new FunCall("-", new Exp[] {x, y}, Syntax.Infix);
+			RESULT = new FunCall("-", Syntax.Infix, new Exp[] {x, y});
 		:}
 	|	term2:x CONCAT term:y {:
-			RESULT = new FunCall("||", new Exp[] {x, y}, Syntax.Infix);
+			RESULT = new FunCall("||", Syntax.Infix, new Exp[] {x, y});
 		:}
 	;
 	
@@ -543,10 +543,10 @@ term2 ::=
 term ::=
 		factor
 	|	term:x ASTERISK factor:y {:
-			RESULT = new FunCall("*", new Exp[] {x, y}, Syntax.Infix);
+			RESULT = new FunCall("*", Syntax.Infix, new Exp[] {x, y});
 		:}
 	|	term:x SOLIDUS factor:y {:
-			RESULT = new FunCall("/", new Exp[] {x, y}, Syntax.Infix);
+			RESULT = new FunCall("/", Syntax.Infix, new Exp[] {x, y});
 		:}
 	;
 // 
@@ -558,7 +558,7 @@ factor ::=
 			RESULT = p;
 		:}
 	|	MINUS value_expression_primary:p {:
-			RESULT = new FunCall("-", new Exp[] {p}, Syntax.Prefix);
+			RESULT = new FunCall("-", Syntax.Prefix, new Exp[] {p});
 		:}
 	;
 // <sign> ::= + | -
@@ -595,7 +595,7 @@ value_expression_primary ::=
 			RESULT = new Id(i);
 		:}
 	|	value_expression_primary:i DOT unquoted_identifier:j {:
-			RESULT = new FunCall(j, new Exp[] {i}, Syntax.Property);
+			RESULT = new FunCall(j, Syntax.Property, new Exp[] {i});
 		:}
 	|	value_expression_primary:i DOT quoted_identifier:j {:
 			if (i instanceof Id) {
@@ -603,7 +603,7 @@ value_expression_primary ::=
 				RESULT = i;
 			} else {
 				RESULT = new FunCall(
-					j, new Exp[] {i}, Syntax.QuotedProperty);
+					j, Syntax.QuotedProperty, new Exp[] {i});
 			}
 		:}
 	|	value_expression_primary:i DOT amp_quoted_identifier:j {:
@@ -612,26 +612,26 @@ value_expression_primary ::=
 				RESULT = i;
 			} else {
 				RESULT = new FunCall(
-					j, new Exp[] {i}, Syntax.AmpersandQuotedProperty);
+					j, Syntax.AmpersandQuotedProperty, new Exp[] {i});
 			}
 		:}
 	|	value_expression_primary:i DOT identifier:j LPAREN exp_list_opt:lis RPAREN {:
 			lis.add(0, i);
-			RESULT = new FunCall(j, (Exp[]) lis.toArray(new Exp[0]), Syntax.Method);
+			RESULT = new FunCall(j, Syntax.Method, (Exp[]) lis.toArray(new Exp[0]));
 		:}
 	|	identifier:i LPAREN exp_list_opt:lis RPAREN {:
 			RESULT = new FunCall(
-				i, (Exp[]) lis.toArray(new Exp[0]), Syntax.Function);
+				i, Syntax.Function, (Exp[]) lis.toArray(new Exp[0]));
 		:}
 	|	LPAREN exp_list:lis RPAREN {:
 			// Whereas ([Sales],[Time]) and () are tuples, ([Sales]) and (5)
 			// are just expressions.
 			RESULT = new FunCall(
-				"()", (Exp[]) lis.toArray(new Exp[0]), Syntax.Parentheses);
+				"()", Syntax.Parentheses, (Exp[]) lis.toArray(new Exp[0]));
 		:}
 	|	LBRACE exp_list_opt:lis RBRACE {: // set built from sets/tuples
 			RESULT = new FunCall(
-				"{}", (Exp[]) lis.toArray(new Exp[0]), Syntax.Braces);
+				"{}", Syntax.Braces, (Exp[]) lis.toArray(new Exp[0]));
 		:}
 	|	case_expression
 	;
@@ -656,10 +656,10 @@ case_expression ::=
 			}
 			if (x == null) {
 				RESULT = new FunCall(
-					"_CaseTest", (Exp[]) v.toArray(new Exp[0]), Syntax.Case);
+					"_CaseTest", Syntax.Case, (Exp[]) v.toArray(new Exp[0]));
 			} else {
 				RESULT = new FunCall(
-					"_CaseMatch", (Exp[]) v.toArray(new Exp[0]), Syntax.Case);
+					"_CaseMatch", Syntax.Case, (Exp[]) v.toArray(new Exp[0]));
 			}
 		:}
 	;
@@ -938,7 +938,7 @@ comp_op ::=
 // 												[, <member>]]])
 expression ::=
 		expression:x COLON value_expression:y {: // range yields set
-			RESULT = new FunCall(":", new Exp[] {x, y}, Syntax.Infix);
+			RESULT = new FunCall(":", Syntax.Infix, new Exp[] {x, y});
 		:}
 	|	value_expression
 	;
