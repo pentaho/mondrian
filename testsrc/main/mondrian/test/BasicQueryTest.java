@@ -469,7 +469,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 				" {[Product].Children} on rows" + nl +
 				"from Sales");
 		String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL(false);
-    // the following replacement is for databases in ANSI mode 
+    // the following replacement is for databases in ANSI mode
     //  using '"' to quote identifiers
     sql = sql.replace('"', '`');
 		assertEquals("select `time_by_day`.`the_year` as `Year`," +
@@ -505,7 +505,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 		} else {
 			fname_plus_lname = " fname + ' ' + lname as `Name`,";
 		}
-    // the following replacement is for databases in ANSI mode 
+    // the following replacement is for databases in ANSI mode
     //  using '"' to quote identifiers
     sql = sql.replace('"', '`');
 		assertEquals("select `store`.`store_name` as `Store Name`," +
@@ -2653,7 +2653,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         CachePool.instance().flush();
         testBasketAnalysis();
     }
-    
+
     /**
      * <b>How Can I Perform Complex String Comparisons?</b>
      *
@@ -3743,6 +3743,33 @@ public class BasicQueryTest extends FoodMartTestCase {
 		"Row #1: 15,111" + nl);
 	}
 
+	/**
+	 * This resulted in OutOfMemoryException when the BatchingCellReader did not
+	 * know the values for the tupels that were used in filters.
+	 */
+	public void testFilteredCrossJoin() {
+		CachePool.instance().flush();
+		Result result = runQuery(
+	    "select {[Measures].[Store Sales]} on columns," + nl +
+	    "  NON EMPTY Crossjoin(" + nl +
+	    "    Filter([Customers].[Name].Members," + nl +
+	    "      (([Measures].[Store Sales]," + nl +
+	    "        [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]," + nl +
+	    "        [Time].[1997].[Q1].[1]) > 5.0))," + nl +
+	    "    Filter([Product].[Product Name].Members," + nl +
+	    "      (([Measures].[Store Sales]," + nl +
+	    "        [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]," + nl +
+	    "        [Time].[1997].[Q1].[1]) > 5.0))" + nl +
+	    "  ) ON rows" + nl +
+	    "from [Sales]" + nl +
+	    "where (" + nl +
+	    "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]," + nl +
+	    "  [Time].[1997].[Q1].[1]" + nl +
+	    ")" + nl);
+		// ok if no OutOfMemoryException occurs
+		Axis a = result.getAxes()[1];
+		assertEquals(12, a.positions.length);
+	}
 }
 
 // End BasicQueryTest.java

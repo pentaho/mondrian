@@ -99,9 +99,24 @@ public class FunUtil extends Util {
 		return allowedValues.getOrdinal(literal);
 	}
 
-	static boolean getBooleanArg(Evaluator evaluator, Exp[] args, int index) {
+	/** 
+	 * returns defaultValue, if the expression can not be evaluated because
+	 * some required operands have not been loaded from the database yet.
+	 */
+	static boolean getBooleanArg(Evaluator evaluator, Exp[] args, int index, boolean defaultValue) {
 		Object o = getArg(evaluator, args, index);
+		if (o == null)
+			return defaultValue;
 		return ((Boolean) o).booleanValue();
+	}
+
+	/** 
+	 * returns null, if the expression can not be evaluated because
+	 * some required operands have not been loaded from the database yet.
+	 */
+	static Boolean getBooleanArg(Evaluator evaluator, Exp[] args, int index) {
+		Object o = getArg(evaluator, args, index);
+		return (Boolean) o;
 	}
 
 	static int getIntArg(Evaluator evaluator, Exp[] args, int index) {

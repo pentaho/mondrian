@@ -984,7 +984,7 @@ public class BuiltinFunTable extends FunTable {
 			}));
 		define(new FunDefBase("IIf", "IIf(<Logical Expression>, <Numeric Expression1>, <Numeric Expression2>)", "Returns one of two numeric values determined by a logical test.", "fnbnn") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				boolean logical = getBooleanArg(evaluator, args, 0);
+				boolean logical = getBooleanArg(evaluator, args, 0, false);
 				return getDoubleArg(evaluator, args, logical ? 1 : 2, null);
 			}
 		});
@@ -1404,7 +1404,7 @@ public class BuiltinFunTable extends FunTable {
 								"unexpected type in set: " + o.getClass());
 					}
 					Boolean b = (Boolean) exp.evaluateScalar(evaluator2);
-					if (b.booleanValue()) {
+					if (b != null && b.booleanValue()) {
 						result.add(o);
 					}
 				}
@@ -1927,7 +1927,7 @@ public class BuiltinFunTable extends FunTable {
 
 		define(new FunDefBase("IIf", "IIf(<Logical Expression>, <String Expression1>, <String Expression2>)", "Returns one of two string values determined by a logical test.", "fSbSS") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				boolean logical = getBooleanArg(evaluator, args, 0);
+				boolean logical = getBooleanArg(evaluator, args, 0, false);
 				return getStringArg(evaluator, args, logical ? 1 : 2, null);
 			}
 		});
@@ -2096,7 +2096,7 @@ public class BuiltinFunTable extends FunTable {
 				int clauseCount = args.length / 2,
 					j = 0;
 				for (int i = 0; i < clauseCount; i++) {
-					boolean logical = getBooleanArg(evaluator, args, j++);
+					boolean logical = getBooleanArg(evaluator, args, j++, false);
 					if (logical) {
 						return getArg(evaluator, args, j);
 					} else {
@@ -2369,35 +2369,55 @@ public class BuiltinFunTable extends FunTable {
 		});
 		define(new FunDefBase("AND", "<Logical Expression> AND <Logical Expression>", "Returns the conjunction of two conditions.", "ibbb") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				return toBoolean(
-						getBooleanArg(evaluator, args, 0) &&
-						getBooleanArg(evaluator, args, 1));
+				// if the first arg is known and false, we dont evaluate the second
+				Boolean b1 = getBooleanArg(evaluator, args, 0);
+				if (b1 != null && !b1.booleanValue())
+					return Boolean.FALSE;
+				Boolean b2 = getBooleanArg(evaluator, args, 1);
+				if (b2 != null && !b2.booleanValue())
+					return Boolean.FALSE;
+				if (b1 == null || b2 == null)
+					return null;
+				return toBoolean(b1.booleanValue() && b2.booleanValue());
 			}
 		});
 		define(new FunDefBase("OR", "<Logical Expression> OR <Logical Expression>", "Returns the disjunction of two conditions.", "ibbb") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				// Only evaluate 2nd if first is false.
-				return toBoolean(
-						getBooleanArg(evaluator, args, 0) ||
-						getBooleanArg(evaluator, args, 1));
+				// if the first arg is known and true, we dont evaluate the second
+				Boolean b1 = getBooleanArg(evaluator, args, 0);
+				if (b1 != null && b1.booleanValue())
+					return Boolean.TRUE;
+				Boolean b2 = getBooleanArg(evaluator, args, 1);
+				if (b2 != null && b2.booleanValue())
+					return Boolean.TRUE;
+				if (b1 == null || b2 == null)
+					return null;
+				return toBoolean(b1.booleanValue() || b2.booleanValue());
 			}
 		});
 		define(new FunDefBase("XOR", "<Logical Expression> XOR <Logical Expression>", "Returns whether two conditions are mutually exclusive.", "ibbb") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				final boolean b0 = getBooleanArg(evaluator, args, 0);
-				final boolean b1 = getBooleanArg(evaluator, args, 1);
-				return toBoolean(b0 != b1);
+				Boolean b1 = getBooleanArg(evaluator, args, 0);
+				Boolean b2 = getBooleanArg(evaluator, args, 1);
+				if (b1 == null || b2 == null)
+					return null;
+				return toBoolean(b1.booleanValue() != b2.booleanValue());
 			}
 		});
 		define(new FunDefBase("NOT", "NOT <Logical Expression>", "Returns the negation of a condition.", "Pbb") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				return toBoolean(!getBooleanArg(evaluator, args, 0));
+				Boolean b = getBooleanArg(evaluator, args, 0);
+				if (b == null)
+					return null;
+				return toBoolean(!b.booleanValue());
 			}
 		});
 		define(new FunDefBase("=", "<String Expression> = <String Expression>", "Returns whether two expressions are equal.", "ibSS") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				String o0 = getStringArg(evaluator, args, 0, null),
 						o1 = getStringArg(evaluator, args, 1, null);
+				if (o0 == null || o1 == null)
+					return null;
 				return toBoolean(o0.equals(o1));
 			}
 		});
@@ -2405,6 +2425,8 @@ public class BuiltinFunTable extends FunTable {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Double o0 = getDoubleArg(evaluator, args, 0),
 						o1 = getDoubleArg(evaluator, args, 1);
+				if (o0.isNaN() || o1.isNaN())
+					return null;
 				return toBoolean(o0.equals(o1));
 			}
 		});
@@ -2412,6 +2434,8 @@ public class BuiltinFunTable extends FunTable {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				String o0 = getStringArg(evaluator, args, 0, null),
 						o1 = getStringArg(evaluator, args, 1, null);
+				if (o0 == null || o1 == null)
+					return null;
 				return toBoolean(!o0.equals(o1));
 			}
 		});
@@ -2419,6 +2443,8 @@ public class BuiltinFunTable extends FunTable {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Double o0 = getDoubleArg(evaluator, args, 0),
 						o1 = getDoubleArg(evaluator, args, 1);
+				if (o0.isNaN() || o1.isNaN())
+					return null;
 				return toBoolean(!o0.equals(o1));
 			}
 		});
@@ -2426,6 +2452,8 @@ public class BuiltinFunTable extends FunTable {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Double o0 = getDoubleArg(evaluator, args, 0),
 						o1 = getDoubleArg(evaluator, args, 1);
+				if (o0.isNaN() || o1.isNaN())
+					return null;
 				return toBoolean(o0.compareTo(o1) < 0);
 			}
 		});
@@ -2433,6 +2461,8 @@ public class BuiltinFunTable extends FunTable {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Double o0 = getDoubleArg(evaluator, args, 0),
 						o1 = getDoubleArg(evaluator, args, 1);
+				if (o0.isNaN() || o1.isNaN())
+					return null;
 				return toBoolean(o0.compareTo(o1) <= 0);
 			}
 		});
@@ -2440,6 +2470,8 @@ public class BuiltinFunTable extends FunTable {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Double o0 = getDoubleArg(evaluator, args, 0),
 						o1 = getDoubleArg(evaluator, args, 1);
+				if (o0.isNaN() || o1.isNaN())
+					return null;
 				return toBoolean(o0.compareTo(o1) > 0);
 			}
 		});
@@ -2447,6 +2479,8 @@ public class BuiltinFunTable extends FunTable {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Double o0 = getDoubleArg(evaluator, args, 0),
 						o1 = getDoubleArg(evaluator, args, 1);
+				if (o0.isNaN() || o1.isNaN())
+					return null;
 				return toBoolean(o0.compareTo(o1) >= 0);
 			}
 		});

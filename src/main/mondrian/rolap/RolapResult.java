@@ -35,7 +35,7 @@ class RolapResult extends ResultBase
 	AggregatingCellReader aggregatingReader;
 	FastBatchingCellReader batchingReader;
     private int[] modulos;
-    private static final int MAX_AGGREGATION_PASS_COUNT = 3;
+    private static final int MAX_AGGREGATION_PASS_COUNT = 5;
 
     RolapResult(Query query) {
 		this.query = query;
