@@ -1,0 +1,96 @@
+<!--
+  == $Id$
+  == This software is subject to the terms of the Common Public License
+  == Agreement, available at the following URL:
+  == http://www.opensource.org/licenses/cpl.html.
+  == (C) Copyright 2002 Kana Software, Inc. and others.
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  == jhyde, 20 September, 2002
+  ==
+  == Ant build-file used in runtime installation of mondrian.
+  -->
+
+<project name="mondrian" default="compile">
+  <!-- Properties specified in mondrian.properties override those set in
+       the environment. -->
+  <property environment="myenv"/>
+  <property file="mondrian.properties"/>
+  <property name="name" value="mondrian"/>
+  <property name="project.location" location=".."/>
+  <property name="lib.location" location="${project.location}/lib"/>
+  <property name="war.file" value="${lib.location}/${name}.war"/>
+  <property name="webapp.location" location="${project.location}/webapp"/>
+  <property name="weblogic.home" value="${myenv.WEBLOGIC_HOME}"/>
+  <property name="tomcat.home" value="${myenv.TOMCAT_HOME}"/>
+
+  <path id="project.classpath">
+    <pathelement location="${tomcat.home}/common/lib/servlet.jar"/>
+    <pathelement location="${lib.location}/javacup.jar"/>
+    <pathelement location="${lib.location}/xalan.jar"/>
+    <pathelement location="${lib.location}/junit.jar"/>
+    <!-- CLASSPATH must contain xml-apis.jar, xercesImpl.jar, javacup.jar -->
+    <pathelement path="${myenv.CLASSPATH}"/>
+    <!-- Weblogic must be after xml-apis.jar and xercesImpl.jar, because it
+         contains an incompatible version of xerces. -->
+    <pathelement location="${weblogic.home}/lib/weblogic.jar"/>
+  </path>
+
+  <target name="war" description="
+Creates mondrian.war.
+Assumes that lib contains mondrian.jar, ant.jar, junit.jar etc.">
+    <filter filtersfile="mondrian.properties"/>
+    <mkdir dir="${lib.location}" />
+    <delete file="${war.file}"/>
+    <delete file="${lib.location}/web.xml"/>
+    <copy file="${webapp.location}/WEB-INF/web.xml"
+        filtering="true" todir="${lib.location}"/>
+    <war warfile="${war.file}"
+        webxml="${lib.location}/web.xml">
+      <fileset dir="${webapp.location}"
+          excludes="${webapp.location}/WEB-INF/web.xml"/>
+      <lib dir="${lib.location}" includes="
+${name}.jar,
+javacup.jar,
+xalan.jar,
+xml-apis.jar,
+xercesImpl.jar
+junit.jar"/>
+    </war>
+  </target>
+
+  <target name="deploy-to-tomcat" depends="war">
+    <delete dir="${tomcat.home}/webapps/mondrian"/>
+    <copy file="${war.file}"
+        todir="${tomcat.home}/webapps"/>
+  </target>
+
+  <target name="junit-main">
+        <mkdir dir="junit-results"/>
+    <junit printsummary="yes" fork="yes" haltonfailure="no" >
+        <classpath>
+            <path refid="project.classpath"/>
+        </classpath>
+        <jvmarg value="-Dmondrian.jdbcDrivers=${mondrian.jdbcDrivers}"/>
+        <jvmarg value="-Dmondrian.test.connectString=Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}'"/>
+        <formatter type="xml" />
+
+        <batchtest fork="yes" todir="junit-results">
+            <fileset dir="classes">
+              <include name="mondrian/test/**/*Test*.class" />
+              <exclude name="mondrian/test/**/*Testable*.class" />
+              <exclude name="mondrian/test/**/*TestContext*.class" />
+            </fileset>
+        </batchtest>
+    </junit>
+
+    <junitreport todir="junit-results">
+      <fileset dir="junit-results">
+        <include name="TEST-*.xml"/>
+      </fileset>
+      <report format="frames" todir="junit-results/html"/>
+    </junitreport>
+
+  </target>
+
+</project>
