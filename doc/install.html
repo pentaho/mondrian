@@ -1029,7 +1029,8 @@ IDENTIFIED BY ‘foodmart’;</pre>
       catalogUri=&quot;/WEB-INF/queries/FoodMart.xml&quot;&gt;</code> <br>
       to <br>
 &nbsp;&nbsp;&nbsp; <code>&lt;jp:mondrianQuery id=&quot;query01&quot; 
-      jdbcDriver=&quot;com.mysql.jdbc.Driver&quot; jdbcUrl=&quot;jdbc:<a href="mysql://localhost/foodmart%22" target="_new">mysql://localhost/foodmart&quot;</a>; 
+      jdbcDriver=&quot;com.mysql.jdbc.Driver&quot; 
+      jdbcUrl=&quot;jdbc:mysql://localhost/foodmart?user=foodmart&amp;#38;password=foodmart&quot;; 
       catalogUri=&quot;/WEB-INF/queries/FoodMart.xml&quot;&gt;</code></li>
       <li>Clear the Mondrian Tomcat cache. That is, delete <code>&lt;path to 
       tomcat&gt;\work\Catalina\localhost\mondrian</code></li>
@@ -1043,6 +1044,8 @@ IDENTIFIED BY ‘foodmart’;</pre>
   <br>
   Pat </p>
 </blockquote>
+
+  <p>&nbsp;</p>
 
 <hr>
 
