@@ -12,6 +12,8 @@
 */
 package mondrian.rolap.agg;
 
+import mondrian.rolap.CellKey;
+
 /**
  * A <code>SegmentDataset</code> holds the values in a segment.
  *
@@ -20,7 +22,7 @@ package mondrian.rolap.agg;
  * @version $Id$
  **/
 interface SegmentDataset {
-	Object get(int[] pos);
+	Object get(CellKey pos);
 	double getBytes();
 }
 

@@ -13,8 +13,9 @@
 package mondrian.rolap.agg;
 
 import mondrian.rolap.CellKey;
+import mondrian.olap.Util;
 
-import java.util.Hashtable;
+import java.util.HashMap;
 
 /**
  * A <code>SparseSegmentDataset</code> is a means of storing segment values
@@ -32,17 +33,18 @@ import java.util.Hashtable;
  * @version $Id$
  **/
 class SparseSegmentDataset implements SegmentDataset {
-	Segment segment;
-	Hashtable values;
-	CellKey key = new CellKey(null);
+	private HashMap values = new HashMap();
 
-	public Object get(int[] pos)
-	{
-		key.ordinals = pos;
-		return values.get(key);
+	SparseSegmentDataset(Segment segment) {
+		Util.discard(segment);
 	}
-	public double getBytes()
-	{
+	public Object get(CellKey pos) {
+		return values.get(pos);
+	}
+	void put(CellKey key, Object value) {
+		values.put(key, value);
+	}
+	public double getBytes() {
 		// assume a slot, key, and value are each 4 bytes
 		return values.size() * 12;
 	}

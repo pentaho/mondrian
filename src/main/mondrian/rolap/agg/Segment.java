@@ -13,9 +13,11 @@
 package mondrian.rolap.agg;
 
 import mondrian.olap.Util;
+import mondrian.olap.MondrianProperties;
 import mondrian.rolap.CachePool;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.RolapUtil;
+import mondrian.rolap.CellKey;
 import mondrian.rolap.sql.SqlQuery;
 
 import java.io.PrintWriter;
@@ -112,7 +114,7 @@ public class Segment implements CachePool.Cacheable
 	 * {@link #waitUntilLoaded}.
 	 */
 	synchronized void setData(
-			DenseSegmentDataset data, Aggregation.Axis[] axes,
+			SegmentDataset data, Aggregation.Axis[] axes,
 			Collection pinnedSegments) {
 		Util.assertTrue(this.data == null);
 		this.axes = axes;
@@ -260,7 +262,7 @@ public class Segment implements CachePool.Cacheable
 			// or more of its keys does have any values
 			return Util.nullValue;
 		} else {
-			Object o = data.get(pos);
+			Object o = data.get(new CellKey(pos));
 			if (o == null) {
 				o = Util.nullValue;
 			}
@@ -369,7 +371,6 @@ public class Segment implements CachePool.Cacheable
 				}
 				// get the measure
 				for (int i = 0; i < measureCount; i++) {
-					Segment segment = segments[i];
 					Object o = resultSet.getObject(k++);
 					if (o == null) {
 						o = Util.nullValue; // convert to placeholder
@@ -395,14 +396,15 @@ public class Segment implements CachePool.Cacheable
 				}
 				n *= size;
 			}
-			DenseSegmentDataset[] datas = new DenseSegmentDataset[segments.length];
+			SegmentDataset[] datas = new SegmentDataset[segments.length];
+			boolean sparse = useSparse((double) n, (double) rows.size());
 			for (int i = 0; i < segments.length; i++) {
-				DenseSegmentDataset data = new DenseSegmentDataset();
-				datas[i] = data;
-				data.segment = segments[i];
-				data.values = new Object[n];
+				datas[i] = sparse ?
+						new SparseSegmentDataset(segments[i]) :
+						new DenseSegmentDataset(segments[i], new Object[n]);
 			}
-			// now convert the rows into a dense array
+			// now convert the rows into a sparse array
+			int[] pos = new int[arity];
 			for (int i = 0, count = rows.size(); i < count; i++) {
 				Object[] row = (Object[]) rows.get(i);
 				int k = 0;
@@ -410,18 +412,26 @@ public class Segment implements CachePool.Cacheable
 					k *= segment0.axes[j].keys.length;
 					Object o = row[j];
 					Aggregation.Axis axis = segment0.axes[j];
-					Integer offsetInteger = (Integer)
-						axis.mapKeyToOffset.get(o);
+					Integer offsetInteger = (Integer) axis.mapKeyToOffset.get(o);
 					int offset = offsetInteger.intValue();
+					pos[j] = offset;
 					k += offset;
 				}
+				CellKey key = null;
+				if (sparse) {
+					key = new CellKey((int[]) pos.clone());
+				}
 				for (int j = 0; j < segments.length; j++) {
-					datas[j].values[k] = row[arity + j];
+					final Object o = row[arity + j];
+					if (sparse) {
+						((SparseSegmentDataset) datas[j]).put(key, o);
+					} else {
+						((DenseSegmentDataset) datas[j]).set(k, o);
+					}
 				}
 			}
 			for (int i = 0; i < segments.length; i++) {
-				Segment segment = segments[i];
-				segment.setData(datas[i], segments[0].axes, pinnedSegments);
+				segments[i].setData(datas[i], segments[0].axes, pinnedSegments);
 			}
 		} catch (SQLException e) {
 			throw Util.getRes().newInternal(
@@ -436,6 +446,40 @@ public class Segment implements CachePool.Cacheable
 				// ignore
 			}
 		}
+	}
+
+	/**
+	 * Decides whether to use a sparse representation for this segment, using
+	 * the formula described
+	 * {@link MondrianProperties#getSparseSegmentCountThreshold here}.
+	 *
+	 * @param possibleCount Number of values in the space.
+	 * @param actualCount Actual number of values.
+	 * @return Whether to use a sparse representation.
+	 */
+	private static boolean useSparse(final double possibleCount,
+									 final double actualCount) {
+		final MondrianProperties properties = MondrianProperties.instance();
+		double densityThreshold = properties.getSparseSegmentDensityThreshold();
+		if (densityThreshold < 0) {
+			densityThreshold = 0;
+		}
+		if (densityThreshold > 1) {
+			densityThreshold = 1;
+		}
+		int countThreshold = properties.getSparseSegmentCountThreshold();
+		if (countThreshold < 0) {
+			countThreshold = 0;
+		}
+		boolean sparse = (possibleCount - countThreshold) >
+				(actualCount * densityThreshold);
+		if (possibleCount < countThreshold) {
+			Util.assertTrue(!sparse);
+		}
+		if (possibleCount == actualCount) {
+			Util.assertTrue(!sparse);
+		}
+		return sparse;
 	}
 
 	/**

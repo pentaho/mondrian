@@ -124,6 +124,34 @@ public class MondrianProperties extends PropertiesPlus {
 		return getIntProperty(LargeDimensionThreshold, 100);
 	}
 	public static final String LargeDimensionThreshold = "mondrian.rolap.LargeDimensionThreshold";
+
+	/**
+	 * When storing collections of cell values, we have to choose between a
+	 * sparse and a dense representation, based upon the <code>possible</code>
+	 * and <code>actual</code> number of values.
+	 * The <code>density</code> is <code>actual / possible</code>.
+	 * We use a sparse representation if
+	 *   <code>possible -
+	 *   {@link #getSparseSegmentCountThreshold countThreshold} &gt;
+	 *   actual *
+	 *   {@link #getSparseSegmentDensityThreshold densityThreshold}</code>
+	 *
+	 * <p>The default values are
+	 * {@link #getSparseSegmentCountThreshold countThreshold} = 1000,
+	 * {@link #getSparseSegmentDensityThreshold} = 0.5.
+	 *
+	 * <p>At these default values, we use a dense representation
+	 * for (1000 possible, 0 actual), or (2000 possible, 500 actual), or
+	 * (3000 possible, 1000 actual). Any fewer actual values, or any more
+	 * possible values, and we will use a sparse representation.
+	 */
+	public int getSparseSegmentCountThreshold() {
+		return getIntProperty("mondrian.rolap.SparseSegmentValueThreshold", 1000);
+	}
+	/** @see #getSparseSegmentCountThreshold */
+	public double getSparseSegmentDensityThreshold() {
+		return getDoubleProperty("mondrian.rolap.SparseSegmentDensityThreshold", 0.5);
+	}
 }
 
 /**
@@ -149,6 +177,18 @@ class PropertiesPlus extends Properties {
 		}
 		int i = Integer.valueOf(value).intValue();
 		return i;
+	}
+	/**
+	 * Retrieves a double-precision property. Returns <code>default</code> if
+	 * the property is not found.
+	 */
+	public double getDoubleProperty(String key, double defaultValue) {
+		String value = getProperty(key);
+		if (value == null) {
+			return defaultValue;
+		}
+		double d = Double.valueOf(value).doubleValue();
+		return d;
 	}
 	/**
 	 * Retrieves a boolean property. Returns <code>true</code> if the

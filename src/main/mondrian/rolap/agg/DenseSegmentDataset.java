@@ -12,6 +12,8 @@
 */
 package mondrian.rolap.agg;
 
+import mondrian.rolap.CellKey;
+
 /**
  * A <code>DenseSegmentDataset</code> is a means of storing segment values
  * which is suitable when most of the combinations of keys have a value
@@ -26,12 +28,16 @@ package mondrian.rolap.agg;
  **/
 class DenseSegmentDataset implements SegmentDataset
 {
-	Segment segment;
-	Object[] values; // length == m[0] * ... * m[axes.length-1]
+	private Segment segment;
+	private Object[] values; // length == m[0] * ... * m[axes.length-1]
 
-	public Object get(int[] keys)
+	DenseSegmentDataset(Segment segment, Object[] values) {
+		this.segment = segment;
+		this.values = values;
+	}
+	public Object get(CellKey keys)
 	{
-		int offset = getOffset(keys);
+		int offset = getOffset(keys.ordinals);
 		return values[offset];
 	}
 	public double getBytes()
@@ -81,6 +87,10 @@ outer:
 			return -1; // not found
 		}
 		return offset;
+	}
+
+	void set(int k, Object o) {
+		values[k] = o;
 	}
 }
 

@@ -636,6 +636,20 @@ public class FoodMartTestCase extends TestCase {
 		runQueryCheckResult(sampleQueries[7]);
 	}
 
+	/** Requires the use of a sparse segment, because the product dimension
+	 * has 6 atttributes, the product of whose cardinalities is ~8M. If we
+	 * use a dense segment, we run out of memory trying to allocate a huge
+	 * array. */
+	public void testBigQuery() {
+		Result result = runQuery(
+				"SELECT {[Measures].[Unit Sales]} on columns," + nl +
+				" {[Product].members} on rows" + nl +
+				"from Sales");
+		final int rowCount = result.getAxes()[1].positions.length;
+		assertEquals(2256, rowCount);
+		assertEquals("152", result.getCell(new int[] {0, rowCount - 1}).getFormattedValue());
+	}
+
 	public void testNonEmpty1() {
 		assertSize(
 				"select" + nl +

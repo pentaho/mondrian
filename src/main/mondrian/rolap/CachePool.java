@@ -168,7 +168,7 @@ public class CachePool {
 	private double tick()
 	{
 		tick++;
-		if (true || tick % 10 == 0) {
+		if (true || tick % 1000 == 0) {
 			validate();
 		}
 		// Maintain the relation "totalDecay == 1 / (decay ^ tick)". Every time
