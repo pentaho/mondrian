@@ -494,9 +494,17 @@ public class BasicQueryTest extends FoodMartTestCase {
 		if (jdbc_url.toLowerCase().indexOf("mysql") >= 0 ) {
 			// Mysql would generate "CONCAT( ... )"
 			fname_plus_lname = " CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `Name`,";
+		} else if (jdbc_url.toLowerCase().indexOf("postgresql") >= 0  ||
+				jdbc_url.toLowerCase().indexOf("oracle") >= 0) {
+			fname_plus_lname = " `fname` || ' ' || `lname` as `Name`,";
 		} else {
 			fname_plus_lname = " fname + ' ' + lname as `Name`,";
-		}
+/*
+ * What about generic?
+ 			            <SQL dialect="generic">
+			  lname
+			            </SQL>
+*/		}
     // the following replacement is for databases in ANSI mode
     //  using '"' to quote identifiers
     sql = sql.replace('"', '`');
