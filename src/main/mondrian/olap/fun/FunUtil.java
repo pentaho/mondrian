@@ -11,13 +11,8 @@
 */
 package mondrian.olap.fun;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 import mondrian.olap.*;
-import mondrian.test.FoodMartTestCase;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
@@ -938,49 +933,36 @@ public class FunUtil extends Util {
 	 * Adds a test case for each method of this object whose signature looks
 	 * like 'public void testXxx()'.
 	 */
-	public void addTests(TestSuite suite) {
-		addTests(this, suite);
-	}
+//	public void addTests(TestSuite suite, Pattern pattern) {
+//		addTests(this, suite, pattern);
+//	}
 
-	/**
-	 * Adds a test case for each method in an object whose signature looks
-	 * like 'public void testXxx({@link TestCase})'.
-	 */
-	public static void addTests(Object o, TestSuite suite) {
-		for (Class clazz = o.getClass(); clazz != null; clazz = clazz.getSuperclass()) {
-			Method[] methods = clazz.getDeclaredMethods();
-			for (int i = 0; i < methods.length; i++) {
-				Method method = methods[i];
-				String methodName = method.getName();
-				if (methodName.startsWith("test") &&
-						Modifier.isPublic(method.getModifiers()) &&
-						method.getParameterTypes().length == 1 &&
-						TestCase.class.isAssignableFrom(
-								method.getParameterTypes()[0]) &&
-						method.getReturnType() == Void.TYPE) {
-					suite.addTest(new MethodCallTestCase(
-							clazz.getName() + "." + method.getName(), o, method));
-				}
-			}
-		}
-	}
+//	/**
+//	 * Adds a test case for each method in an object whose signature looks
+//	 * like 'public void testXxx({@link TestCase})'.
+//	 */
+//	public static void addTests(Object o, TestSuite suite, Pattern pattern) {
+//		for (Class clazz = o.getClass(); clazz != null; clazz = clazz.getSuperclass()) {
+//			Method[] methods = clazz.getDeclaredMethods();
+//			for (int i = 0; i < methods.length; i++) {
+//				Method method = methods[i];
+//				String methodName = method.getName();
+//				if (methodName.startsWith("test") &&
+//						Modifier.isPublic(method.getModifiers()) &&
+//						method.getParameterTypes().length == 1 &&
+//						TestCase.class.isAssignableFrom(
+//								method.getParameterTypes()[0]) &&
+//						method.getReturnType() == Void.TYPE) {
+//                    String fullMethodName = clazz.getName() + "." + method.getName();
+//                    if (pattern == null || pattern.matcher(fullMethodName).matches()) {
+//                        suite.addTest(new MethodCallTestCase(
+//                            fullMethodName, o, method));
+//                    }
+//				}
+//			}
+//		}
+//	}
 
-	private static class MethodCallTestCase extends FoodMartTestCase {
-		Object o;
-		Object[] args;
-		Method method;
-
-		MethodCallTestCase(String name, Object o, Method method) {
-			super(name);
-			this.o = o;
-			this.args = new Object[]{this};
-			this.method = method;
-		}
-
-		protected void runTest() throws Throwable {
-			method.invoke(o, args);
-		}
-	}
 }
 
 abstract class MemberComparator implements Comparator {

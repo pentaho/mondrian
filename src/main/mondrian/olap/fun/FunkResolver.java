@@ -11,7 +11,6 @@
 */
 package mondrian.olap.fun;
 
-import junit.framework.TestSuite;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Exp;
 import mondrian.olap.FunDef;
@@ -34,10 +33,10 @@ class FunkResolver extends MultiResolver {
 		this.funk = funk;
 	}
 
-	public void addTests(TestSuite suite) {
-		super.addTests(suite);
-		funk.addTests(suite);
-	}
+//	public void addTests(TestSuite suite, Pattern pattern) {
+//		super.addTests(suite, pattern);
+//		funk.addTests(suite, pattern);
+//	}
 
 	protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
 		return new FunDefBase(this, dummyFunDef.getReturnType(),

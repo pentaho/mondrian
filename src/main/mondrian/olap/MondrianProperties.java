@@ -39,6 +39,7 @@ public class MondrianProperties extends PropertiesPlus {
 	 */
 	private static MondrianProperties instance;
     private static final String mondrianDotProperties = "mondrian.properties";
+    private static final String buildDotProperties = "build.properties";
     private int populateCount;
 
     public static synchronized MondrianProperties instance() {
@@ -61,8 +62,17 @@ public class MondrianProperties extends PropertiesPlus {
 		File file = new File(mondrianDotProperties);
         if (file.exists()) {
             try {
-                final URL url = Util.toURL(file);
+                URL url = Util.toURL(file);
                 load(url);
+
+                // For file-based installations (i.e. testing), load any overrides from
+                // build.properties.
+                file = new File(buildDotProperties);
+
+                if (file.exists()) {
+                    url = Util.toURL(file);
+                    load(url);
+                }
             } catch (MalformedURLException e) {
                 System.out.println("Mondrian: file '" + file.getAbsolutePath() +
                         "' could not be loaded (" + e + ")");

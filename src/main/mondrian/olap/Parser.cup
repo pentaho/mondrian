@@ -62,7 +62,7 @@ parser code {:
 	// Override lr_parser methods for NLS.  With this error handling scheme,
 	// all errors are fatal.
 	public void report_fatal_error(
-		String   message, 
+		String   message,
 		Object   info)
 		throws java.lang.Exception
 	{
@@ -118,6 +118,7 @@ scan with {:
 terminal
 	AND,
 	AS,
+	AXIS,
 	CASE,
 	CELL,
 	CELL_ORDINAL,
@@ -165,7 +166,7 @@ terminal
 	SOLIDUS;					// /
 
 // c. Typed terminals
-terminal Double NUMBER; 
+terminal Double NUMBER;
 terminal String ID;
 terminal String QUOTED_ID;
 terminal String AMP_QUOTED_ID;
@@ -251,18 +252,18 @@ start with select_statement;
 // ----------------------------------------------------------------------------
 // Elements
 //
-// 
+//
 // <identifier> ::= <regular_identifier> | <delimited_identifier>
 
-quoted_identifier ::= 
+quoted_identifier ::=
 		QUOTED_ID
 	;
 
-amp_quoted_identifier ::= 
+amp_quoted_identifier ::=
 		AMP_QUOTED_ID
 	;
 
-unquoted_identifier ::= 
+unquoted_identifier ::=
 		ID
 	|	keyword
 	;
@@ -291,72 +292,72 @@ compound_id ::=
 	|	compound_id:hd DOT identifier:tl {:
 			hd.append(tl); RESULT = hd;
 		:}
-		
+
 	;
 
 //
-// <regular_identifier> ::= <alpha_char> [{<alpha_char> | <digit> 
+// <regular_identifier> ::= <alpha_char> [{<alpha_char> | <digit>
 // 										 | <underscore>}...]
-// 
+//
 // <delimited_identifier> ::=
 // 		<start_delimiter>{<double_end_delimiter> | <nondelimit_end_symbol>}
-// 			 [{<double_end_delimiter> | <nondelimit_end_symbol> }...] 
+// 			 [{<double_end_delimiter> | <nondelimit_end_symbol> }...]
 // 		<end_delimiter>
-// 
+//
 // <start_delimiter> ::= <open_bracket>
-// 
+//
 // <end_delimiter> ::= <close_bracket>
-// 
+//
 // <double_end_delimiter> ::= <end_delimiter> end_delimiter>
-// 
+//
 // <nondelimit_end_symbol> ::= !! <any_character_except_delimit_end_symbol>
-// 
-// <cube_name> ::= [ [ [ <data_source>] <catalog_name>] [<schema_name>].] 
+//
+// <cube_name> ::= [ [ [ <data_source>] <catalog_name>] [<schema_name>].]
 // 				   <identifier>
 cube_name ::= compound_id ;
-// 
+//
 // <data_source> ::= <identifier>
-// 
+//
 // <catalog_name> ::= <identifier>
-// 
+//
 // <schema_name> ::= <identifier>
-// 
+//
 // <dim_hier> ::= [<cube_name>.]<dimension_name>
 // 			   | [[<cube_name>.]< dimension_name>.]<hierarchy_name>
 // jhyde: Need more lookahead for this to work... just use id in place of dim_hier.
 //   dim_hier ::= id;
-// 
+//
 // <dimension_name> ::= <identifier>
 // 					  | <member>.DIMENSION
 // 					  | <level>.DIMENSION
 // 					  | <hierarchy>.DIMENSION
-// 
+//
 // <hierarchy_name> ::= <identifier>
 // 					  | < member>.HIERARCHY
 // 					  | <level>.HIERARCHY
-// 
+//
 // <level> ::= [<dim_hier>.]< identifier>
 // 			  | <dim_hier>.LEVELS(<index>)
 // 			  | <member>.LEVEL
-// 
+//
 // Note: The first production is for the case when named levels are
 // supported. The second production is for the case when named levels are not
 // supported.
-// 
-// 	
+//
+//
 // <member> ::= [<level>.]<identifier>
 // 			   | <dim_hier>.<identifier>
 // 			   | <member>.<identifier>
 // 			   | <member_value_expression>
-// 
+//
 // Note: The <member>.<identifier> recognizes the fact that members may
 // sometimes need to be qualified by their parent names. For example,
 // "Portland" is a city in Oregon, and also in Maine. So a reference to
 // Portland will be either Oregon.Portland or Maine.Portland.
-// 
-// 	
+//
+//
 // <property> ::= <mandatory_property> | <user_defined_property>
-// 
+//
 // <mandatory_property> ::= CATALOG_NAME
 // 						  | SCHEMA_NAME
 // 						  | CUBE_NAME
@@ -375,89 +376,89 @@ cube_name ::= compound_id ;
 // 						  | PARENT_UNIQUE_NAME
 // 						  | PARENT_COUNT
 // 						  | DESCRIPTION
-// 
-// <user_defined_property> ::= <dim_hier>.<identifier> 
-// 							 | <level>.<identifier> 
+//
+// <user_defined_property> ::= <dim_hier>.<identifier>
+// 							 | <level>.<identifier>
 // 							 | <member>.<identifier>
-// 
+//
 // Note: The three productions recognize the fact that a property can apply to
 // all the members of a dimension, or all the members of a level, or just to a
 // member.
-// 
-// 	
-// <tuple> ::= <member> 
-// 			| (<member> [, <member>...]) 
+//
+//
+// <tuple> ::= <member>
+// 			| (<member> [, <member>...])
 // 			| <tuple_value_expression>
-// 
+//
 // Note: Each member must be from a different dimension or from a different
 // hierarchy.
-// 
-// 	
+//
+//
 // <set> ::= <member>:<member>
-// 
+//
 // Note: Each member must be from the same hierarchy and the same level.
-// 
-// 	
+//
+//
 // 		   | <set_value_expression>
 // 		   | <open_brace>[<set>|<tuple> [, <set>|<tuple>...]]<close_brace>
-// 
+//
 // Note: Duplicates (if any) are always retained when specifying sets in this
 // fashion.
-// 
-// 	
+//
+//
 // 		   | (<set>)
-// 
+//
 // <open_brace> ::= {
-// 
+//
 // <close_brace> ::= }
-// 
+//
 // <open_bracket> ::= [
-// 
+//
 // <close_bracket> ::= ]
-// 
+//
 // <underscore> ::= _
-// 
+//
 // <alpha_char> ::= a | b | c | ...| z | A | B | C | ... | Z
-// 
+//
 // <digit> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-// 
+//
 // Leveling Rules for Elements
-// 
+//
 // The ability to qualify a cube name by one or more of <data_source>,
 // <catalog_name>, or <schema_name> is optional. Consumers can check the value
 // of the property MDPROP_MDX_OBJQUALIFICATION to see whether a provider
 // supports cube qualification.
-// 
-// 
+//
+//
 // The ability to qualify a dimension name by a cube name is
 // optional. Consumers can check the value of the property
 // MDPROP_MDX_OBJQUALIFICATION to see whether a provider supports dimension
 // qualification.
-// 
-// 
+//
+//
 // The ability to qualify a hierarchy name by a dimension name or by cube name
 // and dimension name is optional. Consumers can check the value of the
 // property MDPROP_MDX_OBJQUALIFICATION to see whether a provider supports
 // hierarchy qualification.
-// 
-// 
+//
+//
 // The provider need support only one of the two productions for <level>. If it
-// supports 
-// 
-// <level> ::= [<dim_hier>.] <identifier> 
-// 
+// supports
+//
+// <level> ::= [<dim_hier>.] <identifier>
+//
 // then the ability to qualify by <dim_hier> is optional.
-// 
+//
 // Consumers can check the value of the property MDPROP_NAMED_LEVELS to see if
 // the provider supports named levels. If it does, then the consumer can check
 // MDPROP_MDX_OBJQUALIFICATION to see whether named levels can be qualified by
 // <dim_hier>.
-// 
+//
 // The ability to qualify a member by a level, a member, or <dim_hier> is
 // optional. Consumers can check the value of the property
 // MDPROP_MDX_OBJQUALIFICATION to see whether a provider supports member
-// qualification. 
-// 
+// qualification.
+//
 // Note: Several leveling rules above make it optional to qualify
 // multidimensional schema object names. However, this does not imply that the
 // ability to generate unique names for members, levels, dimensions, and
@@ -466,33 +467,33 @@ cube_name ::= compound_id ;
 // means other than qualification, then the ability to qualify is optional. For
 // more information, see 'Provider Implementation Considerations for Unique
 // Names' in Chapter 2.
-// 
+//
 //
 
 // ----------------------------------------------------------------------------
 //
-// 
+//
 // Expressions
-// 
+//
 // Note: The syntax of <value_expression> is generally the same as SQL-92,
 // subclause 6.11, <value_expression>. Differences are:
-// 
+//
 // <tuple>[.VALUE], <property>[.VALUE], and <conditional_expression> are new
 // values for <value_expression_primary>.
-// 
-// 
+//
+//
 // There are new values for <numeric_value_function>, mainly for statistical
 // analysis.
-// 
-// 
+//
+//
 // The BNF for <value_expression_primary>, <character_string_literal>, and
 // <string_value_expression> have been shortened by eliminating several
 // intermediate nonterminals.
-// 	
-// <value_expression> ::= <numeric_value_expression> 
-// 						| <string_value_expression> 
-// 
-// <numeric_value_expression> ::= <term> 
+//
+// <value_expression> ::= <numeric_value_expression>
+// 						| <string_value_expression>
+//
+// <numeric_value_expression> ::= <term>
 // 					  | <numeric_value_expression> {<plus> | <minus>} <term>
 value_expression ::=
 		term5
@@ -504,7 +505,7 @@ value_expression ::=
 		:}
 	;
 
-term5 ::= 
+term5 ::=
 		term4
 	|	term5:x AND term4:y {:
 			RESULT = new FunCall("AND", Syntax.Infix, new Exp[] {x, y});
@@ -537,7 +538,7 @@ term2 ::=
 			RESULT = new FunCall("||", Syntax.Infix, new Exp[] {x, y});
 		:}
 	;
-	
+
 //
 // <term> ::= <factor> | <term> {<asterisk> | <solidus>} <factor>
 term ::=
@@ -549,9 +550,9 @@ term ::=
 			RESULT = new FunCall("/", Syntax.Infix, new Exp[] {x, y});
 		:}
 	;
-// 
+//
 // <factor> ::= [<sign>] <numeric_primary>
-// 
+//
 factor ::=
 		value_expression_primary
 	|	PLUS value_expression_primary:p {:
@@ -562,22 +563,22 @@ factor ::=
 		:}
 	;
 // <sign> ::= + | -
-// 
+//
 // <plus> ::= +
-// 
+//
 // <minus> ::= -
-// 
+//
 // <asterisk>::= *
-// 
+//
 // <solidus> ::= /
-// 
-// <numeric_primary> ::= <value_expression_primary> 
+//
+// <numeric_primary> ::= <value_expression_primary>
 // 					   | <numeric_value_function>
 //
 // Note: The data type of <value_expression_primary> in the above production
 // shall be numeric.
-// 
-// 	
+//
+//
 // <value_expression_primary> ::= <unsigned_numeric_literal>
 // 							   | (<value_expression>)
 // 							   |  <character_string_literal>
@@ -691,59 +692,59 @@ else_clause_opt ::=
 		:}
 	;
 
-// 
+//
 // <conditional_expression> ::= <if_expression> | <case_expression>
-// 
+//
 // <if_expression> ::= iif(<search_condition>, <true_part>, <false_part>)
-// 
+//
 // <true_part> ::= <value_expression>
-// 
+//
 // <false_part> ::= <value_expression>
-// 
+//
 // <case_expression> ::= <simple_case> | <searched_case> | <coalesce_empty>
-// 
+//
 // <simple_case> ::= CASE <case_operand>
 // 						<simple_when_clause>...
 // 					   [<else_clause>]
 // 					 END
-// 
+//
 // <searched_case> ::= CASE
 // 						  <searched_when_clause>...
 // 						 [<else_clause>]
 // 					   END
-// 
+//
 // <simple_when_clause> ::= WHEN <when_operand> THEN <result>
-// 
+//
 // <searched_when_clause> ::= WHEN <search_condition> THEN <result>
-// 
+//
 // <else_clause> ::= ELSE <value_expression>
-// 
+//
 // <case_operand> ::= <value_expression>
-// 
+//
 // <when_operand> ::= <value_expression>
-// 
+//
 // <result> ::= <value_expression>
-// 
-// <coalesce_empty> ::= COALESCEEMPTY (<value_expression> 
+//
+// <coalesce_empty> ::= COALESCEEMPTY (<value_expression>
 // 									{, <value_expression> }...)
-// 
+//
 // <signed_numeric_literal> ::= [<sign>]<unsigned_numeric_literal>
-// 
-// <unsigned_numeric_literal> ::= <exact_numeric_literal> 
+//
+// <unsigned_numeric_literal> ::= <exact_numeric_literal>
 // 								| <approximate_numeric_literal>
-// 
+//
 // <exact_numeric_literal> ::= <unsigned_integer>[.<unsigned_integer>]
 // 							 | <unsigned_integer>.
 // 							 | .<unsigned_integer>
-// 
+//
 // <unsigned_integer> ::= {<digit>}...
-// 
+//
 // <approximate_numeric_literal> ::= <mantissa>E<exponent>
-// 
+//
 // <mantissa> ::= < exact_numeric_literal>
-// 
+//
 // <exponent> ::= [<sign>]<unsigned_integer>
-// 
+//
 // <string_value_expression> ::= <value_expression_primary>
 // 							   | <string_value_expression>
 // 								 <concatenation_operator>
@@ -751,50 +752,50 @@ else_clause_opt ::=
 //
 // Note: The data type of <value_expression_primary> in the above production
 // shall be a character string.
-// 
-// 	
-// <character_string_literal> ::= <quote>[<character_representation>...] 
+//
+//
+// <character_string_literal> ::= <quote>[<character_representation>...]
 // 								 <quote>
-// 
+//
 // <character_representation> ::= <nonquote_character> | <quote_symbol>
-// 
-// <nonquote_character> ::= !! 
+//
+// <nonquote_character> ::= !!
 // 					   <any_character_in_the_character_set_other_than_quote>
-// 
+//
 // <quote_symbol> ::= <quote> <quote>
-// 
+//
 // <quote>  ::= '
-// 
+//
 // <concatenation_operator> ::= ||
-// 
+//
 // Leveling Rules for Expressions
-// 
-// The following productions for <value_expression_primary> are optional: 
-// 
+//
+// The following productions for <value_expression_primary> are optional:
+//
 // The ability to qualify <tuple>[.VALUE] by <cube_name> in a value expression
 // primary is optional. Consumers can check the value of the property
 // MDPROP_MDX_OUTERREFERENCE to see whether a provider supports this feature.
-// 
-// 
+//
+//
 // <property>[.VALUE]. Consumers can check the value of the property
 // MDPROP_MDX_QUERYBYPROPERTY to see whether a provider supports this feature.
-// 
-// 
+//
+//
 // <simple_case>, <searched_case>. Consumers can check the value of the
 // property MDPROP_MDX_CASESUPPORT to see whether a provider supports this
 // feature.
 //
- 
+
 // ----------------------------------------------------------------------------
 // Search Condition
-// 
-// <search_condition> ::= <boolean_term> 
+//
+// <search_condition> ::= <boolean_term>
 // 						| <search_condition> {OR | XOR} <boolean_term>
-// 
+//
 // <boolean_term> ::= <boolean_factor> | <boolean_term> AND <boolean_factor>
-// 
+//
 // <boolean_factor> ::= [NOT] <boolean_primary>
-// 
+//
 // <boolean_primary> ::= <value_expression> <comp_op> <value_expression>
 // 					   | ISEMPTY(<value_expression>)
 // 					   | (<search_condition>)
@@ -812,59 +813,59 @@ comp_op ::=
 	|	LE {: RESULT = "<="; :}
 	|	GE {: RESULT = ">="; :}
 	;
-// 
+//
 // <equals_operator> ::= =
-// 
+//
 // <not_equals_operator> ::= <>
-// 
+//
 // <greater_than_operator> ::= >
-// 
+//
 // <less_than_operator> ::= <
-// 
+//
 // <greater_than_or_equals_operator> ::= >=
-// 
+//
 // <less_than_or_equals_operator> ::= <=
-// 
+//
 // Leveling Rules for Search Condition
-// 
+//
 // If <value_expression> in a <boolean_primary> value is a string value
 // expression, then support for <comp_op> values other than <equals_operator>
 // and <not_equals_operator> is optional. Consumers can check the value of the
 // property MDPROP_MDX_STRING_COMPOP to see whether a provider supports this
 // feature.
- 
+
 // ----------------------------------------------------------------------------
 // Set Value Expression
-// 
+//
 // <index> ::= <numeric_value_expression>
-// 
+//
 // Note: <index> denotes an integer argument. If an arbitrary
 // <numeric_value_expression> appears here, then it is truncated to the nearest
 // integer.
-// 
-// 	
+//
+//
 // <percentage> ::= <numeric_value_expression>
-// 
+//
 // <set_value_expression> ::= <dim_hier>.MEMBERS
 // 							| <level>.MEMBERS
 // 							| <member>.CHILDREN
-// 							| BOTTOMCOUNT(<set>, <index> 
+// 							| BOTTOMCOUNT(<set>, <index>
 // 								 [, <numeric_value_expression>])
-// 							| BOTTOMPERCENT(<set>, <percentage>, 
+// 							| BOTTOMPERCENT(<set>, <percentage>,
 // 								 <numeric_value_expression>)
-// 							| BOTTOMSUM(<set>, <numeric_value_expression>, 
+// 							| BOTTOMSUM(<set>, <numeric_value_expression>,
 // 								 <numeric_value_expression>)
 // 							| CROSSJOIN(<set>, <set>)
 // 							| DESCENDANTS(<member>, <level> [,<desc_flags>])
-// 
+//
 // Note: In the absence of explicit <desc_flags> specification, SELF is the
 // default.
-// 	
+//
 // 							| DISTINCT(<set>)
 // 							| DRILLDOWNLEVEL(<set> [, <level>]])
 // 							| DRILLDOWNLEVELBOTTOM(<set>, <index>
 // 								[,[<level>] [, <numeric_value_expression>]])
-// 							| DRILLDOWNLEVELTOP(<set>, <index>[, [<level>] 
+// 							| DRILLDOWNLEVELTOP(<set>, <index>[, [<level>]
 // 								[, <numeric_value_expression>]])
 // 							| DRILLDOWNMEMBER(<set>, <set>[, RECURSIVE])
 // 							| DRILLDOWNMEMBERBOTTOM(<set>, <set>, <index>
@@ -881,31 +882,31 @@ comp_op ::=
 // 							| INTERSECT(<set>, <set> [, ALL])
 // 							| LASTPERIODS(<index> [, <member>])
 // 							| MTD([<member>])
-// 							| ORDER(<set>, <value_expression> 
+// 							| ORDER(<set>, <value_expression>
 // 								[, ASC | DESC | BASC | BDESC])
-// 
+//
 // Note:   In the absence of explicit specification, ASC is the default.
-// 
-// 	
+//
+//
 // 							| PERIODSTODATE([<level>[, <member>]])
 // 							| QTD([<member>])
 // 							| TOGGLEDRILLSTATE(<set1>, <set2>[, RECURSIVE])
-// 
+//
 // Note: With the exception of CROSSJOIN, all set functions that take more than
 // one <set> argument require that the two set arguments have tuples of the
 // same dimensionality.
-// 
-// 	
-// 							| TOPCOUNT(<set>, <index> 
+//
+//
+// 							| TOPCOUNT(<set>, <index>
 // 								[, <numeric_value_expression>])
-// 							| TOPPERCENT(<set>, <percentage>, 
+// 							| TOPPERCENT(<set>, <percentage>,
 // 								<numeric_value_expression>)
-// 							| TOPSUM(<set>, <numeric_value_expression>,  
+// 							| TOPSUM(<set>, <numeric_value_expression>,
 // 								<numeric_value_expression>)
 // 							| UNION(<set>, <set> [, ALL])
 // 							| WTD([<member>])
 // 							| YTD(<member>)
-// 
+//
 // <desc_flags> ::= SELF
 // 				  | AFTER
 // 				  | BEFORE
@@ -914,18 +915,18 @@ comp_op ::=
 // 				  | SELF_AND_BEFORE
 // 				  | SELF_BEFORE_AFTER
 //
- 
+
 // ----------------------------------------------------------------------------
 // Member Value Expression
-// 
-// <member_value_expression> ::= <member>.{PARENT | FIRSTCHILD | LASTCHILD 
+//
+// <member_value_expression> ::= <member>.{PARENT | FIRSTCHILD | LASTCHILD
 // 										   | PREVMEMBER | NEXTMEMBER}
 // 							   | <member>.LEAD(<index>)
 // 							   | <member>.LAG(<index>)
-// 
+//
 // Note:   LAG(<index>) is the same as LEAD(-<index>)
-// 
-// 	
+//
+//
 // 							   | <member>.{FIRSTSIBLING | LASTSIBLING}
 // 							   | <dimension>.[CURRENTMEMBER]
 // 							   | <dimension>.DEFAULTMEMBER
@@ -957,55 +958,55 @@ exp_list ::=
 			list.add(0, e); RESULT = list;
 		:}
 	;
-// 
+//
 // Leveling Rules for Member Value Expression
-// 
+//
 // The following member functions are optional: COUSIN, PARALLELPERIOD,
 // OPENINGPERIOD, CLOSINGPERIOD. Consumers can check the value of the property
 // MDPROP_MDX_MEMBER_FUNCTIONS to see whether a provider supports this feature.
 //
- 
+
 //
 // 	* Tuple Value Expression
-// 
+//
 // <tuple_value_expression> ::= <set>.CURRENTMEMBER
-// 							  | <set>[.ITEM](<string_value_expression> 
+// 							  | <set>[.ITEM](<string_value_expression>
 // 								 [, <string_value_expression>...] | <index>)
 //
- 
+
 //
 // 	* Numeric Value Function
-// 
-// <numeric_value_function> ::= 
+//
+// <numeric_value_function> ::=
 // 		  AGGREGATE(<set> [, <numeric_value_expression>])
 // 		| AVG(<set>[, <numeric_value_expression>])
 // 		| CORRELATION(<set> [, <numeric_value_expression>]
 // 			 [, <numeric_value_expression>])
-// 		| COVARIANCE(<set>[, <numeric_value_expression> 
+// 		| COVARIANCE(<set>[, <numeric_value_expression>
 // 			 [, <numeric_value_expression>])
 // 		| COUNT(<set>[, INCLUDEEMPTY])
-// 		| LINREGINTERCEPT(<set>[, <numeric_value_expression> 
-// 		  
-// 
+// 		| LINREGINTERCEPT(<set>[, <numeric_value_expression>
+//
+//
 // Leveling Rules for Numeric Value Function
-// 
+//
 // The following numeric functions are optional: MEDIAN, VAR, STDEV, RANK,
 // AGGREGATE, COVARIANCE, CORRELATION, LINREGSLOPE, LINREGVARIANCE, LINREGR2,
 // LINREGPOINT. Consumers can check the value of the property
 // MDPROP_MDX_NUMERIC_FUNCTIONS to see whether a provider supports this
 // feature.
 //
- 
+
 // ----------------------------------------------------------------------------
 // MDX Statement
-// 
+//
 // <MDX_statement> ::= <select_statement>
 // 					 | <create_formula_statement>
 // 					 | <drop_formula_statement>
 //
 
 // <select_statement> ::= [WITH <formula_specification>]
-// 						   SELECT [<axis_specification> 
+// 						   SELECT [<axis_specification>
 // 								  [, <axis_specification>...]]
 // 						   FROM [<cube_specification>]
 // 						   WHERE [<slicer_specification>]
@@ -1055,7 +1056,7 @@ axis_specification_list ::=
 	;
 where_clause_opt ::=
 		/* empty */
-	|	WHERE slicer_specification:s {: RESULT = s; :}; 
+	|	WHERE slicer_specification:s {: RESULT = s; :};
 cell_props_opt ::=
 		/* empty */ {:
 			RESULT = new ArrayList();
@@ -1083,7 +1084,7 @@ single_formula_specification ::=
 		member_specification
 	|	set_specification
 	;
-// 
+//
 // <member_specification> ::= MEMBER <member_name> AS <value_expression>
 // 								   [, <solve_order_specification>]
 // 								   [, <member_property_definition>...]
@@ -1122,22 +1123,22 @@ member_property_def_list ::=
 		:}
 	;
 //
-// <member_name> ::= <member>.<identifier> 
+// <member_name> ::= <member>.<identifier>
 // 				   | <cube_name>.<member>.<identifier>
 //
 member_name ::= compound_id;
 //
-// Note: 
-// 
+// Note:
+//
 // The identifier defines a new member. The qualification member has enough
 // information to specify the dimension, and the level in the dimension that
 // this new member should be on.
-// 
-// 
+//
+//
 // If <member_name> is part of a member specification that appears in a create
 // formula statement or is part of a drop formula statement, then it must be
 // qualified by a cube name, as in the second production above.
-// 	
+//
 // <solve_order_specification> ::= SOLVE_ORDER = <unsigned_integer>
 //
 // <member_property_definition> ::= <identifier> = <value_expression>
@@ -1146,12 +1147,12 @@ member_property_definition ::=
 			RESULT = new MemberProperty(id, e);
 		:}
 	;
-// 
+//
 // Note: Since the property definition appears in the context of a member
 // definition, there is enough information to associate the identifier (which
 // is the property name) in the above production with a member.
-// 
-// 	
+//
+//
 // <set_specification> ::= SET <set_name> AS <set>
 set_specification ::=
 		SET set_name:s AS QUOTE expression:e QUOTE {:
@@ -1161,20 +1162,37 @@ set_specification ::=
 			RESULT = new Formula(s.toStringArray(), e);
 		:}
 	;
-// 
+//
 // <set_name> ::= <identifier> | <cube_name>.<identifier>
 set_name ::= compound_id ;
 //
 // Note: If <set_name> is part of a set specification that appears in a create
 // formula statement or is part of a drop formula statement, then it must be
 // qualified by a cube name, as in the second production above.
-// 
-// 	
+//
+//
 // <axis_specification> ::= [NON EMPTY] <set> [<dim_props>] ON <axis_name>
 axis_specification ::=
 		non_empty_opt:b expression:s dim_props_opt ON axis_name:a {:
 			RESULT = new QueryAxis(b.booleanValue(), s, a, QueryAxis.SubtotalVisibility.Undefined);
 		:}
+    |   non_empty_opt:b expression:s dim_props_opt ON AXIS LPAREN NUMBER:n RPAREN :a {:
+            double d = n.doubleValue();
+            int index = (int)d;
+
+            // AxisOrdinal values go from -2 to 4. The negative values represent
+            // special cases, so are ignored.
+            if (index < 0 || index != d || index > AxisOrdinal.instance.getMax()) {
+                this.parser.report_error("Invalid AXIS specification. The axis number must be a non-negative integer between "
+                    + "0 and "
+                    + AxisOrdinal.instance.getMax() + ", but it was " + d + ".",
+                    null);
+            }
+
+            String axisName = AxisOrdinal.instance.getName(index);
+			RESULT = new QueryAxis(b.booleanValue(), s, axisName, QueryAxis.SubtotalVisibility.Undefined);
+		:}
+
 	;
 non_empty_opt ::=
 		/* empty */ {: RESULT = new Boolean(false); :}
@@ -1184,16 +1202,15 @@ dim_props_opt ::=
 		/* empty */
 	|	dim_props
 	;
-// 
+//
 // <axis_name> ::= COLUMNS
 // 				 | ROWS
 // 				 | PAGES
 // 				 | CHAPTERS
 // 				 | SECTIONS
 // 				 | AXIS(<index>)
-// jhyde: we don't support 'AXIS(<index>)'
 axis_name ::= identifier;
-// 
+//
 // <dim_props> ::= [DIMENSION] PROPERTIES <property> [, <property>...]
 dim_props ::=
 	dimension_opt PROPERTIES property_list
@@ -1209,17 +1226,17 @@ property_list ::=
 property ::=
 		compound_id
 	;
-// 
+//
 // <cube_specification> ::= [<cube_name>] [, <cube_name>]
 // jhyde: In this implementation, you must supply EXACTLY one cube.
 cube_specification ::=
 		cube_name;
 
-// 
+//
 // <slicer_specification> ::= {<set> | <tuple>}
 slicer_specification ::=
 		expression;
-// 
+//
 // <cell_props> ::= [CELL] PROPERTIES <cell_property> [, <cell_property>...]
 cell_props ::=
 		cell_opt PROPERTIES cell_property_list
@@ -1232,7 +1249,7 @@ cell_property_list ::=
 		cell_property
 	|	cell_property COMMA cell_property_list
 	;
-// 
+//
 // <cell_property> ::= <mandatory_cell_property>
 // 					 | <optional_cell_property>
 // 					 | <provider_specific_cell_property>
@@ -1241,11 +1258,11 @@ cell_property ::=
 	|	optional_cell_property
 	|	provider_specific_cell_property
 	;
-// 
+//
 // <mandatory_cell_property> ::= CELL_ORDINAL | VALUE | FORMATTED_VALUE
 mandatory_cell_property ::=
 		CELL_ORDINAL | VALUE | FORMATTED_VALUE;
-// 
+//
 // <optional_cell_property> ::= FORMAT_STRING
 // 							  | FORE_COLOR
 // 							  | BACK_COLOR
@@ -1255,53 +1272,53 @@ mandatory_cell_property ::=
 //
 // <provider_specific_cell_property> ::= <identifier>
 provider_specific_cell_property ::= identifier;
-// 
+//
 // <create_formula_statement> ::= CREATE [<scope>]<formula_specification>
-// 
-// <drop_formula_statement> ::= <drop_member_statement> 
+//
+// <drop_formula_statement> ::= <drop_member_statement>
 // 							  | <drop_set_statement>
-// 
-// <drop_member_statement> ::= DROP MEMBER <member_name> 
+//
+// <drop_member_statement> ::= DROP MEMBER <member_name>
 // 										[, <member_name>...]
-// 
+//
 // <drop_set_statement> ::= DROP SET <set_name> [, <set_name>...]
-// 
+//
 // <scope> := GLOBAL | SESSION
-// 
+//
 // Leveling Rules for MDX Statement
-// 
+//
 // Support for <formula_specification> is optional. Consumers can check the
 // value of the property MDPROP_MDX_FORMULAS to see whether a provider supports
 // this feature.
-// 
-// 
+//
+//
 // Support for <set> in <slicer_specification> is optional. Consumers can check
 // the value of the property MDPROP_MDX_SLICER to see whether a provider
 // supports this feature.
-// 
-// 
+//
+//
 // Support for more than one cube name in <cube_specification> is
 // optional. Support for having no cube name in the FROM clause (that is, the
 // cube is implicitly defined by the axis and slicer dimensions) is also
 // optional. Consumers can check the value of the property MDPROP_MDX_JOINCUBES
 // to see whether a provider supports this feature.
-// 
-// 
+//
+//
 // The axis names CHAPTERS and SECTIONS are optional. Consumers can check the
 // value of the property MDPROP_AXES to see whether a provider supports this
 // feature.
-// 
-// 
+//
+//
 // Support for <index> > 2 in the AXIS(<index>) function is optional. Consumers
 // can check the value of the property MDPROP_AXES to see whether a provider
 // supports this feature.
-// 
-// 
+//
+//
 // Support for <create_formula_statement> is optional. Consumers can check the
 // value of the property MDPROP_MDX_FORMULAS to see whether a provider supports
 // this feature.
-// 
-// 
+//
+//
 // Support for <scope> of GLOBAL is optional. Consumers can check the value of
 // the property MDPROP_MDX_FORMULAS to see whether a provider supports this
 // feature.

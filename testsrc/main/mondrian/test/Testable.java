@@ -12,6 +12,8 @@
 */
 package mondrian.test;
 
+import java.util.regex.Pattern;
+
 import junit.framework.TestSuite;
 
 /**
@@ -27,7 +29,7 @@ public interface Testable {
 	 * Adds test cases to a suite. The default implementation calls every
 	 * method which starts with 'test'.
 	 */
-	void addTests(TestSuite suite);
+	void addTests(TestSuite suite, Pattern pattern);
 }
 
 // End Testable.java

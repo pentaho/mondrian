@@ -14,6 +14,7 @@ package mondrian.test;
 import mondrian.olap.Connection;
 import mondrian.olap.Query;
 import mondrian.olap.Parameter;
+import junit.framework.Assert;
 
 /**
  * A <code>ParameterTest</code> is a test suite for functionality relating to
@@ -44,11 +45,11 @@ public class ParameterTest extends FoodMartTestCase {
 	}
 	public void testNumericParameter() {
 		String s = executeExpr("Parameter(\"N\",NUMERIC,2+3,\"A numeric parameter\")");
-		assertEquals("5",s);
+		Assert.assertEquals("5",s);
 	}
 	public void testStringParameter() {
 		String s = executeExpr("Parameter(\"S\",STRING,\"x\" || \"y\",\"A string parameter\")");
-		assertEquals("xy", s);
+        Assert.assertEquals("xy", s);
 	}
 	public void testNumericParameterStringValueFails() {
 		assertExprThrows("Parameter(\"S\",NUMERIC,\"x\" || \"y\",\"A string parameter\")",
@@ -101,7 +102,7 @@ public class ParameterTest extends FoodMartTestCase {
 				"\".\" ||" +
 				"ParamRef(\"X\") || " +
 				"Parameter(\"Y\",STRING,\"y\" || \"Y\",\"Other string\")");
-		assertEquals("xyY.xyY",s);
+        Assert.assertEquals("xyY.xyY",s);
 	}
 	public void testParamRefWithoutParamFails() {
 		assertExprThrows("ParamRef(\"Y\")", "Parameter 'Y' is referenced but never defined");
@@ -126,12 +127,12 @@ public class ParameterTest extends FoodMartTestCase {
 				"  Parameter(\"Q\",[Gender],[Gender].DefaultMember,\"Another gender?\")} on columns" + nl +
 				"from Sales");
 		Parameter[] parameters = query.getParameters();
-		assertEquals("S", parameters[0].getName());
-		assertEquals("N", parameters[1].getName());
-		assertEquals("P", parameters[2].getName());
-		assertEquals("Q", parameters[3].getName());
+        Assert.assertEquals("S", parameters[0].getName());
+        Assert.assertEquals("N", parameters[1].getName());
+        Assert.assertEquals("P", parameters[2].getName());
+        Assert.assertEquals("Q", parameters[3].getName());
 		parameters[2].setValue("[Gender].[M]", query);
-		assertEquals("with member [Measures].[A string] as 'Parameter(\"S\", STRING, (\"x\" || \"y\"), \"A string parameter\")'" + nl +
+        Assert.assertEquals("with member [Measures].[A string] as 'Parameter(\"S\", STRING, (\"x\" || \"y\"), \"A string parameter\")'" + nl +
 				"  member [Measures].[A number] as 'Parameter(\"N\", NUMERIC, (2.0 + 3.0), \"A numeric parameter\")'" + nl +
 				"select {Parameter(\"P\", [Gender], [Gender].[All Gender].[M], \"Which gender?\"), Parameter(\"Q\", [Gender], [Gender].DefaultMember, \"Another gender?\")} ON columns," + nl +
 				"  {[Measures].[Unit Sales]} ON rows" + nl +

@@ -109,7 +109,7 @@ public class Scanner {
 
 			System.err.println(
 				"Scanner returns #" + s.sym +
-				(name == null ? "" : ":" + name) + 
+				(name == null ? "" : ":" + name) +
 				(s.value == null ? "" : "(" + s.value.toString() + ")"));
 		}
 		return s;
@@ -135,7 +135,7 @@ public class Scanner {
 		initResword(ParserSym.AND                 ,"AND");
 		initResword(ParserSym.AS                  ,"AS");
 //		initResword(ParserSym.ASC                 ,"ASC");
-//		initResword(ParserSym.AXIS                ,"AXIS");
+		initResword(ParserSym.AXIS                ,"AXIS");
 //		initResword(ParserSym.BACK_COLOR          ,"BACK_COLOR");
 //		initResword(ParserSym.BASC                ,"BASC");
 //		initResword(ParserSym.BDESC               ,"BDESC");
@@ -255,7 +255,7 @@ public class Scanner {
 
 			case '0': case '1': case '2': case '3': case '4':
 			case '5': case '6': case '7': case '8': case '9':
-				
+
 				// Parse a number.  Valid examples include 1, 1.2, 0.1, .1,
 				// 1e2, 1E2, 1e-2, 1e+2.  Invalid examples include e2, 1.2.3,
 				// 1e2e3, 1e2.3.

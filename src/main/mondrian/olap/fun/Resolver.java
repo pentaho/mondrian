@@ -14,7 +14,6 @@ package mondrian.olap.fun;
 import mondrian.olap.Exp;
 import mondrian.olap.FunDef;
 import mondrian.olap.Syntax;
-import mondrian.test.Testable;
 
 /**
  * A <code>Resolver</code> converts a function name, invokation type, and set
@@ -24,7 +23,7 @@ import mondrian.test.Testable;
  * @since 3 March, 2002
  * @version $Id$
  **/
-interface Resolver extends Testable
+interface Resolver
 {
 	String getName();
     Syntax getSyntax();

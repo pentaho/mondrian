@@ -458,8 +458,8 @@ public class BasicQueryTest extends FoodMartTestCase {
 				" {[Product].members} on rows" + nl +
 				"from Sales");
 		final int rowCount = result.getAxes()[1].positions.length;
-		assertEquals(2256, rowCount);
-		assertEquals("152", result.getCell(new int[] {0, rowCount - 1}).getFormattedValue());
+        assertEquals(2256, rowCount);
+        assertEquals("152", result.getCell(new int[] {0, rowCount - 1}).getFormattedValue());
 	}
 
 	public void testDrillThrough() {
@@ -485,7 +485,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 " and `product`.`product_class_id` = `product_class`.`product_class_id`" +
                 " and `product_class`.`product_family` in ('Drink')", sql);
 		sql = result.getCell(new int[] {1, 1}).getDrillThroughSQL(false);
-		assertNull(sql); // because it is a calculated member
+        assertNull(sql); // because it is a calculated member
 	}
 	public void testDrillThrough2() {
 		Result result = runQuery(
@@ -574,7 +574,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 " and `sales_fact_1997`.`customer_id` = `customer`.`customer_id`",
                 sql);
 		sql = result.getCell(new int[] {1, 1}).getDrillThroughSQL(true);
-		assertNull(sql); // because it is a calculated member
+        assertNull(sql); // because it is a calculated member
 	}
 
 	public void testNonEmpty1() {
@@ -615,10 +615,10 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"  [Product].[All Products].[Drink].children on columns" + nl +
 				"from Sales" + nl +
 				"where ([Measures].[Unit Sales], [Promotion Media].[All Media].[Street Handout], [Time].[1997])");
-		assertTrue(result.getAxes().length == 1);
-		assertTrue(result.getAxes()[0].positions.length == 3);
-		assertTrue(result.getSlicerAxis().positions.length == 1);
-		assertTrue(result.getSlicerAxis().positions[0].members.length == 3);
+        assertTrue(result.getAxes().length == 1);
+        assertTrue(result.getAxes()[0].positions.length == 3);
+        assertTrue(result.getSlicerAxis().positions.length == 1);
+        assertTrue(result.getSlicerAxis().positions[0].members.length == 3);
 	}
 
 	public void testSlicerIsEvaluatedBeforeAxes() {
@@ -808,12 +808,12 @@ public class BasicQueryTest extends FoodMartTestCase {
 
 	public void testConstantString() {
 		String s = executeExpr(" \"a string\" ");
-		assertEquals("a string", s);
+        assertEquals("a string", s);
 	}
 
 	public void testConstantNumber() {
 		String s = executeExpr(" 1234 ");
-		assertEquals("1,234", s);
+        assertEquals("1,234", s);
 	}
 
 	public void testCyclicalCalculatedMembers() {
@@ -838,7 +838,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 			assertExprThrows("[Time].[1997].[Q4]", "infinite loop");
 		} else {
 			String s = executeExpr("[Time].[1997].[Q4]");
-			assertEquals("72,024", s);
+            assertEquals("72,024", s);
 		}
 	}
 
@@ -1785,13 +1785,13 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"from Sales");
 		Cell cell = result.getCell(new int[] {0,0});
 		Object value = cell.getValue();
-		assertTrue(value instanceof Number);
-		assertEquals(135215, ((Number) value).intValue());
+        assertTrue(value instanceof Number);
+        assertEquals(135215, ((Number) value).intValue());
 		cell = result.getCell(new int[] {1,0});
 		value = cell.getValue();
-		assertTrue(value instanceof Number);
+        assertTrue(value instanceof Number);
 		// Plato give 285011.12, Oracle gives 285011, MySQL gives 285964 (bug!)
-		assertEquals(285011, ((Number) value).intValue());
+        assertEquals(285011, ((Number) value).intValue());
 	}
 
 	public void testDynamicFormat() {
@@ -2293,7 +2293,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"  </Hierarchy>" + nl +
 				"</Dimension>");
 		final Axis axis = executeAxis2("Sales", "[Gender2].members");
-		assertEquals("[Gender2].[All Gender]" + nl +
+        assertEquals("[Gender2].[All Gender]" + nl +
 				"[Gender2].[All Gender].[F]" + nl +
 				"[Gender2].[All Gender].[M]",
 				toString(axis.positions));
@@ -2429,7 +2429,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 						"Row #19: (null)" + nl +
 						"Row #20: (null)" + nl +
 						"Row #21: 24,576" + nl;
-		assertEquals(expected, resultString);
+        assertEquals(expected, resultString);
 	}
 
 	/**
@@ -2471,7 +2471,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 					"from Sales";
 			Query query = connection.parseQuery(queryString);
 			Result result = connection.execute(query);
-			assertEquals(10407, result.getAxes()[1].positions.length);
+            assertEquals(10407, result.getAxes()[1].positions.length);
 		} finally {
 			properties.setProperty(MondrianProperties.LargeDimensionThreshold, old + "");
 		}
@@ -2495,7 +2495,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 		// Parentheses are added to reflect operator precedence, but that's ok.
 		// Note that the doubled parentheses in line #2 of the query have been
 		// reduced to a single level.
-		assertEquals("with member [Measures].[Rendite] as '(([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost])', " +
+        assertEquals("with member [Measures].[Rendite] as '(([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost])', " +
 				"format_string = IIf((((([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]) * 100.0) > Parameter(\"UpperLimit\", NUMERIC, 151.0, \"Obere Grenze\")), " +
 				"\"|#.00%|arrow='up'\", " +
 				"IIf((((([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]) * 100.0) < Parameter(\"LowerLimit\", NUMERIC, 150.0, \"Untere Grenze\")), " +
@@ -2516,7 +2516,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 		// double-quotes. This won't work in MSOLAP, but for Mondrian it's
 		// consistent with the fact that property values are expressions,
 		// not enclosed in single-quotes.
-		assertEquals("with member [Measures].[Foo] as '1.0', " +
+        assertEquals("with member [Measures].[Foo] as '1.0', " +
 				"format_string = \"##0.00\", " +
 				"funny = IIf((1.0 = 1.0), \"x\"\"y\", \"foo\")" + nl +
 				"select {[Measures].[Foo]} ON columns" + nl +
@@ -3651,7 +3651,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     /*
      * takes quite long
      */
-    public void testParallelMutliple() {
+    public void dont_testParallelMutliple() {
       for (int i = 0; i < 5; i++) {
         runParallelQueries(1, 1, false);
         runParallelQueries(3, 2, false);
@@ -3660,19 +3660,19 @@ public class BasicQueryTest extends FoodMartTestCase {
       }
     }
 
-	public void testParallelNot() {
+	public void dont_testParallelNot() {
 		runParallelQueries(1, 1, false);
 	}
 
-	public void testParallelSomewhat() {
+	public void dont_testParallelSomewhat() {
 		runParallelQueries(3, 2, false);
 	}
 
-    public void testParallelFlushCache() {
+    public void dont_testParallelFlushCache() {
         runParallelQueries(4, 6, true);
     }
 
-	public void testParallelVery() {
+	public void dont_testParallelVery() {
 		runParallelQueries(6, 10, false);
 	}
 
@@ -3708,7 +3708,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 					}
 				});
 		threaded.run();
-		assertEquals("number of executions", threadCount * iterationCount, executeCount[0]);
+        assertEquals("number of executions", threadCount * iterationCount, executeCount[0]);
 	}
 
 

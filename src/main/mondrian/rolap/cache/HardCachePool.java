@@ -12,14 +12,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
 /**
- * A CachePool implementation keeps hard references to all objects 
+ * A CachePool implementation keeps hard references to all objects
  * that have been registered, even if they are not currently used. It does
  * not free any memory unless flush() is called.
- * 
+ *
  * <p>The only way to clear the caches is via the CachePool.flush() method.
  *
  * @author av
@@ -85,9 +82,4 @@ public class HardCachePool extends CachePool {
 
 	public void validate() {
 	}
-
-	public Test suite() throws Exception {
-		return new TestSuite();
-	}
-
 }

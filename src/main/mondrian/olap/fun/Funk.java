@@ -14,7 +14,6 @@ package mondrian.olap.fun;
 
 import mondrian.olap.Evaluator;
 import mondrian.olap.Exp;
-import mondrian.test.Testable;
 
 /**
  * A <code>Funk</code> is a code-fragment: it can be evaluated, given an
@@ -25,7 +24,7 @@ import mondrian.test.Testable;
  * @since 28 February, 2002
  * @version $Id$
  **/
-interface Funk extends Testable {
+interface Funk {
 	/**
 	 * Evaluates this function with the given set of expressions. The
 	 * implementation will often evaluate the expressions first. For example,

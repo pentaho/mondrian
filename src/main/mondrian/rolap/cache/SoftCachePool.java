@@ -8,8 +8,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
 import mondrian.olap.Util;
 
 /**
@@ -155,13 +153,4 @@ public class SoftCachePool extends CachePool {
 	/** does nothing */
 	public void notify(Cacheable cacheable, double previousCost) {
 	}
-
-	/**
-	 * Creates a JUnit testcase to test this class.
-	 */
-	public Test suite() throws Exception {
-		TestSuite suite = new TestSuite();
-		return suite;
-	}
-
 }

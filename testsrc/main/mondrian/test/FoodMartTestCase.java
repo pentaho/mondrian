@@ -16,6 +16,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 
 import junit.framework.TestCase;
+import junit.framework.Assert;
 import mondrian.olap.Axis;
 import mondrian.olap.Cell;
 import mondrian.olap.Connection;
@@ -40,6 +41,9 @@ public class FoodMartTestCase extends TestCase {
 		super(name);
 	}
 
+    public FoodMartTestCase() {
+    }
+
 	public Result runQuery(String queryString) {
 		Connection connection = getConnection();
 		Query query = connection.parseQuery(queryString);
@@ -57,9 +61,9 @@ public class FoodMartTestCase extends TestCase {
 	protected void assertSize(String queryString, int columnCount, int rowCount) {
 		Result result = runQuery(queryString);
 		Axis[] axes = result.getAxes();
-		assertTrue(axes.length == 2);
-		assertTrue(axes[0].positions.length == columnCount);
-		assertTrue(axes[1].positions.length == rowCount);
+		Assert.assertTrue(axes.length == 2);
+        Assert.assertTrue(axes[0].positions.length == columnCount);
+        Assert.assertTrue(axes[1].positions.length == rowCount);
 	}
 
 	/**
@@ -74,11 +78,11 @@ public class FoodMartTestCase extends TestCase {
 
 	private void checkThrowable(Throwable throwable, String pattern) {
 		if (throwable == null) {
-			fail("query did not yield an exception");
+            Assert.fail("query did not yield an exception");
 		}
 		String stackTrace = getStackTrace(throwable);
 		if (stackTrace.indexOf(pattern) < 0) {
-			fail("query's error does not match pattern '" + pattern +
+            Assert.fail("query's error does not match pattern '" + pattern +
 					"'; error is [" + stackTrace + "]");
 		}
 	}
@@ -150,7 +154,7 @@ public class FoodMartTestCase extends TestCase {
 		Result result = runQuery(query);
 		String resultString = toString(result);
 		if (desiredResult != null) {
-			assertEquals(desiredResult, resultString);
+            Assert.assertEquals(desiredResult, resultString);
 		}
 	}
 
@@ -197,7 +201,7 @@ public class FoodMartTestCase extends TestCase {
 	 */
 	public void assertAxisReturns(String cube, String expression, String expected) {
 		Axis axis = executeAxis2(cube, expression);
-		assertEquals(expected, toString(axis.positions));
+        Assert.assertEquals(expected, toString(axis.positions));
 	}
 	/**
 	 * Runs a query with a given expression on an axis, and asserts that it
@@ -205,7 +209,7 @@ public class FoodMartTestCase extends TestCase {
 	 */
 	public void assertAxisReturns(Connection connection, String expression, String expected) {
 		Axis axis = executeAxis2(connection, expression);
-		assertEquals(expected, toString(axis.positions));
+        Assert.assertEquals(expected, toString(axis.positions));
 	}
 	/**
 	 * Converts a {@link Throwable} to a stack trace.
@@ -318,14 +322,14 @@ interface ChooseRunnable {
  * each one, and succeeding only if they all succeed.
  */
 class TestCaseForker {
-	TestCase testCase;
+    BasicQueryTest testCase;
 	long timeoutMs;
 	Thread[] threads;
 	ArrayList failures = new ArrayList();
 	ChooseRunnable chooseRunnable;
 
 	public TestCaseForker(
-			TestCase testCase, long timeoutMs, int threadCount,
+			BasicQueryTest testCase, long timeoutMs, int threadCount,
 			ChooseRunnable chooseRunnable) {
 		this.testCase = testCase;
 		this.timeoutMs = timeoutMs;

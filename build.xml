@@ -25,13 +25,17 @@
     ===================================================================
   -->
   <property name="src.dir" value="src"/>
+  <property name="testsrc.dir" value="testsrc"/>
   <property name="java.dir" value="${src.dir}/main"/>
+  <property name="javatest.dir" value="${testsrc.dir}/main"/>
   <property name="etc.dir" value="${src.dir}/etc"/>
   <property name="lib.dir" value="lib"/>
+  <property name="testlib.dir" value="testlib"/>
   <property name="doc.dir" value="doc"/>
   <property name="resource.location" location="resource"/>
   <property name="javadoc.dir" value="${doc.dir}/api"/>
   <property name="classes.dir" value="classes"/>
+  <property name="testclasses.dir" value="testclasses"/>
   <property name="dist.name" value="${name}-${version}"/>
   <property name="dist.base" value="distribution"/>
   <property name="dist.dir" value="dist"/>
@@ -68,13 +72,13 @@ ${lib.dir}/mondrian.war,
 ${lib.dir}/mondrian.xml,
 ${lib.dir}/web.xml,
 ${lib.dir}/ant.jar,
-${lib.dir}/junit.jar,
 ${lib.dir}/optional.jar,
 ${lib.dir}/xalan.jar,
 ${lib.dir}/xercesImpl.jar,
 ${lib.dir}/xml-apis.jar,
 ${lib.dir}/commons-dbcp.jar,
 ${lib.dir}/commons-pool.jar,
+${testlib.dir}/junit.jar
 demo/mysql/FoodMartDropTables.sql,
 demo/mysql/FoodMartData.sql"/>
 
@@ -88,7 +92,6 @@ demo/mysql/FoodMartData.sql"/>
     <pathelement location="${lib.dir}/mof.jar"/>
     <pathelement location="${lib.dir}/jmi.jar"/>
     <pathelement location="${lib.dir}/xalan.jar"/>
-    <pathelement location="${lib.dir}/junit.jar"/>
     <pathelement location="${lib.dir}/xml-apis.jar"/>
     <pathelement location="${lib.dir}/xercesImpl.jar"/>
     <!-- CLASSPATH must contain xml-apis.jar, xercesImpl.jar, javacup.jar -->
@@ -98,6 +101,12 @@ demo/mysql/FoodMartData.sql"/>
     <pathelement location="${weblogic.home}/lib/weblogic.jar"/>
     <pathelement location="${ant.home}/lib/ant.jar"/>
     <pathelement location="${ant.home}/lib/optional.jar"/>
+  </path>
+
+  <path id="project.test.classpath">
+    <path refid="project.classpath"/>
+    <pathelement location="${testlib.dir}/junit.jar"/>
+    <pathelement location="${testclasses.dir}"/>
   </path>
 
   <path id="project.boot.classpath">
@@ -123,7 +132,7 @@ demo/mysql/FoodMartData.sql"/>
   <!--
     ===================================================================
     Properties for running the FoodMart test. (Override them by
-    editing mondrian.properties)
+    editing build.properties)
     ===================================================================
   -->
 
@@ -166,11 +175,11 @@ demo/mysql/FoodMartData.sql"/>
           shows configuration info
       </echo>
   </target>
-  
+
   <target name="info">
-  <echo>==============================================================</echo>  
-  <echo>| Mondrian configuration info                                |</echo>  
-  <echo>==============================================================</echo>  
+  <echo>==============================================================</echo>
+  <echo>| Mondrian configuration info                                |</echo>
+  <echo>==============================================================</echo>
   <echo>project.location      = ${project.location}</echo>
   <echo>jdk.home              = ${env.JAVA_HOME}</echo>
   <echo>catalina.home         = ${env.CATALINA_HOME}</echo>
@@ -180,7 +189,7 @@ demo/mysql/FoodMartData.sql"/>
   <echo>mondrian.foodmart.catalogURL = ${mondrian.foodmart.catalogURL}</echo>
   <echo>==============================================================</echo>
   </target>
-  
+
   <target name="all" depends="clean,compile,test"/>
 
   <target name="clean">
@@ -192,6 +201,8 @@ demo/mysql/FoodMartData.sql"/>
 
   <target name="prepare">
     <mkdir dir="${classes.dir}"/>
+    <mkdir dir="${testclasses.dir}"/>
+    <mkdir dir="${testlib.dir}"/>
   </target>
 
   <target name="compile" depends="
@@ -257,6 +268,17 @@ copy.properties"/>
     </javac>
   </target>
 
+  <target name="compile.tests" depends="compile.java">
+    <javac
+        srcdir="${javatest.dir}"
+        destdir="${testclasses.dir}"
+        debug="${project.build.debug}"
+        classpathref="project.test.classpath"
+        source="1.4">
+        <include name="mondrian/**/*.java"/>
+    </javac>
+  </target>
+
   <target name="copy.properties">
     <copy todir="${classes.dir}">
       <fileset dir="${java.dir}" includes="**/*.properties"/>
@@ -316,7 +338,7 @@ copy.properties"/>
       <!-- mondrian.test.connectString is the mondrian connect-string.
            Provider must be 'mondrian'. Jdbc is the  Catalog is the  -->
       <sysproperty key="mondrian.test.connectString"	value="Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}';JdbcUser='${mondrian.foodmart.jdbcUser}';JdbcPassword='${mondrian.foodmart.jdbcPassword}'"/>
-      
+
     </java>
   </target>
 
@@ -350,12 +372,12 @@ copy.properties"/>
     </antcall>
   </target>
 
-  <target name="test-dbms"
+  <target name="test-dbms" depends="compile"
       description="
 Runs all JUnit tests, using the given database connection
 in {mondrian.foodmart.jdbcURL}.">
     <echo>Connecting to ${mondrian.foodmart.jdbcURL}</echo>
-    <java classpathref="project.classpath" classname="mondrian.test.Main"
+    <java classpathref="project.test.classpath" classname="mondrian.test.Main"
         fork="yes">
 
       <sysproperty key="mondrian.jdbcDrivers"     	value="${mondrian.jdbcDrivers}"/>
@@ -367,23 +389,26 @@ in {mondrian.foodmart.jdbcURL}.">
     </java>
   </target>
 
-<target name="junit-main" depends="compile">
-        <mkdir dir="junit-results"/>
+<target name="junit-main" depends="compile,compile.tests">
+    <mkdir dir="junit-results"/>
     <junit printsummary="yes" fork="yes" haltonfailure="no" >
         <classpath>
-            <path refid="project.classpath"/>
+            <path refid="project.test.classpath"/>
         </classpath>
-	<sysproperty key="mondrian.jdbcDrivers"     		value="${mondrian.jdbcDrivers}"/>
-	<sysproperty key="mondrian.test.connectString"		value="Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}'"/>
-	<sysproperty key="mondrian.test.foodmart.catalogURL"	value="${mondrian.foodmart.catalogURL}"/>
+        <sysproperty key="mondrian.jdbcDrivers"     		value="${mondrian.jdbcDrivers}"/>
+        <sysproperty key="mondrian.test.connectString"		value="Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}'"/>
+        <sysproperty key="mondrian.test.foodmart.catalogURL"	value="${mondrian.foodmart.catalogURL}"/>
 
         <formatter type="xml" />
 
         <batchtest fork="yes" todir="junit-results">
-            <fileset dir="classes">
+            <fileset dir="${testclasses.dir}">
               <include name="mondrian/test/**/*Test*.class" />
               <exclude name="mondrian/test/**/*Testable*.class" />
               <exclude name="mondrian/test/**/*TestContext*.class" />
+              <exclude name="mondrian/test/**/TestCaseForker.class" />
+              <exclude name="mondrian/test/**/FoodMartTestCase.class" />
+              <exclude name="mondrian/test/**/*$*.class" />
             </fileset>
         </batchtest>
     </junit>
@@ -636,66 +661,65 @@ You should set pscp.user, pscp.password and pscp.path in build.properties">
     </exec>
   </target>
 
-  <target name="copy-jars" description="
+    <target name="copy-jars" description="
 Copy .jar files into lib, so that the same files are available to
 build mondrian.war as in the runtime environment.">
-    <copy todir="${lib.dir}">
-      <fileset dir="${junit.home}" includes="junit.jar"/>
-      <fileset dir="${ant.home}/lib" includes="ant.jar,optional.jar"/>
-      <fileset dir="${xalan.home}/bin" includes="xalan.jar,xml-apis.jar,xercesImpl.jar"/>
-      <fileset dir="${catalina.home}/common/lib" includes="commons-dbcp.jar,commons-pool.jar,commons-collections.jar"/>
-    </copy>
-    
-  <extension id="junit.ext" extensionName="junit"/>
-  <jarlib-resolve property="junit.library" failOnError="false" checkExtension="false">
-    <extension refid="junit.ext"/>
-    <location location="${lib.dir}/junit.jar"/>
-    <url url="http://gump.covalent.net/jars/latest/junit/junit.jar" destfile="${lib.dir}/junit.jar"/>
-  </jarlib-resolve>
-  
-  <extension id="commons-dbcp.ext" extensionName="org.apache.commons.dbcp"/>
-  <jarlib-resolve property="commons-dbcp.library" failOnError="false" checkExtension="false">
-    <extension refid="commons-dbcp.ext"/>
-    <location location="${lib.dir}/commons-dbcp.jar"/>
-    <url url="http://gump.covalent.net/jars/latest/jakarta-commons/commons-dbcp.jar" destfile="${lib.dir}/commons-dbcp.jar"/>
-  </jarlib-resolve>
-  
-  <extension id="commons-pool.ext" extensionName="org.apache.commons.pool"/>
-  <jarlib-resolve property="commons-pool.library" failOnError="false" checkExtension="false">
-    <extension refid="commons-pool.ext"/>
-    <location location="${lib.dir}/commons-pool.jar"/>
-    <url url="http://gump.covalent.net/jars/latest/jakarta-commons/commons-pool.jar" destfile="${lib.dir}/commons-pool.jar"/>
-  </jarlib-resolve>
+        <copy todir="${lib.dir}">
+          <fileset dir="${ant.home}/lib" includes="ant.jar,optional.jar"/>
+          <fileset dir="${xalan.home}/bin" includes="xalan.jar,xml-apis.jar,xercesImpl.jar"/>
+          <fileset dir="${catalina.home}/common/lib" includes="commons-dbcp.jar,commons-pool.jar,commons-collections.jar"/>
+        </copy>
 
-  <extension id="commons-collections.ext" extensionName="org.apache.commons.collections"/>
-  <jarlib-resolve property="commons-collections.library" failOnError="false" checkExtension="false">
-    <extension refid="commons-collections.ext"/>
-    <location location="${lib.dir}/commons-collections.jar"/>
-    <url url="http://gump.covalent.net/jars/latest/jakarta-commons/commons-collections.jar" destfile="${lib.dir}/commons-collections.jar"/>
-  </jarlib-resolve>
+        <extension id="junit.ext" extensionName="junit"/>
+        <jarlib-resolve property="junit.library" failOnError="false" checkExtension="false">
+            <extension refid="junit.ext"/>
+            <location location="${testlib.dir}/junit.jar"/>
+            <url url="http://gump.covalent.net/jars/latest/junit/junit.jar" destfile="${testlib.dir}/junit.jar"/>
+        </jarlib-resolve>
 
-  <extension id="xalan.ext" extensionName="org.apache.xalan"/>
-  <jarlib-resolve property="xalan.library" failOnError="false" checkExtension="false">
-    <extension refid="xalan.ext"/>
-    <location location="${lib.dir}/xalan.jar"/>
-    <url url="http://gump.covalent.net/jars/latest/xml-xalan/xalan.jar" destfile="${lib.dir}/xalan.jar"/>
-  </jarlib-resolve>
+        <extension id="commons-dbcp.ext" extensionName="org.apache.commons.dbcp"/>
+        <jarlib-resolve property="commons-dbcp.library" failOnError="false" checkExtension="false">
+            <extension refid="commons-dbcp.ext"/>
+            <location location="${lib.dir}/commons-dbcp.jar"/>
+            <url url="http://gump.covalent.net/jars/latest/jakarta-commons/commons-dbcp.jar" destfile="${lib.dir}/commons-dbcp.jar"/>
+        </jarlib-resolve>
 
-  <extension id="xml.ext" extensionName="org.xml"/>
-  <jarlib-resolve property="xml.library" failOnError="false" checkExtension="false">
-    <extension refid="xml.ext"/>
-    <location location="${lib.dir}/xml-apis.jar"/>
-    <url url="http://gump.covalent.net/jars/latest/xml-commons/xml-apis.jar" destfile="${lib.dir}/xml-apis.jar"/>
-  </jarlib-resolve>
+        <extension id="commons-pool.ext" extensionName="org.apache.commons.pool"/>
+        <jarlib-resolve property="commons-pool.library" failOnError="false" checkExtension="false">
+            <extension refid="commons-pool.ext"/>
+            <location location="${lib.dir}/commons-pool.jar"/>
+            <url url="http://gump.covalent.net/jars/latest/jakarta-commons/commons-pool.jar" destfile="${lib.dir}/commons-pool.jar"/>
+        </jarlib-resolve>
 
-  <extension id="xerces.ext" extensionName="org.apache.xerces"/>
-  <jarlib-resolve property="xerces.library" failOnError="false" checkExtension="false">
-    <extension refid="xerces.ext"/>
-    <location location="${lib.dir}/xercesImpl.jar"/>
-    <url url="http://gump.covalent.net/jars/latest/xml-xerces2/xercesImpl.jar" destfile="${lib.dir}/xercesImpl.jar"/>
-  </jarlib-resolve>
+        <extension id="commons-collections.ext" extensionName="org.apache.commons.collections"/>
+        <jarlib-resolve property="commons-collections.library" failOnError="false" checkExtension="false">
+            <extension refid="commons-collections.ext"/>
+            <location location="${lib.dir}/commons-collections.jar"/>
+            <url url="http://gump.covalent.net/jars/latest/jakarta-commons/commons-collections.jar" destfile="${lib.dir}/commons-collections.jar"/>
+        </jarlib-resolve>
 
-  </target>
+        <extension id="xalan.ext" extensionName="org.apache.xalan"/>
+        <jarlib-resolve property="xalan.library" failOnError="false" checkExtension="false">
+            <extension refid="xalan.ext"/>
+            <location location="${lib.dir}/xalan.jar"/>
+            <url url="http://gump.covalent.net/jars/latest/xml-xalan/xalan.jar" destfile="${lib.dir}/xalan.jar"/>
+        </jarlib-resolve>
+
+        <extension id="xml.ext" extensionName="org.xml"/>
+        <jarlib-resolve property="xml.library" failOnError="false" checkExtension="false">
+            <extension refid="xml.ext"/>
+            <location location="${lib.dir}/xml-apis.jar"/>
+            <url url="http://gump.covalent.net/jars/latest/xml-commons/xml-apis.jar" destfile="${lib.dir}/xml-apis.jar"/>
+        </jarlib-resolve>
+
+        <extension id="xerces.ext" extensionName="org.apache.xerces"/>
+        <jarlib-resolve property="xerces.library" failOnError="false" checkExtension="false">
+            <extension refid="xerces.ext"/>
+            <location location="${lib.dir}/xercesImpl.jar"/>
+            <url url="http://gump.covalent.net/jars/latest/xml-xerces2/xercesImpl.jar" destfile="${lib.dir}/xercesImpl.jar"/>
+        </jarlib-resolve>
+
+    </target>
 
   <target name="war" depends="jar,copy-jars" description="
 Creates mondrian.war based upon jpivot.war.
@@ -725,7 +749,6 @@ commons-pool.jar,
 commons-dbcp.jar,
 " excludes="
 javacup.jar,
-junit.jar,
 xalan.jar,
 xercesImpl.jar,
 xml-apis.jar,
@@ -752,7 +775,6 @@ and lib contains ant.jar, junit.jar etc. (use 'copy-jars' target)">
 ${name}.jar,
 javacup.jar,
 jmi.jar,
-junit.jar,
 mof.jar,
 xalan.jar"/>
     </war>

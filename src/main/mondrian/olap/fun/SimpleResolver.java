@@ -11,7 +11,6 @@
 */
 package mondrian.olap.fun;
 
-import junit.framework.TestSuite;
 import mondrian.olap.Exp;
 import mondrian.olap.FunDef;
 import mondrian.olap.Syntax;
@@ -59,9 +58,9 @@ class SimpleResolver implements Resolver {
         return true;
     }
 
-	public void addTests(TestSuite suite) {
-		funDef.addTests(suite);
-	}
+//	public void addTests(TestSuite suite, Pattern pattern) {
+//		funDef.addTests(suite, pattern);
+//	}
 }
 
 // End SimpleResolver.java

@@ -11,7 +11,6 @@
 */
 
 package mondrian.olap;
-import mondrian.test.Testable;
 
 import java.io.PrintWriter;
 
@@ -19,7 +18,7 @@ import java.io.PrintWriter;
  * <code>FunDef</code> is the definition of an MDX function. See also {@link
  * FunTable}.
  **/
-public interface FunDef extends Testable {
+public interface FunDef {
     /**
 	 * Returns the syntactic type of the function. */
     Syntax getSyntax();
@@ -78,14 +77,14 @@ public interface FunDef extends Testable {
 
 	/**
 	 * Computes how the result of the function depends on members
-	 * of the dimension. For example, the add operation "+" has two 
+	 * of the dimension. For example, the add operation "+" has two
 	 * arguments. If one argument depends on Customers and the other
 	 * depends on Products, the result will depend on both (union of
 	 * dependencies).
-	 * <p> 
+	 * <p>
 	 * For tupel, filter and some others this is not true. They must
-	 * compute the intersection. TopCount has to omit its Count 
-	 * argument etc. 
+	 * compute the intersection. TopCount has to omit its Count
+	 * argument etc.
 	 */
 	boolean dependsOn(Exp[] args, Dimension dimension);
 }

@@ -12,6 +12,7 @@
 package mondrian.test;
 
 import mondrian.olap.*;
+import junit.framework.Assert;
 
 /**
  * <code>AccessControlTest</code> is a set of unit-tests for access-control.
@@ -63,7 +64,7 @@ public class AccessControlTest extends FoodMartTestCase {
 		final SchemaReader schemaReader = salesCube.getSchemaReader(null); // unrestricted
 		final Member member = schemaReader.getMemberByUniqueName(Util.explode(memberName),true);
 		final int actualAccess = role.getAccess(member);
-		assertEquals(memberName, Access.instance().getName(expectedAccess), Access.instance().getName(actualAccess));
+		Assert.assertEquals(memberName, Access.instance().getName(expectedAccess), Access.instance().getName(actualAccess));
 	}
 
 	public void testGrantHierarchy() {
@@ -149,7 +150,7 @@ public class AccessControlTest extends FoodMartTestCase {
 		assertAxisThrows(restrictedConnection, "[Customers].[USA].[CA].[San Francisco].[Catherine Abel]", "not found");
 		assertAxisReturns(restrictedConnection, "[Customers].[USA].[CA].[San Francisco].children", "");
 		Axis axis = executeAxis2(restrictedConnection, "[Customers].members");
-		assertEquals(122, axis.positions.length); // 13 states, 109 cities
+		Assert.assertEquals(122, axis.positions.length); // 13 states, 109 cities
 	}
 	/** Test that we only aggregate over SF, LA, even when called from functions. */
 	public void testGrantHierarchy9() {
@@ -169,7 +170,7 @@ public class AccessControlTest extends FoodMartTestCase {
 				" {[Gender].children} on rows" + nl +
 				"from Sales" + nl +
 				"where ([Marital Status].[S])");
-		assertEquals("Axis #0:" + nl +
+        Assert.assertEquals("Axis #0:" + nl +
 				"{[Marital Status].[All Marital Status].[S]}" + nl +
 				"Axis #1:" + nl +
 				"{[Measures].[California Unit Sales]}" + nl +
@@ -186,7 +187,7 @@ public class AccessControlTest extends FoodMartTestCase {
 				"select {[Unit Sales]} on columns," + nl +
 				"{[Store].[USA], [Store].[USA].children} on rows" + nl +
 				"from [Sales]");
-		assertEquals("Axis #0:" + nl +
+        Assert.assertEquals("Axis #0:" + nl +
 				"{}" + nl +
 				"Axis #1:" + nl +
 				"{[Measures].[Unit Sales]}" + nl +
