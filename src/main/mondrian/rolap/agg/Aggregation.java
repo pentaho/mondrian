@@ -11,11 +11,19 @@
 */
 
 package mondrian.rolap.agg;
-import mondrian.olap.Util;
-import mondrian.rolap.CachePool;
-import mondrian.rolap.RolapStar;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
-import java.util.*;
+import mondrian.olap.Util;
+import mondrian.rolap.RolapStar;
+import mondrian.rolap.cache.CachePool;
+import mondrian.rolap.cache.SoftCacheableReference;
 
 /**
  * A <code>Aggregation</code> is a pre-computed aggregation over a set of
@@ -63,12 +71,12 @@ public class Aggregation
 	RolapStar star;
 	RolapStar.Column[] columns;
 	/** List of soft references to segments. **/
-	ArrayList segmentRefs;
+	List segmentRefs;
 
 	Aggregation(RolapStar star, RolapStar.Column[] columns) {
 		this.star = star;
 		this.columns = columns;
-		this.segmentRefs = new ArrayList();
+		this.segmentRefs = Collections.synchronizedList(new ArrayList());
 	}
 
 	/**
@@ -81,7 +89,7 @@ public class Aggregation
 	 *   state = {CA, OR},
 	 *   gender = unconstrained
 	 */
-	synchronized void load(
+	public synchronized void load(
 			RolapStar.Measure[] measures, Object[][] constraintses,
 			Collection pinnedSegments) {
 		Segment[] segments = new Segment[measures.length];
@@ -90,8 +98,8 @@ public class Aggregation
 			RolapStar.Measure measure = measures[i];
 			Segment segment = new Segment(this, measure, constraintses);
 			segments[i] = segment;
-			CachePool.SoftCacheableReference ref =
-					new CachePool.SoftCacheableReference(segment);
+			SoftCacheableReference ref =
+					new SoftCacheableReference(segment);
 			this.segmentRefs.add(ref);
 			final int pinCount = 1;
 			cachePool.register(segment, pinCount, pinnedSegments);
@@ -103,7 +111,7 @@ public class Aggregation
 	 * Drops constraints, where the list of values is close to the values which
 	 * would be returned anyway.
 	 **/
-	Object[][] optimizeConstraints(Object[][] constraintses)
+	public synchronized Object[][] optimizeConstraints(Object[][] constraintses)
 	{
 		Util.assertTrue(constraintses.length == columns.length);
 		Object[][] newConstraintses = (Object[][]) constraintses.clone();
@@ -191,42 +199,49 @@ public class Aggregation
 	 *
 	 * Returns <code>null</code> if no segment contains the cell.
 	 **/
-	synchronized Object get(
+	public synchronized Object get(
 			RolapStar.Measure measure, Object[] keys, Collection pinSet) {
-		for (int i = 0, count = segmentRefs.size(); i < count; i++) {
-			CachePool.SoftCacheableReference ref =
-					(CachePool.SoftCacheableReference) segmentRefs.get(i);
-			Segment segment = (Segment) ref.getCacheable();
-			if (segment == null) {
-				continue; // it's being garbage-collected, has not finalized yet
-			}
-			if (segment.measure != measure) {
-				continue;
-			}
-			if (segment.isReady()) {
-				Object o = segment.get(keys);
-				if (o != null) {
-					if (pinSet != null) {
-						CachePool.instance().pin(segment, pinSet);
-					}
-					return o;
+		
+		// if we dont synchronize here, the CachePool.flushIfNecessary may
+		// remove elements from segmentRefs while we are iterating. This
+		// would cause a ConcurrentModificationException.
+
+		synchronized (CachePool.instance()) {
+			for (Iterator it = segmentRefs.iterator(); it.hasNext();) {
+				SoftCacheableReference ref = (SoftCacheableReference)it.next();
+				Segment segment = (Segment) ref.getCacheable();
+				if (segment == null) {
+					it.remove();
+					continue; // it's being garbage-collected
 				}
-			} else {
-				if (segment.wouldContain(keys)) {
-					if (pinSet != null) {
-						CachePool.instance().pin(segment, pinSet);
+				if (segment.measure != measure) {
+					continue;
+				}
+				if (segment.isReady()) {
+					Object o = segment.get(keys);
+					if (o != null) {
+						if (pinSet != null) {
+							CachePool.instance().pin(segment, pinSet);
+						}
+						return o;
 					}
-					return null;
+				} else {
+					if (segment.wouldContain(keys)) {
+						if (pinSet != null) {
+							CachePool.instance().pin(segment, pinSet);
+						}
+						return null;
+					}
 				}
 			}
 		}
 		return null;
 	}
 
-    synchronized void removeSegment(Segment segment) {
-        boolean existed = segmentRefs.remove(
-                new CachePool.SoftCacheableReference(segment));
-        Util.assertTrue(existed, "removeSegment: Segment is not registered");
+
+	/** must <em>not</em> be synchronized */
+    void removeSegment(Segment segment) {
+        segmentRefs.remove(new SoftCacheableReference(segment));
     }
 
     // -- classes -------------------------------------------------------------

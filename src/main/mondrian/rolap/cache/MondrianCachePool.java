@@ -10,17 +10,20 @@
 // jhyde, 25 December, 2001
 */
 
-package mondrian.rolap;
-import mondrian.olap.Util;
-import mondrian.olap.MondrianProperties;
-
-import java.util.*;
+package mondrian.rolap.cache;
 import java.io.PrintWriter;
-import java.lang.ref.SoftReference;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 
-import junit.framework.TestSuite;
 import junit.framework.Test;
 import junit.framework.TestCase;
+import junit.framework.TestSuite;
+import mondrian.olap.Util;
+import mondrian.rolap.RolapUtil;
 
 /**
  * A <code>CachePool</code> manages the objects in a collection of
@@ -43,11 +46,23 @@ import junit.framework.TestCase;
  * its job, it uses {@link SoftReference soft references}. (Except on pinned
  * objects.)
  *
+ * <p>The locking strategy has changed: all public CachePool methods should
+ * be synchronized. The methods of <code>Cacheable</code> must <em>not</em>
+ * be synchronized.
+ *
+ * <p>There are still some bugs:
+ * <ul>
+ *   <li>if validate() is called at the end of the public pin() and unpin() methods,
+ *       it fails in multithreaded context. The cost calculation does not seem to work</li>
+ *   <li>the cache does not use the available memory, instead it computes its own
+ *       cost limit which may be too large or too small compared to available memory</li>
+ * </ul>
+ *
  * @author jhyde
  * @since 25 December, 2001
  * @version $Id$
  **/
-public class CachePool {
+class MondrianCachePool extends CachePool {
 	private static final double decay = (1.0 - 1.0 / 32.0); // slightly < 1
 	private static final double decayReciprocal = 1.0 / decay; // slightly > 1
 	private double tick = 0;
@@ -71,13 +86,11 @@ public class CachePool {
 	private HashSet pinnedZombies;
 	/** Sum of all objects' pin counts. For consistency checking. **/
 	private int totalPinCount;
-	/** Singleton. **/
-	private static CachePool instance;
 	/** List of all strings representing all {@link Cacheable} objects which
 	 * have not yet been finalized. Hard references to strings. */
 	private HashMap mapCacheableIdToCost = new HashMap();
 
-	CachePool(double costLimit)
+	public MondrianCachePool(double costLimit)
 	{
 		this.costLimit = costLimit;
 		this.queue = new Queue(new MyComparator());
@@ -150,21 +163,11 @@ public class CachePool {
 		}
 	}
 
- 	/** Returns or creates the singleton. **/
-	public static synchronized CachePool instance()
-	{
-		if (instance == null) {
-			final int costLimit =
-					MondrianProperties.instance().getCachePoolCostLimit();
-			instance = new CachePool(costLimit);
-		}
-		return instance;
-	}
 
 	/**
 	 * Returns the number of objects in the <code>CachePool</code>.
 	 **/
-	synchronized int size() {
+	public synchronized int size() {
 		return queue.size() + pinned.size();
 	}
 
@@ -175,9 +178,10 @@ public class CachePool {
 	private double tick()
 	{
 		tick++;
-		if (tick % 1000 == 0) {
-			validate();
-		}
+		// validate() is buggy (or the cache is)
+		// if (tick % 1000 == 0) {
+		//   validate();
+		// }
 		// Maintain the relation "totalDecay == 1 / (decay ^ tick)". Every time
 		// the clock ticks, "totalDecay" increases a little, hence every
 		// object's effective weight "benefit / cost * totalDecay" declines a
@@ -189,7 +193,7 @@ public class CachePool {
   	/**
   	 * Records that an object has just been added to a cache.
   	 **/
-  	void register(Cacheable cacheable)
+  	public synchronized void register(Cacheable cacheable)
 	{
 		register(cacheable, 0, null);
 	}
@@ -198,10 +202,10 @@ public class CachePool {
   	 * Records that an object has just been added to a cache, and pins it, in
 	 * an atomic operation.
   	 **/
-  	public void register(
+  	public synchronized void register(
 			Cacheable cacheable, int pinCount, Collection pinned) {
           synchronized (this) {
-              String id = cacheableId(cacheable);
+              Object id = cacheableId(cacheable);
               double cost = cacheable.getCost();
               if (mapCacheableIdToCost.put(id, new Double(cost)) != null) {
                   throw Util.newInternal("Cacheable '" + cacheable +
@@ -250,7 +254,7 @@ public class CachePool {
 	 * A {@link Cacheable} <em>must</em> call this from its
 	 * <code>finalize</code> method.
 	 */
-	public void deregister(Cacheable cacheable, boolean fromFinalizer) {
+	public synchronized void deregister(Cacheable cacheable, boolean fromFinalizer) {
 		deregisterInternal(cacheable);
 		// Remove it from the queue. (If this method is called from the
 		// cacheable's finalize method, the soft reference to it will
@@ -270,7 +274,7 @@ public class CachePool {
 	 * called from a synchronized context.
 	 */
 	private void deregisterInternal(Cacheable cacheable) {
-		String id = cacheableId(cacheable);
+		Object id = cacheableId(cacheable);
 		final double cost;
 		synchronized (this) {
 			Double registeredCost = (Double) this.mapCacheableIdToCost.remove(id);
@@ -304,7 +308,7 @@ public class CachePool {
 	/**
 	 * Records that an object has been accessed.
 	 **/
-	void access(Cacheable cacheable)
+	public synchronized void access(Cacheable cacheable)
 	{
 		checkRegistered(cacheable);
 		cacheable.markAccessed(tick());
@@ -316,7 +320,7 @@ public class CachePool {
 	 **/
 	public synchronized void notify(Cacheable cacheable, double previousCost)
 	{
-		String id = cacheableId(cacheable);
+		Object id = cacheableId(cacheable);
 		double newCost = cacheable.getCost();
 		double deltaCost = newCost - previousCost;
 		int pinCount = cacheable.getPinCount();
@@ -358,17 +362,8 @@ public class CachePool {
 	 * Flushes all unpinned objects in the cache. Objects which are still
 	 * pinned are marked, so they will be removed immediately that they are
 	 * unpinned.
-	 * @deprecated this method may cause dead locks, use AggregationManager.flushCache() instead
 	 */
 	public synchronized void flush() {
-		internalFlush();
-	}
-
-    /**
-     * used by AggregationManager to flush the cache - not for
-     * public use.
-     */
-	public synchronized void internalFlush() {
 		while (removeLast() != null) {
 		}
 		// Mark the still-pinned objects for death.
@@ -393,8 +388,8 @@ public class CachePool {
      * otherwise returns null.
      */
     private synchronized Cacheable getOneToFlush() {
-        if ((unpinnedCost + pinnedCost) > costLimit && !queue.isEmpty()) {
-            while (true) {
+        if ((unpinnedCost + pinnedCost) > costLimit) {
+            while (!queue.isEmpty()) {
                 SoftCacheableReference ref = (SoftCacheableReference) queue.removeLast();
                 Cacheable cacheable = ref.getCacheable();
                 if (cacheable != null) {
@@ -408,7 +403,7 @@ public class CachePool {
 	/**
 	 * Returns the total cost of the objects in the cache.
 	 **/
-	double getTotalCost()
+	public synchronized double getTotalCost()
 	{
 		return pinnedCost + unpinnedCost;
 	}
@@ -454,7 +449,7 @@ public class CachePool {
 			if (!existed) {
                 // The object is not in the cache. It may have been removed
                 // recently, due to another thread's activity.
-                String id = cacheableId(cacheable);
+                Object id = cacheableId(cacheable);
                 mapCacheableIdToCost.remove(id);
                 newlyPinned.remove(cacheable);
                 register(cacheable, 1, newlyPinned);
@@ -475,6 +470,7 @@ public class CachePool {
 				", size=" + size() +
 				", totalPinCount=" + totalPinCount);
 		}
+		//validate();
 	}
 
 	/**
@@ -486,7 +482,7 @@ public class CachePool {
 	 * @synchronization Must be called from synchronized context.
 	 */
 	private double checkRegistered(Cacheable cacheable) {
-		String id = cacheableId(cacheable);
+		Object id = cacheableId(cacheable);
 		Double registeredCost = (Double) mapCacheableIdToCost.get(id);
 		if (registeredCost == null) {
 			throw Util.newInternal(id + " is not registered");
@@ -498,18 +494,11 @@ public class CachePool {
 		return cost;
 	}
 
-	/**
-	 * Returns whether <code>cacheable</code> is registered.
-	 */
-	synchronized boolean isRegistered(Cacheable cacheable) {
-		String id = cacheableId(cacheable);
-		return mapCacheableIdToCost.get(id) != null;
-	}
 
 	/**
 	 * Unpins an object from the cache. See {@link #pin}.
 	 **/
-	void unpin(Cacheable cacheable)
+	public synchronized void unpin(Cacheable cacheable)
 	{
         synchronized (this) {
             double cost = checkRegistered(cacheable);
@@ -540,13 +529,14 @@ public class CachePool {
             }
         }
         flushIfNecessary();
+        //validate();
 	}
 
 	/**
 	 * Unpins all elements in a list. All elements must implement {@link
 	 * Cacheable}. See {@link #unpin(Cacheable)}.
 	 **/
-	void unpin(Collection pinned)
+	public synchronized void unpin(Collection pinned)
 	{
 		for (Iterator iterator = pinned.iterator(); iterator.hasNext(); ) {
 			Object o = iterator.next();
@@ -554,15 +544,10 @@ public class CachePool {
 		}
 	}
 
-	private static String cacheableId(Cacheable cacheable) {
-		return cacheable.getClass().getName() + "@" +
-				Integer.toHexString(System.identityHashCode(cacheable));
-	}
-
 	/**
 	 * Prints cacheables.
 	 */
-	public void printCacheables(PrintWriter pw) {
+	public synchronized void printCacheables(PrintWriter pw) {
 		pw.println("Cacheable objects which have not been finalized: count=" +
 				mapCacheableIdToCost.size() + ": {");
 		for (Iterator iterator = mapCacheableIdToCost.keySet().iterator(); iterator.hasNext();) {
@@ -576,8 +561,9 @@ public class CachePool {
 
 	/**
 	 * Checks internal consistency.
+	 * Does not seem to work in a multithreaded environment
 	 **/
-	synchronized void validate()
+	public synchronized void validate()
 	{
 //		printCacheables(RolapUtil.debugOut);
 		// "pinnedZombies" is a subset of "pinned"
@@ -650,7 +636,7 @@ public class CachePool {
 	/**
 	 * Creates a JUnit testcase to test this class.
 	 */
-	public static Test suite() throws Exception {
+	public Test suite() throws Exception {
 		TestSuite suite = new TestSuite();
 		suite.addTestSuite(CachePoolTestCase.class);
 		return suite;
@@ -661,7 +647,7 @@ public class CachePool {
 			super(s);
 		}
 		public void test() {
-			CachePool c = new CachePool(10);
+			MondrianCachePool c = new MondrianCachePool(10);
 			ArrayList list = new ArrayList();
 			// add object of cost 3, now {3:1}
 			final CacheableInt o3 = new CacheableInt(3);
@@ -729,116 +715,12 @@ public class CachePool {
 		}
 	}
 
-	/**
-	 * An object must implement <code>Cacheable</code> to be stored in a cache.
-	 */
-	public interface Cacheable
-	{
-		/** Removes the object from its cache. The {@link CachePool} calls this
-		 * method when an object's cost exceeds its benefit. **/
-		void removeFromCache();
-		/** Sets this object's last-access time. Since the weight increases
-		 * exponentially over time, less recently accessed objects decline in
-		 * importance. **/
-		void markAccessed(double recency);
-		/** Calculates how valuable this object is in the cache. A larger
-		 * number means is it more valuable, so it is less likely to be
-		 * flushed. A typical formula would divide its <em>benefit</em> (the
-		 * time it would take to re-create it in the cache, or not use it at
-		 * all), by its <em>cost</em> (the number of bytes it occupies), and
-		 * multiply by its <em>recency</em> value. It is important that all
-		 * objects in the <code>CachePool</code> have comparable weights. **/
-		double getScore();
-		/** Returns the cost of this object. **/
-		double getCost();
-		/** Stores the object's pin count. Called from {@link
-		 * CachePool#pin}. **/
-		void setPinCount(int pinCount);
-		/** Returns the object's pin count. If an object's pin count is greater
-		 * than zero, it is not a candidate for being removed from the
-		 * cache. **/
-		int getPinCount();
-	}
-
-	/**
-	 * A soft reference to a cacheable.
-	 *
-	 * They are equal if and only if their underlying objects still exist and
-	 * are equal.
-	 */
-	public static class SoftCacheableReference extends SoftReference {
-		/** Unique id of the cacheable. Works beyond the grave: when
-		 * cacheable is about to be garbage-collected, the referent will be
-		 * null, but we'll still have the id, so we'll know what we used to
-		 * point to. {@link #hashCode} and {@link #equals} use this, for the
-		 * same reason. **/
-		private String cacheableId;
-		public SoftCacheableReference(Cacheable referent) {
-			super(referent);
-			this.cacheableId = cacheableId(referent);
-		}
-		/**
-		 * Returns the referent {@link Cacheable}, which may be null if
-		 * it has been garbage-collected.
-		 */
-		public Cacheable getCacheable() {
-			return (Cacheable) super.get();
-		}
-		/**
-		 * Returns the referent {@link Cacheable}. If the referent is null
-		 * (because it has been garbage collected) and <code>fail</code> is
-		 * true, throws an internal error.
-		 *
-		 * @post return != null
-		 */
-		public Cacheable getCacheableOrFail() {
-			Cacheable cacheable = (Cacheable) super.get();
-			if (cacheable != null) {
-				return cacheable;
-			}
-			// I don't know whether this is possible. The circumstances
-			// would be the following. The garbage collector decides to
-			// remove this cacheable, but has not got around to calling its
-			// finalize method (which calls Cacheable.removeFromCache,
-			// which removes it from this list) yet. Maybe it's possible
-			// in a multi-threaded environment.
-			if (RolapUtil.debugOut != null) {
-				RolapUtil.debugOut.println("CachePool: getCacheableOrFail failed!");
-				new NullPointerException().printStackTrace(RolapUtil.debugOut);
-			}
-			throw Util.newInternal(
-					"Cacheable's parent cache references object which " +
-					"has been garbage-collected");
-		}
-
-		public int hashCode() {
-			return cacheableId.hashCode();
-		}
-
-		public boolean equals(Object obj) {
-			if (!(obj instanceof SoftCacheableReference)) {
-				return false;
-			}
-			SoftCacheableReference that = (SoftCacheableReference) obj;
-			return this.cacheableId.equals(that.cacheableId);
-		}
-		/**
-		 * Returns whether this reference refers to <code>cacheable</code>.
-		 * Because we've kept cacheable's unique identifier, we can do this
-		 * test even when cacheable is just about to be garbage collected, and
-		 * our reference has been cleared.
-		 */
-		public boolean refersTo(Cacheable cacheable) {
-			final String cacheableId = cacheableId(cacheable);
-			return this.cacheableId.equals(cacheableId);
-		}
-	}
 }
 
 /**
  * Trivial {@link CachePool.Cacheable} for testing purposes.
  */
-class CacheableInt implements CachePool.Cacheable {
+class CacheableInt implements Cacheable {
 	int pinCount;
 	int x;
 

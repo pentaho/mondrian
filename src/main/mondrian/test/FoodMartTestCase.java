@@ -11,12 +11,19 @@
 */
 package mondrian.test;
 
-import junit.framework.TestCase;
-import mondrian.olap.*;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+
+import junit.framework.TestCase;
+import mondrian.olap.Axis;
+import mondrian.olap.Cell;
+import mondrian.olap.Connection;
+import mondrian.olap.Member;
+import mondrian.olap.Position;
+import mondrian.olap.Query;
+import mondrian.olap.Result;
+import mondrian.olap.Util;
 
 /**
  * <code>FoodMartTestCase</code> is a unit test which runs against the FoodMart
@@ -312,13 +319,13 @@ interface ChooseRunnable {
  */
 class TestCaseForker {
 	TestCase testCase;
-	int timeoutMs;
+	long timeoutMs;
 	Thread[] threads;
 	ArrayList failures = new ArrayList();
 	ChooseRunnable chooseRunnable;
 
 	public TestCaseForker(
-			TestCase testCase, int timeoutMs, int threadCount,
+			TestCase testCase, long timeoutMs, int threadCount,
 			ChooseRunnable chooseRunnable) {
 		this.testCase = testCase;
 		this.timeoutMs = timeoutMs;
@@ -359,7 +366,7 @@ class TestCaseForker {
 				Throwable throwable = (Throwable) failures.get(i);
 				throwable.printStackTrace();
 			}
-			testCase.fail(failures.size() + " threads failed");
+			TestCase.fail(failures.size() + " threads failed");
 		}
 	}
 }

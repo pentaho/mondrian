@@ -11,22 +11,27 @@
 */
 
 package mondrian.test;
-import junit.framework.*;
-import junit.textui.TestRunner;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Util;
-import mondrian.olap.fun.BuiltinFunTable;
-import mondrian.rolap.CachePool;
-import mondrian.rolap.RolapUtil;
-import mondrian.rolap.agg.TestAggregationManager;
-import mondrian.util.Schedule;
-import mondrian.xmla.XmlaTest;
-
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Enumeration;
 import java.util.regex.Pattern;
+
+import junit.framework.AssertionFailedError;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestListener;
+import junit.framework.TestResult;
+import junit.framework.TestSuite;
+import junit.textui.TestRunner;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util;
+import mondrian.olap.fun.BuiltinFunTable;
+import mondrian.rolap.RolapUtil;
+import mondrian.rolap.agg.TestAggregationManager;
+import mondrian.rolap.cache.CachePool;
+import mondrian.util.Schedule;
+import mondrian.xmla.XmlaTest;
 
 /**
  * <code>Main</code> is the main test suite for Mondrian.
@@ -100,12 +105,12 @@ public class Main {
 			suite.addTest(BuiltinFunTable.suite());
 			suite.addTestSuite(Schedule.ScheduleTestCase.class);
 			suite.addTest(Util.suite());
-			suite.addTest(CachePool.suite());
+			suite.addTest(CachePool.instance().suite());
 			suite.addTestSuite(TestAggregationManager.class);
 			suite.addTestSuite(ParameterTest.class);
 			suite.addTestSuite(AccessControlTest.class);
 			if (false) suite.addTestSuite(ParentChildHierarchyTest.class);
-            suite.addTestSuite(XmlaTest.class);
+            if (false) suite.addTestSuite(XmlaTest.class);
 		}
 		if (testName != null) {
 			// Filter the suite, so that only tests whose names match

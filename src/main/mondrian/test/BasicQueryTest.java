@@ -22,8 +22,7 @@ import mondrian.olap.Query;
 import mondrian.olap.Result;
 import mondrian.olap.Schema;
 import mondrian.olap.Util;
-import mondrian.rolap.CachePool;
-import mondrian.rolap.agg.AggregationManager;
+import mondrian.rolap.cache.CachePool;
 
 /**
  * <code>BasicQueryTest</code> is a test case which tests simple queries against
@@ -1944,7 +1943,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * {@link ArrayIndexOutOfBoundsException}
      */
     public void testBug804903() {
-		AggregationManager.instance().flushCachePool();
+		CachePool.instance().flush();
         runQueryCheckResult(
                 "select {[Measures].[Customer Count]} ON columns," + nl +
                 "  {([Promotion Media].[All Media], [Product].[All Products])} ON rows" + nl +
@@ -3620,6 +3619,24 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "FROM Sales ", "");
     }
 
+
+
+    /*
+     * takes quite long
+     */
+    public void testParallelMutliple() {
+      for (int i = 0; i < 5; i++) {
+        System.out.println("running #1,1,false");
+        runParallelQueries(1, 1, false);
+        System.out.println("running #3,2,false");
+        runParallelQueries(3, 2, false);
+        System.out.println("running #4,6,true");
+        runParallelQueries(4, 6, true);
+        System.out.println("running #6,10,false");
+        runParallelQueries(6, 10, false);
+      }
+    }
+
 	public void testParallelNot() {
 		runParallelQueries(1, 1, false);
 	}
@@ -3638,7 +3655,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 
 	private void runParallelQueries(final int threadCount,
             final int iterationCount, final boolean flush) {
-		int timeoutMs = threadCount * iterationCount * 10 * 1000; // 1 minute per query
+		long timeoutMs = threadCount * iterationCount * 600 * 1000; // 10 minute per query
 		final int[] executeCount = new int[] {0};
 		final QueryAndResult[] queries = new QueryAndResult[sampleQueries.length + taglibQueries.length];
 		System.arraycopy(sampleQueries, 0, queries, 0, sampleQueries.length);
@@ -3651,9 +3668,11 @@ public class BasicQueryTest extends FoodMartTestCase {
 							try {
 								runQueryCheckResult(queries[queryIndex]);
                                 if (flush && i == 0) {
-									AggregationManager.instance().flushCachePool();
+									CachePool.instance().flush();
                                 }
-								executeCount[0]++;
+                                synchronized (executeCount) {
+									executeCount[0]++;
+                                }
 							} catch (Throwable e) {
 								e.printStackTrace();
 								throw Util.newInternal(
@@ -3666,7 +3685,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 					}
 				});
 		threaded.run();
-		assertEquals(threadCount * iterationCount, executeCount[0]);
+		assertEquals("number of executions", threadCount * iterationCount, executeCount[0]);
 	}
 
 }

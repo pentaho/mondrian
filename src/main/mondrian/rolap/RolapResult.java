@@ -15,6 +15,7 @@ import mondrian.olap.*;
 import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
+import mondrian.rolap.cache.*;
 
 import java.io.PrintWriter;
 import java.util.*;

@@ -11,14 +11,6 @@
 */
 package mondrian.rolap.agg;
 
-import mondrian.olap.EnumeratedValues;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Util;
-import mondrian.rolap.CachePool;
-import mondrian.rolap.CellKey;
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.RolapUtil;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.ResultSet;
@@ -27,6 +19,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+
+import mondrian.olap.EnumeratedValues;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util;
+import mondrian.rolap.CellKey;
+import mondrian.rolap.RolapStar;
+import mondrian.rolap.RolapUtil;
+import mondrian.rolap.cache.CachePool;
+import mondrian.rolap.cache.Cacheable;
 
 /**
  * A <code>Segment</code> is a collection of cell values parameterized by
@@ -62,7 +63,7 @@ import java.util.Iterator;
  * @since 21 March, 2002
  * @version $Id$
  **/
-public class Segment implements CachePool.Cacheable
+public class Segment implements Cacheable
 {
 	private int id; // for debug
 	private static int nextId = 0; // generator for "id"

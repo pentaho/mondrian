@@ -21,7 +21,6 @@ import java.util.Set;
 
 import mondrian.olap.MondrianDef;
 import mondrian.olap.Util;
-import mondrian.rolap.CachePool;
 import mondrian.rolap.RolapAggregationManager;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.sql.SqlQuery;
@@ -148,7 +147,7 @@ public class AggregationManager extends RolapAggregationManager {
         return null;
     }
 
-    public synchronized void loadAggregation(
+    public void loadAggregation(
 		RolapStar.Measure[] measures, RolapStar.Column[] columns,
 		Object[][] constraintses, Collection pinnedSegments)
 	{
@@ -513,24 +512,6 @@ public class AggregationManager extends RolapAggregationManager {
         }
     }
     
-    /**
-     * aquires locks to all aggregations before flushing 
-     * the cache.
-     *
-     */
-    public synchronized void flushCachePool() {
-    	flushCachePool(aggregations.iterator());
-    }
-    private void flushCachePool(Iterator iter) {
-    	if (iter.hasNext()) {
-    		Object lock = iter.next();
-    		synchronized(lock) {
-    			flushCachePool(iter); 
-    		}
-    	}
-    	else
-    		CachePool.instance().internalFlush();
-    }
 }
 
 // End RolapAggregationManager.java
