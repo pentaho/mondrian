@@ -35,14 +35,12 @@ class RolapCube extends CubeBase
 	MondrianDef.Relation fact;
 	/** To access all measures stored in the fact table. */
 	CellReader cellReader;
-	/** Special cell value indicates that the value is not in cache yet. **/
-	RuntimeException valueNotReadyException = new RuntimeException(
-			"value not ready");
 	/**
 	 * Mapping such that
 	 * <code>localDimensionOrdinals[dimension.globalOrdinal]</code> is equal to
 	 * the ordinal of the dimension in this cube. See {@link
-	 * RolapDimension#topic_ordinals} */
+	 * RolapDimension#topic_ordinals}
+	 */
 	int[] localDimensionOrdinals;
 
 	RolapCube(

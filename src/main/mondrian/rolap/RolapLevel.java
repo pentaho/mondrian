@@ -61,6 +61,9 @@ class RolapLevel extends LevelBase
 			checkColumn((MondrianDef.Column) ordinalExp);
 		}
 		this.ordinalExp = ordinalExp;
+		if (ordinalExp == null) {
+			this.ordinalExp = nameExp;
+		}
 		for (int i = 0; i < properties.length; i++) {
 			RolapProperty property = properties[i];
 			if (property.exp instanceof MondrianDef.Column) {

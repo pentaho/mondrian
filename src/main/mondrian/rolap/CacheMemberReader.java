@@ -81,6 +81,18 @@ class CacheMemberReader implements MemberReader, MemberCache
 		return mapKeyToMember.put(key, value);
 	}
 
+	// don't need to implement this MemberCache method because we're never
+	// used in a context where it is needed
+	public void putChildren(RolapMember member, ArrayList children) {
+		throw new UnsupportedOperationException();
+	}
+
+	// don't need to implement this MemberCache method because we're never
+	// used in a context where it is needed
+	public boolean hasChildren(RolapMember member) {
+		return false;
+	}
+
 	public RolapMember lookupMember(String uniqueName, boolean failIfNotFound) {
 		return lookupMember(this, uniqueName, failIfNotFound);
 	}

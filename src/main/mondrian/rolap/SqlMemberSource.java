@@ -66,9 +66,12 @@ class SqlMemberSource implements MemberReader
 
 	boolean canDoRolap()
 	{
-		RolapLevel lastLevel = (RolapLevel) hierarchy.getLevels()[
-			hierarchy.getLevels().length - 1];
-		return lastLevel.ordinalExp != null;
+		if (false) {
+			RolapLevel lastLevel = (RolapLevel) hierarchy.getLevels()[
+				hierarchy.getLevels().length - 1];
+			return lastLevel.ordinalExp != null;
+		}
+		return true; // todo: remove this method
 	}
 
 	// implement MemberSource
@@ -290,6 +293,7 @@ class SqlMemberSource implements MemberReader
 			}
 			hierarchy.addToFrom(sqlQuery, level, null);
 			sqlQuery.addSelect(level.nameExp.getExpression(sqlQuery));
+			sqlQuery.addOrderBy(level.ordinalExp.getExpression(sqlQuery));
 			for (int j = 0; j < level.properties.length; j++) {
 				RolapProperty property = level.properties[j];
 				String q = property.exp.getExpression(sqlQuery);
@@ -297,6 +301,20 @@ class SqlMemberSource implements MemberReader
 			}
 		}
 		return sqlQuery.toString();
+	}
+
+	/**
+	 * Returns the ordinal of the nearest level above <code>level</code>
+	 * whose members are unique without being qualified by their parent member.
+	 */
+	static private int uniqueLevel(Level level) {
+		RolapLevel[] levels = (RolapLevel[]) level.getHierarchy().getLevels();
+		for (int i = level.getDepth(); i >= 0; i--) {
+			if (levels[i].unique) {
+				return i;
+			}
+		}
+		return 0;
 	}
 
 	/**
@@ -337,21 +355,21 @@ class SqlMemberSource implements MemberReader
 			"while generating query to retrieve members of level " + level);
 		hierarchy.addToFrom(sqlQuery, level, null);
   		RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
-  		for (int i = level.getDepth(); i >= 0; i--) {
+		RolapLevel lastLevel = levels[levels.length - 1];
+		int levelDepth = level.getDepth();
+		for (int i = 0; i <= levelDepth; i++) {
   			RolapLevel level2 = levels[i];
   			if (level2.isAll()) {
   				continue;
   			}
 			String q = level2.nameExp.getExpression(sqlQuery);
 			sqlQuery.addSelect(q);
-			if (level.getDepth() < levels.length - 1) {
+			if (level != lastLevel) {
 				sqlQuery.addGroupBy(q);
 			}
-			if (level2.unique) {
-				break;
-			}
+			sqlQuery.addOrderBy(level2.ordinalExp.getExpression(sqlQuery));
 		}
-		RolapLevel lastLevel = levels[levels.length - 1];
+		/*
 		if (lastLevel.ordinalExp != null) {
 			String q = lastLevel.ordinalExp.getExpression(sqlQuery);
 			int distanceToLeaf = levels.length - 1 - level.getDepth();
@@ -368,6 +386,7 @@ class SqlMemberSource implements MemberReader
 			}
 			sqlQuery.addSelect(q);
  		}
+		*/
 		for (int i = 0; i < level.properties.length; i++) {
 			RolapProperty property = level.properties[i];
 			String q = property.exp.getExpression(sqlQuery);
@@ -381,20 +400,33 @@ class SqlMemberSource implements MemberReader
 		RolapLevel level, int startOrdinal, int endOrdinal)
 	{
 		ResultSet resultSet = null;
-		RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
-		boolean rolap = canDoRolap();
+		final RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
+		final RolapLevel lastLevel = levels[levels.length - 1];
+//		boolean rolap = canDoRolap();
 		String sql = makeLevelSql(level);
 		try {
 			resultSet = RolapUtil.executeQuery(
 					jdbcConnection, sql, "SqlMemberSource.getMembersInLevel");
 			ArrayList list = new ArrayList();
 			int ordinal = 0;
+			final int levelDepth = level.getDepth();
+			RolapMember allMember = null;
+			if (hierarchy.hasAll()) {
+				Member[] rootMembers = hierarchy.getRootMembers();
+				Util.assertTrue(rootMembers.length == 1);
+				allMember = (RolapMember) rootMembers[0];
+			}
+			// members[i] is the current member of level#i, and siblings[i]
+			// is the current member of level#i plus its siblings
+			RolapMember[] members = new RolapMember[levels.length];
+			ArrayList[] siblings = new ArrayList[levels.length + 1];
 			while (resultSet.next()) {
 				int column = 0;
 				RolapMember member = null;
-				for (int i = level.getDepth(); i >= 0; i--) {
+				for (int i = 0; i <= levelDepth; i++) {
 					RolapLevel level2 = levels[i];
 					if (level2.isAll()) {
+						member = allMember;
 						continue;
 					}
 					Object value = resultSet.getObject(column + 1);
@@ -406,26 +438,51 @@ class SqlMemberSource implements MemberReader
 					member = cache.getMember(key);
 					if (member == null) {
 						member = new RolapMember(parent, level2, value);
-						if (rolap) {
-							member.ordinal = resultSet.getInt(column + 2);
-						} else {
-							member.ordinal = ordinal++;
-						}
+						member.ordinal = ordinal;
 						for (int j = 0; j < level.properties.length; j++) {
 							RolapProperty property = level.properties[j];
 							member.setProperty(
-									property.getName(), resultSet.getObject(column + 3 + j));
+									property.getName(),
+									resultSet.getObject(column + 3 + j));
 						}
-						list.add(member);
 						cache.putMember(key, member);
 					}
-					column++;
-					if (level2.unique) {
-						break;	// no need to qualify further
+					if (member != members[i]) {
+						// Flush list we've been building.
+						ArrayList children = siblings[i + 1];
+						if (children != null) {
+							cache.putChildren(members[i], children);
+						}
+						// Start a new list, if the cache needs one. (We don't
+						// synchronize, so it's possible that the cache will
+						// have one by the time we complete it.)
+						if (i < levelDepth &&
+								!cache.hasChildren(member)) {
+							siblings[i + 1] = new ArrayList();
+						} else {
+							siblings[i + 1] = null; // don't bother building up a list
+						}
+						// Record new current member of this level.
+						members[i] = member;
+						// If we're building a list of siblings at this level,
+						// we haven't seen this one before, so add it.
+						if (siblings[i] != null) {
+							siblings[i].add(member);
+						}
 					}
+					ordinal++;
+					column++;
+				}
+				list.add(member);
+			}
+			for (int i = 0; i < members.length; i++) {
+				RolapMember member = members[i];
+				final ArrayList children = siblings[i + 1];
+				if (member != null &&
+						children != null) {
+					cache.putChildren(member, list);
 				}
 			}
-
 			return RolapUtil.toArray(list);
 		} catch (SQLException e) {
 			throw Util.getRes().newInternal(
@@ -490,9 +547,15 @@ class SqlMemberSource implements MemberReader
 		String q = level.nameExp.getExpression(sqlQuery);
 		sqlQuery.addSelect(q);
 		sqlQuery.addGroupBy(q);
+		String orderBy = level.ordinalExp.getExpression(sqlQuery);
+		sqlQuery.addOrderBy(orderBy);
+		if (!orderBy.equals(q)) {
+			sqlQuery.addGroupBy(orderBy);
+		}
 
 		RolapLevel lastLevel = levels[levels.length - 1];
 		int distanceToLeaf = levels.length - 1 - member.getLevel().getDepth();
+		/*
 		if (lastLevel.ordinalExp != null) {
 			q = lastLevel.ordinalExp.getExpression(sqlQuery);
 			if (distanceToLeaf > 0) {
@@ -508,13 +571,14 @@ class SqlMemberSource implements MemberReader
 			}
 			sqlQuery.addSelect(q);
 		}
+		*/
 		return sqlQuery.toString();
 	}
 
 	// implement MemberSource
 	public RolapMember[] getMemberChildren(RolapMember[] parentMembers)
 	{
-		Util.assertTrue(canDoRolap());
+//		Util.assertTrue(canDoRolap());
 		ArrayList list = new ArrayList();
 		for (int i = 0; i < parentMembers.length; i++) {
 			getMemberChildren(list, parentMembers[i]);
@@ -536,6 +600,7 @@ class SqlMemberSource implements MemberReader
 		try {
 			resultSet = RolapUtil.executeQuery(
 					jdbcConnection, sql, "SqlMemberSource.getMemberChildren");
+			int ordinal = 0;
 			while (resultSet.next()) {
 				Object value = resultSet.getObject(1);
 				Object key = cache.makeKey(parentMember, value);
@@ -543,7 +608,7 @@ class SqlMemberSource implements MemberReader
 				if (member == null) {
 					member = new RolapMember(
 						parentMember, childLevel, value);
-					member.ordinal = resultSet.getInt(2);
+					member.ordinal = ordinal++; //resultSet.getInt(2);
 					cache.putMember(key, member);
 				}
 				list.add(member);

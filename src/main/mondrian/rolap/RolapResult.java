@@ -242,7 +242,7 @@ class RolapResult extends ResultBase
 			if (o == Boolean.TRUE) {
 				// Aggregation is being loaded. (todo: Use better value, or
 				// throw special exception)
-				return cube.valueNotReadyException;
+				return RolapUtil.valueNotReadyException;
 			}
 			if (o != null) {
 				return o;
@@ -256,7 +256,7 @@ class RolapResult extends ResultBase
 				ArrayList clone = (ArrayList) key.clone();
 				keys.add(clone);
 			}
-			return cube.valueNotReadyException;
+			return RolapUtil.valueNotReadyException;
 		}
 
 		/** Loads the aggregations which we will need. Writes the aggregations
@@ -305,8 +305,10 @@ class RolapResult extends ResultBase
 				} catch (MondrianEvaluationException e) {
 					o = e;
 				}
-				CellKey key = point.copy();
-				cellValues.put(key, o);
+				if (o != null && o != RolapUtil.valueNotReadyException) {
+					CellKey key = point.copy();
+					cellValues.put(key, o);
+				}
 			}
 		} else {
 			RolapAxis _axis = (RolapAxis) axes[axis];

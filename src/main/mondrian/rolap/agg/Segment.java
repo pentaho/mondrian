@@ -231,6 +231,9 @@ public class Segment implements CachePool.Cacheable
 	 * is null (because no fact table rows met those criteria), and
 	 * <code>null</code> if the value is not supposed to be in this segment
 	 * (because one or more of the keys do not pass the axis criteria).
+	 *
+	 * <p>Note: Must be called from a synchronized context, because uses the
+	 * <code>pos[]</code> as workspace.</p>
 	 **/
 	Object get(Object[] keys)
 	{
@@ -371,7 +374,7 @@ public class Segment implements CachePool.Cacheable
 					if (o == null) {
 						o = Util.nullValue; // convert to placeholder
 					}
-					row[arity] = o;
+					row[arity + i] = o;
 				}
 				rows.add(row);
 			}

@@ -21,6 +21,7 @@ import mondrian.test.TestContext;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 
 /**
@@ -60,8 +61,8 @@ public class FunUtil extends Util {
 
 	static int getIntArg(Evaluator evaluator, Exp[] args, int index) {
 		Object o = args[index].evaluateScalar(evaluator);
-		if (o instanceof Integer) {
-			return ((Integer) o).intValue();
+		if (o instanceof Number) {
+			return ((Number) o).intValue();
 		} else {
 			// we need to handle String("5.0")
 			String s = o.toString();
@@ -73,23 +74,31 @@ public class FunUtil extends Util {
 	static BigDecimal getDecimalArg(
 			Evaluator evaluator, Exp[] args, int index) {
 		Object o = args[index].evaluateScalar(evaluator);
-		if (o instanceof Double) {
-			return new BigDecimal(((Double) o).doubleValue());
-		} else {
+		if (o instanceof BigDecimal) {
 			return (BigDecimal) o;
+		} else if (o instanceof BigInteger) {
+			return new BigDecimal((BigInteger) o);
+		} else if (o instanceof Number) {
+			return new BigDecimal(((Number) o).doubleValue());
+		} else {
+			throw Util.newInternal(
+					"arg " + o + " cannot be converted to BigDecimal");
 		}
 	}
 
 	static Double getDoubleArg(Evaluator evaluator, Exp[] args, int index) {
 		Object o = args[index].evaluateScalar(evaluator);
-		if (o instanceof BigDecimal) {
-			return new Double(((BigDecimal) o).doubleValue());
+		if (o instanceof Double) {
+			return (Double) o;
+		} else if (o instanceof Number) {
+			return new Double(((Number) o).doubleValue());
 		} else if (o instanceof Throwable) {
 			return new Double(Double.NaN);
 		} else if (o instanceof Util.NullCellValue) {
 			return new Double(0);
 		} else {
-			return (Double) o;
+			throw Util.newInternal(
+					"arg " + o + " cannot be converted to Double");
 		}
 	}
 
@@ -326,14 +335,16 @@ public class FunUtil extends Util {
 		int numMembers = members.size();
 		for (int i = 0; i < numMembers; i++) {
 			Object o = mapMemberToValue.get(members.elementAt(i));
-			if (o instanceof Double) {
-				total += ((Double) o).doubleValue();
+			if (o instanceof Number) {
+				total += ((Number) o).doubleValue();
 			}
 		}
 		for (int i = 0; i < numMembers; i++) {
-			Object o = mapMemberToValue.get(members.elementAt(i));
-			if (o instanceof Double) {
-				mapMemberToValue.put(members.elementAt(i), new Double(((Double) o).doubleValue() / total * 100));
+			Object member = members.elementAt(i);
+			Object o = mapMemberToValue.get(member);
+			if (o instanceof Number) {
+				double d = ((Number) o).doubleValue();
+				mapMemberToValue.put(member, new Double(d / total * 100));
 			}
 		}
 		
@@ -356,9 +367,12 @@ public class FunUtil extends Util {
 		double runningTotal = 0; int i = 0;
 		for (; (i < numMembers) && (runningTotal < target); i++) {
 			Object o = mapMemberToValue.get(members.elementAt(i));
-			//todo: figure out why we have non-doubles, add error handling	
-			if (o instanceof Double) {
-				runningTotal += ((Double) o).doubleValue();
+			if (o instanceof Number) {
+				runningTotal += ((Number) o).doubleValue();
+			} else if (o instanceof Exception) {
+				// ignore the error
+			} else {
+				throw Util.newInternal("got " + o + " when expecting Number");
 			}
 		}
 		members.setSize(i);
@@ -410,7 +424,7 @@ public class FunUtil extends Util {
 			return Util.nullValue;
 		}
 		else {
-			double max = 0.0;
+			double max = Double.MIN_VALUE;
 			for (int i = 0; i < sw.v.size(); i++) {
 				double iValue = ((Double) sw.v.elementAt(i)).doubleValue();
 				if (iValue > max) { max = iValue; }

@@ -47,10 +47,10 @@ CREATE TABLE "inventory_fact_1997"(
   "store_id" INTEGER,
   "units_ordered" INTEGER,
   "units_shipped" INTEGER,
-  "warehouse_sales" DECIMAL(10,2),
-  "warehouse_cost" DECIMAL(10,2),
+  "warehouse_sales" DECIMAL(10,4),
+  "warehouse_cost" DECIMAL(10,4),
   "supply_time" SMALLINT,
-  "store_invoice" DECIMAL(10,2));
+  "store_invoice" DECIMAL(10,4));
 CREATE TABLE "inventory_fact_1998"(
   "product_id" INTEGER NOT NULL,
   "time_id" INTEGER,
@@ -58,10 +58,10 @@ CREATE TABLE "inventory_fact_1998"(
   "store_id" INTEGER,
   "units_ordered" INTEGER,
   "units_shipped" INTEGER,
-  "warehouse_sales" DECIMAL(10,2),
-  "warehouse_cost" DECIMAL(10,2),
+  "warehouse_sales" DECIMAL(10,4),
+  "warehouse_cost" DECIMAL(10,4),
   "supply_time" SMALLINT,
-  "store_invoice" DECIMAL(10,2));
+  "store_invoice" DECIMAL(10,4));
 CREATE TABLE "product"(
   "product_class_id" INTEGER NOT NULL,
   "product_id" INTEGER NOT NULL,
@@ -106,8 +106,8 @@ CREATE TABLE "sales_fact_1997"(
   "customer_id" INTEGER NOT NULL,
   "promotion_id" INTEGER NOT NULL,
   "store_id" INTEGER NOT NULL,
-  "store_sales" NUMERIC NOT NULL,
-  "store_cost" NUMERIC NOT NULL,
+  "store_sales" DECIMAL(10,2) NOT NULL,
+  "store_cost" DECIMAL(10,4) NOT NULL,
   "unit_sales" INTEGER NOT NULL);
 CREATE TABLE "sales_fact_1998"(
   "product_id" INTEGER NOT NULL,
@@ -115,8 +115,8 @@ CREATE TABLE "sales_fact_1998"(
   "customer_id" INTEGER NOT NULL,
   "promotion_id" INTEGER NOT NULL,
   "store_id" INTEGER NOT NULL,
-  "store_sales" NUMERIC NOT NULL,
-  "store_cost" NUMERIC NOT NULL,
+  "store_sales" DECIMAL(10,2) NOT NULL,
+  "store_cost" DECIMAL(10,4) NOT NULL,
   "unit_sales" INTEGER NOT NULL);
 CREATE TABLE "sales_fact_dec_1998"(
   "product_id" INTEGER NOT NULL,
@@ -124,8 +124,8 @@ CREATE TABLE "sales_fact_dec_1998"(
   "customer_id" INTEGER NOT NULL,
   "promotion_id" INTEGER NOT NULL,
   "store_id" INTEGER NOT NULL,
-  "store_sales" NUMERIC NOT NULL,
-  "store_cost" NUMERIC NOT NULL,
+  "store_sales" DECIMAL(10,2) NOT NULL,
+  "store_cost" DECIMAL(10,4) NOT NULL,
   "unit_sales" INTEGER NOT NULL);
 CREATE TABLE "store"(
   "store_id" INTEGER NOT NULL,

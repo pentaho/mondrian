@@ -70,12 +70,14 @@ public class SqlQuery
 		from = new StringBuffer(),
 		where = new StringBuffer(),
 		groupBy = new StringBuffer(),
-		having = new StringBuffer();
+		having = new StringBuffer(),
+		orderBy = new StringBuffer();
 	int selectCount = 0,
 		fromCount = 0,
 		whereCount = 0,
 		groupByCount = 0,
-		havingCount = 0;
+		havingCount = 0,
+		orderByCount = 0;
 	public ArrayList fromAliases = new ArrayList();
 
 	/**
@@ -374,10 +376,16 @@ public class SqlQuery
 			(havingCount++ == 0 ? " having " : " and ") +
 			expression);
 	}
+	public void addOrderBy(String expression)
+	{
+		orderBy.append(
+			(orderByCount++ == 0 ? " order by " : ", ") + expression);
+	}
 	public String toString()
 	{
 		return select.toString() + from.toString() +
-			where.toString() + groupBy.toString() + having.toString();
+			where.toString() + groupBy.toString() + having.toString() +
+			orderBy.toString();
 	}
 }
 

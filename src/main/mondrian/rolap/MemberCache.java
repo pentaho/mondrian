@@ -12,6 +12,8 @@
 
 package mondrian.rolap;
 
+import java.util.ArrayList;
+
 /**
  * A <code>MemberCache</code> can retrieve members based upon their parent and
  * name.
@@ -30,6 +32,12 @@ interface MemberCache {
 	/** Replaces the {@link RolapMember} with a given key (created by {@link
 	 * #makeKey}). Returns the previous member with that key, or null. **/
 	Object putMember(Object key, RolapMember value);
+	/** Returns whether this cache currently knows the children of
+	 * <code>member</code>. */
+	boolean hasChildren(RolapMember member);
+	/** Registers that the children of <code>member</code> are
+	 * <code>children</code> (a list of {@link RolapMember}s). */
+	void putChildren(RolapMember member, ArrayList children);
 }
 
 

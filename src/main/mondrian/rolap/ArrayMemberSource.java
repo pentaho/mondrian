@@ -12,10 +12,7 @@
 
 package mondrian.rolap;
 import mondrian.olap.Util;
-import mondrian.olap.MondrianDef;
-import mondrian.rolap.sql.SqlQuery;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Properties;
 

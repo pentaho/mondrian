@@ -427,7 +427,8 @@ public class BuiltinFunTable extends FunTable {
 		}
 		switch (matchCount) {
 		case 0:
-			break;
+			throw Util.newInternal(
+					"no function matches signature '" + signature + "'");
 		case 1:
 			return matchDef;
 		default:
@@ -435,9 +436,6 @@ public class BuiltinFunTable extends FunTable {
 					"more than one function matches signature '" + signature +
 					"'");
 		}
-
-		throw Util.newInternal(
-				"no function matches signature '" + signature + "'");
 	}
 
 	/**
@@ -1466,7 +1464,7 @@ public class BuiltinFunTable extends FunTable {
 				public void testBottomCount(FoodMartTestCase test) {
 					Axis axis = test.executeAxis2(
 							"BottomCount({[Promotion Media].[Media Type].members}, 2, [Measures].[Unit Sales])");
-					String expected = "[Promotion Media].[All Promotion Media].[Radio], " +
+					String expected = "[Promotion Media].[All Promotion Media].[Radio]" + nl +
 							"[Promotion Media].[All Promotion Media].[Sunday Paper, Radio, TV]";
 					test.assertEquals(expected, test.toString(axis.positions));
 				}
@@ -1487,7 +1485,7 @@ public class BuiltinFunTable extends FunTable {
 				public void testBottomPercent(FoodMartTestCase test) {
 					Axis axis = test.executeAxis2(
 							"BottomPercent({[Promotion Media].[Media Type].members}, 1, [Measures].[Unit Sales])");
-					String expected = "[Promotion Media].[All Promotion Media].[Radio], " +
+					String expected = "[Promotion Media].[All Promotion Media].[Radio]" + nl +
 							"[Promotion Media].[All Promotion Media].[Sunday Paper, Radio, TV]";
 					test.assertEquals(expected, test.toString(axis.positions));
 				}
@@ -1508,7 +1506,7 @@ public class BuiltinFunTable extends FunTable {
 				public void testBottomSum(FoodMartTestCase test) {
 					Axis axis = test.executeAxis2(
 							"BottomSum({[Promotion Media].[Media Type].members}, 5000, [Measures].[Unit Sales])");
-					String expected = "[Promotion Media].[All Promotion Media].[Radio], " +
+					String expected = "[Promotion Media].[All Promotion Media].[Radio]" + nl +
 							"[Promotion Media].[All Promotion Media].[Sunday Paper, Radio, TV]";
 					test.assertEquals(expected, test.toString(axis.positions));
 				}
@@ -1817,13 +1815,15 @@ public class BuiltinFunTable extends FunTable {
 							}
 							if (isDrilledDown) {
 								// skip descendants of this member
-								while (i < n) {
-									Member next = (Member) v0.elementAt(i++);
+								do {
+									Member next = (Member) v0.elementAt(i);
 									boolean strict = true;
-									if (!isAncestorOf(m, next, strict)) {
+									if (isAncestorOf(m, next, strict)) {
+										i++;
+									} else {
 										break;
 									}
-								}
+								} while (i < n);
 							} else {
 								Member[] children = m.getMemberChildren();
 								for (int j = 0; j < children.length; j++) {
@@ -1836,40 +1836,54 @@ public class BuiltinFunTable extends FunTable {
 					public void testToggleDrillState(FoodMartTestCase test) {
 						Axis axis = test.executeAxis2(
 								"ToggleDrillState({[Customers].[USA],[Customers].[Canada]},{[Customers].[USA],[Customers].[USA].[CA]})");
-						String expected = "[Customers].[All Customers].[USA], " +
-								"[Customers].[All Customers].[USA].[CA], " +
-								"[Customers].[All Customers].[USA].[OR], " +
-								"[Customers].[All Customers].[USA].[WA], " +
+						String expected = "[Customers].[All Customers].[USA]" + nl +
+								"[Customers].[All Customers].[USA].[CA]" + nl +
+								"[Customers].[All Customers].[USA].[OR]" + nl +
+								"[Customers].[All Customers].[USA].[WA]" + nl +
 								"[Customers].[All Customers].[Canada]";
 						test.assertEquals(expected, test.toString(axis.positions));
 					}
 					public void testToggleDrillState2(FoodMartTestCase test) {
 						Axis axis = test.executeAxis2(
 								"ToggleDrillState([Product].[Product Department].members, {[Product].[All Products].[Food].[Snack Foods]})");
-						String expected = "[Product].[All Products].[Drink].[Alcoholic Beverages], " +
-								"[Product].[All Products].[Drink].[Beverages], " +
-								"[Product].[All Products].[Drink].[Dairy], " +
-								"[Product].[All Products].[Food].[Baked Goods], " +
-								"[Product].[All Products].[Food].[Baking Goods], " +
-								"[Product].[All Products].[Food].[Breakfast Foods], " +
-								"[Product].[All Products].[Food].[Canned Foods], " +
-								"[Product].[All Products].[Food].[Canned Products], " +
-								"[Product].[All Products].[Food].[Dairy], " +
-								"[Product].[All Products].[Food].[Deli], " +
-								"[Product].[All Products].[Food].[Eggs], " +
-								"[Product].[All Products].[Food].[Frozen Foods], " +
-								"[Product].[All Products].[Food].[Meat], " +
-								"[Product].[All Products].[Food].[Produce], " +
-								"[Product].[All Products].[Food].[Seafood], " +
-								"[Product].[All Products].[Food].[Snack Foods], " +
-								"[Product].[All Products].[Food].[Snack Foods].[Snack Foods], " +
-								"[Product].[All Products].[Food].[Snacks], " +
-								"[Product].[All Products].[Food].[Starchy Foods], " +
-								"[Product].[All Products].[Non-Consumable].[Carousel], " +
-								"[Product].[All Products].[Non-Consumable].[Checkout], " +
-								"[Product].[All Products].[Non-Consumable].[Health and Hygiene], " +
-								"[Product].[All Products].[Non-Consumable].[Household], " +
+						String expected = "[Product].[All Products].[Drink].[Alcoholic Beverages]" + nl +
+								"[Product].[All Products].[Drink].[Beverages]" + nl +
+								"[Product].[All Products].[Drink].[Dairy]" + nl +
+								"[Product].[All Products].[Food].[Baked Goods]" + nl +
+								"[Product].[All Products].[Food].[Baking Goods]" + nl +
+								"[Product].[All Products].[Food].[Breakfast Foods]" + nl +
+								"[Product].[All Products].[Food].[Canned Foods]" + nl +
+								"[Product].[All Products].[Food].[Canned Products]" + nl +
+								"[Product].[All Products].[Food].[Dairy]" + nl +
+								"[Product].[All Products].[Food].[Deli]" + nl +
+								"[Product].[All Products].[Food].[Eggs]" + nl +
+								"[Product].[All Products].[Food].[Frozen Foods]" + nl +
+								"[Product].[All Products].[Food].[Meat]" + nl +
+								"[Product].[All Products].[Food].[Produce]" + nl +
+								"[Product].[All Products].[Food].[Seafood]" + nl +
+								"[Product].[All Products].[Food].[Snack Foods]" + nl +
+								"[Product].[All Products].[Food].[Snack Foods].[Snack Foods]" + nl +
+								"[Product].[All Products].[Food].[Snacks]" + nl +
+								"[Product].[All Products].[Food].[Starchy Foods]" + nl +
+								"[Product].[All Products].[Non-Consumable].[Carousel]" + nl +
+								"[Product].[All Products].[Non-Consumable].[Checkout]" + nl +
+								"[Product].[All Products].[Non-Consumable].[Health and Hygiene]" + nl +
+								"[Product].[All Products].[Non-Consumable].[Household]" + nl +
 								"[Product].[All Products].[Non-Consumable].[Periodicals]";
+						test.assertEquals(expected, test.toString(axis.positions));
+					}
+					public void testToggleDrillState3(FoodMartTestCase test) {
+						Axis axis = test.executeAxis2(
+								"ToggleDrillState(" +
+								"{[Time].[1997].[Q1]," +
+								" [Time].[1997].[Q2]," +
+								" [Time].[1997].[Q2].[4]," +
+								" [Time].[1997].[Q2].[6]," +
+								" [Time].[1997].[Q3]}," +
+								"{[Time].[1997].[Q2]})");
+						String expected = "[Time].[1997].[Q1]" + nl +
+								"[Time].[1997].[Q2]" + nl +
+								"[Time].[1997].[Q3]";
 						test.assertEquals(expected, test.toString(axis.positions));
 					}
 				}));
@@ -1895,7 +1909,7 @@ public class BuiltinFunTable extends FunTable {
 					public void testTopCount(FoodMartTestCase test) {
 						Axis axis = test.executeAxis2(
 								"TopCount({[Promotion Media].[Media Type].members}, 2, [Measures].[Unit Sales])");
-						String expected = "[Promotion Media].[All Promotion Media].[No Media], " +
+						String expected = "[Promotion Media].[All Promotion Media].[No Media]" + nl +
 								"[Promotion Media].[All Promotion Media].[Daily Paper, Radio, TV]";
 						test.assertEquals(expected, test.toString(axis.positions));
 					}
@@ -1935,7 +1949,7 @@ public class BuiltinFunTable extends FunTable {
 				public void testTopSum(FoodMartTestCase test) {
 					Axis axis = test.executeAxis2(
 							"TopSum({[Promotion Media].[Media Type].members}, 200000, [Measures].[Unit Sales])");
-					String expected = "[Promotion Media].[All Promotion Media].[No Media], " +
+					String expected = "[Promotion Media].[All Promotion Media].[No Media]" + nl +
 							"[Promotion Media].[All Promotion Media].[Daily Paper, Radio, TV]";
 					test.assertEquals(expected, test.toString(axis.positions));
 				}

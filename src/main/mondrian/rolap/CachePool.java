@@ -694,8 +694,15 @@ public class CachePool {
 	 * are equal.
 	 */
 	public static class SoftCacheableReference extends SoftReference {
+		/** Unique id of the cacheable. Works beyond the grave: when
+		 * cacheable is about to be garbage-collected, the referent will be
+		 * null, but we'll still have the id, so we'll know what we used to
+		 * point to. {@link #hashCode} and {@link #equals} use this, for the
+		 * same reason. **/
+		private String cacheableId;
 		public SoftCacheableReference(Cacheable referent) {
 			super(referent);
+			this.cacheableId = cacheableId(referent);
 		}
 		/**
 		 * Returns the referent {@link Cacheable}, which may be null if
@@ -732,12 +739,7 @@ public class CachePool {
 		}
 
 		public int hashCode() {
-			Cacheable cacheable = getCacheable();
-			if (cacheable == null) {
-				return 0;
-			} else {
-				return cacheable.hashCode();
-			}
+			return cacheableId.hashCode();
 		}
 
 		public boolean equals(Object obj) {
@@ -745,11 +747,17 @@ public class CachePool {
 				return false;
 			}
 			SoftCacheableReference that = (SoftCacheableReference) obj;
-			Cacheable thisCacheable = getCacheable(),
-				thatCacheable = that.getCacheable();
-			return thisCacheable != null &&
-				thatCacheable != null &&
-				thisCacheable.equals(thatCacheable);
+			return this.cacheableId.equals(that.cacheableId);
+		}
+		/**
+		 * Returns whether this reference refers to <code>cacheable</code>.
+		 * Because we've kept cacheable's unique identifier, we can do this
+		 * test even when cacheable is just about to be garbage collected, and
+		 * our reference has been cleared.
+		 */
+		public boolean refersTo(Cacheable cacheable) {
+			final String cacheableId = cacheableId(cacheable);
+			return this.cacheableId.equals(cacheableId);
 		}
 	}
 }
