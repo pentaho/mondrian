@@ -64,355 +64,409 @@ import java.util.HashSet;
  **/
 public class SqlQuery
 {
-	DatabaseMetaData databaseMetaData;
-	// todo: replace {select, selectCount} with a StringList; etc.
-	boolean distinct;
-	StringBuffer select = new StringBuffer(),
-		from = new StringBuffer(),
-		where = new StringBuffer(),
-		groupBy = new StringBuffer(),
-		having = new StringBuffer(),
-		orderBy = new StringBuffer();
+  DatabaseMetaData databaseMetaData;
+  // todo: replace {select, selectCount} with a StringList; etc.
+  boolean distinct;
+  StringBuffer select = new StringBuffer(),
+    from = new StringBuffer(),
+    where = new StringBuffer(),
+    groupBy = new StringBuffer(),
+    having = new StringBuffer(),
+    orderBy = new StringBuffer();
     private HashSet groupBySet = new HashSet();
-	int selectCount = 0,
-		fromCount = 0,
-		whereCount = 0,
-		groupByCount = 0,
-		havingCount = 0,
-		orderByCount = 0;
-	public ArrayList fromAliases = new ArrayList();
+  int selectCount = 0,
+    fromCount = 0,
+    whereCount = 0,
+    groupByCount = 0,
+    havingCount = 0,
+    orderByCount = 0;
+  public ArrayList fromAliases = new ArrayList();
 
     /**
-	 * Creates a <code>SqlQuery</code>
-	 *
-	 * @param databaseMetaData used to determine which dialect of
-	 *     SQL to generate
-	 */
-	public SqlQuery(DatabaseMetaData databaseMetaData) {
-		this.databaseMetaData = databaseMetaData;
-	}
+   * Creates a <code>SqlQuery</code>
+   *
+   * @param databaseMetaData used to determine which dialect of
+   *     SQL to generate
+   */
+  public SqlQuery(DatabaseMetaData databaseMetaData) {
+    this.databaseMetaData = databaseMetaData;
+  }
 
-	/**
-	 * Creates an empty <code>SqlQuery</code> with the same environment as this
-	 * one. (As per the Gang of Four 'prototype' pattern.)
-	 **/
-	public SqlQuery cloneEmpty()
-	{
-		return new SqlQuery(databaseMetaData);
-	}
+  /**
+   * Creates an empty <code>SqlQuery</code> with the same environment as this
+   * one. (As per the Gang of Four 'prototype' pattern.)
+   **/
+  public SqlQuery cloneEmpty()
+  {
+    return new SqlQuery(databaseMetaData);
+  }
 
-	public void setDistinct(boolean distinct) {
-		this.distinct = distinct;
-	}
+  public void setDistinct(boolean distinct) {
+    this.distinct = distinct;
+  }
 
-	/**
-	 * Encloses an identifier in quotation marks appropriate for the
-	 * current SQL dialect. For example,
-	 * <code>quoteIdentifier("emp")</code> yields a string containing
-	 * <code>"emp"</code> in Oracle, and a string containing
-	 * <code>[emp]</code> in Access.
-	 **/
-	public String quoteIdentifier(String val) {
-		String q;
-		try {
-			q = databaseMetaData.getIdentifierQuoteString();
-		} catch (SQLException e) {
-			throw Util.getRes().newInternal("while quoting identifier", e);
-		}
-		if (q == null || q.trim().equals("")) {
-			if (isMySQL()) {
-				// mm.mysql.2.0.4 driver lies. We know better.
-				q = "`";
-			} else {
-				return val; // quoting is not supported
-			}
-		}
-		// if the value is already quoted, do nothing
-		//  if not, then check for a dot qualified expression
-		//  like "owner.table".
-		//  In that case, prefix the single parts separately.
-		if ( val.startsWith(q) && val.endsWith(q) ) {
-			// already quoted - nothing to do
-			return val;
-	  }
-	  int k = val.indexOf('.');
-	  if ( k > 0 ) {
-			// qualified
-			String val1 = Util.replace(val.substring(0,k), q, q + q);
-			String val2 = Util.replace(val.substring(k+1), q, q + q);
-			return q + val1 + q + "." +  q + val2 + q ;
-	  } else {
-			// not Qualified
-			String val2 = Util.replace(val, q, q + q);
-			return q + val2 + q;
-	  }
-	}
-
-	/**
-	 * Encloses an identifier in quotation marks appropriate for the
-	 * current SQL dialect. For example, in Oracle, where the identifiers
-	 * are quoted using double-quotes,
-	 * <code>quoteIdentifier("schema","table")</code> yields a string
-	 * containing <code>"schema"."table"</code>.
-	 *
-	 * @param qual Qualifier. If it is not null,
-	 *             <code>"<em>qual</em>".</code> is prepended.
-	 * @param name Name to be quoted.
-	 **/
-	public String quoteIdentifier(String qual, String name) {
-		if (qual == null) {
-			return quoteIdentifier(name);
-		} else {
-			Util.assertTrue(
-				!qual.equals(""),
-				"qual should probably be null, not empty");
-
-			return quoteIdentifier(qual) +
-				"." +
-				quoteIdentifier(name);
-		}
-	}
-
-	// -- detect various databases --
-
-	private String getProduct() {
-		try {
-			String productName = databaseMetaData.getDatabaseProductName();
-			return productName;
-		} catch (SQLException e) {
-			throw Util.getRes().newInternal(
-					"while detecting database product", e);
-		}
-	}
-	public boolean isOracle() {
-		return getProduct().equals("Oracle");
-	}
-	public boolean isAccess() {
-		return getProduct().equals("ACCESS");
-	}
-	public boolean isPostgres() {
-		return getProduct().toUpperCase().indexOf("POSTGRE") >= 0;
-	}
-	public boolean isMySQL() {
-		return getProduct().toUpperCase().equals("MYSQL");
-	}
-
-	// -- behaviors --
-	protected boolean requiresAliasForFromItems() {
-		return isPostgres();
-	}
-	protected boolean allowsAs() {
-		return !isOracle();
-	}
-	/** Whether "select * from (select * from t)" is OK. **/
-	public boolean allowsFromQuery() {
-		return !isMySQL();
-	}
-	/** Whether "select count(distinct x, y) from t" is OK. **/
-	public boolean allowsCompoundCountDistinct() {
-		return isMySQL();
-	}
-    /** Whether "select count(distinct x) from t" is OK. **/
-    public boolean allowsCountDistinct() {
-        return !isAccess();
+  /**
+   * Encloses an identifier in quotation marks appropriate for the
+   * current SQL dialect. For example,
+   * <code>quoteIdentifier("emp")</code> yields a string containing
+   * <code>"emp"</code> in Oracle, and a string containing
+   * <code>[emp]</code> in Access.
+   **/
+  public String quoteIdentifier(String val) {
+    String q;
+    try {
+      q = databaseMetaData.getIdentifierQuoteString();
+    } catch (SQLException e) {
+      throw Util.getRes().newInternal("while quoting identifier", e);
     }
+    if (q == null || q.trim().equals("")) {
+      if (isMySQL()) {
+        // mm.mysql.2.0.4 driver lies. We know better.
+        q = "`";
+      } else {
+        return val; // quoting is not supported
+      }
+    }
+    // if the value is already quoted, do nothing
+    //  if not, then check for a dot qualified expression
+    //  like "owner.table".
+    //  In that case, prefix the single parts separately.
+    if ( val.startsWith(q) && val.endsWith(q) ) {
+      // already quoted - nothing to do
+      return val;
+    }
+    int k = val.indexOf('.');
+    if ( k > 0 ) {
+      // qualified
+      String val1 = Util.replace(val.substring(0,k), q, q + q);
+      String val2 = Util.replace(val.substring(k+1), q, q + q);
+      return q + val1 + q + "." +  q + val2 + q ;
+    } else {
+      // not Qualified
+      String val2 = Util.replace(val, q, q + q);
+      return q + val2 + q;
+    }
+  }
 
-	/**
-	 * Chooses the variant within an array of {@link
-	 * mondrian.olap.MondrianDef.SQL} which best matches the current SQL
-	 * dialect.
-	 */
-	public String chooseQuery(MondrianDef.SQL[] sqls) {
-		String best;
-		if (isOracle()) {
-			best = "oracle";
-		} else if (isMySQL()) {
-			best = "mysql";
-		} else if (isAccess()) {
-			best = "access";
-		} else if (isPostgres()) {
-			best = "postgres";
-		} else {
-			best = "generic";
-		}
-		String generic = null;
-		for (int i = 0; i < sqls.length; i++) {
-			MondrianDef.SQL sql = sqls[i];
-			if (sql.dialect.equals(best)) {
-				return sql.cdata;
-			}
-			if (sql.dialect.equals("generic")) {
-				generic = sql.cdata;
-			}
-		}
-		if (generic == null) {
-			throw Util.newError("View has no 'generic' variant");
-		}
-		return generic;
-	}
+  /**
+   * Encloses an identifier in quotation marks appropriate for the
+   * current SQL dialect. For example, in Oracle, where the identifiers
+   * are quoted using double-quotes,
+   * <code>quoteIdentifier("schema","table")</code> yields a string
+   * containing <code>"schema"."table"</code>.
+   *
+   * @param qual Qualifier. If it is not null,
+   *             <code>"<em>qual</em>".</code> is prepended.
+   * @param name Name to be quoted.
+   **/
+  public String quoteIdentifier(String qual, String name) {
+    if (qual == null) {
+      return quoteIdentifier(name);
+    } else {
+      Util.assertTrue(
+        !qual.equals(""),
+        "qual should probably be null, not empty");
 
-	/**
-	 * @pre alias != null
-	 */
-	public void addFromQuery(
-			String query, String alias, boolean failIfExists) {
-		Util.assertPrecondition(alias != null);
-		if (fromAliases.contains(alias)) {
-			if (failIfExists) {
-				throw Util.newInternal(
-						"query already contains alias '" + alias + "'");
-			} else {
-				return;
-			}
-		}
-		if (fromCount++ == 0) {
-			from.append(" from ");
-		} else {
-			from.append(", ");
-		}
-		from.append("(");
-		from.append(query);
-		from.append(")");
-		if (alias != null) {
-			Util.assertTrue(!alias.equals(""));
-			if (allowsAs()) {
-				from.append(" as ");
-			} else {
-				from.append(" ");
-			}
-			from.append(quoteIdentifier(alias));
-			fromAliases.add(alias);
-		}
-	}
+      return quoteIdentifier(qual) +
+        "." +
+        quoteIdentifier(name);
+    }
+  }
 
-	/**
-	 * Adds <code>[schema.]table AS alias</code> to the FROM clause.
-	 *
-	 * @param schema schema name; may be null
-	 * @param table table name
-	 * @param alias table alias, may not be null
-	 *
-	 * @pre alias != null
-	 */
-	private void addFromTable(
-			String schema, String table, String alias, boolean failIfExists) {
-		if (fromAliases.contains(alias)) {
-			if (failIfExists) {
-				throw Util.newInternal(
-						"query already contains alias '" + alias + "'");
-			} else {
-				return;
-			}
-		}
-		if (fromCount++ == 0) {
-			from.append(" from ");
-		} else {
-			from.append(", ");
-		}
-		from.append(quoteIdentifier(schema, table));
-		if (alias != null) {
-			Util.assertTrue(!alias.equals(""));
-			if (allowsAs()) {
-				from.append(" as ");
-			} else {
-				from.append(" ");
-			}
-			from.append(quoteIdentifier(alias));
-			fromAliases.add(alias);
-		}
-	}
+  // -- detect various databases --
 
-	public void addFrom(SqlQuery sqlQuery, String alias, boolean failIfExists)
-	{
-		addFromQuery(sqlQuery.toString(), alias, failIfExists);
-	}
+  private String getProduct() {
+    try {
+      String productName = databaseMetaData.getDatabaseProductName();
+      return productName;
+    } catch (SQLException e) {
+      throw Util.getRes().newInternal(
+          "while detecting database product", e);
+    }
+  }
 
-	public void addFrom(MondrianDef.Relation relation, boolean failIfExists) {
-		if (relation instanceof MondrianDef.View) {
-			MondrianDef.View view = (MondrianDef.View) relation;
-			String sqlString = chooseQuery(view.selects);
-			String alias = view.alias;
-			if (!fromAliases.contains(alias)) {
-				addFromQuery(sqlString, alias, failIfExists);
-			}
-		} else if (relation instanceof MondrianDef.Table) {
-			MondrianDef.Table table = (MondrianDef.Table) relation;
-			addFromTable(
-					table.schema, table.name, table.getAlias(), failIfExists);
-		} else if (relation instanceof MondrianDef.Join) {
-			MondrianDef.Join join = (MondrianDef.Join) relation;
-			addFrom(join.left, failIfExists);
-			addFrom(join.right, failIfExists);
-			addWhere(
-					quoteIdentifier(join.getLeftAlias(), join.leftKey) +
-					" = " +
-					quoteIdentifier(join.getRightAlias(), join.rightKey));
-		} else {
-			throw Util.newInternal("bad relation type " + relation);
-		}
-	}
-	/**
-	 * @pre alias != null
-	 */
-	public void addJoin(
-			String type, String query, String alias, String condition) {
-		Util.assertPrecondition(alias != null);
-		Util.assertPrecondition(condition != null);
-		Util.assertTrue(!fromAliases.contains(alias));
-		Util.assertTrue(fromCount > 0);
-		from.append(
-			" " + type + " join " + query + " as " +
-			quoteIdentifier(alias) + " on " + condition);
-		fromAliases.add(alias);
-	}
-	/** Adds an expression to the select clause, automatically creating a
-	 * column alias. **/
-	public void addSelect(String expression) {
-		addSelect(expression, "c" + selectCount);
-	}
-	/** Adds an expression to the select clause, with a specified column
-	 * alias. **/
-	public void addSelect(String expression, String alias) {
-		if (alias != null) {
-			expression += " as " + quoteIdentifier(alias);
-		}
-		select.append(
-			(selectCount++ == 0 ?
-			 ("select " + (distinct ? "distinct " : "")) :
-			 ", ") +
-			expression);
-	}
-	public void addWhere(String expression)
-	{
-		where.append(
-			(whereCount++ == 0 ? " where " : " and ") +
-			expression);
-	}
-	public void addGroupBy(String expression)
-	{
+  private String getProductVersion() {
+    try {
+      String version = databaseMetaData.getDatabaseProductVersion();
+      return version;
+    } catch (SQLException e) {
+      throw Util.getRes().newInternal(
+          "while detecting database product version", e);
+    }
+  }
+
+
+  public boolean isDB2() {
+    // DB2 on NT returns "DB2/NT"
+    return getProduct().startsWith("DB2");
+  }
+  public boolean isAS400() {
+    // DB2/AS400 Product String = "DB2 UDB for AS/400"
+    return getProduct().startsWith("DB2 UDB for AS/400");
+  }
+  public boolean isOldAS400() {
+    if ( isAS400() ) {
+      // TB "04.03.0000 V4R3m0"
+      //  this version cannot handle subqueries and is considered "old"
+      // DEUKA "05.01.0000 V5R1m0" is ok
+      String version = getProductVersion();
+      String[] version_release = version.split("\\.", 3);
+      /*
+      if ( version_release.length > 2 &&
+           "04".compareTo(version_release[0]) > 0 ||
+           ("04".compareTo(version_release[0]) == 0
+             && "03".compareTo(version_release[1]) >= 0) )
+        return true;
+      */
+      // assume, that version <= 04 is "old"
+      if ( "04".compareTo(version_release[0]) >= 0 )
+        return true;
+    }
+    return false;
+  }
+
+  public boolean isOracle() {
+    return getProduct().equals("Oracle");
+  }
+  public boolean isAccess() {
+    return getProduct().equals("ACCESS");
+  }
+  public boolean isPostgres() {
+    return getProduct().toUpperCase().indexOf("POSTGRE") >= 0;
+  }
+  public boolean isMySQL() {
+    return getProduct().toUpperCase().equals("MYSQL");
+  }
+  public boolean isInformix() {
+    return getProduct().startsWith("Informix");
+  }
+
+  // -- behaviors --
+  protected boolean requiresAliasForFromItems() {
+    return isPostgres();
+  }
+  protected boolean allowsAs() {
+    return !isOracle();
+  }
+  /** Whether "select * from (select * from t)" is OK. **/
+  public boolean allowsFromQuery() {
+    // older versions of AS400 do not allow FROM subqueries
+    return !(isMySQL() || isOldAS400());
+  }
+  /** Whether "select count(distinct x, y) from t" is OK. **/
+  public boolean allowsCompoundCountDistinct() {
+    return isMySQL();
+  }
+
+  /** Whether "select count(distinct x) from t" is OK. **/
+  public boolean allowsCountDistinct() {
+    return !isAccess();
+  }
+
+  /**
+   * Chooses the variant within an array of {@link
+   * mondrian.olap.MondrianDef.SQL} which best matches the current SQL
+   * dialect.
+   */
+  public String chooseQuery(MondrianDef.SQL[] sqls) {
+    String best;
+    if (isOracle()) {
+      best = "oracle";
+    } else if (isMySQL()) {
+      best = "mysql";
+    } else if (isAccess()) {
+      best = "access";
+    } else if (isPostgres()) {
+      best = "postgres";
+    } else {
+      best = "generic";
+    }
+    String generic = null;
+    for (int i = 0; i < sqls.length; i++) {
+      MondrianDef.SQL sql = sqls[i];
+      if (sql.dialect.equals(best)) {
+        return sql.cdata;
+      }
+      if (sql.dialect.equals("generic")) {
+        generic = sql.cdata;
+      }
+    }
+    if (generic == null) {
+      throw Util.newError("View has no 'generic' variant");
+    }
+    return generic;
+  }
+
+  /**
+   * @pre alias != null
+   */
+  public void addFromQuery(
+      String query, String alias, boolean failIfExists) {
+    Util.assertPrecondition(alias != null);
+    if (fromAliases.contains(alias)) {
+      if (failIfExists) {
+        throw Util.newInternal(
+            "query already contains alias '" + alias + "'");
+      } else {
+        return;
+      }
+    }
+    if (fromCount++ == 0) {
+      from.append(" from ");
+    } else {
+      from.append(", ");
+    }
+    from.append("(");
+    from.append(query);
+    from.append(")");
+    if (alias != null) {
+      Util.assertTrue(!alias.equals(""));
+      if (allowsAs()) {
+        from.append(" as ");
+      } else {
+        from.append(" ");
+      }
+      from.append(quoteIdentifier(alias));
+      fromAliases.add(alias);
+    }
+  }
+
+  /**
+   * Adds <code>[schema.]table AS alias</code> to the FROM clause.
+   *
+   * @param schema schema name; may be null
+   * @param table table name
+   * @param alias table alias, may not be null
+   *
+   * @pre alias != null
+   */
+  private void addFromTable(
+      String schema, String table, String alias, boolean failIfExists) {
+    if (fromAliases.contains(alias)) {
+      if (failIfExists) {
+        throw Util.newInternal(
+            "query already contains alias '" + alias + "'");
+      } else {
+        return;
+      }
+    }
+    if (fromCount++ == 0) {
+      from.append(" from ");
+    } else {
+      from.append(", ");
+    }
+    from.append(quoteIdentifier(schema, table));
+    if (alias != null) {
+      Util.assertTrue(!alias.equals(""));
+      if (allowsAs()) {
+        from.append(" as ");
+      } else {
+        from.append(" ");
+      }
+      from.append(quoteIdentifier(alias));
+      fromAliases.add(alias);
+    }
+  }
+
+  public void addFrom(SqlQuery sqlQuery, String alias, boolean failIfExists)
+  {
+    addFromQuery(sqlQuery.toString(), alias, failIfExists);
+  }
+
+  public void addFrom(MondrianDef.Relation relation, boolean failIfExists) {
+    if (relation instanceof MondrianDef.View) {
+      MondrianDef.View view = (MondrianDef.View) relation;
+      String sqlString = chooseQuery(view.selects);
+      String alias = view.alias;
+      if (!fromAliases.contains(alias)) {
+        addFromQuery(sqlString, alias, failIfExists);
+      }
+    } else if (relation instanceof MondrianDef.Table) {
+      MondrianDef.Table table = (MondrianDef.Table) relation;
+      addFromTable(
+          table.schema, table.name, table.getAlias(), failIfExists);
+    } else if (relation instanceof MondrianDef.Join) {
+      MondrianDef.Join join = (MondrianDef.Join) relation;
+      addFrom(join.left, failIfExists);
+      addFrom(join.right, failIfExists);
+      addWhere(
+          quoteIdentifier(join.getLeftAlias(), join.leftKey) +
+          " = " +
+          quoteIdentifier(join.getRightAlias(), join.rightKey));
+    } else {
+      throw Util.newInternal("bad relation type " + relation);
+    }
+  }
+  /**
+   * @pre alias != null
+   */
+  public void addJoin(
+      String type, String query, String alias, String condition) {
+    Util.assertPrecondition(alias != null);
+    Util.assertPrecondition(condition != null);
+    Util.assertTrue(!fromAliases.contains(alias));
+    Util.assertTrue(fromCount > 0);
+    from.append(
+      " " + type + " join " + query + " as " +
+      quoteIdentifier(alias) + " on " + condition);
+    fromAliases.add(alias);
+  }
+
+  /** Adds an expression to the select clause, automatically creating a
+   * column alias. **/
+  public void addSelect(String expression) {
+
+    // some DB2 versions (AS/400) throw an error, if a column alias is
+    //  *not* used in a subsequent order by (Group by)
+    if (isAS400())
+      addSelect(expression, null);
+    else
+      addSelect(expression, "c" + selectCount);
+  }
+
+  /** Adds an expression to the select clause, with a specified column
+   * alias. **/
+  public void addSelect(String expression, String alias) {
+    if (alias != null) {
+      expression += " as " + quoteIdentifier(alias);
+    }
+    select.append(
+      (selectCount++ == 0 ?
+       ("select " + (distinct ? "distinct " : "")) :
+       ", ") +
+      expression);
+  }
+  public void addWhere(String expression)
+  {
+    where.append(
+      (whereCount++ == 0 ? " where " : " and ") +
+      expression);
+  }
+  public void addGroupBy(String expression)
+  {
         // Only add it to the clause once.
         if (groupBySet.add(expression)) {
             groupBy.append(
                 (groupByCount++ == 0 ? " group by " : ", ") + expression);
         }
-	}
-	public void addHaving(String expression)
-	{
-		having.append(
-			(havingCount++ == 0 ? " having " : " and ") +
-			expression);
-	}
-	public void addOrderBy(String expression)
-	{
-		orderBy.append(
-			(orderByCount++ == 0 ? " order by " : ", ") + expression);
-	}
-	public String toString()
-	{
-		return select.toString() + from.toString() +
-			where.toString() + groupBy.toString() + having.toString() +
-			orderBy.toString();
-	}
+  }
+  public void addHaving(String expression)
+  {
+    having.append(
+      (havingCount++ == 0 ? " having " : " and ") +
+      expression);
+  }
+  public void addOrderBy(String expression)
+  {
+    orderBy.append(
+      (orderByCount++ == 0 ? " order by " : ", ") + expression);
+  }
+  public String toString()
+  {
+    return select.toString() + from.toString() +
+      where.toString() + groupBy.toString() + having.toString() +
+      orderBy.toString();
+  }
 }
 
 // End SqlQuery.java
