@@ -3783,7 +3783,27 @@ public class BasicQueryTest extends FoodMartTestCase {
         Axis a = result.getAxes()[1];
         assertEquals(67, a.positions.length);
     }
-	
+
+    /**
+     * description of this testcase:
+     * A calculated member is created on the time.month level.
+     * On Hierarchize this member is compared to a month.
+     * The month has a numeric key, while the calculated members
+     * key type is string.
+     * No exeception must be thrown. 
+     */
+    public void testHierDifferentKeyClass() {
+        Result result = runQuery(
+        "with member [Time].[1997].[Q1].[xxx] as" +nl +
+		"'Aggregate({[Time].[1997].[Q1].[1], [Time].[1997].[Q1].[2]})'" +nl +
+		"select {[Measures].[Unit Sales], [Measures].[Store Cost]," +nl +
+		"[Measures].[Store Sales]} ON columns," +nl +
+		"Hierarchize(Union(Union({[Time].[1997], [Time].[1998]," +nl +
+		"[Time].[1997].[Q1].[xxx]}, [Time].[1997].Children)," +nl + 
+		"[Time].[1997].[Q1].Children)) ON rows from [Sales]");        		
+        Axis a = result.getAxes()[1];
+        assertEquals(10, a.positions.length);
+    }
 }
 
 // End BasicQueryTest.java
