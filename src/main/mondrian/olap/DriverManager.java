@@ -34,7 +34,8 @@ public class DriverManager {
 	 * @param connectString Connect string of the form
 	 *   'property=value;property=value;...'.
 	 *   See {@link Util#parseConnectString} for more details of the format.
-	 *   See {@link RolapConnection} for a list of allowed properties.
+	 *   See {@link mondrian.rolap.RolapConnectionProperties} for a list of
+	 *   allowed properties.
 	 * @param servletContext If not null, the <code>catalog</code> is read
 	 *   relative to the WAR file of this servlet.
 	 * @param fresh If <code>true</code>, a new connection is created;

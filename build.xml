@@ -3,7 +3,7 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == (C) Copyright 2001-2002 Kana Software, Inc. and others.
+  == (C) Copyright 2001-2003 Kana Software, Inc. and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   == jhyde, 31 October, 2001
@@ -57,6 +57,8 @@ ${java.dir}/mondrian/olap/MondrianDef.java,
 ${java.dir}/mondrian/xom/MetaDef.java,
 ${java.dir}/mondrian/olap/MondrianResource*.java,
 ${java.dir}/mondrian/olap/MondrianResource*.properties,
+${demo.dir}/monrg/source/happy/BirthdayResource*.java,
+${demo.dir}/monrg/source/happy/BirthdayResource*.properties,
 ${etc.dir}/mondrian/web/jsp/**/*.java"/>
   <property name="generated.lib.files" value="
 ${lib.dir}/mondrian.jar,
@@ -272,7 +274,7 @@ copy.properties"/>
 
       <!-- mondrian.test.connectString is the mondrian connect-string.
            Provider must be 'mondrian'. Jdbc is the  Catalog is the  -->
-      <jvmarg value="-Dmondrian.test.connectString=Provider=mondrian;Jdbc=${mondrian.foodmart.jdbcURL};Catalog=${mondrian.foodmart.catalogURL}"/>
+      <jvmarg value="-Dmondrian.test.connectString=Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}';JdbcUser='${mondrian.foodmart.jdbcUser}';JdbcPassword='${mondrian.foodmart.jdbcPassword}'"/>
     </java>
   </target>
 
@@ -369,10 +371,11 @@ in {mondrian.foodmart.jdbcURL}.">
           dir="."
           prefix="${dist.name}"
           includes="
-**/*.java,
-**/*.cup,
-**/*.html,
 **/*.css,
+**/*.cup,
+**/*.gif,
+**/*.html,
+**/*.java,
 ${java.dir}/**/*.properties,
 ${java.dir}/mondrian/olap/MondrianResource.xml,
 ${java.dir}/mondrian/resource/Resource.xml,
@@ -399,6 +402,7 @@ ${demo.dir}/FoodMart.xml"
           excludes="
 ${javadoc.dir}/**,
 **/*~,
+**/junit-results/**,
 ${generated.java.files}" />
     </zip>
   </target>
@@ -447,7 +451,7 @@ demo/**/*.sh"
     <copy file="${war.file}" tofile="${dist.dir}/${dist.name}.war"/>
   </target>
 
-  <target name="binzip" depends="compile,javadoc,jar,copy-jars,version">
+  <target name="binzip" depends="javadoc,jar,copy-jars,version">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.bin.file}"/>
     <zip zipfile="${dist.bin.file}">
@@ -485,7 +489,7 @@ xml-apis.jar"/>
     </zip>
   </target>
 
-  <target name="jar">
+  <target name="jar" depends="compile">
     <mkdir dir="${lib.dir}" />
     <zip
         zipfile="${jar.file}"
@@ -549,7 +553,7 @@ You should set pscp.user, pscp.password and pscp.path in build.properties">
     </exec>
   </target>
 
-  <target name="webapp" depends="compile,jar,copy-jars,war"
+  <target name="webapp" depends="jar,copy-jars,war"
     description="Creates mondrian.war in a build environment."/>
 
   <target name="copy-jars" description="

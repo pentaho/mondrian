@@ -78,11 +78,17 @@ public class RolapSchema implements Schema
 	private RolapSchema(String catalogName, Util.PropertyList connectInfo) {
 		internalConnection = new RolapConnection(connectInfo, this);
 		try {
-			java.net.URL url = new java.net.URL(catalogName);
 			mondrian.xom.Parser xmlParser =
 				mondrian.xom.XOMUtil.createDefaultParser();
-			MondrianDef.Schema xmlSchema = new MondrianDef.Schema(
-				xmlParser.parse(url));
+			String schema = connectInfo.get(RolapConnectionProperties.CatalogContent);
+			final DOMWrapper def;
+			if (schema == null) {
+				java.net.URL url = new java.net.URL(catalogName);
+				def = xmlParser.parse(url);
+			} else {
+				def = xmlParser.parse(schema);
+			}
+			MondrianDef.Schema xmlSchema = new MondrianDef.Schema(def);
 			load(xmlSchema);
 		} catch (mondrian.xom.XOMException e) {
 			throw Util.newError(e, "while parsing catalog " + catalogName);
@@ -219,8 +225,8 @@ public class RolapSchema implements Schema
 
 		synchronized RolapSchema get(
 				String catalogName, String jdbcConnectString,
-				String jdbcUser, Util.PropertyList connectInfo) {
-			final String key = makeKey(catalogName, jdbcConnectString, jdbcUser);
+				String jdbcUser, String dataSource, Util.PropertyList connectInfo) {
+			final String key = makeKey(catalogName, jdbcConnectString, jdbcUser, dataSource);
 			RolapSchema schema = (RolapSchema) mapUrlToSchema.get(key);
 			if (schema == null) {
 				schema = new RolapSchema(catalogName, connectInfo);
@@ -233,26 +239,36 @@ public class RolapSchema implements Schema
 			return schema;
 		}
 
-		synchronized void remove(String catalogName, String jdbcConnectString, String jdbcUser) {
-			mapUrlToSchema.remove(makeKey(catalogName, jdbcConnectString, jdbcUser));
+		synchronized void remove(String catalogName, String jdbcConnectString, String jdbcUser, String dataSource) {
+			mapUrlToSchema.remove(makeKey(catalogName, jdbcConnectString, jdbcUser, dataSource));
 		}
 
 		/**
 		 * Creates a key with which to identify a schema in the cache.
 		 */
 		private static String makeKey(
-				String catalogName, String jdbcConnectString, String jdbcUser) {
-			String key = catalogName + ":" + jdbcConnectString;
-			if (jdbcUser != null) {
-				key += ":" + jdbcUser;
-			}
+				String catalogName, String jdbcConnectString, String jdbcUser, String dataSource) {
+			StringBuffer buf = new StringBuffer();
+			appendIfNotNull(buf, catalogName);
+			appendIfNotNull(buf, jdbcConnectString);
+			appendIfNotNull(buf, jdbcUser);
+			appendIfNotNull(buf, dataSource);
+			String key = buf.toString();
 			return key;
 		}
 
+		private static void appendIfNotNull(StringBuffer buf, String s) {
+			if (s != null) {
+				if (buf.length() > 0) {
+					buf.append('.');
+				}
+				buf.append(s);
+			}
+		}
 	}
 
-	public static void flushSchema(String catalogName, String jdbcConnectString, String jdbcUser) {
-		Pool.instance().remove(catalogName, jdbcConnectString, jdbcUser);
+	public static void flushSchema(String catalogName, String jdbcConnectString, String jdbcUser, String dataSource) {
+		Pool.instance().remove(catalogName, jdbcConnectString, jdbcUser, dataSource);
 	}
 
 	public Cube lookupCube(String cube,boolean failIfNotFound)

@@ -13,34 +13,17 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 
+import javax.naming.NamingException;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.*;
 
 /**
  * A <code>RolapConnection</code> is a connection to a Mondrian OLAP Server.
  *
- * <h2><a name="properties">Allowable properties</a></h2>
- *
- * <table border="1">
- * <tr><th>Property</th><th>Description</th></tr>
- * <tr><td>Provider</td><td>Must be 'Mondrian'</td></tr>
- * <tr><td>Catalog</td><td>The URL of the catalog, an XML file which describes
- *   the schema: cubes, hierarchies, and so forth. Catalogs are described
- *   <a target="_top" href="http://apoptosis.dyndns.org:8080/open/mondrian/doc/schema.html">here</a>.</td></tr>
- * <tr><td>Jdbc</td><td>URL of the JDBC database where the data is
- *   stored.</td></tr>
- * <tr><td>JdbcUser</td><td>User to log on to the JDBC database. (You
- *   don't need to specify this parameter if it is already specified in
- *   the JDBC URL.)</td></tr>
- * <tr><td>JdbcPassword</td><td>Password to log on to the JDBC database. (You
- *   don't need to specify this parameter if it is already specified in
- *   the JDBC URL.)</td></tr>
- * <tr><td>JdbcDrivers</td><td>A comma-separated list of JDBC driver classes,
- *   for example, <code>sun.jdbc.odbc.JdbcOdbcDriver,oracle.jdbc.OracleDriver</code>.</td></tr>
- * <tr><td>Role</td><td>The name of the {@link Role role} to adopt. If not
- *   specified, the connection uses a role which has access to every object
- *   in the schema.</td></tr>
- * </table>
+ * <p>Typically, you create a connection via {@link DriverManager#getConnection}.
+ * {@link RolapConnectionProperties} describes allowable keywords.</p>
  *
  * @see RolapSchema
  * @see DriverManager
@@ -51,7 +34,6 @@ import java.util.*;
 public class RolapConnection extends ConnectionBase {
 	Util.PropertyList connectInfo;
 	java.sql.Connection jdbcConnection;
-	String jdbcConnectString;
 	String catalogName;
 	RolapSchema schema;
 	private SchemaReader schemaReader;
@@ -59,8 +41,9 @@ public class RolapConnection extends ConnectionBase {
 
 	/**
 	 * Creates a connection.
-	 * @param connectInfo Connection properties, as described
-	 *   <a href="#properties">here</a>.
+	 *
+	 * @param connectInfo Connection properties; keywords are described in
+	 *   {@link RolapConnectionProperties}.
 	 */
 	public RolapConnection(Util.PropertyList connectInfo) {
 		this(connectInfo, null);
@@ -73,52 +56,75 @@ public class RolapConnection extends ConnectionBase {
 	 * create a schema's internal connection). Other uses retrieve a schema
 	 * from the cache based upon the <code>Catalog</code> property.
 	 *
-	 * @param connectInfo Connection properties, as described
-	 *   <a href="#properties">here</a>.
+	 * @param connectInfo Connection properties; keywords are described in
+	 *   {@link RolapConnectionProperties}.
 	 * @param schema Schema for the connection. Must be null unless this is to
 	 *   be an internal connection.
 	 * @pre connectInfo != null
 	 */
 	RolapConnection(Util.PropertyList connectInfo, RolapSchema schema) {
 		this.connectInfo = connectInfo;
-		this.jdbcConnectString = connectInfo.get("Jdbc");
-		this.catalogName = connectInfo.get("Catalog");
-		String provider = connectInfo.get("Provider");
-		Util.assertTrue(provider.equalsIgnoreCase("mondrian"));
-		String jdbcDrivers = connectInfo.get("JdbcDrivers");
-		if (jdbcDrivers != null) {
-			loadDrivers(jdbcDrivers);
+		final String jdbcConnectString = connectInfo.get(RolapConnectionProperties.Jdbc);
+		final String jdbcUser = connectInfo.get(RolapConnectionProperties.JdbcUser);
+		final String dataSource = connectInfo.get(RolapConnectionProperties.DataSource);
+
+		if ((jdbcConnectString == null) != (dataSource != null)) {
+			throw Util.newInternal(
+					"Connect string '" + connectInfo.toString() +
+					"' must contain either '" + RolapConnectionProperties.Jdbc +
+					"' or '" + RolapConnectionProperties.DataSource + "'");
 		}
-		loadDrivers(MondrianProperties.instance().getJdbcDrivers());
-		Properties jdbcProperties = new Properties();
-		String jdbcUser = connectInfo.get("JdbcUser");
-		if (jdbcUser != null) {
-			jdbcProperties.setProperty("user", jdbcUser);
-		}
-		String jdbcPassword = connectInfo.get("JdbcPassword");
-		if (jdbcPassword != null) {
-			jdbcProperties.setProperty("password", jdbcPassword);
-		}
-		try {
-			this.jdbcConnection = java.sql.DriverManager.getConnection(
-				jdbcConnectString, jdbcProperties);
-		} catch (SQLException e) {
-			throw Util.getRes().newInternal(
-					"while creating RolapSchema (" + connectInfo.toString() + ")", e);
+		if (jdbcConnectString != null) {
+			// Get connection through JDBC DriverManager.
+			this.catalogName = connectInfo.get(RolapConnectionProperties.Catalog);
+			String provider = connectInfo.get(RolapConnectionProperties.Provider);
+			Util.assertTrue(provider.equalsIgnoreCase("mondrian"));
+			String jdbcDrivers = connectInfo.get(RolapConnectionProperties.JdbcDrivers);
+			if (jdbcDrivers != null) {
+				loadDrivers(jdbcDrivers);
+			}
+			loadDrivers(MondrianProperties.instance().getJdbcDrivers());
+			Properties jdbcProperties = new Properties();
+			if (jdbcUser != null) {
+				jdbcProperties.setProperty("user", jdbcUser);
+			}
+			String jdbcPassword = connectInfo.get(RolapConnectionProperties.JdbcPassword);
+			if (jdbcPassword != null) {
+				jdbcProperties.setProperty("password", jdbcPassword);
+			}
+			try {
+				this.jdbcConnection = java.sql.DriverManager.getConnection(
+						jdbcConnectString, jdbcProperties);
+			} catch (SQLException e) {
+				throw Util.newInternal(e,
+						"Error while creating RolapSchema (" + connectInfo.toString() + ")");
+			}
+		} else {
+			Util.assertTrue(dataSource != null);
+			// Get connection from datasource.
+			try {
+				final DataSource dataSourceObject = (DataSource)
+						new InitialContext().lookup(dataSource);
+				this.jdbcConnection = dataSourceObject.getConnection();
+			} catch (SQLException e) {
+				throw Util.newInternal(
+						e, "Error while creating connection from data source (" + dataSource + ")");
+			} catch (NamingException e) {
+				throw Util.newInternal(
+						e, "Error while looking up data source (" + dataSource + ")");
+			}
 		}
 		Role role = null;
 		if (schema == null) {
-			if (catalogName != null) {
-				// If RolapSchema.Pool.get were to call this with schema == null,
-				// we would loop.
-				schema = RolapSchema.Pool.instance().get(
-						catalogName, jdbcConnectString, jdbcUser, connectInfo);
-				String roleName = connectInfo.get("Role");
-				if (roleName != null) {
-					role = schema.lookupRole(roleName);
-					if (role == null) {
-						throw Util.newError("Role '" + roleName + "' not found");
-					}
+			// If RolapSchema.Pool.get were to call this with schema == null,
+			// we would loop.
+			schema = RolapSchema.Pool.instance().get(
+					catalogName, jdbcConnectString, jdbcUser, dataSource, connectInfo);
+			String roleName = connectInfo.get("Role");
+			if (roleName != null) {
+				role = schema.lookupRole(roleName);
+				if (role == null) {
+					throw Util.newError("Role '" + roleName + "' not found");
 				}
 			}
 		}
@@ -307,6 +313,7 @@ class NonEmptyResult extends ResultBase {
 	public void close() {
 		underlying.close();
 	}
+
 }
 
 // End RolapConnection.java
