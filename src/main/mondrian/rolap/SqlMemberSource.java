@@ -317,7 +317,18 @@ class SqlMemberSource implements MemberReader
                 root.ordinal = lastOrdinal++;
                 list.add(root);
             }
+            
+            int limit = MondrianProperties.instance().getResultLimit();
+     		int nFetch = 0;
+
             while (resultSet.next()) {
+
+            	if ( limit > 0 && limit < ++nFetch ) {
+					// result limit exceeded, throw an exception
+            		String msg = "SqlMemberSource.getMembers Fetch limit(" +limit +") exceeded; sql=[" + sql + "]";
+					throw Util.newInternal(new ResultLimitExceeded(msg), msg);
+				}
+
                 int column = 0;
                 RolapMember member = root;
                 for (int i = 0; i < levels.length; i++) {
@@ -517,7 +528,18 @@ class SqlMemberSource implements MemberReader
             // is the current member of level#i plus its siblings
             RolapMember[] members = new RolapMember[levels.length];
             ArrayList[] siblings = new ArrayList[levels.length + 1];
+
+            int limit = MondrianProperties.instance().getResultLimit();
+            int nFetch = 0;
+
             while (resultSet.next()) {
+
+            	if ( limit > 0 && limit < ++nFetch ) {
+					// result limit exceeded, throw an exception
+            		String msg = "SqlMemberSource.getMembersInLevel Fetch limit(" +limit +") exceeded; sql=[" + sql + "]"; 
+					throw Util.newInternal(new ResultLimitExceeded(msg), msg);
+				}
+
                 int column = 0;
                 RolapMember member = null;
                 for (int i = 0; i <= levelDepth; i++) {
@@ -717,7 +739,18 @@ class SqlMemberSource implements MemberReader
         try {
             resultSet = RolapUtil.executeQuery(
                 jdbcConnection, sql, "SqlMemberSource.getMemberChildren");
+
+            int limit = MondrianProperties.instance().getResultLimit();
+            int nFetch = 0;
+
             while (resultSet.next()) {
+
+            	if ( limit > 0 && limit < ++nFetch ) {
+					// result limit exceeded, throw an exception
+            		String msg = "SqlMemberSource.getMemberChildren Fetch limit(" +limit +") exceeded; sql=[" + sql + "]";
+					throw Util.newInternal(new ResultLimitExceeded(msg), msg);
+				}
+
                 Object value = resultSet.getObject(1);
                 if (value == null) {
                     value = RolapUtil.sqlNullValue;

@@ -33,10 +33,19 @@ class CrossJoinFunDef extends FunDefBase {
     public Object evaluate(Evaluator evaluator, Exp[] args) {
         List set0 = getArgAsList(evaluator, args, 0);
         List set1 = getArgAsList(evaluator, args, 1);
-
+        
         // optimize nonempty(crossjoin(a,b)) ==
         //  nonempty(crossjoin(nonempty(a),nonempty(b))
         long size = (long)set0.size() * (long)set1.size();
+
+        // throw an exeption, if the crossjoin gets too large
+        int limit = MondrianProperties.instance().getResultLimit();
+        if ( limit > 0 && limit < size ) {
+			// result limit exceeded, throw an exception
+        	String msg = "Crossjoin result limit(" +limit +") exceeded; size=" + size;
+			throw Util.newInternal(new ResultLimitExceeded(msg), msg);
+		}
+
         if (size > 1000 && evaluator.isNonEmpty()) {
             set0 = nonEmptyList(evaluator, set0);
             set1 = nonEmptyList(evaluator, set1);

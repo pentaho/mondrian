@@ -77,20 +77,26 @@ public class MondrianProperties extends PropertiesPlus {
                 System.out.println("Mondrian: file '" + file.getAbsolutePath() +
                         "' could not be loaded (" + e + ")");
             }
-        } else if (populateCount == 0) {
+        }
+        /*
+        else if (populateCount == 0) {
             System.out.println("Mondrian: Warning: file '" +
                     file.getAbsolutePath() + "' not found");
         }
+        */
 		// If we're in a servlet, read "mondrian.properties" from JAR file.
 		if (servletContext != null) {
 			try {
-				final URL resource = servletContext.getResource(mondrianDotProperties);
-				if (resource != null) {
-					load(resource);
-				} else if (populateCount == 0) {
+				final URL resourceUrl = servletContext.getResource("/" + mondrianDotProperties);
+				if (resourceUrl != null) {
+					load(resourceUrl);
+				}
+				/*
+				else if (populateCount == 0) {
                     System.out.println("Mondrian: Warning: servlet resource '" +
                             mondrianDotProperties + "' not found");
                 }
+                */
 			} catch (MalformedURLException e) {
 				System.out.println("Mondrian: '" + mondrianDotProperties +
                         "' could not be loaded from servlet context (" + e +
@@ -159,8 +165,16 @@ public class MondrianProperties extends PropertiesPlus {
 			"oracle.jdbc.OracleDriver," +
 			"com.mysql.jdbc.Driver";
 
-	// mondrian.rolap properties
+	/** Retrieves the value of the {@link #ResultLimit} property,
+	 */
+	public int getResultLimit() {
+		return getIntProperty(ResultLimit, 0);
+	}
+	/** Property {@value}. */
+	public static final String ResultLimit = "mondrian.result.limit";
 
+	// mondrian.rolap properties
+	
 	/** Retrieves the value of the {@link #CachePoolCostLimit} property,
 	 * default value {@link #CachePoolCostLimit_Default}. */
 	public int getCachePoolCostLimit() {
