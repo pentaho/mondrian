@@ -15,7 +15,7 @@ public interface RefPackage extends RefBaseObject {
     public Collection refAllAssociations();
     public RefStruct refCreateStruct(RefObject struct, List params);
     public RefStruct refCreateStruct(String structName, List params);
-    public RefEnum refGetEnum(RefObject enum, String name);
+    public RefEnum refGetEnum(RefObject enum_, String name);
     public RefEnum refGetEnum(String enumName, String name);
     public void refDelete();
 }
