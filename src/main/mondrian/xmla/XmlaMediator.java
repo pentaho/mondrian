@@ -20,11 +20,11 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.StringReader;
-import java.util.Properties;
-import java.util.HashMap;
+import java.io.Writer;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Properties;
 
 /**
  * An <code>XmlaMediator</code> responds to XML for Analysis requests.
@@ -38,10 +38,10 @@ public class XmlaMediator {
 
     /**
      * Processes a request.
-     * @param request
-     * @param response
+     * @param request  XML request, for example, "<SOAP-ENV:Envelope ...>".
+     * @param response Destination for response
      */
-    public void process(String request, OutputStream response) {
+    public void process(String request, Writer response) {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder = null;
         try {

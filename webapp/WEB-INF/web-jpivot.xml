@@ -54,9 +54,19 @@ You must accept the terms of that agreement to use this software.
     </init-param>
   </servlet>
 
+  <servlet>
+    <servlet-name>MondrianXmlaServlet</servlet-name>
+    <servlet-class>mondrian.xmla.XmlaServlet</servlet-class>
+  </servlet>
+
   <servlet-mapping>
     <servlet-name>MDXQueryServlet</servlet-name>
     <url-pattern>/mdxquery</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>MondrianXmlaServlet</servlet-name>
+    <url-pattern>/xmla</url-pattern>
   </servlet-mapping>
 
   <welcome-file-list>

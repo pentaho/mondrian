@@ -17,6 +17,7 @@ import org.xml.sax.SAXException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Writer;
 
 import mondrian.xom.XMLUtil;
 import mondrian.xom.XOMUtil;
@@ -43,8 +44,29 @@ public class SAXWriter implements ContentHandler {
     /** After a burst of character data. */
     private static final int STATE_CHARACTERS = 3;
 
+    /**
+     * Creates a <code>SAXWriter</code> writing to an {@link OutputStream}.
+     */
     public SAXWriter(OutputStream stream) {
         this.pw = new PrintWriter(new OutputStreamWriter(stream));
+    }
+
+    /**
+     * Creates a <code>SAXWriter</code> writing to a {@link Writer}.
+     *
+     * <p>If <code>writer</code> is a {@link PrintWriter},
+     * {@link #SAXWriter(PrintWriter)} is preferred.
+     */
+    public SAXWriter(Writer writer) {
+        this.pw = new PrintWriter(writer);
+    }
+
+    /**
+     * Creates a <code>SAXWriter</code> writing to a {@link PrintWriter}.
+     * @param writer
+     */
+    public SAXWriter(PrintWriter writer) {
+        this.pw = writer;
     }
 
     public void setDocumentLocator(Locator locator) {

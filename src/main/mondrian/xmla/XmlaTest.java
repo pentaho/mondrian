@@ -13,8 +13,9 @@ package mondrian.xmla;
 
 import junit.framework.TestCase;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.StringWriter;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 /**
@@ -30,19 +31,55 @@ public class XmlaTest extends TestCase {
     //private static final String dataSource = "Provider=MSOLAP;Data Source=local;";
     private static final String dataSource = "Provider=Mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;Catalog=file:/E:/mondrian/demo/FoodMart.xml;JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver;";
     private static final String catalogName = "file:/E:/mondrian/demo/FoodMart.xml";
+    /**
+     * Usually null, when {@link #getRequests} sets it, {@link #executeRequest}
+     * writes request strings into it and returns null.
+     */
+    private ArrayList requestList;
 
     public XmlaTest(String s) {
         super(s);
     }
 
+    /**
+     * Executes a request and returns the result.
+     *
+     * <p>When called from {@link #getRequests}, {@link #requestList} is not
+     * null, and this method behaves very differently: it records the request
+     * and returns null.
+     */
     private String executeRequest(String request) {
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        new XmlaMediator().process(request, baos);
-        try {
-            baos.flush();
-        } catch (IOException e) {
+        if (requestList != null) {
+            requestList.add(request);
+            return null;
         }
-        return baos.toString();
+        final StringWriter sw = new StringWriter();
+        final XmlaMediator mediator = new XmlaMediator();
+        mediator.process(request, sw);
+        return sw.toString();
+    }
+
+    /**
+     * Returns a list of all requests in this test. (These requests are used
+     * in the sample web page, <code>xmlaTest.jsp</code>.)
+     */
+    public synchronized String[] getRequests() {
+        this.requestList = new ArrayList();
+        Method[] methods = getClass().getMethods();
+        for (int i = 0; i < methods.length; i++) {
+            Method method = methods[i];
+            if (method.getName().startsWith("test")) {
+                try {
+                    method.invoke(this, null);
+                } catch (Throwable e) {
+                    // ignore
+                }
+            }
+        }
+        final String[] requests = (String[])
+                requestList.toArray(new String[requestList.size()]);
+        this.requestList = null;
+        return requests;
     }
 
     private void assertRequestYields(String request, String expected) {
