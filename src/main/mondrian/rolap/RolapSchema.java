@@ -77,7 +77,7 @@ public class RolapSchema implements Schema
 	private static final int[] dimensionAllowed = new int[] {Access.NONE, Access.ALL};
 	private static final int[] hierarchyAllowed = new int[] {Access.NONE, Access.ALL, Access.CUSTOM};
 	private static final int[] memberAllowed = new int[] {Access.NONE, Access.ALL};
-
+	
 	/**
 	 * Creates a {@link RolapSchema}. Use
 	 * <code>RolapSchema.Pool.instance().get(catalogName)</code>.
@@ -313,7 +313,7 @@ public class RolapSchema implements Schema
 			// if a schema will be dynamically processed, caching is not possible
 			// a "http" URL schema is assumed to be dynamic and will not be cached either
 			String dynProc = connectInfo.get(RolapConnectionProperties.DynamicSchemaProcessor);
-			if ( (dynProc != null && dynProc.length() == 0) || catalogName.toLowerCase().startsWith("http")  ) {
+			if ( (dynProc != null && dynProc.length() > 0) || catalogName.toLowerCase().startsWith("http")  ) {
 				// no caching
 				return new RolapSchema(catalogName, connectInfo);
 			}
