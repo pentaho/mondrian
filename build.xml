@@ -76,18 +76,19 @@ ${lib.dir}/optional.jar,
 ${lib.dir}/xalan.jar,
 ${lib.dir}/xercesImpl.jar,
 ${lib.dir}/xml-apis.jar,
-${lib.dir}/commons-dbcp.jar,
-${lib.dir}/commons-pool.jar,
+${lib.dir}/commons-dbcp-1.1.jar,
+${lib.dir}/commons-pool-1.1.jar,
 ${testlib.dir}/junit.jar
 demo/mysql/FoodMartDropTables.sql,
 demo/mysql/FoodMartData.sql"/>
 
   <path id="project.classpath">
     <pathelement location="${classes.dir}"/>
-    <pathelement location="${lib.dir}/servlet.jar"/>
-    <pathelement location="${lib.dir}/commons-dbcp.jar"/>
+    <pathelement location="${lib.dir}/servlet-api.jar"/>
+    <pathelement location="${lib.dir}/jsp-api.jar"/>
+    <pathelement location="${lib.dir}/commons-dbcp-1.1.jar"/>
     <pathelement location="${lib.dir}/commons-collections.jar"/>
-    <pathelement location="${lib.dir}/commons-pool.jar"/>
+    <pathelement location="${lib.dir}/commons-pool-1.1.jar"/>
     <pathelement location="${lib.dir}/javacup.jar"/>
     <pathelement location="${lib.dir}/mof.jar"/>
     <pathelement location="${lib.dir}/jmi.jar"/>
@@ -332,12 +333,12 @@ copy.properties"/>
     <java classpathref="project.classpath" classname="mondrian.test.Main"
         fork="yes">
 
-      <sysproperty key="mondrian.jdbcDrivers"	value="${mondrian.jdbcDrivers}"/>
-      <sysproperty key="mondrian.test.foodmart.catalogURL"	value="${mondrian.foodmart.catalogURL}"/>
+      <sysproperty key="mondrian.jdbcDrivers"   value="${mondrian.jdbcDrivers}"/>
+      <sysproperty key="mondrian.test.foodmart.catalogURL"  value="${mondrian.foodmart.catalogURL}"/>
 
       <!-- mondrian.test.connectString is the mondrian connect-string.
            Provider must be 'mondrian'. Jdbc is the  Catalog is the  -->
-      <sysproperty key="mondrian.test.connectString"	value="Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}';JdbcUser='${mondrian.foodmart.jdbcUser}';JdbcPassword='${mondrian.foodmart.jdbcPassword}'"/>
+      <sysproperty key="mondrian.test.connectString"  value="Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}';JdbcUser='${mondrian.foodmart.jdbcUser}';JdbcPassword='${mondrian.foodmart.jdbcPassword}'"/>
 
     </java>
   </target>
@@ -380,11 +381,13 @@ in {mondrian.foodmart.jdbcURL}.">
     <java classpathref="project.test.classpath" classname="mondrian.test.Main"
         fork="yes">
 
-      <sysproperty key="mondrian.jdbcDrivers"     	value="${mondrian.jdbcDrivers}"/>
-      <sysproperty key="mondrian.foodmart.jdbcURL"	value="${mondrian.foodmart.jdbcURL}"/>
-      <sysproperty key="mondrian.test.foodmart.catalogURL"	value="${mondrian.foodmart.catalogURL}"/>
-
-      <sysproperty key="mondrian.test.connectString"	value="Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}'"/>
+      <sysproperty key="mondrian.jdbcDrivers"      value="${mondrian.jdbcDrivers}"/>
+      <sysproperty key="mondrian.foodmart.jdbcURL" value="${mondrian.foodmart.jdbcURL}"/>
+      <sysproperty key="mondrian.test.foodmart.catalogURL"  value="${mondrian.foodmart.catalogURL}"/>
+      <sysproperty key="mondrian.test.connectString"  value="Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}'"/>
+      <!-- tests require en_US locale -->
+      <sysproperty key="user.language" value="en"/>
+      <sysproperty key="user.region" value="US"/>
 
     </java>
   </target>
@@ -395,9 +398,9 @@ in {mondrian.foodmart.jdbcURL}.">
         <classpath>
             <path refid="project.test.classpath"/>
         </classpath>
-        <sysproperty key="mondrian.jdbcDrivers"     		value="${mondrian.jdbcDrivers}"/>
-        <sysproperty key="mondrian.test.connectString"		value="Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}'"/>
-        <sysproperty key="mondrian.test.foodmart.catalogURL"	value="${mondrian.foodmart.catalogURL}"/>
+        <sysproperty key="mondrian.jdbcDrivers"          value="${mondrian.jdbcDrivers}"/>
+        <sysproperty key="mondrian.test.connectString"      value="Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}'"/>
+        <sysproperty key="mondrian.test.foodmart.catalogURL"   value="${mondrian.foodmart.catalogURL}"/>
 
         <formatter type="xml" />
 
@@ -667,7 +670,7 @@ build mondrian.war as in the runtime environment.">
         <copy todir="${lib.dir}">
           <fileset dir="${ant.home}/lib" includes="ant.jar,optional.jar"/>
           <fileset dir="${xalan.home}/bin" includes="xalan.jar,xml-apis.jar,xercesImpl.jar"/>
-          <fileset dir="${catalina.home}/common/lib" includes="commons-dbcp.jar,commons-pool.jar,commons-collections.jar"/>
+          <fileset dir="${catalina.home}/common/lib" includes="commons-dbcp-1.1.jar,commons-pool-1.1.jar,commons-collections.jar,servlet-api.jar,jsp-api.jar"/>
         </copy>
         <copy todir="${testlib.dir}">
           <fileset dir="${junit.home}" includes="junit.jar"/>
@@ -683,15 +686,15 @@ build mondrian.war as in the runtime environment.">
         <extension id="commons-dbcp.ext" extensionName="org.apache.commons.dbcp"/>
         <jarlib-resolve property="commons-dbcp.library" failOnError="false" checkExtension="false">
             <extension refid="commons-dbcp.ext"/>
-            <location location="${lib.dir}/commons-dbcp.jar"/>
-            <url url="http://gump.covalent.net/jars/latest/jakarta-commons/commons-dbcp.jar" destfile="${lib.dir}/commons-dbcp.jar"/>
+            <location location="${lib.dir}/commons-dbcp-1.1.jar"/>
+            <url url="http://gump.covalent.net/jars/latest/jakarta-commons/commons-dbcp.jar" destfile="${lib.dir}/commons-dbcp-1.1.jar"/>
         </jarlib-resolve>
 
         <extension id="commons-pool.ext" extensionName="org.apache.commons.pool"/>
         <jarlib-resolve property="commons-pool.library" failOnError="false" checkExtension="false">
             <extension refid="commons-pool.ext"/>
-            <location location="${lib.dir}/commons-pool.jar"/>
-            <url url="http://gump.covalent.net/jars/latest/jakarta-commons/commons-pool.jar" destfile="${lib.dir}/commons-pool.jar"/>
+            <location location="${lib.dir}/commons-pool-1.1.jar"/>
+            <url url="http://gump.covalent.net/jars/latest/jakarta-commons/commons-pool.jar" destfile="${lib.dir}/commons-pool-1.1.jar"/>
         </jarlib-resolve>
 
         <extension id="commons-collections.ext" extensionName="org.apache.commons.collections"/>
@@ -738,18 +741,18 @@ Assumes that mondrian.jar exists (use 'jar' target)">
         update="yes"
         webxml="${lib.dir}/web.xml">
       <webinf dir="${webapp.dir}/WEB-INF" excludes="web.xml"/>
-	  <!-- our FoodMart.xml may be newer than jpivot's -->
+     <!-- our FoodMart.xml may be newer than jpivot's -->
       <webinf dir="${demo.dir}" prefix="WEB-INF/queries" includes="FoodMart.xml"/>
       <fileset dir="${webapp.dir}" excludes="WEB-INF/**/*"/>
-	  <!-- should already contain javacup.jar, xalan.jar, junit.jar -->
+     <!-- should already contain javacup.jar, xalan.jar, junit.jar -->
       <lib dir="${lib.dir}" includes="
 ${name}.jar,
 ant.jar,
 jmi.jar,
 mof.jar,
 optional.jar,
-commons-pool.jar,
-commons-dbcp.jar,
+commons-pool-1.1.jar,
+commons-dbcp-1.1.jar,
 " excludes="
 javacup.jar,
 xalan.jar,

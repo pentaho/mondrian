@@ -22,14 +22,14 @@
 @set PATH=%JAVA_HOME%/bin;%PATH%
 
 @if exist "%ANT_HOME%" goto antHomeOk
-@set ANT_HOME=%HOME_DRIVE%:\apache-ant-1.6.0
+@set ANT_HOME=%HOME_DRIVE%:\apache-ant-1.6.1
 @if exist "%ANT_HOME%" goto antHomeOk
 @echo ANT_HOME (%ANT_HOME%) does not exist
 @goto end
 :antHomeOk
 
 @if exist "%XALAN_HOME%" goto xalanHomeOk
-@set XALAN_HOME=%HOME_DRIVE%:/xalan-j_2_4_1
+@set XALAN_HOME=%HOME_DRIVE%:/xalan-j_2_6_0
 @if exist "%XALAN_HOME%" goto xalanHomeOk
 @echo XALAN_HOME (%XALAN_HOME%) does not exist
 @goto end
@@ -43,7 +43,7 @@
 :junitHomeOk
 
 @if exist "%CATALINA_HOME%" goto catalinaHomeOk
-@set CATALINA_HOME=%HOME_DRIVE%:\jakarta-tomcat-4.1.24
+@set CATALINA_HOME=%HOME_DRIVE%:/jakarta-tomcat-5.0.25
 @if exist "%CATALINA_HOME%" goto catalinaHomeOk
 @echo CATALINA_HOME (%CATALINA_HOME%) does not exist
 @goto end
