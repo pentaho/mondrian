@@ -11,6 +11,9 @@
 */
 
 package mondrian.rolap.agg;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -24,6 +27,7 @@ import mondrian.olap.Util;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.cache.CachePool;
 import mondrian.rolap.cache.SoftCacheableReference;
+import mondrian.rolap.sql.SqlQuery;
 
 /**
  * A <code>Aggregation</code> is a pre-computed aggregation over a set of
@@ -72,11 +76,31 @@ public class Aggregation
 	RolapStar.Column[] columns;
 	/** List of soft references to segments. **/
 	List segmentRefs;
+	boolean oracle = false;
 
 	Aggregation(RolapStar star, RolapStar.Column[] columns) {
 		this.star = star;
 		this.columns = columns;
 		this.segmentRefs = Collections.synchronizedList(new ArrayList());
+
+		// find out if this is an oracle DB
+		Connection con = null;
+		try {
+			con = star.getJdbcConnection();
+			DatabaseMetaData md = con.getMetaData();
+			SqlQuery sqlQuery = new SqlQuery(md);
+			this.oracle = sqlQuery.isOracle();
+		} catch (SQLException e) {
+			throw Util.newInternal(e, "could not query Metadata");
+		} finally {
+			if (con != null) {
+				try {
+					con.close();
+				} catch (SQLException e) {
+					// ignore
+				}
+			}
+		}
 	}
 
 	/**
@@ -115,6 +139,7 @@ public class Aggregation
 	{
 		Util.assertTrue(constraintses.length == columns.length);
 		Object[][] newConstraintses = (Object[][]) constraintses.clone();
+
 		// build a list of constraints sorted by 'bloat factor'
 		ConstraintComparator comparator = new ConstraintComparator(
 			constraintses);
@@ -129,6 +154,20 @@ public class Aggregation
 		// doubles and is greater than 100
 		double originalCellCount = cellCount,
 			maxCellCount = originalCellCount * 2 + 10;
+
+		// Oracle can only handle up to 1000 elements inside an IN(..) clause
+		if (oracle) {
+			final int MAXLEN = 1000;
+			for (int i = 0; i < newConstraintses.length; i++) {
+				Object[] arr = newConstraintses[i];
+				if (arr != null && arr.length > MAXLEN) {
+					double bloat = comparator.getBloat(i);
+					cellCount *= bloat;
+					newConstraintses[i] = null;
+				}
+			}
+		}
+		
 		for (int i = 0; i < indexes.length; i++) {
 			int j = indexes[i].intValue();
 			double bloat = comparator.getBloat(j);
