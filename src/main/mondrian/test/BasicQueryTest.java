@@ -469,6 +469,9 @@ public class BasicQueryTest extends FoodMartTestCase {
 				" {[Product].Children} on rows" + nl +
 				"from Sales");
 		String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL(false);
+    // the following replacement is for databases in ANSI mode 
+    //  using '"' to quote identifiers
+    sql = sql.replace('"', '`');
 		assertEquals("select `time_by_day`.`the_year` as `Year`," +
                 " `product_class`.`product_family` as `Product Family`," +
                 " `sales_fact_1997`.`unit_sales` as `Unit Sales` " +
@@ -502,6 +505,9 @@ public class BasicQueryTest extends FoodMartTestCase {
 		} else {
 			fname_plus_lname = " fname + ' ' + lname as `Name`,";
 		}
+    // the following replacement is for databases in ANSI mode 
+    //  using '"' to quote identifiers
+    sql = sql.replace('"', '`');
 		assertEquals("select `store`.`store_name` as `Store Name`," +
                 " `store`.`store_city` as `Store City`," +
                 " `store`.`store_state` as `Store State`," +
