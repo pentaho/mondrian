@@ -166,6 +166,7 @@ public class RolapSchema implements Schema
 				}
 			}
 		}
+		role.makeImmutable();
 		return role;
 	}
 

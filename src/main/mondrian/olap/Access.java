@@ -25,7 +25,7 @@ public class Access extends EnumeratedValues {
 	private Access() {
 		super(
 				new String[] {
-					"none", "custom", "all dimensions", "all",
+					"none", "custom", "all_dimensions", "all",
 				},
 				new int[] {
 					NONE, CUSTOM, ALL_DIMENSIONS, ALL,
