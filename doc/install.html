@@ -190,18 +190,19 @@ It has been tested against Oracle, Postgres, MySQL and Microsoft Access.</p>
 
 <h4>Examples</h4>
 
-<p>Create FoodMart tables for MySQL from the test dataset in the SQL
+<p>On Linux, create FoodMart tables for MySQL from the test dataset in the SQL
 scripts:</p>
 
 <blockquote>
-  <p><code>$ java -cp '/mondrian/lib/mondrian.jar' mondrian.test.loader.MondrianFoodMartLoader<br>&nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes -jdbcDrivers=com.mysql.jdbc.Driver<br>&nbsp;&nbsp;&nbsp;&nbsp; -inputfile=/mondrian/demo/FoodMartCreateData.sql <br>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL=jdbc:mysql://localhost/foodmart?user=root&amp;password=myAdmin</code><br>
+  <p><code>$ java -cp '/mondrian/lib/mondrian.jar:/mondrian/lib/log4j-1.2.9.jar' mondrian.test.loader.MondrianFoodMartLoader<br>&nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes -jdbcDrivers=com.mysql.jdbc.Driver<br>&nbsp;&nbsp;&nbsp;&nbsp; -inputfile=/mondrian/demo/FoodMartCreateData.sql <br>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL=jdbc:mysql://localhost/foodmart?user=root&amp;password=myAdmin</code><br>
 	</p>
 </blockquote>
-<p>Create FoodMart tables for PostgreSQL from the test dataset in the
-Access
-database:</p>
+
+<p>On Windows, create FoodMart tables for PostgreSQL from the test dataset in
+the Access database:</p>
+
 <blockquote>
-  <p><code>$ java -cp 'mondrian/lib/mondrian.jar' mondrian.test.loader.MondrianFoodMartLoader<br>
+  <p><code>$ java -cp 'C:\mondrian\lib\mondrian.jar;C:\mondrian\lib\log4j-1.2.9.jar' mondrian.test.loader.MondrianFoodMartLoader<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes -jdbcDrivers=org.postgresql.Driver,sun.jdbc.odbc.JdbcOdbcDriver<br>
 &nbsp;&nbsp;&nbsp;&nbsp;
      -inputJdbcURL=jdbc:odbc:MondrianFoodMart<br>

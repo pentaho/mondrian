@@ -295,7 +295,7 @@ in {mondrian.foodmart.jdbcURL}.">
         fork="yes">
 
       <sysproperty key="log4j.configuration" 
-        value="file://${project.location}/log4j.properties"/>
+          value="log4j.properties"/>
       <sysproperty key="mondrian.jdbcDrivers"
           value="${mondrian.jdbcDrivers}"/>
       <sysproperty key="mondrian.foodmart.jdbcURL"
