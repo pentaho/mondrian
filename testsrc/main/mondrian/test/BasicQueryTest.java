@@ -4232,14 +4232,14 @@ public class BasicQueryTest extends FoodMartTestCase {
         final Cube salesCube = schema.lookupCube("Sales", true);
         schema.createDimension(
                 salesCube,
-                "<Dimension name=\"Gender2\" foreignKey=\"customer_id\">" + nl +
+                "<Dimension name=\"Gender3\" foreignKey=\"customer_id\">" + nl +
                 "  <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\"" + nl + 
                 " allMemberCaption=\"Frauen und Maenner\" primaryKey=\"customer_id\">" + nl +
                 "  <Table name=\"customer\"/>" + nl +
                 "    <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>" +nl +
                 "  </Hierarchy>" + nl +
                 "</Dimension>");
-        String mdx = "select {[Gender2].[All Gender]} on columns from Sales";
+        String mdx = "select {[Gender3].[All Gender]} on columns from Sales";
         Result result = TestContext.instance().executeFoodMart(mdx);
         Axis axis0 = result.getAxes()[0];
         Position pos0 = axis0.positions[0];
