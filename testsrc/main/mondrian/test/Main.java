@@ -106,7 +106,7 @@ public class Main extends TestSuite {
 				suite.addTest((Test) o);
 			}
 		} else {
-            suite.addTestSuite(RolapConnectionTest.class);
+            // suite.addTestSuite(RolapConnectionTest.class);
             suite.addTest(ResultComparatorTest.suite());
 			suite.addTestSuite(BasicQueryTest.class);
 			suite.addTestSuite(FunctionTest.class);

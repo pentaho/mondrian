@@ -65,7 +65,7 @@ class RolapStoredMeasure extends RolapMeasure
 	public CellFormatter getFormatter(){
 		return formatter;
 	}
-	void setFormatter(CellFormatter formatter){
+	public void setFormatter(CellFormatter formatter){
 		this.formatter = formatter;
 	}
 }

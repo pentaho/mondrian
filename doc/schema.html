@@ -42,6 +42,8 @@
   <li><a href="#Advanced_physical_constructs">Advanced physical constructs</a><ol>
     <li><a href="#Member_readers">Member readers</a></li>
     <li><a href="#Cell_readers">Cell readers</a></li>
+    <li><a href="#Cell_formatter">Cell formatter</a></li>
+    <li><a href="#Member_formatter">Member formatter</a></li>
   </ol>
   </li>
   <li><a href="#Access_control">Access-control</a><ol>
@@ -56,38 +58,38 @@
   <li><a href="#Appendix_A_XML_elements">Appendix A: XML elements</a></li>
 </ol>
 <h2><a name="What_is_a_schema">What is a schema?</a></h2>
-<p>A schema defines a multi-dimensional database. It contains a logical model, 
-consisting of cubes, hierarchies, and members, and a mapping of this model onto 
+<p>A schema defines a multi-dimensional database. It contains a logical model,
+consisting of cubes, hierarchies, and members, and a mapping of this model onto
 a physical model.</p>
-<p>The logical model consists of the constructs used to write queries in MDX 
+<p>The logical model consists of the constructs used to write queries in MDX
 language: cubes, dimensions, hierarchies, levels, and members.</p>
-<p>The physical model is the source of the data which is presented through the 
-logical model. It is typically a star schema, which is a set of tables in a 
+<p>The physical model is the source of the data which is presented through the
+logical model. It is typically a star schema, which is a set of tables in a
 relational database; later, we shall see examples of other kinds of mappings.</p>
 <h2><a name="Schema_files">Schema files</a></h2>
-<p>Mondrian schemas are represented in an XML file. An example schema, 
+<p>Mondrian schemas are represented in an XML file. An example schema,
 containing almost all of the constructs we discuss here, is supplied as <code>
-<a href="../demo/FoodMart.xml">demo/FoodMart.xml</a></code>. The dataset to populate this schema is available as a 
+<a href="../demo/FoodMart.xml">demo/FoodMart.xml</a></code>. The dataset to populate this schema is available as a
 mondrian data distribution, <code>mondrian-data.zip</code>, from
 <a href="http://sourceforge.net/projects/mondrian">SourceForge.net</a>.</p>
-<p>Currently, the only way to create a schema is to edit a schema XML file in a 
-text editor. The XML syntax is not too complicated, so this is not as difficult 
-as it sounds, particularly if you use the FoodMart schema as a guiding example. 
-We are also developing a graphical workbench (written in Swing) to create and modify 
+<p>Currently, the only way to create a schema is to edit a schema XML file in a
+text editor. The XML syntax is not too complicated, so this is not as difficult
+as it sounds, particularly if you use the FoodMart schema as a guiding example.
+We are also developing a graphical workbench (written in Swing) to create and modify
 schemas.</p>
 <h2><a name="Cubes_and_dimensions">Logical model</a></h2>
-<p>The most important components of a schema are cubes, measures, and 
+<p>The most important components of a schema are cubes, measures, and
 dimensions:</p>
 <ul>
-  <li>A <dfn><font face="Verdana">cube</font></dfn> is a collection of 
+  <li>A <dfn><font face="Verdana">cube</font></dfn> is a collection of
   dimensions and measures in a particular subject area. </li>
-  <li>A <dfn><font face="Verdana">measure</font></dfn> is a quantity that you are 
-interested in measuring, for example, unit sales of a product, or cost price of 
+  <li>A <dfn><font face="Verdana">measure</font></dfn> is a quantity that you are
+interested in measuring, for example, unit sales of a product, or cost price of
 inventory items.</li>
-  <li>A <dfn><font face="Verdana">dimension</font></dfn> is an attribute, or set of 
-attributes, by which you can divide measures into sub-categories. For example, 
-you might wish to break down product sales by their color, the gender of the 
-customer, and the store in which the product was sold; color, gender, and store 
+  <li>A <dfn><font face="Verdana">dimension</font></dfn> is an attribute, or set of
+attributes, by which you can divide measures into sub-categories. For example,
+you might wish to break down product sales by their color, the gender of the
+customer, and the store in which the product was sold; color, gender, and store
 are all dimensions.</li>
 </ul>
 <p>Let's look at the XML definition of a simple schema.</p>
@@ -116,11 +118,11 @@ are all dimensions.</li>
         aggregator=&quot;sum&quot; formatString=&quot;#,###&quot;/&gt;
     &lt;<a href="#XML_Measure">Measure</a> name=&quot;Store Sales&quot; column=&quot;store_sales&quot;
         aggregator=&quot;sum&quot; formatString=&quot;#,###.##&quot;/&gt;
-  &lt;/<a href="#XML_Cube">Cube</a>&gt;  
+  &lt;/<a href="#XML_Cube">Cube</a>&gt;
 &lt;/<a href="#XML_Schema">Schema</a>&gt;</pre>
 </blockquote>
-<p>This schema contains a single cube, called &quot;Sales&quot;. The Sales cube has two 
-dimensions, &quot;Time&quot;, and &quot;Gender&quot;, and two measures, &quot;Unit Sales&quot; and &quot;Store 
+<p>This schema contains a single cube, called &quot;Sales&quot;. The Sales cube has two
+dimensions, &quot;Time&quot;, and &quot;Gender&quot;, and two measures, &quot;Unit Sales&quot; and &quot;Store
 Sales&quot;.</p>
 <p>We can write an MDX query on this schema:</p>
 <blockquote>
@@ -129,8 +131,8 @@ Sales&quot;.</p>
 from [Sales]<br>
 where [Gender].[F]</p>
 </blockquote>
-<p>This query refers to the Sales cube (<code>[Sales]</code>), each of the 
-dimensions <code>[Measures]</code>, <code>[Time]</code>, <code>[Gender</code>], 
+<p>This query refers to the Sales cube (<code>[Sales]</code>), each of the
+dimensions <code>[Measures]</code>, <code>[Time]</code>, <code>[Gender</code>],
 and various members of those dimensions. The results are as follows:</p>
 <blockquote>
   <table border="2" cellpadding="2" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" id="AutoNumber1">
@@ -163,10 +165,10 @@ and various members of those dimensions. The results are as follows:</p>
 </blockquote>
 <p>Now let's look at the schema definition in more detail.</p>
 <h3>Cube</h3>
-<p>A cube (see <code><a href="#XML_Cube">&lt;Cube&gt;</a></code>) is little more than 
-a named collection of measures and dimensions. The one thing the measures and 
-dimensions have in common is the fact table, here <code>&quot;sales_fact_1997&quot;</code>. 
-As we shall see, the fact table holds the columns from which measures are 
+<p>A cube (see <code><a href="#XML_Cube">&lt;Cube&gt;</a></code>) is little more than
+a named collection of measures and dimensions. The one thing the measures and
+dimensions have in common is the fact table, here <code>&quot;sales_fact_1997&quot;</code>.
+As we shall see, the fact table holds the columns from which measures are
 calculated, and contains references to the tables which hold the dimensions.</p>
 <blockquote>
   <pre>&lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot;&gt;
@@ -174,14 +176,14 @@ calculated, and contains references to the tables which hold the dimensions.</p>
   ...
 &lt;/<a href="#XML_Cube">Cube</a>&gt;</pre>
 </blockquote>
-<p>The fact table is defined using the <a href="#XML_Table">&lt;Table&gt;</a> element. 
-If the fact table is not in the default schema, you can provide an explicit 
+<p>The fact table is defined using the <a href="#XML_Table">&lt;Table&gt;</a> element.
+If the fact table is not in the default schema, you can provide an explicit
 schema using the &quot;schema&quot; attribute, for example</p>
 <blockquote>
   <pre>&lt;<a href="#XML_Table">Table</a> schema=&quot;foodmart&quot; name=&quot;sales_fact_1997&quot;/&gt;</pre>
 </blockquote>
 <p>You can also use the <code><a href="#XML_View">&lt;View&gt;</a></code> and <code>
-<a href="#XML_Join">&lt;Join&gt;</a></code> constructs to build more complicated SQL 
+<a href="#XML_Join">&lt;Join&gt;</a></code> constructs to build more complicated SQL
 statements.</p>
 <h3>Measures</h3>
 <p>The Sales cube defines two measures, &quot;Unit Sales&quot; and &quot;Store Sales&quot;.</p>
@@ -191,18 +193,26 @@ statements.</p>
 &lt;<a href="#XML_Measure">Measure</a> name=&quot;Store Sales&quot; column=&quot;store_sales&quot;
     aggregator=&quot;sum&quot; formatString=&quot;#,###.00&quot;/&gt;</pre>
 </blockquote>
-<p dir="ltr">Each measure (see <a href="#XML_Measure">&lt;Measure&gt;</a>) has a name, 
+<p dir="ltr">Each measure (see <a href="#XML_Measure">&lt;Measure&gt;</a>) has a name,
 a column in the fact table, and an aggregation function (usually &quot;sum&quot;).</p>
-<p dir="ltr">An optional <code>formatString</code> specifies how the value is to 
-be printed. Here, we have chosen to output unit sales with no decimal places 
-(since it is an integer), and store sales with two decimal places (since it is a 
-currency value). The ',' and '.' symbols are locale-sensitive, so if you were 
-running in Italian, store sales might appear as &quot;48.123,45&quot;. You can achieve 
+
+<p dir="ltr">An optional <code>formatString</code> specifies how the value is to
+be printed. Here, we have chosen to output unit sales with no decimal places
+(since it is an integer), and store sales with two decimal places (since it is a
+currency value). The ',' and '.' symbols are locale-sensitive, so if you were
+running in Italian, store sales might appear as &quot;48.123,45&quot;. You can achieve
 even more wild effects using <a href="#Format_strings">advanced format strings</a>.</p>
+<p dir="ltr">A measure can have a caption attribute to be returned by getCaption() instead of the name.
+Defining a specific caption does make sense if special letters (e.g. &#931; or &#928;) are to be displayed.</p>
+<blockquote>
+  <pre>&lt;<a href="#XML_Measure">Measure</a> name=&quot;Sum X&quot; column=&quot;sum_x&quot; aggregator=&quot;sum&quot; caption=&quot;&amp;#931; X&quot;/&gt;
+</blockquote>
 <p dir="ltr">Rather than coming from a column, a measure can use a
 <a href="#Cell_readers">cell reader</a>.</p>
-<h3>Dimensions</h3>
-<p>The Gender dimension consists of a single hierarchy, which has just one 
+<p dir="ltr">In order to provide a specific formatting of the cell values, a measure can use a
+<a href="#Cell_formatter">cell formatter</a>.</p>
+<h3>Dimensions, Hierarchies, Levels</h3>
+<p>The Gender dimension consists of a single hierarchy, which has just one
 level.</p>
 <blockquote>
   <pre>&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Gender&quot; foreignKey=&quot;customer_id&quot;&gt;
@@ -212,11 +222,11 @@ level.</p>
   &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;
 &lt;/<a href="#XML_Dimension">Dimension</a>&gt;</pre>
 </blockquote>
-<p>For any given sale, the gender dimension is the gender of the customer who 
-made that purchase. This is expressed by joining from the fact table 
+<p>For any given sale, the gender dimension is the gender of the customer who
+made that purchase. This is expressed by joining from the fact table
 &quot;sales_fact_1997.customer_id&quot; to the dimension table &quot;customer.customer_id&quot;</p>
-<p>The &quot;gender&quot; column contains two values, 'F' and 'M', so the Gender dimension 
-contains the member, <code>[Gender].[F]</code> and <code>[Gender].[M]</code>. Because <code>hasAll=&quot;true&quot;</code>, the system generates a special 'all' 
+<p>The &quot;gender&quot; column contains two values, 'F' and 'M', so the Gender dimension
+contains the member, <code>[Gender].[F]</code> and <code>[Gender].[M]</code>. Because <code>hasAll=&quot;true&quot;</code>, the system generates a special 'all'
 level, containing a single member called <code>[All Genders]</code>.</p>
 <p>A dimension can contain more than one hierarchy:</p>
 <blockquote>
@@ -241,15 +251,15 @@ level, containing a single member called <code>[All Genders]</code>.</p>
   &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;
 &lt;/<a href="#XML_Dimension">Dimension</a>&gt;</pre>
 </blockquote>
-<p>Notice that the first hierarchy doesn't have a name. By default, a hierarchy 
+<p>Notice that the first hierarchy doesn't have a name. By default, a hierarchy
 has the same name as its dimension, so the first hierarchy is called &quot;Time&quot;.</p>
-<p>These hierarchies don't have much in common -- they don't even have the same 
+<p>These hierarchies don't have much in common -- they don't even have the same
 table! -- except that they are joined from the same column in the fact table,
-<code>&quot;time_id&quot;</code>. The main reason to put two hierarchies in the same 
-dimension is because it makes more sense to the end-user: end-users know that it 
-makes no sense to have the &quot;Time&quot; hierarchy on one axis and the &quot;Time Weekly&quot; 
-hierarchy on another axis. If two hierarchies are the same dimension, the MDX 
-language enforces common sense, and does not allow you to use them both in the 
+<code>&quot;time_id&quot;</code>. The main reason to put two hierarchies in the same
+dimension is because it makes more sense to the end-user: end-users know that it
+makes no sense to have the &quot;Time&quot; hierarchy on one axis and the &quot;Time Weekly&quot;
+hierarchy on another axis. If two hierarchies are the same dimension, the MDX
+language enforces common sense, and does not allow you to use them both in the
 same query.</p>
 <p>A dimension can live in the fact table:</p>
 <blockquote>
@@ -266,82 +276,100 @@ same query.</p>
 <p>Each dimension contains a single hierarchy, which is made up of levels</p>
 <p>Some more definitions:</p>
 <ul>
-  <li>A <dfn><font face="Verdana">member</font></dfn> is a point within a dimension 
-determined by a particular set of attribute values. The gender hierarchy has 
-the two members 'M' and 'F'. 'San Francisco', 'California' and 'USA' are all 
+  <li>A <dfn><font face="Verdana">member</font></dfn> is a point within a dimension
+determined by a particular set of attribute values. The gender hierarchy has
+the two members 'M' and 'F'. 'San Francisco', 'California' and 'USA' are all
 members of the store hierarchy.</li>
-  <li>A <dfn><font face="Verdana">hierarchy</font></dfn> is a set of related 
-attributes (or <dfn><font face="Verdana">levels</font></dfn>) which collectively 
-form a dimension. For example, the store hierarchy consists of the store name, 
-city, state, and nation. The hierarchy allows you form intermediate sub-totals: 
-the sub-total for a state is the sum of the sub-totals of all of the cities in 
-that state, each of which is the sum of the sub-totals of the stores in that 
+  <li>A <dfn><font face="Verdana">hierarchy</font></dfn> is a set of related
+attributes (or <dfn><font face="Verdana">levels</font></dfn>) which collectively
+form a dimension. For example, the store hierarchy consists of the store name,
+city, state, and nation. The hierarchy allows you form intermediate sub-totals:
+the sub-total for a state is the sum of the sub-totals of all of the cities in
+that state, each of which is the sum of the sub-totals of the stores in that
 city.</li>
 </ul>
-<p>For reasons of uniformity, measures are treated as members of a special 
+<p>For reasons of uniformity, measures are treated as members of a special
 dimension, called Measures.</p>
-<p>Most dimensions have just one hierarchy, but occasionally a dimension has 
-more than one. For example, you might wish to aggregate days from the Time 
-dimension into months, quarters, and years; or into weeks and years. Both 
-hierarchies start off with days and end with years, but aggregate using 
+<p>Most dimensions have just one hierarchy, but occasionally a dimension has
+more than one. For example, you might wish to aggregate days from the Time
+dimension into months, quarters, and years; or into weeks and years. Both
+hierarchies start off with days and end with years, but aggregate using
 different paths.</p>
-<p>Most hierarchies have an <dfn><font face="Verdana">all-member</font></dfn>, 
-which is parent of all other members of the hierarchy, and thus represents a 
-grand total. It is typically named 'All <i>something</i>', for example, 'All 
+<p>Most hierarchies have an <dfn><font face="Verdana">all-member</font></dfn>,
+which is parent of all other members of the hierarchy, and thus represents a
+grand total. It is typically named 'All <i>something</i>', for example, 'All
 stores'.</p>
+<p><a href="#Member_properties">Member properties</a> can be assigned to a level's members. The property values are retrieved
+ by <code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/Member.html#getPropertyValue(java.lang.String)">getPropertyValue()</a></code>
+ or as String by <code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/Member.html#getPropertyFormattedValue(java.lang.String)">getPropertyFormattedValue()</a></code>.
+ A formatter class can be defined, which would be used by <code>getPropertyFormattedValue()</code>.</p>
+<blockquote>
+  <pre>
+    &lt;<a href="#XML_Level">Level</a> name=&quot;MyLevel&quot; column=&quot;LevelColumn&quot; uniqueMembers=&quot;true&quot;/&gt;
+      &lt;Property name=&quot;MyProp&quot; column=&quot;PropColumn&quot; formatter=&quot;com.foo.MyPropertyFormatter&quot;/&gt;
+    &lt;Level/&gt;
+ </pre>
+</blockquote>
+<p>The class &quot;com.foo.MyPropertyFormatter&quot; would have to implement <code>
+<a href="http://mondrian.sourceforge.net/api/mondrian/olap/PropertyFormatter.html">
+interface mondrian.olap.PropertyFormatter</a></code>.</p>
+
+<p>A member's value to be displayed by getCaption() can be formatted by a
+<a href="#Member_formatter">member formatter</a>.</p>
+
 <h2><a name="Star_schemas">Star and snowflake schemas</a></h2>
-<p>We saw earlier how to build a cube based upon a fact table, and dimensions in 
-the fact table (&quot;Payment method&quot;) and in a table joined to the fact table 
+<p>We saw earlier how to build a cube based upon a fact table, and dimensions in
+the fact table (&quot;Payment method&quot;) and in a table joined to the fact table
 (&quot;Gender&quot;). This is the most common kind of mapping, and is known as a <dfn>
 <font face="Verdana">star schema</font></dfn>.</p>
-<p>But a dimension can be based upon more than one table, provided that there is 
-a well-defined path to join these tables to the fact table. This kind of 
-dimension is known as a snowflake, and is defined using the <code>&lt;Join&gt;</code> 
+<p>But a dimension can be based upon more than one table, provided that there is
+a well-defined path to join these tables to the fact table. This kind of
+dimension is known as a snowflake, and is defined using the <code>&lt;Join&gt;</code>
 operator. For example:</p>
 <blockquote>
   <pre>&lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot;&gt;
   ...
   &lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Product&quot; foreignKey=&quot;product_id&quot;&gt;
     &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; primaryKey=&quot;product_id&quot; primaryKeyTable=&quot;product&quot;&gt;
-      &lt;Join leftKey=&quot;product_class_id&quot; rightAlias=&quot;product_class&quot; rightKey=&quot;product_class_id&quot;&gt; 
-        &lt;<a href="#XML_Table">Table</a> name=&quot;product&quot;/&gt; 
-        &lt;Join leftKey=&quot;product_type_id&quot; rightKey=&quot;product_type_id&quot;&gt; 
-          &lt;<a href="#XML_Table">Table</a> name=&quot;product_class&quot;/&gt; 
-          &lt;<a href="#XML_Table">Table</a> name=&quot;product_type&quot;/&gt; 
-        &lt;/Join&gt; 
+      &lt;Join leftKey=&quot;product_class_id&quot; rightAlias=&quot;product_class&quot; rightKey=&quot;product_class_id&quot;&gt;
+        &lt;<a href="#XML_Table">Table</a> name=&quot;product&quot;/&gt;
+        &lt;Join leftKey=&quot;product_type_id&quot; rightKey=&quot;product_type_id&quot;&gt;
+          &lt;<a href="#XML_Table">Table</a> name=&quot;product_class&quot;/&gt;
+          &lt;<a href="#XML_Table">Table</a> name=&quot;product_type&quot;/&gt;
+        &lt;/Join&gt;
       &lt;/Join&gt;
       ...
     &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;
   &lt;/<a href="#XML_Dimension">Dimension</a>&gt;
 &lt;/<a href="#XML_Cube">Cube</a>&gt;</pre>
 </blockquote>
-<p>This defines a <code>&quot;Product&quot;</code> dimension consisting of three tables. 
-The fact table joins to <code>&quot;product&quot;</code> (via the foreign key <code>&quot;product_id&quot;</code>), 
-which joins to <code>&quot;product_class&quot;</code> (via the foreign key <code>&quot;product_class_id&quot;</code>), 
-which joins to <code>&quot;product_type&quot;</code> (via the foreign key <code>&quot;product_type_id&quot;</code>). 
-We require a <code>&lt;Join&gt;</code> element nested within a <code>&lt;Join&gt;</code> 
-element because <code>&lt;Join&gt;</code> takes two operands; the operands can be 
+<p>This defines a <code>&quot;Product&quot;</code> dimension consisting of three tables.
+The fact table joins to <code>&quot;product&quot;</code> (via the foreign key <code>&quot;product_id&quot;</code>),
+which joins to <code>&quot;product_class&quot;</code> (via the foreign key <code>&quot;product_class_id&quot;</code>),
+which joins to <code>&quot;product_type&quot;</code> (via the foreign key <code>&quot;product_type_id&quot;</code>).
+We require a <code>&lt;Join&gt;</code> element nested within a <code>&lt;Join&gt;</code>
+element because <code>&lt;Join&gt;</code> takes two operands; the operands can be
 tables, joins, or even queries.</p>
-<p>The arrangement of the tables seems complex, the simple rule of thumb is to 
-order the tables by the number of rows they contain. The <code>&quot;product&quot;</code> 
+<p>The arrangement of the tables seems complex, the simple rule of thumb is to
+order the tables by the number of rows they contain. The <code>&quot;product&quot;</code>
 table has the most rows, so it joins to the fact table and appears first; <code>
-&quot;product_class&quot;</code> has fewer rows, and <code>&quot;product_type&quot;</code>, at the 
+&quot;product_class&quot;</code> has fewer rows, and <code>&quot;product_type&quot;</code>, at the
 tip of the snowflake, has least of all.</p>
-<p>Note that the outer <code>&lt;Join&gt;</code> element has a <code>rightAlias</code> 
+<p>Note that the outer <code>&lt;Join&gt;</code> element has a <code>rightAlias</code>
 attribute. This is necessary because the right component of the join (the inner
-<code>&lt;Join&gt;</code> element) consists of more than one table. No <code>leftAlias</code> 
-attribute is necessary in this case, because the leftKey column unambiguously 
+<code>&lt;Join&gt;</code> element) consists of more than one table. No <code>leftAlias</code>
+attribute is necessary in this case, because the leftKey column unambiguously
 comes from the <code>&quot;product&quot;</code> table.</p>
 <h3><a name="Shared_dimensions">Shared dimensions</a></h3>
-<p>When generating the SQL for a join, mondrian needs to know which column to 
-join to. If you are joining to a join, then you need to tell it which of the 
-tables in the join that column belongs to (usually it will be the first table in 
+<p>When generating the SQL for a join, mondrian needs to know which column to
+join to. If you are joining to a join, then you need to tell it which of the
+tables in the join that column belongs to (usually it will be the first table in
 the join).</p>
-<p>Because shared dimensions don't belong to a cube, you have to give them an 
-explicit table (or other data source). When you use them in a particular cube, 
-you specify the foreign key. This example shows the <code>Store Type</code> 
+<p>Because shared dimensions don't belong to a cube, you have to give them an
+explicit table (or other data source). When you use them in a particular cube,
+you specify the foreign key. This example shows the <code>Store Type</code>
 dimension being joined to the <code>Sales</code> cube using the <code>
-sales_fact_1997.store_id</code> foreign key, and to the <code>Warehouse</code> 
+sales_fact_1997.store_id</code> foreign key, and to the <code>Warehouse</code>
 cube using the <code>warehouse.warehouse_store_id</code> foreign key:</p>
 <blockquote>
   <pre>&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Store Type&quot;&gt;
@@ -355,7 +383,7 @@ cube using the <code>warehouse.warehouse_store_id</code> foreign key:</p>
   &lt;<a href="#XML_Table">Table</a> name=&quot;sales_fact_1997&quot;/&gt;
   ...
   &lt;<a href="#XML_DimensionUsage">DimensionUsage</a> name=&quot;Store Type&quot; source=&quot;Store Type&quot; foreignKey=&quot;store_id&quot;/&gt;
-&lt;/<a href="#XML_Cube">Cube</a>&gt;  
+&lt;/<a href="#XML_Cube">Cube</a>&gt;
 
 &lt;<a href="#XML_Cube">Cube</a> name=&quot;Warehouse&quot;&gt;
   &lt;<a href="#XML_Table">Table</a> name=&quot;warehouse&quot;/&gt;
@@ -364,18 +392,18 @@ cube using the <code>warehouse.warehouse_store_id</code> foreign key:</p>
 &lt;/<a href="#XML_Cube">Cube</a>&gt;</pre>
 </blockquote>
 <h3><a name="Join_optimization">Join optimization</a></h3>
-<p>The table mapping in the schema tells Mondrian how to get the data, but 
-Mondrian is smart enough not to read the schema literally. It applies a number 
+<p>The table mapping in the schema tells Mondrian how to get the data, but
+Mondrian is smart enough not to read the schema literally. It applies a number
 of optimizations when generating queries:</p>
 <ul>
-  <li>If a dimension has a small number of members, Mondrian reads it into a 
+  <li>If a dimension has a small number of members, Mondrian reads it into a
   cache on first use. See the
   <a href="http://mondrian.sourceforge.net/api/mondrian/olap/MondrianProperties.html#getLargeDimensionThreshold()">
   mondrian.rolap.LargeDimensionThreshold</a> property.</li>
-  <li>If a dimension (or, more precisely, the level of the dimension being 
+  <li>If a dimension (or, more precisely, the level of the dimension being
   accessed) is in the fact table, Mondrian does not perform a join.</li>
-  <li>If two dimensions access the same table via the same join path, Mondrian 
-  only joins them once. For example, <code>[Gender]</code> and <code>[Age]</code> 
+  <li>If two dimensions access the same table via the same join path, Mondrian
+  only joins them once. For example, <code>[Gender]</code> and <code>[Age]</code>
   might both be columns in the <code>customers</code> table, joined via <code>
   sales_1997.cust_id = customers.cust_id</code>.</li>
 </ul>
@@ -383,20 +411,20 @@ of optimizations when generating queries:</p>
 <h3><a name="Virtual_cubes">Virtual cubes</a></h3>
 <p>Defined by the <code><a href="#XML_VirtualCube">&lt;VirtualCube&gt;</a></code> element. (To be continued...)</p>
 <h3><a name="Parent_child_hierarchies">Parent-child hierarchies</a></h3>
-<p>A conventional hierarchy has a rigid set of levels, and members which adhere 
-to those levels. For example, in the <code>Product</code> hierarchy, any member of the 
-<code>Product Name</code> level has a parent in the <code>Brand Name</code> level, which has a parent in 
-the <code>Product Subcategory</code> level, and so forth. This structure is 
+<p>A conventional hierarchy has a rigid set of levels, and members which adhere
+to those levels. For example, in the <code>Product</code> hierarchy, any member of the
+<code>Product Name</code> level has a parent in the <code>Brand Name</code> level, which has a parent in
+the <code>Product Subcategory</code> level, and so forth. This structure is
 sometimes too rigid to model real-world data.</p>
-<p>A <dfn><font face="Verdana">parent-child hierarchy</font></dfn> has only one level (not counting the special 'all' 
-level), but any member can have parents in the same level. A classic example is 
+<p>A <dfn><font face="Verdana">parent-child hierarchy</font></dfn> has only one level (not counting the special 'all'
+level), but any member can have parents in the same level. A classic example is
 the reporting structure in the <code>Employees</code> hierarchy:</p>
 <blockquote>
   <pre>&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Employees&quot; foreignKey=&quot;employee_id&quot;&gt;
   &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All Employees&quot; primaryKey=&quot;employee_id&quot;&gt;
     &lt;<a href="#XML_Table">Table</a> name=&quot;employee&quot;/&gt;
     &lt;<a href="#XML_Level">Level</a> name=&quot;Employee Id&quot; uniqueMembers=&quot;true&quot; type=&quot;Numeric&quot;
-        column=&quot;employee_id&quot; nameColumn=&quot;full_name&quot; 
+        column=&quot;employee_id&quot; nameColumn=&quot;full_name&quot;
         parentColumn=&quot;supervisor_id&quot; nullParentValue=&quot;0&quot;&gt;
       &lt;<a href="#XML_Property">Property</a> name=&quot;Marital Status&quot; column=&quot;marital_status&quot;/&gt;
       &lt;<a href="#XML_Property">Property</a> name=&quot;Position Title&quot; column=&quot;position_title&quot;/&gt;
@@ -411,22 +439,22 @@ the reporting structure in the <code>Employees</code> hierarchy:</p>
 <p>The important attributes here are <code>parentColumn</code> and <code>
 nullParentValue</code>:</p>
 <ul>
-  <li>The <code>parentColumn</code> attribute is the name of the column which 
-  links a member to its parent member; in this case, it is the foreign key 
-  column which points to an employee's supervisor. The <code>&lt;ParentExpression&gt;</code> 
-  child element of <code>&lt;Level&gt;</code> is equivalent to the <code>parentColumn</code> 
+  <li>The <code>parentColumn</code> attribute is the name of the column which
+  links a member to its parent member; in this case, it is the foreign key
+  column which points to an employee's supervisor. The <code>&lt;ParentExpression&gt;</code>
+  child element of <code>&lt;Level&gt;</code> is equivalent to the <code>parentColumn</code>
   attribute, but allows you to define an arbitrary SQL expression, just like the
   <code>&lt;Expression&gt;</code> element. The <code>parentColumn</code> attribute (or
-  <code>&lt;ParentExpression&gt;</code> element) is the only indication to Mondrian 
+  <code>&lt;ParentExpression&gt;</code> element) is the only indication to Mondrian
   that a hierarchy has a parent-child structure.</li>
-  <li>The <code>nullParentValue</code> attribute is the value which indicates 
-  that a member has no parent. The default is <code>nullParentValue=&quot;null&quot;</code>, 
-  but since many database don't index null values, schema designers sometimes 
+  <li>The <code>nullParentValue</code> attribute is the value which indicates
+  that a member has no parent. The default is <code>nullParentValue=&quot;null&quot;</code>,
+  but since many database don't index null values, schema designers sometimes
   use values as the empty string, 0, and -1 instead.</li>
 </ul>
 <h3><a name="Member_properties">Member properties</a></h3>
-<p>Member properties are defined by the <code><a href="#XML_Property">&lt;Property&gt;</a></code> 
-element. You use them via the <code><i>member</i>.Properties(&quot;<i>propertyName</i>&quot;)</code> 
+<p>Member properties are defined by the <code><a href="#XML_Property">&lt;Property&gt;</a></code>
+element. You use them via the <code><i>member</i>.Properties(&quot;<i>propertyName</i>&quot;)</code>
 function, for example:</p>
 <blockquote>
   <pre>SELECT {[Store Sales]} ON COLUMNS,
@@ -435,48 +463,48 @@ function, for example:</p>
              10, [Store Sales]) ON ROWS
 FROM [Sales]</pre>
 </blockquote>
-<p>Mondrian deduces the type of the property expression, if it can. If the 
-property name is a constant string, the type is based upon the type attribute 
-(&quot;String&quot;, &quot;Numeric&quot; or &quot;Boolean&quot;) of the property definition. If the property 
-name is an expression (for example <code>CurrentMember.Properties(&quot;Store &quot; + 
+<p>Mondrian deduces the type of the property expression, if it can. If the
+property name is a constant string, the type is based upon the type attribute
+(&quot;String&quot;, &quot;Numeric&quot; or &quot;Boolean&quot;) of the property definition. If the property
+name is an expression (for example <code>CurrentMember.Properties(&quot;Store &quot; +
 &quot;Type&quot;)</code>), Mondrian will return an untyped value.</p>
 <h2><a name="Advanced_physical_constructs">Advanced physical constructs</a></h2>
 <h3><a name="Member_readers">Member readers</a></h3>
-<p>A <dfn><font face="Verdana">member reader</font></dfn> is a means of 
-accessing members. Hierarchies are usually based upon a dimension table (an 
-'arm' of a star schema), and are therefore populated using SQL. But even if your 
-data doesn't reside in an RDBMS, you can make it appear as a hierarchy by 
+<p>A <dfn><font face="Verdana">member reader</font></dfn> is a means of
+accessing members. Hierarchies are usually based upon a dimension table (an
+'arm' of a star schema), and are therefore populated using SQL. But even if your
+data doesn't reside in an RDBMS, you can make it appear as a hierarchy by
 writing a Java class called a <dfn><font face="Verdana">custom member reader</font></dfn>.</p>
 <p>Here are a couple of examples:</p>
 <ol>
-  <li><code>DateSource</code> (to be written) generates a time hierarchy. 
-  Conventionally, data warehouse implementors generate a table containing a row 
-  for every date their system is ever likely to deal with. But the problem is 
-  that this table needs to be loaded, and as time goes by, they will have to 
-  remember to add more rows. DateSource generates date members in memory, and on 
+  <li><code>DateSource</code> (to be written) generates a time hierarchy.
+  Conventionally, data warehouse implementors generate a table containing a row
+  for every date their system is ever likely to deal with. But the problem is
+  that this table needs to be loaded, and as time goes by, they will have to
+  remember to add more rows. DateSource generates date members in memory, and on
   demand.</li>
-  <li><code>FileSystemSource</code> (to be written) presents the file system as 
-  a hierarchy of directories and files. Since a directory can have a parent 
-  which is itself a directory, it is a parent-child hierarchy. Like the time 
-  hierarchy created by DateSource, this is a virtual hierarchy: the member for a 
-  particular file is only created when, and if, that file's parent directory is 
+  <li><code>FileSystemSource</code> (to be written) presents the file system as
+  a hierarchy of directories and files. Since a directory can have a parent
+  which is itself a directory, it is a parent-child hierarchy. Like the time
+  hierarchy created by DateSource, this is a virtual hierarchy: the member for a
+  particular file is only created when, and if, that file's parent directory is
   expanded.</li>
-  <li><code>ExpressionMemberReader</code> (to be written) creates a hierarchy 
+  <li><code>ExpressionMemberReader</code> (to be written) creates a hierarchy
   based upon an expression.</li>
 </ol>
-<p>A custom member reader must implement 
-<a href="http://mondrian.sourceforge.net/api/mondrian/rolap/MemberSource.html">interface 
-mondrian.rolap.MemberSource</a>. If you need to implement a larger set of member 
+<p>A custom member reader must implement
+<a href="http://mondrian.sourceforge.net/api/mondrian/rolap/MemberSource.html">interface
+mondrian.rolap.MemberSource</a>. If you need to implement a larger set of member
 operations for fine-grained control, implement the derived
 <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/MemberReader.html">
-interface mondrian.rolap.MemberReader</a>; otherwise, Mondrian wrap your reader 
-in a 
-<a href="http://mondrian.sourceforge.net/api/mondrian/rolap/MemberSource.html">mondrian.rolap.CacheMemberReader</a>. 
-Your member reader must have a 
-public constructor which takes <code>(<a href="http://mondrian.sourceforge.net/api/mondrian/rolap/RolapHierarchy.html">Hierarchy</a>,<a href="http://java.sun.com/j2se/1.4/docs/api/java/util/Properties.html">Properties</a>)</code> 
+interface mondrian.rolap.MemberReader</a>; otherwise, Mondrian wrap your reader
+in a
+<a href="http://mondrian.sourceforge.net/api/mondrian/rolap/MemberSource.html">mondrian.rolap.CacheMemberReader</a>.
+Your member reader must have a
+public constructor which takes <code>(<a href="http://mondrian.sourceforge.net/api/mondrian/rolap/RolapHierarchy.html">Hierarchy</a>,<a href="http://java.sun.com/j2se/1.4/docs/api/java/util/Properties.html">Properties</a>)</code>
 parameters, and throws no checked exceptions.</p>
 <p>Member readers are declared using the <code><a href="#XML_Hierarchy">&lt;Hierarchy&gt;</a></code> element's
-<code>memberReaderClass</code> attribute; any <code><a href="#XML_Parameter">&lt;Parameter&gt;</a></code> child 
+<code>memberReaderClass</code> attribute; any <code><a href="#XML_Parameter">&lt;Parameter&gt;</a></code> child
 elements are passed via the <code>properties</code> constructor parameter. Here is an example:</p>
 <blockquote>
   <pre>&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Has bought dairy&quot;&gt;
@@ -497,16 +525,40 @@ elements are passed via the <code>properties</code> constructor parameter. Here 
 <a href="http://mondrian.sourceforge.net/api/mondrian/olap/CellReader.html">
 interface mondrian.olap.CellReader</a></code>.</p>
 
+<h3><a name="Cell_formatter">Cell formatter</a></h3>
+<p dir="ltr">A cell formatter attribute demotes a java class to format the cell value
+being displayed by
+<code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/Cell.html#getFormattedValue()">getFormattedValue()</a></code>.</p>
+<blockquote>
+  <pre dir="ltr">&lt;<a href="#XML_Measure">Measure</a> name=&quot;name&quot; formatter=&quot;com.foo.MyCellFormatter&quot;&gt;</pre>
+</blockquote>
+<p>The class &quot;com.foo.MyCellFormatter&quot; would have to implement <code>
+<a href="http://mondrian.sourceforge.net/api/mondrian/olap/CellFormatter.html">
+interface mondrian.olap.CellFormatter</a></code>.</p>
+
+<h3><a name="Member_formatter">Member formatter</a></h3>
+<p>A member formatter attribute demotes a java class to format a member's display value
+returned by <code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/Member.html#getCaption()">getCaption()</a></code>.</p>
+<Level column="BUCHDAT" name="Buchungsdatum" uniqueMembers="false" formatter="com.tonbeller.bii.gwg.mondrian.MFBuchdat"/>
+<blockquote>
+  <pre dir="ltr">&lt;<a href="#XML_Level">Level</a> column=&quot;column&quot; name=&quot;name&quot; formatter=&quot;com.foo.MyMemberFormatter&quot;&gt;</pre>
+</blockquote>
+
+<p>The class &quot;com.foo.MyMemberFormatter&quot; would have to implement <code>
+<a href="http://mondrian.sourceforge.net/api/mondrian/olap/MemberFormatter.html">
+interface mondrian.olap.MemberFormatter</a></code>.</p>
+
+
 <h2><a name="Access_control">Access-control</a></h2>
 
-<p>You've got all this great data, but you don't everyone to be able to read all 
-of it. You can define an access-control profile, called a Role, as part of the 
+<p>You've got all this great data, but you don't everyone to be able to read all
+of it. You can define an access-control profile, called a Role, as part of the
 schema, and set this role when establishing a connection.</p>
 
 <h3><a name="Defining_roles">Defining a role</a></h3>
 
-<p>Roles are defined by <code><a href="#XML_Role">&lt;Role&gt;</a></code> elements, 
-which occur as direct children of the <code><a href="#XML_Schema">&lt;Schema&gt;</a></code> 
+<p>Roles are defined by <code><a href="#XML_Role">&lt;Role&gt;</a></code> elements,
+which occur as direct children of the <code><a href="#XML_Schema">&lt;Schema&gt;</a></code>
 element, after the last <code><a href="#XML_Cube">&lt;Cube&gt;</a></code>. Here is an example of a role:</p>
 
 <blockquote>
@@ -527,76 +579,76 @@ element, after the last <code><a href="#XML_Cube">&lt;Cube&gt;</a></code>. Here 
 &lt;/<a href="#XML_Role">Role</a>&gt;</pre>
 </blockquote>
 
-<p>A <code><a href="#XML_SchemaGrant">&lt;SchemaGrant&gt;</a></code> defines the default access for 
-objects in a schema. The <code>access</code> attribute can be &quot;all&quot; or &quot;none&quot;; 
-this access can be overridden for specific objects. In this case, because 
-<code>access=&quot;none&quot;</code>, a user would only be able to browse the &quot;Sales&quot; cube, 
+<p>A <code><a href="#XML_SchemaGrant">&lt;SchemaGrant&gt;</a></code> defines the default access for
+objects in a schema. The <code>access</code> attribute can be &quot;all&quot; or &quot;none&quot;;
+this access can be overridden for specific objects. In this case, because
+<code>access=&quot;none&quot;</code>, a user would only be able to browse the &quot;Sales&quot; cube,
 because it is explicitly granted.</p>
 
-<p>A <code><a href="#XML_CubeGrant">&lt;CubeGrant&gt;</a></code> defines the access to 
-a particular cube. As for <code><a href="#XML_SchemaGrant">&lt;SchemaGrant&gt;</a></code>, the access attribute can be &quot;all&quot; or &quot;none&quot;, and can 
+<p>A <code><a href="#XML_CubeGrant">&lt;CubeGrant&gt;</a></code> defines the access to
+a particular cube. As for <code><a href="#XML_SchemaGrant">&lt;SchemaGrant&gt;</a></code>, the access attribute can be &quot;all&quot; or &quot;none&quot;, and can
 be overridden for specific sub-objects in the cube.</p>
 
-<p>A <code><a href="#XML_HierarchyGrant">&lt;HierarchyGrant&gt;</a></code> defines 
-access to a hierarchy. The access attribute can be &quot;all&quot;, meaning all members 
-are visible; &quot;none&quot;, meaning the hierarchy's very existence is hidden from the 
-user; and &quot;custom&quot;. With custom access, you can use the <code>topLevel</code> 
-attribute to define the top level which is visible (preventing users from seeing 
+<p>A <code><a href="#XML_HierarchyGrant">&lt;HierarchyGrant&gt;</a></code> defines
+access to a hierarchy. The access attribute can be &quot;all&quot;, meaning all members
+are visible; &quot;none&quot;, meaning the hierarchy's very existence is hidden from the
+user; and &quot;custom&quot;. With custom access, you can use the <code>topLevel</code>
+attribute to define the top level which is visible (preventing users from seeing
 too much of the 'big picture', such as viewing revenues rolled up to the <code>
-Store Country</code> level); or use the <code>bottomLevel</code> attribute to 
-define the bottom level which is visible (here, preventing users from invading 
-looking at individual customers' details); or control which sets of members the 
-user can see, by defining nested <a href="#XML_MemberGrant">&lt;MemberGrant&gt;</a> 
+Store Country</code> level); or use the <code>bottomLevel</code> attribute to
+define the bottom level which is visible (here, preventing users from invading
+looking at individual customers' details); or control which sets of members the
+user can see, by defining nested <a href="#XML_MemberGrant">&lt;MemberGrant&gt;</a>
 elements.</p>
 
-<p>You can only define a <code><a href="#XML_MemberGrant">&lt;MemberGrant&gt;</a></code> 
-element if its enclosing <code><a href="#XML_HierarchyGrant">&lt;HierarchyGrant&gt;</a></code> 
-has <code>access=&quot;custom&quot;</code>. Member grants give (or remove) access to a 
+<p>You can only define a <code><a href="#XML_MemberGrant">&lt;MemberGrant&gt;</a></code>
+element if its enclosing <code><a href="#XML_HierarchyGrant">&lt;HierarchyGrant&gt;</a></code>
+has <code>access=&quot;custom&quot;</code>. Member grants give (or remove) access to a
 given member, and all of its children. Here are the rules:</p>
 
 <ol>
-  <li><b>Members inherit access from their parents</b>. If you deny access to 
+  <li><b>Members inherit access from their parents</b>. If you deny access to
   California, you won't be able to see San Francisco.</li>
-  <li><b>Grants are order-dependent</b>. If you grant access to USA, then deny 
-  access to Oregon, then you won't be able to see Oregon, or Portland. But if 
-  you were to deny access to Oregon, then grant access to USA, you can 
+  <li><b>Grants are order-dependent</b>. If you grant access to USA, then deny
+  access to Oregon, then you won't be able to see Oregon, or Portland. But if
+  you were to deny access to Oregon, then grant access to USA, you can
   effectively see everything.</li>
-  <li><b>A member is visible if any of its children are visible</b>. Suppose you 
-  deny access to USA, then grant access to California. You will be able to see 
-  USA, and California, but none of the other states. The totals against USA will 
+  <li><b>A member is visible if any of its children are visible</b>. Suppose you
+  deny access to USA, then grant access to California. You will be able to see
+  USA, and California, but none of the other states. The totals against USA will
   still reflect all states, however.</li>
-  <li><b>Member grants don't override the hierarchy grant's top- and 
-  bottom-levels</b>. If you set <code>topLevel=&quot;[Store].[Store State]&quot;</code>, 
+  <li><b>Member grants don't override the hierarchy grant's top- and
+  bottom-levels</b>. If you set <code>topLevel=&quot;[Store].[Store State]&quot;</code>,
   and grant access to California, you won't be able to see USA.</li>
 </ol>
 
-<p>In the example, the user will have access to California, and all of the 
-cities in California except Los Angeles. They will be able to see USA (because 
-its child, California, is visible), but no other nations, and not All Stores 
+<p>In the example, the user will have access to California, and all of the
+cities in California except Los Angeles. They will be able to see USA (because
+its child, California, is visible), but no other nations, and not All Stores
 (because it is above the top level, <code>Store Country</code>).</p>
 
 <h3><a name="Setting_a_connections_role">Setting a connection's role</a></h3>
 
-<p>A role only has effect when it is associated with a connection. By default, 
-connections have a role which gives them access to every 
+<p>A role only has effect when it is associated with a connection. By default,
+connections have a role which gives them access to every
 cube in that connection's schema. </p>
 
-<p>Most databases associate roles (or 'groups') with users, and automatically 
-assign them when users log in. However, Mondrian doesn't have the notion of 
-users, so you have to establish the role in a different way. There are two ways 
+<p>Most databases associate roles (or 'groups') with users, and automatically
+assign them when users log in. However, Mondrian doesn't have the notion of
+users, so you have to establish the role in a different way. There are two ways
 of doing this:</p>
 
 <ol>
-  <li><b>In the connect string</b>. If you specify the <code>Role</code> keyword 
+  <li><b>In the connect string</b>. If you specify the <code>Role</code> keyword
   in the connect string, the connection will adopt that role. See
   <a href="http://mondrian.sourceforge.net/api/mondrian/olap/DriverManager.html">
   class DriverManager</a> for examples of connect string syntax.</li>
-  <li><b>Programmatically</b>. Once your application has established a 
+  <li><b>Programmatically</b>. Once your application has established a
   connection, call the method
   <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Connection.html#setRole(mondrian.olap.Role)">
   Connection.setRole(Role)</a>. You can create a Role programmatically (see
-  <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Role.html">class 
-  Role</a> for more details), or look 
+  <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Role.html">class
+  Role</a> for more details), or look
   one up using the method
   <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Schema.html#lookupRole(java.lang.String)">
   Schema.lookupRole(String)</a>.</li>
@@ -607,14 +659,14 @@ of doing this:</p>
 <h3 dir="ltr"><a name="Format_strings">Format strings</a></h3>
 
 <p dir="ltr">Format strings use Visual Basic formatting syntax, see
-<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Format.html">class 
+<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Format.html">class
 mondrian.olap.Format</a> for more details. </p>
 
-<p dir="ltr">A measure's format string is usually a fixed string, but it really 
-an expression, which is evaluated in the same context as the cell. You can 
+<p dir="ltr">A measure's format string is usually a fixed string, but it really
+an expression, which is evaluated in the same context as the cell. You can
 therefore change the formatting of a cell depending upon the cell's value.</p>
 
-<p dir="ltr"><i>todo</i>: example of expression format string to do 
+<p dir="ltr"><i>todo</i>: example of expression format string to do
 traffic-lighting</p>
 
 <h2><a name="Appendix_A_XML_elements">Appendix A: XML elements</a></h2>
@@ -637,7 +689,7 @@ traffic-lighting</p>
   </tr>
   <tr>
     <td><code>&lt;<a name="XML_VirtualCube" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#VirtualCube">VirtualCube</a>&gt;</code></td>
-    <td>A cube defined by combining the dimensions and measures of one or more 
+    <td>A cube defined by combining the dimensions and measures of one or more
     cubes.</td>
   </tr>
   <tr>
@@ -673,7 +725,7 @@ traffic-lighting</p>
   </tr>
   <tr>
     <td><code>&lt;<a name="XML_View" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#View">View</a>&gt;</code></td>
-    <td>Defines a 'table' using a SQL query, which can have 
+    <td>Defines a 'table' using a SQL query, which can have
     different variants for different underlying databases.</td>
   </tr>
   <tr>
@@ -736,6 +788,6 @@ traffic-lighting</p>
     </td>
   </tr>
 </table>
-  
+
 </body>
 </html>

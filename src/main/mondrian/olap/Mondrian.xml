@@ -213,8 +213,6 @@ todo:
                 YTD, QTD, <i>etc.</i>). Use a <dfn>standard</dfn> dimension
                 if the dimension is not a time-related dimension. The default
                 value is <code>"Standard"</code>.
-                <p>Note that any dimension named "Time" or "Zeit" is
-                automatically a time dimension.</p>
             </Doc>
             <Value>StandardDimension</Value>
             <Value>TimeDimension</Value>
@@ -229,7 +227,7 @@ todo:
             // Return the dimension's enumerated type.
             public DimensionType getDimensionType() {
                 if (type == null) {
-                    return DimensionType.StandardDimension;
+                    return null; //DimensionType.StandardDimension;
                 } else {
                     return (DimensionType) DimensionType.enumeration.getValue(type);
                 }
@@ -509,6 +507,11 @@ todo:
 			<Doc>
 				Name of a formatter class for the appropriate cell beeing displayed.
 				The class must implement the mondrian.olap.CellFormatter interface.
+			</Doc>
+		</Attribute>
+		<Attribute name="caption" required="false">
+			<Doc>
+				A string beeing displayed instead of the name.
 			</Doc>
 		</Attribute>
 	</Element>

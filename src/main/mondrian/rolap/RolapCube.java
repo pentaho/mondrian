@@ -86,7 +86,12 @@ class RolapCube extends CubeBase
 					e.printStackTrace();
 				}
 			}
-			
+	
+			if (xmlMeasure.caption != null && xmlMeasure.caption.length() > 0) {
+				// there is a special caption string
+				measures[i].setProperty("$caption", xmlMeasure.caption);
+			}
+				
 		}
 		this.measuresHierarchy.memberReader = new CacheMemberReader(
 				new MeasureMemberSource(measuresHierarchy, measures));
