@@ -319,7 +319,12 @@ todo:
 			</Doc>
 		</Attribute>
 		<Attribute name="type" default="String">
-			<Doc>todo:</Doc>
+			<Doc>
+				Indicates the type of this level's key column: String or
+				Numeric. When generating SQL statements, Mondrian
+				encloses values for String columns in quotation marks,
+				but leaves values for Numeric columns un-quoted.
+			</Doc>
 			<Value>String</Value>
 			<Value>Numeric</Value>
 		</Attribute>
@@ -329,6 +334,38 @@ todo:
 				example, zipcodes are unique across all states. The
 				first level's members are always unique.
 			</Doc>
+		</Attribute>
+		<Attribute name="levelType" required="false" default="Regular">
+			<Doc>
+				Whether this is a regular or a time-related level. 
+				The value makes a difference to time-related functions
+				such as YTD (year-to-date).
+			</Doc>
+			<Value>Regular</Value>
+			<Value>TimeYears</Value>
+			<Value>TimeQuarters</Value>
+			<Value>TimeMonths</Value>
+			<Value>TimeWeeks</Value>
+			<Value>TimeDays</Value>
+		</Attribute>
+		<Attribute name="hideMemberIf" default="Never">
+			<Doc>
+				Condition which determines whether a member of this level
+				is hidden. If a hierarchy has one or more levels with hidden
+				members, then it is possible that not all leaf members are the
+				same distance from the root, and it is termed a <dfn>ragged
+				hierarchy</dfn>.
+
+				<p>Allowable values are:
+				<code>Never</code> (a member always appears; the default);
+				<code>IfBlankName</code> (a member doesn't appear if its name
+				is null or empty); and
+				<code>IfParentsName</code> (a member appears unless its name
+				matches the parent's.</p>
+			</Doc>
+			<Value>Never</Value>
+			<Value>IfBlankName</Value>
+			<Value>IfParentsName</Value>
 		</Attribute>
 		<Object name="keyExp" type="KeyExpression" required="false">
 			<Doc>

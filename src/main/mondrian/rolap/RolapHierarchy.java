@@ -46,7 +46,7 @@ class RolapHierarchy extends HierarchyBase
 	String foreignKey;
 	private Exp aggregateChildrenExpression;
 
-	RolapHierarchy(RolapDimension dimension, String subName, boolean hasAll)
+    RolapHierarchy(RolapDimension dimension, String subName, boolean hasAll)
 	{
 		this.dimension = dimension;
 		this.subName = subName;
@@ -85,7 +85,11 @@ class RolapHierarchy extends HierarchyBase
 			}
 			this.levels = new RolapLevel[xmlHierarchy.levels.length + 1];
 			this.levels[0] = new RolapLevel(
-					this, 0, "(All)", null, null, null, null, new RolapProperty[0], RolapLevel.ALL | RolapLevel.UNIQUE);
+					this, 0, "(All)", null, null, null, null,
+                    RolapProperty.emptyArray,
+                    RolapLevel.ALL | RolapLevel.UNIQUE,
+                    RolapLevel.HideMemberCondition.Never,
+                    LevelType.Regular);
 			for (int i = 0; i < xmlHierarchy.levels.length; i++) {
 				final MondrianDef.Level xmlLevel = xmlHierarchy.levels[i];
 				if (xmlLevel.getKeyExp() == null &&
@@ -146,7 +150,8 @@ class RolapHierarchy extends HierarchyBase
 	RolapLevel newLevel(String name, int flags) {
 		RolapLevel level = new RolapLevel(
 				this, this.levels.length, name, null, null,
-				null, null, new RolapProperty[0], flags);
+				null, null, RolapProperty.emptyArray, flags,
+                RolapLevel.HideMemberCondition.Never, LevelType.Regular);
 		this.levels = (RolapLevel[]) RolapUtil.addElement(this.levels, level);
 		return level;
 	}
@@ -372,10 +377,13 @@ class RolapHierarchy extends HierarchyBase
  */
 class RolapNullMember extends RolapMember {
 	RolapNullMember(RolapHierarchy hierarchy) {
-		super(
-			null, (RolapLevel) hierarchy.getLevels()[0], null, "#Null");
-		this.memberType = NULL_MEMBER_TYPE;
+		super(null, (RolapLevel) hierarchy.getLevels()[0], null, "#Null",
+            NULL_MEMBER_TYPE);
 	}
+
+    public boolean isNull() {
+        return true;
+    }
 }
 
 // End RolapHierarchy.java

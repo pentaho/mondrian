@@ -63,7 +63,7 @@ public interface Member extends OlapElement, Comparable {
 	int getMemberType();
 
 	static final int UNKNOWN_MEMBER_TYPE = 0;
-	static final int REGULAR_MEMBER_TYPE = 1;
+	static final int REGULAR_MEMBER_TYPE = 1; // adMemberRegular
 	static final int ALL_MEMBER_TYPE = 2;
 	static final int MEASURE_MEMBER_TYPE = 3;
 	static final int FORMULA_MEMBER_TYPE = 4;
@@ -133,6 +133,12 @@ public interface Member extends OlapElement, Comparable {
 	 * Returns the ordinal of the member.
 	 */
 	int getOrdinal();
+
+    /**
+     * Returns whether this member is 'hidden', as per the rules which define
+     * a ragged hierarchy.
+     */
+    boolean isHidden();
 }
 
 // End Member.java

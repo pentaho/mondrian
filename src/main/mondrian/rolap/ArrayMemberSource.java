@@ -12,6 +12,7 @@
 
 package mondrian.rolap;
 import mondrian.olap.Util;
+import mondrian.olap.Member;
 
 import java.util.ArrayList;
 import java.util.Properties;
@@ -100,8 +101,8 @@ class HasBoughtDairySource extends ArrayMemberSource
 			RolapMember root = null;
 			RolapLevel level = (RolapLevel) hierarchy.getLevels()[0];
 			if (hierarchy.hasAll()) {
-				root = new RolapMember(
-					null, level, null, hierarchy.getAllMemberName());
+				root = new RolapMember(null, level, null,
+                        hierarchy.getAllMemberName(), Member.ALL_MEMBER_TYPE);
 				root.ordinal = ordinal++;
 				list.add(root);
 				level = (RolapLevel) hierarchy.getLevels()[1];

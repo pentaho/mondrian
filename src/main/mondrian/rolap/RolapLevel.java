@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2003 Kana Software, Inc. and others.
+// Copyright (C) 2001-2004 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -44,21 +44,30 @@ class RolapLevel extends LevelBase
 	final MondrianDef.Expression parentExp;
 	/** Value which indicates a null parent in a parent-child hierarchy. */
 	String nullParentValue;
-	private static final RolapProperty[] emptyPropertyArray = new RolapProperty[0];
+    /** Condition under which members are hidden. */
+    private final HideMemberCondition hideMemberCondition;
 
-	/**
+    /**
 	 * Creates a level.
 	 *
 	 * @pre parentExp != null || nullParentValue == null
 	 * @pre properties != null
+     * @pre levelType != null
+     * @pre hideMemberCondition != null
 	 */
 	RolapLevel(
 			RolapHierarchy hierarchy, int depth, String name,
 			MondrianDef.Expression keyExp,
 			MondrianDef.Expression ordinalExp,
 			MondrianDef.Expression parentExp, String nullParentValue,
-			RolapProperty[] properties, int flags) {
-		Util.assertPrecondition(properties != null);
+			RolapProperty[] properties,
+            int flags,
+            HideMemberCondition hideMemberCondition,
+            LevelType levelType) {
+        Util.assertPrecondition(properties != null, "properties != null");
+        Util.assertPrecondition(hideMemberCondition != null,
+                "hideMemberCondition != null");
+        Util.assertPrecondition(levelType != null, "levelType != null");
 		this.hierarchy = hierarchy;
 		this.name = name;
 		this.uniqueName = Util.makeFqName(hierarchy, name);
@@ -84,7 +93,8 @@ class RolapLevel extends LevelBase
 			Util.assertTrue(unique, "Parent-child level '" + this + "' must have uniqueMembers=\"true\"");
 		}
 		this.nullParentValue = nullParentValue;
-		Util.assertPrecondition(parentExp != null || nullParentValue == null, "parentExp != null || nullParentValue == null");
+		Util.assertPrecondition(parentExp != null || nullParentValue == null,
+                "parentExp != null || nullParentValue == null");
 		for (int i = 0; i < properties.length; i++) {
 			RolapProperty property = properties[i];
 			if (property.exp instanceof MondrianDef.Column) {
@@ -112,17 +122,20 @@ class RolapLevel extends LevelBase
 			}
 		}
 		this.inheritedProperties = (RolapProperty[]) list.toArray(
-				emptyPropertyArray);
-		this.levelType = Level.STANDARD;
+				RolapProperty.emptyArray);
+        this.levelType = levelType;
 		if (hierarchy.getDimension().getDimensionType() == Dimension.TIME) {
-			if (name.equals("Year")) {
-				this.levelType = Level.YEARS;
-			} else if (name.equals("Quarter")) {
-				this.levelType = Level.QUARTERS;
-			} else if (name.equals("Month")) {
-				this.levelType = Level.MONTHS;
-			}
-		}
+            if (!levelType.isTime()) {
+                throw MondrianResource.instance()
+                        .newNonTimeLevelInTimeHierarchy(getUniqueName());
+            }
+        } else {
+            if (levelType.isTime()) {
+                throw MondrianResource.instance()
+                        .newTimeLevelInNonTimeHierarchy(getUniqueName());
+            }
+        }
+        this.hideMemberCondition = hideMemberCondition;
 	}
 
 	private Property lookupProperty(ArrayList list, String propertyName) {
@@ -145,10 +158,14 @@ class RolapLevel extends LevelBase
 				xmlLevel.getParentExp(), xmlLevel.nullParentValue,
 				createProperties(xmlLevel),
 				(xmlLevel.type.equals("Numeric") ? NUMERIC : 0) |
-				(xmlLevel.uniqueMembers.booleanValue() ? UNIQUE : 0));
+				(xmlLevel.uniqueMembers.booleanValue() ? UNIQUE : 0),
+                HideMemberCondition.lookup(xmlLevel.hideMemberIf),
+                LevelType.lookup(xmlLevel.levelType));
 	}
 
-	static RolapProperty[] createProperties(MondrianDef.Level xmlLevel) {
+    // helper for constructor
+    private static RolapProperty[] createProperties(
+            MondrianDef.Level xmlLevel) {
 		ArrayList list = new ArrayList();
 		final MondrianDef.Expression nameExp = xmlLevel.getNameExp();
 		if (nameExp != null) {
@@ -162,7 +179,7 @@ class RolapLevel extends LevelBase
 					convertPropertyTypeNameToCode(property.type),
 					xmlLevel.getPropertyExp(i)));
 		}
-		return (RolapProperty[]) list.toArray(emptyPropertyArray);
+		return (RolapProperty[]) list.toArray(RolapProperty.emptyArray);
 	}
 
 	private static int convertPropertyTypeNameToCode(String type) {
@@ -217,6 +234,35 @@ class RolapLevel extends LevelBase
 	public Property[] getInheritedProperties() {
 		return inheritedProperties;
 	}
+
+    /**
+     * Conditions under which a level's members may be hidden (thereby creating
+     * a <dfn>ragged hierarchy</dfn>).
+     */
+    public static class HideMemberCondition extends EnumeratedValues.BasicValue {
+        private HideMemberCondition(String name, int ordinal) {
+            super(name, ordinal, null);
+        }
+        /** A member always appears. */
+        public static final HideMemberCondition Never =
+                new HideMemberCondition("Never", 0);
+        /** A member doesn't appear if its name is null or empty. */
+        public static final HideMemberCondition IfBlankName =
+                new HideMemberCondition("IfBlankName", 1);
+        /** A member appears unless its name matches its parent's. */
+        public static final HideMemberCondition IfParentsName =
+                new HideMemberCondition("IfParentsName", 2);
+        public static final EnumeratedValues enumeration =
+                new EnumeratedValues(
+                        new HideMemberCondition[] {
+                            Never, IfBlankName, IfParentsName
+                        }
+                );
+        public static HideMemberCondition lookup(String s) {
+            return (HideMemberCondition) enumeration.getValue(s);
+        }
+    }
+
 }
 
 // End RolapLevel.java

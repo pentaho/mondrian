@@ -28,7 +28,7 @@ public abstract class LevelBase
 	protected String uniqueName;
 	protected String description;
 	protected int depth;
-	protected int levelType;
+	protected LevelType levelType;
 
 	// from Element
 	public String getQualifiedName() {
@@ -38,7 +38,7 @@ public abstract class LevelBase
 	public int getType() {
 		return Category.Level;
 	}
-	public int getLevelType() { return levelType; }
+	public LevelType getLevelType() { return levelType; }
 	public String getUniqueName() { return uniqueName; }
 	public String getName() { return name; }
 	public String getDescription() { return description; }

@@ -18,7 +18,10 @@ import mondrian.olap.Property;
  * <code>RolapProperty</code> is the definition of a member property.
  */
 class RolapProperty extends Property {
-	RolapProperty(String name, int type, MondrianDef.Expression exp) {
+    /** Array of RolapProperty of length 0. */
+    static final RolapProperty[] emptyArray = new RolapProperty[0];
+
+    RolapProperty(String name, int type, MondrianDef.Expression exp) {
 		super(name, type);
 		this.exp = exp;
 	}

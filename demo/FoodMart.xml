@@ -51,9 +51,9 @@
 	<Dimension name="Time" foreignKey="time_id">
 		<Hierarchy hasAll="false" primaryKey="time_id">
 			<Table name="time_by_day"/>
-			<Level name="Year" column="the_year" type="Numeric" uniqueMembers="true"/>
-			<Level name="Quarter" column="quarter" uniqueMembers="false"/>
-			<Level name="Month" column="month_of_year" uniqueMembers="false" type="Numeric"/>
+			<Level name="Year" column="the_year" type="Numeric" uniqueMembers="true" levelType="TimeYears"/>
+			<Level name="Quarter" column="quarter" uniqueMembers="false" levelType="TimeQuarters"/>
+			<Level name="Month" column="month_of_year" uniqueMembers="false" type="Numeric" levelType="TimeMonths"/>
 		</Hierarchy>
 	</Dimension>
 
@@ -241,9 +241,9 @@ CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)
 	<Dimension name="Time" foreignKey="pay_date">
 		<Hierarchy hasAll="false" primaryKey="the_date">
 			<Table name="time_by_day"/>
-			<Level name="Year" column="the_year" type="Numeric" uniqueMembers="true"/>
-			<Level name="Quarter" column="quarter" uniqueMembers="false"/>
-			<Level name="Month" column="month_of_year" uniqueMembers="false" type="Numeric"/>
+			<Level name="Year" column="the_year" type="Numeric" uniqueMembers="true" levelType="TimeYears"/>
+			<Level name="Quarter" column="quarter" uniqueMembers="false" levelType="TimeQuarters"/>
+			<Level name="Month" column="month_of_year" uniqueMembers="false" type="Numeric" levelType="TimeMonths"/>
 		</Hierarchy>
 	</Dimension>
 

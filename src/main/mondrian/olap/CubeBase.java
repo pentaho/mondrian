@@ -111,8 +111,7 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 
 	// ------------------------------------------------------------------------
 
-	private Level getTimeLevel(int levelType)
-	{
+	private Level getTimeLevel(LevelType levelType) {
 		for (int i = 0; i < dimensions.length; i++) {
 			DimensionBase dimension = dimensions[i];
 			if (dimension.dimensionType == Dimension.TIME) {
@@ -131,19 +130,19 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 	}
 	public Level getYearLevel()
 	{
-		return getTimeLevel(Level.YEARS);
+		return getTimeLevel(LevelType.TimeYears);
 	}
 	public Level getQuarterLevel()
 	{
-		return getTimeLevel(Level.QUARTERS);
+		return getTimeLevel(LevelType.TimeQuarters);
 	}
 	public Level getMonthLevel()
 	{
-		return getTimeLevel(Level.MONTHS);
+		return getTimeLevel(LevelType.TimeMonths);
 	}
 	public Level getWeekLevel()
 	{
-		return getTimeLevel(Level.WEEKS);
+		return getTimeLevel(LevelType.TimeWeeks);
 	}
 	public void accept(Visitor visitor)
 	{

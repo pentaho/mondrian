@@ -40,15 +40,24 @@ class RolapMember extends MemberBase
 	private Map mapPropertyNameToValue = emptyMap;
 	private static final Map emptyMap = Collections.unmodifiableMap(new HashMap(0));
 
-    RolapMember(
-			RolapMember parentMember, RolapLevel level, Object key, String name) {
+    /**
+     * Creates a RolapMember
+     *
+     * @param parentMember Parent member
+     * @param level Level this member belongs to
+     * @param key Key to this member in the underlying RDBMS
+     * @param name Name of this member
+     * @param flags Flags describing this member (see {@link #flags}
+     */
+    RolapMember(RolapMember parentMember, RolapLevel level, Object key,
+            String name, int flags) {
 		this.parentMember = parentMember;
 		this.parentUniqueName = parentMember == null ? null:
 			parentMember.getUniqueName();
 		this.level = level;
 		this.key = key;
 		this.ordinal = -1;
-		this.memberType = 1; // adMemberRegular
+		this.flags = flags;
 		if (name != null &&
 				!(key != null && name.equals(key.toString()))) {
 			// Save memory by only saving the name as a property if it's different from
@@ -66,7 +75,7 @@ class RolapMember extends MemberBase
 	}
 
 	RolapMember(RolapMember parentMember, RolapLevel level, Object value) {
-		this(parentMember, level, value, null);
+		this(parentMember, level, value, null, REGULAR_MEMBER_TYPE);
 	}
 
 	public boolean isCalculatedInQuery() {

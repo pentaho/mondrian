@@ -255,6 +255,18 @@
     <text>Show/hide empty cells operation on axis ''{0,number}'' is not supported.</text>
 </exception>
 
+<!-- ====================================================================== -->
+<!-- Catalog errors -->
+
+<exception id="400020" name="NonTimeLevelInTimeHierarchy">
+    <text>Level ''{0}'' belongs to a time hierarchy, so its level-type must be  ''Years'', ''Quarters'', ''Months'', ''Weeks'' or ''Days''.</text>
+</exception>
+
+<exception id="400030" name="TimeLevelInNonTimeHierarchy">
+    <text>Level ''{0}'' does not belong to a time hierarchy, so its level-type must be ''Standard''.</text>
+</exception>
+
+
 <!-- End of last error section ============================================ -->
 
 </resourceBundle>

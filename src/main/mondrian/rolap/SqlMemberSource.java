@@ -11,10 +11,7 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.Exp;
-import mondrian.olap.MondrianDef;
-import mondrian.olap.Property;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.rolap.sql.SqlQuery;
 
 import javax.sql.DataSource;
@@ -300,7 +297,8 @@ class SqlMemberSource implements MemberReader
             if (hierarchy.hasAll()) {
                 root = new RolapMember(
                     null, (RolapLevel) hierarchy.getLevels()[0],
-                    null, hierarchy.getAllMemberName());
+                    null, hierarchy.getAllMemberName(),
+                    Member.ALL_MEMBER_TYPE);
                 root.ordinal = lastOrdinal++;
                 list.add(root);
             }
@@ -463,7 +461,8 @@ class SqlMemberSource implements MemberReader
 			Object key = cache.makeKey(null, allMemberName);
 			RolapMember root = cache.getMember(key);
 			if (root == null) {
-				root = new RolapMember(null, level, null, allMemberName);
+				root = new RolapMember(null, level, null, allMemberName,
+                        Member.ALL_MEMBER_TYPE);
 				root.ordinal = lastOrdinal++;
 				cache.putMember(key, root);
 			}

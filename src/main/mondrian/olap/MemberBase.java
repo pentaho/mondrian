@@ -27,7 +27,9 @@ public abstract class MemberBase
 	protected MemberBase parentMember;
 	protected LevelBase level;
 	protected String uniqueName;
-	protected int memberType;
+    /** Combines member type and whether is hidden, according to the following
+     * relation: <code>flags == (isHidden ? 8 : 0) | memberType</code>. */
+	protected int flags;
 	protected String parentUniqueName;
 
 	// implement Exp, OlapElement, Member
@@ -61,7 +63,7 @@ public abstract class MemberBase
 		return level;
 	}
 	public final int getMemberType() {
-		return memberType;
+		return flags & 7;
 	}
 	public String getDescription() {
 		return null;
@@ -72,8 +74,8 @@ public abstract class MemberBase
 	public final boolean isAll() {
 		return level.isAll();
 	}
-	public final boolean isNull() {
-		return memberType == NULL_MEMBER_TYPE;
+	public boolean isNull() {
+		return false;
 	}
 	public OlapElement lookupChild(SchemaReader schemaReader, String s) {
 		return Util.lookupMemberChildByName(schemaReader, this, s);
@@ -190,6 +192,9 @@ public abstract class MemberBase
 		return -1;
   }
 
+    public boolean isHidden() {
+        return false;
+    }
 }
 
 // End MemberBase.java
