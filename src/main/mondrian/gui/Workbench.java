@@ -57,6 +57,7 @@ public class Workbench extends javax.swing.JFrame {
         newMenu = new javax.swing.JMenu();
         newSchemaMenuItem = new javax.swing.JMenuItem();
         newQueryMenuItem = new javax.swing.JMenuItem();
+        newJDBCExplorerMenuItem = new javax.swing.JMenuItem();
         openMenuItem = new javax.swing.JMenuItem();
         saveMenuItem = new javax.swing.JMenuItem();
         saveAsMenuItem = new javax.swing.JMenuItem();
@@ -149,6 +150,15 @@ public class Workbench extends javax.swing.JFrame {
 
         newMenu.add(newQueryMenuItem);
 
+        newJDBCExplorerMenuItem.setText("JDBC Explorer");
+        newJDBCExplorerMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newJDBCExplorerMenuItemActionPerformed(evt);
+            }
+        });
+
+        newMenu.add(newJDBCExplorerMenuItem);
+
         fileMenu.add(newMenu);
 
         openMenuItem.setText("Open");
@@ -228,6 +238,32 @@ public class Workbench extends javax.swing.JFrame {
 
         pack();
     }//GEN-END:initComponents
+
+    private void newJDBCExplorerMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newJDBCExplorerMenuItemActionPerformed
+        try {
+            JInternalFrame jf = new JInternalFrame();
+            jf.setTitle("JDBC Explorer - " + this.jdbcConnectionUrl);
+
+            Class.forName(this.jdbcDriverClassName);
+            java.sql.Connection con = java.sql.DriverManager.getConnection(this.jdbcConnectionUrl);
+
+            JDBCExplorer jdbce = new JDBCExplorer(con);
+
+            jf.getContentPane().add(jdbce);
+            jf.setBounds(0, 0, 500, 480);
+            jf.setClosable(true);
+            jf.setIconifiable(true);
+            jf.setMaximizable(true);
+            jf.setResizable(true);
+            jf.setVisible(true);
+
+            desktopPane.add(jf);
+
+            jf.show();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }//GEN-LAST:event_newJDBCExplorerMenuItemActionPerformed
 
     private void toolbarPreferencesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toolbarPreferencesButtonActionPerformed
         // Add your handling code here:
@@ -372,6 +408,7 @@ public class Workbench extends javax.swing.JFrame {
     private javax.swing.JMenuItem cutMenuItem;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem saveMenuItem;
+    private javax.swing.JMenuItem newJDBCExplorerMenuItem;
     private javax.swing.JCheckBoxMenuItem viewCubesMenuItem;
     private javax.swing.JButton toolbarSaveButton;
     private javax.swing.JMenuItem copyMenuItem;

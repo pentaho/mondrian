@@ -71,17 +71,17 @@ public class PreferencesDialog extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPanel1.add(jLabel1, gridBagConstraints);
 
         jLabel2.setText("Connection URL");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPanel1.add(jLabel2, gridBagConstraints);
 
         urlTextField.setText("jdbc:");
@@ -89,10 +89,10 @@ public class PreferencesDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPanel1.add(urlTextField, gridBagConstraints);
 
         driverClassTextField.setText("org.gjt.mm.mysql.Driver");
@@ -100,9 +100,9 @@ public class PreferencesDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPanel1.add(driverClassTextField, gridBagConstraints);
 
         jTabbedPane1.addTab("JDBC", jPanel1);
@@ -124,8 +124,8 @@ public class PreferencesDialog extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         getContentPane().add(acceptButton, gridBagConstraints);
 
         cancelButton.setText("Cancel");
@@ -138,9 +138,9 @@ public class PreferencesDialog extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         getContentPane().add(cancelButton, gridBagConstraints);
 
         pack();

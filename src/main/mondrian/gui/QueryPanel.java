@@ -94,8 +94,8 @@ public class QueryPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextPane resultTextPane;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextPane queryTextPane;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JButton executeButton;
