@@ -78,9 +78,9 @@ public class RolapConnection extends ConnectionBase {
 					"' must contain either '" + RolapConnectionProperties.Jdbc +
 					"' or '" + RolapConnectionProperties.DataSource + "'");
 		}
+		this.catalogName = connectInfo.get(RolapConnectionProperties.Catalog);
 		if (jdbcConnectString != null) {
 			// Get connection through JDBC DriverManager.
-			this.catalogName = connectInfo.get(RolapConnectionProperties.Catalog);
 			String provider = connectInfo.get(RolapConnectionProperties.Provider);
 			Util.assertTrue(provider.equalsIgnoreCase("mondrian"));
 			String jdbcDrivers = connectInfo.get(RolapConnectionProperties.JdbcDrivers);
