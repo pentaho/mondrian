@@ -161,7 +161,7 @@ public class SqlQuery
 		return getProduct().equals("ACCESS");
 	}
 	public boolean isPostgres() {
-		return getProduct().toUpperCase().indexOf("POSTGRES") >= 0;
+		return getProduct().toUpperCase().indexOf("POSTGRE") >= 0;
 	}
 
 	// -- behaviors --

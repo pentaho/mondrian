@@ -170,7 +170,7 @@ class SqlMemberSource implements MemberReader
 	 *
 	 * <pre>SELECT count(*) FROM (
 	 *   SELECT DISTINCT "country", "state_province"
-	 *   FROM "customer")</pre>
+	 *   FROM "customer") AS "foo"</pre>
 	 *
 	 * </blockquote> counts the non-leaf "state_province" level, and
 	 * <blockquote>
@@ -203,7 +203,8 @@ class SqlMemberSource implements MemberReader
 			}
 		}
 		hierarchy.addToFrom(sqlQuery);
-		return "select count(*) from (" + sqlQuery.toString() + ")";
+		// note: Postgres requires the alias 'as foo'
+		return "select count(*) from (" + sqlQuery.toString() + ") as foo";
 	}
 
 	// implement MemberSource

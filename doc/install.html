@@ -2,7 +2,7 @@
 
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <title>Mondrian installation guide</title>
 <link rel="stylesheet" type="text/css" href="stylesheet.css" />
@@ -37,13 +37,14 @@
   <li><a href="#1_Contents">Contents</a>
   <li><a href="#2_Modification_history">Modification history</a>
   <li><a href="#3_Setup_build_environment">Setup build environment</a>
-  <li><a href="#4_Build">Build</a>
-  <li><a href="#5_Run_the_demo">Run the demo</a>
-  <li><a href="#6_Run_the_web_app">Run the web app</a>
-  <li><a href="#7_Debug_tomcat_using_IntelliJ">Debug tomcat using IntelliJ</a><li>
-  <a href="#8_Miscellaneous">Miscellaneous</a>
+  <li><a href="#4_Download_the_source_code">Download the source code</a><li>
+  <a href="#5_Build">Build</a>
+  <li><a href="#6_Load_the_database">Load the database</a><li><a href="#5_Run_the_demo">Run the demo</a>
+  <li><a href="#8_Run_the_web_app">Run the web app</a>
+  <li><a href="#9_Debug_tomcat_using_IntelliJ">Debug tomcat using IntelliJ</a><li>
+  <a href="#10_Miscellaneous">Miscellaneous</a>
     <ol>
-      <li><a href="#8_1_Coding_guidelines">Coding guidelines</a></li>
+      <li><a href="#10_1_Coding_guidelines">Coding guidelines</a></li>
     </ol>
   <li><a href="#Appendix_A_Product_installation_instructions">Appendix A: 
   Product instllation instructions</a></li>
@@ -82,6 +83,13 @@
     <td><i>Julian Hyde</i></td>
     <td><em>Upgrade to Ant 1.5, Tomcat 4.0.4.</em></td>
   </tr>
+  <tr>
+    <td><I>August 1<SUP>st</SUP>, 2002</I></td>
+    <td><em>5</em></td>
+    <td><i>Julian Hyde</i></td>
+    <td><em>Clean up database instructions. Add 'Download the source code' 
+    section.</em></td>
+  </tr>
 </table>
 
 <h2><a name="3_Setup_build_environment">3. Setup build environment</a></h2>
@@ -105,21 +113,44 @@
   <li>Install <a href="#Jikes">Jikes</a>.</li>
 </ol>
 
-<h2><a name="4_Build">4. Build</a></h2>
+<h2><a name="4_Download_the_source_code">4. Download the source code</a></h2>
+<p>Download <code>mondrian-0.3-src.zip</code> and <code>mondrian-0.3-data.zip</code> 
+(or later versions) from <a href="http://sourceforge.net/projects/mondrian">
+Sourceforge</a>, and unzip them. For example, if you unzip to <code>Z:\</code>, 
+you will end up with a file structure including
+<code>Z:\mondrian-0.3\build.xml</code> and
+<code>Z:\mondrian-0.3\demo\FoodMartData.sql</code>.</p>
+
+<p>If you are a mondrian developer, create a perforce client. The perforce 
+server's port is 66.123.172.226:1666. Use a view specification like this 
+(substituting the name of your perforce client for CLIENT):</p>
+<blockquote>
+  <pre>//open/mondrian/... //CLIENT/mondrian/...</pre>
+</blockquote>
+
+<h2><a name="5_Build">5. Build</a></h2>
 <p>As follows:</p>
 <blockquote>
 <pre>cd <i>${project.location}</i>
 build</pre>
 </blockquote>
-<h2><a name="5_Run_the_demo">5. Run the demo</a></h2>
-<p>You first need a database. I wanted to distribute a hsqldb database, but when loaded and indexed, the 300,000
-rows/20Mb data set turned into a 400Mb datafile. So, two choices:</p>
+<h2><a name="6_Load_the_database">6. Load the database</a></h2>
+<p>You first need a database. How you create and load the database depends upon 
+which database you are using.</p>
+<p> <i>Did these instructions work for you? Have you managed to get mondrian 
+working on other databases/versions? Please let me know.</i></p>
+<h3> <b>6.1. Microsoft Access</b></h3>
+<p>Download <code><i>${project.location}</i>/demo/access/FoodMart.mdb</code> . 
+Start ODBC Administrator, and create a System ODBC DSN called <code>MondrianFoodMart</code> pointing to 
+that file.
+    The JDBC connect string will be <code>jdbc:odbc:MondrianFoodMart</code>.</p>
+<h3>6.2. Oracle</h3>
+<p>Version 8.1.7 or higher.</p>
+<p>Create the dataset by importing <code>${project.location}/demo/oracle/FoodMart.dmp</code>. 
+(You don't need to run <code>FoodMartTables.sql</code> and <code>
+FoodMartIndexes.sql</code> in that folder.)</p>
+<p>Setup your environment as follows:</p>
 <ol>
-  <li>If you have <b>Microsoft Access</b>, create a System ODBC DSN called
-    MondrianFoodMart pointing to <code><i>${project.location}</i>/demo/access/FoodMart.mdb</code>.
-    The JDBC connect string will be <code>jdbc:odbc:MondrianFoodMart</code>. </li>
-  <li>If you have <b>Oracle</b>, create the dataset by importing <code>${project.location}/demo/oracle/FoodMart.dmp</code>. 
-  Setup your environment:<ol>
   <li>Set <code>ORACLE_HOME</code> in <code>build.bat</code>, or in your 
   environment.</li>
   <li>Append <code>%ORACLE_HOME%/jdbc/lib/classes12.zip</code> to <code>
@@ -128,35 +159,48 @@ rows/20Mb data set turned into a 400Mb datafile. So, two choices:</p>
   mondrian.jdbcDrivers</code> includes <code>oracle.jdbc.OracleDriver</code>.</li>
   <li>In <code>build.xml</code>, set the property <code>
   mondrian.foodmart.jdbcURL</code>. It should probably include a username and 
-  password, for example <code>jdbc:oracle:oci8:foodmart/foodmart@myoracle</code>.</li>
+  password, for example <code>
+  <a href="mailto:jdbc:oracle:oci8:foodmart/foodmart@myoracle">jdbc:oracle:oci8:foodmart/foodmart@myoracle</a></code>.</li>
+      <li>In <code>FoodMart.xml</code>, change the query for customers to <code>SELECT 
+      *, &quot;fname&quot; || ' ' || &quot;lname&quot; as &quot;name&quot; FROM &quot;customer&quot;</code>, 
+      because the concatenation operator is '||' and not '+'.</li>
 </ol>
-  </li>
-  <li>If you have another database, create and populate the schema  by running the scripts <code>FoodMartTables.sql</code>,
-    <code>FoodMartData.sql</code> and <code>FoodMartIndexes.sql</code> in <code>${project.location}/demo/</code>. You may need to modify the scripts for your database's
-    particular DDL
-    syntax. Examples:<ul>
-    <li>The scripts work with <b>hsqldb</b> as is.</li>
-    <li>For <b>mySQL</b>, you will need to change all <code>varchar</code> 
+  <h3><a name="6_3_hsqldb">6.3. Hypersonic SQL (hsqldb)</a></h3>
+<p>Create and populate the schema  by running the scripts <code>FoodMartTables.sql</code>,
+    <code>FoodMartData.sql</code> and <code>FoodMartIndexes.sql</code> in <code>${project.location}/demo/</code>.</p>
+<h3>6.4. mySQL</h3>
+<p>As <a href="#6_3_hsqldb">hsqldb</a>, except for the following.</p>
+<p>Change all <code>varchar</code> 
         columns in <code>FoodMartTables.sql</code> to
-        <code>varchar(30)</code>,&nbsp; and change all
+        <code>varchar(30)</code>,&nbsp;and change all
         <code>false</code>/<code>true</code> values in <code>
-        FoodMartData.sql</code> to <code>0</code>/<code>1</code>;</li>
-    <li>For <b>postgres</b>, change <code>DOUBLE</code> to <code>DOUBLE
-    PRECISION</code> in <code>
-        FoodMartTables.sql</code>.</li>
-    <li>Oracle versions of these scripts are available in <code>demo/oracle</code> 
-    (but it's easier to import <code>FoodMart.dmp</code>, as described above).</li>
-    <li>(Please let me know your experiences with other databases.)</li>
-    </ul>
-    </li>
-</ol>
+        FoodMartData.sql</code> to <code>0</code>/<code>1</code>.</p>
+<p>In build.xml, set the property <code>
+  mondrian.foodmart.jdbcURL</code>. A typical value is <code>
+jdbc:mysql://localhost/foodmart?user=root&amp;password=</code>, but because the 
+value is in an xml file, you will have to escape the '&amp;' as '&amp;#38;', for 
+example:</p><blockquote>
+
+<pre>&lt;property name=&quot;mondrian.foodmart.jdbcURL&quot;
+    value=&quot;jdbc:mysql://localhost/foodmart?user=root&amp;#38;password=&quot;/&gt;</pre>
+    
+</blockquote>
+<h3>6.5. Postgres</h3>
+<p>As <a href="#6_3_hsqldb">hsqldb</a>, except for the following.</p>
+<p>In <code>
+        FoodMartTables.sql</code>, change <code>DOUBLE</code> to <code>DOUBLE
+    PRECISION</code>, and <code>BIT</code> to <code>SMALLINT</code>.</p>
+In <code>FoodMart.xml</code>, change the query for customers to <code>SELECT 
+      *, &quot;fname&quot; || ' ' || &quot;lname&quot; as &quot;name&quot; FROM &quot;customer&quot;</code>, 
+because the concatenation operator is '||' and not '+'.<h2>
+<a name="7_Run_the_test_suite">7. Run the test suite</a></h2>
 <p>Edit the &quot;FoodMartTest&quot; target in <code>build.xml</code>.</p>
 <p>Run</p>
 <blockquote>
   <pre>cd <i>${project.location}</i>
 build test</pre>
 </blockquote>
-<h2><a name="6_Run_the_web_app">6. Run the web app</a></h2>
+<h2><a name="8_Run_the_web_app">8. Run the web app</a></h2>
 <ol>
   <li>First install Tomcat, as above.</li>
   <li>Make sure the <code>web.xml</code> file in <code>${project.location}/</code><code>webapp/WEB-INF</code> 
@@ -166,7 +210,7 @@ build test</pre>
   <li>Start up tomcat. (<code>build start.tomcat</code> is an easy way to do this.)</li>
   <li>Hit <a href="http://localhost:8080/mondrian" target="_new">http://localhost:8080/mondrian</a>.</li>
 </ol>
-<h2><a name="7_Debug_tomcat_using_IntelliJ">7. Debug tomcat using IntelliJ</a></h2>
+<h2><a name="9_Debug_tomcat_using_IntelliJ">9. Debug tomcat using IntelliJ</a></h2>
 <ol>
   <li>add <code><i>${tomcat.home}</i>/webapps/mondrian.war</code> to intellij's 
   classpath</li>
@@ -191,8 +235,8 @@ goto end</code></pre>
   <li><code>catalina jpda run</code></li>
   <li>attach intellij's debugger to port 5000</li>
 </ol>
-<h2><a name="8_Miscellaneous">8. Miscellaneous</a></h2>
-<h3><a name="8_1_Coding_guidelines">8.1. Coding guidelines</a></h3>
+<h2><a name="10_Miscellaneous">10. Miscellaneous</a></h2>
+<h3><a name="10_1_Coding_guidelines">10.1. Coding guidelines</a></h3>
 <ul>
   <li>Indentation 4.</li>
   <li>Tab stop 4.</li>
