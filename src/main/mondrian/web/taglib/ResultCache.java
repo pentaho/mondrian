@@ -11,38 +11,52 @@
 */
 package mondrian.web.taglib;
 
-import mondrian.olap.Connection;
-import mondrian.olap.Query;
-import mondrian.olap.Result;
-import org.w3c.dom.Document;
+import java.io.IOException;
+import java.util.Locale;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionBindingEvent;
+import javax.servlet.http.HttpSessionBindingListener;
 import javax.xml.parsers.ParserConfigurationException;
+
+import mondrian.olap.Connection;
+import mondrian.olap.DriverManager;
+import mondrian.olap.MondrianResource;
+import mondrian.olap.Query;
+import mondrian.olap.Result;
+import org.w3c.dom.Document;
 
 /**
  * holds a query/result pair in the users session
  */
 
-public class ResultCache {
+public class ResultCache implements HttpSessionBindingListener {
 	private final static String ATTR_NAME = "mondrian.web.taglib.ResultCache.";
 	private Query query = null;
 	private Result result = null;
 	private Document document = null;
 	private ServletContext servletContext;
+	private Connection connection;
+	private MondrianResource resource;
 
 	private ResultCache(ServletContext context) {
 		this.servletContext = context;
 	}
+	
 
 	/**
 	 * Retrieves a cached query. It is identified by its name and the
 	 * current session. The servletContext parameter is necessary because
 	 * HttpSession.getServletContext was not added until J2EE 1.3.
 	 */
-	public static ResultCache getInstance(HttpSession session, ServletContext servletContext, String name) {
+	public static ResultCache getInstance(
+		HttpSession session,
+		ServletContext servletContext,
+		String name)
+		throws IOException {
 		String fqname = ATTR_NAME + name;
-		ResultCache resultCache = (ResultCache)session.getAttribute(fqname);
+		ResultCache resultCache = (ResultCache) session.getAttribute(fqname);
 		if (resultCache == null) {
 			resultCache = new ResultCache(servletContext);
 			session.setAttribute(fqname, resultCache);
@@ -50,20 +64,28 @@ public class ResultCache {
 		return resultCache;
 	}
 
-
 	public void parse(String mdx) {
-		Connection con = ApplResources.getInstance(servletContext).getConnection();
-		query = con.parseQuery(mdx);
-		setDirty();
+		mondrian.olap.Util.setThreadRes(resource);
+		try {
+			query = connection.parseQuery(mdx);
+			setDirty();
+		} finally {
+			mondrian.olap.Util.setThreadRes(null);
+		}
 	}
-
 
 	public Result getResult() {
 		if (result == null) {
-			long t1 = System.currentTimeMillis();
-			result = ApplResources.getInstance(servletContext).getConnection().execute(query);
-			long t2 = System.currentTimeMillis();
-			System.out.println("Execute query took " + (t2 - t1) + " millisec");
+			mondrian.olap.Util.setThreadRes(resource);
+			try {
+				long t1 = System.currentTimeMillis();
+				result = connection.execute(query);
+				long t2 = System.currentTimeMillis();
+				System.out.println(
+					"Execute query took " + (t2 - t1) + " millisec");
+			} finally {
+				mondrian.olap.Util.setThreadRes(null);
+			}
 		}
 		return result;
 	}
@@ -74,8 +96,7 @@ public class ResultCache {
 				document = DOMBuilder.build(getResult());
 			}
 			return document;
-		}
-		catch (ParserConfigurationException e) {
+		} catch (ParserConfigurationException e) {
 			e.printStackTrace();
 			throw new RuntimeException(e.toString());
 		}
@@ -103,7 +124,33 @@ public class ResultCache {
 		result = null;
 		document = null;
 	}
+	
+	/**
+	 * create a new connection to Mondrian
+	 */
+	public void valueBound(HttpSessionBindingEvent ev) {
+		try {
+			String resourceURL = servletContext.getInitParameter("resourceURL");
+			this.resource = new MondrianResource(resourceURL, Locale.ENGLISH);
+			mondrian.olap.Util.setThreadRes(resource);
+			String connectString =
+				servletContext.getInitParameter("connectString");
+			this.connection =
+				DriverManager.getConnection(connectString, null, false);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			mondrian.olap.Util.setThreadRes(null);
+		}
+	}
 
+    /**
+     * close connection
+     */
+	public void valueUnbound(HttpSessionBindingEvent ev) {
+		connection.close();
+	}
+	
 
 }
 

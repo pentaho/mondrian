@@ -11,9 +11,12 @@
 */
 package mondrian.web.taglib;
 
-import mondrian.olap.Connection;
-import mondrian.olap.DriverManager;
-import mondrian.olap.MondrianResource;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.StringTokenizer;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -22,21 +25,18 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.StringTokenizer;
+
+import mondrian.olap.Connection;
+import mondrian.olap.DriverManager;
+import mondrian.olap.MondrianResource;
 
 /**
- * holds an instance of the mdx connection in the servlet context
+ * holds compiled stylesheets
  */
 
 public class ApplResources implements Listener.ApplicationContext {
 
 	private static final String ATTRNAME = "mondrian.web.taglib.ApplResources";
-	private Connection connection;
 	private ServletContext context;
 
 	/**
@@ -52,10 +52,6 @@ public class ApplResources implements Listener.ApplicationContext {
 	 */
 	public static ApplResources getInstance(ServletContext context) {
 		return (ApplResources)context.getAttribute(ATTRNAME);
-	}
-
-	public Connection getConnection() {
-		return connection;
 	}
 
 	private HashMap templatesCache = new HashMap();
@@ -83,42 +79,24 @@ public class ApplResources implements Listener.ApplicationContext {
 	public void init(ServletContextEvent event) {
 		this.context = event.getServletContext();
 
-		try {
-			// static initialization taken from MDXQueryServlet
-			String resourceURL = context.getInitParameter("resourceURL");
-			// the following can cause security exception:
-			// System.getProperties().put("mondrian.resourceURL", resourceURL);
-			mondrian.olap.Util.setThreadRes(
-				new MondrianResource(resourceURL, Locale.ENGLISH));
-
-			String jdbcDrivers = context.getInitParameter("jdbcDrivers");
-			StringTokenizer tok = new StringTokenizer(jdbcDrivers, ", ");
-			while (tok.hasMoreTokens()) {
-				String jdbcDriver = tok.nextToken();
-				try {
-					Class.forName(jdbcDriver);
-				} catch (ClassNotFoundException e) {
-					e.printStackTrace();
-				}
+		// static initialization taken from MDXQueryServlet
+		String jdbcDrivers = context.getInitParameter("jdbcDrivers");
+		StringTokenizer tok = new StringTokenizer(jdbcDrivers, ", ");
+		while (tok.hasMoreTokens()) {
+			String jdbcDriver = tok.nextToken();
+			try {
+				Class.forName(jdbcDriver);
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
 			}
+		}
 
-			String connectString = context.getInitParameter("connectString");
-			this.connection = DriverManager.getConnection(connectString, null, false);
-
-		}
-		catch (MalformedURLException e) {
-			e.printStackTrace();
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
 		context.setAttribute(ATTRNAME, this);
 	}
-
-	// implement ApplicationContext
-	public void destroy(ServletContextEvent event) {
-		connection.close();
+	
+	public void destroy(ServletContextEvent ev) {
 	}
+
 
 }
 
