@@ -384,6 +384,7 @@ in {mondrian.foodmart.jdbcURL}.">
 **/*.gif,
 **/*.html,
 **/*.java,
+**/*.mf,
 ${java.dir}/**/*.properties,
 ${java.dir}/mondrian/olap/MondrianResource.xml,
 ${java.dir}/mondrian/resource/Resource.xml,
@@ -452,11 +453,11 @@ demo/**/*.sh"
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.data.mysql.file}"/>
     <copy file="demo/FoodMartDropTables.sql" todir="demo/mysql/FoodMartDropTables.sql"/>
-    <!-- Convert every 'true' and 'false' to '1' and '0'. Couldn't figure out
-         a portable way to do this - sorry! -->
-    <exec dir="." executable="sed.exe" output="${demo.dir}/mysql/FoodMartData.sql">
-      <arg line="-e 's/,true/,1/g;s/,false/,0/g' ${demo.dir}/FoodMartData.sql"/>
-    </exec>
+    <tempfile property="mysql-temp-file"/>
+    <unzip src="demo/mysql/foodmart.zip" dest="${mysql-temp-file}">
+      <patternset includes="foodmart.sql"/>
+    </unzip>
+    <echo>mysql-temp-file=${mysql-temp-file}</echo>
     <zip
         zipfile="${dist.data.mysql.file}"
         update="true">
@@ -468,12 +469,13 @@ demo/**/*.sh"
           includes="LICENSE.html,
 README.txt,
 VERSION.txt,
-demo/mysql/FoodMartTables.sql,
-demo/mysql/FoodMartIndexes.sql,
-demo/mysql/FoodMartDropTables.sql,
-demo/mysql/FoodMartData.sql,
 demo/mysql/INSTALL.txt"/>
+      <zipfileset
+          dir="${mysql-temp-file}"
+          prefix="mondrian-data/demo/mysql"
+          includes="foodmart.sql"/>
     </zip>
+    <delete dir="${mysql-temp-file}"/>
   </target>
 
   <target name="export.foodmart.oracle">
@@ -552,12 +554,14 @@ mondrian/resource/**/*.class"/>
         packagenames="mondrian.*,javax.*,org.omg.cwm.*"
         overview="${java.dir}/overview.html"
         footer="&lt;a href=&quot;http://sourceforge.net/projects/mondrian&quot;&gt;&lt;img src=&quot;http://sourceforge.net/sflogo.php?group_id=35302&#38;type=1&quot; width=&quot;88&quot; height=&quot;31&quot; border=&quot;0&quot; alt=&quot;SourceForge.net_Logo&quot;&gt;&lt;/a&gt;"
-        author="true">
-        <link href="http://javadoc.dyndns.org/joogle/api"/>
+        author="true"
+        source="1.4"
+        additionalparam="-linksource">
+      <link href="http://javadoc.dyndns.org/joogle/api"/>
 <!--
-        <link href="http://java.sun.com/j2se/1.4/docs/api/"/>
-        <link href="http://www.junit.org/junit/javadoc/3.7/"/>
-        <link href="http://java.sun.com/products/servlet/2.2/javadoc/"/>
+      <link href="http://java.sun.com/j2se/1.4/docs/api/"/>
+      <link href="http://www.junit.org/junit/javadoc/3.7/"/>
+      <link href="http://java.sun.com/products/servlet/2.2/javadoc/"/>
  -->
     </javadoc>
     <copy file="${java.dir}/mondrian/xom/meta.xml"
