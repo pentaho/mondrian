@@ -56,6 +56,146 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
 				"Row #0: $39,431.67" + nl +
 				"Row #0: 7,392" + nl);
 	}
+
+    // bug 1063369: DISTINCT COUNT applied to a parent/child hierarchy fails:
+    // unsupported when children expanded
+     public void testDistinctAll() {
+        // parent/child dimension not expanded, and the query works
+		runQueryCheckResult(
+				"select {[Measures].[Count], [Measures].[Org Salary], " + nl +
+                "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns," + nl +
+				"{[Employees]} on rows" + nl +
+				"from [HR]",
+				"Axis #0:" + nl +
+				"{}" + nl +
+				"Axis #1:" + nl +
+				"{[Measures].[Count]}" + nl +
+				"{[Measures].[Org Salary]}" + nl +
+				"{[Measures].[Number of Employees]}" + nl +
+				"{[Measures].[Avg Salary]}" + nl +
+				"Axis #2:" + nl +
+				"{[Employees].[All Employees]}" + nl +
+				"Row #0: 7,392" + nl +
+				"Row #0: $39,431.67" + nl +
+				"Row #0: 616" + nl +
+				"Row #0: $64.01" + nl);
+	}
+    // disable this test til bug is fixed
+	public void _testDistinctChildrenOfAll() {
+        // parent/child dimension expanded: fails with
+        // java.lang.UnsupportedOperationException at
+        // mondrian.rolap.RolapAggregator$6.aggregate(RolapAggregator.java:72)
+		runQueryCheckResult(
+				"select {[Measures].[Count], [Measures].[Org Salary], " + nl +
+                "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns," + nl +
+				"{[Employees].children} on rows" + nl +
+				"from [HR]",
+				"Axis #0:" + nl +
+				"{}" + nl +
+				"Axis #1:" + nl +
+				"{[Measures].[Count]}" + nl +
+				"{[Measures].[Org Salary]}" + nl +
+				"{[Measures].[Number of Employees]}" + nl +
+				"{[Measures].[Avg Salary]}" + nl +
+				"Axis #2:" + nl +
+				"{[Employees].[All Employees]}" + nl +
+				"Row #0: 7,392" + nl +
+				"Row #0: $39,431.67" + nl +
+				"Row #0: 616" + nl +
+				"Row #0: $64.01" + nl);
+	}
+
+    // same two tests, but on a subtree:
+    // disable test til bug fixed
+    public void _testDistinctSubtree() {
+        // also fails with UnsupportedOperationException
+		runQueryCheckResult(
+				"select {[Measures].[Count], [Measures].[Org Salary], " + nl +
+                "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns," + nl +
+				"{[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki]} on rows" + nl +
+				"from [HR]",
+				"Axis #0:" + nl +
+				"{}" + nl +
+				"Axis #1:" + nl +
+				"{[Measures].[Count]}" + nl +
+				"{[Measures].[Org Salary]}" + nl +
+				"{[Measures].[Number of Employees]}" + nl +
+				"{[Measures].[Avg Salary]}" + nl +
+				"Axis #2:" + nl +
+				"{[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki]}" + nl +
+				"Row #0: 24" + nl +
+				"Row #0: $234.36" + nl +
+				"Row #0: 2" + nl +
+				"Row #0: $117.18" + nl);
+	}
+
+
+    // verify that COUNT DISTINCT works against the explict closure of the parent/child
+    // hierarchy. (repeats the last 4 tests).
+    public void testDistinctAllExplicitClosure() {
+		runQueryCheckResult(
+				"select {[Measures].[Count], [Measures].[Org Salary], " + nl +
+                "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns," + nl +
+				"{[EmployeesClosure]} on rows" + nl +
+				"from [HR]",
+				"Axis #0:" + nl +
+				"{}" + nl +
+				"Axis #1:" + nl +
+				"{[Measures].[Count]}" + nl +
+				"{[Measures].[Org Salary]}" + nl +
+				"{[Measures].[Number of Employees]}" + nl +
+				"{[Measures].[Avg Salary]}" + nl +
+				"Axis #2:" + nl +
+				"{[EmployeesClosure].[All Employees]}" + nl +
+				"Row #0: 7,392" + nl +
+				"Row #0: $39,431.67" + nl +
+				"Row #0: 616" + nl +
+				"Row #0: $64.01" + nl);
+	}
+	public void testDistinctChildrenOfAllExplicitClosure() {
+        // the children of the closed relation are all the descendants, so limit results
+		runQueryCheckResult(
+				"select {[Measures].[Count], [Measures].[Org Salary], " + nl +
+                "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns," + nl +
+				"{[EmployeesClosure].FirstChild} on rows" + nl +
+				"from [HR]",
+				"Axis #0:" + nl +
+				"{}" + nl +
+				"Axis #1:" + nl +
+				"{[Measures].[Count]}" + nl +
+				"{[Measures].[Org Salary]}" + nl +
+				"{[Measures].[Number of Employees]}" + nl +
+				"{[Measures].[Avg Salary]}" + nl +
+				"Axis #2:" + nl +
+				"{[EmployeesClosure].[All Employees].[1]}" + nl +
+				"Row #0: 7,392" + nl +
+				"Row #0: $39,431.67" + nl +
+				"Row #0: 616" + nl +
+				"Row #0: $64.01" + nl);
+	}
+    public void testDistinctSubtreeExplicitClosure() {
+		runQueryCheckResult(
+				"select {[Measures].[Count], [Measures].[Org Salary], " + nl +
+                "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns," + nl +
+				"{[EmployeesClosure].[All Employees].[7]} on rows" + nl +
+				"from [HR]",
+				"Axis #0:" + nl +
+				"{}" + nl +
+				"Axis #1:" + nl +
+				"{[Measures].[Count]}" + nl +
+				"{[Measures].[Org Salary]}" + nl +
+				"{[Measures].[Number of Employees]}" + nl +
+				"{[Measures].[Avg Salary]}" + nl +
+				"Axis #2:" + nl +
+				"{[EmployeesClosure].[All Employees].[7]}" + nl +
+				"Row #0: 24" + nl +
+				"Row #0: $234.36" + nl +
+				"Row #0: 2" + nl +
+				"Row #0: $117.18" + nl);
+	}
+
+
+
 	public void testLeaf() {
 		// Juanita Sharp has no reports
 		runQueryCheckResult(
