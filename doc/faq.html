@@ -46,6 +46,7 @@
   <li><a href="#Performance">Performance</a><ul>
     <li><a href="#cache_refresh">When I change the data in the RDBMS, the result
     doesn't change even if i refresh the browser. Why is this?</a></li>
+	<li><a href="#Tuning_the_Aggregate_function">Tuning the Aggregate function</a></li>
   </ul></li>
 </ul>
 
@@ -337,13 +338,74 @@ following piece of code, which flushes the entire contents:</p>
 <p>See <a href="components.html#caching">caching design</a> for more
 information.</p>
 
+<h3><a name="Tuning_the_Aggregate_function">Tuning the Aggregate function</a></h3>
+
+<p>I am using an MDX query with a calculated &quot;aggregate&quot; member. It aggregates 
+the values between Node A and Node B.&nbsp; The dimension that it is aggregating 
+on is a Time dimension. This Time dimension has a granularity of one minute. 
+When executing this MDX query, the performance seems to be fairly bad.</p>
+
+<p>Here is the query: </p>
+
+<blockquote>
+
+	<p><code>WITH MEMBER [Time].[AggregateValues] AS <br>
+&nbsp; 'Aggregate([Time].[2004].[October].[1].[12].[10] : 
+	[Time].[2004].[October].[20].[12].[10])' <br>
+	SELECT [Measures].[Volume] ON ROWS, <br>
+&nbsp; NON EMPTY {[Service].[Name]} <br>
+	WHERE ([Time].[AggregateValues])</code></p>
+</blockquote>
+
+<p>Is this normal behavior? Is there any way I can speed this up?</p>
+
+<p><i>Answer:</i></p>
+
+<p>The performance is bad because you are pulling 19 days * 1440 minutes per day = 
+27360 cells from the database into memory per cell that you actually display. 
+Mondrian is a lot less efficient at crunching numbers than the database is, and 
+uses a lot of memory.</p>
+
+<p>The best way to improve performance is to push as much of the processing to 
+the database as possible. If you were asking for a whole month, it would be 
+easy:</p>
+
+<p>WITH MEMBER [Time].[AggregateValues]<br>
+AS 'Aggregate({[Time].[2004].[October]})'<br>
+SELECT [Measures].[Volume] ON ROWS,<br>
+NON EMPTY {[Service].[Name]}<br>
+WHERE ([Time].[AggregateValues])</p>
+
+<p>But since you're working with time periods which are not aligned with the 
+dimensional structure, you'll have to chop up the interval:</p>
+
+<blockquote>
+
+	<p><code>WITH MEMBER [Time].[AggregateValues]<br>
+&nbsp; AS 'Aggregate({<br>
+&nbsp;&nbsp;&nbsp; [Time].[2004].[October].[1].[12].[10]<br>
+&nbsp;&nbsp;&nbsp;&nbsp; : [Time].[2004].[October].[1].[23].[59],<br>
+&nbsp;&nbsp;&nbsp; [Time].[2004].[October].[2]<br>
+&nbsp;&nbsp;&nbsp;&nbsp; : [Time].[2004].[October].[19],<br>
+&nbsp;&nbsp;&nbsp; [Time].[2004].[October].[20].[0].[00]<br>
+&nbsp;&nbsp;&nbsp;&nbsp; : [Time].[2004].[October].[20].[12].[10]})'<br>
+	SELECT [Measures].[Volume] ON ROWS, <br>
+	NON EMPTY {[Service].[Name]} <br>
+	WHERE ([Time].[AggregateValues])</code></p>
+</blockquote>
+
+<p>This will retrieve a much smaller number of cells from the database &mdash; 18 
+days + no more than 1440 minutes &mdash; and therefore do more of the heavy lifting 
+using SQL's <code>GROUP BY</code> operator. If you want to improve it still further, 
+introduce hourly aggregates.</p>
+
 <hr noshade color="#000000" size="1">
 
 
 <table border="0" class="clsStd" width="100%" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0">
   <tr>
     <td class="content">
-      <a target="_top" href="index.html">Home</a> |
+      <a target="_top" href="index.html">Homeeee</a> |
       <a target="_top" href="#">No frames</a> | This file is<i>
       <a href="http://mondrian.sourceforge.net/faq.html">$Id$</a></i>
       (<a href="http://perforce.eigenbase.org:8080/open/mondrian/doc/faq.html?ac=22">log</a>)</td>
