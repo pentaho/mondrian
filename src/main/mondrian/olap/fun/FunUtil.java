@@ -36,6 +36,12 @@ public class FunUtil extends Util {
 	}
 
 	static Exp getArgNoEval(Exp[] args, int index) {
+		return getArgNoEval(args, index, null);
+	}
+
+	static Exp getArgNoEval(Exp[] args, int index, Exp defaultValue) {
+		if (index >= args.length)
+			return defaultValue;
 		return args[index];
 	}
 

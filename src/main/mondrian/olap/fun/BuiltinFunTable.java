@@ -1385,7 +1385,7 @@ public class BuiltinFunTable extends FunTable {
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						List members = (List) getArg(evaluator, args, 0);
-						ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
+						ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
 						Aggregator aggregator = (Aggregator) evaluator.getProperty(Property.PROPERTY_AGGREGATION_TYPE);
 						if (aggregator == null) {
 							throw newEvalException(null, "Could not find an aggregator in the current evaluation context");
@@ -1527,7 +1527,7 @@ public class BuiltinFunTable extends FunTable {
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					List members = (List) getArg(evaluator, args, 0);
-					ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
+					ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
 					return avg(evaluator.push(), members, exp);
 				}
 				public void testAvg(FoodMartTestCase test) {
@@ -1543,8 +1543,8 @@ public class BuiltinFunTable extends FunTable {
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					List members = (List) getArg(evaluator, args, 0);
-					ExpBase exp1 = (ExpBase) getArg(evaluator, args, 1);
-					ExpBase exp2 = (ExpBase) getArg(evaluator, args, 2, valueFunCall);
+					ExpBase exp1 = (ExpBase) getArgNoEval(args, 1);
+					ExpBase exp2 = (ExpBase) getArgNoEval(args, 2, valueFunCall);
 					return correlation(evaluator.push(), members, exp1, exp2);
 				}
 				public void testCorrelation(FoodMartTestCase test) {
@@ -1607,8 +1607,8 @@ public class BuiltinFunTable extends FunTable {
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					List members = (List) getArg(evaluator, args, 0);
-					ExpBase exp1 = (ExpBase) getArg(evaluator, args, 1);
-					ExpBase exp2 = (ExpBase) getArg(evaluator, args, 2);
+					ExpBase exp1 = (ExpBase) getArgNoEval(args, 1);
+					ExpBase exp2 = (ExpBase) getArgNoEval(args, 2);
 					return covariance(evaluator.push(), members, exp1, exp2, true);
 				}
 				public void testCovariance(FoodMartTestCase test) {
@@ -1622,8 +1622,8 @@ public class BuiltinFunTable extends FunTable {
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					List members = (List) getArg(evaluator, args, 0);
-					ExpBase exp1 = (ExpBase) getArg(evaluator, args, 1);
-					ExpBase exp2 = (ExpBase) getArg(evaluator, args, 2, valueFunCall);
+					ExpBase exp1 = (ExpBase) getArgNoEval(args, 1);
+					ExpBase exp2 = (ExpBase) getArgNoEval(args, 2, valueFunCall);
 					return covariance(evaluator.push(), members, exp1, exp2, false);
 				}
 				public void testCovarianceN(FoodMartTestCase test) {
@@ -1654,7 +1654,7 @@ public class BuiltinFunTable extends FunTable {
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					List members = (List) getArg(evaluator, args, 0);
-					ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
+					ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
 					return max(evaluator.push(), members, exp);
 				}
 				public void testMax(FoodMartTestCase test) {
@@ -1669,7 +1669,7 @@ public class BuiltinFunTable extends FunTable {
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					List members = (List) getArg(evaluator, args, 0);
-					ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
+					ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
 					//todo: ignore nulls, do we need to ignore the List?
 					return median(evaluator.push(), members, exp);
 
@@ -1759,13 +1759,18 @@ public class BuiltinFunTable extends FunTable {
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					List members = (List) getArg(evaluator, args, 0);
-					ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
+					ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
 					return min(evaluator.push(), members, exp);
 				}
 				public void testMin(FoodMartTestCase test) {
 					String result = test.executeExpr(
 							"MIN({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
 					Assert.assertEquals("142,277.07", result);
+				}
+				public void testMinTupel(FoodMartTestCase test) {
+					String result = test.executeExpr(
+						"Min([Customers].[All Customers].[USA].Children, ([Measures].[Unit Sales], [Gender].[All Gender].[F]))");
+					Assert.assertEquals("33,036", result);
 				}
 			}));
 		define(new FunDefBase("Ordinal", "<Level>.Ordinal", "Returns the zero-based ordinal value associated with a level.", "pnl"));
@@ -1776,7 +1781,7 @@ public class BuiltinFunTable extends FunTable {
 				new FunkBase() {
 						public Object evaluate(Evaluator evaluator, Exp[] args) {
 							List members = (List) getArg(evaluator, args, 0);
-							ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
+							ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
 							return stdev(evaluator.push(), members, exp, false);
 						}
 				}));
@@ -1786,7 +1791,7 @@ public class BuiltinFunTable extends FunTable {
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						List members = (List) getArg(evaluator, args, 0);
-						ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
+						ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
 						return stdev(evaluator.push(), members, exp, false);
 					}
 					public void testStdev(FoodMartTestCase test) {
@@ -1801,7 +1806,7 @@ public class BuiltinFunTable extends FunTable {
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						List members = (List) getArg(evaluator, args, 0);
-						ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
+						ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
 						return stdev(evaluator.push(), members, exp, true);
 					}
 				}));
@@ -1811,7 +1816,7 @@ public class BuiltinFunTable extends FunTable {
 				new FunkBase() {
 						public Object evaluate(Evaluator evaluator, Exp[] args) {
 							List members = (List) getArg(evaluator, args, 0);
-							ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
+							ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
 							return stdev(evaluator.push(), members, exp, true);
 						}
 					public void testStdevP(FoodMartTestCase test) {
@@ -1826,7 +1831,7 @@ public class BuiltinFunTable extends FunTable {
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						List members = (List) getArg(evaluator, args, 0);
-						ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
+						ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
 						return sum(evaluator.push(), members, exp);
 					}
 					public void testSumNoExp(FoodMartTestCase test) {
@@ -1881,7 +1886,7 @@ public class BuiltinFunTable extends FunTable {
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						List members = (List) getArg(evaluator, args, 0);
-						ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
+						ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
 						return var(evaluator.push(), members, exp, false);
 					}
 					public void testVar(FoodMartTestCase test) {
@@ -1896,7 +1901,7 @@ public class BuiltinFunTable extends FunTable {
 				new FunkBase() {
 						public Object evaluate(Evaluator evaluator, Exp[] args) {
 							List members = (List) getArg(evaluator, args, 0);
-							ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
+							ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
 							return var(evaluator.push(), members, exp, false);
 						}
 				}));
@@ -1906,7 +1911,7 @@ public class BuiltinFunTable extends FunTable {
 				new FunkBase() {
 						public Object evaluate(Evaluator evaluator, Exp[] args) {
 							List members = (List) getArg(evaluator, args, 0);
-							ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
+							ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
 							return var(evaluator.push(), members, exp, true);
 						}
 				}));
@@ -1916,7 +1921,7 @@ public class BuiltinFunTable extends FunTable {
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						List members = (List) getArg(evaluator, args, 0);
-						ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
+						ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
 						return var(evaluator.push(), members, exp, true);
 					}
 					public void testVarP(FoodMartTestCase test) {
@@ -1973,7 +1978,7 @@ public class BuiltinFunTable extends FunTable {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					List list = (List) getArg(evaluator, args, 0);
 					int n = getIntArg(evaluator, args, 1);
-					ExpBase exp = (ExpBase) getArg(evaluator, args, 2, null);
+					ExpBase exp = (ExpBase) getArgNoEval(args, 2, null);
 					if (exp != null) {
 						boolean desc = false, brk = true;
 						sort(evaluator, list, exp, desc, brk);
@@ -1997,7 +2002,7 @@ public class BuiltinFunTable extends FunTable {
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					List members = (List) getArg(evaluator, args, 0);
-					ExpBase exp = (ExpBase) getArg(evaluator, args, 2);
+					ExpBase exp = (ExpBase) getArgNoEval(args, 2);
 					Double n = getDoubleArg(evaluator, args, 1);
 					return topOrBottom(evaluator.push(), members, exp, false, true, n.doubleValue());
 
@@ -2016,7 +2021,7 @@ public class BuiltinFunTable extends FunTable {
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					List members = (List) getArg(evaluator, args, 0);
-					ExpBase exp = (ExpBase) getArg(evaluator, args, 2);
+					ExpBase exp = (ExpBase) getArgNoEval(args, 2);
 					Double n = getDoubleArg(evaluator, args, 1);
 					return topOrBottom(evaluator.push(), members, exp, false, false, n.doubleValue());
 
@@ -3590,7 +3595,7 @@ public class BuiltinFunTable extends FunTable {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						List list = (List) getArg(evaluator, args, 0);
 						int n = getIntArg(evaluator, args, 1);
-						ExpBase exp = (ExpBase) getArg(evaluator, args, 2, null);
+						ExpBase exp = (ExpBase) getArgNoEval(args, 2, null);
 						if (exp != null) {
 							boolean desc = true, brk = true;
 							sort(evaluator, list, exp, desc, brk);
@@ -3605,6 +3610,11 @@ public class BuiltinFunTable extends FunTable {
 								"[Promotion Media].[All Media].[No Media]" + nl +
 								"[Promotion Media].[All Media].[Daily Paper, Radio, TV]");
 					}
+					public void testTopCountTuple(FoodMartTestCase test) {
+						test.assertAxisReturns("TopCount([Customers].[Name].members,2,(Time.[1997].[Q1],[Measures].[Store Sales]))",
+							"[Customers].[All Customers].[USA].[WA].[Spokane].[Grace McLaughlin]" + nl +
+							"[Customers].[All Customers].[USA].[WA].[Spokane].[Matt Bellah]");
+					}
 				}));
 
 		define(new FunkResolver(
@@ -3613,7 +3623,7 @@ public class BuiltinFunTable extends FunTable {
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					List members = (List) getArg(evaluator, args, 0);
-					ExpBase exp = (ExpBase) getArg(evaluator, args, 2);
+					ExpBase exp = (ExpBase) getArgNoEval(args, 2);
 					Double n = getDoubleArg(evaluator, args, 1);
 					return topOrBottom(evaluator.push(), members, exp, true, true, n.doubleValue());
 
@@ -3631,7 +3641,7 @@ public class BuiltinFunTable extends FunTable {
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					List members = (List) getArg(evaluator, args, 0);
-					ExpBase exp = (ExpBase) getArg(evaluator, args, 2);
+					ExpBase exp = (ExpBase) getArgNoEval(args, 2);
 					Double n = getDoubleArg(evaluator, args, 1);
 					return topOrBottom(evaluator.push(), members, exp, true, false, n.doubleValue());
 
