@@ -90,8 +90,22 @@ public class RolapSchema implements Schema
 			String schema = connectInfo.get(RolapConnectionProperties.CatalogContent);
 			final DOMWrapper def;
 			if (schema == null) {
+				String dynProcName = connectInfo.get(RolapConnectionProperties.DynamicSchemaProcessor);
 				java.net.URL url = new java.net.URL(catalogName);
+				if ( dynProcName != null && dynProcName.length() >0 ) {
+					try {
+						Class clazz = Class.forName(dynProcName);
+						Constructor ctor = clazz.getConstructor(new Class[0]);
+						DynamicSchemaProcessor dynProc =
+							(DynamicSchemaProcessor) ctor.newInstance(new Object[0]);
+						schema = dynProc.processSchema(url);
+					} catch (Exception e) {
+						throw Util.newError(e, "loading DynamicSchemaProcessor " + dynProcName);
+					}
+					def = xmlParser.parse(schema);
+				} else {
 				def = xmlParser.parse(url);
+				}
 			} else {
 				def = xmlParser.parse(schema);
 			}
@@ -296,18 +310,18 @@ public class RolapSchema implements Schema
 		synchronized RolapSchema get(
 				String catalogName, String jdbcConnectString,
 				String jdbcUser, String dataSource, Util.PropertyList connectInfo) {
+			// if a schema will be dynamically processed, caching is not possible
+			// a "http" URL schema is assumed to be dynamic and will not be cached either
+			String dynProc = connectInfo.get(RolapConnectionProperties.DynamicSchemaProcessor);
+			if ( (dynProc != null && dynProc.length() == 0) || catalogName.toLowerCase().startsWith("http")  ) {
+				// no caching
+				return new RolapSchema(catalogName, connectInfo);
+			}
 			final String key = makeKey(catalogName, jdbcConnectString, jdbcUser, dataSource);
 			RolapSchema schema = (RolapSchema) mapUrlToSchema.get(key);
 			if (schema == null) {
 				schema = new RolapSchema(catalogName, connectInfo);
-				// do not chache the schema, if it dynamic
-				//  .i.e created from an http URL.
-				if (!catalogName.toLowerCase().startsWith("http"))
 					mapUrlToSchema.put(key, schema);
-				// Must create RolapConnection after we add to map, otherwise
-				// we will loop.
-				// no, this is redundant - its set in the ctor of RolapSchema
-				// schema.internalConnection = new RolapConnection(connectInfo, schema);
 			}
 			return schema;
 		}

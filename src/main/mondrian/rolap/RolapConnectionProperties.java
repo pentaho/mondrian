@@ -23,7 +23,7 @@ public class RolapConnectionProperties extends EnumeratedValues {
     private RolapConnectionProperties() {
 		super(new String[] {
 			Provider, Jdbc, JdbcDrivers, JdbcUser, JdbcPassword, Catalog,
-			CatalogContent, CatalogName, DataSource, PoolNeeded, Role});
+			CatalogContent, CatalogName, DataSource, PoolNeeded, Role, DynamicSchemaProcessor});
 	}
 	/**
 	 * @{value} must equal <code>"Mondrian"</code>.
@@ -98,6 +98,13 @@ public class RolapConnectionProperties extends EnumeratedValues {
      * after removing this prefix. This allows you to specify connection properties without a URL.
      */
     public static final String JdbcPropertyPrefix = "jdbc.";
+    /**
+     * The name of a class implementing mondrian.rolap.DynamicSchemaProcessor.
+     * A dynamic schema prozessor is called at runtime in order to modify the
+     * schema content.
+     */
+    public static final String DynamicSchemaProcessor = "DynamicSchemaProcessor";
+
 }
 
 // End RolapConnectionProperties.java
