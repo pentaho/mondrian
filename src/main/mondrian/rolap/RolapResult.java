@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Vector;
+import java.io.PrintWriter;
 
 /**
  * todo:
@@ -45,6 +46,8 @@ class RolapResult extends ResultBase
 		this.aggregatingReader = new AggregatingCellReader();
 		final boolean alwaysFlush = Util.getProperties().getBooleanProperty(
 				"mondrian.rolap.RolapResult.flushAfterEachQuery");
+		final boolean printCacheables = Util.getProperties().getBooleanProperty(
+				"mondrian.rolap.RolapResult.printCacheables");
 		HashSet pinnedSegments = new HashSet();
 		this.batchingReader = new BatchingCellReader(
 			(RolapCube) query.getCube(), pinnedSegments);
@@ -94,6 +97,10 @@ class RolapResult extends ResultBase
 			CachePool.instance().unpin(pinnedSegments);
 			if (alwaysFlush) {
 				CachePool.instance().flush();
+			}
+			if (printCacheables) {
+				CachePool.instance().validate();
+				CachePool.instance().printCacheables(new PrintWriter(System.out));
 			}
 		}
 	}
@@ -232,6 +239,11 @@ class RolapResult extends ResultBase
 			// contains it
 			Object o = AggregationManager.instance().getCellFromCache(
 				currentMembers, pinnedSegments);
+			if (o == Boolean.TRUE) {
+				// Aggregation is being loaded. (todo: Use better value, or
+				// throw special exception)
+				return cube.valueNotReadyException;
+			}
 			if (o != null) {
 				return o;
 			}
@@ -287,7 +299,7 @@ class RolapResult extends ResultBase
 				for (int j = 0; j < position.members.length; j++) {
 					evaluator.setContext((RolapMember) position.members[j]);
 				}
-				Object o = null;
+				Object o;
 				try {
 					o = evaluator.evaluateCurrent();
 				} catch (MondrianEvaluationException e) {

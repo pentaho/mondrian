@@ -49,6 +49,11 @@ import java.io.PrintWriter;
  * cell count (c) and the value count (v). We don't count the space
  * required for the actual values, which is the same in any scheme.</p>
  *
+ * <b>Note to developers</b>: {@link Segment} implements {@link Cacheable},
+ * and must adhere to the contract that imposes. For this class, that means
+ * that references to segments must be made using soft references (see {@link
+ * CachePool.SoftCacheableReference}) so that they can be garbage-collected.
+ *
  * @author jhyde
  * @since 28 August, 2001
  * @version $Id$
@@ -57,24 +62,26 @@ public class Aggregation
 {
 	RolapStar star;
 	RolapStar.Column[] columns;
-	ArrayList segments;
+	/** List of soft references to segments. **/
+	ArrayList segmentRefs;
 
 	Aggregation(RolapStar star, RolapStar.Column[] columns) {
 		this.star = star;
 		this.columns = columns;
-		this.segments = new ArrayList();
+		this.segmentRefs = new ArrayList();
 	}
 
 	/**
 	 * Loads a set of segments into this aggregation, one per measure,
-	 * each constrained by the same set of column values.
+	 * each constrained by the same set of column values, and each pinned
+	 * once.
 	 *
 	 * For example,
 	 *   measures = {unit_sales, store_sales},
 	 *   state = {CA, OR},
 	 *   gender = unconstrained
 	 */
-	void load(
+	synchronized void load(
 			RolapStar.Measure[] measures, Object[][] constraintses,
 			Collection pinnedSegments) {
 		Segment[] segments = new Segment[measures.length];
@@ -82,7 +89,11 @@ public class Aggregation
 			RolapStar.Measure measure = measures[i];
 			Segment segment = new Segment(this, measure, constraintses);
 			segments[i] = segment;
-			this.segments.add(segment);
+			CachePool.SoftCacheableReference ref =
+					new CachePool.SoftCacheableReference(segment);
+			this.segmentRefs.add(ref);
+			final int pinCount = 1;
+			CachePool.instance().register(segment, pinCount, pinnedSegments);
 		}
 		Segment.load(segments, pinnedSegments);
 	}
@@ -168,80 +179,45 @@ public class Aggregation
 				return constraints.length;
 			}
 		}
-	};
-
-	Object[][] obsolete_optimizeConstraints(Object[][] constraintses)
-	{
-		// We currently drop constraints which would retrieve more than about
-		// half of the column values (actually (cardinality - 5) / 2). But if
-		// each of 10 dimensions caused a 2x bloat, that would bloat the
-		// aggregation by 1000x, and that would be a problem. So we ought to
-		// limit the total bloat to say 10x, and drop the constraints which
-		// would cause the least bloat.
-		Util.assertTrue(constraintses.length == columns.length);
-		Object[][] newConstraintses = (Object[][]) constraintses.clone();
-		for (int i = 0; i < columns.length; i++) {
-			Object[] constraints = constraintses[i];
-			RolapStar.Column column = columns[i];
-			if (constraints == null) {
-				continue; // this column is already unconstrained
-			}
-			int cardinality = column.getCardinality();
-			if (cardinality * 2 + 5 > constraints.length) {
-				newConstraintses[i] = null;
-			}
-		}
-		return newConstraintses;
-	}
-
-	// implement CellReader
-//	public Object get(Evaluator evaluator)
-//	{
-//		RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator;
-//		CellRequest request =
-//			RolapAggregationManager.instance().makeRequest(
-//				rolapEvaluator.currentMembers);
-//		Object[] keys = request.getSingleValues();
-//		return get(keys);
-//	}
-
-	Object get(RolapStar.Measure measure, Object[] keys)
-	{
-		for (int i = 0, count = segments.size(); i < count; i++) {
-			Segment segment = (Segment) segments.get(i);
-			if (segment.measure != measure) {
-				continue;
-			}
-			Object o = segment.get(keys);
-			if (o != null) {
-				// 'Util.nullValue' means right segment, but no fact table rows
-				// exist at that coordinate, hence the total is null; 'null'
-				// means the value wouldn't be in the segment
-				return o;
-			}
-		}
-		throw Util.getRes().newInternal("not found");
 	}
 
 	/**
-	 * Retrieves the value identified by <code>keys</code>, and pins the
+	 * Retrieves the value identified by <code>keys</code>.
+	 *
+	 * <p>If <code>pinSet</code> is not null, pins the
 	 * segment which holds it. <code>pinSet</code> ensures that a segment is
-	 * only pinned once. Returns <code>null</code> if no segment contains the
+	 * only pinned once.
+	 *
+	 * Returns <code>null</code> if no segment contains the
 	 * cell.
 	 **/
-	Object getAndPin(RolapStar.Measure measure, Object[] keys, Collection pinSet)
-	{
-		for (int i = 0, count = segments.size(); i < count; i++) {
-			Segment segment = (Segment) segments.get(i);
-			Object o = segment.get(keys);
+	synchronized Object get(
+			RolapStar.Measure measure, Object[] keys, Collection pinSet) {
+		for (int i = 0, count = segmentRefs.size(); i < count; i++) {
+			CachePool.SoftCacheableReference ref =
+					(CachePool.SoftCacheableReference) segmentRefs.get(i);
+			Segment segment = (Segment) ref.getCacheable();
+			if (segment == null) {
+				continue; // it's being garbage-collected, has not finalized yet
+			}
 			if (segment.measure != measure) {
 				continue;
 			}
-			if (o != null) {
-				if (!pinSet.contains(segment)) {
-					CachePool.instance().pin(segment, pinSet);
+			if (segment.isLoaded()) {
+				Object o = segment.get(keys);
+				if (o != null) {
+					if (pinSet != null) {
+						CachePool.instance().pin(segment, pinSet);
+					}
+					return o;
 				}
-				return o;
+			} else {
+				if (segment.wouldContain(keys)) {
+					if (pinSet != null) {
+						CachePool.instance().pin(segment, pinSet);
+					}
+					return null;
+				}
 			}
 		}
 		return null;
@@ -270,6 +246,9 @@ public class Aggregation
 		}
 		double getBytes()
 		{
+			if (keys == null) {
+				return 0;
+			}
 			return 16 + 8 * keys.length;
 		}
 	}

@@ -25,6 +25,94 @@
 <h2>Components</h2>
 <i>to be written...</i>
 
+<h2>Caching strategy</h2>
+<p>The various subsystems of mondrian have different memory requirements. Some 
+of them require a fixed amount of memory to do their work, whereas others can 
+exploit extra memory to increase their performance. This is an overview of how 
+the various subsystems use memory.</p>
+<p><dfn><font face="Verdana">Caching</font></dfn> is a scheme whereby a 
+component uses extra memory when it is available in order to boost its 
+performance, and when times are hard, it releases memory with loss of 
+performance but with no loss of correctness. A cache&nbsp; is the use of extra 
+memory when times are good, use varying amounts of memory.</p>
+<p><dfn><font face="Verdana">Garbage collection</font></dfn> is carried out by 
+the Java VM to reclaim objects which are unreachable from 'live' objects. A 
+special construct called a <i>soft reference</i> allows objects to be 
+garbage-collected in hard times.</p>
+<p>The garbage collector is not very discriminating in what it chooses to throw 
+out, so mondrian has its own caching strategy. There are several caches in the 
+system (described below), but they all of the objects in these caches are 
+registered in the singleton instance of
+<a href="http://mondrian.sourceforge.net/api/mondrian/rolap/CachePool.html">
+class mondrian.rolap.CachePool</a> (currently there is just a single instance). 
+The cache pool doesn't actually store the objects, but handles all of the events 
+related to their life cycle in a cache. It weighs objects' cost (some function 
+involving their size in bytes and their usefulness, which is based upon how 
+recently they were used) and their benefit (the effort it would take to 
+re-compute them).</p>
+<p>The cache pool is not infallible &mdash; in particular, it can not adapt to  conditions where memory is in short supply &mdash; so uses 
+soft references, so that 
+the garbage collector can overrule its wisdom.</p>
+<p>Cached objects must obey the following contract:</p>
+<ol>
+  <li dir="ltr">
+  <p dir="ltr">They must implement
+  <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/CachePool.Cacheable.html">
+  interface mondrian.rolap.CachePool.Cacheable</a>, which includes methods to 
+  measure objects' cost, benefit, record each time they are used, and tell them 
+  to remove themselves from their cache.</li>
+  <li>Their constructor must call
+  <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/CachePool.html#registerBirth(Object)">
+  CachePool.registerBirth(Cachable)</a>, and they must call
+  <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/CachePool.html#registerDeath">
+  CachePool.registerDeath(Cachable)</a>. (This allows us to detect leaks of 
+  cacheable objects.)</li>
+  <li>They must be despensable: if they disappear, their subsystem will continue 
+  to work correctly, albeit slower. A subsystem can declare an object to be 
+  temporarily indispensable by calling
+  <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/CachePool.html#registerBirth(Object)">
+  CachePool.pin(Cacheable,Collection)</a> and then unpin it a short time later.</li>
+  <li>They must be available for garbage collection. Their cache must reference 
+  them via soft references.</li>
+  <li>Thread safety. Their cache must be thread-safe. We will implement phased 
+  construction: if a cached object takes a significant time to initialize, it 
+  marks itself under construction, so that the caller can leave the critical 
+  section, and other threads can access already initialized objects in the 
+  cache; when the object has completed construction, it will notify the caller 
+  that it is ready.</li>
+</ol>
+<p>The following objects are cached.</p>
+<h3>1. Segment</h3>
+<p>A Segment (<a href="http://mondrian.sourceforge.net/api/mondrian/rolap/agg/Segment.html">class 
+mondrian.rolap.agg.Segment</a>) is a collection of cell values parameterized by 
+a measure, and a set of (column, value) pairs. An example of a segment is</p>
+<blockquote>
+  <p>(Unit sales, Gender = 'F', State in {'CA','OR'}, Marital Status = <i>
+  anything</i>)</p>
+</blockquote>
+<p>All segments over the same set of columns belong to an Aggregation, in this 
+case</p>
+<blockquote>
+  <p>('Sales' Star, Gender, State, Marital Status)</p>
+</blockquote>
+<p>Note that different measures (in the same Star) occupy the same Aggregation. 
+Aggregations belong to the AggregationManager, a singleton.</p>
+<p>Segments are pinned during the evaluation of a single MDX query. The query 
+evaluates the expressions twice. The first pass, it finds which cell values it 
+needs, pins the segments containing the ones which are already present (one 
+pin-count for each cell value used), and builds a cell request (<a href="api/mondrian/rolap/CachePool.Cacheable.html">class 
+mondrian.rolap.agg.CellRequest</a>) for those which are not present. It executes 
+the cell request to bring the required cell values into the cache, again, 
+pinned. Then it evalutes the query a second time, knowing that all cell values 
+are available. Finally, it releases the pins.</p>
+<h3>2. Member set</h3>
+<p>A member set (<a href="http://mondrian.sourceforge.net/api/mondrian/rolap/SmartMemberReaderChildrenList.html">class 
+mondrian.rolap.SmartMemberReader.ChildrenList</a>) is a set of children of a 
+particular member. It belongs to a member reader (<a href="http://mondrian.sourceforge.net/api/mondrian/rolap/SmartMemberReader.html">class 
+mondrian.rolap.SmartMemberReader</a>).</p>
+<p>&nbsp; </p>
+<p>&nbsp;</p>
+
 <hr>
 
 <table border="0" class="clsStd" width="100%" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0">

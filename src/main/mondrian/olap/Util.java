@@ -657,9 +657,16 @@ public class Util extends mondrian.xom.XOMUtil
 		 * found, or if its value is not an integer.
 		 */
 		public int getIntProperty(String key) {
+			return getIntProperty(key, -1);
+		}
+		/**
+		 * Retrieves an integer property. Returns <code>default</code> if the
+		 * property is not found.
+		 */
+		public int getIntProperty(String key, int defaultValue) {
 			String value = getProperty(key);
 			if (value == null) {
-				return -1;
+				return defaultValue;
 			}
 			int i = Integer.valueOf(value).intValue();
 			return i;

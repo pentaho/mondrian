@@ -94,7 +94,7 @@ public class AggregationManager extends RolapAggregationManager {
 		}
 	}
 
-	void loadAggregation(
+	private synchronized void loadAggregation(
 		RolapStar.Measure[] measures, RolapStar.Column[] columns,
 		Object[][] constraintses, Collection pinnedSegments)
 	{
@@ -111,6 +111,8 @@ public class AggregationManager extends RolapAggregationManager {
 	/**
 	 * Looks for an existing aggregation over a given set of columns, or
 	 * returns <code>null</code> if there is none.
+	 *
+	 * <p>Must be called from synchronized context.
 	 **/
 	private Aggregation lookupAggregation(
 			RolapStar star, RolapStar.Column[] columns)
@@ -147,19 +149,25 @@ public class AggregationManager extends RolapAggregationManager {
 		if (aggregation == null) {
 			return null; // cell is not in any aggregation
 		}
-		return aggregation.get(measure, request.getSingleValues());
+		Object o = aggregation.get(
+				measure, request.getSingleValues(), null);
+		if (o != null) {
+			return o;
+		}
+		throw Util.getRes().newInternal("not found");
 	}
 
 	public Object getCellFromCache(CellRequest request, Set pinSet) {
+		Util.assertPrecondition(pinSet != null);
 		RolapStar.Measure measure = request.getMeasure();
 		Aggregation aggregation = lookupAggregation(
 				measure.table.star, request.getColumns());
 		if (aggregation == null) {
 			return null; // cell is not in any aggregation
 		}
-		return aggregation.getAndPin(measure, request.getSingleValues(), pinSet);
+		return aggregation.get(
+				measure, request.getSingleValues(), pinSet);
 	}
-
 }
 
 // End RolapAggregationManager.java

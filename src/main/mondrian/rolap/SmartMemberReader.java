@@ -134,11 +134,18 @@ class SmartMemberReader implements MemberReader, MemberCache
 		ArrayList missed = new ArrayList();
 		for (int i = 0; i < parentMembers.length; i++) {
 			RolapMember parent = parentMembers[i];
-			ChildrenList v = (ChildrenList) mapMemberToChildren.get(parent);
-			if (v == null) {
+			CachePool.SoftCacheableReference ref =
+					(CachePool.SoftCacheableReference) mapMemberToChildren.get(
+							parent);
+			if (ref == null) {
 				missed.add(parent);
 			} else {
-				result.addAll(v.list);
+				ChildrenList v = (ChildrenList) ref.getCacheable();
+				if (v == null) {
+					missed.add(parent);
+				} else {
+					result.addAll(v.list);
+				}
 			}
 		}
 		if (missed.size() > 0) {
@@ -154,6 +161,9 @@ class SmartMemberReader implements MemberReader, MemberCache
 	 * A <code>ChildrenList</code> is held in the {@link mapMemberToChildren}
 	 * cache. It implements {@link CachePool.Cacheable}, so it can be removed
 	 * if it is not pulling its weight.
+	 *
+	 * <p><b>Note to developers</b>: this class must obey the contract for
+	 * objects which implement {@link CachePool.Cacheable}.
 	 **/
 	static class ChildrenList implements CachePool.Cacheable
 	{
@@ -169,6 +179,11 @@ class SmartMemberReader implements MemberReader, MemberCache
 			this.member = member;
 			this.list = new ArrayList();
 		}
+
+		protected void finalize() {
+			CachePool.instance().deregister(this, true); // per Cacheable contract
+		}
+
 		// implement CachePool.Cacheable
 		public double getCost()
 		{
@@ -185,7 +200,13 @@ class SmartMemberReader implements MemberReader, MemberCache
 		// implement CachePool.Cacheable
 		public void removeFromCache()
 		{
-			reader.mapMemberToChildren.remove(member);
+			CachePool.SoftCacheableReference ref =
+					(CachePool.SoftCacheableReference)
+					reader.mapMemberToChildren.remove(member);
+			if (ref == null ||
+					ref.getCacheableOrFail() != this) {
+				throw Util.newInternal("Bad or non-existent ref: " + ref);
+			}
 		}
 		// implement CachePool.Cacheable
 		public void markAccessed(double recency)
@@ -195,6 +216,7 @@ class SmartMemberReader implements MemberReader, MemberCache
 		// implement CachePool.Cacheable
 		public void setPinCount(int pinCount)
 		{
+			System.out.println("SmartMemberReader: pinCount=" + pinCount + " (was " + this.pinCount + ")");
 			this.pinCount = pinCount;
 		}
 		// implement CachePool.Cacheable
@@ -235,12 +257,12 @@ class SmartMemberReader implements MemberReader, MemberCache
 			result.add(child);
 		}
 		CachePool pool = CachePool.instance();
-		for (Iterator elements =
-				 tempMap.values().iterator(); elements.hasNext(); ) {
-			ChildrenList list = (ChildrenList) elements.next();
-			pool.register(list);
+		for (Iterator keys = tempMap.keySet().iterator(); keys.hasNext();) {
+			RolapMember member = (RolapMember) keys.next();
+			ChildrenList referent = (ChildrenList) tempMap.get(member);
+			CachePool.SoftCacheableReference ref = new CachePool.SoftCacheableReference(referent);
+			mapMemberToChildren.put(member, ref);
 		}
-		mapMemberToChildren.putAll(tempMap);
 	}
 
 	public RolapMember getLeadMember(RolapMember member, int n)
@@ -249,9 +271,12 @@ class SmartMemberReader implements MemberReader, MemberCache
 			return member;
 		} else if (false) {
 			RolapMember parent = (RolapMember) member.getParentMember();
-			ChildrenList siblings = (ChildrenList)
-				mapMemberToChildren.get(parent);
-			if (siblings != null) {
+			CachePool.SoftCacheableReference refSiblings =
+					(CachePool.SoftCacheableReference) mapMemberToChildren.get(
+							parent);
+			if (refSiblings != null) {
+				ChildrenList siblings = (ChildrenList)
+						refSiblings.getCacheableOrFail();
 				int pos = siblings.list.indexOf(member);
 				Util.assertTrue(pos >= 0);
 				int siblingPos = pos + n;

@@ -18,18 +18,44 @@ import mondrian.rolap.RolapStar;
 import mondrian.rolap.RolapUtil;
 import mondrian.rolap.sql.SqlQuery;
 
-import javax.olap.metadata.Measure;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Collection;
 
 /**
- * <code>Segment</code> todo:
+ * A <code>Segment</code> is a collection of cell values parameterized by
+ * a measure, and a set of (column, value) pairs. An example of a segment is</p>
+ *
+ * <blockquote>
+ *   <p>(Unit sales, Gender = 'F', State in {'CA','OR'}, Marital Status = <i>
+ *   anything</i>)</p>
+ * </blockquote>
+ *
+ * <p>All segments over the same set of columns belong to an Aggregation, in this
+ * case</p>
+ *
+ * <blockquote>
+ *   <p>('Sales' Star, Gender, State, Marital Status)</p>
+ * </blockquote>
+ *
+ * <p>Note that different measures (in the same Star) occupy the same Aggregation.
+ * Aggregations belong to the AggregationManager, a singleton.</p>
+ * <p>Segments are pinned during the evaluation of a single MDX query. The query
+ * evaluates the expressions twice. The first pass, it finds which cell values it
+ * needs, pins the segments containing the ones which are already present (one
+ * pin-count for each cell value used), and builds a {@link CellRequest
+ * cell request} for those which are not present. It executes
+ * the cell request to bring the required cell values into the cache, again,
+ * pinned. Then it evalutes the query a second time, knowing that all cell values
+ * are available. Finally, it releases the pins.</p>
+ *
+ * <p><b>Note to developers</b>: this class must obey the contract for
+ * objects which implement {@link CachePool.Cacheable}.
  *
  * @author jhyde
  * @since 21 March, 2002
@@ -48,6 +74,7 @@ public class Segment implements CachePool.Cacheable
 	private int[] pos; // workspace
 	private double recency; // when was this segment last used?
 	private int pinCount;
+	private double cost;
 
 	/**
 	 * Creates a <code>Segment</code>; it's not loaded yet.
@@ -76,18 +103,43 @@ public class Segment implements CachePool.Cacheable
 		this.desc = makeDescription();
 	}
 
+	protected void finalize() {
+		CachePool.instance().deregister(this, true); // per Cacheable contract
+	}
+
 	/**
-	 * Set the data.
-	 *
-	 * todo: Give segments state, so that they are not used
-	 * before they are ready. This would be the point where they are marked
-	 * ready.
+	 * Sets the data, and notifies any threads which are blocked in
+	 * {@link #waitUntilLoaded}.
 	 */
-	void setData(DenseSegmentDataset data, Collection pinnedSegments) {
+	synchronized void setData(
+			DenseSegmentDataset data, Aggregation.Axis[] axes,
+			Collection pinnedSegments) {
 		Util.assertTrue(this.data == null);
+		this.axes = axes;
 		this.data = data;
-		final int pinCount = 1;
-		CachePool.instance().register(this, pinCount, pinnedSegments);
+		adjustCost();
+		notifyAll();
+	}
+
+	/**
+	 * Must be called from synchronized context.
+	 */
+	private synchronized void adjustCost() {
+		double previousCost = cost;
+		cost = 0;
+		if (axes != null) {
+			for (int i = 0; i < axes.length; i++) {
+				cost += axes[i].getBytes();
+			}
+		}
+		if (data != null) {
+			cost += data.getBytes();
+		}
+		CachePool.instance().notify(this, previousCost);
+	}
+
+	public boolean isLoaded() {
+		return data != null;
 	}
 
 	private String makeDescription()
@@ -127,8 +179,11 @@ public class Segment implements CachePool.Cacheable
 	// implement CachePool.Cacheable
 	public void removeFromCache()
 	{
-		boolean existed = aggregation.segments.remove(this);
-		Util.assertTrue(existed);
+		boolean existed = aggregation.segmentRefs.remove(
+				new CachePool.SoftCacheableReference(this));
+		Util.assertTrue(
+				existed,
+				"removeFromCache: Segment is not registered with its Aggregator");
 	}
 
 	// implement CachePool.Cacheable
@@ -144,6 +199,7 @@ public class Segment implements CachePool.Cacheable
 	// implement CachePool.Cacheable
 	public void setPinCount(int pinCount)
 	{
+//		System.out.println("Segment: pinCount=" + pinCount + " (was " + this.pinCount + ")");
 		this.pinCount = pinCount;
 	}
 	// implement CachePool.Cacheable
@@ -161,12 +217,7 @@ public class Segment implements CachePool.Cacheable
 	// implement CachePool.Cacheable
 	public double getCost()
 	{
-		double bytes = 0;
-		for (int i = 0; i < axes.length; i++) {
-			bytes += axes[i].getBytes();
-		}
-		bytes += data.getBytes();
-		return bytes;
+		return cost;
 	}
 	private double getBenefit()
 	{
@@ -212,6 +263,22 @@ public class Segment implements CachePool.Cacheable
 			}
 			return o;
 		}
+	}
+
+	/**
+	 * Returns whether the given set of key values will be in this segment
+	 * when it finishes loading.
+	 **/
+	boolean wouldContain(Object[] keys)
+	{
+		Util.assertTrue(keys.length == axes.length);
+		for (int i = 0; i < keys.length; i++) {
+			Object key = keys[i];
+			if (!axes[i].contains(key)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -350,10 +417,8 @@ public class Segment implements CachePool.Cacheable
 				}
 			}
 			for (int i = 0; i < segments.length; i++) {
-				if (i > 0) {
-					segments[i].axes = segments[0].axes;
-				}
-				segments[i].setData(datas[i], pinnedSegments);
+				Segment segment = segments[i];
+				segment.setData(datas[i], segments[0].axes, pinnedSegments);
 			}
 		} catch (SQLException e) {
 			throw Util.getRes().newInternal(
@@ -367,6 +432,20 @@ public class Segment implements CachePool.Cacheable
 			} catch (SQLException e) {
 				// ignore
 			}
+		}
+	}
+
+	/**
+	 * Blocks until this segment has finished loading; if this segment has
+	 * already loaded, returns immediately.
+	 */
+	public synchronized void waitUntilLoaded() {
+		if (!isLoaded()) {
+			try {
+				wait();
+			} catch (InterruptedException e) {
+			}
+			Util.assertTrue(isLoaded());
 		}
 	}
 }

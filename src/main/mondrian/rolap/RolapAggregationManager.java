@@ -15,6 +15,7 @@ package mondrian.rolap;
 import mondrian.olap.Util;
 import mondrian.olap.Evaluator;
 import mondrian.rolap.agg.CellRequest;
+import mondrian.rolap.agg.Segment;
 
 import java.util.*;
 
@@ -65,6 +66,10 @@ public abstract class RolapAggregationManager implements CellReader {
 			batch.requests.add(request);
 		}
 		loadAggregations(batches, pinnedSegments);
+		for (Iterator segmentIter = pinnedSegments.iterator(); segmentIter.hasNext();) {
+			Segment segment = (Segment) segmentIter.next();
+			segment.waitUntilLoaded();
+		}
 	}
 
 	public abstract void loadAggregations(ArrayList batches, Collection pinnedSegments);
