@@ -882,7 +882,7 @@ public class FoodMartTestCase extends TestCase {
 				"from Sales" + nl +
 				"where ([Time].[1997])",
 
-				"Axis #0:" + nl +
+				("Axis #0:" + nl +
 				"{[Time].[1997]}" + nl +
 				"Axis #1:" + nl +
 				"{[Measures].[Unit Sales], [Promotion Media].[All Promotion Media].[Radio]}" + nl +
@@ -912,7 +912,7 @@ public class FoodMartTestCase extends TestCase {
 				"{[Product].[All Products].[Drink].[Alcoholic Beverages], [Customers].[All Customers].[USA].[WA].[Seattle]}" + nl +
 				"{[Product].[All Products].[Drink].[Alcoholic Beverages], [Customers].[All Customers].[USA].[WA].[Spokane]}" + nl +
 				"{[Product].[All Products].[Drink].[Alcoholic Beverages], [Customers].[All Customers].[USA].[WA].[Tacoma]}" + nl +
-				"{[Product].[All Products].[Drink].[Alcoholic Beverages], [Customers].[All Customers].[USA].[WA].[Yakima]}" + nl +
+				"{[Product].[All Products].[Drink].[Alcoholic Beverages], [Customers].[All Customers].[USA].[WA].[Yakima]}" + nl) + (
 				"{[Product].[All Products].[Drink].[Beverages], [Customers].[All Customers].[USA].[WA].[Anacortes]}" + nl +
 				"{[Product].[All Products].[Drink].[Beverages], [Customers].[All Customers].[USA].[WA].[Ballard]}" + nl +
 				"{[Product].[All Products].[Drink].[Beverages], [Customers].[All Customers].[USA].[WA].[Bremerton]}" + nl +
@@ -943,7 +943,7 @@ public class FoodMartTestCase extends TestCase {
 				"{[Product].[All Products].[Drink].[Dairy], [Customers].[All Customers].[USA].[WA].[Lynnwood]}" + nl +
 				"{[Product].[All Products].[Drink].[Dairy], [Customers].[All Customers].[USA].[WA].[Marysville]}" + nl +
 				"{[Product].[All Products].[Drink].[Dairy], [Customers].[All Customers].[USA].[WA].[Olympia]}" + nl +
-				"{[Product].[All Products].[Drink].[Dairy], [Customers].[All Customers].[USA].[WA].[Port Orchard]}" + nl +
+				"{[Product].[All Products].[Drink].[Dairy], [Customers].[All Customers].[USA].[WA].[Port Orchard]}" + nl) + (
 				"{[Product].[All Products].[Drink].[Dairy], [Customers].[All Customers].[USA].[WA].[Puyallup]}" + nl +
 				"{[Product].[All Products].[Drink].[Dairy], [Customers].[All Customers].[USA].[WA].[Redmond]}" + nl +
 				"{[Product].[All Products].[Drink].[Dairy], [Customers].[All Customers].[USA].[WA].[Renton]}" + nl +
@@ -974,7 +974,7 @@ public class FoodMartTestCase extends TestCase {
 				"Row #2: (null)" + nl +
 				"Row #2: 2.37" + nl +
 				"Row #2: (null)" + nl +
-				"Row #2: (null)" + nl +
+				"Row #2: (null)" + nl) + (
 				"Row #3: (null)" + nl +
 				"Row #3: (null)" + nl +
 				"Row #3: 24" + nl +
@@ -1005,7 +1005,7 @@ public class FoodMartTestCase extends TestCase {
 				"Row #6: 7" + nl +
 				"Row #6: 7.8" + nl +
 				"Row #6: (null)" + nl +
-				"Row #6: (null)" + nl +
+				"Row #6: (null)" + nl) + (
 				"Row #6: 15" + nl +
 				"Row #7: 14" + nl +
 				"Row #7: (null)" + nl +
@@ -1036,7 +1036,7 @@ public class FoodMartTestCase extends TestCase {
 				"Row #10: 15" + nl +
 				"Row #10: 11" + nl +
 				"Row #10: (null)" + nl +
-				"Row #10: (null)" + nl +
+				"Row #10: (null)" + nl) + (
 				"Row #10: 34.79" + nl +
 				"Row #10: 15.67" + nl +
 				"Row #11: (null)" + nl +
@@ -1067,7 +1067,7 @@ public class FoodMartTestCase extends TestCase {
 				"Row #14: (null)" + nl +
 				"Row #14: (null)" + nl +
 				"Row #14: 4" + nl +
-				"Row #14: 3.64" + nl +
+				"Row #14: 3.64" + nl) + (
 				"Row #14: (null)" + nl +
 				"Row #14: (null)" + nl +
 				"Row #14: 9.64" + nl +
@@ -1098,7 +1098,7 @@ public class FoodMartTestCase extends TestCase {
 				"Row #18: 6" + nl +
 				"Row #18: (null)" + nl +
 				"Row #18: (null)" + nl +
-				"Row #18: 3" + nl +
+				"Row #18: 3" + nl) + (
 				"Row #18: 7.16" + nl +
 				"Row #18: (null)" + nl +
 				"Row #18: (null)" + nl +
@@ -1129,7 +1129,7 @@ public class FoodMartTestCase extends TestCase {
 				"Row #21: (null)" + nl +
 				"Row #22: 3" + nl +
 				"Row #22: (null)" + nl +
-				"Row #22: (null)" + nl +
+				"Row #22: (null)") + nl + (
 				"Row #22: 18" + nl +
 				"Row #22: 6.39" + nl +
 				"Row #22: (null)" + nl +
@@ -1160,7 +1160,7 @@ public class FoodMartTestCase extends TestCase {
 				"Row #25: (null)" + nl +
 				"Row #25: 18.9" + nl +
 				"Row #26: 3" + nl +
-				"Row #26: (null)" + nl +
+				"Row #26: (null)" + nl) + (
 				"Row #26: (null)" + nl +
 				"Row #26: 9" + nl +
 				"Row #26: 1.5" + nl +
@@ -1191,7 +1191,7 @@ public class FoodMartTestCase extends TestCase {
 				"Row #29: (null)" + nl +
 				"Row #29: 48.02" + nl +
 				"Row #29: 28.8" + nl +
-				"Row #30: (null)" + nl +
+				"Row #30: (null)" + nl) + (
 				"Row #30: (null)" + nl +
 				"Row #30: 14" + nl +
 				"Row #30: (null)" + nl +
@@ -1222,7 +1222,7 @@ public class FoodMartTestCase extends TestCase {
 				"Row #33: 2.8" + nl +
 				"Row #33: (null)" + nl +
 				"Row #33: (null)" + nl +
-				"Row #33: (null)" + nl +
+				"Row #33: (null)" + nl) + (
 				"Row #34: 4" + nl +
 				"Row #34: (null)" + nl +
 				"Row #34: (null)" + nl +
@@ -1253,7 +1253,7 @@ public class FoodMartTestCase extends TestCase {
 				"Row #37: (null)" + nl +
 				"Row #37: (null)" + nl +
 				"Row #37: (null)" + nl +
-				"Row #37: 7.92" + nl +
+				"Row #37: 7.92" + nl) + (
 				"Row #37: (null)" + nl +
 				"Row #38: 25" + nl +
 				"Row #38: (null)" + nl +
@@ -1284,7 +1284,7 @@ public class FoodMartTestCase extends TestCase {
 				"Row #41: 15" + nl +
 				"Row #41: (null)" + nl +
 				"Row #41: (null)" + nl +
-				"Row #41: (null)" + nl +
+				"Row #41: (null)" + nl) + (
 				"Row #41: 18.88" + nl +
 				"Row #41: (null)" + nl +
 				"Row #42: (null)" + nl +
@@ -1315,7 +1315,7 @@ public class FoodMartTestCase extends TestCase {
 				"Row #45: (null)" + nl +
 				"Row #45: (null)" + nl +
 				"Row #45: (null)" + nl +
-				"Row #45: 1.71" + nl +
+				"Row #45: 1.71" + nl) + (
 				"Row #45: (null)" + nl +
 				"Row #45: (null)" + nl +
 				"Row #45: (null)" + nl +
@@ -1346,7 +1346,7 @@ public class FoodMartTestCase extends TestCase {
 				"Row #49: (null)" + nl +
 				"Row #49: (null)" + nl +
 				"Row #49: 7" + nl +
-				"Row #49: (null)" + nl +
+				"Row #49: (null)" + nl) + (
 				"Row #49: (null)" + nl +
 				"Row #49: (null)" + nl +
 				"Row #49: 10.01" + nl +
@@ -1377,7 +1377,7 @@ public class FoodMartTestCase extends TestCase {
 				"Row #52: 12.34" + nl +
 				"Row #53: (null)" + nl +
 				"Row #53: (null)" + nl +
-				"Row #53: (null)" + nl +
+				"Row #53: (null)" + nl) + (
 				"Row #53: 5" + nl +
 				"Row #53: (null)" + nl +
 				"Row #53: (null)" + nl +
@@ -1406,7 +1406,7 @@ public class FoodMartTestCase extends TestCase {
 				"Row #56: 23.69" + nl +
 				"Row #56: (null)" + nl +
 				"Row #56: (null)" + nl +
-				"Row #56: 7.07" + nl),
+				"Row #56: 7.07" + nl)),
 
 		// 5
 		new QueryAndResult(
