@@ -21,9 +21,6 @@ package mondrian.olap;
  **/
 public abstract class CubeBase extends OlapElementBase implements Cube {
 
-    protected String name;
-    protected DimensionBase[] dimensions;
-
     /** constraints indexes for adSchemaMembers
      *
      * http://msdn.microsoft.com/library/psdk/dasdk/mdx8h4k.htm
@@ -45,6 +42,13 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
     public static final int MDTREEOP_SELF = 0;
     public static final int MDTREEOP_CHILDREN = 1;
     public static final int MDPROP_USERDEFINED0 = 19;
+
+    protected final String name;
+    protected DimensionBase[] dimensions;
+
+    protected CubeBase(String name) {
+        this.name = name;
+    }
 
     // implement OlapElement
     public String getName()
@@ -100,10 +104,12 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
     public Hierarchy lookupHierarchy(String s, boolean unique)
     {
         for (int i = 0; i < dimensions.length; i++) {
-            DimensionBase dimension = dimensions[i];
-            for (int j = 0; j < dimension.hierarchies.length; j++) {
-                HierarchyBase hierarchy = dimension.hierarchies[j];
-                String name = unique ? hierarchy.uniqueName : hierarchy.name;
+            Dimension dimension = dimensions[i];
+            Hierarchy[] hierarchies = dimension.getHierarchies();
+            for (int j = 0; j < hierarchies.length; j++) {
+                Hierarchy hierarchy = hierarchies[j];
+                String name = unique 
+                    ? hierarchy.getUniqueName() : hierarchy.getName();
                 if (name.equals(s)) {
                     return hierarchy;
                 }
@@ -159,13 +165,15 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 
     private Level getTimeLevel(LevelType levelType) {
         for (int i = 0; i < dimensions.length; i++) {
-            DimensionBase dimension = dimensions[i];
-            if (dimension.dimensionType == DimensionType.TimeDimension) {
-                for (int j = 0; j < dimension.hierarchies.length; j++) {
-                    HierarchyBase hierarchy = dimension.hierarchies[j];
-                    for (int k = 0; k < hierarchy.levels.length; k++) {
-                        LevelBase level = hierarchy.levels[k];
-                        if (level.levelType == levelType) {
+            Dimension dimension = dimensions[i];
+            if (dimension.getDimensionType() == DimensionType.TimeDimension) {
+                Hierarchy[] hierarchies = dimension.getHierarchies();
+                for (int j = 0; j < hierarchies.length; j++) {
+                    Hierarchy hierarchy = hierarchies[j];
+                    Level[] levels = hierarchy.getLevels();
+                    for (int k = 0; k < levels.length; k++) {
+                        Level level = levels[k];
+                        if (level.getLevelType() == levelType) {
                             return level;
                         }
                     }
