@@ -15,17 +15,31 @@
 <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<title>Mondrian home page</title>
+<title>Mondrian home page (no frames)</title>
 <link rel="stylesheet" href="stylesheet.css" type="text/css" />
 </head>
 
 <body>
 
-<table cellSpacing="0" cellPadding="0" border="0">
-<tr><td colspan="5"><img border="0" src="logo_top.jpg" width="283" height="75"></td></tr>
+
+<table cellSpacing="0" cellPadding="0" border="0" style="border-collapse: collapse" bordercolor="#111111">
+<tr>
+<td colspan="5">
+  <!-- Table containing top-half of logo and horizontal line. -->
+  <table cellSpacing="0" cellPadding="0" border="0">
+  <tr>
+    <td rowspan=2><img border="0" src="logo_top.jpg" width="283" height="75"/></td>
+    <td><img src="spacer.gif" width="1" height="74"/></td>
+  </tr>
+  <tr>
+    <td bgcolor="#999999" width="100%"><img src="spacer.gif" width="100%" height="1"/></td>
+  </tr>
+  </table>
+</td>
+</tr>
 <tr>
 <!-- Start links -->
-<td valign="top" rowspan="2">
+<td valign="top" rowspan="1">
 <img border="0" src="logo_bottom.jpg" width="138" height="64"><br/>
 <p dir="ltr">
 <a href="noframes.html">Home</a> (<a href="index.html">frames</a>)<br>
@@ -43,11 +57,6 @@ Design<br>
 &nbsp;&nbsp;&nbsp;<a href="help.html">Help</a><br>
 </td>
 <!-- End links -->
-<td width="5"><img height="1" src="spacer.gif" width="5" border="0"></td>
-<td height="1" bgcolor="#999999" colspan="7"><img height="1" src="spacer.gif" border="0"/></td>
-</tr>
-<tr>
-<td width="5"><img height="1" src="spacer.gif" width="5" border="0"></td>
 <td width="1" bgcolor="#999999"><img height="1" src="spacer.gif" width="1" border="0"></td>
 <td width="5"><img height="1" src="spacer.gif" width="5" border="0"></td>
 <td valign="top">
@@ -61,52 +70,6 @@ analyze very large datasets stored in SQL databases without writing SQL.</p>
 <a href="api/index.html" target=_blank>javadoc</a>,
 and <a href="roadmap.html">the roadmap</a>.</p>
 
-</td>
-<td width="5"><img height="1" src="spacer.gif" width="5" border="0"></td>
-<td width="1" bgcolor="#999999"><img height="1" src="spacer.gif" width="1" border="0"></td>
-<td width="5"><img height="1" src="spacer.gif" width="5" border="0"></td>
-<td valign="top" width="30%">
-<h2>News</h2>
-<table cellSpacing="0" cellPadding="8" border="0">
-  <tr>
-    <td vAlign="top" align="left">
-        <b>August 9th, 2002<br>
-        <a href="http://sourceforge.net/forum/forum.php?forum_id=201376">Mondrian version 0.3 released</a> </b>
-        <p>See <a href="http://sourceforge.net/project/shownotes.php?release_id=104342">
-        release notes</a>.</td>
-  </tr>
-  <tr>
-    <td vAlign="top" align="left">
-        <b>June 28th, 2002</b><br>
-        <b>
-        <a href="http://sourceforge.net/forum/forum.php?forum_id=189995">Mondrian to implement the JOLAP specification</a>
-        </b>
-        <p>JOLAP, the long-awaited J2EE API for access to OLAP servers (<a href="http://www.jcp.org/jsr/detail/69.jsp" target="_blank" style="text-decoration: none">http://www.jcp.org/jsr/detail/69.jsp</a>), 
-        is approaching its public review stage. Mondrian is ideally placed to 
-        become the first, and leading, JOLAP implementation.
-    </td>
-  </tr>
-  <tr>
-    <td vAlign="top" align="left">
-        <b>June 28th, 2002</b> <br>
-        <b>
-        <a href="http://sourceforge.net/forum/forum.php?forum_id=189995">We are recruiting</a>
-        </b>
-        <p>
-        If you are a talented Java programmer with 
-        experience writing high-quality server-side code, especially relating to 
-        databases and metadata, please email
-        <a href="mailto:mondrian-devel@lists.sourceforge.net" target="_new">mondrian-devel@lists.sourceforge.net</a>,
-        or look out for job-postings.
-     </td>
-  </tr>
-  <tr>
-    <td><b><a href="http://sourceforge.net/news/?group_id=35302">More news...</a></b></td>
-  </tr>
-  </table>
-  </td>
-  </tr>
-</table>
 </td>
 </tr>
 </table>
