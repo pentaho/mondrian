@@ -21,6 +21,7 @@ public class Literal extends ExpBase
 	public int type;
 	private Object o;
 
+	private static final boolean enableSharedLiterals = false;
 	public static final Literal emptyString = new Literal("", false);
 	public static final Literal zero = new Literal(new Integer(0));
 	public static final Literal one = new Literal(new Integer(1));
@@ -34,7 +35,7 @@ public class Literal extends ExpBase
 	}
 
 	static Literal createString(String s) {
-		if (s.equals("")) {
+		if (s.equals("") && enableSharedLiterals) {
 			return emptyString;
 		} else {
 			return new Literal(s, false);
@@ -48,9 +49,9 @@ public class Literal extends ExpBase
 		this.type = CatNumeric;
 	}
 	static Literal create(Double d) {
-		if (d.doubleValue() == 0.0) {
+		if (d.doubleValue() == 0.0 && enableSharedLiterals) {
 			return doubleZero;
-		} else if (d.doubleValue() == 1.0) {
+		} else if (d.doubleValue() == 1.0 && enableSharedLiterals) {
 			return doubleOne;
 		} else {
 			return new Literal(d);
@@ -62,9 +63,9 @@ public class Literal extends ExpBase
 	}
 
 	static Literal create(Integer i) {
-		if (i.intValue() == 0) {
+		if (i.intValue() == 0 && enableSharedLiterals) {
 			return zero;
-		} else if (i.intValue() == 1) {
+		} else if (i.intValue() == 1 && enableSharedLiterals) {
 			return one;
 		} else {
 			return new Literal(i);

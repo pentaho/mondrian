@@ -64,16 +64,6 @@ class SqlMemberSource implements MemberReader
 		this.cache = cache;
 	}
 
-	boolean canDoRolap()
-	{
-		if (false) {
-			RolapLevel lastLevel = (RolapLevel) hierarchy.getLevels()[
-				hierarchy.getLevels().length - 1];
-			return lastLevel.ordinalExp != null;
-		}
-		return true; // todo: remove this method
-	}
-
 	// implement MemberSource
 	public int getMemberCount()
 	{
@@ -320,9 +310,9 @@ class SqlMemberSource implements MemberReader
 	/**
 	 * Generates the SQL statement to access members of <code>level</code>. For
 	 * example, <blockquote>
-	 * <pre>SELECT "country", "state_province", "city", min("ordinal") - 1
+	 * <pre>SELECT "country", "state_province", "city"
 	 * FROM "customer"
-	 * GROUP BY "country", "state_province", "city"</pre>
+	 * GROUP BY "country", "state_province", "city", "foo", "bar"</pre>
 	 * </blockquote> accesses the "City" level of the "Customers"
 	 * hierarchy. Note that:<ul>
 	 *
@@ -330,23 +320,7 @@ class SqlMemberSource implements MemberReader
 	 *
 	 * <li><code>"city"</code> is the level key;</li>
 	 *
-	 * <li><code>min("customer_id") * 4 - 1</code> computes the ordinal of each
-	 * city. Here, 4 is the number of levels, and 1 is the distance of the
-	 * "city" level from the leaf level "Name". It will result in the following
-	 * ordinals:<table>
-	 * <tr><th>Ordinal</th><th>Member</th></tr>
-	 * <tr><td>0</td>  <td>[All]</td></tr>
-	 * <tr><td>1</td>  <td>[Canada]</td></tr>
-	 * <tr><td>2</td>  <td>[Canada].[BC]</td></tr>
-	 * <tr><td>3</td>  <td>[Canada].[BC].[Burnaby]</td></tr>
-	 * <tr><td>4</td>  <td>[Canada].[BC].[Burnaby].[Alex Wellington]</td></tr>
-	 * <tr><td>8</td>  <td>[Canada].[BC].[Burnaby].[Ana Quick]</td></tr>
-	 * <tr><td>...</td><td></td></tr>
-	 * <tr><td>332</td><td>[Canada].[BC].[Burnaby].[Winston Barnett]</td></tr>
-	 * <tr><td>335</td><td>[Canada].[BC].[Cliffside]</td></tr>
-	 * <tr><td>336</td><td>[Canada].[BC].[Cliffside].[Amanda Thomas]</td></tr>
-	 * </table></li>
-	 *
+	 * <li><code>"foo", "bar"</code> are member properties.</li>
 	 * </ul>
 	 **/
 	String makeLevelSql(RolapLevel level)
@@ -369,24 +343,6 @@ class SqlMemberSource implements MemberReader
 			}
 			sqlQuery.addOrderBy(level2.ordinalExp.getExpression(sqlQuery));
 		}
-		/*
-		if (lastLevel.ordinalExp != null) {
-			String q = lastLevel.ordinalExp.getExpression(sqlQuery);
-			int distanceToLeaf = levels.length - 1 - level.getDepth();
-			if (distanceToLeaf > 0) {
-				q = "min(" + q + ")";
-				int levelCount = levels.length;
-				if (hierarchy.hasAll()) {
-					levelCount--;
-				}
-				if (levelCount > 1) {
-					q = q + " * " + levelCount;
-				}
-				q = q + " - " + distanceToLeaf;
-			}
-			sqlQuery.addSelect(q);
- 		}
-		*/
 		for (int i = 0; i < level.properties.length; i++) {
 			RolapProperty property = level.properties[i];
 			String q = property.exp.getExpression(sqlQuery);
@@ -402,7 +358,6 @@ class SqlMemberSource implements MemberReader
 		ResultSet resultSet = null;
 		final RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
 		final RolapLevel lastLevel = levels[levels.length - 1];
-//		boolean rolap = canDoRolap();
 		String sql = makeLevelSql(level);
 		try {
 			resultSet = RolapUtil.executeQuery(
@@ -516,7 +471,7 @@ class SqlMemberSource implements MemberReader
 	 * Generates the SQL statement to access the children of
 	 * <code>member</code>. For example, <blockquote>
 	 *
-	 * <pre>SELECT "city", min("ordinal") - 1
+	 * <pre>SELECT "city"
 	 * FROM "customer"
 	 * WHERE "country" = 'USA'
 	 * AND "state_province" = 'BC'
@@ -552,33 +507,12 @@ class SqlMemberSource implements MemberReader
 		if (!orderBy.equals(q)) {
 			sqlQuery.addGroupBy(orderBy);
 		}
-
-		RolapLevel lastLevel = levels[levels.length - 1];
-		int distanceToLeaf = levels.length - 1 - member.getLevel().getDepth();
-		/*
-		if (lastLevel.ordinalExp != null) {
-			q = lastLevel.ordinalExp.getExpression(sqlQuery);
-			if (distanceToLeaf > 0) {
-				q = "min(" + q + ")";
-				int levelCount = levels.length;
-				if (hierarchy.hasAll()) {
-					levelCount--;
-				}
-				if (levelCount > 1) {
-					q = q + " * " + levelCount;
-				}
-				q = q + " - " + distanceToLeaf;
-			}
-			sqlQuery.addSelect(q);
-		}
-		*/
 		return sqlQuery.toString();
 	}
 
 	// implement MemberSource
 	public RolapMember[] getMemberChildren(RolapMember[] parentMembers)
 	{
-//		Util.assertTrue(canDoRolap());
 		ArrayList list = new ArrayList();
 		for (int i = 0; i < parentMembers.length; i++) {
 			getMemberChildren(list, parentMembers[i]);

@@ -291,7 +291,6 @@ class SmartMemberReader implements MemberReader, MemberCache
 				(CachePool.SoftCacheableReference)
 				mapMemberToChildren.remove(childrenList.member);
 		if (ref == null || !ref.refersTo(childrenList)) {
-//			new NullPointerException().printStackTrace(RolapUtil.debugOut);
 			throw Util.newInternal(
 				"removeFromCache: ChildrenList " + childrenList +
 				" is not registered with its SmartMemberReader (ref=" +

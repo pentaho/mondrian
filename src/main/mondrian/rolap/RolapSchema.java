@@ -220,8 +220,7 @@ public class RolapSchema implements Schema
 		} else {
 			SqlMemberSource source = new SqlMemberSource(hierarchy);
 			int memberCount = source.getMemberCount();
-			if (memberCount > RolapHierarchy.LARGE_DIMENSION_THRESHOLD &&
-				source.canDoRolap()) {
+			if (memberCount > RolapHierarchy.LARGE_DIMENSION_THRESHOLD) {
 				return new SmartMemberReader(source);
 			} else {
 				return new CacheMemberReader(source);
