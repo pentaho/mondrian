@@ -269,6 +269,11 @@ public class RolapSchema implements Schema
 			mapUrlToSchema.remove(makeKey(catalogName, jdbcConnectString, jdbcUser, dataSource));
 		}
 
+		synchronized void clear() {
+			mapUrlToSchema.clear();
+		}
+
+
 		/**
 		 * Creates a key with which to identify a schema in the cache.
 		 */
@@ -295,6 +300,10 @@ public class RolapSchema implements Schema
 
 	public static void flushSchema(String catalogName, String jdbcConnectString, String jdbcUser, String dataSource) {
 		Pool.instance().remove(catalogName, jdbcConnectString, jdbcUser, dataSource);
+	}
+
+	public static void clearCache() {
+		Pool.instance().clear();
 	}
 
 	public Cube lookupCube(String cube,boolean failIfNotFound)
