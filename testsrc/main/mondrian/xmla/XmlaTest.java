@@ -12,17 +12,15 @@
 package mondrian.xmla;
 
 import junit.framework.TestCase;
-
-import java.io.StringWriter;
-import java.io.File;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.regex.Pattern;
-import java.net.URL;
-
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
+
+import java.io.File;
+import java.io.StringWriter;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Unit test for Mondrian's XML for Analysis API (package
@@ -62,14 +60,13 @@ public class XmlaTest extends TestCase {
 
         String driver = MondrianProperties.instance().getJdbcDrivers();
         String url = MondrianProperties.instance().getFoodmartJdbcURL();
-        
-        // Deal with embedded & that can be in the JDBC URL
 
+        // Deal with embedded & that can be in the JDBC URL
         dataSource =
-           "Provider=Mondrian;"
-           + "Jdbc=" + url.replaceAll("&", "&amp;") + ";"
-           + "Catalog=" + catalogName + ";"
-           + "JdbcDrivers=" + driver +";";
+                "Provider=Mondrian;"
+                + "Jdbc=" + url.replaceAll("&", "&amp;") + ";"
+                + "Catalog=" + catalogName + ";"
+                + "JdbcDrivers=" + driver +";";
     }
 
     /**
@@ -101,13 +98,17 @@ public class XmlaTest extends TestCase {
         for (int i = 0; i < methods.length; i++) {
             Method method = methods[i];
             if (method.getName().startsWith("test")) {
+                final int prevRequestCount = requestList.size();
                 try {
                     method.invoke(this, null);
                 } catch (Throwable e) {
                     // ignore
                 }
-                mapNameToRequest.put(method.getName(),
-                        requestList.get(requestList.size() - 1));
+                final int requestCount = requestList.size();
+                if (requestCount > prevRequestCount) {
+                    mapNameToRequest.put(method.getName(),
+                            requestList.get(prevRequestCount));
+                }
             }
         }
         this.requestList = null;
@@ -1583,6 +1584,83 @@ public class XmlaTest extends TestCase {
                 "</SOAP-ENV:Envelope>");
     }
 
+    public static void assertEquals(String[] expected, String[] actual) {
+        if (!equals(expected, actual)) {
+            assertEquals((Object) expected, (Object) actual);
+        }
+    }
+
+    public static boolean equals(String[] expected, String[] actual) {
+        if (expected == null ||
+                actual == null ||
+                expected.length != actual.length) {
+            return false;
+        }
+        for (int i = 0; i < expected.length; i++) {
+            if (!Util.equals(expected[i], actual[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Tests that the redundant copies of the sample XML/A requests are in
+     * sync.
+     *
+     * <p>The primary set of XML/A requests is encoded in the test methods of
+     * this class, and is retrieved by calling {@link #getRequests()}. But
+     * there is a redundant set of XML/A requests which is used to drive
+     * the XML/A test page, <code>xmlaTest.jsp</code>. This page must not be
+     * dependent upon the test classes, the method
+     * {@link XmlaUtil#getSampleRequests(String, String)} contains a redundant
+     * copy of these requests. If these get out of sync, this test helpfully
+     * outputs the code for the redundant copy, and then fails. 
+     */
+    public void testThatRequestListMatches() {
+        if (requestList != null) {
+            return;
+        }
+        final HashMap requestMap = getRequests();
+        final Set requestKeySet = requestMap.keySet();
+        final String[] requestKeys = (String[])
+                requestKeySet.toArray(new String[requestKeySet.size()]);
+        Arrays.sort(requestKeys);
+        ArrayList requestList = new ArrayList();
+        for (int i = 0; i < requestKeys.length; i++) {
+            String requestKey = requestKeys[i];
+            String request = (String) requestMap.get(requestKey);
+            requestList.add(requestKey);
+            requestList.add(request);
+        }
+        final String[] requests = (String[])
+                requestList.toArray(new String[requestList.size()]);
+        final String[] sampleRequests = XmlaUtil.getSampleRequests(catalogName, dataSource);
+        if (!equals(requests, sampleRequests)) {
+            System.out.println("Java:");
+            System.out.println("{");
+            for (int i = 0; i < requests.length; i++) {
+                System.out.print(toJava(requests[i]));
+                System.out.println(",");
+            }
+            System.out.println("}");
+        }
+        assertEquals(requests, sampleRequests);
+    }
+
+    private static String toJava(String s) {
+        s = Util.replace(s, "\"", "\\\"");
+        final String lineBreak = "\" + nl + " + nl + "\"";
+        s = Pattern.compile("\r\n|\r|\n").matcher(s).replaceAll(lineBreak);
+        s = Util.replace(s, dataSource, "\" + dataSource + \"");
+        s = Util.replace(s, catalogName, "\" + catalogName + \"");
+        s = "\"" + s + "\"";
+        final String spurious = " + " + nl + "\"\"";
+        if (s.endsWith(spurious)) {
+            s = s.substring(0, s.length() - spurious.length());
+        }
+        return s;
+    }
 
 }
 

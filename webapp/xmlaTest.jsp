@@ -3,7 +3,7 @@
                  org.eigenbase.xom.XMLUtil,
                  java.io.PrintWriter,
                  java.io.StringWriter,
-                 mondrian.xmla.XmlaTest,
+                 mondrian.xmla.XmlaUtil,
                  java.util.HashMap,
                  java.util.Arrays"%>
 <%@ page language="java" %>
@@ -30,7 +30,7 @@
         return sw.toString();
     }
 
-    private static final HashMap requestMap = new XmlaTest("foo").getRequests();
+    private static final HashMap requestMap = XmlaUtil.getRequestMap();
 %>
 <html>
 <head>
