@@ -87,7 +87,7 @@ public class Segment {
     final Aggregation aggregation;
     final RolapStar.Measure measure;
 
-    Aggregation.Axis[] axes;
+    final Aggregation.Axis[] axes;
     private SegmentDataset data;
     private final CellKey cellKey; // workspace
     /** State of the segment, values are described by {@link State}. */
@@ -103,20 +103,13 @@ public class Segment {
      **/
     Segment(Aggregation aggregation, 
             RolapStar.Measure measure,
-            ColumnConstraint[][] constraintses) {
+            ColumnConstraint[][] constraintses,
+            Aggregation.Axis[] axes) {
         this.id = nextId++;
         this.aggregation = aggregation;
         this.measure = measure;
-        RolapStar.Column[] columns = aggregation.getColumns();
-        int axisCount = columns.length;
-
-        Util.assertTrue(constraintses.length == axisCount);
-
-        this.axes = new Aggregation.Axis[axisCount];
-        for (int i = 0; i < axisCount; i++) {
-            this.axes[i] = new Aggregation.Axis(columns[i], constraintses[i]);
-        }
-        this.cellKey = new CellKey(new int[axisCount]);
+        this.axes = axes;
+        this.cellKey = new CellKey(new int[axes.length]);
         this.state = State.Loading;
     }
 
@@ -125,12 +118,10 @@ public class Segment {
      * {@link #waitUntilLoaded}.
      */
     synchronized void setData(SegmentDataset data, 
-                              Aggregation.Axis[] axes,
                               Collection pinnedSegments) {
         Util.assertTrue(this.data == null);
         Util.assertTrue(this.state == State.Loading);
 
-        this.axes = axes;
         this.data = data;
         this.state = State.Ready;
         notifyAll();
@@ -263,12 +254,15 @@ public class Segment {
      *
      * @pre segments[i].aggregation == aggregation
      **/
-    static void load(Segment[] segments, Collection pinnedSegments) {
+    static void load(Segment[] segments, 
+                     Collection pinnedSegments, 
+                     Aggregation.Axis[] axes) {
         String sql = AggregationManager.generateSQL(segments);
         Segment segment0 = segments[0];
         RolapStar star = segment0.aggregation.getStar();
         RolapStar.Column[] columns = segment0.aggregation.getColumns();
         int arity = columns.length;
+
         // execute
         ResultSet resultSet = null;
         final int measureCount = segments.length;
@@ -286,9 +280,9 @@ public class Segment {
                     if (o == null) {
                         o = RolapUtil.sqlNullValue;
                     }
-                    Integer offsetInteger = segment0.axes[i].getOffset(o);
+                    Integer offsetInteger = axes[i].getOffset(o);
                     if (offsetInteger == null) {
-                        segment0.axes[i].addNextOffset(o);
+                        axes[i].addNextOffset(o);
                     }
                     row[i] = o;
                 }
@@ -302,12 +296,13 @@ public class Segment {
                 }
                 rows.add(row);
             }
+
             // figure out size of dense array, and allocate it (todo: use
             // sparse array sometimes)
             boolean sparse = false;
             int n = 1;
             for (int i = 0; i < arity; i++) {
-                Aggregation.Axis axis = segment0.axes[i];
+                Aggregation.Axis axis = axes[i];
                 int size = axis.loadKeys();
 
                 int previous = n;
@@ -331,9 +326,9 @@ public class Segment {
                 Object[] row = (Object[]) rows.get(i);
                 int k = 0;
                 for (int j = 0; j < arity; j++) {
-                    k *= segment0.axes[j].getKeys().length;
+                    k *= axes[j].getKeys().length;
                     Object o = row[j];
-                    Aggregation.Axis axis = segment0.axes[j];
+                    Aggregation.Axis axis = axes[j];
                     Integer offsetInteger = axis.getOffset(o);
                     int offset = offsetInteger.intValue();
                     pos[j] = offset;
@@ -352,9 +347,11 @@ public class Segment {
                     }
                 }
             }
+
             for (int i = 0; i < segments.length; i++) {
-                segments[i].setData(datas[i], segments[0].axes, pinnedSegments);
+                segments[i].setData(datas[i], pinnedSegments);
             }
+
         } catch (SQLException e) {
             throw Util.newInternal(e,
                     "Error while loading segment; sql=[" + sql + "]");

@@ -119,16 +119,26 @@ public class Aggregation {
     public synchronized void load(RolapStar.Measure[] measures,
                                   ColumnConstraint[][] constraintses, 
                                   Collection pinnedSegments) {
+        int axisCount = columns.length;
+        Util.assertTrue(constraintses.length == axisCount);
+
+        // This array of Aggregation.Axis is shared by all Segments for
+        // this set of measures and constraintses
+        Aggregation.Axis[] axes = new Aggregation.Axis[axisCount];
+        for (int i = 0; i < axisCount; i++) {
+            axes[i] = new Aggregation.Axis(columns[i], constraintses[i]);
+        }
+
         Segment[] segments = new Segment[measures.length];
         for (int i = 0; i < measures.length; i++) {
             RolapStar.Measure measure = measures[i];
-            Segment segment = new Segment(this, measure, constraintses);
+            Segment segment = new Segment(this, measure, constraintses, axes);
             segments[i] = segment;
             SoftReference ref = new SoftReference(segment);
             segmentRefs.add(ref);
             pinnedSegments.add(segment);
         }
-        Segment.load(segments, pinnedSegments);
+        Segment.load(segments, pinnedSegments, axes);
     }
 
 
