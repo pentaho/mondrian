@@ -22,6 +22,7 @@ import mondrian.olap.Query;
 import mondrian.olap.Result;
 import mondrian.olap.Schema;
 import mondrian.olap.Util;
+import mondrian.rolap.RolapConnection;
 import mondrian.rolap.cache.CachePool;
 
 /**
@@ -490,6 +491,17 @@ public class BasicQueryTest extends FoodMartTestCase {
 				" {[Product].Children} on rows" + nl +
 				"from Sales");
 		String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL(true);
+		//System.out.println("Drillthrough= " + sql);
+
+		RolapConnection conn = (RolapConnection) getConnection();
+		String jdbc_url = conn.getConnectInfo().get("Jdbc");
+		String fname_plus_lname;
+		if (jdbc_url.toLowerCase().indexOf("mysql") >= 0 ) {
+			// Mysql would generate "CONCAT( ... )"
+			fname_plus_lname = " CONCAT(`customer`.`fname`, \" \", `customer`.`lname`) as `Name`,";
+		} else {
+			fname_plus_lname = " fname + ' ' + lname as `Name`,";
+		}
 		assertEquals("select `store`.`store_name` as `Store Name`," +
                 " `store`.`store_city` as `Store City`," +
                 " `store`.`store_state` as `Store State`," +
@@ -507,7 +519,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 " `product_class`.`product_family` as `Product Family`," +
                 " `promotion`.`media_type` as `Media Type`," +
                 " `promotion`.`promotion_name` as `Promotion Name`," +
-                " fname + ' ' + lname as `Name`," +
+                fname_plus_lname + //" fname + ' ' + lname as `Name`," +
                 " `customer`.`city` as `City`," +
                 " `customer`.`state_province` as `State Province`," +
                 " `customer`.`country` as `Country`," +
@@ -2253,6 +2265,10 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
 	public void testCatalogHierarchyBasedOnView() {
+	    RolapConnection conn = (RolapConnection) getConnection();
+	   	String jdbc_url = conn.getConnectInfo().get("Jdbc");
+	   	if (jdbc_url.toLowerCase().indexOf("mysql") >= 0 )
+	   		return; // Mysql cannot handle subselect
 		Schema schema = getConnection().getSchema();
 		final Cube salesCube = schema.lookupCube("Sales", true);
 		schema.createDimension(
@@ -2282,6 +2298,11 @@ public class BasicQueryTest extends FoodMartTestCase {
 	 * joins correctly. This probably won't work in MySQL.
 	 */
 	public void testCatalogHierarchyBasedOnView2() {
+		RolapConnection conn = (RolapConnection) getConnection();
+		String jdbc_url = conn.getConnectInfo().get("Jdbc");
+		if (jdbc_url.toLowerCase().indexOf("mysql") >= 0 )
+			return; // Mysql cannot handle subselect
+
 		Schema schema = getConnection().getSchema();
 		final Cube salesCube = schema.lookupCube("Sales", true);
 		schema.createDimension(

@@ -191,6 +191,10 @@ public class RolapConnection extends ConnectionBase {
         }
     }
 
+	public Util.PropertyList getConnectInfo() {
+		return connectInfo;
+	}
+	
     public static synchronized void loadDrivers(String jdbcDrivers) {
 		StringTokenizer tok = new StringTokenizer(jdbcDrivers, ",");
 		while (tok.hasMoreTokens()) {
