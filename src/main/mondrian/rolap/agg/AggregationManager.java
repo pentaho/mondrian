@@ -49,7 +49,7 @@ public class AggregationManager extends RolapAggregationManager {
 			ArrayList requests = batch.requests;
 			CellRequest firstRequest = (CellRequest) requests.get(0);
 			RolapStar.Column[] columns = firstRequest.getColumns();
-			RolapStar.Measure measure = firstRequest.getMeasure();
+			ArrayList measuresList = new ArrayList();
 			HashSet[] valueSets = new HashSet[columns.length];
 			for (int i = 0; i < valueSets.length; i++) {
 				valueSets[i] = new HashSet();
@@ -62,6 +62,15 @@ public class AggregationManager extends RolapAggregationManager {
 						!(value instanceof Object[]),
 						"multi-valued key not valid in this cell request");
                     valueSets[j].add(value);
+				}
+				RolapStar.Measure measure = request.getMeasure();
+				if (!measuresList.contains(measure)) {
+					if (measuresList.size() > 0) {
+						Util.assertTrue(
+								measure.table.star ==
+								((RolapStar.Measure) measuresList.get(0)).table.star);
+					}
+					measuresList.add(measure);
 				}
 			}
 			Object[][] constraintses = new Object[columns.length][];
@@ -78,22 +87,25 @@ public class AggregationManager extends RolapAggregationManager {
 			// todo: optimize key sets; drop a constraint if more than x% of
 			// the members are requested; whether we should get just the cells
 			// requested or expand to a n-cube
-			loadAggregation(measure, columns, constraintses, pinnedSegments);
+			RolapStar.Measure[] measures = (RolapStar.Measure[])
+					measuresList.toArray(
+							new RolapStar.Measure[measuresList.size()]);
+			loadAggregation(measures, columns, constraintses, pinnedSegments);
 		}
 	}
 
 	void loadAggregation(
-		RolapStar.Measure measure, RolapStar.Column[] columns,
+		RolapStar.Measure[] measures, RolapStar.Column[] columns,
 		Object[][] constraintses, Collection pinnedSegments)
 	{
-		RolapStar star = measure.table.star;
-		Aggregation aggregation = lookupAggregation(measure, columns);
+		RolapStar star = measures[0].table.star;
+		Aggregation aggregation = lookupAggregation(star, columns);
 		if (aggregation == null) {
-			aggregation = new Aggregation(star, measure, columns);
+			aggregation = new Aggregation(star, columns);
+			this.aggregations.add(aggregation);
 		}
 		constraintses = aggregation.optimizeConstraints(constraintses);
-		aggregation.load(constraintses, pinnedSegments);
-		aggregations.add(aggregation);
+		aggregation.load(measures, constraintses, pinnedSegments);
 	}
 
 	/**
@@ -101,11 +113,11 @@ public class AggregationManager extends RolapAggregationManager {
 	 * returns <code>null</code> if there is none.
 	 **/
 	private Aggregation lookupAggregation(
-			RolapStar.Measure measure, RolapStar.Column[] columns)
+			RolapStar star, RolapStar.Column[] columns)
 	{
 		for (int i = 0, count = aggregations.size(); i < count; i++) {
 			Aggregation aggregation = (Aggregation) aggregations.get(i);
-			if (aggregation.measure == measure &&
+			if (aggregation.star == star &&
 					equals(aggregation.columns, columns)) {
 				return aggregation;
 			}
@@ -129,21 +141,23 @@ public class AggregationManager extends RolapAggregationManager {
 	}
 
 	public Object getCellFromCache(CellRequest request) {
+		RolapStar.Measure measure = request.getMeasure();
 		Aggregation aggregation = lookupAggregation(
-				request.getMeasure(), request.getColumns());
+				measure.table.star, request.getColumns());
 		if (aggregation == null) {
 			return null; // cell is not in any aggregation
 		}
-		return aggregation.get(request.getSingleValues());
+		return aggregation.get(measure, request.getSingleValues());
 	}
 
 	public Object getCellFromCache(CellRequest request, Set pinSet) {
+		RolapStar.Measure measure = request.getMeasure();
 		Aggregation aggregation = lookupAggregation(
-				request.getMeasure(), request.getColumns());
+				measure.table.star, request.getColumns());
 		if (aggregation == null) {
 			return null; // cell is not in any aggregation
 		}
-		return aggregation.getAndPin(request.getSingleValues(), pinSet);
+		return aggregation.getAndPin(measure, request.getSingleValues(), pinSet);
 	}
 
 }

@@ -27,13 +27,17 @@ import java.util.ArrayList;
  **/
 public class CellRequest {
 	private RolapStar.Measure measure;
+	/** List of columns being which have values in this request. The 0th
+	 * entry is a dummy entry: the star, which ensures that 2 requests for the
+	 * same columns on measures in the same star get put into the same batch.
+	 */
 	private ArrayList columnList = new ArrayList();
 	private ArrayList valueList = new ArrayList();
 
 	/** Creates a {@link CellRequest}. **/
 	public CellRequest(RolapStar.Measure measure) {
 		this.measure = measure;
-		this.columnList.add(measure);
+		this.columnList.add(measure.table.star);
 	}
 
 	public void addConstrainedColumn(RolapStar.Column column, Object[] values) {
@@ -55,7 +59,7 @@ public class CellRequest {
 	}
 
 	public RolapStar.Column[] getColumns() {
-		// ignore the measure, the 0th element of columnList
+		// ignore the star, the 0th element of columnList
 		RolapStar.Column[] a = new RolapStar.Column[columnList.size() - 1];
 		for (int i = 0; i < a.length; i++) {
 			a[i] = (RolapStar.Column) columnList.get(i + 1);
@@ -64,7 +68,7 @@ public class CellRequest {
 	}
 
 	/** Returns a list which identifies which batch this request will
-	 * belong to. The list contains the measure as well as the
+	 * belong to. The list contains the star as well as the
 	 * columns. **/
 	public ArrayList getBatchKey() {
 		return columnList;

@@ -407,16 +407,25 @@ class XmlFileTask extends ResourceGen.FileTask {
 		this.locale = Util.fileNameToLocale(fileName, ".xml");
 	}
 	void process(ResourceGen generator) throws IOException {
-			URL url = Util.convertPathToURL(getFile());
-			ResourceDef.ResourceBundle resourceList = Util.load(url);
-			generateJava(generator, resourceList, null);
-			if (locale != null) {
-				generateJava(generator, resourceList, locale);
-			}
-			if (locale == null) {
-				locale = Locale.getDefault();
-			}
-			generateProperties(generator, resourceList, locale);
+		URL url = Util.convertPathToURL(getFile());
+		ResourceDef.ResourceBundle resourceList = Util.load(url);
+		if (resourceList.locale == null) {
+			throw new BuildException(
+					"Resource file " + url + " must have locale");
+		}
+		this.locale = Util.parseLocale(resourceList.locale);
+		if (this.locale == null) {
+			throw new BuildException(
+					"Invalid locale " + resourceList.locale);
+		}
+		generateJava(generator, resourceList, null);
+		if (locale != null) {
+			generateJava(generator, resourceList, locale);
+		}
+		if (locale == null) {
+			locale = Locale.getDefault();
+		}
+		generateProperties(generator, resourceList, locale);
 	}
 
 	/**

@@ -18,6 +18,7 @@ import mondrian.rolap.RolapStar;
 import mondrian.rolap.RolapUtil;
 import mondrian.rolap.sql.SqlQuery;
 
+import javax.olap.metadata.Measure;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.ResultSet;
@@ -25,6 +26,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Collection;
 
 /**
  * <code>Segment</code> todo:
@@ -39,6 +41,7 @@ public class Segment implements CachePool.Cacheable
 	private static int nextId = 0; // generator for "id"
 	private String desc;
 	Aggregation aggregation;
+	RolapStar.Measure measure;
 
 	Aggregation.Axis[] axes;
 	private SegmentDataset data;
@@ -47,16 +50,18 @@ public class Segment implements CachePool.Cacheable
 	private int pinCount;
 
 	/**
-	 * Creates a <code>Segment</code>.
+	 * Creates a <code>Segment</code>; it's not loaded yet.
+	 *
 	 * @param aggregation The aggregation that this <code>Segment</code>
 	 *    belongs to
 	 * @param constraintses For each column, either an array of values
 	 *    to fetch or null, indicating that the column is unconstrained
 	 **/
-	Segment(Aggregation aggregation, Object[][] constraintses)
-	{
+	Segment(Aggregation aggregation, RolapStar.Measure measure,
+			Object[][] constraintses) {
 		this.id = nextId++;
 		this.aggregation = aggregation;
+		this.measure = measure;
 		int axisCount = aggregation.columns.length;
 		Util.assertTrue(constraintses.length == axisCount);
 		this.axes = new Aggregation.Axis[axisCount];
@@ -68,16 +73,29 @@ public class Segment implements CachePool.Cacheable
 			axis.mapKeyToOffset = new HashMap();
 		}
 		this.pos = new int[axisCount];
-		this.data = load();
 		this.desc = makeDescription();
+	}
+
+	/**
+	 * Set the data.
+	 *
+	 * todo: Give segments state, so that they are not used
+	 * before they are ready. This would be the point where they are marked
+	 * ready.
+	 */
+	void setData(DenseSegmentDataset data, Collection pinnedSegments) {
+		Util.assertTrue(this.data == null);
+		this.data = data;
+		final int pinCount = 1;
+		CachePool.instance().register(this, pinCount, pinnedSegments);
 	}
 
 	private String makeDescription()
 	{
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
-		pw.print("Segment #" + id + " {measure=" + aggregation.measure.aggregator +
-			"("	+ aggregation.measure.expression.getGenericExpression() + ")");
+		pw.print("Segment #" + id + " {measure=" + measure.aggregator +
+			"("	+ measure.expression.getGenericExpression() + ")");
 		for (int i = 0; i < aggregation.columns.length; i++) {
 			pw.print(", ");
 			pw.print(aggregation.columns[i].expression.getGenericExpression());
@@ -203,12 +221,13 @@ public class Segment implements CachePool.Cacheable
 	 * example, <code>getSegment({Unit_sales}, {Region, State, Year}, {"West",
 	 * {"CA", "OR", "WA"}, null})</code> returns sales in states CA, OR and WA
 	 * in the Western region, for all years.
+	 *
+	 * @pre segments[i].aggregation == aggregation
 	 **/
-	SegmentDataset load()
-	{
-		RolapStar star = aggregation.star;
-		RolapStar.Measure measure = aggregation.measure;
-		RolapStar.Column[] columns = aggregation.columns;
+	static void load(Segment[] segments, Collection pinnedSegments) {
+		Segment segment0 = segments[0];
+		RolapStar star = segment0.aggregation.star;
+		RolapStar.Column[] columns = segment0.aggregation.columns;
 		int arity = columns.length;
 		SqlQuery sqlQuery;
 		try {
@@ -219,7 +238,7 @@ public class Segment implements CachePool.Cacheable
 		}
 		// add constraining dimensions
 		for (int i = 0; i < arity; i++) {
-			Object[] constraints = axes[i].constraints;
+			Object[] constraints = segments[0].axes[i].constraints;
 			RolapStar.Column column = columns[i];
 			RolapStar.Table table = column.table;
 			if (table.isFunky()) {
@@ -235,24 +254,43 @@ public class Segment implements CachePool.Cacheable
 			sqlQuery.addSelect(expr);
 			sqlQuery.addGroupBy(expr);
 		}
-		// add measure
-		Util.assertTrue(measure.table == star.factTable);
-		star.factTable.addToFrom(sqlQuery, false, true);
-		sqlQuery.addSelect(
-			measure.aggregator + "(" + measure.getExpression(sqlQuery) + ")");
+		// add measures
+		for (int i = 0; i < segments.length; i++) {
+			Segment segment = segments[i];
+			RolapStar.Measure measure = segment.measure;
+			Util.assertTrue(measure.table == star.factTable);
+			if (i > 0) {
+				Util.assertTrue(segment.aggregation == segment0.aggregation);
+				int n = segment.axes.length;
+				Util.assertTrue(n == segment0.axes.length);
+				for (int j = 0; j < segment.axes.length; j++) {
+					// We only require that the two arrays have the same
+					// contents, we but happen to know they are the same array,
+					// because we constructed them at the same time.
+					Util.assertTrue(
+							segment.axes[j].constraints ==
+							segment0.axes[j].constraints);
+				}
+			}
+			star.factTable.addToFrom(sqlQuery, false, true);
+			sqlQuery.addSelect(
+				measure.aggregator + "(" + measure.getExpression(sqlQuery) + ")");
+		}
 		// execute
 		String sql = sqlQuery.toString();
 		ResultSet resultSet = null;
+		final int measureCount = segments.length;
 		try {
 			resultSet = RolapUtil.executeQuery(
 					star.getJdbcConnection(), sql, "Segment.load");
 			ArrayList rows = new ArrayList();
 			while (resultSet.next()) {
-				Object[] row = new Object[arity + 1];
+				Object[] row = new Object[arity + measureCount];
 				// get the columns
+				int k = 1;
 				for (int i = 0; i < arity; i++) {
-					Object o = resultSet.getObject(i + 1);
-					HashMap h = this.axes[i].mapKeyToOffset;
+					Object o = resultSet.getObject(k++);
+					HashMap h = segment0.axes[i].mapKeyToOffset;
 					Integer offsetInteger = (Integer) h.get(o);
 					if (offsetInteger == null) {
 						h.put(o, new Integer(h.size()));
@@ -260,18 +298,21 @@ public class Segment implements CachePool.Cacheable
 					row[i] = o;
 				}
 				// get the measure
-				Object o = resultSet.getObject(arity + 1);
-				if (o == null) {
-					o = Util.nullValue; // convert to placeholder
+				for (int i = 0; i < measureCount; i++) {
+					Segment segment = segments[i];
+					Object o = resultSet.getObject(k++);
+					if (o == null) {
+						o = Util.nullValue; // convert to placeholder
+					}
+					row[arity] = o;
 				}
-				row[arity] = o;
 				rows.add(row);
 			}
 			// figure out size of dense array, and allocate it (todo: use
 			// sparse array sometimes)
 			int n = 1;
 			for (int i = 0; i < arity; i++) {
-				Aggregation.Axis axis = this.axes[i];
+				Aggregation.Axis axis = segment0.axes[i];
 				int size = axis.mapKeyToOffset.size();
 				axis.keys = new Object[size];
 				for (Iterator keys = axis.mapKeyToOffset.keySet().iterator();
@@ -284,26 +325,36 @@ public class Segment implements CachePool.Cacheable
 				}
 				n *= size;
 			}
-			Object[] values = new Object[n];
+			DenseSegmentDataset[] datas = new DenseSegmentDataset[segments.length];
+			for (int i = 0; i < segments.length; i++) {
+				DenseSegmentDataset data = new DenseSegmentDataset();
+				datas[i] = data;
+				data.segment = segments[i];
+				data.values = new Object[n];
+			}
 			// now convert the rows into a dense array
 			for (int i = 0, count = rows.size(); i < count; i++) {
 				Object[] row = (Object[]) rows.get(i);
 				int k = 0;
 				for (int j = 0; j < arity; j++) {
-					k *= this.axes[j].keys.length;
+					k *= segment0.axes[j].keys.length;
 					Object o = row[j];
-					Aggregation.Axis axis = this.axes[j];
+					Aggregation.Axis axis = segment0.axes[j];
 					Integer offsetInteger = (Integer)
 						axis.mapKeyToOffset.get(o);
 					int offset = offsetInteger.intValue();
 					k += offset;
 				}
-				values[k] = row[arity];
+				for (int j = 0; j < segments.length; j++) {
+					datas[j].values[k] = row[arity + j];
+				}
 			}
-			DenseSegmentDataset data = new DenseSegmentDataset();
-			data.segment = this;
-			data.values = values;
-			return data;
+			for (int i = 0; i < segments.length; i++) {
+				if (i > 0) {
+					segments[i].axes = segments[0].axes;
+				}
+				segments[i].setData(datas[i], pinnedSegments);
+			}
 		} catch (SQLException e) {
 			throw Util.getRes().newInternal(
 					"while loading segment; sql=[" + sql + "]", e);

@@ -282,7 +282,7 @@ abstract class Util {
 	/**
 	 * Parses 'localeName' into a locale.
 	 */
-	private static Locale parseLocale(String localeName) {
+	static Locale parseLocale(String localeName) {
 		int score1 = localeName.indexOf('_');
 		String language, country = "", variant = "";
 		if (score1 < 0) {

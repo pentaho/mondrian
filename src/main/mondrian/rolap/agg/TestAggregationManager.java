@@ -42,12 +42,12 @@ public class TestAggregationManager extends TestCase {
 	}
 
 	public void testFemaleUnitSales() {
-		CellRequest request = createFemaleUnitSalesCellRequest();
+		CellRequest request = createRequest("Sales", "[Measures].[Unit Sales]", "customer", "gender", "F");
 		final RolapAggregationManager aggMan = AggregationManager.instance();
 		Object value = aggMan.getCellFromCache(request);
 		assertNull(value); // before load, the cell is not found
 		ArrayList pinnedSegments = new ArrayList();
-		aggMan.loadAggregations(createSingletonBatch(request), pinnedSegments);
+		aggMan.loadAggregations(createBatch(new CellRequest[] {request}), pinnedSegments);
 		value = aggMan.getCellFromCache(request); // after load, cell is found
 		assertTrue(value instanceof Number);
 		assertEquals(131558, ((Number) value).intValue());
@@ -58,15 +58,58 @@ public class TestAggregationManager extends TestCase {
 	 * generates the correct SQL.
 	 */
 	public void testFemaleUnitSalesSql() {
-		CellRequest request = createFemaleUnitSalesCellRequest();
+		CellRequest request = createRequest("Sales", "[Measures].[Unit Sales]", "customer", "gender", "F");
 		final String pattern = "select `customer`.`gender` as `c0`, sum(`sales_fact_1997`.`unit_sales`) as `c1` from `customer` as `customer`, `sales_fact_1997` as `sales_fact_1997` where `sales_fact_1997`.`customer_id` = `customer`.`customer_id` group by `customer`.`gender`";
-		assertRequestSql(request, pattern, null);
+		assertRequestSql(new CellRequest[] {request}, pattern, null);
 	}
 
 	// todo: test multiple values, (UNit Sales, State={CA,OR})
 
-	// todo: test multiple measures, ({Unit SAles,Store Sales}, Gender=F)
-	//  -- NOT possible yet, since a batch can only contain one measure
+	/**
+	 * Test a batch containing multiple measures:
+	 *   (store_state=CA, gender=F, measure=[UNit Sales])
+	 *   (store_state=CA, gender=M, measure=[Store Sales])
+	 *   (store_state=OR, gender=M, measure=[Unit Sales])
+	 */
+	public void testMultipleMeasures() {
+		CellRequest[] requests = new CellRequest[] {
+			createRequest("Sales", "[Measures].[Unit Sales]",
+					new String[] {"customer", "store"},
+					new String[] {"gender", "store_state"},
+					new String[] {"F", "CA"}),
+			createRequest("Sales", "[Measures].[Store Sales]",
+					new String[] {"customer", "store"},
+					new String[] {"gender", "store_state"},
+					new String[] {"M", "CA"}),
+			createRequest("Sales", "[Measures].[Unit Sales]",
+					new String[] {"customer", "store"},
+					new String[] {"gender", "store_state"},
+					new String[] {"F", "OR"})};
+		final String pattern = "select `customer`.`gender` as `c0`, `store`.`store_state` as `c1`, sum(`sales_fact_1997`.`unit_sales`) as `c2`, sum(`sales_fact_1997`.`store_sales`) as `c3` from `customer` as `customer`, `sales_fact_1997` as `sales_fact_1997`, `store` as `store` where `sales_fact_1997`.`customer_id` = `customer`.`customer_id` and `sales_fact_1997`.`store_id` = `store`.`store_id` and `store`.`store_state` in ('CA', 'OR') group by `customer`.`gender`, `store`.`store_state`";
+		assertRequestSql(requests, pattern, "select `customer`.`gender`");
+	}
+
+	/**
+	 */
+	private CellRequest createMultipleMeasureCellRequest() {
+		String cube = "Sales";
+		String measure = "[Measures].[Unit Sales]";
+		String table = "store";
+		String column = "store_state";
+		String value = "CA";
+		final Connection connection = TestContext.instance().getFoodMartConnection();
+		final boolean fail = true;
+		Cube salesCube = connection.getSchema().lookupCube(cube, fail);
+		Member storeSqftMeasure = salesCube.lookupMemberByUniqueName(
+				measure, fail);
+		RolapStar.Measure starMeasure = RolapStar.getStarMeasure(storeSqftMeasure);
+		CellRequest request = new CellRequest(starMeasure);
+		final RolapStar star = starMeasure.table.star;
+		final RolapStar.Column storeTypeColumn = star.lookupColumn(
+				table, column);
+		request.addConstrainedColumn(storeTypeColumn, value);
+		return request;
+	}
 
 	// todo: test unrestricted column, (Unit Sales, Gender=*)
 
@@ -81,16 +124,15 @@ public class TestAggregationManager extends TestCase {
 		assertTrue(s, s.indexOf(pattern) >= 0);
 	}
 
-	private ArrayList createSingletonBatch(CellRequest request) {
+	private ArrayList createBatch(CellRequest[] requests) {
 		ArrayList batches = new ArrayList();
 		RolapAggregationManager.Batch batch = new RolapAggregationManager.Batch();
 		batches.add(batch);
-		batch.requests.add(request);
+		for (int i = 0; i < requests.length; i++) {
+			CellRequest request = requests[i];
+			batch.requests.add(request);
+		}
 		return batches;
-	}
-
-	private CellRequest createFemaleUnitSalesCellRequest() {
-		return createRequest("Sales", "[Measures].[Unit Sales]", "customer", "gender", "F");
 	}
 
 	/**
@@ -99,14 +141,14 @@ public class TestAggregationManager extends TestCase {
 	public void testHierarchyInFactTable() {
 		CellRequest request = createRequest("Store", "[Measures].[Store Sqft]", "store", "store_type", "Supermarket");
 		final String pattern = "select `store`.`store_type` as `c0`, sum(`store`.`store_sqft`) as `c1` from `store` as `store` group by `store`.`store_type`";
-		assertRequestSql(request, pattern, "select `store`.`store_type` as `c0`");
+		assertRequestSql(new CellRequest[] {request}, pattern, "select `store`.`store_type` as `c0`");
 	}
 
 	private void assertRequestSql_old(CellRequest request, final String pattern) {
 		final RolapAggregationManager aggMan = AggregationManager.instance();
 		ArrayList pinnedSegments = new ArrayList();
 		final RolapUtil.TeeWriter tw = RolapUtil.startTracing();
-		aggMan.loadAggregations(createSingletonBatch(request), pinnedSegments);
+		aggMan.loadAggregations(createBatch(new CellRequest[] {request}), pinnedSegments);
 		String s = tw.toString();
 		assertMatches(s,pattern);
 	}
@@ -118,10 +160,10 @@ public class TestAggregationManager extends TestCase {
 		}
 	};
 
-	private void assertRequestSql(CellRequest request, final String pattern, final String trigger) {
+	private void assertRequestSql(CellRequest[] requests, final String pattern, final String trigger) {
 		final RolapAggregationManager aggMan = AggregationManager.instance();
 		ArrayList pinnedSegments = new ArrayList();
-		RolapStar star = request.getMeasure().table.star;
+		RolapStar star = requests[0].getMeasure().table.star;
 		final java.sql.Connection connection = star.getJdbcConnection();
 		String database = null;
 		try {
@@ -155,7 +197,7 @@ public class TestAggregationManager extends TestCase {
 				));
 		Bomb bomb;
 		try {
-			aggMan.loadAggregations(createSingletonBatch(request), pinnedSegments);
+			aggMan.loadAggregations(createBatch(requests), pinnedSegments);
 			bomb = null;
 		} catch (Bomb e) {
 			bomb = e;
@@ -178,6 +220,28 @@ public class TestAggregationManager extends TestCase {
 		final RolapStar.Column storeTypeColumn = star.lookupColumn(
 				table, column);
 		request.addConstrainedColumn(storeTypeColumn, value);
+		return request;
+	}
+
+	private CellRequest createRequest(
+			final String cube, final String measureName,
+			final String[] tables, final String[] columns, final String[] values) {
+		final Connection connection = TestContext.instance().getFoodMartConnection();
+		final boolean fail = true;
+		Cube salesCube = connection.getSchema().lookupCube(cube, fail);
+		Member measure = salesCube.lookupMemberByUniqueName(
+				measureName, fail);
+		RolapStar.Measure starMeasure = RolapStar.getStarMeasure(measure);
+		CellRequest request = new CellRequest(starMeasure);
+		final RolapStar star = starMeasure.table.star;
+		for (int i = 0; i < tables.length; i++) {
+			String table = tables[i];
+			String column = columns[i];
+			String value = values[i];
+			final RolapStar.Column storeTypeColumn = star.lookupColumn(
+					table, column);
+			request.addConstrainedColumn(storeTypeColumn, value);
+		}
 		return request;
 	}
 }

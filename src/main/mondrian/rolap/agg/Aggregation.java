@@ -56,28 +56,35 @@ import java.io.PrintWriter;
 public class Aggregation
 {
 	RolapStar star;
-	RolapStar.Measure measure;
 	RolapStar.Column[] columns;
 	ArrayList segments;
 
-	Aggregation(
-		RolapStar star, RolapStar.Measure measure, RolapStar.Column[] columns)
-	{
+	Aggregation(RolapStar star, RolapStar.Column[] columns) {
 		this.star = star;
-		this.measure = measure;
 		this.columns = columns;
 		this.segments = new ArrayList();
 	}
 
 	/**
-	 * Loads a new aggregation.
+	 * Loads a set of segments into this aggregation, one per measure,
+	 * each constrained by the same set of column values.
+	 *
+	 * For example,
+	 *   measures = {unit_sales, store_sales},
+	 *   state = {CA, OR},
+	 *   gender = unconstrained
 	 */
-	void load(Object[][] constraintses, Collection pinnedSegments)
-	{
-		Segment segment = new Segment(this, constraintses);
-		segments.add(segment);
-		int pinCount = 1;
-		CachePool.instance().register(segment, pinCount, pinnedSegments);
+	void load(
+			RolapStar.Measure[] measures, Object[][] constraintses,
+			Collection pinnedSegments) {
+		Segment[] segments = new Segment[measures.length];
+		for (int i = 0; i < measures.length; i++) {
+			RolapStar.Measure measure = measures[i];
+			Segment segment = new Segment(this, measure, constraintses);
+			segments[i] = segment;
+			this.segments.add(segment);
+		}
+		Segment.load(segments, pinnedSegments);
 	}
 
 	/**
@@ -198,10 +205,13 @@ public class Aggregation
 //		return get(keys);
 //	}
 
-	Object get(Object[] keys)
+	Object get(RolapStar.Measure measure, Object[] keys)
 	{
 		for (int i = 0, count = segments.size(); i < count; i++) {
 			Segment segment = (Segment) segments.get(i);
+			if (segment.measure != measure) {
+				continue;
+			}
 			Object o = segment.get(keys);
 			if (o != null) {
 				// 'Util.nullValue' means right segment, but no fact table rows
@@ -219,11 +229,14 @@ public class Aggregation
 	 * only pinned once. Returns <code>null</code> if no segment contains the
 	 * cell.
 	 **/
-	Object getAndPin(Object[] keys, Collection pinSet)
+	Object getAndPin(RolapStar.Measure measure, Object[] keys, Collection pinSet)
 	{
 		for (int i = 0, count = segments.size(); i < count; i++) {
 			Segment segment = (Segment) segments.get(i);
 			Object o = segment.get(keys);
+			if (segment.measure != measure) {
+				continue;
+			}
 			if (o != null) {
 				if (!pinSet.contains(segment)) {
 					CachePool.instance().pin(segment, pinSet);
