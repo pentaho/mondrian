@@ -38,7 +38,7 @@ public class Literal extends ExpBase
 	/**
 	 * Creates a string literal.
 	 * @see #createSymbol
-	 */ 
+	 */
 	public static Literal createString(String s) {
 		if (s.equals("")) {
 			return emptyString;
@@ -57,7 +57,7 @@ public class Literal extends ExpBase
 		this.o = d;
 		this.type = Category.Numeric;
 	}
-	static Literal create(Double d) {
+	public static Literal create(Double d) {
 		if (d.doubleValue() == 0.0) {
 			return doubleZero;
 		} else if (d.doubleValue() == 1.0) {
