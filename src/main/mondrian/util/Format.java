@@ -2977,17 +2977,12 @@ class FloatingDecimal {
 		char thousandChar) // ',' or '.', or 0
 	{
 		// char result[] = new char[nDigits + 10]; // crashes for 1.000.000,00
-		// let result be +1,234,567.00
-		// then we will need a result length of 13.
-		// this length does *not* depend from nDigits
-		//  it is : digitsLeftofDecimal = max (decExponent, maxDigitsRightOfDecimal)
+		// the result length does *not* depend from nDigits
+		//  it is : decExponent
 		//         +maxDigitsRightOfDecimal
-		//         +2  (for decimal point and sign
-		//         +(digitsLeftofDecimal-1)/3  (for the thousand separators)
-		int digitsLeftofDecimal = Math.max (decExponent, maxDigitsRightOfDecimal);
-		int resultLen =
-			2 + digitsLeftofDecimal + maxDigitsRightOfDecimal +
-			(digitsLeftofDecimal -1)/3;
+		//         +10  (for decimal point and sign or -Infinity)
+		//         +decExponent/3 (for the thousand separators)
+		int resultLen = 10 + decExponent*4/3  + maxDigitsRightOfDecimal;
         char result[] = new char[resultLen];
 		int i = toJavaFormatString(
 			result, 0, minDigitsLeftOfDecimal, decimalChar,
