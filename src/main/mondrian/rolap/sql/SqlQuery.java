@@ -230,6 +230,9 @@ public class SqlQuery
 	public boolean isOracle() {
 		return getProduct().equals("Oracle");
 	}
+	public boolean isMSSql() {
+		return getProduct().equalsIgnoreCase("Microsoft SQL Server");
+	}
 	public boolean isAccess() {
 		return getProduct().equals("ACCESS");
 	}
@@ -274,6 +277,8 @@ public class SqlQuery
 		String best;
 		if (isOracle()) {
 			best = "oracle";
+		} else if (isMSSql()) {
+			best = "mssql";
 		} else if (isMySQL()) {
 			best = "mysql";
 		} else if (isAccess()) {
