@@ -1739,6 +1739,75 @@ public class FoodMartTestCase extends TestCase {
 				"Row #4: <i>6557.00</i>" + nl +
 				"Row #5: <b>150555.00</b>" + nl);
 	}
+	/**
+	 * If a measure (in this case, <code>[Measures].[Sales Count]</code>)
+	 * occurs only within a format expression, bug 684593 causes an internal
+	 * error ("value not found") when the cell's formatted value is retrieved.
+	 */
+	public void testBug684593(FoodMartTestCase test) {
+		test.runQueryCheckResult(
+				"with member [Measures].[USales] as '[Measures].[Unit Sales]'," + nl +
+				" format_string = iif([Measures].[Sales Count] > 30, \"#.00 good\",\"#.00 bad\")" + nl +
+				"select {[Measures].[USales], [Measures].[Store Cost], [Measures].[Store Sales]} ON columns," + nl +
+				" Crossjoin({[Promotion Media].[All Media].[Radio], [Promotion Media].[All Media].[TV], [Promotion Media]. [All Media].[Sunday Paper], [Promotion Media].[All Media].[Street Handout]}, [Product].[All Products].[Drink].Children) ON rows" + nl +
+				"from [Sales] where ([Time].[1997])",
+
+				"Axis #0:" + nl +
+				"{[Time].[1997]}" + nl +
+				"Axis #1:" + nl +
+				"{[Measures].[USales]}" + nl +
+				"{[Measures].[Store Cost]}" + nl +
+				"{[Measures].[Store Sales]}" + nl +
+				"Axis #2:" + nl +
+				"{[Promotion Media].[All Media].[Radio], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
+				"{[Promotion Media].[All Media].[Radio], [Product].[All Products].[Drink].[Beverages]}" + nl +
+				"{[Promotion Media].[All Media].[Radio], [Product].[All Products].[Drink].[Dairy]}" + nl +
+				"{[Promotion Media].[All Media].[TV], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
+				"{[Promotion Media].[All Media].[TV], [Product].[All Products].[Drink].[Beverages]}" + nl +
+				"{[Promotion Media].[All Media].[TV], [Product].[All Products].[Drink].[Dairy]}" + nl +
+				"{[Promotion Media].[All Media].[Sunday Paper], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
+				"{[Promotion Media].[All Media].[Sunday Paper], [Product].[All Products].[Drink].[Beverages]}" + nl +
+				"{[Promotion Media].[All Media].[Sunday Paper], [Product].[All Products].[Drink].[Dairy]}" + nl +
+				"{[Promotion Media].[All Media].[Street Handout], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
+				"{[Promotion Media].[All Media].[Street Handout], [Product].[All Products].[Drink].[Beverages]}" + nl +
+				"{[Promotion Media].[All Media].[Street Handout], [Product].[All Products].[Drink].[Dairy]}" + nl +
+				"Row #0: 75.00 bad" + nl +
+				"Row #0: 70.40" + nl +
+				"Row #0: 168.62" + nl +
+				"Row #1: 97.00 good" + nl +
+				"Row #1: 75.70" + nl +
+				"Row #1: 186.03" + nl +
+				"Row #2: 54.00 bad" + nl +
+				"Row #2: 36.75" + nl +
+				"Row #2: 89.03" + nl +
+				"Row #3: 76.00 bad" + nl +
+				"Row #3: 70.99" + nl +
+				"Row #3: 182.38" + nl +
+				"Row #4: 188.00 good" + nl +
+				"Row #4: 167.00" + nl +
+				"Row #4: 419.14" + nl +
+				"Row #5: 68.00 bad" + nl +
+				"Row #5: 45.19" + nl +
+				"Row #5: 119.55" + nl +
+				"Row #6: 148.00 good" + nl +
+				"Row #6: 128.97" + nl +
+				"Row #6: 316.88" + nl +
+				"Row #7: 197.00 good" + nl +
+				"Row #7: 161.81" + nl +
+				"Row #7: 399.58" + nl +
+				"Row #8: 85.00 bad" + nl +
+				"Row #8: 54.75" + nl +
+				"Row #8: 140.27" + nl +
+				"Row #9: 158.00 good" + nl +
+				"Row #9: 121.14" + nl +
+				"Row #9: 294.55" + nl +
+				"Row #10: 270.00 good" + nl +
+				"Row #10: 201.28" + nl +
+				"Row #10: 520.55" + nl +
+				"Row #11: 84.00 bad" + nl +
+				"Row #11: 50.26" + nl +
+				"Row #11: 128.32" + nl);
+	}
 	/** Make sure that the "Store" cube is working. **/
 	public void testStoreCube() {
 		runQueryCheckResult(
@@ -2034,12 +2103,16 @@ public class FoodMartTestCase extends TestCase {
 		}
 	}
 
-	public void testParallelButSingle() {
+	public void testParallelNot() {
 		runParallelQueries(1, 1);
 	}
 
-	public void _testParallel() {
-		runParallelQueries(5, 3);
+	public void _testParallelSomewhat() {
+		runParallelQueries(3, 2);
+	}
+
+	public void _testParallelVery() {
+		runParallelQueries(6, 10);
 	}
 
 	private void runParallelQueries(final int threadCount, final int iterationCount) {

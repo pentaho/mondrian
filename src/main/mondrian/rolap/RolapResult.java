@@ -19,7 +19,7 @@ import java.util.*;
 import java.io.PrintWriter;
 
 /**
- * todo:
+ * A <code>RolapResult</code> is the result of running a query.
  *
  * @author jhyde
  * @since 10 August, 2001
@@ -176,36 +176,29 @@ class RolapResult extends ResultBase
 
 	private void executeBody(Query query)
 	{
-		cellValues = new HashMap();
-		// first time, create a dummy evaluator which collects requests
-		this.evaluator.cellReader = this.batchingReader;
-		executeStripe(query.axes.length - 1);
+		// Compute the cells several times. The first time, use a dummy
+		// evaluator which collects requests.
+		int count = 0;
+		while (true) {
+			cellValues = new HashMap();
+			//
+			this.evaluator.cellReader = this.batchingReader;
+			executeStripe(query.axes.length - 1);
 
-		// Retrieve the aggregations collected.
-		//
-		// Do we group them by (a) level, or (b) the underlying columns they
-		// access.  I think the columns.
-		//
-		// Maybe some or all of the group can be derived by rolling up.  We
-		// should probably roll up if possible (the danger is that we end up
-		// with a fragmented aggregation, which we hit many times).
-		//
-		// If we roll up, do we also store?  I think so.  Then we can let the
-		// caching policy kick in.  (It gets interesting if we roll up, but do
-		// not store, part of an aggregation.)
-		//
-		// For each group, extend the aggregation definition a bit, if it will
-		// help us roll up later.
-		//
-		if (batchingReader.keys.isEmpty()) {
-			return;
+			// Retrieve the aggregations collected.
+			//
+			//
+			if (batchingReader.keys.isEmpty()) {
+				// We got all of the cells we needed, so the result must be
+				// correct.
+				return;
+			}
+			if (count++ > 3) {
+				throw Util.newInternal("Query required more than " + count + " iterations");
+			}
+			batchingReader.loadAggregations();
+			batchingReader.clear();
 		}
-		batchingReader.loadAggregations();
-		batchingReader.clear();
-
-		// second time, really execute
-		this.evaluator.cellReader = this.aggregatingReader;
-		executeStripe(query.axes.length - 1);
 	}
 
 	/**
@@ -269,9 +262,27 @@ class RolapResult extends ResultBase
 			return RolapUtil.valueNotReadyException;
 		}
 
-		/** Loads the aggregations which we will need. Writes the aggregations
+		/**
+		 * Loads the aggregations which we will need. Writes the aggregations
 		 * it loads (and pins) into <code>pinned</code>; the caller must pass
-		 * this to {@link CachePool#unpin(Collection)}. **/
+		 * this to {@link CachePool#unpin(Collection)}.
+		 *
+		 * <h3>Design discussion</h3>
+		 *
+		 * <p>Do we group them by (a) level, or (b) the underlying columns they
+		 * access.  I think the columns.
+		 *
+		 * <p>Maybe some or all of the group can be derived by rolling up.  We
+		 * should probably roll up if possible (the danger is that we end up
+		 * with a fragmented aggregation, which we hit many times).
+		 *
+		 * <p>If we roll up, do we also store?  I think so.  Then we can let the
+		 * caching policy kick in.  (It gets interesting if we roll up, but do
+		 * not store, part of an aggregation.)
+		 *
+		 * <p>For each group, extend the aggregation definition a bit, if it
+		 * will help us roll up later.
+		 **/
 		void loadAggregations() {
 			AggregationManager.instance().loadAggregations(keys, pinnedSegments);
 		}
@@ -316,6 +327,15 @@ class RolapResult extends ResultBase
 				if (o != null && o != RolapUtil.valueNotReadyException) {
 					CellKey key = point.copy();
 					cellValues.put(key, o);
+					// Compute the formatted value, to ensure that any needed
+					// values are in the cache.
+					try {
+						Util.discard(getCell(point.ordinals));
+					} catch (MondrianEvaluationException e) {
+						// ignore
+					} catch (Throwable e) {
+						Util.discard(e);
+					}
 				}
 			}
 		} else {
