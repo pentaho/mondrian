@@ -243,7 +243,8 @@ class RolapEvaluator implements Evaluator
 
 	public String format(Object o) {
 		if (o == Util.nullValue) {
-			return "(null)";
+			Format format = getFormat();
+			return format.format(null);
 		} else if (o instanceof Throwable) {
 			return "#ERR: " + o.toString();
 		} else if (o instanceof String) {

@@ -15,10 +15,9 @@ import mondrian.olap.Util;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.io.PrintStream;
-import java.util.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.*;
 
 /**
  * <code>Format</code> formats numbers, strings and dates according to the
@@ -339,18 +338,6 @@ public class Format {
 	}
 
 	/**
-	 * Formats an object using a format string.
-	 *
-	 * @deprecated {@link #format(Object,String,Locale)} does
-	 *   locale-specific formatting.
-	 */
-	static String format(Object o, String formatString)
-	{
-		Format format = new Format(formatString);
-		return format.format(o);
-	}
-
-	/**
 	 * Formats an object using a format string, according to a given locale. If
 	 * you need to format many objects using the same format string, use {@link
 	 * #Format(Object,String,Locale)}.
@@ -514,7 +501,7 @@ public class Format {
 			if (formats.length >= 4) {
 				formats[3].format(0, pw);
 			} else {
-				pw.print("");
+				super.formatNull(pw);
 			}
 		}
 		void format(double n, PrintWriter pw) {
@@ -722,8 +709,8 @@ public class Format {
 	 * numbers with a given number of decimal places, leading zeroes, in
 	 * exponential notation, etc.
 	 *
-	 * <p>It is implemented using {@link BBFloatingDecimal}, which is a
-	 * barely-modified version of {@link java.lang.FloatingDecimal}.
+	 * <p>It is implemented using {@link FloatingDecimal}, which is a
+	 * barely-modified version of <code>java.lang.FloatingDecimal</code>.
 	 */
 	static class NumericFormat extends FallbackFormat
 	{
@@ -1249,19 +1236,16 @@ public class Format {
 
 	};
 
-/* todo:
-	private static class StringFormat extends CompoundFormat
+	private static class StringFormat extends BasicFormat
 	{
 		int stringCase;
 
-		StringFormat(int stringCase)
-		{
+		StringFormat(int stringCase) {
 			this.stringCase = stringCase;
 		}
 	};
-*/
 
-	/** Values for {@link StringFormat#case}. */
+	/** Values for {@link StringFormat#stringCase}. */
 	private static final int CASE_ASIS = 0;
 	private static final int CASE_UPPER = 1;
 	private static final int CASE_LOWER = 2;
@@ -1275,7 +1259,7 @@ public class Format {
 	 * during parsing. */
 	private static final int SPECIAL = 8;
 
-	/** Values for {@link Format#code}. */
+	/** Values for {@link BasicFormat#code}. */
 	private static final int FORMAT_NULL = 0;
 	private static final int FORMAT_C = 3;
 	private static final int FORMAT_D = 4;
@@ -1336,6 +1320,8 @@ public class Format {
 	private static final Token nfe(
 		int code, int flags, String token, String purpose, String description)
 	{
+		Util.discard(purpose);
+		Util.discard(description);
 		return new Token(code,flags,token);
 	}
 
@@ -1462,6 +1448,11 @@ public class Format {
 
 	/**
 	 * Constructs a <code>Format</code> in a specific locale.
+	 *
+	 * @param formatString the format string; see
+	 *   <a href="http://www.apostate.com/programming/vb-format.html">this
+	 *   description</a> for more details
+	 * @param locale The locale
 	 **/
 	public Format(String formatString, Locale locale)
 	{
@@ -1509,6 +1500,11 @@ public class Format {
 	/**
 	 * Constructs a <code>Format</code> in a specific locale, or retrieves
 	 * one from the cache if one already exists.
+	 *
+	 * 	 * @param formatString the format string; see
+	 *   <a href="http://www.apostate.com/programming/vb-format.html">this
+	 *   description</a> for more details
+
 	 */
 	public static Format get(String formatString, Locale locale) {
 		String key = formatString + "@@@" + locale;
@@ -1532,9 +1528,6 @@ public class Format {
 	 * Create a {@link FormatLocale} object characterized by the given
 	 * proeprties.
 	 *
-	 * @param formatString the format string; see
-	 *   <a href="http://www.apostate.com/programming/vb-format.html">this
-	 *   description</a> for more details  
 	 * @param thousandSeparator the character used to separate thousands in
 	 *   numbers, or ',' by default.  For example, 12345 is '12,345 in English,
 	 *   '12.345 in French. 
@@ -1671,8 +1664,8 @@ public class Format {
 			zeroesRightOfExp = 0;
 		int stringCase = CASE_ASIS;
 		boolean useDecimal = false,
-			useThouSep = false,
-			fillFromRight = true;
+				useThouSep = false,
+				fillFromRight = true;
 
 		/** Whether to print numbers in decimal or exponential format.  Valid
 		 * values are FORMAT_NULL, FORMAT_E_PLUS_LOWER, FORMAT_E_MINUS_LOWER,
@@ -2072,7 +2065,7 @@ loop:
 }
 
 /**
- * Copied from {@link java.lang.FloatingDecimal}.
+ * Copied from <code>java.lang.FloatingDecimal</code>.
  */
 class FloatingDecimal {
 	boolean		isExceptional;
@@ -2080,15 +2073,6 @@ class FloatingDecimal {
 	int			decExponent;
 	char		digits[];
 	int			nDigits;
-
-	private		FloatingDecimal( boolean negSign, int decExponent, char []digits, int n,	boolean e )
-	{
-		isNegative = negSign;
-		isExceptional = e;
-		this.decExponent = decExponent;
-		this.digits = digits;
-		this.nDigits = n;
-	}
 
 	/*
 	 * Constants of the implementation
@@ -2393,9 +2377,9 @@ class FloatingDecimal {
 		}
 		// Begin to unpack
 		// Discover obvious special cases of NaN and Infinity.
-		binExp = (int)( (fBits&singleExpMask) >> singleExpShift );
+		binExp = ( (fBits&singleExpMask) >> singleExpShift );
 		fractBits = fBits&singleFractMask;
-		if ( binExp == (int)(singleExpMask>>singleExpShift) ) {
+		if ( binExp == (singleExpMask>>singleExpShift) ) {
 			isExceptional = true;
 			if ( fractBits == 0L ){
 				digits =  infinity;
@@ -2626,7 +2610,7 @@ class FloatingDecimal {
 				 * case, we discard it and decrement decExp.
 				 */
 				ndigit = 0;
-				q = (int) ( b / s );
+				q = ( b / s );
 				b = 10 * ( b % s );
 				m *= 10;
 				low	 = (b <	 m );
@@ -2650,7 +2634,7 @@ class FloatingDecimal {
 					high = low = false;
 				}
 				while( ! low && ! high ){
-					q = (int) ( b / s );
+					q = ( b / s );
 					b = 10 * ( b % s );
 					m *= 10;
 					if ( q >= 10 ){
@@ -3656,10 +3640,10 @@ class FDBigInt {
 		}
 		for( ; i> 0 ; i-- ){
 			r.append( Integer.toHexString( data[i] ) );
-			r.append( (char) ' ' );
+			r.append( ' ' );
 		}
 		r.append( Integer.toHexString( data[0] ) );
-		r.append( (char) ']' );
+		r.append( ']' );
 		return new String( r );
 	}
 }
