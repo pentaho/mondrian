@@ -86,6 +86,11 @@ public interface Exp {
         void resolveChild(Formula formula);
         boolean requiresExpression();
         FunTable getFunTable();
+        /**
+         * Creates or retrieves the parameter corresponding to a "Parameter" or
+         * "ParamRef" function call.
+         */
+        Parameter createOrLookupParam(FunCall call);
     }
 }
 

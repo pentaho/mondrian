@@ -21,6 +21,7 @@
 <li><a href="taglib.jsp">Various queries formatted using the tag-library</a></li>
 <li><a href="adhoc.jsp">Basic interface for ad hoc queries</a></li>
 <li><a href="pivot.jsp">Basic pivot table</a></li>
+<li><a href="xmlaTest.jsp">XML for Analysis tester</a></li>
 </ul>
 
 <p>Other links:</p>

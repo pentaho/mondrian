@@ -46,9 +46,12 @@ public class RolapStar {
 	 * {@link RolapLevel} to {@link Column}. The double indirection is
 	 * necessary because in different cubes, a shared hierarchy might be joined
 	 * onto the fact table at different levels. */
-	HashMap mapCubeToMapLevelToColumn = new HashMap();
+	final HashMap mapCubeToMapLevelToColumn = new HashMap();
+    /** Maps {@link Column} to {@link String} for each column which is a key
+     * to a level. */
+    final HashMap mapColumnToName = new HashMap();
 
-	/**
+    /**
 	 * Please use {@link Pool#getOrCreateStar} to create a {@link
 	 * RolapStar}.
 	 */
@@ -179,6 +182,15 @@ public class RolapStar {
                 // ignore
             }
         }
+    }
+
+    /**
+     * Returns a printable name for a column, generally the name of the level
+     * mapped into it; or null if no such mapping exists. The mapping is
+     * approximate.
+     */
+    public String getColumnName(Column column) {
+        return (String) mapColumnToName.get(column);
     }
 
     public static class Column

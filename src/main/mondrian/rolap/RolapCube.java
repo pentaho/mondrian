@@ -270,6 +270,7 @@ class RolapCube extends CubeBase
 					column.isNumeric = (level.flags & RolapLevel.NUMERIC) != 0;
 					table.columns.add(column);
 					mapLevelToColumn.put(level, column);
+                    star.mapColumnToName.put(column, level.getName());
 				}
 			}
 		}

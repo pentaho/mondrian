@@ -858,6 +858,10 @@ public class Util extends mondrian.xom.XOMUtil
             public FunTable getFunTable() {
                 return funTable;
             }
+
+            public Parameter createOrLookupParam(FunCall call) {
+                return null;
+            }
         };
     }
 

@@ -8,58 +8,58 @@
 
 @set SRCROOT=%~dp0
 
-@if exist "%HOME_DRIVE%" goto x001
+@if exist "%HOME_DRIVE%" goto homeDriveOk
 @set HOME_DRIVE=E
-:x001
+:homeDriveOk
 
-@if exist "%JAVA_HOME%" goto x002
+@if exist "%JAVA_HOME%" goto javaHomeOk
 @set JAVA_HOME=%HOME_DRIVE%:/j2sdk1.4.1_01
-@if exist "%JAVA_HOME%" goto x002
+@if exist "%JAVA_HOME%" goto javaHomeOk
 @echo JAVA_HOME (%JAVA_HOME%) does not exist
 @goto end
-:x002
+:javaHomeOk
 
 @set PATH=%JAVA_HOME%/bin;%PATH%
 
-@if exist "%ANT_HOME%" goto x010
+@if exist "%ANT_HOME%" goto javaHomeOk
 @set ANT_HOME=%HOME_DRIVE%:\jakarta-ant-1.5
-@if exist "%ANT_HOME%" goto x010
+@if exist "%ANT_HOME%" goto javaHomeOk
 @echo ANT_HOME (%ANT_HOME%) does not exist
 @goto end
-:x010
+:javaHomeOk
 
-@if exist "%XALAN_HOME%" goto x030
+@if exist "%XALAN_HOME%" goto xalanHomeOk
 @set XALAN_HOME=%HOME_DRIVE%:/xalan-j_2_4_1
-@if exist "%XALAN_HOME%" goto x030
+@if exist "%XALAN_HOME%" goto xalanHomeOk
 @echo XALAN_HOME (%XALAN_HOME%) does not exist
 @goto end
-:x030
+:xalanHomeOk
 
-@if exist "%JUNIT_HOME%" goto x040
-@set JUNIT_HOME=%HOME_DRIVE%:/junit3.7
-@if exist "%JUNIT_HOME%" goto x040
+@if exist "%JUNIT_HOME%" goto junitHomeOk
+@set JUNIT_HOME=%HOME_DRIVE%:/junit3.8.1
+@if exist "%JUNIT_HOME%" goto junitHomeOk
 @echo JUNIT_HOME (%JUNIT_HOME%) does not exist
 @goto end
-:x040
+:junitHomeOk
 
-@if exist "%CATALINA_HOME%" goto x050
-@set CATALINA_HOME=%HOME_DRIVE%:\jakarta-tomcat-4.1.18
-@if exist "%CATALINA_HOME%" goto x050
+@if exist "%CATALINA_HOME%" goto catalinaHomeOk
+@set CATALINA_HOME=%HOME_DRIVE%:\jakarta-tomcat-4.1.24
+@if exist "%CATALINA_HOME%" goto catalinaHomeOk
 @echo CATALINA_HOME (%CATALINA_HOME%) does not exist
 @goto end
-:x050
+:catalinaHomeOk
 
 @set CLASSPATH=%SRCROOT%/classes;%SRCROOT%/lib/javacup.jar;%SRCROOT%/lib/boot.jar;%XALAN_HOME%/bin/xml-apis.jar;%XALAN_HOME%/bin/xercesImpl.jar;%JUNIT_HOME%/junit.jar
 
 @rem To use Oracle, uncomment the next line and modify appropriately
 @rem set ORACLE_HOME=%HOME_DRIVE%:/oracle/ora81
-@if "%ORACLE_HOME%" == "" goto x300
-@if exist "%ORACLE_HOME%" goto x290
+@if "%ORACLE_HOME%" == "" goto oracleHomeNotSet
+@if exist "%ORACLE_HOME%" goto oracleHomeOk
 @echo ORACLE_HOME (%ORACLE_HOME%) does not exist
 @goto end
-:x290
+:oracleHomeOk
 @set CLASSPATH=%CLASSPATH%;%ORACLE_HOME%/jdbc/lib/classes12.zip
-:x300
+:oracleHomeNotSet
 
 @rem To use MySQL, uncomment the next 2 lines and modify appropriately
 @rem set MYSQL_HOME=%HOME_DRIVE%:/MySQL

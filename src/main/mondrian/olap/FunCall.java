@@ -51,6 +51,11 @@ public class FunCall extends ExpBase
 		}
 	}
 
+    /** @deprecated use #FunCall(String,Syntax,Exp[]) */
+    public FunCall(String fun, Exp[] args, int syntax) {
+        this(fun, Syntax.get(syntax), args);
+    }
+
 	public Object clone() {
 		return new FunCall(fun, syntax, ExpBase.cloneArray(args));
 	}
@@ -121,7 +126,7 @@ public class FunCall extends ExpBase
 		}
         funDef = resolver.getFunTable().getDef(this, resolver);
 		if (this.isCallToParameter()) {
-			Parameter param = resolver.getQuery().createOrLookupParam(this);
+			Parameter param = resolver.createOrLookupParam(this);
 			return resolver.resolveChild(param);
 		} else if (this.isCallTo("StrToTuple") ||
 				   this.isCallTo("StrToSet")) {

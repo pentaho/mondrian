@@ -26,16 +26,8 @@ public class Parameter extends ExpBase {
 	 * a "Parameter" function, subsequent times, a "ParamRef". **/
 	int printCount;
 
-	Parameter(FunCall funCall) {
-		defineCount = 0;
-		printCount = 0;
-		update(funCall);
-	}
-
-	Parameter(
-		String name, int category, Hierarchy hierarchy, Exp exp,
-		String description)
-	{
+	Parameter(String name, int category, Hierarchy hierarchy, Exp exp,
+            String description) {
 		this.name = name;
 		this.category = category;
 		this.hierarchy = hierarchy;
@@ -62,37 +54,7 @@ public class Parameter extends ExpBase {
 		return exp;
 	}
 
-	/**
-	 * Sets or updates properties of this <code>Parameter</code> based upon a
-	 * "Parameter" or "ParamRef" function call.
-	 */
-	void update(FunCall funCall)
-	{
-		ParameterFunDef parameterFunDef = (ParameterFunDef) funCall.getFunDef();
-
-		// If this is not the first time we've seen this parameter, check that
-		// the name is the same.
-		if (this.name != null) {
-			if (!this.name.equals(parameterFunDef.parameterName)) {
-				throw Util.newInternal("parameter renamed from " + this.name +
-						" to " + parameterFunDef.parameterName);
-			}
-		}
-		this.name = parameterFunDef.parameterName;
-
-		if (parameterFunDef.isDefinition()) {
-			// parameter definition
-			++defineCount;
-			exp = parameterFunDef.exp;
-			description = parameterFunDef.parameterDescription;
-			category = funCall.getType();
-			hierarchy = funCall.getHierarchy();
-		} else {
-			// parameter reference
-		}
-	}
-
-	public boolean usesDimension(Dimension dimension)
+    public boolean usesDimension(Dimension dimension)
 	{
 		Hierarchy mdxHierarchy = getHierarchy();
 		return mdxHierarchy != null &&
@@ -108,8 +70,9 @@ public class Parameter extends ExpBase {
 		// the other one.  The registered one will be resolved after everything
 		// else in the query has been resolved.
 		Parameter p = resolver.getQuery().lookupParam(name);
-		Util.assertTrue(
-			p != null, "parameter '" + name + "' not registered");
+        if (p == null) {
+            throw Util.newInternal("parameter '" + name + "' not registered");
+        }
 		if (p != this) {
 			return p;			// will resolve it later
 		}
@@ -121,8 +84,8 @@ public class Parameter extends ExpBase {
 	}
 
 	/**
-	 * todo: Remove this method, and require the client to call
-	 * {@link Connection#parseExpression}. Currently, we do not check access.
+     * @deprecated Call {@link Connection#parseExpression} then
+     *   {@link #setValue(Object)}
 	 */
 	public void setValue(String value, Query query)
 	{
@@ -137,60 +100,61 @@ public class Parameter extends ExpBase {
 			exp = Util.lookup(query, Util.explode(value));
 			break;
 		default:
-			throw Util.newInternal("bad category " + category);
+			throw Category.instance.badValue(category);
 		}
 	}
 
-	/**
-	 * returns the parameters value
-	 * @return one of String, Double, Member
-	 */
-	public Object getValue() {
-		switch (category) {
-		case Category.Numeric:
-		  // exp can be a unary minus FunCall
-		  if (exp instanceof FunCall) {
-				FunCall f = (FunCall)exp;
-				if (f.getFunName().equals("-")) {
-					Literal lit = (Literal)f.args[0];
-					Object o = lit.getValue();
-					if (o instanceof Double)
-					  return new Double(-((Double)o).doubleValue());
-					else if (o instanceof Integer)
-					  return new Integer(-((Integer)o).intValue()); // probably impossible
-					else if (o instanceof Integer)
-   				  return o; // probably impossible
-
-			  } else {
-					//unexpected funcall in parameter definition
-					throw Util.newInternal("bad FunCall " + f);
-			  }
-		  }
-			return ((Literal)exp).getValue();
-		case Category.String:
-			return ((Literal)exp).getValue();
-		default:
-			return (Member)exp;
-		}
-	}
-
-
-  /**
-   * sets the parameters value
-   * @param value one of String, Double, Member
-   */
-	public void setValue(Object value) {
-    switch (category) {
-    case Category.Numeric:
-      exp = Literal.create((Double)value);
-      break;
-    case Category.String:
-      exp = Literal.createString((String)value);
-      break;
-    default:
-      exp = (Member)value;
+    /**
+     * Returns the value of this parameter.
+     * @return one of String, Double, Member
+     */
+    public Object getValue() {
+        switch (category) {
+        case Category.Numeric:
+            // exp can be a unary minus FunCall
+            if (exp instanceof FunCall) {
+                FunCall f = (FunCall)exp;
+                if (f.getFunName().equals("-")) {
+                    Literal lit = (Literal)f.args[0];
+                    Object o = lit.getValue();
+                    if (o instanceof Double) {
+                        return new Double(-((Double)o).doubleValue());
+                    } else if (o instanceof Integer) {
+                        return new Integer(-((Integer)o).intValue()); // probably impossible
+                    } else if (o instanceof Integer) {
+                        return o; // probably impossible
+                    }
+                } else {
+                    //unexpected funcall in parameter definition
+                    throw Util.newInternal("bad FunCall " + f);
+                }
+            }
+            return ((Literal)exp).getValue();
+        case Category.String:
+            return ((Literal)exp).getValue();
+        default:
+            return (Member)exp;
+        }
     }
-	}
+
+
+    /**
+     * Sets the value of this parameter.
+     * @param value Value of the parameter; must be a {@link String},
+     *   a {@link Double}, or a {@link Member}
+     */
+    public void setValue(Object value) {
+        switch (category) {
+        case Category.Numeric:
+            exp = Literal.create((Double)value);
+            break;
+        case Category.String:
+            exp = Literal.createString((String)value);
+            break;
+        default:
+            exp = (Member)value;
+        }
+    }
 
 	/**
 	 * Returns "STRING", "NUMERIC" or "MEMBER"
@@ -240,7 +204,7 @@ public class Parameter extends ExpBase {
                 hierarchy.unparse(pw);
                 break;
             default:
-                throw Util.newInternal("bad case " + category);
+                throw Category.instance.badValue(category);
             }
             pw.print(", ");
             exp.unparse(pw);

@@ -12,6 +12,7 @@
 
 package mondrian.olap;
 import mondrian.olap.fun.BuiltinFunTable;
+import mondrian.olap.fun.ParameterFunDef;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -44,13 +45,11 @@ public class Query extends QueryPart {
 		{}
 
 	/** Constructs a Query. */
-	public Query(
-		Connection connection, Formula[] formulas, QueryAxis[] axes,
-		String cube, Exp slicer, QueryPart[] cellProps)
-	{
-		this(connection, connection.getSchema().lookupCube(cube, true),
+    public Query(Connection connection, Formula[] formulas, QueryAxis[] axes,
+            String cube, Exp slicer, QueryPart[] cellProps) {
+        this(connection, connection.getSchema().lookupCube(cube, true),
                 formulas, axes, slicer, cellProps, new Parameter[0]);
-	}
+    }
 
 	/** Construct a Query; called from clone(). */
 	public Query(Connection connection, Cube mdxCube,
@@ -72,14 +71,12 @@ public class Query extends QueryPart {
         return new StackResolver(BuiltinFunTable.instance());
     }
 
-    public Object clone() throws CloneNotSupportedException
-	{
-		return new Query(
-				connection,  mdxCube,
-				Formula.cloneArray(formulas), QueryAxis.cloneArray(axes),
-				slicer == null ? null : (Exp) slicer.clone(), null,
-				Parameter.cloneArray(parameters));
-	}
+    public Object clone() throws CloneNotSupportedException {
+        return new Query(connection,  mdxCube,
+                Formula.cloneArray(formulas), QueryAxis.cloneArray(axes),
+                slicer == null ? null : (Exp) slicer.clone(), null,
+                Parameter.cloneArray(parameters));
+    }
 
 	public Query safeClone()
 	{
@@ -650,12 +647,12 @@ public class Query extends QueryPart {
 	}
 
 	/** SetParameter.  Assign 'value' to parameter 'name'*/
-	public void setParameter( String sParameter, String value )
+	public void setParameter(String parameterName, String value)
 	{
-		Parameter param = lookupParam( sParameter );
+		Parameter param = lookupParam(parameterName);
 		if (param == null)
 		{
-			throw Util.getRes().newMdxParamNotFound(sParameter);
+			throw Util.getRes().newMdxParamNotFound(parameterName);
 		}
 		param.setValue(value, this);
 	}
@@ -671,10 +668,8 @@ public class Query extends QueryPart {
 	 * drill-state; otherwise, select the first level (children), if expand =
 	 * true, else put default member.</p>
 	 **/
-	public void moveHierarchy(
-		Hierarchy hierarchy, int fromAxis, int toAxis, int iPositionOnAxis,
-		boolean bExpand)
-	{
+	public void moveHierarchy(Hierarchy hierarchy, int fromAxis, int toAxis,
+            int iPositionOnAxis, boolean bExpand) {
 		Exp e;
 
 		// Find the hierarchy in its current position.
@@ -1051,200 +1046,6 @@ public class Query extends QueryPart {
 	}
 
 	/**
-	 * Returns filtered sQuery based on user's grant privileges.
-	 *
-	 * @param cubeAccess Contains a list of forbidden hiearchies, and limited
-	 *   members.
-	 * @param oFilterAxesMembers An output parameter; its 0th element will
-	 *   contain a list of {@link Member}s, which would have to be applied after
-	 *   query execution.
-	 **/
-	public String processFilterQuery(
-		CubeAccess cubeAccess, ArrayList oFilterAxesMembers[]) {
-		if (!cubeAccess.hasRestrictions()){
-			return this.toPlatoMdx();
-		}
-		//it is possible that some of parameters are no longer used and
-		// they have to be purged from ParametersDefs
-		resolveParameters();
-		Query query = safeClone();
-		oFilterAxesMembers[0] = query.applyPermissions(cubeAccess);
-		return query.toPlatoMdx();
-	}
-
-	/**
-	 * Applies {@link CubeAccess} permissions to the query by filtering
-	 * hierarchies, putting limits on the slicer, etc.  If some of the
-	 * permissions can not be applied (user used expression like currentYear,
-	 * which can not be computed prior to running query) the function returns
-	 * array of limited members, which could not be applied. It means, that the
-	 * we need to parse the results before showing them to the user.
-	 */
-	private ArrayList applyPermissions(CubeAccess cubeAccess)
-	{
-		ArrayList filterAxesMemberList = null;
-		// first check: if query contains any forbidden hierarchies
-		Hierarchy[]  noAccessHierarchies =
-			cubeAccess.getNoAccessHierarchies();
-		if (noAccessHierarchies != null){
-			for( int i = 0; i < noAccessHierarchies.length; i++ ){
-				Walker walker = findHierarchy( noAccessHierarchies[i] );
-				if (walker != null){
-					// noAccess hierarchy is used; reject the query
-					throw Util.getRes().newUserDoesNotHaveRightsTo(
-						noAccessHierarchies[i].getUniqueName());
-				}
-			}
-		}
-		//second check: we need to apply restricted hierarchies
-		Member[] limitedMembers = cubeAccess.getLimitedMembers();
-		if (limitedMembers != null){
-			for (int i = 0; i < limitedMembers.length; i++){
-				Hierarchy limitedHierarchy =
-					limitedMembers[i].getHierarchy();
-				Member[] mdxMember={ limitedMembers[i] };
-				Walker walker = findHierarchy(limitedHierarchy);
-				if (walker == null) {
-					//put limitedMember on the slicer
-					filterHierarchy(limitedHierarchy, AxisOrdinal.SLICER, mdxMember);
-				} else {
-					// the hierarchy is used somewhere in query
-					// if it is used on the slicer, we should modify the slicer
-					// to include it. If it is used on one of the axes, it
-					// we will parse returned results
-					int axis = getAxisCodeForWalker(walker);
-					if (axis == AxisOrdinal.SLICER){
-						Object foundNode = walker.currentElement();
-						Member foundMember = null;
-						if (foundNode instanceof Member){
-							foundMember = (Member) foundNode;
-						} else if (foundNode instanceof FunCall &&
-									((FunCall) foundNode).isCallToTuple()) {
-							// tuple has only one node, which is our possible
-							// target
-							FunCall funCall = (FunCall) foundNode;
-							if (funCall.args[0] instanceof Member) {
-								foundMember = (Member) funCall.args[0];
-							}
-						}
-						if (foundMember != null){
-							//we found  member (not member expression)
-							applyLimitOnMember(
-								foundMember, limitedMembers[i], axis);
-						} else {
-							// it looks like member is within an expression on
-							// slicer. let's remove it from there and add
-							// member
-							moveHierarchy(
-								limitedHierarchy, AxisOrdinal.SLICER, AxisOrdinal.NONE, 0, true);
-							filterHierarchy(
-								limitedHierarchy, AxisOrdinal.SLICER, mdxMember);
-						}
-					} else if (axis == AxisOrdinal.COLUMNS || axis == AxisOrdinal.ROWS) {
-						if (walker.currentElement() instanceof Member) {
-							// try to apply the limitation before executing
-							// query
-							applyLimitOnMember(
-								(Member) walker.currentElement(),
-								limitedMembers[i], axis);
-						} else {
-							// there might be an expression on the axes.  we
-							// will filter the result set, so we need to build
-							// filters
-							if (filterAxesMemberList == null) {
-								filterAxesMemberList = new ArrayList();
-							}
-							filterAxesMemberList.add(limitedMembers[i]);
-						}
-					}
-				}
-			}
-		}
-		return filterAxesMemberList;
-	}
-
-	/**
-	 * This function takes the walker, which is presumably Member or
-	 * Hierarchy and return the axis code, on which it was found.
-	 **/
-	private int getAxisCodeForWalker(Walker walker)
-	{
-		int depth = 0;
-		Object parent = walker.getAncestor(depth);
-		Util.assertTrue(
-			parent != null,
-			"failed to find Axis for" + walker.currentElement().toString());
-
-		//walk up the tree
-		++depth;
-		Object grandParent = walker.getAncestor( depth );
-		++depth;
-		while (grandParent != null &&
-			   !(grandParent instanceof Query)) {
-			parent = grandParent;
-			grandParent = walker.getAncestor( depth );
-			++depth;
-		}
-		if (parent instanceof Axis) {
-			if (((QueryAxis) parent).axisName.equals("columns")) {
-				return AxisOrdinal.COLUMNS;
-			}
-			return AxisOrdinal.ROWS;
-		} else if (parent instanceof FunCall &&
-				   ((FunCall) parent).isCallToTuple()) {
-			return AxisOrdinal.SLICER;
-		}
-		return AxisOrdinal.NONE;
-	}
-
-	private void applyLimitOnMember(
-		Member foundMember, Member limitedMember, int axis)
-	{
-		if (foundMember.isChildOrEqualTo(limitedMember)) {
-			return;
-		} else if (limitedMember.isChildOrEqualTo(foundMember)) {
-			Member[] mdxMembers = {limitedMember};
-			filterHierarchy(foundMember.getHierarchy(), axis, mdxMembers);
-		} else {
-			// limitedMember and foundMember are not inheriting each other
-			// example. [OR].[Seattle] and [CA].[San Jose]
-			throw Util.getRes().newUserDoesNotHaveRightsTo(
-				foundMember.getUniqueName());
-		}
-	}
-
-	/**
-	 * Creates or retrieves the parameter corresponding to a "Parameter" or
-	 * "ParamRef" function call.
-	 */
-	Parameter createOrLookupParam(FunCall funCall)
-	{
-		//this is a definition of parameter
-		Util.assertTrue(
-			funCall.args[0] instanceof Literal,
-			"The name of parameter has to be a quoted string");
-		String name = (String) ((Literal)funCall.args[0]).getValue();
-		Parameter param = lookupParam(name);
-		if (param == null) {
-			// Create a new parameter.
-			param = new Parameter(funCall);
-
-			// Append it to the array of known parameters.
-			Parameter[] oldParameters = parameters;
-			parameters = new Parameter[oldParameters.length + 1];
-			for (int i = 0; i < oldParameters.length; i++) {
-				parameters[i] = oldParameters[i];
-			}
-			parameters[oldParameters.length] = param;
-
-		} else {
-			// the parameter is already defined, update it
-			param.update(funCall);
-		}
-		return param;
-	}
-
-	/**
 	 * Returns a parameter with a given name, or <code>null</code> if there is
 	 * no such parameter.
 	 */
@@ -1573,6 +1374,7 @@ public class Query extends QueryPart {
     private class StackResolver implements Exp.Resolver {
         private final Stack stack = new Stack();
         private final FunTable funTable;
+        private boolean haveCollectedParameters;
 
         public StackResolver(FunTable funTable) {
             this.funTable = funTable;
@@ -1643,8 +1445,7 @@ public class Query extends QueryPart {
                 if (funCall.isCallToTuple()) {
                     return requiresExpression(n - 1);
                 } else {
-                    final Exp arg = (Exp) stack.get(n);
-                    int k = whichArg(funCall, arg);
+                    int k = whichArg(funCall, stack.get(n));
                     Util.assertTrue(k >= 0);
                     return funTable.requiresExpression(funCall, k, this);
                 }
@@ -1657,10 +1458,90 @@ public class Query extends QueryPart {
             return funTable;
         }
 
-        private int whichArg(final FunCall funCall, final Exp arg) {
-            for (int i = 0; i < funCall.args.length; i++) {
-                if (funCall.args[i] == arg) {
-                    return i;
+        public Parameter createOrLookupParam(FunCall funCall) {
+            Util.assertTrue(funCall.args[0] instanceof Literal,
+                "The name of parameter must be a quoted string");
+            String name = (String) ((Literal) funCall.args[0]).getValue();
+            Parameter param = lookupParam(name);
+            ParameterFunDef funDef = (ParameterFunDef) funCall.getFunDef();
+            if (funDef.isDefinition()) {
+                if (param != null) {
+                    if (param.defineCount++ > 0) {
+                        throw Util.newInternal("Parameter '" + name +
+                                "' is defined more than once");
+                    } else {
+                        return param;
+                    }
+                }
+                param = new Parameter(funDef.parameterName, funCall.getType(),
+                        funCall.getHierarchy(), funDef.exp,
+                        funDef.parameterDescription);
+
+                // Append it to the array of known parameters.
+                Parameter[] old = parameters;
+                final int count = old.length;
+                parameters = new Parameter[count + 1];
+                System.arraycopy(old, 0, parameters, 0, count);
+                parameters[count] = param;
+                return param;
+            } else {
+                if (param != null) {
+                    return param;
+                }
+                // We're looking at a ParamRef("p"), and its defining
+                // Parameter("p") hasn't been seen yet. Just this once, walk
+                // over the entire query finding parameter definitions.
+                if (!haveCollectedParameters) {
+                    haveCollectedParameters = true;
+                    collectParameters();
+                    param = lookupParam(name);
+                    if (param != null) {
+                        return param;
+                    }
+                }
+                throw Util.newInternal("Parameter '" + name +
+                        "' is referenced but never defined");
+            }
+        }
+
+        private void collectParameters() {
+            final Walker walker = new Walker(Query.this);
+            while (walker.hasMoreElements()) {
+                final Object o = walker.nextElement();
+                if (o instanceof Parameter) {
+                    // Parameter has already been resolved.
+                    ;
+                } else if (o instanceof FunCall) {
+                    final FunCall call = (FunCall) o;
+                    if (call.getFunName().equalsIgnoreCase("Parameter")) {
+                        // Parameter definition which has not been resolved
+                        // yet. Resolve it and add it to the list of parameters.
+                        // Because we're resolving out out of the proper order,
+                        // the resolver doesn't hold the correct ancestral
+                        // context, but it should be OK.
+                        final Parameter param = (Parameter) resolveChild(call);
+                        param.defineCount = 0;
+                    }
+                }
+            }
+        }
+
+        /*
+        private void replace(QueryPart oldChild, QueryPart newChild) {
+            QueryPart parent = (QueryPart) stack.get(stack.size() - 2);
+            int childIndex = whichArg(parent, oldChild);
+            Util.assertTrue(childIndex >= 0);
+            parent.replaceChild(childIndex, newChild);
+        }
+*/
+
+        private int whichArg(final Object node, final Object arg) {
+            if (node instanceof Walkable) {
+                final Object[] children = ((Walkable) node).getChildren();
+                for (int i = 0; i < children.length; i++) {
+                    if (children[i] == arg) {
+                        return i;
+                    }
                 }
             }
             return -1;

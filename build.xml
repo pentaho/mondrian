@@ -17,7 +17,7 @@
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
-  <property name="version" value="0.6"/>
+  <property name="version" value="1.0-rc1"/>
 
   <!--
     ===================================================================
@@ -513,7 +513,8 @@ VERSION.txt"
           excludes="
 **/*~,
 **/_vti*/*,
-**/*.psp"/>
+**/*.psp,
+${doc.dir}/api/src-html/**/*"/>
     </zip>
   </target>
 

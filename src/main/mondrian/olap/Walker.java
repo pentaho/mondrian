@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1999-2002 Kana Software, Inc. and others.
+// (C) Copyright 1999-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -19,40 +19,39 @@ import java.io.PrintWriter;
  * instance of {@link Walkable} supply their children using
  * <code>getChildren()</code>; other objects are assumed to have no children.
  *
- * Do not modify the tree during the enumeration.
+ * <p>If the tree is modified during the enumeration, strange things may happen.
  *
- * Example use:<code>
+ * <p>Example use:<code><pre>
  *    Tree t;
  *    Walker w = new Walker(t);
  *    while (w.hasMoreElements()) {
  *      Tree node = (Tree) w.nextNode();
  *      System.out.println(node.toString());
  *    }
- * </code>
+ * </pre></code>
  **/
-class Walker implements Enumeration {
+public class Walker implements Enumeration {
 	/**
 	 * The active parts of the tree from the root to nextNode are held in a
 	 * stack.  When the stack is empty, the enumeration finishes.  currentFrame
 	 * holds the frame of the 'current node' (the node last returned from
 	 * nextElement()) because it may no longer be on the stack.
 	 **/
-	Stack stack;
-	Frame currentFrame;
-	Object nextNode;
+	private final Stack stack;
+	private Frame currentFrame;
+	private Object nextNode;
 
-	class Frame {
-		Frame(Frame parent, Object node)
-		{
+	private class Frame {
+		Frame(Frame parent, Object node) {
 			this.parent = parent;
 			this.node = node;
 			this.children = getChildren(node);
-			this.iChild = -1; // haven't visited first child yet
+			this.childIndex = -1; // haven't visited first child yet
 		}
-		Frame parent;
-		Object node;
-		Object[] children;
-		int iChild;
+		final Frame parent;
+		final Object node;
+		final Object[] children;
+		int childIndex;
 	}
 
 	public Walker(Walkable root)
@@ -73,9 +72,9 @@ class Walker implements Enumeration {
 		do {
 			Frame frame = (Frame) stack.peek();
 			if (frame.children != null &&
-				++frame.iChild < frame.children.length) {
+				++frame.childIndex < frame.children.length) {
 				// Here is an unvisited child.  Visit it.
-				visit(frame, frame.children[frame.iChild]);
+				visit(frame, frame.children[frame.childIndex]);
 				return;
 			}
 			stack.pop();
@@ -106,7 +105,7 @@ class Walker implements Enumeration {
 	public void prune()
 	{
 		if( currentFrame.children != null ){			
-			currentFrame.iChild = currentFrame.children.length;
+			currentFrame.childIndex = currentFrame.children.length;
 		}
 		//we need to make that next frame on the stack is not a child
 		//of frame we just pruned. if it is, we need to prune it too

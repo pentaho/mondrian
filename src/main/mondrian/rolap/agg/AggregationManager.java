@@ -12,6 +12,7 @@
 
 package mondrian.rolap.agg;
 import mondrian.olap.Util;
+import mondrian.olap.MondrianDef;
 import mondrian.rolap.RolapAggregationManager;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.sql.SqlQuery;
@@ -215,46 +216,27 @@ public class AggregationManager extends RolapAggregationManager {
 	}
 
 	public String getDrillThroughSQL(final CellRequest request) {
-		return generateSQL(new QuerySpec() {
-			public int getMeasureCount() {
-				return 1;
-			}
-
-			public RolapStar.Measure getMeasure(int i) {
-				Util.assertTrue(i == 0);
-				return request.getMeasure();
-			}
-
-			public RolapStar getStar() {
-				return request.getMeasure().table.star;
-			}
-
-			public RolapStar.Column[] getColumns() {
-				return request.getColumns();
-			}
-
-			public Object[] getConstraints(int i) {
-				final Object value = request.getValueList().get(i);
-				if (value == null) {
-					return null;
-				} else {
-					return new Object[] {value};
-				}
-			}
-		});
+        return generateSQL(new DrillThroughQuerySpec(request), false);
 	}
 
-	/**
+    /**
 	 * Generates the query to retrieve the cells for a list of segments.
 	 */
 	static String generateSQL(Segment[] segments) {
-		return generateSQL(new SegmentArrayQuerySpec(segments));
+		return generateSQL(new SegmentArrayQuerySpec(segments), true);
 	}
 
-	private static String generateSQL(QuerySpec spec) {
+    /**
+	 * Generates the query to retrieve the cells for a list of segments.
+     *
+     * @param spec Query specification
+     * @param aggregate Whether to aggregate; <code>true</code> for populating
+     *   a segment, <code>false</code> for drill-through
+	 */
+	private static String generateSQL(QuerySpec spec, boolean aggregate) {
         java.sql.Connection jdbcConnection = spec.getStar().getJdbcConnection();
         try {
-            return generateSql(spec, jdbcConnection);
+            return generateSql(spec, jdbcConnection, aggregate);
         } finally {
             try {
                 jdbcConnection.close();
@@ -264,7 +246,8 @@ public class AggregationManager extends RolapAggregationManager {
         }
     }
 
-    private static String generateSql(QuerySpec spec, java.sql.Connection jdbcConnection) {
+    private static String generateSql(QuerySpec spec,
+            java.sql.Connection jdbcConnection, boolean aggregate) {
         final DatabaseMetaData metaData;
         try {
             metaData = jdbcConnection.getMetaData();
@@ -281,8 +264,9 @@ public class AggregationManager extends RolapAggregationManager {
             }
         }
         SqlQuery sqlQuery = new SqlQuery(metaData);
-        final boolean wrapInDistinct = distinctCount > 0 &&
-                        !sqlQuery.allowsCountDistinct();
+        final boolean wrapInDistinct = aggregate &&
+                distinctCount > 0 &&
+                !sqlQuery.allowsCountDistinct();
         if (wrapInDistinct) {
             // Generate something like
             //  select d0, d1, count(m0)
@@ -345,16 +329,21 @@ public class AggregationManager extends RolapAggregationManager {
                     sqlQuery.addWhere(
                         expr + " in " + column.quoteValues(constraints));
                 }
-                sqlQuery.addSelect(expr);
-                sqlQuery.addGroupBy(expr);
+                sqlQuery.addSelect(expr, spec.getColumnAlias(i));
+                if (aggregate) {
+                    sqlQuery.addGroupBy(expr);
+                }
             }
             // add measures
             for (int i = 0, measureCount = spec.getMeasureCount(); i < measureCount; i++) {
                 RolapStar.Measure measure = spec.getMeasure(i);
                 Util.assertTrue(measure.table == star.factTable);
                 star.factTable.addToFrom(sqlQuery, false, true);
-                sqlQuery.addSelect(
-                    measure.aggregator.getExpression(measure.getExpression(sqlQuery)));
+                String expr = measure.getExpression(sqlQuery);
+                if (aggregate) {
+                    expr = measure.aggregator.getExpression(expr);
+                }
+                sqlQuery.addSelect(expr, spec.getMeasureAlias(i));
             }
         }
         return sqlQuery.toString();
@@ -366,15 +355,13 @@ public class AggregationManager extends RolapAggregationManager {
 	 */
 	private interface QuerySpec {
 		int getMeasureCount();
-
 		RolapStar.Measure getMeasure(int i);
-
+        String getMeasureAlias(int i);
 		RolapStar getStar();
-
 		RolapStar.Column[] getColumns();
-
+        String getColumnAlias(int i);
 		Object[] getConstraints(int i);
-	}
+    }
 
 	/**
 	 * Provides the information necessary to generate a SQL statement to
@@ -410,6 +397,10 @@ public class AggregationManager extends RolapAggregationManager {
 			return segments[i].measure;
 		}
 
+        public String getMeasureAlias(int i) {
+            return "m" + i;
+        }
+
 		public RolapStar getStar() {
 			return segments[0].aggregation.star;
 		}
@@ -418,10 +409,89 @@ public class AggregationManager extends RolapAggregationManager {
 			return segments[0].aggregation.columns;
 		}
 
+        public String getColumnAlias(int i) {
+            return "c" + i;
+        }
+
 		public Object[] getConstraints(int i) {
 			return segments[0].axes[i].constraints;
 		}
 	}
+
+    /**
+     * Provides the information necessary to generate SQL for a drill-through
+     * request.
+     */
+    private static class DrillThroughQuerySpec implements QuerySpec {
+        private final CellRequest request;
+        private final String[] columnNames;
+
+        public DrillThroughQuerySpec(CellRequest request) {
+            this.request = request;
+            this.columnNames = computeDistinctColumnNames();
+        }
+
+        private String[] computeDistinctColumnNames() {
+            final RolapStar star = request.getMeasure().table.star;
+            final ArrayList columnNames = new ArrayList();
+            final RolapStar.Column[] columns = getColumns();
+            HashSet columnNameSet = new HashSet();
+            int j = 0;
+            for (int i = 0; i < columns.length; i++) {
+                RolapStar.Column column = columns[i];
+                String columnName = star.getColumnName(column);
+                if (columnName != null) {
+                    // nothing
+                } else if (column.expression instanceof MondrianDef.Column) {
+                    columnName = ((MondrianDef.Column) column.expression).name;
+                } else {
+                    columnName = "c" + i;
+                }
+                // Register the column name, and if it's not unique,
+                // generate names until it is.
+                while (!columnNameSet.add(columnName)) {
+                    columnName = "x" + (j++);
+                }
+                columnNames.add(columnName);
+            }
+            return (String[]) columnNames.toArray(new String[columnNames.size()]);
+        }
+
+        public int getMeasureCount() {
+            return 1;
+        }
+
+        public RolapStar.Measure getMeasure(int i) {
+            Util.assertTrue(i == 0);
+            return request.getMeasure();
+        }
+
+        public String getMeasureAlias(int i) {
+            Util.assertTrue(i == 0);
+            return null;
+        }
+
+        public RolapStar getStar() {
+            return request.getMeasure().table.star;
+        }
+
+        public RolapStar.Column[] getColumns() {
+            return request.getColumns();
+        }
+
+        public String getColumnAlias(int i) {
+            return columnNames[i];
+        }
+
+        public Object[] getConstraints(int i) {
+            final Object value = request.getValueList().get(i);
+            if (value == null) {
+                return null;
+            } else {
+                return new Object[] {value};
+            }
+        }
+    }
 }
 
 // End RolapAggregationManager.java

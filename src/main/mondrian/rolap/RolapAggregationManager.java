@@ -50,7 +50,7 @@ public abstract class RolapAggregationManager implements CellReader {
 		for (Iterator keys = keySet.iterator(); keys.hasNext(); ) {
 			ArrayList key = (ArrayList) keys.next();
 			members = (RolapMember[]) key.toArray(members);
-			CellRequest request = makeRequest(members);
+			CellRequest request = makeRequest(members, false);
 			if (request == null) {
 				continue; // invalid location -- ignore it
 			}
@@ -76,9 +76,14 @@ public abstract class RolapAggregationManager implements CellReader {
 	 * Creates a request to evaluate the cell identified by
 	 * <code>members</code>. If any of the members is the null member, returns
 	 * null, since there is no cell. If the measure is calculated, returns
-	 * null. 
+	 * null.
+     *
+     * @param members Set of members which constrain the cell
+     * @param extendedContext If true, add non-constraining columns to the
+     *   query for levels below each current member. This additional context
+     *   makes the drill-through queries easier for humans to understand.
 	 **/
-	CellRequest makeRequest(RolapMember[] members) {
+	CellRequest makeRequest(RolapMember[] members, boolean extendedContext) {
 		if (!(members[0] instanceof RolapStoredMeasure)) {
 			return null;
 		}
@@ -88,10 +93,40 @@ public abstract class RolapAggregationManager implements CellReader {
 		Util.assertTrue(starMeasure != null);
 		RolapStar star = starMeasure.table.star;
 		CellRequest request = new CellRequest(starMeasure);
-		HashMap mapLevelToColumn = (HashMap) star.mapCubeToMapLevelToColumn.get(measure.cube);
+		HashMap mapLevelToColumn = (HashMap)
+                star.mapCubeToMapLevelToColumn.get(measure.cube);
 		for (int i = 1; i < members.length; i++) {
 			RolapMember member = members[i];
 			RolapLevel previousLevel = null;
+            if (extendedContext) {
+                // Add the key columns as non-constraining columns. For example,
+                // if they asked for [Gender].[M], [Store].[USA].[CA] then
+                // the following levels are in play:
+                //   Gender = 'M'
+                //   Marital Status not constraining
+                //   Nation = 'USA'
+                //   State = 'CA'
+                //   City not constraining
+                //
+                // Note that [Marital Status] column is present by virtue of
+                // the implicit [Marital Status].[All] member. Hence the SQL
+                //
+                //   select [Marital Status], [City]
+                //   from [Star]
+                //   where [Gender] = 'M'
+                //   and [Nation] = 'USA'
+                //   and [State] = 'CA'
+                //
+                RolapLevel[] levels = (RolapLevel[]) member.getHierarchy().getLevels();
+                for (int j = levels.length - 1,
+                        depth = member.getLevel().getDepth(); j > depth; j--) {
+                    final RolapLevel level = levels[j];
+                    RolapStar.Column column = (RolapStar.Column) mapLevelToColumn.get(level);
+                    if (column != null) {
+                        request.addConstrainedColumn(column, null);
+                    }
+                }
+            }
 			for (RolapMember m = member; m != null; m = (RolapMember)
 					 m.getParentMember()) {
 				if (m.key == null) {
@@ -115,94 +150,12 @@ public abstract class RolapAggregationManager implements CellReader {
 				previousLevel = level;
 				RolapStar.Column column = (RolapStar.Column) mapLevelToColumn.get(level);
 				if (column == null) {
-					// This hierarchy is not one which qualifies the starMeasure (this happens in
-					// virtual cubes). The starMeasure only has a value for the 'all' member of
-					// the hierarchy (which this is not).
+					// This hierarchy is not one which qualifies the starMeasure
+                    // (this happens in virtual cubes). The starMeasure only has
+                    // a value for the 'all' member of the hierarchy.
 					return null;
 				} else {
 					request.addConstrainedColumn(column, m.key);
-				}
-			}
-		}
-		return request;
-	}
-	
-	/**
-	 * Creates a request to evaluate the cell identified by
-	 * <code>members</code>.
-	 * If any of the members is an "All" member, then it exapnds that member
-	 * adding all of the levels of that member to the request.
-	 * If any of the members is the null member, returns
-	 * null, since there is no cell. If the measure is calculated, returns null. 
-	 * @param members Array of RolapMembers that identify this cell.
-	 * @return a CellRequest object for the cell
-	 */
-	CellRequest makeDrillThroughRequest(
-							RolapMember[] members) {
-		if (!(members[0] instanceof RolapStoredMeasure)) {
-			return null;
-		}
-		RolapStoredMeasure measure = (RolapStoredMeasure) members[0];
-		final RolapStar.Measure starMeasure = (RolapStar.Measure)
-				measure.starMeasure;
-		Util.assertTrue(starMeasure != null);
-		RolapStar star = starMeasure.table.star;
-		CellRequest request = new CellRequest(starMeasure);
-		HashMap mapLevelToColumn = (HashMap) star.mapCubeToMapLevelToColumn.get(measure.cube);
-		for (int i = 1; i < members.length; i++) {
-			
-			// If this is an All member, then expand children, and add all columns as non-constraining
-			if ( members[i].isAll() ) {
-				RolapLevel rl = (RolapLevel) members[i].getLevel();
-				while ( (rl = (RolapLevel) rl.getChildLevel()) != null ) {
-					RolapStar.Column column = (RolapStar.Column) mapLevelToColumn.get(rl);
-					if (column == null) {
-						// This hierarchy is not one which qualifies the starMeasure (this happens in
-						// virtual cubes). The starMeasure only has a value for the 'all' member of
-						// the hierarchy (which this is not).
-						return null;
-					}
-					else {
-						// add the column as a non-constraining column, by using a null value
-						request.addConstrainedColumn(column, null);
-					}
-				}
-			}
-			// else its not an All member, so add this member plus parent member columns as constraining
-			else {
-				RolapLevel previousLevel = null;
-				for (RolapMember m = members[i];
-					m != null;
-					m = (RolapMember) m.getParentMember()) {
-					if (m.key == null) {
-						if (m == m.getHierarchy().getNullMember()) {
-							// cannot form a request if one of the members is null
-							return null;
-						} else if (m.isAll()) {
-							continue;
-						} else {
-							throw Util.getRes().newInternal("why is key null?");
-						}
-					}
-					RolapLevel level = (RolapLevel) m.getLevel();
-					if (level == previousLevel) {
-						// We are looking at a parent in a parent-child hierarchy,
-						// for example, we have moved from Fred to Fred's boss,
-						// Wilma. We don't want to include Wilma's key in the
-						// request.
-						continue;
-					}
-					previousLevel = level;
-					RolapStar.Column column =
-						(RolapStar.Column) mapLevelToColumn.get(level);
-					if (column == null) {
-						// This hierarchy is not one which qualifies the starMeasure (this happens in
-						// virtual cubes). The starMeasure only has a value for the 'all' member of
-						// the hierarchy (which this is not).
-						return null;
-					} else {
-						request.addConstrainedColumn(column, m.key);
-					}
 				}
 			}
 		}
@@ -214,7 +167,7 @@ public abstract class RolapAggregationManager implements CellReader {
 	 **/
 	public Object getCellFromCache(RolapMember[] members)
 	{
-		CellRequest request = makeRequest(members);
+		CellRequest request = makeRequest(members, false);
 		if (request == null) {
 			return Util.nullValue; // request out of bounds
 		}
@@ -229,7 +182,7 @@ public abstract class RolapAggregationManager implements CellReader {
 	 **/
 	public Object getCellFromCache(RolapMember[] members, Set pinSet)
 	{
-		CellRequest request = makeRequest(members);
+		CellRequest request = makeRequest(members, false);
 		if (request == null) {
 			return Util.nullValue; // request out of bounds
 		}
@@ -240,7 +193,7 @@ public abstract class RolapAggregationManager implements CellReader {
 
 	public Object getCell(RolapMember[] members)
 	{
-		CellRequest request = makeRequest(members);
+		CellRequest request = makeRequest(members, false);
 		RolapMeasure measure = (RolapMeasure) members[0];
 		final RolapStar.Measure starMeasure = (RolapStar.Measure)
 				measure.starMeasure;
