@@ -73,17 +73,17 @@ public class MondrianProperties extends PropertiesPlus {
 			}
 		}
 		// copy in all system properties which start with "mondrian."
+		int count = 0;
 		for (Enumeration keys = System.getProperties().keys();
 				keys.hasMoreElements(); ) {
 			String key = (String) keys.nextElement();
 			String value = System.getProperty(key);
-			int count = 0;
 			if (key.startsWith("mondrian.")) {
 				setProperty(key, value);
 				count++;
 			}
-			System.out.println("Mondrian: loaded " + count + " system properties");
 		}
+		System.out.println("Mondrian: loaded " + count + " system properties");
 	}
 
 	/** Tries to load properties from a URL. Does not fail, just prints success

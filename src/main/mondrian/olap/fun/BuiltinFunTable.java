@@ -1821,17 +1821,20 @@ public class BuiltinFunTable extends FunTable {
 				if (set0.isEmpty() || set1.isEmpty()) {
 					return emptyVector;
 				}
+				boolean neitherSideIsTuple = true;
 				int arity0 = 1,
 					arity1 = 1;
 				if (set0.elementAt(0) instanceof Member[]) {
 					arity0 = ((Member[]) set0.elementAt(0)).length;
+					neitherSideIsTuple = false;
 				}
 				if (set1.elementAt(0) instanceof Member[]) {
 					arity1 = ((Member[]) set1.elementAt(0)).length;
+					neitherSideIsTuple = false;
 				}
 				Vector result = new Vector();
-				if (arity0 == 1 && arity1 == 1) {
-					// Simpler routine if we know neither side is an array.
+				if (neitherSideIsTuple) {
+					// Simpler routine if we know neither side contains tuples.
 					for (int i = 0, m = set0.size(); i < m; i++) {
 						Member o0 = (Member) set0.elementAt(i);
 						for (int j = 0, n = set1.size(); j < n; j++) {
@@ -1915,6 +1918,16 @@ public class BuiltinFunTable extends FunTable {
 						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[Mexico]}" + nl +
 						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M], [Store].[All Stores].[USA]}" + nl +
 						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores]}" + nl +
+						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Canada]}" + nl +
+						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Mexico]}" + nl +
+						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[USA]}");
+			}
+			public void testCrossjoinSingletonTuples(FoodMartTestCase test) {
+				test.assertAxisReturns("CrossJoin({([Gender].[M])}, {([Marital Status].[S])})",
+						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S]}");
+			}
+			public void testCrossjoinSingletonTuplesNested(FoodMartTestCase test) {
+				test.assertAxisReturns("CrossJoin({([Gender].[M])}, CrossJoin({([Marital Status].[S])}, [Store].children))",
 						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Canada]}" + nl +
 						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Mexico]}" + nl +
 						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[USA]}");
