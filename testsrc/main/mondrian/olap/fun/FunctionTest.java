@@ -231,12 +231,10 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testOrdinal() throws Exception {
-        Cell cell = executeExprRaw("[Sales Ragged]", "[Store].[All Stores].[Vatican].ordinal");
-
+        Cell cell = executeExprRaw("Sales Ragged", "[Store].[All Stores].[Vatican].ordinal");
         assertEquals("Vatican is at level 1.", 1, ((Number)cell.getValue()).intValue());
 
-        cell = executeExprRaw("[Sales Ragged]", "[Store].[All Stores].[USA].[Washington].ordinal");
-
+        cell = executeExprRaw("Sales Ragged", "[Store].[All Stores].[USA].[Washington].ordinal");
         assertEquals("Washington is at level 3.", 3, ((Number) cell.getValue()).intValue());
     }
 

@@ -59,6 +59,21 @@ public class TestCalculatedMembers extends FoodMartTestCase {
         }
     }
 
+    /**
+     * Tests a calculated member with spaces in its name against a virtual
+     * cube with spaces in its name.
+     */
+    public void testCalculatedMemberInCubeWithSpace() {
+        Cube salesCube = getSalesCube("Warehouse and Sales");
+        salesCube.createCalculatedMember(
+            "<CalculatedMember name='Profit With Spaces'" +
+            "  dimension='Measures'" +
+            "  formula='[Measures].[Store Sales]-[Measures].[Store Cost]'/>");
+
+        String s = executeExpr("Warehouse and Sales", "[Measures].[Profit With Spaces]");
+        Assert.assertEquals("339,610.90", s);
+    }
+
     public void testCalculatedMemberInCubeWithProps() {
         Cube salesCube = getSalesCube("Sales");
 
@@ -107,7 +122,6 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 throw e;
             }
         }
-
 
         // should fail if member property's expression is invalid
         try {

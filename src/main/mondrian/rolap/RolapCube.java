@@ -122,16 +122,19 @@ class RolapCube extends CubeBase
     private Formula parseFormula(String formulaString,
         String memberUniqueName, ArrayList propNames, ArrayList propExprs)
     {
+        assert memberUniqueName.startsWith("[");
         RolapConnection conn = schema.getInternalConnection();
-        StringBuffer buf = new StringBuffer(
-            "WITH MEMBER " + memberUniqueName + " AS " + formulaString);
+        StringBuffer buf = new StringBuffer(256);
+        buf.append("WITH MEMBER ").append(memberUniqueName).append(" AS ")
+            .append(formulaString);
         assert propNames.size() == propExprs.size();
         for (int i = 0; i < propNames.size(); i++) {
             String name = (String) propNames.get(i);
             String expr = (String) propExprs.get(i);
             buf.append(", ").append(name).append(" = ").append(expr);
         }
-        buf.append(" SELECT FROM " + getUniqueName());
+        buf.append(" SELECT FROM ")
+            .append(Util.quoteMdxIdentifier(getUniqueName()));
         final String queryString = buf.toString();
         final Query queryExp;
         try {

@@ -263,9 +263,13 @@ public class FoodMartTestCase extends TestCase {
      * @return Returns a {@link Cell} which is the result of the expression.
      */
     public Cell executeExprRaw(String cubeName, String expression) {
-        Result result = TestContext.instance().executeFoodMart("with member [Measures].[Foo] as '" +
-                expression +
-                "' select {[Measures].[Foo]} on columns from " + cubeName);
+        if (cubeName.indexOf(' ') >= 0) {
+            cubeName = Util.quoteMdxIdentifier(cubeName);
+        }
+        final String queryString = "with member [Measures].[Foo] as '" +
+            expression +
+            "' select {[Measures].[Foo]} on columns from " + cubeName;
+        Result result = TestContext.instance().executeFoodMart(queryString);
 
         return result.getCell(new int[]{0});
     }
