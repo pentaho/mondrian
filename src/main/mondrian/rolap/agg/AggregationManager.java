@@ -118,9 +118,12 @@ public class AggregationManager extends RolapAggregationManager {
                         distinctMeasuresList.toArray(new RolapStar.Measure[0]);
                 loadAggregation(measures, columns, constraintses, pinnedSegments);
             }
-			RolapStar.Measure[] measures = (RolapStar.Measure[])
-					measuresList.toArray(new RolapStar.Measure[0]);
-			loadAggregation(measures, columns, constraintses, pinnedSegments);
+            final int measureCount = measuresList.size();
+            if (measureCount > 0) {
+                RolapStar.Measure[] measures = (RolapStar.Measure[])
+                        measuresList.toArray(new RolapStar.Measure[measureCount]);
+                loadAggregation(measures, columns, constraintses, pinnedSegments);
+            }
 		}
 	}
 

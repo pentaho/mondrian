@@ -1862,6 +1862,25 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "Row #0: 131,558" + nl +
                 "Row #1: 135,215" + nl);
     }
+    /**
+     * Query with distinct-count measure and no other measures gives
+     * {@link ArrayIndexOutOfBoundsException}
+     */
+    public void testBug804903() {
+        CachePool.instance().flush();
+        runQueryCheckResult(
+                "select {[Measures].[Customer Count]} ON columns," + nl +
+                "  {([Promotion Media].[All Media], [Product].[All Products])} ON rows" + nl +
+                "from [Sales]" + nl +
+                "where [Time].[1997]",
+                "Axis #0:" + nl +
+                "{[Time].[1997]}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Customer Count]}" + nl +
+                "Axis #2:" + nl +
+                "{[Promotion Media].[All Media], [Product].[All Products]}" + nl +
+                "Row #0: 5,581" + nl);
+    }
 	/** Make sure that the "Store" cube is working. **/
 	public void testStoreCube() {
 		runQueryCheckResult(
