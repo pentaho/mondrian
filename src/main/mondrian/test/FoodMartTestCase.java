@@ -15,8 +15,9 @@ package mondrian.test;
 import junit.framework.TestCase;
 import mondrian.olap.*;
 
-import java.io.StringWriter;
 import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
 
 /**
  * <code>FoodMartTestCase</code> is a unit test which runs against the FoodMart
@@ -587,6 +588,7 @@ public class FoodMartTestCase extends TestCase {
 		cell = result.getCell(new int[] {1,0});
 		value = cell.getValue();
 		assertTrue(value instanceof Number);
+		// Plato give 285011.12, Oracle gives 285011, MySQL gives 285964 (bug!)
 		assertEquals(285011, ((Number) value).intValue());
 	}
 
@@ -624,6 +626,114 @@ public class FoodMartTestCase extends TestCase {
 				"Row #5: 23,598" + nl +
 				"Row #5: 14,210" + nl,
 				s);
+	}
+
+	public void testParallelButSingle() {
+		runParallelQueries(1, 1);
+	}
+
+	public void testParallel() {
+		runParallelQueries(5, 3);
+	}
+
+	private void runParallelQueries(final int threadCount, final int iterationCount) {
+		int timeoutMs = threadCount * iterationCount * 10 * 1000; // 1 minute per query
+		final int[] executeCount = new int[] {0};
+		TestCaseForker threaded = new TestCaseForker(
+				this, timeoutMs, threadCount, new ChooseRunnable() {
+					public void run(int i) {
+						for (int j = 0; j < iterationCount; j++) {
+							int queryIndex = (i + j) % taglibQueries.length;
+							String query = taglibQueries[queryIndex];
+							try {
+								Result result = runQuery(query);
+								executeCount[0]++;
+							} catch (Throwable e) {
+								e.printStackTrace();
+								Util.newInternal(
+										e,
+										"Thread #" + i +
+										" failed while executing query #" +
+										queryIndex);
+							}
+						}
+					}
+				});
+		threaded.run();
+		assertEquals(threadCount * iterationCount, executeCount[0]);
+	}
+}
+
+/**
+ * Similar to {@link Runnable}, except classes which implement
+ * <code>ChooseRunnable</code> choose what to do based upon an integer
+ * parameter.
+ */
+interface ChooseRunnable {
+	void run(int i);
+}
+
+/**
+ * Runs a test case in several parallel threads, catching exceptions from
+ * each one, and succeeding only if they all succeed.
+ */
+class TestCaseForker {
+	TestCase testCase;
+	int timeoutMs;
+	Thread[] threads;
+	ArrayList failures = new ArrayList();
+	ChooseRunnable chooseRunnable;
+
+	public TestCaseForker(
+			TestCase testCase, int timeoutMs, int threadCount,
+			ChooseRunnable chooseRunnable) {
+		this.testCase = testCase;
+		this.timeoutMs = timeoutMs;
+		this.threads = new Thread[threadCount];
+		this.chooseRunnable = chooseRunnable;
+	}
+
+	public void run() {
+		ThreadGroup threadGroup = null;//new ThreadGroup("TestCaseForker thread group");
+		final TestCaseForker forker = this;
+		for (int i = 0; i < threads.length; i++) {
+			final int threadIndex = i;
+			this.threads[i] = new Thread(threadGroup, "thread #" + threadIndex) {
+				public void run() {
+					try {
+						chooseRunnable.run(threadIndex);
+					} catch (Throwable e) {
+						e.printStackTrace();
+						failures.add(e);
+					} finally {
+						synchronized (forker) {
+							forker.notify();
+						}
+					}
+				}
+			};
+		}
+		for (int i = 0; i < threads.length; i++) {
+			threads[i].start();
+		}
+		for (int i = 0; i < threads.length; i++) {
+			try {
+				synchronized (this) {
+					this.wait(timeoutMs);
+				}
+			} catch (InterruptedException e) {
+				failures.add(
+						Util.newInternal(
+								e, "Interrupted after " + timeoutMs + "ms"));
+			}
+		}
+		if (failures.size() > 0) {
+			for (int i = 0; i < failures.size(); i++) {
+				Throwable throwable = (Throwable) failures.get(i);
+				throwable.printStackTrace();
+			}
+			testCase.fail(failures.size() + " threads failed");
+		}
 	}
 }
 

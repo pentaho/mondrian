@@ -520,7 +520,7 @@ public class CachePool {
 				throw newValidateFailed("element in pinned is not in pinnedZombies");
 			}
 		}
-		if (unpinnedCost >= costLimit) {
+		if (unpinnedCost > costLimit) {
 			throw newValidateFailed("unpinnedCost{" + unpinnedCost + "} > costLimit {" + costLimit + "}");
 		}
 		double maxScore = 0,

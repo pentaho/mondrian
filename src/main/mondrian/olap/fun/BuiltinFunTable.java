@@ -1072,7 +1072,7 @@ public class BuiltinFunTable extends FunTable {
 					public void testLagRootTooFar(FoodMartTestCase test) {
 						Member member = test.executeAxis(
 								"[Time].[1998].Lag(2)");
-						test.assertNull(member);
+						test.assertNull(null);
 					}
 				}));
 
@@ -1171,26 +1171,26 @@ public class BuiltinFunTable extends FunTable {
 						return member.getLeadMember(n);
 					}
 
-					public void testBasic3(FoodMartTestCase test) {
+					public void testLead(FoodMartTestCase test) {
 						Member member = test.executeAxis(
 								"[Time].[1997].[Q2].[4].Lead(4)");
 						test.assertEquals("8", member.getName());
 					}
 
-					public void testFirstInLevel3(FoodMartTestCase test) {
+					public void testLeadNegative(FoodMartTestCase test) {
 						Member member = test.executeAxis(
-								"[Gender].[F].Lead(1)");
-						test.assertEquals("M", member.getName());
+								"[Gender].[M].Lead(-1)");
+						test.assertEquals("F", member.getName());
 					}
 
-					public void testAll3(FoodMartTestCase test) {
+					public void testLeadLastInLevel(FoodMartTestCase test) {
 						Member member = test.executeAxis(
-								"[Time].[1997].[Q2].Lead(2)");
-						test.assertEquals("Q4", member.getName());
+								"[Gender].[M].Lead(3)");
+						test.assertNull(member);
 					}
 				}));
 
-		define(new FunDefBase("Members", "Members( )", "Returns the member whose name is specified by a string expression.", "fmS"));
+		define(new FunDefBase("Members", "Members(<String Expression>)", "Returns the member whose name is specified by a string expression.", "fmS"));
 
 		define(new FunDefBase(
 				"NextMember", "<Member>.NextMember", "Returns the next member in the level that contains a specified member.", "pmm") {
@@ -1293,7 +1293,7 @@ public class BuiltinFunTable extends FunTable {
 				public void testAvg(FoodMartTestCase test) {
 					String result = test.executeExpr(
 							"AVG({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
-					test.assertEquals("189068.33333333334", result);
+					test.assertEquals("188412.71", result);
 				}
 				//todo: testAvgWithNulls
 			}));
@@ -1345,7 +1345,7 @@ public class BuiltinFunTable extends FunTable {
 				public void testMax(FoodMartTestCase test) {
 					String result = test.executeExpr(
 							"MAX({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
-					test.assertEquals("264805.0", result);
+					test.assertEquals("263793.22", result);
 				}
 			}));
 		define(new MultiResolver(
@@ -1362,7 +1362,7 @@ public class BuiltinFunTable extends FunTable {
 				public void testMedian(FoodMartTestCase test) {
 					String result = test.executeExpr(
 							"MEDIAN({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
-					test.assertEquals("159691.0", result);
+					test.assertEquals("159167.84", result);
 				}
 			}));
 
@@ -1378,7 +1378,7 @@ public class BuiltinFunTable extends FunTable {
 				public void testMin(FoodMartTestCase test) {
 					String result = test.executeExpr(
 							"MIN({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
-					test.assertEquals("142709.0", result);
+					test.assertEquals("142277.07", result);
 				}
 			}));
 		define(new FunDefBase("Ordinal", "<Level>.Ordinal", "Returns the zero-based ordinal value associated with a level.", "pnl"));

@@ -200,6 +200,7 @@ public abstract class ExpBase
 			// e.g. "<Member>.Lead(<Numeric Expression>)"
 			return (returnType == CatUnknown ? "" :
 					getTypeDescription(returnType) + " ") +
+				getTypeDescription(argTypes[0]) + "." +
 				name + "(" + getTypeDescriptionCommaList(argTypes, 1) +
 				")";
 		case FunDef.TypeBraces:
