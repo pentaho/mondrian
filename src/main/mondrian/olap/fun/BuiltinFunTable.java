@@ -1562,12 +1562,42 @@ public class BuiltinFunTable extends FunTable {
 					List members = (List) getArg(evaluator, args, 0);
 					String empties = getLiteralArg(args, 1, "INCLUDEEMPTY", new String[] {"INCLUDEEMPTY", "EXCLUDEEMPTY"}, null);
 					final boolean includeEmpty = empties.equals("INCLUDEEMPTY");
-					return count(members, includeEmpty);
+					return count(evaluator, members, includeEmpty);
 				}
 				public void testCount(FoodMartTestCase test) {
 					String result = test.executeExpr(
 							"count({[Promotion Media].[Media Type].members})");
 					Assert.assertEquals("14", result);
+				}
+				public void testCountExcludeEmpty(FoodMartTestCase test) {
+                    test.runQueryCheckResult(
+                            "with member [Measures].[Promo Count] as " + nl +
+                            " ' Count(Crossjoin({[Measures].[Unit Sales]}," + nl +
+                            " {[Promotion Media].[Media Type].members}), EXCLUDEEMPTY)'" + nl +
+                            "select {[Measures].[Unit Sales], [Measures].[Promo Count]} on columns," + nl +
+                            " {[Product].[Drink].[Beverages].[Carbonated Beverages].[Soda].children} on rows" + nl +
+                            "from Sales",
+                            "Axis #0:" + nl +
+                            "{}" + nl +
+                            "Axis #1:" + nl +
+                            "{[Measures].[Unit Sales]}" + nl +
+                            "{[Measures].[Promo Count]}" + nl +
+                            "Axis #2:" + nl +
+                            "{[Product].[All Products].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Excellent]}" + nl +
+                            "{[Product].[All Products].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Fabulous]}" + nl +
+                            "{[Product].[All Products].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Skinner]}" + nl +
+                            "{[Product].[All Products].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Token]}" + nl +
+                            "{[Product].[All Products].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Washington]}" + nl +
+                            "Row #0: 738" + nl +
+                            "Row #0: 14" + nl +
+                            "Row #1: 632" + nl +
+                            "Row #1: 13" + nl +
+                            "Row #2: 655" + nl +
+                            "Row #2: 14" + nl +
+                            "Row #3: 735" + nl +
+                            "Row #3: 14" + nl +
+                            "Row #4: 647" + nl +
+                            "Row #4: 12" + nl);
 				}
 				//todo: testCountNull, testCountNoExp
 			}));

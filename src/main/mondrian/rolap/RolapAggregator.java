@@ -40,7 +40,7 @@ public abstract class RolapAggregator
             return Sum;
         }
         public Object aggregate(Evaluator evaluator, List members, Exp exp) {
-            return FunUtil.count(members, false);
+            return FunUtil.count(evaluator, members, false);
         }
     };
     public static final RolapAggregator Min = new RolapAggregator("min", 2, false) {

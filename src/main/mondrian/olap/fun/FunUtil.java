@@ -716,14 +716,20 @@ public class FunUtil extends Util {
 		}
 	}
 
-	public static Object count(List members, boolean includeEmpty) {
+	public static Object count(Evaluator evaluator, List members, boolean includeEmpty) {
 		if (includeEmpty) {
 			return new Double(members.size());
 		} else {
 			int retval = 0;
 			for (int i = 0; i < members.size(); i++) {
 				final Object member = members.get(i);
-				if (member != Util.nullValue && member != null) {
+                if (member instanceof Member) {
+                    evaluator.setContext((Member) member);
+                } else {
+                    evaluator.setContext((Member[]) member);
+                }
+                Object o = evaluator.evaluateCurrent();
+				if (o != Util.nullValue && o != null) {
 					retval++;
 				}
 			}
