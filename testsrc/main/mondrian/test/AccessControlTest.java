@@ -29,7 +29,7 @@ public class AccessControlTest extends FoodMartTestCase {
 	}
 
 	public void testGrantDimensionNone() {
-		Connection connection = getConnection();
+		Connection connection = getConnection(true);
 		Role role = connection.getRole().makeMutableClone();
 		Schema schema = connection.getSchema();
 		Cube salesCube = schema.lookupCube("Sales", true);
@@ -223,7 +223,7 @@ public class AccessControlTest extends FoodMartTestCase {
 	 * for Canada
 	 */
 	private Connection getRestrictedConnection(boolean restrictCustomers) {
-		Connection connection = getConnection();
+		Connection connection = getConnection(true);
 		Role role = new Role();
 		Schema schema = connection.getSchema();
 		final boolean fail = true;

@@ -13,6 +13,7 @@
 package mondrian.rolap;
 import mondrian.olap.Exp;
 import mondrian.olap.Formula;
+import mondrian.olap.Property;
 
 /**
  * A <code>RolapCalculatedMember</code> is a member based upon a
@@ -39,6 +40,13 @@ class RolapCalculatedMember extends RolapMember {
 	int getSolveOrder() {
 		return 0;
 	}
+
+    public Object getPropertyValue(String name) {
+        if (name.equals(Property.PROPERTY_FORMULA)) {
+            return formula.getExpression();
+        }
+        return super.getPropertyValue(name);
+    }
 
 	public boolean isCalculated() {
 		return true;

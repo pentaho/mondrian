@@ -1,10 +1,9 @@
 /*
 // $Id$
-// (C) Copyright 2002 Kana Software, Inc.
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// Copyright (C) 2002-2004 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -18,8 +17,6 @@ import junit.framework.Assert;
  * Tests the expressions used for calculated members. Please keep in sync
  * with the actual code used by the wizard.
  *
- * <p>todo: Enable this test.
- *
  * @author jhyde
  * @since 5 October, 2002
  * @version $Id$
@@ -29,9 +26,32 @@ public class TestCalculatedMembers extends FoodMartTestCase {
 		super(name);
 	}
 
-    public void testCalculatedMemberAgainstCube() {
-        final String s = executeExpr("[Measures].[Profit]");
-        Assert.assertEquals(s, "339,610.90");
+    public void testCalculatedMemberInCube() {
+        String s = executeExpr("[Measures].[Profit]");
+        Assert.assertEquals("339,610.90", s);
+    }
+
+    public void testCalculatedMemberInCubeAndQuery() {
+        runQueryCheckResult("WITH MEMBER [Measures].[Profit Growth]" + nl +
+            " AS '[Measures].[Profit] - ([Measures].[Profit], [Time].PrevMember)'" + nl +
+            "SELECT {[Measures].[Profit], [Measures].[Profit Growth]} ON COLUMNS," + nl +
+            " {[Time].[1997].[Q2].children} ON ROWS" + nl +
+            "FROM [Sales]",
+            "Axis #0:" + nl +
+            "{}" + nl +
+            "Axis #1:" + nl +
+            "{[Measures].[Profit]}" + nl +
+            "{[Measures].[Profit Growth]}" + nl +
+            "Axis #2:" + nl +
+            "{[Time].[1997].[Q2].[4]}" + nl +
+            "{[Time].[1997].[Q2].[5]}" + nl +
+            "{[Time].[1997].[Q2].[6]}" + nl +
+            "Row #0: 25,766.55" + nl +
+            "Row #0: -4,289.24" + nl +
+            "Row #1: 26,673.73" + nl +
+            "Row #1: 907.18" + nl +
+            "Row #2: 27,261.76" + nl +
+            "Row #2: 588.03" + nl);
     }
 
 	public void _testWhole() {

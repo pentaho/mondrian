@@ -15,7 +15,6 @@ import mondrian.olap.DriverManager;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Vector;
 
 /**
  * todo:
@@ -40,6 +39,7 @@ public class Test {
 			}
 		}
 	}
+
 	Test(String[] args)
 	{
 		pw = new PrintWriter(System.out, true);
@@ -47,6 +47,7 @@ public class Test {
         boolean fresh = true;
 		connection = (RolapConnection) DriverManager.getConnection(connectString, null, fresh);
 	}
+
 	void convertFoodMart() throws java.sql.SQLException
 	{
 		java.sql.Connection connection = null;
@@ -128,10 +129,10 @@ public class Test {
 		pw.println();
 
 		pw.println("First children of first children: {");
-		Vector firstChildren = new Vector();
+		ArrayList firstChildren = new ArrayList();
 		RolapMember member = rootMembers[0];
 		while (member != null) {
-			firstChildren.addElement(member);
+			firstChildren.add(member);
 			pw.print("\t");
 			print(member);
 			ArrayList children = new ArrayList();

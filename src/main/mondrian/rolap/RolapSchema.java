@@ -176,6 +176,7 @@ public class RolapSchema implements Schema
         Util.assertPrecondition(xmlSchema != null, "xmlSchema != null");
         RolapCube cube = new RolapCube(this, xmlSchema, xmlCube);
         mapNameToCube.put(xmlCube.name, cube);
+        cube.init(xmlCube);
         return cube;
     }
 
@@ -194,28 +195,36 @@ public class RolapSchema implements Schema
 				final SchemaReader schemaReader = cube.getSchemaReader(null);
 				for (int k = 0; k < cubeGrant.dimensionGrants.length; k++) {
 					MondrianDef.DimensionGrant dimensionGrant = cubeGrant.dimensionGrants[k];
-					Dimension dimension = (Dimension) Util.lookupCompound(
-							schemaReader, cube, Util.explode(dimensionGrant.dimension), true, Category.Dimension);
+					Dimension dimension = (Dimension)
+                        schemaReader.lookupCompound(
+							cube, Util.explode(dimensionGrant.dimension), true,
+                            Category.Dimension);
 					role.grant(dimension, getAccess(dimensionGrant.access, dimensionAllowed));
 				}
 				for (int k = 0; k < cubeGrant.hierarchyGrants.length; k++) {
 					MondrianDef.HierarchyGrant hierarchyGrant = cubeGrant.hierarchyGrants[k];
-					Hierarchy hierarchy = (Hierarchy) Util.lookupCompound(
-							schemaReader, cube, Util.explode(hierarchyGrant.hierarchy), true, Category.Hierarchy);
+					Hierarchy hierarchy = (Hierarchy)
+                        schemaReader.lookupCompound(
+							cube, Util.explode(hierarchyGrant.hierarchy), true,
+                            Category.Hierarchy);
 					final int hierarchyAccess = getAccess(hierarchyGrant.access, hierarchyAllowed);
 					Level topLevel = null;
 					if (hierarchyGrant.topLevel != null) {
 						if (hierarchyAccess != Access.CUSTOM) {
 							throw Util.newError("You may only specify 'topLevel' if access='custom'");
 						}
-						topLevel = (Level) Util.lookupCompound(schemaReader, cube, Util.explode(hierarchyGrant.topLevel), true, Category.Level);
+						topLevel = (Level) schemaReader.lookupCompound(
+                            cube, Util.explode(hierarchyGrant.topLevel), true,
+                            Category.Level);
 					}
 					Level bottomLevel = null;
 					if (hierarchyGrant.bottomLevel != null) {
 						if (hierarchyAccess != Access.CUSTOM) {
 							throw Util.newError("You may only specify 'bottomLevel' if access='custom'");
 						}
-						bottomLevel = (Level) Util.lookupCompound(schemaReader, cube, Util.explode(hierarchyGrant.bottomLevel), true, Category.Level);
+						bottomLevel = (Level) schemaReader.lookupCompound(
+                            cube, Util.explode(hierarchyGrant.bottomLevel),
+                            true, Category.Level);
 					}
 					role.grant(hierarchy, hierarchyAccess, topLevel, bottomLevel);
 					for (int m = 0; m < hierarchyGrant.memberGrants.length; m++) {

@@ -23,7 +23,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Vector;
 
 /**
  * Utility methods for classes in the <code>mondrian.rolap</code> package.
@@ -103,13 +102,6 @@ public class RolapUtil {
 		for (int i = 0; i < array.length; i++) {
 			list.add(array[i]);
 		}
-	}
-
-	static final RolapMember[] toArray(Vector v)
-	{
-		RolapMember[] members = new RolapMember[v.size()];
-		v.copyInto(members);
-		return members;
 	}
 
 	static final RolapMember[] toArray(List v)

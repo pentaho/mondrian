@@ -11,7 +11,7 @@
 */
 
 package mondrian.olap;
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  * <code>MemberBase</code> is a partial implementation of {@link Member}.
@@ -105,7 +105,7 @@ public abstract class MemberBase
 	// implement Member
 	public Member getParentMember()
 	{
-		// use the cache if possible (getAdoMember can be v. expensive)
+		// use the cache if possible (getAdoMember can be very expensive)
 		if (parentUniqueName == null) {
 			return null; // we are root member, which has no parent
 		} else if (parentMember != null) {
@@ -167,8 +167,7 @@ public abstract class MemberBase
 		// If the member is not created from the "with member ..." MDX, the
 		// calculated will be null. But it may be still a calculated measure
 		// stored in the cube.
-		String type = memberTypes[getMemberType()];
-		return type.equals("formula");
+		return getMemberType() == FORMULA_MEMBER_TYPE;
 	}
 
 	public Exp resolve(Resolver resolver) {
@@ -178,15 +177,13 @@ public abstract class MemberBase
 	// implement Member
 	public Member[] getAncestorMembers()
 	{
-		Vector v = new Vector();
+		ArrayList list = new ArrayList();
 		MemberBase parentMember = (MemberBase) getParentMember();
 		while (parentMember != null) {
-			v.addElement(parentMember);
+			list.add(parentMember);
 			parentMember = (MemberBase) parentMember.getParentMember();
 		}
-		Member[] mdxAncestorMembers = new Member[v.size()];
-		v.copyInto(mdxAncestorMembers);
-		return mdxAncestorMembers;
+        return (Member[]) list.toArray(new Member[list.size()]);
 	}
 
 	public void accept(Visitor visitor)

@@ -426,9 +426,9 @@ public class Format {
 	 *
 	 * The base implementation of most of these methods throws an error, there
 	 * is no requirement that a derived class implements all of these methods.
-	 * It is up to {@link #parseFormatString} to ensure that, for example, the
-	 * {@link #format(double,PrintWriter)} method is never called for {@link
-	 * DateFormat}.
+	 * It is up to {@link Format#parseFormatString} to ensure that, for example,
+     * the {@link #format(double,PrintWriter)} method is never called for
+     * {@link DateFormat}.
 	 */
 	static class BasicFormat {
 		int code;
@@ -1499,15 +1499,14 @@ public class Format {
 		}
 		this.locale = locale;
 
-		Vector alternateFormatsVector = new Vector();
+		ArrayList alternateFormatList = new ArrayList();
 		while (formatString.length() > 0) {
 			formatString = parseFormatString(
-				formatString, alternateFormatsVector);
+				formatString, alternateFormatList);
 		}
 
-		BasicFormat[] alternateFormats = new BasicFormat[
-			alternateFormatsVector.size()];
-		alternateFormatsVector.copyInto(alternateFormats);
+		BasicFormat[] alternateFormats = (BasicFormat[])
+            alternateFormatList.toArray(new BasicFormat[alternateFormatList.size()]);
 		if (alternateFormats.length == 0) {
 			format = new JavaFormat();
 		} else {
@@ -1669,11 +1668,13 @@ public class Format {
 	static final int RIGHT_OF_POINT = 2;
 	static final int RIGHT_OF_EXP = 3;
 
-	/** Reads formatString up to the first semi-colon, or to the end if there
-	 * are no semi-colons.  Adds a format to formatsVector, and returns the
-	 * remains of formatString. */
+	/**
+     * Reads formatString up to the first semi-colon, or to the end if there
+	 * are no semi-colons.  Adds a format to alternateFormatList, and returns
+	 * the remains of formatString.
+     */
 	private String parseFormatString(
-		String formatString, Vector alternateFormatsVector)
+		String formatString, ArrayList alternateFormatList)
 	{
 		// Where we are in a numeric format.
 		int numberState = NOT_IN_A_NUMBER;
@@ -1725,7 +1726,7 @@ public class Format {
 		}
 
 		// Scan through the format string for format elements.
-		Vector formatsVector = new Vector();
+		ArrayList formatList = new ArrayList();
 loop:
 		while (formatString.length() > 0) {
 			BasicFormat format = null;
@@ -1790,10 +1791,10 @@ loop:
 							// "m" and "mm" mean minute if immediately after
 							// "h" or "hh"; month otherwise.
 							boolean theyMeantMinute = false;
-							int j = formatsVector.size() - 1;
+							int j = formatList.size() - 1;
 							while (j >= 0) {
 								BasicFormat prevFormat = (BasicFormat)
-									formatsVector.elementAt(j);
+									formatList.get(j);
 								if (prevFormat instanceof LiteralFormat) {
 									// ignore boilerplate
 									j--;
@@ -1978,12 +1979,12 @@ loop:
 						zeroesLeftOfPoint, digitsRightOfPoint,
 						zeroesRightOfPoint, digitsRightOfExp, zeroesRightOfExp,
 						useDecimal, useThouSep);
-					formatsVector.addElement(numericFormat);
+					formatList.add(numericFormat);
 					numberState = NOT_IN_A_NUMBER;
 					haveSeenNumber = true;
 				}
 
-				formatsVector.addElement(format);
+				formatList.add(format);
 			}
 
 			formatString = newFormatString;
@@ -1995,15 +1996,15 @@ loop:
 				prevIgnored, locale, expFormat, digitsLeftOfPoint,
 				zeroesLeftOfPoint, digitsRightOfPoint, zeroesRightOfPoint,
 				digitsRightOfExp, zeroesRightOfExp, useDecimal, useThouSep);
-			formatsVector.addElement(numericFormat);
+			formatList.add(numericFormat);
 			numberState = NOT_IN_A_NUMBER;
 			haveSeenNumber = true;
 		}
 
 		// The is the end of an alternate - or of the whole format string.
 		// Push the current list of formats onto the list of alternates.
-		BasicFormat[] formats = new BasicFormat[formatsVector.size()];
-		formatsVector.copyInto(formats);
+		BasicFormat[] formats = (BasicFormat[])
+            formatList.toArray(new BasicFormat[formatList.size()]);
 
 		// If they used some symbol like 'AM/PM' in the format string, tell all
 		// date formats to use twelve hour clock.  Likewise, figure out the
@@ -2068,7 +2069,7 @@ loop:
 			formats.length > 0
 			? new CompoundFormat(formats)
 			: null;
-		alternateFormatsVector.addElement(alternateFormat);
+		alternateFormatList.add(alternateFormat);
 		return formatString;
 	}
 

@@ -118,7 +118,7 @@ public class Main extends TestSuite {
             suite.addTestSuite(ParserTest.class);
 			suite.addTestSuite(ParentChildHierarchyTest.class);
             if (false) suite.addTestSuite(XmlaTest.class);
-            if (false) suite.addTestSuite(TestCalculatedMembers.class);
+            suite.addTestSuite(TestCalculatedMembers.class);
             suite.addTestSuite(RaggedHierarchyTest.class);
 		}
 		if (testName != null) {

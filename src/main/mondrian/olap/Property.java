@@ -39,6 +39,9 @@ public abstract class Property {
 	holds a {@link java.util.List} of its data member and all of its children
 	(including non-visible children). */
 	public static final String PROPERTY_CONTRIBUTING_CHILDREN = "$contributingChildren";
+    /** The name of the property which returns a calculated member's
+     * expression. */
+    public static final String PROPERTY_FORMULA = "$formula";
     /** Cell property for XML/A. */
     public static final String PROPERTY_VALUE = "VALUE";
     /** Cell property for XML/A. */

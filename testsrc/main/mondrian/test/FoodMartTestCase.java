@@ -43,8 +43,12 @@ public class FoodMartTestCase extends TestCase {
 		return connection.execute(query);
 	}
 
+    protected Connection getConnection(boolean fresh) {
+        return TestContext.instance().getFoodMartConnection(fresh);
+    }
+
 	protected Connection getConnection() {
-		return TestContext.instance().getFoodMartConnection(false);
+        return getConnection(false);
 	}
 
 	/**

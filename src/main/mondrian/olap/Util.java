@@ -113,7 +113,7 @@ public class Util extends mondrian.xom.XOMUtil
 
 	public static String[] explode(String s)
 	{
-		Vector vector = new Vector();
+		ArrayList list = new ArrayList();
 		int i = 0;
 		while (i < s.length()) {
 			if (s.charAt(i) != '[') {
@@ -130,15 +130,14 @@ public class Util extends mondrian.xom.XOMUtil
 				throw getRes().newMdxInvalidMember(s);
 			}
 			String sub = s.substring(i + 1, j);
-			vector.addElement(sub);
+			list.add(sub);
 			if (j + 1 < s.length())
 				if (s.charAt(j+1) != '.') {
 					throw getRes().newMdxInvalidMember(s);
 				}
 			i = j +  2;
 		}
-		String[] names = new String[vector.size()];
-		vector.copyInto(names);
+		String[] names = (String[]) list.toArray(new String[list.size()]);
 		return names;
 	}
 
@@ -509,15 +508,13 @@ public class Util extends mondrian.xom.XOMUtil
      **/
     public static String[] convertStackToString(Throwable e)
     {
-        Vector v = new Vector();
+        ArrayList list = new ArrayList();
         while (e != null) {
             String sMsg = getErrorMessage(e);
-            v.addElement(sMsg);
+            list.add(sMsg);
             e = e.getCause();
         }
-        String[] msgs = new String[v.size()];
-        v.copyInto(msgs);
-        return msgs;
+        return (String[]) list.toArray(new String[list.size()]);
     }
 
 	/**
@@ -592,12 +589,12 @@ public class Util extends mondrian.xom.XOMUtil
 	 **/
 	public static class PropertyList
 	{
-		Vector v = new Vector();
+		ArrayList list = new ArrayList();
 
 		public String get(String key)
 		{
-			for (int i = 0, n = v.size(); i < n; i++) {
-				String[] pair = (String[]) v.elementAt(i);
+			for (int i = 0, n = list.size(); i < n; i++) {
+				String[] pair = (String[]) list.get(i);
 				if (pair[0].equalsIgnoreCase(key)) {
 					return pair[1];
 				}
@@ -610,8 +607,8 @@ public class Util extends mondrian.xom.XOMUtil
 
 		public String put(String key, String value)
 		{
-			for (int i = 0, n = v.size(); i < n; i++) {
-				String[] pair = (String[]) v.elementAt(i);
+			for (int i = 0, n = list.size(); i < n; i++) {
+				String[] pair = (String[]) list.get(i);
 				if (pair[0].equalsIgnoreCase(key)) {
 					String old = pair[1];
 					if (key.equalsIgnoreCase("Provider")) {
@@ -623,15 +620,15 @@ public class Util extends mondrian.xom.XOMUtil
 					return old;
 				}
 			}
-			v.addElement(new String[] {key, value});
+			list.add(new String[] {key, value});
 			return null;
 		}
 
 		public String toString()
 		{
 			StringBuffer sb = new StringBuffer();
-			for (int i = 0, n = v.size(); i < n; i++) {
-				String[] pair = (String[]) v.elementAt(i);
+			for (int i = 0, n = list.size(); i < n; i++) {
+				String[] pair = (String[]) list.get(i);
 				if (i > 0) {
 					sb.append("; ");
 				}
@@ -643,7 +640,7 @@ public class Util extends mondrian.xom.XOMUtil
 		}
 
         public Iterator iterator() {
-            return v.iterator();
+            return list.iterator();
         }
 	}
 

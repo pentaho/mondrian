@@ -11,7 +11,7 @@
 */
 
 package mondrian.olap;
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  * This class implements object of type GrantCube to apply permissions
@@ -19,33 +19,38 @@ import java.util.Vector;
  **/
 public class CubeAccess
 {
-	private boolean bHasRestrictions; 
-	Hierarchy[] noAccessHierarchies; // array of hierarchies with no access
-	Member[]  limitedMembers;  // array of limitedMembers
-	Vector vHierarchy;
-	Vector vMember;
+	private boolean hasRestrictions;
+    /** array of hierarchies with no access */
+	Hierarchy[] noAccessHierarchies;
+    /** array of members which have limited access */
+	Member[]  limitedMembers;
+	final ArrayList hierarchyList;
+	final ArrayList memberList;
 	Cube mdxCube;
 	
-	/**Creates cubeAccess object. User's code should be responsible for
+	/**
+     * Creates a CubeAccess object.
+     *
+     * <p>User's code should be responsible for
 	 * filling cubeAccess with restricted hierarchies and restricted 
-	 * members by calling addSlicer(). Do NOT forfet to call
-	 *  'normalizeCubeAccess()' after you done filling cubeAccess.
+	 * members by calling addSlicer(). Do NOT forget to call
+	 * {@link #normalizeCubeAccess()} after you done filling cubeAccess.
 	 */
-	public CubeAccess( Cube mdxCube )
+	public CubeAccess(Cube mdxCube)
 	{
 		this.mdxCube = mdxCube;
 		noAccessHierarchies = null;
 		limitedMembers = null;
-		bHasRestrictions = false;
-		vHierarchy = new Vector();
-		vMember = new Vector();
+		hasRestrictions = false;
+		hierarchyList = new ArrayList();
+		memberList = new ArrayList();
 	}
 	
-	public boolean hasRestrictions(){ return bHasRestrictions; }
+	public boolean hasRestrictions(){ return hasRestrictions; }
 	public Hierarchy[] getNoAccessHierarchies(){return noAccessHierarchies;}
 	public Member[] getLimitedMembers(){return limitedMembers; }
-	public Vector getNoAccessHierarchiesAsVector(){ return vHierarchy; }
-	public Vector getLimitedMembersAsVector(){ return vMember; }
+	public ArrayList getNoAccessHierarchyList(){ return hierarchyList; }
+	public ArrayList getLimitedMemberList(){ return memberList; }
 	public boolean isHierarchyAllowed( Hierarchy mdxHierarchy )
 	{
 		String hierName = mdxHierarchy.getUniqueName();
@@ -92,7 +97,7 @@ public class CubeAccess
 			}
 			// there should be only slicer per hierarchy; ignore the rest
 			if (getLimitedMemberForHierarchy(member.getHierarchy()) == null) {
-				vMember.addElement(member);
+				memberList.add(member);
 			}
 		} else {
 			boolean fail = false;
@@ -101,7 +106,7 @@ public class CubeAccess
 				throw Util.getRes().newMdxCubeSlicerHierarchyError(
 					sHierarchy, mdxCube.getUniqueName());
 			}
-			vHierarchy.addElement(hierarchy);
+			hierarchyList.add(hierarchy);
 		}
 	}
 
@@ -110,15 +115,15 @@ public class CubeAccess
 	 */
 	public void normalizeCubeAccess()
 	{
-		if( vMember.size() > 0 ){
-			limitedMembers = new Member[ vMember.size()];
-			vMember.copyInto(limitedMembers);
-			bHasRestrictions = true;
+		if (memberList.size() > 0) {
+			limitedMembers = (Member[])
+                memberList.toArray(new Member[memberList.size()]);
+			hasRestrictions = true;
 		}
-		if( vHierarchy.size() > 0 ){
-			noAccessHierarchies = new Hierarchy[ vHierarchy.size()];
-			vHierarchy.copyInto(noAccessHierarchies);
-			bHasRestrictions = true;
+		if (hierarchyList.size() > 0) {
+			noAccessHierarchies = (Hierarchy[])
+                hierarchyList.toArray(new Hierarchy[ hierarchyList.size()]);
+			hasRestrictions = true;
 		}
 	}
 	
@@ -126,30 +131,29 @@ public class CubeAccess
 	 */
 	public boolean equals( Object object )
 	{
-		if( !( object instanceof CubeAccess )){
+		if (!(object instanceof CubeAccess)) {
 		   return false;
 		}
-		CubeAccess cubeAccess = ( CubeAccess ) object;
-		Vector vMdxHierarchies = cubeAccess.getNoAccessHierarchiesAsVector();
-		Vector vMembers = cubeAccess.getLimitedMembersAsVector();
+		CubeAccess cubeAccess = (CubeAccess) object;
+		ArrayList hierarchyList = cubeAccess.getNoAccessHierarchyList();
+		ArrayList limitedMemberList = cubeAccess.getLimitedMemberList();
 
-		if(( this.vHierarchy.size() != vMdxHierarchies.size() ) ||
-		   ( this.vMember.size() != vMembers.size() )){
-			return false;
-		}		
-		for( int i = 0; i < vMdxHierarchies.size(); i++ ){
-			if( !this.vHierarchy.contains( vMdxHierarchies.elementAt(i))){
+        if ((this.hierarchyList.size() != hierarchyList.size()) ||
+            (this.memberList.size() != limitedMemberList.size())) {
+            return false;
+        }
+		for (int i = 0; i < hierarchyList.size(); i++) {
+			if (!this.hierarchyList.contains(hierarchyList.get(i))) {
 				return false;
 			}
 		}
-		for( int i = 0; i < vMembers.size(); i++ ){
-			if( !this.vMember.contains( vMembers.elementAt(i ))){
+		for (int i = 0; i < limitedMemberList.size(); i++ ){
+			if (!this.memberList.contains( limitedMemberList.get(i))) {
 				return false;
 			}
 		}
 		return true;
 	}
-		
 }
 
 // End CubeAccess.java

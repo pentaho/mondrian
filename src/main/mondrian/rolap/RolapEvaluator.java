@@ -152,19 +152,8 @@ class RolapEvaluator implements Evaluator
 	}
 	public Object evaluateCurrent()
 	{
-		int minSolve = Integer.MAX_VALUE;
-		RolapMember minSolveMember = null;
-		for (int i = 0, count = currentMembers.length; i < count; i++) {
-            final RolapMember currentMember = currentMembers[i];
-            if (currentMember.isCalculated()) {
-				int solve = currentMember.getSolveOrder();
-				if (solve < minSolve) {
-					minSolve = solve;
-					minSolveMember = currentMember;
-				}
-			}
-		}
-		if (minSolve < Integer.MAX_VALUE) {
+        RolapMember minSolveMember = getMinSolveMember();
+        if (minSolveMember != null) {
 			// There is at least one calculated member. Expand the first one
 			// with the lowest solve order.
 			RolapMember defaultMember = (RolapMember)
@@ -179,6 +168,27 @@ class RolapEvaluator implements Evaluator
 		}
 		return cellReader.get(this);
 	}
+
+    /**
+     * Returns the member in the current context which is (a) calculated, and
+     * (b) has the lowest solve order; returns null if there are no calculated
+     * members.
+     */ 
+    private RolapMember getMinSolveMember() {
+        int minSolve = Integer.MAX_VALUE;
+        RolapMember minSolveMember = null;
+        for (int i = 0, count = currentMembers.length; i < count; i++) {
+            final RolapMember currentMember = currentMembers[i];
+            if (currentMember.isCalculated()) {
+                int solve = currentMember.getSolveOrder();
+                if (solve < minSolve) {
+                    minSolve = solve;
+                    minSolveMember = currentMember;
+                }
+            }
+        }
+        return minSolveMember;
+    }
 
     private void setExpanding(Member member)
     {

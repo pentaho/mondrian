@@ -12,6 +12,8 @@
 
 package mondrian.olap;
 
+import java.util.ArrayList;
+
 /**
  * todo:
  *
@@ -102,15 +104,14 @@ public abstract class DimensionBase
 
 	protected Object[] getAllowedChildren(CubeAccess cubeAccess)
 	{
-		java.util.Vector vMdxHierarchies = new java.util.Vector();
+		ArrayList hierarchyList = new ArrayList();
 		Hierarchy[] mdxHierarchies = getHierarchies();
 		for (int i = 0; i < mdxHierarchies.length; i++) {
-			if (cubeAccess.isHierarchyAllowed(mdxHierarchies[i]))
-				vMdxHierarchies.addElement(mdxHierarchies[i]);
+			if (cubeAccess.isHierarchyAllowed(mdxHierarchies[i])) {
+				hierarchyList.add(mdxHierarchies[i]);
+            }
 		}
-		mdxHierarchies = new Hierarchy[vMdxHierarchies.size()];
-		vMdxHierarchies.copyInto(mdxHierarchies);
-		return mdxHierarchies;
+        return hierarchyList.toArray(new Hierarchy[hierarchyList.size()]);
 	}
 
 	public void accept(Visitor visitor)

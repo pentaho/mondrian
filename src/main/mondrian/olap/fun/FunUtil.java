@@ -309,17 +309,6 @@ public class FunUtil extends Util {
         }
     }
 
-	/** Adds every element of <code>right</code> to <code>left</code>. **/
-	static void add(Vector left, Vector right) {
-		if (right == null) {
-			return;
-		}
-		for (int i = 0, n = right.size(); i < n; i++) {
-			final Object o = right.elementAt(i);
-			left.addElement(o);
-		}
-	}
-
 	/** Adds every element of <code>right</code> which is not in <code>set</code>
 	 * to both <code>set</code> and <code>left</code>. **/
 	static void addUnique(List left, List right, Set set) {
@@ -342,15 +331,7 @@ public class FunUtil extends Util {
 		return b ? Boolean.TRUE : Boolean.FALSE;
 	}
 
-	static HashSet toHashSet(Vector vector) {
-		HashSet set = new HashSet();
-		for (int i = 0, count = vector.size(); i < count; i++) {
-			set.add(vector.elementAt(i));
-		}
-		return set;
-	}
-
-	static List addMembers(SchemaReader schemaReader, List members, Hierarchy hierarchy) {
+    static List addMembers(SchemaReader schemaReader, List members, Hierarchy hierarchy) {
 		Level[] levels = schemaReader.getHierarchyLevels(hierarchy); // only accessible levels
 		for (int i = 0; i < levels.length; i++) {
 			addMembers(schemaReader, members, levels[i]);
@@ -547,9 +528,11 @@ public class FunUtil extends Util {
 	/**
 	 * Handles TopSum, TopPercent, BottomSum, BottomPercent by
 	 * evaluating members, sorting appropriately, and returning a
-	 * truncated vector of members
+	 * truncated list of members
 	 */
-	static Object topOrBottom (Evaluator evaluator, List members, ExpBase exp, boolean isTop, boolean isPercent, double target) {
+	static Object topOrBottom(Evaluator evaluator, List members, ExpBase exp,
+        boolean isTop, boolean isPercent, double target)
+    {
 		HashMap mapMemberToValue = evaluateMembers(evaluator, exp, members, false);
 		Comparator comparator = new BreakMemberComparator(mapMemberToValue, isTop);
 		Collections.sort(members, comparator);
@@ -757,8 +740,8 @@ public class FunUtil extends Util {
 	static Object covariance(Evaluator evaluator, List members, ExpBase exp1, ExpBase exp2, boolean biased) {
 		SetWrapper sw1 = evaluateSet(evaluator.push(), members, exp1);
 		SetWrapper sw2 = evaluateSet(evaluator.push(), members, exp2);
-		//todo: because evaluateSet does not add nulls to the SetWrapper, this solution may
-		//lead to mismatched vectors and is therefore not robust
+		// todo: because evaluateSet does not add nulls to the SetWrapper, this
+        // solution may lead to mismatched lists and is therefore not robust
 		return _covariance(sw1, sw2, biased);
 	}
 
@@ -856,9 +839,9 @@ public class FunUtil extends Util {
 
 	/**
 	 * Evaluates <code>exp</code> (if defined) over <code>members</code> to
-	 * generate a <code>Vector</code> of <code>SetWrapper</code>, which contains
-	 * a <code>Double</code> value and meta information, unlike
-	 * <code>evaluateMembers</code>, which only produces values
+	 * generate a {@link List} of {@link SetWrapper} objects, which contains
+	 * a {@link Double} value and meta information, unlike
+	 * {@link #evaluateMembers}, which only produces values.
 	 *
 	 * @pre exp != null
 	 */

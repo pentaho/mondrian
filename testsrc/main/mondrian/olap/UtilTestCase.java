@@ -27,7 +27,7 @@ public class UtilTestCase extends TestCase {
         assertNull(properties.get(" bar")); // get does not ignore spaces
         assertEquals("z", properties.get("foo")); // later occurrence overrides
         assertNull(properties.get("kipper"));
-        assertEquals(2, properties.v.size());
+        assertEquals(2, properties.list.size());
         assertEquals("foo=z; bar=y", properties.toString());
     }
 
@@ -43,7 +43,7 @@ public class UtilTestCase extends TestCase {
                 " doubleQuotedValue = \"=double quoted value preceded by equals\" ;" +
                 " singleQuotedValueWithSemi = 'one; two';" +
                 " singleQuotedValueWithSpecials = 'one; two \"three''four=five'");
-        assertEquals(11, properties.v.size());
+        assertEquals(11, properties.list.size());
         String value;
         value = properties.get("normalProp");
         assertEquals("value", value);
