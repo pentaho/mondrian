@@ -79,7 +79,7 @@ class RolapConnectionPool {
             connectionPool = new GenericObjectPool(
                 null, // PoolableObjectFactory, can be null
                 50, // max active
-                GenericObjectPool.WHEN_EXHAUSTED_FAIL, // action when exhausted
+                GenericObjectPool.WHEN_EXHAUSTED_BLOCK, // action when exhausted
                 3000, // max wait (milli seconds)
                 10, // max idle
                 false, // test on borrow
