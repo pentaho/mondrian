@@ -4,11 +4,9 @@
 // the junit license and modifications are covered as follows:
 //
 // This software is subject to the terms of the Common Public License
-// and Eclipse Plublic License agreements, available at the following URLs:
-//    http://www.opensource.org/licenses/cpl1.0.php.
-//    http://www.opensource.org/licenses/eclipse-1.0.php.
-//
-// Copyright (C) 2004 SAS Institute, Inc. and others.
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2004 SAS Institute, Inc.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
