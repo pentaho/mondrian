@@ -70,6 +70,7 @@ ${lib.dir}/mondrian.jar,
 ${lib.dir}/mondrian.war,
 ${lib.dir}/mondrian.xml,
 ${lib.dir}/web.xml,
+${lib.dir}/index.jsp,
 ${lib.dir}/ant.jar,
 ${lib.dir}/optional.jar,
 ${lib.dir}/xalan.jar,
@@ -726,6 +727,9 @@ Assumes that mondrian.jar exists (use 'jar' target)">
     <delete file="${lib.dir}/web.xml"/>
     <copy file="${webapp.dir}/WEB-INF/web-jpivot.xml"
         filtering="true" tofile="${lib.dir}/web.xml"/>
+    <!-- always replace jpivot's index.jsp -->
+    <copy overwrite="yes" file="${webapp.dir}/index.jsp" tofile="${lib.dir}/index.jsp"/>
+
     <war warfile="${war.file}"
         update="yes"
         webxml="${lib.dir}/web.xml">
@@ -733,6 +737,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <!-- our FoodMart.xml may be newer than jpivot's -->
       <webinf dir="${demo.dir}" prefix="WEB-INF/queries" includes="FoodMart.xml"/>
       <fileset dir="${webapp.dir}" excludes="WEB-INF/**/*"/>
+      <fileset dir="${lib.dir}" includes="index.jsp"/>
       <!-- should already contain javacup.jar, xalan.jar, junit.jar -->
       <lib dir="${lib.dir}" includes="
 ${name}.jar,
