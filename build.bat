@@ -7,7 +7,7 @@
 @rem You must accept the terms of that agreement to use this software.
 
 @set SRCROOT=%~dp0
-@set HOME_DRIVE=C
+@set HOME_DRIVE=Z
 
 @set ANT_HOME=%HOME_DRIVE%:\jakarta-ant-1.5
 @if exist "%ANT_HOME%" goto x010
@@ -56,8 +56,8 @@
 :x300
 
 @rem To use MySQL, uncomment the next 2 lines and modify appropriately
-@set MYSQL_HOME=%HOME_DRIVE%:/MySQL
-@set CLASSPATH=%CLASSPATH%;%MYSQL_HOME%/lib/mm.mysql-2.0.4-bin.jar
+@rem set MYSQL_HOME=%HOME_DRIVE%:/MySQL
+@rem set CLASSPATH=%CLASSPATH%;%MYSQL_HOME%/lib/mm.mysql-2.0.4-bin.jar
 
 @%ANT_HOME%\bin\ant %1 %2 %3 %4 %5 %6 %7 %8 %9
 :end
