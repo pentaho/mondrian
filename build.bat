@@ -2,7 +2,7 @@
 @rem This software is subject to the terms of the Common Public License
 @rem Agreement, available at the following URL:
 @rem http://www.opensource.org/licenses/cpl.html.
-@rem (C) Copyright 2001-2003 Kana Software, Inc. and others.
+@rem (C) Copyright 2001-2004 Kana Software, Inc. and others.
 @rem All Rights Reserved.
 @rem You must accept the terms of that agreement to use this software.
 
@@ -22,7 +22,7 @@
 @set PATH=%JAVA_HOME%/bin;%PATH%
 
 @if exist "%ANT_HOME%" goto antHomeOk
-@set ANT_HOME=%HOME_DRIVE%:\jakarta-ant-1.5
+@set ANT_HOME=%HOME_DRIVE%:\apache-ant-1.6.0
 @if exist "%ANT_HOME%" goto antHomeOk
 @echo ANT_HOME (%ANT_HOME%) does not exist
 @goto end
