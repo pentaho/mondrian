@@ -57,17 +57,6 @@ public class TestContext {
 	/** Creates a TestContext. Called only from {@link #instance()}. **/
 	private TestContext() {
 		this.pw = new PrintWriter(System.out, true);
-		String jdbcDrivers = MondrianProperties.instance().getJdbcDrivers();
-		StringTokenizer tok = new java.util.StringTokenizer(jdbcDrivers, ",");
-		while (tok.hasMoreTokens()) {
-			String jdbcDriver = tok.nextToken();
-			try {
-				Class.forName(jdbcDriver);
-			} catch (ClassNotFoundException e) {
-				pw.println("Could not find driver " + jdbcDriver);
-			}
-		}
-
 		foodMartConnectString = MondrianProperties.instance().getTestConnectString();
 		if (foodMartConnectString == null) {
 			URL catalogUrl = convertPathToURL(new File("demo/FoodMart.xml"));

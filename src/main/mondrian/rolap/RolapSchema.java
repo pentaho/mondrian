@@ -19,8 +19,7 @@ import mondrian.xom.DOMWrapper;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * A <code>RolapSchema</code> is a collection of {@link RolapCube}s and
@@ -159,9 +158,14 @@ public class RolapSchema implements Schema
 		return (RolapCube) mapNameToCube.get(cube);
 	}
 
-	public String[] listCubeNames()
-	{
-		throw new UnsupportedOperationException();
+	public Cube[] getCubes() {
+		return (RolapCube[]) mapNameToCube.values().toArray(new RolapCube[0]);
+	}
+
+	public Hierarchy[] getSharedHierarchies() {
+		return (RolapHierarchy[])
+				mapSharedHierarchyNameToHierarchy.values().toArray(
+						new RolapHierarchy[0]);
 	}
 
 	RolapHierarchy getSharedHierarchy(String name) {

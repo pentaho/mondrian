@@ -17,6 +17,7 @@ import java.sql.SQLException;
 import java.util.Locale;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 /**
  * A <code>RolapConnection</code> is a connection to a mondrian database.
@@ -55,6 +56,11 @@ public class RolapConnection extends ConnectionBase {
 		this.catalogName = connectInfo.get("Catalog");
 		String provider = connectInfo.get("Provider");
 		Util.assertTrue(provider.equalsIgnoreCase("mondrian"));
+		String jdbcDrivers = connectInfo.get("JdbcDrivers");
+		if (jdbcDrivers != null) {
+			loadDrivers(jdbcDrivers);
+		}
+		loadDrivers(MondrianProperties.instance().getJdbcDrivers());
 		try {
 			this.jdbcConnection = java.sql.DriverManager.getConnection(
 				jdbcConnectString);
@@ -69,6 +75,19 @@ public class RolapConnection extends ConnectionBase {
 					catalogName, jdbcConnectString, connectInfo);
 		}
 		this.schema = schema;
+	}
+
+
+	public static void loadDrivers(String jdbcDrivers) {
+		StringTokenizer tok = new StringTokenizer(jdbcDrivers, ",");
+		while (tok.hasMoreTokens()) {
+			String jdbcDriver = tok.nextToken();
+			try {
+				Class.forName(jdbcDriver);
+			} catch (ClassNotFoundException e) {
+				System.out.println("Could not find driver " + jdbcDriver);
+			}
+		}
 	}
 
 	public void close()

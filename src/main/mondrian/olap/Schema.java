@@ -23,9 +23,14 @@ public interface Schema {
 	Cube lookupCube(String cube,boolean failIfNotFound);
 
 	/**
-	 * Find the names of all cubes in a given database.
+	 * Returns a list of all cubes in a given database.
 	 **/
-	String[] listCubeNames();
+	Cube[] getCubes();
+
+	/**
+	 * Returns a list of shared dimensions.
+	 */
+	Hierarchy[] getSharedHierarchies();
 
 	/**
 	 * Creates a dimension in the given cube by parsing an XML string. The XML
@@ -33,6 +38,7 @@ public interface Schema {
 	 * Returns the dimension created.
 	 **/
 	Dimension createDimension(Cube cube, String xml);
+
 }
 
 // End Schema.java

@@ -1,4 +1,8 @@
 package javax.olap.metadata;
-
-public interface Measure extends javax.jmi.model.Attribute {
+import org.omg.cwm.objectmodel.core.Attribute;
+public interface Measure extends Attribute
+{
+// class scalar attributes
+// class references
+// class operations
 }

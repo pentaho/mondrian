@@ -13,6 +13,7 @@
 package mondrian.olap;
 import java.lang.reflect.*;
 import java.util.Properties;
+import java.util.StringTokenizer;
 
 /**
  * The basic service for managing a set of OLAP drivers
@@ -33,9 +34,9 @@ public class DriverManager {
 			sConnect += "Catalog=" + sCatalog;
 		}
 		Util.PropertyList properties = Util.parseConnectString(sConnect);
-		String provider = (String) properties.get("PROVIDER");
+		String provider = properties.get("PROVIDER");
 		if (provider.equalsIgnoreCase("mondrian")) {
-			return new mondrian.rolap.RolapConnection(properties);
+			return getConnection(properties);
 		}
 		try {
 			Class clazz = Class.forName("Broadbase.mdx.adomd.AdomdConnection");
@@ -57,7 +58,10 @@ public class DriverManager {
 			throw Util.getRes().newInternal("while connecting to " + sConnect, e);
 		}
 	}
-}
 
+	public static Connection getConnection(Util.PropertyList properties) {
+		return new mondrian.rolap.RolapConnection(properties);
+	}
+}
 
 // End DriverManager.java

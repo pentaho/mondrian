@@ -19,10 +19,8 @@ import mondrian.rolap.RolapAggregationManager;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.RolapUtil;
 import mondrian.test.TestContext;
+import mondrian.util.DelegatingInvocationHandler;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -60,7 +58,7 @@ public class TestAggregationManager extends TestCase {
 	public void testFemaleUnitSalesSql() {
 		CellRequest request = createRequest("Sales", "[Measures].[Unit Sales]", "customer", "gender", "F");
 		final String pattern = "select `customer`.`gender` as `c0`, sum(`sales_fact_1997`.`unit_sales`) as `c1` from `customer` as `customer`, `sales_fact_1997` as `sales_fact_1997` where `sales_fact_1997`.`customer_id` = `customer`.`customer_id` group by `customer`.`gender`";
-		assertRequestSql(new CellRequest[] {request}, pattern, null);
+		assertRequestSql(new CellRequest[] {request}, pattern, "select `customer`.`gender`");
 	}
 
 	// todo: test multiple values, (UNit Sales, State={CA,OR})
@@ -177,24 +175,7 @@ public class TestAggregationManager extends TestCase {
 				(java.sql.Connection) Proxy.newProxyInstance(
 						null,
 						new Class[]{java.sql.Connection.class},
-						new DelegatingInvocationHandler(connection) {
-							public Statement createStatement() throws SQLException {
-								final Statement statement = connection.createStatement();
-								return (Statement) Proxy.newProxyInstance(
-										null,
-										new Class[]{java.sql.Statement.class},
-										new DelegatingInvocationHandler(statement) {
-											public ResultSet executeQuery(String sql) throws SQLException {
-												if (trigger == null || sql.startsWith(trigger)) {
-													throw new Bomb(sql);
-												} else {
-													return statement.executeQuery(sql);
-												}
-											}
-										});
-							}
-						}
-				));
+						new TriggerHandler(connection, trigger)));
 		Bomb bomb;
 		try {
 			aggMan.loadAggregations(createBatch(requests), pinnedSegments);
@@ -244,46 +225,43 @@ public class TestAggregationManager extends TestCase {
 		}
 		return request;
 	}
+
+	public class TriggerHandler extends DelegatingInvocationHandler {
+		private final java.sql.Connection connection;
+		private final String trigger;
+
+		public TriggerHandler(java.sql.Connection connection, String trigger) {
+			super(connection);
+			this.connection = connection;
+			this.trigger = trigger;
+		}
+
+		public Statement createStatement() throws SQLException {
+			final Statement statement = connection.createStatement();
+			return (Statement) Proxy.newProxyInstance(
+					null,
+					new Class[]{Statement.class},
+					new StatementHandler(statement));
+		}
+
+		public class StatementHandler extends DelegatingInvocationHandler {
+			private final Statement statement;
+
+			public StatementHandler(Statement statement) {
+				super(statement);
+				this.statement = statement;
+			}
+
+			public ResultSet executeQuery(String sql) throws SQLException {
+				if (trigger == null || sql.startsWith(trigger)) {
+					throw new Bomb(sql);
+				} else {
+					return statement.executeQuery(sql);
+				}
+			}
+		}
+	}
 }
 
-/**
- * A class derived from <code>DelegatingInvocationHandler</code> handles a
- * method call by looking for a method in itself with identical parameters. If
- * no such method is found, it forwards the call to a fallback object, which
- * must implement all of the interfaces which this proxy implements.
- *
- * <p> It is useful in creating a wrapper class around an interface which may
- * change over time.
- */
-abstract class DelegatingInvocationHandler implements InvocationHandler {
-	Object fallback;
-	DelegatingInvocationHandler(Object fallback) {
-		this.fallback = fallback;
-	}
-	public Object invoke(Object proxy, Method method, Object[] args)
-			throws Throwable {
-		Class clazz = getClass();
-		Method matchingMethod;
-		try {
-			matchingMethod = clazz.getMethod(
-					method.getName(), method.getParameterTypes());
-		} catch (NoSuchMethodException e) {
-			matchingMethod = null;
-		} catch (SecurityException e) {
-			matchingMethod = null;
-		}
-		try {
-			if (matchingMethod != null) {
-				// Invoke the method in the derived class.
-				return matchingMethod.invoke(this, args);
-			} else {
-				// Invoke the method on the proxy.
-				return method.invoke(fallback, args);
-			}
-		} catch (InvocationTargetException e) {
-			throw e.getTargetException();
-		}
-	}
-}
 
 // End TestAggregationManager.java
