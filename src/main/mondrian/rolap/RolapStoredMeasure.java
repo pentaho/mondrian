@@ -11,6 +11,7 @@
 */
 
 package mondrian.rolap;
+import mondrian.olap.CellFormatter;
 import mondrian.olap.MondrianDef;
 import mondrian.olap.Property;
 import mondrian.olap.Util;
@@ -29,6 +30,8 @@ class RolapStoredMeasure extends RolapMeasure
 	/** For SQL generator. Has values "SUM", "COUNT", etc. */
 	final RolapAggregator aggregator;
 	final RolapCube cube;
+
+	CellFormatter formatter = null;
 
 	RolapStoredMeasure(
 			RolapCube cube, RolapMember parentMember, RolapLevel level, String name,
@@ -59,6 +62,12 @@ class RolapStoredMeasure extends RolapMeasure
 		return cube.cellReader;
 	}
 
+	public CellFormatter getFormatter(){
+		return formatter;
+	}
+	void setFormatter(CellFormatter formatter){
+		this.formatter = formatter;
+	}
 }
 
 // End RolapStoredMeasure.java

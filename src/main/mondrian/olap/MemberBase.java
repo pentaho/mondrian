@@ -44,6 +44,13 @@ public abstract class MemberBase
 		return uniqueName;
 	}
 	public final String getCaption() {
+		// if there is a member formatter for the members level,
+		//  we will call this interface to provide the display string
+		MemberFormatter mf = getLevel().getMemberFormatter();
+		if (mf != null) {
+			return mf.formatMember(this);
+		}
+
 		final String caption = (String) getPropertyValue(Property.PROPERTY_CAPTION);
 		if (caption != null) {
 			return caption;

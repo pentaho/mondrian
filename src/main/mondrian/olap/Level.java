@@ -42,6 +42,10 @@ public interface Level extends OlapElement {
 	Property[] getProperties();
 	/** Returns properties defined against this level and parent levels. **/
 	Property[] getInheritedProperties();
+
+	/** @return the MemberFormatter
+	  */
+	MemberFormatter getMemberFormatter();
 }
 
 // End Level.java

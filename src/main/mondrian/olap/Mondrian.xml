@@ -367,6 +367,12 @@ todo:
 			<Value>IfBlankName</Value>
 			<Value>IfParentsName</Value>
 		</Attribute>
+		<Attribute name="formatter" required="false">
+			<Doc>
+				Name of a formatter class for the member labels beeing displayed.
+				The class must implement the mondrian.olap.MemberFormatter interface.
+			</Doc>
+		</Attribute>
 		<Object name="keyExp" type="KeyExpression" required="false">
 			<Doc>
 				The SQL expression used to populate this level's key.
@@ -468,6 +474,12 @@ todo:
 			<Value>max</Value>
 			<Value>avg</Value>
 			<Value>distinct count</Value>
+		</Attribute>
+		<Attribute name="formatter" required="false">
+			<Doc>
+				Name of a formatter class for the appropriate cell beeing displayed.
+				The class must implement the mondrian.olap.CellFormatter interface.
+			</Doc>
 		</Attribute>
 	</Element>
 
@@ -609,6 +621,12 @@ todo:
 				hierarchies, but it must have different aliases.)
 			</Doc>
 		</Attribute>
+		<Object name="filter" type="SQL" required="false">
+		<Doc>
+		  The SQL WHERE clause expression to be appended to any select statement
+		</Doc>
+		</Object>
+
 		<Code><![CDATA[
 			/** Convenience contructor. **/
 			public Table(String schema, String name, String alias) {
@@ -649,7 +667,14 @@ todo:
 			}
 			public int hashCode() {
 				return toString().hashCode();
-			}]]>
+			}
+			public String getFilter() {
+				if (filter == null)
+				  return null;
+				else
+				  return filter.cdata;
+			}
+      ]]>
 		</Code>
 	</Element>
 

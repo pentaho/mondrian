@@ -14,6 +14,7 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.rolap.agg.AggregationManager;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -66,13 +67,26 @@ class RolapCube extends CubeBase
 			MondrianDef.Dimension xmlDimension = xmlCubeDimension.getDimension(xmlSchema);
 			dimensions[i + 1] = new RolapDimension(schema, this, xmlDimension, xmlCubeDimension);
 		}
-		RolapMeasure measures[] = new RolapMeasure[
+		RolapStoredMeasure measures[] = new RolapStoredMeasure[
 			xmlCube.measures.length];
 		for (int i = 0; i < xmlCube.measures.length; i++) {
 			MondrianDef.Measure xmlMeasure = xmlCube.measures[i];
 			measures[i] = new RolapStoredMeasure(
 					this, null, measuresLevel, xmlMeasure.name, xmlMeasure.formatString,
 					xmlMeasure.column, xmlMeasure.aggregator);
+
+			if (xmlMeasure.formatter != null) {
+				// there is a special cell formatter class
+				try {
+					Class clazz = Class.forName(xmlMeasure.formatter);
+					Constructor ctor = clazz.getConstructor(new Class[0]);
+					CellFormatter cellFormatter = (CellFormatter) ctor.newInstance(new Object[0]);
+					measures[i].setFormatter(cellFormatter);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			
 		}
 		this.measuresHierarchy.memberReader = new CacheMemberReader(
 				new MeasureMemberSource(measuresHierarchy, measures));
@@ -338,6 +352,14 @@ class RolapCube extends CubeBase
 		// use OlapElement's virtual lookup
 		return parent.lookupChild(getSchemaReader(), s);
 	}
+	
+	/**
+	 * get the measures hierarchy
+	 */
+	public Hierarchy getMeasuresHierarchy(){
+		return measuresHierarchy;
+	}
+	
 }
 
 // End RolapCube.java

@@ -29,6 +29,7 @@ public abstract class LevelBase
 	protected String description;
 	protected int depth;
 	protected LevelType levelType;
+	protected MemberFormatter memberFormatter = null;
 
 	// from Element
 	public String getQualifiedName() {
@@ -88,6 +89,12 @@ public abstract class LevelBase
 	public void childrenAccept(Visitor visitor)
 	{
 		// we don't generally visit child members
+	}
+	
+	/** @return the MemberFormatter
+	  */
+	public MemberFormatter getMemberFormatter(){
+		return memberFormatter;
 	}
 }
 

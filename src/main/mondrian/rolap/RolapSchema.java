@@ -262,7 +262,10 @@ public class RolapSchema implements Schema
 			RolapSchema schema = (RolapSchema) mapUrlToSchema.get(key);
 			if (schema == null) {
 				schema = new RolapSchema(catalogName, connectInfo);
-				mapUrlToSchema.put(key, schema);
+				// do not chache the schema, if it dynamic
+				//  .i.e created from an http URL.
+				if (!catalogName.toLowerCase().startsWith("http"))
+					mapUrlToSchema.put(key, schema);
 				// Must create RolapConnection after we add to map, otherwise
 				// we will loop.
 				// no, this is redundant - its set in the ctor of RolapSchema

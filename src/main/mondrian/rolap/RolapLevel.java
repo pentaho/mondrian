@@ -13,6 +13,7 @@
 package mondrian.rolap;
 import mondrian.olap.*;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -169,6 +170,16 @@ class RolapLevel extends LevelBase
 				(xmlLevel.uniqueMembers.booleanValue() ? UNIQUE : 0),
                 HideMemberCondition.lookup(xmlLevel.hideMemberIf),
                 LevelType.lookup(xmlLevel.levelType));
+		if (xmlLevel.formatter != null) {
+			// there is a special member formatter class
+			try {
+				Class clazz = Class.forName(xmlLevel.formatter);
+				Constructor ctor = clazz.getConstructor(new Class[0]);
+				memberFormatter = (MemberFormatter) ctor.newInstance(new Object[0]);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
     // helper for constructor

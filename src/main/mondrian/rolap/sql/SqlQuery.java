@@ -351,7 +351,7 @@ public class SqlQuery
 	 * @return true if table *was* added
 	 */
 	private boolean addFromTable(
-			String schema, String table, String alias, boolean failIfExists) {
+			String schema, String table, String alias, String filter, boolean failIfExists) {
 		if (fromAliases.contains(alias)) {
 			if (failIfExists) {
 				throw Util.newInternal(
@@ -376,6 +376,11 @@ public class SqlQuery
 			from.append(quoteIdentifier(alias));
 			fromAliases.add(alias);
 		}
+		if ( filter != null ) {
+		  // append filter condition to where clause
+		  String wclause = "(" + filter + ")";
+		  addWhere(wclause);
+		}
 		return true;
 	}
 
@@ -399,7 +404,7 @@ public class SqlQuery
 		} else if (relation instanceof MondrianDef.Table) {
 			MondrianDef.Table table = (MondrianDef.Table) relation;
 			return addFromTable(
-					table.schema, table.name, table.getAlias(), failIfExists);
+					table.schema, table.name, table.getAlias(), table.getFilter(), failIfExists);
 		} else if (relation instanceof MondrianDef.Join) {
 			MondrianDef.Join join = (MondrianDef.Join) relation;
 			boolean added = false;

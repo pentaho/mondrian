@@ -21,6 +21,7 @@ import java.util.List;
 
 import mondrian.olap.Axis;
 import mondrian.olap.Cell;
+import mondrian.olap.CellFormatter;
 import mondrian.olap.Dimension;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Exp;
@@ -54,6 +55,7 @@ class RolapResult extends ResultBase
 	FastBatchingCellReader batchingReader;
     private int[] modulos;
     private static final int MAX_AGGREGATION_PASS_COUNT = 5;
+    private Dimension measuresDim = null;
 
     RolapResult(Query query) {
 		this.query = query;
@@ -140,6 +142,7 @@ class RolapResult extends ResultBase
 		} finally {
 			evaluator.clearExpResultCache();
 		}
+		query.getCube().getDimensions();
 	}
 
 	// implement Result
@@ -505,6 +508,15 @@ class RolapCell implements Cell
 	public String getFormattedValue() {
         final int[] pos = result.getCellPos(ordinal);
         final Evaluator evaluator = result.getEvaluator(pos);
+        RolapCube c = (RolapCube) evaluator.getCube();
+        Dimension measuresDim = c.getMeasuresHierarchy().getDimension();
+        Member m = evaluator.getContext(measuresDim);
+        CellFormatter cf = null;
+        if (m instanceof RolapStoredMeasure)
+        	cf = ((RolapStoredMeasure)m).getFormatter();
+        if (cf != null){
+        	return cf.formatCell(value);
+        }
         return evaluator.format(value);
 	}
 	public boolean isNull() {
