@@ -332,6 +332,18 @@
     <text>In usage of dimension ''{0}'' in cube ''{1}'', the level ''{2}'' is unknown</text>
 </exception>
 
+<exception id="40110" name="CalcMemberHasBadFormula">
+    <text>Calculated member ''{0}'' in cube ''{1}'' has bad formula</text>
+</exception>
+
+<exception id="40120" name="CalcMemberHasBadDimension">
+    <text>Unknown dimension ''{0}}'' for calculated member ''{1}'' in cube ''{2}''</text>
+</exception>
+
+<exception id="40130" name="CalcMemberNotUnique">
+    <text>Calculated member ''{1}'' already exists in cube ''{2}''</text>
+</exception>
+
 
 
 <!-- End of last error section ============================================ -->

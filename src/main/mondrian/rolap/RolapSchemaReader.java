@@ -31,6 +31,7 @@ abstract class RolapSchemaReader implements SchemaReader {
     private RolapSchema schema;
 
 	RolapSchemaReader(Role role, RolapSchema schema) {
+        assert role != null : "precondition: role != null";
 		this.role = role;
         this.schema = schema;
 	}
@@ -150,9 +151,26 @@ abstract class RolapSchemaReader implements SchemaReader {
 		return parent.lookupChild(this, name);
 	}
 
-	public Member getMemberByUniqueName(String[] uniqueNameParts, boolean failIfNotFound) {
-		return Util.lookupMemberCompound(this, getCube(), uniqueNameParts, failIfNotFound);
+	public Member getMemberByUniqueName(
+        String[] uniqueNameParts,
+        boolean failIfNotFound)
+    {
+        // In general, this schema reader doesn't have a cube, so we cannot
+        // start looking up members.
+        return null;
 	}
+
+    public OlapElement lookupCompound(OlapElement parent, String[] names,
+        boolean failIfNotFound, int category)
+    {
+        return Util.lookupCompound(this, parent, names, failIfNotFound,
+            category);
+    }
+
+    public Member getCalculatedMember(String[] nameParts) {
+        // There are no calculated members defined against a schema.
+        return null;
+    }
 
 	public Member getLeadMember(Member member, int n) {
 		return getMemberReader(member.getHierarchy()).getLeadMember((RolapMember) member, n);

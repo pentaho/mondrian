@@ -570,7 +570,7 @@ public class BuiltinFunTable extends FunTable {
 				if (s.indexOf("[") == -1) {
 					s = Util.quoteMdxIdentifier(s);
 				}
-				OlapElement o = lookupCompound(evaluator.getSchemaReader(),
+				OlapElement o = evaluator.getSchemaReader().lookupCompound(
 						evaluator.getCube(), explode(s), false, Category.Dimension);
 				if (o instanceof Dimension) {
 					return (Dimension) o;
@@ -626,7 +626,8 @@ public class BuiltinFunTable extends FunTable {
 				Cube cube = evaluator.getCube();
 				OlapElement o = null;
 				if (s.startsWith("[")) {
-					o = lookupCompound(evaluator.getSchemaReader(), cube, explode(s), false, Category.Level);
+					o = evaluator.getSchemaReader().lookupCompound(cube,
+                        explode(s), false, Category.Level);
 				} else {
 					// lookupCompound barfs if "s" doesn't have matching
 					// brackets, so don't even try
@@ -700,6 +701,13 @@ public class BuiltinFunTable extends FunTable {
 				return evaluator.getContext(dimension);
 			}
 		});
+
+        define(new FunDefBase("DataMember", "<Member>.DataMember", "Returns the system-generated data member that is associated with a nonleaf member of a dimension.", "pmm") {
+            public Object evaluate(Evaluator evaluator, Exp[] args) {
+                Member member = getMemberArg(evaluator, args, 0, true);
+                return member.getDataMember();
+            }
+        });
 
 		define(new FunDefBase("DefaultMember", "<Dimension>.DefaultMember", "Returns the default member of a dimension.", "pmd") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
@@ -911,7 +919,8 @@ public class BuiltinFunTable extends FunTable {
 				Cube cube = evaluator.getCube();
 				SchemaReader schemaReader = evaluator.getSchemaReader();
 				String[] uniqueNameParts = Util.explode(mname);
-				Member member = Util.lookupMemberCompound(schemaReader, cube, uniqueNameParts, true);
+                Member member = (Member) schemaReader.lookupCompound(cube,
+                    uniqueNameParts, true, Category.Member);
 				// Member member = schemaReader.getMemberByUniqueName(uniqueNameParts, false);
 				return member;
 			}

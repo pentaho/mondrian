@@ -95,6 +95,36 @@ public interface SchemaReader {
 	 **/
 	Member getMemberByUniqueName(String[] uniqueNameParts, boolean failIfNotFound);
 
+    /**
+     * Looks up an MDX object by name.
+     *
+     * <p>Resolves a name such as
+     * '[Products]&#46;[Product Department]&#46;[Produce]' by resolving the
+     * components ('Products', and so forth) one at a time.
+     *
+     * @param parent Parent element to search in
+     * @param names Exploded compound name, such as {"Products",
+     *     "Product Department", "Produce"}
+     * @param failIfNotFound If the element is not found, determines whether
+     *      to return null or throw an error
+     * @param category Type of returned element, a {@link Category} value;
+     *      {@link Category#Unknown} if it doesn't matter.
+     *
+     * @pre parent != null
+     * @post !(failIfNotFound && return == null)
+     */
+    OlapElement lookupCompound(
+        OlapElement parent,
+        String[] names,
+        boolean failIfNotFound,
+        int category);
+
+    /**
+	 * Looks up a calculated member by name. If the name is not found in the
+     * current scope, returns null.
+	 **/
+	Member getCalculatedMember(String[] nameParts);
+
 	/**
 	 * Appends to <code>list</code> all members between <code>startMember</code>
 	 * and <code>endMember</code> (inclusive) which belong to

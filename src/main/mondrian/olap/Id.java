@@ -12,7 +12,6 @@
 
 package mondrian.olap;
 import java.io.PrintWriter;
-import java.util.Vector;
 
 /**
  * Multi-part identifier.
@@ -21,15 +20,13 @@ public class Id
 	extends ExpBase
 	implements Cloneable
 {
-	private Vector names;
-	private Vector keys;
+	private final String[] names;
+	private final boolean[] keys;
 
 	Id(String s, boolean key)
 	{
-		names = new Vector();
-		keys = new Vector();
-		names.addElement(s);
-		keys.addElement(new Boolean(key));
+		names = new String[] {s};
+		keys = new boolean[] {key};
 	}
 
 	Id(String s)
@@ -37,7 +34,7 @@ public class Id
 		this(s, false);
 	}
 
-	private Id(Vector names, Vector keys)
+	private Id(String[] names, boolean[] keys)
 	{
 		this.names = names;
 		this.keys = keys;
@@ -45,7 +42,8 @@ public class Id
 
 	public Object clone()
 	{
-		return new Id((Vector) names.clone(), (Vector) keys.clone());
+        // This is immutable, so no need to clone.
+        return this;
 	}
 
 	public int getType()
@@ -66,20 +64,23 @@ public class Id
 
 	public String[] toStringArray()
 	{
-		String[] ret = new String[names.size()];
-		names.copyInto(ret);
-		return ret;
+        return (String[]) names.clone();
 	}
 
 	public String getElement(int i)
 	{
-		return (String) names.elementAt(i);
+		return names[i];
 	}
 
-	public void append(String s, boolean key)
+	public Id append(String s, boolean key)
 	{
-		names.addElement(s);
-		keys.addElement(new Boolean(key));
+        String[] newNames = new String[names.length + 1];
+        boolean[] newKeys = new boolean[keys.length + 1];
+        System.arraycopy(names, 0, newNames, 0, names.length);
+        System.arraycopy(keys, 0, newKeys, 0, keys.length);
+        newNames[newNames.length - 1] = s;
+        newKeys[newKeys.length - 1] = key;
+        return new Id(newNames, newKeys);
 	}
 
 	public void append(String s)
@@ -89,24 +90,23 @@ public class Id
 
 	public Exp resolve(Resolver resolver)
 	{
-		if (names.size() == 1) {
-			final String s = (String) names.elementAt(0);
+		if (names.length == 1) {
+			final String s = names[0];
 			if (FunTable.instance().isReserved(s)) {
 				return Literal.createSymbol(s.toUpperCase());
 			}
 		}
-		final String[] namesArray = toStringArray();
-		return Util.lookup(resolver.getQuery(), namesArray);
+		return Util.lookup(resolver.getQuery(), names);
 	}
 
 	public void unparse(PrintWriter pw)
 	{
-		for (int i = 0, n = names.size(); i < n; i++) {
-			String s = (String) names.elementAt(i);
+		for (int i = 0; i < names.length; i++) {
+			String s = names[i];
 			if (i > 0) {
 				pw.print(".");
 			}
-			if (((Boolean)keys.elementAt(i)).booleanValue()) {
+			if (keys[i]) {
 				pw.print("&[" + Util.mdxEncodeString(s) + "]");
 			} else {
 				pw.print("[" + Util.mdxEncodeString(s) + "]");

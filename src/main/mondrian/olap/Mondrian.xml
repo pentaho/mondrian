@@ -110,6 +110,7 @@ todo:
 		</Object>
 		<Array name="dimensions" type="CubeDimension"><Doc></Doc></Array>
 		<Array name="measures" type="Measure"><Doc></Doc></Array>
+		<Array name="calculatedMembers" type="CalculatedMember"><Doc></Doc></Array>
 		<Code><![CDATA[
 			Dimension getDimension(Schema xmlSchema, String dimensionName) {
 				for (int i = 0; i < dimensions.length; i++) {
@@ -559,6 +560,35 @@ todo:
 		<Attribute name="caption" required="false">
 			<Doc>
 				A string being displayed instead of the name.
+			</Doc>
+		</Attribute>
+	</Element>
+
+	<Element type="CalculatedMember">
+		<Attribute name="name" required="true">
+			<Doc>
+				Name of this calculated member.
+			</Doc>
+		</Attribute>
+		<Attribute name="formatString">
+			<Doc>
+				Format string with which to format cells of this member. For
+				more details, see {@link mondrian.util.Format}.
+			</Doc>
+		</Attribute>
+		<Attribute name="caption" required="false">
+			<Doc>
+				A string being displayed instead of the name.
+			</Doc>
+		</Attribute>
+		<Attribute name="formula" required="true">
+			<Doc>
+				MDX expression which gives the value of this member.
+			</Doc>
+		</Attribute>
+		<Attribute name="dimension" required="true">
+			<Doc>
+				Name of the dimension which this member belongs to.
 			</Doc>
 		</Attribute>
 	</Element>

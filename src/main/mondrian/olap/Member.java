@@ -149,6 +149,15 @@ public interface Member extends OlapElement, Comparable {
      * @return depth
      */
     int getDepth();
+
+    /**
+     * Returns the system-generated data member that is associated with a
+     * nonleaf member of a dimension.
+     *
+     * <p>Returns this member if this member is a leaf member, or if the
+     * nonleaf member does not have an associated data member.</p>
+     */
+    Member getDataMember();
 }
 
 // End Member.java

@@ -1159,67 +1159,11 @@ public class Query extends QueryPart {
 		return mdxCube;
 	}
 
-	public SchemaReader getSchemaReader() {
-		final SchemaReader cubeSchemaReader = mdxCube.getSchemaReader(getConnection().getRole());
-		return new DelegatingSchemaReader(cubeSchemaReader) {
-			public Member getMemberByUniqueName(String[] uniqueNameParts, boolean failIfNotFound) {
-				Member member = lookupMemberFromCache(Util.implode(uniqueNameParts));
-				if (member == null) {
-					// Not a calculated member in the query, so go to the cube.
-					member = schemaReader.getMemberByUniqueName(uniqueNameParts, failIfNotFound);
-				}
-				return member;
-			}
-			public OlapElement getElementChild(OlapElement parent, String s) {
-				// first look in cube
-				OlapElement mdxElement = schemaReader.getElementChild(parent, s);
-				if (mdxElement != null) {
-					return mdxElement;
-				}
-				// then look in defined members
-				Iterator definedMembers = getDefinedMembers().iterator();
-				definedMemberLoop:
-				while (definedMembers.hasNext()) {
-					Member mdxMember = (Member) definedMembers.next();
-					if (parent != null) {
-						// make sure that parent (Level,Hierarchy,Dimension)
-						//  matches the MDX member
-						Level lev = mdxMember.getLevel();
-						if (parent instanceof Level) {
-							if ( !parent.equals(lev))
-								continue definedMemberLoop;
-						} else {
-							Hierarchy hier = lev.getHierarchy();
-							if (parent instanceof Hierarchy) {
-								if (!parent.equals(hier))
-									continue definedMemberLoop;
-							} else {
-								Dimension dim = hier.getDimension();
-								if (parent instanceof Dimension && !parent.equals(dim))
-									continue definedMemberLoop;
-							}
-						}
-					} // parent check
-					if (mdxMember.getName().equalsIgnoreCase(s)) {
-						// allow member to be referenced without dimension name
-						return mdxMember;
-					}
-				}
-
-				// then in defined sets
-				for (int i = 0; i < formulas.length; i++) {
-					Formula formula = formulas[i];
-					if (formula.isMember) {
-						continue;		// have already done these
-					}
-					if (formula.names[0].equals(s)) {
-						return formula.mdxSet;
-					}
-				}
-
-				return mdxElement;
-			}
-		};
+	public SchemaReader getSchemaReader(boolean accessControlled) {
+        final Role role = accessControlled ? getConnection().getRole() :
+            null;
+        final SchemaReader cubeSchemaReader = mdxCube.getSchemaReader(role);
+		return new QuerySchemaReader(cubeSchemaReader);
 	}
 
 	/**
@@ -1675,6 +1619,105 @@ public class Query extends QueryPart {
         }
     }
 
+    /**
+     * Source of metadata within the scope of a query.
+     *
+     * <p>Note especially that {@link #getCalculatedMember(String[])}
+     * returns the calculated members defined in this query.
+     */
+    private class QuerySchemaReader extends DelegatingSchemaReader {
+        public QuerySchemaReader(SchemaReader cubeSchemaReader) {
+            super(cubeSchemaReader);
+        }
+
+        public Member getMemberByUniqueName(
+            String[] uniqueNameParts,
+            boolean failIfNotFound)
+        {
+            final String uniqueName = Util.implode(uniqueNameParts);
+            Member member = lookupMemberFromCache(uniqueName);
+            if (member == null) {
+                // Not a calculated member in the query, so go to the cube.
+                member = schemaReader.getMemberByUniqueName(uniqueNameParts,
+                    failIfNotFound);
+            }
+            return member;
+        }
+
+        public Member getCalculatedMember(String[] nameParts) {
+            final String uniqueName = Util.implode(nameParts);
+            return lookupMemberFromCache(uniqueName);
+        }
+
+        public OlapElement getElementChild(OlapElement parent, String s) {
+            // first look in cube
+            OlapElement mdxElement = schemaReader.getElementChild(parent, s);
+            if (mdxElement != null) {
+                return mdxElement;
+            }
+            // then look in defined members
+            Iterator definedMembers = getDefinedMembers().iterator();
+            definedMemberLoop:
+            while (definedMembers.hasNext()) {
+                Member mdxMember = (Member) definedMembers.next();
+                if (parent != null) {
+                    // make sure that parent (Level,Hierarchy,Dimension)
+                    //  matches the MDX member
+                    Level lev = mdxMember.getLevel();
+                    if (parent instanceof Level) {
+                        if ( !parent.equals(lev))
+                            continue definedMemberLoop;
+                    } else {
+                        Hierarchy hier = lev.getHierarchy();
+                        if (parent instanceof Hierarchy) {
+                            if (!parent.equals(hier))
+                                continue definedMemberLoop;
+                        } else {
+                            Dimension dim = hier.getDimension();
+                            if (parent instanceof Dimension && !parent.equals(dim))
+                                continue definedMemberLoop;
+                        }
+                    }
+                } // parent check
+                if (mdxMember.getName().equalsIgnoreCase(s)) {
+                    // allow member to be referenced without dimension name
+                    return mdxMember;
+                }
+            }
+
+            // then in defined sets
+            for (int i = 0; i < formulas.length; i++) {
+                Formula formula = formulas[i];
+                if (formula.isMember) {
+                    continue;		// have already done these
+                }
+                if (formula.names[0].equals(s)) {
+                    return formula.mdxSet;
+                }
+            }
+
+            return mdxElement;
+        }
+
+        public OlapElement lookupCompound(OlapElement parent, String[] names,
+            boolean failIfNotFound, int category)
+        {
+            // First look to ourselves.
+            switch (category) {
+            case Category.Unknown:
+            case Category.Member:
+                if (parent == mdxCube) {
+                    final Member calculatedMember = getCalculatedMember(names);
+                    if (calculatedMember != null) {
+                        return calculatedMember;
+                    }
+                }
+            }
+            // Then delegate to the next reader.
+            return super.lookupCompound(parent, names, failIfNotFound,
+                category);
+        }
+    }
 }
 
 // End Query.java

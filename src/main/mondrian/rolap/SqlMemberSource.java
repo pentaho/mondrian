@@ -934,6 +934,9 @@ class SqlMemberSource implements MemberReader
 			else
 				depth = 0;
 		}
+        public Member getDataMember() {
+            return dataMember;
+        }
 		public boolean isCalculated() {
 			return true;
 		}

@@ -290,7 +290,7 @@ compound_id ::=
 			RESULT = new Id(i);
 		:}
 	|	compound_id:hd DOT identifier:tl {:
-			hd.append(tl); RESULT = hd;
+			RESULT = hd.append(tl, false);
 		:}
 
 	;
@@ -600,8 +600,7 @@ value_expression_primary ::=
 		:}
 	|	value_expression_primary:i DOT quoted_identifier:j {:
 			if (i instanceof Id) {
-				((Id) i).append(j);
-				RESULT = i;
+				RESULT = ((Id) i).append(j, false);
 			} else {
 				RESULT = new FunCall(
 					j, Syntax.QuotedProperty, new Exp[] {i});
@@ -609,8 +608,7 @@ value_expression_primary ::=
 		:}
 	|	value_expression_primary:i DOT amp_quoted_identifier:j {:
 			if (i instanceof Id) {
-				((Id) i).append(j, true);
-				RESULT = i;
+				RESULT = ((Id) i).append(j, true);
 			} else {
 				RESULT = new FunCall(
 					j, Syntax.AmpersandQuotedProperty, new Exp[] {i});

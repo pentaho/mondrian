@@ -27,20 +27,22 @@ public class AccessControlTest extends FoodMartTestCase {
 	public AccessControlTest(String name) {
 		super(name);
 	}
+
 	public void testGrantDimensionNone() {
 		Connection connection = getConnection();
 		Role role = connection.getRole().makeMutableClone();
 		Schema schema = connection.getSchema();
 		Cube salesCube = schema.lookupCube("Sales", true);
 		// todo: add Schema.lookupDimension
-		Dimension genderDimension = (Dimension) Util.lookupCompound(
-				salesCube.getSchemaReader(role), salesCube,
-				new String[] {"Gender"}, true, Category.Dimension);
+        final SchemaReader schemaReader = salesCube.getSchemaReader(role);
+        Dimension genderDimension = (Dimension) schemaReader.lookupCompound(
+				salesCube, new String[] {"Gender"}, true, Category.Dimension);
 		role.grant(genderDimension, Access.NONE);
 		role.makeImmutable();
 		connection.setRole(role);
 		assertAxisThrows(connection, "[Gender].children", "MDX object '[Gender]' not found in cube 'Sales'");
 	}
+    
 	public void testRoleMemberAccess() {
 		final Connection restrictedConnection = getRestrictedConnection();
 		bar(restrictedConnection, Access.CUSTOM, "[Store].[USA]"); // because CA has access

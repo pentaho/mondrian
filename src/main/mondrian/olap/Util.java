@@ -199,9 +199,24 @@ public class Util extends mondrian.xom.XOMUtil
 	 * @see #explode
 	 */
 	public static OlapElement lookupCompound(
-			SchemaReader schemaReader, OlapElement parent, String[] names,
-			boolean failIfNotFound, int category) {
+        SchemaReader schemaReader,
+        OlapElement parent,
+        String[] names,
+        boolean failIfNotFound,
+        int category)
+    {
 		Util.assertPrecondition(parent != null, "parent != null");
+        // First look up a member from the cache of calculated members
+        // (cubes and queries both have them).
+        switch (category) {
+        case Category.Member:
+        case Category.Unknown:
+            Member member = schemaReader.getCalculatedMember(names);
+            if (member != null) {
+                return member;
+            }
+        }
+        // Now resolve the name one part at a time.
 		for (int i = 0; i < names.length; i++) {
 			String name = names[i];
 			final OlapElement child = schemaReader.getElementChild(parent, name);
@@ -260,33 +275,17 @@ public class Util extends mondrian.xom.XOMUtil
 		}
 	}
 
-	/**
-	 * Resolves a name such as
-	 * '[Products]&#46;[Product Department]&#46;[Produce]'
-	 * to a {@link Member} by parsing out the components
-	 * {'Products', 'Product Department', 'Produce'}
-	 * and resolving them one at a time.
-	 *
-	 * @pre st != null
-	 * @pre cube != null
-	 * @post !(failIfNotFound && return == null)
-	 */
-	public static Member lookupMemberCompound(
-			SchemaReader st, Cube cube, String[] names, boolean failIfNotFound) {
-		return (Member) lookupCompound(st, cube, names, failIfNotFound, Category.Member);
-	}
-
-	public static OlapElement lookup(Query q, String[] namesArray) {
+    public static OlapElement lookup(
+        Query q,
+        String[] namesArray)
+    {
 		// First, look for a calculated member defined in the query.
 		final String fullName = quoteMdxIdentifier(namesArray);
-		OlapElement olapElement = q.lookupMemberFromCache(fullName);
-		if (olapElement == null) {
-			// Now look for any kind of object (member, level, hierarchy,
-			// dimension) in the cube. Use a schema reader without restrictions.
-//			final SchemaReader schemaReader = q.getSchemaReader();
-			final SchemaReader schemaReader = q.getCube().getSchemaReader(null);
-			olapElement = lookupCompound(schemaReader, q.getCube(), namesArray, false, Category.Unknown);
-		}
+        // Look for any kind of object (member, level, hierarchy,
+        // dimension) in the cube. Use a schema reader without restrictions.
+        final SchemaReader schemaReader = q.getSchemaReader(false);
+        OlapElement olapElement = schemaReader.lookupCompound(
+            q.getCube(), namesArray, false, Category.Unknown);
 		if (olapElement != null) {
 			Role role = q.getConnection().getRole();
 			if (!role.canAccess(olapElement)) {
@@ -294,7 +293,8 @@ public class Util extends mondrian.xom.XOMUtil
 			}
 		}
 		if (olapElement == null) {
-			throw Util.getRes().newMdxChildObjectNotFound(fullName, q.getCube().getQualifiedName());
+			throw Util.getRes().newMdxChildObjectNotFound(fullName,
+                q.getCube().getQualifiedName());
 		}
 		return olapElement;
 	}
@@ -660,7 +660,7 @@ public class Util extends mondrian.xom.XOMUtil
 	 * href="http://msdn.microsoft.com/library/en-us/oledb/htm/oledbconnectionstringsyntax.asp"
 	 * target="_blank">OLE DB connect string syntax
 	 * specification</a>. To find what it <em>actually</em> does, take
-	 * a look at the {@link mondrian.olap.UtilTestCase JUnit test case}.
+	 * a look at the <code>mondrian.olap.UtilTestCase</code> test case.
 	 **/
 	public static PropertyList parseConnectString(String s) {
 		return new ConnectStringParser().parse(s);

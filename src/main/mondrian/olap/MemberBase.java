@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2003 Kana Software, Inc. and others.
+// (C) Copyright 2001-2004 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -36,14 +36,18 @@ public abstract class MemberBase
 	public String getQualifiedName() {
 		return Util.getRes().getMdxMemberName(uniqueName);
 	}
-	public final int getType() {
+
+    public final int getType() {
 		return Category.Member;
 	}
-	public abstract String getName();
-	public final String getUniqueName() {
+
+    public abstract String getName();
+
+    public final String getUniqueName() {
 		return uniqueName;
 	}
-	public final String getCaption() {
+
+    public final String getCaption() {
 		// if there is a member formatter for the members level,
 		//  we will call this interface to provide the display string
 		MemberFormatter mf = getLevel().getMemberFormatter();
@@ -57,33 +61,43 @@ public abstract class MemberBase
 		}
 		return getName();
 	}
-	public final String getParentUniqueName() {
+
+    public final String getParentUniqueName() {
 		return parentUniqueName;
 	}
-	public boolean usesDimension(Dimension dimension) {
+
+    public boolean usesDimension(Dimension dimension) {
 		return level.hierarchy.dimension == dimension;
 	}
-	public final Hierarchy getHierarchy() {
+
+    public final Hierarchy getHierarchy() {
 		return level.hierarchy;
 	}
-	public final Level getLevel() {
+
+    public final Level getLevel() {
 		return level;
 	}
-	public final int getMemberType() {
+
+    public final int getMemberType() {
 		return flags & 7;
 	}
-	public String getDescription() {
+
+    public String getDescription() {
 		return null;
 	}
-	public final boolean isMeasure() {
+
+    public final boolean isMeasure() {
 		return level.hierarchy.dimension.isMeasures();
 	}
-	public final boolean isAll() {
+
+    public final boolean isAll() {
 		return level.isAll();
 	}
-	public boolean isNull() {
+
+    public boolean isNull() {
 		return false;
 	}
+
 	public OlapElement lookupChild(SchemaReader schemaReader, String s) {
 		return Util.lookupMemberChildByName(schemaReader, this, s);
 	}
@@ -124,13 +138,14 @@ public abstract class MemberBase
 	**/
 	public boolean isChildOrEqualTo(String uniqueName)
 	{
-		if (uniqueName == null)
-			return false;
+		if (uniqueName == null) {
+            return false;
+        }
 
 		// The mapping member uniqueName --> parent uniqueName is more
 		// efficient than using getAdoMember().
 		String thisUniqueName = getUniqueName();
-		if (thisUniqueName.equals(uniqueName)){
+		if (thisUniqueName.equals(uniqueName)) {
 			//found a match
 			return true;
 		}
@@ -156,14 +171,6 @@ public abstract class MemberBase
 		return type.equals("formula");
 	}
 
-//  	/**
-//  	 * Return direct children for every mdxMember in given array.
-//  	 **/
-//  	protected Member[] getChildren(Member[] parentMembers)
-//  	{
-//  		return getCube().getMemberChildren(parentMembers);
-//  	}
-
 	public Exp resolve(Resolver resolver) {
 		return this;
 	}
@@ -186,6 +193,7 @@ public abstract class MemberBase
 	{
 		visitor.visit(this);
 	}
+
 	public void childrenAccept(Visitor visitor)
 	{
 		// don't generally traverse to children -- we could implement, if
@@ -193,19 +201,20 @@ public abstract class MemberBase
 	}
 
 	/**
-	 * Defaulty implementation returns -1.
+	 * Default implementation returns -1.
 	 */
 	public int getOrdinal() {
 		return -1;
-  }
+    }
 
     public boolean isHidden() {
         return false;
     }
-    
-	/**
-	 * Returns the formatted value of the property named <code>propertyName</code>.
-	 */
+
+    public Member getDataMember() {
+        return null;
+    }
+
 	public String getPropertyFormattedValue(String propertyName){
 		return getPropertyValue(propertyName).toString();
 	}

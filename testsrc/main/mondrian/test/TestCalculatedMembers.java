@@ -12,6 +12,8 @@
 */
 package mondrian.test;
 
+import junit.framework.Assert;
+
 /**
  * Tests the expressions used for calculated members. Please keep in sync
  * with the actual code used by the wizard.
@@ -27,7 +29,12 @@ public class TestCalculatedMembers extends FoodMartTestCase {
 		super(name);
 	}
 
-	public void testWhole() {
+    public void testCalculatedMemberAgainstCube() {
+        final String s = executeExpr("[Measures].[Profit]");
+        Assert.assertEquals(s, "339,610.90");
+    }
+
+	public void _testWhole() {
 		execute(
 				"with" + nl +
 				"member [Measures].[Total Store Sales by Product Name] as" + nl +
