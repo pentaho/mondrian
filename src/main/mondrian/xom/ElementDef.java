@@ -707,7 +707,20 @@ public abstract class ElementDef implements NodeDef, Serializable, Cloneable
 	 */
 	public boolean equals(Object other)
 	{
+            try {
 		return displayDiff((ElementDef)other, null, 0);
+            } catch (ClassCastException ex) {
+                return false;
+            }
+	}
+
+        /**
+         * Returns a unique hash of this instance.
+         * @return hash of the toXML() return value
+         */
+	public int hashCode()
+	{
+            return this.toXML().hashCode();
 	}
 
 	/**
