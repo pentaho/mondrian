@@ -2,10 +2,27 @@
 # This software is subject to the terms of the Common Public License
 # Agreement, available at the following URL:
 # http://www.opensource.org/licenses/cpl.html.
-# (C) Copyright 2002 Kana Software, Inc. and others.
+# (C) Copyright 2002-2003 Kana Software, Inc. and others.
 # All Rights Reserved.
 # You must accept the terms of that agreement to use this software.
 #
+CREATE TABLE account(
+  account_id INTEGER NOT NULL,
+  account_parent INTEGER,
+  account_description VARCHAR,
+  account_type VARCHAR NOT NULL,
+  account_rollup VARCHAR NOT NULL,
+  Custom_Members VARCHAR);
+CREATE TABLE category(
+  category_id VARCHAR NOT NULL,
+  category_parent VARCHAR,
+  category_description VARCHAR NOT NULL,
+  category_rollup VARCHAR);
+CREATE TABLE currency(
+  currency_id INTEGER NOT NULL,
+  date TIMESTAMP NOT NULL,
+  currency VARCHAR NOT NULL,
+  conversion_ratio DECIMAL(10,2) NOT NULL);
 CREATE TABLE customer(
   customer_id INTEGER NOT NULL,
   ordinal INTEGER NOT NULL,
@@ -31,10 +48,43 @@ CREATE TABLE customer(
   total_children SMALLINT NOT NULL,
   num_children_at_home SMALLINT NOT NULL,
   education VARCHAR NOT NULL,
-  date_accnt_opened TIMESTAMP NOT NULL);
+  date_accnt_opened TIMESTAMP NOT NULL,
+  member_card VARCHAR,
+  occupation VARCHAR,
+  houseowner VARCHAR,
+  num_cars_owned INTEGER);
 CREATE TABLE days(
-  day INTEGER,
-  week_day VARCHAR);
+  day INTEGER NOT NULL,
+  week_day VARCHAR NOT NULL);
+CREATE TABLE department(
+  department_id INTEGER NOT NULL,
+  department_description VARCHAR NOT NULL);
+CREATE TABLE employee(
+  employee_id INTEGER NOT NULL,
+  full_name VARCHAR NOT NULL,
+  first_name VARCHAR NOT NULL,
+  last_name VARCHAR NOT NULL,
+  position_id INTEGER,
+  position_title VARCHAR,
+  store_id INTEGER NOT NULL,
+  department_id INTEGER NOT NULL,
+  birth_date TIMESTAMP NOT NULL,
+  hire_date TIMESTAMP,
+  end_date TIMESTAMP,
+  salary DECIMAL(10,2) NOT NULL,
+  supervisor_id INTEGER,
+  education_level VARCHAR NOT NULL,
+  marital_status VARCHAR NOT NULL,
+  gender VARCHAR NOT NULL,
+  management_role VARCHAR);
+CREATE TABLE expense_fact(
+  store_id INTEGER NOT NULL,
+  account_id INTEGER NOT NULL,
+  exp_date TIMESTAMP NOT NULL,
+  time_id INTEGER NOT NULL,
+  category_id VARCHAR NOT NULL,
+  currency_id INTEGER NOT NULL,
+  amount DECIMAL(10,2) NOT NULL);
 CREATE TABLE inventory_fact_1997(
   product_id INTEGER NOT NULL,
   time_id INTEGER,
@@ -57,6 +107,13 @@ CREATE TABLE inventory_fact_1998(
   warehouse_cost DECIMAL(10,2),
   supply_time SMALLINT,
   store_invoice DECIMAL(10,2));
+CREATE TABLE position(
+  position_id INTEGER NOT NULL,
+  position_title VARCHAR NOT NULL,
+  pay_type VARCHAR NOT NULL,
+  min_scale DECIMAL(10,2) NOT NULL,
+  max_scale DECIMAL(10,2) NOT NULL,
+  management_role VARCHAR NOT NULL);
 CREATE TABLE product(
   product_class_id INTEGER NOT NULL,
   product_id INTEGER NOT NULL,
@@ -95,6 +152,32 @@ CREATE TABLE region(
   sales_region VARCHAR,
   sales_country VARCHAR,
   sales_district_id INTEGER);
+CREATE TABLE reserve_employee(
+  employee_id INTEGER NOT NULL,
+  full_name VARCHAR NOT NULL,
+  first_name VARCHAR NOT NULL,
+  last_name VARCHAR NOT NULL,
+  position_id INTEGER,
+  position_title VARCHAR,
+  store_id INTEGER NOT NULL,
+  department_id INTEGER NOT NULL,
+  birth_date TIMESTAMP NOT NULL,
+  hire_date TIMESTAMP,
+  end_date TIMESTAMP,
+  salary DECIMAL(10,2) NOT NULL,
+  supervisor_id INTEGER,
+  education_level VARCHAR NOT NULL,
+  marital_status VARCHAR NOT NULL,
+  gender VARCHAR NOT NULL);
+CREATE TABLE salary(
+  pay_date TIMESTAMP NOT NULL,
+  employee_id INTEGER NOT NULL,
+  department_id INTEGER NOT NULL,
+  currency_id INTEGER NOT NULL,
+  salary_paid DECIMAL(10,2) NOT NULL,
+  overtime_paid DECIMAL(10,2) NOT NULL,
+  vacation_accrued INTEGER NOT NULL,
+  vacation_used INTEGER NOT NULL);
 CREATE TABLE sales_fact_1997(
   product_id INTEGER NOT NULL,
   time_id INTEGER NOT NULL,
