@@ -249,11 +249,11 @@ class RolapCube extends CubeBase
 		}
 		RolapStoredMeasure[] storedMeasures = (RolapStoredMeasure[])
 				list.toArray(new RolapStoredMeasure[list.size()]);
+		RolapStar star = RolapStar.Pool.instance().getOrCreateStar(
+				schema, this.fact);
 		// create measures (and stars for them, if necessary)
 		for (int i = 0; i < storedMeasures.length; i++) {
 			RolapStoredMeasure storedMeasure = storedMeasures[i];
-			RolapStar star = RolapStar.Pool.instance().getOrCreateStar(
-					schema, this.fact);
 			RolapStar.Measure measure = new RolapStar.Measure();
 			measure.table = star.factTable;
 			measure.expression = storedMeasure.expression;
@@ -261,54 +261,58 @@ class RolapCube extends CubeBase
 			measure.isNumeric = true;
 			storedMeasure.starMeasure = measure; // reverse mapping
 			star.factTable.columns.add(measure);
-			// create dimension tables
-			RolapDimension[] dimensions =
-				(RolapDimension[]) this.getDimensions();
-			for (int j = 0; j < dimensions.length; j++) {
-				RolapDimension dimension = dimensions[j];
-				RolapHierarchy[] hierarchies = (RolapHierarchy[])
-						dimension.getHierarchies();
-				for (int k = 0; k < hierarchies.length; k++) {
-					RolapHierarchy hierarchy = hierarchies[k];
-					HierarchyUsage hierarchyUsage = schema.getUsage(hierarchy,this);
-					MondrianDef.Relation relation = hierarchy.getRelation();
-					if (relation == null) {
-						continue; // e.g. [Measures] hierarchy
-					}
-					RolapStar.Table table = star.factTable;
-					if (!relation.equals(table.relation)) {
-						RolapStar.Condition joinCondition = new RolapStar.Condition(
-								table.getAlias(), hierarchyUsage.foreignKey,
-								hierarchyUsage.primaryKeyTable.getAlias(),
-								hierarchyUsage.primaryKey);
-						table = table.addJoin(relation, joinCondition);
-					}
-					RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
-					for (int l = 0; l < levels.length; l++) {
-						RolapLevel level = levels[l];
-						if (level.nameExp == null) {
-							continue;
-						} else {
-							RolapStar.Column column = new RolapStar.Column();
-							if (level.nameExp instanceof MondrianDef.Column) {
-								String tableName = ((MondrianDef.Column) level.nameExp).table;
-								column.table = table.findAncestor(tableName);
-								if (column.table == null) {
-									throw Util.newError(
-											"Level '" + level.getUniqueName() +
-											"' of cube '" + this +
-											"' is invalid: table '" + tableName +
-											"' is not found in current scope");
-								}
-							} else {
-								column.table = table;
-							}
-							column.expression = level.nameExp;
-							column.isNumeric = (level.flags & RolapLevel.NUMERIC) != 0;
-							table.columns.add(column);
-							star.mapLevelToColumn.put(level, column);
+		}
+		// create dimension tables
+		RolapDimension[] dimensions = (RolapDimension[]) this.getDimensions();
+		for (int j = 0; j < dimensions.length; j++) {
+			registerDimension(dimensions[j]);
+		}
+	}
+
+	private void registerDimension(RolapDimension dimension) {
+		RolapStar star = RolapStar.Pool.instance().getOrCreateStar(
+				schema, this.fact);
+		RolapHierarchy[] hierarchies = (RolapHierarchy[])
+				dimension.getHierarchies();
+		for (int k = 0; k < hierarchies.length; k++) {
+			RolapHierarchy hierarchy = hierarchies[k];
+			HierarchyUsage hierarchyUsage = schema.getUsage(hierarchy,this);
+			MondrianDef.Relation relation = hierarchy.getRelation();
+			if (relation == null) {
+				continue; // e.g. [Measures] hierarchy
+			}
+			RolapStar.Table table = star.factTable;
+			if (!relation.equals(table.relation)) {
+				RolapStar.Condition joinCondition = new RolapStar.Condition(
+						table.getAlias(), hierarchyUsage.foreignKey,
+						hierarchyUsage.primaryKeyTable.getAlias(),
+						hierarchyUsage.primaryKey);
+				table = table.addJoin(relation, joinCondition);
+			}
+			RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
+			for (int l = 0; l < levels.length; l++) {
+				RolapLevel level = levels[l];
+				if (level.nameExp == null) {
+					continue;
+				} else {
+					RolapStar.Column column = new RolapStar.Column();
+					if (level.nameExp instanceof MondrianDef.Column) {
+						String tableName = ((MondrianDef.Column) level.nameExp).table;
+						column.table = table.findAncestor(tableName);
+						if (column.table == null) {
+							throw Util.newError(
+									"Level '" + level.getUniqueName() +
+									"' of cube '" + this +
+									"' is invalid: table '" + tableName +
+									"' is not found in current scope");
 						}
+					} else {
+						column.table = table;
 					}
+					column.expression = level.nameExp;
+					column.isNumeric = (level.flags & RolapLevel.NUMERIC) != 0;
+					table.columns.add(column);
+					star.mapLevelToColumn.put(level, column);
 				}
 			}
 		}
@@ -367,6 +371,7 @@ class RolapCube extends CubeBase
 		}
 		Util.assertTrue(localDimensionOrdinals[globalOrdinal] == -1);
 		localDimensionOrdinals[globalOrdinal] = localOrdinal;
+		registerDimension(dimension);
 		return dimension;
 	}
 }

@@ -151,34 +151,6 @@ public class RolapStar {
 		}
 	}
 
-	/**
-	 * Helper method, returns whether <code>relation</code> is a table named
-	 * <code>factTable.factSchema</code>.
-	 */
-	static boolean matchesTable(
-			MondrianDef.Relation relation, String schema, String table) {
-		if (relation instanceof MondrianDef.Table) {
-			MondrianDef.Table t = (MondrianDef.Table) relation;
-			if (t.name.equals(table) &&
-					Util.equals(t.schema, schema)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-//  	static class Segment
-//  	{
-//  		Object[][] keys;
-//  		Object[] values;
-//  	};
-
-//  	private static class Axis
-//  	{
-//  		Column column;
-//  		Vector values = new Vector();
-//  	};
-
 	public static class Column
 	{
 		public Table table;
@@ -295,8 +267,10 @@ public class RolapStar {
 				Condition joinCondition) {
 			this.relation = relation;
 			Util.assertTrue(
-					relation instanceof MondrianDef.Table,
-					"todo: allow dimension which is not a Table, " + relation);
+					relation instanceof MondrianDef.Table ||
+					relation instanceof MondrianDef.View,
+					"todo: allow dimension which is not a Table or View, [" +
+					relation + "]");
 			this.parent = parent;
 			this.joinCondition = joinCondition;
 			Util.assertTrue((parent == null) == (joinCondition == null));
@@ -312,11 +286,11 @@ public class RolapStar {
 		synchronized Table addJoin(
 				MondrianDef.Relation relation,
 				RolapStar.Condition joinCondition) {
-			if (relation instanceof MondrianDef.Table) {
-				MondrianDef.Table table = (MondrianDef.Table) relation;
-				RolapStar.Table starTable = findChild(table);
+			if (relation instanceof MondrianDef.Table ||
+					relation instanceof MondrianDef.View) {
+				RolapStar.Table starTable = findChild(relation);
 				if (starTable == null) {
-					starTable = new RolapStar.Table(table, this, joinCondition);
+					starTable = new RolapStar.Table(relation, this, joinCondition);
 					starTable.star = this.star;
 					this.children.add(starTable);
 				}
@@ -351,13 +325,13 @@ public class RolapStar {
 		}
 
 		/**
-		 * Returns a child table which maps onto a given relation, or null if
+		 * Returns a child relation which maps onto a given relation, or null if
 		 * there is none.
 		 */
-		public Table findChild(MondrianDef.Table table) {
+		public Table findChild(MondrianDef.Relation relation) {
 			for (int i = 0; i < children.size(); i++) {
 				Table child = (Table) children.get(i);
-				if (matchesTable(child.relation, table.schema, table.name)) {
+				if (child.relation.equals(relation)) {
 					return child;
 				}
 			}

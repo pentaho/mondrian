@@ -1884,6 +1884,53 @@ public class FoodMartTestCase extends TestCase {
 				toString(axis.positions));
 	}
 
+	/**
+	 * Run a query against a large hierarchy, to make sure that we can generate
+	 * joins correctly. This probably won't work in MySQL.
+	 */
+	public void testCatalogHierarchyBasedOnView2() {
+		Schema schema = getConnection().getSchema();
+		final Cube salesCube = schema.lookupCube("Sales", true);
+		schema.createDimension(
+				salesCube,
+				"<Dimension name=\"ProductView\" foreignKey=\"product_id\">" + nl +
+				"	<Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"productView\">" + nl +
+				"		<View alias=\"productView\">" + nl +
+				"			<SQL dialect=\"generic\"><![CDATA[" + nl +
+				"SELECT *" + nl +
+				"FROM \"product\", \"product_class\"" + nl +
+				"WHERE \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\"" + nl +
+				"]]>" + nl +
+				"			</SQL>" + nl +
+				"		</View>" + nl +
+				"		<Level name=\"Product Family\" column=\"product_family\" uniqueMembers=\"true\"/>" + nl +
+				"		<Level name=\"Product Department\" column=\"product_department\" uniqueMembers=\"false\"/>" + nl +
+				"		<Level name=\"Product Category\" column=\"product_category\" uniqueMembers=\"false\"/>" + nl +
+				"		<Level name=\"Product Subcategory\" column=\"product_subcategory\" uniqueMembers=\"false\"/>" + nl +
+				"		<Level name=\"Brand Name\" column=\"brand_name\" uniqueMembers=\"false\"/>" + nl +
+				"		<Level name=\"Product Name\" column=\"product_name\" uniqueMembers=\"true\"/>" + nl +
+				"	</Hierarchy>" + nl +
+				"</Dimension>");
+		runQueryCheckResult(
+				"select {[Measures].[Unit Sales]} on columns," + nl +
+				" {[ProductView].[Drink].[Beverages].children} on rows" + nl +
+				"from Sales",
+				
+				"Axis #0:" + nl +
+				"{}" + nl +
+				"Axis #1:" + nl +
+				"{[Measures].[Unit Sales]}" + nl +
+				"Axis #2:" + nl +
+				"{[ProductView].[All ProductViews].[Drink].[Beverages].[Carbonated Beverages]}" + nl +
+				"{[ProductView].[All ProductViews].[Drink].[Beverages].[Drinks]}" + nl +
+				"{[ProductView].[All ProductViews].[Drink].[Beverages].[Hot Beverages]}" + nl +
+				"{[ProductView].[All ProductViews].[Drink].[Beverages].[Pure Juice Beverages]}" + nl +
+				"Row #0: 3,407" + nl +
+				"Row #1: 2,469" + nl +
+				"Row #2: 4,301" + nl +
+				"Row #3: 3,396" + nl);
+	}
+
 	public void testMemberWithNullKey() {
 		runQueryCheckResult(
 				"select {[Measures].[Unit Sales]} on columns," + nl +
