@@ -1,4 +1,5 @@
-Mondrian 0.3
+This is a source or binary distribution of Mondrian,
+an OLAP Server written in Java.
 
 For installation instructions, see doc/install.html.
 

@@ -17,7 +17,7 @@
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
-  <property name="version" value="0.3"/>
+  <property name="version" value="0.4"/>
 
   <!--
     ===================================================================
@@ -353,7 +353,11 @@ in {mondrian.foodmart.jdbcURL}.">
     <delete file="${project.location}/javaFiles" quiet="true"/>
   </target>
 
-  <target name="srczip">
+  <target name="version">
+    <echo message="Mondrian ${version}" file="VERSION.txt"/>
+  </target>
+
+  <target name="srczip" depends="version">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.src.file}"/>
     <zip
@@ -434,7 +438,7 @@ demo/**/*.sh"
     </exec>
   </target>
 
-  <target name="binzip" depends="compile,javadoc,jar,copy-jars">
+  <target name="binzip" depends="compile,javadoc,jar,copy-jars,version">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.bin.file}"/>
     <zip zipfile="${dist.bin.file}">

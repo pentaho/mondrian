@@ -23,6 +23,7 @@
 </ul>
 
 <p>Other links:</p>
+<ul>
 <li><a href="http://sourceforge.net/projects/mondrian">Home page</a></li>
 <li><a href="http://sourceforge.net/projects/jpivot">JPivot (more advanced pivot table)</a></li>
 </ul>

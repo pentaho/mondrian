@@ -214,7 +214,7 @@ text-align:right;
 <title>JSP Page</title>
 </head>
 <body>
-    <form action="index.jsp" method="post">
+    <form action="adhoc.jsp" method="post">
     <table>
         <tr>
             <td>

@@ -132,7 +132,7 @@ public class MDXQueryServlet extends HttpServlet {
 	}
 
 	request.setAttribute("result", html.toString());
-	getServletContext().getRequestDispatcher("/index.jsp").include(request, response);
+	getServletContext().getRequestDispatcher("/adhoc.jsp").include(request, response);
     } 
 	
     private void processTransform(HttpServletRequest request, HttpServletResponse response)
@@ -154,7 +154,7 @@ public class MDXQueryServlet extends HttpServlet {
 		rc.setQuery(query);
 		String redirect = request.getParameter("redirect");
 		if (redirect == null) {
-			redirect = "/index.jsp";
+		    redirect = "/adhoc.jsp";
 		}
 		getServletContext().getRequestDispatcher(redirect).include(request, response);
 	}
