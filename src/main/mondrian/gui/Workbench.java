@@ -1,41 +1,116 @@
 /*
  * Workbench.java
- *
+ *  * 
+ * This software is subject to the terms of the Common Public License
+ * Agreement, available at the following URL:
+ * http://www.opensource.org/licenses/cpl.html.
+ * Copyright (C) 1999-2003 Kana Software, Inc. and others.
+ * All Rights Reserved.
+ * You must accept the terms of that agreement to use this software.
+ * 
  * Created on September 26, 2002, 11:28 AM
+ * Modified on 15-Jun-2003 by ebengtso
+ *  
  */
-
 package mondrian.gui;
 
-import mondrian.rolap.*;
-import mondrian.olap.*;
-
-
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Locale;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Properties;
-import java.util.ArrayList;
-import java.io.PrintWriter;
-import java.net.*;
 
-import javax.swing.*;
-import javax.swing.tree.*;
+import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
+import javax.swing.JInternalFrame;
+
+
+import mondrian.olap.Connection;
+import mondrian.olap.DriverManager;
+import mondrian.olap.MondrianDef;
+import mondrian.olap.MondrianProperties;
+
 
 /**
  *
  * @author  sean
  */
 public class Workbench extends javax.swing.JFrame {
-    Connection connection;
-    String jdbcDriverClassName = "org.gjt.mm.mysql.Driver";
-    String jdbcConnectionUrl = "jdbc:mysql://localhost/foodmart";
+
+	private static final String LAST_USED1 = "lastUsed1";
+	private static final String LAST_USED1_URL = "lastUsedUrl1";
+	private static final String LAST_USED2 = "lastUsed2";
+	private static final String LAST_USED2_URL = "lastUsedUrl2";
+	private static final String LAST_USED3 = "lastUsed3";
+	private static final String LAST_USED3_URL = "lastUsedUrl3";
+	private static final String LAST_USED4 = "lastUsed4";
+	private static final String LAST_USED4_URL = "lastUsedUrl4";
+
+    private Connection connection;
+    private String jdbcDriverClassName;
+    private String jdbcConnectionUrl;
+    
+    private Properties workbenchProperties;
     
     /** Creates new form Workbench */
-    public Workbench() {
+    public Workbench() {   
+		loadWorkbenchProperties(); 	
+		initDataSource();
         initComponents();
         ImageIcon icon = new javax.swing.ImageIcon("images/cube16.gif");
         
         this.setIconImage(icon.getImage());
+    }
+
+	/**
+	 * load properties
+	 * 
+	 * @return
+	 */
+	private void loadWorkbenchProperties() {    
+		workbenchProperties = new Properties();
+		try {
+			workbenchProperties.load(new FileInputStream(new File("workbench.properties")));			
+		} catch (Exception e) {
+			// TODO deal with exception
+		}
+	}
+
+	/**
+ 	 * save properties 
+	 * @param propertyName
+	 * @return
+	 */
+	private void storeWorkbenchProperties() {    
+		//save properties to file		
+		OutputStream out = null;
+		try {
+			out = (OutputStream) new FileOutputStream(
+									new File("workbench.properties"));
+			workbenchProperties.store(out,"Workbench configuration");
+		} catch (Exception e) {
+			//TODO deal with exception
+		}
+		finally {
+			try {
+				out.close();
+			} catch (IOException eIO) {
+				//TODO deal with exception
+			}
+		}
+	}
+
+
+    /**
+	 * Initialize the data source from a property file
+	 */
+	private void initDataSource() {
+		jdbcDriverClassName = workbenchProperties.getProperty("jdbcDriverClassName");
+		jdbcConnectionUrl = workbenchProperties.getProperty("jdbcConnectionUrl");
     }
     
     /** This method is called from within the constructor to
@@ -59,9 +134,14 @@ public class Workbench extends javax.swing.JFrame {
         newQueryMenuItem = new javax.swing.JMenuItem();
         newJDBCExplorerMenuItem = new javax.swing.JMenuItem();
         openMenuItem = new javax.swing.JMenuItem();
+		lastUsed1MenuItem = new javax.swing.JMenuItem();
+		lastUsed2MenuItem = new javax.swing.JMenuItem();
+		lastUsed3MenuItem = new javax.swing.JMenuItem();
+		lastUsed4MenuItem = new javax.swing.JMenuItem();
         saveMenuItem = new javax.swing.JMenuItem();
         saveAsMenuItem = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JSeparator();
+		jSeparator2 = new javax.swing.JSeparator();
         exitMenuItem = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         cutMenuItem = new javax.swing.JMenuItem();
@@ -188,7 +268,43 @@ public class Workbench extends javax.swing.JFrame {
 
         fileMenu.add(saveAsMenuItem);
 
-        fileMenu.add(jSeparator1);
+		//add last used
+        fileMenu.add(jSeparator2);
+			
+		lastUsed1MenuItem.setText(workbenchProperties.getProperty("lastUsed1"));
+		lastUsed1MenuItem.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				lastUsed1MenuItemActionPerformed(evt);
+			}
+		});
+		fileMenu.add(lastUsed1MenuItem);
+		
+		lastUsed2MenuItem.setText(workbenchProperties.getProperty("lastUsed2"));
+		lastUsed2MenuItem.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				lastUsed2MenuItemActionPerformed(evt);
+			}
+		});
+		fileMenu.add(lastUsed2MenuItem);
+
+		lastUsed3MenuItem.setText(workbenchProperties.getProperty("lastUsed3"));
+		lastUsed3MenuItem.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				lastUsed3MenuItemActionPerformed(evt);
+			}
+		});
+		fileMenu.add(lastUsed3MenuItem);
+
+		lastUsed4MenuItem.setText(workbenchProperties.getProperty("lastUsed4"));
+		lastUsed4MenuItem.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				lastUsed4MenuItemActionPerformed(evt);
+			}
+		});
+		fileMenu.add(lastUsed4MenuItem);
+
+		updateLastUsedMenu();
+		fileMenu.add(jSeparator1);
 
         exitMenuItem.setText("Exit");
         exitMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -223,13 +339,13 @@ public class Workbench extends javax.swing.JFrame {
             }
         });
 
-        viewDimensionsMenuItem.setText("CheckBox");
+        viewDimensionsMenuItem.setText("View Dimensions");
         viewMenu.add(viewDimensionsMenuItem);
 
-        viewMeasuresMenuItem.setText("CheckBox");
+        viewMeasuresMenuItem.setText("View Measures");
         viewMenu.add(viewMeasuresMenuItem);
 
-        viewCubesMenuItem.setText("CheckBox");
+        viewCubesMenuItem.setText("View Cubes");
         viewMenu.add(viewCubesMenuItem);
 
         menuBar.add(viewMenu);
@@ -276,6 +392,10 @@ public class Workbench extends javax.swing.JFrame {
         if (pd.accepted()) {
             jdbcConnectionUrl = pd.getJDBCConnectionUrl();
             jdbcDriverClassName = pd.getJDBCDriverClassName();
+        
+			workbenchProperties.setProperty("jdbcDriverClassName", jdbcDriverClassName);
+			workbenchProperties.setProperty("jdbcConnectionUrl", jdbcConnectionUrl);  
+            
         }
         
     }//GEN-LAST:event_toolbarPreferencesButtonActionPerformed
@@ -342,35 +462,127 @@ public class Workbench extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_saveMenuItemActionPerformed
 
+	/**
+	 * Set last used in properties file
+	 * 
+	 * @param name
+	 * @param url
+	 */
+	private void setLastUsed(String name,String url) {
+		if( workbenchProperties.getProperty(LAST_USED3) != null ) {
+			workbenchProperties.setProperty(LAST_USED4,workbenchProperties.getProperty(LAST_USED3));
+			workbenchProperties.setProperty(LAST_USED4_URL,workbenchProperties.getProperty(LAST_USED3_URL));
+		}
+		if( workbenchProperties.getProperty(LAST_USED2) != null ) {
+			workbenchProperties.setProperty(LAST_USED3,workbenchProperties.getProperty(LAST_USED2));
+			workbenchProperties.setProperty(LAST_USED3_URL,workbenchProperties.getProperty(LAST_USED2_URL));
+		}
+		if( workbenchProperties.getProperty(LAST_USED1) != null ) {		
+			workbenchProperties.setProperty(LAST_USED2,workbenchProperties.getProperty(LAST_USED1));
+			workbenchProperties.setProperty(LAST_USED2_URL,workbenchProperties.getProperty(LAST_USED1_URL));
+		}
+		workbenchProperties.setProperty(LAST_USED1,name);
+		workbenchProperties.setProperty(LAST_USED1_URL,url);
+		updateLastUsedMenu();			
+	}
+
+	private void updateLastUsedMenu() {
+		if( workbenchProperties.getProperty(LAST_USED1) == null )
+			jSeparator2.setVisible(false);
+		else
+			jSeparator2.setVisible(true);
+
+		if( workbenchProperties.getProperty(LAST_USED1) != null )
+			lastUsed1MenuItem.setVisible(true);
+		else
+			lastUsed1MenuItem.setVisible(false);
+		if( workbenchProperties.getProperty(LAST_USED2) != null )
+			lastUsed2MenuItem.setVisible(true);
+		else
+			lastUsed2MenuItem.setVisible(false);
+		if( workbenchProperties.getProperty(LAST_USED3) != null )
+			lastUsed3MenuItem.setVisible(true);
+		else
+			lastUsed3MenuItem.setVisible(false);
+		if( workbenchProperties.getProperty(LAST_USED4) != null )
+			lastUsed4MenuItem.setVisible(true);
+		else
+			lastUsed4MenuItem.setVisible(false);
+
+		lastUsed1MenuItem.setText(workbenchProperties.getProperty(LAST_USED1));
+		lastUsed2MenuItem.setText(workbenchProperties.getProperty(LAST_USED2));
+		lastUsed3MenuItem.setText(workbenchProperties.getProperty(LAST_USED3));
+		lastUsed4MenuItem.setText(workbenchProperties.getProperty(LAST_USED4));
+	}
+
+	private void lastUsed1MenuItemActionPerformed(java.awt.event.ActionEvent evt) {
+		try {
+			openSchemaFrame(new File(new URI(workbenchProperties.getProperty(LAST_USED1_URL) ) ) );
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void lastUsed2MenuItemActionPerformed(java.awt.event.ActionEvent evt) {
+		try {
+			openSchemaFrame(new File(new URI(workbenchProperties.getProperty(LAST_USED2_URL) ) ) );
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void lastUsed3MenuItemActionPerformed(java.awt.event.ActionEvent evt) {
+		try {
+			openSchemaFrame(new File(new URI(workbenchProperties.getProperty(LAST_USED3_URL) ) ) );
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void lastUsed4MenuItemActionPerformed(java.awt.event.ActionEvent evt) {
+		try {
+			openSchemaFrame(new File(new URI(workbenchProperties.getProperty(LAST_USED4_URL) ) ) );
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void openSchemaFrame(File file) {
+		try {
+			JInternalFrame schemaFrame = new JInternalFrame();
+			schemaFrame.setTitle("Schema - " + file.getName());
+			Class.forName(jdbcDriverClassName);
+			String connectString = "Provider=mondrian;" +
+				"Jdbc=" + jdbcConnectionUrl + ";" +
+				"Catalog=" + file.toURL().toString();
+			connection = DriverManager.getConnection(connectString, null, false); 
+	                
+			schemaFrame.getContentPane().add(new SchemaExplorer(file));
+	
+			schemaFrame.setBounds(0, 0, 500, 480);
+			schemaFrame.setClosable(true);
+			schemaFrame.setIconifiable(true);
+			schemaFrame.setMaximizable(true);
+			schemaFrame.setResizable(true);
+			schemaFrame.setVisible(true);
+	
+			desktopPane.add(schemaFrame, javax.swing.JLayeredPane.DEFAULT_LAYER);
+			schemaFrame.show();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		
+	}
     private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMenuItemActionPerformed
         JFileChooser jfc = new JFileChooser();
 		MondrianProperties.instance();
         if (jfc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            try {
-                
-                JInternalFrame schemaFrame = new JInternalFrame();
-                schemaFrame.setTitle("Schema - " + jfc.getSelectedFile().getName());
-                
-                Class.forName(jdbcDriverClassName);
-                String connectString = "Provider=mondrian;" +
-                    "Jdbc=" + jdbcConnectionUrl + ";" +
-                    "Catalog=" + jfc.getSelectedFile().toURL();
-                connection = DriverManager.getConnection(connectString, null, false); 
-                
-                schemaFrame.getContentPane().add(new SchemaExplorer(jfc.getSelectedFile()));
-
-                schemaFrame.setBounds(0, 0, 500, 480);
-                schemaFrame.setClosable(true);
-                schemaFrame.setIconifiable(true);
-                schemaFrame.setMaximizable(true);
-                schemaFrame.setResizable(true);
-                schemaFrame.setVisible(true);
-
-                desktopPane.add(schemaFrame, javax.swing.JLayeredPane.DEFAULT_LAYER);
-                schemaFrame.show();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
+			try {
+				setLastUsed(jfc.getSelectedFile().getName(),jfc.getSelectedFile().toURL().toString());
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			}
+        	openSchemaFrame(jfc.getSelectedFile());
         }
     }//GEN-LAST:event_openMenuItemActionPerformed
         
@@ -379,6 +591,7 @@ public class Workbench extends javax.swing.JFrame {
     }//GEN-LAST:event_viewMenuActionPerformed
     
     private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
+		storeWorkbenchProperties();
         System.exit(0);
     }//GEN-LAST:event_exitMenuItemActionPerformed
     
@@ -386,7 +599,8 @@ public class Workbench extends javax.swing.JFrame {
     private void exitForm(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_exitForm
         System.exit(0);
     }//GEN-LAST:event_exitForm
-    
+
+	    
     /**
      * @param args the command line arguments
      */
@@ -396,15 +610,21 @@ public class Workbench extends javax.swing.JFrame {
         w.show();
     }
     
+	
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton toolbarSaveAsButton;
     private javax.swing.JMenuItem openMenuItem;
+	private javax.swing.JMenuItem lastUsed1MenuItem;
+	private javax.swing.JMenuItem lastUsed2MenuItem;
+	private javax.swing.JMenuItem lastUsed3MenuItem;
+	private javax.swing.JMenuItem lastUsed4MenuItem;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem newQueryMenuItem;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JButton toolbarOpenButton;
     private javax.swing.JButton toolbarNewButton;
     private javax.swing.JSeparator jSeparator1;
+	private javax.swing.JSeparator jSeparator2;
     private javax.swing.JMenuItem cutMenuItem;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem saveMenuItem;
