@@ -96,24 +96,7 @@ public class Id
 			}
 		}
 		final String[] namesArray = toStringArray();
-		// First, look for a calculated member defined in the query.
-		final String fullName = toString();
-		OlapElement olapElement = q.lookupMemberFromCache(fullName);
-		if (olapElement == null) {
-			// Now look for any kind of object (member, level, hierarchy,
-			// dimension) in the cube.
-			olapElement = Util.lookupCompound(q, namesArray, q.getCube(), false);
-		}
-		if (olapElement != null) {
-			Role role = q.getConnection().getRole();
-			if (!role.canAccess(olapElement)) {
-				olapElement = null;
-			}
-		}
-		if (olapElement == null) {
-			throw Util.getRes().newMdxChildObjectNotFound(fullName, q.getCube().getQualifiedName());
-		}
-		return olapElement;
+		return Util.lookup(q,namesArray);
 	}
 
 	private boolean isReserved(String s) {

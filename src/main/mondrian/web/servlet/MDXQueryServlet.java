@@ -168,7 +168,8 @@ public class MDXQueryServlet extends HttpServlet {
 		if (operation.equals("expand")) {
 			String memberName = request.getParameter("member");
 			boolean fail = true;
-			Member member = query.getCube().lookupMemberByUniqueName(memberName, fail);
+			Member member = query.getSchemaReader().getMemberByUniqueName(
+					Util.explode(memberName), fail);
 			query.toggleDrillState(member);
 		} else {
 			throw Util.newInternal("unkown operation '" + operation + "'");

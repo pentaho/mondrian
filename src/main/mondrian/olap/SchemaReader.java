@@ -26,6 +26,11 @@ import java.util.List;
  **/
 public interface SchemaReader {
 	/**
+	 * Returns the access-control profile that this <code>SchemaReader</code>
+	 * is implementing.
+	 */
+	Role getRole();
+	/**
 	 * Returns an array of the root members of <code>hierarchy</code>.
 	 **/
 	Member[] getHierarchyRootMembers(Hierarchy hierarchy);
@@ -49,9 +54,7 @@ public interface SchemaReader {
 	 *   <code>null</code>, if there is no such member.
 	 * @return The member, or null if not found
 	 **/
-	Member getMemberByUniqueName(Hierarchy hierarchy, String[] uniqueNameParts, boolean failIfNotFound);
-
-	Member getMemberByUniqueName(String uniqueName, boolean failIfNotFound);
+	Member getMemberByUniqueName(String[] uniqueNameParts, boolean failIfNotFound);
 
 	/**
 	 * Appends to <code>list</code> all members between <code>startMember</code>
@@ -83,9 +86,19 @@ public interface SchemaReader {
 	int compareMembersHierarchically(Member m1, Member m2);
 
 	/**
+	 * Looks up the child of <code>parent</code> called <code>s</code>; returns
+	 * null if no element is found.
+	 **/
+	OlapElement getElementChild(OlapElement parent, String name);
+
+	/**
 	 * Returns the members of <code>level</code>.
 	 */
 	Member[] getLevelMembers(Level level);
+	/**
+	 * Returns the accessible levels of a hierarchy.
+	 */
+	Level[] getHierarchyLevels(Hierarchy hierarchy);
 }
 
 // End SchemaReader.java

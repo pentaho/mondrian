@@ -116,26 +116,33 @@ public class MondrianProperties extends PropertiesPlus {
 
 	// mondrian.test properties
 
-	/** Retrieves the value of the {@link #TestName} property. */
+	/**
+	 * Retrieves the value of the {@link #TestName} property.
+	 * This is a regular expression as defined by
+	 * {@link java.util.regex.Pattern}.
+	 * If this property is specified, only tests whose names match the pattern
+	 * in its entirety will be run.
+	 *
+	 * @see #getTestClass
+	 */
 	public String getTestName() {
 		return getProperty(TestName);
 	}
 	/** Property {@value}. */
 	public static final String TestName = "mondrian.test.Name";
 
-	/** Retrieves the value of the {@link #TestClass} property. */
+	/**
+	 * Retrieves the value of the {@link #TestClass} property. This is the
+	 * name of the class which either implements {@link junit.framework.Test},
+	 * or has a method <code>public [static] {@link junit.framework.Test}
+	 * suite()</code>.
+	 * @see #getTestName
+	 */
 	public String getTestClass() {
 		return getProperty(TestClass);
 	}
 	/** Property {@value}. */
 	public static final String TestClass = "mondrian.test.Class";
-
-	/** Retrieves the value of the {@link #TestSuite} property. */
-	public String getTestSuite() {
-		return getProperty(TestSuite);
-	}
-	/** Property {@value}. */
-	public static final String TestSuite = "mondrian.test.Suite";
 
 	/** Retreives the value of the {@link #TestConnectString} property. */
 	public String getTestConnectString() {

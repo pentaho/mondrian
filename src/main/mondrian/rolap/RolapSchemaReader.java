@@ -15,6 +15,7 @@ import mondrian.olap.*;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * A <code>RolapSchemaReader</code> allows you to read schema objects while
@@ -24,22 +25,39 @@ import java.util.ArrayList;
  * @since Feb 24, 2003
  * @version $Id$
  **/
-class RolapSchemaReader implements SchemaReader {
+abstract class RolapSchemaReader implements SchemaReader {
 	private Role role;
+	private HashMap hierarchyReaders = new HashMap();
 
 	RolapSchemaReader(Role role) {
 		this.role = role;
 	}
+
+	public Role getRole() {
+		return role;
+	}
+
 	public Member[] getHierarchyRootMembers(Hierarchy hierarchy) {
-		return getLevelMembers(hierarchy.getLevels()[0]);
+		final Role.HierarchyAccess hierarchyAccess = role.getAccessDetails(hierarchy);
+		Level firstLevel;
+		if (hierarchyAccess == null) {
+			firstLevel = hierarchy.getLevels()[0];
+		} else {
+			firstLevel = hierarchyAccess.getTopLevel();
+			if (firstLevel == null) {
+				firstLevel = hierarchy.getLevels()[0];
+			}
+		}
+		return getLevelMembers(firstLevel);
 	}
 
-	public Member getMemberByUniqueName(Hierarchy hierarchy, String[] uniqueNameParts, boolean failIfNotFound) {
-		return getMemberReader(hierarchy).lookupMember(uniqueNameParts, failIfNotFound);
-	}
-
-	private MemberReader getMemberReader(Hierarchy hierarchy) {
-		return ((RolapHierarchy) hierarchy).memberReader;
+	private synchronized MemberReader getMemberReader(Hierarchy hierarchy) {
+		MemberReader memberReader = (MemberReader) hierarchyReaders.get(hierarchy);
+		if (memberReader == null) {
+			memberReader = ((RolapHierarchy) hierarchy).getMemberReader(role);
+			hierarchyReaders.put(hierarchy, memberReader);
+		}
+		return memberReader;
 	}
 
 	public void getMemberRange(Level level, Member startMember, Member endMember, List list) {
@@ -73,12 +91,14 @@ class RolapSchemaReader implements SchemaReader {
 		}
 	}
 
-	public Cube getCube() {
-		throw new UnsupportedOperationException();
+	public abstract Cube getCube();
+
+	public OlapElement getElementChild(OlapElement parent, String name) {
+		return parent.lookupChild(this, name);
 	}
 
-	public Member getMemberByUniqueName(String uniqueName, boolean failIfNotFound) {
-		return getCube().lookupMemberByUniqueName(uniqueName, failIfNotFound);
+	public Member getMemberByUniqueName(String[] uniqueNameParts, boolean failIfNotFound) {
+		return Util.lookupMemberCompound(this, getCube(), uniqueNameParts, failIfNotFound);
 	}
 
 	public Member getLeadMember(Member member, int n) {
@@ -89,6 +109,30 @@ class RolapSchemaReader implements SchemaReader {
 		final List membersInLevel = getMemberReader(level.getHierarchy()).getMembersInLevel(
 					(RolapLevel) level, 0, Integer.MAX_VALUE);
 		return RolapUtil.toArray(membersInLevel);
+	}
+
+	public Level[] getHierarchyLevels(Hierarchy hierarchy) {
+		final Role.HierarchyAccess hierarchyAccess = role.getAccessDetails(hierarchy);
+		final Level[] levels = hierarchy.getLevels();
+		if (hierarchyAccess == null) {
+			return levels;
+		}
+		Level topLevel = hierarchyAccess.getTopLevel();
+		Level bottomLevel = hierarchyAccess.getBottomLevel();
+		if (topLevel == null &&
+				bottomLevel == null) {
+			return levels;
+		}
+		if (topLevel == null) {
+			topLevel = levels[0];
+		}
+		if (bottomLevel == null) {
+			bottomLevel = levels[levels.length - 1];
+		}
+		final int levelCount = bottomLevel.getDepth() - topLevel.getDepth() + 1;
+		Level[] restrictedLevels = new Level[levelCount];
+		System.arraycopy(levels, topLevel.getDepth(), restrictedLevels, 0, levelCount);
+		return restrictedLevels;
 	}
 }
 

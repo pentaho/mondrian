@@ -91,7 +91,7 @@ public class Formula extends QueryPart {
          OlapElement mdxElement = q.getCube();
          for (int i = 0; i < names.length; i++) {
             OlapElement parent = mdxElement;
-            mdxElement = q.lookupChild(parent, names[i], false);
+            mdxElement = q.getSchemaReader().getElementChild(parent, names[i]);
             if (mdxElement == null) {
                // this part of the name was not found... define it
                Level level;

@@ -96,7 +96,7 @@ public abstract class MemberBase
 			final SchemaReader schemaReader = hierarchy.getDimension().getSchema().getSchemaReader();
 			String[] parentUniqueNameParts = Util.explode(parentUniqueName);
 			parentMember = (MemberBase) schemaReader.getMemberByUniqueName(
-					hierarchy, parentUniqueNameParts, failIfNotFound);
+					parentUniqueNameParts, failIfNotFound);
 			return parentMember;
 		}
 	}
@@ -158,9 +158,7 @@ public abstract class MemberBase
 //  		return getCube().getMemberChildren(parentMembers);
 //  	}
 
-	public Exp resolve(Query q)
-	{
-//		return q.lookupMemberByUniqueName(getUniqueName(), true);
+	public Exp resolve(Query q) {
 		return this;
 	}
 

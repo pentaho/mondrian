@@ -60,6 +60,12 @@ public abstract class HierarchyBase
 	}
 	public boolean hasAll() { return hasAll; }
 
+	public boolean equals(OlapElement mdxElement) {
+		// Use object identity, because a private hierarchy can have the same
+		// name as a public hierarchy.
+		return this == mdxElement;
+	}
+
 	/** find a child object */
 	public OlapElement lookupChild(SchemaReader schemaReader, String s)
 	{

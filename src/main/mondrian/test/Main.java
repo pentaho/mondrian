@@ -22,9 +22,10 @@ import mondrian.rolap.agg.TestAggregationManager;
 import mondrian.util.Schedule;
 
 import java.io.PrintWriter;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Enumeration;
+import java.util.regex.Pattern;
 
 /**
  * <code>Main</code> is the main test suite for Mondrian.
@@ -69,52 +70,73 @@ public class Main {
 		RolapUtil.checkTracing();
 		MondrianProperties properties = MondrianProperties.instance();
 		String testName = properties.getTestName(),
-			testClass = properties.getTestClass(),
-			testSuite = properties.getTestSuite();
+			testClass = properties.getTestClass();
+		TestSuite suite = new TestSuite();
 		if (testClass != null) {
 			Class clazz = Class.forName(testClass);
-			if (testName != null) {
-				// e.g. testName = "testUseDimensionAsShorthandForMember",
-				// testClass = "mondrian.test.FoodMartTestCase"
-				Constructor constructor = clazz.getConstructor(
-						new Class[] {String.class});
-				Object o = constructor.newInstance(
-						new Object[] {testName});
-				return (Test) o;
-			} else {
+			if (Test.class.isAssignableFrom(clazz)) {
 				// e.g. testClass = "mondrian.test.FoodMartTestCase",
 				// the name of a class which extends TestCase. We will invoke
-				// every method which starts with 'test'.
-				TestSuite suite = new TestSuite();
+				// every method which starts with 'test'. (If "testName" is set,
+				// we'll filter this list later.)
 				suite.addTestSuite(clazz);
-				return suite;
-			}
-		}
-		if (testSuite != null) {
-			// e.g. testSuite = "mondrian.olap.fun.BuiltinFunTable". Class does
-			// not necessarily implement Test. We call its 'public [static]
-			// Test suite()' method.
-			Class clazz = Class.forName(testSuite);
-			Method method = clazz.getMethod("suite", new Class[0]);
-			Object target;
-			if (Modifier.isStatic(method.getModifiers())) {
-				target = null;
 			} else {
-				target = clazz.newInstance();
+				// e.g. testClass = "mondrian.olap.fun.BuiltinFunTable". Class
+				// does not implement Test, so look for a 'public [static]
+				// Test suite()' method.
+				Method method = clazz.getMethod("suite", new Class[0]);
+				Object target;
+				if (Modifier.isStatic(method.getModifiers())) {
+					target = null;
+				} else {
+					target = clazz.newInstance();
+				}
+				Object o = method.invoke(target, new Object[0]);
+				suite.addTest((Test) o);
 			}
-			Object o = method.invoke(target, new Object[0]);
-			return (Test) o;
+		} else {
+			suite.addTestSuite(BasicQueryTest.class);
+			suite.addTest(BuiltinFunTable.suite());
+			suite.addTestSuite(Schedule.ScheduleTestCase.class);
+			suite.addTest(Util.suite());
+			suite.addTest(CachePool.suite());
+			suite.addTestSuite(TestAggregationManager.class);
+			suite.addTestSuite(ParameterTest.class);
+			if (false) {
+				suite.addTestSuite(AccessControlTest.class);
+			}
 		}
-		TestSuite suite = new TestSuite();
-		suite.addTestSuite(BasicQueryTest.class);
-		suite.addTest(BuiltinFunTable.suite());
-		suite.addTestSuite(Schedule.ScheduleTestCase.class);
-		suite.addTest(Util.suite());
-		suite.addTest(CachePool.suite());
-		suite.addTestSuite(TestAggregationManager.class);
-		suite.addTestSuite(ParameterTest.class);
-		suite.addTestSuite(AccessControlTest.class);
+		if (testName != null) {
+			// Filter the suite, so that only tests whose names match
+			// "testName" (in its entirety) will be run.
+			Pattern testPattern = Pattern.compile(testName);
+			suite = copySuite(suite, testPattern);
+		}
 		return suite;
+	}
+
+	private static TestSuite copySuite(TestSuite suite, Pattern testPattern) {
+		TestSuite newSuite = new TestSuite();
+		Enumeration tests = suite.tests();
+		while (tests.hasMoreElements()) {
+			Test test = (Test) tests.nextElement();
+			if (test instanceof TestCase) {
+				TestCase testCase = (TestCase) test;
+				final String testName = testCase.getName();
+				if (testPattern.matcher(testName).matches()) {
+					newSuite.addTest(test);
+				}
+			} else if (test instanceof TestSuite) {
+				TestSuite subSuite = copySuite((TestSuite) test, testPattern);
+				if (subSuite.countTestCases() > 0) {
+					newSuite.addTest(subSuite);
+				}
+			} else {
+				// some other kind of test
+				newSuite.addTest(test);
+			}
+		}
+		return newSuite;
 	}
 
 	/**

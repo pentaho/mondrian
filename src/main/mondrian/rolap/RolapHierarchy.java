@@ -392,6 +392,27 @@ class RolapHierarchy extends HierarchyBase
 			return new SharedHierarchyUsage(fact, sharedHierarchy);
 		}
 	}
+
+	/**
+	 * Returns a member reader which enforces the access-control profile of
+	 * <code>role</code>.
+	 *
+	 * @pre role != null
+	 * @post return != null
+	 */
+	MemberReader getMemberReader(Role role) {
+		final int access = role.getAccess(this);
+		switch (access) {
+		case Access.NONE:
+			throw Util.newInternal("Illegal access to members of hierarchy " + this);
+		case Access.ALL:
+			return memberReader;
+		case Access.CUSTOM:
+			return new RestrictedMemberReader(memberReader, role);
+		default:
+			throw Util.newInternal("Bad case " + access);
+		}
+	}
 }
 
 /**

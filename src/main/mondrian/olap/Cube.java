@@ -13,10 +13,8 @@
 package mondrian.olap;
 
 import java.util.List;
-import java.util.Collection;
-import java.util.Map;
 
-public interface Cube extends OlapElement, NameResolver {
+public interface Cube extends OlapElement {
 
 	String getName();
 
@@ -45,6 +43,13 @@ public interface Cube extends OlapElement, NameResolver {
 	Level getQuarterLevel();
 	Level getMonthLevel();
 	Level getWeekLevel();
+	/**
+	 * Returns a {@link SchemaReader} for which this cube is the context for
+	 * lookup up members.
+	 * If <code>role</code> is null, the returned schema reader also obeys the
+	 * access-control profile of role. 
+	 */
+	SchemaReader getSchemaReader(Role role);
 }
 
 // End Cube.java

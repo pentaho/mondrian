@@ -519,9 +519,9 @@ public class BuiltinFunTable extends FunTable {
 				if (s.indexOf("[") == -1) {
 					s = Util.quoteMdxIdentifier(s);
 				}
-				Cube cube = evaluator.getCube();
 				boolean fail = false;
-				OlapElement o = lookupCompound(cube, explode(s), cube, fail);
+				OlapElement o = lookupCompound(evaluator.getSchemaReader(),
+						evaluator.getCube(), explode(s), fail);
 				if (o == null) {
 					throw newEvalException(
 							this, "Dimensions '" + s + "' not found");
@@ -636,7 +636,7 @@ public class BuiltinFunTable extends FunTable {
 				OlapElement o = null;
 				if (s.startsWith("[")) {
 					final boolean fail = false;
-					o = lookupCompound(cube, explode(s), cube, fail);
+					o = lookupCompound(evaluator.getSchemaReader(), cube, explode(s), fail);
 				} else {
 					// lookupCompound barfs if "s" doesn't have matching
 					// brackets, so don't even try
@@ -1206,7 +1206,8 @@ public class BuiltinFunTable extends FunTable {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Member member = getMemberArg(evaluator, args, 0, true);
 				Member parent = member.getParentMember();
-				if (parent == null) {
+				if (parent == null ||
+						!evaluator.getSchemaReader().getRole().canAccess(parent)) {
 					parent = member.getHierarchy().getNullMember();
 				}
 				return parent;

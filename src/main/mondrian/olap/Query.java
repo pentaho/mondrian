@@ -25,7 +25,7 @@ import java.util.*;
  * <p><code>Query</code> contains several methods to manipulate the parse tree
  * of the query; {@link #swapAxes} and {@link #drillDown} are examples.
  **/
-public class Query extends QueryPart implements NameResolver {
+public class Query extends QueryPart {
 
 	//hidden string
 	public static final String hidden = "hidden_";
@@ -1199,7 +1199,7 @@ public class Query extends QueryPart implements NameResolver {
 						if (foundMember != null){
 							//we found  member (not member expression)
 							applyLimitOnMember(
-								foundMember, limitedMembers[i], axis); 
+								foundMember, limitedMembers[i], axis);
 						} else {
 							// it looks like member is within an expression on
 							// slicer. let's remove it from there and add
@@ -1376,51 +1376,47 @@ public class Query extends QueryPart implements NameResolver {
 		return mdxCube;
 	}
 
-	// implement NameResolver
-	public OlapElement lookupChild(
-		OlapElement parent, String s, boolean failIfNotFound) {
-		// first look in cube
-		OlapElement mdxElement = mdxCube.lookupChild(parent, s, false);
-		if (mdxElement != null) {
-			return mdxElement;
-		}
-		// then look in defined members
-		Iterator definedMembers = getDefinedMembers().iterator();
-		while (definedMembers.hasNext()) {
-			Member mdxMember = (Member) definedMembers.next();
-			if (mdxMember.getName().equalsIgnoreCase(s)) {
-				// allow member to be referenced without dimension name
-				return mdxMember;
+	public SchemaReader getSchemaReader() {
+		final SchemaReader cubeSchemaReader = mdxCube.getSchemaReader(getConnection().getRole());
+		return new DelegatingSchemaReader(cubeSchemaReader) {
+			public Member getMemberByUniqueName(String[] uniqueNameParts, boolean failIfNotFound) {
+				Member member = lookupMemberFromCache(Util.implode(uniqueNameParts));
+				if (member == null) {
+					// Not a calculated member in the query, so go to the cube.
+					member = schemaReader.getMemberByUniqueName(uniqueNameParts, failIfNotFound);
+				}
+				return member;
 			}
-		}
+			public OlapElement getElementChild(OlapElement parent, String s) {
+				// first look in cube
+				OlapElement mdxElement = schemaReader.getElementChild(parent, s);
+				if (mdxElement != null) {
+					return mdxElement;
+				}
+				// then look in defined members
+				Iterator definedMembers = getDefinedMembers().iterator();
+				while (definedMembers.hasNext()) {
+					Member mdxMember = (Member) definedMembers.next();
+					if (mdxMember.getName().equalsIgnoreCase(s)) {
+						// allow member to be referenced without dimension name
+						return mdxMember;
+					}
+				}
 
-		// then in defined sets
-		for (int i = 0; i < formulas.length; i++) {
-			Formula formula = formulas[i];
-			if (formula.isMember) {
-				continue;		// have already done these
+				// then in defined sets
+				for (int i = 0; i < formulas.length; i++) {
+					Formula formula = formulas[i];
+					if (formula.isMember) {
+						continue;		// have already done these
+					}
+					if (formula.names[0].equals(s)) {
+						return formula.mdxSet;
+					}
+				}
+
+				return mdxElement;
 			}
-			if (formula.names[0].equals(s)) {
-				return formula.mdxSet;
-			}
-		}
-
-		// fail if we didn't find it
-		if (mdxElement == null && failIfNotFound) {
-			throw Util.getRes().newMdxChildObjectNotFound(
-				s, parent.getQualifiedName());
-		}
-		return mdxElement;
-	}
-
-	// implement NameResolver
-	public Member lookupMemberByUniqueName(String s, boolean failIfNotFound)
-	{
-		Member member = lookupMemberFromCache(s);
-		if (member == null) {
-			member = mdxCube.lookupMemberByUniqueName(s, failIfNotFound);
-		}
-		return member;
+		};
 	}
 
 	/**
@@ -1642,7 +1638,7 @@ public class Query extends QueryPart implements NameResolver {
 			return collectHierarchies(axes[axis]);
 		}
 	}
-	
+
 }
 
 // End Query.java

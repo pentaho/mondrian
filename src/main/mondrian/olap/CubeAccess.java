@@ -11,8 +11,7 @@
 */
 
 package mondrian.olap;
-import java.io.*;
-import java.util.*;
+import java.util.Vector;
 
 /**
  * This class implements object of type GrantCube to apply permissions
@@ -85,7 +84,8 @@ public class CubeAccess
 	{
 		if (bMember) {
 			boolean fail = false;
-			Member member = mdxCube.lookupMemberByUniqueName(sMember, fail);
+			Member member = mdxCube.getSchemaReader(null).getMemberByUniqueName(
+					Util.explode(sMember), fail);
 			if (member == null) {
 				throw Util.getRes().newMdxCubeSlicerMemberError(
 					sMember, sHierarchy, mdxCube.getUniqueName());

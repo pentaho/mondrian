@@ -1,4 +1,4 @@
-/* 
+/*
 // $Id$
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
@@ -6,7 +6,7 @@
 // (C) Copyright 2001-2002 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-// 
+//
 // jhyde, 6 August, 2001
 */
 
@@ -38,7 +38,7 @@ public class Util extends mondrian.xom.XOMUtil
 	{
 		String retString = new String();
 		for (int i = 0; i < st.length(); i++) {
-			if (st.charAt(i) == ']' && (i+1) < st.length() 
+			if (st.charAt(i) == ']' && (i+1) < st.length()
 				&& st.charAt(i+1) != '.')
 				retString += "]"; //escaping character
 			retString += st.charAt(i);
@@ -187,22 +187,23 @@ public class Util extends mondrian.xom.XOMUtil
 	 * '[Products]&#46;[Product Department]&#46;[Produce]' by resolving the
 	 * components ('Products', and so forth) one at a time.
 	 *
-	 * @param st {@link Cube} or {@link Query} to look in
+	 * @param schemaReader Schema reader, supplies access-control context
+	 * @param parent Parent element to search in
 	 * @param names Exploded compound name, such as {"Products",
 	 *   "Product Department", "Produce"}
-	 * @param parent Parent element to search in
 	 * @param failIfNotFound If the element is not found, determines whether
 	 *   to return null or throw an error
 	 * @pre parent != null
+	 * @post !(failIfNotFound && return == null)
 	 * @see #explode
 	 */
 	public static OlapElement lookupCompound(
-		NameResolver st, String[] names, OlapElement parent, boolean failIfNotFound)
+		SchemaReader schemaReader, OlapElement parent, String[] names, boolean failIfNotFound)
 	{
 		Util.assertPrecondition(parent != null, "parent != null");
 		for (int i = 0; i < names.length; i++) {
 			String name = names[i];
-			final OlapElement child = st.lookupChild(parent, name, false);
+			final OlapElement child = schemaReader.getElementChild(parent, name);
 			if (child == null) {
 				if (failIfNotFound) {
 					throw getRes().newMdxChildObjectNotFound(
@@ -217,41 +218,51 @@ public class Util extends mondrian.xom.XOMUtil
 	}
 
 	/**
-	 * Resolves a name such as '[Products]&#46;[Product
-	 * Department]&#46;[Produce]' by parsing out the components {'Products',
-	 * 'Product Department', 'Produce'} and resolving them one at a time.
+	 * Resolves a name such as
+	 * '[Products]&#46;[Product Department]&#46;[Produce]'
+	 * to a {@link Member} by parsing out the components
+	 * {'Products', 'Product Department', 'Produce'}
+	 * and resolving them one at a time.
 	 *
+	 * @pre st != null
+	 * @pre cube != null
+	 * @post !(failIfNotFound && return == null)
 	 */
-
 	public static Member lookupMemberCompound(
-		NameResolver st, String[] names, boolean failIfNotFound)
+		SchemaReader st, Cube cube, String[] names, boolean failIfNotFound)
 	{
-		OlapElement mdxElem = lookupCompound(st, names, st.getCube(), failIfNotFound);
+		OlapElement mdxElem = lookupCompound(st, cube, names, false);
 		if (mdxElem instanceof Member) {
 			return (Member) mdxElem;
-		} else if (failIfNotFound) {
+		}
+		if (failIfNotFound) {
 			String s = implode(names);
 			throw getRes().newMdxCantFindMember(s);
 		}
 		return null;
 	}
 
-	public static Member lookupMember(
-		NameResolver st, String s, boolean failIfNotFound)
-	{
-		if (st instanceof Query) {
-			Member member = ((Query) st).lookupMemberFromCache(s);
-			if (member != null) {
-				return member;
+	public static OlapElement lookup(Query q, String[] namesArray) {
+		// First, look for a calculated member defined in the query.
+		final String fullName = quoteMdxIdentifier(namesArray);
+		OlapElement olapElement = q.lookupMemberFromCache(fullName);
+		if (olapElement == null) {
+			// Now look for any kind of object (member, level, hierarchy,
+			// dimension) in the cube. Use a schema reader without restrictions.
+//			final SchemaReader schemaReader = q.getSchemaReader();
+			final SchemaReader schemaReader = q.getCube().getSchemaReader(null);
+			olapElement = lookupCompound(schemaReader, q.getCube(), namesArray, false);
+		}
+		if (olapElement != null) {
+			Role role = q.getConnection().getRole();
+			if (!role.canAccess(olapElement)) {
+				olapElement = null;
 			}
 		}
-		OlapElement mdxElem = lookupCompound(st, explode(s), st.getCube(), failIfNotFound);
-		if (mdxElem instanceof Member) {
-			return (Member) mdxElem;
-		} else if (failIfNotFound) {
-			throw getRes().newMdxCantFindMember(s);
+		if (olapElement == null) {
+			throw Util.getRes().newMdxChildObjectNotFound(fullName, q.getCube().getQualifiedName());
 		}
-		return null;
+		return olapElement;
 	}
 
 	/**
@@ -273,7 +284,7 @@ public class Util extends mondrian.xom.XOMUtil
 		// If the first level is 'all', lookup member at second level. For
 		// example, they could say '[USA]' instead of '[(All
 		// Customers)].[USA]'.
-		if (hierarchy.hasAll()) {
+		if (rootMembers.length == 1 && rootMembers[0].isAll()) {
 			return lookupMemberChildByName(reader, rootMembers[0], memberName);
 		}
 		return null;
@@ -325,7 +336,7 @@ public class Util extends mondrian.xom.XOMUtil
 				"could not find member " + member + " amongst its siblings");
 	}
 
-	
+
 	/**
 	 * A <code>NullCellValue</code> is a placeholder value used when cells have
 	 * a null value. It is a singleton.
@@ -355,7 +366,7 @@ public class Util extends mondrian.xom.XOMUtil
 			throw getRes().newInternal("assert failed");
 		}
 	}
-	
+
 	/**
 	 * Throws an internal error with the given messagee if condition is not
 	 * true. It would be called <code>assert</code>, but that is a keyword as

@@ -15,6 +15,7 @@ import junit.framework.TestCase;
 import mondrian.olap.Connection;
 import mondrian.olap.Cube;
 import mondrian.olap.Member;
+import mondrian.olap.Util;
 import mondrian.rolap.RolapAggregationManager;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.RolapUtil;
@@ -98,8 +99,8 @@ public class TestAggregationManager extends TestCase {
 		final Connection connection = TestContext.instance().getFoodMartConnection(false);
 		final boolean fail = true;
 		Cube salesCube = connection.getSchema().lookupCube(cube, fail);
-		Member storeSqftMeasure = salesCube.lookupMemberByUniqueName(
-				measure, fail);
+		Member storeSqftMeasure = salesCube.getSchemaReader(null).getMemberByUniqueName(
+				Util.explode(measure), fail);
 		RolapStar.Measure starMeasure = RolapStar.getStarMeasure(storeSqftMeasure);
 		CellRequest request = new CellRequest(starMeasure);
 		final RolapStar star = starMeasure.table.star;
@@ -193,8 +194,8 @@ public class TestAggregationManager extends TestCase {
 		final Connection connection = TestContext.instance().getFoodMartConnection(false);
 		final boolean fail = true;
 		Cube salesCube = connection.getSchema().lookupCube(cube, fail);
-		Member storeSqftMeasure = salesCube.lookupMemberByUniqueName(
-				measure, fail);
+		Member storeSqftMeasure = salesCube.getSchemaReader(null).getMemberByUniqueName(
+				Util.explode(measure), fail);
 		RolapStar.Measure starMeasure = RolapStar.getStarMeasure(storeSqftMeasure);
 		CellRequest request = new CellRequest(starMeasure);
 		final RolapStar star = starMeasure.table.star;
@@ -210,8 +211,8 @@ public class TestAggregationManager extends TestCase {
 		final Connection connection = TestContext.instance().getFoodMartConnection(false);
 		final boolean fail = true;
 		Cube salesCube = connection.getSchema().lookupCube(cube, fail);
-		Member measure = salesCube.lookupMemberByUniqueName(
-				measureName, fail);
+		Member measure = salesCube.getSchemaReader(null).getMemberByUniqueName(
+				Util.explode(measureName), fail);
 		RolapStar.Measure starMeasure = RolapStar.getStarMeasure(measure);
 		CellRequest request = new CellRequest(starMeasure);
 		final RolapStar star = starMeasure.table.star;

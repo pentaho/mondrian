@@ -14,6 +14,8 @@ package mondrian.olap;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Collections;
 
 /**
  * A <code>Role</code> is a collection of access rights to cubes, permissions,
@@ -35,11 +37,15 @@ import java.util.Iterator;
  **/
 public class Role {
 	private boolean mutable = true;
-	/** Maps {@link Schema} to {@link Boolean},
-	 * {@link Cube} to {@link Boolean},
-	 * {@link Dimension} to {@link Boolean},
+	/** Maps {@link Schema} to {@link Integer},
+	 * {@link Cube} to {@link Integer},
+	 * {@link Dimension} to {@link Integer},
 	 * {@link Hierarchy} to {@link HierarchyAccess}. */
 	private HashMap grants = new HashMap();
+	private static Integer integers[] = {
+		new Integer(0), new Integer(1), new Integer(2), new Integer(3),
+		new Integer(4),
+	};
 
 	/**
 	 * Creates a role with no permissions.
@@ -89,35 +95,33 @@ public class Role {
 	 * @param access An {@link Access access code}
 	 *
 	 * @pre schema != null
-	 * @pre access == Access.ALL || access == Access.NONE
+	 * @pre access == Access.ALL || access == Access.NONE || access == Access.ALL_DIMENSIONS
 	 * @pre isMutable()
 	 */
 	public void grant(Schema schema, int access) {
 		Util.assertPrecondition(schema != null, "schema != null");
-		Util.assertPrecondition(access == Access.ALL || access == Access.NONE, "access == Access.ALL || access == Access.NONE");
+		Util.assertPrecondition(access == Access.ALL || access == Access.NONE || access == Access.ALL_DIMENSIONS, "access == Access.ALL || access == Access.NONE");
 		Util.assertPrecondition(isMutable(), "isMutable()");
-		grants.put(schema, toBoolean(access));
+		grants.put(schema, toInteger(access));
+	}
+
+	private static Integer toInteger(int access) {
+		return integers[access];
 	}
 
 	/**
 	 * Returns the access this role has to a given schema.
 	 *
 	 * @pre schema != null
-	 * @post return == Access.ALL || return == Access.NONE
+	 * @post return == Access.ALL || return == Access.NONE || return == Access.ALL_DIMENSIONS
 	 */
 	public int getAccess(Schema schema) {
 		Util.assertPrecondition(schema != null, "schema != null");
-		Boolean b = (Boolean) grants.get(schema);
-		return toAccess(b);
+		return toAccess((Integer) grants.get(schema));
 	}
 
-	private static Boolean toBoolean(int access) {
-		return access == Access.ALL ? Boolean.TRUE : Boolean.FALSE;
-	}
-
-	private static int toAccess(Boolean b) {
-		return b != null && b.booleanValue() ? Access.ALL :
-				Access.NONE;
+	private static int toAccess(Integer i) {
+		return i == null ? Access.NONE : i.intValue();
 	}
 
 	/**
@@ -134,7 +138,7 @@ public class Role {
 		Util.assertPrecondition(cube != null, "cube != null");
 		Util.assertPrecondition(access == Access.ALL || access == Access.NONE, "access == Access.ALL || access == Access.NONE");
 		Util.assertPrecondition(isMutable(), "isMutable()");
-		grants.put(cube, toBoolean(access));
+		grants.put(cube, toInteger(access));
 	}
 
 	/**
@@ -145,14 +149,14 @@ public class Role {
 	 */
 	public int getAccess(Cube cube) {
 		Util.assertPrecondition(cube != null, "cube != null");
-		Boolean access = (Boolean) grants.get(cube);
+		Integer access = (Integer) grants.get(cube);
 		if (access == null) {
-			access = (Boolean) grants.get(cube.getSchema());
+			access = (Integer) grants.get(cube.getSchema());
 		}
 		return toAccess(access);
 	}
 
-	private static class HierarchyAccess {
+	public static class HierarchyAccess {
 		private Hierarchy hierarchy;
 		private Level topLevel;
 		private int access;
@@ -183,7 +187,53 @@ public class Role {
 					membersIter.remove();
 				}
 			}
-			memberGrants.put(member, toBoolean(access));
+			memberGrants.put(member, toInteger(access));
+		}
+
+		public int getAccess(Member member) {
+			int access = this.access;
+			if (access == Access.CUSTOM) {
+				access = Access.NONE;
+				if (topLevel != null &&
+						member.getLevel().getDepth() < topLevel.getDepth()) {
+					// no access
+				} else if (bottomLevel != null &&
+						member.getLevel().getDepth() > bottomLevel.getDepth()) {
+					// no access
+				} else {
+					for (Iterator membersIter = memberGrants.keySet().iterator(); membersIter.hasNext();) {
+						Member m = (Member) membersIter.next();
+						final int memberAccess = toAccess((Integer) memberGrants.get(m));
+						if (member.isChildOrEqualTo(m)) {
+							// A member has access if it has been granted access,
+							// or if any of its ancestors have.
+							access = Math.max(access, memberAccess);
+						} else if (m.isChildOrEqualTo(member) &&
+								memberAccess != Access.NONE) {
+							// A member has CUSTOM access if any of its descendants
+							// has access.
+							access = Math.max(access, Access.CUSTOM);
+						}
+					}
+				}
+			}
+			return access;
+		}
+
+		public Hierarchy getHierarchy() {
+			return hierarchy;
+		}
+
+		public Level getTopLevel() {
+			return topLevel;
+		}
+
+		public Level getBottomLevel() {
+			return bottomLevel;
+		}
+
+		public Map getMemberGrants() {
+			return Collections.unmodifiableMap(memberGrants);
 		}
 	}
 
@@ -201,7 +251,7 @@ public class Role {
 		Util.assertPrecondition(dimension != null, "dimension != null");
 		Util.assertPrecondition(access == Access.ALL || access == Access.NONE, "access == Access.ALL || access == Access.NONE");
 		Util.assertPrecondition(isMutable(), "isMutable()");
-		grants.put(dimension, toBoolean(access));
+		grants.put(dimension, toInteger(access));
 	}
 
 	/**
@@ -212,11 +262,36 @@ public class Role {
 	 */
 	public int getAccess(Dimension dimension) {
 		Util.assertPrecondition(dimension != null, "dimension != null");
-		Boolean b = (Boolean) grants.get(dimension);
-		if (b != null) {
-			return toAccess(b);
+		Integer i = (Integer) grants.get(dimension);
+		if (i != null) {
+			return toAccess(i);
 		}
-		return getAccess(dimension.getSchema());
+		// If the role has access to a cube this dimension is part of, that's
+		// good enough.
+		for (Iterator grantsIter = grants.keySet().iterator(); grantsIter.hasNext();) {
+			Object object = grantsIter.next();
+			if (!(object instanceof Cube)) {
+				continue;
+			}
+			final int access = toAccess((Integer) grants.get(object));
+			if (access == Access.NONE) {
+				continue;
+			}
+			final Dimension[] dimensions = ((Cube) object).getDimensions();
+			for (int j = 0; j < dimensions.length; j++) {
+				if (dimensions[j] == dimension) {
+					return access;
+				}
+			}
+		}
+		// Check access at the schema level.
+		switch (getAccess(dimension.getSchema())) {
+		case Access.ALL:
+		case Access.ALL_DIMENSIONS:
+			return Access.ALL;
+		default:
+			return Access.NONE;
+		}
 	}
 
 	/**
@@ -254,7 +329,7 @@ public class Role {
 	 * Returns the access this role has to a given hierarchy.
 	 *
 	 * @pre hierarchy != null
-	 * @post Access.instance().isValid(return)
+	 * @post return == Access.NONE || return == Access.ALL || return == Access.CUSTOM
 	 */
 	public int getAccess(Hierarchy hierarchy) {
 		Util.assertPrecondition(hierarchy != null, "hierarchy != null");
@@ -263,6 +338,17 @@ public class Role {
 			return access.access;
 		}
 		return getAccess(hierarchy.getDimension());
+	}
+
+	/**
+	 * Returns the details of this hierarchy's access, or null if the hierarchy
+	 * has not been given explicit access.
+	 *
+	 * @pre hierarchy != null
+	 */
+	public HierarchyAccess getAccessDetails(Hierarchy hierarchy) {
+		Util.assertPrecondition(hierarchy != null, "hierarchy != null");
+		return (HierarchyAccess) grants.get(hierarchy);
 	}
 
 	/**
@@ -285,7 +371,7 @@ public class Role {
 			}
 			return access.access;
 		}
-		return getAccess(level.getDimension().getSchema());
+		return getAccess(level.getDimension());
 	}
 
 	/**
@@ -320,22 +406,16 @@ public class Role {
 	 *
 	 * @pre member != null
 	 * @pre isMutable()
-	 * @post Access.instance().isValid(return)
+	 * @post return == Access.NONE || return == Access.ALL || return == Access.CUSTOM
 	 */
 	public int getAccess(Member member) {
 		Util.assertPrecondition(member != null, "member != null");
 		HierarchyAccess hierarchyAccess = (HierarchyAccess)
 				grants.get(member.getHierarchy());
-		int access = getAccess(member.getDimension().getSchema());
 		if (hierarchyAccess != null) {
-			for (Iterator membersIter = hierarchyAccess.memberGrants.keySet().iterator(); membersIter.hasNext();) {
-				Member m = (Member) membersIter.next();
-				if (member.isChildOrEqualTo(m)) {
-					access = hierarchyAccess.access;
-				}
-			}
+			return hierarchyAccess.getAccess(member);
 		}
-		return access;
+		return getAccess(member.getDimension());
 	}
 
 	/**

@@ -312,7 +312,7 @@ public class FunUtil extends Util {
 	}
 
 	static Vector addMembers(SchemaReader schemaReader, Vector vector, Hierarchy hierarchy) {
-		Level[] levels = hierarchy.getLevels();
+		Level[] levels = schemaReader.getHierarchyLevels(hierarchy); // only accessible levels
 		for (int i = 0; i < levels.length; i++) {
 			addMembers(schemaReader, vector, levels[i]);
 		}
@@ -904,7 +904,6 @@ public class FunUtil extends Util {
 	 * like 'public void testXxx({@link TestCase})'.
 	 */
 	public static void addTests(Object o, TestSuite suite) {
-		String testName = MondrianProperties.instance().getTestName();
 		for (Class clazz = o.getClass(); clazz != null; clazz = clazz.getSuperclass()) {
 			Method[] methods = clazz.getDeclaredMethods();
 			for (int i = 0; i < methods.length; i++) {
@@ -916,10 +915,6 @@ public class FunUtil extends Util {
 						TestCase.class.isAssignableFrom(
 								method.getParameterTypes()[0]) &&
 						method.getReturnType() == Void.TYPE) {
-					if (testName != null &&
-							methodName.indexOf(testName) < 0) {
-						continue;
-					}
 					suite.addTest(new MethodCallTestCase(
 							clazz.getName() + "." + method.getName(), o, method));
 				}

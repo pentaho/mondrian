@@ -115,11 +115,6 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 
 	// ------------------------------------------------------------------------
 
-	// implement NameResolver
-	public Member lookupMemberByUniqueName(String s, boolean failIfNotFound) {
-		return Util.lookupMember(this, s, failIfNotFound);
-	}
-
 	private Level getTimeLevel(int levelType)
 	{
 		for (int i = 0; i < dimensions.length; i++) {

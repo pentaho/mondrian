@@ -23,18 +23,11 @@ public interface NameResolver {
 	Cube getCube();
 
 	/**
-	 * Looks up the child of <code>parent</code> called <code>s</code>; if no
-	 * element is found, if <code>failIfNotFound</code> fails, otherwise
-	 * returns null.
+	 * Looks up the child of <code>parent</code> called <code>s</code>; returns
+	 * null if no element is found.
 	 **/
-	OlapElement lookupChild(
-		OlapElement parent, String s, boolean failIfNotFound);
+	OlapElement lookupChild(OlapElement parent, String s);
 
-	/**
-	 * Looks up a member by its unique name. If you wish to look up a member by
-	 * its fully-qualified name, use {@link Util#lookupMemberCompound}.
-	 **/
-	Member lookupMemberByUniqueName(String s, boolean failIfNotFound);
 }
 
 // End NameResolver.java

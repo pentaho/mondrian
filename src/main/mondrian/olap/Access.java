@@ -25,10 +25,10 @@ public class Access extends EnumeratedValues {
 	private Access() {
 		super(
 				new String[] {
-					"all", "none", "custom",
+					"none", "custom", "all dimensions", "all",
 				},
 				new int[] {
-					ALL, NONE, CUSTOM,
+					NONE, CUSTOM, ALL_DIMENSIONS, ALL,
 				}
 		);
 	}
@@ -37,12 +37,14 @@ public class Access extends EnumeratedValues {
 	public static final Access instance() {
 		return instance;
 	}
-	/** All access to an object. **/
-	public static final int ALL = 1;
 	/** No access to an object. **/
-	public static final int NONE = 2;
+	public static final int NONE = 1;
 	/** Custom access to an object (described by other parameters). **/
-	public static final int CUSTOM = 3;
+	public static final int CUSTOM = 2;
+	/** Access to all shared dimensions (applies to schema grant). **/
+	public static final int ALL_DIMENSIONS = 3;
+	/** All access to an object. **/
+	public static final int ALL = 4;
 }
 
 // End Access.java

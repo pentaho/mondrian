@@ -124,7 +124,7 @@ public class Parameter extends ExpBase {
 	 * todo: Remove this method, and require the client to call
 	 * {@link Connection#parseExpression}. Currently, we do not check access.
 	 */
-	public void setValue(String value, NameResolver st)
+	public void setValue(String value, Query query)
 	{
 		switch (category) {
 		case Category.Numeric:
@@ -134,7 +134,7 @@ public class Parameter extends ExpBase {
 			exp = Literal.createString(value);
 			break;
 		case Category.Member:
-			exp = Util.lookupMember(st, value, false);
+			exp = Util.lookup(query, Util.explode(value));
 			break;
 		default:
 			throw Util.newInternal("bad category " + category);

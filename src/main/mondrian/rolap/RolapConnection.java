@@ -179,7 +179,11 @@ public class RolapConnection extends ConnectionBase {
 		Util.assertPrecondition(role != null, "role != null");
 		Util.assertPrecondition(!role.isMutable(), "!role.isMutable()");
 		this.role = role;
-		this.schemaReader = new RolapSchemaReader(getRole());
+		this.schemaReader = new RolapSchemaReader(getRole()) {
+			public Cube getCube() {
+				throw new UnsupportedOperationException();
+			}
+		};
 
 	}
 
