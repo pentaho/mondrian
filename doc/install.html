@@ -98,9 +98,10 @@ JDBC connect string "<code>jdbc:odbc:MondrianFoodMart</code>".</p>
 
 <h3><a name="3_2_Non_Access_setup">3.2. Other database</a></h3>
 
-<p>If not using Access, use the MondrianFoodMartLoader
-utility to create a database, and load data from a SQL script. Its syntax is as 
-follows:</p>
+<p>If not using Access, use the MondrianFoodMartLoader utility to create a 
+database, and load data from a SQL script.</p>
+
+<h4>Syntax</h4>
 <blockquote>
   <p><code>MondrianFoodMartLoader<br>
 &nbsp;&nbsp;&nbsp; [-verbose] [-tables] [-data] [-indexes]<br>
@@ -112,15 +113,18 @@ follows:</p>
 &nbsp;&nbsp;&nbsp;
     ]<br>
 &nbsp;&nbsp;&nbsp; [ [-inputJdbcURL=&lt;jdbcURL&gt; [-inputJdbcUser=user] [-inputJdbcPassword=password] ]<br>
-&nbsp;&nbsp;&nbsp; | [-inputfile=&lt;file name&gt;]<br>
+&nbsp;&nbsp;&nbsp; | [-inputFile=&lt;file name&gt;]<br>
 &nbsp;&nbsp;&nbsp; ]</code></p>
 </blockquote>
+
+<h4>Options</h4>
 
 <table style="text-align: left; "
  border="1" cellpadding="2" cellspacing="0">
   <tbody>
     <tr>
-      <td style="vertical-align: top; text-align: center;"><span
+      <td style="vertical-align: top; text-align: center;">
+		<span
  style="font-weight: bold;">Option</span><br>
       </td>
       <td style="vertical-align: top; text-align: center;"><span
@@ -128,73 +132,99 @@ follows:</p>
       </td>
     </tr>
     <tr>
-      <td style="vertical-align: top;">jdbcURL</td>
-      <td style="vertical-align: top;"><p>JDBC URL for related DB connection</p></td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;">user</td>
-      <td style="vertical-align: top;">User name for related DB</td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;">password</td>
-      <td style="vertical-align: top;">Password for related DB</td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;">file name</td>
-      <td style="vertical-align: top;">Optional. If no input DB parameters are
-given, assumes data comes from this file of INSERT statements.</td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;">outputDirectory</td>
-      <td style="vertical-align: top;">Optional. Directory where DB creation
-scripts will be placed. Statements are in a format that will work for
-the database type indicated by outputJdbcURL.</td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;">batch size</td>
-      <td style="vertical-align: top;">Size of batch for JDBC INSERT
-statement output. Defaults to 50. If set to 1, JDBC batches are not
-used.</td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;">verbose</td>
+      <td style="vertical-align: top;"><code>-verbose</code></td>
       <td style="vertical-align: top;">Verbose mode.</td>
     </tr>
     <tr>
-      <td style="vertical-align: top;">tables</td>
+      <td style="vertical-align: top;"><code>-tables</code></td>
       <td style="vertical-align: top;">Create tables in output JDBC, or
 generate CREATE TABLE statement file in output directory for all
 FoodMart tables, as appropriate for the output database type. If not
 given, the tables are assumed to exist, and will be deleted first.</td>
     </tr>
     <tr>
-      <td style="vertical-align: top;">data</td>
+      <td style="vertical-align: top;"><code>-data</code></td>
       <td style="vertical-align: top;">Load data from input (JDBC,
-insert statement file) to output (JDBC, insert statement file).</td>
+insert statement file) to output (JDBC, insert statement file). Any existing 
+		data is deleted first.</td>
     </tr>
     <tr>
-      <td style="vertical-align: top;">indexes</td>
+      <td style="vertical-align: top;"><code>-indexes</code></td>
       <td style="vertical-align: top;">Create indexes in output JDBC,
 or generate CREATE INDEX statement file in output directory for all
 FoodMart tables, as appropriate for the output database type.</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><code>-jdbcDrivers=</code><i><code>&lt;driver 
+		list&gt;</code></i></td>
+      <td style="vertical-align: top;">Comma-separated list of JDBC drivers 
+		needed to connect to the source and target databases. The JAR files 
+		containing these drivers must also be in the classpath (the <code>-cp</code> 
+		argument to the <code>java</code> command).</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;" nowrap><code>-outputJdbcURL<i>=&lt;jdbcURL&gt;</i></code></td>
+      <td style="vertical-align: top;"><p>JDBC URL for target database</p></td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><code>-outputJdbcUser=<i>&lt;user&gt;</i></code></td>
+      <td style="vertical-align: top;">User name for target database</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><code>-outputJdbcPassword=<i>&lt;password&gt;</i></code></td>
+      <td style="vertical-align: top;">Password for target database</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;" nowrap><code>-outputDirectory=<i>&lt;directory 
+		name&gt;</i></code></td>
+      <td style="vertical-align: top;">Optional. Directory where DB creation
+scripts will be placed. Statements are in a format that will work for
+the database type indicated by outputJdbcURL.</td>
+    </tr>
+	<tr>
+      <td style="vertical-align: top;"><code>-outputJdbcBatchSize=<i>&lt;batch size&gt;</i></code></td>
+      <td style="vertical-align: top;">Size of batch for JDBC INSERT
+statement output. Defaults to 50. If set to 1, JDBC batches are not
+used.</td>
+    </tr>
+	<tr>
+      <td style="vertical-align: top;" nowrap><code>-inputJdbcURL=<i>&lt;jdbcURL&gt;</i></code></td>
+      <td style="vertical-align: top;">JDBC URL for source database</td>
+    </tr>
+	<tr>
+      <td style="vertical-align: top;"><code>-inputJdbcUser=<i>&lt;user&gt;</i></code></td>
+      <td style="vertical-align: top;">User name for source database</td>
+    </tr>
+	<tr>
+      <td style="vertical-align: top;"><code>-inputJdbcPassword=<i>&lt;password&gt;</i></code></td>
+      <td style="vertical-align: top;">Password for source database</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><code>-inputFile=<i>&lt;file name&gt;</i></code></td>
+      <td style="vertical-align: top;">Optional. If no input DB parameters are
+given, assumes data comes from this file of INSERT statements.</td>
     </tr>
   </tbody>
 </table>
 
 <p>The usual source for the MondrianFoodMartLoader utility is
-a SQL script (<code>[-inputfile=&lt;file name&gt;]</code>). But you have already 
+a SQL script (<code>[-inputFile=&lt;file name&gt;]</code>). But you have already 
 loaded the data into one JDBC data source (say Microsoft Access), use the <code>
 -inputJdbcURL</code> and related options to copy data to another JDBC database.<p>The loader uses standard J2SE JDBC, the relevant JDBC driver JARs,
 and some classes out of Mondrian that do not rely on additional JARs.
 It has been tested against Oracle, Postgres, MySQL and Microsoft Access.</p>
 
+<p>If you the target is a JDBC database, you must create the necessary database 
+or schema first. This is database-specific.</p>
+
 <h4>Examples</h4>
 
-<p>On Linux, create FoodMart tables for MySQL from the test dataset in the SQL
+<p>On Linux, create a MySQL schema called 'foodmart', and create FoodMart tables from the test dataset in the SQL
 scripts:</p>
 
 <blockquote>
-  <p><code>$ java -cp '/mondrian/lib/mondrian.jar:/mondrian/lib/log4j-1.2.9.jar' mondrian.test.loader.MondrianFoodMartLoader<br>&nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes -jdbcDrivers=com.mysql.jdbc.Driver<br>&nbsp;&nbsp;&nbsp;&nbsp; -inputfile=/mondrian/demo/FoodMartCreateData.sql <br>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL=jdbc:mysql://localhost/foodmart?user=root&amp;password=myAdmin</code><br>
+  <p><code><i><b>$</b></i> mysqladmin create foodmart<b><i><br>
+	$</i></b> java -cp &quot;/mondrian/lib/mondrian.jar:/mondrian/lib/log4j-1.2.9.jar&quot; mondrian.test.loader.MondrianFoodMartLoader<br>&nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes -jdbcDrivers=com.mysql.jdbc.Driver<br>&nbsp;&nbsp;&nbsp;&nbsp; -inputFile=/mondrian/demo/FoodMartCreateData.sql <br>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL=&quot;jdbc:mysql://localhost/foodmart?user=root&amp;password=myAdmin&quot;</code><br>
 	</p>
 </blockquote>
 
@@ -202,11 +232,11 @@ scripts:</p>
 the Access database:</p>
 
 <blockquote>
-  <p><code>$ java -cp 'C:\mondrian\lib\mondrian.jar;C:\mondrian\lib\log4j-1.2.9.jar' mondrian.test.loader.MondrianFoodMartLoader<br>
-&nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes -jdbcDrivers=org.postgresql.Driver,sun.jdbc.odbc.JdbcOdbcDriver<br>
+  <p><code><i><b>C:\mondrian&gt;</b></i> $ java -cp &quot;C:\mondrian\lib\mondrian.jar;C:\mondrian\lib\log4j-1.2.9.jar&quot; mondrian.test.loader.MondrianFoodMartLoader<br>
+&nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes -jdbcDrivers=&quot;org.postgresql.Driver,sun.jdbc.odbc.JdbcOdbcDriver&quot;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;
-     -inputJdbcURL=jdbc:odbc:MondrianFoodMart<br>
-&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL=jdbc:postgresql://localhost/foodmart -outputJdbcUser=postgres -outputJdbcPassword=password</code></p>
+     -inputJdbcURL=&quot;jdbc:odbc:MondrianFoodMart&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL=&quot;jdbc:postgresql://localhost/foodmart&quot; -outputJdbcUser=postgres -outputJdbcPassword=password</code></p>
 </blockquote>
 
 <h2><a name="4_Configure_exec_environment">4. Configure the execution environment for testing</a>
