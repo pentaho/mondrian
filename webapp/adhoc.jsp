@@ -71,7 +71,7 @@
 
 		// #8
 		"select" + nl +
-		" {[Measures].[Unit Sales], [Measures].[Ever]} on columns," + nl +
+		" {[Measures].[Unit Sales]} on columns," + nl +
 		" [Gender].members on rows" + nl +
 		"from Sales",
 
@@ -107,10 +107,10 @@
 
 		// #12
 		"WITH" + nl +
-		"   MEMBER [Product].[Beer and Wine].[BigSeller] AS" + nl +
-		"  'IIf([Product].[Beer and Wine] > 100, \"Yes\",\"No\")'" + nl +
+		"   MEMBER [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[BigSeller] AS" + nl +
+		"  'IIf([Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine] > 100, \"Yes\",\"No\")'" + nl +
 		"SELECT" + nl +
-		"   {[Product].[BigSeller]} ON COLUMNS," + nl +
+		"   {[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[BigSeller]} ON COLUMNS," + nl +
 		"   {Store.[Store Name].Members} ON ROWS" + nl +
 		"FROM Sales",
 
@@ -131,7 +131,7 @@
 		// #14: cyclical calculated members
 		"WITH" + nl +
 		"   MEMBER [Product].[X] AS '[Product].[Y]'" + nl +
-		"   MEMBER [Product].[Y] '[Product].[X]'" + nl +
+		"   MEMBER [Product].[Y] AS '[Product].[X]'" + nl +
 		"SELECT" + nl +
 		"   {[Product].[X]} ON COLUMNS," + nl +
 		"   {Store.[Store Name].Members} ON ROWS" + nl +
@@ -148,7 +148,7 @@
 		"     [Time].[1997].CHILDREN} ON COLUMNS," + nl +
 		" {[Store].[Store Country].[USA].CHILDREN} ON ROWS" + nl +
 		" FROM [Sales]" + nl +
-		" WHERE (MEASURES.ProfitPercent)",
+		" WHERE ([Measures].[ProfitPercent])",
 
 		// #16 (= mdx sample #7, but uses virtual cube)
 		"with member [Measures].[Accumulated Sales] as 'Sum(YTD(),[Measures].[Store Sales])'" + nl +
@@ -171,7 +171,7 @@
 
 		// #19 bug: should allow 'members(n)' (and do it efficiently)
 		"select {[Measures].[Unit Sales]} on columns," + nl +
-		" {[Customers].members(0)} on rows" + nl +
+		" {[Customers].members} on rows" + nl +
 		"from [Sales]",
 
 		// #20 crossjoins on rows and columns, and a slicer
