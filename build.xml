@@ -96,7 +96,9 @@ demo/mysql/FoodMartData.sql"/>
     <pathelement location="${boot.jar.file}"/>
   </path>
 
-  <taskdef name="javacup" classname="java_cup.JavaCUPTask"/>
+  <taskdef name="javacup" classname="java_cup.JavaCUPTask">
+    <classpath refid="project.boot.classpath"/>
+  </taskdef>
   <taskdef name="xomgen" classname="mondrian.xom.XOMGenTask">
     <classpath refid="project.boot.classpath"/>
   </taskdef>
@@ -182,7 +184,7 @@ copy.properties"/>
         srcdir="${java.dir}"
         destdir="${classes.dir}"
         debug="${project.build.debug}"
-        classpathref="project.classpath">
+        classpathref="project.boot.classpath">
       <include name="mondrian/xom/**/*.java" />
     </javac>
   </target>
@@ -566,7 +568,7 @@ mondrian/resource/**/*.class"/>
         footer="&lt;a href=&quot;http://sourceforge.net/projects/mondrian&quot;&gt;&lt;img src=&quot;http://sourceforge.net/sflogo.php?group_id=35302&#38;type=1&quot; width=&quot;88&quot; height=&quot;31&quot; border=&quot;0&quot; alt=&quot;SourceForge.net_Logo&quot;&gt;&lt;/a&gt;"
         author="true">
         <link href="http://javadoc.dyndns.org/"/>
-<!-- 
+<!--
         <link href="http://java.sun.com/j2se/1.4/docs/api/"/>
         <link href="http://www.junit.org/junit/javadoc/3.7/"/>
         <link href="http://java.sun.com/products/servlet/2.2/javadoc/"/>
@@ -693,6 +695,6 @@ xalan.jar"/>
           dir="."
           includes="images/*.*"/>
     </jar>
-    
+
   </target>
 </project>
