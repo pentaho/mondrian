@@ -2596,7 +2596,14 @@ public class BuiltinFunTable extends FunTable {
             public void testGenerate(FoodMartTestCase test) {
                 test.assertAxisReturns(
                         "Generate({[Store].[USA], [Store].[USA].[CA]}, {[Store].CurrentMember.Children})",
-                        "");
+                        "[Store].[All Stores].[USA].[CA]" + nl +
+                        "[Store].[All Stores].[USA].[OR]" + nl +
+                        "[Store].[All Stores].[USA].[WA]" + nl +
+                        "[Store].[All Stores].[USA].[CA].[Alameda]" + nl +
+                        "[Store].[All Stores].[USA].[CA].[Beverly Hills]" + nl +
+                        "[Store].[All Stores].[USA].[CA].[Los Angeles]" + nl +
+                        "[Store].[All Stores].[USA].[CA].[San Diego]" + nl +
+                        "[Store].[All Stores].[USA].[CA].[San Francisco]");
             }
             public void testGenerateAll(FoodMartTestCase test) {
                 test.assertAxisReturns(
