@@ -62,11 +62,10 @@ connect as the 'guest' user.</p>
   </li>
   <li>Set <code>Server</code> to <code>perforce.eigenbase.org</code>;
     <code>Port</code> to <code>1666</code>; set <code>User</code> to
-your SourceForge username (for example, <code>jhyde</code>); set <code>
+your SourceForge username (usually <code>guest</code>, unless you are a commiter 
+	to the project); set <code>
 Client</code> to your username plus the name of your machine (for
-example, <code>jhyde.notebook</code>). <b>Note</b>: The number of
-perforce user licenses is limited, so if you don't intend to check
-anything in, please use the <code>guest</code> user.</li>
+example, <code>guest.jhyde.stilton</code>).</li>
   <li>Choose <code>ClientSpec</code> &gt; <code>New...</code> and
 create a client with the same name. Set its root to something like
 'C:\' or 'D:\work', and view specification of
@@ -179,7 +178,11 @@ Total time: 46 seconds</pre>
 <p>Before you run the regression test suite or the web application, you must 
 install the standard FoodMart dataset. This is described in the
 <a href="install.html#4_Load_the_database">installation guide</a>.</p>
-<h2><a name="6_Run_the_test_suite">6. Running the test suite</a></h2>
+
+<p>&nbsp;If you got your files from the Perforce server, you can skip the step 
+where you download the data sets: you should already have the files <code>demo/access/MondrianFoodMart.mdb</code>
+and <code>demo/FoodMartCreateData.zip</code>.</p>
+<h2><a name="6_Run_the_test_suite">Running the test suite</a></h2>
 <p>At the command line:</p>
 <blockquote>
   <pre>cd <i>${project.location}</i><br>ant test</pre>
@@ -189,13 +192,20 @@ install the standard FoodMart dataset. This is described in the
 <p>Example output:</p>
 <blockquote>
   <pre>Buildfile: C:\Documents and Settings\swood\My Documents\perforce\open\mondrian\build.xml
+
 test-postgres:
+
 sniff:
+
 prepare:
+
 parser:
   [javacup] Files are up to date.
+
 compile.xom:
+
 compile.resgen:
+
 generate.resources:
    [resgen] C:\...\src\main\mondrian\olap\MondrianResource.java is up to date
    [resgen] C:\...\src\main\mondrian\olap\MondrianResource.properties is up to date
@@ -203,11 +213,17 @@ generate.resources:
    [resgen] C:\...\src\main\mondrian\olap\MondrianResource_en_US.properties is up to date
    [resgen] C:\...\src\main\mondrian\olap\MondrianResource_de_DE.java is up to date
    [resgen] C:\...\src\main\mondrian\olap\MondrianResource_de_DE.properties is up to date
+
 def:
+
 compile.java:
+
 compile.jsp.maybe:
+
 copy.properties:
+
 compile:
+
 info:
      [echo] ==============================================================
      [echo] | Mondrian configuration info                                |
@@ -220,10 +236,12 @@ info:
      [echo] weblogic.home         = ${env.WEBLOGIC_HOME}
      [echo] mondrian.foodmart.catalogURL = file:///C:\.../demo/FoodMart.xml
      [echo] ==============================================================
+
 compile.tests:
     [javac] Compiling 28 source files to C:\...\testclasses
     [javac] Note: C:\...\testsrc\main\mondrian\test\ParameterTest.java uses or overrides a deprecated API.
     [javac] Note: Recompile with -deprecation for details.
+
 test-dbms:
      [echo] Connecting to jdbc:postgresql://localhost/FM3
      [java] Mondrian: properties loaded from 'file:/C:/.../mondrian.properties'
@@ -275,6 +293,48 @@ Total time: 12 minutes 13 seconds
 to the <i></i><code><i>TOMCAT_HOME</i>/webapps</code> directory.</p>
 
 <p>Now, start Tomcat and hit <a href="http://localhost:8080/mondrian">http://localhost:8080/mondrian</a>.</p>
+
+<p>Coding style</p>
+<h2><a name="7_2_Coding_guidelines">Coding guidelines</a></h2>
+<p>If you are contributing code, please follow the same guidelines used for the 
+rest of the code. (&quot;When in Rome, do as the Romans do.&quot;)</p>
+
+<p>Code content:</p>
+<ul>
+  <li>Declare variables as near to their first use as possible.</li>
+  <li>Don't initialize variables with 'dummy' values just
+      to shut up the compiler.</li>
+  <li>One declaration per line is recommended.</li>
+  <li>Only one top-level class should be defined per java file.</li>
+</ul>
+
+<p>Documentation and comments:</p>
+<ul>
+  <li>Source files must contain copyright and license notices.</li>
+  <li>Classes and public methods must have javadoc.</li>
+  <li>Write Javadoc comments on
+      methods in the present active ('Collects garbage.'), <em>not</em>
+      the imperative ('Collect garbage.'), passive ('Garbage is collected.'),
+      or future active ('Will collect garbage.').</li>
+  <li>When editing HTML documents, please don't use an editor which reformats
+      the HTML source (such as Microsoft Word).</li>
+</ul>
+
+<p>Spacing and indentation:</p>
+<ul>
+  <li>Use spaces, not tabs.</li>
+  <li>Indentation 4.</li>
+  <li>Open braces on the same line as the preceding 'if', 'else', 'while'
+      statement, or method or 'class' declaration.</li>
+  <li>Use braces even for single-line blocks.</li>
+  <li>Try to keep lines shorter than 80 characters.</li>
+</ul>
+
+<p>The following images show my spacing and indentation settings in IntelliJ.</p>
+
+<p><img border="0" src="code_indentation.png" width="909" height="908"></p>
+
+<p><img border="0" src="code_spacing.png" width="776" height="903"></p>
 
 <h2><a name="Appendix_A_Product_installation_instructions">Appendix A. Product
 installation instructions</a></h2>
