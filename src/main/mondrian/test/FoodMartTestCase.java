@@ -154,6 +154,15 @@ public class FoodMartTestCase extends TestCase {
 		checkThrowable(throwable, pattern);
 	}
 
+	/**
+	 * Runs a query with a given expression on an axis, and asserts that it
+	 * returns the expected string.
+	 */
+	public void assertAxisReturns(String expression, String expected) {
+		Axis axis = executeAxis2(expression);
+		assertEquals(expected, toString(axis.positions));
+	}
+
 	private static String getStackTrace(Throwable e) {
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);

@@ -390,7 +390,6 @@ public class BuiltinFunTable extends FunTable {
 	 * possible.
 	 **/
 	public FunDef getDef(FunCall call) {
-		boolean bIgnoreCase = true;	// this may become a parameter
 		String name = call.getFunName();
 		String upperName = name.toUpperCase();
 
@@ -1595,11 +1594,9 @@ public class BuiltinFunTable extends FunTable {
 					return set;
 				}
 				public void testBottomCount(FoodMartTestCase test) {
-					Axis axis = test.executeAxis2(
-							"BottomCount({[Promotion Media].[Media Type].members}, 2, [Measures].[Unit Sales])");
-					String expected = "[Promotion Media].[All Media].[Radio]" + nl +
-							"[Promotion Media].[All Media].[Sunday Paper, Radio, TV]";
-					test.assertEquals(expected, test.toString(axis.positions));
+					test.assertAxisReturns("BottomCount({[Promotion Media].[Media Type].members}, 2, [Measures].[Unit Sales])",
+							"[Promotion Media].[All Media].[Radio]" + nl +
+							"[Promotion Media].[All Media].[Sunday Paper, Radio, TV]");
 				}
 				//todo: test unordered
 
@@ -1616,11 +1613,9 @@ public class BuiltinFunTable extends FunTable {
 
 				}
 				public void testBottomPercent(FoodMartTestCase test) {
-					Axis axis = test.executeAxis2(
-							"BottomPercent({[Promotion Media].[Media Type].members}, 1, [Measures].[Unit Sales])");
-					String expected = "[Promotion Media].[All Media].[Radio]" + nl +
-							"[Promotion Media].[All Media].[Sunday Paper, Radio, TV]";
-					test.assertEquals(expected, test.toString(axis.positions));
+					test.assertAxisReturns("BottomPercent({[Promotion Media].[Media Type].members}, 1, [Measures].[Unit Sales])",
+							"[Promotion Media].[All Media].[Radio]" + nl +
+							"[Promotion Media].[All Media].[Sunday Paper, Radio, TV]");
 				}
 				//todo: test precision
 			}));
@@ -1637,11 +1632,9 @@ public class BuiltinFunTable extends FunTable {
 
 				}
 				public void testBottomSum(FoodMartTestCase test) {
-					Axis axis = test.executeAxis2(
-							"BottomSum({[Promotion Media].[Media Type].members}, 5000, [Measures].[Unit Sales])");
-					String expected = "[Promotion Media].[All Media].[Radio]" + nl +
-							"[Promotion Media].[All Media].[Sunday Paper, Radio, TV]";
-					test.assertEquals(expected, test.toString(axis.positions));
+					test.assertAxisReturns("BottomSum({[Promotion Media].[Media Type].members}, 5000, [Measures].[Unit Sales])",
+							"[Promotion Media].[All Media].[Radio]" + nl +
+							"[Promotion Media].[All Media].[Sunday Paper, Radio, TV]");
 				}
 			}));
 		define(new FunDefBase("Children", "<Member>.Children", "Returns the children of a member.", "pxm") {
@@ -1718,13 +1711,13 @@ public class BuiltinFunTable extends FunTable {
 			}
 
 			public void testCrossjoinNested(FoodMartTestCase test) {
-				final Axis axis = test.executeAxis2(
+				test.assertAxisReturns(
 						"  CrossJoin(" + nl +
 						"    CrossJoin(" + nl +
 						"      [Gender].members," + nl +
 						"      [Marital Status].members)," + nl +
-						"   {[Store], [Store].children})");
-				test.assertEquals(
+						"   {[Store], [Store].children})",
+
 						"{[Gender].[All Gender], [Marital Status].[All Marital Status], [Store].[All Stores]}" + nl +
 						"{[Gender].[All Gender], [Marital Status].[All Marital Status], [Store].[All Stores].[Canada]}" + nl +
 						"{[Gender].[All Gender], [Marital Status].[All Marital Status], [Store].[All Stores].[Mexico]}" + nl +
@@ -1760,8 +1753,7 @@ public class BuiltinFunTable extends FunTable {
 						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores]}" + nl +
 						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Canada]}" + nl +
 						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[Mexico]}" + nl +
-						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[USA]}",
-						test.toString(axis.positions));
+						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S], [Store].[All Stores].[USA]}");
 			}
 		});
 		define(new MultiResolver(
@@ -1936,38 +1928,38 @@ public class BuiltinFunTable extends FunTable {
 				};
 			}
 			public void testHierarchize(FoodMartTestCase test) {
-				final Axis axis = test.executeAxis2(
+				test.assertAxisReturns(
 						"Hierarchize(" + nl +
 						"    {[Product].[All Products], " +
 						"     [Product].[Food]," + nl +
 						"     [Product].[Drink]," + nl +
 						"     [Product].[Non-Consumable]," + nl +
 						"     [Product].[Food].[Eggs]," + nl +
-						"     [Product].[Drink].[Dairy]})");
-				final String expected = "[Product].[All Products]" + nl +
+						"     [Product].[Drink].[Dairy]})",
+
+						"[Product].[All Products]" + nl +
 						"[Product].[All Products].[Drink]" + nl +
 						"[Product].[All Products].[Drink].[Dairy]" + nl +
 						"[Product].[All Products].[Food]" + nl +
 						"[Product].[All Products].[Food].[Eggs]" + nl +
-						"[Product].[All Products].[Non-Consumable]";
-				test.assertEquals(expected, test.toString(axis.positions));
+						"[Product].[All Products].[Non-Consumable]");
 			}
 			public void testHierarchizePost(FoodMartTestCase test) {
-				final Axis axis = test.executeAxis2(
+				test.assertAxisReturns(
 						"Hierarchize(" + nl +
 						"    {[Product].[All Products], " +
 						"     [Product].[Food]," + nl +
 						"     [Product].[Food].[Eggs]," + nl +
 						"     [Product].[Drink].[Dairy]}," + nl +
-						"  POST)");
-				final String expected = "[Product].[All Products].[Drink].[Dairy]" + nl +
+						"  POST)",
+
+						"[Product].[All Products].[Drink].[Dairy]" + nl +
 						"[Product].[All Products].[Food].[Eggs]" + nl +
 						"[Product].[All Products].[Food]" + nl +
-						"[Product].[All Products]";
-				test.assertEquals(expected, test.toString(axis.positions));
+						"[Product].[All Products]");
 			}
 			public void testHierarchizeCrossJoinPre(FoodMartTestCase test) {
-				final Axis axis = test.executeAxis2(
+				test.assertAxisReturns(
 						"Hierarchize(" + nl +
 						"  CrossJoin(" + nl +
 						"    {[Product].[All Products], " +
@@ -1975,8 +1967,9 @@ public class BuiltinFunTable extends FunTable {
 						"     [Product].[Food].[Eggs]," + nl +
 						"     [Product].[Drink].[Dairy]}," + nl +
 						"    [Gender].MEMBERS)," + nl +
-						"  PRE)");
-				final String expected = "{[Product].[All Products], [Gender].[All Gender]}" + nl +
+						"  PRE)",
+
+						"{[Product].[All Products], [Gender].[All Gender]}" + nl +
 						"{[Product].[All Products], [Gender].[All Gender].[F]}" + nl +
 						"{[Product].[All Products], [Gender].[All Gender].[M]}" + nl +
 						"{[Product].[All Products].[Drink].[Dairy], [Gender].[All Gender]}" + nl +
@@ -1987,11 +1980,10 @@ public class BuiltinFunTable extends FunTable {
 						"{[Product].[All Products].[Food], [Gender].[All Gender].[M]}" + nl +
 						"{[Product].[All Products].[Food].[Eggs], [Gender].[All Gender]}" + nl +
 						"{[Product].[All Products].[Food].[Eggs], [Gender].[All Gender].[F]}" + nl +
-						"{[Product].[All Products].[Food].[Eggs], [Gender].[All Gender].[M]}";
-				test.assertEquals(expected, test.toString(axis.positions));
+						"{[Product].[All Products].[Food].[Eggs], [Gender].[All Gender].[M]}");
 			}
 			public void testHierarchizeCrossJoinPost(FoodMartTestCase test) {
-				final Axis axis = test.executeAxis2(
+				test.assertAxisReturns(
 						"Hierarchize(" + nl +
 						"  CrossJoin(" + nl +
 						"    {[Product].[All Products], " +
@@ -1999,8 +1991,9 @@ public class BuiltinFunTable extends FunTable {
 						"     [Product].[Food].[Eggs]," + nl +
 						"     [Product].[Drink].[Dairy]}," + nl +
 						"    [Gender].MEMBERS)," + nl +
-						"  POST)");
-				final String expected = "{[Product].[All Products].[Drink].[Dairy], [Gender].[All Gender].[F]}" + nl +
+						"  POST)",
+
+						"{[Product].[All Products].[Drink].[Dairy], [Gender].[All Gender].[F]}" + nl +
 						"{[Product].[All Products].[Drink].[Dairy], [Gender].[All Gender].[M]}" + nl +
 						"{[Product].[All Products].[Drink].[Dairy], [Gender].[All Gender]}" + nl +
 						"{[Product].[All Products].[Food].[Eggs], [Gender].[All Gender].[F]}" + nl +
@@ -2011,8 +2004,7 @@ public class BuiltinFunTable extends FunTable {
 						"{[Product].[All Products].[Food], [Gender].[All Gender]}" + nl +
 						"{[Product].[All Products], [Gender].[All Gender].[F]}" + nl +
 						"{[Product].[All Products], [Gender].[All Gender].[M]}" + nl +
-						"{[Product].[All Products], [Gender].[All Gender]}";
-				test.assertEquals(expected, test.toString(axis.positions));
+						"{[Product].[All Products], [Gender].[All Gender]}");
 			}
 		});
 
@@ -2206,7 +2198,7 @@ public class BuiltinFunTable extends FunTable {
 						"Row #8: 57" + nl);
 			}
 			public void testOrderHierarchicalDesc(FoodMartTestCase test) {
-				final Axis axis = test.executeAxis2(
+				test.assertAxisReturns(
 						"Order(" + nl +
 						"    {[Product].[All Products], " +
 						"     [Product].[Food]," + nl +
@@ -2215,17 +2207,17 @@ public class BuiltinFunTable extends FunTable {
 						"     [Product].[Food].[Eggs]," + nl +
 						"     [Product].[Drink].[Dairy]}," + nl +
 						"  [Measures].[Unit Sales]," + nl +
-						"  DESC)");
-				final String expected = "[Product].[All Products]" + nl +
+						"  DESC)",
+
+						"[Product].[All Products]" + nl +
 						"[Product].[All Products].[Food]" + nl +
 						"[Product].[All Products].[Food].[Eggs]" + nl +
 						"[Product].[All Products].[Non-Consumable]" + nl +
 						"[Product].[All Products].[Drink]" + nl +
-						"[Product].[All Products].[Drink].[Dairy]";
-				test.assertEquals(expected, test.toString(axis.positions));
+						"[Product].[All Products].[Drink].[Dairy]");
 			}
 			public void testOrderCrossJoinDesc(FoodMartTestCase test) {
-				final Axis axis = test.executeAxis2(
+				test.assertAxisReturns(
 						"Order(" + nl +
 						"  CrossJoin(" + nl +
 						"    {[Gender].[M], [Gender].[F]}," + nl +
@@ -2236,8 +2228,9 @@ public class BuiltinFunTable extends FunTable {
 						"     [Product].[Food].[Eggs]," + nl +
 						"     [Product].[Drink].[Dairy]})," + nl +
 						"  [Measures].[Unit Sales]," + nl +
-						"  DESC)");
-				final String expected = "{[Gender].[All Gender].[M], [Product].[All Products]}" + nl +
+						"  DESC)",
+
+						"{[Gender].[All Gender].[M], [Product].[All Products]}" + nl +
 						"{[Gender].[All Gender].[M], [Product].[All Products].[Food]}" + nl +
 						"{[Gender].[All Gender].[M], [Product].[All Products].[Food].[Eggs]}" + nl +
 						"{[Gender].[All Gender].[M], [Product].[All Products].[Non-Consumable]}" + nl +
@@ -2248,8 +2241,7 @@ public class BuiltinFunTable extends FunTable {
 						"{[Gender].[All Gender].[F], [Product].[All Products].[Food].[Eggs]}" + nl +
 						"{[Gender].[All Gender].[F], [Product].[All Products].[Non-Consumable]}" + nl +
 						"{[Gender].[All Gender].[F], [Product].[All Products].[Drink]}" + nl +
-						"{[Gender].[All Gender].[F], [Product].[All Products].[Drink].[Dairy]}";
-				test.assertEquals(expected, test.toString(axis.positions));
+						"{[Gender].[All Gender].[F], [Product].[All Products].[Drink].[Dairy]}");
 			}
 			public void testOrderBug656802(FoodMartTestCase test) {
 				// Note:
@@ -2422,19 +2414,16 @@ public class BuiltinFunTable extends FunTable {
 						return result;
 					}
 					public void testToggleDrillState(FoodMartTestCase test) {
-						Axis axis = test.executeAxis2(
-								"ToggleDrillState({[Customers].[USA],[Customers].[Canada]},{[Customers].[USA],[Customers].[USA].[CA]})");
-						String expected = "[Customers].[All Customers].[USA]" + nl +
+						test.assertAxisReturns("ToggleDrillState({[Customers].[USA],[Customers].[Canada]},{[Customers].[USA],[Customers].[USA].[CA]})",
+								"[Customers].[All Customers].[USA]" + nl +
 								"[Customers].[All Customers].[USA].[CA]" + nl +
 								"[Customers].[All Customers].[USA].[OR]" + nl +
 								"[Customers].[All Customers].[USA].[WA]" + nl +
-								"[Customers].[All Customers].[Canada]";
-						test.assertEquals(expected, test.toString(axis.positions));
+								"[Customers].[All Customers].[Canada]");
 					}
 					public void testToggleDrillState2(FoodMartTestCase test) {
-						Axis axis = test.executeAxis2(
-								"ToggleDrillState([Product].[Product Department].members, {[Product].[All Products].[Food].[Snack Foods]})");
-						String expected = "[Product].[All Products].[Drink].[Alcoholic Beverages]" + nl +
+						test.assertAxisReturns("ToggleDrillState([Product].[Product Department].members, {[Product].[All Products].[Food].[Snack Foods]})",
+								"[Product].[All Products].[Drink].[Alcoholic Beverages]" + nl +
 								"[Product].[All Products].[Drink].[Beverages]" + nl +
 								"[Product].[All Products].[Drink].[Dairy]" + nl +
 								"[Product].[All Products].[Food].[Baked Goods]" + nl +
@@ -2457,39 +2446,36 @@ public class BuiltinFunTable extends FunTable {
 								"[Product].[All Products].[Non-Consumable].[Checkout]" + nl +
 								"[Product].[All Products].[Non-Consumable].[Health and Hygiene]" + nl +
 								"[Product].[All Products].[Non-Consumable].[Household]" + nl +
-								"[Product].[All Products].[Non-Consumable].[Periodicals]";
-						test.assertEquals(expected, test.toString(axis.positions));
+								"[Product].[All Products].[Non-Consumable].[Periodicals]");
 					}
 					public void testToggleDrillState3(FoodMartTestCase test) {
-						Axis axis = test.executeAxis2(
+						test.assertAxisReturns(
 								"ToggleDrillState(" +
 								"{[Time].[1997].[Q1]," +
 								" [Time].[1997].[Q2]," +
 								" [Time].[1997].[Q2].[4]," +
 								" [Time].[1997].[Q2].[6]," +
 								" [Time].[1997].[Q3]}," +
-								"{[Time].[1997].[Q2]})");
-						String expected = "[Time].[1997].[Q1]" + nl +
+								"{[Time].[1997].[Q2]})",
+								"[Time].[1997].[Q1]" + nl +
 								"[Time].[1997].[Q2]" + nl +
-								"[Time].[1997].[Q3]";
-						test.assertEquals(expected, test.toString(axis.positions));
+								"[Time].[1997].[Q3]");
 					}
 					// bug 634860
 					public void testToggleDrillStateTuple(FoodMartTestCase test) {
-                        Axis axis = test.executeAxis2(
+                        test.assertAxisReturns(
 								"ToggleDrillState(" + nl +
 								"{([Store].[All Stores].[USA].[CA]," +
 								"  [Product].[All Products].[Drink].[Alcoholic Beverages])," + nl +
 								" ([Store].[All Stores].[USA]," +
 								"  [Product].[All Products].[Drink])}," + nl +
-								"{[Store].[All stores].[USA].[CA]})");
-						String expected = "{[Store].[All Stores].[USA].[CA], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
+								"{[Store].[All stores].[USA].[CA]})",
+								"{[Store].[All Stores].[USA].[CA], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
 								"{[Store].[All Stores].[USA].[CA].[Beverly Hills], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
 								"{[Store].[All Stores].[USA].[CA].[Los Angeles], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
 								"{[Store].[All Stores].[USA].[CA].[San Diego], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
 								"{[Store].[All Stores].[USA].[CA].[San Francisco], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
-								"{[Store].[All Stores].[USA], [Product].[All Products].[Drink]}";
-						test.assertEquals(expected, test.toString(axis.positions));
+								"{[Store].[All Stores].[USA], [Product].[All Products].[Drink]}");
 					}
 				}));
 		define(new FunkResolver(
@@ -2512,11 +2498,9 @@ public class BuiltinFunTable extends FunTable {
 						return set;
 					}
 					public void testTopCount(FoodMartTestCase test) {
-						Axis axis = test.executeAxis2(
-								"TopCount({[Promotion Media].[Media Type].members}, 2, [Measures].[Unit Sales])");
-						String expected = "[Promotion Media].[All Media].[No Media]" + nl +
-								"[Promotion Media].[All Media].[Daily Paper, Radio, TV]";
-						test.assertEquals(expected, test.toString(axis.positions));
+						test.assertAxisReturns("TopCount({[Promotion Media].[Media Type].members}, 2, [Measures].[Unit Sales])",
+								"[Promotion Media].[All Media].[No Media]" + nl +
+								"[Promotion Media].[All Media].[Daily Paper, Radio, TV]");
 					}
 				}));
 
@@ -2532,10 +2516,8 @@ public class BuiltinFunTable extends FunTable {
 
 				}
 				public void testTopPercent(FoodMartTestCase test) {
-					Axis axis = test.executeAxis2(
-							"TopPercent({[Promotion Media].[Media Type].members}, 70, [Measures].[Unit Sales])");
-					String expected = "[Promotion Media].[All Media].[No Media]";
-					test.assertEquals(expected, test.toString(axis.positions));
+					test.assertAxisReturns("TopPercent({[Promotion Media].[Media Type].members}, 70, [Measures].[Unit Sales])",
+							"[Promotion Media].[All Media].[No Media]");
 				}
 				//todo: test precision
 			}));
@@ -2552,11 +2534,9 @@ public class BuiltinFunTable extends FunTable {
 
 				}
 				public void testTopSum(FoodMartTestCase test) {
-					Axis axis = test.executeAxis2(
-							"TopSum({[Promotion Media].[Media Type].members}, 200000, [Measures].[Unit Sales])");
-					String expected = "[Promotion Media].[All Media].[No Media]" + nl +
-							"[Promotion Media].[All Media].[Daily Paper, Radio, TV]";
-					test.assertEquals(expected, test.toString(axis.positions));
+					test.assertAxisReturns("TopSum({[Promotion Media].[Media Type].members}, 200000, [Measures].[Unit Sales])",
+							"[Promotion Media].[All Media].[No Media]" + nl +
+							"[Promotion Media].[All Media].[Daily Paper, Radio, TV]");
 				}
 			}));
 
@@ -2588,41 +2568,37 @@ public class BuiltinFunTable extends FunTable {
 				};
 			}
 			public void testUnionAll(FoodMartTestCase test) {
-				final Axis axis = test.executeAxis2("Union({[Gender].[M]}, {[Gender].[F]}, ALL)");
-				String expected = "[Gender].[All Gender].[M]" + nl +
-						"[Gender].[All Gender].[F]"; // order is preserved
-				test.assertEquals(expected, test.toString(axis.positions));
+				test.assertAxisReturns("Union({[Gender].[M]}, {[Gender].[F]}, ALL)",
+						"[Gender].[All Gender].[M]" + nl +
+						"[Gender].[All Gender].[F]"); // order is preserved
 			}
 			public void testUnion(FoodMartTestCase test) {
-				final Axis axis = test.executeAxis2("Union({[Store].[USA], [Store].[USA], [Store].[USA].[OR]}, {[Store].[USA].[CA], [Store].[USA]})");
-				String expected = "[Store].[All Stores].[USA]" + nl +
+				test.assertAxisReturns("Union({[Store].[USA], [Store].[USA], [Store].[USA].[OR]}, {[Store].[USA].[CA], [Store].[USA]})",
+						"[Store].[All Stores].[USA]" + nl +
 						"[Store].[All Stores].[USA].[OR]" + nl +
-						"[Store].[All Stores].[USA].[CA]";
-				test.assertEquals(expected, test.toString(axis.positions));
+						"[Store].[All Stores].[USA].[CA]");
 			}
 			public void testUnionEmptyBoth(FoodMartTestCase test) {
-				final Axis axis = test.executeAxis2("Union({}, {})");
-				String expected = "";
-				test.assertEquals(expected, test.toString(axis.positions));
+				test.assertAxisReturns("Union({}, {})",
+						"");
 			}
 			public void testUnionEmptyRight(FoodMartTestCase test) {
-				final Axis axis = test.executeAxis2("Union({[Gender].[M]}, {})");
-				String expected = "[Gender].[All Gender].[M]";
-				test.assertEquals(expected, test.toString(axis.positions));
+				test.assertAxisReturns("Union({[Gender].[M]}, {})",
+						"[Gender].[All Gender].[M]");
 			}
 			public void testUnionTuple(FoodMartTestCase test) {
-				final Axis axis = test.executeAxis2(
+				test.assertAxisReturns(
 						"Union({" +
 						" ([Gender].[M], [Marital Status].[S])," +
 						" ([Gender].[F], [Marital Status].[S])" +
 						"}, {" +
 						" ([Gender].[M], [Marital Status].[M])," +
 						" ([Gender].[M], [Marital Status].[S])" +
-						"})");
-				String expected = "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S]}" + nl +
+						"})",
+
+						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S]}" + nl +
 						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S]}" + nl +
-						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M]}";
-				test.assertEquals(expected, test.toString(axis.positions));
+						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M]}");
 			}
 			public void testUnionQuery(FoodMartTestCase test) {
 				Result result = test.runQuery(
@@ -2683,46 +2659,81 @@ public class BuiltinFunTable extends FunTable {
 			}
 
 			public void testRange(FoodMartTestCase test) {
-				final Axis axis = test.executeAxis2("[Time].[1997].[Q1].[2] : [Time].[1997].[Q2].[5]");
-				String expected = "[Time].[1997].[Q1].[2]" + nl +
+				test.assertAxisReturns("[Time].[1997].[Q1].[2] : [Time].[1997].[Q2].[5]",
+						"[Time].[1997].[Q1].[2]" + nl +
 						"[Time].[1997].[Q1].[3]" + nl +
 						"[Time].[1997].[Q2].[4]" + nl +
-						"[Time].[1997].[Q2].[5]"; // not parents
-				test.assertEquals(expected, test.toString(axis.positions));
+						"[Time].[1997].[Q2].[5]"); // not parents
 			}
-			public void _testRangeLarge(FoodMartTestCase test) {
-				final Axis axis = test.executeAxis2("[Customers].[USA].[CA].[San Francisco] : [Customers].[USA].[WA].[Seattle]");
-				String expected = "[Time].[1997].[Q1].[2]" + nl +
-						"[Time].[1997].[Q1].[3]" + nl +
-						"[Time].[1997].[Q2].[4]" + nl +
-						"[Time].[1997].[Q2].[5]"; // not parents
-				test.assertEquals(expected, test.toString(axis.positions));
+			/**
+			 * Large dimensions use a different member reader, therefore need to
+			 * be tested separately.
+			 */
+			public void testRangeLarge(FoodMartTestCase test) {
+				test.assertAxisReturns("[Customers].[USA].[CA].[San Francisco] : [Customers].[USA].[WA].[Bellingham]",
+						"[Customers].[All Customers].[USA].[CA].[San Francisco]" + nl +
+						"[Customers].[All Customers].[USA].[CA].[San Gabriel]" + nl +
+						"[Customers].[All Customers].[USA].[CA].[San Jose]" + nl +
+						"[Customers].[All Customers].[USA].[CA].[Santa Cruz]" + nl +
+						"[Customers].[All Customers].[USA].[CA].[Santa Monica]" + nl +
+						"[Customers].[All Customers].[USA].[CA].[Spring Valley]" + nl +
+						"[Customers].[All Customers].[USA].[CA].[Torrance]" + nl +
+						"[Customers].[All Customers].[USA].[CA].[West Covina]" + nl +
+						"[Customers].[All Customers].[USA].[CA].[Woodland Hills]" + nl +
+						"[Customers].[All Customers].[USA].[OR].[Albany]" + nl +
+						"[Customers].[All Customers].[USA].[OR].[Beaverton]" + nl +
+						"[Customers].[All Customers].[USA].[OR].[Corvallis]" + nl +
+						"[Customers].[All Customers].[USA].[OR].[Lake Oswego]" + nl +
+						"[Customers].[All Customers].[USA].[OR].[Lebanon]" + nl +
+						"[Customers].[All Customers].[USA].[OR].[Milwaukie]" + nl +
+						"[Customers].[All Customers].[USA].[OR].[Oregon City]" + nl +
+						"[Customers].[All Customers].[USA].[OR].[Portland]" + nl +
+						"[Customers].[All Customers].[USA].[OR].[Salem]" + nl +
+						"[Customers].[All Customers].[USA].[OR].[W. Linn]" + nl +
+						"[Customers].[All Customers].[USA].[OR].[Woodburn]" + nl +
+						"[Customers].[All Customers].[USA].[WA].[Anacortes]" + nl +
+						"[Customers].[All Customers].[USA].[WA].[Ballard]" + nl +
+						"[Customers].[All Customers].[USA].[WA].[Bellingham]");
 			}
 			public void testRangeStartEqualsEnd(FoodMartTestCase test) {
-				final Axis axis = test.executeAxis2("[Time].[1997].[Q3].[7] : [Time].[1997].[Q3].[7]");
-				String expected = "[Time].[1997].[Q3].[7]";
-				test.assertEquals(expected, test.toString(axis.positions));
+				test.assertAxisReturns("[Time].[1997].[Q3].[7] : [Time].[1997].[Q3].[7]",
+						"[Time].[1997].[Q3].[7]");
+			}
+			public void testRangeStartEqualsEndLarge(FoodMartTestCase test) {
+				test.assertAxisReturns("[Customers].[USA].[CA] : [Customers].[USA].[CA]",
+						"[Customers].[All Customers].[USA].[CA]");
 			}
 			public void testRangeEndBeforeStart(FoodMartTestCase test) {
-				final Axis axis = test.executeAxis2("[Time].[1997].[Q3].[7] : [Time].[1997].[Q2].[5]");
-				String expected = "[Time].[1997].[Q2].[5]" + nl +
+				test.assertAxisReturns("[Time].[1997].[Q3].[7] : [Time].[1997].[Q2].[5]",
+						"[Time].[1997].[Q2].[5]" + nl +
 						"[Time].[1997].[Q2].[6]" + nl +
-						"[Time].[1997].[Q3].[7]"; // same as if reversed
-				test.assertEquals(expected, test.toString(axis.positions));
+						"[Time].[1997].[Q3].[7]"); // same as if reversed
+			}
+			public void testRangeEndBeforeStartLarge(FoodMartTestCase test) {
+				test.assertAxisReturns("[Customers].[USA].[WA] : [Customers].[USA].[CA]",
+						"[Customers].[All Customers].[USA].[CA]" + nl +
+						"[Customers].[All Customers].[USA].[OR]" + nl +
+						"[Customers].[All Customers].[USA].[WA]");
 			}
 			public void testRangeBetweenDifferentLevelsIsError(FoodMartTestCase test) {
-				test.assertAxisThrows(
-						"[Time].[1997].[Q2] : [Time].[1997].[Q2].[5]",
+				test.assertAxisThrows("[Time].[1997].[Q2] : [Time].[1997].[Q2].[5]",
 						"Members must belong to the same level");
 			}
 			public void testRangeBoundedByAll(FoodMartTestCase test) {
-				final Axis axis = test.executeAxis2("[Gender] : [Gender]");
-				String expected = "[Gender].[All Gender]";
-				test.assertEquals(expected, test.toString(axis.positions));
+				test.assertAxisReturns("[Gender] : [Gender]",
+						"[Gender].[All Gender]");
+			}
+			public void testRangeBoundedByAllLarge(FoodMartTestCase test) {
+				test.assertAxisReturns("[Customers].DefaultMember : [Customers]",
+						"[Customers].[All Customers]");
 			}
 			public void testRangeBoundedByNull(FoodMartTestCase test) {
-				final Axis axis = test.executeAxis2("[Gender].[F] : [Gender].[M].NextMember");
-				test.assertTrue(axis.positions.length == 0);
+				test.assertAxisReturns("[Gender].[F] : [Gender].[M].NextMember",
+						"");
+			}
+			public void testRangeBoundedByNullLarge(FoodMartTestCase test) {
+				test.assertAxisReturns("[Customers].PrevMember : [Customers].[USA].[OR]",
+						"");
 			}
 		});
 

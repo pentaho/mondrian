@@ -218,12 +218,10 @@ class SqlMemberSource implements MemberReader
 			ArrayList list = new ArrayList();
 			HashMap map = new HashMap();
 			RolapMember root = null;
-			int ordinal = 0;
 			if (hierarchy.hasAll()) {
 				root = new RolapMember(
 					null, (RolapLevel) hierarchy.getLevels()[0],
 					null, hierarchy.getAllMemberName());
-				root.ordinal = ordinal++;
 				list.add(root);
 			}
 			while (resultSet.next()) {
@@ -243,7 +241,6 @@ class SqlMemberSource implements MemberReader
 					member = (RolapMember) map.get(key);
 					if (member == null) {
 						member = new RolapMember(parent, level, value);
-						member.ordinal = ordinal++;
 						list.add(member);
 						map.put(key, member);
 					}
@@ -366,7 +363,6 @@ class SqlMemberSource implements MemberReader
 			resultSet = RolapUtil.executeQuery(
 					jdbcConnection, sql, "SqlMemberSource.getMembersInLevel");
 			ArrayList list = new ArrayList();
-			int ordinal = 0;
 			final int levelDepth = level.getDepth();
 			RolapMember allMember = null;
 			if (hierarchy.hasAll()) {
@@ -396,7 +392,6 @@ class SqlMemberSource implements MemberReader
 					member = cache.getMember(key);
 					if (member == null) {
 						member = new RolapMember(parent, level2, value);
-						member.ordinal = ordinal;
 						for (int j = 0; j < level2.properties.length; j++) {
 							RolapProperty property = level2.properties[j];
 							member.setProperty(
@@ -430,7 +425,6 @@ class SqlMemberSource implements MemberReader
 							siblings[i].add(member);
 						}
 					}
-					ordinal++;
 				}
 				list.add(member);
 			}
@@ -466,7 +460,6 @@ class SqlMemberSource implements MemberReader
 		if (hierarchy.hasAll()) {
 			RolapMember root = new RolapMember(
 				null, level0, null, hierarchy.getAllMemberName());
-			root.ordinal = 0;
 			return new RolapMember[] {root};
 		}
 		return getMembersInLevel(level0, 0, Integer.MAX_VALUE);
@@ -541,7 +534,6 @@ class SqlMemberSource implements MemberReader
 		try {
 			resultSet = RolapUtil.executeQuery(
 					jdbcConnection, sql, "SqlMemberSource.getMemberChildren");
-			int ordinal = 0;
 			while (resultSet.next()) {
 				Object value = resultSet.getObject(1);
 				if (value == null) {
@@ -550,9 +542,7 @@ class SqlMemberSource implements MemberReader
 				Object key = cache.makeKey(parentMember, value);
 				RolapMember member = cache.getMember(key);
 				if (member == null) {
-					member = new RolapMember(
-						parentMember, childLevel, value);
-					member.ordinal = ordinal++; //resultSet.getInt(2);
+					member = new RolapMember(parentMember, childLevel, value);
 					cache.putMember(key, member);
 				}
 				list.add(member);

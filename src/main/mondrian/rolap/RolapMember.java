@@ -26,6 +26,9 @@ import java.util.Map;
  */
 class RolapMember extends MemberBase
 {
+	/** Ordinal of the member within the hierarchy. Some member readers do not
+	 * use this property; in which case, they should leave it as its default,
+	 * -1. */
 	int ordinal;
 	Object key;
 	/**
@@ -48,6 +51,7 @@ class RolapMember extends MemberBase
 		this.name = name;
 		this.caption = name;
 		this.key = key;
+		this.ordinal = -1;
 		this.memberType = 1; // adMemberRegular
 		this.uniqueName = (parentMember == null)
 			? Util.makeFqName(getHierarchy(), name)

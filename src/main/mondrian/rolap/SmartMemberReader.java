@@ -229,9 +229,13 @@ public class SmartMemberReader implements MemberReader, MemberCache
 	/**
 	 * Reads the children of <code>member</code> into cache, and also into
 	 * <code>result</code>.
+	 *
+	 * @param result Children are written here, in order
+	 * @param members Members whose children to read
+	 * @pre isSorted(members)
 	 **/
-	private void readMemberChildren(ArrayList result, RolapMember[] members)
-	{
+	private void readMemberChildren(ArrayList result, RolapMember[] members) {
+		Util.assertPrecondition(isSorted(members), "isSorted(members)");
 		RolapMember[] children = source.getMemberChildren(members);
 		// Put them in a temporary hash table first. Register them later, when
 		// we know their size (hence their 'cost' to the cache pool).
@@ -260,6 +264,26 @@ public class SmartMemberReader implements MemberReader, MemberCache
 				}
 			}
 		}
+	}
+
+	/**
+	 * Returns true if every element of <code>members</code> is not null and is
+	 * strictly less than the following element; false otherwise.
+	 */
+	public boolean isSorted(RolapMember[] members) {
+		if (members.length > 0 && members[0] == null) {
+			// Special case check for 0th element, just in case length == 1.
+			return false;
+		}
+		for (int i = 1; i < members.length; i++) {
+			RolapMember m0 = members[i - 1],
+					m1 = members[i];
+			if (m1 == null ||
+					compare(m0, m1, false) >= 0) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	// synchronization: Must synchronize, because uses mapMemberToChildren
@@ -350,18 +374,46 @@ public class SmartMemberReader implements MemberReader, MemberCache
 
 	public void getMemberRange(
 			RolapLevel level, RolapMember startMember, RolapMember endMember, List list) {
-		int startOrdinal = startMember.ordinal;
-		int endOrdinal = endMember.ordinal + 1;
-		RolapMember m = endMember;
-		while (m != null) {
-			if (m.ordinal < startMember.ordinal) {
-				break;
+		Util.assertPrecondition(startMember != null, "startMember != null");
+		Util.assertPrecondition(endMember != null, "endMember != null");
+		Util.assertPrecondition(startMember.getLevel() == endMember.getLevel(),
+				"startMember.getLevel() == endMember.getLevel()");
+		if (compare(startMember, endMember, false) > 0) {
+			return;
+		}
+		list.add(startMember);
+		if (startMember == endMember) {
+			return;
+		}
+		SiblingIterator siblings = new SiblingIterator(this, startMember);
+		while (siblings.hasNext()) {
+			final RolapMember member = siblings.nextMember();
+			list.add(member);
+			if (member == endMember) {
+				return;
 			}
 		}
-		final RolapMember[] descendants = getDescendants(m, startMember.getLevel(), startOrdinal, endOrdinal);
-		for (int i = 0; i < descendants.length; i++) {
-			list.add(descendants[i]);
+		throw Util.newInternal("sibling iterator did not hit end point, start=" +
+				startMember + ", end=" + endMember);
+	}
+
+	public void _getMemberRange(
+			RolapLevel level, RolapMember startMember, RolapMember endMember, List list) {
+		// todo: Use a more efficient algorithm, which makes less use of
+		// bounds.
+		Util.assertTrue(level == startMember.getLevel());
+		Util.assertTrue(level == endMember.getLevel());
+		// "m" is the lowest member which is an ancestor of both "startMember"
+		// and "endMember". If "startMember" == "endMember", then "m" is
+		// "startMember".
+		RolapMember m = endMember;
+		while (m != null) {
+			if (compare(m, startMember, false) <= 0) {
+				break;
+			}
+			m = (RolapMember) m.getParentMember();
 		}
+		_getDescendants(m, startMember.getLevel(), startMember, endMember, list);
 	}
 
 	/**
@@ -369,33 +421,48 @@ public class SmartMemberReader implements MemberReader, MemberCache
 	 * whose ordinal is between <code>startOrdinal</code> and
 	 * <code>endOrdinal</code>.
 	 **/
-	private RolapMember[] getDescendants(
-		RolapMember member, Level level, int startOrdinal, int endOrdinal)
-	{
+	private void _getDescendants(
+			RolapMember member, Level level, RolapMember startMember,
+			RolapMember endMember, List result) {
+		// todo: Make algortihm more efficient: Use binary search.
 		RolapMember[] members = new RolapMember[] {member};
 		while (true) {
 			ArrayList children = new ArrayList();
 			getMemberChildren(children, members);
-			RolapMember[] childrenArray = RolapUtil.toArray(children);
-			int count = childrenArray.length, start = count, end = count;
-			for (int i = 0; i < count; i++) {
-				if (childrenArray[i].ordinal >= startOrdinal) {
-					start = i;
-					break;
+			int count = children.size(),
+					start,
+					end;
+			if (startMember == null) {
+				start = 0;
+			} else {
+				start = count;
+				for (int i = 0; i < count; i++) {
+					final RolapMember m = (RolapMember) children.get(i);
+					if (compare(m, startMember, false) >= 0) {
+						start = i;
+						break;
+					}
 				}
 			}
-			for (int i = start; i < count; i++) {
-				if (childrenArray[i].ordinal >= endOrdinal) {
-					end = i;
-					break;
+			if (endMember == null) {
+				end = count;
+			} else {
+				end = count;
+				for (int i = start; i < count; i++) {
+					final RolapMember m = (RolapMember) children.get(i);
+					if (compare(m, endMember, false) >= 0) {
+						end = i;
+						break;
+					}
 				}
 			}
-			members = new RolapMember[end - start];
-			System.arraycopy(childrenArray, start, members, 0, end - start);
-			if (members.length == 0 ||
-				members[0].getLevel() == level) {
-				return members;
+			List trimmedChildren = children.subList(start, end);
+			if (trimmedChildren.isEmpty() ||
+					((RolapMember) children.get(0)).getLevel() == level) {
+				result.addAll(trimmedChildren);
+				return;
 			}
+			members = (RolapMember[]) trimmedChildren.toArray(RolapUtil.emptyMemberArray);
 		}
 	}
 
@@ -438,9 +505,11 @@ public class SmartMemberReader implements MemberReader, MemberCache
 		int levelDepth1 = m1.getLevel().getDepth(),
 			levelDepth2 = m2.getLevel().getDepth();
 		if (levelDepth1 < levelDepth2) {
-			return compare(m1, (RolapMember) m2.getParentMember(), false);
+			final int c = compare(m1, (RolapMember) m2.getParentMember(), false);
+			return (c == 0) ? -1 : c;
 		} else if (levelDepth1 > levelDepth2) {
-			return compare((RolapMember) m1.getParentMember(), m2, false);
+			final int c = compare((RolapMember) m1.getParentMember(), m2, false);
+			return (c == 0) ? 1 : c;
 		} else {
 			return compare((RolapMember) m1.getParentMember(), (RolapMember) m2.getParentMember(), false);
 		}

@@ -229,9 +229,6 @@ class RolapCube extends CubeBase
 			localDimensionOrdinals[globalOrdinal] = i;
 		}
 		this.cellReader = AggregationManager.instance();
-		if (false) {
-			this.cellReader = new CachingCellReader(this, this.cellReader);
-		}
 		register();
 	}
 

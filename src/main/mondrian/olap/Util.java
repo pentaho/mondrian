@@ -311,17 +311,47 @@ public class Util extends mondrian.xom.XOMUtil
 	/**
 	 * Checks that a precondition (declared using the javadoc <code>@pre</code>
 	 * tag) is satisfied.
+	 *
+	 * @param b The value of executing the condition
 	 */
 	public static void assertPrecondition(boolean b) {
 		assertTrue(b);
 	}
 
 	/**
+	 * Checks that a precondition (declared using the javadoc <code>@pre</code>
+	 * tag) is satisfied. For example,
+	 *
+	 * <blockquote><pre>void f(String s) {
+	 *    Util.assertPrecondition(s != null, "s != null");
+	 *    ...
+	 * }</pre></blockquote>
+	 *
+	 * @param b The value of executing the condition
+	 * @param condition The text of the condition
+	 */
+	public static void assertPrecondition(boolean b, String condition) {
+		assertTrue(b, condition);
+	}
+
+	/**
 	 * Checks that a postcondition (declared using the javadoc
 	 * <code>@post</code> tag) is satisfied.
+	 *
+	 * @param b The value of executing the condition
 	 */
 	public static void assertPostcondition(boolean b) {
 		assertTrue(b);
+	}
+
+	/**
+	 * Checks that a postcondition (declared using the javadoc
+	 * <code>@post</code> tag) is satisfied.
+	 *
+	 * @param b The value of executing the condition
+	 */
+	public static void assertPostcondition(boolean b, String condition) {
+		assertTrue(b, condition);
 	}
 
 	public static MondrianResource getRes() {
