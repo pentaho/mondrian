@@ -26,26 +26,21 @@ import java.util.Iterator;
  **/
 public class EnumeratedValues implements Cloneable
 {
-	/** map symbol names to ordinal values */
-	private HashMap nameToOrdinalMap = new HashMap();
-	/** map symbol names to descriptions */
-	private HashMap nameToDescriptionMap = new HashMap();
+    /** map symbol names to values */
+    private HashMap valuesByName = new HashMap();
 
 	/** the smallest ordinal value */
 	private int min = Integer.MAX_VALUE;
-	
+
 	/** the largest ordinal value */
 	private int max = Integer.MIN_VALUE;
 
 	// the variables below are only set AFTER makeImmutable() has been called
 
-	/** an array mapping ordinal values to names; it is biased by the
-	 * min value */
-	private String [] ordinalToNameMap;
-	/** an array mapping ordinal values to desciptions; it is biased by the
-	 * min value */
-	private String [] ordinalToDescriptionMap;
-	private static final String[] emptyStringArray = new String[0];
+    /** An array mapping ordinals to {@link Value}s. It is biased by the
+     * min value. It is built by {@link #makeImmutable}. */
+    private Value[] ordinalToValueMap;
+    private static final String[] emptyStringArray = new String[0];
 
 	/**
 	 * Creates a new empty, mutable enumeration.
@@ -53,12 +48,20 @@ public class EnumeratedValues implements Cloneable
 	public EnumeratedValues() {
 	}
 
+    /** Creates an enumeration, with an array of values, and freezes it. */
+    public EnumeratedValues(Value[] values) {
+        for (int i = 0; i < values.length; i++) {
+            register(values[i]);
+        }
+        makeImmutable();
+    }
+
 	/** Creates an enumeration, initialize it with an array of strings, and
 	 * freezes it. */
 	public EnumeratedValues(String[] names)
 	{
 		for (int i = 0; i < names.length; i++) {
-			register(i, names[i], names[i]);
+			register(new BasicValue(names[i], i, names[i]));
 		}
 		makeImmutable();
 	}
@@ -68,7 +71,7 @@ public class EnumeratedValues implements Cloneable
 	public EnumeratedValues(String[] names, int[] codes)
 	{
 		for (int i = 0; i < names.length; i++) {
-			register(codes[i], names[i], names[i]);
+			register(new BasicValue(names[i], codes[i], names[i]));
 		}
 		makeImmutable();
 	}
@@ -78,24 +81,24 @@ public class EnumeratedValues implements Cloneable
 	public EnumeratedValues(String[] names, int[] codes, String[] descriptions)
 	{
 		for (int i = 0; i < names.length; i++) {
-			register(codes[i], names[i], descriptions[i]);
+			register(new BasicValue(names[i], codes[i], descriptions[i]));
 		}
 		makeImmutable();
 	}
 
 	protected Object clone()
 	{
-		EnumeratedValues clone = null;;
+		EnumeratedValues clone = null;
 		try {
 			clone = (EnumeratedValues) super.clone();
 		} catch(CloneNotSupportedException ex) {
 			// IMPLEMENT internal error?
 		}
-		clone.nameToOrdinalMap = (HashMap) nameToOrdinalMap.clone();
-		clone.ordinalToNameMap = null;
+		clone.valuesByName = (HashMap) valuesByName.clone();
+		clone.ordinalToValueMap = null;
 		return clone;
 	}
-	
+
 	/**
 	 * Creates a mutable enumeration from an existing enumeration, which may
 	 * already be immutable.
@@ -104,19 +107,25 @@ public class EnumeratedValues implements Cloneable
 	{
 		return (EnumeratedValues) clone();
 	}
-	
+
 	/**
 	 * Associates a symbolic name with an ordinal value.
      *
+     * @pre value != null
 	 * @pre !isImmutable()
+	 * @pre value.getName() != null
 	 */
-	public void register(int ordinal,String name, String description)
-	{
-		Util.assertPrecondition(!isImmutable());
-		final Integer i = new Integer(ordinal);
-		nameToOrdinalMap.put(name,i);
-		nameToDescriptionMap.put(name,description);
-		min = Math.min(min,ordinal);
+	public void register(Value value) {
+        Util.assertPrecondition(value != null, "value != null");
+		Util.assertPrecondition(!isImmutable(), "isImmutable()");
+        final String name = value.getName();
+        Util.assertPrecondition(name != null, "value.getName() != null");
+        Value old = (Value) valuesByName.put(name, value);
+        if (old != null) {
+            throw Util.newInternal("Enumeration already contained a value '" + old.getName() + "'");
+        }
+        final int ordinal = value.getOrdinal();
+        min = Math.min(min,ordinal);
 		max = Math.max(max,ordinal);
 	}
 
@@ -125,21 +134,21 @@ public class EnumeratedValues implements Cloneable
 	 */
 	public void makeImmutable()
 	{
-		ordinalToNameMap = new String[1 + max - min];
-		ordinalToDescriptionMap = new String[1 + max - min];
-		for (Iterator names = nameToOrdinalMap.keySet().iterator();
-                names.hasNext(); ) {
-			String name = (String) names.next();
-			int ordinal = getOrdinal(name);
-			ordinalToNameMap[ordinal - min] = name;
-			String description = (String) nameToDescriptionMap.get(name);
-			ordinalToDescriptionMap[ordinal - min] = description;
+		ordinalToValueMap = new Value[1 + max - min];
+		for (Iterator values = valuesByName.values().iterator();
+                values.hasNext(); ) {
+			Value value = (Value) values.next();
+            final int index = value.getOrdinal() - min;
+            if (ordinalToValueMap[index] != null) {
+                throw Util.newInternal("Enumeration has more than one value with ordinal " + value.getOrdinal());
+            }
+            ordinalToValueMap[index] = value;
 		}
 	}
 
 	public final boolean isImmutable()
 	{
-		return (ordinalToNameMap != null);
+		return (ordinalToValueMap != null);
 	}
 
 	/**
@@ -180,7 +189,7 @@ public class EnumeratedValues implements Cloneable
 		}
 		return true;
 	}
-	
+
 	/**
 	 * Returns the name associated with an ordinal; the return value
 	 * is null if the ordinal is not a member of the enumeration.
@@ -190,7 +199,12 @@ public class EnumeratedValues implements Cloneable
 	public final String getName(int ordinal)
 	{
 		Util.assertPrecondition(isImmutable());
-		return ordinalToNameMap[ordinal - min];
+        final Value value = ordinalToValueMap[ordinal - min];
+        if (value == null) {
+            return null;
+        } else {
+            return value.getName();
+        }
 	}
 
 	/**
@@ -202,31 +216,42 @@ public class EnumeratedValues implements Cloneable
 	public final String getDescription(int ordinal)
 	{
 		Util.assertPrecondition(isImmutable());
-		return ordinalToDescriptionMap[ordinal - min];
+        final Value value = ordinalToValueMap[ordinal - min];
+        if (value == null) {
+            return null;
+        } else {
+            return value.getDescription();
+        }
 	}
 
 	/**
 	 * Returns the ordinal associated with a name
      *
      * @throws Error if the name is not a member of the enumeration
-	 */
-	public final int getOrdinal(String name)
-	{
-		Integer i = findOrdinal(name);
-		if (i == null) {
+     */
+    public final int getOrdinal(String name) {
+        return getValue(name).getOrdinal();
+    }
+
+    /**
+     * Returns the ordinal associated with a name.
+     *
+     * @throws Error if the name is not a member of the enumeration
+     */
+    public Value getValue(String name) {
+        final Value value = (Value) valuesByName.get(name);
+        if (value == null) {
             throw new Error("Unknown enum name:  "+name);
         }
-		return i.intValue();
-	}
-	
-	/**
-	 * Returns the ordinal associated with a name; the return value is
-	 * null if the name is not a member of the enumeration.
-	 */
-	public final Integer findOrdinal(String name)
-	{
-		return (Integer) nameToOrdinalMap.get(name);
-	}
+        return value;
+    }
+
+    /**
+     * Returns the names in this enumeration, in no particular order.
+     */
+    public String[] getNames() {
+        return (String[]) valuesByName.keySet().toArray(emptyStringArray);
+    }
 
 	/**
 	 * Returns an error indicating that the value is illegal. (The client needs
@@ -238,12 +263,76 @@ public class EnumeratedValues implements Cloneable
 				getClass().getName() + "'");
 	}
 
-	/**
-	 * Returns the names in this enumeration, in no particular order.
-	 */ 
-	public String[] getNames() {
-		return (String[]) nameToOrdinalMap.keySet().toArray(emptyStringArray);
-	}
+    /**
+     * Returns an exception indicating that we didn't expect to find this value
+     * here.
+     */
+    public RuntimeException unexpected(Value value) {
+        return Util.newInternal("Was not expecting value '" + value +
+                "' for enumeration '" + getClass().getName() +
+                "' in this context");
+    }
+
+    /**
+     * A <code>Value</code> represents a member of an enumerated type. If an
+     * enumerated type is not based upon an explicit array of values, an
+     * array of {@link BasicValue}s will implicitly be created.
+     */
+    public interface Value {
+        String getName();
+        int getOrdinal();
+        String getDescription();
+    }
+
+    /**
+     * <code>BasicValue</code> is an obvious implementation of {@link Value}.
+     */
+    public static class BasicValue implements Value {
+        public final String name_;
+        public final int ordinal_;
+        public final String description_;
+
+        /**
+         * @pre name != null
+         */
+        public BasicValue(String name, int ordinal, String description) {
+            Util.assertPrecondition(name != null, "name != null");
+            this.name_ = name;
+            this.ordinal_ = ordinal;
+            this.description_ = description;
+        }
+
+        public String getName() {
+            return name_;
+        }
+
+        public int getOrdinal() {
+            return ordinal_;
+        }
+
+        public String getDescription() {
+            return description_;
+        }
+
+        /**
+         * Returns the value's name.
+         */
+        public String toString() {
+            return name_;
+        }
+
+        /**
+         * Returns whether this value is equal to a given string.
+         *
+         * @deprecated I bet you meant to write
+         *   <code>value.name_.equals(s)</code> rather than
+         *   <code>value.equals(s)</code>, didn't you?
+         */
+        public boolean equals(String s) {
+            return super.equals(s);
+        }
+    }
+
 }
 
 // End EnumeratedValues.java

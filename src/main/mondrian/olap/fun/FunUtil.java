@@ -830,6 +830,9 @@ public class FunUtil extends Util {
 	 * Helper for <code>OpeningPeriod</code> and <code>ClosingPeriod</code>.
 	 */
 	static Object openClosingPeriod(Evaluator evaluator, FunDef funDef, Member member, Level level) {
+        if (level == null) {
+            return member.getHierarchy().getNullMember();
+        }
 		if (member.getHierarchy() != level.getHierarchy()) {
 			throw newEvalException(
 					funDef,

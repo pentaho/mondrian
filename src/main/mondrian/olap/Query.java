@@ -285,9 +285,9 @@ public class Query extends QueryPart {
 			return AxisOrdinal.SLICER; // slicer is never permuted
 		}
 		String axisName = axes[iPhysicalAxis].axisName;
-		final Integer ordinal = AxisOrdinal.instance.findOrdinal(axisName);
-		if (ordinal != null) {
-			return ordinal.intValue();
+        final EnumeratedValues.Value value = AxisOrdinal.instance.getValue(axisName);
+		if (value != null) {
+			return value.getOrdinal();
 		}
 		return AxisOrdinal.NONE;
 	}

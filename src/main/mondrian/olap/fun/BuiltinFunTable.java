@@ -16,6 +16,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import mondrian.olap.*;
 import mondrian.test.FoodMartTestCase;
+import mondrian.util.Format;
 
 import java.io.PrintWriter;
 import java.util.*;
@@ -54,7 +55,7 @@ public class BuiltinFunTable extends FunTable {
 	private final HashSet reservedWords = new HashSet();
 	private static final Resolver[] emptyResolverArray = new Resolver[0];
 
-	/**
+    /**
 	 * Creates a <code>BuiltinFunTable</code>. This method should only be
 	 * called from {@link FunTable#instance}.
 	 **/
@@ -853,8 +854,13 @@ public class BuiltinFunTable extends FunTable {
 			public void testClosingPeriodMember(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"ClosingPeriod([USA])");
-        Assert.assertEquals("WA", member.getName());
+                Assert.assertEquals("WA", member.getName());
 			}
+            public void testClosingPeriodMemberLeaf(FoodMartTestCase test) {
+                Member member = test.executeAxis(
+                        "ClosingPeriod([Time].[1997].[Q3].[8])");
+                Assert.assertNull(member);
+            }
 		});
 		define(new FunDefBase("ClosingPeriod", "ClosingPeriod([<Level>[, <Member>]])", "Returns the last sibling among the descendants of a member at a level.", "fmlm") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
@@ -3417,6 +3423,42 @@ public class BuiltinFunTable extends FunTable {
 
 		//
 		// STRING FUNCTIONS
+        define(new MultiResolver("Format", "Format(<Numeric Expression>, <String Expression>)", "Formats a number to string.", new String[] { "fSmS", "fSnS" }) {
+            protected FunDef createFunDef(final Exp[] args, final FunDef dummyFunDef) {
+                final Locale locale = Locale.getDefault(); // todo: use connection's locale
+                if (args[1] instanceof Literal) {
+                    // Constant string expression: optimize by compiling
+                    // format string.
+                    String formatString = (String) ((Literal) args[1]).getValue();
+                    final Format format = new Format(formatString, locale);
+                    return new FunDefBase(dummyFunDef) {
+                        public Object evaluate(Evaluator evaluator, Exp[] args) {
+                            Double o = getDoubleArg(evaluator, args, 0);
+                            return format.format(o);
+                        }
+                    };
+                } else {
+                    // Variable string expression
+                    return new FunDefBase(dummyFunDef) {
+                        public Object evaluate(Evaluator evaluator, Exp[] args) {
+                            Double o = getDoubleArg(evaluator, args, 0);
+                            String formatString = getStringArg(evaluator, args, 1, null);
+                            final Format format = new Format(formatString, locale);
+                            return format.format(o);
+                        }
+                    };
+                }
+            }
+            public void testFormatFixed(FoodMartTestCase test) {
+                String s = test.executeExpr("Format(12.2, \"#,##0.00\")");
+                Assert.assertEquals("12.20", s);
+            }
+            public void testFormatVariable(FoodMartTestCase test) {
+                String s = test.executeExpr("Format(1234.5, \"#,#\" || \"#0.00\")");
+                Assert.assertEquals("1,234.50", s);
+            }
+        });
+
 		define(new FunDefBase("IIf", "IIf(<Logical Expression>, <String Expression1>, <String Expression2>)", "Returns one of two string values determined by a logical test.", "fSbSS") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				boolean logical = getBooleanArg(evaluator, args, 0);
