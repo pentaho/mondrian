@@ -208,17 +208,20 @@ public abstract class ExpBase
 		return "<" + Category.instance.getDescription(type & Category.Mask) + ">";
 	}
 
-	private static String getTypeDescriptionCommaList(int[] types, int start)
-	{
-		String s = "";
-		for (int i = start; i < types.length; i++) {
-			if (i > start) {
-				s += ", ";
-			}
-			s += getTypeDescription(types[i]);
-		}
-		return s;
-	}
+  private static String getTypeDescriptionCommaList(int[] types, int start)
+  {
+    int initialSize = (types.length - start) * 16;
+    StringBuffer sb = new StringBuffer(initialSize > 0 ? initialSize : 16);
+    for (int i = start; i < types.length; i++) {
+      if (i > start) {
+        sb.append(", ");
+      }
+      sb.append("<")
+        .append(Category.instance.getDescription(types[i] & Category.Mask))
+        .append(">");
+    }
+    return sb.toString();
+  }
 
 	public static void unparseList(
 		PrintWriter pw, Exp[] exps, String start, String mid, String end,
