@@ -54,14 +54,14 @@ public class RolapConnectionProperties extends EnumeratedValues {
 	/**
 	 * @{value} is the URL of the catalog, an XML file which describes
 	 * the schema: cubes, hierarchies, and so forth. Catalogs are described
-	 * <a target="_top" href="http://apoptosis.dyndns.org:8080/open/mondrian/doc/schema.html">here</a>.
+	 * <a target="_top" href="http://perforce.eigenbase.org:8080/open/mondrian/doc/schema.html">here</a>.
 	 * See also {@link #CatalogContent}.
 	 */
 	public static final String Catalog = "Catalog";
 	/**
 	 * @{value} is an XML string representing
 	 * the schema: cubes, hierarchies, and so forth. Catalogs are described
-	 * <a target="_top" href="http://apoptosis.dyndns.org:8080/open/mondrian/doc/schema.html">here</a>.
+	 * <a target="_top" href="http://perforce.eigenbase.org:8080/open/mondrian/doc/schema.html">here</a>.
 	 * See also {@link #Catalog}.
 	 */
 	public static final String CatalogContent = "CatalogContent";

@@ -18,6 +18,7 @@ import mondrian.olap.Util;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Iterator;
 
 /**
  * A <code>RestrictedMemberReader</code> reads only the members of a hierarchy
@@ -58,6 +59,22 @@ class RestrictedMemberReader extends DelegatingMemberReader {
 		// Don't support cache-writeback. It would confuse the cache!
 		return false;
 	}
+
+    public RolapMember getLeadMember(RolapMember member, int n) {
+        int i = 0;
+        int increment = 1;
+        if (n < 0) {
+            increment = -1;
+            n = -n;
+        }
+        while (i < n) {
+            member = memberReader.getLeadMember(member, increment);
+            if (canSee(member)) {
+                ++i;
+            }
+        }
+        return member;
+    }
 
 	public void getMemberChildren(RolapMember parentMember, List children) {
 		// todo: optimize if parentMember is beyond last level
@@ -126,7 +143,10 @@ class RestrictedMemberReader extends DelegatingMemberReader {
 	}
 
 	public void getMemberChildren(List parentMembers, List children) {
-		super.getMemberChildren(parentMembers, children);
+        for (Iterator i = parentMembers.iterator(); i.hasNext();) {
+            RolapMember parentMember = (RolapMember) i.next();
+            getMemberChildren(parentMember, children);
+        }
 	}
 
     public List getMembersInLevel(RolapLevel level, int startOrdinal,
@@ -148,6 +168,14 @@ class RestrictedMemberReader extends DelegatingMemberReader {
 		filterMembers(membersInLevel, filteredMembers);
 		return filteredMembers;
 	}
+
+    public void getMemberDescendants(RolapMember member, List result,
+            RolapLevel level, boolean before, boolean self, boolean after) {
+        // Utility method -- it calls our getMemberChildren(List,List), so
+        // we get restriction.
+        RolapUtil.getMemberDescendants(this, member, level, result, before,
+                self, after);
+    }
 }
 
 // End RestrictedMemberReader.java

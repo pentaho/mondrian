@@ -64,14 +64,14 @@ class RolapMember extends MemberBase
 			// the key.
 			setProperty(Property.PROPERTY_NAME, name);
 		} else {
-			setUniqueName();
+			setUniqueName(key.toString());
 		}
 	}
 
-	private void setUniqueName() {
+	private void setUniqueName(String name) {
 		this.uniqueName = (parentMember == null)
-			? Util.makeFqName(getHierarchy(), getName())
-			: Util.makeFqName(parentMember, getName());
+			? Util.makeFqName(getHierarchy(), name)
+			: Util.makeFqName(parentMember, name);
 	}
 
 	RolapMember(RolapMember parentMember, RolapLevel level, Object value) {
@@ -105,7 +105,7 @@ class RolapMember extends MemberBase
 		}
 		mapPropertyNameToValue.put(name, value);
 		if (name.equals(Property.PROPERTY_NAME)) {
-			setUniqueName();
+			setUniqueName(value.toString());
 		}
 	}
 
@@ -214,8 +214,10 @@ class RolapMember extends MemberBase
         case RolapLevel.HideMemberCondition.NeverORDINAL:
             return false;
         case RolapLevel.HideMemberCondition.IfBlankNameORDINAL: {
+            // If the key value in the database is null, then we use
+            // a special key value whose toString() is "null".
             final String name = getName();
-            return name == null || name.equals("");
+            return name.equals("null") || name.equals("");
         }
         case RolapLevel.HideMemberCondition.IfParentsNameORDINAL: {
             final Member parentMember = getParentMember();

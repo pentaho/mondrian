@@ -299,7 +299,7 @@ public class AggregationManager extends RolapAggregationManager {
                 Object[] constraints = spec.getConstraints(i);
                 if (constraints != null) {
                     innerSqlQuery.addWhere(
-                        expr + " in " + column.quoteValues(constraints));
+                            column.createInExpr(expr, constraints));
                 }
                 final String alias = "d" + i;
                 innerSqlQuery.addSelect(expr, alias);
@@ -334,7 +334,7 @@ public class AggregationManager extends RolapAggregationManager {
                 Object[] constraints = spec.getConstraints(i);
                 if (constraints != null) {
                     sqlQuery.addWhere(
-                        expr + " in " + column.quoteValues(constraints));
+                            column.createInExpr(expr, constraints));
                 }
 
                 // some DB2 (AS400) versions throw an error, if a column alias is there

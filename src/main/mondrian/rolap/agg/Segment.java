@@ -355,6 +355,9 @@ public class Segment implements Cacheable
 				int k = 1;
 				for (int i = 0; i < arity; i++) {
 					Object o = resultSet.getObject(k++);
+                    if (o == null) {
+                        o = RolapUtil.sqlNullValue;
+                    }
 					HashMap h = segment0.axes[i].mapKeyToOffset;
 					Integer offsetInteger = (Integer) h.get(o);
 					if (offsetInteger == null) {
