@@ -42,7 +42,11 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
             tree.setModel(model);
             tree.setCellRenderer(renderer);
             tree.addTreeSelectionListener(this);
-
+            SchemaPropertyCellEditor spce = new SchemaPropertyCellEditor();
+            propertyTable.setDefaultEditor(Object.class, spce);
+            SchemaPropertyCellRenderer spcr = new SchemaPropertyCellRenderer();
+            propertyTable.setDefaultRenderer(Object.class, spcr);
+            
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -80,6 +84,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         jSplitPane1.setDividerLocation(200);
         jPanel1.setLayout(new java.awt.BorderLayout());
 
+        jScrollPane2.setName("null");
         propertyTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -327,8 +332,8 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JButton addDimensionButton;
     private javax.swing.JButton cutButton;
-    private javax.swing.JButton saveButton;
     private javax.swing.JButton addMeasureButton;
+    private javax.swing.JButton saveButton;
     private javax.swing.JButton addCubeButton;
     private javax.swing.JButton copyButton;
     private javax.swing.JToolBar jToolBar1;

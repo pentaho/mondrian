@@ -35,6 +35,14 @@ public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
         return "?";        
     }
     
+    public boolean isCellEditable(int row, int col) {
+        if (col == 1) {
+            return true;
+        }
+        
+        return false;        
+    }
+    
     /** Returns the number of columns in the model. A
      * <code>JTable</code> uses this method to determine how many columns it
      * should create and display by default.
