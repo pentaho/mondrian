@@ -61,26 +61,33 @@ the garbage collector can overrule its wisdom.</p>
   interface mondrian.rolap.CachePool.Cacheable</a>, which includes methods to 
   measure objects' cost, benefit, record each time they are used, and tell them 
   to remove themselves from their cache.</li>
-  <li>Their constructor must call
-  <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/CachePool.html#registerBirth(Object)">
-  CachePool.registerBirth(Cachable)</a>, and they must call
+  <li>They must call
+  <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/CachePool.html#register(Cacheable)">CachePool.register(Cacheable)</a> 
+  either in their constructor or, in any case, before they are made visible in 
+  their cache.</li>
+  <li>They they must call
   <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/CachePool.html#registerDeath">
-  CachePool.registerDeath(Cachable)</a>. (This allows us to detect leaks of 
-  cacheable objects.)</li>
+  CachePool.unregister(Cacheable)</a> when they are removed from their cache and 
+  in their <code>finalize()</code> method.</li>
   <li>They must be despensable: if they disappear, their subsystem will continue 
   to work correctly, albeit slower. A subsystem can declare an object to be 
   temporarily indispensable by calling
-  <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/CachePool.html#registerBirth(Object)">
-  CachePool.pin(Cacheable,Collection)</a> and then unpin it a short time later.</li>
-  <li>They must be available for garbage collection. Their cache must reference 
-  them via soft references.</li>
-  <li>Thread safety. Their cache must be thread-safe. We will implement phased 
-  construction: if a cached object takes a significant time to initialize, it 
-  marks itself under construction, so that the caller can leave the critical 
-  section, and other threads can access already initialized objects in the 
-  cache; when the object has completed construction, it will notify the caller 
-  that it is ready.</li>
+  <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/CachePool.html#pin(Cacheable,Collection)">CachePool.pin(Cacheable,Collection)</a> and then unpin it a short time later.</li>
+  <li dir="ltr">
+  <p dir="ltr">Their cache must reference them via soft references, so that they 
+  are available for garbage collection. </li>
+  <li>Thread safety. Their cache must be thread-safe.</li>
 </ol>
+<p>If a cached object takes a significant time to initialize, it may not be 
+possible to construct it, register it, and initialize it within the same 
+synchronized section without unnacceptably reducing concurrency. If this is the 
+case, you should use phased construction. First construct and register the 
+object, but mark it 'under construction'. Then release the lock on the CachePool 
+and the object's cache, and continue initializing the object. Other threads will 
+be able to see the object, and should be able to wait until the object is 
+constructed. The method
+<a href="http://mondrian.sourceforge.net/api/mondrian/rolap/agg/Segment.html#waitUntilLoaded()">
+Segment.waitUntilLoaded()</a> is an example of this.</p>
 <p>The following objects are cached.</p>
 <h3>1. Segment</h3>
 <p>A Segment (<a href="http://mondrian.sourceforge.net/api/mondrian/rolap/agg/Segment.html">class 
@@ -110,7 +117,17 @@ are available. Finally, it releases the pins.</p>
 mondrian.rolap.SmartMemberReader.ChildrenList</a>) is a set of children of a 
 particular member. It belongs to a member reader (<a href="http://mondrian.sourceforge.net/api/mondrian/rolap/SmartMemberReader.html">class 
 mondrian.rolap.SmartMemberReader</a>).</p>
-<p>&nbsp; </p>
+<h3>3. Schema</h3>
+<p>Schemas (<a href="api/mondrian/rolap/RolapSchema.html">class 
+mondrian.rolap.RolapSchema</a>) are cached in
+<a href="api/mondrian/rolap/RolapStar.Pool.html">class 
+mondrian.rolap.RolapSchema.Pool</a>, which is a singleton (todo: use soft 
+references). The cache key is the URL which the schema was loaded from.</p>
+<h3>4. Star schemas</h3>
+<p>Star schemas (<a href="api/mondrian/rolap/RolapStar.html">class 
+mondrian.rolap.RolapStar</a>) are stored in the static member <code>
+RolapStar.stars</code> (todo: use soft references), and accessed via <code>
+RolapStar.getOrCreateStar(RolapSchema, MondrianDef.Relation)</code>.</p>
 <p>&nbsp;</p>
 
 <hr>

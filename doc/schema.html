@@ -1,0 +1,388 @@
+<html>
+<!--
+  == $Id$
+  == This software is subject to the terms of the Common Public License
+  == Agreement, available at the following URL:
+  == http://www.opensource.org/licenses/cpl.html.
+  == (C) Copyright 2001-2002 Kana Software, Inc. and others.
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  == jhyde, 24 September, 2002
+  -->
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>How to design a mondrian schema</title>
+<link rel="stylesheet" href="stylesheet.css" type="text/css" />
+</head>
+
+<body>
+<h1>How to design a Mondrian schema</h1>
+<h2>Contents</h2>
+<ol>
+  <li><a href="#What_is_a_schema">What is a schema?</a></li>
+  <li><a href="#Schema_files">Schema files</a></li>
+  <li><a href="#Cubes_and_dimensions">Cubes and dimensions</a></li>
+  <li><a href="#Star_schemas">Star schemas</a></li>
+  <li><a href="#Advanced_logical_constructs">Advanced logical constructs</a><ol>
+    <li><a href="#Virtual_cubes">Virtual cubes</a></li>
+    <li><a href="#Shared_dimensions">Shared dimensions</a></li>
+    <li><a href="#Parent_child_hierarchies">Parent-child hierarchies</a></li>
+    <li><a href="#Member_properties">Member properties</a></li>
+  </ol>
+  </li>
+  <li><a href="#Advanced_physical_constructs">Advanced physical constructs</a><ol>
+    <li><a href="#Member_readers">Member readers</a></li>
+    <li><a href="#Cell_readers">Cell readers</a></li>
+  </ol>
+  </li>
+</ol>
+<h2><a name="What_is_a_schema">What is a schema?</a></h2>
+<p>A schema defines a multi-dimensional database. It contains a logical model, 
+consisting of cubes, hierarchies, and members, and a mapping of this model onto 
+a physical model.</p>
+<p>The logical model consists of the constructs used to write queries in MDX 
+language: cubes, dimensions, hierarchies, levels, and members.</p>
+<p>The physical model is the source of the data which is presented through the 
+logical model. It is typically a star schema, which is a set of tables in a 
+relational database; later, we shall see examples of other kinds of mappings.</p>
+<h2><a name="Schema_files">Schema files</a></h2>
+<p>Mondrian schemas are represented in an XML file. An example schema, 
+containing almost all of the constructs we discuss here, is supplied as <code>
+demo/FoodMart.xml</code>. The dataset to populate this schema is available as a 
+mondrian data distribution, <code>mondrian-data.zip</code>, from
+<a href="http://mondrian.sourceforge.net">SourceForge.net</a>.</p>
+<p>Currently, the only way to create a schema is to edit a schema XML file in a 
+text editor. The XML syntax is not too complicated, so this is not as difficult 
+as it sounds, particularly if you use the FoodMart schema as a guiding example. 
+We have started building a workbench (written in Swing) to create and modify 
+schemas, but it will be some time before it supports all of the constructs.</p>
+<h2><a name="Cubes_and_dimensions">Logical model</a></h2>
+<p>The most important components of a schema are cubes, measures, and 
+dimensions:</p>
+<ul>
+  <li>A <dfn><font face="Verdana">cube</font></dfn> is a collection of 
+  dimensions and measures in a particular subject area. </li>
+  <li>A <dfn><font face="Verdana">measure</font></dfn> is a quantity that you are 
+interested in measuring, for example, unit sales of a product, or cost price of 
+inventory items.</li>
+  <li>A <dfn><font face="Verdana">dimension</font></dfn> is an attribute, or set of 
+attributes, by which you can divide measures into sub-categories. For example, 
+you might wish to break down product sales by their color, the gender of the 
+customer, and the store in which the product was sold; color, gender, and store 
+are all dimensions.</li>
+</ul>
+<p>Let's look at the XML definition of a simple schema.</p>
+<blockquote>
+  <pre>&lt;Schema&gt;
+  &lt;Cube name=&quot;Sales&quot;&gt;
+    &lt;Table name=&quot;sales_fact_1997&quot;/&gt;
+    &lt;Dimension name=&quot;Gender&quot; foreignKey=&quot;customer_id&quot;&gt;
+      &lt;Hierarchy hasAll=&quot;true&quot; allMemberName=&quot;All Genders&quot; primaryKey=&quot;customer_id&quot;&gt;
+        &lt;Table name=&quot;customer&quot;/&gt;
+        &lt;Level name=&quot;Gender&quot; column=&quot;gender&quot; uniqueMembers=&quot;true&quot;/&gt;
+      &lt;/Hierarchy&gt;
+    &lt;/Dimension&gt;
+    &lt;Dimension name=&quot;Time&quot; foreignKey=&quot;time_id&quot;&gt;
+      &lt;Hierarchy hasAll=&quot;false&quot; primaryKey=&quot;time_id&quot;&gt;
+        &lt;Table name=&quot;time_by_day&quot;/&gt;
+        &lt;Level name=&quot;Year&quot; column=&quot;the_year&quot; type=&quot;Numeric&quot;
+            uniqueMembers=&quot;true&quot;/&gt;
+        &lt;Level name=&quot;Quarter&quot; column=&quot;quarter&quot;
+            uniqueMembers=&quot;false&quot;/&gt;
+        &lt;Level name=&quot;Month&quot; column=&quot;month_of_year&quot; type=&quot;Numeric&quot;
+            uniqueMembers=&quot;false&quot;/&gt;
+      &lt;/Hierarchy&gt;
+    &lt;/Dimension&gt;
+    &lt;Measure name=&quot;Unit Sales&quot; column=&quot;unit_sales&quot;
+        aggregator=&quot;sum&quot; formatString=&quot;#,###&quot;/&gt;
+    &lt;Measure name=&quot;Store Sales&quot; column=&quot;store_sales&quot;
+        aggregator=&quot;sum&quot; formatString=&quot;#,###.##&quot;/&gt;
+  &lt;/Cube&gt;  
+&lt;/Schema&gt;</pre>
+</blockquote>
+<p>This schema contains a single cube, called &quot;Sales&quot;. The Sales cube has two 
+dimensions, &quot;Time&quot;, and &quot;Gender&quot;, and two measures, &quot;Unit Sales&quot; and &quot;Store 
+Sales&quot;.</p>
+<p>We can write an MDX query on this schema:</p>
+<blockquote>
+<p>select {[Measures].[Unit Sales], [Measures].[Store Sales]} on columns,<br>
+&nbsp; {[Time].[1997].[Q1].descendants} on rows<br>
+from [Sales]<br>
+where [Gender].[F]</p>
+</blockquote>
+<p>This query refers to the Sales cube (<code>[Sales]</code>), each of the 
+dimensions <code>[Measures]</code>, <code>[Time]</code>, <code>[Gender</code>], 
+and various members of those dimensions. The results are as follows:</p>
+<blockquote>
+  <table border="2" cellpadding="2" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" id="AutoNumber1">
+    <tr>
+      <th align="left">[Time]</th>
+      <th>[Measures].[Unit Sales]</th>
+      <th>[Measures].[Store Sales]</th>
+    </tr>
+    <tr>
+      <th align="left">[1997].[Q1]</th>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th align="left">[1997].[Q1].[Jan]</th>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th align="left">[1997].[Q1].[Feb]</th>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th align="left">[1997].[Q1].[Mar]</th>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </table>
+</blockquote>
+<p>Now let's look at the schema definition in more detail.</p>
+<h3>Cube</h3>
+<p>A cube (see <code><a href="#XML_Cube">&lt;Cube&gt;</a></code>) is little more than 
+a named collection of measures and dimensions. The one thing the measures and 
+dimensions have in common is the fact table, here <code>&quot;sales_fact_1997&quot;</code>. 
+As we shall see, the fact table holds the columns from which measures are 
+calculated, and contains references to the tables which hold the dimensions.</p>
+<blockquote>
+  <pre>  &lt;Cube name=&quot;Sales&quot;&gt;
+    &lt;Table name=&quot;sales_fact_1997&quot;/&gt;
+    ...
+  &lt;/Cube&gt;</pre>
+</blockquote>
+<p>The fact table is defined using the <a href="#XML_Table">&lt;Table&gt;</a> element. 
+If the fact table is not in the default schema, you can provide an explicit 
+schema using the &quot;schema&quot; attribute, for example</p>
+<blockquote>
+  <pre>&lt;Table schema=&quot;foodmart&quot; name=&quot;sales_fact_1997&quot;/&gt;</pre>
+</blockquote>
+<p>You can also use the <code><a href="#XML_View">&lt;View&gt;</a></code> and <code>
+<a href="#XML_Join">&lt;Join&gt;</a></code> constructs to build more complicated SQL 
+statements.</p>
+<h3>Measures</h3>
+<p>The Sales cube defines two measures, &quot;Unit Sales&quot; and &quot;Store Sales&quot;.</p>
+<blockquote>
+  <pre>    &lt;Measure name=&quot;Unit Sales&quot; column=&quot;unit_sales&quot;
+        aggregator=&quot;sum&quot; formatString=&quot;#,###&quot;/&gt;
+    &lt;Measure name=&quot;Store Sales&quot; column=&quot;store_sales&quot;
+        aggregator=&quot;sum&quot; formatString=&quot;#,###.00&quot;/&gt;</pre>
+</blockquote>
+<p dir="ltr">Each measure (see <a href="#XML_Measure">&lt;Measure&gt;</a>) has a name, 
+a column in the fact table, and an aggregation function (usually &quot;sum&quot;).</p>
+<p dir="ltr">An optional <code>formatString</code> specifies how the value is to 
+be printed. Here, we have chosen to output unit sales with no decimal places 
+(since it is an integer), and store sales with two decimal places (since it is a 
+currency value). The ',' and '.' symbols are locale-sensitive, so if you were 
+running in Italian, store sales might appear as &quot;48.123,45&quot;. You can achieve 
+even more wild effects using <a href="#Format_strings">advanced format strings</a>.</p>
+<p dir="ltr">Rather than coming from a column, a measure can use a
+<a href="#Cell_readers">cell reader</a>.</p>
+<h3>Dimensions</h3>
+<p>The Gender dimension consists of a single hierarchy, which has just one 
+level.</p>
+<blockquote>
+  <pre>    &lt;Dimension name=&quot;Gender&quot; foreignKey=&quot;customer_id&quot;&gt;
+      &lt;Hierarchy hasAll=&quot;true&quot; primaryKey=&quot;customer_id&quot;&gt;
+        &lt;Table name=&quot;customer&quot;/&gt;
+        &lt;Level name=&quot;Gender&quot; column=&quot;gender&quot; uniqueMembers=&quot;true&quot;/&gt;
+      &lt;/Hierarchy&gt;
+    &lt;/Dimension&gt;</pre>
+</blockquote>
+<p>For any given sale, the gender dimension is the gender of the customer who 
+made that purchase. This is expressed by joining from the fact table 
+&quot;sales_fact_1997.customer_id&quot; to the dimension table &quot;customer.customer_id&quot;</p>
+<p>Because <code>hasAll=&quot;true&quot;</code>, the system generates a special 'all' 
+level, containing a single member called ...</p>
+<p>The &quot;gender&quot; column contains two values, 'F' and 'M', so the Gender dimension 
+contains just two members</p>
+<p>&nbsp;</p>
+<p>A dimension can contain more than one hierarchy:</p>
+<blockquote>
+  <pre>    &lt;Dimension name=&quot;Time&quot; foreignKey=&quot;time_id&quot;&gt;
+      &lt;Hierarchy hasAll=&quot;false&quot; primaryKey=&quot;time_id&quot;&gt;
+        &lt;Table name=&quot;time_by_day&quot;/&gt;
+        &lt;Level name=&quot;Year&quot; column=&quot;the_year&quot; type=&quot;Numeric&quot;
+            uniqueMembers=&quot;true&quot;/&gt;
+        &lt;Level name=&quot;Quarter&quot; column=&quot;quarter&quot;
+            uniqueMembers=&quot;false&quot;/&gt;
+        &lt;Level name=&quot;Month&quot; column=&quot;month_of_year&quot; type=&quot;Numeric&quot;
+            uniqueMembers=&quot;false&quot;/&gt;
+      &lt;/Hierarchy&gt;
+      &lt;Hierarchy name=&quot;Time Weekly&quot; hasAll=&quot;false&quot; primaryKey=&quot;time_id&quot;&gt;
+        &lt;Table name=&quot;time_by_week&quot;/&gt;
+        &lt;Level name=&quot;Year&quot; column=&quot;the_year&quot; type=&quot;Numeric&quot;
+            uniqueMembers=&quot;true&quot;/&gt;
+        &lt;Level name=&quot;Week&quot; column=&quot;week&quot;
+            uniqueMembers=&quot;false&quot;/&gt;
+        &lt;Level name=&quot;Day&quot; column=&quot;day_of_week&quot; type=&quot;String&quot;
+            uniqueMembers=&quot;false&quot;/&gt;
+      &lt;/Hierarchy&gt;
+    &lt;/Dimension&gt;</pre>
+</blockquote>
+<p>Notice that the first hierarchy doesn't have a name. By default, a hierarchy 
+has the same name as its dimension, so the first hierarchy is called &quot;Time&quot;.</p>
+<p>These hierarchies don't have much in common -- they don't even have the same 
+table! -- except that they are joined from the same column in the fact table,
+<code>&quot;time_id&quot;</code>. The main reason to put two hierarchies in the same 
+dimension is because it makes more sense to the end-user: end-users know that it 
+makes no sense to have the &quot;Time&quot; hierarchy on one axis and the &quot;Time Weekly&quot; 
+hierarchy on another axis. If two hierarchies are the same dimension, the MDX 
+language enforces common sense, and does not allow you to use them both in the 
+same query.</p>
+<p>A dimension can live in the fact table:</p>
+<blockquote>
+  <pre>    &lt;Dimension name=&quot;Xxx&quot;&gt;
+      &lt;Hierarchy hasAll=&quot;true&quot;&gt;
+        &lt;Level name=&quot;Xxx&quot; column=&quot;xxx&quot; uniqueMembers=&quot;true&quot;/&gt;
+      &lt;/Hierarchy&gt;
+    &lt;/Dimension&gt;</pre>
+</blockquote>
+<p>Each dimension contains a single hierarchy, which is made up of levels</p>
+<p>Some more definitions:</p>
+<ul>
+  <li>A <dfn><font face="Verdana">member</font></dfn> is a point within a dimension 
+determined by a particular set of attribute values. The gender hierarchy has 
+the two members 'M' and 'F'. 'San Francisco', 'California' and 'USA' are all 
+members of the store hierarchy.</li>
+  <li>A <dfn><font face="Verdana">hierarchy</font></dfn> is a set of related 
+attributes (or <dfn><font face="Verdana">levels</font></dfn>) which collectively 
+form a dimension. For example, the store hierarchy consists of the store name, 
+city, state, and nation. The hierarchy allows you form intermediate sub-totals: 
+the sub-total for a state is the sum of the sub-totals of all of the cities in 
+that state, each of which is the sum of the sub-totals of the stores in that 
+city.</li>
+</ul>
+<p>For reasons of uniformity, measures are treated as members of a special 
+dimension, called Measures.</p>
+<p>Most dimensions have just one hierarchy, but occasionally a dimension has 
+more than one. For example, you might wish to aggregate days from the Time 
+dimension into months, quarters, and years; or into weeks and years. Both 
+hierarchies start off with days and end with years, but aggregate using 
+different paths.</p>
+<p>Most hierarchies have an <dfn><font face="Verdana">all-member</font></dfn>, 
+which is parent of all other members of the hierarchy, and thus represents a 
+grand total. It is typically named 'All <i>something</i>', for example, 'All 
+stores'.</p>
+<h2><a name="Star_schemas">Star schemas</a></h2>
+<h2><a name="Advanced_logical_constructs">Advanced logical constructs</a></h2>
+<h3><a name="Virtual_cubes">Virtual cubes</a></h3>
+<p>...</p>
+<h3><a name="Shared_dimensions">Shared dimensions</a></h3>
+<p>...</p>
+<h3><a name="Parent_child_hierarchies">Parent-child hierarchies</a></h3>
+<p>...</p>
+<h3><a name="Member_properties">Member properties</a></h3>
+<p>...</p>
+<h2><a name="Advanced_physical_constructs">Advanced physical constructs</a></h2>
+<h3><a name="Member_readers">Member readers</a></h3>
+<p>A <dfn><font face="Verdana">member reader</font></dfn> is a means of 
+accessing members. Hierarchies are usually based upon a dimension table (an 
+'arm' of a star schema), and are therefore populated using SQL. But even if your 
+data doesn't reside in an RDBMS, you can make it appear as a hierarchy by 
+writing a Java class called a <dfn><font face="Verdana">custom member reader</font></dfn>.</p>
+<p>A custom member reader must implement the
+<a href="api/mondrian/rolap/MemberSource.html">interface 
+mondrian.rolap.MemberSource</a>. Here are a couple of examples:</p>
+<ol>
+  <li><code>DateSource</code> (to be written) generates a time hierarchy. 
+  Conventionally, data warehouse implementors generate a table containing a row 
+  for every date their system is ever likely to deal with. But the problem is 
+  that this table needs to be loaded, and as time goes by, they will have to 
+  remember to add more rows. DateSource generates date members in memory, and on 
+  demand.</li>
+  <li><code>FileSystemSource</code> (to be written) presents the file system as 
+  a hierarchy of directories and files. Since a directory can have a parent 
+  which is itself a directory, it is a parent-child hierarchy. Like the time 
+  hierarchy created by DateSource, this is a virtual hierarchy: the member for a 
+  particular file is only created when, and if, that file's parent directory is 
+  expanded.</li>
+  <li><code>ExpressionMemberReader</code> (to be written) creates a hierarchy 
+  based upon an expression, for example</li>
+</ol>
+<h3><a name="Cell_readers">Cell readers</a></h3>
+<p dir="ltr">Not implemented yet. Syntax would be something like</p>
+
+<blockquote>
+  <pre dir="ltr">&lt;Measure name=&quot;name&quot; cellReaderClass=&quot;com.foo.MyCellReader&quot;&gt;</pre>
+</blockquote>
+<p>and the class &quot;com.foo.MyCellReader&quot; would implement <code>
+<a href="http://mondrian.sourceforge.net/api/mondrian/olap/CellReader.html">
+interface mondrian.olap.CellReader</a></code>.</p>
+
+<h2>Other stuff</h2>
+
+<h3 dir="ltr"><a name="Format_strings">Format strings</a></h3>
+
+<p dir="ltr">Format strings use Visual Basic formatting syntax, see
+<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Format.html">class 
+mondrian.olap.Format</a> for more details. </p>
+
+<p dir="ltr">A measure's format string is usually a fixed string, but it really 
+an expression, which is evaluated in the same context as the cell. You can 
+therefore change the formatting of a cell depending upon the cell's value.</p>
+
+<p dir="ltr"><i>todo</i>: example of expression format string to do 
+traffic-lighting</p>
+
+<h2>Appendix A: XML elements</h2>
+
+<table border="2" cellpadding="2" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber2">
+  <tr>
+    <td width="33%">Element</td>
+    <td width="33%">Description</td>
+  </tr>
+  <tr>
+    <td width="33%">&lt;<a name="XML_Schema">Schema</a>&gt;</td>
+    <td width="33%">A collection of Cubes, Virtual cubes, and Shared dimensions.</td>
+  </tr>
+  <tr>
+    <td width="33%">&lt;<a name="XML_Cube">Cube</a>&gt;</td>
+    <td width="33%">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="33%">&lt;<a name="XML_Measure">Measure</a>&gt;</td>
+    <td width="33%">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="33%">&lt;<a name="XML_Table">Table</a>&gt;</td>
+    <td width="33%">Defines a fact- or dimension table.</td>
+  </tr>
+  <tr>
+    <td width="33%">&lt;<a name="XML_View">View</a>&gt;</td>
+    <td width="33%">Defines a 'table' using a SQL query, which can have 
+    different variants for different underlying databases.</td>
+  </tr>
+  <tr>
+    <td width="33%">&lt;<a name="XML_Join">Join</a>&gt;</td>
+    <td width="33%">Defines a 'table' by joining a set of queries.</td>
+  </tr>
+</table>
+
+<hr>
+
+<table border="0" class="clsStd" width="100%" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0">
+  <tr>
+    <td class="content">
+      <a target="_top" href="index.html">Home</a> |
+      <a target="_top" href="schema.html">No frames</a> | This file is<i>
+      <a href="http://apoptosis.dyndns.org:8080/open/mondrian/doc/schema.html">$Id$
+      </a></i> (<a href="http://apoptosis.dyndns.org:8080/open/mondrian/doc/schema.html?ac=22">log</a>)</td>
+    <td align="right">
+      <a href="http://sourceforge.net">
+        <img src="http://sourceforge.net/sflogo.php?group_id=35302&type=1" width="88" height="31" border="0" alt="SourceForge.net Logo">
+      </a>
+    </td>
+  </tr>
+</table>
+  
+</body>
+</html>
