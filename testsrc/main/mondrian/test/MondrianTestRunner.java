@@ -15,8 +15,6 @@
 package mondrian.test;
 
 import java.io.PrintStream;
-import java.util.Enumeration;
-import java.util.regex.Pattern;
 
 import junit.framework.*;
 import junit.runner.*;
