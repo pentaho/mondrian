@@ -13,6 +13,7 @@
 package mondrian.rolap.sql;
 
 import mondrian.olap.Util;
+import mondrian.olap.MondrianDef;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -113,7 +114,12 @@ public class SqlQuery
 			throw Util.getRes().newInternal(e, "while quoting identifier");
 		}
 		if (q == null || q.trim().equals("")) {
-			return val; // quoting is not supported
+			if (isMySQL()) {
+				// mm.mysql.2.0.4 driver lies. We know better.
+				q = "`";
+			} else {
+				return val; // quoting is not supported
+			}
 		}
 
 		String val2 = Util.replace(val, q, q + q);
@@ -148,7 +154,8 @@ public class SqlQuery
 
 	private String getProduct() {
 		try {
-			return databaseMetaData.getDatabaseProductName();
+			String productName = databaseMetaData.getDatabaseProductName();
+			return productName;
 		} catch (SQLException e) {
 			throw Util.getRes().newInternal(
 				e, "while detecting database product");
@@ -163,6 +170,9 @@ public class SqlQuery
 	public boolean isPostgres() {
 		return getProduct().toUpperCase().indexOf("POSTGRE") >= 0;
 	}
+	public boolean isMySQL() {
+		return getProduct().toUpperCase().equals("MYSQL");
+	}
 
 	// -- behaviors --
 	protected boolean requiresAliasForFromItems() {
@@ -170,6 +180,39 @@ public class SqlQuery
 	}
 	protected boolean allowsAs() {
 		return !isOracle();
+	}
+
+	/**
+	 * Chooses the variant within an array of {@link MondrianDef.SQL} which
+	 * best matches the current SQL dialect.
+	 */
+	public String chooseQuery(MondrianDef.SQL[] sqls) {
+		String best;
+		if (isOracle()) {
+			best = "oracle";
+		} else if (isMySQL()) {
+			best = "mysql";
+		} else if (isAccess()) {
+			best = "access";
+		} else if (isPostgres()) {
+			best = "postgres";
+		} else {
+			best = "generic";
+		}
+		String generic = null;
+		for (int i = 0; i < sqls.length; i++) {
+			MondrianDef.SQL sql = sqls[i];
+			if (sql.dialect.equals(best)) {
+				return sql.cdata;
+			}
+			if (sql.dialect.equals("generic")) {
+				generic = sql.cdata;
+			}
+		}
+		if (generic == null) {
+			throw Util.newInternal("Query has no 'generic' variant");
+		}
+		return generic;
 	}
 
 	public void addFromQuery(String query, String alias)

@@ -7,7 +7,7 @@
 @rem You must accept the terms of that agreement to use this software.
 
 @set SRCROOT=%~dp0
-@set HOME_DRIVE=Z
+@set HOME_DRIVE=C
 
 @set ANT_HOME=%HOME_DRIVE%:\jakarta-ant-1.5
 @if exist "%ANT_HOME%" goto x010
@@ -45,7 +45,7 @@
 
 @set CLASSPATH=%SRCROOT%/classes;%SRCROOT%/lib/javacup.jar;%SRCROOT%/lib/boot.jar;%XALAN_HOME%/bin/xml-apis.jar;%XALAN_HOME%/bin/xercesImpl.jar
 
-@rem To use Oracle, uncomment this line and modify appropriately
+@rem To use Oracle, uncomment the next line and modify appropriately
 @rem set ORACLE_HOME=%HOME_DRIVE%:/oracle/ora81
 @if "%ORACLE_HOME%" == "" goto x300
 @if exist "%ORACLE_HOME%" goto x290
@@ -54,6 +54,10 @@
 :x290
 @set CLASSPATH=%CLASSPATH%;%ORACLE_HOME%/jdbc/lib/classes12.zip
 :x300
+
+@rem To use MySQL, uncomment the next 2 lines and modify appropriately
+@set MYSQL_HOME=%HOME_DRIVE%:/MySQL
+@set CLASSPATH=%CLASSPATH%;%MYSQL_HOME%/lib/mm.mysql-2.0.4-bin.jar
 
 @%ANT_HOME%\bin\ant %1 %2 %3 %4 %5 %6 %7 %8 %9
 :end

@@ -214,13 +214,6 @@ todo:
 			</Doc>
 		</Attribute>
 		<Attribute name="hasAll" type="Boolean" required="true"><Doc></Doc></Attribute>
-		<Attribute name="sql" required="false">
-			<Doc>
-				SQL statement to populate the hierarchy. (More powerful than
-				<code>table</code> but sometimes you will need to hard-code
-				schema names, which may cause installation problems.)
-			</Doc>
-		</Attribute>
 		<Attribute name="table" required="false">
 			<Doc>
 				Name of table to populate the hierarchy.
@@ -246,6 +239,11 @@ todo:
 				{@link Broadbase.olap.RolapConnection.MemberReader}.
 			</Doc>
 		</Attribute>
+		<Object name="querySet" type="Query">
+			<Doc>
+				SQL statement to populate the hierarchy.
+			</Doc>
+		</Object>
 		<Array name="levels" type="Level"><Doc></Doc></Array>
 		<Array name="memberReaderParameters" type="Parameter"/>
 	</Element>
@@ -294,6 +292,29 @@ todo:
 	<Element type="Parameter">
 		<Attribute name="name"/>
 		<Attribute name="value"/>
+	</Element>
+
+	<Element type="Query">
+		<Doc>
+			A collection of SQL statements, one per dialect.
+		</Doc>
+		<Array name="selects" type="SQL" min="1"/>
+	</Element>
+
+	<Element type="SQL">
+		<Attribute name="dialect" default="generic">
+			<Doc>
+				Dialect of SQL the query is intended for.
+			</Doc>
+			<Value>generic</Value>
+			<Value>oracle</Value>
+			<Value>mysql</Value>
+			<Value>access</Value>
+			<Value>postgres</Value>
+			<Value>hsqldb</Value>
+			<Value>mssql</Value>
+		</Attribute>
+		<CData/>
 	</Element>
 
 </Model>

@@ -174,8 +174,13 @@ class SqlMemberSource implements MemberReader
 	 *   SELECT DISTINCT "country", "state_province"
 	 *   FROM "customer") AS "foo"</pre>
 	 *
-	 * </blockquote> counts the non-leaf "state_province" level, and
-	 * <blockquote>
+	 * </blockquote> counts the non-leaf "state_province" level. MySQL
+	 * doesn't allow SELECT-in-FROM, so we use the syntax<blockquote>
+	 *
+	 * <pre>SELECT count(DISTINCT "country", "state_province")
+	 * FROM "customer"</pre>
+	 *
+	 * </blockquote>. The leaf level requires a different query:<blockquote>
 	 *
 	 * <pre>SELECT count(*) FROM "customer"</pre>
 	 *
@@ -193,25 +198,47 @@ class SqlMemberSource implements MemberReader
 			hierarchy.addToFrom(sqlQuery);
 			return sqlQuery.toString();
 		}
-		sqlQuery.setDistinct(true);
-  		for (int i = levelDepth; i >= 0; i--) {
-  			RolapLevel level2 = levels[i];
-  			if (level2.isAll()) {
-  				continue;
-  			}
-			sqlQuery.addSelect(sqlQuery.quoteIdentifier(level2.column));
-			if (level2.unique) {
-				break; // no further qualification needed
+		boolean isMySQL = sqlQuery.isMySQL();
+		if (isMySQL) {
+			// "select count(distinct c1, c2) from table"
+			String columnList = "";
+			for (int i = levelDepth; i >= 0; i--) {
+				RolapLevel level2 = levels[i];
+				if (level2.isAll()) {
+					continue;
+				}
+				if (columnList != "") {
+					columnList += ", ";
+				}
+				columnList += sqlQuery.quoteIdentifier(level2.column);
+				if (level2.unique) {
+					break; // no further qualification needed
+				}
 			}
+			sqlQuery.addSelect("count(DISTINCT " + columnList + ")");
+			hierarchy.addToFrom(sqlQuery);
+			return sqlQuery.toString();
+		} else {
+			sqlQuery.setDistinct(true);
+			for (int i = levelDepth; i >= 0; i--) {
+				RolapLevel level2 = levels[i];
+				if (level2.isAll()) {
+					continue;
+				}
+				sqlQuery.addSelect(sqlQuery.quoteIdentifier(level2.column));
+				if (level2.unique) {
+					break; // no further qualification needed
+				}
+			}
+			hierarchy.addToFrom(sqlQuery);
+			SqlQuery outerQuery = newQuery(
+					"while generating query to count members in level " + level);
+			outerQuery.addSelect("count(*)");
+			// Note: the "foo" is for Postgres, which requires
+			// FROM-queries to have an alias
+			outerQuery.addFromQuery(sqlQuery.toString(), "foo");
+			return outerQuery.toString();
 		}
-		hierarchy.addToFrom(sqlQuery);
-		// note: Postgres requires the alias 'as foo'
-        //	return "select count(*) from (" + sqlQuery.toString() + ") as foo";
-        SqlQuery outerQuery = newQuery(
-                "while generating query to count members in level " + level);
-        outerQuery.addSelect("count(*)");
-        outerQuery.addFromQuery(sqlQuery.toString(), "foo");
-        return outerQuery.toString();
     }
 
 	// implement MemberSource

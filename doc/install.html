@@ -30,7 +30,7 @@
   </tr>
 </table>
 
-<h1><font size="6">How to build and install Mondrian</font></h1>
+<h1>How to build and install Mondrian</h1>
 
 <h2><a name="1_Contents">1. Contents</a></h2>
 <ol>
@@ -39,7 +39,14 @@
   <li><a href="#3_Setup_build_environment">Setup build environment</a>
   <li><a href="#4_Download_the_source_code">Download the source code</a><li>
   <a href="#5_Build">Build</a>
-  <li><a href="#6_Load_the_database">Load the database</a><li><a href="#5_Run_the_demo">Run the demo</a>
+  <li><a href="#6_Load_the_database">Load the database</a><ol>
+  <li><a href="#6_1_Microsoft_Access">Microsoft Access</a></li>
+  <li><a href="#6_2_Oracle">Oracle</a></li>
+  <li><a href="#6_3_hsqldb">hsqldb</a></li>
+  <li><a href="#6_4_MySQL">MySQL</a></li>
+</ol>
+
+  <li><a href="#5_Run_the_demo">Run the demo</a>
   <li><a href="#8_Run_the_web_app">Run the web app</a>
   <li><a href="#9_Debug_tomcat_using_IntelliJ">Debug tomcat using IntelliJ</a><li>
   <a href="#10_Miscellaneous">Miscellaneous</a>
@@ -162,12 +169,12 @@ build</pre>
 which database you are using.</p>
 <p> <i>Did these instructions work for you? Have you managed to get mondrian 
 working on other databases/versions? Please let me know.</i></p>
-<h3> <b>6.1. Microsoft Access</b></h3>
+<h3> <b><a name="6_1_Microsoft_Access">6.1. Microsoft Access</a></b></h3>
 <p>Download <code><i>${project.location}</i>/demo/access/FoodMart.mdb</code> . 
 Start ODBC Administrator, and create a System ODBC DSN called <code>MondrianFoodMart</code> pointing to 
 that file.
     The JDBC connect string will be <code>jdbc:odbc:MondrianFoodMart</code>.</p>
-<h3>6.2. Oracle</h3>
+<h3><a name="6_2_Oracle">6.2. Oracle</a></h3>
 <p>Version 8.1.7 or higher.</p>
 <p>Create the dataset by importing <code>${project.location}/demo/oracle/FoodMart.dmp</code>:<blockquote>
 
@@ -214,8 +221,7 @@ import done in WE8ISO8859P1 character set and WE8ISO8859P1 NCHAR character set
 . . importing table                    "warehouse"         24 rows imported
 . . importing table              "warehouse_class"          6 rows imported
 Import terminated successfully without warnings.</pre>
-</blockquote>. (You don't need to run <code>FoodMartTables.sql</code> and <code>
-FoodMartIndexes.sql</code> in that folder.)</p>
+</blockquote></p>
 <p>Setup your environment as follows:</p>
 <ol>
   <li>Set <code>ORACLE_HOME</code> in <code>build.bat</code>, or in your 
@@ -224,24 +230,99 @@ FoodMartIndexes.sql</code> in that folder.)</p>
   CLASSPATH</code> in <code>build.bat</code>, or in your environment.</li>
   <li>In <code>build.xml</code>, make sure that the property <code>
   mondrian.jdbcDrivers</code> includes <code>oracle.jdbc.OracleDriver</code>.</li>
-  <li>In <code>build.xml</code>, set the property <code>
-  mondrian.foodmart.jdbcURL</code>. It should probably include a username and 
-  password, for example <code>
-  <a href="mailto:jdbc:oracle:oci8:foodmart/foodmart@myoracle">jdbc:oracle:oci8:foodmart/foodmart@myoracle</a></code>.</li>
-      <li>In <code>FoodMart.xml</code>, change the query for customers to <code>SELECT 
-      *, &quot;fname&quot; || ' ' || &quot;lname&quot; as &quot;name&quot; FROM &quot;customer&quot;</code>, 
-      because the concatenation operator is '||' and not '+'.</li>
+  <li>In <code>build.xml</code>, set the properties <code>
+  mondrian.foodmart.jdbcURL</code> and <code>
+  mondrian.foodmart.jdbcURL.oracle</code>. They should probably include a username and 
+  password, for example <code>jdbc:oracle:oci8:foodmart/foodmart@myoracle</code>.</li>
 </ol>
   <h3><a name="6_3_hsqldb">6.3. Hypersonic SQL (hsqldb)</a></h3>
 <p>Create and populate the schema  by running the scripts <code>FoodMartTables.sql</code>,
     <code>FoodMartData.sql</code> and <code>FoodMartIndexes.sql</code> in <code>${project.location}/demo/</code>.</p>
-<h3>6.4. mySQL</h3>
-<p>As <a href="#6_3_hsqldb">hsqldb</a>, except for the following.</p>
-<p>Change all <code>varchar</code> 
+<h3><a name="6_4_MySQL">6.4. MySQL</a></h3>
+<p>First, <a href="#MySQL">install</a>. Then
+<a href="http://www.mysql.com/doc/en/Adding_users.html">create a user</a> and a 
+database:</p>
+<blockquote>
+  <pre><font face="Courier New">C:\mysql\bin&gt; <b>mysql</b>
+mysql&gt; <b>GRANT ALL PRIVILEGES ON *.* TO foodmart@localhost
+    </b>-&gt;<b> IDENTIFIED BY 'foodmart';</b>
+Query OK, 0 rows affected (0.06 sec)
+
+mysql&gt; <b>create database foodmart;
+</b>Query OK, 1 row affected (0.00 sec)
+
+mysql&gt; <b>use foodmart</b>
+Database changed
+
+mysql&gt; <b>connect foodmart</b>
+Connection id: 5
+Current database: foodmart</font></pre>
+</blockquote>
+<p>Change the datasets for MySQL syntax:</p>
+<ul>
+  <li>Change all <code>varchar</code> 
         columns in <code>FoodMartTables.sql</code> to
-        <code>varchar(30)</code>,&nbsp;and change all
+        <code>varchar(30)</code></li>
+  <li>Change all
         <code>false</code>/<code>true</code> values in <code>
-        FoodMartData.sql</code> to <code>0</code>/<code>1</code>.</p>
+        FoodMartData.sql</code> to <code>0</code>/<code>1</code>.</li>
+</ul>
+<p>Create the tables, load the data, run sanity checks, create indexes:</p>
+<blockquote>
+  <pre><font face="Courier New">mysql&gt; <b>source c:/mondrian/demo/FoodMartTables.sql
+</b>Query OK, 1 row affected (0.00 sec)
+(15 times)
+
+mysql&gt; <b>source c:/mondrian/demo/FoodMartData.sql</b>
+Query OK, 1 row affected (0.00 sec)
+(295,789 times)
+
+mysql&gt; <b>commit;
+</b>Query OK, 0 rows affected (0.00 sec)
+
+mysql&gt; <b>show tables;
+</b>+---------------------+
+| Tables_in_foodmart  |
++---------------------+
+| customer            |
+| days                |
+| inventory_fact_1997 |
+| inventory_fact_1998 |
+| product             |
+| product_class       |
+| promotion           |
+| region              |
+| sales_fact_1997     |
+| sales_fact_1998     |
+| sales_fact_dec_1998 |
+| store               |
+| time_by_day         |
+| warehouse           |
+| warehouse_class     |
++---------------------+
+15 rows in set (0.02 sec)
+
+mysql&gt; <b>select * from days;
+</b>+------+-----------+
+| day  | week_day  |
++------+-----------+
+| 1    | Sunday    |
+| 2    | Monday    |
+| 5    | Thursday  |
+| 4    | Wednesday |
+| 3    | Tuesday   |
+| 6    | Friday    |
+| 7    | Saturday  |
++------+-----------+
+7 rows in set (0.06 sec)
+
+mysql&gt; <b>source c:/mondrian/demo/FoodMartIndexes.sql</b>
+Query OK, 10281 rows affected (0.63 sec)
+Records: 10281 Duplicates: 0 Warnings: 0
+...
+
+mysql&gt; <b>exit</b></font></pre>
+</blockquote>
 <p>In build.xml, set the property <code>
   mondrian.foodmart.jdbcURL</code>. A typical value is <code>
 jdbc:mysql://localhost/foodmart?user=root&amp;password=</code>, but because the 
@@ -257,9 +338,7 @@ example:</p><blockquote>
 <p>In <code>
         FoodMartTables.sql</code>, change <code>DOUBLE</code> to <code>DOUBLE
     PRECISION</code>, and <code>BIT</code> to <code>SMALLINT</code>.</p>
-In <code>FoodMart.xml</code>, change the query for customers to <code>SELECT 
-      *, &quot;fname&quot; || ' ' || &quot;lname&quot; as &quot;name&quot; FROM &quot;customer&quot;</code>, 
-because the concatenation operator is '||' and not '+'.<h2>
+<h2>
 <a name="7_Run_the_test_suite">7. Run the test suite</a></h2>
 <p>Edit the &quot;FoodMartTest&quot; target in <code>build.xml</code>.</p>
 <p>Run</p>
@@ -285,8 +364,8 @@ build test</pre>
   <blockquote>
 <pre><code>:doJpda
 if not &quot;%SECURITY_POLICY_FILE%&quot; == &quot;&quot; goto doSecurityJpda
-%_EXECJAVA% %JAVA_OPTS% %CATALINA_OPTS% -Xdebug <font color="#FF0000"><i><b>-Xnoagent
- </b></i></font> -Xrunjdwp:transport=<font color="#FF0000"><i><b>dt_socket</b></i></font>,address=%JPDA_ADDRESS%,server=y,suspend=n %DEBUG_OPTS%
+%_EXECJAVA% %JAVA_OPTS% %CATALINA_OPTS% -Xdebug <i><b>-Xnoagent
+ </b></i> -Xrunjdwp:transport=<i><b>dt_socket</b></i>,address=%JPDA_ADDRESS%,server=y,suspend=n %DEBUG_OPTS%
   -Djava.endorsed.dirs=&quot;%JAVA_ENDORSED_DIRS%&quot; -classpath &quot;%CLASSPATH%&quot;
   -Dcatalina.base=&quot;%CATALINA_BASE%&quot; -Dcatalina.home=&quot;%CATALINA_HOME%&quot;
   -Djava.io.tmpdir=&quot;%CATALINA_TMPDIR%&quot; %MAINCLASS% %CMD_LINE_ARGS% %ACTION%
@@ -367,7 +446,7 @@ jakarta-ant-1.5-bin.zip</a>,  extracted to <code>E:/jakarta-ant-1.5</code>,
     <td>Available from <a href="http://jakarta.apache.org/tomcat" target="_blank">
     http://jakarta.apache.org/tomcat</a>. I downloaded <code>
     jakarta-tomcat-4.0.4.zip</code>,  extracted to <code>E:/jakarta-tomcat-4.0.4</code>, 
-    and set <font face="Verdana"><code>TOMCAT_HOME</code></font> to the same.</td>
+    and set <code>TOMCAT_HOME</code> to the same.</td>
   </tr>
   <tr>
     <td><a name="Jikes">Jikes</a></td>
@@ -418,7 +497,7 @@ jakarta-ant-1.5-bin.zip</a>,  extracted to <code>E:/jakarta-ant-1.5</code>,
       is needed in order to build the <code>parser</code> target.)</td>
   </tr>
   <tr>
-    <td>hsql Database Engine</td>
+    <td><a name="hsql">hsql</a> Database Engine</td>
     <td>No</td>
     <td>1.61</td>
     <td>
@@ -429,11 +508,28 @@ to your classpath.</p>
     </td>
   </tr>
   <tr>
-    <td>mySQL</td>
+    <td><a name="MySQL">MySQL</a></td>
     <td>No</td>
-    <td>?</td>
+    <td>3.23</td>
     <td>
-?</td>
+Available from <a href="http://www.mysql.com/downloads/">
+http://www.mysql.com/downloads/</a>. Install MySQL from the zip file. Then
+<a href="http://www.mysql.com/doc/en/NT_start.html">install and start the 
+service</a>:<blockquote>
+  <pre><code>C:\mysql\bin&gt; mysqld-max-nt --install
+Service successfully installed.
+C:\mysql\bin&gt; net start mysql
+The MySql service is starting.
+The MySql service was started successfully.</code></pre>
+</blockquote>
+  <p>Download a <a href="http://www.mysql.com/doc/en/Java.html">JDBC driver</a>. 
+  I downloaded
+  <a href="http://mysql.oregonstate.edu/Downloads/Contrib/mm.mysql-2.0.4-bin.jar">
+  mm.mysql-2.0.4-bin.jar</a> to <code>C:\MySQL\lib</code>, appended it to my 
+  CLASSPATH (by editing <code>build.bat</code>), and appended <code>
+  org.gjt.mm.mysql.Driver</code> to my <code>mondrian.jdbcDrivers</code> 
+  property. 
+    </td>
   </tr>
   <tr>
     <td>Postgres</td>

@@ -12,6 +12,9 @@
 
 package mondrian.resource;
 
+import java.io.PrintStream;
+import java.io.PrintWriter;
+
 /**
  * An <code>Error</code> is an an error which can be constructed from a
  * resource and a set of arguments. It implements {@link ChainableThrowable},
@@ -44,6 +47,21 @@ public class Error extends java.lang.Error implements ChainableThrowable
 	public int getCode()
 	{
 		return code;
+	}
+//	public String toString() {
+//		return Util.toString(this);
+//	}
+	public void printStackTrace(PrintWriter s) {
+		super.printStackTrace(s);
+		if (nextThrowable != null) {
+			nextThrowable.printStackTrace(s);
+		}
+	}
+	public void printStackTrace(PrintStream s) {
+		super.printStackTrace(s);
+		if (nextThrowable != null) {
+			nextThrowable.printStackTrace(s);
+		}
 	}
 }
 

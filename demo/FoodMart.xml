@@ -41,7 +41,14 @@
 	</Dimension>
 
 	<Dimension name="Product" foreignKey="product_id">
-		<Hierarchy hasAll="true" sql="SELECT * FROM &quot;product&quot;, &quot;product_class&quot; WHERE &quot;product&quot;.&quot;product_class_id&quot; = &quot;product_class&quot;.&quot;product_class_id&quot;" primaryKey="product_id">
+		<Hierarchy hasAll="true" primaryKey="product_id">
+			<Query>
+				<SQL dialect="generic">
+SELECT *
+FROM "product", "product_class"
+WHERE "product"."product_class_id" = "product_class"."product_class_id"
+				</SQL>
+			</Query>
 			<Level name="Product Family" column="product_family" uniqueMembers="true"/>
 			<Level name="Product Department" column="product_department" uniqueMembers="false"/>
 			<Level name="Product Category" column="product_category" uniqueMembers="false"/>
@@ -78,13 +85,21 @@
 		</Hierarchy>
 	</Dimension>
 	<Dimension name="Customers" foreignKey="customer_id">
-		<!-- ifdef ORACLE ==
-		<Hierarchy hasAll="true" sql="SELECT &quot;customer&quot;.*, &quot;fname&quot; || ' ' || &quot;lname&quot; as &quot;name&quot; FROM &quot;customer&quot;" primaryKey="customer_id">
-		  == elif TRUE -->
-		<Hierarchy hasAll="true" sql="SELECT *, &quot;fname&quot; + ' ' + &quot;lname&quot; as &quot;name&quot; FROM &quot;customer&quot;" primaryKey="customer_id">
-		<!-- else ==
-		<Hierarchy hasAll="true" table="customer" primaryKey="customer_id">
-		  == endif -->
+		<Hierarchy hasAll="true" primaryKey="customer_id">
+			<Query>
+				<SQL dialect="oracle">
+SELECT "customer".*, "fname" || ' ' || "lname" as "name" FROM "customer"
+				</SQL>
+				<SQL dialect="access">
+SELECT *, [fname] + ' ' + [lname] as [name] FROM [customer]
+				</SQL>
+				<SQL dialect="postgres">
+SELECT "customer".*, "fname" || ' ' || "lname" as "name" FROM "customer"
+				</SQL>
+				<SQL dialect="generic">
+SELECT * FROM "customer"
+				</SQL>
+			</Query>
 			<Level name="Country" column="country" uniqueMembers="true"/>
 			<Level name="State Province" column="state_province" uniqueMembers="true"/>
 			<Level name="City" column="city" uniqueMembers="false"/>

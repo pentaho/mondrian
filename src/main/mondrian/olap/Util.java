@@ -473,11 +473,11 @@ public class Util extends mondrian.xom.XOMUtil
 	 * <code>Provider='sqloledb';Data Source='MySqlServer';Initial
 	 * Catalog='Pubs';Integrated Security='SSPI';</code>.
 	 *
-	 * <p> This method implements as much as possible of the
-	 * <a href="http://msdn.microsoft.com/library/en-us/oledb/htm/oledbconnectionstringsyntax.asp">OLE
-	 * DB connect string syntax specification</a>. To find what it
-	 * <em>actually</em> does, take a look at the {@link #UtilTestCase
-	 * JUnit test case}.
+	 * <p> This method implements as much as possible of the <a
+	 * href="http://msdn.microsoft.com/library/en-us/oledb/htm/oledbconnectionstringsyntax.asp"
+	 * target="_blank">OLE DB connect string syntax
+	 * specification</a>. To find what it <em>actually</em> does, take
+	 * a look at the {@link mondrian.olap.Util.UtilTestCase JUnit test case}.
 	 **/
 	public static PropertyList parseConnectString(String s) {
 		return new ConnectStringParser().parse(s);

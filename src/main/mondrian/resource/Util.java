@@ -15,10 +15,8 @@ import mondrian.xom.XOMException;
 import mondrian.xom.Parser;
 import mondrian.xom.XOMUtil;
 import mondrian.xom.DOMWrapper;
-import java.io.PrintWriter;
-import java.io.IOException;
-import java.io.File;
-import java.io.InputStream;
+
+import java.io.*;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -213,7 +211,31 @@ public class Util {
 		}
 		return (Throwable[]) list.toArray(emptyThrowableArray);
 	}
-}
 
+	/**
+	 * Formats an error, which may have chained errors, as a string.
+	 */
+	public static String toString(Throwable err)
+	{
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		Throwable[] throwables = toArray(err);
+		for (int i = 0; i < throwables.length; i++) {
+			Throwable throwable = throwables[i];
+			if (i > 0) {
+				pw.println();
+				pw.print("Caused by: ");
+			}
+			if (throwable instanceof ChainableThrowable) {
+				pw.print(throwable.getMessage());
+				pw.print(" at ");
+				throwable.printStackTrace(pw);
+			} else {
+				pw.print(throwable.toString());
+			}
+		}
+		return sw.toString();
+	}
+}
 
 // End Util.java

@@ -13,6 +13,7 @@
   <property name="project.location" location="."/>
   <property name="lib.location" location="${project.location}/lib"/>
   <property file="${project.location}/build.properties"/>
+  <property file="${project.location}/mondrian.properties"/>
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
@@ -85,22 +86,33 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
 
   <!--
     ===================================================================
-    Properties for running the FoodMart test
+    Properties for running the FoodMart test. (Override them by
+	editing mondrian.properties)
     =================================================================== 
   -->
 
-  <!-- Comma-separated list of jdbc drivers; for example,
-       "org.hsqldb.jdbcDriver,sun.jdbc.odbc.JdbcOdbcDriver,oracle.jdbc.OracleDriver" -->
+  <!-- Comma-separated list of jdbc drivers. Typical drivers:
+       sun.jdbc.odbc.JdbcOdbcDriver, org.hsqldb.jdbcDriver,
+       oracle.jdbc.OracleDriver, org.gjt.mm.mysql.Driver. Remember to
+       include the driver on your CLASSPATH! -->
   <property name="mondrian.jdbcDrivers"
       value="sun.jdbc.odbc.JdbcOdbcDriver,oracle.jdbc.OracleDriver"/>
   <!-- The URL of the folder which contains the resource files. -->
   <property name="mondrian.resourceURL"
       value="file:///${resource.location}"/>
-  <!-- JDBC URL of the relational database; examples are
-       "jdbc:odbc:MondrianFoodMart", "jdbc:hsqldb:demo/hsql/FoodMart",
-	   "jdbc:oracle:oci8:foodmart/foodmart@kanaebiz". -->
-  <property name="mondrian.foodmart.jdbcURL"
+  <!-- Connect string to the relational database. -->
+  <property name="mondrian.foodmart.jdbcURL.access"
       value="jdbc:odbc:MondrianFoodMart"/>
+  <property name="mondrian.foodmart.jdbcURL.hsqldb"
+      value="jdbc:hsqldb:demo/hsql/FoodMart"/>
+  <property name="mondrian.foodmart.jdbcURL.mysql"
+      value="jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart"/>
+  <property name="mondrian.foodmart.jdbcURL.oracle"
+      value="jdbc:oracle:oci8:foodmart/foodmart@realm1"/>
+  <property name="mondrian.foodmart.jdbcURL.postgres"
+      value="jdbc:??"/>
+  <property name="mondrian.foodmart.jdbcURL"
+      refid="mondrian.foodmart.jdbcURL.access"/>
   <!-- URL of the catalog definition. -->
   <property name="mondrian.foodmart.catalogURL"
       value="file:///${project.location}/${demo.dir}/FoodMart.xml"/>
@@ -186,11 +198,12 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
     </wljspc>
   </target>
 
-  <!-- FoodMartTest runs a few queries using the FoodMart schema. Before you
-       run it, you will need to set the "mondrian.jdbcDrivers",
-       "mondrian.foodmart.jdbcURL", and "mondrian.foodmart.catalogURL"
-       properties.  -->
-  <target name="FoodMartTest">
+  <!-- Before you run it, you will need to set the
+       "mondrian.jdbcDrivers", "mondrian.foodmart.jdbcURL", and
+       "mondrian.foodmart.catalogURL" properties.  -->
+
+  <target name="FoodMartTest"
+      description="Runs a few queries using the FoodMart schema.">
     <java classpathref="project.classpath" classname="mondrian.test.Main" 
         fork="yes">
       <jvmarg value="-Dmondrian.jdbcDrivers=${mondrian.jdbcDrivers}"/>
@@ -202,18 +215,47 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
     </java>
   </target>
 
-  <!-- test runs all JUnit tests. Same prerequisites as FoodMartTest -->
-  <target name="test">
+  <!-- Same prerequisites as FoodMartTest -->
+  <target name="test" description="Runs all JUnit tests.">
+    <antcall target="test-dbms"/>
+  </target>
+
+  <target name="test-access" description="Runs all JUnit tests on Access.">
+    <antcall target="test-dbms">
+      <param name="mondrian.foodmart.jdbcURL" value="${mondrian.foodmart.jdbcURL.access}"/>
+    </antcall>
+  </target>
+
+  <target name="test-mysql" description="Runs all JUnit tests on MySQL.">
+    <antcall target="test-dbms">
+      <param name="mondrian.foodmart.jdbcURL" value="${mondrian.foodmart.jdbcURL.mysql}"/>
+    </antcall>
+  </target>
+
+  <target name="test-oracle" description="Runs all JUnit tests on Oracle.">
+    <antcall target="test-dbms">
+      <param name="mondrian.foodmart.jdbcURL" value="${mondrian.foodmart.jdbcURL.oracle}"/>
+    </antcall>
+  </target>
+
+  <target name="test-postgres" description="Runs all JUnit tests on Postgres.">
+    <antcall target="test-dbms">
+      <param name="mondrian.foodmart.jdbcURL" value="${mondrian.foodmart.jdbcURL.postgres}"/>
+    </antcall>
+  </target>
+
+  <target name="test-dbms"
+      description="
+Runs all JUnit tests, using the given database connection
+in {mondrian.foodmart.jdbcURL}.">
     <java classpathref="project.classpath" classname="mondrian.test.Main" 
         fork="yes">
       <jvmarg value="-Dmondrian.jdbcDrivers=${mondrian.jdbcDrivers}"/>
       <jvmarg value="-Dmondrian.resourceURL=${mondrian.resourceURL}"/>
-
-      <!-- mondrian.test.connectString is the mondrian connect-string.
-           Provider must be 'mondrian'. Jdbc is the  Catalog is the  -->
-      <jvmarg value="-Dmondrian.test.connectString=Provider=mondrian;Jdbc=${mondrian.foodmart.jdbcURL};Catalog=${mondrian.foodmart.catalogURL}"/>
+      <jvmarg value="-Dmondrian.test.connectString=Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}'"/>
     </java>
   </target>
+
 
   <target name="etags">
     <exec dir="${project.location}" executable="find" output="javaFiles">
@@ -235,8 +277,33 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
       <zipfileset
           dir="."
           prefix="${dist.name}"
-          includes="**/*.java, **/*.cup, **/*.html, **/*.css, ${java.dir}/mondrian/resource/Resource.xml, ${java.dir}/mondrian/olap/Mondrian.xml, ${java.dir}/mondrian/xom/Meta.xml, ${java.dir}/javax/jmi/model/resources/mof.xml, ${lib.dir}/javacup.jar, ${lib.dir}/boot.jar, ${webapp.dir}/WEB-INF/web.xml, ${webapp.dir}/**/*.jsp, ${webapp.dir}/WEB-INF/*.xsl, ${webapp.dir}/WEB-INF/*.tld, resource/*.xml, resource/*.xsl, build.xml, build.bat, build.properties, deploy_env.properties, LICENSE.html, README.txt, VERSION.txt, ${demo.dir}/FoodMart.xml"
-          excludes="${javadoc.dir}/**, **/*~, ${generated.java.files}" />
+          includes="**/*.java,
+**/*.cup,
+**/*.html,
+**/*.css,
+${java.dir}/mondrian/resource/Resource.xml,
+${java.dir}/mondrian/olap/Mondrian.xml,
+${java.dir}/mondrian/xom/Meta.xml,
+${java.dir}/javax/jmi/model/resources/mof.xml,
+${lib.dir}/javacup.jar,
+${lib.dir}/boot.jar,
+${webapp.dir}/WEB-INF/web.xml,
+${webapp.dir}/**/*.jsp,
+${webapp.dir}/WEB-INF/*.xsl,
+${webapp.dir}/WEB-INF/*.tld,
+resource/*.xml,
+sresource/*.xsl,
+build.xml,
+build.bat,
+build.properties,
+deploy_env.properties,
+LICENSE.html,
+README.txt,
+VERSION.txt,
+${demo.dir}/FoodMart.xml"
+          excludes="${javadoc.dir}/**,
+**/*~,
+${generated.java.files}" />
     </zip>
   </target>
 
@@ -250,14 +317,27 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
            new data file each release. -->
       <zipfileset
           dir="."
-          includes="LICENSE.html, README.txt, VERSION.txt, demo/FoodMartData.sql, demo/FoodMartTables.sql, demo/FoodMartIndexes.sql, demo/oracle/FoodMartData.sql, demo/oracle/FoodMartTables.sql, demo/oracle/FoodMartIndexes.sql, demo/oracle/FoodMart.dmp, demo/access/MondrianFoodMart.mdb, demo/**/*.pl, demo/**/*.sh"
-          excludes="demo/FoodMart.xml, **/*~"/>
+          includes="LICENSE.html,
+README.txt,
+VERSION.txt,
+demo/FoodMartData.sql,
+demo/FoodMartTables.sql,
+demo/FoodMartIndexes.sql,
+demo/oracle/FoodMartData.sql,
+demo/oracle/FoodMartTables.sql,
+demo/oracle/FoodMartIndexes.sql,
+demo/oracle/FoodMart.dmp,
+demo/access/MondrianFoodMart.mdb,
+demo/**/*.pl,
+demo/**/*.sh"
+          excludes="demo/FoodMart.xml,
+**/*~"/>
     </zip>
   </target>
 
   <target name="export.foodmart.oracle">
     <exec dir="${demo.dir}/oracle" executable="${myenv.ORACLE_HOME}/bin/exp">
-      <arg line="userid=foodmart/foodmart@kanaebiz"/>
+      <arg line="userid=foodmart/foodmart@realm1"/>
       <arg line="file=FoodMart.dmp"/>
       <arg line="owner=FOODMART"/>
 	</exec>
@@ -271,7 +351,10 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
       <zipfileset
           dir="."
           prefix="${dist.name}"
-          includes="${javadoc.dir}/**/*, LICENSE.html, README.txt, VERSION.txt"
+          includes="${javadoc.dir}/**/*,
+LICENSE.html,
+README.txt,
+VERSION.txt"
           excludes="**/*~"/>
       <zipfileset
           dir="${dist.dir}"
@@ -290,7 +373,9 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
           includes="**/*.class"/>
       <zipfileset
           dir="."
-          includes="LICENSE.html, README.txt, VERSION.txt"/>
+          includes="LICENSE.html,
+README.txt,
+VERSION.txt"/>
     </zip>
   </target>
 
@@ -301,7 +386,8 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
     <jar jarfile="${boot.jar.file}">
       <fileset
           dir="${classes.dir}"
-          includes="mondrian/xom/**/*.class, mondrian/resource/**/*.class"/>
+          includes="mondrian/xom/**/*.class,
+mondrian/resource/**/*.class"/>
     </jar>
   </target>
 

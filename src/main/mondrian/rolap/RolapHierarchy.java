@@ -129,12 +129,13 @@ class RolapHierarchy extends HierarchyBase
 			}
 		}
 		if ((xmlHierarchy.table == null ? 0 : 1) +
-			(xmlHierarchy.sql == null ? 0 : 1) +
+			(xmlHierarchy.querySet == null ? 0 : 1) +
 			(xmlHierarchy.memberReaderClass == null ? 0 : 1) != 1) {
 			throw Util.newInternal(
-				"you must specify precisely one of the 'table', 'sql', and " +
-				"'memberReaderClass' attributes of hierarchy '" +
-				getUniqueName() + "'");
+					"Hierarchy '" + getUniqueName() +
+					"' must have precisely one of the following: " +
+					"a 'table' or 'memberReaderClass' attribute, " +
+					"or an embedded '<Query>'");
 		}
 //  		if (xmlHierarchy.table != null) {
 //  			this.sql = RolapUtil.doubleQuoteForSql(
@@ -203,7 +204,7 @@ class RolapHierarchy extends HierarchyBase
 		if (this.memberReader != null) {
 			return this.memberReader;
 		}
-		if (xmlHierarchy.sql != null || xmlHierarchy.table != null) {
+		if (xmlHierarchy.querySet != null || xmlHierarchy.table != null) {
 			SqlMemberSource source = new SqlMemberSource(this);
 			int memberCount = source.getMemberCount();
 			if (memberCount > LARGE_DIMENSION_THRESHOLD &&
@@ -254,11 +255,12 @@ class RolapHierarchy extends HierarchyBase
 			"cannot create member reader for hierarchy '" + name + "'");
 	}
 
-    String getQuery() {
-        if (xmlHierarchy == null) {
-            return null;
-        }
-        return xmlHierarchy.sql;
+    MondrianDef.SQL[] getQuery() {
+		if (xmlHierarchy == null ||
+				xmlHierarchy.querySet == null) {
+			return null;
+		}
+        return xmlHierarchy.querySet.selects;
     }
 
     String getTable() {
@@ -322,8 +324,9 @@ class RolapHierarchy extends HierarchyBase
 	}
 	void addToFrom(SqlQuery query)
 	{
-		if (xmlHierarchy.sql != null) {
-			query.addFromQuery(xmlHierarchy.sql, getAlias());
+		if (xmlHierarchy.querySet != null) {
+			String sqlString = query.chooseQuery(xmlHierarchy.querySet.selects);
+			query.addFromQuery(sqlString, getAlias());
 		} else if (xmlHierarchy.table != null) {
 			query.addFromTable(
 				xmlHierarchy.schema, xmlHierarchy.table, getAlias());

@@ -12,6 +12,7 @@
 
 package mondrian.rolap;
 import mondrian.olap.Util;
+import mondrian.olap.MondrianDef;
 import mondrian.rolap.sql.SqlQuery;
 
 import java.sql.Connection;
@@ -242,7 +243,7 @@ public class RolapStar {
 	{
 		public RolapStar star;
 		public String alias;
-		private String sql;
+		private MondrianDef.SQL[] selects;
         private String schema;
         private String table;
 		public String primaryKey;
@@ -253,18 +254,19 @@ public class RolapStar {
             this.schema = schema;
             this.table = table;
         }
-        void setQuery(String sql) {
-            this.sql = sql;
+        void setQuery(MondrianDef.SQL[] selects) {
+            this.selects = selects;
         }
 		public void addToFrom(SqlQuery query) {
-			if (sql != null) {
-				query.addFromQuery(sql,alias);
+			if (selects != null) {
+				String sqlString = query.chooseQuery(selects);
+				query.addFromQuery(sqlString, alias);
 			} else {
 				query.addFromTable(schema,table,alias);
 			}
 		}
 		public boolean isFunky() {
-			return sql == null && table == null;
+			return selects == null && table == null;
 		}
 	};
 }
