@@ -48,17 +48,17 @@ public abstract class OlapElementBase
 	/** JDK1.1's string hashing algorithm only samples if the string is 16 or
 	 * longer.  Member names are so similar that we want to read all
 	 * characters. */
-	public static final int stringHash(String s)
-	{
-		int h = 0;
-		int len = s.length();
+  public static final int stringHash(String s)
+  {
+    int h = 0;
+    char buf [] = s.toCharArray();
 
-	    for (int i = 0; i < len; i++) {
-			h = (h * 37) + s.charAt(i);
-	    }
-		return h;
+    for (int i = 0; i < buf.length; i++) {
+      h = (h * 37) + buf[i];
     }
-	
+    return h;
+  }
+
 //  	public String getType()
 //  	{
 //  		// Take the class-name (e.g. Broadbase.mdx.Hierarchy) and remove
