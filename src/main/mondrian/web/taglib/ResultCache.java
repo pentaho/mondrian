@@ -65,27 +65,17 @@ public class ResultCache implements HttpSessionBindingListener {
 	}
 
 	public void parse(String mdx) {
-		mondrian.olap.Util.setThreadRes(resource);
-		try {
-			query = connection.parseQuery(mdx);
-			setDirty();
-		} finally {
-			mondrian.olap.Util.setThreadRes(null);
-		}
+		query = connection.parseQuery(mdx);
+		setDirty();
 	}
 
 	public Result getResult() {
 		if (result == null) {
-			mondrian.olap.Util.setThreadRes(resource);
-			try {
-				long t1 = System.currentTimeMillis();
-				result = connection.execute(query);
-				long t2 = System.currentTimeMillis();
-				System.out.println(
-					"Execute query took " + (t2 - t1) + " millisec");
-			} finally {
-				mondrian.olap.Util.setThreadRes(null);
-			}
+			long t1 = System.currentTimeMillis();
+			result = connection.execute(query);
+			long t2 = System.currentTimeMillis();
+			System.out.println(
+				"Execute query took " + (t2 - t1) + " millisec");
 		}
 		return result;
 	}
@@ -129,19 +119,11 @@ public class ResultCache implements HttpSessionBindingListener {
 	 * create a new connection to Mondrian
 	 */
 	public void valueBound(HttpSessionBindingEvent ev) {
-		try {
-			String resourceURL = servletContext.getInitParameter("resourceURL");
-			this.resource = new MondrianResource(resourceURL, Locale.ENGLISH);
-			mondrian.olap.Util.setThreadRes(resource);
-			String connectString =
-				servletContext.getInitParameter("connectString");
-			this.connection =
-				DriverManager.getConnection(connectString, null, false);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			mondrian.olap.Util.setThreadRes(null);
-		}
+		this.resource = MondrianResource.instance();
+		String connectString =
+			servletContext.getInitParameter("connectString");
+		this.connection =
+			DriverManager.getConnection(connectString, null, false);
 	}
 
     /**

@@ -27,11 +27,6 @@ You must accept the terms of that agreement to use this software.
       <param-value>@connectString@</param-value>
     </context-param>
 
-    <context-param>
-      <param-name>resourceURL</param-name>
-      <param-value>@resourceURL@</param-value>
-    </context-param>
-
     <listener>
       <listener-class>mondrian.web.taglib.Listener</listener-class>
     </listener>
@@ -46,10 +41,6 @@ You must accept the terms of that agreement to use this software.
       <init-param>
         <param-name>connectString</param-name>
         <param-value>@connectString@</param-value>
-      </init-param>
-      <init-param>
-        <param-name>resourceURL</param-name>
-        <param-value>@resourceURL@</param-value>
       </init-param>
     </servlet>
 

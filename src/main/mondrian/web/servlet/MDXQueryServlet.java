@@ -39,9 +39,6 @@ public class MDXQueryServlet extends HttpServlet {
     */	
     public void init(ServletConfig config) throws ServletException {
 	super.init(config);
-	String resourceURL = config.getInitParameter("resourceURL");
-	System.getProperties().put("mondrian.resourceURL", resourceURL);
-	mondrian.olap.Util.setThreadRes(MondrianResource.instance());
 	connectString = config.getInitParameter("connectString");
 	String jdbcDrivers = config.getInitParameter("jdbcDrivers");
 	StringTokenizer tok = new java.util.StringTokenizer(jdbcDrivers, ",");

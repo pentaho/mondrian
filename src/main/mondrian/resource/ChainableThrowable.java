@@ -25,7 +25,7 @@ public interface ChainableThrowable {
 	 * Returns the next {@link Throwable} in the chain.  The returned {@link
 	 * Throwable} does not necessarily implement {@link ChainableThrowable}.
 	 **/
-	Throwable getNextThrowable();
+	Throwable getCause();
 }
 
 // End ChainableThrowable.java

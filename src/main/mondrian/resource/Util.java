@@ -20,20 +20,26 @@ import java.io.*;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Locale;
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
+import java.rmi.RemoteException;
 
 /**
- * todo:
+ * Miscellaneous utility methods for the <code>mondrian.resource</code>
+ * package, all them <code>static</code> and package-private.
  *
  * @author jhyde
  * @since 3 December, 2001
  * @version $Id$
  **/
-public class Util {
+abstract class Util {
 
 	private static final Throwable[] emptyThrowableArray = new Throwable[0];
 
     /** loads URL into Document and returns set of resources **/
-	public static ResourceDef.BaflResourceList load(URL url)
+	static ResourceDef.BaflResourceList load(URL url)
 		throws IOException
 	{
 		return load(url.openStream());
@@ -66,7 +72,7 @@ public class Util {
 	 *        each line, not counting the prefix and suffix.  If this is -1,
 	 *        never break lines.
 	 **/
-	public static void fillText(
+	static void fillText(
 		PrintWriter pw, String text, String linePrefix, String lineSuffix,
 		int maxTextPerLine)
 	{
@@ -121,7 +127,7 @@ public class Util {
 		}
 	}
 
-	public static URL stringToUrl(String strFile) throws IOException
+	static URL stringToUrl(String strFile) throws IOException
 	{
 		try {
 			File f = new File(strFile);
@@ -134,7 +140,7 @@ public class Util {
 	/**
 	 * Creates a file-protocol URL for the given filename.
 	 **/
-	public static URL convertPathToURL(File file)
+	static URL convertPathToURL(File file)
 	{
 		try {
 			String path = file.getAbsolutePath();
@@ -157,7 +163,7 @@ public class Util {
 		}
 	}
 
-	public static String formatError(String template, Object[] args)
+	static String formatError(String template, Object[] args)
 	{
 		String s = template;
 		for (int i = 0; i < args.length; i++) {
@@ -169,7 +175,7 @@ public class Util {
 	}
 
 	/** Does not modify the original string */
-	public static String replace(String s,String find,String replace)
+	static String replace(String s,String find,String replace)
 	{
 		// let's be optimistic
 		int found = s.indexOf(find);
@@ -198,24 +204,56 @@ public class Util {
 	/**
 	 * Converts a chain of {@link Throwable}s into an array.
 	 **/
-	public static Throwable[] toArray(Throwable err)
+	static Throwable[] toArray(Throwable err)
 	{
 		ArrayList list = new ArrayList();
 		while (err != null) {
 			list.add(err);
-			if (err instanceof ChainableThrowable) {
-				err = ((ChainableThrowable) err).getNextThrowable();
-			} else {
-				err = null;
-			}
+			err = getCause(err);
 		}
 		return (Throwable[]) list.toArray(emptyThrowableArray);
+	}
+
+	private static final Class[] emptyClassArray = new Class[0];
+
+	private static Throwable getCause(Throwable err) {
+		if (err instanceof ChainableThrowable) {
+			return ((ChainableThrowable) err).getCause();
+		}
+		if (err instanceof InvocationTargetException) {
+			return ((InvocationTargetException) err).getTargetException();
+		}
+		try {
+			Method method = err.getClass().getMethod(
+					"getCause", emptyClassArray);
+			if (Throwable.class.isAssignableFrom(method.getReturnType())) {
+				return (Throwable) method.invoke(err, new Object[0]);
+			}
+		} catch (NoSuchMethodException e) {
+		} catch (SecurityException e) {
+		} catch (IllegalAccessException e) {
+		} catch (IllegalArgumentException e) {
+		} catch (InvocationTargetException e) {
+		}
+		try {
+			Method method = err.getClass().getMethod(
+					"getNestedThrowable", emptyClassArray);
+			if (Throwable.class.isAssignableFrom(method.getReturnType())) {
+				return (Throwable) method.invoke(err, new Object[0]);
+			}
+		} catch (NoSuchMethodException e) {
+		} catch (SecurityException e) {
+		} catch (IllegalAccessException e) {
+		} catch (IllegalArgumentException e) {
+		} catch (InvocationTargetException e) {
+		}
+		return null;
 	}
 
 	/**
 	 * Formats an error, which may have chained errors, as a string.
 	 */
-	public static String toString(Throwable err)
+	static String toString(Throwable err)
 	{
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
@@ -236,6 +274,49 @@ public class Util {
 		}
 		return sw.toString();
 	}
+
+	static void printStackTrace(Throwable throwable, PrintWriter s) {
+		Throwable[] stack = Util.toArray(throwable);
+		PrintWriter pw = new DummyPrintWriter(s);
+		for (int i = 0; i < stack.length; i++) {
+			if (i > 0) {
+				pw.println("caused by");
+			}
+			stack[i].printStackTrace(pw);
+		}
+		pw.flush();
+	}
+
+	static void printStackTrace(Throwable throwable, PrintStream s) {
+		Throwable[] stack = Util.toArray(throwable);
+		PrintStream ps = new DummyPrintStream(s);
+		for (int i = 0; i < stack.length; i++) {
+			if (i > 0) {
+				ps.println("caused by");
+			}
+			stack[i].printStackTrace(ps);
+		}
+		ps.flush();
+	}
+
+	/**
+	 * So we know to avoid recursively calling {@link printStackTrace(PrintWriter)}.
+	 */
+	static class DummyPrintWriter extends PrintWriter {
+		public DummyPrintWriter(Writer out) {
+			super(out);
+		}
+	}
+
+	/**
+	 * So we know to avoid recursively calling {@link printStackTrace(PrintStream)}.
+	 */
+	static class DummyPrintStream extends PrintStream {
+		public DummyPrintStream(OutputStream out) {
+			super(out);
+		}
+	}
+
 }
 
 // End Util.java

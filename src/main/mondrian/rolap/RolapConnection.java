@@ -63,9 +63,9 @@ public class RolapConnection extends ConnectionBase
 						xmlParser.parse(url));
 					loadSchema(xmlSchema);
 				} catch (mondrian.xom.XOMException e) {
-					throw new Error(e.getMessage());
+					throw Util.newError(e, "while parsing catalog " + catalogName);
 				} catch (java.io.IOException e) {
-					throw new Error(e.getMessage());
+					throw Util.newError(e, "while parsing catalog " + catalogName);
 				}
 			}
 		} catch (SQLException e) {
@@ -101,7 +101,7 @@ public class RolapConnection extends ConnectionBase
 	}
 	public String[] listCubeNames()
 	{
-		throw new Error("unsupported");
+		throw new UnsupportedOperationException();
 	}
 	public Locale getLocale()
 	{

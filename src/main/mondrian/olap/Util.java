@@ -32,7 +32,6 @@ public class Util extends mondrian.xom.XOMUtil
 	// properties
 
 	public static final Object nullValue = new NullCellValue();
-	private static Hashtable threadRes = new Hashtable();
 
 	/** encodes string for MDX (escapes ] as ]] inside a name) */
 	public static String mdxEncodeString(String st)
@@ -290,23 +289,23 @@ public class Util extends mondrian.xom.XOMUtil
 		}
 	}
 
-	public static Error newInternal(String message) {
+	public static RuntimeException newInternal(String message) {
 		return getRes().newInternal(message);
 	}
 
-	public static Error newInternal(Throwable e, String message) {
+	public static RuntimeException newInternal(Throwable e, String message) {
 		return getRes().newInternal(e, message);
 	}
 
 	/** Creates a non-internal error. Currently implemented in terms of
 	 * internal errors, but later we will create resourced messages. **/
-	public static Error newError(String message) {
+	public static RuntimeException newError(String message) {
 		return getRes().newInternal(message);
 	}
 
 	/** Creates a non-internal error. Currently implemented in terms of
 	 * internal errors, but later we will create resourced messages. **/
-	public static Error newError(Throwable e, String message) {
+	public static RuntimeException newError(Throwable e, String message) {
 		return getRes().newInternal(e, message);
 	}
 
@@ -326,23 +325,8 @@ public class Util extends mondrian.xom.XOMUtil
 		assertTrue(b);
 	}
 
-	public static void setThreadRes(MondrianResource resource)
-	{
-		if (resource == null) {
-			threadRes.remove(Thread.currentThread());
-		} else {
-			threadRes.put(Thread.currentThread(), resource);
-		}
-	}
-
-	public static MondrianResource getRes()
-	{
-		MondrianResource resource = (MondrianResource) threadRes.get(
-			Thread.currentThread());
-		if (resource == null) {
-			resource = MondrianResource.instance();
-		}
-		return resource;
+	public static MondrianResource getRes() {
+		return MondrianResource.instance();
 	}
 
 	/**
@@ -358,7 +342,7 @@ public class Util extends mondrian.xom.XOMUtil
 			String sMsg = getErrorMessage(e);
 			v.addElement(sMsg);
 			if (e instanceof ChainableThrowable) {
-				e = ((ChainableThrowable) e).getNextThrowable();
+				e = ((ChainableThrowable) e).getCause();
 			} else {
 				e = null;
 			}

@@ -19,6 +19,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.net.MalformedURLException;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -61,9 +62,6 @@ public class TestContext {
 	/** Creates a TestContext. Called only from {@link #init}. **/
 	private TestContext() {
 		this.pw = new PrintWriter(System.out, true);
-
-		mondrian.olap.Util.setThreadRes(MondrianResource.instance());
-
 		String jdbcDrivers = Util.getProperties().getProperty(
 				"mondrian.jdbcDrivers", "org.hsqldb.jdbcDriver");
 		StringTokenizer tok = new java.util.StringTokenizer(jdbcDrivers, ",");
@@ -79,13 +77,38 @@ public class TestContext {
 		foodMartConnectString = Util.getProperties().getProperty(
                 "mondrian.test.connectString");
 		if (foodMartConnectString == null) {
-			URL catalogUrl = mondrian.resource.Util.convertPathToURL(
-					new File("demo/FoodMart.xml"));
+			URL catalogUrl = convertPathToURL(new File("demo/FoodMart.xml"));
 			String jdbcURL = Util.getProperties().getProperty(
 					"mondrian.test.jdbcURL", "jdbc:hsqldb:demo/hsql/FoodMart");
 			foodMartConnectString = "Provider=mondrian;" +
 					"Jdbc=" + jdbcURL + ";" +
 					"Catalog=" + catalogUrl;
+		}
+	}
+
+	/**
+	 * Creates a file-protocol URL for the given filename.
+	 **/
+	public static URL convertPathToURL(File file)
+	{
+		try {
+			String path = file.getAbsolutePath();
+			// This is a bunch of weird code that is required to
+			// make a valid URL on the Windows platform, due
+			// to inconsistencies in what getAbsolutePath returns.
+			String fs = System.getProperty("file.separator");
+			if (fs.length() == 1)
+			{
+				char sep = fs.charAt(0);
+				if (sep != '/')
+					path = path.replace(sep, '/');
+				if (path.charAt(0) != '/')
+					path = '/' + path;
+			}
+			path = "file://" + path;
+			return new URL(path);
+		} catch (MalformedURLException e) {
+			throw new java.lang.Error(e.getMessage());
 		}
 	}
 

@@ -66,7 +66,7 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
     <pathelement location="${junit.home}/junit.jar"/>
     <!-- CLASSPATH must contain xml-apis.jar, xercesImpl.jar, javacup.jar -->
     <pathelement path="${myenv.CLASSPATH}"/>
-	<!-- Weblogic must be after xml-apis.jar and xercesImpl.jar, because it
+    <!-- Weblogic must be after xml-apis.jar and xercesImpl.jar, because it
          contains an incompatible version of xerces. -->
     <pathelement location="${weblogic.home}/lib/weblogic.jar"/>
   </path>
@@ -91,19 +91,16 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
   <!--
     ===================================================================
     Properties for running the FoodMart test. (Override them by
-	editing mondrian.properties)
+    editing mondrian.properties)
     ===================================================================
   -->
 
   <!-- Comma-separated list of jdbc drivers. Typical drivers:
        sun.jdbc.odbc.JdbcOdbcDriver, org.hsqldb.jdbcDriver,
-       oracle.jdbc.OracleDriver, org.gjt.mm.mysql.Driver. Remember to
+       oracle.jdbc.OracleDriver, com.mysql.jdbc.Driver. Remember to
        include the driver on your CLASSPATH! -->
   <property name="mondrian.jdbcDrivers"
-      value="sun.jdbc.odbc.JdbcOdbcDriver,oracle.jdbc.OracleDriver"/>
-  <!-- The URL of the folder which contains the resource files. -->
-  <property name="mondrian.resourceURL"
-      value="file:///${resource.location}"/>
+      value="sun.jdbc.odbc.JdbcOdbcDriver"/>
   <!-- Connect string to the relational database. -->
   <property name="mondrian.foodmart.jdbcURL.access"
       value="jdbc:odbc:MondrianFoodMart"/>
@@ -149,7 +146,7 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
     <mkdir dir="${classes.dir}"/>
   </target>
 
-  <target name="compile" depends="sniff,prepare,parser,def,compile.jsp.maybe,compile.java"/>
+  <target name="compile" depends="sniff,prepare,parser,def,compile.jsp.maybe,compile.java,copy.properties"/>
 
   <target name="compile.java">
     <javac
@@ -159,6 +156,12 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
         classpathref="project.classpath">
       <include name="mondrian/**/*.java" />
     </javac>
+  </target>
+
+  <target name="copy.properties">
+    <copy todir="${classes.dir}">
+      <fileset dir="${java.dir}" includes="**/*.properties"/>
+    </copy>
   </target>
 
   <target name="parser">
@@ -171,19 +174,19 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
   <target name="def">
     <xomgen
         model="${java.dir}/mondrian/xom/Meta.xml"
-		destdir="${java.dir}"
-		classname="mondrian.xom.MetaDef"
-		dtdname="meta.dtd"/>
+        destdir="${java.dir}"
+        classname="mondrian.xom.MetaDef"
+        dtdname="meta.dtd"/>
     <xomgen
         model="${java.dir}/mondrian/olap/Mondrian.xml"
         destdir="${java.dir}"
-		classname="mondrian.olap.MondrianDef"
+        classname="mondrian.olap.MondrianDef"
         dtdname="mondrian.dtd"/>
     <xomgen
         model="${java.dir}/mondrian/resource/Resource.xml"
-		destdir="${java.dir}"
-		classname="mondrian.resource.ResourceDef"
-		dtdname="Resource.dtd"/>
+        destdir="${java.dir}"
+        classname="mondrian.resource.ResourceDef"
+        dtdname="Resource.dtd"/>
   </target>
 
   <target name="compile.jsp.maybe" depends="compile.java"
@@ -211,7 +214,6 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
     <java classpathref="project.classpath" classname="mondrian.test.Main"
         fork="yes">
       <jvmarg value="-Dmondrian.jdbcDrivers=${mondrian.jdbcDrivers}"/>
-      <jvmarg value="-Dmondrian.resourceURL=${mondrian.resourceURL}"/>
 
       <!-- mondrian.test.connectString is the mondrian connect-string.
            Provider must be 'mondrian'. Jdbc is the  Catalog is the  -->
@@ -255,39 +257,35 @@ in {mondrian.foodmart.jdbcURL}.">
     <java classpathref="project.classpath" classname="mondrian.test.Main"
         fork="yes">
       <jvmarg value="-Dmondrian.jdbcDrivers=${mondrian.jdbcDrivers}"/>
-      <jvmarg value="-Dmondrian.resourceURL=${mondrian.resourceURL}"/>
       <jvmarg value="-Dmondrian.test.connectString=Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}'"/>
     </java>
   </target>
 
 <target name="junit-main" depends="compile">
-		<mkdir dir="junit-results"/>
-	<junit printsummary="yes" fork="yes" haltonfailure="no" >
-		<classpath>
-			<path refid="project.classpath"/>
-		</classpath>
+        <mkdir dir="junit-results"/>
+    <junit printsummary="yes" fork="yes" haltonfailure="no" >
+        <classpath>
+            <path refid="project.classpath"/>
+        </classpath>
+        <jvmarg value="-Dmondrian.jdbcDrivers=${mondrian.jdbcDrivers}"/>
+        <jvmarg value="-Dmondrian.test.connectString=Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}'"/>
+        <formatter type="xml" />
 
-	        <jvmarg value="-Dmondrian.jdbcDrivers=${mondrian.jdbcDrivers}"/>
-	        <jvmarg value="-Dmondrian.resourceURL=${mondrian.resourceURL}"/>
-	       	<jvmarg value="-Dmondrian.test.connectString=Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}'"/>
-		<formatter type="xml" />
+        <batchtest fork="yes" todir="junit-results">
+            <fileset dir="classes">
+              <include name="mondrian/test/**/*Test*.class" />
+              <exclude name="mondrian/test/**/*Testable*.class" />
+              <exclude name="mondrian/test/**/*TestContext*.class" />
+            </fileset>
+        </batchtest>
+    </junit>
 
-		  <batchtest fork="yes" todir="junit-results">
-		    <fileset dir="classes">
-		      <include name="mondrian/test/**/*Test*.class" />
-		      <exclude name="mondrian/test/**/*Testable*.class" />
-		      <exclude name="mondrian/test/**/*TestContext*.class" />
-		    </fileset>
-		  </batchtest>
-	</junit>
-
-<junitreport todir="junit-results">
-  <fileset dir="junit-results">
-    <include name="TEST-*.xml"/>
-  </fileset>
-  <report format="frames" todir="junit-results/html"/>
-</junitreport>
-
+    <junitreport todir="junit-results">
+      <fileset dir="junit-results">
+        <include name="TEST-*.xml"/>
+      </fileset>
+      <report format="frames" todir="junit-results/html"/>
+    </junitreport>
 
 </target>
 
@@ -347,7 +345,7 @@ ${generated.java.files}" />
     <zip
         zipfile="${dist.data.file}"
         update="true">
-	  <!-- We do not use 'prefix="${dist.name}"', cuz we don't want to issue a
+      <!-- We do not use 'prefix="${dist.name}"', cuz we don't want to issue a
            new data file each release. -->
       <zipfileset
           dir="."
@@ -374,7 +372,7 @@ demo/**/*.sh"
       <arg line="userid=foodmart/foodmart@realm1"/>
       <arg line="file=FoodMart.dmp"/>
       <arg line="owner=FOODMART"/>
-	</exec>
+    </exec>
   </target>
 
     <target name="binaryzip" depends="javadoc,jar,webapp">
@@ -451,10 +449,16 @@ mondrian/resource/**/*.class"/>
     <mkdir dir="${javadoc.dir}" />
     <delete quiet="true" file="${javadoc.dir}/index.html"/>
     <javadoc sourcepath="${java.dir}"
+        classpathref="project.classpath"
         destdir="${javadoc.dir}"
         packagenames="mondrian.*"
         overview="${doc.dir}/overview.html"
-        author="true"/>
+        footer="&lt;a href=&quot;http://sourceforge.net/projects/mondrian&quot;&gt;&lt;img src=&quot;http://sourceforge.net/sflogo.php?group_id=35302&#38;type=1&quot; width=&quot;88&quot; height=&quot;31&quot; border=&quot;0&quot; alt=&quot;SourceForge.net_Logo&quot;&gt;&lt;/a&gt;"
+        author="true">
+        <link href="http://www.javasoft.com/j2se/1.3/docs/api/"/>
+        <link href="http://www.junit.org/junit/javadoc/3.7/"/>
+        <link href="http://java.sun.com/products/servlet/2.2/javadoc/"/>
+    </javadoc>
     <copy file="${java.dir}/mondrian/xom/meta.xml"
         todir="${javadoc.dir}/mondrian/xom"/>
     <copy file="${java.dir}/mondrian/resource/resource.xml"
@@ -480,13 +484,13 @@ You should set pscp.user, pscp.password and pscp.path in build.properties">
     <delete file="${war.file}"/>
     <delete file="${dist.dir}/web.xml"/>
     <copy file="${webapp.dir}/WEB-INF/web.xml"
-	    filtering="true" todir="${dist.dir}"/>
+        filtering="true" todir="${dist.dir}"/>
     <war warfile="${war.file}"
         webxml="${dist.dir}/web.xml">
       <fileset dir="${webapp.dir}" excludes="${webapp.dir}/WEB-INF/web.xml"/>
       <lib dir="${lib.dir}" includes="javacup.jar"/>
       <lib dir="${xalan.home}/bin" includes="xalan.jar,xml-apis.jar,xercesImpl.jar"/>
-	  <lib dir="${junit.home}" includes="junit.jar"/>
+      <lib dir="${junit.home}" includes="junit.jar"/>
       <classes dir="${classes.dir}"/>
     </war>
   </target>
@@ -505,6 +509,8 @@ You should set pscp.user, pscp.password and pscp.path in build.properties">
     <pathelement path="/jdk1.3.1_02/lib/tools.jar"/>
     <pathelement path="/jakarta-tomcat-4.0.3/localhost/work/classes"/>
     <pathelement path="/jakarta-tomcat-4.0.3/bin/bootstrap.jar"/>
+    <pathelement path="/oracle/ora81/jdbc/lib/classes12.zip"/>
+    <pathelement path="/MySQL/lib/mysql-connector-java-2.0.14-bin.jar"/>
   </path>
 
   <target name="start.tomcat">
@@ -548,6 +554,33 @@ You should set pscp.user, pscp.password and pscp.path in build.properties">
       <sysproperty key="java.endorsed.dirs" value="../bin;../common/lib"/>
       <arg value="stop"/>
     </java>
+  </target>
+
+  <target name="setup-compile-farm">
+    <echo>Copy junit</echo>
+    <exec executable="pscp.exe">
+      <arg line="-unsafe -q -v -pw ${cf.password} -r"/>
+      <arg line="${junit.home}"/>
+      <arg line="${cf.user}:${cf.path}/junit3.7"/>
+    </exec>
+    <echo>Copy ant</echo>
+    <exec executable="pscp.exe">
+      <arg line="-unsafe -q -v -pw ${cf.password} -r"/>
+      <arg line="${ant.home}"/>
+      <arg line="${cf.user}:${cf.path}/jakarta-ant-1.5"/>
+    </exec>
+    <echo>Copy xalan</echo>
+    <exec executable="pscp.exe">
+      <arg line="-unsafe -q -v -pw ${cf.password} -r"/>
+      <arg line="${xalan.home}"/>
+      <arg line="${cf.user}:${cf.path}/xalan-j_2_4_D1"/>
+    </exec>
+    <echo>Copy tomcat</echo>
+    <exec executable="pscp.exe">
+      <arg line="-unsafe -q -v -pw ${cf.password} -r"/>
+      <arg line="${tomcat.home}"/>
+      <arg line="${cf.user}:${cf.path}/jakarta-tomcat-4.0.4"/>
+    </exec>
   </target>
 
 </project>

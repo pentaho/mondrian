@@ -44,7 +44,6 @@ public class Test {
 	Test(String[] args)
 	{
 		pw = new PrintWriter(System.out, true);
-		mondrian.olap.Util.setThreadRes(MondrianResource.instance());
 		String connectString = "Data Source=LOCALHOST;Provider=msolap;",
 			catalogName = "Foodmart";
         boolean fresh = true;
