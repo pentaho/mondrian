@@ -1008,8 +1008,16 @@ public class BuiltinFunTable extends FunTable {
 			}));
 		define(new FunDefBase("IIf", "IIf(<Logical Expression>, <Numeric Expression1>, <Numeric Expression2>)", "Returns one of two numeric values determined by a logical test.", "fnbnn") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				boolean logical = getBooleanArg(evaluator, args, 0, false);
-				return getDoubleArg(evaluator, args, logical ? 1 : 2, null);
+				Boolean b = getBooleanArg(evaluator, args, 0);
+				if (b == null) {
+					getDoubleArg(evaluator, args, 1, null);
+					getDoubleArg(evaluator, args, 2, null);
+					return new Double(Double.NaN);
+				}
+				if (b.booleanValue())
+					return getDoubleArg(evaluator, args, 1, null);
+				else
+					return getDoubleArg(evaluator, args, 2, null);
 			}
 		});
 		if (false) define(new FunDefBase("LinRegIntercept", "LinRegIntercept(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Calculates the linear regression of a set and returns the value of b in the regression line y = ax + b.", "fn*"));
@@ -1951,8 +1959,16 @@ public class BuiltinFunTable extends FunTable {
 
 		define(new FunDefBase("IIf", "IIf(<Logical Expression>, <String Expression1>, <String Expression2>)", "Returns one of two string values determined by a logical test.", "fSbSS") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				boolean logical = getBooleanArg(evaluator, args, 0, false);
-				return getStringArg(evaluator, args, logical ? 1 : 2, null);
+				Boolean b = getBooleanArg(evaluator, args, 0);
+				if (b == null) {
+					getStringArg(evaluator, args, 1, null);
+					getStringArg(evaluator, args, 2, null);
+					return null;
+				}
+				if (b.booleanValue())
+					return getStringArg(evaluator, args, 1, null);
+				else
+					return getStringArg(evaluator, args, 2, null);
 			}
 		});
 		define(new FunDefBase("Name", "<Dimension>.Name", "Returns the name of a dimension.", "pSd") {
