@@ -64,9 +64,11 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
     <pathelement location="${lib.dir}/jmi.jar"/>
     <pathelement location="${xalan.home}/bin/xalan.jar"/>
     <pathelement location="${junit.home}/junit.jar"/>
-    <pathelement location="${weblogic.home}/lib/weblogic.jar"/>
     <!-- CLASSPATH must contain xml-apis.jar, xercesImpl.jar, javacup.jar -->
     <pathelement path="${myenv.CLASSPATH}"/>
+	<!-- Weblogic must be after xml-apis.jar and xercesImpl.jar, because it
+         contains an incompatible version of xerces. -->
+    <pathelement location="${weblogic.home}/lib/weblogic.jar"/>
   </path>
 
   <path id="project.boot.classpath">

@@ -156,13 +156,32 @@ public abstract class XOMUtil extends XMLUtil {
 		addChildren(parent, new NodeDef[] {child});
 	}
 
+	private static boolean inWeblogic() {
+		try {
+			Class.forName("weblogic.xml.sax.XMLInputSource");
+		} catch (ClassNotFoundException e) {
+			return false;
+		}
+		return true;
+	}
+
 	/**
 	 * Creates a {@link Parser} of the default parser type.
 	 **/
 	public static Parser createDefaultParser() throws XOMException
 	{
-//		String className = "mondrian.xom.wrappers.XercesDOMParser";
-		String className = "mondrian.xom.wrappers.JaxpDOMParser";
+		String className;
+		if (inWeblogic()) {
+			// We need a non-validating parser, and Weblogic's jaxp parser
+			// can't switched to non-validating, so explicitly use Xerces.
+			//
+			// You must also ensure that xml-apis.jar and xercesImpl.jar are
+			/// before weblogic.jar on the CLASSPATH, otherwise you'll get a
+			// java.lang.VerifyError.
+			className = "mondrian.xom.wrappers.XercesDOMParser";
+		} else {
+			className = "mondrian.xom.wrappers.JaxpDOMParser";
+		}
 		try {
 			Class clazz = Class.forName(className);
 			return (Parser) clazz.newInstance();
@@ -173,7 +192,11 @@ public abstract class XOMUtil extends XMLUtil {
 		} catch (InstantiationException e) {
 			throw new XOMException(e, "while creating xml parser" + className);
 		} catch (VerifyError e) {
-			throw new XOMException(e, "while creating xml parser" + className);
+			throw new XOMException(
+					e, "while creating xml parser" + className +
+					" (if you are running Weblogic 6.1, try putting " +
+					"xml-apis.jar and xercesImpl.jar BEFORE weblogic.jar " +
+					"on CLASSPATH)");
 		}
 	}
 

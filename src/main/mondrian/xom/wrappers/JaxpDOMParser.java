@@ -44,8 +44,13 @@ public class JaxpDOMParser extends GenericDOMParser {
 		try {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			factory.setValidating(validating);
-			factory.setAttribute(VALIDATION_FEATURE, new Boolean(validating));
-			factory.setAttribute(LOAD_EXTERNAL_DTD_FEATURE, new Boolean(validating));
+			try {
+				factory.setAttribute(VALIDATION_FEATURE, new Boolean(validating));
+				factory.setAttribute(LOAD_EXTERNAL_DTD_FEATURE, new Boolean(validating));
+			} catch (IllegalArgumentException e) {
+				// Weblogic 6.1's parser complains 'No arguments are
+				// implemented'
+			}
 			builder = factory.newDocumentBuilder();
 		} catch (ParserConfigurationException e) {
 			throw new XOMException(e, "Error creating parser");

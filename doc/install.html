@@ -134,6 +134,7 @@
 <p>Optional:</p>
 <ol>
   <li>Install <a href="#Jikes">Jikes</a>.</li>
+  <li>Configure <a href="#Weblogic">Weblogic</a>.</li>
 </ol>
 
 <h2><a name="4_Download_the_source_code">4. Download the code</a></h2>
@@ -637,6 +638,21 @@ The MySql service was started successfully.</code></pre>
       I modified version v.0.10g to add an Ant task, and to output error
       messages in a format which Emacs can parse.</td>
   </tr>
+  <tr>
+    <td><a name="Weblogic">Weblogic</a></td>
+    <td>No</td>
+    <td>6.1</td>
+    <td>
+    <ol>
+      <li>Extract <code>xml-apis.jar</code> and <code>xercesImpl.jar</code> from
+      <code>mondrian.war</code> and place them in <code>${weblogic.home}/lib</code>.</li>
+      <li>Edit <code>startWeblogic.cmd</code>, or whichever script you use to 
+      start Weblogic, and place <code>xml-apis.jar</code> and <code>
+      xercesImpl.jar</code> before <code>weblogic.jar</code> on the class-path.</li>
+    </ol>
+    <p>See <a href="#Appendix_C_A_note_on_Weblogic_and_Xerces">note on Weblogic 
+    and Xerces</a>.</td>
+  </tr>
   </table>
 
 <h2><a name="Appendix_B_How_to_debug_Tomcat_using_IntelliJ">Appendix B. How to debug 
@@ -665,6 +681,27 @@ goto end</code></pre>
   <li><code>catalina jpda run</code></li>
   <li>attach intellij's debugger to port 5000</li>
 </ol>
+
+<h2><a name="Appendix_C_A_note_on_Weblogic_and_Xerces">Appendix C. A note on 
+Weblogic and Xerces</a></h2>
+<p>Weblogic 6.1 ships with an older, incompatible, version of Xerces. The 
+symptom is the error</p>
+<blockquote>
+  <pre>java.lang.VerifyError: (class: mondrian/xom/wrappers/XercesDOMParser, method: parse signature: (Lorg/xml/sax/InputSource;)Lorg/w3c/dom/Document;) Incompatible object argument for function call 
+at java.lang.Class.forName0(Native Method) 
+at java.lang.Class.forName(Class.java:120) 
+at mondrian.xom.XOMUtil.createDefaultParser(XOMUtil.java:165) 
+at mondrian.resource.Util.load(Util.java:49) 
+...</pre>
+</blockquote>
+<p>The solution is to place <code>xml-apis.jar</code> and <code>xercesImpl.jar</code> 
+before <code>weblogic.jar</code> on your class-path.</p>
+<p>Generally, Mondrian uses whichever JAXP-compliant XML parser is provided by 
+the system. Unfortunately Weblogic's parser cannot be set to non-validating 
+mode, and Mondrian needs this. Therefore, in a Weblogic environment, Mondrian 
+explicitly uses Xerces.&nbsp; Fyi,
+<a href="http://xml.apache.org/soap/faq/faq-for-WL6.1beta.html">this note</a> 
+describes how to change Weblogic's default XML parser.</p>
 
 <p>&nbsp;</p>
 
