@@ -10,7 +10,6 @@
 package mondrian.test.loader;
 
 import mondrian.olap.MondrianResource;
-import mondrian.olap.Util;
 import mondrian.rolap.RolapUtil;
 import mondrian.rolap.sql.SqlQuery;
 
@@ -27,6 +26,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * Utility to load the FoodMart dataset into an arbitrary JDBC database.
@@ -39,6 +40,8 @@ import java.util.regex.Pattern;
  * <li>MySQL 4.15 using MySQL-connector/J 3.0.16</li>
  *
  * <li>Postgres 8.0 beta using postgresql-driver-jdbc3-74-214.jar</li>
+ *
+ * <li>Oracle 10g using ojdbc14.jar</li>
  *
  * </ul>
  * 
@@ -59,6 +62,11 @@ import java.util.regex.Pattern;
  * @version $Id$
  */
 public class MondrianFoodMartLoader {
+    final Pattern decimalDataTypeRegex = Pattern.compile("DECIMAL\\((.*),(.*)\\)");
+    final DecimalFormat integerFormatter = new DecimalFormat(decimalFormat(15, 0));
+    final String dateFormatString = "yyyy-MM-dd";
+    final String oracleDateFormatString = "YYYY-MM-DD";
+	final DateFormat dateFormatter = new SimpleDateFormat(dateFormatString);
     private String jdbcDrivers;
     private String jdbcURL;
     private String userName;
@@ -78,6 +86,7 @@ public class MondrianFoodMartLoader {
     private int inputBatchSize = 50;
     private Connection connection;
     private Connection inputConnection;
+
     private FileWriter fileOutput = null;
 
     private SqlQuery sqlQuery;
@@ -136,15 +145,25 @@ public class MondrianFoodMartLoader {
     }
 
     public void usage() {
-        System.out.println("Usage: MondrianFoodMartLoader [-verbose] [-tables] [-data] [-indexes] -jdbcDrivers=<jdbcDriver> [-outputJdbcURL=<jdbcURL> [-outputJdbcUser=user] [-outputJdbcPassword=password] [-outputJdbcBatchSize=<batch size>] | -outputDirectory=<directory name>] [ [-inputJdbcURL=<jdbcURL> [-inputJdbcUser=user] [-inputJdbcPassword=password]] | [-inputfile=<file name>]]");
+        System.out.println("Usage: MondrianFoodMartLoader [-verbose] [-tables] [-data] [-indexes] " +
+        		"-jdbcDrivers=<jdbcDriver> " +
+        		"-outputJdbcURL=<jdbcURL> [-outputJdbcUser=user] [-outputJdbcPassword=password]" +
+        		"[-outputJdbcBatchSize=<batch size>] " +
+        		"| " +
+        		"[-outputDirectory=<directory name>] " +
+        		"[" +
+        		"	[-inputJdbcURL=<jdbcURL> [-inputJdbcUser=user] [-inputJdbcPassword=password]]" +
+        		"	| " +
+        		"	[-inputfile=<file name>]" +
+        		"]");
         System.out.println("");
         System.out.println("  <jdbcURL>         JDBC connect string for DB");
         System.out.println("  [user]            JDBC user name for DB");
         System.out.println("  [password]        JDBC password for user for DB");
         System.out.println("                    If no source DB parameters are given, assumes data comes from file");
-        System.out.println("  [file name]       file containing test data - INSERT statements");
-        System.out.println("                    If no input file name or input JDBC parameters are given, assume insert statements come from demo/FoodMartData.sql file");
-        System.out.println("  [outputDirectory] Where FoodMartCreateTables.sql, FoodMartData.sql and FoodMartCreateIndexes.sql will be created");
+        System.out.println("  [file name]       file containing test data - INSERT statements in MySQL format");
+        System.out.println("                    If no input file name or input JDBC parameters are given, assume insert statements come from demo/FoodMartCreateData.zip file");
+        System.out.println("  [outputDirectory] Where FoodMartCreateTables.sql, FoodMartCreateData.sql and FoodMartCreateIndexes.sql will be created");
 
         System.out.println("  <batch size>      size of JDBC batch updates - default to 50 inserts");
         System.out.println("  <jdbcDrivers>     Comma-separated list of JDBC drivers.");
@@ -189,7 +208,8 @@ public class MondrianFoodMartLoader {
         }
         final DatabaseMetaData metaData = connection.getMetaData();
         sqlQuery = new SqlQuery(metaData);
-        try {
+
+		try {
             createTables();  // This also initializes mapTableNameToColumns
             if (data) {
                 if (jdbcInput) {
@@ -219,83 +239,201 @@ public class MondrianFoodMartLoader {
 
     /**
      * Parse a file of INSERT statements and output to the configured JDBC
-     * connection or another file
+     * connection or another file in the dialect of the target data source.
      * 
-     * @throws IOException
-     * @throws SQLException
+     * The assumption is that the input INSERT statements are out of MySQL, generated
+     * by this loader by something like:
+     * 
+     * MondrianFoodLoader
+     * -verbose -tables -data -indexes 
+     * -jdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver,com.mysql.jdbc.Driver 
+     * -inputJdbcURL=jdbc:odbc:MondrianFoodMart 
+     * -outputJdbcURL=jdbc:mysql://localhost/textload?user=root&password=myAdmin 
+     * -outputDirectory=C:\Temp\wip\Loader-Output
+     * 
+     * @throws Exception
      */
-    private void loadDataFromFile() throws IOException, SQLException {
-        final InputStream is = openInputStream();
-        final InputStreamReader reader = new InputStreamReader(is);
-        final BufferedReader bufferedReader = new BufferedReader(reader);
-        final Pattern regex = Pattern.compile("INSERT INTO ([^ ]+)(.*)VALUES(.*)\\((.*)\\);");
-        String line;
-        int lineNumber = 0;
-        int tableRowCount = 0;
-        String prevTable = "";
-
-        String[] batch = new String[inputBatchSize];
-        int batchSize = 0;
-
-        while ((line = bufferedReader.readLine()) != null) {
-            ++lineNumber;
-            if (line.startsWith("#")) {
-                continue;
-            }
-            // Split the up the line. For example,
-            //   INSERT INTO foo VALUES (1, 'bar');
-            // would yield
-            //   tableName = "foo"
-            //   values = "1, 'bar'"
-            final Matcher matcher = regex.matcher(line);
-            if (!matcher.matches()) {
-                throw MondrianResource.instance().newInvalidInsertLine(
-                    new Integer(lineNumber), line);
-            }
-            final String tableName = matcher.group(1); // e.g. "foo"
-            final String values = matcher.group(2); // e.g. "1, 'bar'"
-            Util.discard(values); // Not needed now
-
-            // If table just changed, flush the previous batch.
-            if (!tableName.equals(prevTable)) {
-                if (!prevTable.equals("")) {
-                    System.out.println("Table " + prevTable +
-                        ": loaded " + tableRowCount + " rows.");
-                }
-                tableRowCount = 0;
-                writeBatch(batch, batchSize);
-                batchSize = 0;
-                prevTable = tableName;
-            }
-
-            // remove trailing ';'
-            assert line.endsWith(";");
-            line = line.substring(0, line.length() - 1);
-
-            // this database represents booleans as integers
-            if (sqlQuery.isMySQL()) {
-                line = line.replaceAll("false", "0")
-                    .replaceAll("true", "1");
-            }
-
-            ++tableRowCount;
-
-            batch[batchSize++] = line;
-            if (batchSize >= inputBatchSize) {
-                writeBatch(batch, batchSize);
-                batchSize = 0;
-            }
+    private void loadDataFromFile() throws Exception {
+        InputStream is = openInputStream();
+        
+        if (is == null) {
+        	throw new Exception("No data file to process");
         }
-        // Print summary of the final table.
-        if (!prevTable.equals("")) {
-            System.out.println("Table " + prevTable +
-                ": loaded " + tableRowCount + " rows.");
-            tableRowCount = 0;
-            writeBatch(batch, batchSize);
-            batchSize = 0;
-        }
+        
+        try {
+			final InputStreamReader reader = new InputStreamReader(is);
+			final BufferedReader bufferedReader = new BufferedReader(reader);
+			final Pattern regex = Pattern.compile("INSERT INTO `([^ ]+)` \\((.*)\\) VALUES\\((.*)\\);");
+			String line;
+			int lineNumber = 0;
+			int tableRowCount = 0;
+			String prevTable = "";
+			String quotedTableName = null;
+			String quotedColumnNames = null;
+			Column[] orderedColumns = null;
+			
+			String[] batch = new String[inputBatchSize];
+			int batchSize = 0;
+			
+			while ((line = bufferedReader.readLine()) != null) {
+			    ++lineNumber;
+			    if (line.startsWith("#")) {
+			        continue;
+			    }
+			    // Split the up the line. For example,
+			    //   INSERT INTO `foo` ( `column1`,`column2` ) VALUES (1, 'bar');
+			    // would yield
+			    //   tableName = "foo"
+			    //	 columnNames = " `column1`,`column2` "
+			    //   values = "1, 'bar'"
+			    final Matcher matcher = regex.matcher(line);
+			    if (!matcher.matches()) {
+			        throw MondrianResource.instance().newInvalidInsertLine(
+			            new Integer(lineNumber), line);
+			    }
+			    String tableName = matcher.group(1); // e.g. "foo"
+			    String columnNames = matcher.group(2); 
+			    String values = matcher.group(3); 
+//            Util.discard(values); // Not needed now
+
+			    // If table just changed, flush the previous batch.
+			    if (!tableName.equals(prevTable)) {
+			        if (!prevTable.equals("")) {
+			            System.out.println("Table " + prevTable +
+			                ": loaded " + tableRowCount + " rows.");
+			        }
+			        tableRowCount = 0;
+			        writeBatch(batch, batchSize);
+			        batchSize = 0;
+			        prevTable = tableName;
+			        quotedTableName = quoteId(tableName);
+			        quotedColumnNames = columnNames.replaceAll("`", sqlQuery.getQuoteIdentifierString());
+			        String[] splitColumnNames = columnNames.replaceAll("`", "").replaceAll(" ", "").split(",");
+			        Column[] columns = (Column[]) mapTableNameToColumns.get(tableName);
+			    	
+			        orderedColumns = new Column[columns.length];
+			        
+			    	for (int i = 0; i < splitColumnNames.length; i++) {
+			    		Column thisColumn = null;
+			    		for (int j = 0; j < columns.length && thisColumn == null; j++) {
+			    			if (columns[j].name.equalsIgnoreCase(splitColumnNames[i])) {
+			    				thisColumn = columns[j]; 
+			    			}
+			    		}
+			    		if (thisColumn == null) {
+			    			throw new Exception("Unknown column in INSERT statement from file: " + splitColumnNames[i]);
+			    		} else {
+			    			orderedColumns[i] = thisColumn; 
+			    		}
+			    	}
+
+			        
+			    }
+			    
+			    StringBuffer massagedLine = new StringBuffer();
+			    
+			    massagedLine
+					.append("INSERT INTO ")
+					.append(quotedTableName)
+					.append(" (")
+					.append(quotedColumnNames)
+					.append(" ) VALUES(")
+					.append(getMassagedValues(orderedColumns, values))
+					.append(" )");
+			    
+			    line = massagedLine.toString();
+
+			    ++tableRowCount;
+
+			    batch[batchSize++] = line;
+			    if (batchSize >= inputBatchSize) {
+			        writeBatch(batch, batchSize);
+			        batchSize = 0;
+			    }
+			}
+			// Print summary of the final table.
+			if (!prevTable.equals("")) {
+			    System.out.println("Table " + prevTable +
+			        ": loaded " + tableRowCount + " rows.");
+			    tableRowCount = 0;
+			    writeBatch(batch, batchSize);
+			    batchSize = 0;
+			}
+		} finally {
+			if (is != null) {
+				is.close();
+			}
+		}
     }
 
+    /**
+     * @param splitColumnNames		the individual column names in the same order as the values 
+     * @param columns				column metadata for the table
+     * @param values				the contents of the INSERT VALUES clause ie. "34,67.89,'GHt''ab'". These are in MySQL form.
+     * @return String				values for the destination dialect
+     * @throws Exception
+     */
+    private String getMassagedValues(Column[] columns, String values) throws Exception {
+    	StringBuffer sb = new StringBuffer();
+    	
+    	// Get the values out as individual elements
+    	// Split the string at commas, and cope with embedded commas
+    	String[] individualValues = new String[columns.length];
+    	
+    	String[] splitValues = values.split(",");
+    	
+    	// If these 2 are the same length, then there are no embedded commas
+    	
+    	if (splitValues.length == columns.length) {
+    		individualValues = splitValues;
+    	} else {
+        	// "34,67.89,'GH,t''a,b'" => { "34", "67.89", "'GH", "t''a", "b'"
+	    	int valuesPos = 0;
+	    	boolean inQuote = false;
+	    	for (int i = 0; i < splitValues.length; i++) {
+	    		if (i == 0) {
+	    			individualValues[valuesPos] = splitValues[i];
+	    			inQuote = inQuote(splitValues[i], inQuote);
+	    		} else {
+	    			// at end
+	    			if (inQuote) {
+	    				individualValues[valuesPos] = individualValues[valuesPos] + "," + splitValues[i];
+		    			inQuote = inQuote(splitValues[i], inQuote);
+	    			} else {
+	    				valuesPos++;
+	    				individualValues[valuesPos] = splitValues[i];
+		    			inQuote = inQuote(splitValues[i], inQuote);
+	    			}
+	    		}
+	    	}
+	    	
+	    	assert(valuesPos + 1 == columns.length);
+    	}
+    	
+    	for (int i = 0; i < columns.length; i++) {
+    		if (i > 0) {
+    			sb.append(",");
+    		}
+    	 	sb.append(columnValue(individualValues[i], columns[i]));
+    	}
+    	return sb.toString();
+    	
+    }
+    
+    private boolean inQuote(String str, boolean nowInQuote) {
+    	if (str.indexOf('\'') == -1) {
+    		// No quote, so stay the same
+    		return nowInQuote;
+    	}
+    	int lastPos = 0;
+    	while (lastPos <= str.length() && str.indexOf('\'', lastPos) != -1) {
+    		int pos = str.indexOf('\'', lastPos);
+    		nowInQuote = !nowInQuote;
+    		lastPos = pos + 1;
+    	}
+    	return nowInQuote;
+    }
+    
     private void loadDataFromJdbcInput() throws Exception {
         if (outputDirectory != null) {
             fileOutput = new FileWriter(new File(outputDirectory, "createData.sql"));
@@ -471,21 +609,25 @@ public class MondrianFoodMartLoader {
 
     /**
      * Open the file of INSERT statements to load the data. Default
-     * file name is ./demo/FoodMartData.sql
+     * file name is ./demo/FoodMartCreateData.zip
      *    
      * @return FileInputStream
      */
-    private FileInputStream openInputStream() {
-        final File file = (inputFile != null) ? new File(inputFile) : new File("demo", "FoodMartData.sql");
-        if (file.exists()) {
-            try {
-                return new FileInputStream(file);
-            } catch (FileNotFoundException e) {
-            }
-        } else {
+    private InputStream openInputStream() throws Exception {
+    	final String defaultZipFileName = "FoodMartCreateData.zip";
+    	final String defaultDataFileName = "FoodMartCreateData.sql";
+        final File file = (inputFile != null) ? new File(inputFile) : new File("demo", defaultZipFileName);
+        if (!file.exists()) {
             System.out.println("No input file: " + file);
+            return null;
         }
-        return null;
+    	if (file.getName().toLowerCase().endsWith(".zip")) {
+    		ZipFile zippedData = new ZipFile(file);
+    		ZipEntry entry = zippedData.getEntry(defaultDataFileName);
+    		return zippedData.getInputStream(entry);
+    	} else {
+            return new FileInputStream(file);
+    	}
     }
 
     /**
@@ -1036,7 +1178,7 @@ public class MondrianFoodMartLoader {
     private String quoteId(String name) {
         return sqlQuery.quoteIdentifier(name);
     }
-
+    
     /**
      * String representation of the column in the result set, suitable for
      * inclusion in a SQL insert statement.
@@ -1053,14 +1195,10 @@ public class MondrianFoodMartLoader {
      * @throws Exception
      */
     private String columnValue(ResultSet rs, Column column) throws Exception {
-        String columnType = column.type;
-        final Pattern regex = Pattern.compile("DECIMAL\\((.*),(.*)\\)");
-        final DecimalFormat integerFormatter = new DecimalFormat(decimalFormat(15, 0));
-        final String dateFormatString = "yyyy-MM-dd";
-        final String oracleDateFormatString = "YYYY-MM-DD";
-		final DateFormat dateFormatter = new SimpleDateFormat(dateFormatString);
 
 		Object obj = rs.getObject(column.name);
+        String columnType = column.type;
+
         if (obj == null) {
             return "NULL";
         }
@@ -1172,7 +1310,7 @@ public class MondrianFoodMartLoader {
          * Output for a DECIMAL(length, places)
          */
         } else if (columnType.startsWith("DECIMAL")) {
-            final Matcher matcher = regex.matcher(columnType);
+            final Matcher matcher = decimalDataTypeRegex.matcher(columnType);
             if (!matcher.matches()) {
                 throw new Exception("Bad DECIMAL column type for " + columnType);
             }
@@ -1206,6 +1344,45 @@ public class MondrianFoodMartLoader {
         throw new Exception("Unknown column type: " + columnType + " for column: " + column.name);
     }
 
+    private String columnValue(String columnValue, Column column) throws Exception {
+        String columnType = column.type;
+
+        if (columnValue == null) {
+            return "NULL";
+        }
+
+        /*
+         * Output for a TIMESTAMP
+         */
+        if (columnType.startsWith("TIMESTAMP")) {
+            if (sqlQuery.isOracle()) {
+            	return "TIMESTAMP " + columnValue;
+            }
+            
+        /*
+         * Output for a DATE
+         */
+        } else if (columnType.startsWith("DATE")) {
+            if (sqlQuery.isOracle()) {
+            	return "DATE " + columnValue;
+            }
+            
+        /*
+         * Output for a BOOLEAN (Postgres) or BIT (other DBMSs)
+         */
+        } else if (columnType.startsWith("BOOLEAN") || columnType.startsWith("BIT")) {
+            if (!sqlQuery.isMySQL()) {
+            	if (columnValue.trim().equals("1")) {
+            		return "true";
+            	} else if (columnValue.trim().equals("0")) {
+            		return "false";
+            	} 
+            }
+        }
+    	return columnValue;
+        //throw new Exception("Unknown column type: " + columnType + " for column: " + column.name);
+    }
+    
     /**
      * Generate an appropriate string to use in an SQL insert statement for
      * a VARCHAR colummn, taking into account NULL strings and strings with embedded
@@ -1243,7 +1420,7 @@ public class MondrianFoodMartLoader {
      * @param placesStr  String representing integer: number of decimal places
      * @return number format, ie. length = 6, places = 2 => "####.##"
      */
-    private String decimalFormat(String lengthStr, String placesStr) {
+    private static String decimalFormat(String lengthStr, String placesStr) {
 
         int length = Integer.parseInt(lengthStr);
         int places = Integer.parseInt(placesStr);
@@ -1258,7 +1435,7 @@ public class MondrianFoodMartLoader {
      * @param places  int: number of decimal places
      * @return number format, ie. length = 6, places = 2 => "###0.00"
      */
-    private String decimalFormat(int length, int places) {
+    private static String decimalFormat(int length, int places) {
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < length; i++) {
             if ((length - i) == places) {

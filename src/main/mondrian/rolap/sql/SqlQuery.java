@@ -81,7 +81,7 @@ public class SqlQuery
 		havingCount = 0,
 		orderByCount = 0;
 	public ArrayList fromAliases = new ArrayList();
-
+	private String quoteIdentifierString = null;
     /**
 	 * Creates a <code>SqlQuery</code>
 	 *
@@ -90,6 +90,8 @@ public class SqlQuery
 	 */
 	public SqlQuery(DatabaseMetaData databaseMetaData) {
 		this.databaseMetaData = databaseMetaData;
+		initializeQuoteIdentifierString();
+		
 	}
 
 	/**
@@ -105,6 +107,23 @@ public class SqlQuery
 		this.distinct = distinct;
 	}
 
+	private void initializeQuoteIdentifierString() {
+		try {
+			quoteIdentifierString = databaseMetaData.getIdentifierQuoteString();
+		} catch (SQLException e) {
+			throw Util.getRes().newInternal("while quoting identifier", e);
+		}
+		if (quoteIdentifierString == null || quoteIdentifierString.trim().equals("")) {
+			if (isMySQL()) {
+				// mm.mysql.2.0.4 driver lies. We know better.
+				quoteIdentifierString = "`";
+			} else {
+				// Quoting not supported
+				quoteIdentifierString = "";
+			}
+		}
+	}
+	
 	/**
 	 * Encloses an identifier in quotation marks appropriate for the
 	 * current SQL dialect. For example,
@@ -113,19 +132,9 @@ public class SqlQuery
 	 * <code>[emp]</code> in Access.
 	 **/
 	public String quoteIdentifier(String val) {
-		String q;
-		try {
-			q = databaseMetaData.getIdentifierQuoteString();
-		} catch (SQLException e) {
-			throw Util.getRes().newInternal("while quoting identifier", e);
-		}
+		String q = getQuoteIdentifierString();
 		if (q == null || q.trim().equals("")) {
-			if (isMySQL()) {
-				// mm.mysql.2.0.4 driver lies. We know better.
-				q = "`";
-			} else {
-				return val; // quoting is not supported
-			}
+			return val; // quoting is not supported
 		}
 		// if the value is already quoted, do nothing
 		//  if not, then check for a dot qualified expression
@@ -173,6 +182,9 @@ public class SqlQuery
 		}
 	}
 
+	public String getQuoteIdentifierString() {
+		return quoteIdentifierString;
+	}
 	// -- detect various databases --
 
 	private String getProduct() {
