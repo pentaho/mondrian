@@ -445,6 +445,7 @@ public class SmartMemberReader implements MemberReader, MemberCache
 				startMember + ", end=" + endMember);
 	}
 
+	/*
 	public void _getMemberRange(
 			RolapLevel level, RolapMember startMember, RolapMember endMember, List list) {
 		// todo: Use a more efficient algorithm, which makes less use of
@@ -463,12 +464,14 @@ public class SmartMemberReader implements MemberReader, MemberCache
 		}
 		_getDescendants(m, startMember.getLevel(), startMember, endMember, list);
 	}
+	*/
 
 	/**
 	 * Returns the descendants of <code>member</code> at <code>level</code>
 	 * whose ordinal is between <code>startOrdinal</code> and
 	 * <code>endOrdinal</code>.
 	 **/
+	/*
 	private void _getDescendants(
 			RolapMember member, Level level, RolapMember startMember,
 			RolapMember endMember, List result) {
@@ -514,6 +517,7 @@ public class SmartMemberReader implements MemberReader, MemberCache
 			members = trimmedChildren;
 		}
 	}
+	*/
 
 	public int getMemberCount()
 	{

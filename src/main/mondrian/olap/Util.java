@@ -374,6 +374,20 @@ public class Util extends mondrian.xom.XOMUtil
 		throw Util.newInternal(
 				"could not find member " + member + " amongst its siblings");
 	}
+	
+	/**
+	 * returns the first descendant on the level underneath parent.
+	 * If parent = [Time].[1997] and level = [Time].[Month], then
+	 * the member [Time].[1997].[Q1].[1] will be returned
+	 */
+	public static Member getFirstDescendantOnLevel(SchemaReader reader, Member parent, Level level) {
+		Member m = parent;
+		while (m.getLevel() != level) {
+			Member[] children = reader.getMemberChildren(m);
+			m = children[0];
+		}
+		return m;
+	}
 
 
 	/**

@@ -18,13 +18,18 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
+ * 
  * <code>CacheMemberReader</code> implements {@link MemberReader} by reading
  * from a pre-populated array of {@link mondrian.olap.Member}s.
  *
  * @author jhyde
  * @since 21 December, 2001
  * @version $Id$
- **/
+ * 
+ * @deprecated dont use this because of bugs. If you make RolapSchema.createMemberReader()
+ * return instances of CacheMemberReader, then the HR tests fail (parent child hierarchies
+ * dont work).
+ */
 class CacheMemberReader implements MemberReader, MemberCache
 {
 	private MemberSource source;
@@ -165,6 +170,10 @@ class CacheMemberReader implements MemberReader, MemberCache
 	public void getMemberRange(
 			RolapLevel level, RolapMember startMember, RolapMember endMember,
 			List list) {
+		Util.assertPrecondition(startMember != null, "startMember != null");
+		Util.assertPrecondition(endMember != null, "endMember != null");
+		Util.assertPrecondition(startMember.getLevel() == endMember.getLevel(),
+				"startMember.getLevel() == endMember.getLevel()");
 		for (int i = startMember.ordinal; i <= endMember.ordinal; i++) {
 			if (members[i].getLevel() == endMember.getLevel()) {
 				list.add(members[i]);

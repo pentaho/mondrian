@@ -866,8 +866,14 @@ public class FunUtil extends Util {
 		// periodsToDate( [Time].[Quarter], [Time].[1997] is valid,
 		//  but will return an empty List
 		ArrayList members = new ArrayList();
-		if (m != null)
-			evaluator.getSchemaReader().getMemberRange(level, m, member, members);
+		if (m != null) {
+			// e.g. m is [Time].[1997] and member is [Time].[1997].[Q1].[3]
+			// we now have to make m to be the first member of the range,
+			// so m becomes [Time].[1997].[Q1].[1]
+			SchemaReader reader = evaluator.getSchemaReader();
+			m = Util.getFirstDescendantOnLevel(reader, m, member.getLevel());
+			reader.getMemberRange(level, m, member, members);
+		}
 		return members;
 	}
 

@@ -412,8 +412,6 @@ class SqlMemberSource implements MemberReader
 		SqlQuery sqlQuery = newQuery(jdbcConnection,
                 "while generating query to retrieve members of level " + level);
   		RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
-		RolapLevel lastLevel = levels[levels.length - 1];
-		final boolean needGroup = level != lastLevel;
 		int levelDepth = level.getDepth();
 		for (int i = 0; i <= levelDepth; i++) {
   			RolapLevel level2 = levels[i];
@@ -423,18 +421,14 @@ class SqlMemberSource implements MemberReader
 			hierarchy.addToFrom(sqlQuery, level2.keyExp, null);
 			String q = level2.keyExp.getExpression(sqlQuery);
 			sqlQuery.addSelect(q);
-			if (needGroup) {
-				sqlQuery.addGroupBy(q);
-			}
+			sqlQuery.addGroupBy(q);
 			hierarchy.addToFrom(sqlQuery, level2.ordinalExp, null);
 			sqlQuery.addOrderBy(level2.ordinalExp.getExpression(sqlQuery));
 			for (int j = 0; j < level2.properties.length; j++) {
 				RolapProperty property = level2.properties[j];
 				String q2 = property.exp.getExpression(sqlQuery);
 				sqlQuery.addSelect(q2);
-				if (needGroup) {
-					sqlQuery.addGroupBy(q2);
-				}
+				sqlQuery.addGroupBy(q2);
 			}
 		}
 		return sqlQuery.toString();

@@ -420,6 +420,18 @@ public class RolapSchema implements Schema
 					e2);
 		} else {
 			SqlMemberSource source = new SqlMemberSource(hierarchy);
+			return new SmartMemberReader(source);
+
+			// the CacheMemberReader is buggy, dont use
+			// @see CacheMemberReader
+			// return new CacheMemberReader(source);
+
+			// The following code is disabed bcause
+			// counting members is too slow. The test suite
+			// runs faster w/o this. So the optimization here
+			// is not to be too clever.
+		    /*
+			SqlMemberSource source = new SqlMemberSource(hierarchy);
 			int memberCount = source.getMemberCount();
 			int largeDimensionThreshold =
 					MondrianProperties.instance().getLargeDimensionThreshold();
@@ -428,6 +440,7 @@ public class RolapSchema implements Schema
 			} else {
 				return new CacheMemberReader(source);
 			}
+			*/
 		}
 	}
 
@@ -490,7 +503,7 @@ public class RolapSchema implements Schema
 	}
 
 	/**
-	 * <code>RolapStarRegistry</code> is a registry for {@link RolapStar}s. 
+	 * <code>RolapStarRegistry</code> is a registry for {@link RolapStar}s.
 	 */
 	class RolapStarRegistry {
 		private ArrayList stars = new ArrayList();
@@ -522,7 +535,7 @@ public class RolapSchema implements Schema
 	public RolapStarRegistry getRolapStarRegistry() {
 	  return rolapStarRegistry;
 	}
-	
+
 }
 
 // End RolapSchema.java

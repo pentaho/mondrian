@@ -125,9 +125,33 @@ public class Aggregation
 	}
 
 	/**
+	 * we do NOT optimize, we fetch exactly what we need - which performs better
+	 * than counting the number of rows and fetching more cells than requested.
+	 */
+	public synchronized Object[][] optimizeConstraints(Object[][] constraintses)
+	{
+		Util.assertTrue(constraintses.length == columns.length);
+		Object[][] newConstraintses = (Object[][]) constraintses.clone();
+		// Oracle can only handle up to 1000 elements inside an IN(..) clause
+		if (oracle) {
+			final int MAXLEN = 1000;
+			for (int i = 0; i < newConstraintses.length; i++) {
+				Object[] arr = newConstraintses[i];
+				if (arr != null && arr.length > MAXLEN) {
+					// FIXME should fetch 1000 and make sure that the rest is fetched later
+					newConstraintses[i] = null;
+				}
+			}
+		}
+		
+		return newConstraintses;
+	}
+	
+	/**
 	 * Drops constraints, where the list of values is close to the values which
 	 * would be returned anyway.
 	 **/
+	/*
 	public synchronized Object[][] optimizeConstraints(Object[][] constraintses)
 	{
 		Util.assertTrue(constraintses.length == columns.length);
@@ -208,8 +232,8 @@ public class Aggregation
 			int cardinality = column.getCardinality();
 			return ((double) cardinality) / ((double) constraints.length);
 		}
-		/** Returns the cardinality of this column, assuming that the
-		 * constraint is not removed. **/
+		// Returns the cardinality of this column, assuming that the
+		// constraint is not removed.
 		double getCardinality(int i)
 		{
 			Object[] constraints = constraintses[i];
@@ -221,6 +245,7 @@ public class Aggregation
 			}
 		}
 	}
+    */
 
 	/**
 	 * Retrieves the value identified by <code>keys</code>.

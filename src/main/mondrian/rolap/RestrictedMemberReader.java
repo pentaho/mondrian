@@ -69,6 +69,8 @@ class RestrictedMemberReader extends DelegatingMemberReader {
         }
         while (i < n) {
             member = memberReader.getLeadMember(member, increment);
+            if (member.isNull())
+            	return member;
             if (canSee(member)) {
                 ++i;
             }
