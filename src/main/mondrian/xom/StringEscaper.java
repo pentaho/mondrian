@@ -3,10 +3,9 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2000-2002 Kana Software, Inc. and others.
+// Copyright (C) 2000-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
 */
 
 package mondrian.xom;
@@ -17,10 +16,10 @@ import java.util.*;
  * with escape sequences in strings.  Initially, a StringEscaper starts out as
  * an identity transform in the "mutable" state.  Call defineEscape as many
  * times as necessary to set up mappings, and then call makeImmutable() before
- * using escapeString to actually apply the defined transform.  Or, use one of
+ * using appendEscapedString to actually apply the defined transform.  Or, use one of
  * the global mappings pre-defined here.</p>
  **/
-class StringEscaper implements Cloneable
+public class StringEscaper implements Cloneable
 {
 	private Vector translationVector;
 	private String [] translationTable;
@@ -94,6 +93,29 @@ class StringEscaper implements Cloneable
 			return s;
 		} else {
 			return sb.toString();
+		}
+	}
+
+	/**
+	 * Apply an immutable transformation to the given string, writing the
+	 * results to a string buffer.
+	 */
+	public void appendEscapedString(String s, StringBuffer sb)
+	{
+		int n = s.length();
+		for (int i = 0; i < n; i++) {
+			char c = s.charAt(i);
+			String escape;
+			if (c >= translationTable.length) {
+				escape = null;
+			} else {
+				escape = translationTable[c];
+			}
+			if (escape == null) {
+				sb.append(c);
+			} else {
+				sb.append(escape);
+			}
 		}
 	}
 

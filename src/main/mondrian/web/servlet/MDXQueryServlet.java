@@ -1,10 +1,9 @@
 /*
 // $Id$
-// (C) Copyright 2002 Kana Software, Inc.
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// Copyright (C) 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -15,6 +14,7 @@ package mondrian.web.servlet;
 
 import mondrian.olap.*;
 import mondrian.web.taglib.ResultCache;
+import mondrian.xom.StringEscaper;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -145,8 +145,12 @@ public class MDXQueryServlet extends HttpServlet {
 
 			html.append("</table>");
 		} catch (Throwable e) {
-			html.append("Error: " + e.getMessage());
-			e.printStackTrace();
+			final String[] strings = Util.convertStackToString(e);
+			html.append("Error:<pre><blockquote>");
+			for (int i = 0; i < strings.length; i++) {
+				StringEscaper.htmlEscaper.appendEscapedString(strings[i], html);
+			}
+			html.append("</blockquote></pre>");
 		} finally {
 			if (mdxConnection != null) {
 				mdxConnection.close();
@@ -154,6 +158,7 @@ public class MDXQueryServlet extends HttpServlet {
 		}
 
 		request.setAttribute("result", html.toString());
+		response.setHeader("Content-Type", "text/html");
 		getServletContext().getRequestDispatcher("/adhoc.jsp").include(request, response);
 	}
 
@@ -179,6 +184,7 @@ public class MDXQueryServlet extends HttpServlet {
 		if (redirect == null) {
 			redirect = "/adhoc.jsp";
 		}
+		response.setHeader("Content-Type", "text/html");
 		getServletContext().getRequestDispatcher(redirect).include(request, response);
 	}
 
