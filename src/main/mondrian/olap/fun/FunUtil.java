@@ -356,6 +356,10 @@ public class FunUtil extends Util {
 	static int compareValues(Object value0, Object value1) {
 		if (value0 == value1) {
 			return 0;
+		} else if (value0 instanceof RuntimeException ||
+				value1 instanceof RuntimeException) {
+			// one of the values is not in cache; continue as best as we can
+			return 0;
 		} else if (value0 == Util.nullValue) {
 			return 1; // null == +infinity
 		} else if (value1 == Util.nullValue) {

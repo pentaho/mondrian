@@ -1700,6 +1700,49 @@ public class FoodMartTestCase extends TestCase {
 				"Row #5: 14,210" + nl);
 	}
 
+	/**
+	 * The bug happened when a cell which was in cache was compared with a cell
+	 * which was not in cache. The compare method could not deal with the
+	 * {@link RuntimeException} which indicates that the cell is not in cache.
+	 */
+	public void testBug636687() {
+		runQuery(
+				"select {[Measures].[Unit Sales], [Measures].[Store Cost],[Measures].[Store Sales]} ON columns, " +
+				"Order(" +
+				"{([Store].[All Stores].[USA].[CA], [Product].[All Products].[Drink].[Alcoholic Beverages]), " +
+				"([Store].[All Stores].[USA].[CA], [Product].[All Products].[Drink].[Beverages]), " +
+				"Crossjoin({[Store].[All Stores].[USA].[CA].Children}, {[Product].[All Products].[Drink].[Beverages]}), " +
+				"([Store].[All Stores].[USA].[CA], [Product].[All Products].[Drink].[Dairy]), " +
+				"([Store].[All Stores].[USA].[OR], [Product].[All Products].[Drink].[Alcoholic Beverages]), " +
+				"([Store].[All Stores].[USA].[OR], [Product].[All Products].[Drink].[Beverages]), " +
+				"([Store].[All Stores].[USA].[OR], [Product].[All Products].[Drink].[Dairy]), " +
+				"([Store].[All Stores].[USA].[WA], [Product].[All Products].[Drink].[Alcoholic Beverages]), " +
+				"([Store].[All Stores].[USA].[WA], [Product].[All Products].[Drink].[Beverages]), " +
+				"([Store].[All Stores].[USA].[WA], [Product].[All Products].[Drink].[Dairy])}, " +
+				"[Measures].[Store Cost], BDESC) ON rows " +
+				"from [Sales] " +
+				"where ([Time].[1997])");
+		runQuery(
+				"select {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} ON columns, " +
+				"Order(" +
+				"{([Store].[All Stores].[USA].[WA], [Product].[All Products].[Drink].[Beverages]), " +
+				"([Store].[All Stores].[USA].[CA], [Product].[All Products].[Drink].[Beverages]), " +
+				"([Store].[All Stores].[USA].[OR], [Product].[All Products].[Drink].[Beverages]), " +
+				"([Store].[All Stores].[USA].[WA], [Product].[All Products].[Drink].[Alcoholic Beverages]), " +
+				"([Store].[All Stores].[USA].[CA], [Product].[All Products].[Drink].[Alcoholic Beverages]), " +
+				"([Store].[All Stores].[USA].[OR], [Product].[All Products].[Drink].[Alcoholic Beverages]), " +
+				"([Store].[All Stores].[USA].[WA], [Product].[All Products].[Drink].[Dairy]), " +
+				"([Store].[All Stores].[USA].[CA].[San Diego], [Product].[All Products].[Drink].[Beverages]), " +
+				"([Store].[All Stores].[USA].[CA].[Los Angeles], [Product].[All Products].[Drink].[Beverages]), " +
+				"Crossjoin({[Store].[All Stores].[USA].[CA].[Los Angeles]}, {[Product].[All Products].[Drink].[Beverages].Children}), " +
+				"([Store].[All Stores].[USA].[CA].[Beverly Hills], [Product].[All Products].[Drink].[Beverages]), " +
+				"([Store].[All Stores].[USA].[CA], [Product].[All Products].[Drink].[Dairy]), " +
+				"([Store].[All Stores].[USA].[OR], [Product].[All Products].[Drink].[Dairy]), " +
+				"([Store].[All Stores].[USA].[CA].[San Francisco], [Product].[All Products].[Drink].[Beverages])}, " +
+				"[Measures].[Store Cost], BDESC) ON rows " +
+				"from [Sales] " +
+				"where ([Time].[1997])");
+	}
 	public void testParallelButSingle() {
 		runParallelQueries(1, 1);
 	}
