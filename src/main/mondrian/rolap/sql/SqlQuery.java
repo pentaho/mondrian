@@ -224,6 +224,9 @@ public class SqlQuery
         if (!isAS400()) {
             return false;
         }
+        // TB "04.03.0000 V4R3m0"
+        //  this version cannot handle subqueries and is considered "old"
+        // DEUKA "05.01.0000 V5R1m0" is ok
         String version = getProductVersion();
         String[] version_release = version.split("\\.", 3);
         /*
