@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>WITH MEMBER Measures.[Profit] AS    '(Measures.[Store Sales] - Measures.[Store Cost])' MEMBER Measures.[Profit Growth] AS '(Measures.[Profit]) /    COALESCEEMPTY((Measures.[Profit], [Time].PREVMEMBER),    Measures.[Profit])', FORMAT_STRING = '#.00%' SELECT {Measures.[Profit], Measures.[Profit Growth]} ON COLUMNS, {DESCENDANTS([Time].[1997], [Month])} ON ROWS FROM [Sales]</mdxQuery>
+    <mdxQuery>WITH MEMBER Measures.[Profit] AS    '(Measures.[Store Sales] - Measures.[Store Cost])' MEMBER Measures.[Profit Increase] AS '(Measures.[Profit]) /    COALESCEEMPTY((Measures.[Profit], [Time].PREVMEMBER),    Measures.[Profit])', FORMAT_STRING = '#.00%' SELECT {Measures.[Profit], Measures.[Profit Increase]} ON COLUMNS, {DESCENDANTS([Time].[1997], [Month])} ON ROWS FROM [Sales]</mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>
@@ -41,7 +41,7 @@
                     <member>[Measures].[Profit]</member>
                 </tuple>
                 <tuple>
-                    <member>[Measures].[Profit Growth]</member>
+                    <member>[Measures].[Profit Increase]</member>
                 </tuple>
             </tuples>
         </columns>
