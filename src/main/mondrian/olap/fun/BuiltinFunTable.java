@@ -905,6 +905,41 @@ public class BuiltinFunTable extends FunTable {
 				Dimension dimension = getDimensionArg(evaluator, args, 0, true);
 				return evaluator.getContext(dimension);
 			}
+            public void testCurrentMemberFromSlicer(FoodMartTestCase test) {
+				Result result = test.runQuery(
+						"with member [Measures].[Foo] as '[Gender].CurrentMember.Name'" + nl +
+						"select {[Measures].[Foo]} on columns" + nl +
+						"from Sales where ([Gender].[F])");
+				test.assertEquals("F", result.getCell(new int[] {0}).getValue());
+			}
+			public void testCurrentMemberFromDefaultMember(FoodMartTestCase test) {
+				Result result = test.runQuery(
+						"with member [Measures].[Foo] as '[Time].CurrentMember.Name'" + nl +
+						"select {[Measures].[Foo]} on columns" + nl +
+						"from Sales");
+				test.assertEquals("1997", result.getCell(new int[] {0}).getValue());
+			}
+			public void testCurrentMemberFromAxis(FoodMartTestCase test) {
+				Result result = test.runQuery(
+						"with member [Measures].[Foo] as '[Gender].CurrentMember.Name || [Marital Status].CurrentMember.Name'" + nl +
+						"select {[Measures].[Foo]} on columns," + nl +
+						" CrossJoin({[Gender].children}, {[Marital Status].children}) on rows" + nl +
+						"from Sales");
+				test.assertEquals("FM", result.getCell(new int[] {0,0}).getValue());
+			}
+			/**
+			 * When evaluating a calculated member, MSOLAP regards that
+			 * calculated member as the current member of that dimension, so it
+			 * cycles in this case. But I disagree; it is the previous current
+			 * member, before the calculated member was expanded.
+			 */
+			public void testCurrentMemberInCalcMember(FoodMartTestCase test) {
+				Result result = test.runQuery(
+						"with member [Measures].[Foo] as '[Measures].CurrentMember.Name'" + nl +
+						"select {[Measures].[Foo]} on columns" + nl +
+						"from Sales");
+				test.assertEquals("Unit Sales", result.getCell(new int[] {0}).getValue());
+			}
 		});
 		define(new FunDefBase("DefaultMember", "<Dimension>.DefaultMember", "Returns the default member of a dimension.", "pmd") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
@@ -1164,20 +1199,20 @@ public class BuiltinFunTable extends FunTable {
 				return member.getLeadMember(+1);
 			}
 
-			public void testBasic2(TestCase test) {
-				Result result = TestContext.instance().executeFoodMart(
+			public void testBasic2(FoodMartTestCase test) {
+				Result result = test.runQuery(
 						"select {[Gender].[F].NextMember} ON COLUMNS from Sales");
 				test.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("M"));
 			}
 
-			public void testFirstInLevel2(TestCase test) {
-				Result result = TestContext.instance().executeFoodMart(
+			public void testFirstInLevel2(FoodMartTestCase test) {
+				Result result = test.runQuery(
 						"select {[Gender].[M].NextMember} ON COLUMNS from Sales");
 				test.assertTrue(result.getAxes()[0].positions.length == 0);
 			}
 
-			public void testAll2(TestCase test) {
-				Result result = TestContext.instance().executeFoodMart(
+			public void testAll2(FoodMartTestCase test) {
+				Result result = test.runQuery(
 						"select {[Gender].PrevMember} ON COLUMNS from Sales");
 				// previous to [Gender].[All] is null, so no members are returned
 				test.assertTrue(result.getAxes()[0].positions.length == 0);
@@ -1197,20 +1232,20 @@ public class BuiltinFunTable extends FunTable {
 				return parent;
 			}
 
-			public void testBasic5(TestCase test) {
-				Result result = TestContext.instance().executeFoodMart(
+			public void testBasic5(FoodMartTestCase test) {
+				Result result = test.runQuery(
 						"select{ [Product].[All Products].[Drink].Parent} on columns from Sales");
 				test.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("All Products"));
 			}
 
-			public void testFirstInLevel5(TestCase test) {
-				Result result = TestContext.instance().executeFoodMart(
+			public void testFirstInLevel5(FoodMartTestCase test) {
+				Result result = test.runQuery(
 						"select {[Time].[1997].[Q2].[4].Parent} on columns,{[Gender].[M]} on rows from Sales");
 				test.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("Q2"));
 			}
 
-			public void testAll5(TestCase test) {
-				Result result = TestContext.instance().executeFoodMart(
+			public void testAll5(FoodMartTestCase test) {
+				Result result = test.runQuery(
 						"select {[Time].[1997].[Q2].Parent} on columns,{[Gender].[M]} on rows from Sales");
 				// previous to [Gender].[All] is null, so no members are returned
 				test.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("1997"));
@@ -1223,20 +1258,20 @@ public class BuiltinFunTable extends FunTable {
 				return member.getLeadMember(-1);
 			}
 
-			public void testBasic(TestCase test) {
-				Result result = TestContext.instance().executeFoodMart(
+			public void testBasic(FoodMartTestCase test) {
+				Result result = test.runQuery(
 						"select {[Gender].[M].PrevMember} ON COLUMNS from Sales");
 				test.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("F"));
 			}
 
-			public void testFirstInLevel(TestCase test) {
-				Result result = TestContext.instance().executeFoodMart(
+			public void testFirstInLevel(FoodMartTestCase test) {
+				Result result = test.runQuery(
 						"select {[Gender].[F].PrevMember} ON COLUMNS from Sales");
 				test.assertTrue(result.getAxes()[0].positions.length == 0);
 			}
 
-			public void testAll(TestCase test) {
-				Result result = TestContext.instance().executeFoodMart(
+			public void testAll(FoodMartTestCase test) {
+				Result result = test.runQuery(
 						"select {[Gender].PrevMember} ON COLUMNS from Sales");
 				// previous to [Gender].[All] is null, so no members are returned
 				test.assertTrue(result.getAxes()[0].positions.length == 0);
@@ -1813,7 +1848,17 @@ public class BuiltinFunTable extends FunTable {
 				test.assertEquals("Year", s);
 			}
 		});
-		define(new FunDefBase("Name", "<Member>.Name", "Returns the name of a member.", "pSm"));
+		define(new FunDefBase("Name", "<Member>.Name", "Returns the name of a member.", "pSm") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				Member member = getMemberArg(evaluator, args, 0, true);
+				return member.getName();
+			}
+
+			public void testMemberName(FoodMartTestCase test) {
+				String s = test.executeExpr("[Time].[1997].Name");
+				test.assertEquals("1997", s);
+			}
+		});
 		define(new FunDefBase("SetToStr", "SetToStr(<Set>)", "Constructs a string from a set.", "fSx"));
 		define(new FunDefBase("TupleToStr", "TupleToStr(<Tuple>)", "Constructs a string from a tuple.", "fSt"));
 		define(new FunDefBase("UniqueName", "<Dimension>.UniqueName", "Returns the unique name of a dimension.", "pSd") {
@@ -2065,7 +2110,21 @@ public class BuiltinFunTable extends FunTable {
 			}
 		});
 		define(new FunDefBase("-", "- <Numeric Expression>", "Returns the negative of a number.", "Pnn"));
-		define(new FunDefBase("||", "<String Expression> || <String Expression>", "Concatenates two strings.", "iSSS"));
+		define(new FunDefBase("||", "<String Expression> || <String Expression>", "Concatenates two strings.", "iSSS") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				String o0 = getStringArg(evaluator, args, 0, null),
+						o1 = getStringArg(evaluator, args, 1, null);
+				return o0 + o1;
+			}
+			public void testStringConcat(FoodMartTestCase test) {
+				String s = test.executeExpr(" \"foo\" || \"bar\"  ");
+				test.assertEquals("foobar", s);
+			}
+			public void testStringConcat2(FoodMartTestCase test) {
+				String s = test.executeExpr(" \"foo\" || [Gender].[M].Name || \"\" ");
+				test.assertEquals("fooM", s);
+			}
+		});
 		define(new FunDefBase("AND", "<Logical Expression> AND <Logical Expression>", "Returns the conjunction of two conditions.", "ibbb"));
 		define(new FunDefBase("OR", "<Logical Expression> OR <Logical Expression>", "Returns the disjunction of two conditions.", "ibbb"));
 		define(new FunDefBase("XOR", "<Logical Expression> XOR <Logical Expression>", "Returns whether two conditions are mutually exclusive.", "ibbb"));
