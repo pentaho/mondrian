@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>SELECT {Store, Store.LastChild, Store.[All Stores].LastChild, Store.[All Stores].[USA].[CA].[San Francisco].LastChild} ON Columns,
+       {Product, Product.LastChild, Product.[Drink].LastChild, Product.[Food].[Deli].[Meat].[Bologna].[American].LastChild } ON Rows
+FROM [Sales] where([Measures].[Unit Sales], [Time].[1997], [Store Size in SQFT].[All Store Size in SQFTs], [Store Type].[All Store Types], [Promotions].[All Promotions], [Customers].[All Customers], [Education Level].[All Education Levels], [Marital Status].[All Marital Status], [Yearly Income].[All Yearly Incomes], [Promotion Media].[All Media], [Gender].[All Gender])</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Measures]</dim>
+                <dim>[Time]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Unit Sales]</member>
+                    <member>[Time].[1997]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Customers].[All Customers]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Store]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store].[All Stores]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Product]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Product].[All Products]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Bologna].[American].[American Pimento Loaf]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>266773.0</cell>
+                <cell>266773.0</cell>
+                <cell>266773.0</cell>
+                <cell>2117.0</cell>
+            </drow>
+            <drow>
+                <cell>50236.0</cell>
+                <cell>50236.0</cell>
+                <cell>50236.0</cell>
+                <cell>387.0</cell>
+            </drow>
+            <drow>
+                <cell>4186.0</cell>
+                <cell>4186.0</cell>
+                <cell>4186.0</cell>
+                <cell>31.0</cell>
+            </drow>
+            <drow>
+                <cell>195.0</cell>
+                <cell>195.0</cell>
+                <cell>195.0</cell>
+                <cell>3.0</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

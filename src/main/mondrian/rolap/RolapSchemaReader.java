@@ -28,9 +28,11 @@ import java.util.List;
 abstract class RolapSchemaReader implements SchemaReader {
 	private Role role;
 	private HashMap hierarchyReaders = new HashMap();
+    private RolapSchema schema;
 
-	RolapSchemaReader(Role role) {
+	RolapSchemaReader(Role role, RolapSchema schema) {
 		this.role = role;
+        this.schema = schema;
 	}
 
 	public Role getRole() {
@@ -221,6 +223,23 @@ abstract class RolapSchemaReader implements SchemaReader {
     public boolean isVisible(Member member) {
         return !member.isHidden() &&
                 role.canAccess(member);
+    }
+
+    public Cube[] getCubes() {
+        Cube[] cubes = schema.getCubes();
+        ArrayList visibleCubes = new ArrayList(cubes.length);
+
+        for (int idx = 0; idx < cubes.length; idx++) {
+            if (role.canAccess(cubes[idx])) {
+                visibleCubes.add(cubes[idx]);
+            }
+        }
+
+        Cube[] result = new Cube[visibleCubes.size()];
+
+        visibleCubes.toArray(result);
+
+        return result;
     }
 }
 

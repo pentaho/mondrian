@@ -1,0 +1,1125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>select { ([Measures].[Store Sales]) } on columns,     generate( [Product].[All Products].[Drink].children, crossjoin([Promotions].children, {[Product].currentmember})) on rows from [Sales]</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Time]</dim>
+                <dim>[Store]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Time].[1997]</member>
+                    <member>[Store].[All Stores]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Customers].[All Customers]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Measures]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Store Sales]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Promotions]</dim>
+                <dim>[Product]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Bag Stuffers]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Best Savings]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Big Promo]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Big Time Discounts]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Big Time Savings]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Bye Bye Baby]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Cash Register Lottery]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Coupon Spectacular]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Dimes Off]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Dollar Cutters]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Dollar Days]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Double Down Sale]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Double Your Savings]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Fantastic Discounts]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Free For All]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Go For It]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Green Light Days]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Green Light Special]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[High Roller Savings]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[I Cant Believe It Sale]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Money Grabbers]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Money Savers]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Mystery Sale]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[No Promotion]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[One Day Sale]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Pick Your Savings]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Price Cutters]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Price Destroyers]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Price Savers]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Price Slashers]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Price Smashers]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Price Winners]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Sale Winners]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Sales Days]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Sales Galore]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Save-It Sale]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Saving Days]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Savings Galore]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Shelf Clearing Days]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Shelf Emptiers]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Super Duper Savers]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Super Savers]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Super Wallet Savers]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Three for One]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Tip Top Savings]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Two Day Sale]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Two for One]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Unbeatable Price Savers]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Wallet Savers]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Weekend Markdown]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[You Save Days]</member>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Bag Stuffers]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Best Savings]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Big Promo]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Big Time Discounts]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Big Time Savings]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Bye Bye Baby]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Cash Register Lottery]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Coupon Spectacular]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Dimes Off]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Dollar Cutters]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Dollar Days]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Double Down Sale]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Double Your Savings]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Fantastic Discounts]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Free For All]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Go For It]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Green Light Days]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Green Light Special]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[High Roller Savings]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[I Cant Believe It Sale]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Money Grabbers]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Money Savers]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Mystery Sale]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[No Promotion]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[One Day Sale]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Pick Your Savings]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Price Cutters]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Price Destroyers]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Price Savers]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Price Slashers]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Price Smashers]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Price Winners]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Sale Winners]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Sales Days]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Sales Galore]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Save-It Sale]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Saving Days]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Savings Galore]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Shelf Clearing Days]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Shelf Emptiers]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Super Duper Savers]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Super Savers]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Super Wallet Savers]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Three for One]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Tip Top Savings]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Two Day Sale]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Two for One]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Unbeatable Price Savers]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Wallet Savers]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Weekend Markdown]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[You Save Days]</member>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Bag Stuffers]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Best Savings]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Big Promo]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Big Time Discounts]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Big Time Savings]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Bye Bye Baby]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Cash Register Lottery]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Coupon Spectacular]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Dimes Off]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Dollar Cutters]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Dollar Days]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Double Down Sale]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Double Your Savings]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Fantastic Discounts]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Free For All]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Go For It]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Green Light Days]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Green Light Special]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[High Roller Savings]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[I Cant Believe It Sale]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Money Grabbers]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Money Savers]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Mystery Sale]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[No Promotion]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[One Day Sale]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Pick Your Savings]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Price Cutters]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Price Destroyers]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Price Savers]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Price Slashers]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Price Smashers]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Price Winners]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Sale Winners]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Sales Days]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Sales Galore]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Save-It Sale]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Saving Days]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Savings Galore]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Shelf Clearing Days]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Shelf Emptiers]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Super Duper Savers]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Super Savers]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Super Wallet Savers]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Three for One]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Tip Top Savings]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Two Day Sale]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Two for One]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Unbeatable Price Savers]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Wallet Savers]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Weekend Markdown]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[You Save Days]</member>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>74.39</cell>
+            </drow>
+            <drow>
+                <cell>155.61</cell>
+            </drow>
+            <drow>
+                <cell>101.01</cell>
+            </drow>
+            <drow>
+                <cell>35.73</cell>
+            </drow>
+            <drow>
+                <cell>5.39</cell>
+            </drow>
+            <drow>
+                <cell>57.59</cell>
+            </drow>
+            <drow>
+                <cell>265.15</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>56.37</cell>
+            </drow>
+            <drow>
+                <cell>32.91</cell>
+            </drow>
+            <drow>
+                <cell>118.24</cell>
+            </drow>
+            <drow>
+                <cell>58.98</cell>
+            </drow>
+            <drow>
+                <cell>38.31</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>97.42</cell>
+            </drow>
+            <drow>
+                <cell>5.52</cell>
+            </drow>
+            <drow>
+                <cell>73.32</cell>
+            </drow>
+            <drow>
+                <cell>18.35</cell>
+            </drow>
+            <drow>
+                <cell>153.28</cell>
+            </drow>
+            <drow>
+                <cell>21.48</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>100.1</cell>
+            </drow>
+            <drow>
+                <cell>79.81</cell>
+            </drow>
+            <drow>
+                <cell>10136.65</cell>
+            </drow>
+            <drow>
+                <cell>127.71</cell>
+            </drow>
+            <drow>
+                <cell>29.25</cell>
+            </drow>
+            <drow>
+                <cell>48.08</cell>
+            </drow>
+            <drow>
+                <cell>112.6</cell>
+            </drow>
+            <drow>
+                <cell>249.69</cell>
+            </drow>
+            <drow>
+                <cell>51.92</cell>
+            </drow>
+            <drow>
+                <cell>24.29</cell>
+            </drow>
+            <drow>
+                <cell>78.56</cell>
+            </drow>
+            <drow>
+                <cell>10.56</cell>
+            </drow>
+            <drow>
+                <cell>88.72</cell>
+            </drow>
+            <drow>
+                <cell>127.59</cell>
+            </drow>
+            <drow>
+                <cell>104.15</cell>
+            </drow>
+            <drow>
+                <cell>121.84</cell>
+            </drow>
+            <drow>
+                <cell>58.49</cell>
+            </drow>
+            <drow>
+                <cell>51.49</cell>
+            </drow>
+            <drow>
+                <cell>98.82</cell>
+            </drow>
+            <drow>
+                <cell>147.34</cell>
+            </drow>
+            <drow>
+                <cell>96.41</cell>
+            </drow>
+            <drow>
+                <cell>43.71</cell>
+            </drow>
+            <drow>
+                <cell>65.68</cell>
+            </drow>
+            <drow>
+                <cell>15.65</cell>
+            </drow>
+            <drow>
+                <cell>146.06</cell>
+            </drow>
+            <drow>
+                <cell>5.62</cell>
+            </drow>
+            <drow>
+                <cell>139.39</cell>
+            </drow>
+            <drow>
+                <cell>44.17</cell>
+            </drow>
+            <drow>
+                <cell>53.99</cell>
+            </drow>
+            <drow>
+                <cell>201.69</cell>
+            </drow>
+            <drow>
+                <cell>98.01</cell>
+            </drow>
+            <drow>
+                <cell>181.49</cell>
+            </drow>
+            <drow>
+                <cell>144.85</cell>
+            </drow>
+            <drow>
+                <cell>116.43</cell>
+            </drow>
+            <drow>
+                <cell>61.89</cell>
+            </drow>
+            <drow>
+                <cell>87.3</cell>
+            </drow>
+            <drow>
+                <cell>517.07</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>105.64</cell>
+            </drow>
+            <drow>
+                <cell>44.6</cell>
+            </drow>
+            <drow>
+                <cell>155.07</cell>
+            </drow>
+            <drow>
+                <cell>255.11</cell>
+            </drow>
+            <drow>
+                <cell>31.32</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>165.92</cell>
+            </drow>
+            <drow>
+                <cell>93.64</cell>
+            </drow>
+            <drow>
+                <cell>134.52</cell>
+            </drow>
+            <drow>
+                <cell>55.74</cell>
+            </drow>
+            <drow>
+                <cell>352.56</cell>
+            </drow>
+            <drow>
+                <cell>8.58</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>54.98</cell>
+            </drow>
+            <drow>
+                <cell>147.57</cell>
+            </drow>
+            <drow>
+                <cell>20381.82</cell>
+            </drow>
+            <drow>
+                <cell>264.62</cell>
+            </drow>
+            <drow>
+                <cell>57.12</cell>
+            </drow>
+            <drow>
+                <cell>201.11</cell>
+            </drow>
+            <drow>
+                <cell>206.59</cell>
+            </drow>
+            <drow>
+                <cell>437.91</cell>
+            </drow>
+            <drow>
+                <cell>113.2</cell>
+            </drow>
+            <drow>
+                <cell>59.0</cell>
+            </drow>
+            <drow>
+                <cell>122.91</cell>
+            </drow>
+            <drow>
+                <cell>48.02</cell>
+            </drow>
+            <drow>
+                <cell>276.23</cell>
+            </drow>
+            <drow>
+                <cell>304.35</cell>
+            </drow>
+            <drow>
+                <cell>175.49</cell>
+            </drow>
+            <drow>
+                <cell>136.45</cell>
+            </drow>
+            <drow>
+                <cell>123.79</cell>
+            </drow>
+            <drow>
+                <cell>32.22</cell>
+            </drow>
+            <drow>
+                <cell>233.02</cell>
+            </drow>
+            <drow>
+                <cell>310.45</cell>
+            </drow>
+            <drow>
+                <cell>319.21</cell>
+            </drow>
+            <drow>
+                <cell>122.5</cell>
+            </drow>
+            <drow>
+                <cell>104.89</cell>
+            </drow>
+            <drow>
+                <cell>40.25</cell>
+            </drow>
+            <drow>
+                <cell>187.36</cell>
+            </drow>
+            <drow>
+                <cell>2.2</cell>
+            </drow>
+            <drow>
+                <cell>160.01</cell>
+            </drow>
+            <drow>
+                <cell>46.61</cell>
+            </drow>
+            <drow>
+                <cell>115.21</cell>
+            </drow>
+            <drow>
+                <cell>353.7</cell>
+            </drow>
+            <drow>
+                <cell>18.62</cell>
+            </drow>
+            <drow>
+                <cell>62.03</cell>
+            </drow>
+            <drow>
+                <cell>36.84</cell>
+            </drow>
+            <drow>
+                <cell>11.56</cell>
+            </drow>
+            <drow>
+                <cell>19.26</cell>
+            </drow>
+            <drow>
+                <cell>28.96</cell>
+            </drow>
+            <drow>
+                <cell>142.78</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>45.23</cell>
+            </drow>
+            <drow>
+                <cell>7.74</cell>
+            </drow>
+            <drow>
+                <cell>69.04</cell>
+            </drow>
+            <drow>
+                <cell>37.44</cell>
+            </drow>
+            <drow>
+                <cell>41.14</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>11.32</cell>
+            </drow>
+            <drow>
+                <cell>3.29</cell>
+            </drow>
+            <drow>
+                <cell>8.49</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>75.93</cell>
+            </drow>
+            <drow>
+                <cell>5.39</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>34.58</cell>
+            </drow>
+            <drow>
+                <cell>12.33</cell>
+            </drow>
+            <drow>
+                <cell>5163.38</cell>
+            </drow>
+            <drow>
+                <cell>62.03</cell>
+            </drow>
+            <drow>
+                <cell>6.91</cell>
+            </drow>
+            <drow>
+                <cell>66.51</cell>
+            </drow>
+            <drow>
+                <cell>88.45</cell>
+            </drow>
+            <drow>
+                <cell>97.0</cell>
+            </drow>
+            <drow>
+                <cell>30.87</cell>
+            </drow>
+            <drow>
+                <cell>44.24</cell>
+            </drow>
+            <drow>
+                <cell>47.74</cell>
+            </drow>
+            <drow>
+                <cell>1.84</cell>
+            </drow>
+            <drow>
+                <cell>41.55</cell>
+            </drow>
+            <drow>
+                <cell>57.09</cell>
+            </drow>
+            <drow>
+                <cell>44.58</cell>
+            </drow>
+            <drow>
+                <cell>65.03</cell>
+            </drow>
+            <drow>
+                <cell>49.37</cell>
+            </drow>
+            <drow>
+                <cell>31.87</cell>
+            </drow>
+            <drow>
+                <cell>21.67</cell>
+            </drow>
+            <drow>
+                <cell>45.97</cell>
+            </drow>
+            <drow>
+                <cell>77.5</cell>
+            </drow>
+            <drow>
+                <cell>41.53</cell>
+            </drow>
+            <drow>
+                <cell>34.46</cell>
+            </drow>
+            <drow>
+                <cell>16.21</cell>
+            </drow>
+            <drow>
+                <cell>37.4</cell>
+            </drow>
+            <drow>
+                <cell>9.69</cell>
+            </drow>
+            <drow>
+                <cell>50.21</cell>
+            </drow>
+            <drow>
+                <cell>53.12</cell>
+            </drow>
+            <drow>
+                <cell>13.67</cell>
+            </drow>
+            <drow>
+                <cell>86.74</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

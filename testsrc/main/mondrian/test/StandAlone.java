@@ -1,20 +1,20 @@
 /*
- * Copyright 2003 by Alphablox Corp. All rights reserved.
- *
- * Created by gjohnson
- * Last change: $Modtime: $
- * Last author: $Author$
- * Revision: $Revision$
- */
+// $Id$
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// (C) Copyright 2004-2004 Julian Hyde and others
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
 package mondrian.test;
 
 import mondrian.olap.*;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.text.MessageFormat;
+import java.io.*;
+import java.text.*;
+import java.util.StringTokenizer;
+import java.util.NoSuchElementException;
 
 public class StandAlone {
     private static final String[] indents = new String[]{
@@ -24,11 +24,13 @@ public class StandAlone {
     private static Connection cxn;
 
     private static String cellProp;
+    private static boolean printMemberProps = false;
+
     private static BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
 
 //    public static final String ConnectionString = "Provider=mondrian;" +
 //        "Jdbc=jdbc:JSQLConnect://gjlaptop:1433/database=RDBPerformance/user=galt/password=password;" +
-//        "Catalog=file:RdbCubePerformance.xml;" +
+//        "Catalog=file:demo\\RdbCubePerformance.xml;" +
 //        "JdbcDrivers=com.jnetdirect.jsql.JSQLDriver;";
     public static final String ConnectionString = "Provider=mondrian;" +
         "Jdbc=jdbc:JSQLConnect://engdb04:1433/database=MondrianFoodmart/user=mondrian/password=password;" +
@@ -37,7 +39,7 @@ public class StandAlone {
 
     public static void main(String[] args) {
         long now = System.currentTimeMillis();
-        java.sql.DriverManager.setLogWriter(new PrintWriter(System.err));
+//        java.sql.DriverManager.setLogWriter(new PrintWriter(System.err));
 
         cxn = DriverManager.getConnection(ConnectionString, null, true);
 
@@ -149,8 +151,7 @@ public class StandAlone {
                 Cell cell = result.getCell(new int[0]);
                 printCell(cell);
             }
-        }
-        else if (axes.length == 1) {
+        } else if (axes.length == 1) {
             // Only columns
             Position[] cols = axes[0].positions;
 
@@ -177,8 +178,7 @@ public class StandAlone {
                     printCell(cell);
                 }
             }
-        }
-        else {
+        } else {
             Position[] colPositions = axes[0].positions;
             Position[] rowPositions = axes[1].positions;
 
@@ -256,20 +256,23 @@ public class StandAlone {
             needComma = true;
 
             System.out.print(member.getUniqueName());
-            Property[] props =  member.getProperties();
 
-            if (props.length > 0) {
-                System.out.print(" {");
-                for (int idx = 0; idx < props.length; idx++) {
-                    if (idx > 1) {
-                        System.out.print(", ");
+            if (printMemberProps) {
+                Property[] props =  member.getProperties();
+
+                if (props.length > 0) {
+                    System.out.print(" {");
+                    for (int idx = 0; idx < props.length; idx++) {
+                        if (idx > 1) {
+                            System.out.print(", ");
+                        }
+                        Property prop = props[idx];
+
+                        System.out.print(prop.getName() + ": " + member.getPropertyValue(prop.getName()));
+
                     }
-                    Property prop = props[idx];
-
-                    System.out.print(prop.getName() + ": " + member.getPropertyValue(prop.getName()));
-
+                    System.out.print("}");
                 }
-                System.out.print("}");
             }
         }
     }
@@ -297,12 +300,68 @@ public class StandAlone {
         else if (line.equals("\\cp")) {
             System.out.print("Enter cell property: ");
             cellProp = stdin.readLine();
+            if (cellProp.length() == 0) {
+                cellProp = null;
+            }
+        }
+        else if (line.equals("\\mp")) {
+            printMemberProps ^= true;
+            System.out.println("Print member properties: " + printMemberProps);
+        }
+        else if (line.startsWith("\\test ")) {
+            StringTokenizer st = new StringTokenizer(line, " ", false);
+            st.nextToken(); // throw away /test
+            String threads = st.nextToken();
+            String seconds = st.nextToken();
+            String useRandom;
+
+            try {
+                useRandom = st.nextToken();
+            }
+            catch (NoSuchElementException nse) {
+                useRandom = "false";
+            }
+
+            try {
+                runTest(Integer.parseInt(threads), Integer.parseInt(seconds), Boolean.valueOf(useRandom).booleanValue());
+            }
+            catch (NumberFormatException nfe) {
+                System.out.println("Please enter a valid integer for the number of threads and the execution time");
+            }
         }
         else {
             System.out.println("Commands:");
             System.out.println("\t\\q        Quit");
             System.out.println("\t\\schema   Print the schema");
             System.out.println("\t\\dbg      Toggle SQL driver debugging");
+        }
+    }
+
+    private static void runTest(int numThreads, int seconds, boolean randomQueries) {
+        QueryRunner[] runners = new QueryRunner[numThreads];
+
+        System.out.println("Running multi-threading test with " + numThreads + " threads for " + seconds + " seconds.");
+        System.out.println("Queries will " + ( randomQueries ? "" : "not ") + "be random.");
+
+        for (int idx = 0; idx < runners.length; idx++) {
+            runners[idx] = new QueryRunner(idx, seconds, randomQueries);
+        }
+
+        for (int idx = 0; idx < runners.length; idx++) {
+            runners[idx].start();
+        }
+
+        for (int idx = 0; idx < runners.length; idx++) {
+            try {
+                runners[idx].join();
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        for (int idx = 0; idx < runners.length; idx++) {
+            runners[idx].report(System.out);
         }
     }
 
@@ -335,8 +394,9 @@ public class StandAlone {
     }
 
     private static void printDimension(Dimension dim) {
+        DimensionType dimensionType = dim.getDimensionType();
         System.out.println("\tDimension " + dim.getName()
-            + " type: " + (dim.getDimensionType() == Dimension.STANDARD ? "standard" : "time"));
+            + " type: " + dimensionType.name_);
 
         System.out.println("\t    Description: " + dim.getDescription());
         Hierarchy[] hierarchies = dim.getHierarchies();
@@ -370,3 +430,5 @@ public class StandAlone {
         level.unparse(new PrintWriter(System.out));
     }
 }
+
+// End StandAlone.java

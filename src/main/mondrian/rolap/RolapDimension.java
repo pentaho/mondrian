@@ -57,7 +57,7 @@ class RolapDimension extends DimensionBase
 	static int nextOrdinal = 1; // 0 is reserved for [Measures]
 	RolapSchema schema;
 
-	RolapDimension(RolapSchema schema, String name, int globalOrdinal) {
+	RolapDimension(RolapSchema schema, String name, int globalOrdinal, DimensionType dimensionType) {
 		this.schema = schema;
 		Util.assertTrue((globalOrdinal == 0) == name.equals(MEASURES_NAME));
 		this.globalOrdinal = globalOrdinal;
@@ -66,19 +66,19 @@ class RolapDimension extends DimensionBase
 		this.description = null;
 		// todo: recognition of a time dimension should be improved
 		// allow multiple time dimensions
-		this.dimensionType = (name.indexOf("Time") >= 0 || name.indexOf("Zeit") >= 0) ? 
-								TIME : STANDARD;
+        this.dimensionType = dimensionType;
 		this.hierarchies = new RolapHierarchy[0];
 	}
 
 	/**
 	 * @pre schema != null
 	 */
-	RolapDimension(RolapSchema schema, RolapCube cube, 
+	RolapDimension(RolapSchema schema, RolapCube cube,
             MondrianDef.Dimension xmlDimension,
             MondrianDef.CubeDimension xmlCubeDimension)
 	{
-		this(schema, xmlDimension.name, chooseOrdinal(cube, xmlCubeDimension));
+		this(schema, xmlDimension.name, chooseOrdinal(cube, xmlCubeDimension),
+                xmlDimension.getDimensionType());
 		Util.assertPrecondition(schema != null);
 		if (cube != null) {
 			Util.assertTrue(cube.schema == schema);

@@ -460,7 +460,7 @@ public class RolapSchema implements Schema
 	}
 
 	public SchemaReader getSchemaReader() {
-		return new RolapSchemaReader(defaultRole) {
+		return new RolapSchemaReader(defaultRole, this) {
 			public Cube getCube() {
 				throw new UnsupportedOperationException();
 			}

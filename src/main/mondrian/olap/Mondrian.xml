@@ -205,12 +205,35 @@ todo:
 			applicable to private dimensions.
 		</Doc>
 		<Attribute name="name" required="true"><Doc></Doc></Attribute>
+        <Attribute name="type" required="false">
+            <Doc>
+                The dimension's type may be one of "Standard" or "Time". A
+                <dfn>time</dfn>
+                dimension will allow the use of the MDX time functions (WTD,
+                YTD, QTD, <i>etc.</i>). Use a <dfn>standard</dfn> dimension
+                if the dimension is not a time-related dimension. The default
+                value is <code>"Standard"</code>.
+                <p>Note that any dimension named "Time" or "Zeit" is
+                automatically a time dimension.</p>
+            </Doc>
+            <Value>StandardDimension</Value>
+            <Value>TimeDimension</Value>
+        </Attribute>
 		<Array name="hierarchies" type="Hierarchy"><Doc></Doc></Array>
 		<Code>
 			// implement CubeDimension
 			public Dimension getDimension(Schema schema) {
 				return this;
 			}
+
+            // Return the dimension's enumerated type.
+            public DimensionType getDimensionType() {
+                if (type == null) {
+                    return DimensionType.StandardDimension;
+                } else {
+                    return (DimensionType) DimensionType.enumeration.getValue(type);
+                }
+            }
 		</Code>
 	</Element>
 
@@ -337,7 +360,7 @@ todo:
 		</Attribute>
 		<Attribute name="levelType" required="false" default="Regular">
 			<Doc>
-				Whether this is a regular or a time-related level. 
+				Whether this is a regular or a time-related level.
 				The value makes a difference to time-related functions
 				such as YTD (year-to-date).
 			</Doc>

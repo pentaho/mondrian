@@ -27,9 +27,9 @@ import java.io.IOException;
  * @version $Id$
  *
  * <hr/>
- * 
+ *
  * <h2><a name="XOMGen">XOMGen</a></h2>
- * <h3>Description</h3> 
+ * <h3>Description</h3>
  * <p>
  * 	 Invokes the {@link MetaGenerator}.
  * </p>
@@ -37,7 +37,7 @@ import java.io.IOException;
  * 	 This task only invokes XOMGen if the grammar file is newer than the
  *   generated Java files.
  * </p>
- * 
+ *
  * <h3>Parameters</h3>
  * <table border="1" cellpadding="2" cellspacing="0">
  * 	 <tr>
@@ -69,7 +69,7 @@ import java.io.IOException;
  * 	   <td valign="top" align="center">Yes</td>
  * 	 </tr>
  * </table>
- * 
+ *
  * <h3>Example</h3>
  * <blockquote><pre>&lt;xomgen
  * 	   model=&quot;src/main/mondrian/xom/Meta.xml&quot;
@@ -130,7 +130,7 @@ public class XOMGenTask extends Task {
 			throw new BuildException("Generation of model failed: " + e);
 		} catch (IOException e) {
 			throw new BuildException("Generation of model failed: " + e);
-		}			
+		}
 	}
 
 	// ------------------------------------------------------------------------

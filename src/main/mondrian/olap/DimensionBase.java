@@ -28,7 +28,7 @@ public abstract class DimensionBase
 	protected String description;
 	protected HierarchyBase[] hierarchies;
 	protected int globalOrdinal;
-	protected int dimensionType;
+	protected DimensionType dimensionType;
 
 	// implement Element
 	public String getUniqueName() { return uniqueName; }
@@ -38,7 +38,7 @@ public abstract class DimensionBase
 	public int getType() {
 		return Category.Dimension;
 	}
-	public int getDimensionType() { return dimensionType; } 
+	public DimensionType getDimensionType() { return dimensionType; } 
 	public String getQualifiedName() {
 		return Util.getRes().getMdxDimensionName(getUniqueName());
 	}
@@ -53,7 +53,7 @@ public abstract class DimensionBase
 	public OlapElement lookupChild(SchemaReader schemaReader, String s)
 	{
 		Hierarchy mdxHierarchy = lookupHierarchy(s);
-		
+
 		// If the user is looking for [Marital Status].[Marital Status] we
 		// should not return mdxHierarchy "Marital Status", because he is
 		// looking for level - we can check that by checking of hierarchy and
@@ -99,7 +99,7 @@ public abstract class DimensionBase
 //  	}
 
 	public Object[] getChildren() {return getHierarchies();}
-	
+
 	protected Object[] getAllowedChildren(CubeAccess cubeAccess)
 	{
 		java.util.Vector vMdxHierarchies = new java.util.Vector();

@@ -88,7 +88,7 @@ public class RolapConnection extends ConnectionBase {
             final String jdbcUser = connectInfo.get(RolapConnectionProperties.JdbcUser);
             final String dataSource = connectInfo.get(RolapConnectionProperties.DataSource);
 			schema = RolapSchema.Pool.instance().get(
-					catalogName, jdbcConnectString, jdbcUser, dataSource, connectInfo);
+					catalogName, jdbcConnectString + getJDBCProperties(connectInfo).toString(), jdbcUser, dataSource, connectInfo);
 			String roleName = connectInfo.get(RolapConnectionProperties.Role);
 			if (roleName != null) {
 				role = schema.lookupRole(roleName);
@@ -100,14 +100,21 @@ public class RolapConnection extends ConnectionBase {
 		if (role == null) {
 			role = schema.defaultRole;
 		}
+        this.schema = schema;
 		setRole(role);
-		this.schema = schema;
 	}
 
-    private DataSource createDataSource(Util.PropertyList connectInfo) {
+    //
+    // This is package-level in order for the RolapConnectionTest class to have access.
+    //
+    static DataSource createDataSource(Util.PropertyList connectInfo) {
         final String jdbcConnectString = connectInfo.get(RolapConnectionProperties.Jdbc);
         final String poolNeededString = connectInfo.get(RolapConnectionProperties.PoolNeeded);
         final boolean poolNeeded;
+
+        Properties jdbcProperties = getJDBCProperties(connectInfo);
+        String propertyString = jdbcProperties.toString();
+
         if (jdbcConnectString != null) {
             // Get connection through own pooling datasource
             String jdbcDrivers = connectInfo.get(RolapConnectionProperties.JdbcDrivers);
@@ -124,29 +131,30 @@ public class RolapConnection extends ConnectionBase {
             }
             final String jdbcUser = connectInfo.get(RolapConnectionProperties.JdbcUser);
             final String jdbcPassword = connectInfo.get(RolapConnectionProperties.JdbcPassword);
-            if (!poolNeeded) {
-                // Connection is already pooled; don't pool it again.
-                return new DriverManagerDataSource(jdbcConnectString, jdbcUser,
-                        jdbcPassword);
-            }
-            Properties jdbcProperties = new Properties();
+
             if (jdbcUser != null) {
-                jdbcProperties.setProperty("user", jdbcUser);
+                jdbcProperties.put("user", jdbcUser);
             }
             if (jdbcPassword != null) {
-                jdbcProperties.setProperty("password", jdbcPassword);
+                jdbcProperties.put("password", jdbcPassword);
             }
+
+            if (!poolNeeded) {
+                // Connection is already pooled; don't pool it again.
+                return new DriverManagerDataSource(jdbcConnectString, jdbcProperties);
+            }
+
             if (jdbcConnectString.toLowerCase().indexOf("mysql") > -1) {
                 // mysql driver needs this autoReconnect parameter
                 jdbcProperties.setProperty("autoReconnect", "true");
             }
             // use the DriverManagerConnectionFactory to create connections
             ConnectionFactory connectionFactory =
-                    new DriverManagerConnectionFactory(jdbcConnectString,
+                    new DriverManagerConnectionFactory(jdbcConnectString ,
                             jdbcProperties);
             try {
                 return RolapConnectionPool.instance().getPoolingDataSource(
-                        jdbcConnectString, connectionFactory);
+                        jdbcConnectString + propertyString, connectionFactory);
             } catch (Throwable e) {
                 throw Util.newInternal(e,
                         "Error while creating connection pool (with URI " +
@@ -192,10 +200,28 @@ public class RolapConnection extends ConnectionBase {
         }
     }
 
-	public Util.PropertyList getConnectInfo() {
+    /**
+     * Create a {@link Properties} object containing all of the JDBC connection properties
+     * present in the {@link Util.PropertyList connectInfo}.
+     * @param connectInfo
+     * @return The JDBC connection properties.
+     */
+    private static Properties getJDBCProperties(Util.PropertyList connectInfo) {
+        Properties jdbcProperties = new Properties();
+        Iterator iterator = connectInfo.iterator();
+        while (iterator.hasNext()) {
+            String[] entry = (String[]) iterator.next();
+            if (entry[0].startsWith(RolapConnectionProperties.JdbcPropertyPrefix)) {
+                jdbcProperties.put(entry[0].substring(RolapConnectionProperties.JdbcPropertyPrefix.length()), entry[1]);
+            }
+        }
+        return jdbcProperties;
+    }
+
+    public Util.PropertyList getConnectInfo() {
 		return connectInfo;
 	}
-	
+
     public static synchronized void loadDrivers(String jdbcDrivers) {
 		StringTokenizer tok = new StringTokenizer(jdbcDrivers, ",");
 		while (tok.hasMoreTokens()) {
@@ -268,7 +294,7 @@ public class RolapConnection extends ConnectionBase {
 		Util.assertPrecondition(role != null, "role != null");
 		Util.assertPrecondition(!role.isMutable(), "!role.isMutable()");
 		this.role = role;
-		this.schemaReader = new RolapSchemaReader(role) {
+		this.schemaReader = new RolapSchemaReader(role, schema) {
 			public Cube getCube() {
 				throw new UnsupportedOperationException();
 			}
@@ -287,27 +313,30 @@ public class RolapConnection extends ConnectionBase {
      */
     private static class DriverManagerDataSource implements DataSource {
         private final String jdbcConnectString;
-        private final String jdbcUser;
-        private final String jdbcPassword;
         private PrintWriter logWriter;
         private int loginTimeout;
+        private Properties jdbcProperties;
 
-        public DriverManagerDataSource(String jdbcConnectString,
-                String jdbcUser, String jdbcPassword) {
+        public DriverManagerDataSource(String jdbcConnectString, Properties properties) {
             this.jdbcConnectString = jdbcConnectString;
-            this.jdbcUser = jdbcUser;
-            this.jdbcPassword = jdbcPassword;
+            this.jdbcProperties = properties;
         }
 
         public Connection getConnection() throws SQLException {
-            return java.sql.DriverManager.getConnection(jdbcConnectString,
-                    jdbcUser, jdbcPassword);
+            return new org.apache.commons.dbcp.DelegatingConnection(java.sql.DriverManager.getConnection(jdbcConnectString, jdbcProperties));
         }
 
         public Connection getConnection(String username, String password)
                 throws SQLException {
-            return java.sql.DriverManager.getConnection(jdbcConnectString,
-                    username, password);
+            if (jdbcProperties == null) {
+                return java.sql.DriverManager.getConnection(jdbcConnectString,
+                        username, password);
+            } else {
+                Properties temp = (Properties)jdbcProperties.clone();
+                temp.put("user", username);
+                temp.put("password", password);
+                return java.sql.DriverManager.getConnection(jdbcConnectString, temp);
+            }
         }
 
         public PrintWriter getLogWriter() throws SQLException {

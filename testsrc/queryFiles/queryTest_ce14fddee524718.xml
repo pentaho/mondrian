@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>select { ([Measures].[Store Sales]) } on columns,     generate( [Product].[All Products].[Drink].children,          generate ( [Store].[USA].children, { ([Product].currentmember, [Store].currentmember) } )) on rows from [Sales]</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Time]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Time].[1997]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Customers].[All Customers]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Measures]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Store Sales]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Product]</dim>
+                <dim>[Store]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                    <member>[Store].[All Stores].[USA].[OR]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                    <member>[Store].[All Stores].[USA].[OR]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                    <member>[Store].[All Stores].[USA].[OR]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Dairy]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>4011.37</cell>
+            </drow>
+            <drow>
+                <cell>3460.32</cell>
+            </drow>
+            <drow>
+                <cell>6557.39</cell>
+            </drow>
+            <drow>
+                <cell>8006.53</cell>
+            </drow>
+            <drow>
+                <cell>6947.13</cell>
+            </drow>
+            <drow>
+                <cell>12794.87</cell>
+            </drow>
+            <drow>
+                <cell>2185.34</cell>
+            </drow>
+            <drow>
+                <cell>1729.84</cell>
+            </drow>
+            <drow>
+                <cell>3143.42</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

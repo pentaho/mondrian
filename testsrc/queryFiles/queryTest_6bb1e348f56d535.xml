@@ -1,0 +1,834 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>select {[Measures].[Store Invoice], [Measures].[Supply Time]} on columns,     non empty hierarchize(crossjoin([Warehouse].members, crossjoin([Store].[Store State].members, [Store Type].members))) on rows from [Warehouse] </mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Time]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Time].[1997]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Measures]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Store Invoice]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Supply Time]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Warehouse]</dim>
+                <dim>[Store]</dim>
+                <dim>[Store Type]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses]</member>
+                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses]</member>
+                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Store Type].[All Store Types].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses]</member>
+                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Store Type].[All Store Types].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA]</member>
+                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA]</member>
+                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Store Type].[All Store Types].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA]</member>
+                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Store Type].[All Store Types].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[CA]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[CA]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[CA]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[CA]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[CA].[Beverly Hills]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[CA].[Beverly Hills]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[CA].[Beverly Hills].[Big  Quality Warehouse]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[CA].[Beverly Hills].[Big  Quality Warehouse]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[CA].[Los Angeles]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[CA].[Los Angeles]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[CA].[Los Angeles].[Artesia Warehousing, Inc.]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[CA].[Los Angeles].[Artesia Warehousing, Inc.]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[CA].[San Diego]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[CA].[San Diego]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[CA].[San Diego].[Jorgensen Service Storage]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[CA].[San Diego].[Jorgensen Service Storage]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[CA].[San Francisco]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[CA].[San Francisco]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[CA].[San Francisco].[Food Service Storage, Inc.]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[CA].[San Francisco].[Food Service Storage, Inc.]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[OR]</member>
+                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[OR]</member>
+                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Store Type].[All Store Types].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[OR]</member>
+                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Store Type].[All Store Types].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[OR].[Portland]</member>
+                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[OR].[Portland]</member>
+                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Store Type].[All Store Types].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[OR].[Portland].[Quality Distribution, Inc.]</member>
+                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[OR].[Portland].[Quality Distribution, Inc.]</member>
+                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Store Type].[All Store Types].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[OR].[Salem]</member>
+                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[OR].[Salem]</member>
+                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Store Type].[All Store Types].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[OR].[Salem].[Treehouse Distribution]</member>
+                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[OR].[Salem].[Treehouse Distribution]</member>
+                    <member>[Store].[All Stores].[USA].[OR]</member>
+                    <member>[Store Type].[All Store Types].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Bellingham]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Bellingham]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Bellingham].[Foster Products]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Bellingham].[Foster Products]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Bremerton]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Bremerton]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Bremerton].[Destination, Inc.]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Bremerton].[Destination, Inc.]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Seattle]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Seattle]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Seattle].[Quality Warehousing and Trucking]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Seattle].[Quality Warehousing and Trucking]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Spokane]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Spokane]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Spokane].[Jones International]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Spokane].[Jones International]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Tacoma]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Tacoma]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Tacoma].[Jorge Garcia, Inc.]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Tacoma].[Jorge Garcia, Inc.]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Walla Walla]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Walla Walla]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Walla Walla].[Valdez Warehousing]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Walla Walla].[Valdez Warehousing]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Yakima]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Yakima]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Yakima].[Maddock Stored Foods]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[All Warehouses].[USA].[WA].[Yakima].[Maddock Stored Foods]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types].[Mid-Size Grocery]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>29607.2994</cell>
+                <cell>3100.0</cell>
+            </drow>
+            <drow>
+                <cell>5132.8974</cell>
+                <cell>559.0</cell>
+            </drow>
+            <drow>
+                <cell>988.8204</cell>
+                <cell>80.0</cell>
+            </drow>
+            <drow>
+                <cell>23485.5816</cell>
+                <cell>2461.0</cell>
+            </drow>
+            <drow>
+                <cell>20194.0007</cell>
+                <cell>2051.0</cell>
+            </drow>
+            <drow>
+                <cell>16151.0411</cell>
+                <cell>1650.0</cell>
+            </drow>
+            <drow>
+                <cell>4042.9596</cell>
+                <cell>401.0</cell>
+            </drow>
+            <drow>
+                <cell>52477.1088</cell>
+                <cell>5274.0</cell>
+            </drow>
+            <drow>
+                <cell>16100.8297</cell>
+                <cell>1578.0</cell>
+            </drow>
+            <drow>
+                <cell>5274.3375</cell>
+                <cell>528.0</cell>
+            </drow>
+            <drow>
+                <cell>2143.2282</cell>
+                <cell>299.0</cell>
+            </drow>
+            <drow>
+                <cell>28958.7134</cell>
+                <cell>2869.0</cell>
+            </drow>
+            <drow>
+                <cell>29607.2994</cell>
+                <cell>3100.0</cell>
+            </drow>
+            <drow>
+                <cell>5132.8974</cell>
+                <cell>559.0</cell>
+            </drow>
+            <drow>
+                <cell>988.8204</cell>
+                <cell>80.0</cell>
+            </drow>
+            <drow>
+                <cell>23485.5816</cell>
+                <cell>2461.0</cell>
+            </drow>
+            <drow>
+                <cell>20194.0007</cell>
+                <cell>2051.0</cell>
+            </drow>
+            <drow>
+                <cell>16151.0411</cell>
+                <cell>1650.0</cell>
+            </drow>
+            <drow>
+                <cell>4042.9596</cell>
+                <cell>401.0</cell>
+            </drow>
+            <drow>
+                <cell>52477.1088</cell>
+                <cell>5274.0</cell>
+            </drow>
+            <drow>
+                <cell>16100.8297</cell>
+                <cell>1578.0</cell>
+            </drow>
+            <drow>
+                <cell>5274.3375</cell>
+                <cell>528.0</cell>
+            </drow>
+            <drow>
+                <cell>2143.2282</cell>
+                <cell>299.0</cell>
+            </drow>
+            <drow>
+                <cell>28958.7134</cell>
+                <cell>2869.0</cell>
+            </drow>
+            <drow>
+                <cell>29607.2994</cell>
+                <cell>3100.0</cell>
+            </drow>
+            <drow>
+                <cell>5132.8974</cell>
+                <cell>559.0</cell>
+            </drow>
+            <drow>
+                <cell>988.8204</cell>
+                <cell>80.0</cell>
+            </drow>
+            <drow>
+                <cell>23485.5816</cell>
+                <cell>2461.0</cell>
+            </drow>
+            <drow>
+                <cell>5132.8974</cell>
+                <cell>559.0</cell>
+            </drow>
+            <drow>
+                <cell>5132.8974</cell>
+                <cell>559.0</cell>
+            </drow>
+            <drow>
+                <cell>5132.8974</cell>
+                <cell>559.0</cell>
+            </drow>
+            <drow>
+                <cell>5132.8974</cell>
+                <cell>559.0</cell>
+            </drow>
+            <drow>
+                <cell>11634.9186</cell>
+                <cell>1279.0</cell>
+            </drow>
+            <drow>
+                <cell>11634.9186</cell>
+                <cell>1279.0</cell>
+            </drow>
+            <drow>
+                <cell>11634.9186</cell>
+                <cell>1279.0</cell>
+            </drow>
+            <drow>
+                <cell>11634.9186</cell>
+                <cell>1279.0</cell>
+            </drow>
+            <drow>
+                <cell>11850.663</cell>
+                <cell>1182.0</cell>
+            </drow>
+            <drow>
+                <cell>11850.663</cell>
+                <cell>1182.0</cell>
+            </drow>
+            <drow>
+                <cell>11850.663</cell>
+                <cell>1182.0</cell>
+            </drow>
+            <drow>
+                <cell>11850.663</cell>
+                <cell>1182.0</cell>
+            </drow>
+            <drow>
+                <cell>988.8204</cell>
+                <cell>80.0</cell>
+            </drow>
+            <drow>
+                <cell>988.8204</cell>
+                <cell>80.0</cell>
+            </drow>
+            <drow>
+                <cell>988.8204</cell>
+                <cell>80.0</cell>
+            </drow>
+            <drow>
+                <cell>988.8204</cell>
+                <cell>80.0</cell>
+            </drow>
+            <drow>
+                <cell>20194.0007</cell>
+                <cell>2051.0</cell>
+            </drow>
+            <drow>
+                <cell>16151.0411</cell>
+                <cell>1650.0</cell>
+            </drow>
+            <drow>
+                <cell>4042.9596</cell>
+                <cell>401.0</cell>
+            </drow>
+            <drow>
+                <cell>4042.9596</cell>
+                <cell>401.0</cell>
+            </drow>
+            <drow>
+                <cell>4042.9596</cell>
+                <cell>401.0</cell>
+            </drow>
+            <drow>
+                <cell>4042.9596</cell>
+                <cell>401.0</cell>
+            </drow>
+            <drow>
+                <cell>4042.9596</cell>
+                <cell>401.0</cell>
+            </drow>
+            <drow>
+                <cell>16151.0411</cell>
+                <cell>1650.0</cell>
+            </drow>
+            <drow>
+                <cell>16151.0411</cell>
+                <cell>1650.0</cell>
+            </drow>
+            <drow>
+                <cell>16151.0411</cell>
+                <cell>1650.0</cell>
+            </drow>
+            <drow>
+                <cell>16151.0411</cell>
+                <cell>1650.0</cell>
+            </drow>
+            <drow>
+                <cell>52477.1088</cell>
+                <cell>5274.0</cell>
+            </drow>
+            <drow>
+                <cell>16100.8297</cell>
+                <cell>1578.0</cell>
+            </drow>
+            <drow>
+                <cell>5274.3375</cell>
+                <cell>528.0</cell>
+            </drow>
+            <drow>
+                <cell>2143.2282</cell>
+                <cell>299.0</cell>
+            </drow>
+            <drow>
+                <cell>28958.7134</cell>
+                <cell>2869.0</cell>
+            </drow>
+            <drow>
+                <cell>1049.4587</cell>
+                <cell>216.0</cell>
+            </drow>
+            <drow>
+                <cell>1049.4587</cell>
+                <cell>216.0</cell>
+            </drow>
+            <drow>
+                <cell>1049.4587</cell>
+                <cell>216.0</cell>
+            </drow>
+            <drow>
+                <cell>1049.4587</cell>
+                <cell>216.0</cell>
+            </drow>
+            <drow>
+                <cell>11659.6249</cell>
+                <cell>1130.0</cell>
+            </drow>
+            <drow>
+                <cell>11659.6249</cell>
+                <cell>1130.0</cell>
+            </drow>
+            <drow>
+                <cell>11659.6249</cell>
+                <cell>1130.0</cell>
+            </drow>
+            <drow>
+                <cell>11659.6249</cell>
+                <cell>1130.0</cell>
+            </drow>
+            <drow>
+                <cell>11517.1251</cell>
+                <cell>1193.0</cell>
+            </drow>
+            <drow>
+                <cell>11517.1251</cell>
+                <cell>1193.0</cell>
+            </drow>
+            <drow>
+                <cell>11517.1251</cell>
+                <cell>1193.0</cell>
+            </drow>
+            <drow>
+                <cell>11517.1251</cell>
+                <cell>1193.0</cell>
+            </drow>
+            <drow>
+                <cell>5781.9634</cell>
+                <cell>546.0</cell>
+            </drow>
+            <drow>
+                <cell>5781.9634</cell>
+                <cell>546.0</cell>
+            </drow>
+            <drow>
+                <cell>5781.9634</cell>
+                <cell>546.0</cell>
+            </drow>
+            <drow>
+                <cell>5781.9634</cell>
+                <cell>546.0</cell>
+            </drow>
+            <drow>
+                <cell>16100.8297</cell>
+                <cell>1578.0</cell>
+            </drow>
+            <drow>
+                <cell>16100.8297</cell>
+                <cell>1578.0</cell>
+            </drow>
+            <drow>
+                <cell>16100.8297</cell>
+                <cell>1578.0</cell>
+            </drow>
+            <drow>
+                <cell>16100.8297</cell>
+                <cell>1578.0</cell>
+            </drow>
+            <drow>
+                <cell>1093.7695</cell>
+                <cell>83.0</cell>
+            </drow>
+            <drow>
+                <cell>1093.7695</cell>
+                <cell>83.0</cell>
+            </drow>
+            <drow>
+                <cell>1093.7695</cell>
+                <cell>83.0</cell>
+            </drow>
+            <drow>
+                <cell>1093.7695</cell>
+                <cell>83.0</cell>
+            </drow>
+            <drow>
+                <cell>5274.3375</cell>
+                <cell>528.0</cell>
+            </drow>
+            <drow>
+                <cell>5274.3375</cell>
+                <cell>528.0</cell>
+            </drow>
+            <drow>
+                <cell>5274.3375</cell>
+                <cell>528.0</cell>
+            </drow>
+            <drow>
+                <cell>5274.3375</cell>
+                <cell>528.0</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

@@ -1,0 +1,693 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>with member [Measures].[Store Profit] as '[Measures].[Store Sales] - [Measures].[Store Cost]' select { [Time].[1997].children } on columns,     hierarchize(intersect( crossjoin({ [Measures].members, [Measures].[Store Profit] }, [Store].members),         generate([Store].members, { ([Measures].[Store Profit], [Store].currentmember) } ))) on rows from [Sales] where ( [Product].[Food] )</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Product]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Product].[All Products].[Food]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Customers].[All Customers]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Time]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Time].[1997].[Q1]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q2]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q3]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q4]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Measures]</dim>
+                <dim>[Store]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Canada]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Canada].[BC]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Canada].[BC].[Vancouver]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Canada].[BC].[Vancouver].[Store 19]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Canada].[BC].[Victoria]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Canada].[BC].[Victoria].[Store 20]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Mexico]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Mexico].[DF]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Mexico].[DF].[Mexico City]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Mexico].[DF].[Mexico City].[Store 9]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Mexico].[DF].[San Andres]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Mexico].[DF].[San Andres].[Store 21]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Mexico].[Guerrero]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Mexico].[Guerrero].[Acapulco]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Mexico].[Guerrero].[Acapulco].[Store 1]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Mexico].[Jalisco]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Mexico].[Jalisco].[Guadalajara]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Mexico].[Jalisco].[Guadalajara].[Store 5]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Mexico].[Veracruz]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Mexico].[Veracruz].[Orizaba]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Mexico].[Veracruz].[Orizaba].[Store 10]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Mexico].[Yucatan]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Mexico].[Yucatan].[Merida]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Mexico].[Yucatan].[Merida].[Store 8]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Mexico].[Zacatecas]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Mexico].[Zacatecas].[Camacho]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Mexico].[Zacatecas].[Camacho].[Store 4]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Mexico].[Zacatecas].[Hidalgo]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Mexico].[Zacatecas].[Hidalgo].[Store 12]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[Mexico].[Zacatecas].[Hidalgo].[Store 18]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[CA].[Alameda]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[CA].[Alameda].[HQ]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[CA].[Beverly Hills]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[CA].[Los Angeles]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[CA].[San Diego]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[CA].[San Francisco]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[OR]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[OR].[Portland]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[OR].[Portland].[Store 11]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[OR].[Salem]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[OR].[Salem].[Store 13]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[WA].[Bellingham]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[WA].[Bremerton]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[WA].[Seattle]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[WA].[Seattle].[Store 15]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[WA].[Spokane]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[WA].[Spokane].[Store 16]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[WA].[Tacoma]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[WA].[Walla Walla]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[WA].[Yakima]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Profit]</member>
+                    <member>[Store].[All Stores].[USA].[WA].[Yakima].[Store 23]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>60814.4714</cell>
+                <cell>57323.3736</cell>
+                <cell>61262.5473</cell>
+                <cell>66364.4742</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>60814.4714</cell>
+                <cell>57323.3736</cell>
+                <cell>61262.5473</cell>
+                <cell>66364.4742</cell>
+            </drow>
+            <drow>
+                <cell>15651.0004</cell>
+                <cell>16743.9595</cell>
+                <cell>17189.7717</cell>
+                <cell>19628.088</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>3583.4563</cell>
+                <cell>5538.0341</cell>
+                <cell>4534.0642</cell>
+                <cell>6370.6271</cell>
+            </drow>
+            <drow>
+                <cell>3583.4563</cell>
+                <cell>5538.0341</cell>
+                <cell>4534.0642</cell>
+                <cell>6370.6271</cell>
+            </drow>
+            <drow>
+                <cell>5906.233</cell>
+                <cell>5097.82</cell>
+                <cell>6040.0404</cell>
+                <cell>6554.1819</cell>
+            </drow>
+            <drow>
+                <cell>5906.233</cell>
+                <cell>5097.82</cell>
+                <cell>6040.0404</cell>
+                <cell>6554.1819</cell>
+            </drow>
+            <drow>
+                <cell>5746.7441</cell>
+                <cell>5580.7009</cell>
+                <cell>6115.4902</cell>
+                <cell>6184.897</cell>
+            </drow>
+            <drow>
+                <cell>5746.7441</cell>
+                <cell>5580.7009</cell>
+                <cell>6115.4902</cell>
+                <cell>6184.897</cell>
+            </drow>
+            <drow>
+                <cell>414.567</cell>
+                <cell>527.4045</cell>
+                <cell>500.1769</cell>
+                <cell>518.382</cell>
+            </drow>
+            <drow>
+                <cell>414.567</cell>
+                <cell>527.4045</cell>
+                <cell>500.1769</cell>
+                <cell>518.382</cell>
+            </drow>
+            <drow>
+                <cell>17230.4541</cell>
+                <cell>13671.4779</cell>
+                <cell>15800.1723</cell>
+                <cell>14895.1158</cell>
+            </drow>
+            <drow>
+                <cell>6096.9216</cell>
+                <cell>6180.8576</cell>
+                <cell>5108.6427</cell>
+                <cell>6432.4504</cell>
+            </drow>
+            <drow>
+                <cell>6096.9216</cell>
+                <cell>6180.8576</cell>
+                <cell>5108.6427</cell>
+                <cell>6432.4504</cell>
+            </drow>
+            <drow>
+                <cell>11133.5325</cell>
+                <cell>7490.6203</cell>
+                <cell>10691.5296</cell>
+                <cell>8462.6654</cell>
+            </drow>
+            <drow>
+                <cell>11133.5325</cell>
+                <cell>7490.6203</cell>
+                <cell>10691.5296</cell>
+                <cell>8462.6654</cell>
+            </drow>
+            <drow>
+                <cell>27933.0169</cell>
+                <cell>26907.9362</cell>
+                <cell>28272.6033</cell>
+                <cell>31841.2704</cell>
+            </drow>
+            <drow>
+                <cell>468.9205</cell>
+                <cell>432.7989</cell>
+                <cell>459.0532</cell>
+                <cell>674.0213</cell>
+            </drow>
+            <drow>
+                <cell>468.9205</cell>
+                <cell>432.7989</cell>
+                <cell>459.0532</cell>
+                <cell>674.0213</cell>
+            </drow>
+            <drow>
+                <cell>5501.8184</cell>
+                <cell>5551.0509</cell>
+                <cell>5757.519</cell>
+                <cell>6321.5162</cell>
+            </drow>
+            <drow>
+                <cell>5501.8184</cell>
+                <cell>5551.0509</cell>
+                <cell>5757.519</cell>
+                <cell>6321.5162</cell>
+            </drow>
+            <drow>
+                <cell>5639.1092</cell>
+                <cell>5425.6842</cell>
+                <cell>5789.5264</cell>
+                <cell>6271.9034</cell>
+            </drow>
+            <drow>
+                <cell>5639.1092</cell>
+                <cell>5425.6842</cell>
+                <cell>5789.5264</cell>
+                <cell>6271.9034</cell>
+            </drow>
+            <drow>
+                <cell>5189.7487</cell>
+                <cell>5002.3148</cell>
+                <cell>5525.279</cell>
+                <cell>5940.2173</cell>
+            </drow>
+            <drow>
+                <cell>5189.7487</cell>
+                <cell>5002.3148</cell>
+                <cell>5525.279</cell>
+                <cell>5940.2173</cell>
+            </drow>
+            <drow>
+                <cell>7867.3664</cell>
+                <cell>7375.4887</cell>
+                <cell>8090.5428</cell>
+                <cell>9164.3626</cell>
+            </drow>
+            <drow>
+                <cell>7867.3664</cell>
+                <cell>7375.4887</cell>
+                <cell>8090.5428</cell>
+                <cell>9164.3626</cell>
+            </drow>
+            <drow>
+                <cell>445.6996</cell>
+                <cell>534.9483</cell>
+                <cell>501.2902</cell>
+                <cell>632.4563</cell>
+            </drow>
+            <drow>
+                <cell>445.6996</cell>
+                <cell>534.9483</cell>
+                <cell>501.2902</cell>
+                <cell>632.4563</cell>
+            </drow>
+            <drow>
+                <cell>2820.3541</cell>
+                <cell>2585.6504</cell>
+                <cell>2149.3927</cell>
+                <cell>2836.7933</cell>
+            </drow>
+            <drow>
+                <cell>2820.3541</cell>
+                <cell>2585.6504</cell>
+                <cell>2149.3927</cell>
+                <cell>2836.7933</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

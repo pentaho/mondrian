@@ -1,18 +1,23 @@
 /*
- * Copyright 2003 by Alphablox Corp. All rights reserved.
- *
- * Created by gjohnson
- * Last change: $Modtime: $
- * Last author: $Author$
- * Revision: $Revision$
- */
-
+// $Id$
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// (C) Copyright 2004-2004 Julian Hyde and others.
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
 package mondrian.olap;
 
 import junit.framework.TestCase;
 
 import java.text.MessageFormat;
 
+/**
+ * Tests the MDX parser.
+ *
+ * @author gjohnson
+ */
 public class ParserTest extends TestCase {
     public ParserTest(String name) {
         super(name);

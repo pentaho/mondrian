@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>with     member [Measures].[GJProfit] as '[Measures].[Store Sales]-[Measures].[Store Cost]'     member [Measures].[GJGarbage] as '[Measures].[GJProfit] * 7 / 2' select     { [Measures].[Store Sales], [Measures].[Store Cost], [Measures].[GJProfit], [Measures].[GJGarbage] } on columns,     non empty {[Store].[Store Name].members} properties [Store].[Store Name].[Store Sqft] on rows from     [Sales]</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Time]</dim>
+                <dim>[Product]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Time].[1997]</member>
+                    <member>[Product].[All Products]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Customers].[All Customers]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Measures]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Store Sales]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Cost]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[GJProfit]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[GJGarbage]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Store]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[OR].[Portland].[Store 11]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[OR].[Salem].[Store 13]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Seattle].[Store 15]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Spokane].[Store 16]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Yakima].[Store 23]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>45750.24</cell>
+                <cell>18266.4404</cell>
+                <cell>27483.7996</cell>
+                <cell>96193.2986</cell>
+            </drow>
+            <drow>
+                <cell>54545.28</cell>
+                <cell>21771.536</cell>
+                <cell>32773.744</cell>
+                <cell>114708.104</cell>
+            </drow>
+            <drow>
+                <cell>54431.14</cell>
+                <cell>21713.5328</cell>
+                <cell>32717.6072</cell>
+                <cell>114511.6252</cell>
+            </drow>
+            <drow>
+                <cell>4441.18</cell>
+                <cell>1778.9159</cell>
+                <cell>2662.2641</cell>
+                <cell>9317.9243</cell>
+            </drow>
+            <drow>
+                <cell>55058.79</cell>
+                <cell>21948.944</cell>
+                <cell>33109.846</cell>
+                <cell>115884.461</cell>
+            </drow>
+            <drow>
+                <cell>87218.28</cell>
+                <cell>34823.5566</cell>
+                <cell>52394.7234</cell>
+                <cell>183381.5319</cell>
+            </drow>
+            <drow>
+                <cell>4739.23</cell>
+                <cell>1896.6174</cell>
+                <cell>2842.6126</cell>
+                <cell>9949.1441</cell>
+            </drow>
+            <drow>
+                <cell>52896.3</cell>
+                <cell>21121.9631</cell>
+                <cell>31774.3369</cell>
+                <cell>111210.1791</cell>
+            </drow>
+            <drow>
+                <cell>52644.07</cell>
+                <cell>20956.8025</cell>
+                <cell>31687.2675</cell>
+                <cell>110905.4362</cell>
+            </drow>
+            <drow>
+                <cell>49634.46</cell>
+                <cell>19795.491</cell>
+                <cell>29838.969</cell>
+                <cell>104436.3915</cell>
+            </drow>
+            <drow>
+                <cell>74843.96</cell>
+                <cell>29959.2813</cell>
+                <cell>44884.6787</cell>
+                <cell>157096.3754</cell>
+            </drow>
+            <drow>
+                <cell>4705.97</cell>
+                <cell>1880.3396</cell>
+                <cell>2825.6304</cell>
+                <cell>9889.7064</cell>
+            </drow>
+            <drow>
+                <cell>24329.23</cell>
+                <cell>9713.813</cell>
+                <cell>14615.417</cell>
+                <cell>51153.9595</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

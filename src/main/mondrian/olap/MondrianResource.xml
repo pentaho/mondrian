@@ -19,7 +19,7 @@
 <resourceBundle
 	static="false"
 	locale="en_US"
-	exceptionClassName="java.lang.RuntimeException">
+	exceptionClassName="mondrian.olap.MondrianException">
 
 <!-- ====================================================================== -->
 <!-- Internal errors 320,000 - 321,000 ==================================== -->
@@ -265,6 +265,30 @@
 
 <exception id="350440" name="MoreThanOneFunctionMatchesSignature">
     <text>More than one function matches signature ''{0}''</text>
+</exception>
+
+<exception id="350450" name="MemberNotInLevelHierarchy">
+    <text>The member ''{0}'' is not in the same hierarchy as the level ''{1}''.</text>
+</exception>
+
+<exception id="350460" name="ToggleDrillStateRecursiveNotSupported">
+    <text>''RECURSIVE'' is not supported in ToggleDrillState.</text>
+</exception>
+
+<exception id="350470" name="ItemIndexOutOfBounds">
+    <text>Item index out of bounds. Expected a number between 0 and {1}, but was {0}.</text>
+</exception>
+
+<exception id="350480" name="LeavesNotSupported">
+    <text>LEAVES option in Descendants function is not supported.</text>
+</exception>
+
+<exception id="350490" name="FunctionMbrAndLevelHierarchyMismatch">
+    <text>The &lt;level&gt; and &lt;member&gt; arguments to {0} must be from the same hierarchy. The level was from ''{1}'' but the member was from ''{2}''.</text>
+</exception>
+
+<exception id="350500" name="CousinHierarchyMismatch">
+    <text>The member arguments to the Cousin function must be from the same hierarchy. The members are ''{0}'' and ''{1}''.</text>
 </exception>
 
 <!-- ====================================================================== -->

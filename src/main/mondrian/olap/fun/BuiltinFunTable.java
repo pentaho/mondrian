@@ -611,11 +611,11 @@ public class BuiltinFunTable extends FunTable {
 				Level[] levels = hierarchy.getLevels();
 
 				int n = getIntArg(evaluator, args, 1);
-				if ((n > levels.length) || (n < 1)) {
+				if ((n >= levels.length) || (n < 0)) {
 					throw newEvalException(
 							this, "Index '" + n + "' out of bounds");
 				}
-				return levels[n - 1];
+				return levels[n];
 			}
 		});
 
@@ -659,110 +659,47 @@ public class BuiltinFunTable extends FunTable {
 		define(new FunDefBase("IsEmpty", "IsEmpty(<Value Expression>)", "Determines if an expression evaluates to the empty cell value.", "fbn"));
 		//
 		// MEMBER FUNCTIONS
-		define(new FunDefBase("Ancestor", "Ancestor(<Member>, <Level>)", "Returns the ancestor of a member at a specified level.", "fmml") {
-			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				Member member = getMemberArg(evaluator, args, 0, false);
-				Level level = getLevelArg(evaluator, args, 1, false);
-				if (member.getHierarchy() != level.getHierarchy()) {
-					throw newEvalException(
-							this,
-							"member '" + member +
-							"' is not in the same hierarchy as level '" +
-							level + "'");
-				}
-				if (member.getLevel().equals(level)) {
-					return member;
-				}
-				Member[] members = member.getAncestorMembers();
-                final SchemaReader schemaReader = evaluator.getSchemaReader();
-				for (int i = 0; i < members.length; i++) {
-                    final Member ancestorMember = members[i];
-                    if (ancestorMember.getLevel().equals(level) &&
-                            schemaReader.isVisible(ancestorMember)) {
-						return ancestorMember;
-                    }
-				}
-				return member.getHierarchy().getNullMember(); // not found
-			}
-		});
+		define(new FunkResolver("Ancestor",
+                "Ancestor(<Member>, {<Level>|<Numeric Expression>})",
+                "Returns the ancestor of a member at a specified level.",
+                new String[] {"fmml", "fmmn"},
+                new FunkBase() {
 
-		define(new FunDefBase("ClosingPeriod", "ClosingPeriod([<Level>[, <Member>]])", "Returns the last sibling among the descendants of a member at a level.", "fm") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				Cube cube = evaluator.getCube();
-				Dimension timeDimension = cube.getYearLevel().getDimension();
-				Member member = evaluator.getContext(timeDimension);
-				Level level = member.getLevel().getChildLevel();
-				return openClosingPeriod(evaluator, this, member, level);
+                Member member = getMemberArg(evaluator, args, 0, false);
+                Object arg2 = getArg(evaluator, args, 1);
+
+                Level level = null;
+                int distance;
+                if (arg2 instanceof Level) {
+				    level = (Level) arg2;
+                    distance = member.getLevel().getDepth() - level.getDepth();
+                } else {
+                    distance = ((Number)arg2).intValue();
+                }
+
+                return ancestor(evaluator, member, distance, level);
 			}
-		});
-		define(new FunDefBase("ClosingPeriod", "ClosingPeriod([<Level>[, <Member>]])", "Returns the last sibling among the descendants of a member at a level.", "fml") {
-			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				Cube cube = evaluator.getCube();
-				Dimension timeDimension = cube.getYearLevel().getDimension();
-				Member member = evaluator.getContext(timeDimension);
-				Level level = getLevelArg(evaluator, args, 0, true);
-				return openClosingPeriod(evaluator, this, member, level);
-			}
-		});
-		define(new FunDefBase("ClosingPeriod", "ClosingPeriod([<Member>])", "Returns the last sibling among the descendants of a member at a level.", "fmm") {
+		}));
+
+		define(new FunDefBase("Cousin", "Cousin(<member>, <ancestor member>)",
+                "Returns the member with the same relative position under <ancestor member> as the member specified.", "fmmm") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Member member = getMemberArg(evaluator, args, 0, true);
-				Level level = member.getLevel().getChildLevel();
-				return openClosingPeriod(evaluator, this, member, level);
-			}
-		});
-		define(new FunDefBase("ClosingPeriod", "ClosingPeriod([<Level>[, <Member>]])", "Returns the last sibling among the descendants of a member at a level.", "fmlm") {
-			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				Level level = getLevelArg(evaluator, args, 0, true);
-				Member member = getMemberArg(evaluator, args, 1, true);
-				return openClosingPeriod(evaluator, this, member, level);
+				Member ancestorMember = getMemberArg(evaluator, args, 1, true);
+				Member cousin = cousin(evaluator.getSchemaReader(), member, ancestorMember);
+
+				return cousin;
 			}
 		});
 
-		define(new FunDefBase("Cousin", "Cousin(<Member1>, <Member2>)", "Returns the member with the same relative position under a member as the member specified.", "fmmm") {
-			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				Member member1 = getMemberArg(evaluator, args, 0, true);
-				Member member2 = getMemberArg(evaluator, args, 1, true);
-				Member cousin = cousin(evaluator.getSchemaReader(), member1, member2);
-				if (cousin == null) {
-					cousin = member1.getHierarchy().getNullMember();
-				}
-				return cousin;
-			}
-			private Member cousin(SchemaReader schemaReader, Member member1, Member member2) {
-				if (member1.getHierarchy() != member2.getHierarchy()) {
-					throw newEvalException(
-							this,
-							"Members '" + member1 + "' and '" + member2 +
-							"' are not compatible as cousins");
-				}
-				if (member1.getLevel().getDepth() < member2.getLevel().getDepth()) {
-					return null;
-				}
-				return cousin2(schemaReader, member1, member2);
-			}
-			private Member cousin2(SchemaReader schemaReader, Member member1, Member member2) {
-				if (member1.getLevel() == member2.getLevel()) {
-					return member2;
-				}
-				Member uncle = cousin2(schemaReader, member1.getParentMember(), member2);
-				if (uncle == null) {
-					return null;
-				}
-				int ordinal = Util.getMemberOrdinalInParent(schemaReader, member1);
-				Member[] cousins = schemaReader.getMemberChildren(uncle);
-				if (cousins.length <= ordinal) {
-					return null;
-				}
-				return cousins[ordinal];
-			}
-		});
 		define(new FunDefBase("CurrentMember", "<Dimension>.CurrentMember", "Returns the current member along a dimension during an iteration.", "pmd") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Dimension dimension = getDimensionArg(evaluator, args, 0, true);
 				return evaluator.getContext(dimension);
 			}
 		});
+
 		define(new FunDefBase("DefaultMember", "<Dimension>.DefaultMember", "Returns the default member of a dimension.", "pmd") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Dimension dimension = getDimensionArg(evaluator, args, 0, true);
@@ -800,14 +737,7 @@ public class BuiltinFunTable extends FunTable {
 			}
 		});
 
-		define(new FunDefBase("Item", "<Tuple>.Item(<Numeric Expression>)", "Returns a member from a tuple.", "mmtn") {
-			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				Member[] members = getTupleArg(evaluator, args, 0);
-				Double n = getDoubleArg(evaluator, args, 1);
-				int i = n.intValue();
-				return members[i];
-			}
-		});
+		if (false) define(new FunDefBase("Item", "<Tuple>.Item(<Numeric Expression>)", "Returns a member from a tuple.", "mm*"));
 
 		define(new FunkResolver(
 				"Lag", "<Member>.Lag(<Numeric Expression>)", "Returns a member further along the specified member's dimension.",
@@ -873,8 +803,88 @@ public class BuiltinFunTable extends FunTable {
 			}
 		});
 
-		if (false) define(new FunDefBase("OpeningPeriod", "OpeningPeriod([<Level>[, <Member>]])", "Returns the first sibling among the descendants of a member at a level.", "fm*"));
-		if (false) define(new FunDefBase("ParallelPeriod", "ParallelPeriod([<Level>[, <Numeric Expression>[, <Member>]]])", "Returns a member from a prior period in the same relative position as a specified member.", "fm*"));
+		define(new FunkResolver("OpeningPeriod",
+                "OpeningPeriod([<Level>[, <Member>]])",
+                "Returns the first descendant of a member at a level.",
+                new String[] {"fm", "fml", "fmlm"},
+                new FunkBase() {
+                    public Object evaluate(Evaluator evaluator, Exp[] args) {
+                        return openingClosingPeriod(evaluator, args, true);
+                    }
+                }));
+
+		define(new FunkResolver("ClosingPeriod",
+                "ClosingPeriod([<Level>[, <Member>]])",
+                "Returns the last descendant of a member at a level.",
+                new String[] {"fm", "fml", "fmlm", "fmm"},
+                new FunkBase() {
+                    public Object evaluate(Evaluator evaluator, Exp[] args) {
+                        return openingClosingPeriod(evaluator, args, false);
+                    }
+                }));
+
+        define(new FunkResolver(
+                "ParallelPeriod", "ParallelPeriod([<Level>[, <Numeric Expression>[, <Member>]]])",
+                "Returns a member from a prior period in the same relative position as a specified member.",
+                new String[] {"fm", "fml", "fmln", "fmlnm"},
+                new FunkBase() {
+                    public Object evaluate(Evaluator evaluator, Exp[] args) {
+                        // Member defaults to [Time].currentmember
+                        Member member;
+                        if (args.length == 3) {
+                            member = getMemberArg(evaluator, args, 2, true);
+                        } else {
+                            member = evaluator.getContext(evaluator.getCube().getTimeDimension());
+                        }
+
+                        // Numeric Expression defaults to 1.
+                        int lagValue;
+
+                        if (args.length >= 2) {
+                            lagValue = getIntArg(evaluator, args, 1);
+                        } else {
+                            lagValue = 1;
+                        }
+
+                        Level ancestorLevel;
+                        if (args.length >= 1) {
+                            ancestorLevel = getLevelArg(evaluator, args, 0, true);
+                        }
+                        else {
+                            Member parent = member.getParentMember();
+
+                            if (parent == null || parent.getType() != Category.Member) {
+                                //
+                                // The parent isn't a member (it's probably a hierarchy),
+                                // so there is no parallelperiod.
+                                //
+                                return member.getHierarchy().getNullMember();
+                            }
+
+                            ancestorLevel = parent.getLevel();
+                        }
+
+                        //
+                        // Now do some error checking.
+                        // The ancestorLevel and the member must be from the
+                        // same hierarchy.
+                        //
+                        if (member.getHierarchy() != ancestorLevel.getHierarchy()) {
+                            MondrianResource.instance().newFunctionMbrAndLevelHierarchyMismatch(
+                                    "ParallelPeriod", ancestorLevel.getHierarchy().getUniqueName(),
+                                    member.getHierarchy().getUniqueName()
+                            );
+                        }
+
+                        int distance = member.getLevel().getDepth() - ancestorLevel.getDepth();
+
+                        Member ancestor = ancestor(evaluator, member, distance, ancestorLevel);
+
+                        Member inLaw = evaluator.getSchemaReader().getLeadMember(ancestor, -lagValue);
+
+                        return cousin(evaluator.getSchemaReader(), member, inLaw);
+                    }
+                }));
 
 		define(new FunDefBase("Parent", "<Member>.Parent", "Returns the parent of a member.", "pmm") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
@@ -984,6 +994,13 @@ public class BuiltinFunTable extends FunTable {
 					return count(evaluator, members, includeEmpty);
 				}
 			}));
+        define(new FunDefBase(
+            "Count", "<Set>.Count", "Returns the number of tuples in a set including empty cells.", "pnx") {
+                public Object evaluate(Evaluator evaluator, Exp[] args) {
+                    List members = (List) getArg(evaluator, args, 0);
+                    return count(evaluator, members, true);
+                }
+            });
 		define(new FunkResolver(
 			"Covariance", "Covariance(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Returns the covariance of two series evaluated over a set (biased).",
 			new String[]{"fnxn","fnxnn"},
@@ -1010,6 +1027,10 @@ public class BuiltinFunTable extends FunTable {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Boolean b = getBooleanArg(evaluator, args, 0);
 				if (b == null) {
+                    // The result of the logical expression is not known,
+                    // probably because some necessary value is not in the
+                    // cache yet. Evaluate both expressions so that the cache
+                    // gets populated as soon as possible.
 					getDoubleArg(evaluator, args, 1, null);
 					getDoubleArg(evaluator, args, 2, null);
 					return new Double(Double.NaN);
@@ -1058,7 +1079,15 @@ public class BuiltinFunTable extends FunTable {
 					return min(evaluator.push(), members, exp);
 				}
 			}));
-		define(new FunDefBase("Ordinal", "<Level>.Ordinal", "Returns the zero-based ordinal value associated with a level.", "pnl"));
+
+		define(new FunDefBase("Ordinal", "<Level>.Ordinal", "Returns the zero-based ordinal value associated with a level.", "pnl") {
+            public Object evaluate(Evaluator evaluator, Exp[] args) {
+                Level level = getLevelArg(evaluator, args, 0, false);
+
+                return new Double(level.getDepth());
+            }
+        });
+
 		if (false) define(new FunDefBase("Rank", "Rank(<Tuple>, <Set>)", "Returns the one-based rank of a tuple in a set.", "fn*"));
 		define(new FunkResolver(
 				"Stddev", "Stddev(<Set>[, <Numeric Expression>])", "Alias for Stdev.",
@@ -1278,66 +1307,8 @@ public class BuiltinFunTable extends FunTable {
             }
         });
 
-		defineReserved(DescendantsFlags.instance);
-		define(new MultiResolver(
-				"Descendants", "Descendants(<Member>[, <Level>[, <Desc_flag>]])", "Returns the set of descendants of a member at a specified level, optionally including or excluding descendants in other levels.",
-				new String[]{"fxm", "fxml", "fxmly", "fxmn", "fxmny"}) {
-			protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-				int depthLimit = -1; // unlimited
-				boolean depthSpecified = false;
-				int flag = DescendantsFlags.SELF;
-				if (args.length == 1) {
-					depthLimit = -1;
-					flag = DescendantsFlags.SELF_BEFORE_AFTER;
-				}
-				if (args.length >= 2) {
-					if (args[1] instanceof Literal) {
-						Literal literal = (Literal) args[1];
-						if (literal.getValue() instanceof Number) {
-							Number number = (Number) literal.getValue();
-							depthLimit = number.intValue();
-							depthSpecified = true;
-						}
-					}
-				}
-				if (args.length >= 3) {
-					flag = getLiteralArg(args, 2, DescendantsFlags.SELF,
-                            DescendantsFlags.instance, dummyFunDef);
-				}
-				final int depthLimitFinal = depthLimit < 0 ?
-                        Integer.MAX_VALUE : depthLimit;
-				final int flagFinal = flag;
-				final boolean depthSpecifiedFinal = depthSpecified;
-				return new FunDefBase(dummyFunDef) {
-					public Object evaluate(Evaluator evaluator, Exp[] args) {
-						Member member = getMemberArg(evaluator, args, 0, true);
-                        final boolean self =
-                                (flagFinal & DescendantsFlags.SELF) ==
-                                DescendantsFlags.SELF;
-                        final boolean after =
-                                (flagFinal & DescendantsFlags.AFTER) ==
-                                DescendantsFlags.AFTER;
-                        final boolean before =
-                                (flagFinal & DescendantsFlags.BEFORE) ==
-                                DescendantsFlags.BEFORE;
-                        List result = new ArrayList();
-                        final SchemaReader schemaReader =
-                                evaluator.getSchemaReader();
-                        if (depthSpecifiedFinal) {
-                            descendantsByDepth(member, result, schemaReader,
-                                    depthLimitFinal, before, self, after);
-						} else {
-                            final Level level = args.length > 1 ?
-                                getLevelArg(evaluator, args, 1, true) :
-                                member.getLevel();
-                            schemaReader.getMemberDescendants(member, result,
-                                    level, before, self, after);
-                        }
-                        return result;
-					}
-				};
-			}
-		});
+		defineReserved(DescendantsFunDef.Flags.instance);
+        define(new DescendantsFunDef.Resolver());
 
 		define(new FunDefBase("Distinct", "Distinct(<Set>)", "Eliminates duplicate tuples from a set.", "fxx"){
             // implement FunDef
@@ -1365,21 +1336,47 @@ public class BuiltinFunTable extends FunTable {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						//todo add fssl functionality
 						List set0 = (List) getArg(evaluator, args, 0);
-						int[] depthArray = new int[set0.size()];
-						List drilledSet = new ArrayList();
+
+                        if (set0.size() == 0) {
+                            return set0;
+                        }
+
+                        int searchDepth = -1;
+
+                        Level level = getLevelArg(evaluator, args, 1, false);
+                        if (level != null) {
+                            searchDepth = level.getDepth();
+                        }
+
+                        if (searchDepth == -1) {
+                            searchDepth = ((Member)set0.get(0)).getLevel().getDepth();
+
+                            for (int i = 1, m = set0.size(); i < m; i++) {
+                                Member member = (Member) set0.get(i);
+                                int memberDepth = member.getLevel().getDepth();
+
+                                if (memberDepth > searchDepth) {
+                                    searchDepth = memberDepth;
+                                }
+                            }
+                        }
+
+                        List drilledSet = new ArrayList();
 
 						for (int i = 0, m = set0.size(); i < m; i++) {
 							Member member = (Member) set0.get(i);
-							depthArray[i] = member.getLevel().getDepth();
-							// Object o0 = set0.get(i);
-							//   depthList.addElement(new Object[] {o0});
-						}
-						Arrays.sort(depthArray);
-						int maxDepth = depthArray[depthArray.length - 1];
-						for (int i = 0, m = set0.size(); i < m; i++) {
-							Member member = (Member) set0.get(i);
 							drilledSet.add(member);
-							if (member.getLevel().getDepth() == maxDepth) {
+
+                            Member nextMember = i == m - 1 ? null : (Member) set0.get(i + 1);
+
+                            //
+                            // This member is drilled if it's at the correct depth
+                            // and if it isn't drilled yet. A member is considered
+                            // to be "drilled" if it is immediately followed by
+                            // at least one descendant
+                            //
+							if (member.getLevel().getDepth() == searchDepth
+                                && !isAncestorOf(member, nextMember, true)) {
 								Member[] childMembers = evaluator.getSchemaReader().getMemberChildren(member);
 								for (int j = 0; j < childMembers.length; j++) {
 									drilledSet.add(childMembers[j]);
@@ -1524,28 +1521,7 @@ public class BuiltinFunTable extends FunTable {
 				new String[] {"fxxxy", "fxxx"}) {
 			protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
 				final boolean all = getLiteralArg(args, 2, "", new String[] {"ALL"}, dummyFunDef).equalsIgnoreCase("ALL");
-				return new FunDefBase(dummyFunDef) {
-					public Object evaluate(Evaluator evaluator, Exp[] args) {
-						List left = (List) getArg(evaluator, args, 0);
-						if (left == null) {
-							left = Collections.EMPTY_LIST;
-						}
-						List right = (List) getArg(evaluator, args, 1);
-						if (right == null) {
-							right = Collections.EMPTY_LIST;
-						}
-						ArrayList result = new ArrayList();
-						for (Iterator i = left.iterator(); i.hasNext();) {
-							Object leftObject = i.next();
-							if (right.contains(leftObject)) {
-								if (all || !result.contains(leftObject)) {
-									result.add(leftObject);
-								}
-							}
-						}
-						return result;
-					}
-				};
+				return new IntersectFunDef(dummyFunDef, all);
 			}
 		});
 
@@ -1582,24 +1558,8 @@ public class BuiltinFunTable extends FunTable {
 					}
 				}));
 
-		defineReserved(OrderFlags.instance);
-		define(new MultiResolver(
-				"Order", "Order(<Set>, <Value Expression>[, ASC | DESC | BASC | BDESC])", "Arranges members of a set, optionally preserving or breaking the hierarchy.",
-				new String[]{"fxxvy", "fxxv"}) {
-			protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-				int order = getLiteralArg(args, 2, OrderFlags.ASC, OrderFlags.instance, dummyFunDef);
-				final boolean desc = OrderFlags.isDescending(order);
-				final boolean brk = OrderFlags.isBreak(order);
-				return new FunDefBase(dummyFunDef) {
-					public Object evaluate(Evaluator evaluator, Exp[] args) {
-						List members = (List) getArg(evaluator, args, 0);
-						ExpBase exp = (ExpBase) getArgNoEval(args, 1);
-						sort(evaluator, members, exp, desc, brk);
-						return members;
-					}
-				};
-			}
-		});
+		defineReserved(OrderFunDef.Flags.instance);
+		define(new OrderFunDef.OrderResolver());
 
 		define(new FunkResolver(
 				"PeriodsToDate", "PeriodsToDate([<Level>[, <Member>]])", "Returns a set of periods (members) from a specified level starting with the first period and ending with a specified member.",
@@ -1696,14 +1656,13 @@ public class BuiltinFunTable extends FunTable {
 		defineReserved("RECURSIVE");
 		define(new FunkResolver(
 				"ToggleDrillState", "ToggleDrillState(<Set1>, <Set2>[, RECURSIVE])", "Toggles the drill state of members. This function is a combination of DrillupMember and DrilldownMember.",
-				new String[]{"fxxx", "fxxx#"},
+				new String[]{"fxxx", "fxxxy"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						List v0 = (List) getArg(evaluator, args, 0),
 								v1 = (List) getArg(evaluator, args, 1);
 						if (args.length > 2) {
-							throw Util.newInternal(
-									"ToggleDrillState(RECURSIVE) not supported");
+                            throw MondrianResource.instance().newToggleDrillStateRecursiveNotSupported();
 						}
 						if (v1.isEmpty()) {
 							return v0;
@@ -1961,6 +1920,10 @@ public class BuiltinFunTable extends FunTable {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Boolean b = getBooleanArg(evaluator, args, 0);
 				if (b == null) {
+                    // The result of the logical expression is not known,
+                    // probably because some necessary value is not in the
+                    // cache yet. Evaluate both expressions so that the cache
+                    // gets populated as soon as possible.
 					getStringArg(evaluator, args, 1, null);
 					getStringArg(evaluator, args, 2, null);
 					return null;
@@ -2026,26 +1989,55 @@ public class BuiltinFunTable extends FunTable {
 		// TUPLE FUNCTIONS
 		define(new FunDefBase("Current", "<Set>.Current", "Returns the current tuple from a set during an iteration.", "ptx"));
 
-		//if (false) define(new FunDefBase("Item", "<Set>.Item(<String Expression>[, <String Expression>...] | <Index>)", "Returns a tuple from a set.", "mt*"));
-		// we do not support the <String expression> arguments
-		define(new FunDefBase("Item", "<Set>.Item(<Numeric Expression>)", "Returns a tuple from a set.", "mtxn") {
-			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				// as the first arg is as set, it evaluates to a List
-				List list = (List) args[0].evaluate(evaluator);
-				Double n = getDoubleArg(evaluator, args, 1);
-				int i = n.intValue();
-				if (list.size() <= i)
-					return null;
-				if(list.get(0) instanceof Member) {
-					// List of members
-					return new Member[] { (Member)list.get(i)};
-				} else {
-					// List of tuples
-					Member[] memberExps = (Member[]) list.get(i);
-					return memberExps;
-				}
-			}
-		});
+        if (false) {
+		    // we do not support the <String expression> arguments
+            define(new FunDefBase("Item", "<Set>.Item(<String Expression>[, <String Expression>...] | <Index>)", "Returns a tuple from a set.", "mx*"));
+        }
+        define (new FunkResolver("Item", "<Set>.Item(<Index>)", "Returns the <Index>th element in the set, or ", new String[] {"mtxn", "mmtn"},
+            new FunkBase() {
+                // Returns the item specified from the set.
+                public Object evaluate(Evaluator evaluator, Exp[] args) {
+                    Object arg0 = getArg(evaluator, args, 0);
+                    int index = getIntArg(evaluator, args, 1);
+                    int setSize;
+
+                    if (arg0 instanceof List) {
+                        List theSet = (List)arg0;
+
+                        setSize = theSet.size();
+                        if (index < setSize && index >= 0) {
+                            return theSet.get(index);
+                        }
+                    }
+                    else {
+                        //
+                        // You'll get a member in the following case:
+                        // {[member]}.item(0).item(0), even though the first invocation of
+                        // item returned a tuple.
+                        //
+                        assert ((arg0 instanceof Member[]) || (arg0 instanceof Member));
+
+                        if (arg0 instanceof Member) {
+                            if (index == 0) {
+                                return arg0;
+                            }
+                            setSize = 0;
+                        }
+                        else {
+                            Member[] tuple = (Member[]) arg0;
+
+                            if (index < tuple.length && index >= 0) {
+                                return tuple[index];
+                            }
+
+                            setSize = tuple.length;
+                        }
+                    }
+
+                    throw MondrianResource.instance().newItemIndexOutOfBounds(Integer.toString(index), Integer.toString(setSize - 1));
+                }
+        }));
+
 
 		define(new FunDefBase("StrToTuple", "StrToTuple(<String Expression>)", "Constructs a tuple from a string.", "ftS") {
 			public Hierarchy getHierarchy(Exp[] args) {
@@ -2099,7 +2091,7 @@ public class BuiltinFunTable extends FunTable {
 						}
 					}
 					if (matchingArgs == args.length) {
-						return new FunDefBase(this, type, ExpBase.getTypes(args));
+						return new CoalesceEmptyFunDef(this, type, ExpBase.getTypes(args));
 					}
 				}
 				return null;
@@ -2239,53 +2231,7 @@ public class BuiltinFunTable extends FunTable {
 			}
 		});
 
-		define(new ResolverBase(
-					   "Properties",
-					   "<Member>.Properties(<String Expression>)",
-					   "Returns the value of a member property.",
-					   Syntax.Method) {
-			public FunDef resolve(Exp[] args, int[] conversionCount) {
-				final int[] argTypes = new int[]{Category.Member, Category.String};
-				if (args.length != 2 ||
-						args[0].getType() != Category.Member ||
-						args[1].getType() != Category.String) {
-					return null;
-				}
-				int returnType;
-				if (args[1] instanceof Literal) {
-					String propertyName = (String) ((Literal) args[1]).getValue();
-					Hierarchy hierarchy = args[0].getHierarchy();
-					Level[] levels = hierarchy.getLevels();
-					Property property = lookupProperty(
-							levels[levels.length - 1], propertyName);
-					if (property == null) {
-						// we'll likely get a runtime error
-						returnType = Category.Value;
-					} else {
-						switch (property.getType()) {
-						case Property.TYPE_BOOLEAN:
-							returnType = Category.Logical;
-							break;
-						case Property.TYPE_NUMERIC:
-							returnType = Category.Numeric;
-							break;
-						case Property.TYPE_STRING:
-							returnType = Category.String;
-							break;
-						default:
-							throw Util.newInternal("Unknown property type " + property.getType());
-						}
-					}
-				} else {
-					returnType = Category.Value;
-				}
-				return new PropertiesFunDef(name, signature, description, syntax, returnType, argTypes);
-			}
-
-            public boolean requiresExpression(int k) {
-                return true;
-            }
-		});
+		define(new PropertiesFunDef.Resolver());
 
 		//
 		// PARAMETER FUNCTIONS
@@ -2613,37 +2559,6 @@ public class BuiltinFunTable extends FunTable {
                 }));
 	}
 
-    private static void descendantsByDepth(Member member, List result,
-            final SchemaReader schemaReader, final int depthLimitFinal,
-            final boolean before, final boolean self, final boolean after) {
-        Member[] children = {member};
-        for (int depth = 0;; ++depth) {
-            if (depth == depthLimitFinal) {
-                if (self) {
-                    Util.addAll(result, children);
-                }
-                if (!after) {
-                    break; // no more results after this level
-                }
-            } else if (depth < depthLimitFinal) {
-                if (before) {
-                    Util.addAll(result, children);
-                }
-            } else {
-                if (after) {
-                    Util.addAll(result, children);
-                } else {
-                    break; // no more results after this level
-                }
-            }
-
-            children = schemaReader.getMemberChildren(children);
-            if (children.length == 0) {
-                break;
-            }
-        }
-    }
-
     private static boolean isConstantHierarchy(Exp typeArg) {
 		if (typeArg instanceof Hierarchy) {
 			// e.g. "[Time].[By Week]"
@@ -2671,30 +2586,6 @@ public class BuiltinFunTable extends FunTable {
 		return false;
 	}
 
-	private boolean isValidProperty(
-			Member member, String propertyName) {
-		return lookupProperty(member.getLevel(), propertyName) != null;
-	}
-
-	/**
-	 * Finds a member property called <code>propertyName</code> at, or above,
-	 * <code>level</code>.
-	 */
-	private Property lookupProperty(
-			Level level, String propertyName) {
-		do {
-			Property[] properties = level.getProperties();
-			for (int i = 0; i < properties.length; i++) {
-				Property property = properties[i];
-				if (property.getName().equals(propertyName)) {
-					return property;
-				}
-			}
-			level = level.getParentLevel();
-		} while (level != null);
-		return null;
-	}
-
     /**
      * Get a read-only version of the name-to-resolvers map. Used by the testing
      * framework
@@ -2703,186 +2594,6 @@ public class BuiltinFunTable extends FunTable {
         return Collections.unmodifiableMap(((BuiltinFunTable)instance()).mapNameToResolvers);
     }
 
-	private class PropertiesFunDef extends FunDefBase {
-		public PropertiesFunDef(
-				String name, String signature, String description,
-				Syntax syntax, int returnType, int[] parameterTypes) {
-			super(name, signature, description, syntax, returnType, parameterTypes);
-		}
-
-		public Object evaluate(Evaluator evaluator, Exp[] args) {
-			Member member = getMemberArg(evaluator, args, 0, true);
-			String s = getStringArg(evaluator, args, 1, null);
-			Object o = member.getPropertyValue(s);
-			if (o == null) {
-				if (isValidProperty(member, s)) {
-					o = member.getHierarchy().getNullMember();
-				} else {
-					throw new MondrianEvaluationException(
-							"Property '" + s +
-							"' is not valid for member '" + member + "'");
-				}
-			}
-			return o;
-		}
-	}
-
-	private static class DescendantsFlags extends EnumeratedValues {
-		static final DescendantsFlags instance = new DescendantsFlags();
-		private DescendantsFlags() {
-			super(
-					new String[] {
-						"SELF","AFTER","BEFORE","BEFORE_AND_AFTER","SELF_AND_AFTER",
-						"SELF_AND_BEFORE","SELF_BEFORE_AFTER","LEAVES"},
-					new int[] {
-						SELF,AFTER,BEFORE,BEFORE_AND_AFTER,SELF_AND_AFTER,
-						SELF_AND_BEFORE,SELF_BEFORE_AFTER,LEAVES});
-		}
-		public static final int SELF = 1;
-		public static final int AFTER = 2;
-		public static final int BEFORE = 4;
-		public static final int BEFORE_AND_AFTER = BEFORE | AFTER;
-		public static final int SELF_AND_AFTER = SELF | AFTER;
-		public static final int SELF_AND_BEFORE = SELF | BEFORE;
-		public static final int SELF_BEFORE_AFTER = SELF | BEFORE | AFTER;
-		public static final int LEAVES = 8;
-	}
-
-	private static class OrderFlags extends EnumeratedValues {
-		static final OrderFlags instance = new OrderFlags();
-		private OrderFlags() {
-			super(new String[] {"ASC","DESC","BASC","BDESC"});
-		}
-		public static final int ASC = 0;
-		public static final int DESC = 1;
-		public static final int BASC = 2;
-		public static final int BDESC = 3;
-		public static final boolean isDescending(int value) {
-			return (value & DESC) == DESC;
-		}
-		public static final boolean isBreak(int value) {
-			return (value & BASC) == BASC;
-		}
-	}
-
-	private static class CrossJoinFunDef extends FunDefBase {
-		public CrossJoinFunDef(FunDef dummyFunDef) {
-			super(dummyFunDef);
-		}
-
-		public Hierarchy getHierarchy(Exp[] args) {
-			// CROSSJOIN(<Set1>,<Set2>) has Hierarchy [Hie1] x [Hie2], which we
-			// can't represent, so we return null.
-			return null;
-		}
-
-		public Object evaluate(Evaluator evaluator, Exp[] args) {
-			List set0 = getArgAsList(evaluator, args, 0);
-			List set1 = getArgAsList(evaluator, args, 1);
-
-			// optimize nonempty(crossjoin(a,b)) == nonempty(crossjoin(nonempty(a),nonempty(b))
-			long size = (long)set0.size() * (long)set1.size();
-			if (size > 1000 && evaluator.isNonEmpty()) {
-				set0 = nonEmptyList(evaluator, set0);
-				set1 = nonEmptyList(evaluator, set1);
-			}
-
-			if (set0.isEmpty() || set1.isEmpty()) {
-				return Collections.EMPTY_LIST;
-			}
-
-			boolean neitherSideIsTuple = true;
-			int arity0 = 1,
-				arity1 = 1;
-			if (set0.get(0) instanceof Member[]) {
-				arity0 = ((Member[]) set0.get(0)).length;
-				neitherSideIsTuple = false;
-			}
-			if (set1.get(0) instanceof Member[]) {
-				arity1 = ((Member[]) set1.get(0)).length;
-				neitherSideIsTuple = false;
-			}
-			List result = new ArrayList();
-			if (neitherSideIsTuple) {
-				// Simpler routine if we know neither side contains tuples.
-				for (int i = 0, m = set0.size(); i < m; i++) {
-					Member o0 = (Member) set0.get(i);
-					for (int j = 0, n = set1.size(); j < n; j++) {
-						Member o1 = (Member) set1.get(j);
-						result.add(new Member[]{o0, o1});
-					}
-				}
-			} else {
-				// More complex routine if one or both sides are arrays
-				// (probably the product of nested CrossJoins).
-				Member[] row = new Member[arity0 + arity1];
-				for (int i = 0, m = set0.size(); i < m; i++) {
-					int x = 0;
-					Object o0 = set0.get(i);
-					if (o0 instanceof Member) {
-						row[x++] = (Member) o0;
-					} else {
-						assertTrue(o0 instanceof Member[]);
-						final Member[] members = (Member[]) o0;
-						for (int k = 0; k < members.length; k++) {
-							row[x++] = members[k];
-						}
-					}
-					for (int j = 0, n = set1.size(); j < n; j++) {
-						Object o1 = set1.get(j);
-						if (o1 instanceof Member) {
-							row[x++] = (Member) o1;
-						} else {
-							assertTrue(o1 instanceof Member[]);
-							final Member[] members = (Member[]) o1;
-							for (int k = 0; k < members.length; k++) {
-								row[x++] = members[k];
-							}
-						}
-						result.add(row.clone());
-						x = arity0;
-					}
-				}
-			}
-			return result;
-		}
-
-		private static List getArgAsList(Evaluator evaluator, Exp[] args, int index) {
-			final Object arg = getArg(evaluator, args, index);
-			if (arg instanceof List) {
-				return (List) arg;
-			} else {
-				List list = new ArrayList();
-				list.add(arg);
-				return list;
-			}
-		}
-
-		private static List nonEmptyList(Evaluator evaluator, List list) {
-			if (list.isEmpty())
-				return list;
-			List result = new ArrayList();
-			evaluator = evaluator.push();
-			if (list.get(0) instanceof Member[]) {
-				for (Iterator it = list.iterator(); it.hasNext();) {
-					Member[] m = (Member[]) it.next();
-					evaluator.setContext(m);
-					Object value = evaluator.evaluateCurrent();
-					if (value != Util.nullValue && !(value instanceof Throwable))
-						result.add(m);
-				}
-			} else {
-				for (Iterator it = list.iterator(); it.hasNext();) {
-					Member m = (Member) it.next();
-					evaluator.setContext(m);
-					Object value = evaluator.evaluateCurrent();
-					if (value != Util.nullValue && !(value instanceof Throwable))
-						result.add(m);
-				}
-			}
-			return result;
-		}
-	}
 }
 
 // End BuiltinFunTable.java

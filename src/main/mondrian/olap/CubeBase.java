@@ -78,6 +78,7 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 		}
 		return null;
 	}
+
 	public OlapElement lookupChild(SchemaReader schemaReader, String s)
 	{
 		Dimension mdxDimension = (Dimension)lookupDimension(s);
@@ -93,6 +94,20 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 		}
 		return null;
 	}
+
+    /**
+     * Returns the time dimension for this cube, or <code>null</code>
+     * if there is no time dimension.
+     */
+    public Dimension getTimeDimension() {
+        for (int i = 0; i < dimensions.length; i++) {
+            if (dimensions[i].getDimensionType() == DimensionType.TimeDimension) {
+                return dimensions[i];
+            }
+        }
+
+        return null;
+    }
 
 	public OlapElement lookupDimension(String s)
 	{
@@ -114,7 +129,7 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 	private Level getTimeLevel(LevelType levelType) {
 		for (int i = 0; i < dimensions.length; i++) {
 			DimensionBase dimension = dimensions[i];
-			if (dimension.dimensionType == Dimension.TIME) {
+			if (dimension.dimensionType == DimensionType.TimeDimension) {
 				for (int j = 0; j < dimension.hierarchies.length; j++) {
 					HierarchyBase hierarchy = dimension.hierarchies[j];
 					for (int k = 0; k < hierarchy.levels.length; k++) {

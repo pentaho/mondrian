@@ -19,9 +19,11 @@ import mondrian.olap.Util;
 import mondrian.olap.UtilTestCase;
 import mondrian.olap.fun.FunctionTest;
 import mondrian.rolap.RolapUtil;
+import mondrian.rolap.RolapConnectionTest;
 import mondrian.rolap.agg.TestAggregationManager;
 import mondrian.util.ScheduleTest;
 import mondrian.xmla.XmlaTest;
+import mondrian.test.comp.ResultComparatorTest;
 
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
@@ -76,6 +78,10 @@ public class Main extends TestSuite {
 		MondrianProperties properties = MondrianProperties.instance();
 		String testName = properties.getTestName(),
 			testClass = properties.getTestClass();
+
+        System.out.println("testName: " + testName);
+        System.out.println("testClass: " + testClass);
+
 		TestSuite suite = new TestSuite();
 		if (testClass != null) {
 			Class clazz = Class.forName(testClass);
@@ -100,6 +106,8 @@ public class Main extends TestSuite {
 				suite.addTest((Test) o);
 			}
 		} else {
+            suite.addTestSuite(RolapConnectionTest.class);
+            suite.addTest(ResultComparatorTest.suite());
 			suite.addTestSuite(BasicQueryTest.class);
 			suite.addTestSuite(FunctionTest.class);
 			suite.addTestSuite(ScheduleTest.class);

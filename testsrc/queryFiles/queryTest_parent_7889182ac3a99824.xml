@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>SELECT {Crossjoin({[Store].[All Stores].[Canada].Parent}, {[Time].[1997].Children})} ON AXIS(0),
+       {[Product].[All Products].[Food].[Eggs].Parent} ON AXIS(1)
+FROM [Sales]
+WHERE ([Customers].[All Customers].[USA].[OR].[Salem].Parent, [Gender].[All Gender].[M])
+</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Measures]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Unit Sales]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Customers].[All Customers].[USA].[OR]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender].[M]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Store]</dim>
+                <dim>[Time]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store].[All Stores]</member>
+                    <member>[Time].[1997].[Q1]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores]</member>
+                    <member>[Time].[1997].[Q2]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores]</member>
+                    <member>[Time].[1997].[Q3]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores]</member>
+                    <member>[Time].[1997].[Q4]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Product]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Product].[All Products].[Food]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>7121.0</cell>
+                <cell>5470.0</cell>
+                <cell>6287.0</cell>
+                <cell>6062.0</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

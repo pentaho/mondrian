@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>SELECT {[Measures].[Unit Sales]} ON COLUMNS, ORDER([Store].[Store Name].MEMBERS, (Measures.[Unit Sales]),BDESC) ON ROWS FROM [Sales] WHERE [Product].[Non-Consumable]</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Time]</dim>
+                <dim>[Product]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Time].[1997]</member>
+                    <member>[Product].[All Products].[Non-Consumable]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Customers].[All Customers]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Measures]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Unit Sales]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Store]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[OR].[Salem].[Store 13]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[OR].[Portland].[Store 11]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Seattle].[Store 15]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Spokane].[Store 16]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Yakima].[Store 23]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[Canada].[BC].[Vancouver].[Store 19]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[Canada].[BC].[Victoria].[Store 20]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[Mexico].[DF].[Mexico City].[Store 9]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[Mexico].[DF].[San Andres].[Store 21]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[Mexico].[Guerrero].[Acapulco].[Store 1]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[Mexico].[Jalisco].[Guadalajara].[Store 5]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[Mexico].[Veracruz].[Orizaba].[Store 10]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[Mexico].[Yucatan].[Merida].[Store 8]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[Mexico].[Zacatecas].[Camacho].[Store 4]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[Mexico].[Zacatecas].[Hidalgo].[Store 12]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[Mexico].[Zacatecas].[Hidalgo].[Store 18]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[CA].[Alameda].[HQ]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>7940.0</cell>
+            </drow>
+            <drow>
+                <cell>6712.0</cell>
+            </drow>
+            <drow>
+                <cell>5076.0</cell>
+            </drow>
+            <drow>
+                <cell>4947.0</cell>
+            </drow>
+            <drow>
+                <cell>4706.0</cell>
+            </drow>
+            <drow>
+                <cell>4639.0</cell>
+            </drow>
+            <drow>
+                <cell>4479.0</cell>
+            </drow>
+            <drow>
+                <cell>4428.0</cell>
+            </drow>
+            <drow>
+                <cell>3950.0</cell>
+            </drow>
+            <drow>
+                <cell>2140.0</cell>
+            </drow>
+            <drow>
+                <cell>442.0</cell>
+            </drow>
+            <drow>
+                <cell>390.0</cell>
+            </drow>
+            <drow>
+                <cell>387.0</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

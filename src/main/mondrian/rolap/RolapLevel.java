@@ -125,7 +125,7 @@ class RolapLevel extends LevelBase
 		this.inheritedProperties = (RolapProperty[]) list.toArray(
 				RolapProperty.emptyArray);
         this.levelType = levelType;
-		if (hierarchy.getDimension().getDimensionType() == Dimension.TIME) {
+		if (hierarchy.getDimension().getDimensionType() == DimensionType.TimeDimension) {
             if (!levelType.isTime() && !isAll) {
 				// do not throw an exception here,
 				//  in order not to break existing applications
@@ -286,6 +286,17 @@ class RolapLevel extends LevelBase
         }
     }
 
+    public OlapElement lookupChild(SchemaReader schemaReader, String name) {
+        Member[] levelMembers = schemaReader.getLevelMembers(this);
+
+        for (int idx = 0; idx < levelMembers.length; idx++) {
+            if (levelMembers[idx].getName().equals(name)) {
+                return levelMembers[idx];
+            }
+        }
+
+        return null;
+    }
 }
 
 // End RolapLevel.java

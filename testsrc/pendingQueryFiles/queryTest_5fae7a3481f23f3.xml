@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>Select {ToggleDrillState({[Store].[All Stores].[USA],[Store].[All Stores].[Canada],[Store].[All Stores].[Mexico]}, {[Store].[All Stores].[USA],[Store].[All Stores].[USA].[WA],[Store].[All Stores].[Mexico]},RECURSIVE)} on Axis(0) from [Sales] </mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Measures]</dim>
+                <dim>[Time]</dim>
+                <dim>[Product]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Unit Sales]</member>
+                    <member>[Time].[1997]</member>
+                    <member>[Product].[All Products]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Customers].[All Customers]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Store]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store].[All Stores].[USA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[CA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[OR]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Bellingham]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Bremerton]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Seattle]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Spokane]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Tacoma]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Walla Walla]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Yakima]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[Canada]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[Mexico]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[Mexico].[DF]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[Mexico].[Guerrero]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[Mexico].[Jalisco]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[Mexico].[Veracruz]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[Mexico].[Yucatan]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[Mexico].[Zacatecas]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <data>
+            <drow>
+                <cell>266773.0</cell>
+                <cell>74748.0</cell>
+                <cell>67659.0</cell>
+                <cell>124366.0</cell>
+                <cell>2237.0</cell>
+                <cell>24576.0</cell>
+                <cell>25011.0</cell>
+                <cell>23591.0</cell>
+                <cell>35257.0</cell>
+                <cell>2203.0</cell>
+                <cell>11491.0</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

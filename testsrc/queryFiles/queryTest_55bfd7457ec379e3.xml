@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>with member [Measures].[Test] as'iif ([Promotions].CurrentMember.level.name = "(All)","Top","Not Top")' Select {[Measures].[Test]} on columns, [Promotions].members on rows from [Sales]</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Time]</dim>
+                <dim>[Product]</dim>
+                <dim>[Store]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Time].[1997]</member>
+                    <member>[Product].[All Products]</member>
+                    <member>[Store].[All Stores]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Customers].[All Customers]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Measures]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Test]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Promotions]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Promotions].[All Promotions]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Bag Stuffers]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Best Savings]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Big Promo]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Big Time Discounts]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Big Time Savings]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Bye Bye Baby]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Cash Register Lottery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Coupon Spectacular]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Dimes Off]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Dollar Cutters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Dollar Days]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Double Down Sale]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Double Your Savings]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Fantastic Discounts]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Free For All]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Go For It]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Green Light Days]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Green Light Special]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[High Roller Savings]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[I Cant Believe It Sale]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Money Grabbers]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Money Savers]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Mystery Sale]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[No Promotion]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[One Day Sale]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Pick Your Savings]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Price Cutters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Price Destroyers]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Price Savers]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Price Slashers]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Price Smashers]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Price Winners]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Sale Winners]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Sales Days]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Sales Galore]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Save-It Sale]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Saving Days]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Savings Galore]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Shelf Clearing Days]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Shelf Emptiers]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Super Duper Savers]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Super Savers]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Super Wallet Savers]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Three for One]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Tip Top Savings]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Two Day Sale]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Two for One]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Unbeatable Price Savers]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Wallet Savers]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[Weekend Markdown]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[All Promotions].[You Save Days]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+            <drow>
+                <cell>Not Top</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

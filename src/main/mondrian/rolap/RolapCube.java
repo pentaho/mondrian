@@ -58,7 +58,7 @@ class RolapCube extends CubeBase
 					getUniqueName());
 		}
 		this.dimensions = new RolapDimension[xmlCube.dimensions.length + 1];
-		RolapDimension measuresDimension = new RolapDimension(schema, Dimension.MEASURES_NAME, 0);
+		RolapDimension measuresDimension = new RolapDimension(schema, Dimension.MEASURES_NAME, 0, DimensionType.StandardDimension);
 		this.dimensions[0] = measuresDimension;
 		this.measuresHierarchy = measuresDimension.newHierarchy(null, false);
 		RolapLevel measuresLevel = this.measuresHierarchy.newLevel("MeasuresLevel", 0);
@@ -106,7 +106,7 @@ class RolapCube extends CubeBase
 		this.dimensions = new RolapDimension[
 			xmlVirtualCube.dimensions.length + 1];
 		RolapDimension measuresDimension = new RolapDimension(
-			schema, Dimension.MEASURES_NAME, 0);
+			schema, Dimension.MEASURES_NAME, 0, DimensionType.StandardDimension);
 		this.dimensions[0] = measuresDimension;
 		this.measuresHierarchy = measuresDimension.newHierarchy(null, false);
 		this.measuresHierarchy.newLevel("MeasuresLevel", 0);
@@ -168,19 +168,11 @@ class RolapCube extends CubeBase
 			role = schema.defaultRole.makeMutableClone();
 			role.grant(this, Access.ALL);
 		}
-		return new RolapSchemaReader(role) {
+		return new RolapSchemaReader(role, schema) {
 			public Cube getCube() {
 				return RolapCube.this;
 			}
 		};
-	}
-
-	private RolapDimension newDimension(String name)
-	{
-		RolapDimension dimension = new RolapDimension(schema, name, RolapDimension.nextOrdinal++);
-		this.dimensions = (RolapDimension[]) RolapUtil.addElement(
-			this.dimensions, dimension);
-		return dimension;
 	}
 
 	void init()

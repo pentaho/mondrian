@@ -48,7 +48,7 @@
 		</Hierarchy>
 	</Dimension>
 
-	<Dimension name="Time">
+	<Dimension name="Time" type="TimeDimension">
 		<Hierarchy hasAll="false" primaryKey="time_id">
 			<Table name="time_by_day"/>
 			<Level name="Year" column="the_year" type="Numeric" uniqueMembers="true" levelType="TimeYears"/>
@@ -137,8 +137,11 @@ fname + ' ' + lname
 					<SQL dialect="mysql">
 CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)
 					</SQL>
+                    <SQL dialect="mssql">
+fname + ' ' + lname
+                    </SQL>
 					<SQL dialect="generic">
-"lname"
+lname
 					</SQL>
 				</KeyExpression>
 				<Property name="Gender" column="gender"/>
@@ -199,7 +202,7 @@ CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)
 	<Measure name="Warehouse Sales" column="warehouse_sales" aggregator="sum"/>
 	<Measure name="Units Shipped" column="units_shipped" aggregator="sum"/>
 	<Measure name="Units Ordered" column="units_ordered" aggregator="sum"/>
-	<Measure name="Warehouse Profit" column="&quot;inventory_fact_1997&quot;.&quot;warehouse_sales&quot;-&quot;inventory_fact_1997&quot;.&quot;warehouse_cost&quot;" aggregator="sum"/>
+	<Measure name="Warehouse Profit" column="&quot;warehouse_sales&quot;-&quot;inventory_fact_1997&quot;.&quot;warehouse_cost&quot;" aggregator="sum"/>
 </Cube>
 
 <!-- Test a cube based upon a single table. -->
@@ -232,7 +235,7 @@ CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)
 	<Table name="salary"/>
 	<!-- Use private "Time" dimension because key is different than public
 	     "Time" dimension. -->
-	<Dimension name="Time" foreignKey="pay_date">
+	<Dimension name="Time" type="TimeDimension" foreignKey="pay_date">
 		<Hierarchy hasAll="false" primaryKey="the_date">
 			<Table name="time_by_day"/>
 			<Level name="Year" column="the_year" type="Numeric" uniqueMembers="true" levelType="TimeYears"/>
@@ -367,6 +370,9 @@ fname + ' ' + lname
 					<SQL dialect="mysql">
 CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)
 					</SQL>
+                    <SQL dialect="mssql">
+fname + ' ' + lname
+                    </SQL>
 					<SQL dialect="generic">
 "lname"
 					</SQL>
@@ -453,6 +459,12 @@ CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)
 			</HierarchyGrant>
 			<HierarchyGrant hierarchy="[Gender]" access="none"/>
 		</CubeGrant>
+	</SchemaGrant>
+</Role>
+
+<Role name="No HR Cube">
+	<SchemaGrant access="all">
+		<CubeGrant cube="HR" access="none"/>
 	</SchemaGrant>
 </Role>
 

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>select { [Time].[1997].children } on columns,     intersect( {[Product].[Food].[Baked Goods], [Product].[Food].[Baking Goods], [Product].[Food].[Breakfast Foods], [Product].[Food].[Baked Goods], [Product].[Food].[Baking Goods], [Product].[Food].[Breakfast Foods]},         {[Product].[Food].[Baked Goods], [Product].[Food].[Baking Goods], [Product].[Food].[Breakfast Foods], [Product].[Food].[Baked Goods], [Product].[Food].[Baking Goods], [Product].[Food].[Breakfast Foods]}, all) on rows from [Sales] where ( [Measures].[Store Cost] )</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Measures]</dim>
+                <dim>[Store]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Store Cost]</member>
+                    <member>[Store].[All Stores]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Customers].[All Customers]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Time]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Time].[1997].[Q1]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q2]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q3]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q4]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Product]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baked Goods]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Breakfast Foods]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baked Goods]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Breakfast Foods]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>1609.8117</cell>
+                <cell>1453.4103</cell>
+                <cell>1669.9533</cell>
+                <cell>1830.9166</cell>
+            </drow>
+            <drow>
+                <cell>3804.7026</cell>
+                <cell>3633.6761</cell>
+                <cell>3772.9881</cell>
+                <cell>4159.2433</cell>
+            </drow>
+            <drow>
+                <cell>680.1564</cell>
+                <cell>652.8166</cell>
+                <cell>661.5138</cell>
+                <cell>762.3098</cell>
+            </drow>
+            <drow>
+                <cell>1609.8117</cell>
+                <cell>1453.4103</cell>
+                <cell>1669.9533</cell>
+                <cell>1830.9166</cell>
+            </drow>
+            <drow>
+                <cell>3804.7026</cell>
+                <cell>3633.6761</cell>
+                <cell>3772.9881</cell>
+                <cell>4159.2433</cell>
+            </drow>
+            <drow>
+                <cell>680.1564</cell>
+                <cell>652.8166</cell>
+                <cell>661.5138</cell>
+                <cell>762.3098</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>select {[Measures].[Store Sales], [Measures].[Unit Sales]} on columns,     crossjoin([Time].children, [Store].children) on rows from [Warehouse and Sales] </mdxQuery>
+    <dataResult>
+        <columns>
+            <dimensions>
+                <dim>[Measures]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Store Sales]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Unit Sales]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Time]</dim>
+                <dim>[Store]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Time].[1997].[Q1]</member>
+                    <member>[Store].[All Stores].[Canada]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q1]</member>
+                    <member>[Store].[All Stores].[Mexico]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q1]</member>
+                    <member>[Store].[All Stores].[USA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q2]</member>
+                    <member>[Store].[All Stores].[Canada]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q2]</member>
+                    <member>[Store].[All Stores].[Mexico]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q2]</member>
+                    <member>[Store].[All Stores].[USA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q3]</member>
+                    <member>[Store].[All Stores].[Canada]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q3]</member>
+                    <member>[Store].[All Stores].[Mexico]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q3]</member>
+                    <member>[Store].[All Stores].[USA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q4]</member>
+                    <member>[Store].[All Stores].[Canada]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q4]</member>
+                    <member>[Store].[All Stores].[Mexico]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q4]</member>
+                    <member>[Store].[All Stores].[USA]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>139628.35</cell>
+                <cell>66291.0</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>132666.27</cell>
+                <cell>62610.0</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>140271.89</cell>
+                <cell>65848.0</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>152671.62</cell>
+                <cell>72024.0</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

@@ -39,6 +39,12 @@ public interface Cube extends OlapElement {
 	 **/
 	Member[] getMembersForQuery(String query, List calcMembers);
 
+    /**
+     * Returns the time dimension for this cube, or <code>null</code>
+     * if there is no time dimension.
+     */
+    Dimension getTimeDimension();
+    
 	Level getYearLevel();
 	Level getQuarterLevel();
 	Level getMonthLevel();
@@ -47,7 +53,7 @@ public interface Cube extends OlapElement {
 	 * Returns a {@link SchemaReader} for which this cube is the context for
 	 * lookup up members.
 	 * If <code>role</code> is null, the returned schema reader also obeys the
-	 * access-control profile of role. 
+	 * access-control profile of role.
 	 */
 	SchemaReader getSchemaReader(Role role);
 }

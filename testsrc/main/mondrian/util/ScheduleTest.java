@@ -1,12 +1,12 @@
 /*
- * Copyright 2003 by Alphablox Corp. All rights reserved.
- *
- * Created by gjohnson
- * Last change: $Modtime: $
- * Last author: $Author$
- * Revision: $Revision$
- */
-
+// $Id$
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// (C) Copyright 2004-2004 Julian Hyde and others
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
 package mondrian.util;
 
 import junit.framework.TestCase;
@@ -41,10 +41,7 @@ public class ScheduleTest extends TestCase {
 
     // helper methods
 
-    static void assertEquals
-            (Calendar
-            c1, Calendar
-            c2) {
+    static void assertEquals(Calendar c1, Calendar c2) {
         if (c1 == null || c2 == null) {
             assertEquals((Object) c1, (Object) c2);
         }
@@ -56,10 +53,7 @@ public class ScheduleTest extends TestCase {
         }
     }
 
-    static void assertEquals
-            (Date
-            expected, Calendar
-            actual) {
+    static void assertEquals(Date expected, Calendar actual) {
         if (expected == null || actual == null) {
             assertEquals((Object) expected, (Object) actual);
         }
@@ -68,20 +62,12 @@ public class ScheduleTest extends TestCase {
         }
     }
 
-    static void assertEquals
-            (int year,
-             int month,
-             int day, String
-            dow, int hour,
-             int minute,
-             Date actual) {
+    static void assertEquals(int year, int month, int day, String dow,
+            int hour, int minute, Date actual) {
         assertEquals(toDate(year, month, day, dow, hour, minute), actual);
     }
 
-    static void assertEquals
-            (Calendar
-            expected, Date
-            actual) {
+    static void assertEquals(Calendar expected, Date actual) {
         if (expected == null || actual == null) {
             assertEquals((Object) expected, (Object) actual);
         }
@@ -90,11 +76,8 @@ public class ScheduleTest extends TestCase {
         }
     }
 
-    static void assertScheduleCount
-            (Schedule
-            schedule, Date
-            d, Date
-            last, int expectedCount) {
+    static void assertScheduleCount(Schedule schedule, Date d, Date last,
+            int expectedCount) {
         int count = 0;
         while (true) {
             Date next = schedule.nextOccurrence(d, true);
@@ -111,24 +94,13 @@ public class ScheduleTest extends TestCase {
         assertEquals("schedule count", expectedCount, count);
     }
 
-    static Date toDate
-            (int year,
-             int month,
-             int day, String
-            dow,
-             int hour,
-             int minute) {
+    static Date toDate(int year, int month, int day, String dow, int hour,
+            int minute) {
         return toDate(year, month, day, dow, hour, minute, gmtTz);
     }
 
-    static Date toDate
-            (int year,
-             int month,
-             int day, String
-            dow,
-             int hour,
-             int minute, TimeZone
-            tz) {
+    static Date toDate(int year, int month, int day, String dow, int hour,
+            int minute, TimeZone tz) {
         Calendar calendar = ScheduleUtil.createCalendar(year, month, day, hour, minute, 0);
         calendar.setTimeZone(tz);
         assertEquals(daysOfWeek[calendar.get(Calendar.DAY_OF_WEEK)], dow);
@@ -137,8 +109,7 @@ public class ScheduleTest extends TestCase {
     // --------------------------------------------------------------------
     // test cases
 
-    public void testOnceTimeSchedule
-            () {
+    public void testOnceTimeSchedule() {
         Calendar calendar0827 = ScheduleUtil.createCalendar(time0827);
         OnceTimeSchedule onceTimeSchedule = new OnceTimeSchedule(calendar0827);
         Calendar t = onceTimeSchedule.nextOccurrence(null, true);
@@ -172,10 +143,11 @@ public class ScheduleTest extends TestCase {
         assertEquals(2002, 04, 23, "Tue", 8, 27, d);
     }
 
-    public void testDaily
-            () {
+    public void testDaily() {
         int period = 1;
-        Schedule schedule = Schedule.createDaily(toDate(2002, 04, 20, "Sat", 8, 27), toDate(2002, 06, 03, "Mon", 8, 27),
+        Schedule schedule = Schedule.createDaily(
+                toDate(2002, 04, 20, "Sat", 8, 27),
+                toDate(2002, 06, 03, "Mon", 8, 27),
                 gmtTz, time0827, period);
         Date d;
         d = schedule.nextOccurrence(null, false);
@@ -195,7 +167,8 @@ public class ScheduleTest extends TestCase {
     public void testDailyNoUpperLimit
             () {
         int period = 1;
-        Schedule schedule = Schedule.createDaily(toDate(2002, 4, 20, "Sat", 8, 27), null, gmtTz, time0827,
+        Schedule schedule = Schedule.createDaily(
+                toDate(2002, 4, 20, "Sat", 8, 27), null, gmtTz, time0827,
                 period);
         Date d = schedule.nextOccurrence(null, false);
         assertEquals(2002, 4, 20, "Sat", 8, 27, d);
@@ -206,7 +179,9 @@ public class ScheduleTest extends TestCase {
     public void testDailyPeriodic
             () {
         int period = 10;
-        Schedule schedule = Schedule.createDaily(toDate(2002, 4, 20, "Sat", 8, 27), toDate(2002, 06, 03, "Mon", 8, 27),
+        Schedule schedule = Schedule.createDaily(
+                toDate(2002, 4, 20, "Sat", 8, 27),
+                toDate(2002, 06, 03, "Mon", 8, 27),
                 gmtTz, time0827, period);
         Date d = schedule.nextOccurrence(null, false);
         assertEquals(2002, 4, 20, "Sat", 8, 27, d);
@@ -244,7 +219,9 @@ public class ScheduleTest extends TestCase {
                 (1 << Calendar.TUESDAY) |
                 (1 << Calendar.THURSDAY);
         int period = 1;
-        Schedule schedule = Schedule.createWeekly(toDate(2002, 4, 20, "Sat", 8, 27), toDate(2002, 06, 05, "Wed", 12, 00),
+        Schedule schedule = Schedule.createWeekly(
+                toDate(2002, 4, 20, "Sat", 8, 27),
+                toDate(2002, 06, 05, "Wed", 12, 00),
                 gmtTz, time0827, period, thuesday);
         Date d;
         d = schedule.nextOccurrence(null, false);
@@ -258,7 +235,9 @@ public class ScheduleTest extends TestCase {
             () {
         int period = 1;
         int daysOfMonth = (1 << 12) | (1 << 21) | (1 << Schedule.LAST_DAY_OF_MONTH);
-        Schedule schedule = Schedule.createMonthlyByDay(toDate(2002, 4, 20, "Sat", 8, 27), toDate(2002, 07, 10, "Wed", 12, 00),
+        Schedule schedule = Schedule.createMonthlyByDay(
+                toDate(2002, 4, 20, "Sat", 8, 27),
+                toDate(2002, 07, 10, "Wed", 12, 00),
                 gmtTz, time0827, period, daysOfMonth);
         Date d;
         d = schedule.nextOccurrence(null, false);
@@ -278,7 +257,8 @@ public class ScheduleTest extends TestCase {
             () {
         int daysOfMonth = (1 << 12) | (1 << 21) | (1 << Schedule.LAST_DAY_OF_MONTH);
         int period = 2;
-        Schedule schedule = Schedule.createMonthlyByDay(toDate(2002, 04, 30, "Tue", 8, 27),
+        Schedule schedule = Schedule.createMonthlyByDay(
+                toDate(2002, 04, 30, "Tue", 8, 27),
                 toDate(2002, 7, 10, "Wed", 12, 00),
                 gmtTz, time0827, period, daysOfMonth);
         Date d;
@@ -301,7 +281,8 @@ public class ScheduleTest extends TestCase {
         int period = 3;
         int daysOfWeek = (1 << Calendar.THURSDAY) | (1 << Calendar.SUNDAY);
         int weeksOfMonth = (1 << 2) | (1 << Schedule.LAST_WEEK_OF_MONTH);
-        Schedule schedule = Schedule.createMonthlyByWeek(toDate(2002, 4, 20, "Sat", 8, 27),
+        Schedule schedule = Schedule.createMonthlyByWeek(
+                toDate(2002, 4, 20, "Sat", 8, 27),
                 toDate(2004, 4, 19, "Mon", 12, 00),
                 gmtTz, time0827, period, daysOfWeek, weeksOfMonth);
         Date d;
@@ -321,7 +302,8 @@ public class ScheduleTest extends TestCase {
         int period = 1;
         int daysOfWeek = (1 << Calendar.THURSDAY);
         int weeksOfMonth = (1 << Schedule.LAST_WEEK_OF_MONTH);
-        Schedule schedule = Schedule.createMonthlyByWeek(toDate(2002, 3, 07, "Thu", 14, 00),
+        Schedule schedule = Schedule.createMonthlyByWeek(
+                toDate(2002, 3, 07, "Thu", 14, 00),
                 toDate(2004, 4, 19, "Mon", 12, 00),
                 jstTz, time0827, period, daysOfWeek, weeksOfMonth);
         Date d;
@@ -375,7 +357,8 @@ public class ScheduleTest extends TestCase {
             () {
         int period = 1;
         TimeZone tz = pstTz;
-        Schedule schedule = Schedule.createDaily(toDate(2002, 04, 03, "Wed", 8, 27, tz), null,
+        Schedule schedule = Schedule.createDaily(
+                toDate(2002, 04, 03, "Wed", 8, 27, tz), null,
                 tz, time0233, period);
         Date d;
         d = schedule.nextOccurrence(null, false);
@@ -426,3 +409,5 @@ public class ScheduleTest extends TestCase {
         assertEquals(2002, 10, 29, "Tue", 10, 33, d);
     }
 }
+
+// End ScheduleTest.java

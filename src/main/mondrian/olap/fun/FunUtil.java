@@ -291,6 +291,24 @@ public class FunUtil extends Util {
 		return null;
 	}
 
+    /**
+     * Returns <code>true</code> if the mask in <code>flag</code> is set.
+     * @param value The value to check.
+     * @param mask The mask within value to look for.
+     * @param strict If <code>true</code> all the bits in mask must be set. If
+     * <code>false</code> the method will return <code>true</code> if any of the
+     * bits in <code>mask</code> are set.
+     * @return <code>true</code> if the correct bits in <code>mask</code> are set.
+     */
+    static boolean checkFlag(int value, int mask, boolean strict) {
+        if (strict) {
+            return (value & mask) == mask;
+        }
+        else {
+            return (value & mask) != 0;
+        }
+    }
+
 	/** Adds every element of <code>right</code> to <code>left</code>. **/
 	static void add(Vector left, Vector right) {
 		if (right == null) {
@@ -539,7 +557,9 @@ public class FunUtil extends Util {
 			toPercent(members, mapMemberToValue);
 		}
 		double runningTotal = 0;
-		for (int i = 0, numMembers = members.size(); i < numMembers; i++) {
+        int numMembers = members.size();
+        int nullCount = 0;
+		for (int i = 0; i < numMembers; i++) {
 			if (runningTotal >= target) {
 				members = members.subList(0, i);
 				break;
@@ -549,10 +569,24 @@ public class FunUtil extends Util {
 				runningTotal += ((Number) o).doubleValue();
 			} else if (o instanceof Exception) {
 				// ignore the error
+            } else if (o instanceof Util.NullCellValue) {
+                nullCount++;
 			} else {
 				throw Util.newInternal("got " + o + " when expecting Number");
 			}
 		}
+
+        // MSAS exhibits the following behavior. If the value of all members is
+        // null, then the first (or last) member of the set is returned for percent
+        // operations.
+        if (isPercent && nullCount == numMembers) {
+            if (isTop) {
+                return members.subList(0, 1);
+            }
+            else {
+                return members.subList(numMembers - 1, numMembers);
+            }
+        }
 		return members;
 	}
 
@@ -589,8 +623,28 @@ public class FunUtil extends Util {
 			asArray[i] = ((Double) sw.v.get(i)).doubleValue();
 		}
 		Arrays.sort(asArray);
-		int median = (int) Math.floor(asArray.length / 2);
-		return new Double(asArray[median]);
+
+        /*
+         * The median is defined as the value that has exactly the same
+         * number of entries before it in the sorted list as after.
+         * So, if the number of entries in the list is odd, the
+         * median is the entry at (length-1)/2 (using zero-based indexes).
+         * If the number of entries is even, the median is defined as the
+         * arithmetic mean of the two numbers in the middle of the list, or
+         * (entries[length/2 - 1] + entries[length/2]) / 2.
+         */
+        int length = asArray.length;
+        Double result;
+        if ((length & 1) == 1) {
+            // The length is odd. Note that length/2 is an integer expression,
+            // and it's positive so we save ourselves a divide...
+            result = new Double(asArray[length >> 1]);
+        }
+        else {
+            result = new Double((asArray[(length >> 1) - 1] + asArray[length >> 1]) / 2.0);
+        }
+
+		return result;
 	}
 
     /**
@@ -890,32 +944,140 @@ public class FunUtil extends Util {
 		return members;
 	}
 
-	/**
-	 * Helper for <code>OpeningPeriod</code> and <code>ClosingPeriod</code>.
-	 */
-	static Object openClosingPeriod(Evaluator evaluator, FunDef funDef, Member member, Level level) {
-        if (level == null) {
+    /**
+     * Returns the member under ancestorMember having the same relative position under
+     * member's parent.
+     * <p>For exmaple, cousin([Feb 2001], [Q3 2001]) is [August 2001].
+     * @param schemaReader The reader to use
+     * @param member The member for which we'll find the cousin.
+     * @param ancestorMember The cousin's ancestor.
+     * @return The child of <code>ancestorMember</code> in the same position under
+     * <code>ancestorMember</code> as <code>member</code> is under its parent.
+     */
+    static Member cousin(SchemaReader schemaReader, Member member, Member ancestorMember) {
+        if (member.getHierarchy() != ancestorMember.getHierarchy()) {
+            throw MondrianResource.instance().newCousinHierarchyMismatch(
+                member.getUniqueName(), ancestorMember.getUniqueName());
+        }
+        if (member.getLevel().getDepth() < ancestorMember.getLevel().getDepth()) {
             return member.getHierarchy().getNullMember();
         }
-		if (member.getHierarchy() != level.getHierarchy()) {
-			throw newEvalException(
-					funDef,
-					"member '" + member +
-					"' must be in same hierarchy as level '" + level + "'");
-		}
-		if (member.getLevel().getDepth() > level.getDepth()) {
-			return member.getHierarchy().getNullMember();
-		}
-		// Expand member to its children, until we get to the right
-		// level. We assume that all children are in the same
-		// level.
-		Member[] children = {member};
-		while (children.length > 0 &&
-				children[0].getLevel().getDepth() < level.getDepth()) {
-			children = evaluator.getSchemaReader().getMemberChildren(children);
-		}
-		return children[children.length - 1];
-	}
+
+        Member cousin = cousin2(schemaReader, member, ancestorMember);
+        if (cousin == null) {
+            cousin = member.getHierarchy().getNullMember();
+        }
+
+        return cousin;
+    }
+
+    static private Member cousin2(SchemaReader schemaReader, Member member1, Member member2) {
+        if (member1.getLevel() == member2.getLevel()) {
+            return member2;
+        }
+        Member uncle = cousin2(schemaReader, member1.getParentMember(), member2);
+        if (uncle == null) {
+            return null;
+        }
+        int ordinal = Util.getMemberOrdinalInParent(schemaReader, member1);
+        Member[] cousins = schemaReader.getMemberChildren(uncle);
+        if (cousins.length <= ordinal) {
+            return null;
+        }
+        return cousins[ordinal];
+    }
+
+    /**
+     * Returns the ancestor of <code>member</code> at the given level
+     * or distance. It is assumed that any error checking required
+     * has been done prior to calling this function.
+     * <p>This method takes into consideration the fact that there
+     * may be intervening hidden members between <code>member</code>
+     * and the ancestor. If <code>targetLevel</code> is not null, then
+     * the method will only return a member if the level at
+     * <code>distance</code> from the member is actually the
+     * <code>targetLevel</code> specified.
+     * @param evaluator The evaluation context
+     * @param member The member for which the ancestor is to be found
+     * @param distance The distance up the chain the ancestor is to
+     * be found.
+     * @param targetLevel The desired targetLevel of the ancestor. If <code>null</code>,
+     * then the distance completely determines the desired ancestor.
+     * @return The ancestor member, or <code>null</code> if no such
+     * ancestor exists.
+     */
+    static Member ancestor(Evaluator evaluator, Member member, int distance, Level targetLevel) {
+        if (targetLevel != null && member.getHierarchy() != targetLevel.getHierarchy()) {
+            throw MondrianResource.instance().newMemberNotInLevelHierarchy(member.getUniqueName(), targetLevel.getUniqueName());
+        }
+
+        if (distance == 0) {
+            /*
+            * Shortcut if there's nowhere to go.
+            */
+            return member;
+        }
+        else if (distance < 0) {
+            /*
+            * Can't go backwards.
+            */
+            return member.getHierarchy().getNullMember();
+        }
+
+        Member[] ancestors = member.getAncestorMembers();
+        final SchemaReader schemaReader = evaluator.getSchemaReader();
+
+        Member result = member.getHierarchy().getNullMember();
+
+        searchLoop:
+        for (int i = 0; i < ancestors.length; i++) {
+            final Member ancestorMember = ancestors[i];
+
+            if (targetLevel != null) {
+                if (ancestorMember.getLevel() == targetLevel) {
+                    if (schemaReader.isVisible(ancestorMember)) {
+                        result = ancestorMember;
+                        break searchLoop;
+                    }
+                    else {
+                        result = member.getHierarchy().getNullMember();
+                        break searchLoop;
+                    }
+                }
+            }
+            else {
+                if (schemaReader.isVisible(ancestorMember)) {
+                    distance--;
+
+                    //
+                    // Make sure that this ancestor is really on the right targetLevel. If
+                    // a targetLevel was specified and at least one of the ancestors was
+                    // hidden, this this algorithm goes too far up the ancestor
+                    // list. It's not a problem, except that we need to check
+                    // if it's happened and return the hierarchy's null member
+                    // instead.
+                    //
+                    // For example, consider what happens with
+                    // Ancestor([Store].[Israel].[Haifa], [Store].[Store State]). The
+                    // distance from [Haifa] to [Store State] is 1, but that lands us at
+                    // the country targetLevel, which is clearly wrong.
+                    //
+                    if (distance == 0) {
+                        if (targetLevel == null || ancestorMember.getLevel() == targetLevel) {
+                            result = ancestorMember;
+                            break searchLoop;
+                        }
+                        else {
+                            result = member.getHierarchy().getNullMember();
+                            break searchLoop;
+                        }
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
 
 	static boolean equals(Member m1, Member m2) {
 		return m1 == null ?
@@ -950,7 +1112,109 @@ public class FunUtil extends Util {
 			}
 		}
 	}
-	/**
+
+    /**
+     * Evaluates the OPENINGPERIOD (or, CLOSINGPERIOD, if
+     * <code>isOpeningPeriod</code> is false) function.
+     */
+    static Object openingClosingPeriod(Evaluator evaluator, Exp[] args,
+        boolean isOpeningPeriod)
+    {
+        Member member;
+        Level level;
+
+        //
+        // If the member argument is present, use it. Otherwise default
+        // to the time dimension's current member.
+        //
+        if (args.length == 2) {
+            member = getMemberArg(evaluator, args, 1, false);
+        } else {
+            member = evaluator.getContext(evaluator.getCube().getTimeDimension());
+        }
+
+        //
+        // If the level argument is present, use it. Otherwise use the level
+        // immediately after that of the member argument.
+        //
+        if (args.length >= 1) {
+            level = getLevelArg(evaluator,  args, 0, false);
+        } else {
+            int targetDepth = member.getLevel().getDepth() + 1;
+            Level[] levels = member.getHierarchy().getLevels();
+
+            if (levels.length <= targetDepth) {
+                return member.getHierarchy().getNullMember();
+            }
+            level = levels[targetDepth];
+        }
+
+        //
+        // Make sure the member and the level come from the same hierarchy.
+        //
+        if (!member.getHierarchy().equals(level.getHierarchy())) {
+            throw MondrianResource.instance().newFunctionMbrAndLevelHierarchyMismatch(
+                    isOpeningPeriod ? "OpeningPeriod" : "ClosingPeriod",
+                    level.getHierarchy().getUniqueName(),
+                    member.getHierarchy().getUniqueName());
+        }
+
+        //
+        // Shortcut if the level is above the member.
+        //
+        if (level.getDepth() < member.getLevel().getDepth()) {
+            return member.getHierarchy().getNullMember();
+        }
+
+        //
+        // Shortcut if the level is the same as the member
+        //
+        if (level == member.getLevel()) {
+            return member;
+        }
+
+        return getDescendant(evaluator.getSchemaReader(), member, level,
+            isOpeningPeriod);
+    }
+
+    /**
+     * Returns the first or last descendant of the member at the target level.
+     * This method is the implementation of both OpeningPeriod and ClosingPeriod.
+     * @param schemaReader The schema reader to use to evaluate the function.
+     * @param member The member from which the descendant is to be found.
+     * @param targetLevel The level to stop at.
+     * @param returnFirstDescendant Flag indicating whether to return the first
+     * or last descendant of the member.
+     * @return A member.
+     * @pre member.getLevel().getDepth() < level.getDepth();
+     */
+    private static Member getDescendant(SchemaReader schemaReader,
+            Member member, Level targetLevel, boolean returnFirstDescendant) {
+        Member[] children;
+
+        final int targetLevelDepth = targetLevel.getDepth();
+        assertPrecondition(member.getLevel().getDepth() < targetLevelDepth,
+                "member.getLevel().getDepth() < targetLevel.getDepth()");
+
+        for (;;) {
+            children = schemaReader.getMemberChildren(member);
+
+            if (children.length == 0) {
+                return targetLevel.getHierarchy().getNullMember();
+            }
+
+            member = children[returnFirstDescendant ? 0 : (children.length - 1)];
+
+            if (member.getLevel().getDepth() == targetLevelDepth) {
+                if (member.isHidden()) {
+                    return member.getHierarchy().getNullMember();
+                } else {
+                    return member;
+                }
+            }
+        }
+    }
+    /**
 	 * Adds a test case for each method of this object whose signature looks
 	 * like 'public void testXxx()'.
 	 */
@@ -1287,7 +1551,8 @@ class ArrayHolder {
 		int h = 0;
 		for (int i = 0; i < a.length; i++) {
 			Object o = a[i];
-			h = (h << 4) ^ o.hashCode();
+            int rotated = (h << 4) | ((h >> 28) & 0xf);
+			h = rotated ^ o.hashCode();
 		}
 		return h;
 	}

@@ -61,6 +61,13 @@ class RolapConnectionPool {
     }
 
     /**
+     * Clears the connection pool for testing purposes
+     */
+    void clearPool() {
+        mapConnectKeyToPool.clear();
+    }
+
+    /**
      * Gets or creates a connection pool for a particular connect
      * specification.
      */

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>with     member [Product].[Level 0 Name] as    '[Product].Levels(0).Name', SOLVE_ORDER = 0    member [Product].[Level 1 Name] as    '[Product].Levels(1).Name', SOLVE_ORDER = 1    member [Product].[Level 2 Name] as     '[Product].Levels(2).Name',SOLVE_ORDER = 2    member [Product].[Level 3 Name] as    '[Product].Levels(3).Name',SOLVE_ORDER = 3    member [Product].[Level 4 Name] as    '[Product].Levels(4).Name',SOLVE_ORDER = 4    member [Product].[Level 5 Name] as    '[Product].Levels(5).Name',SOLVE_ORDER = 5    member [Product].[Level 6 Name] as    '[Product].Levels(6).Name',SOLVE_ORDER = 6 select     {[Product].[Level 0 Name],[Product].[Level 1 Name],[Product].[Level 2 Name],[Product].[Level 3 Name],[Product].[Level 4 Name],[Product].[Level 5 Name],[Product].[Level 6 Name]}  on Axis(0)  from [Sales]</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Measures]</dim>
+                <dim>[Time]</dim>
+                <dim>[Store]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Unit Sales]</member>
+                    <member>[Time].[1997]</member>
+                    <member>[Store].[All Stores]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Customers].[All Customers]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Product]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Product].[Level 0 Name]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Level 1 Name]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Level 2 Name]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Level 3 Name]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Level 4 Name]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Level 5 Name]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Level 6 Name]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <data>
+            <drow>
+                <cell>(All)</cell>
+                <cell>Product Family</cell>
+                <cell>Product Department</cell>
+                <cell>Product Category</cell>
+                <cell>Product Subcategory</cell>
+                <cell>Brand Name</cell>
+                <cell>Product Name</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

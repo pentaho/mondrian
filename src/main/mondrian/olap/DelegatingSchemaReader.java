@@ -100,6 +100,10 @@ public class DelegatingSchemaReader implements SchemaReader {
     public boolean isVisible(Member member) {
         return schemaReader.isVisible(member);
     }
+
+    public Cube[] getCubes() {
+        return schemaReader.getCubes();
+    }
 }
 
 // End DelegatingSchemaReader.java

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>select [Time].children on axis(0),     [Store].children on axis(1) from [Warehouse and Sales] where ([Measures].[Store Sales])</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Measures]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Store Sales]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Time]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Time].[1997].[Q1]</member>
+                </tuple>
+                <tuple>                                      s
+                    <member>[Time].[1997].[Q2]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q3]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q4]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Store]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store].[All Stores].[Canada]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[Mexico]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>139628.35</cell>
+                <cell>132666.27</cell>
+                <cell>140271.89</cell>
+                <cell>152671.62</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

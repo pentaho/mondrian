@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery> with member [Store].[Median CA Store]  as 'Median([Store].[All Stores].[USA].[CA].children)'  Select { [Store].[Median CA Store],[Store].[All Stores].[USA].[CA].children} on Axis(0), {[Time].[1997].children} on Axis(1) from [Sales] </mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Measures]</dim>
+                <dim>[Product]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Unit Sales]</member>
+                    <member>[Product].[All Products]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Customers].[All Customers]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Store]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store].[Median CA Store]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[CA].[Alameda]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[CA].[Beverly Hills]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[CA].[Los Angeles]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[CA].[San Diego]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[CA].[San Francisco]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Time]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Time].[1997].[Q1]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q2]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q3]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q4]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>5039.0</cell>
+                <cell>#Missing</cell>
+                <cell>3822.0</cell>
+                <cell>6373.0</cell>
+                <cell>6256.0</cell>
+                <cell>439.0</cell>
+            </drow>
+            <drow>
+                <cell>5695.5</cell>
+                <cell>#Missing</cell>
+                <cell>5837.0</cell>
+                <cell>5554.0</cell>
+                <cell>6125.0</cell>
+                <cell>536.0</cell>
+            </drow>
+            <drow>
+                <cell>5597.0</cell>
+                <cell>#Missing</cell>
+                <cell>4724.0</cell>
+                <cell>6470.0</cell>
+                <cell>6619.0</cell>
+                <cell>557.0</cell>
+            </drow>
+            <drow>
+                <cell>6792.5</cell>
+                <cell>#Missing</cell>
+                <cell>6950.0</cell>
+                <cell>7266.0</cell>
+                <cell>6635.0</cell>
+                <cell>585.0</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

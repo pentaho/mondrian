@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>WITH MEMBER [Measures].[YTD Salaries] AS 'Sum(PeriodsToDate([Time].[Year]),[Org Salary])' SELECT {[Measures].[Org Salary],[Measures].[YTD Salaries]} ON COLUMNS, [Time].[Quarter].Members ON ROWS FROM [HR]</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Store]</dim>
+                <dim>[Pay Type]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Position]</dim>
+                <dim>[Department]</dim>
+                <dim>[Employees]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store].[All Stores]</member>
+                    <member>[Pay Type].[All Pay Types]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Position].[All Position]</member>
+                    <member>[Department].[All Departments]</member>
+                    <member>[Employees].[All Employees]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Measures]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Org Salary]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[YTD Salaries]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Time]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Time].[1997].[Q1]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q2]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q3]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q4]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1998].[Q1]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1998].[Q2]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1998].[Q3]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1998].[Q4]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>9858.3828</cell>
+                <cell>9858.3828</cell>
+            </drow>
+            <drow>
+                <cell>9860.2098</cell>
+                <cell>19718.5926</cell>
+            </drow>
+            <drow>
+                <cell>9853.6837</cell>
+                <cell>29572.2763</cell>
+            </drow>
+           <drow>
+                <cell>9859.3949</cell>
+                <cell>39431.6712</cell>
+            </drow>
+            <drow>
+                <cell>58030.4784</cell>
+                <cell>58030.4784</cell>
+            </drow>
+            <drow>
+                <cell>58028.2749</cell>
+                <cell>116058.7533</cell>
+            </drow>
+            <drow>
+                <cell>58029.6571</cell>
+                <cell>174088.4104</cell>
+            </drow>
+            <drow>
+                <cell>58032.3595</cell>
+                <cell>232120.7699</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

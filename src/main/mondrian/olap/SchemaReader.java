@@ -154,6 +154,10 @@ public interface SchemaReader {
      * Returns whether a member is visible.
      */
     boolean isVisible(Member member);
+    /**
+     * Returns the list of accessible cubes.
+     */
+    Cube[] getCubes();
 }
 
 // End SchemaReader.java

@@ -150,10 +150,10 @@ public abstract class ExpBase
 	public Object evaluateScalar(Evaluator evaluator) {
 		Object o = evaluate(evaluator);
 		if (o instanceof Member) {
-			evaluator.setContext((Member) o);
+            evaluator = evaluator.push((Member) o);
 			return evaluator.evaluateCurrent();
 		} else if (o instanceof Member[]) {
-			evaluator.setContext((Member[]) o);
+            evaluator = evaluator.push((Member[]) o);
 			return evaluator.evaluateCurrent();
 		} else {
 			return o;

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2003 Julian Hyde <jhyde@users.sf.net>
+// Copyright (C) 2003-2003 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -2586,9 +2586,8 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "Axis #2:" + nl +
                 "{[Customers].[All Customers]}" + nl +
                 "{[Customers].[All Customers].[Canada]}" + nl +
-                "{[Customers].[All Customers].[Mexico]}" + nl +
-                "{[Customers].[All Customers].[USA]}" + nl +
                 "{[Customers].[All Customers].[Canada].[BC]}" + nl +
+                "{[Customers].[All Customers].[Mexico]}" + nl +
                 "{[Customers].[All Customers].[Mexico].[DF]}" + nl +
                 "{[Customers].[All Customers].[Mexico].[Guerrero]}" + nl +
                 "{[Customers].[All Customers].[Mexico].[Jalisco]}" + nl +
@@ -2598,6 +2597,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "{[Customers].[All Customers].[Mexico].[Veracruz]}" + nl +
                 "{[Customers].[All Customers].[Mexico].[Yucatan]}" + nl +
                 "{[Customers].[All Customers].[Mexico].[Zacatecas]}" + nl +
+                "{[Customers].[All Customers].[USA]}" + nl +
                 "{[Customers].[All Customers].[USA].[CA]}" + nl +
                 "{[Customers].[All Customers].[USA].[OR]}" + nl +
                 "{[Customers].[All Customers].[USA].[WA]}" + nl +
@@ -2607,8 +2607,8 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "Row #1: (null)" + nl +
                 "Row #2: .00" + nl +
                 "Row #2: (null)" + nl +
-                "Row #3: 4,719.00" + nl +
-                "Row #3: 553,587.77" + nl +
+                "Row #3: .00" + nl +
+                "Row #3: (null)" + nl +
                 "Row #4: .00" + nl +
                 "Row #4: (null)" + nl +
                 "Row #5: .00" + nl +
@@ -2627,8 +2627,8 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "Row #11: (null)" + nl +
                 "Row #12: .00" + nl +
                 "Row #12: (null)" + nl +
-                "Row #13: .00" + nl +
-                "Row #13: (null)" + nl +
+                "Row #13: 4,719.00" + nl +
+                "Row #13: 553,587.77" + nl +
                 "Row #14: 2,149.00" + nl +
                 "Row #14: 151,509.69" + nl +
                 "Row #15: 1,008.00" + nl +

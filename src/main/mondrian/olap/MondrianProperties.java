@@ -286,6 +286,36 @@ public class MondrianProperties extends PropertiesPlus {
 	public static final String SparseSegmentDensityThreshold = "mondrian.rolap.SparseSegmentDensityThreshold";
 	/** Value is {@value}. */
 	public static final double SparseSegmentDensityThreshold_Default = 0.5;
+
+    public static final String QueryFilePattern = "mondrian.test.QueryFilePattern";
+    public String getQueryFilePattern() {
+        return getProperty(QueryFilePattern);
+    }
+
+    public static final String CachePoolType = "mondrian.rolap.CachePoolType";
+    public static final String CachePoolType_Soft = "soft";
+    public static final String CachePoolType_Mondrian = "mondrian";
+    public static final String CachePoolType_Hard = "hard";
+
+    /**
+     * The cache pool type. Legal values are {@link #CachePoolType_Soft},
+     * {@link #CachePoolType_Hard} and {@link #CachePoolType_Mondrian}.
+     * <p>
+     * A <code>CachePoolType_Soft</code> cache pool uses a soft reference HashMap for the
+     * cache pool. Its behavior is driven by the Java garbage collector. See
+     * {@link mondrian.rolap.cache.SoftCachePool} for more information.
+     * <p>
+     * The <code>CachePoolType_Hard</code> keeps cache entries in memory until
+     * the cache is flushed. See {@link mondrian.rolap.cache.HardCachePool} for
+     * more information.
+     * <p>
+     * The <code>CachePoolType_Mondrian</code> uses a cost-based metric for keeping
+     * cache entries in the pool. See {@link mondrian.rolap.cache.MondrianCachePool} for
+     * more information.
+     */
+    public String getCachePoolType() {
+        return getProperty(CachePoolType, CachePoolType_Soft);
+    }
 }
 
 /**

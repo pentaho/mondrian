@@ -3,10 +3,9 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2004-2004 Julian Hyde
+// (C) Copyright 2004-2004 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-// Copyright 2003 by Alphablox Corp. All rights reserved.
 */
 
 package mondrian.olap.fun;

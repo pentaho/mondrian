@@ -109,9 +109,13 @@ public class FoodMartTestCase extends TestCase {
 	 * Runs a query with a given expression on an axis, and returns the single
 	 * member.
 	 */
-	public Member executeAxis(String expression) {
+    public Member executeAxis(String expression) {
+        return executeAxis("Sales", expression);
+    }
+
+	public Member executeAxis(String cubeName, String expression) {
 		Result result = TestContext.instance().executeFoodMart(
-				"select {" + expression + "} on columns from Sales");
+				"select {" + expression + "} on columns from " + cubeName);
 		Axis axis = result.getAxes()[0];
 		switch (axis.positions.length) {
 		case 0:
@@ -160,21 +164,43 @@ public class FoodMartTestCase extends TestCase {
 
 	/**
 	 * Runs a query with a given expression on an axis, and asserts that it
-	 * throws an error which matches a particular pattern.
+	 * throws an error which matches a particular pattern. The expression
+     * is evaulated against the Sales cube.
 	 */
 	public void assertAxisThrows(String expression, String pattern) {
 		assertAxisThrows(TestContext.instance().getFoodMartConnection(false),
 				expression, pattern);
 	}
+
 	/**
 	 * Runs a query with a given expression on an axis, and asserts that it
-	 * throws an error which matches a particular pattern.
+	 * throws an error which matches a particular pattern. The expression
+     * is evaulated against the named cube.
+	 */
+	public void assertAxisThrows(String cubeName, String expression, String pattern) {
+		assertAxisThrows(TestContext.instance().getFoodMartConnection(false),
+				cubeName, expression, pattern);
+	}
+
+	/**
+	 * Runs a query with a given expression on an axis, and asserts that it
+	 * throws an error which matches a particular pattern. The expression is evaulated
+     * against the Sales cube.
 	 */
 	public void assertAxisThrows(Connection connection, String expression, String pattern) {
+        assertAxisThrows(connection, "Sales", expression, pattern);
+	}
+
+    /**
+     * Runs a query with a given expression on an axis, and asserts that it
+     * throws an error which matches a particular pattern. The expression is evaulated
+     * against the named cube.
+     */
+	public void assertAxisThrows(Connection connection, String cubeName, String expression, String pattern) {
 		Throwable throwable = null;
 		try {
 			Util.discard(execute(connection,
-					"select {" + expression + "} on columns from Sales"));
+					"select {" + expression + "} on columns from " + cubeName));
 		} catch (Throwable e) {
 			throwable = e;
 		}
@@ -217,14 +243,28 @@ public class FoodMartTestCase extends TestCase {
 
 	/** Executes an expression against the FoodMart database to form a single
 	 * cell result set, then returns that cell's formatted value. **/
-	public String executeExpr(String expression) {
-		Result result = TestContext.instance().executeFoodMart(
-				"with member [Measures].[Foo] as '" +
-				expression +
-				"' select {[Measures].[Foo]} on columns from Sales");
-		Cell cell = result.getCell(new int[]{0});
-		return cell.getFormattedValue();
+	public String executeExpr(String cubeName, String expression) {
+		return executeExprRaw(cubeName, expression).getFormattedValue();
 	}
+
+	public String executeExpr(String expression) {
+        return executeExpr("Sales", expression);
+	}
+
+    /**
+     * Executes the expression in the context of the cube indicated by <code>cubeName</code>,
+     * and returns the result.
+     * @param cubeName The name of the cube to use
+     * @param expression The expression to evaluate
+     * @return Returns a {@link Cell} which is the result of the expression.
+     */
+    public Cell executeExprRaw(String cubeName, String expression) {
+        Result result = TestContext.instance().executeFoodMart("with member [Measures].[Foo] as '" +
+                expression +
+                "' select {[Measures].[Foo]} on columns from " + cubeName);
+
+        return result.getCell(new int[]{0});
+    }
 
 	/** Executes an expression which returns a boolean result. **/
 	public String executeBooleanExpr(String expression) {

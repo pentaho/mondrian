@@ -1,0 +1,2097 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>SELECT DISTINCT({FILTER([Product].MEMBERS, [Product].CurrentMember.Level.Name = "Brand Name")}) on AXIS(0) from [Sales] WHERE ([Measures].[Unit Sales]) </mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Measures]</dim>
+                <dim>[Time]</dim>
+                <dim>[Store]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Unit Sales]</member>
+                    <member>[Time].[1997]</member>
+                    <member>[Store].[All Stores]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Customers].[All Customers]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Product]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Good]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Pearl]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Top Measure]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Walrus]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Excellent]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Fabulous]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Skinner]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Token]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Washington]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Drinks].[Flavored Drinks].[Excellent]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Drinks].[Flavored Drinks].[Fabulous]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Drinks].[Flavored Drinks].[Skinner]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Drinks].[Flavored Drinks].[Token]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Drinks].[Flavored Drinks].[Washington]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Hot Beverages].[Chocolate].[BBB Best]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Hot Beverages].[Chocolate].[CDR]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Hot Beverages].[Chocolate].[Landslide]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Hot Beverages].[Chocolate].[Plato]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Hot Beverages].[Chocolate].[Super]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Hot Beverages].[Coffee].[BBB Best]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Hot Beverages].[Coffee].[CDR]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Hot Beverages].[Coffee].[Landslide]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Hot Beverages].[Coffee].[Plato]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Hot Beverages].[Coffee].[Super]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Pure Juice Beverages].[Juice].[Excellent]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Pure Juice Beverages].[Juice].[Fabulous]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Pure Juice Beverages].[Juice].[Skinner]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Pure Juice Beverages].[Juice].[Token]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Beverages].[Pure Juice Beverages].[Juice].[Washington]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Booker]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Carlson]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Club]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Even Better]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Gorilla]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels].[Colony]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels].[Fantastic]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels].[Great]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels].[Modell]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baked Goods].[Bread].[Bagels].[Sphinx]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins].[Colony]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins].[Fantastic]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins].[Great]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins].[Modell]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baked Goods].[Bread].[Muffins].[Sphinx]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baked Goods].[Bread].[Sliced Bread].[Colony]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baked Goods].[Bread].[Sliced Bread].[Fantastic]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baked Goods].[Bread].[Sliced Bread].[Great]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baked Goods].[Bread].[Sliced Bread].[Modell]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baked Goods].[Bread].[Sliced Bread].[Sphinx]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Baking Goods].[Cooking Oil].[BBB Best]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Baking Goods].[Cooking Oil].[CDR]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Baking Goods].[Cooking Oil].[Landslide]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Baking Goods].[Cooking Oil].[Plato]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Baking Goods].[Cooking Oil].[Super]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Baking Goods].[Sauces].[BBB Best]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Baking Goods].[Sauces].[CDR]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Baking Goods].[Sauces].[Landslide]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Baking Goods].[Sauces].[Plato]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Baking Goods].[Sauces].[Super]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Baking Goods].[Spices].[BBB Best]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Baking Goods].[Spices].[CDR]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Baking Goods].[Spices].[Landslide]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Baking Goods].[Spices].[Plato]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Baking Goods].[Spices].[Super]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Baking Goods].[Sugar].[BBB Best]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Baking Goods].[Sugar].[CDR]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Baking Goods].[Sugar].[Landslide]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Baking Goods].[Sugar].[Plato]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Baking Goods].[Sugar].[Super]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Jam].[BBB Best]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Jam].[CDR]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Jam].[Landslide]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Jam].[Plato]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Jam].[Super]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Jelly].[BBB Best]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Jelly].[CDR]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Jelly].[Landslide]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Jelly].[Plato]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Jelly].[Super]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Peanut Butter].[BBB Best]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Peanut Butter].[CDR]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Peanut Butter].[Landslide]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Peanut Butter].[Plato]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Peanut Butter].[Super]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[BBB Best]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[CDR]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[Landslide]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[Plato]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[Super]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Breakfast Foods].[Breakfast Foods].[Cereal].[Best]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Breakfast Foods].[Breakfast Foods].[Cereal].[Jeffers]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Breakfast Foods].[Breakfast Foods].[Cereal].[Johnson]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Breakfast Foods].[Breakfast Foods].[Cereal].[Radius]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Breakfast Foods].[Breakfast Foods].[Cereal].[Special]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Anchovies].[Anchovies].[Better]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Anchovies].[Anchovies].[Blue Label]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Anchovies].[Anchovies].[Bravo]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Anchovies].[Anchovies].[Just Right]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Anchovies].[Anchovies].[Pleasant]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Clams].[Clams].[Better]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Clams].[Clams].[Blue Label]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Clams].[Clams].[Bravo]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Clams].[Clams].[Just Right]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Clams].[Clams].[Pleasant]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Oysters].[Oysters].[Better]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Oysters].[Oysters].[Blue Label]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Oysters].[Oysters].[Bravo]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Oysters].[Oysters].[Just Right]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Oysters].[Oysters].[Pleasant]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Sardines].[Sardines].[Better]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Sardines].[Sardines].[Blue Label]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Sardines].[Sardines].[Bravo]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Sardines].[Sardines].[Just Right]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Sardines].[Sardines].[Pleasant]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Shrimp].[Shrimp].[Better]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Shrimp].[Shrimp].[Blue Label]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Shrimp].[Shrimp].[Bravo]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Shrimp].[Shrimp].[Just Right]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Shrimp].[Shrimp].[Pleasant]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Soup].[Soup].[Better]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Soup].[Soup].[Blue Label]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Soup].[Soup].[Bravo]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Soup].[Soup].[Just Right]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Soup].[Soup].[Pleasant]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Tuna].[Tuna].[Better]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Tuna].[Tuna].[Blue Label]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Tuna].[Tuna].[Bravo]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Tuna].[Tuna].[Just Right]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Canned Tuna].[Tuna].[Pleasant]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Vegetables].[Canned Vegetables].[Better]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Vegetables].[Canned Vegetables].[Blue Label]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Vegetables].[Canned Vegetables].[Bravo]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Vegetables].[Canned Vegetables].[Just Right]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Foods].[Vegetables].[Canned Vegetables].[Pleasant]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Products].[Fruit].[Canned Fruit].[Applause]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Products].[Fruit].[Canned Fruit].[Big City]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Products].[Fruit].[Canned Fruit].[Green Ribbon]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Products].[Fruit].[Canned Fruit].[Swell]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Canned Products].[Fruit].[Canned Fruit].[Toucan]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Dairy].[Dairy].[Cheese].[Booker]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Dairy].[Dairy].[Cheese].[Carlson]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Dairy].[Dairy].[Cheese].[Club]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Dairy].[Dairy].[Cheese].[Even Better]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Dairy].[Dairy].[Cheese].[Gorilla]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Dairy].[Dairy].[Cottage Cheese].[Booker]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Dairy].[Dairy].[Cottage Cheese].[Carlson]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Dairy].[Dairy].[Cottage Cheese].[Club]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Dairy].[Dairy].[Cottage Cheese].[Even Better]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Dairy].[Dairy].[Cottage Cheese].[Gorilla]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Dairy].[Dairy].[Sour Cream].[Booker]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Dairy].[Dairy].[Sour Cream].[Carlson]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Dairy].[Dairy].[Sour Cream].[Club]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Dairy].[Dairy].[Sour Cream].[Even Better]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Dairy].[Dairy].[Sour Cream].[Gorilla]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Dairy].[Dairy].[Yogurt].[Booker]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Dairy].[Dairy].[Yogurt].[Carlson]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Dairy].[Dairy].[Yogurt].[Club]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Dairy].[Dairy].[Yogurt].[Even Better]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Dairy].[Dairy].[Yogurt].[Gorilla]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Bologna].[American]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Bologna].[Cutting Edge]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Bologna].[Lake]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Bologna].[Moms]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Bologna].[Red Spade]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Deli Meats].[American]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Deli Meats].[Cutting Edge]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Deli Meats].[Lake]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Deli Meats].[Moms]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Deli Meats].[Red Spade]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Fresh Chicken].[American]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Fresh Chicken].[Cutting Edge]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Fresh Chicken].[Lake]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Fresh Chicken].[Moms]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Fresh Chicken].[Red Spade]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Hot Dogs].[American]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Hot Dogs].[Cutting Edge]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Hot Dogs].[Lake]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Hot Dogs].[Moms]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Meat].[Hot Dogs].[Red Spade]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Side Dishes].[Deli Salads].[American]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Side Dishes].[Deli Salads].[Cutting Edge]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Side Dishes].[Deli Salads].[Lake]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Side Dishes].[Deli Salads].[Moms]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Deli].[Side Dishes].[Deli Salads].[Red Spade]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Eggs].[Eggs].[Eggs].[Blue Medal]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Eggs].[Eggs].[Eggs].[Giant]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Eggs].[Eggs].[Eggs].[Jumbo]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Eggs].[Eggs].[Eggs].[National]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Eggs].[Eggs].[Eggs].[Urban]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Breakfast Foods].[Pancake Mix].[Big Time]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Breakfast Foods].[Pancake Mix].[Carrington]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Breakfast Foods].[Pancake Mix].[Golden]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Breakfast Foods].[Pancake Mix].[Imagine]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Breakfast Foods].[Pancake Mix].[PigTail]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Breakfast Foods].[Pancakes].[Big Time]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Breakfast Foods].[Pancakes].[Carrington]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Breakfast Foods].[Pancakes].[Golden]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Breakfast Foods].[Pancakes].[Imagine]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Breakfast Foods].[Pancakes].[PigTail]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Breakfast Foods].[Waffles].[Big Time]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Breakfast Foods].[Waffles].[Carrington]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Breakfast Foods].[Waffles].[Golden]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Breakfast Foods].[Waffles].[Imagine]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Breakfast Foods].[Waffles].[PigTail]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Frozen Desserts].[Ice Cream].[Big Time]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Frozen Desserts].[Ice Cream].[Carrington]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Frozen Desserts].[Ice Cream].[Golden]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Frozen Desserts].[Ice Cream].[Imagine]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Frozen Desserts].[Ice Cream].[PigTail]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Frozen Desserts].[Popsicles].[Big Time]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Frozen Desserts].[Popsicles].[Carrington]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Frozen Desserts].[Popsicles].[Golden]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Frozen Desserts].[Popsicles].[Imagine]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Frozen Desserts].[Popsicles].[PigTail]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Frozen Entrees].[TV Dinner].[Big Time]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Frozen Entrees].[TV Dinner].[Carrington]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Frozen Entrees].[TV Dinner].[Golden]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Frozen Entrees].[TV Dinner].[Imagine]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Frozen Entrees].[TV Dinner].[PigTail]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Meat].[Frozen Chicken].[Big Time]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Meat].[Frozen Chicken].[Carrington]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Meat].[Frozen Chicken].[Golden]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Meat].[Frozen Chicken].[Imagine]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Meat].[Frozen Chicken].[PigTail]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Pizza].[Pizza].[Big Time]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Pizza].[Pizza].[Carrington]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Pizza].[Pizza].[Golden]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Pizza].[Pizza].[Imagine]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Pizza].[Pizza].[PigTail]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Vegetables].[French Fries].[Big Time]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Vegetables].[French Fries].[Carrington]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Vegetables].[French Fries].[Golden]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Vegetables].[French Fries].[Imagine]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Vegetables].[French Fries].[PigTail]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Vegetables].[Frozen Vegetables].[Big Time]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Vegetables].[Frozen Vegetables].[Carrington]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Vegetables].[Frozen Vegetables].[Golden]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Vegetables].[Frozen Vegetables].[Imagine]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Frozen Foods].[Vegetables].[Frozen Vegetables].[PigTail]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Meat].[Meat].[Hamburger].[Footnote]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Meat].[Meat].[Hamburger].[Genteel]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Meat].[Meat].[Hamburger].[Gerolli]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Meat].[Meat].[Hamburger].[Quick]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Meat].[Meat].[Hamburger].[Ship Shape]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Produce].[Fruit].[Fresh Fruit].[Ebony]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Produce].[Fruit].[Fresh Fruit].[Hermanos]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Produce].[Fruit].[Fresh Fruit].[High Top]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Produce].[Fruit].[Fresh Fruit].[Tell Tale]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Produce].[Fruit].[Fresh Fruit].[Tri-State]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Produce].[Packaged Vegetables].[Tofu].[Ebony]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Produce].[Packaged Vegetables].[Tofu].[Hermanos]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Produce].[Packaged Vegetables].[Tofu].[High Top]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Produce].[Packaged Vegetables].[Tofu].[Tell Tale]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Produce].[Packaged Vegetables].[Tofu].[Tri-State]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Produce].[Specialty].[Nuts].[Ebony]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Produce].[Specialty].[Nuts].[Hermanos]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Produce].[Specialty].[Nuts].[High Top]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Produce].[Specialty].[Nuts].[Tell Tale]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Produce].[Specialty].[Nuts].[Tri-State]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Ebony]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Hermanos]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables].[High Top]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Tell Tale]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Tri-State]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Seafood].[Seafood].[Fresh Fish].[Amigo]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Seafood].[Seafood].[Fresh Fish].[Curlew]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Seafood].[Seafood].[Fresh Fish].[Dual City]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Seafood].[Seafood].[Fresh Fish].[Kiwi]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Seafood].[Seafood].[Fresh Fish].[Tip Top]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Seafood].[Seafood].[Shellfish].[Amigo]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Seafood].[Seafood].[Shellfish].[Curlew]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Seafood].[Seafood].[Shellfish].[Dual City]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Seafood].[Seafood].[Shellfish].[Kiwi]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Seafood].[Seafood].[Shellfish].[Tip Top]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Chips].[Best Choice]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Chips].[Fast]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Chips].[Fort West]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Chips].[Horatio]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Chips].[Nationeel]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Cookies].[Best Choice]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Cookies].[Fast]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Cookies].[Fort West]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Cookies].[Horatio]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Cookies].[Nationeel]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Crackers].[Best Choice]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Crackers].[Fast]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Crackers].[Fort West]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Crackers].[Horatio]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Crackers].[Nationeel]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dips].[Best Choice]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dips].[Fast]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dips].[Fort West]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dips].[Horatio]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dips].[Nationeel]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Donuts].[Best Choice]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Donuts].[Fast]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Donuts].[Fort West]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Donuts].[Horatio]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Donuts].[Nationeel]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Best Choice]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fast]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fort West]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Horatio]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Nationeel]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Meat].[Best Choice]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Meat].[Fast]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Meat].[Fort West]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Meat].[Horatio]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Dried Meat].[Nationeel]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Popcorn].[Best Choice]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Popcorn].[Fast]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Popcorn].[Fort West]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Popcorn].[Horatio]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Popcorn].[Nationeel]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Pretzels].[Best Choice]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Pretzels].[Fast]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Pretzels].[Fort West]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Pretzels].[Horatio]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snack Foods].[Snack Foods].[Pretzels].[Nationeel]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snacks].[Candy].[Chocolate Candy].[Atomic]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snacks].[Candy].[Chocolate Candy].[Choice]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snacks].[Candy].[Chocolate Candy].[Gulf Coast]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snacks].[Candy].[Chocolate Candy].[Musial]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snacks].[Candy].[Chocolate Candy].[Thresher]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snacks].[Candy].[Gum].[Atomic]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snacks].[Candy].[Gum].[Choice]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snacks].[Candy].[Gum].[Gulf Coast]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snacks].[Candy].[Gum].[Musial]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snacks].[Candy].[Gum].[Thresher]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snacks].[Candy].[Hard Candy].[Atomic]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snacks].[Candy].[Hard Candy].[Choice]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snacks].[Candy].[Hard Candy].[Gulf Coast]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snacks].[Candy].[Hard Candy].[Musial]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Snacks].[Candy].[Hard Candy].[Thresher]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Starchy Foods].[Starchy Foods].[Pasta].[Colossal]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Starchy Foods].[Starchy Foods].[Pasta].[Discover]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Starchy Foods].[Starchy Foods].[Pasta].[Jardon]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Starchy Foods].[Starchy Foods].[Pasta].[Medalist]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Starchy Foods].[Starchy Foods].[Pasta].[Monarch]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Starchy Foods].[Starchy Foods].[Pasta].[Shady Lake]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Starchy Foods].[Starchy Foods].[Rice].[Colossal]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Starchy Foods].[Starchy Foods].[Rice].[Discover]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Starchy Foods].[Starchy Foods].[Rice].[Jardon]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Starchy Foods].[Starchy Foods].[Rice].[Medalist]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Starchy Foods].[Starchy Foods].[Rice].[Monarch]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Food].[Starchy Foods].[Starchy Foods].[Rice].[Shady Lake]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Carousel].[Specialty].[Sunglasses].[ADJ]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Carousel].[Specialty].[Sunglasses].[King]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Carousel].[Specialty].[Sunglasses].[Prelude]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Carousel].[Specialty].[Sunglasses].[Symphony]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Carousel].[Specialty].[Sunglasses].[Toretti]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Checkout].[Hardware].[Screwdrivers].[Akron]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Checkout].[Hardware].[Screwdrivers].[Black Tie]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Checkout].[Hardware].[Screwdrivers].[Framton]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Checkout].[Hardware].[Screwdrivers].[James Bay]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Checkout].[Hardware].[Screwdrivers].[Queen]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Checkout].[Miscellaneous].[Maps].[Akron]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Checkout].[Miscellaneous].[Maps].[Black Tie]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Checkout].[Miscellaneous].[Maps].[Framton]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Checkout].[Miscellaneous].[Maps].[James Bay]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Checkout].[Miscellaneous].[Maps].[Queen]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products].[Conditioner].[Bird Call]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products].[Conditioner].[Consolidated]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products].[Conditioner].[Faux Products]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products].[Conditioner].[Hilltop]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products].[Conditioner].[Steady]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products].[Mouthwash].[Bird Call]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products].[Mouthwash].[Consolidated]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products].[Mouthwash].[Faux Products]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products].[Mouthwash].[Hilltop]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products].[Mouthwash].[Steady]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products].[Shampoo].[Bird Call]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products].[Shampoo].[Consolidated]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products].[Shampoo].[Faux Products]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products].[Shampoo].[Hilltop]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products].[Shampoo].[Steady]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products].[Toothbrushes].[Bird Call]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products].[Toothbrushes].[Consolidated]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products].[Toothbrushes].[Faux Products]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products].[Toothbrushes].[Hilltop]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products].[Toothbrushes].[Steady]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Cold Remedies].[Cold Remedies].[Bird Call]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Cold Remedies].[Cold Remedies].[Consolidated]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Cold Remedies].[Cold Remedies].[Faux Products]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Cold Remedies].[Cold Remedies].[Hilltop]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Cold Remedies].[Cold Remedies].[Steady]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Decongestants].[Nasal Sprays].[Bird Call]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Decongestants].[Nasal Sprays].[Consolidated]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Decongestants].[Nasal Sprays].[Faux Products]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Decongestants].[Nasal Sprays].[Hilltop]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Decongestants].[Nasal Sprays].[Steady]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Hygiene].[Personal Hygiene].[Bird Call]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Hygiene].[Personal Hygiene].[Consolidated]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Hygiene].[Personal Hygiene].[Faux Products]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Hygiene].[Personal Hygiene].[Hilltop]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Hygiene].[Personal Hygiene].[Steady]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Pain Relievers].[Acetominifen].[Bird Call]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Pain Relievers].[Acetominifen].[Consolidated]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Pain Relievers].[Acetominifen].[Faux Products]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Pain Relievers].[Acetominifen].[Hilltop]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Pain Relievers].[Acetominifen].[Steady]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Pain Relievers].[Aspirin].[Bird Call]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Pain Relievers].[Aspirin].[Consolidated]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Pain Relievers].[Aspirin].[Faux Products]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Pain Relievers].[Aspirin].[Hilltop]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Pain Relievers].[Aspirin].[Steady]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Pain Relievers].[Ibuprofen].[Bird Call]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Pain Relievers].[Ibuprofen].[Consolidated]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Pain Relievers].[Ibuprofen].[Faux Products]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Pain Relievers].[Ibuprofen].[Hilltop]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Health and Hygiene].[Pain Relievers].[Ibuprofen].[Steady]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Bathroom Products].[Toilet Brushes].[Cormorant]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Bathroom Products].[Toilet Brushes].[Denny]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Bathroom Products].[Toilet Brushes].[High Quality]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Bathroom Products].[Toilet Brushes].[Red Wing]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Bathroom Products].[Toilet Brushes].[Sunset]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Candles].[Candles].[Cormorant]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Candles].[Candles].[Denny]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Candles].[Candles].[High Quality]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Candles].[Candles].[Red Wing]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Candles].[Candles].[Sunset]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Cleaning Supplies].[Cleaners].[Cormorant]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Cleaning Supplies].[Cleaners].[Denny]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Cleaning Supplies].[Cleaners].[High Quality]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Cleaning Supplies].[Cleaners].[Red Wing]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Cleaning Supplies].[Cleaners].[Sunset]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Cleaning Supplies].[Deodorizers].[Cormorant]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Cleaning Supplies].[Deodorizers].[Denny]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Cleaning Supplies].[Deodorizers].[High Quality]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Cleaning Supplies].[Deodorizers].[Red Wing]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Cleaning Supplies].[Deodorizers].[Sunset]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Electrical].[Batteries].[Cormorant]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Electrical].[Batteries].[Denny]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Electrical].[Batteries].[High Quality]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Electrical].[Batteries].[Red Wing]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Electrical].[Batteries].[Sunset]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Electrical].[Lightbulbs].[Cormorant]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Electrical].[Lightbulbs].[Denny]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Electrical].[Lightbulbs].[High Quality]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Electrical].[Lightbulbs].[Red Wing]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Electrical].[Lightbulbs].[Sunset]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Hardware].[Tools].[Cormorant]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Hardware].[Tools].[Denny]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Hardware].[Tools].[High Quality]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Hardware].[Tools].[Red Wing]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Hardware].[Tools].[Sunset]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pot Cleaners].[Cormorant]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pot Cleaners].[Denny]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pot Cleaners].[High Quality]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pot Cleaners].[Red Wing]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pot Cleaners].[Sunset]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pot Scrubbers].[Cormorant]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pot Scrubbers].[Denny]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pot Scrubbers].[High Quality]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pot Scrubbers].[Red Wing]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pot Scrubbers].[Sunset]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[Cormorant]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[Denny]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[High Quality]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[Red Wing]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[Sunset]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Sponges].[Cormorant]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Sponges].[Denny]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Sponges].[High Quality]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Sponges].[Red Wing]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Sponges].[Sunset]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Paper Products].[Paper Dishes].[Cormorant]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Paper Products].[Paper Dishes].[Denny]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Paper Products].[Paper Dishes].[High Quality]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Paper Products].[Paper Dishes].[Red Wing]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Paper Products].[Paper Dishes].[Sunset]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Paper Products].[Paper Wipes].[Cormorant]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Paper Products].[Paper Wipes].[Denny]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Paper Products].[Paper Wipes].[High Quality]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Paper Products].[Paper Wipes].[Red Wing]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Paper Products].[Paper Wipes].[Sunset]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Plastic Products].[Plastic Utensils].[Cormorant]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Plastic Products].[Plastic Utensils].[Denny]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Plastic Products].[Plastic Utensils].[High Quality]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Plastic Products].[Plastic Utensils].[Red Wing]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Household].[Plastic Products].[Plastic Utensils].[Sunset]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Auto Magazines].[Dollar]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Auto Magazines].[Excel]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Auto Magazines].[Gauss]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Auto Magazines].[Mighty Good]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Auto Magazines].[Robust]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Computer Magazines].[Dollar]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Computer Magazines].[Excel]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Computer Magazines].[Gauss]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Computer Magazines].[Mighty Good]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Computer Magazines].[Robust]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Fashion Magazines].[Dollar]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Fashion Magazines].[Excel]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Fashion Magazines].[Gauss]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Fashion Magazines].[Mighty Good]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Fashion Magazines].[Robust]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Home Magazines].[Dollar]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Home Magazines].[Excel]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Home Magazines].[Gauss]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Home Magazines].[Mighty Good]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Home Magazines].[Robust]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Sports Magazines].[Dollar]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Sports Magazines].[Excel]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Sports Magazines].[Gauss]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Sports Magazines].[Mighty Good]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[All Products].[Non-Consumable].[Periodicals].[Magazines].[Sports Magazines].[Robust]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <data>
+            <drow>
+                <cell>269.0</cell>
+                <cell>385.0</cell>
+                <cell>362.0</cell>
+                <cell>306.0</cell>
+                <cell>361.0</cell>
+                <cell>945.0</cell>
+                <cell>1206.0</cell>
+                <cell>1015.0</cell>
+                <cell>951.0</cell>
+                <cell>1038.0</cell>
+                <cell>738.0</cell>
+                <cell>632.0</cell>
+                <cell>655.0</cell>
+                <cell>735.0</cell>
+                <cell>647.0</cell>
+                <cell>468.0</cell>
+                <cell>469.0</cell>
+                <cell>506.0</cell>
+                <cell>466.0</cell>
+                <cell>560.0</cell>
+                <cell>171.0</cell>
+                <cell>167.0</cell>
+                <cell>155.0</cell>
+                <cell>175.0</cell>
+                <cell>134.0</cell>
+                <cell>774.0</cell>
+                <cell>714.0</cell>
+                <cell>683.0</cell>
+                <cell>718.0</cell>
+                <cell>610.0</cell>
+                <cell>652.0</cell>
+                <cell>861.0</cell>
+                <cell>609.0</cell>
+                <cell>706.0</cell>
+                <cell>568.0</cell>
+                <cell>772.0</cell>
+                <cell>927.0</cell>
+                <cell>767.0</cell>
+                <cell>959.0</cell>
+                <cell>761.0</cell>
+                <cell>163.0</cell>
+                <cell>160.0</cell>
+                <cell>145.0</cell>
+                <cell>165.0</cell>
+                <cell>182.0</cell>
+                <cell>740.0</cell>
+                <cell>798.0</cell>
+                <cell>605.0</cell>
+                <cell>719.0</cell>
+                <cell>635.0</cell>
+                <cell>737.0</cell>
+                <cell>815.0</cell>
+                <cell>638.0</cell>
+                <cell>653.0</cell>
+                <cell>715.0</cell>
+                <cell>690.0</cell>
+                <cell>619.0</cell>
+                <cell>694.0</cell>
+                <cell>654.0</cell>
+                <cell>620.0</cell>
+                <cell>158.0</cell>
+                <cell>129.0</cell>
+                <cell>165.0</cell>
+                <cell>169.0</cell>
+                <cell>160.0</cell>
+                <cell>598.0</cell>
+                <cell>454.0</cell>
+                <cell>627.0</cell>
+                <cell>428.0</cell>
+                <cell>467.0</cell>
+                <cell>379.0</cell>
+                <cell>346.0</cell>
+                <cell>368.0</cell>
+                <cell>337.0</cell>
+                <cell>295.0</cell>
+                <cell>500.0</cell>
+                <cell>549.0</cell>
+                <cell>533.0</cell>
+                <cell>468.0</cell>
+                <cell>506.0</cell>
+                <cell>602.0</cell>
+                <cell>354.0</cell>
+                <cell>596.0</cell>
+                <cell>521.0</cell>
+                <cell>492.0</cell>
+                <cell>556.0</cell>
+                <cell>545.0</cell>
+                <cell>531.0</cell>
+                <cell>520.0</cell>
+                <cell>515.0</cell>
+                <cell>988.0</cell>
+                <cell>706.0</cell>
+                <cell>828.0</cell>
+                <cell>820.0</cell>
+                <cell>758.0</cell>
+                <cell>569.0</cell>
+                <cell>621.0</cell>
+                <cell>617.0</cell>
+                <cell>682.0</cell>
+                <cell>828.0</cell>
+                <cell>198.0</cell>
+                <cell>136.0</cell>
+                <cell>147.0</cell>
+                <cell>205.0</cell>
+                <cell>214.0</cell>
+                <cell>189.0</cell>
+                <cell>165.0</cell>
+                <cell>184.0</cell>
+                <cell>177.0</cell>
+                <cell>167.0</cell>
+                <cell>124.0</cell>
+                <cell>127.0</cell>
+                <cell>119.0</cell>
+                <cell>160.0</cell>
+                <cell>178.0</cell>
+                <cell>166.0</cell>
+                <cell>191.0</cell>
+                <cell>158.0</cell>
+                <cell>164.0</cell>
+                <cell>140.0</cell>
+                <cell>159.0</cell>
+                <cell>138.0</cell>
+                <cell>137.0</cell>
+                <cell>188.0</cell>
+                <cell>182.0</cell>
+                <cell>1613.0</cell>
+                <cell>1589.0</cell>
+                <cell>1535.0</cell>
+                <cell>1727.0</cell>
+                <cell>1542.0</cell>
+                <cell>341.0</cell>
+                <cell>336.0</cell>
+                <cell>326.0</cell>
+                <cell>429.0</cell>
+                <cell>278.0</cell>
+                <cell>1027.0</cell>
+                <cell>911.0</cell>
+                <cell>1074.0</cell>
+                <cell>1132.0</cell>
+                <cell>1053.0</cell>
+                <cell>355.0</cell>
+                <cell>383.0</cell>
+                <cell>315.0</cell>
+                <cell>379.0</cell>
+                <cell>380.0</cell>
+                <cell>1632.0</cell>
+                <cell>1605.0</cell>
+                <cell>1476.0</cell>
+                <cell>1617.0</cell>
+                <cell>1488.0</cell>
+                <cell>309.0</cell>
+                <cell>336.0</cell>
+                <cell>335.0</cell>
+                <cell>344.0</cell>
+                <cell>308.0</cell>
+                <cell>308.0</cell>
+                <cell>282.0</cell>
+                <cell>373.0</cell>
+                <cell>390.0</cell>
+                <cell>299.0</cell>
+                <cell>317.0</cell>
+                <cell>372.0</cell>
+                <cell>374.0</cell>
+                <cell>374.0</cell>
+                <cell>346.0</cell>
+                <cell>559.0</cell>
+                <cell>494.0</cell>
+                <cell>498.0</cell>
+                <cell>529.0</cell>
+                <cell>508.0</cell>
+                <cell>719.0</cell>
+                <cell>612.0</cell>
+                <cell>605.0</cell>
+                <cell>764.0</cell>
+                <cell>639.0</cell>
+                <cell>168.0</cell>
+                <cell>160.0</cell>
+                <cell>204.0</cell>
+                <cell>196.0</cell>
+                <cell>150.0</cell>
+                <cell>507.0</cell>
+                <cell>519.0</cell>
+                <cell>524.0</cell>
+                <cell>591.0</cell>
+                <cell>487.0</cell>
+                <cell>501.0</cell>
+                <cell>555.0</cell>
+                <cell>492.0</cell>
+                <cell>525.0</cell>
+                <cell>531.0</cell>
+                <cell>808.0</cell>
+                <cell>789.0</cell>
+                <cell>670.0</cell>
+                <cell>941.0</cell>
+                <cell>924.0</cell>
+                <cell>201.0</cell>
+                <cell>163.0</cell>
+                <cell>110.0</cell>
+                <cell>173.0</cell>
+                <cell>167.0</cell>
+                <cell>160.0</cell>
+                <cell>140.0</cell>
+                <cell>165.0</cell>
+                <cell>149.0</cell>
+                <cell>169.0</cell>
+                <cell>680.0</cell>
+                <cell>736.0</cell>
+                <cell>677.0</cell>
+                <cell>655.0</cell>
+                <cell>659.0</cell>
+                <cell>665.0</cell>
+                <cell>501.0</cell>
+                <cell>484.0</cell>
+                <cell>526.0</cell>
+                <cell>556.0</cell>
+                <cell>826.0</cell>
+                <cell>671.0</cell>
+                <cell>681.0</cell>
+                <cell>632.0</cell>
+                <cell>650.0</cell>
+                <cell>601.0</cell>
+                <cell>478.0</cell>
+                <cell>555.0</cell>
+                <cell>473.0</cell>
+                <cell>478.0</cell>
+                <cell>567.0</cell>
+                <cell>482.0</cell>
+                <cell>476.0</cell>
+                <cell>525.0</cell>
+                <cell>530.0</cell>
+                <cell>803.0</cell>
+                <cell>736.0</cell>
+                <cell>555.0</cell>
+                <cell>551.0</cell>
+                <cell>665.0</cell>
+                <cell>618.0</cell>
+                <cell>465.0</cell>
+                <cell>532.0</cell>
+                <cell>441.0</cell>
+                <cell>513.0</cell>
+                <cell>1017.0</cell>
+                <cell>896.0</cell>
+                <cell>819.0</cell>
+                <cell>800.0</cell>
+                <cell>883.0</cell>
+                <cell>359.0</cell>
+                <cell>322.0</cell>
+                <cell>374.0</cell>
+                <cell>362.0</cell>
+                <cell>297.0</cell>
+                <cell>2399.0</cell>
+                <cell>2614.0</cell>
+                <cell>1997.0</cell>
+                <cell>2404.0</cell>
+                <cell>2353.0</cell>
+                <cell>167.0</cell>
+                <cell>211.0</cell>
+                <cell>172.0</cell>
+                <cell>188.0</cell>
+                <cell>148.0</cell>
+                <cell>873.0</cell>
+                <cell>943.0</cell>
+                <cell>853.0</cell>
+                <cell>906.0</cell>
+                <cell>825.0</cell>
+                <cell>3999.0</cell>
+                <cell>4701.0</cell>
+                <cell>3716.0</cell>
+                <cell>4379.0</cell>
+                <cell>3944.0</cell>
+                <cell>175.0</cell>
+                <cell>186.0</cell>
+                <cell>174.0</cell>
+                <cell>181.0</cell>
+                <cell>119.0</cell>
+                <cell>186.0</cell>
+                <cell>178.0</cell>
+                <cell>198.0</cell>
+                <cell>195.0</cell>
+                <cell>172.0</cell>
+                <cell>660.0</cell>
+                <cell>945.0</cell>
+                <cell>826.0</cell>
+                <cell>776.0</cell>
+                <cell>971.0</cell>
+                <cell>1281.0</cell>
+                <cell>1325.0</cell>
+                <cell>1476.0</cell>
+                <cell>1361.0</cell>
+                <cell>1357.0</cell>
+                <cell>300.0</cell>
+                <cell>354.0</cell>
+                <cell>365.0</cell>
+                <cell>370.0</cell>
+                <cell>367.0</cell>
+                <cell>563.0</cell>
+                <cell>757.0</cell>
+                <cell>617.0</cell>
+                <cell>673.0</cell>
+                <cell>722.0</cell>
+                <cell>396.0</cell>
+                <cell>570.0</cell>
+                <cell>501.0</cell>
+                <cell>522.0</cell>
+                <cell>503.0</cell>
+                <cell>1398.0</cell>
+                <cell>1477.0</cell>
+                <cell>1655.0</cell>
+                <cell>1428.0</cell>
+                <cell>1634.0</cell>
+                <cell>150.0</cell>
+                <cell>258.0</cell>
+                <cell>179.0</cell>
+                <cell>201.0</cell>
+                <cell>219.0</cell>
+                <cell>488.0</cell>
+                <cell>572.0</cell>
+                <cell>522.0</cell>
+                <cell>452.0</cell>
+                <cell>476.0</cell>
+                <cell>165.0</cell>
+                <cell>156.0</cell>
+                <cell>177.0</cell>
+                <cell>191.0</cell>
+                <cell>189.0</cell>
+                <cell>900.0</cell>
+                <cell>846.0</cell>
+                <cell>862.0</cell>
+                <cell>812.0</cell>
+                <cell>911.0</cell>
+                <cell>221.0</cell>
+                <cell>104.0</cell>
+                <cell>192.0</cell>
+                <cell>157.0</cell>
+                <cell>176.0</cell>
+                <cell>368.0</cell>
+                <cell>345.0</cell>
+                <cell>305.0</cell>
+                <cell>312.0</cell>
+                <cell>373.0</cell>
+                <cell>539.0</cell>
+                <cell>469.0</cell>
+                <cell>513.0</cell>
+                <cell>555.0</cell>
+                <cell>577.0</cell>
+                <cell>545.0</cell>
+                <cell>342.0</cell>
+                <cell>339.0</cell>
+                <cell>287.0</cell>
+                <cell>369.0</cell>
+                <cell>340.0</cell>
+                <cell>387.0</cell>
+                <cell>164.0</cell>
+                <cell>165.0</cell>
+                <cell>183.0</cell>
+                <cell>167.0</cell>
+                <cell>162.0</cell>
+                <cell>174.0</cell>
+                <cell>111.0</cell>
+                <cell>160.0</cell>
+                <cell>196.0</cell>
+                <cell>169.0</cell>
+                <cell>177.0</cell>
+                <cell>203.0</cell>
+                <cell>213.0</cell>
+                <cell>177.0</cell>
+                <cell>199.0</cell>
+                <cell>109.0</cell>
+                <cell>171.0</cell>
+                <cell>148.0</cell>
+                <cell>218.0</cell>
+                <cell>167.0</cell>
+                <cell>362.0</cell>
+                <cell>302.0</cell>
+                <cell>328.0</cell>
+                <cell>370.0</cell>
+                <cell>413.0</cell>
+                <cell>513.0</cell>
+                <cell>409.0</cell>
+                <cell>538.0</cell>
+                <cell>493.0</cell>
+                <cell>508.0</cell>
+                <cell>190.0</cell>
+                <cell>136.0</cell>
+                <cell>174.0</cell>
+                <cell>174.0</cell>
+                <cell>162.0</cell>
+                <cell>333.0</cell>
+                <cell>351.0</cell>
+                <cell>285.0</cell>
+                <cell>410.0</cell>
+                <cell>397.0</cell>
+                <cell>351.0</cell>
+                <cell>362.0</cell>
+                <cell>379.0</cell>
+                <cell>330.0</cell>
+                <cell>391.0</cell>
+                <cell>700.0</cell>
+                <cell>611.0</cell>
+                <cell>656.0</cell>
+                <cell>724.0</cell>
+                <cell>865.0</cell>
+                <cell>203.0</cell>
+                <cell>144.0</cell>
+                <cell>142.0</cell>
+                <cell>158.0</cell>
+                <cell>195.0</cell>
+                <cell>317.0</cell>
+                <cell>266.0</cell>
+                <cell>278.0</cell>
+                <cell>347.0</cell>
+                <cell>391.0</cell>
+                <cell>150.0</cell>
+                <cell>174.0</cell>
+                <cell>130.0</cell>
+                <cell>183.0</cell>
+                <cell>176.0</cell>
+                <cell>166.0</cell>
+                <cell>151.0</cell>
+                <cell>137.0</cell>
+                <cell>153.0</cell>
+                <cell>226.0</cell>
+                <cell>163.0</cell>
+                <cell>133.0</cell>
+                <cell>149.0</cell>
+                <cell>195.0</cell>
+                <cell>175.0</cell>
+                <cell>457.0</cell>
+                <cell>458.0</cell>
+                <cell>487.0</cell>
+                <cell>598.0</cell>
+                <cell>514.0</cell>
+                <cell>153.0</cell>
+                <cell>162.0</cell>
+                <cell>207.0</cell>
+                <cell>210.0</cell>
+                <cell>195.0</cell>
+                <cell>624.0</cell>
+                <cell>636.0</cell>
+                <cell>635.0</cell>
+                <cell>716.0</cell>
+                <cell>709.0</cell>
+                <cell>613.0</cell>
+                <cell>669.0</cell>
+                <cell>686.0</cell>
+                <cell>802.0</cell>
+                <cell>692.0</cell>
+                <cell>292.0</cell>
+                <cell>356.0</cell>
+                <cell>300.0</cell>
+                <cell>345.0</cell>
+                <cell>389.0</cell>
+                <cell>346.0</cell>
+                <cell>314.0</cell>
+                <cell>296.0</cell>
+                <cell>366.0</cell>
+                <cell>388.0</cell>
+                <cell>118.0</cell>
+                <cell>129.0</cell>
+                <cell>164.0</cell>
+                <cell>159.0</cell>
+                <cell>164.0</cell>
+                <cell>179.0</cell>
+                <cell>142.0</cell>
+                <cell>178.0</cell>
+                <cell>216.0</cell>
+                <cell>164.0</cell>
+                <cell>157.0</cell>
+                <cell>167.0</cell>
+                <cell>189.0</cell>
+                <cell>163.0</cell>
+                <cell>206.0</cell>
+                <cell>319.0</cell>
+                <cell>298.0</cell>
+                <cell>362.0</cell>
+                <cell>332.0</cell>
+                <cell>372.0</cell>
+                <cell>956.0</cell>
+                <cell>883.0</cell>
+                <cell>1158.0</cell>
+                <cell>1063.0</cell>
+                <cell>1060.0</cell>
+                <cell>407.0</cell>
+                <cell>458.0</cell>
+                <cell>491.0</cell>
+                <cell>548.0</cell>
+                <cell>573.0</cell>
+                <cell>184.0</cell>
+                <cell>154.0</cell>
+                <cell>170.0</cell>
+                <cell>170.0</cell>
+                <cell>131.0</cell>
+                <cell>171.0</cell>
+                <cell>134.0</cell>
+                <cell>202.0</cell>
+                <cell>170.0</cell>
+                <cell>169.0</cell>
+                <cell>202.0</cell>
+                <cell>156.0</cell>
+                <cell>174.0</cell>
+                <cell>120.0</cell>
+                <cell>146.0</cell>
+                <cell>220.0</cell>
+                <cell>211.0</cell>
+                <cell>178.0</cell>
+                <cell>176.0</cell>
+                <cell>147.0</cell>
+                <cell>217.0</cell>
+                <cell>170.0</cell>
+                <cell>200.0</cell>
+                <cell>170.0</cell>
+                <cell>152.0</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

@@ -239,6 +239,9 @@ public class SqlQuery
 	public boolean isPostgres() {
 		return getProduct().toUpperCase().indexOf("POSTGRE") >= 0;
 	}
+    public boolean isMSSQL() {
+        return getProduct().toUpperCase().indexOf("SQL SERVER") >= 0;
+    }
 	public boolean isMySQL() {
 		return getProduct().toUpperCase().equals("MYSQL");
 	}
@@ -285,6 +288,8 @@ public class SqlQuery
 			best = "access";
 		} else if (isPostgres()) {
 			best = "postgres";
+        } else if (isMSSQL()) {
+            best = "mssql";
 		} else {
 			best = "generic";
 		}

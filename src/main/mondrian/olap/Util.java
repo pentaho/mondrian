@@ -641,6 +641,10 @@ public class Util extends mondrian.xom.XOMUtil
 			}
 			return sb.toString();
 		}
+
+        public Iterator iterator() {
+            return v.iterator();
+        }
 	}
 
 	/**

@@ -128,6 +128,24 @@ class RolapHierarchy extends HierarchyBase
 		this.foreignKey = xmlCubeDimension.foreignKey;
 	}
 
+    public boolean equals(Object o) {
+        if (!(o instanceof RolapHierarchy)) {
+            return false;
+        }
+        if (this == o) {
+            return true;
+        }
+        RolapHierarchy that = (RolapHierarchy)o;
+        if (sharedHierarchy == null || that.sharedHierarchy == null) {
+            return false;
+        }
+        return sharedHierarchy.equals(that.sharedHierarchy) && getUniqueName().equals(that.getUniqueName());
+    }
+
+    public int hashCode() {
+        return super.hashCode() ^ (sharedHierarchy == null ? 0 : sharedHierarchy.hashCode()); 
+    }
+
 	/**
 	 * Initializes a hierarchy within the context of a cube.
 	 */

@@ -60,21 +60,41 @@ public class RolapMember extends MemberBase
 		this.flags = flags;
 		if (name != null &&
 				!(key != null && name.equals(key.toString()))) {
-			// Save memory by only saving the name as a property if it's different from
-			// the key.
+			// Save memory by only saving the name as a property if it's
+            // different from the key.
 			setProperty(Property.PROPERTY_NAME, name);
 		} else {
-			setUniqueName(key.toString());
+			setUniqueName(key);
 		}
 	}
 
-	private void setUniqueName(String name) {
-		this.uniqueName = (parentMember == null)
+	private void setUniqueName(Object key) {
+        String name = keyToString(key);
+        this.uniqueName = (parentMember == null)
 			? Util.makeFqName(getHierarchy(), name)
 			: Util.makeFqName(parentMember, name);
 	}
 
-	RolapMember(RolapMember parentMember, RolapLevel level, Object value) {
+    /**
+     * Converts a key to a string to be used as part of the member's name
+     * and unique name.
+     *
+     * <p>Usually, it just calls {@link Object#toString}. But if the key is an
+     * integer value represented in a floating-point column, we'd prefer the
+     * integer value. For example, one member of the
+     * <code>[Sales].[Store SQFT]</code> dimension comes out "20319.0" but we'd
+     * like it to be "20319".
+     */
+    private static String keyToString(Object key)
+    {
+        String name = key.toString();
+        if (key instanceof Number && name.endsWith(".0")) {
+            name = name.substring(0, name.length() - 2);
+        }
+        return name;
+    }
+
+    RolapMember(RolapMember parentMember, RolapLevel level, Object value) {
 		this(parentMember, level, value, null, REGULAR_MEMBER_TYPE);
 	}
 
@@ -87,7 +107,7 @@ public class RolapMember extends MemberBase
 		if (name != null) {
 			return name;
 		}
-		return key.toString();
+        return keyToString(key);
 	}
 
 	public void setName(String name) {
@@ -105,7 +125,7 @@ public class RolapMember extends MemberBase
 		}
 		mapPropertyNameToValue.put(name, value);
 		if (name.equals(Property.PROPERTY_NAME)) {
-			setUniqueName(value.toString());
+			setUniqueName(value);
 		}
 	}
 

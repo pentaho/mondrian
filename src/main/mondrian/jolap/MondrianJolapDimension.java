@@ -11,10 +11,7 @@
 */
 package mondrian.jolap;
 
-import mondrian.olap.Dimension;
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Level;
-import mondrian.olap.Property;
+import mondrian.olap.*;
 
 import javax.olap.OLAPException;
 import javax.olap.metadata.CubeDimensionAssociation;
@@ -76,7 +73,7 @@ class MondrianJolapDimension extends ClassifierSupport implements javax.olap.met
 	}
 
 	public boolean isTime() {
-		return dimension.getDimensionType() == Dimension.TIME;
+		return dimension.getDimensionType() == DimensionType.TimeDimension;
 	}
 
 	public void setMeasure(boolean input) throws OLAPException {

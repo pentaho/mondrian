@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>SELECT [Store Type].MEMBERS ON COLUMNS, FILTER([Store City].MEMBERS , [Store City].CurrentMember.PARENT.PARENT.UniqueName = "[Store].[All Stores].[USA]") ON ROWS FROM [Sales] WHERE (Measures.[Sales Count], [Time].[1997])</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Measures]</dim>
+                <dim>[Time]</dim>
+                <dim>[Product]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Sales Count]</member>
+                    <member>[Time].[1997]</member>
+                    <member>[Product].[All Products]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Customers].[All Customers]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Store Type]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store Type].[All Store Types].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store Type].[All Store Types].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store Type].[All Store Types].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store Type].[All Store Types].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store Type].[All Store Types].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store Type].[All Store Types].[Supermarket]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Store]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[CA].[Alameda]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[CA].[Beverly Hills]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[CA].[Los Angeles]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[CA].[San Diego]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[CA].[San Francisco]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[OR].[Portland]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[OR].[Salem]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Bellingham]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Bremerton]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Seattle]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Spokane]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Tacoma]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Walla Walla]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[All Stores].[USA].[WA].[Yakima]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>6815.0</cell>
+                <cell>#Missing</cell>
+                <cell>6815.0</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>8207.0</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>8207.0</cell>
+            </drow>
+            <drow>
+                <cell>8095.0</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>8095.0</cell>
+            </drow>
+            <drow>
+                <cell>1325.0</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>1325.0</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>8264.0</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>8264.0</cell>
+            </drow>
+            <drow>
+                <cell>13347.0</cell>
+                <cell>13347.0</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>1380.0</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>1380.0</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>7876.0</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>7876.0</cell>
+            </drow>
+            <drow>
+                <cell>7956.0</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>7956.0</cell>
+            </drow>
+            <drow>
+                <cell>7397.0</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>7397.0</cell>
+            </drow>
+            <drow>
+                <cell>11184.0</cell>
+                <cell>11184.0</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>1339.0</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>1339.0</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>3652.0</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>3652.0</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

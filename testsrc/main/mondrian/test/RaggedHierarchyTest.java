@@ -107,11 +107,10 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
     }
     public void testDescendantsOfRootAtCity() {
         assertRaggedReturns("Descendants([Store], [Store City])",
-                "[Store].[All Stores].[Israel].[Israel].[Haifa]" + nl +
-                "[Store].[All Stores].[Israel].[Israel].[Tel Aviv]" + nl +
-                "[Store].[All Stores].[USA].[USA].[Washington]" + nl +
                 "[Store].[All Stores].[Canada].[BC].[Vancouver]" + nl +
                 "[Store].[All Stores].[Canada].[BC].[Victoria]" + nl +
+                "[Store].[All Stores].[Israel].[Israel].[Haifa]" + nl +
+                "[Store].[All Stores].[Israel].[Israel].[Tel Aviv]" + nl +
                 "[Store].[All Stores].[Mexico].[DF].[Mexico City]" + nl +
                 "[Store].[All Stores].[Mexico].[DF].[San Andres]" + nl +
                 "[Store].[All Stores].[Mexico].[Guerrero].[Acapulco]" + nl +
@@ -126,6 +125,7 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
                 "[Store].[All Stores].[USA].[CA].[San Francisco]" + nl +
                 "[Store].[All Stores].[USA].[OR].[Portland]" + nl +
                 "[Store].[All Stores].[USA].[OR].[Salem]" + nl +
+                "[Store].[All Stores].[USA].[USA].[Washington]" + nl +
                 "[Store].[All Stores].[USA].[WA].[Bellingham]" + nl +
                 "[Store].[All Stores].[USA].[WA].[Bremerton]" + nl +
                 "[Store].[All Stores].[USA].[WA].[Seattle]" + nl +
@@ -219,68 +219,68 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
                 "Axis #2:" + nl +
                 "{[Store].[All Stores]}" + nl +
                 "{[Store].[All Stores].[Israel]}" + nl +
-                "{[Store].[All Stores].[USA]}" + nl +
-                "{[Store].[All Stores].[Vatican]}" + nl +
                 "{[Store].[All Stores].[Israel].[Israel].[Haifa]}" + nl +
-                "{[Store].[All Stores].[Israel].[Israel].[Tel Aviv]}" + nl +
-                "{[Store].[All Stores].[USA].[CA]}" + nl +
-                "{[Store].[All Stores].[USA].[OR]}" + nl +
-                "{[Store].[All Stores].[USA].[USA].[Washington]}" + nl +
-                "{[Store].[All Stores].[USA].[WA]}" + nl +
-                "{[Store].[All Stores].[Vatican].[Vatican].[null].[Store 17]}" + nl +
                 "{[Store].[All Stores].[Israel].[Israel].[Haifa].[Store 22]}" + nl +
+                "{[Store].[All Stores].[Israel].[Israel].[Tel Aviv]}" + nl +
                 "{[Store].[All Stores].[Israel].[Israel].[Tel Aviv].[Store 23]}" + nl +
+                "{[Store].[All Stores].[USA]}" + nl +
+                "{[Store].[All Stores].[USA].[CA]}" + nl +
                 "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}" + nl +
-                "{[Store].[All Stores].[USA].[CA].[Los Angeles]}" + nl +
-                "{[Store].[All Stores].[USA].[CA].[San Francisco]}" + nl +
-                "{[Store].[All Stores].[USA].[OR].[Portland]}" + nl +
-                "{[Store].[All Stores].[USA].[OR].[Salem]}" + nl +
-                "{[Store].[All Stores].[USA].[USA].[Washington].[Store 24]}" + nl +
-                "{[Store].[All Stores].[USA].[WA].[Bellingham]}" + nl +
-                "{[Store].[All Stores].[USA].[WA].[Bremerton]}" + nl +
-                "{[Store].[All Stores].[USA].[WA].[Seattle]}" + nl +
-                "{[Store].[All Stores].[USA].[WA].[Spokane]}" + nl +
                 "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]}" + nl +
+                "{[Store].[All Stores].[USA].[CA].[Los Angeles]}" + nl +
                 "{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]}" + nl +
+                "{[Store].[All Stores].[USA].[CA].[San Francisco]}" + nl +
                 "{[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}" + nl +
+                "{[Store].[All Stores].[USA].[OR]}" + nl +
+                "{[Store].[All Stores].[USA].[OR].[Portland]}" + nl +
                 "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]}" + nl +
+                "{[Store].[All Stores].[USA].[OR].[Salem]}" + nl +
                 "{[Store].[All Stores].[USA].[OR].[Salem].[Store 13]}" + nl +
+                "{[Store].[All Stores].[USA].[USA].[Washington]}" + nl +
+                "{[Store].[All Stores].[USA].[USA].[Washington].[Store 24]}" + nl +
+                "{[Store].[All Stores].[USA].[WA]}" + nl +
+                "{[Store].[All Stores].[USA].[WA].[Bellingham]}" + nl +
                 "{[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]}" + nl +
+                "{[Store].[All Stores].[USA].[WA].[Bremerton]}" + nl +
                 "{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}" + nl +
+                "{[Store].[All Stores].[USA].[WA].[Seattle]}" + nl +
                 "{[Store].[All Stores].[USA].[WA].[Seattle].[Store 15]}" + nl +
+                "{[Store].[All Stores].[USA].[WA].[Spokane]}" + nl +
                 "{[Store].[All Stores].[USA].[WA].[Spokane].[Store 16]}" + nl +
+                "{[Store].[All Stores].[Vatican]}" + nl +
+                "{[Store].[All Stores].[Vatican].[Vatican].[null].[Store 17]}" + nl +
                 "Row #0: 266,773" + nl +
                 "Row #1: 13,694" + nl +
-                "Row #2: 217,822" + nl +
-                "Row #3: 35,257" + nl +
-                "Row #4: 2,203" + nl +
+                "Row #2: 2,203" + nl +
+                "Row #3: 2,203" + nl +
+                "Row #4: 11,491" + nl +
                 "Row #5: 11,491" + nl +
-                "Row #6: 49,113" + nl +
-                "Row #7: 67,659" + nl +
-                "Row #8: 25,635" + nl +
-                "Row #9: 75,415" + nl +
-                "Row #10: 35,257" + nl +
-                "Row #11: 2,203" + nl +
-                "Row #12: 11,491" + nl +
-                "Row #13: 21,333" + nl +
-                "Row #14: 25,663" + nl +
-                "Row #15: 2,117" + nl +
+                "Row #6: 217,822" + nl +
+                "Row #7: 49,113" + nl +
+                "Row #8: 21,333" + nl +
+                "Row #9: 21,333" + nl +
+                "Row #10: 25,663" + nl +
+                "Row #11: 25,663" + nl +
+                "Row #12: 2,117" + nl +
+                "Row #13: 2,117" + nl +
+                "Row #14: 67,659" + nl +
+                "Row #15: 26,079" + nl +
                 "Row #16: 26,079" + nl +
                 "Row #17: 41,580" + nl +
-                "Row #18: 25,635" + nl +
-                "Row #19: 2,237" + nl +
-                "Row #20: 24,576" + nl +
-                "Row #21: 25,011" + nl +
-                "Row #22: 23,591" + nl +
-                "Row #23: 21,333" + nl +
-                "Row #24: 25,663" + nl +
-                "Row #25: 2,117" + nl +
-                "Row #26: 26,079" + nl +
-                "Row #27: 41,580" + nl +
-                "Row #28: 2,237" + nl +
-                "Row #29: 24,576" + nl +
-                "Row #30: 25,011" + nl +
-                "Row #31: 23,591" + nl);
+                "Row #18: 41,580" + nl +
+                "Row #19: 25,635" + nl +
+                "Row #20: 25,635" + nl +
+                "Row #21: 75,415" + nl +
+                "Row #22: 2,237" + nl +
+                "Row #23: 2,237" + nl +
+                "Row #24: 24,576" + nl +
+                "Row #25: 24,576" + nl +
+                "Row #26: 25,011" + nl +
+                "Row #27: 25,011" + nl +
+                "Row #28: 23,591" + nl +
+                "Row #29: 23,591" + nl +
+                "Row #30: 35,257" + nl +
+                "Row #31: 35,257" + nl);
     }
 }
 
