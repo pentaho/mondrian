@@ -33,8 +33,7 @@ import org.apache.log4j.Logger;
  * @since 21 March, 2002
  * @version $Id$
  **/
-class HierarchyUsage
-{
+class HierarchyUsage {
     private static final Logger LOGGER = Logger.getLogger(HierarchyUsage.class);
 
 
@@ -339,8 +338,8 @@ class HierarchyUsage
                                 cube.getUniqueName(),
                                 cubeDim.level);
             }
-            this.joinTable = findJoinTable(hierarchy, joinLevel.keyExp.getTableAlias());
-            this.joinExp = joinLevel.keyExp;
+            this.joinTable = findJoinTable(hierarchy, joinLevel.getKeyExp().getTableAlias());
+            this.joinExp = joinLevel.getKeyExp();
         } else if (hierarchy.xmlHierarchy != null &&
                 hierarchy.xmlHierarchy.primaryKey != null) {
             // 2. Specify a "primaryKey" attribute of in <Hierarchy>. You must
@@ -356,8 +355,8 @@ class HierarchyUsage
             final Level[] levels = hierarchy.getLevels();
             RolapLevel joinLevel = (RolapLevel) levels[levels.length - 1];
             this.joinTable = findJoinTable(hierarchy,
-                joinLevel.keyExp.getTableAlias());
-            this.joinExp = joinLevel.keyExp;
+                joinLevel.getKeyExp().getTableAlias());
+            this.joinExp = joinLevel.getKeyExp();
         }
 /*
 RME

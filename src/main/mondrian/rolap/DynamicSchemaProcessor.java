@@ -15,7 +15,7 @@ import java.net.URL;
  * A dynamic schema processor is used to dynamically change
  * a Mondrian schema at runtime.
  */
-public interface DynamicSchemaProcessor{
+public interface DynamicSchemaProcessor {
 
     /**
      * modify a Mondrian schema

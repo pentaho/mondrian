@@ -43,39 +43,54 @@ import java.util.HashMap;
  * @version $Id$
  **/
 public class RolapStar {
-    RolapSchema schema;
-    DataSource dataSource;
-    Measure[] measures;
-    public Table factTable;
+
+    private final RolapSchema schema;
+
+    // not final for test purposes
+    private DataSource dataSource;
+
+    private final Table factTable;
     /**
      * Maps {@link RolapCube} to a {@link HashMap} which maps
      * {@link RolapLevel} to {@link Column}. The double indirection is
      * necessary because in different cubes, a shared hierarchy might be joined
      * onto the fact table at different levels.
      */
-    final Map mapCubeToMapLevelToColumn = new HashMap();
+    private final Map mapCubeToMapLevelToColumn;
     /**
      * As {@link #mapCubeToMapLevelToColumn}, but holds name columns.
      */
-    final Map mapCubeToMapLevelToNameColumn = new HashMap();
+    private final Map mapCubeToMapLevelToNameColumn;
 
     /**
      * Maps {@link Column} to {@link String} for each column which is a key
      * to a level.
      */
-    final Map mapColumnToName = new HashMap();
+    private final Map mapColumnToName;
 
     /** holds all aggregations of this star */
-    List aggregations = new ArrayList();
+    private List aggregations;
 
     /**
      * Creates a RolapStar. Please use
      * {@link RolapSchema.RolapStarRegistry#getOrCreateStar} to create a
      * {@link RolapStar}.
      */
-    RolapStar(RolapSchema schema, DataSource dataSource) {
+    RolapStar(RolapSchema schema, 
+              DataSource dataSource, 
+              MondrianDef.Relation fact) {
         this.schema = schema;
         this.dataSource = dataSource;
+        this.factTable = new Table(this, fact, null, null);
+
+        this.mapCubeToMapLevelToColumn = new HashMap();
+        this.mapCubeToMapLevelToNameColumn = new HashMap();
+        this.mapColumnToName = new HashMap();
+        this.aggregations = new ArrayList();
+    }
+
+    public Table getFactTable() {
+        return factTable;
     }
 
     void addAggregation(Aggregation agg) {
@@ -89,7 +104,7 @@ public class RolapStar {
         if (mapLevelToColumn == null) {
             mapLevelToColumn = new HashMap();
             this.mapCubeToMapLevelToColumn.put(cube, mapLevelToColumn);
-}
+        }
         return mapLevelToColumn;
     }
     Map getMapLevelToNameColumn(RolapCube cube) {
@@ -124,8 +139,7 @@ public class RolapStar {
      *
      * <p>Must be called from synchronized context.
      **/
-    public Aggregation lookupAggregation(RolapStar.Column[] columns)
-    {
+    public Aggregation lookupAggregation(RolapStar.Column[] columns) {
         synchronized(aggregations) {
             for (int i = 0, count = aggregations.size(); i < count; i++) {
                 Aggregation aggregation = (Aggregation) aggregations.get(i);
@@ -141,8 +155,8 @@ public class RolapStar {
     /**
      * Returns whether two arrays of columns are identical.
      **/
-    private static boolean equals(
-            RolapStar.Column[] columns1, RolapStar.Column[] columns2) {
+    private static boolean equals(RolapStar.Column[] columns1, 
+                                  RolapStar.Column[] columns2) {
         int count = columns1.length;
         if (count != columns2.length) {
             return false;
@@ -172,7 +186,7 @@ public class RolapStar {
         return jdbcConnection;
     }
 
-    /** For testing purposes only. **/
+    /** For testing purposes only.  **/
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }
@@ -185,7 +199,7 @@ public class RolapStar {
      * Retrieves the {@link RolapStar.Measure} in which a measure is stored.
      */
     public static Measure getStarMeasure(Member member) {
-        return (Measure) ((RolapStoredMeasure) member).starMeasure;
+        return (Measure) ((RolapStoredMeasure) member).getStarMeasure();
     }
 
     /**
@@ -196,8 +210,9 @@ public class RolapStar {
         if (table != null) {
             for (int i = 0; i < table.columns.size(); i++) {
                 Column column = (Column) table.columns.get(i);
-                if (column.expression instanceof MondrianDef.Column) {
-                    MondrianDef.Column columnExpr = (MondrianDef.Column) column.expression;
+                if (column.getExpression() instanceof MondrianDef.Column) {
+                    MondrianDef.Column columnExpr = 
+                        (MondrianDef.Column) column.getExpression();
                     if (columnExpr.name.equals(columnName)) {
                         return column;
                     }
@@ -235,8 +250,7 @@ public class RolapStar {
      * constrained to <code>values</code>.  <code>values</code> must be the
      * same length as <code>columns</code>; null values are left unconstrained.
      **/
-    Object getCell(CellRequest request)
-    {
+    Object getCell(CellRequest request) {
         Connection jdbcConnection = getJdbcConnection();
         try {
             return getCell(request, jdbcConnection);
@@ -261,7 +275,7 @@ public class RolapStar {
             throw Util.getRes().newInternal("while computing single cell", e);
         }
         // add measure
-        Util.assertTrue(measure.table == factTable);
+        Util.assertTrue(measure.getTable() == factTable);
         factTable.addToFrom(sqlQuery, true, true);
         sqlQuery.addSelect(
             measure.aggregator.getExpression(measure.getExpression(sqlQuery)));
@@ -272,7 +286,7 @@ public class RolapStar {
                 continue; // not constrained
             }
             Column column = columns[i];
-            Table table = column.table;
+            Table table = column.getTable();
             if (table.isFunky()) {
                 // this is a funky dimension -- ignore for now
                 continue;
@@ -348,22 +362,35 @@ public class RolapStar {
     /**
      * A column in a star schema.
      */
-    public static class Column
-    {
-        public Table table;
-        public MondrianDef.Expression expression;
-        boolean isNumeric;
-        int cardinality = -1;
+    public static class Column {
+        private final Table table;
+        private final MondrianDef.Expression expression;
+        private final boolean isNumeric;
+        private int cardinality = -1;
 
-        public Column() {
+        Column(Table table, 
+               MondrianDef.Expression expression, 
+               boolean isNumeric) {
+            this.table = table;
+            this.expression = expression;
+            this.isNumeric = isNumeric;
+        }
+        public RolapStar.Table getTable() {
+            return table;
+        }
+        public MondrianDef.Expression getExpression() {
+            return expression;
+        }
+
+        public RolapStar getStar() {
+            return table.star;
         }
 
         public String getExpression(SqlQuery query) {
             return expression.getExpression(query);
         }
 
-        private void quoteValue(Object o, StringBuffer buf)
-        {
+        private void quoteValue(Object o, StringBuffer buf) {
             String s = o.toString();
             if (isNumeric) {
                 buf.append(s);
@@ -372,10 +399,9 @@ public class RolapStar {
             }
         }
 
-        public int getCardinality()
-        {
+        public int getCardinality() {
             if (cardinality == -1) {
-                Connection jdbcConnection = table.star.getJdbcConnection();
+                Connection jdbcConnection = getStar().getJdbcConnection();
                 try {
                     cardinality = getCardinality(jdbcConnection);
                 } finally {
@@ -392,8 +418,7 @@ public class RolapStar {
         private int getCardinality(Connection jdbcConnection) {
             SqlQuery sqlQuery;
             try {
-                sqlQuery = new SqlQuery(
-                    jdbcConnection.getMetaData());
+                sqlQuery = new SqlQuery(jdbcConnection.getMetaData());
             } catch (SQLException e) {
                 throw Util.getRes().newInternal(
                         "while counting distinct values of column '" +
@@ -401,8 +426,9 @@ public class RolapStar {
             }
             if (sqlQuery.allowsCountDistinct()) {
                 // e.g. "select count(distinct product_id) from product"
-                sqlQuery.addSelect(
-                    "count(distinct " + getExpression(sqlQuery) + ")");
+                sqlQuery.addSelect("count(distinct " 
+                    + getExpression(sqlQuery) + ")");
+
                 // no need to join fact table here
                 table.addToFrom(sqlQuery, true, false);
             } else if (sqlQuery.allowsFromQuery()) {
@@ -432,8 +458,11 @@ public class RolapStar {
                 return resultSet.getInt(1);
             } catch (SQLException e) {
                 throw Util.getRes().newInternal(
-                        "while counting distinct values of column '" +
-                        expression.getGenericExpression() + "'; sql=[" + sql + "]",
+                        "while counting distinct values of column '" 
+                        + expression.getGenericExpression() 
+                        + "'; sql=[" 
+                        + sql 
+                        + "]",
                         e);
             } finally {
                 try {
@@ -466,7 +495,8 @@ public class RolapStar {
          *
          * <li>String values: <code>foo.bar in ('a', 'b', 'c')</code></li></ul>
          */
-        public String createInExpr(String expr, ColumnConstraint[] constraints) {
+        public String createInExpr(String expr, 
+                                   ColumnConstraint[] constraints) {
             if (constraints.length == 1) {
                 final ColumnConstraint constraint = constraints[0];
                 Object key = constraint.getValue();
@@ -504,11 +534,6 @@ public class RolapStar {
                 case 1: {
                     // Special case -- one not-null value, and null, for
                     // example "(x is null or x = 1)".
-/*
-RME replace
-                    return "(" + expr + " = " + quoteValue(constraints[0].getValue()) +
-                            " or " + expr + " is null)";
-*/
                     StringBuffer buf = new StringBuffer(64);
                     buf.append('(');
                     buf.append(expr);
@@ -522,11 +547,6 @@ RME replace
                 default: {
                     // Nulls and values, for example,
                     // "(x in (1, 2) or x IS NULL)".
-/*
-RME replace
-                    return "(" + sb.toString() + " or " + expr +
-                            "is null)";
-*/
                     StringBuffer buf = new StringBuffer(64);
                     buf.append('(');
                     buf.append(sb.toString());
@@ -549,9 +569,19 @@ RME replace
      * <p>A measure is basically just a column; except that its
      * {@link #aggregator} defines how it is to be rolled up.
      */
-    public static class Measure extends Column
-    {
-        public RolapAggregator aggregator;
+    public static class Measure extends Column {
+        private final RolapAggregator aggregator;
+
+        Measure(RolapAggregator aggregator,
+                Table table, 
+                MondrianDef.Expression expression,
+                boolean isNumeric) {
+            super(table, expression, isNumeric);
+            this.aggregator = aggregator;
+        }
+        public RolapAggregator getAggregator() {
+            return aggregator;
+        }
     };
 
     /**
@@ -565,22 +595,20 @@ RME replace
      * So the star schema is, in effect, a hierarchy with the fact table at
      * its root.
      */
-    public static class Table
-    {
-        public final RolapStar star;
-        MondrianDef.Relation relation;
-        public String primaryKey;
-        public String foreignKey;
-        List columns = new ArrayList();
-        public Table parent;
-        public List children = new ArrayList();
+    public static class Table {
+        private final RolapStar star;
+        private final MondrianDef.Relation relation;
+        private final List columns;
+        private final Table parent;
+        private final List children;
         /** Condition with which it is connected to its parent. **/
-        Condition joinCondition;
+        private final Condition joinCondition;
         private final String alias;
 
-        public Table(RolapStar star, MondrianDef.Relation relation,
-            Table parent, Condition joinCondition)
-        {
+        Table(RolapStar star, 
+              MondrianDef.Relation relation,
+              Table parent, 
+              Condition joinCondition) {
             this.star = star;
             this.relation = relation;
             Util.assertTrue(
@@ -593,7 +621,21 @@ RME replace
             final AliasReplacer aliasReplacer =
                     new AliasReplacer(relation.getAlias(), this.alias);
             this.joinCondition = aliasReplacer.visit(joinCondition);
+            this.columns = new ArrayList();
+            this.children = new ArrayList();
             Util.assertTrue((parent == null) == (joinCondition == null));
+        }
+        public Table getParent() {
+            return parent;
+        }
+        public void addColumn(Column column) {
+            this.columns.add(column);
+        }
+        RolapStar getStar() {
+            return star;
+        }
+        MondrianDef.Relation getRelation() {
+            return relation;
         }
 
         /** Chooses an alias which is unique within the star. */
@@ -619,9 +661,8 @@ RME replace
          * joined by <code>joinCondition</code>. If the same expression is
          * already present, does not create it again.
          */
-        synchronized Table addJoin(
-                MondrianDef.Relation relation,
-                RolapStar.Condition joinCondition) {
+        synchronized Table addJoin(MondrianDef.Relation relation,
+                                   RolapStar.Condition joinCondition) {
             if (relation instanceof MondrianDef.Table ||
                     relation instanceof MondrianDef.View) {
                 RolapStar.Table starTable = findChild(relation, joinCondition);
@@ -631,6 +672,7 @@ RME replace
                     this.children.add(starTable);
                 }
                 return starTable;
+
             } else if (relation instanceof MondrianDef.Join) {
                 MondrianDef.Join join = (MondrianDef.Join) relation;
                 RolapStar.Table leftTable = addJoin(join.left, joinCondition);
@@ -660,6 +702,7 @@ RME replace
                 RolapStar.Table rightTable = leftTable.addJoin(
                         join.right, joinCondition);
                 return rightTable;
+
             } else {
                 throw Util.newInternal("bad relation type " + relation);
             }
@@ -669,10 +712,8 @@ RME replace
          * Returns a child relation which maps onto a given relation, or null if
          * there is none.
          */
-        public Table findChild(
-            MondrianDef.Relation relation,
-            Condition joinCondition)
-        {
+        public Table findChild(MondrianDef.Relation relation,
+                               Condition joinCondition) {
             for (int i = 0; i < children.size(); i++) {
                 Table child = (Table) children.get(i);
                 if (child.relation.equals(relation)) {
@@ -731,11 +772,9 @@ RME replace
          * @param joinToParent Pass in true if you are constraining a cell
          *     calculcation, false if you are retrieving members.
          */
-        public void addToFrom(
-            SqlQuery query,
-            boolean failIfExists,
-            boolean joinToParent)
-        {
+        public void addToFrom(SqlQuery query,
+                              boolean failIfExists,
+                              boolean joinToParent) {
             query.addFrom(relation, alias, failIfExists);
             Util.assertTrue((parent == null) == (joinCondition == null));
             if (joinToParent) {
@@ -749,7 +788,7 @@ RME replace
         }
 
         public boolean isFunky() {
-            return relation == null;
+            return (relation == null);
         }
         /**
          * Prints this table and its children.
@@ -764,11 +803,11 @@ RME replace
             for (int i = 0, n = columns.size(); i < n; i++) {
                 Column column = (Column) columns.get(i);
                 if (i > 0) {
-                    pw.print(",");
+                    pw.print(',');
                 }
-                pw.print(column.expression.getGenericExpression());
+                pw.print(column.getExpression().getGenericExpression());
             }
-            pw.println("]");
+            pw.println(']');
             for (int i = 0; i < children.size(); i++) {
                 Table child = (Table) children.get(i);
                 child.print(pw, prefix + "  ");
@@ -787,13 +826,14 @@ RME replace
     }
 
     public static class Condition {
-        MondrianDef.Expression left;
-        MondrianDef.Expression right;
+        private final MondrianDef.Expression left;
+        private final MondrianDef.Expression right;
 
-        Condition(
-                MondrianDef.Expression left, MondrianDef.Expression right) {
+        Condition(MondrianDef.Expression left, 
+                  MondrianDef.Expression right) {
             Util.assertPrecondition(left != null);
             Util.assertPrecondition(right != null);
+
             this.left = left;
             this.right = right;
         }
@@ -801,9 +841,17 @@ RME replace
             return left.getExpression(query) + " = " + right.getExpression(query);
         }
 
+/*
+RME - this can not be what was wanted
         public int hashCode() {
             int h = Util.hash(0, left.toString());
             h = Util.hash(h, right.toString());
+            return h;
+        }
+*/
+        public int hashCode() {
+            int h = Util.hash(0, left.hashCode());
+            h = Util.hash(h, right.hashCode());
             return h;
         }
 
@@ -830,8 +878,7 @@ RME replace
             this.newAlias = newAlias;
         }
 
-        private Condition visit(Condition condition)
-        {
+        private Condition visit(Condition condition) {
             if (condition == null) {
                 return null;
             }
@@ -843,9 +890,7 @@ RME replace
                     visit(condition.right));
         }
 
-        public MondrianDef.Expression visit(
-                MondrianDef.Expression expression)
-        {
+        public MondrianDef.Expression visit(MondrianDef.Expression expression) {
             if (expression == null) {
                 return null;
             }
@@ -853,8 +898,7 @@ RME replace
                 return expression;
             }
             if (expression instanceof MondrianDef.Column) {
-                MondrianDef.Column column =
-                        (MondrianDef.Column) expression;
+                MondrianDef.Column column = (MondrianDef.Column) expression;
                 return new MondrianDef.Column(visit(column.table),
                         column.name);
             } else {
@@ -863,8 +907,9 @@ RME replace
         }
 
         private String visit(String table) {
-            return table.equals(oldAlias) ? newAlias :
-                    table;
+            return table.equals(oldAlias) 
+                ? newAlias 
+                : table;
         }
     }
 }

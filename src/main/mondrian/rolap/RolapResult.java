@@ -17,8 +17,8 @@ import mondrian.rolap.agg.AggregationManager;
 
 import org.apache.log4j.Logger;
 import java.util.Collections;
+import java.util.Map;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -28,8 +28,7 @@ import java.util.List;
  * @since 10 August, 2001
  * @version $Id$
  */
-class RolapResult extends ResultBase
-{
+class RolapResult extends ResultBase {
 
     private static final Logger LOGGER = Logger.getLogger(ResultBase.class);
 
@@ -37,12 +36,8 @@ class RolapResult extends ResultBase
 
     private final RolapEvaluator evaluator;
     private final CellKey point;
-
-    // SHOULD THIS BE AN INSTANCE VARIABLE???
-    HashMap cellValues;
-
-    final AggregatingCellReader aggregatingReader;
-    final FastBatchingCellReader batchingReader;
+    private final Map cellValues;
+    private final FastBatchingCellReader batchingReader;
     private final int[] modulos;
 
     RolapResult(Query query) {
@@ -50,11 +45,13 @@ class RolapResult extends ResultBase
 
         this.point = new CellKey(new int[query.axes.length]);
         this.evaluator = new RolapEvaluator(
-                (RolapCube) query.getCube(),
-                (RolapConnection) query.getConnection());
-        this.aggregatingReader = new AggregatingCellReader();
+                            (RolapCube) query.getCube(),
+                            (RolapConnection) query.getConnection());
+        AggregatingCellReader aggregatingReader = new AggregatingCellReader();
         this.batchingReader = new FastBatchingCellReader( 
                                     (RolapCube) query.getCube());
+        this.cellValues = new HashMap();
+
         try {
             for (int i = -1; i < axes.length; i++) {
                 QueryAxis axis;
@@ -73,11 +70,11 @@ class RolapResult extends ResultBase
                 } else {
                     axis = query.axes[i];
                 }
-                RolapAxis axisResult;
+
                 int attempt = 0;
                 while (true) {
                     evaluator.setCellReader(batchingReader);
-                    axisResult = executeAxis(evaluator.push(), axis);
+                    RolapAxis axisResult = executeAxis(evaluator.push(), axis);
                     evaluator.clearExpResultCache();
                     if (!batchingReader.loadAggregations()) {
                         break;
@@ -90,7 +87,7 @@ class RolapResult extends ResultBase
                 }
 
                 evaluator.setCellReader(aggregatingReader);
-                axisResult = executeAxis(evaluator.push(), axis);
+                RolapAxis axisResult = executeAxis(evaluator.push(), axis);
                 evaluator.clearExpResultCache();
 
                 if (i == -1) {
@@ -155,12 +152,10 @@ class RolapResult extends ResultBase
     }
 
     // implement Result
-    public Axis[] getAxes()
-    {
+    public Axis[] getAxes() {
         return axes;
     }
-    public Cell getCell(int[] pos)
-    {
+    public Cell getCell(int[] pos) {
         if (pos.length != point.ordinals.length) {
             throw Util.newError(
                     "coordinates should have dimension " + point.ordinals.length);
@@ -172,8 +167,7 @@ class RolapResult extends ResultBase
         return new RolapCell(this, getCellOrdinal(pos), value);
     }
 
-    private RolapAxis executeAxis(Evaluator evaluator, QueryAxis axis)
-    {
+    private RolapAxis executeAxis(Evaluator evaluator, QueryAxis axis) {
         Position[] positions;
         if (axis == null) {
             // Create an axis containing one position with no members (not
@@ -217,8 +211,9 @@ class RolapResult extends ResultBase
         // evaluator which collects requests.
         int count = 0;
         while (true) {
-            cellValues = new HashMap();
-            //
+            //cellValues = new HashMap();
+            cellValues.clear();
+
             evaluator.setCellReader(this.batchingReader);
             executeStripe(query.axes.length - 1, (RolapEvaluator) evaluator.push());
             evaluator.clearExpResultCache();
@@ -241,23 +236,22 @@ class RolapResult extends ResultBase
      * An <code>AggregatingCellReader</code> reads cell values from the
      * {@link RolapAggregationManager}.
      **/
-    private static class AggregatingCellReader implements CellReader
-    {
-        private final RolapAggregationManager aggregationManager = AggregationManager.instance();
+    private static class AggregatingCellReader implements CellReader {
+        private final RolapAggregationManager aggregationManager = 
+            AggregationManager.instance();
         /**
          * Overrides {@link CellReader#get}. Returns <code>null</code> if no
          * aggregation contains the required cell.
          **/
         // implement CellReader
-        public Object get(Evaluator evaluator)
-        {
+        public Object get(Evaluator evaluator) {
             final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator;
-            return aggregationManager.getCellFromCache(rolapEvaluator.getCurrentMembers());
+            return aggregationManager.getCellFromCache(
+                rolapEvaluator.getCurrentMembers());
         }
     };
 
-    private void executeStripe(int axis, RolapEvaluator evaluator)
-    {
+    private void executeStripe(int axis, RolapEvaluator evaluator) {
         if (axis < 0) {
             RolapAxis _axis = (RolapAxis) slicerAxis;
             int count = _axis.positions.length;

@@ -35,8 +35,7 @@ import mondrian.olap.Util;
  * @since 10 August, 2001
  * @version $Id$
  **/
-interface CellReader
-{
+interface CellReader {
     Object get(Evaluator evaluator);
 };
 

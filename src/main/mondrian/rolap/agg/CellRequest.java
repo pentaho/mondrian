@@ -12,9 +12,11 @@
 
 package mondrian.rolap.agg;
 
-import java.util.ArrayList;
-
 import mondrian.rolap.RolapStar;
+
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * A <code>CellRequest</code> contains the context necessary to get a cell
@@ -25,24 +27,28 @@ import mondrian.rolap.RolapStar;
  * @version $Id$
  **/
 public class CellRequest {
-    private RolapStar.Measure measure;
+    private final RolapStar.Measure measure;
     /** List of columns being which have values in this request. The 0th
      * entry is a dummy entry: the star, which ensures that 2 requests for the
      * same columns on measures in the same star get put into the same batch.
      */
-    private ArrayList columnList = new ArrayList();
-    private ArrayList valueList = new ArrayList();
+    private final List columnList;
+    private final List valueList;
 
     /** Creates a {@link CellRequest}. **/
     public CellRequest(RolapStar.Measure measure) {
         this.measure = measure;
-        this.columnList.add(measure.table.star);
+        this.columnList = new ArrayList();
+        this.valueList = new ArrayList();
+
+        this.columnList.add(measure.getStar());
     }
 
     public void addConstrainedColumn(RolapStar.Column column, Object value) {
         columnList.add(column);
-        if ( value != null )
+        if (value != null) {
             value = new ColumnConstraint(value);
+        }
         valueList.add(value);
     }
 
@@ -66,11 +72,11 @@ public class CellRequest {
     /** Returns a list which identifies which batch this request will
      * belong to. The list contains the star as well as the
      * columns. **/
-    public ArrayList getBatchKey() {
+    public List getBatchKey() {
         return columnList;
     }
 
-    public ArrayList getValueList() {
+    public List getValueList() {
         return valueList;
     }
 

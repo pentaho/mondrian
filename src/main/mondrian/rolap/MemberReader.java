@@ -28,8 +28,7 @@ import java.util.List;
  * @since 10 August, 2001
  * @version $Id$
  */
-interface MemberReader extends MemberSource
-{
+interface MemberReader extends MemberSource {
     /**
      * Returns the member <code>n</code> after <code>member</code> in the same
      * level (or before, if <code>n</code> is negative).

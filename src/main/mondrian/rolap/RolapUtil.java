@@ -14,6 +14,7 @@ package mondrian.rolap;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 
+import org.apache.log4j.Logger;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.sql.Connection;
@@ -30,6 +31,10 @@ import java.util.*;
  * @version $Id$
  **/
 public class RolapUtil {
+
+    private static final Logger LOGGER = Logger.getLogger(RolapUtil.class);
+
+
     static final RolapMember[] emptyMemberArray = new RolapMember[0];
     public static PrintWriter debugOut = null;
     private static Semaphore querySemaphore;
@@ -59,8 +64,7 @@ public class RolapUtil {
      * <code>singleQuoteForSql(null)</code> yields <code>NULL</code>;
      * <code>singleQuoteForSql("don't")</code> yields <code>'don''t'</code>.
      **/
-    static String singleQuoteForSql(String val)
-    {
+    static String singleQuoteForSql(String val) {
         StringBuffer buf = new StringBuffer(64);
         singleQuoteForSql(val, buf);
         return buf.toString();
@@ -82,8 +86,7 @@ public class RolapUtil {
      * Returns <code>s</code> with <code>find</code> replaced everywhere with
      * <code>replace</code>.
      **/
-    static String replace(String s, String find, String replace)
-    {
+    static String replace(String s, String find, String replace) {
         // let's be optimistic
         int found = s.indexOf(find);
         if (found == -1) {
@@ -103,43 +106,25 @@ public class RolapUtil {
             if (found == -1) {
                 found = s.length();
             }
-
-/*
-RME replace
-            for (; start < found; start++) {
-                sb.append(s.charAt(start));
-            }
-            if (found == s.length()) {
-                break;
-            }
-            sb.append(replace);
-            start += find.length();
-            found = s.indexOf(find,start);
-            if (found == -1) {
-                found = s.length();
-            }
-*/
         }
         return sb.toString();
     }
 
-    static final void add(List list, Object[] array)
-    {
+    static final void add(List list, Object[] array) {
         for (int i = 0; i < array.length; i++) {
             list.add(array[i]);
         }
     }
 
-    static final RolapMember[] toArray(List v)
-    {
-        return v.isEmpty() ? emptyMemberArray :
-                (RolapMember[]) v.toArray(new RolapMember[v.size()]);
+    static final RolapMember[] toArray(List v) {
+        return v.isEmpty() 
+            ? emptyMemberArray 
+            : (RolapMember[]) v.toArray(new RolapMember[v.size()]);
     }
 
-    static RolapMember lookupMember(
-            MemberReader reader, 
-            String[] uniqueNameParts, 
-            boolean failIfNotFound) {
+    static RolapMember lookupMember(MemberReader reader, 
+                                    String[] uniqueNameParts, 
+                                    boolean failIfNotFound) {
 
         RolapMember member = null;
         for (int i = 0; i < uniqueNameParts.length; i++) {
@@ -173,8 +158,7 @@ RME replace
      * Adds an object to the end of an array.  The resulting array is of the
      * same type (e.g. <code>String[]</code>) as the input array.
      **/
-    static Object[] addElement(Object[] a, Object o)
-    {
+    static Object[] addElement(Object[] a, Object o) {
         Class clazz = a.getClass().getComponentType();
         Object[] a2 = (Object[]) Array.newInstance(clazz, a.length + 1);
         System.arraycopy(a, 0, a2, 0, a.length);
@@ -193,12 +177,12 @@ RME replace
                   MondrianProperties.instance().getProperty(MondrianProperties.DebugOutFile);
                 if ( debugOutFile != null ) {
                     File f;
-          try {
+                    try {
                         f = new File(debugOutFile);
                         debugOut = new PrintWriter(new FileOutputStream(f), true);
-          } catch (Exception e) {
-            // don't care, use System.out
-          }
+                    } catch (Exception e) {
+                        // don't care, use System.out
+                    }
                 }
                 if ( debugOut == null ) {
                     debugOut = new PrintWriter(System.out, true);
@@ -221,9 +205,10 @@ RME replace
      * the result set. If it succeeds, the caller must close the returned
      * {@link ResultSet}.
      */
-    public static ResultSet executeQuery(
-            Connection jdbcConnection, String sql, String component)
-            throws SQLException {
+    public static ResultSet executeQuery(Connection jdbcConnection, 
+                                         String sql, 
+                                         String component) 
+                                         throws SQLException {
         checkTracing();
         getQuerySemaphore().enter();
         Statement statement = null;
@@ -273,9 +258,11 @@ RME replace
             if (loadedDrivers.add(jdbcDriver)) {
                 try {
                     Class.forName(jdbcDriver);
-                    System.out.println("Mondrian: JDBC driver " + jdbcDriver + " loaded successfully");
+                    LOGGER.info("Mondrian: JDBC driver " 
+                        + jdbcDriver + " loaded successfully");
                 } catch (ClassNotFoundException e) {
-                    System.out.println("Mondrian: Warning: JDBC driver " + jdbcDriver + " not found");
+                    LOGGER.error("Mondrian: Warning: JDBC driver " 
+                        + jdbcDriver + " not found");
                 }
             }
         }
@@ -371,9 +358,13 @@ RME replace
         return querySemaphore;
     }
 
-    static void getMemberDescendants(MemberReader memberReader,
-            RolapMember ancestor, RolapLevel level, List result,
-            boolean before, boolean self, boolean after) {
+    static void getMemberDescendants(MemberReader memberReader, 
+                                     RolapMember ancestor, 
+                                     RolapLevel level, 
+                                     List result, 
+                                     boolean before, 
+                                     boolean self, 
+                                     boolean after) {
         // We find the descendants of a member by making breadth-first passes
         // down the hierarchy. Initially the list just contains the ancestor.
         // Then we find its children. We add those children to the result if

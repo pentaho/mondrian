@@ -15,9 +15,10 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Iterator;
 
 import mondrian.olap.EnumeratedValues;
@@ -62,19 +63,7 @@ import mondrian.rolap.RolapUtil;
  * @since 21 March, 2002
  * @version $Id$
  **/
-public class Segment
-{
-    private final int id; // for debug
-    private static int nextId = 0; // generator for "id"
-    private String desc;
-    final Aggregation aggregation;
-    final RolapStar.Measure measure;
-
-    Aggregation.Axis[] axes;
-    private SegmentDataset data;
-    private final CellKey cellKey; // workspace
-    /** State of the segment, values are described by {@link State}. */
-    private int state;
+public class Segment {
 
     /**
      * <code>State</code> enumerates the allowable values of a segment's
@@ -91,6 +80,19 @@ public class Segment
         public static final int Failed = 3;
     }
 
+    private static int nextId = 0; // generator for "id"
+
+    private final int id; // for debug
+    private String desc;
+    final Aggregation aggregation;
+    final RolapStar.Measure measure;
+
+    Aggregation.Axis[] axes;
+    private SegmentDataset data;
+    private final CellKey cellKey; // workspace
+    /** State of the segment, values are described by {@link State}. */
+    private int state;
+
     /**
      * Creates a <code>Segment</code>; it's not loaded yet.
      *
@@ -99,23 +101,22 @@ public class Segment
      * @param constraintses For each column, either an array of values
      *    to fetch or null, indicating that the column is unconstrained
      **/
-    Segment(Aggregation aggregation, RolapStar.Measure measure,
+    Segment(Aggregation aggregation, 
+            RolapStar.Measure measure,
             ColumnConstraint[][] constraintses) {
         this.id = nextId++;
         this.aggregation = aggregation;
         this.measure = measure;
-        int axisCount = aggregation.columns.length;
+        RolapStar.Column[] columns = aggregation.getColumns();
+        int axisCount = columns.length;
+
         Util.assertTrue(constraintses.length == axisCount);
+
         this.axes = new Aggregation.Axis[axisCount];
         for (int i = 0; i < axisCount; i++) {
-            Aggregation.Axis axis =
-                this.axes[i] = new Aggregation.Axis();
-            axis.column = aggregation.columns[i];
-            axis.constraints = constraintses[i];
-            axis.mapKeyToOffset = new HashMap();
+            this.axes[i] = new Aggregation.Axis(columns[i], constraintses[i]);
         }
         this.cellKey = new CellKey(new int[axisCount]);
-        this.desc = makeDescription();
         this.state = State.Loading;
     }
 
@@ -123,11 +124,12 @@ public class Segment
      * Sets the data, and notifies any threads which are blocked in
      * {@link #waitUntilLoaded}.
      */
-    synchronized void setData(
-            SegmentDataset data, Aggregation.Axis[] axes,
-            Collection pinnedSegments) {
+    synchronized void setData(SegmentDataset data, 
+                              Aggregation.Axis[] axes,
+                              Collection pinnedSegments) {
         Util.assertTrue(this.data == null);
         Util.assertTrue(this.state == State.Loading);
+
         this.axes = axes;
         this.data = data;
         this.state = State.Ready;
@@ -154,41 +156,44 @@ public class Segment
     }
 
     public boolean isReady() {
-        return state == State.Ready;
+        return (state == State.Ready);
     }
 
-    private String makeDescription()
-    {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        pw.print("Segment #" + id + " {measure=" +
-                measure.aggregator.getExpression(
-                        measure.expression.getGenericExpression()));
-        for (int i = 0; i < aggregation.columns.length; i++) {
-            pw.print(", ");
-            pw.print(aggregation.columns[i].expression.getGenericExpression());
-            ColumnConstraint[] constraints = axes[i].constraints;
+    private String makeDescription() {
+        StringBuffer buf = new StringBuffer(64);
+        buf.append("Segment #");
+        buf.append(id);
+        buf.append(" {measure="); 
+        buf.append(measure.getAggregator().getExpression(
+                        measure.getExpression().getGenericExpression()));
+
+        RolapStar.Column[] columns = aggregation.getColumns();
+        for (int i = 0; i < columns.length; i++) {
+            buf.append(", ");
+            buf.append(columns[i].getExpression().getGenericExpression());
+            ColumnConstraint[] constraints = axes[i].getConstraints();
             if (constraints == null) {
-                pw.print("=any");
+                buf.append("=any");
             } else {
-                pw.print("={");
+                buf.append("={");
                 for (int j = 0; j < constraints.length; j++) {
                     if (j > 0) {
-                        pw.print(", ");
+                        buf.append(", ");
                     }
-                    pw.print(constraints[j].getValue().toString());
+                    buf.append(constraints[j].getValue().toString());
                 }
-                pw.print("}");
+                buf.append('}');
             }
         }
-        pw.print("}");
-        pw.flush();
-        return sw.toString();
+        buf.append('}');
+        return buf.toString();
     }
 
-    public String toString()
-    {
-        return desc;
+    public String toString() {
+        if (this.desc == null) {
+            this.desc = makeDescription();
+        }
+        return this.desc;
     }
 
     /**
@@ -201,13 +206,12 @@ public class Segment
      * <p>Note: Must be called from a synchronized context, because uses the
      * <code>cellKey[]</code> as workspace.</p>
      **/
-    Object get(Object[] keys)
-    {
+    Object get(Object[] keys) {
         Util.assertTrue(keys.length == axes.length);
         int missed = 0;
         for (int i = 0; i < keys.length; i++) {
             Object key = keys[i];
-            Integer integer = (Integer) axes[i].mapKeyToOffset.get(key);
+            Integer integer = axes[i].getOffset(key);
             if (integer == null) {
                 if (axes[i].contains(key)) {
                     // see whether this segment should contain this value
@@ -238,8 +242,7 @@ public class Segment
      * Returns whether the given set of key values will be in this segment
      * when it finishes loading.
      **/
-    boolean wouldContain(Object[] keys)
-    {
+    boolean wouldContain(Object[] keys) {
         Util.assertTrue(keys.length == axes.length);
         for (int i = 0; i < keys.length; i++) {
             Object key = keys[i];
@@ -263,8 +266,8 @@ public class Segment
     static void load(Segment[] segments, Collection pinnedSegments) {
         String sql = AggregationManager.generateSQL(segments);
         Segment segment0 = segments[0];
-        RolapStar star = segment0.aggregation.star;
-        RolapStar.Column[] columns = segment0.aggregation.columns;
+        RolapStar star = segment0.aggregation.getStar();
+        RolapStar.Column[] columns = segment0.aggregation.getColumns();
         int arity = columns.length;
         // execute
         ResultSet resultSet = null;
@@ -273,7 +276,7 @@ public class Segment
         try {
             resultSet = RolapUtil.executeQuery(
                     jdbcConnection, sql, "Segment.load");
-            ArrayList rows = new ArrayList();
+            List rows = new ArrayList();
             while (resultSet.next()) {
                 Object[] row = new Object[arity + measureCount];
                 // get the columns
@@ -283,10 +286,9 @@ public class Segment
                     if (o == null) {
                         o = RolapUtil.sqlNullValue;
                     }
-                    HashMap h = segment0.axes[i].mapKeyToOffset;
-                    Integer offsetInteger = (Integer) h.get(o);
+                    Integer offsetInteger = segment0.axes[i].getOffset(o);
                     if (offsetInteger == null) {
-                        h.put(o, new Integer(h.size()));
+                        segment0.axes[i].addNextOffset(o);
                     }
                     row[i] = o;
                 }
@@ -306,19 +308,11 @@ public class Segment
             int n = 1;
             for (int i = 0; i < arity; i++) {
                 Aggregation.Axis axis = segment0.axes[i];
-                int size = axis.mapKeyToOffset.size();
-                axis.keys = new Object[size];
-                for (Iterator keys = axis.mapKeyToOffset.keySet().iterator();
-                     keys.hasNext();) {
-                    Object key = keys.next();
-                    Integer offsetInteger = (Integer) axis.mapKeyToOffset.get(key);
-                    int offset = offsetInteger.intValue();
-                    Util.assertTrue(axis.keys[offset] == null);
-                    axis.keys[offset] = key;
-                }
+                int size = axis.loadKeys();
+
                 int previous = n;
                 n *= size;
-                if (n < previous || n < size) {
+                if ((n < previous) || (n < size)) {
                     // Overflow has occurred.
                     n = Integer.MAX_VALUE;
                     sparse = true;
@@ -327,9 +321,9 @@ public class Segment
             SegmentDataset[] datas = new SegmentDataset[segments.length];
             sparse = sparse || useSparse((double) n, (double) rows.size());
             for (int i = 0; i < segments.length; i++) {
-                datas[i] = sparse ?
-                        (SegmentDataset) new SparseSegmentDataset(segments[i]) :
-                        new DenseSegmentDataset(segments[i], new Object[n]);
+                datas[i] = sparse 
+                    ? (SegmentDataset) new SparseSegmentDataset(segments[i]) 
+                    : new DenseSegmentDataset(segments[i], new Object[n]);
             }
             // now convert the rows into a sparse array
             int[] pos = new int[arity];
@@ -337,10 +331,10 @@ public class Segment
                 Object[] row = (Object[]) rows.get(i);
                 int k = 0;
                 for (int j = 0; j < arity; j++) {
-                    k *= segment0.axes[j].keys.length;
+                    k *= segment0.axes[j].getKeys().length;
                     Object o = row[j];
                     Aggregation.Axis axis = segment0.axes[j];
-                    Integer offsetInteger = (Integer) axis.mapKeyToOffset.get(o);
+                    Integer offsetInteger = axis.getOffset(o);
                     int offset = offsetInteger.intValue();
                     pos[j] = offset;
                     k += offset;
@@ -443,7 +437,8 @@ public class Segment
             case State.Ready:
                 return; // excellent!
             case State.Failed:
-                throw Util.newError("Pending segment failed to load: " + desc);
+                throw Util.newError("Pending segment failed to load: " 
+                    + toString());
             default:
                 throw State.instance.badValue(state);
             }

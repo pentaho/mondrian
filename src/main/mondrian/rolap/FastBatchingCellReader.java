@@ -16,6 +16,7 @@ import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.agg.ColumnConstraint;
 
+import org.apache.log4j.Logger;
 import java.util.*;
 
 /**
@@ -33,14 +34,21 @@ import java.util.*;
  */
 public class FastBatchingCellReader implements CellReader {
 
+    private static final Logger LOGGER = 
+        Logger.getLogger(FastBatchingCellReader.class);
+
+
     private final RolapCube cube;
     private final Set pinnedSegments;
-    private final Map batches = new HashMap();
+    private final Map batches;
+    private int requestCount;
+
     RolapAggregationManager aggMgr = AggregationManager.instance();
 
     public FastBatchingCellReader(RolapCube cube) {
         this.cube = cube;
         this.pinnedSegments = new HashSet();
+        this.batches = new HashMap();
     }
 
     public Object get(Evaluator evaluator) {
@@ -69,7 +77,6 @@ public class FastBatchingCellReader implements CellReader {
         return RolapUtil.valueNotReadyException;
     }
 
-    private int requestCount = 0;
     void recordCellRequest(CellRequest request) {
         ++requestCount;
         Object key = request.getBatchKey();
@@ -82,8 +89,8 @@ public class FastBatchingCellReader implements CellReader {
     }
 
     boolean loadAggregations() {
-        //System.out.println("requestCount = " + requestCount);
         long t1 = System.currentTimeMillis();
+
         requestCount = 0;
         if (batches.isEmpty()) {
             return false;
@@ -93,10 +100,12 @@ public class FastBatchingCellReader implements CellReader {
              ((Batch) it.next()).loadAggregation();
         }
         batches.clear();
-        long t2 = System.currentTimeMillis();
-        if (false) {
-            System.out.println("loadAggregation " + (t2 - t1));
+
+        if (LOGGER.isInfoEnabled()) {
+            long t2 = System.currentTimeMillis();
+            LOGGER.info("loadAggregation " + (t2 - t1));
         }
+
         return true;
     }
 
@@ -121,9 +130,9 @@ public class FastBatchingCellReader implements CellReader {
             }
             RolapStar.Measure measure = request.getMeasure();
             if (!measuresList.contains(measure)) {
-                assert measuresList.size() == 0 ||
-                        measure.table.star ==
-                        ((RolapStar.Measure) measuresList.get(0)).table.star :
+                assert (measuresList.size() == 0) ||
+                        (measure.getStar() ==
+                        ((RolapStar.Measure) measuresList.get(0)).getStar()):
                         "Measure must belong to same star as other measures";
                 measuresList.add(measure);
             }
@@ -131,18 +140,18 @@ public class FastBatchingCellReader implements CellReader {
 
         void loadAggregation() {
             long t1 = System.currentTimeMillis();
+
             AggregationManager aggmgr = AggregationManager.instance();
             ColumnConstraint[][] constraintses =
                     new ColumnConstraint[columns.length][];
             for (int j = 0; j < columns.length; j++) {
-                ColumnConstraint[] constraints;
                 Set valueSet = valueSets[j];
-                if (valueSet == null) {
-                    constraints = null;
-                } else {
-                    constraints = (ColumnConstraint[]) valueSet.
+
+                ColumnConstraint[] constraints = (valueSet == null)
+                    ? null
+                    : (ColumnConstraint[]) valueSet.
                             toArray(new ColumnConstraint[valueSet.size()]);
-                }
+
                 constraintses[j] = constraints;
             }
             // todo: optimize key sets; drop a constraint if more than x% of
@@ -158,12 +167,13 @@ public class FastBatchingCellReader implements CellReader {
                 if (distinctMeasure == null) {
                     break;
                 }
-                final String expr = distinctMeasure.expression.getGenericExpression();
+                final String expr = 
+                    distinctMeasure.getExpression().getGenericExpression();
                 final List distinctMeasuresList = new ArrayList();
                 for (int i = 0; i < measuresList.size();) {
                     RolapStar.Measure measure = (RolapStar.Measure) measuresList.get(i);
-                    if (measure.aggregator.distinct &&
-                            measure.expression.getGenericExpression().equals(expr)) {
+                    if (measure.getAggregator().isDistinct() &&
+                            measure.getExpression().getGenericExpression().equals(expr)) {
                         measuresList.remove(i);
                         distinctMeasuresList.add(distinctMeasure);
                     } else {
@@ -172,7 +182,7 @@ public class FastBatchingCellReader implements CellReader {
                 }
                 RolapStar.Measure[] measures = (RolapStar.Measure[])
                         distinctMeasuresList.toArray(
-                                new RolapStar.Measure[distinctMeasuresList.size()]);
+                            new RolapStar.Measure[distinctMeasuresList.size()]);
                 aggmgr.loadAggregation(measures, columns, constraintses, pinnedSegments);
             }
             final int measureCount = measuresList.size();
@@ -181,9 +191,9 @@ public class FastBatchingCellReader implements CellReader {
                         measuresList.toArray(new RolapStar.Measure[measureCount]);
                 aggmgr.loadAggregation(measures, columns, constraintses, pinnedSegments);
             }
-            long t2 = System.currentTimeMillis();
-            if (false) {
-                System.out.println("Batch.loadAggregation " + (t2 - t1));
+            if (LOGGER.isInfoEnabled()) {
+                long t2 = System.currentTimeMillis();
+                LOGGER.info("Batch.loadAggregation " + (t2 - t1));
             }
         }
 
@@ -196,7 +206,7 @@ public class FastBatchingCellReader implements CellReader {
         RolapStar.Measure getFirstDistinctMeasure(List measuresList) {
             for (int i = 0; i < measuresList.size(); i++) {
                 RolapStar.Measure measure = (RolapStar.Measure) measuresList.get(i);
-                if (measure.aggregator.distinct) {
+                if (measure.getAggregator().isDistinct()) {
                     return measure;
                 }
             }

@@ -27,12 +27,7 @@ import java.util.List;
 public abstract class RolapAggregator
         extends EnumeratedValues.BasicValue
         implements Aggregator {
-    public final boolean distinct;
 
-    public RolapAggregator(String name, int ordinal, boolean distinct) {
-        super(name, ordinal, null);
-        this.distinct = distinct;
-    }
     public static final RolapAggregator Sum = new RolapAggregator("sum", 0, false) {
         public Object aggregate(Evaluator evaluator, List members, Exp exp) {
             return FunUtil.sum(evaluator, members, exp);
@@ -80,9 +75,20 @@ public abstract class RolapAggregator
     /**
      * List of all valid aggregation operators.
      */
-    public static final EnumeratedValues enumeration = new EnumeratedValues(
+    public static final EnumeratedValues enumeration = new EnumeratedValues (
             new RolapAggregator[] {Sum, Count, Min, Max, Avg, DistinctCount}
     );
+
+    private final boolean distinct;
+
+    public RolapAggregator(String name, int ordinal, boolean distinct) {
+        super(name, ordinal, null);
+        this.distinct = distinct;
+    }
+
+    public boolean isDistinct() {
+        return distinct;
+    }
     /**
      * Returns the expression to apply this aggregator to an operand.
      * For example, <code>getExpression("emp.sal")</code> returns

@@ -68,19 +68,23 @@ import java.util.*;
  * @version $Id$
  **/
 public class Aggregation {
-    RolapStar star;
+    private static final int MAXLEN_ORACLE = 1000;
 
-    RolapStar.Column[] columns;
+    private final RolapStar star;
 
-    /** List of soft references to segments. **/
-    List segmentRefs;
+    private final RolapStar.Column[] columns;
 
-    boolean oracle = false;
+    /** 
+     * List of soft references to segments. 
+     * Access must be inside of synchronized methods.
+     **/
+    private final List segmentRefs;
+    private final boolean oracle;
 
     public Aggregation(RolapStar star, RolapStar.Column[] columns) {
         this.star = star;
         this.columns = columns;
-        this.segmentRefs = Collections.synchronizedList(new ArrayList());
+        this.segmentRefs = new ArrayList();
 
         // find out if this is an oracle DB
         Connection con = null;
@@ -113,7 +117,8 @@ public class Aggregation {
      *   gender = unconstrained
      */
     public synchronized void load(RolapStar.Measure[] measures,
-            ColumnConstraint[][] constraintses, Collection pinnedSegments) {
+                                  ColumnConstraint[][] constraintses, 
+                                  Collection pinnedSegments) {
         Segment[] segments = new Segment[measures.length];
         for (int i = 0; i < measures.length; i++) {
             RolapStar.Measure measure = measures[i];
@@ -131,10 +136,12 @@ public class Aggregation {
      * Drops constraints, where the list of values is close to the values which
      * would be returned anyway.
      **/
-    public synchronized ColumnConstraint[][] optimizeConstraints(ColumnConstraint[][] constraintses) {
-        final int MAXLEN_ORACLE = 1000;
+    public synchronized ColumnConstraint[][] optimizeConstraints(
+            ColumnConstraint[][] constraintses) {
+
         Util.assertTrue(constraintses.length == columns.length);
-        ColumnConstraint[][] newConstraintses = (ColumnConstraint[][]) constraintses.clone();
+        ColumnConstraint[][] newConstraintses = 
+            (ColumnConstraint[][]) constraintses.clone();
         double[] bloats = new double[columns.length];
 
         // We want to handle the special case "drilldown" which occurs pretty often.
@@ -184,9 +191,10 @@ public class Aggregation {
                     // common parent exists
                     if (parent.isAll() || potentialParents.contains(parent) ) {
                         // common parent is there as constraint
-                        //  if the children are complete, this constraint set is unneccessary
-                        // try to get the children directly from cache
-                        // for the drilldown case, the children will be in the cache
+                        //  if the children are complete, this constraint set is
+                        //  unneccessary try to get the children directly from
+                        //  cache for the drilldown case, the children will be
+                        //  in the cache
                         // - if not, forget this optimization.
                         int nChildren = -1;
                         SchemaReader scr = star.getSchema().getSchemaReader();
@@ -195,7 +203,9 @@ public class Aggregation {
                         if (nChildren == -1) {
                             // nothing gotten from cache
                             if (parent.isAll()) {
-                                bloats[i] = constraintLength / columns[i].getCardinality();
+                                bloats[i] = 
+                                constraintLength / columns[i].getCardinality();
+
                             } else {
                                 // no information about children cardinality
                                 //  constraints will not be optimized away
@@ -248,7 +258,7 @@ public class Aggregation {
     }
 
     private class ConstraintComparator implements Comparator {
-        double[] bloats;
+        private final double[] bloats;
 
         ConstraintComparator(double[] bloats) {
             this.bloats = bloats;
@@ -259,13 +269,11 @@ public class Aggregation {
         public int compare(Object o0, Object o1) {
             double bloat0 = bloats[((Integer)o0).intValue()];
             double bloat1 = bloats[((Integer)o1).intValue()];
-            if (bloat0 == bloat1) {
-                return 0;
-            } else if (bloat0 < bloat1) {
-                return 1;
-            } else {
-                return -1;
-            }
+            return (bloat0 == bloat1)
+                ? 0
+                : (bloat0 < bloat1)
+                    ? 1
+                    : -1;
         }
 
     }
@@ -279,8 +287,9 @@ public class Aggregation {
      *
      * Returns <code>null</code> if no segment contains the cell.
      **/
-    public synchronized Object get(RolapStar.Measure measure, Object[] keys,
-            Collection pinSet) {
+    public synchronized Object get(RolapStar.Measure measure, 
+                                   Object[] keys,
+                                   Collection pinSet) {
 
         for (Iterator it = segmentRefs.iterator(); it.hasNext();) {
             SoftReference ref = (SoftReference) it.next();
@@ -322,14 +331,56 @@ public class Aggregation {
 
     // -- classes -------------------------------------------------------------
 
-    public static class Axis {
-        RolapStar.Column column;
+    static class Axis {
+        private final RolapStar.Column column;
 
-        ColumnConstraint[] constraints; // null if no constraint
+        // null if no constraint
+        private final ColumnConstraint[] constraints; 
 
-        Object[] keys; // actual keys retrieved
+        // inversion of keys
+        private final Map mapKeyToOffset; 
 
-        HashMap mapKeyToOffset; // inversion of keys
+        // actual keys retrieved
+        private Object[] keys; 
+
+        Axis(RolapStar.Column column,
+            ColumnConstraint[] constraints) {
+            this.column = column;
+            this.constraints = constraints;
+            this.mapKeyToOffset = new HashMap();
+        }
+
+        ColumnConstraint[] getConstraints() {
+            return constraints;
+        }
+
+        Object[] getKeys() {
+            return this.keys;
+        }
+
+        int loadKeys() {
+            int size = mapKeyToOffset.size();
+            this.keys = new Object[size];
+            Iterator it = mapKeyToOffset.entrySet().iterator();
+            while(it.hasNext()) {
+                Map.Entry e = (Map.Entry) it.next();
+                Object key = e.getKey();
+                Integer offsetInteger = (Integer) e.getValue();
+                int offset = offsetInteger.intValue();
+    
+                this.keys[offset] = key;
+            }
+            return size;
+        }
+
+        Integer getOffset(Object key) {
+            return (Integer) mapKeyToOffset.get(key);
+        }
+
+        void addNextOffset(Object key) {
+            int size = mapKeyToOffset.size();
+            mapKeyToOffset.put(key, new Integer(size));
+        }
 
         boolean contains(Object key) {
             if (constraints == null) {
@@ -344,10 +395,9 @@ public class Aggregation {
         }
 
         double getBytes() {
-            if (keys == null) {
-                return 0;
-            }
-            return 16 + 8 * keys.length;
+            return (keys == null)
+                ? 0
+                : 16 + 8 * keys.length;
         }
     }
 

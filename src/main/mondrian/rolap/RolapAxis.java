@@ -9,11 +9,11 @@
 */
 
 package mondrian.rolap;
+
 import mondrian.olap.Axis;
 import mondrian.olap.Position;
 
-class RolapAxis extends Axis
-{
+class RolapAxis extends Axis {
     RolapAxis(Position[] positions) {
         super(positions);    
     }

@@ -122,7 +122,7 @@ public class TestAggregationManager extends TestCase {
                 Util.explode(measure), fail);
         RolapStar.Measure starMeasure = RolapStar.getStarMeasure(storeSqftMeasure);
         CellRequest request = new CellRequest(starMeasure);
-        final RolapStar star = starMeasure.table.star;
+        final RolapStar star = starMeasure.getStar();
         final RolapStar.Column storeTypeColumn = star.lookupColumn(
                 table, column);
         request.addConstrainedColumn(storeTypeColumn, value);
@@ -164,7 +164,7 @@ public class TestAggregationManager extends TestCase {
 
     private void assertRequestSql(CellRequest[] requests, final String pattern, final String trigger) {
         final RolapAggregationManager aggMan = AggregationManager.instance();
-        RolapStar star = requests[0].getMeasure().table.star;
+        RolapStar star = requests[0].getMeasure().getStar();
         String database = null;
         try {
             database = star.getJdbcConnection().getMetaData().getDatabaseProductName();
@@ -207,7 +207,7 @@ public class TestAggregationManager extends TestCase {
                 Util.explode(measure), fail);
         RolapStar.Measure starMeasure = RolapStar.getStarMeasure(storeSqftMeasure);
         CellRequest request = new CellRequest(starMeasure);
-        final RolapStar star = starMeasure.table.star;
+        final RolapStar star = starMeasure.getStar();
         final RolapStar.Column storeTypeColumn = star.lookupColumn(
                 table, column);
         request.addConstrainedColumn(storeTypeColumn, value);
@@ -224,7 +224,7 @@ public class TestAggregationManager extends TestCase {
                 Util.explode(measureName), fail);
         RolapStar.Measure starMeasure = RolapStar.getStarMeasure(measure);
         CellRequest request = new CellRequest(starMeasure);
-        final RolapStar star = starMeasure.table.star;
+        final RolapStar star = starMeasure.getStar();
         for (int i = 0; i < tables.length; i++) {
             String table = tables[i];
             String column = columns[i];

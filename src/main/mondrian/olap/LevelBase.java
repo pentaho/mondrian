@@ -29,7 +29,7 @@ public abstract class LevelBase
     protected String description;
     protected final int depth;
     protected final LevelType levelType;
-    protected MemberFormatter memberFormatter = null;
+    protected MemberFormatter memberFormatter;
 
     protected LevelBase(Hierarchy hierarchy,
                         String name,

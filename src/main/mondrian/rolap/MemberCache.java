@@ -23,20 +23,30 @@ import java.util.List;
  * @version $Id$
  **/
 interface MemberCache {
-    /** Creates a key with which to {@link #get} or {@link #put} the {@link
-     * RolapMember} with a given parent and key. **/
+    /** 
+     * Creates a key with which to {@link #get} or {@link #put} the {@link
+     * RolapMember} with a given parent and key. 
+     **/
     Object makeKey(RolapMember parent, Object key);
-    /** Retrieves the {@link RolapMember} with a given key (created by {@link
-     * #makeKey}). **/
+    /** 
+     * Retrieves the {@link RolapMember} with a given key (created by {@link
+     * #makeKey}). 
+     **/
     RolapMember getMember(Object key);
-    /** Replaces the {@link RolapMember} with a given key (created by {@link
-     * #makeKey}). Returns the previous member with that key, or null. **/
+    /** 
+     * Replaces the {@link RolapMember} with a given key (created by {@link
+     * #makeKey}). Returns the previous member with that key, or null. 
+     **/
     Object putMember(Object key, RolapMember value);
-    /** Returns whether this cache currently knows the children of
-     * <code>member</code>. */
+    /** 
+     * Returns whether this cache currently knows the children of
+     * <code>member</code>. 
+     */
     boolean hasChildren(RolapMember member);
-    /** Registers that the children of <code>member</code> are
-     * <code>children</code> (a list of {@link RolapMember}s). */
+    /** 
+     * Registers that the children of <code>member</code> are
+     * <code>children</code> (a list of {@link RolapMember}s). 
+     */
     void putChildren(RolapMember member, List children);
 }
 

@@ -19,15 +19,14 @@ package mondrian.rolap;
  * @since 10 August, 2001
  * @version $Id$
  **/
-public class CellKey
-{
+public class CellKey {
     public final int[] ordinals;
-    public CellKey(int[] ordinals)
-    {
+
+    public CellKey(int[] ordinals) {
         this.ordinals = ordinals;
     }
-    public boolean equals(Object o)
-    {
+
+    public boolean equals(Object o) {
         if (o instanceof CellKey) {
             CellKey other = (CellKey) o;
             if (other.ordinals.length != this.ordinals.length) {
@@ -43,17 +42,16 @@ public class CellKey
             return false;
         }
     }
-    public int hashCode()
-    {
+
+    public int hashCode() {
         int h = 0;
         for (int i = 0; i < ordinals.length; i++) {
             h = (h * 37) ^ ordinals[i];
         }
         return h;
     }
-    CellKey copy()
-    {
-        return new CellKey((int[])ordinals.clone());
+    CellKey copy() {
+        return new CellKey((int[]) ordinals.clone());
     }
 };
 

@@ -11,6 +11,7 @@
 */
 
 package mondrian.rolap;
+
 import mondrian.olap.Exp;
 import mondrian.olap.Formula;
 import mondrian.olap.Property;
@@ -42,10 +43,9 @@ class RolapCalculatedMember extends RolapMember {
     }
 
     public Object getPropertyValue(String name) {
-        if (name.equals(Property.PROPERTY_FORMULA)) {
-            return formula;
-        }
-        return super.getPropertyValue(name);
+        return (name.equals(Property.PROPERTY_FORMULA))
+            ? formula
+            : super.getPropertyValue(name);
     }
 
     public boolean isCalculated() {

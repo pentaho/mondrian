@@ -68,14 +68,12 @@ class RolapDimension extends DimensionBase {
         return RolapDimension.nextOrdinal++;
     }
 
-    final Schema schema;
+    private final Schema schema;
 
-    RolapDimension(
-        Schema schema,
-        String name,
-        int globalOrdinal,
-        DimensionType dimensionType)
-    {
+    RolapDimension(Schema schema,
+                   String name,
+                   int globalOrdinal,
+                   DimensionType dimensionType) {
         super(name,
             Util.makeFqName(name),
             null,
@@ -95,16 +93,17 @@ class RolapDimension extends DimensionBase {
      *
      * @pre schema != null
      */
-    RolapDimension(
-        RolapSchema schema,
-        RolapCube cube,
-        MondrianDef.Dimension xmlDimension,
-        MondrianDef.CubeDimension xmlCubeDimension)
-    {
-        this(schema, xmlDimension.name, chooseOrdinal(cube, xmlCubeDimension),
-            xmlDimension.getDimensionType());
+    RolapDimension(RolapSchema schema,
+                   RolapCube cube,
+                   MondrianDef.Dimension xmlDimension,
+                   MondrianDef.CubeDimension xmlCubeDimension) {
+        this(schema, 
+             xmlDimension.name, 
+             chooseOrdinal(cube, xmlCubeDimension),
+             xmlDimension.getDimensionType());
 
         Util.assertPrecondition(schema != null);
+
         if (cube != null) {
             Util.assertTrue(cube.getSchema() == schema);
         }
@@ -123,18 +122,19 @@ class RolapDimension extends DimensionBase {
         // if there was no dimension type assigned, determine now.
         if (dimensionType == null) {
             for (int i = 0; i < hierarchies.length; i++) {
-                LevLoop: for (int j = 0; j < hierarchies[i].getLevels().length; j++) {
-                    Level lev = hierarchies[i].getLevels()[j];
+                Level[] levels = hierarchies[i].getLevels();
+                LevLoop: 
+                for (int j = 0; j < levels.length; j++) {
+                    Level lev = levels[j];
                     if (lev.isAll()) {
                         continue LevLoop;
                     }
                     if (dimensionType == null) {
                         // not set yet - set it according to current level
-                        if (lev.getLevelType().isTime()) {
-                            dimensionType = DimensionType.TimeDimension;
-                        } else {
-                            dimensionType = DimensionType.StandardDimension;
-                        }
+                        dimensionType = (lev.getLevelType().isTime())
+                            ? DimensionType.TimeDimension
+                            : DimensionType.StandardDimension;
+
                     } else {
                         // Dimension type was set according to first level.
                         // Make sure that other levels fit to definition.
@@ -165,10 +165,9 @@ class RolapDimension extends DimensionBase {
      * Assigns an ordinal for a dimension usage; also assigns the join-level of
      * the usage.
      */
-    private static int chooseOrdinal(
-        RolapCube cube,
-        MondrianDef.CubeDimension xmlCubeDimension)
-    {
+    private static int chooseOrdinal(RolapCube cube,
+                            MondrianDef.CubeDimension xmlCubeDimension) {
+
         if (xmlCubeDimension.name.equals(MEASURES_NAME)) {
             return 0;
         }
@@ -178,7 +177,6 @@ class RolapDimension extends DimensionBase {
                 (MondrianDef.DimensionUsage) xmlCubeDimension;
             RolapHierarchy hierarchy = schema.getSharedHierarchy(usage.source);
             if (hierarchy != null) {
-System.out.println("RolapDimension.chooseOrdinal: found hierarchy.name="+usage.source);
                 cube.createUsage(hierarchy, usage);
 
                 RolapDimension dimension =
@@ -239,17 +237,15 @@ System.out.println("RolapDimension.chooseOrdinal: found hierarchy.name="+usage.s
      * @param name Name for the new dimension.
      * @param xmlCubeDimension
      */
-    public RolapDimension copy(
-        RolapCube cube,
-        String name,
-        MondrianDef.CubeDimension xmlCubeDimension)
-    {
+    public RolapDimension copy(RolapCube cube,
+                               String name,
+                               MondrianDef.CubeDimension xmlCubeDimension) {
         RolapDimension dimension = new RolapDimension(
             schema,
             name,
             RolapDimension.getNextOrdinal(),
             dimensionType);
-        dimension.hierarchies = (HierarchyBase[]) hierarchies.clone();
+        dimension.hierarchies = (Hierarchy[]) hierarchies.clone();
         for (int i = 0; i < hierarchies.length; i++) {
             final RolapHierarchy hierarchy = (RolapHierarchy) hierarchies[i];
             dimension.hierarchies[i] = new RolapHierarchy(cube, dimension,

@@ -19,29 +19,25 @@ package mondrian.rolap;
  * @since 21 March, 2002
  * @version $Id$
  **/
-class MemberKey
-{
-    final RolapMember parent;
-    final Object value;
-    MemberKey(RolapMember parent, Object value)
-    {
+class MemberKey {
+    private final RolapMember parent;
+    private final Object value;
+    MemberKey(RolapMember parent, Object value) {
         this.parent = parent;
         this.value = value;
     }
     // override Object
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
         if (!(o instanceof MemberKey)) {
             return false;
         }
         MemberKey other = (MemberKey) o;
-        return other.parent == this.parent &&
+        return (other.parent == this.parent) &&
             other.value.equals(this.value);
     }
     // override Object
-    public int hashCode()
-    {
-        return (parent == null 
+    public int hashCode() {
+        return ((parent == null)
             ? 0 
             : parent.hashCode() << 16) ^ value.hashCode();
     }

@@ -24,10 +24,8 @@ package mondrian.rolap;
  * @since 21 December, 2001
  * @version $Id$
  **/
-class MeasureMemberSource extends ArrayMemberSource
-{
-    MeasureMemberSource(RolapHierarchy hierarchy, RolapMember[] members)
-    {
+class MeasureMemberSource extends ArrayMemberSource {
+    MeasureMemberSource(RolapHierarchy hierarchy, RolapMember[] members) {
         super(hierarchy, members);
     }
 }

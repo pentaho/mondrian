@@ -18,7 +18,7 @@ import mondrian.rolap.RolapMember;
 public class ColumnConstraint {
 
     private final Object value;
-    private RolapMember member = null;
+    private final RolapMember member;
 
     public ColumnConstraint(Object o) {
         if ( o instanceof RolapMember ) {

@@ -13,7 +13,9 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 
+import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Collections;
@@ -27,14 +29,16 @@ import java.util.Collections;
  * @version $Id$
  **/
 public abstract class RolapSchemaReader implements SchemaReader {
-    private Role role;
-    private HashMap hierarchyReaders = new HashMap();
-    private RolapSchema schema;
+    private final Role role;
+    private final Map hierarchyReaders;
+    private final RolapSchema schema;
 
     RolapSchemaReader(Role role, RolapSchema schema) {
         assert role != null : "precondition: role != null";
+
         this.role = role;
         this.schema = schema;
+        this.hierarchyReaders = new HashMap();
     }
 
     public Role getRole() {
@@ -103,7 +107,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
                 memberDepth -= topLevel.getDepth();
             }
             return memberDepth;
-        } else if (((RolapLevel) member.getLevel()).parentExp != null) {
+        } else if (((RolapLevel) member.getLevel()).getParentExp() != null) {
             // For members of parent-child hierarchy, members in the same level may have
             // different depths.
             int depth = 0;
@@ -117,7 +121,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
     }
 
     public Member[] getMemberChildren(Member member) {
-        ArrayList children = new ArrayList();
+        List children = new ArrayList();
         final Hierarchy hierarchy = member.getHierarchy();
         final MemberReader memberReader = getMemberReader(hierarchy);
         memberReader.getMemberChildren((RolapMember) member, children);
@@ -132,11 +136,13 @@ public abstract class RolapSchemaReader implements SchemaReader {
     public int getChildrenCountFromCache(Member member) {
         final Hierarchy hierarchy = member.getHierarchy();
         final MemberReader memberReader = getMemberReader(hierarchy);
-        if( !(memberReader instanceof MemberCache))
+        if( !(memberReader instanceof MemberCache)) {
             return -1;
-        if (!((MemberCache)memberReader).hasChildren((RolapMember)member))
+        }
+        if (!((MemberCache)memberReader).hasChildren((RolapMember)member)) {
             return -1;
-        ArrayList children = new ArrayList();
+        }
+        List children = new ArrayList();
         memberReader.getMemberChildren((RolapMember) member, children);
         return children.size();
     }
@@ -147,7 +153,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
         } else {
             final Hierarchy hierarchy = members[0].getHierarchy();
             final MemberReader memberReader = getMemberReader(hierarchy);
-            ArrayList children = new ArrayList();
+            List children = new ArrayList();
             for (int i = 0; i < members.length; i++) {
                 memberReader.getMemberChildren((RolapMember) members[i], children);
             }
@@ -158,6 +164,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
     public void getMemberDescendants(Member member, List result, Level level,
             boolean before, boolean self, boolean after) {
         Util.assertPrecondition(level != null, "level != null");
+
         final Hierarchy hierarchy = member.getHierarchy();
         final MemberReader memberReader = getMemberReader(hierarchy);
         memberReader.getMemberDescendants((RolapMember) member, result,
@@ -170,18 +177,17 @@ public abstract class RolapSchemaReader implements SchemaReader {
         return parent.lookupChild(this, name);
     }
 
-    public Member getMemberByUniqueName(
-        String[] uniqueNameParts,
-        boolean failIfNotFound)
-    {
+    public Member getMemberByUniqueName(String[] uniqueNameParts,
+                                        boolean failIfNotFound) {
         // In general, this schema reader doesn't have a cube, so we cannot
         // start looking up members.
         return null;
     }
 
-    public OlapElement lookupCompound(OlapElement parent, String[] names,
-        boolean failIfNotFound, int category)
-    {
+    public OlapElement lookupCompound(OlapElement parent, 
+                                      String[] names, 
+                                      boolean failIfNotFound, 
+                                      int category) {
         return Util.lookupCompound(this, parent, names, failIfNotFound,
             category);
     }
@@ -211,8 +217,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
         }
         Level topLevel = hierarchyAccess.getTopLevel();
         Level bottomLevel = hierarchyAccess.getBottomLevel();
-        if (topLevel == null &&
-                bottomLevel == null) {
+        if ((topLevel == null) && (bottomLevel == null)) {
             return levels;
         }
         if (topLevel == null) {
@@ -236,15 +241,14 @@ public abstract class RolapSchemaReader implements SchemaReader {
             return hierarchy.getDefaultMember();
         }
         Member[] rootMembers = this.getHierarchyRootMembers(hierarchy);
-        if (rootMembers.length > 0) {
-            return rootMembers[0];
-        }
-        return null;
+        return (rootMembers.length > 0)
+            ? rootMembers[0]
+            : null;
     }
 
     public boolean isDrillable(Member member) {
         final RolapLevel level = (RolapLevel) member.getLevel();
-        if (level.parentExp != null) {
+        if (level.getParentExp() != null) {
             // This is a parent-child level, so its children, if any, come from
             // the same level.
             //
@@ -254,19 +258,18 @@ public abstract class RolapSchemaReader implements SchemaReader {
             // This is a regular level. It has children iff there is a lower
             // level.
             final Level childLevel = level.getChildLevel();
-            return childLevel != null &&
-                    role.getAccess(childLevel) != Access.NONE;
+            return (childLevel != null) &&
+                    (role.getAccess(childLevel) != Access.NONE);
         }
     }
 
     public boolean isVisible(Member member) {
-        return !member.isHidden() &&
-                role.canAccess(member);
+        return !member.isHidden() && role.canAccess(member);
     }
 
     public Cube[] getCubes() {
         Cube[] cubes = schema.getCubes();
-        ArrayList visibleCubes = new ArrayList(cubes.length);
+        List visibleCubes = new ArrayList(cubes.length);
 
         for (int idx = 0; idx < cubes.length; idx++) {
             if (role.canAccess(cubes[idx])) {

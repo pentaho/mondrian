@@ -24,9 +24,27 @@ import java.util.*;
  * @since 10 August, 2001
  * @version $Id$
  */
-public class RolapMember extends MemberBase
-{
+public class RolapMember extends MemberBase {
+
     private static final Logger LOGGER = Logger.getLogger(RolapMember.class);
+
+    /**
+     * Converts a key to a string to be used as part of the member's name
+     * and unique name.
+     *
+     * <p>Usually, it just calls {@link Object#toString}. But if the key is an
+     * integer value represented in a floating-point column, we'd prefer the
+     * integer value. For example, one member of the
+     * <code>[Sales].[Store SQFT]</code> dimension comes out "20319.0" but we'd
+     * like it to be "20319".
+     */
+    private static String keyToString(Object key) {
+        String name = key.toString();
+        if ((key instanceof Number) && name.endsWith(".0")) {
+            name = name.substring(0, name.length() - 2);
+        }
+        return name;
+    }
 
     /** Ordinal of the member within the hierarchy. Some member readers do not
      * use this property; in which case, they should leave it as its default,
@@ -40,8 +58,7 @@ public class RolapMember extends MemberBase
      * have properties. So to reduce memory usage, when empty, this is set to
      * an immutable empty set.
      */
-    private Map mapPropertyNameToValue = emptyMap;
-    private static final Map emptyMap = Collections.unmodifiableMap(new HashMap(0));
+    private Map mapPropertyNameToValue;
 
     /**
      * Creates a RolapMember
@@ -61,6 +78,8 @@ public class RolapMember extends MemberBase
 
         this.key = key;
         this.ordinal = -1;
+        this.mapPropertyNameToValue = Collections.EMPTY_MAP;
+
         if (name != null &&
                 !(key != null && name.equals(key.toString()))) {
             // Save memory by only saving the name as a property if it's
@@ -70,6 +89,11 @@ public class RolapMember extends MemberBase
             setUniqueName(key);
         }
     }
+
+    RolapMember(Member parentMember, RolapLevel level, Object value) {
+        this(parentMember, level, value, null, REGULAR_MEMBER_TYPE);
+    }
+
 
     protected Logger getLogger() {
         return LOGGER;
@@ -103,28 +127,6 @@ public class RolapMember extends MemberBase
             : Util.makeFqName(parentMember, name);
     }
 
-    /**
-     * Converts a key to a string to be used as part of the member's name
-     * and unique name.
-     *
-     * <p>Usually, it just calls {@link Object#toString}. But if the key is an
-     * integer value represented in a floating-point column, we'd prefer the
-     * integer value. For example, one member of the
-     * <code>[Sales].[Store SQFT]</code> dimension comes out "20319.0" but we'd
-     * like it to be "20319".
-     */
-    private static String keyToString(Object key)
-    {
-        String name = key.toString();
-        if (key instanceof Number && name.endsWith(".0")) {
-            name = name.substring(0, name.length() - 2);
-        }
-        return name;
-    }
-
-    RolapMember(Member parentMember, RolapLevel level, Object value) {
-        this(parentMember, level, value, null, REGULAR_MEMBER_TYPE);
-    }
 
     public boolean isCalculatedInQuery() {
         return false;
@@ -132,10 +134,9 @@ public class RolapMember extends MemberBase
 
     public String getName() {
         final String name = (String) getPropertyValue(Property.PROPERTY_NAME);
-        if (name != null) {
-            return name;
-        }
-        return keyToString(key);
+        return (name != null)
+            ? name
+            : keyToString(key);
     }
 
     public void setName(String name) {
@@ -184,28 +185,19 @@ public class RolapMember extends MemberBase
         return level.getInheritedProperties();
     }
     // implement Exp
-    public Object evaluateScalar(Evaluator evaluator)
-    {
+    public Object evaluateScalar(Evaluator evaluator) {
         Member old = evaluator.setContext(this);
         Object value = evaluator.evaluateCurrent();
         evaluator.setContext(old);
         return value;
     }
 
-    String quoteKeyForSql()
-    {
-        if ((getRolapLevel().flags & RolapLevel.NUMERIC) != 0) {
-            return key.toString();
-        } else {
-            return RolapUtil.singleQuoteForSql(key.toString());
-        }
+    String quoteKeyForSql() {
+        return ((getRolapLevel().getFlags() & RolapLevel.NUMERIC) != 0)
+            ? key.toString()
+            : RolapUtil.singleQuoteForSql(key.toString());
     }
 
-/*
-    public int getSolveOrder() {
-        return -1;
-    }
-*/
 
     /**
      * Returns whether this member is calculated using an expression.
@@ -239,14 +231,6 @@ public class RolapMember extends MemberBase
         return this.key;
     }
 
-
-/*
-RME remove
-    // implement the Comparable interface
-    public final int compareTo(Object o) {
-        return compareTo((RolapMember) o);
-    }
-*/
 
     /**
      * Compares this member to another {@link RolapMember}.
@@ -294,7 +278,7 @@ RME remove
 
     public boolean isHidden() {
         final RolapLevel rolapLevel = getRolapLevel();
-        switch (rolapLevel.hideMemberCondition.ordinal_) {
+        switch (rolapLevel.getHideMemberCondition().ordinal_) {
         case RolapLevel.HideMemberCondition.NeverORDINAL:
             return false;
         case RolapLevel.HideMemberCondition.IfBlankNameORDINAL: {
@@ -314,7 +298,7 @@ RME remove
                     name == null ? "" : name);
         }
         default:
-            throw rolapLevel.hideMemberCondition.unexpected();
+            throw rolapLevel.getHideMemberCondition().unexpected();
         }
     }
 
@@ -344,14 +328,14 @@ RME remove
         }
         PropertyFormatter pf;
         if (prop!=null && (pf = prop.getFormatter()) != null) {
-            return pf.formatProperty(this, propertyName, getPropertyValue(propertyName));
+            return pf.formatProperty(this, propertyName, 
+                getPropertyValue(propertyName));
         }
 
         Object val = getPropertyValue(propertyName);
-        if (val == null)
-            return "";
-        else
-            return val.toString();
+        return (val == null)
+            ? ""
+            : val.toString();
     }
 
 }

@@ -13,6 +13,7 @@
 package mondrian.rolap.agg;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -36,24 +37,22 @@ public class AggregationManager extends RolapAggregationManager {
     private static AggregationManager instance;
 
     /** Returns or creates the singleton. **/
-    public static synchronized AggregationManager instance()
-    {
+    public static synchronized AggregationManager instance() {
         if (instance == null) {
             instance = new AggregationManager();
         }
         return instance;
     }
 
-    AggregationManager()
-    {
+    AggregationManager() {
         super();
     }
 
-    public void loadAggregation(
-        RolapStar.Measure[] measures, RolapStar.Column[] columns,
-        ColumnConstraint[][] constraintses, Collection pinnedSegments)
-    {
-        RolapStar star = measures[0].table.star;
+    public void loadAggregation(RolapStar.Measure[] measures, 
+                                RolapStar.Column[] columns,
+                                ColumnConstraint[][] constraintses, 
+                                Collection pinnedSegments) {
+        RolapStar star = measures[0].getStar();
         Aggregation aggregation = star.lookupOrCreateAggregation(columns);
 
         // try to eliminate unneccessary constraints
@@ -67,7 +66,7 @@ public class AggregationManager extends RolapAggregationManager {
 
     public Object getCellFromCache(CellRequest request) {
         RolapStar.Measure measure = request.getMeasure();
-        Aggregation aggregation = measure.table.star.lookupAggregation(
+        Aggregation aggregation = measure.getStar().lookupAggregation(
             request.getColumns());
         if (aggregation == null) {
             return null; // cell is not in any aggregation
@@ -82,14 +81,14 @@ public class AggregationManager extends RolapAggregationManager {
 
     public Object getCellFromCache(CellRequest request, Set pinSet) {
         Util.assertPrecondition(pinSet != null);
+
         RolapStar.Measure measure = request.getMeasure();
-        Aggregation aggregation = measure.table.star.lookupAggregation(
+        Aggregation aggregation = measure.getStar().lookupAggregation(
             request.getColumns());
-        if (aggregation == null) {
-            return null; // cell is not in any aggregation
-        }
-        return aggregation.get(
-                measure, request.getSingleValues(), pinSet);
+        return (aggregation == null)
+            // cell is not in any aggregation
+            ? null 
+            : aggregation.get(measure, request.getSingleValues(), pinSet);
     }
 
     public String getDrillThroughSQL(final CellRequest request) {
@@ -126,7 +125,8 @@ public class AggregationManager extends RolapAggregationManager {
     }
 
     private static String generateSql(QuerySpec spec,
-            java.sql.Connection jdbcConnection, boolean aggregate) {
+                                      java.sql.Connection jdbcConnection, 
+                                      boolean aggregate) {
         final DatabaseMetaData metaData;
         try {
             metaData = jdbcConnection.getMetaData();
@@ -138,7 +138,7 @@ public class AggregationManager extends RolapAggregationManager {
         int distinctCount = 0;
         for (int i = 0, measureCount = spec.getMeasureCount(); i < measureCount; i++) {
             RolapStar.Measure measure = spec.getMeasure(i);
-            if (measure.aggregator.distinct) {
+            if (measure.getAggregator().isDistinct()) {
                 distinctCount++;
             }
         }
@@ -161,7 +161,7 @@ public class AggregationManager extends RolapAggregationManager {
             int arity = columns.length;
             for (int i = 0; i < arity; i++) {
                 RolapStar.Column column = columns[i];
-                RolapStar.Table table = column.table;
+                RolapStar.Table table = column.getTable();
                 if (table.isFunky()) {
                     // this is a funky dimension -- ignore for now
                     continue;
@@ -180,12 +180,12 @@ public class AggregationManager extends RolapAggregationManager {
             }
             for (int i = 0, measureCount = spec.getMeasureCount(); i < measureCount; i++) {
                 RolapStar.Measure measure = spec.getMeasure(i);
-                Util.assertTrue(measure.table == star.factTable);
-                star.factTable.addToFrom(innerSqlQuery, false, true);
+                Util.assertTrue(measure.getTable() == star.getFactTable());
+                star.getFactTable().addToFrom(innerSqlQuery, false, true);
                 final String alias = "m" + i;
                 innerSqlQuery.addSelect(measure.getExpression(outerSqlQuery), alias);
                 outerSqlQuery.addSelect(
-                    measure.aggregator.getNonDistinctAggregator().getExpression(
+                    measure.getAggregator().getNonDistinctAggregator().getExpression(
                             alias));
             }
             outerSqlQuery.addFrom(innerSqlQuery, "foo", true);
@@ -196,7 +196,7 @@ public class AggregationManager extends RolapAggregationManager {
             int arity = columns.length;
             for (int i = 0; i < arity; i++) {
                 RolapStar.Column column = columns[i];
-                RolapStar.Table table = column.table;
+                RolapStar.Table table = column.getTable();
                 if (table.isFunky()) {
                     // this is a funky dimension -- ignore for now
                     continue;
@@ -211,10 +211,11 @@ public class AggregationManager extends RolapAggregationManager {
 
                 // some DB2 (AS400) versions throw an error, if a column alias is there
                 //  and *not* used in a subsequent order by/group by
-                if (sqlQuery.isAS400())
+                if (sqlQuery.isAS400()) {
                     sqlQuery.addSelect(expr, null);
-                else
+                } else {
                     sqlQuery.addSelect(expr, spec.getColumnAlias(i));
+                }
 
                 if (aggregate) {
                     sqlQuery.addGroupBy(expr);
@@ -223,11 +224,11 @@ public class AggregationManager extends RolapAggregationManager {
             // add measures
             for (int i = 0, measureCount = spec.getMeasureCount(); i < measureCount; i++) {
                 RolapStar.Measure measure = spec.getMeasure(i);
-                Util.assertTrue(measure.table == star.factTable);
-                star.factTable.addToFrom(sqlQuery, false, true);
+                Util.assertTrue(measure.getTable() == star.getFactTable());
+                star.getFactTable().addToFrom(sqlQuery, false, true);
                 String expr = measure.getExpression(sqlQuery);
                 if (aggregate) {
-                    expr = measure.aggregator.getExpression(expr);
+                    expr = measure.getAggregator().getExpression(expr);
                 }
                 sqlQuery.addSelect(expr, spec.getMeasureAlias(i));
             }
@@ -258,6 +259,8 @@ public class AggregationManager extends RolapAggregationManager {
 
         SegmentArrayQuerySpec(Segment[] segments) {
             this.segments = segments;
+
+            // the following code is all assertion checking
             Util.assertPrecondition(segments.length > 0, "segments.length > 0");
             for (int i = 0; i < segments.length; i++) {
                 Segment segment = segments[i];
@@ -268,7 +271,8 @@ public class AggregationManager extends RolapAggregationManager {
                     // We only require that the two arrays have the same
                     // contents, we but happen to know they are the same array,
                     // because we constructed them at the same time.
-                    Util.assertTrue(segment.axes[j].constraints == segments[0].axes[j].constraints);
+                    Util.assertTrue(segment.axes[j].getConstraints() == 
+                        segments[0].axes[j].getConstraints());
                 }
             }
         }
@@ -282,23 +286,23 @@ public class AggregationManager extends RolapAggregationManager {
         }
 
         public String getMeasureAlias(int i) {
-            return "m" + i;
+            return "m" + Integer.toString(i);
         }
 
         public RolapStar getStar() {
-            return segments[0].aggregation.star;
+            return segments[0].aggregation.getStar();
         }
 
         public RolapStar.Column[] getColumns() {
-            return segments[0].aggregation.columns;
+            return segments[0].aggregation.getColumns();
         }
 
         public String getColumnAlias(int i) {
-            return "c" + i;
+            return "c" + Integer.toString(i);
         }
 
         public ColumnConstraint[] getConstraints(int i) {
-            return segments[0].axes[i].constraints;
+            return segments[0].axes[i].getConstraints();
         }
     }
 
@@ -313,14 +317,14 @@ public class AggregationManager extends RolapAggregationManager {
 
         public DrillThroughQuerySpec(CellRequest request) {
             this.request = request;
-            this.star = request.getMeasure().table.star;
+            this.star = request.getMeasure().getStar();
             this.columnNames = computeDistinctColumnNames();
         }
 
         private String[] computeDistinctColumnNames() {
-            final ArrayList columnNames = new ArrayList();
+            final List columnNames = new ArrayList();
             final RolapStar.Column[] columns = getColumns();
-            HashSet columnNameSet = new HashSet();
+            Set columnNameSet = new HashSet();
             for (int i = 0; i < columns.length; i++) {
                 RolapStar.Column column = columns[i];
                 addColumnName(column, columnNames, columnNameSet);
@@ -329,19 +333,21 @@ public class AggregationManager extends RolapAggregationManager {
             return (String[]) columnNames.toArray(new String[columnNames.size()]);
         }
 
-        private void addColumnName(RolapStar.Column column, final ArrayList columnNames, HashSet columnNameSet) {
+        private void addColumnName(RolapStar.Column column, 
+                                   final List columnNames, 
+                                   Set columnNameSet) {
             String columnName = star.getColumnName(column);
             if (columnName != null) {
                 // nothing
-            } else if (column.expression instanceof MondrianDef.Column) {
-                columnName = ((MondrianDef.Column) column.expression).name;
+            } else if (column.getExpression() instanceof MondrianDef.Column) {
+                columnName = ((MondrianDef.Column) column.getExpression()).name;
             } else {
-                columnName = "c" + columnNames.size();
+                columnName = "c" + Integer.toString(columnNames.size());
             }
             // Register the column name, and if it's not unique,
             // generate names until it is.
             for (int j = 0; !columnNameSet.add(columnName); j++) {
-                columnName = "x" + j;
+                columnName = "x" + Integer.toString(j);
             }
             columnNames.add(columnName);
         }
@@ -361,7 +367,7 @@ public class AggregationManager extends RolapAggregationManager {
         }
 
         public RolapStar getStar() {
-            return request.getMeasure().table.star;
+            return request.getMeasure().getStar();
         }
 
         public RolapStar.Column[] getColumns() {
@@ -373,12 +379,11 @@ public class AggregationManager extends RolapAggregationManager {
         }
 
         public ColumnConstraint[] getConstraints(int i) {
-            final ColumnConstraint constr = (ColumnConstraint) request.getValueList().get(i);
-            if (constr == null) {
-                return null;
-            } else {
-                return new ColumnConstraint[] {constr};
-            }
+            final ColumnConstraint constr = 
+                (ColumnConstraint) request.getValueList().get(i);
+            return (constr == null)
+                ? null
+                : new ColumnConstraint[] {constr};
         }
     }
 

@@ -29,7 +29,8 @@ import java.util.List;
  * @version $Id$
  **/
 class RestrictedMemberReader extends DelegatingMemberReader {
-    private Role.HierarchyAccess hierarchyAccess;
+
+    private final Role.HierarchyAccess hierarchyAccess;
     private final boolean ragged;
 
     /**
@@ -69,8 +70,9 @@ class RestrictedMemberReader extends DelegatingMemberReader {
         }
         while (i < n) {
             member = memberReader.getLeadMember(member, increment);
-            if (member.isNull())
+            if (member.isNull()) {
                 return member;
+            }
             if (canSee(member)) {
                 ++i;
             }
@@ -80,8 +82,8 @@ class RestrictedMemberReader extends DelegatingMemberReader {
 
     public void getMemberChildren(RolapMember parentMember, List children) {
         // todo: optimize if parentMember is beyond last level
-        ArrayList fullChildren = new ArrayList();
-        ArrayList grandChildren = null;
+        List fullChildren = new ArrayList();
+        List grandChildren = null;
         memberReader.getMemberChildren(parentMember, fullChildren);
         for (int i = 0; i < fullChildren.size(); i++) {
             RolapMember member = (RolapMember) fullChildren.get(i);
@@ -151,8 +153,9 @@ class RestrictedMemberReader extends DelegatingMemberReader {
         }
     }
 
-    public List getMembersInLevel(RolapLevel level, int startOrdinal,
-            int endOrdinal) {
+    public List getMembersInLevel(RolapLevel level, 
+                                  int startOrdinal,
+                                  int endOrdinal) {
         if (hierarchyAccess != null) {
             final int depth = level.getDepth();
             if (hierarchyAccess.getTopLevel() != null &&
@@ -166,13 +169,17 @@ class RestrictedMemberReader extends DelegatingMemberReader {
         }
         final List membersInLevel = super.getMembersInLevel(level,
                 startOrdinal, endOrdinal);
-        ArrayList filteredMembers = new ArrayList();
+        List filteredMembers = new ArrayList();
         filterMembers(membersInLevel, filteredMembers);
         return filteredMembers;
     }
 
-    public void getMemberDescendants(RolapMember member, List result,
-            RolapLevel level, boolean before, boolean self, boolean after) {
+    public void getMemberDescendants(RolapMember member, 
+                                     List result,
+                                     RolapLevel level, 
+                                     boolean before, 
+                                     boolean self, 
+                                     boolean after) {
         // Utility method -- it calls our getMemberChildren(List,List), so
         // we get restriction.
         RolapUtil.getMemberDescendants(this, member, level, result, before,

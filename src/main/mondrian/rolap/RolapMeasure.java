@@ -26,23 +26,30 @@ import mondrian.olap.Property;
  * @since 10 August, 2001
  * @version $Id$
  **/
-abstract class RolapMeasure extends RolapMember
-{
+abstract class RolapMeasure extends RolapMember {
     /**
      * Holds the {@link mondrian.rolap.RolapStar.Measure} from which this
      * member is computed. Untyped, because another implementation might store
      * it somewhere else.
      */
-    Object starMeasure;
+    private Object starMeasure;
 
-    RolapMeasure(
-            Member parentMember, RolapLevel level, String name,
-            String formatString) {
+    RolapMeasure(Member parentMember, 
+                 RolapLevel level, 
+                 String name,
+                String formatString) {
         super(parentMember, level, name);
         if (formatString == null) {
             formatString = "";
         }
-        setProperty(Property.PROPERTY_FORMAT_EXP, Literal.createString(formatString));
+        setProperty(Property.PROPERTY_FORMAT_EXP, 
+            Literal.createString(formatString));
+    }
+    Object getStarMeasure() {
+        return starMeasure;
+    }
+    void setStarMeasure(Object starMeasure) {
+        this.starMeasure = starMeasure;
     }
 }
 

@@ -15,6 +15,7 @@ import mondrian.olap.*;
 
 import org.apache.log4j.Logger;
 import java.lang.reflect.Constructor;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -25,8 +26,7 @@ import java.util.Iterator;
  * @since 10 August, 2001
  * @version $Id$
  */
-class RolapLevel extends LevelBase
-{
+class RolapLevel extends LevelBase {
 
     private static final Logger LOGGER = Logger.getLogger(RolapEvaluator.class);
 
@@ -35,33 +35,33 @@ class RolapLevel extends LevelBase
     static final int UNIQUE = 4;
 
     /** The column or expression which yields the level's key. */
-    final MondrianDef.Expression keyExp;
+    private final MondrianDef.Expression keyExp;
     /** The column or expression which yields the level's ordinal. */
-    final MondrianDef.Expression ordinalExp;
+    private final MondrianDef.Expression ordinalExp;
     /** For SQL generator. Whether values of "column" are unique globally
      * unique (as opposed to unique only within the context of the parent
      * member). **/
-    final boolean unique;
-    int flags;
-    RolapProperty[] properties;
-    RolapProperty[] inheritedProperties;
+    private final boolean unique;
+    private final int flags;
+    private final RolapProperty[] properties;
+    private final RolapProperty[] inheritedProperties;
 
     /**
      * Ths expression which gives the name of members of this level. If null,
      * members are named using the key expression.
      */
-    final MondrianDef.Expression nameExp;
+    private final MondrianDef.Expression nameExp;
     /** The expression which joins to the parent member in a parent-child
      * hierarchy, or null if this is a regular hierarchy. */
-    final MondrianDef.Expression parentExp;
+    private final MondrianDef.Expression parentExp;
     /** Value which indicates a null parent in a parent-child hierarchy. */
-    String nullParentValue;
+    private final String nullParentValue;
     /** For a parent-child hierarchy with a closure provided by the schema,
      * the equivalent level in the closed hierarchy; otherwise null */
     private RolapLevel closedPeer;
 
     /** Condition under which members are hidden. */
-    final HideMemberCondition hideMemberCondition;
+    private final HideMemberCondition hideMemberCondition;
     private final MondrianDef.Closure xmlClosure;
 
     /**
@@ -126,12 +126,12 @@ class RolapLevel extends LevelBase
         this.xmlClosure = xmlClosure;
         for (int i = 0; i < properties.length; i++) {
             RolapProperty property = properties[i];
-            if (property.exp instanceof MondrianDef.Column) {
-                checkColumn((MondrianDef.Column) property.exp);
+            if (property.getExp() instanceof MondrianDef.Column) {
+                checkColumn((MondrianDef.Column) property.getExp());
             }
         }
         this.properties = properties;
-        ArrayList list = new ArrayList();
+        List list = new ArrayList();
         for (Level level = this; level != null;
                 level = level.getParentLevel()) {
             final Property[] levelProperties = level.getProperties();
@@ -176,7 +176,35 @@ class RolapLevel extends LevelBase
         return LOGGER;
     }
 
-    private Property lookupProperty(ArrayList list, String propertyName) {
+    MondrianDef.Expression getKeyExp() {
+        return keyExp;
+    }
+    MondrianDef.Expression getOrdinalExp() {
+        return ordinalExp;
+    }
+    int getFlags() {
+        return flags;
+    }
+    HideMemberCondition getHideMemberCondition() {
+        return hideMemberCondition;
+    }
+    boolean isUnique() {
+        return unique;
+    }
+    RolapProperty[] getRolapProperties() {
+        return properties;
+    }
+    String getNullParentValue() {
+        return nullParentValue;
+    }
+    MondrianDef.Expression getParentExp() {
+        return parentExp;
+    }
+    MondrianDef.Expression getNameExp() {
+        return nameExp;
+    }
+
+    private Property lookupProperty(List list, String propertyName) {
         Property existingProperty = null;
         for (Iterator iterator = list.iterator(); iterator.hasNext();) {
             Property property = (Property) iterator.next();
@@ -188,8 +216,7 @@ class RolapLevel extends LevelBase
         return existingProperty;
     }
 
-    RolapLevel(RolapHierarchy hierarchy, int depth, MondrianDef.Level xmlLevel)
-    {
+    RolapLevel(RolapHierarchy hierarchy, int depth, MondrianDef.Level xmlLevel) {
         this(
             hierarchy, depth, xmlLevel.name, xmlLevel.getKeyExp(),
             xmlLevel.getNameExp(), xmlLevel.getOrdinalExp(),
@@ -219,7 +246,7 @@ class RolapLevel extends LevelBase
     // helper for constructor
     private static RolapProperty[] createProperties(
             MondrianDef.Level xmlLevel) {
-        ArrayList list = new ArrayList();
+        List list = new ArrayList();
         final MondrianDef.Expression nameExp = xmlLevel.getNameExp();
         if (nameExp != null) {
             list.add(new RolapProperty(
@@ -263,8 +290,7 @@ class RolapLevel extends LevelBase
         }
     }
 
-    void init(RolapCube cube, MondrianDef.CubeDimension xmlDimension)
-    {
+    void init(RolapCube cube, MondrianDef.CubeDimension xmlDimension) {
         if (xmlClosure != null) {
             final RolapDimension dimension = ((RolapHierarchy) hierarchy)
                 .createClosedPeerDimension(this, xmlClosure, cube, xmlDimension);
@@ -275,12 +301,11 @@ class RolapLevel extends LevelBase
     }
 
     public boolean isAll() {
-        return hierarchy.hasAll() && depth == 0;
+        return hierarchy.hasAll() && (depth == 0);
     }
 
     public boolean areMembersUnique() {
-        return depth == 0 ||
-            depth == 1 && hierarchy.hasAll();
+        return (depth == 0) || (depth == 1) && hierarchy.hasAll();
     }
 
     public String getTableAlias() {

@@ -17,8 +17,7 @@ import mondrian.rolap.agg.CellRequest;
  * <code>RolapCell</code> implements {@link mondrian.olap.Cell} within a
  * {@link RolapResult}.
  */
-class RolapCell implements Cell
-{
+class RolapCell implements Cell {
     private final RolapResult result;
     protected final Object value;
     private final int ordinal;
@@ -39,19 +38,19 @@ class RolapCell implements Cell
         RolapCube c = (RolapCube) evaluator.getCube();
         Dimension measuresDim = c.getMeasuresHierarchy().getDimension();
         Member m = evaluator.getContext(measuresDim);
-        CellFormatter cf = null;
-        if (m instanceof RolapStoredMeasure)
-            cf = ((RolapStoredMeasure)m).getFormatter();
-        if (cf != null){
-            return cf.formatCell(value);
-        }
-        return evaluator.format(value);
+
+        CellFormatter cf = (m instanceof RolapStoredMeasure)
+            ? ((RolapStoredMeasure)m).getFormatter()
+            : null;
+        return (cf != null)
+            ? cf.formatCell(value)
+            : evaluator.format(value);
     }
     public boolean isNull() {
-        return value == Util.nullValue;
+        return (value == Util.nullValue);
     }
     public boolean isError() {
-        return value instanceof Throwable;
+        return (value instanceof Throwable);
     }
 
     /**
@@ -76,10 +75,9 @@ class RolapCell implements Cell
         }
         CellRequest cellRequest = RolapAggregationManager.makeRequest(
                 currentMembers, extendedContext);
-        if (cellRequest == null) {
-            return null;
-        }
-        return aggregationManager.getDrillThroughSQL(cellRequest);
+        return (cellRequest == null)
+            ? null
+            : aggregationManager.getDrillThroughSQL(cellRequest);
     }
 
     /**

@@ -23,20 +23,23 @@ import mondrian.olap.Util;
  * @since 10 August, 2001
  * @version $Id$
  */
-class RolapStoredMeasure extends RolapMeasure
-{
+class RolapStoredMeasure extends RolapMeasure {
+
     /** For SQL generator. Column which holds the value of the measure. */
-    final MondrianDef.Expression expression;
+    private final MondrianDef.Expression expression;
     /** For SQL generator. Has values "SUM", "COUNT", etc. */
-    final RolapAggregator aggregator;
-    final RolapCube cube;
+    private final RolapAggregator aggregator;
+    private final RolapCube cube;
 
-    private CellFormatter formatter = null;
+    private CellFormatter formatter;
 
-    RolapStoredMeasure(
-            RolapCube cube, RolapMember parentMember, RolapLevel level, String name,
-            String formatString, MondrianDef.Expression expression,
-            String aggregatorName) {
+    RolapStoredMeasure(RolapCube cube, 
+                       RolapMember parentMember, 
+                       RolapLevel level, 
+                       String name, 
+                       String formatString, 
+                       MondrianDef.Expression expression, 
+                       String aggregatorName) {
         super(parentMember, level, name, formatString);
         this.cube = cube;
         this.expression = expression;
@@ -48,14 +51,27 @@ class RolapStoredMeasure extends RolapMeasure
         setProperty(Property.PROPERTY_AGGREGATION_TYPE, aggregator);
     }
 
-    RolapStoredMeasure(
-            RolapCube cube, RolapMember parentMember, RolapLevel level,
-            String name, String formatString, String column, String aggregator) {
+    RolapStoredMeasure(RolapCube cube, 
+                       RolapMember parentMember, 
+                       RolapLevel level, 
+                       String name, 
+                       String formatString, 
+                       String column, 
+                       String aggregator) {
         this(cube, parentMember, level, name, formatString,
                 new MondrianDef.Column(cube.fact.getAlias(), column),
                 aggregator);
     }
 
+    MondrianDef.Expression getMondrianDefExpression() {
+        return expression;
+    }
+    RolapAggregator getAggregator() {
+        return aggregator;
+    }
+    RolapCube getCube() {
+        return cube;
+    }
     // implement RolapMeasure
     CellReader getCellReader() {
         return cube.getCellReader();

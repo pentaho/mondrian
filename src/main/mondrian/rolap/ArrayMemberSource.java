@@ -27,12 +27,12 @@ import java.util.Properties;
  * @since 22 December, 2001
  * @version $Id$
  **/
-abstract class ArrayMemberSource implements MemberSource
-{
+abstract class ArrayMemberSource implements MemberSource {
+
     protected final RolapHierarchy hierarchy;
     protected final RolapMember[] members;
-    ArrayMemberSource(RolapHierarchy hierarchy, RolapMember[] members)
-    {
+
+    ArrayMemberSource(RolapHierarchy hierarchy, RolapMember[] members) {
         this.hierarchy = hierarchy;
         this.members = members;
     }
@@ -57,7 +57,8 @@ abstract class ArrayMemberSource implements MemberSource
     public void getMemberChildren(List parentMembers, List children) {
         // there are no children
     }
-    public RolapMember lookupMember(String[] uniqueNameParts, boolean failIfNotFound) {
+    public RolapMember lookupMember(String[] uniqueNameParts, 
+                                    boolean failIfNotFound) {
         String uniqueName = Util.implode(uniqueNameParts);
         for (int i = 0; i < members.length; i++) {
             RolapMember member = members[i];
@@ -73,6 +74,7 @@ abstract class ArrayMemberSource implements MemberSource
     }
 }
 
+/*
 class HasBoughtDairySource extends ArrayMemberSource
 {
     public HasBoughtDairySource(RolapHierarchy hierarchy, Properties properties)
@@ -81,10 +83,10 @@ class HasBoughtDairySource extends ArrayMemberSource
         Util.discard(properties);
     }
 
-    /**
-     * Because Java won't allow us to call methods before constructing {@link
-     * HasBoughtDairyReader}'s base class.
-     **/
+    ///
+     //Because Java won't allow us to call methods before constructing {@link
+     //HasBoughtDairyReader}'s base class.
+     ///
     private static class Thunk
     {
         RolapHierarchy hierarchy;
@@ -116,5 +118,6 @@ class HasBoughtDairySource extends ArrayMemberSource
         }
     }
 }
+*/
 
 // End ArrayMemberSource.java

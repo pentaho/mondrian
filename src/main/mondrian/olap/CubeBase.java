@@ -44,10 +44,11 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
     public static final int MDPROP_USERDEFINED0 = 19;
 
     protected final String name;
-    protected DimensionBase[] dimensions;
+    protected Dimension[] dimensions;
 
-    protected CubeBase(String name) {
+    protected CubeBase(String name, Dimension[] dimensions) {
         this.name = name;
+        this.dimensions = dimensions;
     }
 
     // implement OlapElement

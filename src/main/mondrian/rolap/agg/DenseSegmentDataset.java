@@ -26,8 +26,7 @@ import mondrian.rolap.CellKey;
  * @since 21 March, 2002
  * @version $Id$
  **/
-class DenseSegmentDataset implements SegmentDataset
-{
+class DenseSegmentDataset implements SegmentDataset {
     private final Segment segment;
     private final Object[] values; // length == m[0] * ... * m[axes.length-1]
 
@@ -35,51 +34,45 @@ class DenseSegmentDataset implements SegmentDataset
         this.segment = segment;
         this.values = values;
     }
-    public Object get(CellKey keys)
-    {
+    public Object get(CellKey keys) {
         int offset = getOffset(keys.ordinals);
         return values[offset];
     }
-    public double getBytes()
-    {
+    public double getBytes() {
         // assume a slot, key, and value are each 4 bytes
         return values.length * 12;
     }
-    boolean contains(Object[] keys)
-    {
-        return getOffset(keys) >= 0;
+    boolean contains(Object[] keys) {
+        return (getOffset(keys) >= 0);
     }
-    Object get(Object[] keys)
-    {
+    Object get(Object[] keys) {
         int offset = getOffset(keys);
         return keys[offset];
     }
-    void put(Object[] keys, Object value)
-    {
+    void put(Object[] keys, Object value) {
         int offset = getOffset(keys);
         keys[offset] = value;
     }
-    private int getOffset(int[] keys)
-    {
+    private int getOffset(int[] keys) {
         int offset = 0;
         for (int i = 0; i < keys.length; i++) {
             Aggregation.Axis axis = segment.axes[i];
-            offset *= axis.keys.length;
+            Object[] ks = axis.getKeys();
+            offset *= ks.length;
             offset += keys[i];
         }
         return offset;
     }
-    private int getOffset(Object[] keys)
-    {
+    private int getOffset(Object[] keys) {
         int offset = 0;
 outer:
         for (int i = 0; i < keys.length; i++) {
             Aggregation.Axis axis = segment.axes[i];
-            offset *= axis.keys.length;
+            Object[] ks = axis.getKeys();
+            offset *= ks.length;
             Object value = keys[i];
-            for (int j = 0, axisLength = axis.keys.length; j <
-                     axisLength; j++) {
-                if (axis.keys[j].equals(value)) {
+            for (int j = 0, axisLength = ks.length; j < axisLength; j++) {
+                if (ks[j].equals(value)) {
                     offset += j;
                     continue outer;
                 }

@@ -104,21 +104,18 @@ public class RolapConnection extends ConnectionBase {
      *        by Mondrian
      * @pre connectInfo != null
      */
-    RolapConnection(
-            Util.PropertyList connectInfo,
-            RolapSchema schema,
-            DataSource dataSource) {
+    RolapConnection(Util.PropertyList connectInfo,
+                    RolapSchema schema,
+                    DataSource dataSource) {
         super();
 
         String provider = connectInfo.get(RolapConnectionProperties.Provider);
         Util.assertTrue(provider.equalsIgnoreCase("mondrian"));
         this.connectInfo = connectInfo;
         this.catalogName = connectInfo.get(RolapConnectionProperties.Catalog);
-        if (dataSource != null) {
-            this.dataSource = dataSource;
-        } else {
-            this.dataSource = createDataSource(connectInfo);
-        }
+        this.dataSource = (dataSource != null)
+            ? dataSource
+            : createDataSource(connectInfo);
         Role role = null;
         if (schema == null) {
             // If RolapSchema.Pool.get were to call this with schema == null,
@@ -157,7 +154,7 @@ public class RolapConnection extends ConnectionBase {
             }
         }
         if (role == null) {
-            role = schema.defaultRole;
+            role = schema.getDefaultRole();
         }
         this.schema = schema;
         setRole(role);
@@ -175,7 +172,6 @@ public class RolapConnection extends ConnectionBase {
                 connectInfo.get(RolapConnectionProperties.Jdbc);
         final String poolNeededString =
                 connectInfo.get(RolapConnectionProperties.PoolNeeded);
-        final boolean poolNeeded;
 
         Properties jdbcProperties = getJDBCProperties(connectInfo);
         String propertyString = jdbcProperties.toString();
@@ -190,13 +186,13 @@ public class RolapConnection extends ConnectionBase {
             final String jdbcDriversProp =
                     MondrianProperties.instance().getJdbcDrivers();
             RolapUtil.loadDrivers(jdbcDriversProp);
-            if (poolNeededString == null) {
+
+            final boolean poolNeeded = (poolNeededString == null)
                 // JDBC connections are dumb beasts, so we assume they're not
                 // pooled.
-                poolNeeded = true;
-            } else {
-                poolNeeded = poolNeededString.equalsIgnoreCase("true");
-            }
+                ? true
+                : poolNeededString.equalsIgnoreCase("true");
+
             final String jdbcUser =
                     connectInfo.get(RolapConnectionProperties.JdbcUser);
             final String jdbcPassword =
@@ -231,43 +227,47 @@ public class RolapConnection extends ConnectionBase {
                         "Error while creating connection pool (with URI " +
                         jdbcConnectString + ")");
             }
-        }
 
-        final String dataSourceName = connectInfo.get(RolapConnectionProperties.DataSource);
-        if (dataSourceName == null) {
-            throw Util.newInternal(
+        } else {
+
+            final String dataSourceName = 
+                connectInfo.get(RolapConnectionProperties.DataSource);
+            if (dataSourceName == null) {
+                throw Util.newInternal(
                     "Connect string '" + connectInfo.toString() +
                     "' must contain either '" + RolapConnectionProperties.Jdbc +
                     "' or '" + RolapConnectionProperties.DataSource + "'");
-        }
+            }
 
-        if (poolNeededString == null) {
-            // Data sources are fairly smart, so we assume they look after their
-            // own pooling.
-            poolNeeded = false;
-        } else {
-            poolNeeded = poolNeededString.equalsIgnoreCase("true");
-        }
-        // Get connection from datasource.
-        final DataSource dataSource;
-        try {
-            dataSource = (DataSource) new InitialContext().lookup(dataSourceName);
-        } catch (NamingException e) {
-            throw Util.newInternal(e, "Error while looking up data source (" +
-                    dataSourceName + ")");
-        }
-        if (!poolNeeded) {
-            return dataSource;
-        }
-        ConnectionFactory connectionFactory =
-                new DataSourceConnectionFactory(dataSource);
-        try {
-            return RolapConnectionPool.instance().getPoolingDataSource(
-                    dataSourceName, connectionFactory);
-        } catch (Exception e) {
-            throw Util.newInternal(e,
-                    "Error while creating connection pool (with URI " +
-                    dataSourceName + ")");
+            final boolean poolNeeded = (poolNeededString == null)
+                // Data sources are fairly smart, so we assume they look after
+                // their own pooling.
+                ? false
+                : poolNeededString.equalsIgnoreCase("true");
+
+            // Get connection from datasource.
+            final DataSource dataSource;
+            try {
+                dataSource = 
+                    (DataSource) new InitialContext().lookup(dataSourceName);
+            } catch (NamingException e) {
+                throw Util.newInternal(e, 
+                    "Error while looking up data source (" +
+                        dataSourceName + ")");
+            }
+            if (!poolNeeded) {
+                return dataSource;
+            }
+            ConnectionFactory connectionFactory =
+                    new DataSourceConnectionFactory(dataSource);
+            try {
+                return RolapConnectionPool.instance().getPoolingDataSource(
+                        dataSourceName, connectionFactory);
+            } catch (Exception e) {
+                throw Util.newInternal(e,
+                        "Error while creating connection pool (with URI " +
+                        dataSourceName + ")");
+            }
         }
     }
 
@@ -302,22 +302,18 @@ public class RolapConnection extends ConnectionBase {
         return schema;
     }
 
-    public String getConnectString()
-    {
+    public String getConnectString() {
         return connectInfo.toString();
     }
-    public String getCatalogName()
-    {
+    public String getCatalogName() {
         return catalogName;
     }
 
-    public Locale getLocale()
-    {
+    public Locale getLocale() {
         return locale;
     }
 
-    public void setLocale(Locale locale)
-    {
+    public void setLocale(Locale locale) {
         this.locale = locale;
     }
 
@@ -325,8 +321,7 @@ public class RolapConnection extends ConnectionBase {
         return schemaReader;
     }
 
-    public Result execute(Query query)
-    {
+    public Result execute(Query query) {
         try {
             Result result = new RolapResult(query);
             for (int i = 0; i < query.axes.length; i++) {
@@ -336,6 +331,7 @@ public class RolapConnection extends ConnectionBase {
                 }
             }
             return result;
+
         } catch (Throwable e) {
             String queryString;
             try {
@@ -351,6 +347,7 @@ public class RolapConnection extends ConnectionBase {
     public void setRole(Role role) {
         Util.assertPrecondition(role != null, "role != null");
         Util.assertPrecondition(!role.isMutable(), "!role.isMutable()");
+
         this.role = role;
         this.schemaReader = new RolapSchemaReader(role, schema) {
             public Cube getCube() {
@@ -362,6 +359,7 @@ public class RolapConnection extends ConnectionBase {
     public Role getRole() {
         Util.assertPostcondition(role != null, "role != null");
         Util.assertPostcondition(!role.isMutable(), "!role.isMutable()");
+
         return role;
     }
 
@@ -375,13 +373,16 @@ public class RolapConnection extends ConnectionBase {
         private int loginTimeout;
         private Properties jdbcProperties;
 
-        public DriverManagerDataSource(String jdbcConnectString, Properties properties) {
+        public DriverManagerDataSource(String jdbcConnectString, 
+                                       Properties properties) {
             this.jdbcConnectString = jdbcConnectString;
             this.jdbcProperties = properties;
         }
 
         public Connection getConnection() throws SQLException {
-            return new org.apache.commons.dbcp.DelegatingConnection(java.sql.DriverManager.getConnection(jdbcConnectString, jdbcProperties));
+            return new org.apache.commons.dbcp.DelegatingConnection(
+                java.sql.DriverManager.getConnection(
+                    jdbcConnectString, jdbcProperties));
         }
 
         public Connection getConnection(String username, String password)
@@ -418,100 +419,96 @@ public class RolapConnection extends ConnectionBase {
     public DataSource getDataSource() {
         return dataSource;
     }
-}
-
-/**
- * A <code>NonEmptyResult</code> filters a result by removing empty rows
- * on a particular axis.
- */
-class NonEmptyResult extends ResultBase {
-
-    private static final Logger LOGGER = Logger.getLogger(NonEmptyResult.class);
-
-    Result underlying;
-    int axis;
-    HashMap map;
-    /** workspace. Synchronized access only. **/
-    private int[] pos;
-
-    NonEmptyResult(Result result, Query query, int axis) {
-        super(query, (Axis[]) result.getAxes().clone());
-
-        this.underlying = result;
-        this.axis = axis;
-        this.map = new HashMap();
-        int axisCount = underlying.getAxes().length;
-        this.pos = new int[axisCount];
-        //this.query = query;
-        //this.axes = (Axis[]) underlying.getAxes().clone();
-        this.slicerAxis = underlying.getSlicerAxis();
-        Position[] positions = underlying.getAxes()[axis].positions;
-        ArrayList positionsList = new ArrayList();
-        for (int i = 0, count = positions.length; i < count; i++) {
-            Position position = positions[i];
-            if (isEmpty(i, axis)) {
-                continue;
-            } else {
-                map.put(new Integer(positionsList.size()), new Integer(i));
-                positionsList.add(position);
-            }
-        }
-        this.axes[axis] = new RolapAxis(
-                (Position[]) positionsList.toArray(new Position[0]));
-    }
-    protected Logger getLogger() {
-        return LOGGER;
-    }
 
     /**
-     * Returns true if all cells at a given offset on a given axis are
-     * empty. For example, in a 2x2x2 dataset, <code>isEmpty(1,0)</code>
-     * returns true if cells <code>{(1,0,0), (1,0,1), (1,1,0),
-     * (1,1,1)}</code> are all empty. As you can see, we hold the 0th
-     * coordinate fixed at 1, and vary all other coordinates over all
-     * possible values.
+     * A <code>NonEmptyResult</code> filters a result by removing empty rows
+     * on a particular axis.
      */
-    private boolean isEmpty(int offset, int fixedAxis) {
-        int axisCount = getAxes().length;
-        pos[fixedAxis] = offset;
-        return isEmptyRecurse(fixedAxis, axisCount - 1);
-    }
+    class NonEmptyResult extends ResultBase {
 
-    private boolean isEmptyRecurse(int fixedAxis, int axis) {
-        if (axis < 0) {
-            RolapCell cell = (RolapCell) underlying.getCell(pos);
-            return cell.isNull();
-        } else if (axis == fixedAxis) {
-            return isEmptyRecurse(fixedAxis, axis - 1);
-        } else {
-            Position[] positions = getAxes()[axis].positions;
+        private final Result underlying;
+        private final int axis;
+        private final Map map;
+        /** workspace. Synchronized access only. **/
+        private final int[] pos;
+
+        NonEmptyResult(Result result, Query query, int axis) {
+            super(query, (Axis[]) result.getAxes().clone());
+
+            this.underlying = result;
+            this.axis = axis;
+            this.map = new HashMap();
+            int axisCount = underlying.getAxes().length;
+            this.pos = new int[axisCount];
+            this.slicerAxis = underlying.getSlicerAxis();
+            Position[] positions = underlying.getAxes()[axis].positions;
+            ArrayList positionsList = new ArrayList();
             for (int i = 0, count = positions.length; i < count; i++) {
-                pos[axis] = i;
-                if (!isEmptyRecurse(fixedAxis, axis - 1)) {
-                    return false;
+                Position position = positions[i];
+                if (isEmpty(i, axis)) {
+                    continue;
+                } else {
+                    map.put(new Integer(positionsList.size()), new Integer(i));
+                    positionsList.add(position);
                 }
             }
-            return true;
+            this.axes[axis] = new RolapAxis(
+                    (Position[]) positionsList.toArray(new Position[0]));
         }
-    }
+        protected Logger getLogger() {
+            return LOGGER;
+        }
 
-    // synchronized because we use 'pos'
-    public synchronized Cell getCell(int[] externalPos) {
-        System.arraycopy(externalPos, 0, this.pos, 0, externalPos.length);
-        int offset = externalPos[axis];
-        int mappedOffset = mapOffsetToUnderlying(offset);
-        this.pos[axis] = mappedOffset;
-        return underlying.getCell(this.pos);
-    }
+        /**
+         * Returns true if all cells at a given offset on a given axis are
+         * empty. For example, in a 2x2x2 dataset, <code>isEmpty(1,0)</code>
+         * returns true if cells <code>{(1,0,0), (1,0,1), (1,1,0),
+         * (1,1,1)}</code> are all empty. As you can see, we hold the 0th
+         * coordinate fixed at 1, and vary all other coordinates over all
+         * possible values.
+         */
+        private boolean isEmpty(int offset, int fixedAxis) {
+            int axisCount = getAxes().length;
+            pos[fixedAxis] = offset;
+            return isEmptyRecurse(fixedAxis, axisCount - 1);
+        }
 
-    private int mapOffsetToUnderlying(int offset) {
-        return ((Integer) map.get(new Integer(offset))).intValue();
-    }
+        private boolean isEmptyRecurse(int fixedAxis, int axis) {
+            if (axis < 0) {
+                RolapCell cell = (RolapCell) underlying.getCell(pos);
+                return cell.isNull();
+            } else if (axis == fixedAxis) {
+                return isEmptyRecurse(fixedAxis, axis - 1);
+            } else {
+                Position[] positions = getAxes()[axis].positions;
+                for (int i = 0, count = positions.length; i < count; i++) {
+                    pos[axis] = i;
+                    if (!isEmptyRecurse(fixedAxis, axis - 1)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
 
-    public void close() {
-        underlying.close();
+        // synchronized because we use 'pos'
+        public synchronized Cell getCell(int[] externalPos) {
+            System.arraycopy(externalPos, 0, this.pos, 0, externalPos.length);
+            int offset = externalPos[axis];
+            int mappedOffset = mapOffsetToUnderlying(offset);
+            this.pos[axis] = mappedOffset;
+            return underlying.getCell(this.pos);
+        }
+
+        private int mapOffsetToUnderlying(int offset) {
+            return ((Integer) map.get(new Integer(offset))).intValue();
+        }
+
+        public void close() {
+            underlying.close();
+        }
+
     }
 
 }
-
 // End RolapConnection.java

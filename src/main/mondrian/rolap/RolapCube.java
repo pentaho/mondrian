@@ -33,16 +33,16 @@ import java.util.List;
  * @since 10 August, 2001
  * @version $Id$
  */
-class RolapCube extends CubeBase
-{
+class RolapCube extends CubeBase {
+
     private static final Logger LOGGER = Logger.getLogger(RolapCube.class);
 
     private final RolapSchema schema;
-    private RolapHierarchy measuresHierarchy;
+    private final RolapHierarchy measuresHierarchy;
     /** For SQL generator. Fact table. */
     final MondrianDef.Relation fact;
     /** To access all measures stored in the fact table. */
-    private CellReader cellReader;
+    private final CellReader cellReader;
     /**
      * Mapping such that
      * <code>localDimensionOrdinals[dimension.globalOrdinal]</code> is equal to
@@ -53,7 +53,7 @@ class RolapCube extends CubeBase
     /** Schema reader which can see this cube and nothing else. */
     private SchemaReader schemaReader;
     /** List of calculated members. */
-    private Formula[] calculatedMembers = new Formula[0];
+    private Formula[] calculatedMembers;
 
     /** Contains {@link HierarchyUsage}s for this cube */
     private final List hierarchyUsages;
@@ -67,73 +67,100 @@ class RolapCube extends CubeBase
      * @param fact 
      */
     private RolapCube(RolapSchema schema, 
+                      MondrianDef.Schema xmlSchema,
                       String name, 
-                      MondrianDef.Relation fact) {
+                      MondrianDef.Relation fact,
+                      MondrianDef.CubeDimension[] dimensions) {
+        super(name, new RolapDimension[dimensions.length + 1]);
 
-        super(name);
         this.schema = schema;
         this.fact = fact;
         this.hierarchyUsages = new ArrayList();
-    }
+        this.cellReader = AggregationManager.instance();
+        this.calculatedMembers = new Formula[0];
 
-    RolapCube(
-        RolapSchema schema, MondrianDef.Schema xmlSchema,
-        MondrianDef.Cube xmlCube)
-    {
-        this(schema, xmlCube.name, xmlCube.fact);
+        final boolean isVirtual = (fact == null);
 
         if (getLogger().isDebugEnabled()) {
-            getLogger().debug("RolapCube<init>: cube=" +this.name);
+            if (isVirtual) {
+                getLogger().debug("RolapCube<init>: virtual cube=" +this.name);
+            } else {
+                getLogger().debug("RolapCube<init>: cube=" +this.name);
+            }
+        }
+
+        RolapDimension measuresDimension = new RolapDimension(
+                schema, 
+                Dimension.MEASURES_NAME, 
+                0, 
+                DimensionType.StandardDimension);
+
+        this.dimensions[0] = measuresDimension;
+
+        this.measuresHierarchy = measuresDimension.newHierarchy(null, false);
+
+        if (!Util.isEmpty(xmlSchema.measuresCaption)) {
+            measuresDimension.setCaption(xmlSchema.measuresCaption);
+            this.measuresHierarchy.setCaption(xmlSchema.measuresCaption);
+        }
+
+        for (int i = 0; i < dimensions.length; i++) {
+            MondrianDef.CubeDimension xmlCubeDimension = dimensions[i];
+            // Look up usages of shared dimensions in the schema before
+            // consulting the XML schema (which may be null).
+            RolapDimension dimension =
+                getOrCreateDimension(xmlCubeDimension, schema, xmlSchema);
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug("RolapCube<init>: dimension="
+                    +dimension.getName());
+            }
+            this.dimensions[i + 1] = dimension;
+
+            if (! isVirtual) {
+                RolapHierarchy[] hierarchies =
+                    (RolapHierarchy[]) dimension.getHierarchies();
+                for (int j = 0; j < hierarchies.length; j++) {
+                    RolapHierarchy hierarchy = hierarchies[j];
+                    if (getLogger().isDebugEnabled()) {
+                        getLogger().debug("RolapCube<init>: hierarchy="
+                            +hierarchy.getName());
+                    }
+                    createUsage(hierarchy, xmlCubeDimension);
+                }
+            }
+
         }
 
         schema.addCube(this);
+    }
+
+    /**
+     * Creates a <code>RolapCube</code> from a regular cube.
+     **/
+    RolapCube(RolapSchema schema, 
+              MondrianDef.Schema xmlSchema,
+              MondrianDef.Cube xmlCube) {
+        this(schema, xmlSchema, xmlCube.name, xmlCube.fact, xmlCube.dimensions);
 
         if (fact.getAlias() == null) {
             throw Util.newError(
                     "Must specify alias for fact table of cube " +
                     getUniqueName());
         }
-        this.dimensions = new RolapDimension[xmlCube.dimensions.length + 1];
 
-        RolapDimension measuresDimension = new RolapDimension(schema,
-            Dimension.MEASURES_NAME, 0, DimensionType.StandardDimension);
-        this.dimensions[0] = measuresDimension;
-        this.measuresHierarchy = measuresDimension.newHierarchy(null, false);
-        if (!Util.isEmpty(xmlSchema.measuresCaption)) {
-            measuresDimension.setCaption(xmlSchema.measuresCaption);
-            this.measuresHierarchy.setCaption(xmlSchema.measuresCaption);
-        }
-        RolapLevel measuresLevel = this.measuresHierarchy.newLevel("MeasuresLevel", 0);
-        for (int i = 0; i < xmlCube.dimensions.length; i++) {
-            MondrianDef.CubeDimension xmlCubeDimension = xmlCube.dimensions[i];
-            // Look up usages of shared dimensions in the schema before
-            // consulting the XML schema (which may be null).
-            RolapDimension dimension =
-                getOrCreateDimension(xmlCubeDimension, schema, xmlSchema);
-            if (getLogger().isDebugEnabled()) {
-                getLogger().debug("RolapCube<init>: dimension="+dimension.getName());
-            }
-            this.dimensions[i + 1] = dimension;
 
-            RolapHierarchy[] hierarchies =
-                (RolapHierarchy[]) dimension.getHierarchies();
-            for (int j = 0; j < hierarchies.length; j++) {
-                RolapHierarchy hierarchy = hierarchies[j];
-                if (getLogger().isDebugEnabled()) {
-                    getLogger().debug("RolapCube<init>: hierarchy="+hierarchy.getName());
-                }
-                createUsage(hierarchy, xmlCubeDimension);
-            }
-
-        }
+        // since MondrianDef.Measure and MondrianDef.VirtualCubeMeasure
+        // can not be treated as the same, measure creation can not be
+        // done in a common constructor.
+        RolapLevel measuresLevel = 
+            this.measuresHierarchy.newLevel("MeasuresLevel", 0);
 
         RolapStoredMeasure measures[] = new RolapStoredMeasure[
             xmlCube.measures.length];
         for (int i = 0; i < xmlCube.measures.length; i++) {
             MondrianDef.Measure xmlMeasure = xmlCube.measures[i];
 
-            final RolapStoredMeasure measure =
-                    new RolapStoredMeasure(
+            final RolapStoredMeasure measure = new RolapStoredMeasure(
                             this, null, measuresLevel, xmlMeasure.name,
                             xmlMeasure.formatString, xmlMeasure.column,
                             xmlMeasure.aggregator);
@@ -144,7 +171,8 @@ class RolapCube extends CubeBase
                 try {
                     Class clazz = Class.forName(xmlMeasure.formatter);
                     Constructor ctor = clazz.getConstructor(new Class[0]);
-                    CellFormatter cellFormatter = (CellFormatter) ctor.newInstance(new Object[0]);
+                    CellFormatter cellFormatter = 
+                        (CellFormatter) ctor.newInstance(new Object[0]);
                     measure.setFormatter(cellFormatter);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -176,7 +204,7 @@ class RolapCube extends CubeBase
         }
 
         this.measuresHierarchy.memberReader = new CacheMemberReader(
-                new MeasureMemberSource(measuresHierarchy, measures));
+                new MeasureMemberSource(this.measuresHierarchy, measures));
         init(xmlCube.dimensions);
         init(xmlCube);
     }
@@ -184,37 +212,16 @@ class RolapCube extends CubeBase
     /**
      * Creates a <code>RolapCube</code> from a virtual cube.
      **/
-    RolapCube(
-        RolapSchema schema, MondrianDef.Schema xmlSchema,
-        MondrianDef.VirtualCube xmlVirtualCube)
-    {
-        this(schema, xmlVirtualCube.name, null);
+    RolapCube(RolapSchema schema, 
+              MondrianDef.Schema xmlSchema,
+              MondrianDef.VirtualCube xmlVirtualCube) {
+        this(schema, xmlSchema, xmlVirtualCube.name, null, xmlVirtualCube.dimensions);
 
-        if (getLogger().isDebugEnabled()) {
-            getLogger().debug("RolapCube<init>: virtual cube=" +this.name);
-        }
 
-        this.dimensions =
-            new RolapDimension[xmlVirtualCube.dimensions.length + 1];
-        RolapDimension measuresDimension = new RolapDimension(
-            schema, Dimension.MEASURES_NAME, 0, DimensionType.StandardDimension);
-        this.dimensions[0] = measuresDimension;
-        this.measuresHierarchy = measuresDimension.newHierarchy(null, false);
-        if (!Util.isEmpty(xmlSchema.measuresCaption)) {
-            measuresDimension.setCaption(xmlSchema.measuresCaption);
-            this.measuresHierarchy.setCaption(xmlSchema.measuresCaption);
-        }
-
+        // since MondrianDef.Measure and MondrianDef.VirtualCubeMeasure
+        // can not be treated as the same, measure creation can not be
+        // done in a common constructor.
         this.measuresHierarchy.newLevel("MeasuresLevel", 0);
-        for (int i = 0; i < xmlVirtualCube.dimensions.length; i++) {
-            MondrianDef.VirtualCubeDimension xmlCubeDimension =
-                xmlVirtualCube.dimensions[i];
-            MondrianDef.Dimension xmlDimension = xmlCubeDimension.getDimension(
-                xmlSchema);
-            RolapDimension dimension = new RolapDimension(
-                schema, this, xmlDimension, xmlCubeDimension);
-            dimensions[i + 1] = dimension;
-        }
 
         RolapMeasure measures[] = new RolapMeasure[
             xmlVirtualCube.measures.length];
@@ -239,7 +246,7 @@ class RolapCube extends CubeBase
             }
         }
         this.measuresHierarchy.memberReader = new CacheMemberReader(
-            new MeasureMemberSource(measuresHierarchy, measures));
+            new MeasureMemberSource(this.measuresHierarchy, measures));
         init(xmlVirtualCube.dimensions);
     }
 
@@ -260,8 +267,8 @@ class RolapCube extends CubeBase
     private RolapDimension getOrCreateDimension(
         MondrianDef.CubeDimension xmlCubeDimension,
         RolapSchema schema,
-        MondrianDef.Schema xmlSchema)
-    {
+        MondrianDef.Schema xmlSchema) {
+
         if (xmlCubeDimension instanceof MondrianDef.DimensionUsage) {
             MondrianDef.DimensionUsage usage =
                 (MondrianDef.DimensionUsage) xmlCubeDimension;
@@ -278,22 +285,28 @@ class RolapCube extends CubeBase
     }
 
     private Formula parseFormula(String formulaString,
-        String memberUniqueName, List propNames, List propExprs)
-    {
+                                 String memberUniqueName, 
+                                 List propNames, 
+                                 List propExprs) {
         assert memberUniqueName.startsWith("[");
+
         RolapConnection conn = schema.getInternalConnection();
         StringBuffer buf = new StringBuffer(256);
         buf.append("WITH MEMBER ").append(memberUniqueName).append(" AS ")
             .append(formulaString);
+
         assert propNames.size() == propExprs.size();
+
         for (int i = 0; i < propNames.size(); i++) {
             String name = (String) propNames.get(i);
             String expr = (String) propExprs.get(i);
             buf.append(", ").append(name).append(" = ").append(expr);
         }
+
         buf.append(" SELECT FROM ")
             .append(Util.quoteMdxIdentifier(getUniqueName()));
         final String queryString = buf.toString();
+
         final Query queryExp;
         try {
             queryExp = conn.parseQuery(queryString);
@@ -302,7 +315,9 @@ class RolapCube extends CubeBase
                 memberUniqueName, getUniqueName(), e);
         }
         queryExp.resolve();
+
         Util.assertTrue(queryExp.formulas.length == 1);
+
         final Formula formula = queryExp.formulas[0];
         return formula;
     }
@@ -311,7 +326,7 @@ class RolapCube extends CubeBase
      * Post-initialization, doing things which cannot be done in the
      * constructor.
      */
-    void init(MondrianDef.Cube xmlCube) {
+    private void init(MondrianDef.Cube xmlCube) {
         // Load calculated members. (Cannot do this in the constructor, because
         // cannot parse the generated query, because the schema has not been
         // set in the cube at this point.)
@@ -324,8 +339,7 @@ class RolapCube extends CubeBase
     }
 
     private Member createCalculatedMember(
-        MondrianDef.CalculatedMember xmlCalcMember)
-    {
+        MondrianDef.CalculatedMember xmlCalcMember) {
         // Lookup dimension
         final Dimension dimension =
             (Dimension) lookupDimension(xmlCalcMember.dimension);
@@ -341,6 +355,7 @@ class RolapCube extends CubeBase
             if (formula.getName().equals(xmlCalcMember.name) &&
                 formula.getMdxMember().getDimension().getName() ==
                 dimension.getName()) {
+
                 throw MondrianResource.instance().newCalcMemberNotUnique(
                     Util.makeFqName(dimension, xmlCalcMember.name),
                     getUniqueName());
@@ -368,8 +383,11 @@ class RolapCube extends CubeBase
         }
         member.setProperty(Property.PROPERTY_VISIBLE, visible);
         
-        if (xmlCalcMember.caption != null && xmlCalcMember.caption.length() > 0)
+        if ((xmlCalcMember.caption != null) && 
+            xmlCalcMember.caption.length() > 0) {
+
             member.setProperty(Property.PROPERTY_CAPTION, xmlCalcMember.caption);
+        }
 
         return formula.getMdxMember();
     }
@@ -388,12 +406,14 @@ class RolapCube extends CubeBase
             List propNames,
             List propExprs,
             String memberName) {
+
         MemberProperty[] properties = new MemberProperty[xmlProperties.length];
         for (int i = 0; i < properties.length; i++) {
             final MondrianDef.CalculatedMemberProperty xmlProperty =
                     xmlProperties[i];
             if (xmlProperty.expression == null &&
                 xmlProperty.value == null) {
+
                 throw MondrianResource.instance()
                     .newNeitherExprNorValueForCalcMemberProperty(
                         xmlProperty.name,
@@ -402,6 +422,7 @@ class RolapCube extends CubeBase
             }
             if (xmlProperty.expression != null &&
                 xmlProperty.value != null) {
+
                 throw MondrianResource.instance()
                     .newExprAndValueForMemberProperty(
                         xmlProperty.name,
@@ -438,7 +459,7 @@ class RolapCube extends CubeBase
 
     public SchemaReader getSchemaReader(Role role) {
         if (role == null) {
-            role = schema.defaultRole.makeMutableClone();
+            role = schema.getDefaultRole().makeMutableClone();
             role.grant(this, Access.ALL);
         }
         return new RolapCubeSchemaReader(role);
@@ -456,8 +477,7 @@ class RolapCube extends CubeBase
         return null;
     }
 
-    void init(MondrianDef.CubeDimension[] xmlDimensions)
-    {
+    private void init(MondrianDef.CubeDimension[] xmlDimensions) {
         int max = -1;
         for (int i = 0; i < dimensions.length; i++) {
             final RolapDimension dimension = (RolapDimension) dimensions[i];
@@ -478,12 +498,10 @@ assert is not true.
 */
             localDimensionOrdinals[globalOrdinal] = i;
         }
-        this.cellReader = AggregationManager.instance();
         register();
     }
 
-    void register()
-    {
+    private void register() {
         if (isVirtual()) {
             return;
         }
@@ -501,14 +519,15 @@ assert is not true.
         // create measures (and stars for them, if necessary)
         for (int i = 0; i < storedMeasures.length; i++) {
             RolapStoredMeasure storedMeasure = storedMeasures[i];
-            RolapStar.Measure measure = new RolapStar.Measure();
-            measure.table = star.factTable;
-            measure.expression = storedMeasure.expression;
-            measure.aggregator = storedMeasure.aggregator;
-            measure.isNumeric = true;
-            storedMeasure.starMeasure = measure; // reverse mapping
-            star.factTable.columns.add(measure);
-            star.mapColumnToName.put(measure, storedMeasure.getName());
+            RolapStar.Measure measure = new RolapStar.Measure(
+                storedMeasure.getAggregator(),
+                star.getFactTable(),
+                storedMeasure.getMondrianDefExpression(),
+                true);
+
+            storedMeasure.setStarMeasure(measure); // reverse mapping
+            star.getFactTable().addColumn(measure);
+            star.addColumnToName(measure, storedMeasure.getName());
         }
 
         // create dimension tables
@@ -529,13 +548,12 @@ assert is not true.
     /**
      * Returns this cube's underlying star schema.
      */
-    RolapStar getStar()
-    {
+    RolapStar getStar() {
         return schema.getRolapStarRegistry().getOrCreateStar(fact);
     }
 
     synchronized void createUsage(RolapHierarchy hierarchy,
-                    MondrianDef.CubeDimension cubeDim) {
+                                  MondrianDef.CubeDimension cubeDim) {
         HierarchyUsage usage = new HierarchyUsage(this, hierarchy, cubeDim);
 
         // Set the hierarchy caption- this is used to display the alias
@@ -589,7 +607,8 @@ assert is not true.
             if (hu.getHierarchyName().equals(name)) {
                 if (list != null) {
                     if (getLogger().isDebugEnabled()) {
-                        getLogger().debug("RolapCube.getUsages: add list HierarchyUsage.name="+hu.getName());
+                        getLogger().debug("RolapCube.getUsages: "
+                            +"add list HierarchyUsage.name="+hu.getName());
                     }
                     list.add(hu);
                 } else if (hierUsage == null) {
@@ -597,8 +616,11 @@ assert is not true.
                 } else {
                     list = new ArrayList();
                     if (getLogger().isDebugEnabled()) {
-                        getLogger().debug("RolapCube.getUsages: add list HierarchyUsage.name="+hierUsage.getName());
-                        getLogger().debug("RolapCube.getUsages: add list HierarchyUsage.name="+hu.getName());
+                        getLogger().debug("RolapCube.getUsages: "
+                            + "add list hierUsage.name="
+                            + hierUsage.getName()
+                            + ", hu.name="
+                            + hu.getName());
                     }
                     list.add(hierUsage);
                     list.add(hu);
@@ -640,7 +662,9 @@ assert is not true.
             if ((s != null) && s.equals(source)) {
                 if (list != null) {
                     if (getLogger().isDebugEnabled()) {
-                        getLogger().debug("RolapCube.getUsagesBySource: add list HierarchyUsage.name="+hu.getName());
+                        getLogger().debug("RolapCube.getUsagesBySource: "
+                            + "add list HierarchyUsage.name="
+                            + hu.getName());
                     }
                     list.add(hu);
                 } else if (hierUsage == null) {
@@ -648,8 +672,11 @@ assert is not true.
                 } else {
                     list = new ArrayList();
                     if (getLogger().isDebugEnabled()) {
-                        getLogger().debug("RolapCube.getUsagesBySource: add list HierarchyUsage.name="+hierUsage.getName());
-                        getLogger().debug("RolapCube.getUsagesBySource: add list HierarchyUsage.name="+hu.getName());
+                        getLogger().debug("RolapCube.getUsagesBySource: "
+                            + "add list hierUsage.name="
+                            + hierUsage.getName()
+                            + ", hu.name="
+                            + hu.getName());
                     }
                     list.add(hierUsage);
                     list.add(hu);
@@ -704,8 +731,8 @@ assert is not true.
             for (int j = 0; j < hierarchyUsages.length; j++) {
                 HierarchyUsage hierarchyUsage = hierarchyUsages[j];
 
-                RolapStar.Table table = star.factTable;
-                if (!relation.equals(table.relation)) {
+                RolapStar.Table table = star.getFactTable();
+                if (!relation.equals(table.getRelation())) {
                     // HierarchyUsage should have checked this.
                     if (hierarchyUsage.getForeignKey() == null) {
                         throw MondrianResource.instance()
@@ -714,7 +741,7 @@ assert is not true.
                     }
                     // jhyde: check is disabled until we handle <View> correctly
                     if (false &&
-                        !star.factTable.containsColumn(hierarchyUsage.getForeignKey())) {
+                        !star.getFactTable().containsColumn(hierarchyUsage.getForeignKey())) {
                         throw MondrianResource.instance()
                                 .newHierarchyInvalidForeignKey(
                                         hierarchyUsage.getForeignKey(),
@@ -730,23 +757,31 @@ assert is not true.
                 RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
                 for (int l = 0; l < levels.length; l++) {
                     RolapLevel level = levels[l];
-                    if (level.keyExp == null) {
+                    if (level.getKeyExp() == null) {
                         continue;
                     } else {
-                        RolapStar.Column column = makeColumnForLevelExpr(level,
-                            table, level.keyExp);
-                        column.isNumeric = (level.flags & RolapLevel.NUMERIC) != 0;
-                        table.columns.add(column);
+                        RolapStar.Column column = makeColumnForLevelExpr(
+                            level,
+                            table, 
+                            level.getKeyExp(),
+                            (level.getFlags() & RolapLevel.NUMERIC) != 0
+                            );
+
+                        table.addColumn(column);
                         mapLevelToColumn.put(level, column);
-                        if (level.nameExp != null) {
+                        if (level.getNameExp() != null) {
                             final RolapStar.Column nameColumn =
-                                makeColumnForLevelExpr(level, table, level.nameExp);
-                            table.columns.add(nameColumn);
+                                makeColumnForLevelExpr(
+                                            level, 
+                                            table,
+                                            level.getNameExp(),
+                                            false);
+                            table.addColumn(nameColumn);
                             mapLevelToNameColumn.put(level, nameColumn);
-                            star.mapColumnToName.put(nameColumn, level.getName());
-                            star.mapColumnToName.put(column, level.getName() + " (Key)");
+                            star.addColumnToName(nameColumn, level.getName());
+                            star.addColumnToName(column, level.getName() + " (Key)");
                         } else {
-                            star.mapColumnToName.put(column, level.getName());
+                            star.addColumnToName(column, level.getName());
                         }
                     }
                 }
@@ -754,31 +789,28 @@ assert is not true.
         }
     }
 
-    private RolapStar.Column makeColumnForLevelExpr(
-        RolapLevel level,
-        RolapStar.Table table,
-        MondrianDef.Expression xmlExpr)
-    {
-        RolapStar.Column column = new RolapStar.Column();
+    private RolapStar.Column makeColumnForLevelExpr(RolapLevel level,
+                                               RolapStar.Table table,
+                                               MondrianDef.Expression xmlExpr,
+                                               boolean isNumeric) {
         if (xmlExpr instanceof MondrianDef.Column) {
             final MondrianDef.Column xmlColumn = (MondrianDef.Column) xmlExpr;
             String tableName = xmlColumn.table;
-            column.table = table.findAncestor(tableName);
-            if (column.table == null) {
+            table = table.findAncestor(tableName);
+            if (table == null) {
                 throw Util.newError(
-                        "Level '" + level.getUniqueName() +
-                        "' of cube '" + this +
-                        "' is invalid: table '" + tableName +
-                        "' is not found in current scope");
+                        "Level '" + level.getUniqueName() 
+                        + "' of cube '" 
+                        + this 
+                        + "' is invalid: table '" + tableName 
+                        + "' is not found in current scope");
             }
             RolapStar.AliasReplacer aliasReplacer =
-                    new RolapStar.AliasReplacer(tableName,
-                            column.table.getAlias());
+                    new RolapStar.AliasReplacer(tableName, table.getAlias());
             xmlExpr = aliasReplacer.visit(xmlExpr);
-        } else {
-            column.table = table;
         }
-        column.expression = xmlExpr;
+        RolapStar.Column column = 
+            new RolapStar.Column(table, xmlExpr, isNumeric);
         return column;
     }
 
@@ -804,7 +836,7 @@ assert is not true.
      * do not have fact tables.
      **/
     boolean isVirtual() {
-        return fact == null;
+        return (fact == null);
     }
 
     RolapDimension createDimension(MondrianDef.CubeDimension xmlCubeDimension) {
@@ -836,7 +868,7 @@ assert is not true.
         dimension.init(this, xmlCubeDimension);
         // add to dimensions array
         final int localOrdinal = dimensions.length;
-        dimensions = (DimensionBase[])
+        this.dimensions = (DimensionBase[])
             RolapUtil.addElement(dimensions, dimension);
 
         RolapHierarchy hierarchy = (RolapHierarchy) dimension.getHierarchy();
@@ -860,8 +892,7 @@ assert is not true.
         return dimension;
     }
 
-    public OlapElement lookupChild(SchemaReader schemaReader, String s)
-    {
+    public OlapElement lookupChild(SchemaReader schemaReader, String s) {
         OlapElement oe = null;
         String status = null;
         if (s.equals("Measures")) {
@@ -1043,10 +1074,8 @@ System.out.println("RolapCube.lookupChild OlapElement: DOES THIS EVER GET CALLED
             return list;
         }
 
-        public Member getMemberByUniqueName(
-            String[] uniqueNameParts,
-            boolean failIfNotFound)
-        {
+        public Member getMemberByUniqueName(String[] uniqueNameParts,
+                                            boolean failIfNotFound) {
             return (Member) lookupCompound(RolapCube.this, uniqueNameParts,
                 failIfNotFound, Category.Member);
         }

@@ -49,20 +49,22 @@ public abstract class RolapAggregationManager implements CellReader {
      * makes the drill-through queries easier for humans to understand.
      **/
     static CellRequest makeRequest(Member[] members,
-            boolean extendedContext)
-    {
+                                   boolean extendedContext) {
         boolean showNames = extendedContext;
         if (!(members[0] instanceof RolapStoredMeasure)) {
             return null;
         }
         RolapStoredMeasure measure = (RolapStoredMeasure) members[0];
         final RolapStar.Measure starMeasure = (RolapStar.Measure)
-                measure.starMeasure;
+                measure.getStarMeasure();
+
         Util.assertTrue(starMeasure != null);
-        RolapStar star = starMeasure.table.star;
+
+        RolapStar star = starMeasure.getStar();
         CellRequest request = new CellRequest(starMeasure);
-        Map mapLevelToColumn = star.getMapLevelToColumn(measure.cube);
-        Map mapLevelNameToColumn = star.getMapLevelToNameColumn(measure.cube);
+        Map mapLevelToColumn = star.getMapLevelToColumn(measure.getCube());
+        Map mapLevelNameToColumn =
+            star.getMapLevelToNameColumn(measure.getCube());
         for (int i = 1; i < members.length; i++) {
             Member member = members[i];
             RolapLevel previousLevel = null;
@@ -95,7 +97,7 @@ public abstract class RolapAggregationManager implements CellReader {
                         mapLevelToColumn.get(level);
                     if (column != null) {
                         request.addConstrainedColumn(column, null);
-                        if (showNames && level.nameExp != null) {
+                        if (showNames && level.getNameExp() != null) {
                             RolapStar.Column nameColumn = (RolapStar.Column)
                                 mapLevelNameToColumn.get(level);
                             Util.assertTrue(nameColumn != null);
@@ -154,7 +156,7 @@ public abstract class RolapAggregationManager implements CellReader {
                 // use the member as constraint, this will give us some
                 //  optimization potential
                 request.addConstrainedColumn(column, m);
-                if (showNames && level.nameExp != null) {
+                if (showNames && level.getNameExp() != null) {
                     RolapStar.Column nameColumn = (RolapStar.Column)
                         mapLevelNameToColumn.get(level);
                     Util.assertTrue(nameColumn != null);
@@ -171,27 +173,27 @@ public abstract class RolapAggregationManager implements CellReader {
     /**
      * Returns the value of a cell from an existing aggregation.
      **/
-    public Object getCellFromCache(Member[] members)
-    {
+    public Object getCellFromCache(Member[] members) {
         CellRequest request = makeRequest(members, false);
-        if (request == null) {
-            return Util.nullValue; // request out of bounds
-        }
-        return getCellFromCache(request);
+        return (request == null)
+            // request out of bounds
+            ? Util.nullValue
+            : getCellFromCache(request);
     }
 
     public abstract Object getCellFromCache(CellRequest request);
 
     public abstract Object getCellFromCache(CellRequest request, Set pinSet);
 
-    public Object getCell(Member[] members)
-    {
+    public Object getCell(Member[] members) {
         CellRequest request = makeRequest(members, false);
         RolapMeasure measure = (RolapMeasure) members[0];
         final RolapStar.Measure starMeasure = (RolapStar.Measure)
-                measure.starMeasure;
+                measure.getStarMeasure();
+
         Util.assertTrue(starMeasure != null);
-        RolapStar star = starMeasure.table.star;
+
+        RolapStar star = starMeasure.getStar();
         return star.getCell(request);
     }
 

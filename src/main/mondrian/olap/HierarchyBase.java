@@ -39,11 +39,14 @@ public abstract class HierarchyBase
     protected final String uniqueName;
     protected String description;
     protected Level[] levels;
-    protected boolean hasAll;
+    protected final boolean hasAll;
     protected String allMemberName;
 
-    protected HierarchyBase(Dimension dimension, String subName) {
+    protected HierarchyBase(Dimension dimension, 
+                            String subName, 
+                            boolean hasAll) {
         this.dimension = dimension;
+        this.hasAll = hasAll;
         setCaption(dimension.getCaption());
 
         this.subName = subName;

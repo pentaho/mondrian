@@ -25,8 +25,7 @@ import java.util.List;
  * @since 10 August, 2001
  * @version $Id$
  */
-class RolapHierarchy extends HierarchyBase
-{
+class RolapHierarchy extends HierarchyBase {
 
     private static final Logger LOGGER = Logger.getLogger(RolapHierarchy.class);
 
@@ -59,20 +58,12 @@ class RolapHierarchy extends HierarchyBase
     // for newClosedPeerHierarchy() to copy; but never used??
     private String primaryKey;
 
-    RolapHierarchy(RolapDimension dimension, String subName, boolean hasAll)
-    {
-        super(dimension, subName);
+    RolapHierarchy(RolapDimension dimension, String subName, boolean hasAll) {
+        super(dimension, subName, hasAll);
 
-        this.hasAll = hasAll;
         this.levels = new RolapLevel[0];
         setCaption(dimension.getCaption());
-/*
-        this.uniqueName = dimension.getUniqueName();
-        if (this.subName != null) {
-            this.name += "." + subName; // e.g. "Time.Weekly"
-            this.uniqueName = Util.makeFqName(name); // e.g. "[Time.Weekly]"
-        }
-*/
+
         if (hasAll) {
             Util.discard(newLevel("(All)",
                     RolapLevel.ALL | RolapLevel.UNIQUE));
@@ -88,9 +79,9 @@ class RolapHierarchy extends HierarchyBase
      */
     RolapHierarchy(RolapCube cube, RolapDimension dimension,
             MondrianDef.Hierarchy xmlHierarchy,
-            MondrianDef.CubeDimension xmlCubeDimension)
-    {
+            MondrianDef.CubeDimension xmlCubeDimension) {
         this(dimension, xmlHierarchy.name, xmlHierarchy.hasAll.booleanValue());
+
         if (xmlHierarchy.relation == null &&
                 xmlHierarchy.memberReaderClass == null &&
                 cube != null) {
@@ -157,42 +148,31 @@ class RolapHierarchy extends HierarchyBase
         if (this == o) {
             return true;
         }
+
         RolapHierarchy that = (RolapHierarchy)o;
-        if (sharedHierarchy == null || that.sharedHierarchy == null) {
-            return false;
-        }
-        return sharedHierarchy.equals(that.sharedHierarchy) && getUniqueName().equals(that.getUniqueName());
+        return ((sharedHierarchy == null) || (that.sharedHierarchy == null))
+            ? false
+            : (sharedHierarchy.equals(that.sharedHierarchy) && 
+                getUniqueName().equals(that.getUniqueName()));
     }
 
     public int hashCode() {
-        return super.hashCode() ^ (sharedHierarchy == null ? 0 : sharedHierarchy.hashCode());
+        return super.hashCode() ^ (sharedHierarchy == null 
+            ? 0 
+            : sharedHierarchy.hashCode());
     }
 
     /**
      * Initializes a hierarchy within the context of a cube.
      */
-    void init(RolapCube cube, MondrianDef.CubeDimension xmlDimension)
-    {
+    void init(RolapCube cube, MondrianDef.CubeDimension xmlDimension) {
         for (int i = 0; i < levels.length; i++) {
             ((RolapLevel) levels[i]).init(cube, xmlDimension);
         }
         if (this.memberReader == null) {
-            this.memberReader = getRolapSchema().createMemberReader(sharedHierarchy,
-                this, memberReaderClass);
+            this.memberReader = getRolapSchema().createMemberReader(
+                sharedHierarchy, this, memberReaderClass);
         }
-// RME also not needed
-        if (this.getDimension().isMeasures() ||
-            this.memberReaderClass != null) {
-            return;
-        }
-/*
-RME not needed
-        if (!cube.isVirtual()) {
-            // virtual cubes don't create usages
-            HierarchyUsage usage = getSchema().getUsage(this,cube);
-            usage.init(cube, this, null);
-        }
-*/
     }
 
     RolapLevel newLevel(String name, int flags) {
@@ -225,8 +205,8 @@ RME not needed
         return (relation != null) && tableExists(tableName, relation);
     }
 
-    private static boolean tableExists(
-            String tableName, MondrianDef.Relation relation) {
+    private static boolean tableExists(String tableName, 
+                                       MondrianDef.Relation relation) {
         if (relation instanceof MondrianDef.Table) {
             return ((MondrianDef.Table) relation).name.equals(tableName);
         }
@@ -246,8 +226,7 @@ RME not needed
         return relation;
     }
 
-    public Member getDefaultMember()
-    {
+    public Member getDefaultMember() {
         // use lazy initialization to get around bootstrap issues
         if (defaultMember == null) {
             List rootMembers = memberReader.getRootMembers();
@@ -261,8 +240,7 @@ RME not needed
         return defaultMember;
     }
 
-    public Member getNullMember()
-    {
+    public Member getNullMember() {
         // use lazy initialization to get around bootstrap issues
         if (nullMember == null) {
             nullMember = new RolapNullMember(this);
@@ -270,16 +248,15 @@ RME not needed
         return nullMember;
     }
 
-    public Member createMember(
-        Member parent, Level level, String name, Formula formula)
-    {
-        if (formula != null) {
-            return new RolapCalculatedMember(
-                (RolapMember) parent, (RolapLevel) level, name, formula);
-        } else {
-            return new RolapMember(
+    public Member createMember(Member parent, 
+                               Level level, 
+                               String name, 
+                               Formula formula) {
+        return (formula != null)
+            ? new RolapCalculatedMember(
+                (RolapMember) parent, (RolapLevel) level, name, formula)
+            : new RolapMember(
                 (RolapMember) parent, (RolapLevel) level, name);
-        }
     }
 
     String getAlias() {
@@ -301,31 +278,13 @@ RME not needed
      *    join to it. Member readers generally do not want to join the cube,
      *    but measure readers do.
      */
-    void addToFrom(
-            SqlQuery query, MondrianDef.Expression expression
-/*
-RME not used anywhere
-            , RolapCube cube
-*/
-            ) {
+    void addToFrom(SqlQuery query, MondrianDef.Expression expression) {
         if (relation == null) {
             throw Util.newError(
                     "cannot add hierarchy " + getUniqueName() +
                     " to query: it does not have a <Table>, <View> or <Join>");
         }
         final boolean failIfExists = false;
-/*
-        if (cube != null) {
-            HierarchyUsage hierarchyUsage = getRolapSchema().getUsage(this,cube);
-            query.addFrom(cube.getFact(), null, failIfExists);
-            query.addFrom(hierarchyUsage.joinTable, null, failIfExists);
-            query.addWhere(
-                    query.quoteIdentifier(
-                        cube.fact.getAlias(), hierarchyUsage.foreignKey) +
-                    " = " +
-                    hierarchyUsage.joinExp.getExpression(query));
-        }
-*/
         MondrianDef.Relation subRelation = relation;
         if (relation instanceof MondrianDef.Join) {
             if (expression != null) {
@@ -349,38 +308,26 @@ RME not used anywhere
      * such an alias.
      */
     private static MondrianDef.Relation relationSubset(
-            MondrianDef.Relation relation, String alias) {
+        MondrianDef.Relation relation, 
+        String alias) {
+
         if (relation instanceof MondrianDef.Table) {
             MondrianDef.Table table = (MondrianDef.Table) relation;
-            if (table.getAlias().equals(alias)) {
-                return relation;
-            } else {
-                return null;
-            }
+            return (table.getAlias().equals(alias))
+                ? relation
+                : null;
+
         } else if (relation instanceof MondrianDef.Join) {
             MondrianDef.Join join = (MondrianDef.Join) relation;
             MondrianDef.Relation rightRelation = relationSubset(join.right, alias);
-            if (rightRelation == null) {
-                return relationSubset(join.left, alias);
-            } else {
-                return join;
-            }
+            return (rightRelation == null)
+                ? relationSubset(join.left, alias)
+                : join;
+
         } else {
             throw Util.newInternal("bad relation type " + relation);
         }
     }
-
-/*
-RME not needed
-    HierarchyUsage createUsage(RolapCube cube) {
-        if (sharedHierarchy == null) {
-            MondrianDef.Relation fact = cube.fact;
-            return new PrivateHierarchyUsage(fact, this);
-        } else {
-            return new SharedHierarchyUsage(cube, sharedHierarchy, foreignKey);
-        }
-    }
-*/
 
     /**
      * Returns a member reader which enforces the access-control profile of
@@ -393,14 +340,13 @@ RME not needed
         final int access = role.getAccess(this);
         switch (access) {
         case Access.NONE:
-            throw Util.newInternal("Illegal access to members of hierarchy " +
-                    this);
+            throw Util.newInternal("Illegal access to members of hierarchy " 
+                    + this);
         case Access.ALL:
-            if (isRagged()) {
-                return new RestrictedMemberReader(memberReader, role);
-            } else {
-                return memberReader;
-            }
+            return (isRagged())
+                ? new RestrictedMemberReader(memberReader, role)
+                : memberReader;
+
         case Access.CUSTOM:
             return new RestrictedMemberReader(memberReader, role);
         default:
@@ -415,7 +361,7 @@ RME not needed
     boolean isRagged() {
         for (int i = 0; i < levels.length; i++) {
             RolapLevel level = (RolapLevel) levels[i];
-            if (level.hideMemberCondition !=
+            if (level.getHideMemberCondition() !=
                     RolapLevel.HideMemberCondition.Never) {
                 return true;
             }
@@ -433,9 +379,13 @@ RME not needed
      */
     synchronized Exp getAggregateChildrenExpression() {
         if (aggregateChildrenExpression == null) {
-            aggregateChildrenExpression = new FunCall("$AggregateChildren",
-                    Syntax.Internal, new Exp[] {this}).resolve(
-                            Util.createSimpleResolver(FunTable.instance()));
+            FunCall fc = new FunCall(
+                "$AggregateChildren",
+                Syntax.Internal, 
+                new Exp[] {this});
+            Exp.Resolver resolver =
+                    Util.createSimpleResolver(FunTable.instance());
+            aggregateChildrenExpression = fc.resolve(resolver);
         }
         return aggregateChildrenExpression;
     }
@@ -505,8 +455,8 @@ RME not needed
         RolapLevel src,
         MondrianDef.Closure clos,
         RolapCube cube,
-        MondrianDef.CubeDimension xmlDimension)
-    {
+        MondrianDef.CubeDimension xmlDimension) {
+
         // REVIEW (mb): What about attribute primaryKeyTable?
 
         // Create a peer dimension.
@@ -532,7 +482,7 @@ RME not needed
         // This represents all groups of descendants. For example, in the
         // Employee closure hierarchy, this level has a row for every employee.
         int index = peerHier.levels.length;
-        int flags = src.flags &~ RolapLevel.UNIQUE;
+        int flags = src.getFlags() &~ RolapLevel.UNIQUE;
         MondrianDef.Expression keyExp =
             new MondrianDef.Column(clos.table.name, clos.parentColumn);
         RolapLevel level = new RolapLevel(peerHier, index++,
@@ -540,7 +490,7 @@ RME not needed
             keyExp, null, null,
             null, null,  // no longer a parent-child hierarchy
             null, RolapProperty.emptyArray, flags,
-            src.hideMemberCondition, src.getLevelType());
+            src.getHideMemberCondition(), src.getLevelType());
         peerHier.levels =
             (RolapLevel[]) RolapUtil.addElement(peerHier.levels, level);
 
@@ -549,15 +499,24 @@ RME not needed
         // closure hierarchy, this level has a row for every direct and
         // indirect report of every employee (which is more than the number
         // of employees).
-        flags = src.flags | RolapLevel.UNIQUE;
+        flags = src.getFlags() | RolapLevel.UNIQUE;
         keyExp = new MondrianDef.Column(clos.table.name, clos.childColumn);
-        RolapLevel sublevel = new RolapLevel(peerHier, index++,
+        RolapLevel sublevel = new RolapLevel(
+            peerHier, 
+            index++,
             "Item",
-            keyExp, null, null,
-            null, null,  // no longer a parent-child hierarchy
-            null, RolapProperty.emptyArray, flags,
-            src.hideMemberCondition, src.getLevelType());
-        peerHier.levels = (RolapLevel[]) RolapUtil.addElement(peerHier.levels, sublevel);
+            keyExp, 
+            null, 
+            null,
+            null, 
+            null,  // no longer a parent-child hierarchy
+            null, 
+            RolapProperty.emptyArray, 
+            flags,
+            src.getHideMemberCondition(), 
+            src.getLevelType());
+        peerHier.levels = 
+            (RolapLevel[]) RolapUtil.addElement(peerHier.levels, sublevel);
 
 /* 
 RME HACK
@@ -568,23 +527,27 @@ RME HACK
     }
 
 
-}
 
-/**
- * A <code>RolapNullMember</code> is the null member of its hierarchy.
- * Every hierarchy has precisely one. They are yielded by operations such as
- * <code>[Gender].[All].ParentMember</code>. Null members are usually omitted
- * from sets (in particular, in the set constructor operator "{ ... }".
- */
-class RolapNullMember extends RolapMember {
-    RolapNullMember(RolapHierarchy hierarchy) {
-        super(null, (RolapLevel) hierarchy.getLevels()[0], null, "#Null",
-            NULL_MEMBER_TYPE);
+    /**
+     * A <code>RolapNullMember</code> is the null member of its hierarchy.
+     * Every hierarchy has precisely one. They are yielded by operations such as
+     * <code>[Gender].[All].ParentMember</code>. Null members are usually
+     * omitted from sets (in particular, in the set constructor operator "{ ...
+     * }".
+     */
+    class RolapNullMember extends RolapMember {
+        RolapNullMember(RolapHierarchy hierarchy) {
+            super(null, 
+                  (RolapLevel) hierarchy.getLevels()[0], 
+                  null, 
+                  "#Null", 
+                  NULL_MEMBER_TYPE);
+        }
+
+        public boolean isNull() {
+            return true;
+        }
     }
 
-    public boolean isNull() {
-        return true;
-    }
 }
-
 // End RolapHierarchy.java

@@ -33,24 +33,37 @@ import java.util.*;
  * @since 10 August, 2001
  * @version $Id$
  */
-class RolapEvaluator implements Evaluator
-{
+class RolapEvaluator implements Evaluator {
     private static final Logger LOGGER = Logger.getLogger(RolapEvaluator.class);
 
-    private RolapCube cube;
-    private RolapConnection connection;
+    private final RolapCube cube;
+    private final RolapConnection connection;
     private Member[] currentMembers;
-    private Evaluator parent;
+    private final Evaluator parent;
     private CellReader cellReader;
-    private int depth;
+    private final int depth;
 
-    Map expResultCache;
+    private final Map expResultCache;
     private Member expandingMember;
+    private boolean nonEmpty;
 
-    RolapEvaluator(RolapCube cube, RolapConnection connection)
-    {
+    private RolapEvaluator(RolapCube cube, 
+                           RolapConnection connection,
+                           Evaluator parent,
+                           int depth,
+                           Map expResultCache,
+                           CellReader cellReader) {
         this.cube = cube;
         this.connection = connection;
+        this.parent = parent;
+        this.depth = depth;
+        this.expResultCache = expResultCache;
+        this.cellReader = cellReader;
+    }
+    RolapEvaluator(RolapCube cube, RolapConnection connection) {
+        this(cube, connection, null, 0, new HashMap(), null);
+        // we expect client to set CellReader 
+
         SchemaReader scr = connection.getSchemaReader();
         Dimension[] dimensions = cube.getDimensions();
         currentMembers = new Member[dimensions.length];
@@ -73,24 +86,20 @@ class RolapEvaluator implements Evaluator
 
             currentMembers[ordinal] = member;
         }
-        this.parent = null;
-        this.depth = 0;
-        this.cellReader = null; // we expect client to set it
-        this.expResultCache = new HashMap();
     }
 
     private RolapEvaluator(RolapCube cube, 
                            RolapConnection connection,
                            Member[] currentMembers, 
-                           RolapEvaluator parent)
-    {
-        this.cube = cube;
-        this.connection = connection;
+                           RolapEvaluator parent) {
+        this(cube, 
+             connection, 
+             parent, 
+             parent.getDepth() + 1, 
+             parent.expResultCache,
+             parent.cellReader);
+
         this.currentMembers = currentMembers;
-        this.parent = parent;
-        this.depth = parent.getDepth() + 1;
-        this.cellReader = parent.cellReader;
-        this.expResultCache = parent.expResultCache;
     }
 
     protected Logger getLogger() {
@@ -140,8 +149,9 @@ class RolapEvaluator implements Evaluator
     private final RolapEvaluator _push() {
         Member[] cloneCurrentMembers = (Member[]) this.currentMembers.clone();
         return new RolapEvaluator((RolapCube) cube, 
-                                    (RolapConnection) connection, 
-                                    cloneCurrentMembers, this);
+                                  (RolapConnection) connection, 
+                                  cloneCurrentMembers, 
+                                  this);
     }
 
     public Evaluator pop() {
@@ -163,16 +173,14 @@ class RolapEvaluator implements Evaluator
     public Object xx(OlapElement mdxElement) {
         return mdxElement;
     }
-    public Member setContext(Member member)
-    {
+    public Member setContext(Member member) {
         RolapMember m = (RolapMember) member;
         int ordinal = m.getDimension().getOrdinal(cube);
         Member previous = currentMembers[ordinal];
         currentMembers[ordinal] = m;
         return previous;
     }
-    public void setContext(Member[] members)
-    {
+    public void setContext(Member[] members) {
         for (int i = 0; i < members.length; i++) {
             Member member = members[i];
 
@@ -189,12 +197,10 @@ class RolapEvaluator implements Evaluator
             setContext(member);
         }
     }
-    public Member getContext(Dimension dimension)
-    {
+    public Member getContext(Dimension dimension) {
         return currentMembers[dimension.getOrdinal(cube)];
     }
-    public Object evaluateCurrent()
-    {
+    public Object evaluateCurrent() {
         Member maxSolveMember = getMaxSolveMember();
         if (maxSolveMember != null) {
             // There is at least one calculated member. Expand the first one
@@ -244,8 +250,7 @@ class RolapEvaluator implements Evaluator
         return maxSolveMember;
     }
 
-    private void setExpanding(Member member)
-    {
+    private void setExpanding(Member member) {
         expandingMember = member;
         int memberCount = currentMembers.length;
         if (depth > memberCount) {
@@ -339,8 +344,7 @@ class RolapEvaluator implements Evaluator
         return sb.toString();
     }
 
-    public Object getProperty(String name)
-    {
+    public Object getProperty(String name) {
         Object o = null;
         int maxSolve = Integer.MIN_VALUE;
         for (int i = 0; i < currentMembers.length; i++) {
@@ -374,8 +378,7 @@ class RolapEvaluator implements Evaluator
      *
      * @post return != null
      */
-    String getFormatString()
-    {
+    String getFormatString() {
         Exp formatExp = (Exp) getProperty(Property.PROPERTY_FORMAT_EXP);
         if (formatExp == null) {
             return "Standard";
@@ -383,8 +386,7 @@ class RolapEvaluator implements Evaluator
         Object o = formatExp.evaluate(this);
         return o.toString();
     }
-    private Format getFormat()
-    {
+    private Format getFormat() {
         String formatString = getFormatString();
         return Format.get(formatString, connection.getLocale());
     }
@@ -393,8 +395,7 @@ class RolapEvaluator implements Evaluator
      * Converts a value of this member into a string according to this member's
      * format specification.
      **/
-    String format(Evaluator evaluator, Object o)
-    {
+    String format(Evaluator evaluator, Object o) {
         return getFormat().format(o);
     }
 
@@ -430,8 +431,9 @@ class RolapEvaluator implements Evaluator
 
             Dimension dim = member.getDimension();
 
-            if (exp.dependsOn(dim))
+            if (exp.dependsOn(dim)) {
                 key.add(currentMembers[i]);
+            }
         }
         return key;
     }
@@ -450,7 +452,6 @@ class RolapEvaluator implements Evaluator
         expResultCache.clear();
     }
 
-    private boolean nonEmpty;
     public boolean isNonEmpty() {
         return nonEmpty;
     }

@@ -50,9 +50,14 @@ import javax.sql.DataSource;
  * @since 26 July, 2001
  * @version $Id$
  **/
-public class RolapSchema implements Schema
-{
+public class RolapSchema implements Schema {
     private static final Logger LOGGER = Logger.getLogger(RolapSchema.class);
+
+    private static final int[] schemaAllowed = new int[] {Access.NONE, Access.ALL, Access.ALL_DIMENSIONS};
+    private static final int[] cubeAllowed = new int[] {Access.NONE, Access.ALL};
+    private static final int[] dimensionAllowed = new int[] {Access.NONE, Access.ALL};
+    private static final int[] hierarchyAllowed = new int[] {Access.NONE, Access.ALL, Access.CUSTOM};
+    private static final int[] memberAllowed = new int[] {Access.NONE, Access.ALL};
 
     private String name;
     /**
@@ -62,33 +67,43 @@ public class RolapSchema implements Schema
     /**
      * Holds cubes in this schema.
      */
-    private final Map mapNameToCube = new HashMap();
+    private final Map mapNameToCube;
     /**
      * Maps {@link String shared hierarchy name} to {@link MemberReader}.
      * Shared between all statements which use this connection.
      */
-    private final Map mapSharedHierarchyToReader = new HashMap();
+    private final Map mapSharedHierarchyToReader;
 
     /**
      * Maps {@link String names of shared hierarchies} to {@link
      * RolapHierarchy the canonical instance of those hierarchies}.
      */
-    private final Map mapSharedHierarchyNameToHierarchy = new HashMap();
+    private final Map mapSharedHierarchyNameToHierarchy;
     /**
      * The default role for connections to this schema.
      */
-    Role defaultRole = createDefaultRole();
+    private Role defaultRole;
 
     private final byte[] md5Bytes;
     /**
      * Maps {@link String names of roles} to {@link Role roles with those names}.
      */
-    private final Map mapNameToRole = new HashMap();
-    private static final int[] schemaAllowed = new int[] {Access.NONE, Access.ALL, Access.ALL_DIMENSIONS};
-    private static final int[] cubeAllowed = new int[] {Access.NONE, Access.ALL};
-    private static final int[] dimensionAllowed = new int[] {Access.NONE, Access.ALL};
-    private static final int[] hierarchyAllowed = new int[] {Access.NONE, Access.ALL, Access.CUSTOM};
-    private static final int[] memberAllowed = new int[] {Access.NONE, Access.ALL};
+    private final Map mapNameToRole;
+
+    private RolapSchema(final byte[] md5Bytes, 
+                        final Util.PropertyList connectInfo,
+                        final DataSource dataSource) {
+        this.md5Bytes = md5Bytes;
+        // the order of the next two lines is important
+        this.defaultRole = createDefaultRole();
+        this.internalConnection = 
+            new RolapConnection(connectInfo, this, dataSource);
+
+        this.mapSharedHierarchyNameToHierarchy = new HashMap();
+        this.mapSharedHierarchyToReader = new HashMap();
+        this.mapNameToCube = new HashMap();
+        this.mapNameToRole = new HashMap();
+    }
 
     /** 
      * Load a schema using a Dynamics loader. 
@@ -101,9 +116,7 @@ public class RolapSchema implements Schema
                         final Util.PropertyList connectInfo,
                         final String dynProcName,
                         final DataSource dataSource) {
-        this.md5Bytes = null;
-        this.internalConnection = 
-            new RolapConnection(connectInfo, this, dataSource);
+        this((byte[]) null, connectInfo, dataSource);
 
         String catalogStr = null;
 
@@ -153,9 +166,7 @@ public class RolapSchema implements Schema
                         final String catalogStr, 
                         final Util.PropertyList connectInfo,
                         final DataSource dataSource) {
-        this.md5Bytes = md5Bytes;
-        this.internalConnection = 
-            new RolapConnection(connectInfo, this, dataSource);
+        this(md5Bytes, connectInfo, dataSource);
 
         load(catalogName, catalogStr);
     }
@@ -164,9 +175,7 @@ public class RolapSchema implements Schema
                         final Util.PropertyList connectInfo,
                         final DataSource dataSource) {
 
-        this.md5Bytes = null;
-        this.internalConnection = 
-            new RolapConnection(connectInfo, this, dataSource);
+        this((byte[]) null, connectInfo, dataSource);
 
         load(catalogName, null);
     }
@@ -220,14 +229,17 @@ public class RolapSchema implements Schema
         }
     }
 
+    Role getDefaultRole() {
+        return defaultRole;
+    }
+
     public String getName() {
         Util.assertPostcondition(name != null, "return != null");
         Util.assertPostcondition(name.length() > 0, "return.length() > 0");
         return name;
     }
 
-    private void load(MondrianDef.Schema xmlSchema)
-    {
+    private void load(MondrianDef.Schema xmlSchema) {
         this.name = xmlSchema.name;
         if (name == null || name.equals("")) {
             throw Util.newError("<Schema> name must be set");
@@ -249,7 +261,7 @@ public class RolapSchema implements Schema
         for (int i = 0; i < xmlSchema.virtualCubes.length; i++) {
             MondrianDef.VirtualCube xmlVirtualCube = xmlSchema.virtualCubes[i];
             RolapCube cube = new RolapCube(this, xmlSchema, xmlVirtualCube);
-            addCube(cube);
+            Util.discard(cube);
         }
         for (int i = 0; i < xmlSchema.roles.length; i++) {
             MondrianDef.Role xmlRole = xmlSchema.roles[i];
@@ -274,7 +286,7 @@ public class RolapSchema implements Schema
      * @return A cube
      */
     private RolapCube createCube(MondrianDef.Schema xmlSchema,
-            MondrianDef.Cube xmlCube) {
+                                 MondrianDef.Cube xmlCube) {
         Util.assertPrecondition(xmlSchema != null, "xmlSchema != null");
         RolapCube cube = new RolapCube(this, xmlSchema, xmlCube);
         return cube;
@@ -687,21 +699,18 @@ public class RolapSchema implements Schema
         }
     }
 
-    public static void flushSchema(
-        final String catalogName,
-        final String connectionKey,
-        final String jdbcUser,
-        String dataSourceStr)
-    {
+    public static void flushSchema(final String catalogName,
+                                   final String connectionKey,
+                                   final String jdbcUser,
+                                   String dataSourceStr) {
         Pool.instance().remove(catalogName, 
                                connectionKey, 
                                jdbcUser, 
                                dataSourceStr);
     }
-    public static void flushSchema(
-        final String catalogName,
-        final DataSource dataSource)
-    {
+
+    public static void flushSchema(final String catalogName,
+                                   final DataSource dataSource) {
         Pool.instance().remove(catalogName, 
                                dataSource);
     }
@@ -710,8 +719,7 @@ public class RolapSchema implements Schema
         Pool.instance().clear();
     }
 
-    public Cube lookupCube(final String cube, final boolean failIfNotFound)
-    {
+    public Cube lookupCube(final String cube, final boolean failIfNotFound) {
         Cube mdxCube = lookupCube(cube);
         if (mdxCube == null && failIfNotFound) {
             throw Util.getRes().newMdxCubeNotFound(cube);
@@ -761,8 +769,8 @@ public class RolapSchema implements Schema
     synchronized MemberReader createMemberReader(
         final String sharedName,
         final RolapHierarchy hierarchy,
-        final String memberReaderClass)
-    {
+        final String memberReaderClass) {
+
         MemberReader reader;
         if (sharedName != null) {
             reader = (MemberReader) mapSharedHierarchyToReader.get(sharedName);
@@ -776,7 +784,8 @@ public class RolapSchema implements Schema
                         mapSharedHierarchyNameToHierarchy.get(sharedName);
                 final RolapDimension sharedDimension = (RolapDimension)
                         sharedHierarchy.getDimension();
-                final RolapDimension dimension = (RolapDimension) hierarchy.getDimension();
+                final RolapDimension dimension = 
+                    (RolapDimension) hierarchy.getDimension();
 //                Util.assertTrue(
 //                        dimension.getGlobalOrdinal() ==
 //                        sharedDimension.getGlobalOrdinal());
@@ -792,8 +801,8 @@ public class RolapSchema implements Schema
      */
     private MemberReader createMemberReader(
             final RolapHierarchy hierarchy, 
-            final String memberReaderClass) 
-    {
+            final String memberReaderClass) {
+
         if (memberReaderClass != null) {
             Exception e2 = null;
             try {
@@ -844,11 +853,10 @@ public class RolapSchema implements Schema
             }
             int largeDimensionThreshold =
                 MondrianProperties.instance().getLargeDimensionThreshold();
-            if (memberCount > largeDimensionThreshold) {
-                return new SmartMemberReader(source);
-            } else {
-                return new CacheMemberReader(source);
-            }
+
+            return (memberCount > largeDimensionThreshold)
+                ? new SmartMemberReader(source)
+                : (MemberReader) new CacheMemberReader(source);
         }
     }
 
@@ -879,24 +887,22 @@ public class RolapSchema implements Schema
      * An <code>Extender</code> is a user-supplied class which extends the
      * system in some way. The <code>Extender</code> interfaces allows it to
      * describe itself, and receive parameters.
-     **/
-    interface Extender
-    {
+    interface Extender {
         String getDescription();
         ExtenderParameter[] getParameterDescriptions();
         void initialize(Properties properties);
     }
+     **/
 
     /**
      * An <code>ExtenderParameter</code> describes a parameter of an {@link
      * Extender}.
-     **/
-    static class ExtenderParameter
-    {
+    static class ExtenderParameter {
         String name;
         Class clazz;
         String description;
     }
+     **/
 
     /**
      * <code>RolapStarRegistry</code> is a registry for {@link RolapStar}s.
@@ -915,13 +921,15 @@ public class RolapSchema implements Schema
         synchronized RolapStar getOrCreateStar(MondrianDef.Relation fact) {
             for (Iterator iterator = stars.iterator(); iterator.hasNext();) {
                 RolapStar star = (RolapStar) iterator.next();
-                if (star.factTable.relation.equals(fact)) {
+                if (star.getFactTable().getRelation().equals(fact)) {
                     return star;
                 }
             }
             DataSource dataSource = getInternalConnection().getDataSource();
-            RolapStar star = new RolapStar(RolapSchema.this, dataSource);
-            star.factTable = new Table(star, fact, null, null);
+            RolapStar star = new RolapStar(RolapSchema.this, 
+                                           dataSource,
+                                           fact);
+            //star.factTable = new Table(star, fact, null, null);
             stars.add(star);
             return star;
         }
