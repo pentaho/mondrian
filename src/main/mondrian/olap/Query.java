@@ -452,10 +452,6 @@ public class Query extends QueryPart {
 				walker.prune();
 				continue; // ignore expressions in formula
 			} else if (o instanceof Exp) {
-				Exp e = (Exp) o;
-				// expression must represent a set or be mdx element
-				if (!e.isSet() && !e.isElement())
-					continue;
 
 				// if object's parent is a function (except a tuple/parentheses
 				// or CrossJoin), algorithm shall look only at the first child
@@ -470,6 +466,12 @@ public class Query extends QueryPart {
 						continue;
 					}
 				}
+
+				Exp e = (Exp) o;
+				// expression must represent a set or be mdx element
+				if (!e.isSet() && !e.isElement())
+					continue;
+
 				Hierarchy obExpHierarchy = e.getHierarchy();
 				if (obExpHierarchy == null)
 					// set must have a dimension (e.g. disallow CrossJoin)
@@ -497,10 +499,6 @@ public class Query extends QueryPart {
 		while (walker.hasMoreElements()) {
 			Object o = walker.nextElement();
 			if (o instanceof Exp) {
-				Exp e = (Exp) o;
-				if (!e.isSet() && !e.isMember())
-					continue; // expression must represent a set or be a member
-
 				// if object's parent is a function (except tuple/parentheses
 				// or CrossJoin), algorithm shall look only at the first child
 				Object parent =  walker.getParent();
@@ -514,6 +512,10 @@ public class Query extends QueryPart {
 						continue;
 					}
 				}
+
+  			Exp e = (Exp) o;
+				if (!e.isSet() && !e.isMember())
+					continue; // expression must represent a set or be a member
 
 				Hierarchy obExpHierarchy = e.getHierarchy();
 				if (obExpHierarchy == null)
