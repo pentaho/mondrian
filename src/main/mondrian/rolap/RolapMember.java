@@ -238,6 +238,14 @@ class RolapMember extends MemberBase
             throw rolapLevel.hideMemberCondition.unexpected();
         }
     }
+
+	/**
+	 * @return the level's depth
+	 * @see mondrian.olap.Member#getDepth()
+	 */
+	public int getDepth() {
+		return level.getDepth();
+	}
 }
 
 

@@ -139,6 +139,13 @@ public interface Member extends OlapElement, Comparable {
      * a ragged hierarchy.
      */
     boolean isHidden();
+    
+    /**
+     * returns the depth of this member, which is not the level's depth
+     *  in case of parent child dimensions
+     * @return depth
+     */
+    int getDepth();
 }
 
 // End Member.java

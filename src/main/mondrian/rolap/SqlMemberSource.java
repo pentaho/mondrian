@@ -869,10 +869,15 @@ class SqlMemberSource implements MemberReader
      */
 	private static class RolapParentChildMember extends RolapMember {
 		private final RolapMember dataMember;
+		private int depth = 0;
 		public RolapParentChildMember(RolapMember parentMember,
                 RolapLevel childLevel, Object value, RolapMember dataMember) {
 			super(parentMember, childLevel, value);
 			this.dataMember = dataMember;
+			if (parentMember != null)
+				depth = parentMember.getDepth() + 1;
+			else
+				depth = 0;
 		}
 		public boolean isCalculated() {
 			return true;
@@ -892,6 +897,14 @@ class SqlMemberSource implements MemberReader
 			} else {
 				return super.getPropertyValue(name);
 			}
+		}
+
+		/**
+		 * @return the members's depth
+		 * @see mondrian.olap.Member#getDepth()
+		 */
+		public int getDepth() {
+			return depth;
 		}
 	}
 }
