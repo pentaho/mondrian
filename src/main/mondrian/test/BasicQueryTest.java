@@ -522,25 +522,97 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"where ([Measures].[Unit Sales])"));
 	}
 
-	public void _testSolveOrder() {
+	public void testSolveOrder() {
 		runQueryCheckResult(
 				"WITH" + nl +
 				"   MEMBER [Measures].[StoreType] AS " + nl +
 				"   '[Store].CurrentMember.Properties(\"Store Type\")'," + nl +
 				"   SOLVE_ORDER = 2" + nl +
 				"   MEMBER [Measures].[ProfitPct] AS " + nl +
-				"   'Val((Measures.[Store Sales] - Measures.[Store Cost]) / Measures.[Store Sales])'," + nl +
-				"   SOLVE_ORDER = 1, FORMAT_STRING = 'Percent'" + nl +
+				"   '(Measures.[Store Sales] - Measures.[Store Cost]) / Measures.[Store Sales]'," + nl +
+				"   SOLVE_ORDER = 1, FORMAT_STRING = '##.00%'" + nl +
 				"SELECT" + nl +
-				"   { [Store].[Store Name].Members} ON COLUMNS," + nl +
+				"   { Descendants([Store].[USA], [Store].[Store Name])} ON COLUMNS," + nl +
 				"   { [Measures].[Store Sales], [Measures].[Store Cost], [Measures].[StoreType]," + nl +
 				"   [Measures].[ProfitPct] } ON ROWS" + nl +
-				"FROM Sales", null);
+				"FROM Sales",
+				"Axis #0:" + nl +
+				"{}" + nl +
+				"Axis #1:" + nl +
+				"{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]}" + nl +
+				"{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]}" + nl +
+				"{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}" + nl +
+				"{[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}" + nl +
+				"{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]}" + nl +
+				"{[Store].[All Stores].[USA].[OR].[Salem].[Store 13]}" + nl +
+				"{[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]}" + nl +
+				"{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}" + nl +
+				"{[Store].[All Stores].[USA].[WA].[Seattle].[Store 15]}" + nl +
+				"{[Store].[All Stores].[USA].[WA].[Spokane].[Store 16]}" + nl +
+				"{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}" + nl +
+				"{[Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22]}" + nl +
+				"{[Store].[All Stores].[USA].[WA].[Yakima].[Store 23]}" + nl +
+				"Axis #2:" + nl +
+				"{[Measures].[Store Sales]}" + nl +
+				"{[Measures].[Store Cost]}" + nl +
+				"{[Measures].[StoreType]}" + nl +
+				"{[Measures].[ProfitPct]}" + nl +
+				"Row #0: 45,750.24" + nl +
+				"Row #0: 54,545.28" + nl +
+				"Row #0: 54,431.14" + nl +
+				"Row #0: 4,441.18" + nl +
+				"Row #0: 55,058.79" + nl +
+				"Row #0: 87,218.28" + nl +
+				"Row #0: 4,739.23" + nl +
+				"Row #0: 52,896.30" + nl +
+				"Row #0: 52,644.07" + nl +
+				"Row #0: 49,634.46" + nl +
+				"Row #0: 74,843.96" + nl +
+				"Row #0: 4,705.97" + nl +
+				"Row #0: 24,329.23" + nl +
+				"Row #1: 18,266.44" + nl +
+				"Row #1: 21,771.54" + nl +
+				"Row #1: 21,713.53" + nl +
+				"Row #1: 1,778.92" + nl +
+				"Row #1: 21,948.94" + nl +
+				"Row #1: 34,823.56" + nl +
+				"Row #1: 1,896.62" + nl +
+				"Row #1: 21,121.96" + nl +
+				"Row #1: 20,956.80" + nl +
+				"Row #1: 19,795.49" + nl +
+				"Row #1: 29,959.28" + nl +
+				"Row #1: 1,880.34" + nl +
+				"Row #1: 9,713.81" + nl +
+				"Row #2: Gourmet Supermarket" + nl +
+				"Row #2: Supermarket" + nl +
+				"Row #2: Supermarket" + nl +
+				"Row #2: Small Grocery" + nl +
+				"Row #2: Supermarket" + nl +
+				"Row #2: Deluxe Supermarket" + nl +
+				"Row #2: Small Grocery" + nl +
+				"Row #2: Supermarket" + nl +
+				"Row #2: Supermarket" + nl +
+				"Row #2: Supermarket" + nl +
+				"Row #2: Deluxe Supermarket" + nl +
+				"Row #2: Small Grocery" + nl +
+				"Row #2: Mid-Size Grocery" + nl +
+				"Row #3: 60.07%" + nl +
+				"Row #3: 60.09%" + nl +
+				"Row #3: 60.11%" + nl +
+				"Row #3: 59.94%" + nl +
+				"Row #3: 60.14%" + nl +
+				"Row #3: 60.07%" + nl +
+				"Row #3: 59.98%" + nl +
+				"Row #3: 60.07%" + nl +
+				"Row #3: 60.19%" + nl +
+				"Row #3: 60.12%" + nl +
+				"Row #3: 59.97%" + nl +
+				"Row #3: 60.04%" + nl +
+				"Row #3: 60.07%" + nl);
 	}
 
 	public void testCalculatedMemberWhichIsNotAMeasure() {
-		String query = "WITH" + nl +
-				"MEMBER [Product].[BigSeller] AS" + nl +
+		String query = "WITH MEMBER [Product].[BigSeller] AS" + nl +
 				"  'IIf([Product].[Drink].[Alcoholic Beverages].[Beer and Wine] > 100, \"Yes\",\"No\")'" + nl +
 				"SELECT {[Product].[BigSeller],[Product].children} ON COLUMNS," + nl +
 				"   {[Store].[All Stores].[USA].[CA].children} ON ROWS" + nl +
@@ -574,22 +646,6 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"Row #3: 1,555" + nl +
 				"Row #3: 387" + nl;
 		runQueryCheckResult(query, desiredResult);
-	}
-
-	public void _testVal() {
-		Util.discard(runQuery(
-				"WITH" + nl +
-				"   MEMBER [Measures].[ProfitPct] AS " + nl +
-				"   'Val((Measures.[Store Sales] - Measures.[Store Cost]) / Measures.[Store Sales])'," + nl +
-				"   SOLVE_ORDER = 1, FORMAT_STRING = 'Percent'" + nl +
-				"   MEMBER [Measures].[ProfitValue] AS " + nl +
-				"   '[Measures].[Store Sales] * [Measures].[ProfitPct]'," + nl +
-				"   SOLVE_ORDER = 2, FORMAT_STRING = 'Currency'" + nl +
-				"SELECT" + nl +
-				"   { [Store].[Store Name].Members} ON COLUMNS," + nl +
-				"   { [Measures].[Store Sales], [Measures].[Store Cost], [Measures].[ProfitValue]," + nl +
-				"   [Measures].[ProfitPct] } ON ROWS" + nl +
-				"FROM Sales"));
 	}
 
 	public void testConstantString() {

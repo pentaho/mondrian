@@ -87,8 +87,7 @@ class RolapMember extends MemberBase
 	{
 		throw new Error("unsupported");
 	}
-	/** The name of the property which holds the parsed format string. Internal. **/
-	public static final String PROPERTY_FORMAT_EXP = "$format_exp";
+	/** Sets a property of this member to a given value. */
 	public synchronized void setProperty(String name, Object value) {
 		if (mapPropertyNameToValue.isEmpty()) {
 			// the empty map is shared and immutable; create our own
@@ -96,6 +95,7 @@ class RolapMember extends MemberBase
 		}
 		mapPropertyNameToValue.put(name, value);
 	}
+
 	public synchronized Object getPropertyValue(String name) {
 		return mapPropertyNameToValue.get(name);
 	}

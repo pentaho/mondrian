@@ -57,6 +57,12 @@ public interface Evaluator {
 	 * Returns parent evaluator.
 	 */
 	Evaluator getParent();
-};
+	/**
+	 * Retrieves the value of property <code>name</code>. If more than one
+	 * member in the current context defines that property, the one with the
+	 * highest solve order has precedence.
+	 */
+	Object getProperty(String name);
+}
 
 // End Evaluator.java

@@ -33,6 +33,7 @@ public class BuiltinFunTable extends FunTable {
 
 	private static final Resolver[] emptyResolvers = new Resolver[0];
 	private static final Vector emptyVector = new Vector();
+	private static final FunCall valueFunCall = new FunCall("_Value", new Exp[0], FunDef.TypeFunction);
 
 	/**
 	 * Creates a <code>BuiltinFunTable</code>. This method should only be
@@ -1275,14 +1276,132 @@ public class BuiltinFunTable extends FunTable {
 		if (false) define(new FunDefBase("ValidMeasure", "ValidMeasure(<Tuple>)", "Returns a valid measure in a virtual cube by forcing inapplicable dimensions to their top level.", "fm*"));
 		//
 		// NUMERIC FUNCTIONS
-		if (false) define(new FunDefBase("Aggregate", "Aggregate(<Set>[, <Numeric Expression>])", "Returns a calculated value using the appropriate aggregate function, based on the context of the query.", "fn*"));
+		define(new FunkResolver("Aggregate", "Aggregate(<Set>[, <Numeric Expression>])", "Returns a calculated value using the appropriate aggregate function, based on the context of the query.",
+				new String[] {"fnx", "fnxn"},
+				new FunkBase() {
+					public Object evaluate(Evaluator evaluator, Exp[] args) {
+						Vector members = (Vector) getArg(evaluator, args, 0);
+						ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
+						String aggregator = (String) evaluator.getProperty(Property.PROPERTY_AGGREGATION_TYPE);
+						if (aggregator == null) {
+							throw newEvalException(null, "Could not find an aggregator in the current evaluation context");
+						}
+						return aggregate(evaluator.push(), aggregator, members, exp);
+					}
+					public void testAggregate(FoodMartTestCase test) {
+						test.runQueryCheckResult(
+								"WITH MEMBER [Store].[CA plus OR] AS 'AGGREGATE({[Store].[USA].[CA], [Store].[USA].[OR]})'" + nl +
+								"SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} ON COLUMNS," + nl +
+								"      {[Store].[USA].[CA], [Store].[USA].[OR], [Store].[CA plus OR]} ON ROWS" + nl +
+								"FROM Sales" + nl +
+								"WHERE ([1997].[Q1])",
+								"Axis #0:" + nl +
+								"{[Time].[1997].[Q1]}" + nl +
+								"Axis #1:" + nl +
+								"{[Measures].[Unit Sales]}" + nl +
+								"{[Measures].[Store Sales]}" + nl +
+								"Axis #2:" + nl +
+								"{[Store].[All Stores].[USA].[CA]}" + nl +
+								"{[Store].[All Stores].[USA].[OR]}" + nl +
+								"{[Store].[CA plus OR]}" + nl +
+								"Row #0: 16,890" + nl +
+								"Row #0: 36,175.20" + nl +
+								"Row #1: 19,287" + nl +
+								"Row #1: 40,170.29" + nl +
+								"Row #2: 36177.0" + nl +
+								"Row #2: 76345.48999999999" + nl);
+					}
+					public void testAggregate2(FoodMartTestCase test) {
+						test.runQueryCheckResult(
+								"WITH" + nl +
+								"  MEMBER [Time].[1st Half Sales] AS 'Aggregate({Time.[1997].[Q1], Time.[1997].[Q2]})'" + nl +
+								"  MEMBER [Time].[2nd Half Sales] AS 'Aggregate({Time.[1997].[Q3], Time.[1997].[Q4]})'" + nl +
+								"  MEMBER [Time].[Difference] AS 'Time.[2nd Half Sales] - Time.[1st Half Sales]'" + nl +
+								"SELECT" + nl +
+								"   { [Store].[Store State].Members} ON COLUMNS," + nl +
+								"   { Time.[1st Half Sales], Time.[2nd Half Sales], Time.[Difference]} ON ROWS" + nl +
+								"FROM Sales" + nl +
+								"WHERE [Measures].[Store Sales]",
+								"Axis #0:" + nl +
+								"{[Measures].[Store Sales]}" + nl +
+								"Axis #1:" + nl +
+								"{[Store].[All Stores].[Canada].[BC]}" + nl +
+								"{[Store].[All Stores].[Mexico].[DF]}" + nl +
+								"{[Store].[All Stores].[Mexico].[Guerrero]}" + nl +
+								"{[Store].[All Stores].[Mexico].[Jalisco]}" + nl +
+								"{[Store].[All Stores].[Mexico].[Veracruz]}" + nl +
+								"{[Store].[All Stores].[Mexico].[Yucatan]}" + nl +
+								"{[Store].[All Stores].[Mexico].[Zacatecas]}" + nl +
+								"{[Store].[All Stores].[USA].[CA]}" + nl +
+								"{[Store].[All Stores].[USA].[OR]}" + nl +
+								"{[Store].[All Stores].[USA].[WA]}" + nl +
+								"Axis #2:" + nl +
+								"{[Time].[1st Half Sales]}" + nl +
+								"{[Time].[2nd Half Sales]}" + nl +
+								"{[Time].[Difference]}" + nl +
+								"Row #0: (null)" + nl +
+								"Row #0: (null)" + nl +
+								"Row #0: (null)" + nl +
+								"Row #0: (null)" + nl +
+								"Row #0: (null)" + nl +
+								"Row #0: (null)" + nl +
+								"Row #0: (null)" + nl +
+								"Row #0: 74571.95" + nl +
+								"Row #0: 71943.17" + nl +
+								"Row #0: 125779.5" + nl +
+								"Row #1: (null)" + nl +
+								"Row #1: (null)" + nl +
+								"Row #1: (null)" + nl +
+								"Row #1: (null)" + nl +
+								"Row #1: (null)" + nl +
+								"Row #1: (null)" + nl +
+								"Row #1: (null)" + nl +
+								"Row #1: 84595.89" + nl +
+								"Row #1: 70333.9" + nl +
+								"Row #1: 138013.72" + nl +
+								"Row #2: 0.0" + nl +
+								"Row #2: 0.0" + nl +
+								"Row #2: 0.0" + nl +
+								"Row #2: 0.0" + nl +
+								"Row #2: 0.0" + nl +
+								"Row #2: 0.0" + nl +
+								"Row #2: 0.0" + nl +
+								"Row #2: 10023.940000000002" + nl +
+								"Row #2: -1609.270000000004" + nl +
+								"Row #2: 12234.220000000001" + nl);
+					}
+					public void testAggregateToSimulateCompoundSlicer(FoodMartTestCase test) {
+						test.runQueryCheckResult(
+								"WITH MEMBER [Time].[1997 H1] as 'Aggregate({[Time].[1997].[Q1], [Time].[1997].[Q2]})'" + nl +
+								"  MEMBER [Education Level].[College or higher] as 'Aggregate({[Education Level].[Bachelors Degree], [Education Level].[Graduate Degree]})'" + nl +
+								"SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} on columns," + nl +
+								"  {[Product].children} on rows" + nl +
+								"FROM [Sales]" + nl +
+								"WHERE ([Time].[1997 H1], [Education Level].[College or higher], [Gender].[F])",
+								"Axis #0:" + nl +
+								"{[Time].[1997 H1], [Education Level].[College or higher], [Gender].[All Gender].[F]}" + nl +
+								"Axis #1:" + nl +
+								"{[Measures].[Unit Sales]}" + nl +
+								"{[Measures].[Store Sales]}" + nl +
+								"Axis #2:" + nl +
+								"{[Product].[All Products].[Drink]}" + nl +
+								"{[Product].[All Products].[Food]}" + nl +
+								"{[Product].[All Products].[Non-Consumable]}" + nl +
+								"Row #0: 2233.0" + nl +
+								"Row #0: 4508.93" + nl +
+								"Row #1: 18154.0" + nl +
+								"Row #1: 38608.69" + nl +
+								"Row #2: 4941.0" + nl +
+								"Row #2: 10662.2" + nl);
+					}
+				}));
 		define(new FunkResolver(
 			"Avg", "Avg(<Set>[, <Numeric Expression>])", "Returns the average value of a numeric expression evaluated over a set.",
 			new String[]{"fnx", "fnxn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					Vector members = (Vector) getArg(evaluator, args, 0);
-					ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+					ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 					return avg(evaluator.push(), members, exp);
 				}
 				public void testAvg(FoodMartTestCase test) {
@@ -1299,7 +1418,7 @@ public class BuiltinFunTable extends FunTable {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					Vector members = (Vector) getArg(evaluator, args, 0);
 					ExpBase exp1 = (ExpBase) getArg(evaluator, args, 1);
-					ExpBase exp2 = (ExpBase) getArg(evaluator, args, 2);
+					ExpBase exp2 = (ExpBase) getArg(evaluator, args, 2, valueFunCall);
 					return correlation(evaluator.push(), members, exp1, exp2);
 				}
 				public void testCorrelation(FoodMartTestCase test) {
@@ -1313,19 +1432,9 @@ public class BuiltinFunTable extends FunTable {
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					Vector members = (Vector) getArg(evaluator, args, 0);
-					String  empties = (String) getArg(evaluator, args, 1, "INCLUDEEMPTY");
-					if (empties.equals("INCLUDEEMPTY")) {
-						return new Double(members.size());
-					}
-					else {
-						int retval = 0;
-						for (int i = 0; i < members.size(); i++) {
-							if ((members.elementAt(i) != Util.nullValue) && (members.elementAt(i) != null)) {
-								retval++;
-							}
-						}
-						return new Double(retval);
-					}
+					String empties = getLiteralArg(args, 1, "INCLUDEEMPTY", new String[] {"INCLUDEEMPTY", "EXCLUDEEMPTY"}, null);
+					final boolean includeEmpty = empties.equals("INCLUDEEMPTY");
+					return count(members, includeEmpty);
 				}
 				public void testCount(FoodMartTestCase test) {
 					String result = test.executeExpr(
@@ -1356,7 +1465,7 @@ public class BuiltinFunTable extends FunTable {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					Vector members = (Vector) getArg(evaluator, args, 0);
 					ExpBase exp1 = (ExpBase) getArg(evaluator, args, 1);
-					ExpBase exp2 = (ExpBase) getArg(evaluator, args, 2);
+					ExpBase exp2 = (ExpBase) getArg(evaluator, args, 2, valueFunCall);
 					return covariance(evaluator.push(), members, exp1, exp2, false);
 				}
 				public void testCovarianceN(FoodMartTestCase test) {
@@ -1376,7 +1485,7 @@ public class BuiltinFunTable extends FunTable {
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					Vector members = (Vector) getArg(evaluator, args, 0);
-					ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+					ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 					return max(evaluator.push(), members, exp);
 				}
 				public void testMax(FoodMartTestCase test) {
@@ -1391,7 +1500,7 @@ public class BuiltinFunTable extends FunTable {
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					Vector members = (Vector) getArg(evaluator, args, 0);
-					ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+					ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 					//todo: ignore nulls, do we need to ignore the vector?
 					return median(evaluator.push(), members, exp);
 
@@ -1401,6 +1510,78 @@ public class BuiltinFunTable extends FunTable {
 							"MEDIAN({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
 					test.assertEquals("159167.84", result);
 				}
+				public void testMedian2(FoodMartTestCase test) {
+					test.runQueryCheckResult(
+							"WITH" + nl +
+							"   MEMBER [Time].[1st Half Sales] AS 'Sum({[Time].[1997].[Q1], [Time].[1997].[Q2]})'" + nl +
+							"   MEMBER [Time].[2nd Half Sales] AS 'Sum({[Time].[1997].[Q3], [Time].[1997].[Q4]})'" + nl +
+							"   MEMBER [Time].[Median] AS 'Median(Time.Members)'" + nl +
+							"SELECT" + nl +
+							"   NON EMPTY { [Store].[Store Name].Members} ON COLUMNS," + nl +
+							"   { [Time].[1st Half Sales], [Time].[2nd Half Sales], [Time].[Median]} ON ROWS" + nl +
+							"FROM Sales" + nl +
+							"WHERE [Measures].[Store Sales]",
+
+							"Axis #0:" + nl +
+							"{[Measures].[Store Sales]}" + nl +
+							"Axis #1:" + nl +
+							"{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]}" + nl +
+							"{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]}" + nl +
+							"{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}" + nl +
+							"{[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}" + nl +
+							"{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]}" + nl +
+							"{[Store].[All Stores].[USA].[OR].[Salem].[Store 13]}" + nl +
+							"{[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]}" + nl +
+							"{[Store].[All Stores].[USA].[WA].[Bremerton].[Store 3]}" + nl +
+							"{[Store].[All Stores].[USA].[WA].[Seattle].[Store 15]}" + nl +
+							"{[Store].[All Stores].[USA].[WA].[Spokane].[Store 16]}" + nl +
+							"{[Store].[All Stores].[USA].[WA].[Tacoma].[Store 17]}" + nl +
+							"{[Store].[All Stores].[USA].[WA].[Walla Walla].[Store 22]}" + nl +
+							"{[Store].[All Stores].[USA].[WA].[Yakima].[Store 23]}" + nl +
+							"Axis #2:" + nl +
+							"{[Time].[1st Half Sales]}" + nl +
+							"{[Time].[2nd Half Sales]}" + nl +
+							"{[Time].[Median]}" + nl +
+							"Row #0: 20801.04" + nl +
+							"Row #0: 25421.41" + nl +
+							"Row #0: 26275.11" + nl +
+							"Row #0: 2074.3900000000003" + nl +
+							"Row #0: 28519.18" + nl +
+							"Row #0: 43423.990000000005" + nl +
+							"Row #0: 2140.99" + nl +
+							"Row #0: 25502.08" + nl +
+							"Row #0: 25293.5" + nl +
+							"Row #0: 23265.53" + nl +
+							"Row #0: 34926.91" + nl +
+							"Row #0: 2159.6" + nl +
+							"Row #0: 12490.89" + nl +
+							"Row #1: 24949.199999999997" + nl +
+							"Row #1: 29123.87" + nl +
+							"Row #1: 28156.03" + nl +
+							"Row #1: 2366.79" + nl +
+							"Row #1: 26539.61" + nl +
+							"Row #1: 43794.28999999999" + nl +
+							"Row #1: 2598.24" + nl +
+							"Row #1: 27394.22" + nl +
+							"Row #1: 27350.57" + nl +
+							"Row #1: 26368.93" + nl +
+							"Row #1: 39917.05" + nl +
+							"Row #1: 2546.37" + nl +
+							"Row #1: 11838.34" + nl +
+							"Row #2: 4577.35" + nl +
+							"Row #2: 5211.38" + nl +
+							"Row #2: 4722.87" + nl +
+							"Row #2: 398.24" + nl +
+							"Row #2: 5039.5" + nl +
+							"Row #2: 7374.59" + nl +
+							"Row #2: 410.22" + nl +
+							"Row #2: 4924.04" + nl +
+							"Row #2: 4569.13" + nl +
+							"Row #2: 4511.68" + nl +
+							"Row #2: 6630.91" + nl +
+							"Row #2: 419.51" + nl +
+							"Row #2: 2169.48" + nl);
+				}
 			}));
 
 		define(new FunkResolver(
@@ -1409,7 +1590,7 @@ public class BuiltinFunTable extends FunTable {
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					Vector members = (Vector) getArg(evaluator, args, 0);
-					ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+					ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 					return min(evaluator.push(), members, exp);
 				}
 				public void testMin(FoodMartTestCase test) {
@@ -1426,7 +1607,7 @@ public class BuiltinFunTable extends FunTable {
 				new FunkBase() {
 						public Object evaluate(Evaluator evaluator, Exp[] args) {
 							Vector members = (Vector) getArg(evaluator, args, 0);
-							ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+							ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 							return stdev(evaluator.push(), members, exp, false);
 						}
 				}));
@@ -1436,7 +1617,7 @@ public class BuiltinFunTable extends FunTable {
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Vector members = (Vector) getArg(evaluator, args, 0);
-						ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+						ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 						return stdev(evaluator.push(), members, exp, false);
 					}
 					public void testStdev(FoodMartTestCase test) {
@@ -1451,7 +1632,7 @@ public class BuiltinFunTable extends FunTable {
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Vector members = (Vector) getArg(evaluator, args, 0);
-						ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+						ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 						return stdev(evaluator.push(), members, exp, true);
 					}
 				}));
@@ -1461,7 +1642,7 @@ public class BuiltinFunTable extends FunTable {
 				new FunkBase() {
 						public Object evaluate(Evaluator evaluator, Exp[] args) {
 							Vector members = (Vector) getArg(evaluator, args, 0);
-							ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+							ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 							return stdev(evaluator.push(), members, exp, true);
 						}
 					public void testStdevP(FoodMartTestCase test) {
@@ -1476,7 +1657,7 @@ public class BuiltinFunTable extends FunTable {
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Vector members = (Vector) getArg(evaluator, args, 0);
-						ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+						ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 						return sum(evaluator.push(), members, exp);
 					}
 					public void testSumNoExp(FoodMartTestCase test) {
@@ -1496,6 +1677,11 @@ public class BuiltinFunTable extends FunTable {
 				Member[] members = getTupleArg(evaluator, args, 0);
 				Evaluator evaluator2 = evaluator.push(members);
 				return evaluator2.evaluateCurrent();
+			}
+		});
+		define(new FunDefBase("_Value", "_Value()", "Returns the value of the current measure.", "fv") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				return evaluator.evaluateCurrent();
 			}
 		});
 		// _Value is a pseudo-function which evaluates a tuple to a number.
@@ -1526,7 +1712,7 @@ public class BuiltinFunTable extends FunTable {
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Vector members = (Vector) getArg(evaluator, args, 0);
-						ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+						ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 						return var(evaluator.push(), members, exp, false);
 					}
 					public void testVar(FoodMartTestCase test) {
@@ -1541,7 +1727,7 @@ public class BuiltinFunTable extends FunTable {
 				new FunkBase() {
 						public Object evaluate(Evaluator evaluator, Exp[] args) {
 							Vector members = (Vector) getArg(evaluator, args, 0);
-							ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+							ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 							return var(evaluator.push(), members, exp, false);
 						}
 				}));
@@ -1551,7 +1737,7 @@ public class BuiltinFunTable extends FunTable {
 				new FunkBase() {
 						public Object evaluate(Evaluator evaluator, Exp[] args) {
 							Vector members = (Vector) getArg(evaluator, args, 0);
-							ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+							ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 							return var(evaluator.push(), members, exp, true);
 						}
 				}));
@@ -1561,7 +1747,7 @@ public class BuiltinFunTable extends FunTable {
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Vector members = (Vector) getArg(evaluator, args, 0);
-						ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+						ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
 						return var(evaluator.push(), members, exp, true);
 					}
 					public void testVarP(FoodMartTestCase test) {

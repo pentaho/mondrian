@@ -13,6 +13,7 @@
 package mondrian.rolap;
 import mondrian.olap.Util;
 import mondrian.olap.MondrianDef;
+import mondrian.olap.Property;
 
 /**
  * todo:
@@ -36,8 +37,21 @@ class RolapStoredMeasure extends RolapMeasure
 		super(parentMember, level, name, formatString);
 		this.cube = cube;
 		this.expression = expression;
-		//Util.assertTrue(aggregator.equals("sum") || aggregator.equals("count"));
+		Util.assertTrue(aggregatorIsValid(aggregator));
 		this.aggregator = aggregator;
+		setProperty(Property.PROPERTY_AGGREGATION_TYPE, aggregator);
+	}
+
+	private static final String[] aggregators = new String[] {
+		"sum", "count", "min", "max", "avg"
+	};
+	private static boolean aggregatorIsValid(String aggregator) {
+		for (int i = 0; i < aggregators.length; i++) {
+			if (aggregator.equals(aggregators[i])) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	RolapStoredMeasure(

@@ -30,7 +30,6 @@ class RolapEvaluator implements Evaluator
 	Evaluator parent;
 	CellReader cellReader;
 	int depth;
-	private static final RolapMember[] emptyMembers = {};
 
 	RolapEvaluator(RolapCube cube, RolapConnection connection)
 	{
@@ -80,29 +79,27 @@ class RolapEvaluator implements Evaluator
 	}
 
 	public Evaluator push(Member[] members) {
-		RolapMember[] cloneCurrentMembers = new RolapMember[
-			this.currentMembers.length];
-		for (int i = 0; i < this.currentMembers.length; i++) {
-			cloneCurrentMembers[i] = this.currentMembers[i];
-		}
-		for (int i = 0; i < members.length; i++) {
-			RolapMember member = (RolapMember) members[i];
-			int ordinal = member.getDimension().getOrdinal(cube);
-			cloneCurrentMembers[ordinal] = member;
-		}
-		return new RolapEvaluator(cube, connection, cloneCurrentMembers, this);
-	}
-
-	public Evaluator push() {
-		return push(emptyMembers);
+		final RolapEvaluator evaluator = _push();
+		evaluator.setContext(members);
+		return evaluator;
 	}
 
 	public Evaluator push(Member member) {
-		return push(new Member[] {member});
+		final RolapEvaluator evaluator = _push();
+		evaluator.setContext(member);
+		return evaluator;
 	}
 
-	public Evaluator pop()
-	{
+	public Evaluator push() {
+		return _push();
+	}
+
+	private final RolapEvaluator _push() {
+		RolapMember[] cloneCurrentMembers = (RolapMember[]) this.currentMembers.clone();
+		return new RolapEvaluator(cube, connection, cloneCurrentMembers, this);
+	}
+
+	public Evaluator pop() {
 		return parent;
 	}
 	public Object xx(Literal literal) {
@@ -199,12 +196,7 @@ class RolapEvaluator implements Evaluator
 		return sb.toString();
 	}
 
-	/**
-	 * Retrieves the value of property <code>name</code>. If more than one
-	 * member in the current context defines that property, the one with the
-	 * highest solve order has precedence.
-	 */
-	Object getProperty(String name)
+	public Object getProperty(String name)
 	{
 		Object o = null;
 		int maxSolve = Integer.MIN_VALUE;
@@ -223,7 +215,7 @@ class RolapEvaluator implements Evaluator
 	}
 	private String getFormatString()
 	{
-		Exp formatExp = (Exp) getProperty(RolapMember.PROPERTY_FORMAT_EXP);
+		Exp formatExp = (Exp) getProperty(Property.PROPERTY_FORMAT_EXP);
 		Object o = formatExp.evaluate(this);
 		return o.toString();
 	}

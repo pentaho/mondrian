@@ -11,10 +11,7 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.MondrianDef;
-import mondrian.olap.Evaluator;
-import mondrian.olap.Literal;
-import mondrian.olap.Exp;
+import mondrian.olap.*;
 
 /**
  * todo:
@@ -42,7 +39,7 @@ abstract class RolapMeasure extends RolapMember
 		}
 		RolapConnection connection = ((RolapDimension) getDimension()).schema.getInternalConnection();
 		Exp formatExp = connection.parseExpression("'" + formatString + "'");
-		setProperty(PROPERTY_FORMAT_EXP, formatExp);
+		setProperty(Property.PROPERTY_FORMAT_EXP, formatExp);
 	}
 
 }

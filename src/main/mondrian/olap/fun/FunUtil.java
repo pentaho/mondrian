@@ -648,7 +648,6 @@ public class FunUtil extends Util {
 		SetWrapper sw2 = evaluateSet(evaluator.push(), members, exp2);
 		//todo: because evaluateSet does not add nulls to the SetWrapper, this solution may
 		//lead to mismatched vectors and is therefore not robust
-//		return _covariance(sw1, sw2, biased);
 		return _covariance(sw1, sw2, biased);
 	}
 	
@@ -674,10 +673,9 @@ public class FunUtil extends Util {
 	static Object stdev(Evaluator evaluator, Vector members, ExpBase exp, boolean biased) {
 		Object o = var(evaluator, members, exp, biased);
 		if (o instanceof Double) {
-				return new Double(Math.sqrt(((Double) o).doubleValue()));
-		}
-		else {
-				return o;
+			return new Double(Math.sqrt(((Double) o).doubleValue()));
+		} else {
+			return o;
 		}
 	}
 
@@ -724,27 +722,54 @@ public class FunUtil extends Util {
 		}
 	}
 
+	static Object count(Vector members, boolean includeEmpty) {
+		if (includeEmpty) {
+			return new Double(members.size());
+		} else {
+			int retval = 0;
+			for (int i = 0; i < members.size(); i++) {
+				final Object member = members.elementAt(i);
+				if (member != Util.nullValue && member != null) {
+					retval++;
+				}
+			}
+			return new Double(retval);
+		}
+	}
+
+	static Object aggregate(
+			Evaluator evaluator, String aggregator, Vector members, ExpBase exp) {
+		if (aggregator.equals("sum")) {
+			return sum(evaluator, members, exp);
+		} else if (aggregator.equals("count")) {
+			return count(members, false);
+		} else if (aggregator.equals("avg")) {
+			return avg(evaluator, members, exp);
+		} else if (aggregator.equals("min")) {
+			return min(evaluator, members, exp);
+		} else if (aggregator.equals("max")) {
+			return max(evaluator, members, exp);
+		} else {
+			throw newEvalException(null, "Unknown aggregator '" + aggregator + "'");
+		}
+	}
+
 	/**
 	 * Evaluates <code>exp</code> (if defined) over <code>members</code> to
 	 * generate a <code>Vector</code> of <code>SetWrapper</code>, which contains
 	 * a <code>Double</code> value and meta information, unlike
 	 * <code>evaluateMembers</code>, which only produces values
+	 *
+	 * @pre exp != null
 	 */
 	static SetWrapper evaluateSet(Evaluator evaluator, Vector members, ExpBase exp) {
+		Util.assertPrecondition(exp != null, "exp != null");
 		// todo: treat constant exps as evaluateMembers() does
 		SetWrapper retval = new SetWrapper();
 		for (int i = 0, count = members.size(); i < count; i++) {
 			Member member = (Member) members.elementAt(i);
 			evaluator.setContext(member);
-			Object o = null;
-			if (exp != null) {
-				o = exp.evaluateScalar(evaluator);
-			}
-			else { //is this right?
-				evaluator.setContext(member);
-				o = evaluator.evaluateCurrent();
-			}
-
+			Object o = exp.evaluateScalar(evaluator);
 			if (o == null || o == Util.nullValue) {
 				retval.nullCount++;
 			} else if (o instanceof Throwable) {

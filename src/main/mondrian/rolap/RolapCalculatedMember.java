@@ -43,7 +43,7 @@ public class RolapCalculatedMember extends RolapMember {
 		if (formatExp == null) {
 			formatExp = Literal.emptyString;
 		}
-		setProperty(PROPERTY_FORMAT_EXP, formatExp);
+		setProperty(Property.PROPERTY_FORMAT_EXP, formatExp);
 	}
 
 	// override RolapMember
