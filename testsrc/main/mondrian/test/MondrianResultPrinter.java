@@ -27,7 +27,7 @@ import junit.runner.BaseTestRunner;
 
 public class MondrianResultPrinter implements TestListener {
 	PrintStream fWriter;
-	int fColumn= 0;
+	int fStarted= 0;
 	
 	public MondrianResultPrinter(PrintStream writer) {
 		fWriter= writer;
@@ -142,11 +142,11 @@ public class MondrianResultPrinter implements TestListener {
 	 * @see junit.framework.TestListener#startTest(Test)
 	 */
 	public void startTest(Test test) {
-		getWriter().print(".");
-		if (fColumn++ >= 40) {
-			getWriter().println();
-			fColumn= 0;
+		if (fStarted % 40 == 0) {
+			getWriter().print("\n[" + fStarted + "] ");
 		}
+		getWriter().print(".");
+		fStarted++;
 	}
 
 }
