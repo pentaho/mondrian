@@ -31,7 +31,7 @@ import java.util.List;
 class RolapResult extends ResultBase
 {
 
-    private static final Logger LOGGER = Logger.getLogger(RolapEvaluator.class);
+    private static final Logger LOGGER = Logger.getLogger(ResultBase.class);
 
     private static final int MAX_AGGREGATION_PASS_COUNT = 5;
 
