@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// Copyright (C) 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -338,14 +338,17 @@ public class CachePool {
 				", newCost=" + newCost +
 				", pinCount=" + pinCount);
 		}
-//		System.out.println("unpinnedCost d now " + unpinnedCost + ", pinnedCost=" + pinnedCost);
+		if (false) {
+			System.out.println("unpinnedCost d now " + unpinnedCost + ", pinnedCost=" + pinnedCost);
+		}
 		Double d = (Double) mapCacheableIdToCost.put(id, new Double(newCost));
-//		System.out.println("oldcost=" + d + ",  ?=" + (d.doubleValue() != previousCost));
+		if (false) {
+			System.out.println("oldcost=" + d + ",  ?=" + (d.doubleValue() != previousCost));
+		}
 		if (d == null) {
 			throw Util.newInternal("not registered");
 		} else if (d.doubleValue() != previousCost) {
-			System.exit(1);
-			throw Util.newInternal("wrong cost");
+			throw Util.newInternal("wrong cost: " + d + " vs. " + previousCost);
 		}
 	}
 

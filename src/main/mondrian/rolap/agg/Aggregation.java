@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// Copyright (C) 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -11,12 +11,11 @@
 */
 
 package mondrian.rolap.agg;
-import mondrian.olap.*;
-import mondrian.rolap.*;
+import mondrian.olap.Util;
+import mondrian.rolap.CachePool;
+import mondrian.rolap.RolapStar;
 
 import java.util.*;
-import java.io.StringWriter;
-import java.io.PrintWriter;
 
 /**
  * A <code>Aggregation</code> is a pre-computed aggregation over a set of
@@ -49,10 +48,11 @@ import java.io.PrintWriter;
  * cell count (c) and the value count (v). We don't count the space
  * required for the actual values, which is the same in any scheme.</p>
  *
- * <b>Note to developers</b>: {@link Segment} implements {@link Cacheable},
- * and must adhere to the contract that imposes. For this class, that means
- * that references to segments must be made using soft references (see {@link
- * CachePool.SoftCacheableReference}) so that they can be garbage-collected.
+ * <b>Note to developers</b>: {@link Segment} implements
+ * {@link CachePool.Cacheable}, and must adhere to the contract that imposes.
+ * For this class, that means that references to segments must be made using
+ * soft references (see {@link CachePool.SoftCacheableReference}) so that they
+ * can be garbage-collected.
  *
  * @author jhyde
  * @since 28 August, 2001
@@ -85,6 +85,7 @@ public class Aggregation
 			RolapStar.Measure[] measures, Object[][] constraintses,
 			Collection pinnedSegments) {
 		Segment[] segments = new Segment[measures.length];
+		final CachePool cachePool = CachePool.instance();
 		for (int i = 0; i < measures.length; i++) {
 			RolapStar.Measure measure = measures[i];
 			Segment segment = new Segment(this, measure, constraintses);
@@ -93,7 +94,7 @@ public class Aggregation
 					new CachePool.SoftCacheableReference(segment);
 			this.segmentRefs.add(ref);
 			final int pinCount = 1;
-			CachePool.instance().register(segment, pinCount, pinnedSegments);
+			cachePool.register(segment, pinCount, pinnedSegments);
 		}
 		Segment.load(segments, pinnedSegments);
 	}
@@ -121,7 +122,7 @@ public class Aggregation
 		double originalCellCount = cellCount,
 			maxCellCount = originalCellCount * 2 + 10;
 		for (int i = 0; i < indexes.length; i++) {
-			int j = ((Integer) indexes[i]).intValue();
+			int j = indexes[i].intValue();
 			double bloat = comparator.getBloat(j);
 			cellCount *= bloat;
 			if (cellCount < maxCellCount) {
@@ -188,8 +189,7 @@ public class Aggregation
 	 * segment which holds it. <code>pinSet</code> ensures that a segment is
 	 * only pinned once.
 	 *
-	 * Returns <code>null</code> if no segment contains the
-	 * cell.
+	 * Returns <code>null</code> if no segment contains the cell.
 	 **/
 	synchronized Object get(
 			RolapStar.Measure measure, Object[] keys, Collection pinSet) {
@@ -203,7 +203,7 @@ public class Aggregation
 			if (segment.measure != measure) {
 				continue;
 			}
-			if (segment.isLoaded()) {
+			if (segment.isReady()) {
 				Object o = segment.get(keys);
 				if (o != null) {
 					if (pinSet != null) {

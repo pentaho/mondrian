@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2003 Kana Software, Inc. and others.
+// Copyright (C) 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -59,7 +59,14 @@ public class DriverManager {
 		// our WAR file, so replace the URL.
 		if (catalog != null && catalog.startsWith("/")) {
 			try {
-				final URL url = servletContext.getResource(catalog);
+				URL url = servletContext.getResource(catalog);
+				if (url == null) {
+					// The catalog does not exist, but construct a feasible
+					// URL so that the error message makes sense.
+					url = servletContext.getResource("/");
+					url = new URL(url.getProtocol(), url.getHost(),
+							url.getPort(), url.getFile() + catalog.substring(1));
+				}
 				if (url != null) {
 					catalog = url.toString();
 					connectionProperties.put("catalog", catalog);

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// Copyright (C) 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -67,7 +67,9 @@ public class MondrianProperties extends PropertiesPlus {
 		if (servletContext != null) {
 			try {
 				final URL resource = servletContext.getResource("mondrian.properties");
-				load(resource);
+				if (resource != null) {
+					load(resource);
+				}
 			} catch (MalformedURLException e) {
 				System.out.println("Mondrian: mondrian.properties could not be loaded from servlet context (" + e + ")");
 			}

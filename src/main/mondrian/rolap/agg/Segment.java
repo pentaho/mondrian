@@ -1,10 +1,9 @@
 /*
 // $Id$
-// (C) Copyright 2002 Kana Software, Inc.
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// Copyright (C) 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -14,6 +13,7 @@ package mondrian.rolap.agg;
 
 import mondrian.olap.Util;
 import mondrian.olap.MondrianProperties;
+import mondrian.olap.EnumeratedValues;
 import mondrian.rolap.CachePool;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.RolapUtil;
@@ -77,6 +77,23 @@ public class Segment implements CachePool.Cacheable
 	private double recency; // when was this segment last used?
 	private int pinCount;
 	private double cost;
+	/** State of the segment, values are described by {@link State}. */
+	private int state;
+
+	/**
+	 * <code>State</code> enumerates the allowable values of a segment's
+	 * state.
+	 */
+	private static class State extends EnumeratedValues {
+		public static final State instance = new State();
+		private State() {
+			super(new String[] {"init","loading","ready","failed"});
+		}
+		public static final int Initial = 0;
+		public static final int Loading = 1;
+		public static final int Ready = 2;
+		public static final int Failed = 3;
+	}
 
 	/**
 	 * Creates a <code>Segment</code>; it's not loaded yet.
@@ -103,6 +120,7 @@ public class Segment implements CachePool.Cacheable
 		}
 		this.cellKey = new CellKey(new int[axisCount]);
 		this.desc = makeDescription();
+		this.state = State.Loading;
 	}
 
 	protected void finalize() {
@@ -117,31 +135,57 @@ public class Segment implements CachePool.Cacheable
 			SegmentDataset data, Aggregation.Axis[] axes,
 			Collection pinnedSegments) {
 		Util.assertTrue(this.data == null);
+		Util.assertTrue(this.state == State.Loading);
 		this.axes = axes;
 		this.data = data;
+		this.state = State.Ready;
 		adjustCost();
 		notifyAll();
+	}
+
+	/**
+	 * If this segment is still loading, signals that it failed to load, and
+	 * notifies any threads which are blocked in {@link #waitUntilLoaded}.
+	 */
+	synchronized void setFailed() {
+		switch (state) {
+		case State.Loading:
+			Util.assertTrue(this.data == null);
+			this.state = State.Failed;
+			adjustCost();
+			notifyAll();
+			break;
+		case State.Ready:
+			// The segment loaded just fine.
+			break;
+		default:
+			throw State.instance.badValue(state);
+		}
 	}
 
 	/**
 	 * Must be called from synchronized context.
 	 */
 	private synchronized void adjustCost() {
-		double previousCost = cost;
-		cost = 0;
+		double newCost = 0;
 		if (axes != null) {
 			for (int i = 0; i < axes.length; i++) {
-				cost += axes[i].getBytes();
+				newCost += axes[i].getBytes();
 			}
 		}
 		if (data != null) {
-			cost += data.getBytes();
+			newCost += data.getBytes();
 		}
+		if (state == State.Failed) {
+			newCost += 1000000; // large value, will cause it to fall out of cache
+		}
+		double previousCost = cost;
+		cost = newCost;
 		CachePool.instance().notify(this, previousCost);
 	}
 
-	public boolean isLoaded() {
-		return data != null;
+	public boolean isReady() {
+		return state == State.Ready;
 	}
 
 	private String makeDescription()
@@ -290,7 +334,7 @@ public class Segment implements CachePool.Cacheable
 	 * Reads a segment of <code>measure</code>, where <code>columns</code> are
 	 * constrained to <code>values</code>.  Each entry in <code>values</code>
 	 * can be null, meaning don't constrain, or can have several values. For
-	 * example, <code>getSegment({Unit_sales}, {Region, State, Year}, {"West",
+	 * example, <code>getSegment({Unit_sales}, {Region, State, Year}, {"West"},
 	 * {"CA", "OR", "WA"}, null})</code> returns sales in states CA, OR and WA
 	 * in the Western region, for all years.
 	 *
@@ -441,8 +485,8 @@ public class Segment implements CachePool.Cacheable
 				segments[i].setData(datas[i], segments[0].axes, pinnedSegments);
 			}
 		} catch (SQLException e) {
-			throw Util.getRes().newInternal(
-					"while loading segment; sql=[" + sql + "]", e);
+			throw Util.newInternal(e,
+					"Error while loading segment; sql=[" + sql + "]");
 		} finally {
 			try {
 				if (resultSet != null) {
@@ -451,6 +495,10 @@ public class Segment implements CachePool.Cacheable
 				}
 			} catch (SQLException e) {
 				// ignore
+			}
+			// Any segments which are still loading have failed.
+			for (int i = 0; i < segments.length; i++) {
+				segments[i].setFailed();
 			}
 		}
 	}
@@ -494,12 +542,19 @@ public class Segment implements CachePool.Cacheable
 	 * already loaded, returns immediately.
 	 */
 	public synchronized void waitUntilLoaded() {
-		if (!isLoaded()) {
+		if (!isReady()) {
 			try {
 				wait();
 			} catch (InterruptedException e) {
 			}
-			Util.assertTrue(isLoaded());
+			switch (state) {
+			case State.Ready:
+				return; // excellent!
+			case State.Failed:
+				throw Util.newError("Pending segment failed to load: " + desc);
+			default:
+				throw State.instance.badValue(state);
+			}
 		}
 	}
 }
