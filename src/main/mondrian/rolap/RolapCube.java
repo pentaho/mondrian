@@ -399,7 +399,9 @@ class RolapCube extends CubeBase
                         .newHierarchyMustHaveForeignKey(hierarchy.getName(),
                             getName());
                 }
-                if (!star.factTable.containsColumn(hierarchyUsage.foreignKey)) {
+				// jhyde: check is disabled until we handle <View> correctly
+                if (false && 
+					!star.factTable.containsColumn(hierarchyUsage.foreignKey)) {
                     throw MondrianResource.instance()
                         .newHierarchyInvalidForeignKey(
                             hierarchyUsage.foreignKey,
