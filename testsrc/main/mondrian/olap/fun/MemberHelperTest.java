@@ -279,5 +279,9 @@ public class MemberHelperTest extends TestCase {
 		public String getPropertyFormattedValue(String propertyName) {
 			return "";
 		}
+
+		public Member getDataMember() {
+			return null;
+		}
     }
 }
