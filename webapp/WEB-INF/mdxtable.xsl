@@ -102,6 +102,7 @@ td.cell-odd {
 <xsl:template match="column-heading">
   <th nowrap="nowrap" class="column-heading" colspan="{@colspan}" rowspan="{@rowspan}">
     <xsl:value-of select="@caption"/>
+    <xsl:apply-templates select="property"/>
   </th>
 </xsl:template>
 
@@ -110,7 +111,18 @@ td.cell-odd {
   <th align="left" nowrap="nowrap" class="row-heading-{@style}" colspan="{@colspan}" rowspan="{@rowspan}">
     <!--xsl:value-of select="@depth"/ -->
     <xsl:value-of select="@caption"/>
+    <xsl:apply-templates select="property"/>
   </th>
+</xsl:template>
+
+<xsl:template match="property">
+<!--
+  <xsl:text>[</xsl:text>
+  <xsl:value-of select="@name"/>
+  <xsl:text>=</xsl:text>
+  <xsl:value-of select="@value"/>
+  <xsl:text>]</xsl:text>
+-->
 </xsl:template>
 
 

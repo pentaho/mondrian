@@ -58,8 +58,9 @@ public class TransformTag extends TagSupport {
 			Transformer transformer = ar.getTransformer(xsltURI, xsltCache);
 			transformer.transform(new DOMSource(doc), new StreamResult(pageContext.getOut()));
 		}
-		catch (TransformerException e) {
+		catch (Exception e) {
 			e.printStackTrace();
+			throw new JspException(e);
 		}
 		return EVAL_PAGE;
 	}

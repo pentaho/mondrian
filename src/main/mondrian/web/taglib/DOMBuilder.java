@@ -11,28 +11,26 @@
 */
 package mondrian.web.taglib;
 
-import javax.servlet.http.HttpSession;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import mondrian.olap.Result;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.ParserConfigurationException;
-import org.w3c.dom.Document;
-import org.w3c.dom.CDATASection;
-import mondrian.olap.Axis;
-import mondrian.olap.Position;
-import javax.xml.transform.TransformerFactory;
 import java.io.StringReader;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import mondrian.olap.Member;
+
+import mondrian.olap.Axis;
 import mondrian.olap.Cell;
-import java.util.Map;
-import java.util.HashMap;
+import mondrian.olap.Member;
+import mondrian.olap.Position;
+import mondrian.olap.Property;
+import mondrian.olap.Result;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * transforms a mondrian result into a DOM
@@ -291,7 +289,24 @@ public class DOMBuilder {
 		e.setAttribute("uname", m.getUniqueName());
 		e.setAttribute("colspan", "1");
 		e.setAttribute("rowspan", "1");
+
+        // add properties to dom tree
+		addMemberProperties(m, e);
+		
 		return e;
+	}
+
+	private void addMemberProperties(Member m, Element e) {
+		Property[] props = m.getLevel().getProperties();
+		if (props != null) {
+		  for (int i = 0; i < props.length; i++) {
+		  	String propName = props[i].getName();
+		  	String propValue = "" + m.getProperty(propName);
+		  	Element propElem = elem("property", e);
+		  	propElem.setAttribute("name", propName);
+		  	propElem.setAttribute("value", propValue);
+		  }
+		}
 	}
 
 	private Element elem(String name, Element parent) {
