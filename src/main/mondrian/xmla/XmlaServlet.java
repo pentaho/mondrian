@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2003 Julian Hyde
+// (C) Copyright 2003-2003 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -15,10 +15,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
@@ -52,7 +49,8 @@ public class XmlaServlet extends HttpServlet {
                 return;
             }
         }
-        if (true) {
+        boolean debug = true;
+        if (debug) {
             System.out.println("Pathinfo=" + request.getPathInfo());
             final Map map = request.getParameterMap();
             for (Iterator iterator = map.keySet().iterator(); iterator.hasNext();) {
@@ -66,11 +64,32 @@ public class XmlaServlet extends HttpServlet {
             }
             System.out.println("Request: " + soapRequest);
         }
-        final PrintWriter printWriter;
+        PrintWriter printWriter;
         try {
             printWriter = response.getWriter();
         } catch (IOException e) {
             return;
+        }
+        if (debug) {
+            System.out.println("Response:");
+            printWriter = new PrintWriter(
+                    new FilterWriter(printWriter) {
+                        public void write(int c) throws IOException {
+                            this.out.write(c);
+                            System.out.print((char) c);
+                        }
+
+                        public void write(char cbuf[], int off, int len) throws IOException {
+                            this.out.write(cbuf, off, len);
+                            System.out.print(new String(cbuf, off, len));
+                        }
+
+                        public void write(String str, int off, int len) throws IOException {
+                            super.write(str, off, len);
+                            System.out.print(str.substring(off, len));
+                        }
+                    }
+            );
         }
         mediator.threadServletContext.set(getServletContext());
         mediator.process(soapRequest, printWriter);

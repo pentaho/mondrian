@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2003 Julian Hyde
+// (C) Copyright 2003-2003 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -19,6 +19,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.Writer;
@@ -138,7 +139,7 @@ public class XmlaMediator {
         try {
             cellSet.unparse(saxHandler);
         } catch (SAXException e) {
-            e.printStackTrace();  //To change body of catch statement use Options | File Templates.
+            e.printStackTrace();
         }
     }
 
@@ -286,7 +287,7 @@ public class XmlaMediator {
         private void cellData(SAXHandler saxHandler) throws SAXException {
             saxHandler.startElement("CellData");
             final int axisCount = result.getAxes().length;
-            int[] pos = new int[] {axisCount};
+            int[] pos = new int[axisCount];
             int[] cellOrdinal = new int[] {0};
             recurse(saxHandler, pos, axisCount - 1, cellOrdinal);
             saxHandler.endElement(); // CellData
@@ -405,8 +406,16 @@ public class XmlaMediator {
      * @return
      */
     static Connection getConnection(Properties properties) {
-        final String dataSourceInfo = properties.getProperty("DataSourceInfo");
-        return DriverManager.getConnection(dataSourceInfo, null, false);
+        final String dataSourceInfo = properties.getProperty(PropertyDefinition.DataSourceInfo.name_);
+        Util.PropertyList connectProperties = Util.parseConnectString(dataSourceInfo);
+        final String catalog = properties.getProperty(PropertyDefinition.Catalog.name_);
+        if (catalog != null) {
+            connectProperties.put("CatalogName", catalog);
+        }
+        final ServletContext servletContext =
+                (ServletContext) threadServletContext.get();
+        return DriverManager.getConnection(connectProperties, servletContext,
+                false);
     }
 
     /**

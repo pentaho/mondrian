@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2003-2003 Julian Hyde <jhyde@users.sf.net>
+// (C) Copyright 2003-2003 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -1191,6 +1191,14 @@ public class XmlaTest extends TestCase {
                 "              <LNum>0</LNum>" + nl +
                 "            </Member>" + nl +
                 "          </Tuple>" + nl +
+                "          <Tuple>" + nl +
+                "            <Member Hierarchy=\"Measures\">" + nl +
+                "              <UName>[Measures].[Customer Count]</UName>" + nl +
+                "              <Caption>Customer Count</Caption>" + nl +
+                "              <LName>[Measures].[MeasuresLevel]</LName>" + nl +
+                "              <LNum>0</LNum>" + nl +
+                "            </Member>" + nl +
+                "          </Tuple>" + nl +
                 "        </Tuples>" + nl +
                 "      </Axis>" + nl +
                 "    </Axes>" + nl +
@@ -1279,6 +1287,124 @@ public class XmlaTest extends TestCase {
                 "  </SOAP-ENV:Body>" + nl +
                 "</SOAP-ENV:Envelope>");
     }
+
+    public void testSelect2() {
+        assertRequestYields(wrap(
+                "<Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\" " + nl +
+                "  SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "  <Command>" + nl +
+                "    <Statement>SELECT {[Measures].members * [1997].children} ON COLUMNS," + nl +
+                " {[Store].[USA].children * [Position].[All Position].children} DIMENSION PROPERTIES [Store].[Store SQFT] ON ROWS" + nl +
+                "FROM [HR]</Statement>" + nl +
+                "  </Command>" + nl +
+                "  <Properties>" + nl +
+                "    <PropertyList>" + nl +
+                "      <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "      <Catalog>FoodMart</Catalog>" + nl +
+                "      <Format>Multidimensional</Format>" + nl +
+                "      <AxisFormat>TupleFormat</AxisFormat>" + nl +
+                "    </PropertyList>" + nl +
+                "  </Properties>" + nl +
+                "</Execute>"),
+
+                "<?xml version=\"1.0\"?>" + nl +
+                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "  <SOAP-ENV:Body>" + nl +
+                "    <OLAPInfo>" + nl +
+                "      <CubeInfo>" + nl +
+                "        <Cube>" + nl +
+                "          <CubeName>Sales</CubeName>" + nl +
+                "        </Cube>" + nl +
+                "      </CubeInfo>" + nl +
+                "      <AxesInfo>" + nl +
+                "        <AxisInfo name=\"Axis0\">" + nl +
+                "          <HierarchyInfo name=\"Measures\">" + nl +
+                "            <UName name=\"[Measures].[MEMBER_UNIQUE_NAME]\"/>" + nl +
+                "            <Caption name=\"[Measures].[MEMBER_CAPTION]\"/>" + nl +
+                "            <LName name=\"[Measures].[LEVEL_UNIQUE_NAME]\"/>" + nl +
+                "            <LNum name=\"[Measures].[LEVEL_NUMBER]\"/>" + nl +
+                "          </HierarchyInfo>" + nl +
+                "        </AxisInfo>" + nl +
+                "      </AxesInfo>" + nl +
+                "      <CellInfo>" + nl +
+                "        <Value name=\"VALUE\"/>" + nl +
+                "        <FmtValue name=\"FORMATTED_VALUE\"/>" + nl +
+                "        <FormatString name=\"FORMAT_STRING\"/>" + nl +
+                "      </CellInfo>" + nl +
+                "    </OLAPInfo>" + nl +
+                "    <Axes>" + nl +
+                "      <Axis name=\"Axis0\">" + nl +
+                "        <Tuples>" + nl +
+                "          <Tuple>" + nl +
+                "            <Member Hierarchy=\"Measures\">" + nl +
+                "              <UName>[Measures].[Unit Sales]</UName>" + nl +
+                "              <Caption>Unit Sales</Caption>" + nl +
+                "              <LName>[Measures].[MeasuresLevel]</LName>" + nl +
+                "              <LNum>0</LNum>" + nl +
+                "            </Member>" + nl +
+                "          </Tuple>" + nl +
+                "          <Tuple>" + nl +
+                "            <Member Hierarchy=\"Measures\">" + nl +
+                "              <UName>[Measures].[Store Cost]</UName>" + nl +
+                "              <Caption>Store Cost</Caption>" + nl +
+                "              <LName>[Measures].[MeasuresLevel]</LName>" + nl +
+                "              <LNum>0</LNum>" + nl +
+                "            </Member>" + nl +
+                "          </Tuple>" + nl +
+                "          <Tuple>" + nl +
+                "            <Member Hierarchy=\"Measures\">" + nl +
+                "              <UName>[Measures].[Store Sales]</UName>" + nl +
+                "              <Caption>Store Sales</Caption>" + nl +
+                "              <LName>[Measures].[MeasuresLevel]</LName>" + nl +
+                "              <LNum>0</LNum>" + nl +
+                "            </Member>" + nl +
+                "          </Tuple>" + nl +
+                "          <Tuple>" + nl +
+                "            <Member Hierarchy=\"Measures\">" + nl +
+                "              <UName>[Measures].[Sales Count]</UName>" + nl +
+                "              <Caption>Sales Count</Caption>" + nl +
+                "              <LName>[Measures].[MeasuresLevel]</LName>" + nl +
+                "              <LNum>0</LNum>" + nl +
+                "            </Member>" + nl +
+                "          </Tuple>" + nl +
+                "          <Tuple>" + nl +
+                "            <Member Hierarchy=\"Measures\">" + nl +
+                "              <UName>[Measures].[Customer Count]</UName>" + nl +
+                "              <Caption>Customer Count</Caption>" + nl +
+                "              <LName>[Measures].[MeasuresLevel]</LName>" + nl +
+                "              <LNum>0</LNum>" + nl +
+                "            </Member>" + nl +
+                "          </Tuple>" + nl +
+                "        </Tuples>" + nl +
+                "      </Axis>" + nl +
+                "    </Axes>" + nl +
+                "    <CellData>" + nl +
+                "      <Cell CellOrdinal=\"0\">" + nl +
+                "        <Value>266773.0</Value>" + nl +
+                "        <FmtValue>266,773</FmtValue>" + nl +
+                "        <FormatString>Standard</FormatString>" + nl +
+                "      </Cell>" + nl +
+                "      <Cell CellOrdinal=\"1\">" + nl +
+                "        <Value>225627.2336</Value>" + nl +
+                "        <FmtValue>225,627.23</FmtValue>" + nl +
+                "        <FormatString>#,###.00</FormatString>" + nl +
+                "      </Cell>" + nl +
+                "      <Cell CellOrdinal=\"2\">" + nl +
+                "        <Value>565238.1300</Value>" + nl +
+                "        <FmtValue>565,238.13</FmtValue>" + nl +
+                "        <FormatString>#,###.00</FormatString>" + nl +
+                "      </Cell>" + nl +
+                "      <Cell CellOrdinal=\"3\">" + nl +
+                "        <Value>86837</Value>" + nl +
+                "        <FmtValue>86,837</FmtValue>" + nl +
+                "        <FormatString>#,###</FormatString>" + nl +
+                "      </Cell>" + nl +
+                "    </CellData>" + nl +
+                "  </SOAP-ENV:Body>" + nl +
+                "</SOAP-ENV:Envelope>");
+    }
+
+
 }
 
 // End XmlaTest.java

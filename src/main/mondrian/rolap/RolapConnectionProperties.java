@@ -23,7 +23,7 @@ public class RolapConnectionProperties extends EnumeratedValues {
 	private RolapConnectionProperties() {
 		super(new String[] {
 			Provider, Jdbc, JdbcDrivers, JdbcUser, JdbcPassword, Catalog,
-			CatalogContent, DataSource, PoolNeeded, Role});
+			CatalogContent, CatalogName, DataSource, PoolNeeded, Role});
 	}
 	/**
 	 * @{value} must equal <code>"Mondrian"</code>.
@@ -65,6 +65,12 @@ public class RolapConnectionProperties extends EnumeratedValues {
 	 * See also {@link #Catalog}.
 	 */
 	public static final String CatalogContent = "CatalogContent";
+    /**
+     * @{value} is not used. If, in future, we support multiple catalogs,
+     * this property will specify which catalog to use.
+     * See also {@link #Catalog}.
+     */
+    public static final String CatalogName = "CatalogName";
 	/**
 	 * @{value} is the name of a data source class. It must implement
 	 * {@link javax.sql.DataSource}.
