@@ -72,6 +72,7 @@ public class Main extends TestSuite {
 		MondrianTestRunner runner = new MondrianTestRunner();
 		runner.setIterations(properties.getIterations());
 		runner.setVUsers(properties.getVUsers());
+		runner.setTimeLimit(properties.getTimeLimit());
         TestResult tres = runner.doRun(test);
         if (!tres.wasSuccessful())
         	System.exit(1);

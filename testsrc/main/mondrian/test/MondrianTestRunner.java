@@ -15,6 +15,8 @@
 package mondrian.test;
 
 import java.io.PrintStream;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import junit.framework.*;
 import junit.runner.*;
@@ -23,11 +25,14 @@ public class MondrianTestRunner extends BaseTestRunner {
 	private MondrianResultPrinter fPrinter;
 	private int fIterations = 1;
 	private int fVUsers = 1;
+	private int fTimeLimit = 0; // seconds
 
 	public static final int SUCCESS_EXIT = 0;
 	public static final int FAILURE_EXIT = 1;
 	public static final int EXCEPTION_EXIT = 2;
-
+	
+	private String stopReason = "Normal termination.";
+	
 	/**
 	 * Constructs a TestRunner.
 	 */
@@ -76,7 +81,18 @@ public class MondrianTestRunner extends BaseTestRunner {
 	public TestResult doRun(final Test suite) {
 		final TestResult result = createTestResult();
 		result.addListener(fPrinter);
-		long startTime = System.currentTimeMillis();
+		final long startTime = System.currentTimeMillis();
+		
+		// Set up a timit limit if specified
+		if (getTimeLimit() > 0) {
+			Timer timer = new Timer();
+			timer.schedule(new TimerTask() {
+				public void run() {
+					setStopReason("Test stopped because the time limit expired.");
+					result.stop();
+				}
+			}, 1000L * (long)getTimeLimit());
+		}
 
 		// Start a new thread for each virtual user
 		Thread threads[] = new Thread[getVUsers()];
@@ -84,8 +100,14 @@ public class MondrianTestRunner extends BaseTestRunner {
 			threads[i] = new Thread(new Runnable() {
 				public void run() {
 					//System.out.println("Thread: " + Thread.currentThread().getName());
-					for (int j = 0; j < getIterations(); j++) {
+					for (int j = 0; getIterations() == 0 || j < getIterations(); j++) {
 						suite.run(result);
+						if (!result.wasSuccessful()) {
+							setStopReason("Test stopped due to errors.");
+							result.stop();
+						}
+						if (result.shouldStop())
+							break;
 					}
 				}
 
@@ -104,9 +126,10 @@ public class MondrianTestRunner extends BaseTestRunner {
 			}
 		}
 
-		long endTime = System.currentTimeMillis();
-		long runTime = endTime - startTime;
+		// print timer results and any exceptions
+		long runTime = System.currentTimeMillis() - startTime;
 		fPrinter.print(result, runTime);
+		fPrinter.getWriter().println(getStopReason());
 
 		return result;
 	}
@@ -134,6 +157,22 @@ public class MondrianTestRunner extends BaseTestRunner {
 
 	public int getVUsers() {
 		return fVUsers;
+	}
+
+	public void setTimeLimit(int fTimeLimit) {
+		this.fTimeLimit = fTimeLimit;
+	}
+
+	public int getTimeLimit() {
+		return fTimeLimit;
+	}
+
+	private void setStopReason(String stopReason) {
+		this.stopReason = stopReason;
+	}
+
+	private String getStopReason() {
+		return stopReason;
 	}
 
 }

@@ -323,6 +323,13 @@ public class MondrianProperties extends PropertiesPlus {
         return getIntProperty(VUsers, VUsers_Default);
     }
 
+    public static final String TimeLimit = "mondrian.test.TimeLimit";
+    public static final int TimeLimit_Default = 0;
+    /** Returns the time limit in seconds */
+    public int getTimeLimit() {
+        return getIntProperty(TimeLimit, TimeLimit_Default);
+    }
+
     public static final String Warmup = "mondrian.test.Warmup";
     public boolean getWarmup() {
         return getBooleanProperty(Warmup);
