@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2004 Kana Software, Inc. and others.
+// (C) Copyright 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -42,14 +42,15 @@ public class BuiltinFunTable extends FunTable {
 	private static final Resolver[] emptyResolverArray = new Resolver[0];
 
     /**
-	 * Creates a <code>BuiltinFunTable</code>. This method should only be
-	 * called from {@link FunTable#instance}.
-	 **/
-	public BuiltinFunTable() {
-		init();
+     * Creates a <code>BuiltinFunTable</code>. This method should only be
+     * called from {@link FunTable#instance}.
+     **/
+    public BuiltinFunTable() {
+        init();
         valueFunCall = new FunCall("_Value", Syntax.Function, new Exp[0])
-                .resolve(dummyResolver);
-	}
+            .resolve(dummyResolver);
+        LinReg.valueFunCall = valueFunCall;
+    }
 
     private static String makeResolverKey(String name, Syntax syntax) {
         return name.toUpperCase() + "$" + syntax;
@@ -969,11 +970,42 @@ public class BuiltinFunTable extends FunTable {
 					return getDoubleArg(evaluator, args, 2, null);
 			}
 		});
-		if (false) define(new FunDefBase("LinRegIntercept", "LinRegIntercept(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Calculates the linear regression of a set and returns the value of b in the regression line y = ax + b.", "fn*"));
-		if (false) define(new FunDefBase("LinRegPoint", "LinRegPoint(<Numeric Expression>, <Set>, <Numeric Expression>[, <Numeric Expression>])", "Calculates the linear regression of a set and returns the value of y in the regression line y = ax + b.", "fn*"));
-		if (false) define(new FunDefBase("LinRegR2", "LinRegR2(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Calculates the linear regression of a set and returns R2 (the coefficient of determination).", "fn*"));
-		if (false) define(new FunDefBase("LinRegSlope", "LinRegSlope(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Calculates the linear regression of a set and returns the value of a in the regression line y = ax + b.", "fn*"));
-		if (false) define(new FunDefBase("LinRegVariance", "LinRegVariance(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Calculates the linear regression of a set and returns the variance associated with the regression line y = ax + b.", "fn*"));
+
+
+        define(new FunkResolver(
+            "LinRegIntercept",
+            "LinRegIntercept(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Calculates the linear regression of a set and returns the value of b in the regression line y = ax + b.",
+            new String[]{"fnxn","fnxnn"},
+            new LinReg.Intercept()));
+
+        define(new FunkResolver(
+            "LinRegPoint",
+            "LinRegPoint(<Numeric Expression>, <Set>, <Numeric Expression>[, <Numeric Expression>])",
+            "Calculates the linear regression of a set and returns the value of y in the regression line y = ax + b.",
+            new String[]{"fnnxn","fnnxnn"},
+            new LinReg.Point()));
+
+        define(new FunkResolver(
+            "LinRegR2",
+            "LinRegR2(<Set>, <Numeric Expression>[, <Numeric Expression>])",
+            "Calculates the linear regression of a set and returns R2 (the coefficient of determination).",
+            new String[]{"fnxn","fnxnn"},
+            new LinReg.R2()));
+
+        define(new FunkResolver(
+            "LinRegSlope",
+            "LinRegSlope(<Set>, <Numeric Expression>[, <Numeric Expression>])",
+            "Calculates the linear regression of a set and returns the value of a in the regression line y = ax + b.",
+            new String[]{"fnxn","fnxnn"},
+            new LinReg.Slope()));
+
+        define(new FunkResolver(
+            "LinRegVariance",
+            "LinRegVariance(<Set>, <Numeric Expression>[, <Numeric Expression>])",
+            "Calculates the linear regression of a set and returns the variance associated with the regression line y = ax + b.",
+            new String[]{"fnxn","fnxnn"},
+            new LinReg.Variance()));
+
 		define(new FunkResolver(
 			"Max", "Max(<Set>[, <Numeric Expression>])", "Returns the maximum value of a numeric expression evaluated over a set.",
 			new String[]{"fnx", "fnxn"},
@@ -984,6 +1016,7 @@ public class BuiltinFunTable extends FunTable {
 					return max(evaluator.push(), members, exp);
 				}
 			}));
+
 		define(new FunkResolver(
 			"Median", "Median(<Set>[, <Numeric Expression>])", "Returns the median value of a numeric expression evaluated over a set.",
 			new String[]{"fnx", "fnxn"},
@@ -1016,7 +1049,13 @@ public class BuiltinFunTable extends FunTable {
             }
         });
 
-		if (false) define(new FunDefBase("Rank", "Rank(<Tuple>, <Set>)", "Returns the one-based rank of a tuple in a set.", "fn*"));
+        define(new FunkResolver(
+            "Rank",
+            "Rank(<Tuple>, <Set> [, <Calc Expression>])",
+            "Returns the one-based rank of a tuple in a set.",
+            new String[]{"fntx","fntxn", "fnmx", "fnmxn"},
+            new RankFunDef()));
+
 		define(new FunkResolver(
 				"Stddev", "Stddev(<Set>[, <Numeric Expression>])", "Alias for Stdev.",
 				new String[]{"fnx", "fnxn"},

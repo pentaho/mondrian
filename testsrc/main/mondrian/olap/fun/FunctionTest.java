@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2004 Julian Hyde and others
+// (C) Copyright 2003-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -246,8 +246,89 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testClosingPeriodLevel() {
-        Member member = executeAxis("ClosingPeriod([Month])");
+        Member member;
+
+        member = executeAxis("ClosingPeriod([Year])");
+        Assert.assertEquals("[Time].[1997]", member.getUniqueName());
+
+        member = executeAxis("ClosingPeriod([Quarter])");
+        Assert.assertEquals("[Time].[1997].[Q4]", member.getUniqueName());
+
+        member = executeAxis("ClosingPeriod([Month])");
         Assert.assertEquals("[Time].[1997].[Q4].[12]", member.getUniqueName());
+
+        runQueryCheckResult(
+                "with member [Measures].[Closing Unit Sales] as '([Measures].[Unit Sales], ClosingPeriod([Time].[Month]))'" + nl +
+                "select non empty {[Measures].[Closing Unit Sales]} on columns," + nl +
+                " {Descendants([Time].[1997])} on rows" + nl +
+                "from [Sales]",
+
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Closing Unit Sales]}" + nl +
+                "Axis #2:" + nl +
+                "{[Time].[1997]}" + nl +
+                "{[Time].[1997].[Q1]}" + nl +
+                "{[Time].[1997].[Q1].[1]}" + nl +
+                "{[Time].[1997].[Q1].[2]}" + nl +
+                "{[Time].[1997].[Q1].[3]}" + nl +
+                "{[Time].[1997].[Q2]}" + nl +
+                "{[Time].[1997].[Q2].[4]}" + nl +
+                "{[Time].[1997].[Q2].[5]}" + nl +
+                "{[Time].[1997].[Q2].[6]}" + nl +
+                "{[Time].[1997].[Q3]}" + nl +
+                "{[Time].[1997].[Q3].[7]}" + nl +
+                "{[Time].[1997].[Q3].[8]}" + nl +
+                "{[Time].[1997].[Q3].[9]}" + nl +
+                "{[Time].[1997].[Q4]}" + nl +
+                "{[Time].[1997].[Q4].[10]}" + nl +
+                "{[Time].[1997].[Q4].[11]}" + nl +
+                "{[Time].[1997].[Q4].[12]}" + nl +
+                "Row #0: 26,796" + nl +
+                "Row #1: 23,706" + nl +
+                "Row #2: 21,628" + nl +
+                "Row #3: 20,957" + nl +
+                "Row #4: 23,706" + nl +
+                "Row #5: 21,350" + nl +
+                "Row #6: 20,179" + nl +
+                "Row #7: 21,081" + nl +
+                "Row #8: 21,350" + nl +
+                "Row #9: 20,388" + nl +
+                "Row #10: 23,763" + nl +
+                "Row #11: 21,697" + nl +
+                "Row #12: 20,388" + nl +
+                "Row #13: 26,796" + nl +
+                "Row #14: 19,958" + nl +
+                "Row #15: 25,270" + nl +
+                "Row #16: 26,796" + nl);
+
+        runQueryCheckResult(
+                "with member [Measures].[Closing Unit Sales] as '([Measures].[Unit Sales], ClosingPeriod([Time].[Month]))'" + nl +
+                "select {[Measures].[Unit Sales], [Measures].[Closing Unit Sales]} on columns," + nl +
+                " {[Time].[1997], [Time].[1997].[Q1], [Time].[1997].[Q1].[1], [Time].[1997].[Q1].[3], [Time].[1997].[Q4].[12]} on rows" + nl +
+                "from [Sales]",
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Unit Sales]}" + nl +
+                "{[Measures].[Closing Unit Sales]}" + nl +
+                "Axis #2:" + nl +
+                "{[Time].[1997]}" + nl +
+                "{[Time].[1997].[Q1]}" + nl +
+                "{[Time].[1997].[Q1].[1]}" + nl +
+                "{[Time].[1997].[Q1].[3]}" + nl +
+                "{[Time].[1997].[Q4].[12]}" + nl +
+                "Row #0: 266,773" + nl +
+                "Row #0: 26,796" + nl +
+                "Row #1: 66,291" + nl +
+                "Row #1: 23,706" + nl +
+                "Row #2: 21,628" + nl +
+                "Row #2: 21,628" + nl +
+                "Row #3: 23,706" + nl +
+                "Row #3: 23,706" + nl +
+                "Row #4: 26,796" + nl +
+                "Row #4: 26,796" + nl);
     }
 
     public void testClosingPeriodLevelNotInTimeFails() {
@@ -297,6 +378,12 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testClosingPeriod() {
+        assertAxisReturns("ClosingPeriod([Time].[Year], [Time].[1997].[Q3])",
+                "");
+
+        assertAxisReturns("ClosingPeriod([Time].[Quarter], [Time].[1997].[Q3])",
+                "[Time].[1997].[Q3]");
+
         assertAxisReturns("ClosingPeriod([Time].[Month], [Time].[1997].[Q3])",
                 "[Time].[1997].[Q3].[9]");
 
@@ -309,9 +396,31 @@ public class FunctionTest extends FoodMartTestCase {
         assertAxisReturns("ClosingPeriod([Time].[Month], [Time].[1997])",
                 "[Time].[1997].[Q4].[12]");
 
+        // leaf member
+
+        assertAxisReturns("ClosingPeriod([Time].[Year], [Time].[1997].[Q3].[8])",
+                "");
+
+        assertAxisReturns("ClosingPeriod([Time].[Quarter], [Time].[1997].[Q3].[8])",
+                "");
+
+        assertAxisReturns("ClosingPeriod([Time].[Month], [Time].[1997].[Q3].[8])",
+                "[Time].[1997].[Q3].[8]");
+
+        // non-Time dimension
+
         assertAxisReturns("ClosingPeriod([Product].[Product Name], [Product].[All Products].[Drink])",
                 "[Product].[All Products].[Drink].[Dairy].[Dairy].[Milk].[Gorilla].[Gorilla Whole Milk]");
 
+        assertAxisReturns("ClosingPeriod([Product].[Product Family], [Product].[All Products].[Drink])",
+                "[Product].[All Products].[Drink]");
+
+        // 'all' level
+
+        assertAxisReturns("ClosingPeriod([Product].[(All)], [Product].[All Products].[Drink])",
+                "");
+
+        // ragged
         assertAxisReturns("[Sales Ragged]", "ClosingPeriod([Store].[Store City], [Store].[All Stores].[Israel])",
                 "[Store].[All Stores].[Israel].[Israel].[Tel Aviv]");
 
@@ -445,15 +554,15 @@ public class FunctionTest extends FoodMartTestCase {
 
 
     public void testDrilldownMember() throws Exception {
-        
+
         // Expect all children of USA
         assertAxisReturns("DrilldownMember({[Store].[USA]}, {[Store].[USA]})",
                 "[Store].[All Stores].[USA]" + nl +
                 "[Store].[All Stores].[USA].[CA]" + nl +
                 "[Store].[All Stores].[USA].[OR]" + nl +
                 "[Store].[All Stores].[USA].[WA]");
-                
-        // Expect all children of USA.CA and USA.OR        
+
+        // Expect all children of USA.CA and USA.OR
         assertAxisReturns("DrilldownMember({[Store].[USA].[CA], [Store].[USA].[OR]}, "+
         	"{[Store].[USA].[CA], [Store].[USA].[OR], [Store].[USA].[WA]})",
                 "[Store].[All Stores].[USA].[CA]" + nl +
@@ -466,16 +575,16 @@ public class FunctionTest extends FoodMartTestCase {
                 "[Store].[All Stores].[USA].[OR].[Portland]" + nl +
                 "[Store].[All Stores].[USA].[OR].[Salem]");
 
-        
+
         // Second set is empty
         assertAxisReturns("DrilldownMember({[Store].[USA]}, {})",
                 "[Store].[All Stores].[USA]");
-                
+
         // Drill down a leaf member
         assertAxisReturns("DrilldownMember({[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]}, "+
         "{[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]})",
         		"[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]");
-                
+
         // Complex case with option recursive
         assertAxisReturns("DrilldownMember({[Store].[All Stores].[USA]}, "+
         "{[Store].[All Stores].[USA], [Store].[All Stores].[USA].[CA], "+
@@ -498,7 +607,7 @@ public class FunctionTest extends FoodMartTestCase {
                 "[Store].[All Stores].[USA].[WA].[Tacoma]" + nl +
                 "[Store].[All Stores].[USA].[WA].[Walla Walla]" + nl +
                 "[Store].[All Stores].[USA].[WA].[Yakima]");
-  		
+
         // Sets of tuples
         assertAxisReturns("DrilldownMember({([Store Type].[Supermarket], [Store].[USA])}, {[Store].[USA]})",
                 "{[Store Type].[All Store Types].[Supermarket], [Store].[All Stores].[USA]}" + nl +
@@ -1621,7 +1730,7 @@ public class FunctionTest extends FoodMartTestCase {
         Assert.assertEquals("Yes", s);
     }
 
-    
+
     public void testDimensionCaption() {
         String s = executeExpr("[Time].[1997].Dimension.Caption");
         Assert.assertEquals("Time", s);
@@ -1642,7 +1751,7 @@ public class FunctionTest extends FoodMartTestCase {
         Assert.assertEquals("1997", s);
     }
 
-    
+
     public void testDimensionName() {
         String s = executeExpr("[Time].[1997].Dimension.Name");
         Assert.assertEquals("Time", s);
@@ -1652,18 +1761,18 @@ public class FunctionTest extends FoodMartTestCase {
         String s = executeExpr("[Time].[1997].Hierarchy.Name");
         Assert.assertEquals("Time", s);
     }
-    
+
     public void testLevelName() {
         String s = executeExpr("[Time].[1997].Level.Name");
         Assert.assertEquals("Year", s);
     }
-    
+
     public void testMemberName() {
         String s = executeExpr("[Time].[1997].Name");
         Assert.assertEquals("1997", s);
     }
 
-    
+
     public void testDimensionUniqueName() {
         String s = executeExpr("[Gender].DefaultMember.Dimension.UniqueName");
         Assert.assertEquals("[Gender]", s);
@@ -1694,13 +1803,13 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testCoalesceEmpty() throws Exception {
         // [DF] is all null and [WA] has numbers for 1997 but not for 1998.
-        Result result = execute("with\n"
-                + "    member Measures.[Coal1] as 'coalesceempty(([Time].[1997], Measures.[Store Sales]), ([Time].[1998], Measures.[Store Sales]))'\n"
-                + "    member Measures.[Coal2] as 'coalesceempty(([Time].[1997], Measures.[Unit Sales]), ([Time].[1998], Measures.[Unit Sales]))'\n"
-                + "select \n"
-                + "    {Measures.[Coal1], Measures.[Coal2]} on columns,\n"
-                + "    {[Store].[All Stores].[Mexico].[DF], [Store].[All Stores].[USA].[WA]} on rows\n"
-                + "from \n"
+        Result result = execute("with" + nl
+                + "    member Measures.[Coal1] as 'coalesceempty(([Time].[1997], Measures.[Store Sales]), ([Time].[1998], Measures.[Store Sales]))'" + nl
+                + "    member Measures.[Coal2] as 'coalesceempty(([Time].[1997], Measures.[Unit Sales]), ([Time].[1998], Measures.[Unit Sales]))'" + nl
+                + "select " + nl
+                + "    {Measures.[Coal1], Measures.[Coal2]} on columns," + nl
+                + "    {[Store].[All Stores].[Mexico].[DF], [Store].[All Stores].[USA].[WA]} on rows" + nl
+                + "from " + nl
                 + "    [Sales]");
 
         Cell cell;
@@ -1713,16 +1822,16 @@ public class FunctionTest extends FoodMartTestCase {
                 result,
                 0.001);
 
-        result = execute("with\n"
-                + "    member Measures.[Sales Per Customer] as 'Measures.[Sales Count] / Measures.[Customer Count]'\n"
-                + "    member Measures.[Coal] as 'coalesceempty(([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),\n"
-                + "        Measures.[Sales Per Customer])'\n"
-                + "select \n"
-                + "    {Measures.[Sales Per Customer], Measures.[Coal]} on columns,\n"
-                + "    {[Store].[All Stores].[Mexico].[DF], [Store].[All Stores].[USA].[WA]} on rows\n"
-                + "from \n"
-                + "    [Sales]\n"
-                + "where\n"
+        result = execute("with" + nl
+                + "    member Measures.[Sales Per Customer] as 'Measures.[Sales Count] / Measures.[Customer Count]'" + nl
+                + "    member Measures.[Coal] as 'coalesceempty(([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF])," + nl
+                + "        Measures.[Sales Per Customer])'" + nl
+                + "select " + nl
+                + "    {Measures.[Sales Per Customer], Measures.[Coal]} on columns," + nl
+                + "    {[Store].[All Stores].[Mexico].[DF], [Store].[All Stores].[USA].[WA]} on rows" + nl
+                + "from " + nl
+                + "    [Sales]" + nl
+                + "where" + nl
                 + "    ([Time].[1997].[Q2])");
 
         checkDataResults(new Double[][] {
@@ -1732,23 +1841,23 @@ public class FunctionTest extends FoodMartTestCase {
                 result,
                 0.001);
 
-        result = execute("with\n"
-                + "    member Measures.[Sales Per Customer] as 'Measures.[Sales Count] / Measures.[Customer Count]'\n"
-                + "    member Measures.[Coal] as 'coalesceempty(([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),\n"
-                + "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),\n"
-                + "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),\n"
-                + "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),\n"
-                + "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),\n"
-                + "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),\n"
-                + "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),\n"
-                + "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),\n"
-                + "        Measures.[Sales Per Customer])'\n"
-                + "select \n"
-                + "    {Measures.[Sales Per Customer], Measures.[Coal]} on columns,\n"
-                + "    {[Store].[All Stores].[Mexico].[DF], [Store].[All Stores].[USA].[WA]} on rows\n"
-                + "from \n"
-                + "    [Sales]\n"
-                + "where\n"
+        result = execute("with" + nl
+                + "    member Measures.[Sales Per Customer] as 'Measures.[Sales Count] / Measures.[Customer Count]'" + nl
+                + "    member Measures.[Coal] as 'coalesceempty(([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF])," + nl
+                + "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF])," + nl
+                + "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF])," + nl
+                + "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF])," + nl
+                + "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF])," + nl
+                + "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF])," + nl
+                + "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF])," + nl
+                + "        ([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF])," + nl
+                + "        Measures.[Sales Per Customer])'" + nl
+                + "select " + nl
+                + "    {Measures.[Sales Per Customer], Measures.[Coal]} on columns," + nl
+                + "    {[Store].[All Stores].[Mexico].[DF], [Store].[All Stores].[USA].[WA]} on rows" + nl
+                + "from " + nl
+                + "    [Sales]" + nl
+                + "where" + nl
                 + "    ([Time].[1997].[Q2])");
 
         checkDataResults(new Double[][] {
@@ -1760,16 +1869,16 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testBrokenContextBug() throws Exception {
-        Result result = execute("with\n"
-                + "    member Measures.[Sales Per Customer] as 'Measures.[Sales Count] / Measures.[Customer Count]'\n"
-                + "    member Measures.[Coal] as 'coalesceempty(([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF]),\n"
-                + "        Measures.[Sales Per Customer])'\n"
-                + "select \n"
-                + "    {Measures.[Coal]} on columns,\n"
-                + "    {[Store].[All Stores].[USA].[WA]} on rows\n"
-                + "from \n"
-                + "    [Sales]\n"
-                + "where\n"
+        Result result = execute("with" + nl
+                + "    member Measures.[Sales Per Customer] as 'Measures.[Sales Count] / Measures.[Customer Count]'" + nl
+                + "    member Measures.[Coal] as 'coalesceempty(([Measures].[Sales Per Customer], [Store].[All Stores].[Mexico].[DF])," + nl
+                + "        Measures.[Sales Per Customer])'" + nl
+                + "select " + nl
+                + "    {Measures.[Coal]} on columns," + nl
+                + "    {[Store].[All Stores].[USA].[WA]} on rows" + nl
+                + "from " + nl
+                + "    [Sales]" + nl
+                + "where" + nl
                 + "    ([Time].[1997].[Q2])");
 
         checkDataResults(new Double[][] {{new Double(8.963)}}, result, 0.001);
@@ -3005,10 +3114,10 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testToggleDrillStateRecursive() throws Exception {
         // We expect this to fail.
-        assertThrows("Select \n"
-                + "    ToggleDrillState(\n"
-                + "        {[Store].[All Stores].[USA]}, \n"
-                + "        {[Store].[All Stores].[USA]}, recursive) on Axis(0) \n"
+        assertThrows("Select " + nl
+                + "    ToggleDrillState(" + nl
+                + "        {[Store].[All Stores].[USA]}, " + nl
+                + "        {[Store].[All Stores].[USA]}, recursive) on Axis(0) " + nl
                 + "from [Sales]",
                 "'RECURSIVE' is not supported in ToggleDrillState.");
     }
@@ -3111,7 +3220,7 @@ public class FunctionTest extends FoodMartTestCase {
         final Axis rowsAxis = result.getAxes()[1];
         Assert.assertEquals(45, rowsAxis.positions.length);
     }
-    
+
     public void testItemMember() {
         String s = executeExpr("Descendants([Time].[1997], [Time].[Month]).Item(1).Item(0).UniqueName");
         Assert.assertEquals("[Time].[1997].[Q1].[2]", s);
@@ -3122,10 +3231,199 @@ public class FunctionTest extends FoodMartTestCase {
         		"[Time].[1997].[Q2].children).Item(0).Item(1).UniqueName");
         Assert.assertEquals("[Time].[1997].[Q2].[4]", s);
     }
-    
+
     public void testStrToMember() {
         String s = executeExpr("StrToMember(\"[Time].[1997].[Q2].[4]\").Name");
         Assert.assertEquals("4", s);
     }
 
+/*
+LinRegPoint(
+    <<numeric exprssion>>,
+    <<set>>,
+    <<y numeric exprssion>>
+    [, <<x numeric exprssion>>]
+)
+With member
+[Measures].[Test] as
+'LinRegPoint(
+  Rank(Time.CurrentMember, Time.CurrentMember.Level.Members) ,
+  Descendants([Time].[All Periods].[2004], [Time].[Month]),
+  [Measures].[Wholesaler 867 Shipped Qty],
+  Rank(Time.CurrentMember, Time.CurrentMember.Level.Members)
+)'
+Select
+  {[Measures].[Test]} ON ROWS,
+  {[Time].[All Periods].[2004]} ON COLUMNS
+from
+  [Wholesaler Shipments]
+*/
+
+    /**
+     * Executes a scalar expression, and asserts that the result is as
+     * expected. For example, <code>assertExprReturns("1 + 2", "3")</code>
+     * should succeed.
+     */
+    public void assertExprReturns(String expr, String expected) {
+        String actual = executeExpr(expr);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Tests the <code>Rank(member, set)</code> MDX function.
+     *
+     * <p>todo: Implement and test Rank(member, set, expr)</p>
+     */
+    public void testRank() {
+        // Member within set
+        assertExprReturns("Rank([Store].[USA].[CA], " +
+                "{[Store].[USA].[OR]," +
+                " [Store].[USA].[CA]," +
+                " [Store].[USA]})",
+                "2");
+        // Member not in set
+        assertExprReturns("Rank([Store].[USA].[WA], " +
+                "{[Store].[USA].[OR]," +
+                " [Store].[USA].[CA]," +
+                " [Store].[USA]})",
+                "0");
+        // Member not in empty set
+        assertExprReturns("Rank([Store].[USA].[WA], {})",
+                "0");
+        // Null member not in set returns null.
+        assertExprReturns("Rank([Store].Parent, " +
+                "{[Store].[USA].[OR]," +
+                " [Store].[USA].[CA]," +
+                " [Store].[USA]})",
+                "(null)");
+        // Null member in empty set. (MSAS returns an error "Formula error -
+        // dimension count is not valid - in the Rank function" but I think
+        // null is the correct behavior.)
+        assertExprReturns("Rank([Gender].Parent, {})",
+                "(null)");
+        // Member occurs twice in set -- pick first
+        assertExprReturns("Rank([Store].[USA].[WA], " + nl +
+                "{[Store].[USA].[WA]," +
+                " [Store].[USA].[CA]," +
+                " [Store].[USA]," +
+                " [Store].[USA].[WA]})",
+                "1");
+        // Tuple not in set
+        assertExprReturns("Rank(([Gender].[F], [Marital Status].[M]), " + nl +
+                "{([Gender].[F], [Marital Status].[S])," + nl +
+                " ([Gender].[M], [Marital Status].[S])," + nl +
+                " ([Gender].[M], [Marital Status].[M])})",
+                "0");
+        // Tuple in set
+        assertExprReturns("Rank(([Gender].[F], [Marital Status].[M]), " + nl +
+                "{([Gender].[F], [Marital Status].[S])," + nl +
+                " ([Gender].[M], [Marital Status].[S])," + nl +
+                " ([Gender].[F], [Marital Status].[M])})",
+                "3");
+        // Tuple not in empty set
+        assertExprReturns("Rank(([Gender].[F], [Marital Status].[M]), " + nl +
+                "{})",
+                "0");
+        // Partially null tuple in set, returns null
+        assertExprReturns("Rank(([Gender].[F], [Marital Status].Parent), " + nl +
+                "{([Gender].[F], [Marital Status].[S])," + nl +
+                " ([Gender].[M], [Marital Status].[S])," + nl +
+                " ([Gender].[F], [Marital Status].[M])})",
+                "(null)");
+    }
+
+    public void testLinRegPointQuarter() {
+        String query = "WITH MEMBER " + nl +
+                "[Measures].[Test] as " + nl +
+                "'LinRegPoint(" + nl +
+                "Rank(Time.CurrentMember, Time.CurrentMember.Level.Members) ," + nl +
+                "Descendants([Time].[1997], [Time].[Quarter]), " + nl +
+                "[Measures].[Store Sales], " + nl +
+                "Rank(Time.CurrentMember, Time.CurrentMember.Level.Members)" + nl +
+                ")' " + nl +
+                "SELECT " + nl +
+                "{[Measures].[Test],[Measures].[Store Sales]} ON ROWS, " + nl +
+                "{[Time].[1997].Children} ON COLUMNS " + nl +
+                "FROM Sales";
+        String expected = "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Time].[1997].[Q1]}" + nl +
+                "{[Time].[1997].[Q2]}" + nl +
+                "{[Time].[1997].[Q3]}" + nl +
+                "{[Time].[1997].[Q4]}" + nl +
+                "Axis #2:" + nl +
+                "{[Measures].[Test]}" + nl +
+                "{[Measures].[Store Sales]}" + nl +
+                "Row #0: 134,299.22" + nl +
+                "Row #0: 138,972.76" + nl +
+                "Row #0: 143,646.30" + nl +
+                "Row #0: 148,319.85" + nl +
+                "Row #1: 139,628.35" + nl +
+                "Row #1: 132,666.27" + nl +
+                "Row #1: 140,271.89" + nl +
+                "Row #1: 152,671.62" + nl;
+
+        runQueryCheckResult(query, expected);
+    }
+
+    public void testLinRegPointMonth() {
+        String query = "WITH MEMBER " + nl +
+                "[Measures].[Test] as " + nl +
+                "  'LinRegPoint(" + nl +
+                "    Rank(Time.CurrentMember, Time.CurrentMember.Level.Members) ," + nl +
+                "    Descendants([Time].[1997], [Time].[Month]), " + nl +
+                "    [Measures].[Store Sales], " + nl +
+                "    Rank(Time.CurrentMember, Time.CurrentMember.Level.Members)" + nl +
+                "  )' " + nl +
+                "SELECT " + nl +
+                "  {[Measures].[Test],[Measures].[Store Sales]} ON ROWS, " + nl +
+                "  Descendants([Time].[1997], [Time].[Month]) ON COLUMNS " + nl +
+                "FROM Sales";
+
+        String expected = "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Time].[1997].[Q1].[1]}" + nl +
+                "{[Time].[1997].[Q1].[2]}" + nl +
+                "{[Time].[1997].[Q1].[3]}" + nl +
+                "{[Time].[1997].[Q2].[4]}" + nl +
+                "{[Time].[1997].[Q2].[5]}" + nl +
+                "{[Time].[1997].[Q2].[6]}" + nl +
+                "{[Time].[1997].[Q3].[7]}" + nl +
+                "{[Time].[1997].[Q3].[8]}" + nl +
+                "{[Time].[1997].[Q3].[9]}" + nl +
+                "{[Time].[1997].[Q4].[10]}" + nl +
+                "{[Time].[1997].[Q4].[11]}" + nl +
+                "{[Time].[1997].[Q4].[12]}" + nl +
+                "Axis #2:" + nl +
+                "{[Measures].[Test]}" + nl +
+                "{[Measures].[Store Sales]}" + nl +
+                "Row #0: 43,824.36" + nl +
+                "Row #0: 44,420.51" + nl +
+                "Row #0: 45,016.66" + nl +
+                "Row #0: 45,612.81" + nl +
+                "Row #0: 46,208.95" + nl +
+                "Row #0: 46,805.10" + nl +
+                "Row #0: 47,401.25" + nl +
+                "Row #0: 47,997.40" + nl +
+                "Row #0: 48,593.55" + nl +
+                "Row #0: 49,189.70" + nl +
+                "Row #0: 49,785.85" + nl +
+                "Row #0: 50,382.00" + nl +
+                "Row #1: 45,539.69" + nl +
+                "Row #1: 44,058.79" + nl +
+                "Row #1: 50,029.87" + nl +
+                "Row #1: 42,878.25" + nl +
+                "Row #1: 44,456.29" + nl +
+                "Row #1: 45,331.73" + nl +
+                "Row #1: 50,246.88" + nl +
+                "Row #1: 46,199.04" + nl +
+                "Row #1: 43,825.97" + nl +
+                "Row #1: 42,342.27" + nl +
+                "Row #1: 53,363.71" + nl +
+                "Row #1: 56,965.64" + nl;
+
+        runQueryCheckResult(query, expected);
+    }
 }

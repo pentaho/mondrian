@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2003 Kana Software, Inc. and others.
+// Copyright (C) 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -202,12 +202,54 @@ public class FunUtil extends Util {
 		}
 	}
 
-	static Member[] getTupleArg(
+    /**
+     * Evaluates and returns the <code>index</code>th argument, which must
+     * be a tuple.
+     *
+     * @see #getTupleOrMemberArg
+     *
+     * @param evaluator Evaluation context
+     * @param args The arguments to the function call
+     * @param index Ordinal of the argument we are seeking
+     * @return A tuple, represented as usual by an array of {@link Member}
+     *   objects.
+     */
+	public static Member[] getTupleArg(
 			Evaluator evaluator, Exp[] args, int index) {
 		Exp arg = args[index];
 		Object o = arg.evaluate(evaluator);
 		return (Member[]) o;
 	}
+
+    /**
+     * Evaluates and returns the <code>index</code>th argument, which we
+     * expect to be either a member or a tuple, as a tuple. If the argument
+     * is a member, converts it into a tuple with one member.
+     *
+     * @see #getTupleArg
+     *
+     * @param evaluator Evaluation context
+     * @param args The arguments to the function call
+     * @param index Ordinal of the argument we are seeking
+     * @return A tuple, represented as usual by an array of {@link Member}
+     *   objects.
+     *
+     * @throws ArrayIndexOutOfBoundsException if <code>index</code> is out of
+     *   range
+     */
+    public static Member[] getTupleOrMemberArg(
+        Evaluator evaluator, Exp[] args, int index)
+    {
+        Exp arg = args[index];
+        Object o0 = arg.evaluate(evaluator);
+        if (o0 instanceof Member[]) {
+            return (Member[]) o0;
+        } else if (o0 instanceof Member) {
+            return new Member[] { (Member)o0 };
+        } else {
+            throw Util.newInternal("Expected tuple or member, got " + o0);
+        }
+    }
 
 	static Level getLevelArg(
 			Evaluator evaluator, Exp[] args, int index, boolean fail) {
@@ -309,8 +351,7 @@ public class FunUtil extends Util {
     static boolean checkFlag(int value, int mask, boolean strict) {
         if (strict) {
             return (value & mask) == mask;
-        }
-        else {
+        } else {
             return (value & mask) != 0;
         }
     }
@@ -521,7 +562,9 @@ public class FunUtil extends Util {
 			Object o = mapMemberToValue.get(member);
 			if (o instanceof Number) {
 				double d = ((Number) o).doubleValue();
-				mapMemberToValue.put(member, new Double(d / total * 100));
+				mapMemberToValue.put(
+                    member, 
+                    new Double(d / total * (double) 100));
 			}
 		}
 
@@ -567,8 +610,7 @@ public class FunUtil extends Util {
         if (numMembers > 0 && isPercent && nullCount == numMembers) {
             if (isTop) {
                 return members.subList(0, 1);
-            }
-            else {
+            } else {
                 return members.subList(numMembers - 1, numMembers);
             }
         }
@@ -741,7 +783,7 @@ public class FunUtil extends Util {
 //					sum += ((Double) resolvers.elementAt(i)).doubleValue();
 //				}
 //				//todo: should look at context and optionally include nulls
-//				avg = sum / resolvers.size();
+//				avg = sum / (double) resolvers.size();
 //			}
 //			return avg;
 //		}
@@ -775,8 +817,7 @@ public class FunUtil extends Util {
             // The length is odd. Note that length/2 is an integer expression,
             // and it's positive so we save ourselves a divide...
             result = new Double(asArray[length >> 1]);
-        }
-        else {
+        } else {
             result = new Double((asArray[(length >> 1) - 1] + asArray[length >> 1]) / 2.0);
         }
 
@@ -824,8 +865,7 @@ public class FunUtil extends Util {
 			return new Double(Double.NaN);
 		} else if (sw.v.size() == 0) {
 			return Util.nullValue;
-		}
-		else {
+		} else {
 			double min = Double.MAX_VALUE;
 			for (int i = 0; i < sw.v.size(); i++) {
 				double iValue = ((Double) sw.v.get(i)).doubleValue();
@@ -841,8 +881,7 @@ public class FunUtil extends Util {
 			return new Double(Double.NaN);
 		} else if (sw.v.size() == 0) {
 			return Util.nullValue;
-		}
-		else {
+		} else {
 			double max = Double.MIN_VALUE;
 			for (int i = 0; i < sw.v.size(); i++) {
 				double iValue = ((Double) sw.v.get(i)).doubleValue();
@@ -862,16 +901,17 @@ public class FunUtil extends Util {
 			return new Double(Double.NaN);
 		} else if (sw.v.size() == 0) {
 			return Util.nullValue;
-		}
-		else {
+		} else {
 			double stdev = 0.0;
 			double avg = _avg(sw);
 			for (int i = 0; i < sw.v.size(); i++) {
 				stdev += Math.pow((((Double) sw.v.get(i)).doubleValue() - avg),2);
 			}
 			int n = sw.v.size();
-			if (!biased) { n--; }
-			return new Double(stdev / n);
+			if (!biased) { 
+                n--; 
+            }
+			return new Double(stdev / (double) n);
 		}
 	}
 
@@ -881,11 +921,13 @@ public class FunUtil extends Util {
 		Object covar = _covariance(sw1, sw2, false);
 		Object var1 = _var(sw1, false); //this should be false, yes?
 		Object var2 = _var(sw2, false);
-		if ((covar instanceof Double) && (var1 instanceof Double) && (var2 instanceof Double)) {
+		if ((covar instanceof Double) &&
+            (var1 instanceof Double) &&
+            (var2 instanceof Double)) {
 			return new Double(((Double) covar).doubleValue() /
-				Math.sqrt(((Double) var1).doubleValue() * ((Double) var2).doubleValue()));
-		}
-		else {
+				Math.sqrt(((Double) var1).doubleValue() *
+                          ((Double) var2).doubleValue()));
+		} else {
 			return Util.nullValue;
 		}
 	}
@@ -914,7 +956,7 @@ public class FunUtil extends Util {
 		}
 		int n = sw1.v.size();
 		if (!biased) { n--; }
-		return new Double(covar / n);
+		return new Double(covar / (double) n);
 	}
 
 	static Object stdev(Evaluator evaluator, List members, ExpBase exp, boolean biased) {
@@ -932,8 +974,7 @@ public class FunUtil extends Util {
 			return new Double(Double.NaN);
 		} else if (sw.v.size() == 0) {
 			return Util.nullValue;
-		}
-		else {
+		} else {
 			return new Double(_avg(sw));
 		}
 	}
@@ -946,7 +987,7 @@ public class FunUtil extends Util {
 			sum += ((Double) sw.v.get(i)).doubleValue();
 		}
 		//todo: should look at context and optionally include nulls
-		return sum / sw.v.size();
+		return sum / (double) sw.v.size();
 	}
 
 	public static Object sum(Evaluator evaluator, List members, Exp exp) {
@@ -959,8 +1000,7 @@ public class FunUtil extends Util {
 			return new Double(Double.NaN);
 		} else if (sw.v.size() == 0) {
 			return Util.nullValue;
-		}
-		else {
+		} else {
 			double sum = 0.0;
 			for (int i = 0; i < sw.v.size(); i++) {
 				sum += ((Double) sw.v.get(i)).doubleValue();
@@ -1004,10 +1044,11 @@ public class FunUtil extends Util {
 		SetWrapper retval = new SetWrapper();
 		for (Iterator it = members.iterator(); it.hasNext();) {
 			Object obj = it.next();
-			if (obj instanceof Member[])
+			if (obj instanceof Member[]) {
 				evaluator.setContext((Member[])obj);
-			else
+			} else {
 				evaluator.setContext((Member)obj);
+            }
 			Object o = exp.evaluateScalar(evaluator);
 			if (o == null || o == Util.nullValue) {
 				retval.nullCount++;
@@ -1152,8 +1193,7 @@ public class FunUtil extends Util {
             * Shortcut if there's nowhere to go.
             */
             return member;
-        }
-        else if (distance < 0) {
+        } else if (distance < 0) {
             /*
             * Can't go backwards.
             */
@@ -1174,14 +1214,12 @@ public class FunUtil extends Util {
                     if (schemaReader.isVisible(ancestorMember)) {
                         result = ancestorMember;
                         break searchLoop;
-                    }
-                    else {
+                    } else {
                         result = member.getHierarchy().getNullMember();
                         break searchLoop;
                     }
                 }
-            }
-            else {
+            } else {
                 if (schemaReader.isVisible(ancestorMember)) {
                     distance--;
 
@@ -1202,8 +1240,7 @@ public class FunUtil extends Util {
                         if (targetLevel == null || ancestorMember.getLevel() == targetLevel) {
                             result = ancestorMember;
                             break searchLoop;
-                        }
-                        else {
+                        } else {
                             result = member.getHierarchy().getNullMember();
                             break searchLoop;
                         }
