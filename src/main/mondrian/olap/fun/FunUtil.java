@@ -425,11 +425,12 @@ public class FunUtil extends Util {
 		// Expand member to its children, until we get to the right
 		// level. We assume that all children are in the same
 		// level.
+		final Hierarchy hierarchy = member.getHierarchy();
 		Member[] children = {member};
 		while (children.length > 0 &&
 				children[0].getLevel().getDepth() <
 				level.getDepth()) {
-			children = member.getCube().getMemberChildren(children);
+			children = hierarchy.getChildMembers(children);
 		}
 		return children[children.length - 1];
 	}

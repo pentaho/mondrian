@@ -37,11 +37,10 @@ interface MemberSource {
 	/** Returns all members which are a child of one of the members in
 	 * <code>parentMembers</code>, sorted by ordinal. **/
 	RolapMember[] getMemberChildren(RolapMember[] parentMembers);
-	/** Makes the necessary modifications to <code>query</code> to efficiently
-	 * access only rows which relate to <code>member</code>. **/
-	void qualifyQuery(SqlQuery query, RolapMember member);
 	/** Returns number of members in this hierarchy. May be an estimate. **/
 	int getMemberCount();
+	/** Finds a member based upon its unique name. **/
+	RolapMember lookupMember(String uniqueName, boolean failIfNotFound);
 }
 
 // End MemberSource.java

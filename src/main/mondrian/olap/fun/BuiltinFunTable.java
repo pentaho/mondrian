@@ -830,8 +830,7 @@ public class BuiltinFunTable extends FunTable {
 					return null;
 				}
 				int ordinal = getOrdinalInParent(member1);
-				Member[] cousins = uncle.getCube().getMemberChildren(
-						new Member[] {uncle});
+				Member[] cousins = uncle.getMemberChildren();
 				if (cousins.length < ordinal) {
 					return null;
 				}
@@ -843,8 +842,7 @@ public class BuiltinFunTable extends FunTable {
 				if (parent == null) {
 					siblings = member.getHierarchy().getRootMembers();
 				} else {
-					siblings = member.getCube().getMemberChildren(
-							new Member[]{parent});
+					siblings = parent.getMemberChildren();
 				}
 				for (int i = 0; i < siblings.length; i++) {
 					if (siblings[i] == member) {
@@ -924,8 +922,7 @@ public class BuiltinFunTable extends FunTable {
 		define(new FunDefBase("FirstChild", "<Member>.FirstChild", "Returns the first child of a member.", "pmm") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Member member = getMemberArg(evaluator, args, 0, true);
-				Member[] children = evaluator.getCube().getMemberChildren(
-						new Member[]{member});
+				Member[] children = member.getMemberChildren();
 				if (children.length == 0) {
 					return member.getHierarchy().getNullMember();
 				} else {
@@ -963,8 +960,7 @@ public class BuiltinFunTable extends FunTable {
 					}
 					children = member.getHierarchy().getRootMembers();
 				} else {
-					children = evaluator.getCube().getMemberChildren(
-							new Member[]{parent});
+					children = parent.getMemberChildren();
 				}
 				return children[0];
 			}
@@ -1048,8 +1044,7 @@ public class BuiltinFunTable extends FunTable {
 		define(new FunDefBase("LastChild", "<Member>.LastChild", "Returns the last child of a member.", "pmm") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Member member = getMemberArg(evaluator, args, 0, true);
-				Member[] children = evaluator.getCube().getMemberChildren(
-						new Member[]{member});
+				Member[] children = member.getMemberChildren();
 				if (children.length == 0) {
 					return member.getHierarchy().getNullMember();
 				} else {
@@ -1093,8 +1088,7 @@ public class BuiltinFunTable extends FunTable {
 					}
 					children = member.getHierarchy().getRootMembers();
 				} else {
-					children = evaluator.getCube().getMemberChildren(
-							new Member[]{parent});
+					children = parent.getMemberChildren();
 				}
 				return children[children.length - 1];
 			}
@@ -1330,9 +1324,7 @@ public class BuiltinFunTable extends FunTable {
 		define(new FunDefBase("Children", "<Member>.Children", "Returns the children of a member.", "pxm") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Member member = getMemberArg(evaluator, args, 0, true);
-				Member[] children =
-						evaluator.getCube().getMemberChildren(
-								new Member[]{member});
+				Member[] children = member.getMemberChildren();
 				return toVector(children);
 			}
 		});
@@ -1371,12 +1363,12 @@ public class BuiltinFunTable extends FunTable {
 						// Expand member to its children, until we get to the right
 						// level. We assume that all children are in the same
 						// level.
+						final Hierarchy hierarchy = member.getHierarchy();
 						Member[] children = {member};
 						while (children.length > 0 &&
 								children[0].getLevel().getDepth() <
 								level.getDepth()) {
-							children = evaluator.getCube().getMemberChildren(
-									children);
+							children = hierarchy.getChildMembers(children);
 						}
 						return toVector(children);
 					}
@@ -1400,23 +1392,17 @@ public class BuiltinFunTable extends FunTable {
 						}
 						Arrays.sort(depthArray);
 						int maxDepth = depthArray[depthArray.length - 1];
-
 						for (int i = 0, m = set0.size(); i < m; i++) {
 							Member member = (Member) set0.elementAt(i);
 							drilledSet.addElement(member);
 							if (member.getDepth() == maxDepth) {
-								Member[] childMembers = {member};// = member.getLevel().getChildLevel().getMembers();
-								childMembers = evaluator.getCube().getMemberChildren(childMembers);
-								if (childMembers.length != 0) {
-									for (int j = 0,p = childMembers.length; j < p; j++)
-										drilledSet.addElement(childMembers[j]);
+								Member[] childMembers = member.getMemberChildren();
+								for (int j = 0; j < childMembers.length; j++) {
+									drilledSet.addElement(childMembers[j]);
 								}
 							}
 						}
-
-
 						return drilledSet;
-
 					}
 				}
 		));
@@ -1647,9 +1633,7 @@ public class BuiltinFunTable extends FunTable {
 									}
 								}
 							} else {
-								Member[] children =
-										evaluator.getCube().getMemberChildren(
-												new Member[]{m});
+								Member[] children = m.getMemberChildren();
 								for (int j = 0; j < children.length; j++) {
 									result.addElement(children[j]);
 								}

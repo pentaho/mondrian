@@ -23,30 +23,31 @@ public abstract class DimensionBase
 	extends OlapElementBase
 	implements Dimension
 {
-	protected CubeBase cube;
 	protected String name;
 	protected String uniqueName;
 	protected String description;
 	protected HierarchyBase[] hierarchies;
-	protected int ordinal;
+	protected int globalOrdinal;
 	protected int dimensionType;
 
 	// implement Element
-	public OlapElement getParent() { return cube; }
 	public String getUniqueName() { return uniqueName; }
 	public String getName() { return name; }
 	public String getDescription() { return description; }
 	public Hierarchy[] getHierarchies() { return hierarchies; }
-	public Cube getCube() { return cube; }
 	public int getType() { return CatDimension; }
 	public int getDimensionType() { return dimensionType; } 
 	public String getQualifiedName() {
 		return Util.getRes().getMdxDimensionName(getUniqueName());
 	}
 	public boolean isMeasures()	{
-		return getUniqueName().equals(CONST_MEASURES);
+		return getUniqueName().equals(MEASURES_UNIQUE_NAME);
 	}
-	public int getOrdinal() { return ordinal; } 
+
+	public boolean usesDimension(Dimension dimension) {
+		return dimension == this;
+	}
+
 	public OlapElement lookupChild(NameResolver st, String s)
 	{
 		Hierarchy mdxHierarchy = lookupHierarchy(st, s);

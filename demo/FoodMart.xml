@@ -94,7 +94,8 @@ WHERE "product"."product_class_id" = "product_class"."product_class_id"
 	</Dimension>
 
 <!-- Sales -->
-<Cube name="Sales" factTable="sales_fact_1997">
+<Cube name="Sales">
+	<Table name="sales_fact_1997"/>
 	<DimensionUsage name="Store" source="Store" foreignKey="store_id"/>
 	<DimensionUsage name="Store Size in SQFT" source="Store Size in SQFT" foreignKey="store_id"/>
 	<DimensionUsage name="Store Type" source="Store Type" foreignKey="store_id"/>
@@ -141,26 +142,6 @@ CONCAT(`customer`.`fname`, " ", `customer`.`lname`)
 				<Property name="Education" column="education"/>
 				<Property name="Yearly Income" column="yearly_income"/>
 			</Level>
-<!--
-			<Query>
-				<SQL dialect="oracle">
-SELECT "customer".*, "fname" || ' ' || "lname" as "name" FROM "customer"
-				</SQL>
-				<SQL dialect="access">
-SELECT *, [fname] + ' ' + [lname] as [name] FROM [customer]
-				</SQL>
-				<SQL dialect="postgres">
-SELECT "customer".*, "fname" || ' ' || "lname" as "name" FROM "customer"
-				</SQL>
-				<SQL dialect="generic">
-SELECT * FROM "customer"
-				</SQL>
-			</Query>
-			<Level name="Country" column="country" uniqueMembers="true"/>
-			<Level name="State Province" column="state_province" uniqueMembers="true"/>
-			<Level name="City" column="city" uniqueMembers="false"/>
-			<Level name="Name" column="name" ordinalColumn="ordinal" uniqueMembers="true"/>
--->
 		</Hierarchy>
 	</Dimension>
 	<Dimension name="Education Level" foreignKey="customer_id">
@@ -200,7 +181,8 @@ SELECT * FROM "customer"
 	<Measure name="Store Sales Net" column="&quot;sales_fact_1997&quot;.&quot;store_sales&quot;-&quot;sales_fact_1997&quot;.&quot;store_cost&quot;" aggregator="sum" formatString="#,###.00"/>
 </Cube>
 
-<Cube name="Warehouse" factTable="inventory_fact_1997">
+<Cube name="Warehouse">
+	<Table name="inventory_fact_1997"/>
 	<DimensionUsage name="Store" source="Store" foreignKey="store_id"/>
 	<DimensionUsage name="Store Size in SQFT" source="Store Size in SQFT" foreignKey="store_id"/>
 	<DimensionUsage name="Store Type" source="Store Type" foreignKey="store_id"/>
@@ -216,6 +198,32 @@ SELECT * FROM "customer"
 	<Measure name="Units Shipped" column="units_shipped" aggregator="sum"/>
 	<Measure name="Units Ordered" column="units_ordered" aggregator="sum"/>
 	<Measure name="Warehouse Profit" column="&quot;inventory_fact_1997&quot;.&quot;warehouse_sales&quot;-&quot;inventory_fact_1997&quot;.&quot;warehouse_cost&quot;" aggregator="sum"/>
+</Cube>
+
+<!-- Test a cube based upon a single table. -->
+<Cube name="Store">
+	<Table name="store"/>
+	<!-- We could have used the shared dimension "Store Type", but we
+	     want to test private dimensions without primary key. -->
+	<Dimension name="Store Type">
+		<Hierarchy hasAll="true">
+			<Level name="Store Type" column="store_type" uniqueMembers="true"/>
+		</Hierarchy>
+	</Dimension>
+
+	<!-- We don't have to specify primary key or foreign key since the shared
+	     dimension "Store" has the same underlying table as the cube. -->
+	<DimensionUsage name="Store" source="Store"/>
+
+	<Dimension name="Has coffee bar">
+		<Hierarchy hasAll="true">
+			<Level name="Has coffee bar" column="coffee_bar" uniqueMembers="true"/>
+		</Hierarchy>
+	</Dimension>
+
+	<Measure name="Store Sqft" column="store_sqft" aggregator="sum" formatString="#,###"/>
+	<Measure name="Grocery Sqft" column="grocery_sqft" aggregator="sum" formatString="#,###"/>
+
 </Cube>
 
 <VirtualCube name="Warehouse and Sales">

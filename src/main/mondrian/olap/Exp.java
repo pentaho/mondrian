@@ -56,7 +56,6 @@ public interface Exp {
 	boolean isElement();
 	boolean isParameter();
 	boolean isEmptySet();
-	Cube getCube();
 	/**
 	 * Returns the dimension of a this expression, or null if no dimension is
 	 * defined. Applicable only to set expressions.

@@ -62,14 +62,11 @@ public abstract class MemberBase
 	public final String getParentUniqueName() {
 		return parentUniqueName;
 	}
+	public boolean usesDimension(Dimension dimension) {
+		return level.hierarchy.dimension == dimension;
+	}
 	public final Hierarchy getHierarchy() {
 		return level.hierarchy;
-	}
-	public final Cube getCube() {
-		return level.hierarchy.dimension.cube;
-	}
-	public final OlapElement getParent() {
-		return level;
 	}
 	public final Level getLevel() {
 		return level;
@@ -104,8 +101,7 @@ public abstract class MemberBase
 			throw Util.getRes().newMdxCalcMemberCanNotHaveChildren(
 				getUniqueName());
 		}
-		Member[] children = getCube().getMemberChildren(
-			new Member[] {this});
+		Member[] children = getMemberChildren();
 		String childName = getUniqueName() + ".[" + s + "]";
 		for (int i = 0; i < children.length; i++){
 			if (childName.equals(children[i].getUniqueName()) ||
@@ -128,7 +124,7 @@ public abstract class MemberBase
 		} else {
 			boolean failIfNotFound = true;
 			return parentMember = (MemberBase)
-				getCube().lookupMemberByUniqueName(
+				getHierarchy().lookupMemberByUniqueName(
 					parentUniqueName, failIfNotFound);
 		}
 	}
@@ -167,7 +163,7 @@ public abstract class MemberBase
 			// try candidate's parentMember
 			if (parentMember == null) {
 				parentMember = (MemberBase)
-					getCube().lookupMemberByUniqueName(
+					getHierarchy().lookupMemberByUniqueName(
 						parentUniqueName, false);
 			}
 			return parentMember.isChildOrEqualTo(uniqueName);

@@ -13,6 +13,7 @@
 package mondrian.rolap;
 
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.olap.MondrianDef;
 
 /**
  * A <code>MeasureMemberSource</code> implements the {@link MemberReader}
@@ -30,20 +31,6 @@ class MeasureMemberSource extends ArrayMemberSource
 	{
 		super(hierarchy, members);
 	}
-
-	// implement MemberReader
-	public void qualifyQuery(
-		SqlQuery sqlQuery, RolapMember member)
-	{
-		RolapStoredMeasure measure = (RolapStoredMeasure) member;
-		RolapCube cube = (RolapCube) member.getCube();
-		cube.addToFrom(sqlQuery);
-		sqlQuery.addSelect(
-			measure.aggregator + "(" +
-			sqlQuery.quoteIdentifier(
-				cube.getAlias(), measure.column) +
-			")");
-	}
-};
+}
 
 // End MeasureMemberSource.java

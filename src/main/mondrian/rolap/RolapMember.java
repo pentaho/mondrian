@@ -70,6 +70,11 @@ class RolapMember extends MemberBase
 			return this.ordinal - other.ordinal;
 		}
 	}
+
+	public Member[] getMemberChildren() {
+		return getHierarchy().getChildMembers(this);
+	}
+
 	public Member getLeadMember(int n)
 	{
 		return ((RolapHierarchy) getHierarchy()).memberReader.getLeadMember(

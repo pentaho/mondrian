@@ -25,29 +25,36 @@ import mondrian.util.Format;
 class RolapEvaluator implements Evaluator
 {
 	RolapCube cube;
+	RolapConnection connection;
 	RolapMember[] currentMembers;
 	Evaluator parent;
 	CellReader cellReader;
 	int depth;
 	private static final RolapMember[] emptyMembers = {};
 
-	RolapEvaluator(RolapCube cube)
+	RolapEvaluator(RolapCube cube, RolapConnection connection)
 	{
 		this.cube = cube;
+		this.connection = connection;
 		RolapDimension[] dimensions = (RolapDimension[]) cube.getDimensions();
 		currentMembers = new RolapMember[dimensions.length];
 		for (int i = 0; i < dimensions.length; i++) {
-			currentMembers[i] = (RolapMember)
-				dimensions[i].getHierarchy().getDefaultMember();
+			final RolapDimension dimension = (RolapDimension) dimensions[i];
+			final int ordinal = dimension.getOrdinal(cube);
+			currentMembers[ordinal] = (RolapMember)
+					dimension.getHierarchy().getDefaultMember();
 		}
 		this.parent = null;
 		this.depth = 0;
 		this.cellReader = cellReader;
 	}
+
 	private RolapEvaluator(
-		RolapCube cube, RolapMember[] currentMembers, RolapEvaluator parent)
+		RolapCube cube, RolapConnection connection,
+		RolapMember[] currentMembers, RolapEvaluator parent)
 	{
 		this.cube = cube;
+		this.connection = connection;
 		this.currentMembers = currentMembers;
 		this.parent = parent;
 		this.depth = parent.getDepth() + 1;
@@ -80,10 +87,10 @@ class RolapEvaluator implements Evaluator
 		}
 		for (int i = 0; i < members.length; i++) {
 			RolapMember member = (RolapMember) members[i];
-			int ordinal = member.getDimension().getOrdinal();
+			int ordinal = member.getDimension().getOrdinal(cube);
 			cloneCurrentMembers[ordinal] = member;
 		}
-		return new RolapEvaluator(cube, cloneCurrentMembers, this);
+		return new RolapEvaluator(cube, connection, cloneCurrentMembers, this);
 	}
 
 	public Evaluator push() {
@@ -117,7 +124,7 @@ class RolapEvaluator implements Evaluator
 	public Member setContext(Member member)
 	{
 		RolapMember m = (RolapMember) member;
-		int ordinal = m.getDimension().getOrdinal();
+		int ordinal = m.getDimension().getOrdinal(cube);
 		RolapMember previous = currentMembers[ordinal];
 		currentMembers[ordinal] = m;
 		return previous;
@@ -130,7 +137,7 @@ class RolapEvaluator implements Evaluator
 	}
 	public Member getContext(Dimension dimension)
 	{
-		return currentMembers[dimension.getOrdinal()];
+		return currentMembers[dimension.getOrdinal(cube)];
 	}
 	public Object evaluateCurrent()
 	{
@@ -223,8 +230,7 @@ class RolapEvaluator implements Evaluator
 	private Format getFormat()
 	{
 		String formatString = getFormatString();
-		return Format.get(
-				formatString, getCube().getConnection().getLocale());
+		return Format.get(formatString, connection.getLocale());
 	}
 
 	/**

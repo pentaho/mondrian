@@ -15,7 +15,7 @@ import java.util.*;
 import java.io.*;
 
 /**
- * MDX expressions.
+ * Skeleton implementation of {@link Exp} interface.
  **/
 public abstract class ExpBase
 	extends QueryPart
@@ -29,11 +29,6 @@ public abstract class ExpBase
 		for (int i = 0; i < a.length; i++)
 			a2[i] = (Exp) a[i].clone();
 		return a2;
-	}
-
-	public Cube getCube()
-	{
-		return getHierarchy().getCube();
 	}
 
 	/**
@@ -68,7 +63,7 @@ public abstract class ExpBase
 		if (mdxHierarchy != null) {
 			return mdxHierarchy.getDimension();
 		}
-		return null;		
+		return null;
 	}
 
 	public Hierarchy getHierarchy()
@@ -91,7 +86,7 @@ public abstract class ExpBase
 	{
 		int category = getType();
 		return isMember() ||
-			category == CatHierarchy || 
+			category == CatHierarchy ||
 			category == CatLevel ||
 			category == CatDimension;
 	}

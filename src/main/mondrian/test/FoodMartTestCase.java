@@ -190,6 +190,15 @@ public class FoodMartTestCase extends TestCase {
 		return sb.toString();
 	}
 
+	/** Formats {@link Result}. **/
+	public String toString(Result result) {
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		result.print(pw);
+		pw.flush();
+		return sw.toString();
+	}
+
 	// --------------------------------------------------------------
 	// tests follow
 
@@ -574,6 +583,42 @@ public class FoodMartTestCase extends TestCase {
 		value = cell.getValue();
 		assertTrue(value instanceof Number);
 		assertEquals(285011, ((Number) value).intValue());
+	}
+
+	/** Make sure that the "Store" cube is working. **/
+	public void testStoreCube() {
+		Result result = runQuery(
+				"select {[Measures].members} on columns," + nl +
+				" {[Store Type].members} on rows" + nl +
+				"from [Store]" +
+				"where [Store].[USA].[CA]");
+		String s = toString(result);
+		assertEquals(
+				"Axis #0:" + nl +
+				"{[Store].[All Stores].[USA].[CA]}" + nl +
+				"Axis #1:" + nl +
+				"{[Measures].[Store Sqft]}" + nl +
+				"{[Measures].[Grocery Sqft]}" + nl +
+				"Axis #2:" + nl +
+				"{[Store Type].[All Store Types]}" + nl +
+				"{[Store Type].[All Store Types].[Deluxe Supermarket]}" + nl +
+				"{[Store Type].[All Store Types].[Gourmet Supermarket]}" + nl +
+				"{[Store Type].[All Store Types].[Mid-Size Grocery]}" + nl +
+				"{[Store Type].[All Store Types].[Small Grocery]}" + nl +
+				"{[Store Type].[All Store Types].[Supermarket]}" + nl +
+				"Row #0: 69,764" + nl +
+				"Row #0: 44,868" + nl +
+				"Row #1: (null)" + nl +
+				"Row #1: (null)" + nl +
+				"Row #2: 23,688" + nl +
+				"Row #2: 15,337" + nl +
+				"Row #3: (null)" + nl +
+				"Row #3: (null)" + nl +
+				"Row #4: 22,478" + nl +
+				"Row #4: 15,321" + nl +
+				"Row #5: 23,598" + nl +
+				"Row #5: 14,210" + nl,
+				s);
 	}
 }
 

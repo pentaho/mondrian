@@ -40,21 +40,12 @@ abstract class RolapMeasure extends RolapMember
 		if (formatString == null) {
 			formatString = "";
 		}
-		Exp formatExp = level.getCube().getConnection().parseExpression(
-				"'" + formatString + "'");
+		RolapConnection connection = ((RolapDimension) getDimension()).schema.getInternalConnection();
+		Exp formatExp = connection.parseExpression("'" + formatString + "'");
 		setProperty(PROPERTY_FORMAT_EXP, formatExp);
 	}
 
-	static RolapMeasure create(
-		RolapMeasure parentMember, RolapLevel level,
-		MondrianDef.Measure xmlMeasure)
-	{
-		return new RolapStoredMeasure(
-			parentMember, level, xmlMeasure.name, xmlMeasure.formatString,
-			xmlMeasure.column, xmlMeasure.aggregator);
-	}
-};
-
+}
 
 
 // End RolapMeasure.java

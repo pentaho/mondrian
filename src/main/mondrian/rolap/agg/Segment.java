@@ -77,10 +77,10 @@ public class Segment implements CachePool.Cacheable
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
 		pw.print("Segment #" + id + " {measure=" + aggregation.measure.aggregator +
-			"("	+ aggregation.measure.name + ")");
+			"("	+ aggregation.measure.expression.getGenericExpression() + ")");
 		for (int i = 0; i < aggregation.columns.length; i++) {
 			pw.print(", ");
-			pw.print(aggregation.columns[i].name);
+			pw.print(aggregation.columns[i].expression.getGenericExpression());
 			Object[] constraints = axes[i].constraints;
 			if (constraints == null) {
 				pw.print("=any");

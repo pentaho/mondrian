@@ -19,13 +19,11 @@ import java.io.*;
  **/
 public interface OlapElement extends Exp
 {
-	OlapElement getParent();
 	String getUniqueName();
 	String getName();
 	String getDescription();
 	// todo: replace with 'visit'
 	void unparse(PrintWriter pw, ElementCallback callback);
-	Cube getCube();
 	void accept(Visitor visitor);
 	void childrenAccept(Visitor visitor);
 	/** Looks up a child element, returning null if it does not exist. */

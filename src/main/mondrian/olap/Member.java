@@ -146,6 +146,10 @@ public interface Member extends OlapElement {
 	 * Returns the definitions of the properties this member may have.
 	 */
 	Property[] getProperties();
+	/**
+	 * Returns direct children of this member.
+	 **/
+	Member[] getMemberChildren();
 }
 
 // End Member.java

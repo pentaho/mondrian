@@ -12,6 +12,7 @@
 
 package mondrian.rolap;
 import mondrian.olap.Util;
+import mondrian.olap.MondrianDef;
 
 /**
  * todo:
@@ -23,27 +24,35 @@ import mondrian.olap.Util;
 class RolapStoredMeasure extends RolapMeasure
 {
 	/** For SQL generator. Column which holds the value of the measure. */
-	String column;
+	MondrianDef.Expression expression;
 	/** For SQL generator. Has values "SUM", "COUNT", etc. */
 	String aggregator;
+	private RolapCube cube;
 
 	RolapStoredMeasure(
-		RolapMember parentMember, RolapLevel level, String name,
-		String formatString, String column, String aggregator)
-	{
+			RolapCube cube, RolapMember parentMember, RolapLevel level, String name,
+			String formatString, MondrianDef.Expression expression,
+			String aggregator) {
 		super(parentMember, level, name, formatString);
-		this.column = column;
+		this.cube = cube;
+		this.expression = expression;
 		Util.assertTrue(aggregator.equals("sum") || aggregator.equals("count"));
 		this.aggregator = aggregator;
 	}
 
-	// implement RolapMeasure
-	CellReader getCellReader()
-	{
-		return ((RolapCube) getCube()).cellReader;
+	RolapStoredMeasure(
+			RolapCube cube, RolapMember parentMember, RolapLevel level,
+			String name, String formatString, String column, String aggregator) {
+		this(
+				cube, parentMember, level, name, formatString,
+				new MondrianDef.Column(cube.fact.getAlias(), column),
+				aggregator);
 	}
-};
 
-
+	// implement RolapMeasure
+	CellReader getCellReader() {
+		return cube.cellReader;
+	}
+}
 
 // End RolapStoredMeasure.java

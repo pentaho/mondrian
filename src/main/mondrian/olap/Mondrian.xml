@@ -79,13 +79,13 @@ Revision is $Id$
 todo:
 	</Doc>
 		<Attribute name="name" required="true"><Doc></Doc></Attribute>
-		<Attribute name="factTable" required="true"><Doc>todo: move to mapping</Doc></Attribute>
-		<Attribute name="factSchema" required="false">
+		<Object name="fact" type="Relation" required="true">
 			<Doc>
-				Qualifier for the fact table. If not present, the fact table
-				name is left unqualified.
+				The fact table is the source of all measures in this cube. If
+				this is a <link class="Table"/> and the schema name is not
+				present, table name is left unqualified.
 			</Doc>
-		</Attribute>
+		</Object>
 		<Array name="dimensions" type="CubeDimension"><Doc></Doc></Array>
 		<Array name="measures" type="Measure"><Doc></Doc></Array>
 		<Code><![CDATA[
@@ -205,8 +205,10 @@ todo:
 		<Doc>
 			Defines a hierarchy.
 			
-			<p/>You must specify precisely one of <code>&lt;Relation&gt;</code>
-			 and <code>memberReaderClass</code>.
+			<p/>You must specify at most one <code>&lt;Relation&gt;</code>
+			or <code>memberReaderClass</code>. If you specify none, the
+			hierarchy is assumed to come from the same fact table of the
+			current cube.
 		</Doc>
 		<Attribute name="name" required="false">
 			<Doc>
@@ -358,6 +360,12 @@ todo:
 		<Code>
 			public abstract Relation find(String seekAlias);
  			public abstract String getAlias();
+ 			public boolean equals(Object o) {
+				return this == o;
+			}
+ 			public int hashCode() {
+				return System.identityHashCode(this);
+			}
 		</Code>
 	</Class>
 
@@ -480,7 +488,7 @@ todo:
 				hierarchies, but it must have different aliases.)
 			</Doc>
 		</Attribute>
-		<Code>
+		<Code><![CDATA[
 			/** Convenience contructor. **/
 			public Table(String schema, String name, String alias) {
 				this();
@@ -509,12 +517,25 @@ todo:
 					return null;
 				}
 			}
+			public boolean equals(Object o) {
+				if (o instanceof Table) {
+					Table that = (Table) o;
+					return this.name.equals(that.name) &&
+						Util.equals(this.schema, that.schema);
+				} else {
+					return false;
+				}
+			}
+			public int hashCode() {
+				return toString().hashCode();
+			}]]>
 		</Code>
 	</Element>
 
 	<Class class="Expression">
 		<Code>
 			public abstract String getExpression(mondrian.rolap.sql.SqlQuery query);
+			public abstract String getGenericExpression();
 			public abstract String getTableAlias();
 		</Code>
 	</Class>
@@ -542,6 +563,13 @@ todo:
 			public String getExpression(mondrian.rolap.sql.SqlQuery query) {
 				return query.quoteIdentifier(table, name);
 			}
+			public String getGenericExpression() {
+				if (table == null) {
+					return name;
+				} else {
+					return table + "." + name;
+				}
+			}
 			public String getTableAlias() {
 				return table;
 			}
@@ -553,16 +581,24 @@ todo:
 			A collection of SQL expressions, one per dialect.
 		</Doc>
 		<Array name="expressions" type="SQL" min="1"/>
-		<Code>
+		<Code><![CDATA[
 			public String toString() {
 				return expressions[0].cdata;
 			}
 			public String getExpression(mondrian.rolap.sql.SqlQuery query) {
 				return query.chooseQuery(expressions);
 			}
+			public String getGenericExpression() {
+				for (int i = 0; i < expressions.length; i++) {
+					if (expressions[i].dialect.equals("generic")) {
+						return expressions[i].cdata;
+					}
+				}
+				return expressions[0].cdata;
+			}
 			public String getTableAlias() {
 				return null;
-			}
+			}]]>
 		</Code>
 	</Element>
 

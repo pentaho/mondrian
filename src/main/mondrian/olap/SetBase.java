@@ -13,7 +13,7 @@
 package mondrian.olap;
 
 /**
- * todo:
+ * Skeleton implementation of {@link Set} interface.
  *
  * @author jhyde
  * @since 6 August, 2001
@@ -30,29 +30,32 @@ class SetBase extends OlapElementBase implements Set {
 
 	// from Element
 	public Object getObject() { return null; }
-	public OlapElement getParent() { return null; }
 	public String getUniqueName() { return "[" + name + "]"; }
 	public String getName() { return name; }
 	public String getQualifiedName() { return null; }
 	public String getDescription() { return null; }
 
 	// from Exp
-	public int getType() { return CatSet; }
-	public Hierarchy getHierarchy() { return exp.getHierarchy(); }
-	public Cube getCube() { return exp.getCube(); }
-	public OlapElement lookupChild(NameResolver st, String s)
-		{ return null; }
-
-	public void setName(String newName) {this.name = name;}
-
-	public void accept(Visitor visitor)
-	{
+	public int getType() {
+		return CatSet;
+	}
+	public boolean usesDimension(Dimension dimension) {
+		return false;
+	}
+	public Hierarchy getHierarchy() {
+		return exp.getHierarchy();
+	}
+	public OlapElement lookupChild(NameResolver st, String s) {
+		return null;
+	}
+	public void setName(String newName) {
+		this.name = name;
+	}
+	public void accept(Visitor visitor) {
 		visitor.visit(this);
 	}
-	public void childrenAccept(Visitor visitor)
-	{
+	public void childrenAccept(Visitor visitor) {
 	}
 }
-
 
 // End SetBase.java

@@ -151,13 +151,14 @@ class RolapLevel extends LevelBase
 	private void checkColumn(MondrianDef.Column nameColumn) {
 		final RolapHierarchy rolapHierarchy = (RolapHierarchy) hierarchy;
 		if (nameColumn.table == null) {
-			nameColumn.table = rolapHierarchy.getUniqueTableName();
-			if (nameColumn.table == null) {
-				throw Util.newInternal(
+			final MondrianDef.Relation table = rolapHierarchy.getUniqueTable();
+			if (table == null) {
+				throw Util.newError(
 						"must specify a table for level " +
 						getUniqueName() +
 						" because hierarchy has more than one table");
 			}
+			nameColumn.table = table.getAlias();
 		} else {
 			Util.assertTrue(rolapHierarchy.tableExists(nameColumn.table));
 		}

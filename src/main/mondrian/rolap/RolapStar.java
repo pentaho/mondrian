@@ -21,6 +21,7 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -37,7 +38,8 @@ import java.util.Iterator;
  * @version $Id$
  **/
 public class RolapStar {
-	RolapConnection connection;
+	RolapSchema schema;
+	java.sql.Connection jdbcConnection;
 	Measure[] measures;
 	public Table factTable;
 	/** todo: better, the dimensional model should hold the mapping **/
@@ -47,12 +49,18 @@ public class RolapStar {
 	 * Please use {@link Pool#getOrCreateStar} to create a {@link
 	 * RolapStar}.
 	 */
-	RolapStar(RolapConnection connection) {
-		this.connection = connection;
+	RolapStar(RolapSchema schema, Connection jdbcConnection) {
+		this.schema = schema;
+		this.jdbcConnection = jdbcConnection;
 	}
 
 	public Connection getJdbcConnection() {
-		return connection.jdbcConnection;
+		return jdbcConnection;
+	}
+
+	/** For testing purposes only. **/
+	public void setJdbcConnection(Connection jdbcConnection) {
+		this.jdbcConnection = jdbcConnection;
 	}
 
 	/**
@@ -70,8 +78,11 @@ public class RolapStar {
 		if (table != null) {
 			for (int i = 0; i < table.columns.size(); i++) {
 				Column column = (Column) table.columns.get(i);
-				if (column.name.equals(columnName)) {
-					return column;
+				if (column.expression instanceof MondrianDef.Column) {
+					MondrianDef.Column columnExpr = (MondrianDef.Column) column.expression;
+					if (columnExpr.name.equals(columnName)) {
+						return column;
+					}
 				}
 			}
 		}
@@ -90,7 +101,7 @@ public class RolapStar {
 		Util.assertTrue(columns.length == values.length);
 		SqlQuery sqlQuery;
 		try {
-			sqlQuery = new SqlQuery(connection.jdbcConnection.getMetaData());
+			sqlQuery = new SqlQuery(jdbcConnection.getMetaData());
 		} catch (SQLException e) {
 			throw Util.getRes().newInternal(e, "while computing single cell");
 		}
@@ -117,7 +128,7 @@ public class RolapStar {
 		ResultSet resultSet = null;
 		try {
 			resultSet = RolapUtil.executeQuery(
-					connection.jdbcConnection, sql, "RolapStar.getCell");
+					jdbcConnection, sql, "RolapStar.getCell");
 			Object o = null;
 			if (resultSet.next()) {
 				o = resultSet.getObject(1);
@@ -172,12 +183,14 @@ public class RolapStar {
 	public static class Column
 	{
 		public Table table;
-		public String name;
+		public MondrianDef.Expression expression;
 		boolean isNumeric;
 		int cardinality = -1;
 
+		public Column() {
+		}
 		public String getExpression(SqlQuery query) {
-			return query.quoteIdentifier(table.getAlias(), name);
+			return expression.getExpression(query);
 		}
 		String quoteValue(Object value)
 		{
@@ -206,12 +219,12 @@ public class RolapStar {
 				SqlQuery sqlQuery;
 				try {
 					sqlQuery = new SqlQuery(
-						table.star.connection.jdbcConnection.getMetaData());
+						table.star.jdbcConnection.getMetaData());
 				} catch (SQLException e) {
 					throw Util.getRes().newInternal(
 						e,
 						"while counting distinct values of column '" +
-						name + "'");
+						expression.getGenericExpression() + "'");
 				}
 				if (sqlQuery.isAccess()) {
 					// Access doesn't like 'count(distinct)', so use,
@@ -235,14 +248,14 @@ public class RolapStar {
 				ResultSet resultSet = null;
 				try {
 					resultSet = RolapUtil.executeQuery(
-							table.star.connection.jdbcConnection, sql,
+							table.star.jdbcConnection, sql,
 							"RolapStar.Column.getCardinality");
 					Util.assertTrue(resultSet.next());
 					cardinality = resultSet.getInt(1);
 				} catch (SQLException e) {
 					throw Util.getRes().newInternal(
 						e, "while counting distinct values of column '" +
-						name + "'; sql=[" + sql + "]");
+						expression.getGenericExpression() + "'; sql=[" + sql + "]");
 				} finally {
 					try {
 						if (resultSet != null) {
@@ -410,7 +423,7 @@ public class RolapStar {
 				if (i > 0) {
 					pw.print(",");
 				}
-				pw.print(column.name);
+				pw.print(column.expression.getGenericExpression());
 			}
 			pw.println("]");
 			for (int i = 0; i < children.size(); i++) {
@@ -470,19 +483,17 @@ public class RolapStar {
 		 * <p> {@link RolapStar.Table#addJoin} works in a similar way.
 		 */
 		synchronized RolapStar getOrCreateStar(
-				RolapConnection connection, String factSchema,
-				String factTable, String alias) {
+				RolapSchema schema, MondrianDef.Relation fact) {
 			for (Iterator iterator = stars.iterator(); iterator.hasNext();) {
 				RolapStar star = (RolapStar) iterator.next();
-				if (star.connection == connection &&
-						matchesTable(star.factTable.relation, factSchema, factTable)) {
+				if (star.schema == schema &&
+						star.factTable.relation.equals(fact)) {
 					return star;
 				}
 			}
-			RolapStar star = new RolapStar(connection);
-			star.factTable = new Table(
-					new MondrianDef.Table(factSchema, factTable, alias),
-					null, null);
+			Connection jdbcConnection = schema.getInternalConnection().jdbcConnection;
+			RolapStar star = new RolapStar(schema, jdbcConnection);
+			star.factTable = new Table(fact, null, null);
 			star.factTable.star = star;
 			stars.add(star);
 			return star;

@@ -22,32 +22,22 @@ import java.util.Locale;
 public interface Connection {
 	String getConnectString();
 	String getCatalogName();
+	Schema getSchema();
 
 	/**
-	 * Closes this <code>MdxConnection</code>. You may not use this
-	 * <code>MdxConnection</code> after closing it.
+	 * Closes this <code>Connection</code>. You may not use this
+	 * <code>Connection</code> after closing it.
 	 **/
 	void close();
 
 	/**
-	 * Find a cube called <code>cube</code> in the current catalog; if no cube
-	 * exists, <code>failIfNotFound</code> controls whether to raise an error
-	 * or return null.
-	 **/
-	Cube lookupCube(String cube,boolean failIfNotFound);
-
-	/**
-	 * Find the names of all cubes in a given database.
-	 **/
-	String[] listCubeNames();
-
-	void loadSchema(MondrianDef.Schema xmlSchema);
-
+	 * Executes a query.
+	 */
 	Result execute(Query query);
 
 	/**
 	 * Returns the locale this connection belongs to.  Determines, for example,
-	 * the curreny string used in formatting cell values.
+	 * the currency string used in formatting cell values.
 	 *
 	 * @see mondrian.util.Format
 	 **/

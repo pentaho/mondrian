@@ -18,14 +18,16 @@ import java.util.*;
  * A <code>Dimension</code> represents a dimension of a cube.
  **/
 public interface Dimension extends OlapElement {
-
-	final String CONST_MEASURES = "[Measures]";
+	final String MEASURES_UNIQUE_NAME = "[Measures]";
+	final String MEASURES_NAME = "Measures";
 	Hierarchy[] getHierarchies();
 	boolean isMeasures();
 	int getDimensionType();
 	static final int STANDARD = 0;
 	static final int TIME = 1;
-	int getOrdinal();
+	/** Returns dimension's ordinal within a given cube. [Measures] are
+	 * always 0. */
+	int getOrdinal(Cube cube);
 }
 
 // End Dimension.java

@@ -18,13 +18,17 @@ import mondrian.olap.Member;
 import mondrian.rolap.RolapAggregationManager;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.RolapUtil;
+import mondrian.rolap.sql.DelegatingConnection;
+import mondrian.rolap.sql.DelegatingStatement;
 import mondrian.test.TestContext;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.io.*;
+import java.sql.*;
 
 /**
- * Unit test for {@link AggregationManager}
+ * Unit test for {@link AggregationManager}.
  *
  * @author jhyde
  * @since 21 March, 2002
@@ -58,13 +62,8 @@ public class TestAggregationManager extends TestCase {
 	 */
 	public void testFemaleUnitSalesSql() {
 		CellRequest request = createFemaleUnitSalesCellRequest();
-		final RolapAggregationManager aggMan = AggregationManager.instance();
-		ArrayList pinnedSegments = new ArrayList();
-		final RolapUtil.TeeWriter tw = RolapUtil.startTracing();
-		aggMan.loadAggregations(createSingletonBatch(request), pinnedSegments);
-		String s = tw.toString();
-		final String pattern = "executing sql [select `customer`.`gender` as `c0`, sum(`fact`.`unit_sales`) as `c1` from `customer` as `customer`, `sales_fact_1997` as `fact` where `fact`.`customer_id` = `customer`.`customer_id` group by `customer`.`gender`]";
-		assertMatches(s,pattern);
+		final String pattern = "select `customer`.`gender` as `c0`, sum(`sales_fact_1997`.`unit_sales`) as `c1` from `customer` as `customer`, `sales_fact_1997` as `sales_fact_1997` where `sales_fact_1997`.`customer_id` = `customer`.`customer_id` group by `customer`.`gender`";
+		assertRequestSql(request, pattern, null);
 	}
 
 	// todo: test multiple values, (UNit Sales, State={CA,OR})
@@ -94,18 +93,118 @@ public class TestAggregationManager extends TestCase {
 	}
 
 	private CellRequest createFemaleUnitSalesCellRequest() {
+		return createRequest("Sales", "[Measures].[Unit Sales]", "customer", "gender", "F");
+	}
+
+	/**
+	 * If a hierarchy lives in the fact table, we should not generate a join.
+	 */
+	public void testHierarchyInFactTable() {
+		CellRequest request = createRequest("Store", "[Measures].[Store Sqft]", "store", "store_type", "Supermarket");
+		final String pattern = "select `store`.`store_type` as `c0`, sum(`store`.`store_sqft`) as `c1` from `store` as `store` group by `store`.`store_type`";
+		assertRequestSql(request, pattern, "select `store`.`store_type` as `c0`");
+	}
+
+	private void assertRequestSql_old(CellRequest request, final String pattern) {
+		final RolapAggregationManager aggMan = AggregationManager.instance();
+		ArrayList pinnedSegments = new ArrayList();
+		final RolapUtil.TeeWriter tw = RolapUtil.startTracing();
+		aggMan.loadAggregations(createSingletonBatch(request), pinnedSegments);
+		String s = tw.toString();
+		assertMatches(s,pattern);
+	}
+
+	class Bomb extends RuntimeException {
+		String sql;
+		Bomb(String sql) {
+			this.sql = sql;
+		}
+	};
+
+	private void assertRequestSql(CellRequest request, final String pattern, final String trigger) {
+		final RolapAggregationManager aggMan = AggregationManager.instance();
+		ArrayList pinnedSegments = new ArrayList();
+		RolapStar star = request.getMeasure().table.star;
+		final java.sql.Connection originalConnection = star.getJdbcConnection();
+		String database = null;
+		try {
+			database = originalConnection.getMetaData().getDatabaseProductName();
+		} catch (SQLException e) {
+		}
+		if (!database.equals("ACCESS")) {
+			return;
+		}
+		star.setJdbcConnection(
+				new DelegatingConnection(originalConnection) {
+					public Statement createStatement() throws SQLException {
+						Statement statement = connection.createStatement();
+						return new DelegatingStatement(statement, this) {
+							public ResultSet executeQuery(String sql) throws SQLException {
+								if (trigger == null || sql.startsWith(trigger)) {
+									throw new Bomb(sql);
+								} else {
+									return super.executeQuery(sql);
+								}
+							}
+							public boolean execute(String sql) throws SQLException {
+								throw new Bomb(sql);
+							}
+						};
+					}
+				});
+		Bomb bomb;
+		try {
+			aggMan.loadAggregations(createSingletonBatch(request), pinnedSegments);
+			bomb = null;
+		} catch (Bomb e) {
+			bomb = e;
+		} finally {
+			star.setJdbcConnection(originalConnection);
+		}
+		assertTrue(bomb != null);
+		assertEquals(pattern, bomb.sql);
+	}
+
+	private CellRequest createRequest(final String cube, final String measure, final String table, final String column, final String value) {
 		final Connection connection = TestContext.instance().getFoodMartConnection();
 		final boolean fail = true;
-		Cube salesCube = connection.lookupCube("Sales", fail);
-		Member unitSalesMeasure = salesCube.lookupMemberByUniqueName(
-				"[Measures].[Unit Sales]", fail);
-		RolapStar.Measure starMeasure = RolapStar.getStarMeasure(unitSalesMeasure);
+		Cube salesCube = connection.getSchema().lookupCube(cube, fail);
+		Member storeSqftMeasure = salesCube.lookupMemberByUniqueName(
+				measure, fail);
+		RolapStar.Measure starMeasure = RolapStar.getStarMeasure(storeSqftMeasure);
 		CellRequest request = new CellRequest(starMeasure);
 		final RolapStar star = starMeasure.table.star;
-		final RolapStar.Column genderColumn = star.lookupColumn(
-				"customer", "gender");
-		request.addConstrainedColumn(genderColumn, "F");
+		final RolapStar.Column storeTypeColumn = star.lookupColumn(
+				table, column);
+		request.addConstrainedColumn(storeTypeColumn, value);
 		return request;
+	}
+
+}
+
+
+class FakeConnection extends DelegatingConnection {
+	FakeConnection(java.sql.Connection connection, String expectedSql) {
+		super(connection);
+	}
+
+	public Statement createStatement() throws SQLException {
+		return new DelegatingStatement(super.createStatement(), this);
+	}
+}
+
+
+
+class AccessDatabaseMetaData extends DelegatingDatabaseMetaData {
+	public AccessDatabaseMetaData(DatabaseMetaData meta) {
+		super(meta);
+	}
+
+	public String getIdentifierQuoteString() throws SQLException {
+		return "`";
+	}
+	public String getDatabaseProductName() throws SQLException {
+		return "ACCESS";
 	}
 }
 

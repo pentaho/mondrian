@@ -81,6 +81,40 @@ class CacheMemberReader implements MemberReader, MemberCache
 		return mapKeyToMember.put(key, value);
 	}
 
+	public RolapMember lookupMember(String uniqueName, boolean failIfNotFound) {
+		return lookupMember(this, uniqueName, failIfNotFound);
+	}
+
+	static RolapMember lookupMember(
+			MemberReader reader, String uniqueName, boolean failIfNotFound) {
+		String[] names = Util.explode(uniqueName);
+		RolapMember member = null;
+		for (int i = 0; i < names.length; i++) {
+			String name = names[i];
+			RolapMember[] children;
+			if (member == null) {
+				children = reader.getRootMembers();
+			} else {
+				children = reader.getMemberChildren(new RolapMember[] {member});
+				member = null;
+			}
+			for (int j = 0; j < children.length; j++) {
+				RolapMember child = children[j];
+				if (child.getName().equals(name)) {
+					member = child;
+					break;
+				}
+			}
+			if (member == null) {
+				break;
+			}
+		}
+		if (member == null && failIfNotFound) {
+			throw Util.getRes().newMdxCantFindMember(uniqueName);
+		}
+		return member;
+	}
+
 	public RolapMember[] getRootMembers()
 	{
 		ArrayList list = new ArrayList();
@@ -167,12 +201,6 @@ class CacheMemberReader implements MemberReader, MemberCache
 	{
 		return members.length;
 	}
-	// implement MemberReader
-	public void qualifyQuery(
-		SqlQuery sqlQuery, RolapMember member)
-	{
-		source.qualifyQuery(sqlQuery, member);
-	}
-};
+}
 
 // End CacheMemberReader.java

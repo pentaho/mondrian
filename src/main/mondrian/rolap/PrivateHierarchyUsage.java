@@ -12,6 +12,9 @@
 */
 package mondrian.rolap;
 
+import mondrian.olap.Util;
+import mondrian.olap.MondrianDef;
+
 /**
  * <code>PrivateHierarchyUsage</code> todo:
  *
@@ -24,28 +27,24 @@ class PrivateHierarchyUsage extends HierarchyUsage
 	RolapHierarchy hierarchy;
 
 	PrivateHierarchyUsage(
-		String factSchema, String factTable, RolapHierarchy hierarchy)
-	{
-		this.factTable = factTable;
-		this.factSchema = factSchema;
+			MondrianDef.Relation fact, RolapHierarchy hierarchy) {
+		super(fact);
 		this.hierarchy = hierarchy;
 	}
 	public boolean equals(Object o)
 	{
-		if (o instanceof PrivateHierarchyUsage) {
-			PrivateHierarchyUsage that = (PrivateHierarchyUsage) o;
-			return this.factTable.equals(that.factTable) &&
-				equals(this.factSchema, that.factSchema) &&
-				this.hierarchy.equals(that.hierarchy);
+		if (!(o instanceof PrivateHierarchyUsage)) {
+			return false;
 		}
-		return false;
+		PrivateHierarchyUsage that = (PrivateHierarchyUsage) o;
+		return this.fact.equals(that.fact) &&
+				this.hierarchy.equals(that.hierarchy);
 	}
 	public int hashCode()
 	{
-		int h = factTable.hashCode(),
-			i = factSchema == null ? 1 : factSchema.hashCode(),
-			j = hierarchy.hashCode();
-		return (h << 8) ^ (i << 4) ^ j;
+		int h = fact.hashCode(),
+			i = hierarchy.hashCode();
+		return (h << 8) ^ i;
 	}
 }
 

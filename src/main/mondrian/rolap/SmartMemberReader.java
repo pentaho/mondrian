@@ -146,6 +146,10 @@ class SmartMemberReader implements MemberReader, MemberCache
 		}
 	}
 
+	public RolapMember lookupMember(String uniqueName, boolean failIfNotFound) {
+		return CacheMemberReader.lookupMember(this, uniqueName, failIfNotFound);
+	}
+
 	/**
 	 * A <code>ChildrenList</code> is held in the {@link mapMemberToChildren}
 	 * cache. It implements {@link CachePool.Cacheable}, so it can be removed
@@ -353,14 +357,7 @@ class SmartMemberReader implements MemberReader, MemberCache
 	{
 		return source.getMemberCount();
 	}
-
-	// implement MemberReader
-	public void qualifyQuery(
-		SqlQuery sqlQuery, RolapMember member)
-	{
-		source.qualifyQuery(sqlQuery, member);
-	}
-};
+}
 
 class SiblingIterator //implements Iterator
 {

@@ -12,6 +12,7 @@
 
 package mondrian.rolap;
 import mondrian.olap.Util;
+import mondrian.olap.MondrianDef;
 import mondrian.rolap.sql.SqlQuery;
 
 import java.sql.SQLException;
@@ -64,7 +65,21 @@ abstract class ArrayMemberSource implements MemberSource
 	{
 		return new RolapMember[0];
 	}
-};
+
+	public RolapMember lookupMember(String uniqueName, boolean failIfNotFound) {
+		for (int i = 0; i < members.length; i++) {
+			RolapMember member = members[i];
+			if (member.getUniqueName().equals(uniqueName)) {
+				return member;
+			}
+		}
+		if (failIfNotFound) {
+			throw Util.getRes().newMdxCantFindMember(uniqueName);
+		} else {
+			return null;
+		}
+	}
+}
 
 class HasBoughtDairySource extends ArrayMemberSource
 {
@@ -109,129 +124,6 @@ class HasBoughtDairySource extends ArrayMemberSource
 				list.add(member);
 			}
 			return (RolapMember[]) list.toArray(RolapUtil.emptyMemberArray);
-		}
-	}
-
-	// implement MemberReader
-	public void qualifyQuery(
-		SqlQuery sqlQuery, RolapMember member)
-	{
-		if (member.isAll()) {
-			// nothing
-//  		} else if (false) {
-//  			// Generate something like the following:
-//  			// sales_fact_1997.customer_id in (
-//  			//  select sales_fact_1997.customer_id
-//  			//  from sales_fact_1997, product
-//  			//  where product.product_id = sales_fact_1997.product_id
-//  			//  and product.product_category = 'Dairy')
-//  			RolapCube cube = (RolapCube) member.getCube();
-//  			RolapHierarchy customerHierarchy = (RolapHierarchy)
-//  				cube.lookupHierarchy("Customers", false);
-//  			RolapMember dairyMember = (RolapMember)
-//  				cube.lookupMemberCompound(
-//  					Util.explode("[Product].[Food].[Dairy]"), true);
-//  			RolapHierarchy productHierarchy = (RolapHierarchy)
-//  				dairyMember.getHierarchy();
-//  			boolean b = member.getName().equals("True");
-//  			StringBuffer sb = new StringBuffer(
-//  				RolapUtil.doubleQuoteForSql(
-//  					customerHierarchy.getAlias(),
-//  					customerHierarchy.foreignKey) +
-//  				(b ? "" : " not") + " in (select " +
-//  				RolapUtil.doubleQuoteForSql(
-//  					cube.getAlias(), customerHierarchy.foreignKey) +
-//  				" from (" + productHierarchy.sql + ") as " +
-//  				RolapUtil.doubleQuoteForSql(productHierarchy.getAlias()) +
-//  				", " +
-//  				RolapUtil.doubleQuoteForSql(cube.factTable) +
-//  				" as " +
-//  				RolapUtil.doubleQuoteForSql(cube.getAlias()) +
-//  				" where " +
-//  				RolapUtil.doubleQuoteForSql(
-//  					cube.getAlias(), productHierarchy.foreignKey) +
-//  				" = " +
-//  				RolapUtil.doubleQuoteForSql(
-//  					productHierarchy.getAlias(),
-//  					productHierarchy.primaryKey));
-//  			for (RolapMember m = dairyMember; m != null; m = (RolapMember)
-//  					 m.getParentMember()) {
-//  				RolapLevel level = (RolapLevel) m.getLevel();
-//  				if (level.column != null) {
-//  					sb.append(
-//  						" and " +
-//  						RolapUtil.doubleQuoteForSql(
-//  							productHierarchy.getAlias(), level.column) +
-//  						" = " +
-//  						m.quoteKeyForSql());
-//  				}
-//  			}
-//  			sb.append(")");
-//  			sqlQuery.addWhere(sb.toString());
-		} else {
-			// Generate something like the following:
-			//
-			// from sales_fact_1997 as "fact"
-			// left join (
-			//   select distinct sales_fact_1997.customer_id
-			//   from sales_fact_1997, product
-			//   where product.product_id = sales_fact_1997.product_id
-			//   and product.product_category = 'Dairy') as "lookup"
-			// on "lookup"."customer_id" = "fact"."customer_id"
-			// ...
-			// where "lookup"."customer_id" is null
-			//
-			RolapCube cube = (RolapCube) member.getCube();
-			RolapHierarchy customerHierarchy = (RolapHierarchy)
-				cube.lookupHierarchy("Customers", false);
-			RolapMember dairyMember = (RolapMember)
-				cube.lookupMemberCompound(
-					Util.explode("[Product].[Food].[Dairy]"), true);
-			RolapHierarchy productHierarchy = (RolapHierarchy)
-				dairyMember.getHierarchy();
-			boolean b = member.getName().equals("True");
-			String productForeignKey = null, // productHierarchy.foreignKey
-				customerForeignKey = null; // customerHierarchy.foreignKey
-			java.sql.Connection jdbcConnection =
-				((RolapConnection) cube.getConnection()).jdbcConnection;
-			SqlQuery sqlQuery2 = null;
-			try {
-				sqlQuery2 = new SqlQuery(jdbcConnection.getMetaData());
-			} catch (SQLException e) {
-				throw Util.newInternal(
-						e, "while reading member data for " + this);
-			}
-			sqlQuery2.setDistinct(true);
-			sqlQuery2.addSelect(sqlQuery2.quoteIdentifier(
-					cube.getAlias(), customerForeignKey));
-			productHierarchy.addToFrom(
-					sqlQuery2, null, (RolapCube) productHierarchy.getCube());
-			cube.addToFrom(sqlQuery2);
-			for (RolapMember m = dairyMember; m != null; m = (RolapMember)
-					 m.getParentMember()) {
-				RolapLevel level = (RolapLevel) m.getLevel();
-				if (level.nameExp != null) {
-					sqlQuery2.addWhere(
-						level.nameExp.getExpression(sqlQuery) +
-						" = " +
-						m.quoteKeyForSql());
-				}
-			}
-			sqlQuery.addJoin(
-				b ? "inner" : "left",
-				sqlQuery2.toString(),
-				"lookup",
-				sqlQuery.quoteIdentifier(
-					"lookup", customerForeignKey) +
-				" = " +
-				sqlQuery.quoteIdentifier(
-					cube.factTable, customerForeignKey));
-			if (!b) {
-				sqlQuery.addWhere(
-					sqlQuery.quoteIdentifier(
-						"lookup", productForeignKey) +
-					" is null");
-			}
 		}
 	}
 }

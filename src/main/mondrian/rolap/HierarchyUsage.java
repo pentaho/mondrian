@@ -12,6 +12,10 @@
 */
 package mondrian.rolap;
 
+import mondrian.olap.MondrianDef;
+import mondrian.olap.Hierarchy;
+import mondrian.olap.Util;
+
 /**
  * A <code>HierarchyUsage</code> is the usage of a hierarchy in the context
  * of a cube. Private hierarchies can only be used in their own
@@ -33,20 +37,24 @@ package mondrian.rolap;
  **/
 abstract class HierarchyUsage
 {
-	String factTable;
-    String factSchema;
+	/**
+	 * Fact table (or relation) which this usage is joining to. This
+	 * identifies the usage, and determines which join conditions need to be
+	 * used.
+	 */
+	protected MondrianDef.Relation fact;
 	/** The foreign key by which {@link #hierarchy} should be joined to
 	 * {@link #factTable}. **/
 	String foreignKey;
+	/** The primary key column by which {@link hierarchy} should be joined to
+	 * {@link #fact}. */
+	String primaryKey;
+	/** Name of dimension table which contains the primary key for the
+	 * hierarchy. (Usually the table of the lowest level of the hierarchy.) */
+	MondrianDef.Relation primaryKeyTable;
 
-    /**
-	 * Returns true if the two strings are equal, or if both are null.
-	 **/
-	protected static boolean equals(String s1, String s2) {
-		if (s1 == null || s2 == null) {
-			return s1 == s2;
-		}
-		return s1.equals(s2);
+	HierarchyUsage(MondrianDef.Relation fact) {
+		this.fact = fact;
 	}
 }
 

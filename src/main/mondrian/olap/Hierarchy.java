@@ -42,8 +42,20 @@ public interface Hierarchy extends OlapElement {
 		PrintWriter pw, CubeAccess cubeAccess, Namer namer,
 		String startMemberName, String direction, int depth);
 */
+	/**
+	 * Returns direct children of <code>member</code>.
+	 **/
+	Member[] getChildMembers(Member member);
+	/**
+	 * Returns direct children for every member in array. This bulk method may
+	 * be much more efficient than {@link #lookupChild}.
+	 **/
+	Member[] getChildMembers(Member[] parentMembers);
+	/**
+	 * Looks up a member by its unique name.
+	 **/
+	Member lookupMemberByUniqueName(String s, boolean failIfNotFound);
 }
-
 
 // End Hierarchy.java
 

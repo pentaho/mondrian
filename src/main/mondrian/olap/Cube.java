@@ -20,7 +20,7 @@ public interface Cube extends OlapElement, NameResolver {
 
 	String getName();
 
-	Connection getConnection();
+	Schema getSchema();
 
 	/**
 	 * Returns the dimensions of this cube.
@@ -38,12 +38,6 @@ public interface Cube extends OlapElement, NameResolver {
 	 * "[Customers].[State]", not "Customers.State".
 	 **/
 	Level lookupLevel(String s);
-
-	/**
-	 * Returns direct children for every member in array. This bulk method may
-	 * be much more efficient than {@link #lookupChild}.
-	 **/
-	Member[] getMemberChildren(Member[] parentMembers);
 
 	/**
 	 * Returns Member[]. It builds Member[] by analyzing cellset, which

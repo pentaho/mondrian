@@ -39,7 +39,9 @@ class RolapResult extends ResultBase
 		this.query = query;
 		this.point = new CellKey(new int[query.axes.length]);
 		this.axes = new RolapAxis[query.axes.length];
-		this.evaluator = new RolapEvaluator((RolapCube) query.getCube());
+		this.evaluator = new RolapEvaluator(
+				(RolapCube) query.getCube(),
+				(RolapConnection) query.getConnection());
 		this.aggregatingReader = new AggregatingCellReader();
 		final boolean alwaysFlush = Util.getProperties().getBooleanProperty(
 				"mondrian.rolap.RolapResult.flushAfterEachQuery");

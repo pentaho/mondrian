@@ -94,8 +94,7 @@
 	 */
 	Member[] getAncestorsAndSiblings(Member member) {
 		LinkedList list = new LinkedList();
-		Member[] children = member.getCube().getMemberChildren(
-				new Member[] {member});
+		Member[] children = member.getMemberChildren();
 		if (children != null && children.length > 0) {
 			member = children[0];
 		}
@@ -114,7 +113,7 @@
 		if (parent != null) {
 			getAncestorsAndSiblings(parent, list);
 			parentPos = list.indexOf(parent);
-			siblings = member.getCube().getMemberChildren(new Member[] {parent});
+			siblings = parent.getMemberChildren();
 		} else {
 			parentPos = -1;
 			siblings = member.getHierarchy().getRootMembers();

@@ -42,10 +42,11 @@ public abstract class LevelBase
 	public String getUniqueName() { return uniqueName; }
 	public String getName() { return name; }
 	public String getDescription() { return description; }
-	public OlapElement getParent() { return hierarchy; }
 	public Hierarchy getHierarchy() { return hierarchy; }
 	public Dimension getDimension() { return hierarchy.dimension; }
-	public Cube getCube() { return hierarchy.dimension.cube; }
+	public boolean usesDimension(Dimension dimension) {
+		return hierarchy.dimension == dimension;
+	}
 	public int getDepth() { return depth; }
 
 	public Level getChildLevel()

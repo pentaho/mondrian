@@ -44,6 +44,7 @@ public class Query extends QueryPart implements NameResolver {
 	public Exp slicer;
 	public QueryPart cellProps[];
 	private Parameter parameters[]; // stores definitions of parameters
+	private Connection connection;
 
 	public Query()
 		{}
@@ -51,20 +52,22 @@ public class Query extends QueryPart implements NameResolver {
 	/** Construct a Query; formulas, axes and cell-properties are linked
 	 * lists.  This constructor is called from the Parser. */
 	public Query(
-		Connection mdxConnection, Formula firstFormulas, QueryAxis firstAxis,
+		Connection connection, Formula firstFormulas, QueryAxis firstAxis,
 		String cube, Exp slicer, QueryPart firstCellProp)
 	{
 		this(
-			mdxConnection.lookupCube(cube, true),
-			Formula.makeArray(firstFormulas), QueryAxis.makeArray(firstAxis),
-			slicer, QueryPart.makeArray(firstCellProp), new Parameter[0]);
+				connection,
+				connection.getSchema().lookupCube(cube, true),
+				Formula.makeArray(firstFormulas), QueryAxis.makeArray(firstAxis),
+				slicer, QueryPart.makeArray(firstCellProp), new Parameter[0]);
 	}
 
 	/** Construct a Query; called from clone(). */
 	private Query(
-		Cube mdxCube, Formula[] formulas, QueryAxis[] axes, Exp slicer,
-		QueryPart[] cellProps, Parameter[] parameters)
-	{
+			Connection connection, Cube mdxCube,
+			Formula[] formulas, QueryAxis[] axes, Exp slicer,
+			QueryPart[] cellProps, Parameter[] parameters) {
+		this.connection = connection;
 		this.mdxCube = mdxCube;
 		this.formulas = formulas;
 		this.axes = axes;
@@ -87,9 +90,10 @@ public class Query extends QueryPart implements NameResolver {
 	public Object clone() throws CloneNotSupportedException
 	{
 		return new Query(
-			mdxCube, Formula.cloneArray(formulas), QueryAxis.cloneArray(axes),
-			slicer == null ? null : (Exp) slicer.clone(), null,
-			Parameter.cloneArray(parameters));
+				connection,  mdxCube,
+				Formula.cloneArray(formulas), QueryAxis.cloneArray(axes),
+				slicer == null ? null : (Exp) slicer.clone(), null,
+				Parameter.cloneArray(parameters));
 	}
 
 	public Query safeClone()
@@ -99,6 +103,10 @@ public class Query extends QueryPart implements NameResolver {
 		} catch (CloneNotSupportedException e) {
 			throw getError().newInternal(e, "Query.clone() failed");
 		}
+	}
+
+	public Connection getConnection() {
+		return connection;
 	}
 
 	public static final String[] axisNames = {

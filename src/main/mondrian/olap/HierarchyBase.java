@@ -49,9 +49,10 @@ public abstract class HierarchyBase
 		return Util.getRes().getMdxHierarchyName(getUniqueName());
 	}
 	public String getDescription() { return description; }
-	public OlapElement getParent() { return dimension; }
 	public Dimension getDimension() { return dimension; }
-	public Cube getCube() { return dimension.cube; }
+	public boolean usesDimension(Dimension dimension) {
+		return this.dimension == dimension;
+	}
 	public Level[] getLevels() { return levels; }
 	public Hierarchy getHierarchy() { return this; }
 	public int getType() { return CatHierarchy; }

@@ -23,7 +23,7 @@ import java.util.*;
  **/
 public abstract class CubeBase extends OlapElementBase implements Cube {
 
-	protected ConnectionBase connection;
+	protected Schema schema;
 	protected String name;
 	protected DimensionBase[] dimensions;
 
@@ -56,11 +56,15 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 		return Util.getRes().getMdxCubeName(getName());
 	}
  	public Hierarchy getHierarchy() { return null; }
-	public OlapElement getParent() { return null; }
 	public String getDescription() { return null; }
 	public Cube getCube() { return this; }
 	public int getType() { return CatCube; }
-	public Connection getConnection() { return connection; }
+	public Schema getSchema() {
+		return schema;
+	}
+	public boolean usesDimension(Dimension dimension) {
+		return false;
+	}
 	public Dimension[] getDimensions() { return dimensions; }
 	public Object[] getChildren() { return dimensions; }
 

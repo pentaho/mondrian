@@ -34,20 +34,6 @@ public abstract class ConnectionBase implements Connection
 		return s;
 	}
 
-	public Cube lookupCube(String cube,boolean failIfNotFound)
-	{
-		Cube mdxCube = lookupCube(cube);
-		if (mdxCube == null && failIfNotFound)
-			throw Util.getRes().newMdxCubeNotFound(cube);
-		return mdxCube;
-	}
-
-	/**
-	 * Finds a cube called 'cube' in the current catalog, or return null if no
-	 * cube exists.
-	 */
-	protected abstract Cube lookupCube(String cube);
-
 	public Query parseQuery(String s) {
 		boolean debug = false;
 		Parser parser = new Parser();

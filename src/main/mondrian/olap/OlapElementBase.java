@@ -70,23 +70,8 @@ public abstract class OlapElementBase
 //  		return s;
 //  	}
 
-	public String toString()
-		{ return getUniqueName(); }
-
-	private boolean isDescendantOf(OlapElement seek)
-	{
-		for (OlapElement e = this; e != null; e = e.getParent()) {
-			if (e == seek) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	// implement Exp
-	public boolean usesDimension(Dimension dim)
-	{
-		return isDescendantOf(dim);
+	public String toString() {
+		return getUniqueName();
 	}
 
 	public Object evaluate(Evaluator evaluator)
