@@ -29,12 +29,6 @@ public class FunCall extends ExpBase
 	/** As {@link FunDef#getSyntacticType}. **/
 	private int syntacticType;
 
-	FunCall(String fun, Exp firstArg)
-	{
-		this.fun = fun.toUpperCase();
-		this.args = ExpBase.makeArray(firstArg);
-	}
-
 	public FunCall(String fun, Exp[] args) {
 		this(fun, args, FunDef.TypeFunction);
 	}

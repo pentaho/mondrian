@@ -38,15 +38,6 @@ public class MemberProperty extends QueryPart {
 		return x2;
 	}
 
-	public static MemberProperty[] makeArray(MemberProperty x)
-	{
-		MemberProperty[] array = new MemberProperty[
-			x == null ? 0 : x.getChainLength()];
-		for (int i = 0; x != null; x = (MemberProperty) x.next)
-			array[i++] = x;
-		return array;
-	}
-
 	public QueryPart resolve(Query q)
 	{
 		exp = (Exp) exp.resolve(q);

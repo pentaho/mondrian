@@ -49,21 +49,19 @@ public class Query extends QueryPart implements NameResolver {
 	public Query()
 		{}
 
-	/** Construct a Query; formulas, axes and cell-properties are linked
-	 * lists.  This constructor is called from the Parser. */
+	/** Constructs a Query. */
 	public Query(
-		Connection connection, Formula firstFormulas, QueryAxis firstAxis,
-		String cube, Exp slicer, QueryPart firstCellProp)
+		Connection connection, Formula[] formulas, QueryAxis[] axes,
+		String cube, Exp slicer, QueryPart[] cellProps)
 	{
 		this(
 				connection,
 				connection.getSchema().lookupCube(cube, true),
-				Formula.makeArray(firstFormulas), QueryAxis.makeArray(firstAxis),
-				slicer, QueryPart.makeArray(firstCellProp), new Parameter[0]);
+				formulas, axes, slicer, cellProps, new Parameter[0]);
 	}
 
 	/** Construct a Query; called from clone(). */
-	private Query(
+	public Query(
 			Connection connection, Cube mdxCube,
 			Formula[] formulas, QueryAxis[] axes, Exp slicer,
 			QueryPart[] cellProps, Parameter[] parameters) {

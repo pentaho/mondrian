@@ -63,14 +63,6 @@ public class Formula extends QueryPart {
 		return x2;
 	}
 
-	public static Formula[] makeArray(Formula x)
-	{
-		Formula[] array = new Formula[x == null ? 0 : x.getChainLength()];
-		for (int i = 0; x != null; x = (Formula) x.next)
-			array[i++] = x;
-		return array;
-	}
-
 	public QueryPart resolve(Query q)
 	{
 		exp = (ExpBase) exp.resolve(q);

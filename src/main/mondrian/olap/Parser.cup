@@ -52,12 +52,11 @@ parser code {:
 	}
 	/** override this function to make your kind of query */
 	protected Query makeQuery(
-		Formula firstFormula, QueryAxis firstAxis,
-		String cube, Exp slicer, QueryPart firstCellProp)
+		Formula[] formulae, QueryAxis[] axes,
+		String cube, Exp slicer, QueryPart[] cellProps)
 	{
 		return new Query(
-			mdxConnection, firstFormula, firstAxis, cube, slicer,
-			firstCellProp);
+			mdxConnection, formulae, axes, cube, slicer, cellProps);
 	}
 
 	// Override lr_parser methods for NLS.  With this error handling scheme,
@@ -175,14 +174,10 @@ terminal String UNKNOWN; // a token the lexer doesn't like!
 
 // Non terminals
 non terminal QueryAxis
-	axis_specification,
-	axis_specification_list,
-	axis_specification_list_opt;
+	axis_specification;
 non terminal Exp
 	case_expression,
     else_clause_opt,
-	exp_list,
-	exp_list_opt,
 	expression,
 	factor,
 	slicer_specification,
@@ -211,18 +206,11 @@ non terminal String
 	unquoted_identifier,
 	amp_quoted_identifier,
 	keyword;
-non terminal QueryPart
-	cell_props,
-	cell_props_opt;
 non terminal Formula
-	formula_specification,
 	member_specification,
 	set_specification,
-	single_formula_specification,
-	with_formula_specification_opt;
+	single_formula_specification;
 non terminal MemberProperty
-	comma_member_property_def_list_opt,
-	member_property_def_list,
 	member_property_definition;
 non terminal
 	cell_opt,
@@ -242,7 +230,17 @@ non terminal Boolean
 	non_empty_opt;
 
 non terminal ArrayList
-	when_list;
+	axis_specification_list,
+	axis_specification_list_opt,
+	cell_props,
+	cell_props_opt,
+	comma_member_property_def_list_opt,
+	exp_list,
+	exp_list_opt,
+	formula_specification,
+	member_property_def_list,
+	when_list,
+	with_formula_specification_opt;
 
 non terminal Exp[]
 	when_clause;
@@ -618,22 +616,22 @@ value_expression_primary ::=
 			}
 		:}
 	|	value_expression_primary:i DOT identifier:j LPAREN exp_list_opt:lis RPAREN {:
-			((QueryPart) i).append((QueryPart) lis);
-			RESULT = new FunCall(j, ExpBase.makeArray(i), FunDef.TypeMethod);
+			lis.add(0, i);
+			RESULT = new FunCall(j, (Exp[]) lis.toArray(new Exp[0]), FunDef.TypeMethod);
 		:}
 	|	identifier:i LPAREN exp_list_opt:lis RPAREN {:
 			RESULT = new FunCall(
-				i, ExpBase.makeArray(lis), FunDef.TypeFunction);
+				i, (Exp[]) lis.toArray(new Exp[0]), FunDef.TypeFunction);
 		:}
 	|	LPAREN exp_list:lis RPAREN {:
 			// Whereas ([Sales],[Time]) and () are tuples, ([Sales]) and (5)
 			// are just expressions.
 			RESULT = new FunCall(
-				"()", ExpBase.makeArray(lis), FunDef.TypeParentheses);
+				"()", (Exp[]) lis.toArray(new Exp[0]), FunDef.TypeParentheses);
 		:}
 	|	LBRACE exp_list_opt:lis RBRACE {: // set built from sets/tuples
 			RESULT = new FunCall(
-				"{}", ExpBase.makeArray(lis), FunDef.TypeBraces);
+				"{}", (Exp[]) lis.toArray(new Exp[0]), FunDef.TypeBraces);
 		:}
 	|	case_expression
 	;
@@ -945,13 +943,18 @@ expression ::=
 	|	value_expression
 	;
 exp_list_opt ::=
-		/* empty */
+		/* empty */ {:
+			RESULT = new ArrayList();
+		:}
 	|	exp_list
 	;
 exp_list ::=
-		expression
-	|	expression:hd COMMA exp_list:tl {:
-			((QueryPart) hd).append((QueryPart) tl); RESULT = hd;
+		expression:e {:
+			RESULT = new ArrayList();
+			RESULT.add(e);
+		:}
+	|	expression:e COMMA exp_list:list {:
+			list.add(0, e); RESULT = list;
 		:}
 	;
 // 
@@ -1018,32 +1021,58 @@ select_statement ::=
 			// We want 'Sales', not '[Sales]', and can't handle 'Schema.Sales'
 			// yet.
 			String cubeName = c.getElement(0);
-			RESULT = parser.makeQuery(f, a, cubeName, w, cp);
+			RESULT = parser.makeQuery(
+				(Formula[]) f.toArray(new Formula[0]),
+				(QueryAxis[]) a.toArray(new QueryAxis[0]),
+				cubeName,
+				w,
+				(QueryPart[]) cp.toArray(new QueryPart[0]));
 		:};
 
 with_formula_specification_opt ::=
-		WITH formula_specification:f {: RESULT = f; :}
-	|	/* empty */ ;
-axis_specification_list_opt ::= /* empty */ |	axis_specification_list;
+	/* empty */ {:
+			RESULT = new ArrayList();
+		:}
+	|	WITH formula_specification:f {:
+			RESULT = f;
+		:}
+	;
+axis_specification_list_opt ::=
+		/* empty */ {:
+			RESULT = new ArrayList();
+		:}
+	|	axis_specification_list
+	;
 axis_specification_list ::=
-		axis_specification
-	|	axis_specification:hd COMMA axis_specification_list:tl {:
-			hd.append(tl); RESULT = hd;
+		axis_specification:i {:
+			RESULT = new ArrayList();
+			RESULT.add(i);
+		:}
+	|	axis_specification:e COMMA axis_specification_list:list {:
+			list.add(0, e);
+			RESULT = list;
 		:}
 	;
 where_clause_opt ::=
 		/* empty */
 	|	WHERE slicer_specification:s {: RESULT = s; :}; 
-cell_props_opt ::= cell_props |	/* empty */ ;
+cell_props_opt ::=
+		/* empty */ {:
+			RESULT = new ArrayList();
+		:}
+	|	cell_props;
 
 //
 // <formula_specification> ::= <single_formula_specification>
 // 							  [<single_formula_specification>...]
 //
 formula_specification ::=
-		single_formula_specification
+		single_formula_specification:e {:
+			RESULT = new ArrayList();
+			RESULT.add(e);
+		:}
 	|	single_formula_specification:hd formula_specification:tl {:
-			hd.append(tl); RESULT = hd;
+			tl.add(0,hd); RESULT = tl;
 		:}
 	;
 
@@ -1062,24 +1091,33 @@ member_specification ::=
 		MEMBER member_name:m AS QUOTE value_expression:e QUOTE
 		comma_member_property_def_list_opt:l {:
 			RESULT = new Formula(
-				m.toStringArray(), e, MemberProperty.makeArray(l));
+				m.toStringArray(),
+				e,
+				(MemberProperty[]) l.toArray(new MemberProperty[0]));
 		:}
 	|	MEMBER member_name:m AS value_expression:e
 		comma_member_property_def_list_opt:l {:
 			RESULT = new Formula(
-				m.toStringArray(), e, MemberProperty.makeArray(l));
+				m.toStringArray(),
+				e,
+				(MemberProperty[]) l.toArray(new MemberProperty[0]));
 		:}
 	;
 comma_member_property_def_list_opt ::=
-		/* empty */
+		/* empty */ {:
+			RESULT = new ArrayList();
+		:}
 	|	COMMA member_property_def_list:l {:
 			RESULT = l;
 		:}
 	;
 member_property_def_list ::=
-		member_property_definition
+		member_property_definition {:
+			RESULT = new ArrayList();
+		:}
 	|	member_property_definition:hd COMMA member_property_def_list:tl {:
-			RESULT = hd; RESULT.append(tl);
+			RESULT = tl;
+			RESULT.add(0,hd);
 		:}
 	;
 //

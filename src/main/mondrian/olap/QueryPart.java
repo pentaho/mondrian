@@ -17,43 +17,9 @@ import java.io.*;
 /**
  * Component of an MDX query (derived classes include Query, Axis, Exp, Level).
  **/
-public abstract class QueryPart extends Object implements Walkable
+public abstract class QueryPart implements Walkable
 {
-	protected QueryPart next;
-
-	QueryPart()
-	{
-		next = null;
-	}
-
-	static QueryPart[] cloneArray(QueryPart[] a)
-		throws CloneNotSupportedException
-	{
-		QueryPart[] a2 = new QueryPart[a.length];
-		for (int i = 0; i < a.length; i++)
-			a2[i] = (QueryPart) a[i].clone();
-		return a2;
-	}
-
-	public void append(QueryPart next)
-	{
-		this.next = next;
-	}
-
-	public final int getChainLength()
-	{
-		int i = 1;
-		for (QueryPart e = this; e.next != null; e = e.next)
-			i++;
-		return i;
-	}
-
-	public static QueryPart[] makeArray(QueryPart x)
-	{
-		QueryPart[] array = new QueryPart[x == null ? 0 : x.getChainLength()];
-		for (int i = 0; x != null; x = x.next)
-			array[i++] = x;
-		return array;
+	QueryPart() {
 	}
 
 	public void unparse(PrintWriter pw, ElementCallback callback)
@@ -102,10 +68,6 @@ public abstract class QueryPart extends Object implements Walkable
 		// By default, a QueryPart is atomic (has no children).
 		return null;
 	}
-
-
-	// -- Helper methods relating to name-resolution. -------------------------
-
 }
 
 // End QueryPart.java

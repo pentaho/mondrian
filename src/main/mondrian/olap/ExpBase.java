@@ -141,15 +141,6 @@ public abstract class ExpBase
 		return false;
 	}
 
-	static Exp[] makeArray(Exp x)
-	{
-		Exp[] array = new Exp[x == null ? 0 : ((ExpBase) x).getChainLength()];
-		for (int i = 0; x != null; x = (Exp) ((ExpBase) x).next) {
-			array[i++] = x;
-		}
-		return array;
-	}
-
 	public int addAtPosition(Exp e, int iPosition)
 	{
 		// Since this method has not been overridden for this type of

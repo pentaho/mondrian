@@ -51,14 +51,6 @@ public class QueryAxis extends QueryPart {
 		return a2;
 	}
 
-	public static QueryAxis[] makeArray(QueryAxis x)
-	{
-		QueryAxis[] array = new QueryAxis[x == null ? 0 : x.getChainLength()];
-		for (int i = 0; x != null; x = (QueryAxis) x.next)
-			array[i++] = x;
-		return array;
-	}
-
 	public QueryPart resolve(Query q)
 	{
 		set = (Exp) set.resolve(q);
