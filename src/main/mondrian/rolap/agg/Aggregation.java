@@ -223,7 +223,13 @@ public class Aggregation
 		return null;
 	}
 
-	// -- classes -------------------------------------------------------------
+    synchronized void removeSegment(Segment segment) {
+        boolean existed = segmentRefs.remove(
+                new CachePool.SoftCacheableReference(segment));
+        Util.assertTrue(existed, "removeSegment: Segment is not registered");
+    }
+
+    // -- classes -------------------------------------------------------------
 
 	public static class Axis
 	{

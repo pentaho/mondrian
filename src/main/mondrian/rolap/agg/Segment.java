@@ -11,14 +11,13 @@
 */
 package mondrian.rolap.agg;
 
-import mondrian.olap.Util;
-import mondrian.olap.MondrianProperties;
 import mondrian.olap.EnumeratedValues;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util;
 import mondrian.rolap.CachePool;
+import mondrian.rolap.CellKey;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.RolapUtil;
-import mondrian.rolap.CellKey;
-import mondrian.rolap.sql.SqlQuery;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -222,17 +221,11 @@ public class Segment implements CachePool.Cacheable
 		return desc;
 	}
 
-	// implement CachePool.Cacheable
-	public void removeFromCache()
-	{
-		boolean existed = aggregation.segmentRefs.remove(
-				new CachePool.SoftCacheableReference(this));
-		Util.assertTrue(
-				existed,
-				"removeFromCache: Segment is not registered with its Aggregator");
-	}
+    public void removeFromCache() {
+        aggregation.removeSegment(this);
+    }
 
-	// implement CachePool.Cacheable
+    // implement CachePool.Cacheable
 	public Object getKey()
 	{
 		return this;

@@ -38,8 +38,10 @@ public class MondrianProperties extends PropertiesPlus {
 	 * of "mondrian.properties" if it exists. A singleton.
 	 */
 	private static MondrianProperties instance;
+    private static final String mondrianDotProperties = "mondrian.properties";
+    private int populateCount;
 
-	public static synchronized MondrianProperties instance() {
+    public static synchronized MondrianProperties instance() {
 		if (instance == null) {
 			instance = new MondrianProperties();
 			instance.populate(null);
@@ -56,22 +58,33 @@ public class MondrianProperties extends PropertiesPlus {
 	 */
 	public void populate(ServletContext servletContext) {
 		// Read properties file "mondrian.properties", if it exists.
-		File file = new File("mondrian.properties");
-		try {
-			final URL url = Util.toURL(file);
-			load(url);
-		} catch (MalformedURLException e) {
-			System.out.println("Mondrian: " + file.getAbsolutePath() + " could not be loaded (" + e + ")");
-		}
+		File file = new File(mondrianDotProperties);
+        if (file.exists()) {
+            try {
+                final URL url = Util.toURL(file);
+                load(url);
+            } catch (MalformedURLException e) {
+                System.out.println("Mondrian: file '" + file.getAbsolutePath() +
+                        "' could not be loaded (" + e + ")");
+            }
+        } else if (populateCount == 0) {
+            System.out.println("Mondrian: Warning: file '" +
+                    file.getAbsolutePath() + "' not found");
+        }
 		// If we're in a servlet, read "mondrian.properties" from JAR file.
 		if (servletContext != null) {
 			try {
-				final URL resource = servletContext.getResource("mondrian.properties");
+				final URL resource = servletContext.getResource(mondrianDotProperties);
 				if (resource != null) {
 					load(resource);
-				}
+				} else if (populateCount == 0) {
+                    System.out.println("Mondrian: Warning: servlet resource '" +
+                            mondrianDotProperties + "' not found");
+                }
 			} catch (MalformedURLException e) {
-				System.out.println("Mondrian: mondrian.properties could not be loaded from servlet context (" + e + ")");
+				System.out.println("Mondrian: '" + mondrianDotProperties +
+                        "' could not be loaded from servlet context (" + e +
+                        ")");
 			}
 		}
 		// copy in all system properties which start with "mondrian."
@@ -85,7 +98,9 @@ public class MondrianProperties extends PropertiesPlus {
 				count++;
 			}
 		}
-		System.out.println("Mondrian: loaded " + count + " system properties");
+        if (populateCount++ == 0) {
+    		System.out.println("Mondrian: loaded " + count + " system properties");
+        }
 	}
 
 	/** Tries to load properties from a URL. Does not fail, just prints success
@@ -93,9 +108,11 @@ public class MondrianProperties extends PropertiesPlus {
 	private void load(final URL url) {
 		try {
 			load(url.openStream());
-			System.out.println("Mondrian: " + url + " loaded");
+            if (populateCount == 0) {
+    			System.out.println("Mondrian: properties loaded from '" + url + "'");
+            }
 		} catch (IOException e) {
-			System.out.println("Mondrian: " + url + " could not be loaded (" + e + ")");
+			System.out.println("Mondrian: error while loading properties from '" + url + "' (" + e + ")");
 		}
 	}
 

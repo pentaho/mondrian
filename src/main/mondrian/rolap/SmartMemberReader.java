@@ -327,7 +327,11 @@ public class SmartMemberReader implements MemberReader, MemberCache
                         if (RolapUtil.debugOut != null) {
                             RolapUtil.debugOut.println("putChildren: remove " + oldRef + ", " + old);
                         }
+                        // Temporarily put the old list back, while we
+                        // deregister it.
+                        mapMemberToChildren.put(member, oldRef);
 						cachePool.deregister(old, false);
+                        mapMemberToChildren.put(member, ref);
 					}
 					cachePool.register(childrenList);
 				}

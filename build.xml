@@ -17,7 +17,7 @@
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
-  <property name="version" value="0.5"/>
+  <property name="version" value="0.6"/>
 
   <!--
     ===================================================================
@@ -621,7 +621,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
         webxml="${lib.dir}/web.xml">
       <webinf dir="${webapp.dir}/WEB-INF" excludes="web.xml"/>
 	  <!-- our FoodMart.xml may be newer than jpivot's -->
-      <webinf dir="${demo.dir}" prefix="queries" includes="FoodMart.xml"/>
+      <webinf dir="${demo.dir}" prefix="WEB-INF/queries" includes="FoodMart.xml"/>
       <fileset dir="${webapp.dir}" excludes="WEB-INF/**/*"/>
 	  <!-- should already contain javacup.jar, xalan.jar, junit.jar -->
       <lib dir="${lib.dir}" includes="${name}.jar"/>

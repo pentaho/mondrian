@@ -220,8 +220,8 @@ public class CachePool {
 				", totalCost=" + unpinnedCost);
 		}
 		while (pinCount-- > 0) {
-			pin(cacheable, pinned);
-		}
+            pin(cacheable, pinned);
+        }
 		flushIfNecessary();
 	}
 
@@ -404,23 +404,33 @@ public class CachePool {
 	 *
 	 * <p>The object is not pinned if it is already in the
 	 * <code>newlyPinned</code> list.
+     *
+     * @param cacheable Object to pin
+     * @param newlyPinned Collection of objects which have been pinned.
+     *   <code>cacheable</code> is added to this list if this method pins
+     *   it
 	 **/
 	public synchronized void pin(Cacheable cacheable, Collection newlyPinned) {
 		if (!newlyPinned.add(cacheable)) {
 			return;
 		}
-		double cost = checkRegistered(cacheable);
 //		printCacheables(RolapUtil.debugOut);
 		int pinCount = cacheable.getPinCount();
 		Util.assertTrue(pinCount >= 0);
 		if (pinCount == 0) {
-			pinned.add(cacheable);
 			SoftCacheableReference ref = new SoftCacheableReference(cacheable);
 			boolean existed = queue.remove(ref);
 			if (!existed) {
-				throw Util.newInternal(
-					"could not find [" + cacheable + "] in queue");
+                // The object is not in the cache. It may have been removed
+                // recently, due to another thread's activity.
+                String id = cacheableId(cacheable);
+                mapCacheableIdToCost.remove(id);
+                newlyPinned.remove(cacheable);
+                register(cacheable, 1, newlyPinned);
+                return;
 			}
+            pinned.add(cacheable);
+            double cost = checkRegistered(cacheable);
 			unpinnedCost -= cost;
 			pinnedCost += cost;
 //			System.out.println("unpinnedCost e now " + unpinnedCost + ", pinnedCost=" + pinnedCost);
@@ -661,6 +671,12 @@ public class CachePool {
 			// {2:0, 8:0}
 			c.unpin(o2);
 			c.unpin(o2);
+            // pin an unregistered object -- should be registered automatically
+            final CacheableInt o20 = new CacheableInt(20);
+            c.pin(o20, list);
+            assertTrue(list.contains(o20));
+            assertEquals(1, o20.getPinCount());
+            c.unpin(o20);
 			c.unpin(o2);
 			c.unpin(o8);
 			assertEquals(10, (int) c.getTotalCost());

@@ -12,6 +12,7 @@
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.rolap.CachePool;
 
 import java.util.regex.Pattern;
 
@@ -3229,18 +3230,23 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
 	public void testParallelNot() {
-		runParallelQueries(1, 1);
+		runParallelQueries(1, 1, false);
 	}
 
 	public void testParallelSomewhat() {
-		runParallelQueries(3, 2);
+		runParallelQueries(3, 2, false);
 	}
 
-	public void _testParallelVery() {
-		runParallelQueries(6, 10);
+    public void testParallelFlushCache() {
+        runParallelQueries(4, 6, true);
+    }
+
+	public void testParallelVery() {
+		runParallelQueries(6, 10, false);
 	}
 
-	private void runParallelQueries(final int threadCount, final int iterationCount) {
+	private void runParallelQueries(final int threadCount,
+            final int iterationCount, final boolean flush) {
 		int timeoutMs = threadCount * iterationCount * 10 * 1000; // 1 minute per query
 		final int[] executeCount = new int[] {0};
 		final QueryAndResult[] queries = new QueryAndResult[sampleQueries.length + taglibQueries.length];
@@ -3253,6 +3259,9 @@ public class BasicQueryTest extends FoodMartTestCase {
 							int queryIndex = (i * 2 + j) % queries.length;
 							try {
 								runQueryCheckResult(queries[queryIndex]);
+                                if (flush && i == 0) {
+                                    CachePool.instance().flush();
+                                }
 								executeCount[0]++;
 							} catch (Throwable e) {
 								e.printStackTrace();
