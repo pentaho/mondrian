@@ -112,8 +112,9 @@ public class SoftCachePool extends CachePool {
 
 	public synchronized void printCacheables(PrintWriter pw) {
 		pw.println("registered: ");
-		for (Iterator it = registered.keySet().iterator(); it.hasNext();) {
-			Cacheable c = (Cacheable) it.next();
+		for (Iterator it = registered.values().iterator(); it.hasNext();) {
+			SoftCacheableReference ref = (SoftCacheableReference) it.next();
+			Cacheable c = (Cacheable) ref.getCacheable();
 			pw.println(c);
 		}
 		pw.println("pinned: ");
@@ -126,6 +127,7 @@ public class SoftCachePool extends CachePool {
 			Cacheable c = (Cacheable) it.next();
 			pw.println(c);
 		}
+		pw.flush();
 	}
 
 	public synchronized void validate() {
