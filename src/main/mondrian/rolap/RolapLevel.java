@@ -125,9 +125,17 @@ class RolapLevel extends LevelBase
 				RolapProperty.emptyArray);
         this.levelType = levelType;
 		if (hierarchy.getDimension().getDimensionType() == Dimension.TIME) {
-            if (!levelType.isTime()) {
+            if (!levelType.isTime() && !isAll) {
+				// do not throw an exception here,
+				//  in order not to break existing applications
+				/*
                 throw MondrianResource.instance()
                         .newNonTimeLevelInTimeHierarchy(getUniqueName());
+                */
+				System.out.println(
+					MondrianResource.NonTimeLevelInTimeHierarchy.instantiate(
+						MondrianResource.instance(), new Object[] {getUniqueName()})
+					.toString());
             }
         } else {
             if (levelType.isTime()) {
