@@ -11,7 +11,6 @@
 */
 
 package mondrian.olap;
-import java.io.PrintWriter;
 
 /**
  * <code>OlapElementBase</code> is an abstract base class for implementations of
@@ -25,6 +24,12 @@ public abstract class OlapElementBase
 	extends ExpBase
 	implements OlapElement
 {
+
+  static {
+    Util.assertTrue(System.getProperty("java.version").compareTo("1.1") > 0,
+    "require at least JDK 1.2, because JDK 1.1 had a severe performance bug when hashing long, similar strings");
+  }
+
 	public boolean equals(Object o)
 	{
 		return (o instanceof OlapElement) &&
@@ -40,35 +45,11 @@ public abstract class OlapElementBase
 	public int hashCode()
 	{
 		int i = (getClass().hashCode() << 8),
-			j = stringHash(getUniqueName()),
+			j = getUniqueName().hashCode(),
 			k = i ^ j;
 		return k;
 	}
 
-	/** JDK1.1's string hashing algorithm only samples if the string is 16 or
-	 * longer.  Member names are so similar that we want to read all
-	 * characters. */
-  public static final int stringHash(String s)
-  {
-    int h = 0;
-    char buf [] = s.toCharArray();
-
-    for (int i = 0; i < buf.length; i++) {
-      h = (h * 37) + buf[i];
-    }
-    return h;
-  }
-
-//  	public String getType()
-//  	{
-//  		// Take the class-name (e.g. Broadbase.mdx.Hierarchy) and remove
-//  		// up to the last '.'.
-//  		String s = getClass().getName();
-//  		int i = s.lastIndexOf(".");
-//  		if (i != -1)
-//  			s = s.substring(i + 1);
-//  		return s;
-//  	}
 
 	public String toString() {
 		return getUniqueName();
