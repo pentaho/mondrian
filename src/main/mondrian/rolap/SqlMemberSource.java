@@ -39,6 +39,7 @@ class SqlMemberSource implements MemberReader
 	private RolapHierarchy hierarchy;
 	private DataSource dataSource;
 	private MemberCache cache;
+	private int lastOrdinal = 0;
 
 	private static Object sqlNullValue = new Object() {
 		public boolean equals(Object o) {
@@ -263,6 +264,7 @@ class SqlMemberSource implements MemberReader
                 root = new RolapMember(
                     null, (RolapLevel) hierarchy.getLevels()[0],
                     null, hierarchy.getAllMemberName());
+                root.ordinal = lastOrdinal++;
                 list.add(root);
             }
             while (resultSet.next()) {
@@ -282,6 +284,7 @@ class SqlMemberSource implements MemberReader
                     member = (RolapMember) map.get(key);
                     if (member == null) {
                         member = new RolapMember(parent, level, value);
+                        member.ordinal = lastOrdinal++;
                         if (value == sqlNullValue) {
                             addAsOldestSibling(list, member);
                         } else {
@@ -424,6 +427,7 @@ class SqlMemberSource implements MemberReader
 			RolapMember root = cache.getMember(key);
 			if (root == null) {
 				root = new RolapMember(null, level, null, allMemberName);
+				root.ordinal = lastOrdinal++;
 				cache.putMember(key, root);
 			}
 			ArrayList list = new ArrayList(1);
@@ -485,6 +489,7 @@ class SqlMemberSource implements MemberReader
                     member = cache.getMember(key);
                     if (member == null) {
                         member = new RolapMember(parent, level2, value);
+                        member.ordinal = lastOrdinal++;
                         for (int j = 0; j < level2.properties.length; j++) {
                             RolapProperty property = level2.properties[j];
                             member.setProperty(
@@ -674,6 +679,7 @@ class SqlMemberSource implements MemberReader
                 RolapMember member = cache.getMember(key);
                 if (member == null) {
                     member = new RolapMember(parentMember, childLevel, value);
+                    member.ordinal = lastOrdinal++;
                     if (parentChild) {
                         // Create a 'public' and a 'data' member. The public member is
                         // calculated, and its value is the aggregation of the data member and all
