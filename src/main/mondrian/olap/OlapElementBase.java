@@ -29,7 +29,9 @@ public abstract class OlapElementBase
     Util.assertTrue(System.getProperty("java.version").compareTo("1.1") > 0,
     "require at least JDK 1.2, because JDK 1.1 had a severe performance bug when hashing long, similar strings");
   }
-
+  
+  private String caption = null;
+  
 	public boolean equals(Object o)
 	{
 		return (o instanceof OlapElement) &&
@@ -70,7 +72,20 @@ public abstract class OlapElementBase
 	{
 		return this;
 	}
-}
 
+	// return name as default for caption
+	public String getCaption() {
+		if (caption != null)
+			return caption;
+		else
+			return getName();
+	}
+	/**
+	 * @param caption The caption to set.
+	 */
+	public void setCaption(String caption) {
+		this.caption = caption;
+	}
+}
 
 // End OlapElementBase.java
