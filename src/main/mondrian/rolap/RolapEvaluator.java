@@ -12,6 +12,7 @@
 
 package mondrian.rolap;
 import mondrian.olap.*;
+import mondrian.olap.fun.FunUtil;
 import mondrian.util.Format;
 
 /**
@@ -27,7 +28,8 @@ class RolapEvaluator implements Evaluator
 	RolapMember[] currentMembers;
 	Evaluator parent;
 	CellReader cellReader;
-	private static final RolapMember[] emptyMembers = {}; 
+	int depth;
+	private static final RolapMember[] emptyMembers = {};
 
 	RolapEvaluator(RolapCube cube)
 	{
@@ -38,7 +40,8 @@ class RolapEvaluator implements Evaluator
 			currentMembers[i] = (RolapMember)
 				dimensions[i].getHierarchy().getDefaultMember();
 		}
-		parent = null;
+		this.parent = null;
+		this.depth = 0;
 		this.cellReader = cellReader;
 	}
 	private RolapEvaluator(
@@ -47,13 +50,28 @@ class RolapEvaluator implements Evaluator
 		this.cube = cube;
 		this.currentMembers = currentMembers;
 		this.parent = parent;
+		this.depth = parent.getDepth() + 1;
 		this.cellReader = parent.cellReader;
+		int memberCount = currentMembers.length;
+		if (depth > memberCount) {
+			if (depth % memberCount == 0) {
+				checkRecursion();
+			}
+		}
 	}
-	// implement Evaluator
-	public Cube getCube()
-	{
+
+	public Cube getCube() {
 		return cube;
 	}
+
+	public int getDepth() {
+		return depth;
+	}
+
+	public Evaluator getParent() {
+		return parent;
+	}
+
 	public Evaluator push(Member[] members)
 	{
 		RolapMember[] cloneCurrentMembers = new RolapMember[
@@ -73,7 +91,7 @@ class RolapEvaluator implements Evaluator
 		return parent;
 	}
 	public Object xx(Literal literal) {
-		return literal.s;
+		return literal.getValue();
 	}
 	public Object xx(Parameter parameter) {
 		return parameter.getValue();
@@ -123,10 +141,44 @@ class RolapEvaluator implements Evaluator
 			// There is at least one calculated member. Expand the first one
 			// with the lowest solve order.  todo: Handle cycles.
 			Evaluator evaluator = push(emptyMembers);
-			return minSolveMember.exp.evaluateScalar(evaluator);
+			return minSolveMember.getExpression().evaluateScalar(evaluator);
 		}
 		return cellReader.get(this);
 	}
+	/**
+	 * Makes sure that there is no evaluator with identical context on the
+	 * stack.
+	 *
+	 * @throws an evaluation exception if there is a loop
+	 */
+	void checkRecursion() {
+		outer:
+		for (Evaluator eval = getParent(); eval != null; eval = eval.getParent()) {
+			for (int i = 0; i < currentMembers.length; i++) {
+				RolapMember member = currentMembers[i];
+				Member parentMember = eval.getContext(member.getDimension());
+				if (member != parentMember) {
+					continue outer;
+				}
+				throw FunUtil.newEvalException(
+						null, "infinite loop: context is " + getContextString());
+			}
+		}
+	}
+
+	private String getContextString() {
+		StringBuffer sb = new StringBuffer("(");
+		for (int j = 0; j < currentMembers.length; j++) {
+			RolapMember m = currentMembers[j];
+			if (j > 0) {
+				sb.append(", ");
+			}
+			sb.append(m.getUniqueName());
+		}
+		sb.append(")");
+		return sb.toString();
+	}
+
 	/**
 	 * Retrieves the value of property <code>name</code>. If more than one
 	 * member in the current context defines that property, the one with the

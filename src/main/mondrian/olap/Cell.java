@@ -23,6 +23,7 @@ package mondrian.olap;
 public interface Cell {
 	String getFormattedValue();
 	boolean isNull();
+	boolean isError();
 }
 
 

@@ -113,6 +113,12 @@ public class FunCall extends ExpBase
 	private void ensureHaveDef() {
 		if (funDef == null) {
 			funDef = FunTable.instance().getDef(this);
+			int[] types = funDef.getParameterTypes();
+			Util.assertTrue(types.length == args.length);
+			for (int i = 0; i < args.length; i++) {
+				Exp arg = args[i];
+				args[i] = FunTable.instance().convert(arg, types[i]);
+			}
 		}
 	}
 

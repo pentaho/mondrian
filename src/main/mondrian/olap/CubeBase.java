@@ -15,7 +15,7 @@ import java.io.*;
 import java.util.*;
 
 /**
- * todo:
+ * <code>CubeBase</code> is an abstract implementation of {@link Cube}.
  *
  * @author jhyde
  * @since 6 August, 2001
@@ -26,7 +26,6 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 	protected ConnectionBase connection;
 	protected String name;
 	protected DimensionBase[] dimensions;
-	protected Object errCellValue = new Util.ErrorCellValue();
 
 	/** constraints indexes for adSchemaMembers
 	 *
@@ -65,9 +64,6 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 	public Dimension[] getDimensions() { return dimensions; }
 	public Object[] getChildren() { return dimensions; }
 
-	// not in OlapElement
-	public Object getErrCellValue() { return errCellValue; }
- 
 	public Hierarchy lookupHierarchy(String s, boolean unique)
 	{
 		for (int i = 0; i < dimensions.length; i++) {

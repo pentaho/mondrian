@@ -47,6 +47,12 @@ public abstract class FunTable {
 	public abstract FunDef getDef(FunCall call);
 
 	/**
+	 * Adds a casting function, if necessary, to ensure that an expression is
+	 * of a given type. Throws an error if conversion is not possible.
+	 */
+	public abstract Exp convert(Exp fromExp, int to);
+
+	/**
 	 * This method is called from the constructor, to define the set of
 	 * functions recognized. Derived class can override this method to add more
 	 * functions. Each function is declared by calling {@link #define}.

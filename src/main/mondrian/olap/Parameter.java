@@ -99,7 +99,7 @@ public class Parameter extends ExpBase {
 
 		// If this is not the first time we've seen this parameter, check that
 		// the name is the same.
-		String name = ((Literal)(fParam.args[0])).s;
+		String name = (String) ((Literal)(fParam.args[0])).getValue();
 		if (this.name != null) {
 			Util.assertTrue(
 				name.equals(this.name), "parameter renamed");
@@ -113,7 +113,7 @@ public class Parameter extends ExpBase {
 
 			// Get the type
 			if( fParam.args[1] instanceof Literal ){
-				String val = ((Literal)(fParam.args[1])).s;
+				String val = (String) ((Literal)(fParam.args[1])).getValue();
 				if (val.equalsIgnoreCase("string")) {
 					category = CatString;
 				} else if (val.equalsIgnoreCase("number")) {
@@ -126,14 +126,14 @@ public class Parameter extends ExpBase {
 				category = CatMember;
 				hierarchyUniqueName = ((Dimension)(fParam.args[1])).getUniqueName();
 			}
-			defaultValue = ((Literal)(fParam.args[2])).s;
+			defaultValue = (String) ((Literal)(fParam.args[2])).getValue();
 			if( fParam.args.length > 3){
-				description = ((Literal)(fParam.args[3])).s;
+				description = (String) ((Literal)(fParam.args[3])).getValue();
 			}
 		} else if( fParam.getFunName().equalsIgnoreCase( "ParamRef") ){
 			//parameter reference
 			if( fParam.args.length > 1 ){
-				currentValue = ((Literal)(fParam.args[1])).s;
+				currentValue = (String) ((Literal)(fParam.args[1])).getValue();
 			}
 		} else {
 			throw Util.getRes().newInternal(

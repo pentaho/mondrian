@@ -19,7 +19,7 @@ import java.io.*;
 public class Literal extends ExpBase
 {
 	public int type;
-	public String s;			// just string literals for now
+	private Object o;
 
 	public static final Literal emptyString = new Literal("", false);
 	public static final Literal zero = new Literal(new Integer(0));
@@ -29,7 +29,7 @@ public class Literal extends ExpBase
 
 	private Literal(String s, boolean isSymbol)
 	{
-		this.s = s;
+		this.o = s;
 		this.type = isSymbol ? CatSymbol : CatString;
 	}
 
@@ -44,7 +44,7 @@ public class Literal extends ExpBase
 		return new Literal(s, true);
 	}
 	private Literal(Double d) {
-		this.s = d.toString();
+		this.o = d;
 		this.type = CatNumeric;
 	}
 	static Literal create(Double d) {
@@ -57,7 +57,7 @@ public class Literal extends ExpBase
 		}
 	}
 	private Literal(Integer i) {
-		this.s = i.toString();
+		this.o = i;
 		this.type = CatNumeric;
 	}
 
@@ -78,10 +78,16 @@ public class Literal extends ExpBase
 
 	public void unparse(PrintWriter pw, ElementCallback callback)
 	{
-		if (type == CatSymbol || type == CatNumeric) {
-			pw.print( s );
-		} else {
-			pw.print(Util.quoteForMdx(s));
+		switch (type) {
+		case CatSymbol:
+		case CatNumeric:
+			pw.print(o);
+			break;
+		case CatString:
+			pw.print(Util.quoteForMdx((String) o));
+			break;
+		default:
+			throw Util.newInternal("bad literal type " + type);
 		}
 	}
 
@@ -103,6 +109,20 @@ public class Literal extends ExpBase
 	public Object evaluate(Evaluator evaluator)
 	{
 		return evaluator.xx(this);
+	}
+
+	public Object getValue() {
+		return o;
+	}
+
+	public int getIntValue() {
+		if (o instanceof Integer) {
+			return ((Integer) o).intValue();
+		} else if (o instanceof Double) {
+			return ((Double) o).intValue();
+		} else {
+			throw Util.newInternal("cannot convert " + o + " to int");
+		}
 	}
 }
 

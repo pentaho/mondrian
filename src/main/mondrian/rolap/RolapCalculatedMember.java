@@ -21,14 +21,14 @@ import mondrian.olap.*;
  * @version $Id$
  **/
 public class RolapCalculatedMember extends RolapMember {
-	Exp exp;
+	private Formula formula;
 
 	RolapCalculatedMember(
 		RolapMember parentMember, RolapLevel level, String name,
 		Formula formula)
 	{
 		super(parentMember, level, name);
-		this.exp = formula.getExpression();
+		this.formula = formula;
 		Exp formatExp = formula.getMemberProperty("format");
 		if (formatExp == null) {
 			formatExp = Literal.emptyString;
@@ -40,6 +40,10 @@ public class RolapCalculatedMember extends RolapMember {
 	int getSolveOrder()
 	{
 		return 0;
+	}
+
+	Exp getExpression() {
+		return formula.getExpression();
 	}
 }
 

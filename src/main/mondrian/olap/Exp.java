@@ -44,6 +44,8 @@ public interface Exp {
 	final int CatCube      = 13;
 	/** Any expression yielding a string or numeric value. **/
 	final int CatValue     = 14;
+	/** Expression which is to be evaluated later. **/
+	final int CatExpression = 32;
 	final EnumeratedValues catEnum = new EnumeratedValues(new String[] {
 		"unknown", "array", "dimension", "hierarchy", "level", "logical",
 		"member", "numeric", "set", "string", "tuple", "symbol", "parameter",

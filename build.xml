@@ -306,25 +306,47 @@
         todir="${tomcat.home}/webapps"/>
   </target>
 
-  <!-- only runs on Windows -->
-  <target name="run-tomcat" depends="deploy-webapp">
-    <exec dir="${tomcat.home}/bin"
-		executable="cmd">
-      <arg line="/c startup.bat"/>
-    </exec>
+  <!-- targets to start and stop tomcat -->
+
+  <path id="tomcat.classpath">
+    <pathelement location="${java.home}/lib/tools.jar"/>
+    <pathelement location="${tomcat.home}/localhost/work/classes"/>
+    <pathelement location="${tomcat.home}/bin/bootstrap.jar"/>
+  </path>
+
+  <target name="start.tomcat">
+    <java classpathref="tomcat.classpath"
+          classname="org.apache.catalina.startup.Bootstrap"
+          fork="yes">
+      <jvmarg value="-Dcatalina.base=${tomcat.home}"/>
+      <jvmarg value="-Dcatalina.home=${tomcat.home}"/>
+      <jvmarg value="-Djava.io.tmpdir=${tomcat.home}/temp"/>
+      <arg value="start"/>
+    </java>
   </target>
 
-  <target name="stop-tomcat">
-    <exec dir="${tomcat.home}/bin"
-		executable="cmd">
-      <arg line="/c shutdown.bat"/>
-    </exec>
+  <target name="debug.tomcat">
+    <java classpathref="tomcat.classpath"
+          classname="org.apache.catalina.startup.Bootstrap"
+          fork="yes">
+      <jvmarg value="-Dcatalina.base=${tomcat.home}"/>
+      <jvmarg value="-Dcatalina.home=${tomcat.home}"/>
+      <jvmarg value="-Djava.io.tmpdir=${tomcat.home}/temp"/>
+      <jvmarg value="-Xdebug"/>
+      <jvmarg value="-Xrunjdwp:transport=dt_socket,address=5000,server=y,suspend=n"/>
+      <arg value="start"/>
+    </java>
   </target>
 
-  <target name="debug-tomcat" depends="deploy-webapp">
-    <exec dir="${tomcat.home}/bin"
-		executable="cmd">
-      <arg line="/c catalina.bat jpda run"/>
-    </exec>
+  <target name="stop.tomcat">
+    <java classpathref="tomcat.classpath"
+          classname="org.apache.catalina.startup.Bootstrap"
+          fork="yes">
+      <jvmarg value="-Dcatalina.base=${tomcat.home}"/>
+      <jvmarg value="-Dcatalina.home=${tomcat.home}"/>
+      <jvmarg value="-Djava.io.tmpdir=${tomcat.home}/temp"/>
+      <arg value="stop"/>
+    </java>
   </target>
+
 </project>

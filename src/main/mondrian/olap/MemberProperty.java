@@ -78,15 +78,9 @@ public class MemberProperty extends QueryPart {
 	{
 		if (exp instanceof Literal &&
 			((Literal) exp).type == Exp.CatString) {
-			pw.print(((Literal) exp).s);
+			exp.unparse(pw, callback);
 		} else if (name.equalsIgnoreCase("SOLVE_ORDER")) {
-			String s = ((Literal) exp).s;
-			int i = 0;
-			try {
-				Double d = new Double(s);
-				i = d.intValue();
-			} catch (NumberFormatException e) {
-			}
+			int i = ((Literal) exp).getIntValue();
 			pw.print(i);
 		} else {
 			exp.unparse(pw, callback);

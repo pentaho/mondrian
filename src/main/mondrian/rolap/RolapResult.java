@@ -12,6 +12,7 @@
 
 package mondrian.rolap;
 import mondrian.olap.*;
+import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.rolap.agg.AggregationManager;
 
 import java.util.Hashtable;
@@ -143,7 +144,6 @@ class RolapResult extends ResultBase
 				}
 				positions[i] = position;
 			}
-
 		}
 		return new RolapAxis(positions);
 	}
@@ -229,7 +229,7 @@ class RolapResult extends ResultBase
 				HashableVector clone = (HashableVector) key.clone();
 				keys.add(clone);
 			}
-			return cube.getErrCellValue();
+			return cube.valueNotReadyException;
 		}
 
 		/** Loads the aggregations which we will need. Writes the aggregations
@@ -272,7 +272,12 @@ class RolapResult extends ResultBase
 				for (int j = 0; j < position.members.length; j++) {
 					evaluator.setContext((RolapMember) position.members[j]);
 				}
-				Object o = evaluator.evaluateCurrent();
+				Object o = null;
+				try {
+					o = evaluator.evaluateCurrent();
+				} catch (MondrianEvaluationException e) {
+					o = e;
+				}
 				CellKey key = point.copy();
 				cellValues.put(key, o);
 			}
@@ -339,7 +344,7 @@ class RolapPosition extends Position
 
 class RolapCell implements Cell
 {
-	private Object value;
+	protected Object value;
 	private String formattedValue;
 
 	RolapCell(RolapMember measure, Object value, Evaluator evaluator)
@@ -347,11 +352,13 @@ class RolapCell implements Cell
 		this.value = value;
 		this.formattedValue = computeFormattedValue(measure, value, evaluator);
 	}
-	private static String computeFormattedValue(
+	static String computeFormattedValue(
 		RolapMember measure, Object value, Evaluator evaluator)
 	{
 		if (value == Util.nullValue) {
 			return "(null)";
+		} else if (value instanceof Throwable) {
+			return "#ERR: " + value.toString();
 		} else {
 			return evaluator.format(value);
 		}
@@ -365,7 +372,9 @@ class RolapCell implements Cell
 	public boolean isNull() {
 		return value == Util.nullValue;
 	}
-};
-
+	public boolean isError() {
+		return value instanceof Throwable;
+	}
+}
 
 // End RolapResult.java

@@ -39,6 +39,17 @@ public interface Evaluator {
 	Object xx(OlapElement mdxElement);
 	Object xx(Parameter parameter);
 	String format(Object o);
+	/**
+	 * Returns number of ancestor evaluators. Used to check for infinite
+	 * loops.
+	 *
+	 * @post return getParent() == null ? 0 : getParent().getDepth() + 1
+	 */
+	int getDepth();
+	/**
+	 * Returns parent evaluator.
+	 */
+	Evaluator getParent();
 };
 
 // End Evaluator.java

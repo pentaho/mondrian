@@ -1300,7 +1300,7 @@ public class Query extends QueryPart implements NameResolver {
 		Util.assertTrue(
 			fParam.args[0] instanceof Literal,
 			"The name of parameter has to be a quoted string");
-		String name = ((Literal)fParam.args[0]).s;
+		String name = (String) ((Literal)fParam.args[0]).getValue();
 		Parameter param = lookupParam(name);
 		if( param == null ){
 			// Create a new parameter.

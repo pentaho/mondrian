@@ -12,14 +12,9 @@
 
 package mondrian.olap;
 import mondrian.resource.ChainableThrowable;
-import java.io.IOException;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -292,12 +287,6 @@ public class Util extends mondrian.xom.XOMUtil
 	public static Error newInternal(Throwable e, String message) {
 		return getRes().newInternal(e, message);
 	}
-
-     public static Error newEvalException(String message) {
-
-         return getRes().newInternal (message);
-     }
-
 
 	public static void setThreadRes(MondrianResource resource)
 	{
