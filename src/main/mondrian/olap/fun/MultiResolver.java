@@ -1,43 +1,40 @@
 /*
 // $Id$
-// (C) Copyright 2002 Kana Software, Inc.
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
-// jhyde, 3 March, 2002
+// jhyde, Feb 12, 2003
 */
 package mondrian.olap.fun;
 
-import junit.framework.TestSuite;
-import mondrian.olap.Evaluator;
-import mondrian.olap.Exp;
 import mondrian.olap.FunDef;
+import mondrian.olap.Exp;
 import mondrian.olap.Util;
 
 /**
- * A <code>MultiResolver</code> resolves a function with a finite set of
- * parameter combinations to a single function.
+ * A <code>MultiResolver</code> considers several overloadings of the same
+ * function. If one of these overloadings matches the actual arguments, it
+ * calls the factory method {@link #createFunDef}.
  *
  * @author jhyde
- * @since 3 March, 2002
+ * @since Feb 12, 2003
  * @version $Id$
  **/
-class MultiResolver extends FunUtil implements Resolver {
-	Funk funk;
+abstract class MultiResolver extends FunUtil implements Resolver {
 	String name;
 	String description;
 	String[] signatures;
 	int syntacticType;
+
 	MultiResolver(
 			String name, String signature, String description,
-			String[] signatures, Funk funk) {
+			String[] signatures) {
 		this.name = name;
 		this.description = description;
-		this.funk = funk;
 		this.signatures = signatures;
 		Util.assertTrue(signatures.length > 0);
 		this.syntacticType = BuiltinFunTable.decodeSyntacticType(signatures[0]);
@@ -47,12 +44,10 @@ class MultiResolver extends FunUtil implements Resolver {
 		}
 	}
 
-	public void addTests(TestSuite suite) {
-		funk.addTests(suite);
-	}
 	public String getName() {
 		return name;
 	}
+
 	public FunDef resolve(int syntacticType, Exp[] args, int[] conversionCount) {
 		if (syntacticType != this.syntacticType) {
 			return null;
@@ -72,29 +67,13 @@ outer:
 			}
 			final String signature = signatures[j];
 			int returnType = BuiltinFunTable.decodeReturnType(signature);
-			final FunkFunDef funDef = new FunkFunDef(this,funk,syntacticType,returnType,parameterTypes);
-			funk.onResolve(args, funDef);
-			return funDef;
+			FunDef dummy = new FunDefBase(this, syntacticType, returnType, parameterTypes);
+			return createFunDef(args, dummy);
 		}
 		return null;
 	}
-}
 
-/**
- * A <code>FunkFunDef</code> is an adaptor to make a {@link Funk} look like a
- * {@link FunDef}.
- **/
-class FunkFunDef extends FunDefBase {
-	Funk funk;
-	FunkFunDef(
-			Resolver resolver, Funk funk, int syntacticType, int returnType,
-			int[] parameterTypes) {
-		super(resolver, syntacticType, returnType, parameterTypes);
-		this.funk = funk;
-	}
-	public Object evaluate(Evaluator evaluator, Exp[] args) {
-		return funk.evaluate(evaluator, args);
-	}
+	protected abstract FunDef createFunDef(Exp[] args, FunDef dummyFunDef);
 }
 
 // End MultiResolver.java

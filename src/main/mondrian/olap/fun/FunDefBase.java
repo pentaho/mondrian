@@ -60,6 +60,16 @@ class FunDefBase extends FunUtil implements FunDef {
 			parameterTypes);
 	}
 
+	/**
+	 * Copy constructor.
+	 */ 
+	FunDefBase(FunDef funDef) {
+		this(
+				funDef.getName(), funDef.getSignature(),
+				funDef.getDescription(), funDef.getSyntacticType(),
+				funDef.getReturnType(), funDef.getParameterTypes());
+	}
+
     public String getName() {
         return name;
     }

@@ -12,12 +12,10 @@
 */
 package mondrian.olap.fun;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 import junit.framework.Test;
+import junit.framework.TestSuite;
 import mondrian.olap.*;
 import mondrian.test.FoodMartTestCase;
-import mondrian.test.TestContext;
 
 import java.io.PrintWriter;
 import java.util.*;
@@ -1032,7 +1030,7 @@ public class BuiltinFunTable extends FunTable {
 
 		if (false) define(new FunDefBase("Item", "<Tuple>.Item(<Numeric Expression>)", "Returns a member from a tuple.", "mm*"));
 
-		define(new MultiResolver(
+		define(new FunkResolver(
 				"Lag", "<Member>.Lag(<Numeric Expression>)", "Returns a member further along the specified member's dimension.",
 				new String[]{"mmmn"},
 				new FunkBase() {
@@ -1157,7 +1155,7 @@ public class BuiltinFunTable extends FunTable {
 			}
 		});
 
-		define(new MultiResolver(
+		define(new FunkResolver(
 				"Lead", "<Member>.Lead(<Numeric Expression>)", "Returns a member further along the specified member's dimension.",
 				new String[]{"mmmn"},
 				new FunkBase() {
@@ -1277,7 +1275,7 @@ public class BuiltinFunTable extends FunTable {
 		//
 		// NUMERIC FUNCTIONS
 		if (false) define(new FunDefBase("Aggregate", "Aggregate(<Set>[, <Numeric Expression>])", "Returns a calculated value using the appropriate aggregate function, based on the context of the query.", "fn*"));
-		define(new MultiResolver(
+		define(new FunkResolver(
 			"Avg", "Avg(<Set>[, <Numeric Expression>])", "Returns the average value of a numeric expression evaluated over a set.",
 			new String[]{"fnx", "fnxN"},
 			new FunkBase() {
@@ -1293,7 +1291,7 @@ public class BuiltinFunTable extends FunTable {
 				}
 				//todo: testAvgWithNulls
 			}));
-		define(new MultiResolver(
+		define(new FunkResolver(
 			"Correlation", "Correlation(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Returns the correlation of two series evaluated over a set.",
 			new String[]{"fnxN","fnxNN"},
 			new FunkBase() {
@@ -1308,7 +1306,7 @@ public class BuiltinFunTable extends FunTable {
 					test.assertEquals("0.9999063938016924", result);
 				}
 			}));
-		define(new MultiResolver(
+		define(new FunkResolver(
 			"Count", "Count(<Set>[, EXCLUDEEMPTY | INCLUDEEMPTY])", "Returns the number of tuples in a set, empty cells included unless the optional EXCLUDEEMPTY flag is used.",
 			new String[]{"fnx", "fnxy"},
 			new FunkBase() {
@@ -1335,7 +1333,7 @@ public class BuiltinFunTable extends FunTable {
 				}
 				//todo: testCountNull, testCountNoExp
 			}));
-		define(new MultiResolver(
+		define(new FunkResolver(
 			"Covariance", "Covariance(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Returns the covariance of two series evaluated over a set (biased).",
 			new String[]{"fnxN","fnxNN"},
 			new FunkBase() {
@@ -1350,7 +1348,7 @@ public class BuiltinFunTable extends FunTable {
 					test.assertEquals("1.3557618990466664E9", result);
 				}
 			}));
-		define(new MultiResolver(
+		define(new FunkResolver(
 			"CovarianceN", "CovarianceN(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Returns the covariance of two series evaluated over a set (unbiased).",
 			new String[]{"fnxN","fnxNN"},
 			new FunkBase() {
@@ -1371,7 +1369,7 @@ public class BuiltinFunTable extends FunTable {
 		if (false) define(new FunDefBase("LinRegR2", "LinRegR2(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Calculates the linear regression of a set and returns R2 (the coefficient of determination).", "fn*"));
 		if (false) define(new FunDefBase("LinRegSlope", "LinRegSlope(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Calculates the linear regression of a set and returns the value of a in the regression line y = ax + b.", "fn*"));
 		if (false) define(new FunDefBase("LinRegVariance", "LinRegVariance(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Calculates the linear regression of a set and returns the variance associated with the regression line y = ax + b.", "fn*"));
-		define(new MultiResolver(
+		define(new FunkResolver(
 			"Max", "Max(<Set>[, <Numeric Expression>])", "Returns the maximum value of a numeric expression evaluated over a set.",
 			new String[]{"fnx", "fnxN"},
 			new FunkBase() {
@@ -1386,7 +1384,7 @@ public class BuiltinFunTable extends FunTable {
 					test.assertEquals("263793.22", result);
 				}
 			}));
-		define(new MultiResolver(
+		define(new FunkResolver(
 			"Median", "Median(<Set>[, <Numeric Expression>])", "Returns the median value of a numeric expression evaluated over a set.",
 			new String[]{"fnx", "fnxN"},
 			new FunkBase() {
@@ -1404,7 +1402,7 @@ public class BuiltinFunTable extends FunTable {
 				}
 			}));
 
-		define(new MultiResolver(
+		define(new FunkResolver(
 			"Min", "Min(<Set>[, <Numeric Expression>])", "Returns the minimum value of a numeric expression evaluated over a set.",
 			new String[]{"fnx", "fnxN"},
 			new FunkBase() {
@@ -1421,7 +1419,7 @@ public class BuiltinFunTable extends FunTable {
 			}));
 		define(new FunDefBase("Ordinal", "<Level>.Ordinal", "Returns the zero-based ordinal value associated with a level.", "pnl"));
 		if (false) define(new FunDefBase("Rank", "Rank(<Tuple>, <Set>)", "Returns the one-based rank of a tuple in a set.", "fn*"));
-		define(new MultiResolver(
+		define(new FunkResolver(
 				"Stddev", "Stddev(<Set>[, <Numeric Expression>])", "Alias for Stdev.",
 				new String[]{"fnx", "fnxN"},
 				new FunkBase() {
@@ -1431,7 +1429,7 @@ public class BuiltinFunTable extends FunTable {
 							return stdev(evaluator.push(), members, exp, false);
 						}
 				}));
-		define(new MultiResolver(
+		define(new FunkResolver(
 				"Stdev", "Stdev(<Set>[, <Numeric Expression>])", "Returns the standard deviation of a numeric expression evaluated over a set (unbiased).",
 				new String[]{"fnx", "fnxN"},
 				new FunkBase() {
@@ -1446,7 +1444,7 @@ public class BuiltinFunTable extends FunTable {
 						test.assertEquals("65825.4547549297", result);
 					}
 				}));
-		define(new MultiResolver(
+		define(new FunkResolver(
 				"StddevP", "StddevP(<Set>[, <Numeric Expression>])", "Alias for StdevP.",
 				new String[]{"fnx", "fnxN"},
 				new FunkBase() {
@@ -1456,7 +1454,7 @@ public class BuiltinFunTable extends FunTable {
 						return stdev(evaluator.push(), members, exp, true);
 					}
 				}));
-		define(new MultiResolver(
+		define(new FunkResolver(
 				"StdevP", "StdevP(<Set>[, <Numeric Expression>])", "Returns the standard deviation of a numeric expression evaluated over a set (biased).",
 				new String[]{"fnx", "fnxN"},
 				new FunkBase() {
@@ -1471,7 +1469,7 @@ public class BuiltinFunTable extends FunTable {
 						test.assertEquals("53746.25874541283", result);
 					}
 				}));
-		define(new MultiResolver(
+		define(new FunkResolver(
 				"Sum", "Sum(<Set>[, <Numeric Expression>])", "Returns the sum of a numeric expression evaluated over a set.",
 				new String[]{"fnx", "fnxN"},
 				new FunkBase() {
@@ -1521,7 +1519,7 @@ public class BuiltinFunTable extends FunTable {
 				return new ValueFunDef(argTypes);
 			}
 		});
-		define(new MultiResolver(
+		define(new FunkResolver(
 				"Var", "Var(<Set>[, <Numeric Expression>])", "Returns the variance of a numeric expression evaluated over a set (unbiased).",
 				new String[]{"fnx", "fnxN"},
 				new FunkBase() {
@@ -1536,7 +1534,7 @@ public class BuiltinFunTable extends FunTable {
 						test.assertEquals("4.332990493693297E9", result);
 					}
 				}));
-		define(new MultiResolver(
+		define(new FunkResolver(
 				"Variance", "Variance(<Set>[, <Numeric Expression>])", "Alias for Var.",
 				new String[]{"fnx", "fnxN"},
 				new FunkBase() {
@@ -1546,7 +1544,7 @@ public class BuiltinFunTable extends FunTable {
 							return var(evaluator.push(), members, exp, false);
 						}
 				}));
-		define(new MultiResolver(
+		define(new FunkResolver(
 				"VarianceP", "VarianceP(<Set>[, <Numeric Expression>])", "Alias for VarP.",
 				new String[]{"fnx", "fnxN"},
 				new FunkBase() {
@@ -1556,7 +1554,7 @@ public class BuiltinFunTable extends FunTable {
 							return var(evaluator.push(), members, exp, true);
 						}
 				}));
-		define(new MultiResolver(
+		define(new FunkResolver(
 				"VarP", "VarP(<Set>[, <Numeric Expression>])", "Returns the variance of a numeric expression evaluated over a set (biased).",
 				new String[]{"fnx", "fnxN"},
 				new FunkBase() {
@@ -1575,7 +1573,7 @@ public class BuiltinFunTable extends FunTable {
 		//
 		// SET FUNCTIONS
 		if (false) define(new FunDefBase("AddCalculatedMembers", "AddCalculatedMembers(<Set>)", "Adds calculated members to a set.", "fx*"));
-		define(new MultiResolver(
+		define(new FunkResolver(
 			"BottomCount",
 			"BottomCount(<Set>, <Count>[, <Numeric Expression>])",
 			"Returns a specified number of items from the bottom of a set, optionally ordering the set first.",
@@ -1604,7 +1602,7 @@ public class BuiltinFunTable extends FunTable {
 				//todo: test unordered
 
 			}));
-		define(new MultiResolver(
+		define(new FunkResolver(
 			"BottomPercent", "BottomPercent(<Set>, <Percentage>, <Numeric Expression>)", "Sorts a set and returns the bottom N elements whose cumulative total is at least a specified percentage.",
 			new String[]{"fxxnN"},
 			new FunkBase() {
@@ -1625,7 +1623,7 @@ public class BuiltinFunTable extends FunTable {
 				//todo: test precision
 			}));
 
-		define(new MultiResolver(
+		define(new FunkResolver(
 			"BottomSum", "BottomSum(<Set>, <Value>, <Numeric Expression>)", "Sorts a set and returns the bottom N elements whose cumulative total is at least a specified value.",
 			new String[]{"fxxnN"},
 			new FunkBase() {
@@ -1766,14 +1764,14 @@ public class BuiltinFunTable extends FunTable {
 		});
 		define(new MultiResolver(
 				"Descendants", "Descendants(<Member>, <Level>[, <Desc_flag>])", "Returns the set of descendants of a member at a specified level, optionally including or excluding descendants in other levels.",
-				new String[]{"fxml", "fxmls"},
-				new FunkBase() {
-					public void onResolve(Exp[] args, FunDef funDef) {
-						String descFlag = getLiteralArg(args, 2, "", new String[] {""}, funDef);
-						Util.assertTrue(descFlag.equals(""), "Desc_flag is not implemented yet");
-						super.onResolve(args, funDef);
-					}
+				new String[]{"fxml", "fxmls"}) {
+			protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+				String descFlag = getLiteralArg(args, 2, "SELF", new String[] {"SELF","AFTER","BEFORE","BEFORE_AND_AFTER","SELF_AND_AFTER","SELF_AND_BEFORE","SELF_BEFORE_AFTER","LEAVES"}, dummyFunDef);
+				if (!descFlag.equals("SELF")) {
+					throw newEvalException(null, "SELF is the only value of Desc_flag currently supported");
+				}
 
+				return new FunDefBase(dummyFunDef) {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Member member = getMemberArg(evaluator, args, 0, true);
 						Level level = getLevelArg(evaluator, args, 1, true);
@@ -1792,10 +1790,11 @@ public class BuiltinFunTable extends FunTable {
 						}
 						return toVector(children);
 					}
-				}));
+				};
+			}});
 		if (false) define(new FunDefBase("Distinct", "Distinct(<Set>)", "Eliminates duplicate tuples from a set.", "fxx"));
 
-		define(new MultiResolver("DrilldownLevel", "DrilldownLevel(<Set>[, <Level>]) or DrilldownLevel(<Set>, , <Index>)", "Drills down the members of a set, at a specified level, to one level below. Alternatively, drills down on a specified dimension in the set.",
+		define(new FunkResolver("DrilldownLevel", "DrilldownLevel(<Set>[, <Level>]) or DrilldownLevel(<Set>, , <Index>)", "Drills down the members of a set, at a specified level, to one level below. Alternatively, drills down on a specified dimension in the set.",
 				new String[]{"fxx", "fxxl"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
@@ -1834,7 +1833,7 @@ public class BuiltinFunTable extends FunTable {
 		if (false) define(new FunDefBase("DrilldownMemberTop", "DrilldownMemberTop(<Set1>, <Set2>, <Count>[, [<Numeric Expression>][, RECURSIVE]])", "Like DrilldownMember except that it includes only the top N children.", "fx*"));
 		if (false) define(new FunDefBase("DrillupLevel", "DrillupLevel(<Set>[, <Level>])", "Drills up the members of a set that are below a specified level.", "fx*"));
 		if (false) define(new FunDefBase("DrillupMember", "DrillupMember(<Set1>, <Set2>)", "Drills up the members in a set that are present in a second specified set.", "fx*"));
-		define(new MultiResolver(
+		define(new FunkResolver(
 				"Except", "Except(<Set1>, <Set2>[, ALL])", "Finds the difference between two sets, optionally retaining duplicates.",
 				new String[]{"fxxx", "fxxxs"},
 				new FunkBase() {
@@ -1922,99 +1921,98 @@ public class BuiltinFunTable extends FunTable {
 
 		define(new MultiResolver(
 				"Hierarchize", "Hierarchize(<Set>[, POST])", "Orders the members of a set in a hierarchy.",
-				new String[] {"fxx", "fxxy"},
-				new FunkBase() {
-					boolean post;
-					public void onResolve(Exp[] args, FunDef funDef) {
-						String order = getLiteralArg(args, 1, "PRE", new String[] {"PRE", "POST"}, funDef);
-						post = order.equals("POST");
-						super.onResolve(args, funDef);
-					}
+				new String[] {"fxx", "fxxy"}) {
+			protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+				String order = getLiteralArg(args, 1, "PRE", new String[] {"PRE", "POST"}, dummyFunDef);
+				final boolean post = order.equals("POST");
+				return new FunDefBase(dummyFunDef) {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Vector members = (Vector) getArg(evaluator, args, 0);
 						hierarchize(members, post);
 						return members;
 					}
-					public void testHierarchize(FoodMartTestCase test) {
-						final Axis axis = test.executeAxis2(
-								"Hierarchize(" + nl +
-								"    {[Product].[All Products], " +
-								"     [Product].[Food]," + nl +
-								"     [Product].[Drink]," + nl +
-								"     [Product].[Non-Consumable]," + nl +
-								"     [Product].[Food].[Eggs]," + nl +
-								"     [Product].[Drink].[Dairy]})");
-						final String expected = "[Product].[All Products]" + nl +
-								"[Product].[All Products].[Drink]" + nl +
-								"[Product].[All Products].[Drink].[Dairy]" + nl +
-								"[Product].[All Products].[Food]" + nl +
-								"[Product].[All Products].[Food].[Eggs]" + nl +
-								"[Product].[All Products].[Non-Consumable]";
-						test.assertEquals(expected, test.toString(axis.positions));
-					}
-					public void testHierarchizePost(FoodMartTestCase test) {
-						final Axis axis = test.executeAxis2(
-								"Hierarchize(" + nl +
-								"    {[Product].[All Products], " +
-								"     [Product].[Food]," + nl +
-								"     [Product].[Food].[Eggs]," + nl +
-								"     [Product].[Drink].[Dairy]}," + nl +
-								"  POST)");
-						final String expected = "[Product].[All Products].[Drink].[Dairy]" + nl +
-								"[Product].[All Products].[Food].[Eggs]" + nl +
-								"[Product].[All Products].[Food]" + nl +
-								"[Product].[All Products]";
-						test.assertEquals(expected, test.toString(axis.positions));
-					}
-					public void testHierarchizeCrossJoinPre(FoodMartTestCase test) {
-						final Axis axis = test.executeAxis2(
-								"Hierarchize(" + nl +
-								"  CrossJoin(" + nl +
-								"    {[Product].[All Products], " +
-								"     [Product].[Food]," + nl +
-								"     [Product].[Food].[Eggs]," + nl +
-								"     [Product].[Drink].[Dairy]}," + nl +
-								"    [Gender].MEMBERS)," + nl +
-								"  PRE)");
-						final String expected = "{[Product].[All Products], [Gender].[All Gender]}" + nl +
-								"{[Product].[All Products], [Gender].[All Gender].[F]}" + nl +
-								"{[Product].[All Products], [Gender].[All Gender].[M]}" + nl +
-								"{[Product].[All Products].[Drink].[Dairy], [Gender].[All Gender]}" + nl +
-								"{[Product].[All Products].[Drink].[Dairy], [Gender].[All Gender].[F]}" + nl +
-								"{[Product].[All Products].[Drink].[Dairy], [Gender].[All Gender].[M]}" + nl +
-								"{[Product].[All Products].[Food], [Gender].[All Gender]}" + nl +
-								"{[Product].[All Products].[Food], [Gender].[All Gender].[F]}" + nl +
-								"{[Product].[All Products].[Food], [Gender].[All Gender].[M]}" + nl +
-								"{[Product].[All Products].[Food].[Eggs], [Gender].[All Gender]}" + nl +
-								"{[Product].[All Products].[Food].[Eggs], [Gender].[All Gender].[F]}" + nl +
-								"{[Product].[All Products].[Food].[Eggs], [Gender].[All Gender].[M]}";
-						test.assertEquals(expected, test.toString(axis.positions));
-					}
-					public void testHierarchizeCrossJoinPost(FoodMartTestCase test) {
-						final Axis axis = test.executeAxis2(
-								"Hierarchize(" + nl +
-								"  CrossJoin(" + nl +
-								"    {[Product].[All Products], " +
-								"     [Product].[Food]," + nl +
-								"     [Product].[Food].[Eggs]," + nl +
-								"     [Product].[Drink].[Dairy]}," + nl +
-								"    [Gender].MEMBERS)," + nl +
-								"  POST)");
-						final String expected = "{[Product].[All Products].[Drink].[Dairy], [Gender].[All Gender].[F]}" + nl +
-								"{[Product].[All Products].[Drink].[Dairy], [Gender].[All Gender].[M]}" + nl +
-								"{[Product].[All Products].[Drink].[Dairy], [Gender].[All Gender]}" + nl +
-								"{[Product].[All Products].[Food].[Eggs], [Gender].[All Gender].[F]}" + nl +
-								"{[Product].[All Products].[Food].[Eggs], [Gender].[All Gender].[M]}" + nl +
-								"{[Product].[All Products].[Food].[Eggs], [Gender].[All Gender]}" + nl +
-								"{[Product].[All Products].[Food], [Gender].[All Gender].[F]}" + nl +
-								"{[Product].[All Products].[Food], [Gender].[All Gender].[M]}" + nl +
-								"{[Product].[All Products].[Food], [Gender].[All Gender]}" + nl +
-								"{[Product].[All Products], [Gender].[All Gender].[F]}" + nl +
-								"{[Product].[All Products], [Gender].[All Gender].[M]}" + nl +
-								"{[Product].[All Products], [Gender].[All Gender]}";
-						test.assertEquals(expected, test.toString(axis.positions));
-					}
-				}));
+				};
+			}
+			public void testHierarchize(FoodMartTestCase test) {
+				final Axis axis = test.executeAxis2(
+						"Hierarchize(" + nl +
+						"    {[Product].[All Products], " +
+						"     [Product].[Food]," + nl +
+						"     [Product].[Drink]," + nl +
+						"     [Product].[Non-Consumable]," + nl +
+						"     [Product].[Food].[Eggs]," + nl +
+						"     [Product].[Drink].[Dairy]})");
+				final String expected = "[Product].[All Products]" + nl +
+						"[Product].[All Products].[Drink]" + nl +
+						"[Product].[All Products].[Drink].[Dairy]" + nl +
+						"[Product].[All Products].[Food]" + nl +
+						"[Product].[All Products].[Food].[Eggs]" + nl +
+						"[Product].[All Products].[Non-Consumable]";
+				test.assertEquals(expected, test.toString(axis.positions));
+			}
+			public void testHierarchizePost(FoodMartTestCase test) {
+				final Axis axis = test.executeAxis2(
+						"Hierarchize(" + nl +
+						"    {[Product].[All Products], " +
+						"     [Product].[Food]," + nl +
+						"     [Product].[Food].[Eggs]," + nl +
+						"     [Product].[Drink].[Dairy]}," + nl +
+						"  POST)");
+				final String expected = "[Product].[All Products].[Drink].[Dairy]" + nl +
+						"[Product].[All Products].[Food].[Eggs]" + nl +
+						"[Product].[All Products].[Food]" + nl +
+						"[Product].[All Products]";
+				test.assertEquals(expected, test.toString(axis.positions));
+			}
+			public void testHierarchizeCrossJoinPre(FoodMartTestCase test) {
+				final Axis axis = test.executeAxis2(
+						"Hierarchize(" + nl +
+						"  CrossJoin(" + nl +
+						"    {[Product].[All Products], " +
+						"     [Product].[Food]," + nl +
+						"     [Product].[Food].[Eggs]," + nl +
+						"     [Product].[Drink].[Dairy]}," + nl +
+						"    [Gender].MEMBERS)," + nl +
+						"  PRE)");
+				final String expected = "{[Product].[All Products], [Gender].[All Gender]}" + nl +
+						"{[Product].[All Products], [Gender].[All Gender].[F]}" + nl +
+						"{[Product].[All Products], [Gender].[All Gender].[M]}" + nl +
+						"{[Product].[All Products].[Drink].[Dairy], [Gender].[All Gender]}" + nl +
+						"{[Product].[All Products].[Drink].[Dairy], [Gender].[All Gender].[F]}" + nl +
+						"{[Product].[All Products].[Drink].[Dairy], [Gender].[All Gender].[M]}" + nl +
+						"{[Product].[All Products].[Food], [Gender].[All Gender]}" + nl +
+						"{[Product].[All Products].[Food], [Gender].[All Gender].[F]}" + nl +
+						"{[Product].[All Products].[Food], [Gender].[All Gender].[M]}" + nl +
+						"{[Product].[All Products].[Food].[Eggs], [Gender].[All Gender]}" + nl +
+						"{[Product].[All Products].[Food].[Eggs], [Gender].[All Gender].[F]}" + nl +
+						"{[Product].[All Products].[Food].[Eggs], [Gender].[All Gender].[M]}";
+				test.assertEquals(expected, test.toString(axis.positions));
+			}
+			public void testHierarchizeCrossJoinPost(FoodMartTestCase test) {
+				final Axis axis = test.executeAxis2(
+						"Hierarchize(" + nl +
+						"  CrossJoin(" + nl +
+						"    {[Product].[All Products], " +
+						"     [Product].[Food]," + nl +
+						"     [Product].[Food].[Eggs]," + nl +
+						"     [Product].[Drink].[Dairy]}," + nl +
+						"    [Gender].MEMBERS)," + nl +
+						"  POST)");
+				final String expected = "{[Product].[All Products].[Drink].[Dairy], [Gender].[All Gender].[F]}" + nl +
+						"{[Product].[All Products].[Drink].[Dairy], [Gender].[All Gender].[M]}" + nl +
+						"{[Product].[All Products].[Drink].[Dairy], [Gender].[All Gender]}" + nl +
+						"{[Product].[All Products].[Food].[Eggs], [Gender].[All Gender].[F]}" + nl +
+						"{[Product].[All Products].[Food].[Eggs], [Gender].[All Gender].[M]}" + nl +
+						"{[Product].[All Products].[Food].[Eggs], [Gender].[All Gender]}" + nl +
+						"{[Product].[All Products].[Food], [Gender].[All Gender].[F]}" + nl +
+						"{[Product].[All Products].[Food], [Gender].[All Gender].[M]}" + nl +
+						"{[Product].[All Products].[Food], [Gender].[All Gender]}" + nl +
+						"{[Product].[All Products], [Gender].[All Gender].[F]}" + nl +
+						"{[Product].[All Products], [Gender].[All Gender].[M]}" + nl +
+						"{[Product].[All Products], [Gender].[All Gender]}";
+				test.assertEquals(expected, test.toString(axis.positions));
+			}
+		});
 
 		if (false) define(new FunDefBase("Intersect", "Intersect(<Set1>, <Set2>[, ALL])", "Returns the intersection of two input sets, optionally retaining duplicates.", "fx*"));
 		if (false) define(new FunDefBase("LastPeriods", "LastPeriods(<Index>[, <Member>])", "Returns a set of members prior to and including a specified member.", "fx*"));
@@ -2038,7 +2036,7 @@ public class BuiltinFunTable extends FunTable {
 				return toVector(level.getMembers());
 			}
 		});
-		define(new MultiResolver(
+		define(new FunkResolver(
 				"Mtd", "Mtd([<Member>])", "A shortcut function for the PeriodsToDate function that specifies the level to be Month.",
 				new String[]{"fx", "fxm"},
 				new FunkBase() {
@@ -2051,252 +2049,249 @@ public class BuiltinFunTable extends FunTable {
 				}));
 		define(new MultiResolver(
 				"Order", "Order(<Set>, <Value Expression>[, ASC | DESC | BASC | BDESC])", "Arranges members of a set, optionally preserving or breaking the hierarchy.",
-				new String[]{"fxxvy", "fxxv"},
-				new FunkBase() {
-					boolean desc;
-					boolean brk;
-
-					public void onResolve(Exp[] args, FunDef funDef) {
-						String order = getLiteralArg(args, 2, "ASC", new String[] {"ASC","DESC","BASC","BDESC"}, funDef);
-						this.desc = order.equals("DESC") || order.equals("BDESC");
-						this.brk = order.equals("BASC") || order.equals("BDESC");
-						super.onResolve(args, funDef);
-					}
-
+				new String[]{"fxxvy", "fxxv"}) {
+			protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+				String order = getLiteralArg(args, 2, "ASC", new String[] {"ASC","DESC","BASC","BDESC"}, dummyFunDef);
+				final boolean desc = order.equals("DESC") || order.equals("BDESC");
+				final boolean brk = order.equals("BASC") || order.equals("BDESC");
+				return new FunDefBase(dummyFunDef) {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Vector members = (Vector) getArg(evaluator, args, 0);
 						ExpBase exp = (ExpBase) getArgNoEval(args, 1);
 						sort(evaluator, members, exp, desc, brk);
 						return members;
 					}
-					public void testOrder(FoodMartTestCase test) {
-						test.runQueryCheckResult(
-								"select {[Measures].[Unit Sales]} on columns," + nl +
-								" order({" + nl +
-								"  [Product].[All Products].[Drink]," + nl +
-								"  [Product].[All Products].[Drink].[Beverages]," + nl +
-								"  [Product].[All Products].[Drink].[Dairy]," + nl +
-								"  [Product].[All Products].[Food]," + nl +
-								"  [Product].[All Products].[Food].[Baked Goods]," + nl +
-								"  [Product].[All Products].[Food].[Eggs]," + nl +
-								"  [Product].[All Products]}," + nl +
-								" [Measures].[Unit Sales]) on rows" + nl +
-								"from Sales",
+				};
+			}
+			public void testOrder(FoodMartTestCase test) {
+				test.runQueryCheckResult(
+						"select {[Measures].[Unit Sales]} on columns," + nl +
+						" order({" + nl +
+						"  [Product].[All Products].[Drink]," + nl +
+						"  [Product].[All Products].[Drink].[Beverages]," + nl +
+						"  [Product].[All Products].[Drink].[Dairy]," + nl +
+						"  [Product].[All Products].[Food]," + nl +
+						"  [Product].[All Products].[Food].[Baked Goods]," + nl +
+						"  [Product].[All Products].[Food].[Eggs]," + nl +
+						"  [Product].[All Products]}," + nl +
+						" [Measures].[Unit Sales]) on rows" + nl +
+						"from Sales",
 
-								"Axis #0:" + nl +
-								"{}" + nl +
-								"Axis #1:" + nl +
-								"{[Measures].[Unit Sales]}" + nl +
-								"Axis #2:" + nl +
-								"{[Product].[All Products]}" + nl +
-								"{[Product].[All Products].[Drink]}" + nl +
-								"{[Product].[All Products].[Drink].[Dairy]}" + nl +
-								"{[Product].[All Products].[Drink].[Beverages]}" + nl +
-								"{[Product].[All Products].[Food]}" + nl +
-								"{[Product].[All Products].[Food].[Eggs]}" + nl +
-								"{[Product].[All Products].[Food].[Baked Goods]}" + nl +
-								"Row #0: 266,773" + nl +
-								"Row #1: 24,597" + nl +
-								"Row #2: 4,186" + nl +
-								"Row #3: 13,573" + nl +
-								"Row #4: 191,940" + nl +
-								"Row #5: 4,132" + nl +
-								"Row #6: 7,870" + nl);
-					}
-					public void testOrderParentsMissing(FoodMartTestCase test) {
-						// Paradoxically, [Alcoholic Beverages] comes before
-						// [Eggs] even though it has a larger value, because
-						// its parent [Drink] has a smaller value than [Food].
-						test.runQueryCheckResult(
-								"select {[Measures].[Unit Sales]} on columns," +
-								" order({" + nl +
-								"  [Product].[All Products].[Drink].[Alcoholic Beverages]," + nl +
-								"  [Product].[All Products].[Food].[Eggs]}," + nl +
-								" [Measures].[Unit Sales], ASC) on rows" + nl +
-								"from Sales",
+						"Axis #0:" + nl +
+						"{}" + nl +
+						"Axis #1:" + nl +
+						"{[Measures].[Unit Sales]}" + nl +
+						"Axis #2:" + nl +
+						"{[Product].[All Products]}" + nl +
+						"{[Product].[All Products].[Drink]}" + nl +
+						"{[Product].[All Products].[Drink].[Dairy]}" + nl +
+						"{[Product].[All Products].[Drink].[Beverages]}" + nl +
+						"{[Product].[All Products].[Food]}" + nl +
+						"{[Product].[All Products].[Food].[Eggs]}" + nl +
+						"{[Product].[All Products].[Food].[Baked Goods]}" + nl +
+						"Row #0: 266,773" + nl +
+						"Row #1: 24,597" + nl +
+						"Row #2: 4,186" + nl +
+						"Row #3: 13,573" + nl +
+						"Row #4: 191,940" + nl +
+						"Row #5: 4,132" + nl +
+						"Row #6: 7,870" + nl);
+			}
+			public void testOrderParentsMissing(FoodMartTestCase test) {
+				// Paradoxically, [Alcoholic Beverages] comes before
+				// [Eggs] even though it has a larger value, because
+				// its parent [Drink] has a smaller value than [Food].
+				test.runQueryCheckResult(
+						"select {[Measures].[Unit Sales]} on columns," +
+						" order({" + nl +
+						"  [Product].[All Products].[Drink].[Alcoholic Beverages]," + nl +
+						"  [Product].[All Products].[Food].[Eggs]}," + nl +
+						" [Measures].[Unit Sales], ASC) on rows" + nl +
+						"from Sales",
 
-								"Axis #0:" + nl +
-								"{}" + nl +
-								"Axis #1:" + nl +
-								"{[Measures].[Unit Sales]}" + nl +
-								"Axis #2:" + nl +
-								"{[Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
-								"{[Product].[All Products].[Food].[Eggs]}" + nl +
-								"Row #0: 6,838" + nl +
-								"Row #1: 4,132" + nl);
-					}
-					public void testOrderCrossJoinBreak(FoodMartTestCase test) {
-						test.runQueryCheckResult(
-								"select {[Measures].[Unit Sales]} on columns," + nl +
-								"  Order(" + nl +
-								"    CrossJoin(" + nl +
-								"      [Gender].children," + nl +
-								"      [Marital Status].children)," + nl +
-								"    [Measures].[Unit Sales]," + nl +
-								"    BDESC) on rows" + nl +
-								"from Sales" + nl +
-								"where [Time].[1997].[Q1]",
+						"Axis #0:" + nl +
+						"{}" + nl +
+						"Axis #1:" + nl +
+						"{[Measures].[Unit Sales]}" + nl +
+						"Axis #2:" + nl +
+						"{[Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
+						"{[Product].[All Products].[Food].[Eggs]}" + nl +
+						"Row #0: 6,838" + nl +
+						"Row #1: 4,132" + nl);
+			}
+			public void testOrderCrossJoinBreak(FoodMartTestCase test) {
+				test.runQueryCheckResult(
+						"select {[Measures].[Unit Sales]} on columns," + nl +
+						"  Order(" + nl +
+						"    CrossJoin(" + nl +
+						"      [Gender].children," + nl +
+						"      [Marital Status].children)," + nl +
+						"    [Measures].[Unit Sales]," + nl +
+						"    BDESC) on rows" + nl +
+						"from Sales" + nl +
+						"where [Time].[1997].[Q1]",
 
-								"Axis #0:" + nl +
-								"{[Time].[1997].[Q1]}" + nl +
-								"Axis #1:" + nl +
-								"{[Measures].[Unit Sales]}" + nl +
-								"Axis #2:" + nl +
-								"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M]}" + nl +
-								"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S]}" + nl +
-								"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M]}" + nl +
-								"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S]}" + nl +
-								"Row #0: 17,097" + nl +
-								"Row #1: 16,845" + nl +
-								"Row #2: 16,536" + nl +
-								"Row #3: 15,813" + nl);
-					}
-					public void testOrderCrossJoin(FoodMartTestCase test) {
-						// Note:
-						// 1. [Alcoholic Beverages] collates before [Eggs] and
-						//    [Seafood] because its parent, [Drink], is less
-						//    than [Food]
-						// 2. [Seattle] generally sorts after [CA] and [OR]
-						//    because invisible parent [WA] is greater.
-						test.runQueryCheckResult(
-								"select CrossJoin(" + nl +
-								"    {[Time].[1997]," + nl +
-								"     [Time].[1997].[Q1]}," + nl +
-								"    {[Measures].[Unit Sales]}) on columns," + nl +
-								"  Order(" + nl +
-								"    CrossJoin( " + nl +
-								"      {[Product].[All Products].[Food].[Eggs]," + nl +
-								"       [Product].[All Products].[Food].[Seafood]," + nl +
-								"       [Product].[All Products].[Drink].[Alcoholic Beverages]}," + nl +
-								"      {[Store].[USA].[WA].[Seattle]," + nl +
-								"       [Store].[USA].[CA]," + nl +
-								"       [Store].[USA].[OR]})," + nl +
-								"    ([Time].[1997].[Q1], [Measures].[Unit Sales])," + nl +
-								"    ASC) on rows" + nl +
-								"from Sales",
+						"Axis #0:" + nl +
+						"{[Time].[1997].[Q1]}" + nl +
+						"Axis #1:" + nl +
+						"{[Measures].[Unit Sales]}" + nl +
+						"Axis #2:" + nl +
+						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M]}" + nl +
+						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S]}" + nl +
+						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M]}" + nl +
+						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S]}" + nl +
+						"Row #0: 17,097" + nl +
+						"Row #1: 16,845" + nl +
+						"Row #2: 16,536" + nl +
+						"Row #3: 15,813" + nl);
+			}
+			public void testOrderCrossJoin(FoodMartTestCase test) {
+				// Note:
+				// 1. [Alcoholic Beverages] collates before [Eggs] and
+				//    [Seafood] because its parent, [Drink], is less
+				//    than [Food]
+				// 2. [Seattle] generally sorts after [CA] and [OR]
+				//    because invisible parent [WA] is greater.
+				test.runQueryCheckResult(
+						"select CrossJoin(" + nl +
+						"    {[Time].[1997]," + nl +
+						"     [Time].[1997].[Q1]}," + nl +
+						"    {[Measures].[Unit Sales]}) on columns," + nl +
+						"  Order(" + nl +
+						"    CrossJoin( " + nl +
+						"      {[Product].[All Products].[Food].[Eggs]," + nl +
+						"       [Product].[All Products].[Food].[Seafood]," + nl +
+						"       [Product].[All Products].[Drink].[Alcoholic Beverages]}," + nl +
+						"      {[Store].[USA].[WA].[Seattle]," + nl +
+						"       [Store].[USA].[CA]," + nl +
+						"       [Store].[USA].[OR]})," + nl +
+						"    ([Time].[1997].[Q1], [Measures].[Unit Sales])," + nl +
+						"    ASC) on rows" + nl +
+						"from Sales",
 
-								"Axis #0:" + nl +
-								"{}" + nl +
-								"Axis #1:" + nl +
-								"{[Time].[1997], [Measures].[Unit Sales]}" + nl +
-								"{[Time].[1997].[Q1], [Measures].[Unit Sales]}" + nl +
-								"Axis #2:" + nl +
-								"{[Product].[All Products].[Drink].[Alcoholic Beverages], [Store].[All Stores].[USA].[OR]}" + nl +
-								"{[Product].[All Products].[Drink].[Alcoholic Beverages], [Store].[All Stores].[USA].[CA]}" + nl +
-								"{[Product].[All Products].[Drink].[Alcoholic Beverages], [Store].[All Stores].[USA].[WA].[Seattle]}" + nl +
-								"{[Product].[All Products].[Food].[Seafood], [Store].[All Stores].[USA].[CA]}" + nl +
-								"{[Product].[All Products].[Food].[Seafood], [Store].[All Stores].[USA].[OR]}" + nl +
-								"{[Product].[All Products].[Food].[Seafood], [Store].[All Stores].[USA].[WA].[Seattle]}" + nl +
-								"{[Product].[All Products].[Food].[Eggs], [Store].[All Stores].[USA].[CA]}" + nl +
-								"{[Product].[All Products].[Food].[Eggs], [Store].[All Stores].[USA].[OR]}" + nl +
-								"{[Product].[All Products].[Food].[Eggs], [Store].[All Stores].[USA].[WA].[Seattle]}" + nl +
-								"Row #0: 1,680" + nl +
-								"Row #0: 393" + nl +
-								"Row #1: 1,936" + nl +
-								"Row #1: 431" + nl +
-								"Row #2: 635" + nl +
-								"Row #2: 142" + nl +
-								"Row #3: 441" + nl +
-								"Row #3: 91" + nl +
-								"Row #4: 451" + nl +
-								"Row #4: 107" + nl +
-								"Row #5: 217" + nl +
-								"Row #5: 44" + nl +
-								"Row #6: 1,116" + nl +
-								"Row #6: 240" + nl +
-								"Row #7: 1,119" + nl +
-								"Row #7: 251" + nl +
-								"Row #8: 373" + nl +
-								"Row #8: 57" + nl);
-					}
-					public void testOrderHierarchicalDesc(FoodMartTestCase test) {
-						final Axis axis = test.executeAxis2(
-								"Order(" + nl +
-								"    {[Product].[All Products], " +
-								"     [Product].[Food]," + nl +
-								"     [Product].[Drink]," + nl +
-								"     [Product].[Non-Consumable]," + nl +
-								"     [Product].[Food].[Eggs]," + nl +
-								"     [Product].[Drink].[Dairy]}," + nl +
-								"  [Measures].[Unit Sales]," + nl +
-								"  DESC)");
-						final String expected = "[Product].[All Products]" + nl +
-								"[Product].[All Products].[Food]" + nl +
-								"[Product].[All Products].[Food].[Eggs]" + nl +
-								"[Product].[All Products].[Non-Consumable]" + nl +
-								"[Product].[All Products].[Drink]" + nl +
-								"[Product].[All Products].[Drink].[Dairy]";
-						test.assertEquals(expected, test.toString(axis.positions));
-					}
-					public void testOrderCrossJoinDesc(FoodMartTestCase test) {
-						final Axis axis = test.executeAxis2(
-								"Order(" + nl +
-								"  CrossJoin(" + nl +
-								"    {[Gender].[M], [Gender].[F]}," + nl +
-								"    {[Product].[All Products], " +
-								"     [Product].[Food]," + nl +
-								"     [Product].[Drink]," + nl +
-								"     [Product].[Non-Consumable]," + nl +
-								"     [Product].[Food].[Eggs]," + nl +
-								"     [Product].[Drink].[Dairy]})," + nl +
-								"  [Measures].[Unit Sales]," + nl +
-								"  DESC)");
-						final String expected = "{[Gender].[All Gender].[M], [Product].[All Products]}" + nl +
-								"{[Gender].[All Gender].[M], [Product].[All Products].[Food]}" + nl +
-								"{[Gender].[All Gender].[M], [Product].[All Products].[Food].[Eggs]}" + nl +
-								"{[Gender].[All Gender].[M], [Product].[All Products].[Non-Consumable]}" + nl +
-								"{[Gender].[All Gender].[M], [Product].[All Products].[Drink]}" + nl +
-								"{[Gender].[All Gender].[M], [Product].[All Products].[Drink].[Dairy]}" + nl +
-								"{[Gender].[All Gender].[F], [Product].[All Products]}" + nl +
-								"{[Gender].[All Gender].[F], [Product].[All Products].[Food]}" + nl +
-								"{[Gender].[All Gender].[F], [Product].[All Products].[Food].[Eggs]}" + nl +
-								"{[Gender].[All Gender].[F], [Product].[All Products].[Non-Consumable]}" + nl +
-								"{[Gender].[All Gender].[F], [Product].[All Products].[Drink]}" + nl +
-								"{[Gender].[All Gender].[F], [Product].[All Products].[Drink].[Dairy]}";
-						test.assertEquals(expected, test.toString(axis.positions));
-					}
-					public void testOrderBug656802(FoodMartTestCase test) {
-						// Note:
-						// 1. [Alcoholic Beverages] collates before [Eggs] and
-						//    [Seafood] because its parent, [Drink], is less
-						//    than [Food]
-						// 2. [Seattle] generally sorts after [CA] and [OR]
-						//    because invisible parent [WA] is greater.
-						test.runQueryCheckResult(
-								"select {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} ON columns, " + nl +
-								"Order(" + nl +
-								"  ToggleDrillState(" + nl +
-								"    {([Promotion Media].[All Media], [Product].[All Products])}," + nl +
-								"    {[Product].[All Products]} ), " + nl +
-								"  [Measures].[Unit Sales], DESC) ON rows " + nl +
-								"from [Sales] where ([Time].[1997])",
+						"Axis #0:" + nl +
+						"{}" + nl +
+						"Axis #1:" + nl +
+						"{[Time].[1997], [Measures].[Unit Sales]}" + nl +
+						"{[Time].[1997].[Q1], [Measures].[Unit Sales]}" + nl +
+						"Axis #2:" + nl +
+						"{[Product].[All Products].[Drink].[Alcoholic Beverages], [Store].[All Stores].[USA].[OR]}" + nl +
+						"{[Product].[All Products].[Drink].[Alcoholic Beverages], [Store].[All Stores].[USA].[CA]}" + nl +
+						"{[Product].[All Products].[Drink].[Alcoholic Beverages], [Store].[All Stores].[USA].[WA].[Seattle]}" + nl +
+						"{[Product].[All Products].[Food].[Seafood], [Store].[All Stores].[USA].[CA]}" + nl +
+						"{[Product].[All Products].[Food].[Seafood], [Store].[All Stores].[USA].[OR]}" + nl +
+						"{[Product].[All Products].[Food].[Seafood], [Store].[All Stores].[USA].[WA].[Seattle]}" + nl +
+						"{[Product].[All Products].[Food].[Eggs], [Store].[All Stores].[USA].[CA]}" + nl +
+						"{[Product].[All Products].[Food].[Eggs], [Store].[All Stores].[USA].[OR]}" + nl +
+						"{[Product].[All Products].[Food].[Eggs], [Store].[All Stores].[USA].[WA].[Seattle]}" + nl +
+						"Row #0: 1,680" + nl +
+						"Row #0: 393" + nl +
+						"Row #1: 1,936" + nl +
+						"Row #1: 431" + nl +
+						"Row #2: 635" + nl +
+						"Row #2: 142" + nl +
+						"Row #3: 441" + nl +
+						"Row #3: 91" + nl +
+						"Row #4: 451" + nl +
+						"Row #4: 107" + nl +
+						"Row #5: 217" + nl +
+						"Row #5: 44" + nl +
+						"Row #6: 1,116" + nl +
+						"Row #6: 240" + nl +
+						"Row #7: 1,119" + nl +
+						"Row #7: 251" + nl +
+						"Row #8: 373" + nl +
+						"Row #8: 57" + nl);
+			}
+			public void testOrderHierarchicalDesc(FoodMartTestCase test) {
+				final Axis axis = test.executeAxis2(
+						"Order(" + nl +
+						"    {[Product].[All Products], " +
+						"     [Product].[Food]," + nl +
+						"     [Product].[Drink]," + nl +
+						"     [Product].[Non-Consumable]," + nl +
+						"     [Product].[Food].[Eggs]," + nl +
+						"     [Product].[Drink].[Dairy]}," + nl +
+						"  [Measures].[Unit Sales]," + nl +
+						"  DESC)");
+				final String expected = "[Product].[All Products]" + nl +
+						"[Product].[All Products].[Food]" + nl +
+						"[Product].[All Products].[Food].[Eggs]" + nl +
+						"[Product].[All Products].[Non-Consumable]" + nl +
+						"[Product].[All Products].[Drink]" + nl +
+						"[Product].[All Products].[Drink].[Dairy]";
+				test.assertEquals(expected, test.toString(axis.positions));
+			}
+			public void testOrderCrossJoinDesc(FoodMartTestCase test) {
+				final Axis axis = test.executeAxis2(
+						"Order(" + nl +
+						"  CrossJoin(" + nl +
+						"    {[Gender].[M], [Gender].[F]}," + nl +
+						"    {[Product].[All Products], " +
+						"     [Product].[Food]," + nl +
+						"     [Product].[Drink]," + nl +
+						"     [Product].[Non-Consumable]," + nl +
+						"     [Product].[Food].[Eggs]," + nl +
+						"     [Product].[Drink].[Dairy]})," + nl +
+						"  [Measures].[Unit Sales]," + nl +
+						"  DESC)");
+				final String expected = "{[Gender].[All Gender].[M], [Product].[All Products]}" + nl +
+						"{[Gender].[All Gender].[M], [Product].[All Products].[Food]}" + nl +
+						"{[Gender].[All Gender].[M], [Product].[All Products].[Food].[Eggs]}" + nl +
+						"{[Gender].[All Gender].[M], [Product].[All Products].[Non-Consumable]}" + nl +
+						"{[Gender].[All Gender].[M], [Product].[All Products].[Drink]}" + nl +
+						"{[Gender].[All Gender].[M], [Product].[All Products].[Drink].[Dairy]}" + nl +
+						"{[Gender].[All Gender].[F], [Product].[All Products]}" + nl +
+						"{[Gender].[All Gender].[F], [Product].[All Products].[Food]}" + nl +
+						"{[Gender].[All Gender].[F], [Product].[All Products].[Food].[Eggs]}" + nl +
+						"{[Gender].[All Gender].[F], [Product].[All Products].[Non-Consumable]}" + nl +
+						"{[Gender].[All Gender].[F], [Product].[All Products].[Drink]}" + nl +
+						"{[Gender].[All Gender].[F], [Product].[All Products].[Drink].[Dairy]}";
+				test.assertEquals(expected, test.toString(axis.positions));
+			}
+			public void testOrderBug656802(FoodMartTestCase test) {
+				// Note:
+				// 1. [Alcoholic Beverages] collates before [Eggs] and
+				//    [Seafood] because its parent, [Drink], is less
+				//    than [Food]
+				// 2. [Seattle] generally sorts after [CA] and [OR]
+				//    because invisible parent [WA] is greater.
+				test.runQueryCheckResult(
+						"select {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} ON columns, " + nl +
+						"Order(" + nl +
+						"  ToggleDrillState(" + nl +
+						"    {([Promotion Media].[All Media], [Product].[All Products])}," + nl +
+						"    {[Product].[All Products]} ), " + nl +
+						"  [Measures].[Unit Sales], DESC) ON rows " + nl +
+						"from [Sales] where ([Time].[1997])",
 
-								"Axis #0:" + nl +
-								"{[Time].[1997]}" + nl +
-								"Axis #1:" + nl +
-								"{[Measures].[Unit Sales]}" + nl +
-								"{[Measures].[Store Cost]}" + nl +
-								"{[Measures].[Store Sales]}" + nl +
-								"Axis #2:" + nl +
-								"{[Promotion Media].[All Media], [Product].[All Products]}" + nl +
-								"{[Promotion Media].[All Media], [Product].[All Products].[Food]}" + nl +
-								"{[Promotion Media].[All Media], [Product].[All Products].[Non-Consumable]}" + nl +
-								"{[Promotion Media].[All Media], [Product].[All Products].[Drink]}" + nl +
-								"Row #0: 266,773" + nl +
-								"Row #0: 225,627.23" + nl +
-								"Row #0: 565,238.13" + nl +
-								"Row #1: 191,940" + nl +
-								"Row #1: 163,270.72" + nl +
-								"Row #1: 409,035.59" + nl +
-								"Row #2: 50,236" + nl +
-								"Row #2: 42,879.28" + nl +
-								"Row #2: 107,366.33" + nl +
-								"Row #3: 24,597" + nl +
-								"Row #3: 19,477.23" + nl +
-								"Row #3: 48,836.21" + nl);
-					}
-				}));
-		define(new MultiResolver(
+						"Axis #0:" + nl +
+						"{[Time].[1997]}" + nl +
+						"Axis #1:" + nl +
+						"{[Measures].[Unit Sales]}" + nl +
+						"{[Measures].[Store Cost]}" + nl +
+						"{[Measures].[Store Sales]}" + nl +
+						"Axis #2:" + nl +
+						"{[Promotion Media].[All Media], [Product].[All Products]}" + nl +
+						"{[Promotion Media].[All Media], [Product].[All Products].[Food]}" + nl +
+						"{[Promotion Media].[All Media], [Product].[All Products].[Non-Consumable]}" + nl +
+						"{[Promotion Media].[All Media], [Product].[All Products].[Drink]}" + nl +
+						"Row #0: 266,773" + nl +
+						"Row #0: 225,627.23" + nl +
+						"Row #0: 565,238.13" + nl +
+						"Row #1: 191,940" + nl +
+						"Row #1: 163,270.72" + nl +
+						"Row #1: 409,035.59" + nl +
+						"Row #2: 50,236" + nl +
+						"Row #2: 42,879.28" + nl +
+						"Row #2: 107,366.33" + nl +
+						"Row #3: 24,597" + nl +
+						"Row #3: 19,477.23" + nl +
+						"Row #3: 48,836.21" + nl);
+			}
+		});
+
+		define(new FunkResolver(
 				"PeriodsToDate", "PeriodsToDate([<Level>[, <Member>]])", "Returns a set of periods (members) from a specified level starting with the first period and ending with a specified member.",
 				new String[]{"fx", "fxl", "fxlm"},
 				new FunkBase() {
@@ -2306,7 +2301,7 @@ public class BuiltinFunTable extends FunTable {
 						return new Vector(periodsToDate(evaluator, level, member));
 					}
 				}));
-		define(new MultiResolver(
+		define(new FunkResolver(
 				"Qtd", "Qtd([<Member>])", "A shortcut function for the PeriodsToDate function that specifies the level to be Quarter.",
 				new String[]{"fx", "fxm"},
 				new FunkBase() {
@@ -2340,7 +2335,7 @@ public class BuiltinFunTable extends FunTable {
 		});
 		if (false) define(new FunDefBase("Subset", "Subset(<Set>, <Start>[, <Count>])", "Returns a subset of elements from a set.", "fx*"));
 		if (false) define(new FunDefBase("Tail", "Tail(<Set>[, <Count>])", "Returns a subset from the end of a set.", "fx*"));
-		define(new MultiResolver(
+		define(new FunkResolver(
 				"ToggleDrillState", "ToggleDrillState(<Set1>, <Set2>[, RECURSIVE])", "Toggles the drill state of members. This function is a combination of DrillupMember and DrilldownMember.",
 				new String[]{"fxxx", "fxxx#"},
 				new FunkBase() {
@@ -2399,7 +2394,7 @@ public class BuiltinFunTable extends FunTable {
 							if (isDrilledDown) {
 								// skip descendants of this member
 								do {
-									Object next = (Member) v0.elementAt(i);
+									Object next = v0.elementAt(i);
 									Member nextMember = (k < 0) ? (Member) next :
 										((Member[]) next)[k];
 									boolean strict = true;
@@ -2495,7 +2490,7 @@ public class BuiltinFunTable extends FunTable {
 						test.assertEquals(expected, test.toString(axis.positions));
 					}
 				}));
-		define(new MultiResolver(
+		define(new FunkResolver(
 				"TopCount",
 				"TopCount(<Set>, <Count>[, <Numeric Expression>])",
 				"Returns a specified number of items from the top of a set, optionally ordering the set first.",
@@ -2523,7 +2518,7 @@ public class BuiltinFunTable extends FunTable {
 					}
 				}));
 
-		define(new MultiResolver(
+		define(new FunkResolver(
 			"TopPercent", "TopPercent(<Set>, <Percentage>, <Numeric Expression>)", "Sorts a set and returns the top N elements whose cumulative total is at least a specified percentage.",
 			new String[]{"fxxnN"},
 			new FunkBase() {
@@ -2543,7 +2538,7 @@ public class BuiltinFunTable extends FunTable {
 				//todo: test precision
 			}));
 
-		define(new MultiResolver(
+		define(new FunkResolver(
 			"TopSum", "TopSum(<Set>, <Value>, <Numeric Expression>)", "Sorts a set and returns the top N elements whose cumulative total is at least a specified value.",
 			new String[]{"fxxnN"},
 			new FunkBase() {
@@ -2565,16 +2560,12 @@ public class BuiltinFunTable extends FunTable {
 
 		define(new MultiResolver(
 				"Union", "Union(<Set1>, <Set2>[, ALL])", "Returns the union of two sets, optionally retaining duplicates.",
-				new String[] {"fxxx", "fxxxy"},
-				new FunkBase() {
-					private boolean all;
-					public void onResolve(Exp[] args, FunDef funDef) {
-						String allString = getLiteralArg(args, 2, "DISTINCT", new String[] {"ALL", "DISTINCT"}, null);
-						this.all = allString.equalsIgnoreCase("ALL");
-						checkCompatible(args[0], args[1], funDef);
-						super.onResolve(args, funDef);
-					}
-
+				new String[] {"fxxx", "fxxxy"}) {
+			protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+				String allString = getLiteralArg(args, 2, "DISTINCT", new String[] {"ALL", "DISTINCT"}, dummyFunDef);
+				final boolean all = allString.equalsIgnoreCase("ALL");
+				checkCompatible(args[0], args[1], dummyFunDef);
+				return new FunDefBase(dummyFunDef) {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Vector left = (Vector) getArg(evaluator, args, 0),
 								right = (Vector) getArg(evaluator, args, 1);
@@ -2592,65 +2583,67 @@ public class BuiltinFunTable extends FunTable {
 							return result;
 						}
 					}
+				};
+			}
+			public void testUnionAll(FoodMartTestCase test) {
+				final Axis axis = test.executeAxis2("Union({[Gender].[M]}, {[Gender].[F]}, ALL)");
+				String expected = "[Gender].[All Gender].[M]" + nl +
+						"[Gender].[All Gender].[F]"; // order is preserved
+				test.assertEquals(expected, test.toString(axis.positions));
+			}
+			public void testUnion(FoodMartTestCase test) {
+				final Axis axis = test.executeAxis2("Union({[Store].[USA], [Store].[USA], [Store].[USA].[OR]}, {[Store].[USA].[CA], [Store].[USA]})");
+				String expected = "[Store].[All Stores].[USA]" + nl +
+						"[Store].[All Stores].[USA].[OR]" + nl +
+						"[Store].[All Stores].[USA].[CA]";
+				test.assertEquals(expected, test.toString(axis.positions));
+			}
+			public void testUnionEmptyBoth(FoodMartTestCase test) {
+				final Axis axis = test.executeAxis2("Union({}, {})");
+				String expected = "";
+				test.assertEquals(expected, test.toString(axis.positions));
+			}
+			public void testUnionEmptyRight(FoodMartTestCase test) {
+				final Axis axis = test.executeAxis2("Union({[Gender].[M]}, {})");
+				String expected = "[Gender].[All Gender].[M]";
+				test.assertEquals(expected, test.toString(axis.positions));
+			}
+			public void testUnionTuple(FoodMartTestCase test) {
+				final Axis axis = test.executeAxis2(
+						"Union({" +
+						" ([Gender].[M], [Marital Status].[S])," +
+						" ([Gender].[F], [Marital Status].[S])" +
+						"}, {" +
+						" ([Gender].[M], [Marital Status].[M])," +
+						" ([Gender].[M], [Marital Status].[S])" +
+						"})");
+				String expected = "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S]}" + nl +
+						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S]}" + nl +
+						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M]}";
+				test.assertEquals(expected, test.toString(axis.positions));
+			}
+			public void testUnionQuery(FoodMartTestCase test) {
+				Result result = test.runQuery(
+						"select {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} on columns," + nl +
+						" Hierarchize( " + nl +
+						"   Union(" + nl +
+						"     Crossjoin(" + nl +
+						"       Crossjoin([Gender].[All Gender].children," + nl +
+						"                 [Marital Status].[All Marital Status].children )," + nl +
+						"       Crossjoin([Customers].[All Customers].children," + nl +
+						"                 [Product].[All Products].children ) ) ," + nl +
+						"     Crossjoin( {([Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M] )}," + nl +
+						"       Crossjoin(" + nl +
+						"         [Customers].[All Customers].[USA].children," + nl +
+						"         [Product].[All Products].children ) ) )) on rows" +nl +
+						"from Sales where ([Time].[1997])");
+				final Axis rowsAxis = result.getAxes()[1];
+				test.assertEquals(45, rowsAxis.positions.length);
+			}
+		});
 
-					public void testUnionAll(FoodMartTestCase test) {
-						final Axis axis = test.executeAxis2("Union({[Gender].[M]}, {[Gender].[F]}, ALL)");
-						String expected = "[Gender].[All Gender].[M]" + nl +
-								"[Gender].[All Gender].[F]"; // order is preserved
-						test.assertEquals(expected, test.toString(axis.positions));
-					}
-					public void testUnion(FoodMartTestCase test) {
-						final Axis axis = test.executeAxis2("Union({[Store].[USA], [Store].[USA], [Store].[USA].[OR]}, {[Store].[USA].[CA], [Store].[USA]})");
-						String expected = "[Store].[All Stores].[USA]" + nl +
-								"[Store].[All Stores].[USA].[OR]" + nl +
-								"[Store].[All Stores].[USA].[CA]";
-						test.assertEquals(expected, test.toString(axis.positions));
-					}
-					public void testUnionEmptyBoth(FoodMartTestCase test) {
-						final Axis axis = test.executeAxis2("Union({}, {})");
-						String expected = "";
-						test.assertEquals(expected, test.toString(axis.positions));
-					}
-					public void testUnionEmptyRight(FoodMartTestCase test) {
-						final Axis axis = test.executeAxis2("Union({[Gender].[M]}, {})");
-						String expected = "[Gender].[All Gender].[M]";
-						test.assertEquals(expected, test.toString(axis.positions));
-					}
-					public void testUnionTuple(FoodMartTestCase test) {
-						final Axis axis = test.executeAxis2(
-								"Union({" +
-								" ([Gender].[M], [Marital Status].[S])," +
-								" ([Gender].[F], [Marital Status].[S])" +
-								"}, {" +
-								" ([Gender].[M], [Marital Status].[M])," +
-								" ([Gender].[M], [Marital Status].[S])" +
-								"})");
-						String expected = "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S]}" + nl +
-								"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S]}" + nl +
-								"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M]}";
-						test.assertEquals(expected, test.toString(axis.positions));
-					}
-					public void testUnionQuery(FoodMartTestCase test) {
-						Result result = test.runQuery(
-								"select {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} on columns," + nl +
-								" Hierarchize( " + nl +
-								"   Union(" + nl +
-								"     Crossjoin(" + nl +
-								"       Crossjoin([Gender].[All Gender].children," + nl +
-								"                 [Marital Status].[All Marital Status].children )," + nl +
-								"       Crossjoin([Customers].[All Customers].children," + nl +
-								"                 [Product].[All Products].children ) ) ," + nl +
-								"     Crossjoin( {([Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M] )}," + nl +
-								"       Crossjoin(" + nl +
-								"         [Customers].[All Customers].[USA].children," + nl +
-								"         [Product].[All Products].children ) ) )) on rows" +nl +
-								"from Sales where ([Time].[1997])");
-						final Axis rowsAxis = result.getAxes()[1];
-						test.assertEquals(45, rowsAxis.positions.length);
-					}
-				}));
 		if (false) define(new FunDefBase("VisualTotals", "VisualTotals(<Set>, <Pattern>)", "Dynamically totals child members specified in a set using a pattern for the total label in the result set.", "fx*"));
-		define(new MultiResolver(
+		define(new FunkResolver(
 				"Wtd", "Wtd([<Member>])", "A shortcut function for the PeriodsToDate function that specifies the level to be Week.",
 				new String[]{"fx", "fxm"},
 				new FunkBase() {
@@ -2661,7 +2654,7 @@ public class BuiltinFunTable extends FunTable {
 								getMemberArg(evaluator, args, 0, false)));
 					}
 				}));
-		define(new MultiResolver(
+		define(new FunkResolver(
 				"Ytd", "Ytd([<Member>])", "A shortcut function for the PeriodsToDate function that specifies the level to be Year.",
 				new String[]{"fx", "fxm"},
 				new FunkBase() {

@@ -12,9 +12,6 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.Exp;
-import mondrian.olap.FunDef;
-
 /**
  * <code>FunkBase</code> is a skeleton implemention of a {@link Funk}
  *
@@ -23,8 +20,6 @@ import mondrian.olap.FunDef;
  * @version $Id$
  **/
 abstract class FunkBase extends FunUtil implements Funk {
-	public void onResolve(Exp[] args, FunDef funDef) {
-	}
 }
 
 // End FunkBase.java
