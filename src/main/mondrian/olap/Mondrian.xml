@@ -5,7 +5,7 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == Copyright (C) 2001-2004 Kana Software, Inc. and others.
+  == Copyright (C) 2001-2005 Kana Software, Inc. and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   ==
@@ -546,8 +546,6 @@ Revision is $Id$
 				A string being displayed instead of the name.
 			</Doc>
 		</Attribute>
-		
-		
 	</Element>
 
 	<Element type="Measure">
@@ -583,6 +581,13 @@ Revision is $Id$
 				A string being displayed instead of the name.
 			</Doc>
 		</Attribute>
+		<Attribute name="visible" type="Boolean" required="false">
+			<Doc>
+				Whether this member is visible in the user-interface.
+                Default true.
+			</Doc>
+		</Attribute>
+		<Array name="memberProperties" type="CalculatedMemberProperty" min="0"/>
 	</Element>
 
 	<Element type="CalculatedMember">
@@ -610,6 +615,12 @@ Revision is $Id$
 		<Attribute name="dimension" required="true">
 			<Doc>
 				Name of the dimension which this member belongs to.
+			</Doc>
+		</Attribute>
+		<Attribute name="visible" type="Boolean" required="false">
+			<Doc>
+				Whether this member is visible in the user-interface.
+                Default true.
 			</Doc>
 		</Attribute>
 		<Array name="memberProperties" type="CalculatedMemberProperty" min="0"/>

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2003 Kana Software, Inc. and others.
+// Copyright (C) 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -48,6 +48,12 @@ public abstract class Property {
     public static final String PROPERTY_FORMATTED_VALUE = "FORMATTED_VALUE";
     /** Cell property for XML/A. */
     public static final String PROPERTY_FORMAT_STRING = "FORMAT_STRING";
+    /**
+     * Name of the system property which determines whether to show a member
+     * (especially a measure or calculated member) in a user interface such as
+     * JPivot.
+     */
+    public static final String PROPERTY_VISIBLE = "$visible";
 	/**
 	 * A list of the names of properties which have special meaning to the
 	 * Mondrian system.

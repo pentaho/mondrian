@@ -563,7 +563,7 @@ public class FunUtil extends Util {
 			if (o instanceof Number) {
 				double d = ((Number) o).doubleValue();
 				mapMemberToValue.put(
-                    member, 
+                    member,
                     new Double(d / total * (double) 100));
 			}
 		}
@@ -908,8 +908,8 @@ public class FunUtil extends Util {
 				stdev += Math.pow((((Double) sw.v.get(i)).doubleValue() - avg),2);
 			}
 			int n = sw.v.size();
-			if (!biased) { 
-                n--; 
+			if (!biased) {
+                n--;
             }
 			return new Double(stdev / (double) n);
 		}
@@ -1132,6 +1132,9 @@ public class FunUtil extends Util {
      * <code>ancestorMember</code> as <code>member</code> is under its parent.
      */
     static Member cousin(SchemaReader schemaReader, Member member, Member ancestorMember) {
+        if (ancestorMember.isNull()) {
+            return ancestorMember;
+        }
         if (member.getHierarchy() != ancestorMember.getHierarchy()) {
             throw MondrianResource.instance().newCousinHierarchyMismatch(
                 member.getUniqueName(), ancestorMember.getUniqueName());

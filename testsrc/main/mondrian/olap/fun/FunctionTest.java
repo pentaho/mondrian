@@ -747,6 +747,15 @@ public class FunctionTest extends FoodMartTestCase {
         Assert.assertNull(member);
     }
 
+    public void testLeadNull() {
+        Member member = executeAxis("[Gender].Parent.Lead(1)");
+        Assert.assertNull(member);
+    }
+
+    public void testLeadZero() {
+        Member member = executeAxis("[Gender].[F].Lead(0)");
+        Assert.assertEquals("F", member.getName());
+    }
 
     public void testBasic2() {
         Result result = runQuery("select {[Gender].[F].NextMember} ON COLUMNS from Sales");
@@ -2117,6 +2126,66 @@ public class FunctionTest extends FoodMartTestCase {
 
         assertAxisReturns("parallelperiod([Time].[Year], 1, [Time].[1998].[Q1].[1])",
                 "[Time].[1997].[Q1].[1]");
+
+        // No args, therefore finds parallel period to [Time].[1997], which
+        // would be [Time].[1996], except that that doesn't exist, so null.
+        assertAxisReturns("ParallelPeriod()", "");
+
+        // Parallel period to [Time].[1997], which would be [Time].[1996],
+        // except that that doesn't exist, so null.
+        assertAxisReturns("ParallelPeriod([Time].[Year], 1, [Time].[1997])", "");
+
+        // one parameter, level 2 above member
+        runQueryCheckResult(
+                "WITH MEMBER [Measures].[Foo] AS " + nl +
+                " ' ParallelPeriod([Time].[Year]).UniqueName '" + nl +
+                "SELECT {[Measures].[Foo]} ON COLUMNS" + nl +
+                "FROM [Sales]" + nl +
+                "WHERE [Time].[1997].[Q3].[8]",
+                "Axis #0:" + nl +
+                "{[Time].[1997].[Q3].[8]}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Foo]}" + nl +
+                "Row #0: [Time].[#Null]" + nl);
+
+        // one parameter, level 1 above member
+        runQueryCheckResult(
+                "WITH MEMBER [Measures].[Foo] AS " + nl +
+                " ' ParallelPeriod([Time].[Quarter]).UniqueName '" + nl +
+                "SELECT {[Measures].[Foo]} ON COLUMNS" + nl +
+                "FROM [Sales]" + nl +
+                "WHERE [Time].[1997].[Q3].[8]",
+                "Axis #0:" + nl +
+                "{[Time].[1997].[Q3].[8]}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Foo]}" + nl +
+                "Row #0: [Time].[1997].[Q2].[5]" + nl);
+
+        // one parameter, level same as member
+        runQueryCheckResult(
+                "WITH MEMBER [Measures].[Foo] AS " + nl +
+                " ' ParallelPeriod([Time].[Month]).UniqueName '" + nl +
+                "SELECT {[Measures].[Foo]} ON COLUMNS" + nl +
+                "FROM [Sales]" + nl +
+                "WHERE [Time].[1997].[Q3].[8]",
+                "Axis #0:" + nl +
+                "{[Time].[1997].[Q3].[8]}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Foo]}" + nl +
+                "Row #0: [Time].[1997].[Q3].[7]" + nl);
+
+        //  one parameter, level below member
+        runQueryCheckResult(
+                "WITH MEMBER [Measures].[Foo] AS " + nl +
+                " ' ParallelPeriod([Time].[Month]).UniqueName '" + nl +
+                "SELECT {[Measures].[Foo]} ON COLUMNS" + nl +
+                "FROM [Sales]" + nl +
+                "WHERE [Time].[1997].[Q3]",
+                "Axis #0:" + nl +
+                "{[Time].[1997].[Q3]}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Foo]}" + nl +
+                "Row #0: [Time].[#Null]" + nl);
     }
 
     public void _testParallelPeriodThrowsException() throws Exception {

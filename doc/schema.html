@@ -4,7 +4,7 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == Copyright (C) 2001-2004 Kana Software, Inc. and others.
+  == Copyright (C) 2001-2005 Kana Software, Inc. and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   == jhyde, 24 September, 2002
@@ -21,7 +21,7 @@
 
 <body>
 <h1>How to design a Mondrian schema</h1>
-<p>Julian Hyde; last updated December, 2004.</p>
+<p>Julian Hyde; last updated February, 2005.</p>
 <h2>Contents</h2>
 <ol>
   <li><a href="#What_is_a_schema">What is a schema?</a></li>
@@ -204,37 +204,37 @@ statements.</p>
 &lt;<a href="#XML_Measure">Measure</a> name=&quot;Store Sales&quot; column=&quot;store_sales&quot;
     aggregator=&quot;sum&quot; formatString=&quot;#,###.00&quot;/&gt;</pre>
 </blockquote>
-<p dir="ltr">Each measure (see <a href="#XML_Measure">&lt;Measure&gt;</a>) has a name,
+<p>Each measure (see <a href="#XML_Measure">&lt;Measure&gt;</a>) has a name,
 a column in the fact table, and an <code>aggregator</code>. The aggregator is usually &quot;sum&quot;, 
 but &quot;count&quot;, &quot;mix&quot;, &quot;max&quot;, &quot;avg&quot;, and &quot;distinct count&quot; are also allowed; 
 &quot;distinct count&quot; has some limitations if your cube contains a
 <a href="#Parent_child_hierarchies">parent-child hierarchy</a>.</p>
 
-<p dir="ltr">An optional <code>formatString</code> attribute specifies how the value is to
+<p>An optional <code>formatString</code> attribute specifies how the value is to
 be printed. Here, we have chosen to output unit sales with no decimal places
 (since it is an integer), and store sales with two decimal places (since it is a
 currency value). The ',' and '.' symbols are locale-sensitive, so if you were
 running in Italian, store sales might appear as &quot;48.123,45&quot;. You can achieve
 even more wild effects using <a href="#Format_strings">advanced format strings</a>.</p>
-<p dir="ltr">A measure can have a caption attribute to be returned by getCaption() instead of the name.
+<p>A measure can have a caption attribute to be returned by getCaption() instead of the name.
 Defining a specific caption does make sense if special letters (e.g. &#931; or &#928;) are to be displayed.</p>
 <blockquote>
   <pre>&lt;<a href="#XML_Measure">Measure</a> name=&quot;Sum X&quot; column=&quot;sum_x&quot; aggregator=&quot;sum&quot; caption=&quot;&amp;#931; X&quot;/&gt;
 </blockquote>
-<p dir="ltr">Rather than coming from a column, a measure can use a
+<p>Rather than coming from a column, a measure can use a
 <a href="#Cell_readers">cell reader</a>.</p>
-<p dir="ltr">In order to provide a specific formatting of the cell values, a measure can use a
+<p>In order to provide a specific formatting of the cell values, a measure can use a
 <a href="#Cell_formatter">cell formatter</a>.</p>
 
-<h3 dir="ltr"><a name="Calculated_members">Calculated members</a></h3>
+<h3><a name="Calculated_members">Calculated members</a></h3>
 
-<p dir="ltr">Suppose you want to create a measure whose value comes not from a 
+<p>Suppose you want to create a measure whose value comes not from a 
 column of the fact table, but from an MDX formula. One way to do this is to use 
 a WITH MEMBER clause, like this:</p>
 
 <blockquote>
 
-	<p dir="ltr"><code>with member [Measures].[Profit] as '[Measures].[Store 
+	<p><code>with member [Measures].[Profit] as '[Measures].[Store 
 	Sales]-[Measures].[Store Cost]',<br>
 &nbsp;&nbsp; FORMAT_STRING = '$#,###'<br>
 	select {[Measures].[Store Sales], [Measures].[Profit]} on columns,<br>
@@ -268,6 +268,42 @@ same property with a conditional format string:</p>
 	<p><code>&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> 
 	name=&quot;FORMAT_STRING&quot; expression=&quot;Iif(Value &lt; 0, '($#,##0.00)', 
 	'$#,##0.00')&quot;/&gt;</code></p>
+</blockquote>
+
+<p>You can make a calculated member or a measure invisible. If you specify <code>
+visible=&quot;false&quot;</code> (the default is &quot;true&quot;) in the <code>&lt;<a href="#XML_Measure">Measure</a>&gt; 
+or &lt;<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code> element, 
+user-interfaces such as JPivot will notice this property and hide the member. 
+This is useful if you want to perform calculations in a number of steps, and 
+hide intermediate steps from end-users. For example, here only &quot;Margin per Sqft&quot; 
+is visible, and its factors &quot;Store Cost&quot;, &quot;Margin&quot; and &quot;Store Sqft&quot; are hidden:</p>
+
+<blockquote>
+
+	<p><code>&lt;<a href="#XML_Measure">Measure</a><br>
+&nbsp;&nbsp;&nbsp; name=&quot;Store Cost&quot;<br>
+&nbsp;&nbsp;&nbsp; column=&quot;store_cost&quot;<br>
+&nbsp;&nbsp;&nbsp; aggregator=&quot;sum&quot;<br>
+&nbsp;&nbsp;&nbsp; formatString=&quot;#,###.00&quot;<br>
+&nbsp;&nbsp;&nbsp; visible=&quot;false&quot;/&gt;<br>
+	&lt;<a href="#XML_CalculatedMember">CalculatedMember</a><br>
+&nbsp;&nbsp;&nbsp; name=&quot;Margin&quot; <br>
+&nbsp;&nbsp;&nbsp; dimension=&quot;Measures&quot; <br>
+&nbsp;&nbsp;&nbsp; visible=&quot;false&quot;<br>
+&nbsp;&nbsp;&nbsp; formula=&quot;([Measures].[Store Sales] - [Measures].[Store Cost]) 
+	/ [Measures].[Store Cost]&quot;/&gt;<br>
+	&lt;<a href="#XML_CalculatedMember">CalculatedMember</a><br>
+&nbsp;&nbsp;&nbsp; name=&quot;Store Sqft&quot; <br>
+&nbsp;&nbsp;&nbsp; dimension=&quot;Measures&quot;<br>
+&nbsp;&nbsp;&nbsp; visible=&quot;false&quot;<br>
+&nbsp;&nbsp;&nbsp; formula='[Store].Properties(&quot;Sqft&quot;)'/&gt;<br>
+	&lt;<a href="#XML_CalculatedMember">CalculatedMember</a><br>
+&nbsp;&nbsp;&nbsp; name=&quot;Margin per Sqft&quot;<br>
+&nbsp;&nbsp;&nbsp; dimension=&quot;Measures&quot;<br>
+&nbsp;&nbsp;&nbsp; visible=&quot;true&quot;<br>
+&nbsp;&nbsp;&nbsp; formula=&quot;[Measures].[Margin] / [Measures].[Store Cost]&quot;&gt;<br>
+&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name=&quot;FORMAT_STRING&quot; value=&quot;$#,##0.00&quot;/&gt;<br>
+	&lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code></p>
 </blockquote>
 
 <h3><a name="Dimensions,_Hierarchies,_Levels">Dimensions, Hierarchies, Levels</a></h3>
@@ -867,17 +903,17 @@ elements are passed via the <code>properties</code> constructor parameter. Here 
 &nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Parameter">Parameter</a> name=&quot;expression&quot; value=&quot;not used&quot;/&gt;
 &nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;
 &lt;/<a href="#XML_Dimension">Dimension</a>&gt;
-</pre></blockquote><h3><a name="Cell_readers">Cell readers</a></h3><p dir="ltr">Not implemented yet. Syntax would be something like</p><blockquote>
-  <pre dir="ltr">&lt;<a href="#XML_Measure">Measure</a> name=&quot;name&quot; cellReaderClass=&quot;com.foo.MyCellReader&quot;&gt;</pre></blockquote><p>and the class &quot;com.foo.MyCellReader&quot; would have to implement <code>
+</pre></blockquote><h3><a name="Cell_readers">Cell readers</a></h3><p>Not implemented yet. Syntax would be something like</p><blockquote>
+  <pre>&lt;<a href="#XML_Measure">Measure</a> name=&quot;name&quot; cellReaderClass=&quot;com.foo.MyCellReader&quot;&gt;</pre></blockquote><p>and the class &quot;com.foo.MyCellReader&quot; would have to implement <code>
 <a href="http://mondrian.sourceforge.net/api/mondrian/olap/CellReader.html">
-interface mondrian.olap.CellReader</a></code>.</p><h3><a name="Cell_formatter">Cell formatter</a></h3><p dir="ltr">A cell formatter attribute demotes a java class to format the cell value
+interface mondrian.olap.CellReader</a></code>.</p><h3><a name="Cell_formatter">Cell formatter</a></h3><p>A cell formatter attribute demotes a java class to format the cell value
 being displayed by
 <code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/Cell.html#getFormattedValue()">getFormattedValue()</a></code>.</p><blockquote>
-  <pre dir="ltr">&lt;<a href="#XML_Measure">Measure</a> name=&quot;name&quot; formatter=&quot;com.foo.MyCellFormatter&quot;/&gt;</pre></blockquote><p>The class &quot;com.foo.MyCellFormatter&quot; would have to implement <code>
+  <pre>&lt;<a href="#XML_Measure">Measure</a> name=&quot;name&quot; formatter=&quot;com.foo.MyCellFormatter&quot;/&gt;</pre></blockquote><p>The class &quot;com.foo.MyCellFormatter&quot; would have to implement <code>
 <a href="http://mondrian.sourceforge.net/api/mondrian/olap/CellFormatter.html">
 interface mondrian.olap.CellFormatter</a></code>.</p><h3><a name="Member_formatter">Member formatter</a></h3><p>A member formatter attribute demotes a java class to format a member's display value
 returned by <code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/Member.html#getCaption()">getCaption()</a></code>.</p><blockquote>
-  <pre dir="ltr">&lt;<a href="#XML_Level">Level</a> column=&quot;column&quot; name=&quot;name&quot; formatter=&quot;com.foo.MyMemberFormatter&quot;/&gt;</pre></blockquote><p>The class &quot;com.foo.MyMemberFormatter&quot; would have to implement <code>
+  <pre>&lt;<a href="#XML_Level">Level</a> column=&quot;column&quot; name=&quot;name&quot; formatter=&quot;com.foo.MyMemberFormatter&quot;/&gt;</pre></blockquote><p>The class &quot;com.foo.MyMemberFormatter&quot; would have to implement <code>
 <a href="http://mondrian.sourceforge.net/api/mondrian/olap/MemberFormatter.html">
 interface mondrian.olap.MemberFormatter</a></code>.</p><h3><a name="I18n">Internationalization</a></h3><p>Internationalized applications based on Mondrian could use multiple, language dependent schemas.<br/>
 If so, the MDX statements would be language dependent too. This might be more difficult to maintain.<br/>
@@ -899,7 +935,7 @@ If your DynamicSchemaProcessor would support JSTL-like resolving of variables,<b
 you might use <code>caption</code>, <code>allMemberCaption</code>, <code>measuresCaption</code> attributes as follows.
 
 <blockquote>
-  <pre dir="ltr">&lt;<a href="#XML_Schema">Schema</a> measuresCaption=&quot;${MEASURESCAPTION}&quot;&gt;</pre><pre dir="ltr">&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Gender&quot; foreignKey=&quot;customer_id&quot; caption=&quot;${GENDER}&quot;&gt;</pre><pre dir="ltr">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All Genders&quot; primaryKey=&quot;customer_id&quot; allMemberCaption=&quot;${ALLGENDER}&quot;&gt;</pre><pre dir="ltr">&lt;<a href="#XML_Level">Level</a> name=&quot;Gender&quot; column=&quot;gender&quot; uniqueMembers=&quot;true&quot; caption=&quot;${GENDER}&quot;&gt;</pre><pre dir="ltr">&lt;<a href="#XML_Measure">Measure</a> name=&quot;Unit Sales&quot; column=&quot;unit_sales&quot; caption=&quot;${UNITSALES}&quot;&gt;</pre></blockquote>A hierarchy with no <code>caption</code> defined would inherit the <code>caption</code> attribute from the dimension parent.
+  <pre>&lt;<a href="#XML_Schema">Schema</a> measuresCaption=&quot;${MEASURESCAPTION}&quot;&gt;</pre><pre>&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Gender&quot; foreignKey=&quot;customer_id&quot; caption=&quot;${GENDER}&quot;&gt;</pre><pre>&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All Genders&quot; primaryKey=&quot;customer_id&quot; allMemberCaption=&quot;${ALLGENDER}&quot;&gt;</pre><pre>&lt;<a href="#XML_Level">Level</a> name=&quot;Gender&quot; column=&quot;gender&quot; uniqueMembers=&quot;true&quot; caption=&quot;${GENDER}&quot;&gt;</pre><pre>&lt;<a href="#XML_Measure">Measure</a> name=&quot;Unit Sales&quot; column=&quot;unit_sales&quot; caption=&quot;${UNITSALES}&quot;&gt;</pre></blockquote>A hierarchy with no <code>caption</code> defined would inherit the <code>caption</code> attribute from the dimension parent.
 </p>
 <h2><a name="Access_control">Access-control</a></h2><p>You've got all this great data, but you don't everyone to be able to read all
 of it. You can define an access-control profile, called a Role, as part of the
@@ -971,13 +1007,13 @@ of doing this:</p><ol>
   Role</a> for more details), or look
   one up using the method
   <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Schema.html#lookupRole(java.lang.String)">
-  Schema.lookupRole(String)</a>.</li></ol><h2><a name="Other_stuff">Other stuff</a></h2><h3 dir="ltr"><a name="Format_strings">Format strings</a></h3><p dir="ltr">Format strings use Visual Basic formatting syntax, see
+  Schema.lookupRole(String)</a>.</li></ol><h2><a name="Other_stuff">Other stuff</a></h2><h3><a name="Format_strings">Format strings</a></h3><p>Format strings use Visual Basic formatting syntax, see
 <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Format.html">class
 mondrian.olap.Format</a> for more details. </p>
 
-<p dir="ltr">A measure's format string is usually a fixed string, but it really
+<p>A measure's format string is usually a fixed string, but it really
 an expression, which is evaluated in the same context as the cell. You can
-therefore change the formatting of a cell depending upon the cell's value.</p><p dir="ltr"><i>todo</i>: example of expression format string to do
+therefore change the formatting of a cell depending upon the cell's value.</p><p><i>todo</i>: example of expression format string to do
 traffic-lighting</p><h2><a name="Appendix_A_XML_elements">Appendix A: XML elements</a></h2><table border="2" cellpadding="2" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" id="AutoNumber2">
   <tr>
     <th>Element</th><th>Description</th></tr><tr>

@@ -89,28 +89,46 @@ class RolapCube extends CubeBase
 			xmlCube.measures.length];
 		for (int i = 0; i < xmlCube.measures.length; i++) {
 			MondrianDef.Measure xmlMeasure = xmlCube.measures[i];
-			measures[i] = new RolapStoredMeasure(
-                this, null, measuresLevel, xmlMeasure.name,
-                xmlMeasure.formatString, xmlMeasure.column,
-                xmlMeasure.aggregator);
-
+            final RolapStoredMeasure measure =
+                    measures[i] =
+                    new RolapStoredMeasure(
+                            this, null, measuresLevel, xmlMeasure.name,
+                            xmlMeasure.formatString, xmlMeasure.column,
+                            xmlMeasure.aggregator);
 			if (!Util.isEmpty(xmlMeasure.formatter)) {
 				// there is a special cell formatter class
 				try {
 					Class clazz = Class.forName(xmlMeasure.formatter);
 					Constructor ctor = clazz.getConstructor(new Class[0]);
 					CellFormatter cellFormatter = (CellFormatter) ctor.newInstance(new Object[0]);
-					measures[i].setFormatter(cellFormatter);
+					measure.setFormatter(cellFormatter);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 
+            // Set member's caption, if present.
 			if (!Util.isEmpty(xmlMeasure.caption)) {
 				// there is a special caption string
-				measures[i].setProperty("$caption", xmlMeasure.caption);
+				measure.setProperty(Property.PROPERTY_CAPTION, xmlMeasure.caption);
 			}
 
+            // Set member's visibility, default true.
+            Boolean visible = xmlMeasure.visible;
+            if (visible == null) {
+                visible = Boolean.TRUE;
+            }
+            measure.setProperty(Property.PROPERTY_VISIBLE, visible);
+
+            ArrayList propNames = new ArrayList();
+            ArrayList propExprs = new ArrayList();
+            validateMemberProps(xmlMeasure.memberProperties, propNames,
+                    propExprs, xmlMeasure.name);
+            for (int j = 0; j < propNames.size(); j++) {
+                String propName = (String) propNames.get(j);
+                final Object propExpr = propExprs.get(j);
+                measure.setProperty(propName, propExpr);
+            }
 		}
 
 		this.measuresHierarchy.memberReader = new CacheMemberReader(
@@ -221,17 +239,51 @@ class RolapCube extends CubeBase
             dimension.getUniqueName(), xmlCalcMember.name);
         final MondrianDef.CalculatedMemberProperty[] xmlProperties =
             xmlCalcMember.memberProperties;
-        final MemberProperty[] properties = new MemberProperty[xmlProperties.length];
         ArrayList propNames = new ArrayList(),
             propExprs = new ArrayList();
+        validateMemberProps(xmlProperties, propNames, propExprs,
+                xmlCalcMember.name);
+
+        final Formula formula = parseFormula(xmlCalcMember.formula,
+            memberUniqueName, propNames, propExprs);
+        calculatedMembers = (Formula[])
+            RolapUtil.addElement(calculatedMembers, formula);
+
+        Member member = formula.getMdxMember();
+
+        Boolean visible = xmlCalcMember.visible;
+        if (visible == null) {
+            visible = Boolean.TRUE;
+        }
+        member.setProperty(Property.PROPERTY_VISIBLE, visible);
+
+        return formula.getMdxMember();
+    }
+
+    /**
+     * Validates an array of member properties, and populates a list of names
+     * and expressions, one for each property.
+     *
+     * @param xmlProperties Array of property definitions.
+     * @param propNames Output array of property names.
+     * @param propExprs Output array of property expressions.
+     * @param memberName Name of member which the properties belong to.
+     */
+    private void validateMemberProps(
+            final MondrianDef.CalculatedMemberProperty[] xmlProperties,
+            ArrayList propNames,
+            ArrayList propExprs,
+            String memberName) {
+        MemberProperty[] properties = new MemberProperty[xmlProperties.length];
         for (int i = 0; i < properties.length; i++) {
-            final MondrianDef.CalculatedMemberProperty xmlProperty = xmlProperties[i];
+            final MondrianDef.CalculatedMemberProperty xmlProperty =
+                    xmlProperties[i];
             if (xmlProperty.expression == null &&
                 xmlProperty.value == null) {
                 throw MondrianResource.instance()
                     .newNeitherExprNorValueForCalcMemberProperty(
                         xmlProperty.name,
-                        xmlCalcMember.name,
+                        memberName,
                         getUniqueName());
             }
             if (xmlProperty.expression != null &&
@@ -239,7 +291,7 @@ class RolapCube extends CubeBase
                 throw MondrianResource.instance()
                     .newExprAndValueForMemberProperty(
                         xmlProperty.name,
-                        xmlCalcMember.name,
+                        memberName,
                         getUniqueName());
             }
             propNames.add(xmlProperty.name);
@@ -249,12 +301,6 @@ class RolapCube extends CubeBase
                 propExprs.add(Util.quoteForMdx(xmlProperty.value));
             }
         }
-        final Formula formula = parseFormula(xmlCalcMember.formula,
-            memberUniqueName, propNames, propExprs);
-
-        calculatedMembers = (Formula[])
-            RolapUtil.addElement(calculatedMembers, formula);
-        return formula.getMdxMember();
     }
 
     /**

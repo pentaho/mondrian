@@ -4044,7 +4044,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * of the [Store] shared dimension, and another usage called [Other Store]
      * which is connected to the [Unit Sales] column
      */
-    public void testCubeWhichUsesSameSharedDimTwice() {
+    public void _testCubeWhichUsesSameSharedDimTwice() {
         RolapConnection conn = (RolapConnection) getConnection();
         Schema schema = conn.getSchema();
         final Cube salesCube = schema.lookupCube("Sales", true);
@@ -4169,6 +4169,43 @@ public class BasicQueryTest extends FoodMartTestCase {
                 " and `sales_fact_1997`.`unit_sales` = `store_1`.`store_id`" +
                 " and `store_1`.`store_country` = 'USA'",
                 sql);
+    }
+
+    public void testMemberVisibility() {
+        Schema schema = getConnection().getSchema();
+        final Cube cube = schema.createCube(
+                "<Cube name=\"Sales_MemberVis\">\n" +
+                "  <Table name=\"sales_fact_1997\"/>\n" +
+                "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n" +
+                "      formatString=\"Standard\" visible=\"false\"/>\n" +
+                "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n" +
+                "      formatString=\"#,###.00\"/>\n" +
+                "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n" +
+                "      formatString=\"#,###.00\"/>\n" +
+                "  <Measure name=\"Sales Count\" column=\"product_id\" aggregator=\"count\"\n" +
+                "      formatString=\"#,###\"/>\n" +
+                "  <Measure name=\"Customer Count\" column=\"customer_id\"\n" +
+                "      aggregator=\"distinct count\" formatString=\"#,###\"/>\n" +
+                "  <CalculatedMember\n" +
+                "      name=\"Profit\"\n" +
+                "      dimension=\"Measures\"\n" +
+                "      visible=\"false\"\n" +
+                "      formula=\"[Measures].[Store Sales]-[Measures].[Store Cost]\">\n" +
+                "    <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"$#,##0.00\"/>\n" +
+                "  </CalculatedMember>\n" +
+                "</Cube>");
+        final SchemaReader scr = cube.getSchemaReader(null);
+        Member member = scr.getMemberByUniqueName(new String[] {"Measures", "Unit Sales"}, true);
+        Object visible = member.getPropertyValue(Property.PROPERTY_VISIBLE);
+        assertEquals(Boolean.FALSE, visible);
+
+        member = scr.getMemberByUniqueName(new String[] {"Measures", "Store Cost"}, true);
+        visible = member.getPropertyValue(Property.PROPERTY_VISIBLE);
+        assertEquals(Boolean.TRUE, visible);
+
+        member = scr.getMemberByUniqueName(new String[] {"Measures", "Profit"}, true);
+        visible = member.getPropertyValue(Property.PROPERTY_VISIBLE);
+        assertEquals(Boolean.FALSE, visible);
     }
 }
 

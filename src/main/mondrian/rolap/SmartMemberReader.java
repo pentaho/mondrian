@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// (C) Copyright 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -50,7 +50,7 @@ public class SmartMemberReader implements MemberReader, MemberCache
 	 * Locking strategy is to lock the parent SmartMemberReader. **/
 	private Map mapKeyToMember = Collections.synchronizedMap(new HashMap());
 	private List rootMembers;
-	
+
 	private Map mapLevelToMembers = Collections.synchronizedMap(new HashMap());
 
 	SmartMemberReader(MemberReader source)
@@ -128,7 +128,9 @@ public class SmartMemberReader implements MemberReader, MemberCache
 	}
 
 
-	/** @synchronized modifies mapLevelToMembers */
+	/**
+     * @synchronization modifies mapLevelToMembers
+     */
 	public synchronized List getMembersInLevel(
 		RolapLevel level, int startOrdinal, int endOrdinal) {
 		SoftReference ref = (SoftReference) mapLevelToMembers.get(level);
@@ -187,22 +189,15 @@ public class SmartMemberReader implements MemberReader, MemberCache
 	}
 
 	/**
-	 * A <code>ChildrenList</code> is held in the {@link #mapMemberToChildren}
-	 * cache. It implements {@link Cacheable}, so it can be removed
-	 * if it is not pulling its weight.
-	 *
-	 * <p><b>Note to developers</b>: this class must obey the contract for
-	 * objects which implement {@link Cacheable}.
+	 * A <code>ChildrenList</code> is held in the
+     * {@link SmartMemberReader#mapMemberToChildren} cache.
 	 **/
 	private static class ChildrenList
 	{
-		private SmartMemberReader reader;
 		private RolapMember member;
 		private ArrayList list;
 
-		ChildrenList(
-				SmartMemberReader reader, RolapMember member, ArrayList list) {
-			this.reader = reader;
+		ChildrenList(RolapMember member, ArrayList list) {
 			this.member = member;
 			this.list = list;
 		}
@@ -292,7 +287,7 @@ public class SmartMemberReader implements MemberReader, MemberCache
 	}
 
     public synchronized void putChildren(RolapMember member, ArrayList children) {
-        ChildrenList childrenList = new ChildrenList(this, member, children);
+        ChildrenList childrenList = new ChildrenList(member, children);
         SoftReference ref = new SoftReference(childrenList);
         mapMemberToChildren.put(member, ref);
     }
@@ -300,7 +295,7 @@ public class SmartMemberReader implements MemberReader, MemberCache
 	// synchronization: Must synchronize, because uses mapMemberToChildren
 	public synchronized RolapMember getLeadMember(RolapMember member, int n)
 	{
-		if (n == 0) {
+		if (n == 0 || member.isNull()) {
 			return member;
 		} else {
 			SiblingIterator iter = new SiblingIterator(this, member);
