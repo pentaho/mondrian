@@ -254,13 +254,28 @@ abstract class Util {
 		return s;
 	}
 
+	static String fileNameToCppClassName(String fileName, String suffix) {
+		String s = fileName;
+		s = removeSuffix(s, suffix);
+
+        int pos = s.lastIndexOf(fileSep);
+        if (pos >= 0) {
+            s = s.substring(pos + 1);
+        }
+    
+		int score = s.indexOf('_');
+		if (score >= 0) {
+			s = s.substring(0, score);
+		}
+		return s;
+	}
+
 	static String removeSuffix(String s, final String suffix) {
 		if (s.endsWith(suffix)) {
 			s = s.substring(0,s.length()-suffix.length());
 		}
 		return s;
 	}
-
 
 	/**
 	 * Given <code>happy/BirthdayResource_en_US.xml</code>,

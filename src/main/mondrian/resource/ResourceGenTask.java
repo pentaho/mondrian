@@ -36,8 +36,24 @@ import java.util.ArrayList;
  *source/happy/BirthdayResource.java
  *source/happy/BirthdayResource_en_US.java</pre>
  *
- * </blockquote>Files are not generated if there is an existing newer one.
- * The output path is determined by 'dest' and the package-name.
+ * </blockquote>
+ *
+ * <p>C++ Example:<blockquote>
+ *
+ * <pre>&lt;resgen mode="c++" srcdir="source" locales="en_US"&gt;
+ *    &lt;include name="happy/BirthdayResource.xml"/&gt;
+ *&lt;/resgen&gt;</pre>
+ *
+ * </blockquote>generates<blockquote>
+ *
+ * <pre>source/happy/BirthdayResource.resources
+ *source/happy/BirthdayResource_en_US.resources
+ *source/happy/BirthdayResource.h
+ *source/happy/BirthdayResource.cpp</pre>
+ *
+ * Files are not generated if there is an existing newer one.
+ * The output path is determined by 'destdir' and the package-name (derived
+ * from the XML file's path relative to 'srcdir').
  *
  * <h2>Element &lt;resourceGen&gt;</h2>
  *
@@ -46,6 +62,13 @@ import java.util.ArrayList;
  * <th>Attribute</th>
  * <th>Description</th>
  * <th>Required</th>
+ * </tr>
+ *
+ * <tr>
+ * <td><a name="mode">mode</a></td>
+ * <td>Generation mode.  Acceptable values are "java", "c++" or "all".
+ *     The default is "java".</td>
+ * <td>No</td>
  * </tr>
  *
  * <tr>
@@ -58,16 +81,15 @@ import java.util.ArrayList;
  *
  * <tr>
  * <td><a name="destdir">destdir</a></td>
- * <td>Destination directory. Classes and properties files are generated
- *     relative to this directory. If not specified, has the same value as
+ * <td>Destination directory. Output files are generated relative to this
+ *     directory. If not specified, has the same value as
  *     <a href="#srcdir">srcdir</a>.</td>
  * <td>No</td>
  * </tr>
  *
  * <tr>
  * <td><a name="locales">locales</a></td>
- * <td>Comma-separated list of locales to generate <code>.properties</code>
- *     and <code>.java</code> files for.</td>
+ * <td>Comma-separated list of locales to generate files for.</td>
  * <td>No</td>
  * </tr>
  *
@@ -88,10 +110,16 @@ import java.util.ArrayList;
  **/
 public class ResourceGenTask extends Task {
 	private ArrayList resources = new ArrayList();
+    int mode = MODE_JAVA;
 	File src;
 	File dest;
 	boolean statik = true;
 	String locales;
+
+    private static final int MODE_UNKNOWN = -1;
+    private static final int MODE_JAVA = 1;
+    private static final int MODE_CPP = 2;
+    private static final int MODE_ALL = 3;
 
 	public ResourceGenTask() {
 	}
@@ -111,6 +139,10 @@ public class ResourceGenTask extends Task {
 		resourceArgs.root = this;
 	}
 	void validate() {
+        if (mode != MODE_JAVA && mode != MODE_CPP && mode != MODE_ALL) {
+            throw new BuildException("You must specify a value mode: java, c++, or all");
+        }
+
 		if (src == null) {
 			throw new BuildException("You must specify 'srcdir'");
 		}
@@ -125,6 +157,21 @@ public class ResourceGenTask extends Task {
 	Include[] getIncludes() {
 		return (Include[]) resources.toArray(new Include[0]);
 	}
+
+    /** Sets <a href="#mode">mode</a>. **/
+    public void setMode(String mode)
+        throws BuildException
+    {
+        if ("java".equals(mode)) {
+            this.mode = MODE_JAVA;
+        } else if ("c++".equals(mode)) {
+            this.mode = MODE_CPP;
+        } else if ("all".equals(mode)) {
+            this.mode = MODE_ALL;
+        } else {
+            this.mode = MODE_UNKNOWN;
+        }
+    }
 
 	/** Sets <a href="#srcdir">srcdir</a>. **/
 	public void setSrcdir(File srcDir) {
@@ -172,11 +219,27 @@ public class ResourceGenTask extends Task {
 	 *     <code>happy.BirthdayResource</code>.</td>
 	 * <td>No</td>
 	 * </tr>
+	 * <tr>
+     *
+	 * <td><a name="cppClassName">cppClassName</a></td>
+	 * <td>The name of the C++ class to be generated.  By default, the class
+     *     name is derived from the name of the source file, for example
+	 *     <code>happy/BirthdayResource_en_US.xml</code> becomes class
+	 *     <code>happy.BirthdayResource</code>.</td>
+	 * <td>No</td>
+	 * </tr>
 	 *
 	 * <tr>
 	 * <td><a name="baseClassName">baseClassName</a></td>
 	 * <td>The fully-qualified name of the base class of the resource bundle.
 	 *     Defaults to "mondrian.resource.ShadowResourceBundle".</td>
+	 * <td>No</td>
+	 * </tr>
+     *
+	 * <tr>
+	 * <td><a name="cppBaseClassName">cppBaseClassName</a></td>
+	 * <td>The fully-qualified name of the base class of the resource bundle
+     *     for C++.  Defaults to "ResourceBundle".</td>
 	 * <td>No</td>
 	 * </tr>
 	 *
@@ -193,6 +256,11 @@ public class ResourceGenTask extends Task {
 		/** Base class. */
 		String baseClassName;
 
+        /** C++ Class name. **/
+        String cppClassName;
+		/** C++ Base class. */
+		String cppBaseClassName;
+
 		void validate() throws BuildException {
 			if (fileName == null) {
 				throw new BuildException("You must specify attribute 'name'");
@@ -200,8 +268,15 @@ public class ResourceGenTask extends Task {
 		}
 		void process(ResourceGen generator) throws BuildException {
 			ResourceGen.FileTask task;
+
+            boolean outputJava = (root.mode != ResourceGenTask.MODE_CPP);
+            boolean outputCpp = (root.mode != ResourceGenTask.MODE_JAVA);
+
 			if (fileName.endsWith(".xml")) {
-				task = generator.createXmlTask(this, fileName, className, baseClassName);
+				task = generator.createXmlTask(this, fileName,
+                                       className, baseClassName, outputJava,
+                                       cppClassName, cppBaseClassName,
+                                       outputCpp);
 			} else if (fileName.endsWith(".properties")) {
 				task = generator.createPropertiesTask(this, fileName);
 			} else {
@@ -231,6 +306,17 @@ public class ResourceGenTask extends Task {
 		}
 		String getBaseClassName() {
 			return baseClassName;
+		}
+		/** Sets <a href="#cppClassName">cppClassName</a>. **/
+		public void setCppClassName(String className) {
+			this.cppClassName = className;
+		}
+		/** Sets <a href="#cppBaseClassName">cppBaseClassName</a>. **/
+		public void setCppBaseClassName(String baseClassName) {
+			this.cppBaseClassName = baseClassName;
+		}
+		String getCppBaseClassName() {
+			return cppBaseClassName;
 		}
 	}
 

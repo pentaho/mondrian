@@ -50,6 +50,15 @@ import org.apache.tools.ant.BuildException;
  **/
 public class ResourceGen
 {
+    private static final String JAVA_STRING = "String";
+    private static final String CPP_STRING = "const string &";
+
+    private static final String JAVA_NUMBER = "Number";
+    private static final String CPP_NUMBER = "int";
+
+    private static final String JAVA_DATE_TIME = "java.util.Date";
+    private static final String CPP_DATE_TIME = "time_t";
+
 	public static void main(String [] args) throws IOException
 	{
 		ResourceGenTask rootArgs = parse(args);
@@ -65,7 +74,9 @@ public class ResourceGen
 		rootArgs.dest = new File(System.getProperty("user.dir"), "src/main");
 		for (int i = 0; i < args.length; i++) {
 			String arg = args[i];
-			if (arg.equals("-srcdir") && i + 1 < args.length) {
+            if (arg.equals("-mode") && i + 1 < args.length) {
+                rootArgs.setMode(args[++i]);
+            } else if (arg.equals("-srcdir") && i + 1 < args.length) {
 				rootArgs.setSrcdir(new File(args[++i]));
 			} else if (arg.equals("-destdir") && i + 1 < args.length) {
 				rootArgs.setDestdir(new File(args[++i]));
@@ -99,7 +110,7 @@ public class ResourceGen
 	 * currently "String", "Number", "java.util.Date", and null) ordered by
 	 * parameter number.
 	 */
-	static String [] getArgTypes(String message) {
+	static String [] getArgTypes(String message, boolean forJava) {
 		Format[] argFormats;
 		try {
 			// We'd like to do
@@ -114,13 +125,14 @@ public class ResourceGen
 				for (int i = 0; i < argFormats.length; i++) {
 					Format argFormat = argFormats[i];
 					if (argFormat == null) {
-						argTypes[i] = "String";
+						argTypes[i] = forJava ? JAVA_STRING : CPP_STRING;
 					} else if (argFormat instanceof NumberFormat) {
-						argTypes[i] = "Number";
+						argTypes[i] = forJava ? JAVA_NUMBER : CPP_NUMBER;
 					} else if (argFormat instanceof DateFormat) {
-						argTypes[i] = "java.util.Date"; // might be date or time
+                        // might be date or time
+						argTypes[i] = forJava ? JAVA_DATE_TIME : CPP_DATE_TIME;
 					} else {
-						argTypes[i] = "String";
+						argTypes[i] = forJava ? JAVA_STRING : CPP_STRING;
 					}
 				}
 				return argTypes;
@@ -133,17 +145,17 @@ public class ResourceGen
 			}
 		} catch (NoSuchMethodException e) {
 			// Fallback pre JDK 1.4
-			return getArgTypesByHand(message);
+			return getArgTypesByHand(message, forJava);
 		} catch (SecurityException e) {
 			throw new RuntimeException(e.toString());
 		}
 	}
 
-	static String [] getArgTypesByHand(String message) {
+	static String [] getArgTypesByHand(String message, boolean forJava) {
 		String[] argTypes = new String[10];
 		int length = 0;
 		for (int i = 0; i < 10; i++) {
-			argTypes[i] = getArgType(i, message);
+			argTypes[i] = getArgType(i, message, forJava);
 			if (argTypes[i] != null) {
 				length = i + 1;
 			}
@@ -154,7 +166,7 @@ public class ResourceGen
 		return argTypes2;
 	}
 
-	private static String getArgType(int i, String message) {
+	private static String getArgType(int i, String message, boolean forJava) {
 		String arg = "{" + Integer.toString(i); // e.g. "{1"
 		int index = message.lastIndexOf(arg);
 		if (index < 0) {
@@ -173,17 +185,17 @@ public class ResourceGen
 			if (index < end) {
 				String sub = message.substring(index);
 				if (sub.startsWith("number")) {
-					return "Number";
+					return forJava ? JAVA_NUMBER : CPP_NUMBER;
 				} else if (sub.startsWith("date")) {
-					return "java.util.Date";
+					return forJava ? JAVA_DATE_TIME : CPP_DATE_TIME;
 				} else if (sub.startsWith("time")) {
-					return "java.util.Date";
+					return forJava ? JAVA_DATE_TIME : CPP_DATE_TIME;
 				} else if (sub.startsWith("choice")) {
 					return null;
 				}
 			}
 		}
-		return "String";
+		return forJava ? JAVA_STRING : CPP_STRING;
 	}
 
 	/**
@@ -201,8 +213,8 @@ public class ResourceGen
 	/**
 	 * Returns a parameter list string, e.g. "String p0, int p1".
 	 */
-	static String getParameterList(String message) {
-		final String [] types = ResourceGen.getArgTypes(message);
+	static String getParameterList(String message, boolean forJava) {
+		final String [] types = ResourceGen.getArgTypes(message, forJava);
 		if (types.length == 0) {
 			return "";
 		}
@@ -213,7 +225,13 @@ public class ResourceGen
 				sb.append(", ");
 			}
 			sb.append(type);
-			sb.append(" p");
+            
+            if (!forJava && (type.endsWith("&") || type.endsWith("*"))) {
+                sb.append("p");
+            } else {
+                sb.append(" p");
+            }
+
 			sb.append(Integer.toString(i));
 		}
 		return sb.toString();
@@ -222,22 +240,38 @@ public class ResourceGen
 	 * Returns a parameter list string, e.g.
 	 * "new Object[] {p0, new Integer(p1)}"
 	 */
-	static String getArgumentList(String message) {
-		final String [] types = ResourceGen.getArgTypes(message);
-		if (types.length == 0) {
-			return "emptyObjectArray";
-		}
-		StringBuffer sb = new StringBuffer("new Object[] {");
-		for (int i = 0; i < types.length; i++) {
-			String type = types[i];
-			if (i > 0) {
-				sb.append(", ");
-			}
-			sb.append("p");
-			sb.append(Integer.toString(i));
-		}
-		sb.append("}");
-		return sb.toString();
+	static String getArgumentList(String message, boolean forJava) {
+		final String [] types = ResourceGen.getArgTypes(message, forJava);
+        
+        if (forJava) {
+            if (types.length == 0) {
+                return "emptyObjectArray";
+            }
+            StringBuffer sb = new StringBuffer("new Object[] {");
+            for (int i = 0; i < types.length; i++) {
+                String type = types[i];
+                if (i > 0) {
+                    sb.append(", ");
+                }
+                sb.append("p");
+                sb.append(Integer.toString(i));
+            }
+            sb.append("}");
+            return sb.toString();
+        } else {
+            if (types.length == 0) return "";
+            
+            StringBuffer sb = new StringBuffer();
+            for (int i = 0; i < types.length; i++) {
+                String type = types[i];
+                if (i > 0) {
+                    sb.append(", ");
+                }
+                sb.append("p");
+                sb.append(Integer.toString(i));
+            }
+            return sb.toString();
+        }
 	}
 	/** Get any comment relating to the message. */
 	static String getComment(ResourceDef.Resource resource)
@@ -254,8 +288,11 @@ public class ResourceGen
 
 	FileTask createXmlTask(
 			ResourceGenTask.Include include, String fileName, String className,
-			String baseClassName) {
-		return new XmlFileTask(include, fileName, className, baseClassName);
+			String baseClassName, boolean outputJava, String cppClassName,
+            String cppBaseClassName, boolean outputCpp) {
+		return new XmlFileTask(include, fileName, className, baseClassName,
+                               outputJava, cppClassName, cppBaseClassName,
+                               outputCpp);
 	}
 
 	FileTask createPropertiesTask(
@@ -268,15 +305,43 @@ public class ResourceGen
 		String className;
 		String fileName;
 
+        String cppClassName;
+    
+        boolean outputJava;
+        boolean outputCpp;
+
 		abstract void process(ResourceGen generator) throws IOException;
-		abstract void generateBaseJava(
+
+		abstract protected void generateBaseJava(
 				ResourceGen generator,
 				ResourceDef.ResourceBundle resourceList, PrintWriter pw);
+
+
+        abstract protected void generateCpp(
+            ResourceGen generator, ResourceDef.ResourceBundle resourceList);
 
 		/** XML source file, e.g. happy/BirthdayResource_en.xml **/
 		File getFile() {
 			return new File(include.root.src, fileName);
 		}
+
+        boolean checkUpToDate(ResourceGen generator, File file) {
+			if (file.exists() &&
+                file.lastModified() >= getFile().lastModified()) {
+				generator.comment(file + " is up to date");
+				return true;
+			}
+      
+            return false;
+        }
+
+        void makeParentDirs(File file) {
+            if (file.getParentFile() != null) {
+                file.getParentFile().mkdirs();
+            }
+        }
+
+
 		String getPackageName() {
 			int lastDot = className.lastIndexOf('.');
 			if (lastDot < 0) {
@@ -285,6 +350,7 @@ public class ResourceGen
 				return className.substring(0,lastDot);
 			}
 		}
+
 		File getPackageDirectory() {
 			File file = include.root.dest;
 			final String packageName = getPackageName();
@@ -293,6 +359,7 @@ public class ResourceGen
 			}
 			return new File(file, packageName.replace('.', Util.fileSep));
 		}
+
 		/** If class name is <code>happy.BirthdayResource</code>, and locale is
 		 * <code>en_US</code>, returns <code>BirthdayResource_en_US</code>. */
 		String getClassNameSansPackage(Locale locale) {
@@ -306,6 +373,7 @@ public class ResourceGen
 			}
 			return s;
 		}
+
 		/**
 		 * Generates a Java class, e.g. com/foo/MyResource.java or
 		 * com/foo/MyResource_en_US.java, depending upon whether locale is
@@ -317,17 +385,16 @@ public class ResourceGen
 				Locale locale) {
 			String fileName = getClassNameSansPackage(locale) + ".java";
 			File file = new File(getPackageDirectory(), fileName);
-			if (file.exists() &&
-					file.lastModified() >= getFile().lastModified()) {
-				generator.comment(file + " is up to date");
-				return;
-			}
+            
+            if (checkUpToDate(generator, file)) {
+                return;
+            }
+
 			generator.comment("Generating " + file);
 			final FileOutputStream out;
 			try {
-				if (file.getParentFile() != null) {
-					file.getParentFile().mkdirs();
-				}
+                makeParentDirs(file);
+
 				out = new FileOutputStream(file);
 			} catch (FileNotFoundException e) {
 				throw new BuildException("Error while writing " + file, e);
@@ -343,6 +410,7 @@ public class ResourceGen
 				pw.close();
 			}
 		}
+
 		/**
 		 * Generates a class containing a line for each resource.
 		 */
@@ -362,19 +430,15 @@ public class ResourceGen
 			pw.println("");
 			generateFooter(pw, className);
 		}
-		protected void generateHeader(PrintWriter pw) {
-			pw.println("/" + "/ This class is generated. Do NOT modify it, or");
-			pw.println("/" + "/ add it to source control.");
+
+        protected void generateDoNotModifyHeader(PrintWriter pw) {
+			pw.println("// This class is generated. Do NOT modify it, or");
+			pw.println("// add it to source control.");
 			pw.println();
-			String packageName = getPackageName();
-			if (packageName != null) {
-				pw.println("package " + packageName + ";");
-			}
-			pw.println("import java.io.IOException;");
-			pw.println("import java.util.Locale;");
-			pw.println("import mondrian.resource.*;");
-			pw.println();
-			pw.println("/" + "**");
+        }
+
+        protected void generateGeneratedByBlock(PrintWriter pw) {
+			pw.println("/**");
 			pw.println(" * This class was generated");
 			pw.println(" * by " + ResourceGen.class);
 			pw.println(" * from " + getFile());
@@ -383,364 +447,25 @@ public class ResourceGen
 			pw.println(" * retrieve and format those messages.");
 			pw.println(" **/");
 			pw.println();
+        }
+
+		protected void generateHeader(PrintWriter pw) {
+            generateDoNotModifyHeader(pw);
+			String packageName = getPackageName();
+			if (packageName != null) {
+				pw.println("package " + packageName + ";");
+			}
+			pw.println("import java.io.IOException;");
+			pw.println("import java.util.Locale;");
+			pw.println("import mondrian.resource.*;");
+			pw.println();
+            generateGeneratedByBlock(pw);
 		}
+
 		private void generateFooter(PrintWriter pw, String className) {
 			pw.println("// End " + className + ".java");
 		}
-	}
-}
 
-
-class XmlFileTask extends ResourceGen.FileTask {
-	String baseClassName;
-
-	XmlFileTask(ResourceGenTask.Include include, String fileName, String className, String baseClassName) {
-		this.include = include;
-		this.fileName = fileName;
-		if (className == null) {
-			className = Util.fileNameToClassName(fileName, ".xml");
-		}
-		this.className = className;
-		if (baseClassName == null) {
-			baseClassName = "mondrian.resource.ShadowResourceBundle";
-		}
-		this.baseClassName = baseClassName;
-	}
-	void process(ResourceGen generator) throws IOException {
-		URL url = Util.convertPathToURL(getFile());
-		ResourceDef.ResourceBundle resourceList = Util.load(url);
-		if (resourceList.locale == null) {
-			throw new BuildException(
-					"Resource file " + url + " must have locale");
-		}
-		ArrayList localeNames = new ArrayList();
-		StringTokenizer tokenizer = new StringTokenizer(include.root.locales,",");
-		while (tokenizer.hasMoreTokens()) {
-			String token = tokenizer.nextToken();
-			localeNames.add(token);
-		}
-		if (!localeNames.contains(resourceList.locale)) {
-			throw new BuildException(
-					"Resource file " + url + " has locale '" +
-					resourceList.locale +
-					"' which is not in the 'locales' list");
-		}
-		Locale[] locales = new Locale[localeNames.size()];
-		for (int i = 0; i < locales.length; i++) {
-			String localeName = (String) localeNames.get(i);
-			locales[i] = Util.parseLocale(localeName);
-			if (locales[i] == null) {
-				throw new BuildException(
-						"Invalid locale " + localeName);
-			}
-		}
-		generateJava(generator, resourceList, null);
-		generateProperties(generator, resourceList, null);
-		for (int i = 0; i < locales.length; i++) {
-			Locale locale = locales[i];
-			generateJava(generator, resourceList, locale);
-			generateProperties(generator, resourceList, locale);
-		}
-	}
-
-	/**
-	 * Generates a class containing a line for each resource.
-	 */
-	void generateBaseJava(
-			ResourceGen generator,
-			ResourceDef.ResourceBundle resourceList, PrintWriter pw) {
-		generateHeader(pw);
-		pw.print("public class " + getClassNameSansPackage(null));
-		final String baseClass = baseClassName;
-		if (baseClass != null) {
-			pw.print(" extends " + baseClass);
-		}
-		String className = getClassNameSansPackage(null);
-		pw.println(" {");
-		pw.println("	public " + className + "() throws IOException {");
-		pw.println("	}");
-		pw.println("	private static String baseName = " + Util.quoteForJava(getClassName(null)) + ";");
-		pw.println("	/**");
-		pw.println("	 * Retrieves the singleton instance of {@link " + className + "}. If");
-		pw.println("	 * the application has called {@link #setThreadLocale}, returns the");
-		pw.println("	 * resource for the thread's locale.");
-		pw.println("	 */");
-		pw.println("	public static synchronized " + className + " instance() {");
-		pw.println("		return (" + className + ") instance(baseName);");
-		pw.println("	}");
-		pw.println("	/**");
-		pw.println("	 * Retrieves the instance of {@link " + className + "} for the given locale.");
-		pw.println("	 */");
-		pw.println("	public static synchronized " + className + " instance(Locale locale) {");
-		pw.println("		return (" + className + ") instance(baseName, locale);");
-		pw.println("	}");
-		if (resourceList.code != null) {
-			pw.println("\t// begin of included code");
-			pw.print(resourceList.code.cdata);
-			pw.println("\t// end of included code");
-		}
-
-		for (int j = 0; j < resourceList.resources.length; j++) {
-			ResourceDef.Resource resource = resourceList.resources[j];
-			if (resource.text == null) {
-				throw new BuildException(
-						"Resource '" + resource.name + "' has no message");
-			}
-			String text = resource.text.cdata;
-			String comment = ResourceGen.getComment(resource);
-			final String resourceInitcap = ResourceGen.getResourceInitcap(resource);// e.g. "Internal"
-
-			String definitionClass = "mondrian.resource.ResourceDefinition";
-			// e.g. "mondrian.resource.ChainableRuntimeException"
-			String parameterList = ResourceGen.getParameterList(text);
-			String argumentList = ResourceGen.getArgumentList(text);
-			pw.print("\t/" + "** ");
-			if (comment != null) {
-				Util.fillText(pw, comment, "\t * ", "", 70);
-				pw.println();
-				pw.println("\t *");
-				pw.print("\t * ");
-			}
-			Util.fillText(pw, "<code>" + resource.name + "</code> is '" + text + "'", "\t * ", "", -1);
-			pw.println("	*/");
-			pw.println("	public static final " + definitionClass + " " + resourceInitcap + " = new " + definitionClass + "(\"" + resourceInitcap + "\", " + Util.quoteForJava(text) + ");");
-			pw.println("	public String get" + resourceInitcap + "(" + parameterList + ") {");
-			pw.println("		return " + resourceInitcap + ".instantiate(" + addLists("this", argumentList) + ").toString();");
-			pw.println("	}");
-			if (resource instanceof ResourceDef.Exception) {
-				ResourceDef.Exception exception = (ResourceDef.Exception) resource;
-				String errorClassName = getErrorClass(resourceList, exception);
-				// Figure out what constructors the exception class has. We'd
-				// prefer to use
-				//   <init>(ResourceDefinition rd)
-				//   <init>(ResourceDefinition rd, Throwable e)
-				// if it has them, but we can use
-				//   <init>(String s)
-				//   <init>(String s, Throwable e)
-				// as a fall-back.
-				boolean hasInstCon = false, hasInstThrowCon = false,
-					hasStringCon = false, hasStringThrowCon = false;
-				try {
-					Class errorClass;
-					try {
-						errorClass = Class.forName(errorClassName);
-					} catch (ClassNotFoundException e) {
-						// Might be in the java.lang package, for which we
-						// allow them to omit the package name.
-						errorClass = Class.forName("java.lang." + errorClassName);
-					}
-					Constructor[] constructors = errorClass.getConstructors();
-					for (int i = 0; i < constructors.length; i++) {
-						Constructor constructor = constructors[i];
-						Class[] types = constructor.getParameterTypes();
-						if (types.length == 1 &&
-								ResourceInstance.class.isAssignableFrom(types[0])) {
-							hasInstCon = true;
-						}
-						if (types.length == 1 &&
-								String.class.isAssignableFrom(types[0])) {
-							hasStringCon = true;
-						}
-						if (types.length == 2 &&
-								ResourceInstance.class.isAssignableFrom(types[0]) &&
-								Throwable.class.isAssignableFrom(types[1])) {
-							hasInstThrowCon = true;
-						}
-						if (types.length == 2 &&
-								String.class.isAssignableFrom(types[0]) &&
-								Throwable.class.isAssignableFrom(types[1])) {
-							hasStringThrowCon = true;
-						}
-					}
-				} catch (ClassNotFoundException e) {
-				}
-				if (hasInstCon) {
-					pw.println("	public " + errorClassName + " new" + resourceInitcap + "(" + parameterList + ") {");
-					pw.println("		return new " + errorClassName + "(" + resourceInitcap + ".instantiate(" + addLists("this", argumentList) + "));");
-					pw.println("	}");
-				} else if (hasInstThrowCon) {
-					pw.println("	public " + errorClassName + " new" + resourceInitcap + "(" + parameterList + ") {");
-					pw.println("		return new " + errorClassName + "(" + resourceInitcap + ".instantiate(" + addLists("this", argumentList) + "), null);");
-					pw.println("	}");
-				} else if (hasStringCon) {
-					pw.println("	public " + errorClassName + " new" + resourceInitcap + "(" + parameterList + ") {");
-					pw.println("		return new " + errorClassName + "(" + resourceInitcap + ".instantiate(" + addLists("this", argumentList) + ").toString());");
-					pw.println("	}");
-				} else if (hasStringThrowCon) {
-					pw.println("	public " + errorClassName + " new" + resourceInitcap + "(" + parameterList + ") {");
-					pw.println("		return new " + errorClassName + "(" + resourceInitcap + ".instantiate(" + addLists("this", argumentList) + ").toString(), null);");
-					pw.println("	}");
-				}
-				if (hasInstThrowCon) {
-					pw.println("	public " + errorClassName + " new" + resourceInitcap + "(" + addLists(parameterList, "Throwable err") + ") {");
-					pw.println("		return new " + errorClassName + "(" + resourceInitcap + ".instantiate(" + addLists("this", argumentList) + "), err);");
-					pw.println("	}");
-				} else if (hasStringThrowCon) {
-					pw.println("	public " + errorClassName + " new" + resourceInitcap + "(" + addLists(parameterList, "Throwable err") + ") {");
-					pw.println("		return new " + errorClassName + "(" + resourceInitcap + ".instantiate(" + addLists("this", argumentList) + ").toString(), err);");
-					pw.println("	}");
-				}
-			}
-		}
-		pw.println("");
-		pw.println("}");
-	}
-
-	private static String addLists(String x, String y) {
-		if (x == null || x.equals("")) {
-			if (y == null || y.equals("")) {
-				return "";
-			} else {
-				return y;
-			}
-		} else if (y == null || y.equals("")) {
-			return x;
-		} else {
-			return x + ", " + y;
-		}
-	}
-
-
-	/**
-	 * Returns the type of error which is to be thrown by this resource.
-	 * Result is null if this is not an error.
-	 */
-	static String getErrorClass(
-			ResourceDef.ResourceBundle resourceList,
-			ResourceDef.Exception exception) {
-		if (exception.className != null) {
-			return exception.className;
-		} else if (resourceList.exceptionClassName != null) {
-			return resourceList.exceptionClassName;
-		} else {
-			return "mondrian.resource.ChainableRuntimeException";
-		}
-	}
-
-	private void generateProperties(
-			ResourceGen generator,
-			ResourceDef.ResourceBundle resourceList,
-			Locale locale) {
-		String fileName = getClassNameSansPackage(locale) + ".properties";
-		File file = new File(getPackageDirectory(), fileName);
-		if (file.exists() &&
-				file.lastModified() >= getFile().lastModified()) {
-			generator.comment(file + " is up to date");
-			return;
-		}
-		generator.comment("Generating " + file);
-		final FileOutputStream out;
-		try {
-			if (file.getParentFile() != null) {
-				file.getParentFile().mkdirs();
-			}
-			out = new FileOutputStream(file);
-		} catch (FileNotFoundException e) {
-			throw new BuildException("Error while writing " + file, e);
-		}
-		PrintWriter pw = new PrintWriter(out);
-		try {
-			if (locale == null) {
-				generateBaseProperties(resourceList, pw);
-			} else {
-				generateProperties(resourceList, pw, locale);
-			}
-		} finally {
-			pw.close();
-		}
-	}
-	/**
-	 * Generates a properties file containing a line for each resource.
-	 */
-	private void generateBaseProperties(
-			ResourceDef.ResourceBundle resourceList, PrintWriter pw) {
-		String fullClassName = getClassName(null);
-		pw.println("# This file contains the resources for");
-		pw.println("# class '" + fullClassName + "'; the base locale is '" +
-				resourceList.locale + "'.");
-		pw.println("# It was generated by " + ResourceGen.class);
-		pw.println("# from " + getFile());
-		pw.println("# on " + new Date().toString() + ".");
-		pw.println();
-		for (int i = 0; i < resourceList.resources.length; i++) {
-			ResourceDef.Resource resource = resourceList.resources[i];
-			final String name = resource.name;
-			if (resource.text == null) {
-				throw new BuildException(
-						"Resource '" + name + "' has no message");
-			}
-			final String message = resource.text.cdata;
-			if (message == null) {
-				continue;
-			}
-			pw.println(name + "=" + Util.quoteForProperties(message));
-		}
-		pw.println("# End " + fullClassName + ".properties");
-	}
-
-	/**
-	 * Generates an empty properties file named after the class and the given
-	 * locale.
-	 *
-	 * @pre locale != null
-	 */
-	private void generateProperties(
-			ResourceDef.ResourceBundle resourceList, PrintWriter pw,
-			Locale locale) {
-		String fullClassName = getClassName(locale);
-		pw.println("# This file contains the resources for");
-		pw.println("# class '" + fullClassName + "' and locale '" + locale + "'.");
-		pw.println("# It was generated by " + ResourceGen.class);
-		pw.println("# from " + getFile());
-		pw.println("# on " + new Date().toString() + ".");
-		pw.println();
-		pw.println("# This file is intentionally blank. Add property values");
-		pw.println("# to this file to override the translations in the base");
-		String basePropertiesFileName = getClassNameSansPackage(locale) + ".properties";
-		pw.println("# properties file, " + basePropertiesFileName);
-		pw.println();
-		pw.println("# End " + fullClassName + ".properties");
-	}
-
-	private String getClassName(Locale locale) {
-		String s = className;
-		if (locale != null) {
-			s += '_' + locale.toString();
-		}
-		return s;
-	}
-}
-
-class PropertiesFileTask extends ResourceGen.FileTask {
-	Locale locale;
-
-	PropertiesFileTask(ResourceGenTask.Include include, String fileName) {
-		this.include = include;
-		this.fileName = fileName;
-		this.className = Util.fileNameToClassName(fileName, ".properties");
-		this.locale = Util.fileNameToLocale(fileName, ".properties");
-	}
-
-	/**
-	 * Given an existing properties file such as
-	 * <code>happy/Birthday_fr_FR.properties</code>, generates the
-	 * corresponding Java class happy.Birthday_fr_FR.java</code>.
-	 *
-	 * <p>todo: Validate.
-	 */
-	void process(ResourceGen generator) throws IOException {
-		// e.g. happy/Birthday_fr_FR.properties
-		String s = Util.fileNameSansLocale(fileName, ".properties");
-		File file = new File(include.root.src, s + ".xml");
-		URL url = Util.convertPathToURL(file);
-		ResourceDef.ResourceBundle resourceList = Util.load(url);
-		generateJava(generator, resourceList, locale);
-	}
-
-	void generateBaseJava(
-			ResourceGen generator,
-			ResourceDef.ResourceBundle resourceList, PrintWriter pw) {
-		throw new UnsupportedOperationException();
 	}
 }
 
