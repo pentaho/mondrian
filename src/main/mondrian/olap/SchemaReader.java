@@ -127,6 +127,10 @@ public interface SchemaReader {
 	 * an inaccessible level, returns the nearest ascendant/descendant member.
 	 */
 	Member getHierarchyDefaultMember(Hierarchy hierarchy);
+    /**
+     * Returns whether a member has visible children.
+     */
+    boolean isDrillable(Member member);
 }
 
 // End SchemaReader.java

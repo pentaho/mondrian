@@ -86,6 +86,10 @@ public class DelegatingSchemaReader implements SchemaReader {
 	public Member getHierarchyDefaultMember(Hierarchy hierarchy) {
 		return schemaReader.getHierarchyDefaultMember(hierarchy);
 	}
+
+    public boolean isDrillable(Member member) {
+        return schemaReader.isDrillable(member);
+    }
 }
 
 // End DelegatingSchemaReader.java

@@ -204,6 +204,23 @@ abstract class RolapSchemaReader implements SchemaReader {
 		}
 		return member;
 	}
+
+    public boolean isDrillable(Member member) {
+        final RolapLevel level = (RolapLevel) member.getLevel();
+        if (level.parentExp != null) {
+            // This is a parent-child level, so its children, if any, come from
+            // the same level.
+            //
+            // todo: More efficient implementation
+            return getMemberChildren(member).length > 0;
+        } else {
+            // This is a regular level. It has children iff there is a lower
+            // level.
+            final Level childLevel = level.getChildLevel();
+            return childLevel != null &&
+                    role.getAccess(childLevel) != Access.NONE;
+        }
+    }
 }
 
 // End RolapSchemaReader.java
