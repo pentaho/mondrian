@@ -1467,13 +1467,13 @@ public class BuiltinFunTable extends FunTable {
 								"Row #1: 84,595.89" + nl +
 								"Row #1: 70,333.90" + nl +
 								"Row #1: 138,013.72" + nl +
-								"Row #2: .00" + nl +
-								"Row #2: .00" + nl +
-								"Row #2: .00" + nl +
-								"Row #2: .00" + nl +
-								"Row #2: .00" + nl +
-								"Row #2: .00" + nl +
-								"Row #2: .00" + nl +
+								"Row #2: (null)" + nl +
+								"Row #2: (null)" + nl +
+								"Row #2: (null)" + nl +
+								"Row #2: (null)" + nl +
+								"Row #2: (null)" + nl +
+								"Row #2: (null)" + nl +
+								"Row #2: (null)" + nl +
 								"Row #2: 10,023.94" + nl +
 								"Row #2: -1,609.27" + nl +
 								"Row #2: 12,234.22" + nl);
@@ -1634,7 +1634,7 @@ public class BuiltinFunTable extends FunTable {
 		define(new FunDefBase("IIf", "IIf(<Logical Expression>, <Numeric Expression1>, <Numeric Expression2>)", "Returns one of two numeric values determined by a logical test.", "fnbnn") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				boolean logical = getBooleanArg(evaluator, args, 0);
-				return getDoubleArg(evaluator, args, logical ? 1 : 2);
+				return getDoubleArg(evaluator, args, logical ? 1 : 2, null);
 			}
 
 			public void testIIfNumeric(FoodMartTestCase test) {
@@ -4397,7 +4397,7 @@ public class BuiltinFunTable extends FunTable {
 				cell = result.getCell(new int[] {0,3});
 				Assert.assertEquals("(null)", cell.getFormattedValue());
 				cell = result.getCell(new int[] {1,3});
-				Assert.assertEquals("NaN", cell.getFormattedValue());
+				Assert.assertEquals("(null)", cell.getFormattedValue());
 			}
 		});
 
@@ -4489,8 +4489,10 @@ public class BuiltinFunTable extends FunTable {
 		// OPERATORS
 		define(new FunDefBase("+", "<Numeric Expression> + <Numeric Expression>", "Adds two numbers.", "innn") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				Double o0 = getDoubleArg(evaluator, args, 0),
-						o1 = getDoubleArg(evaluator, args, 1);
+				Double o0 = getDoubleArg(evaluator, args, 0, null),
+						o1 = getDoubleArg(evaluator, args, 1, null);
+				if (o0 == null || o1 == null)
+					return null;
 				return new Double(o0.doubleValue() + o1.doubleValue());
 			}
 			public void testPlus(FoodMartTestCase test) {
@@ -4500,8 +4502,10 @@ public class BuiltinFunTable extends FunTable {
 		});
 		define(new FunDefBase("-", "<Numeric Expression> - <Numeric Expression>", "Subtracts two numbers.", "innn") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				Double o0 = getDoubleArg(evaluator, args, 0),
-						o1 = getDoubleArg(evaluator, args, 1);
+				Double o0 = getDoubleArg(evaluator, args, 0, null),
+						o1 = getDoubleArg(evaluator, args, 1, null);
+				if (o0 == null || o1 == null)
+					return null;
 				return new Double(o0.doubleValue() - o1.doubleValue());
 			}
 			public void testMinus(FoodMartTestCase test) {
@@ -4516,8 +4520,10 @@ public class BuiltinFunTable extends FunTable {
 		});
 		define(new FunDefBase("*", "<Numeric Expression> * <Numeric Expression>", "Multiplies two numbers.", "innn") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				Double o0 = getDoubleArg(evaluator, args, 0),
-						o1 = getDoubleArg(evaluator, args, 1);
+				Double o0 = getDoubleArg(evaluator, args, 0, null),
+						o1 = getDoubleArg(evaluator, args, 1, null);
+				if (o0 == null || o1 == null)
+					return null;
 				return new Double(o0.doubleValue() * o1.doubleValue());
 			}
 			public void testMultiply(FoodMartTestCase test) {
@@ -4567,10 +4573,11 @@ public class BuiltinFunTable extends FunTable {
 		});
 		define(new FunDefBase("/", "<Numeric Expression> / <Numeric Expression>", "Divides two numbers.", "innn") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				Double o0 = getDoubleArg(evaluator, args, 0),
-						o1 = getDoubleArg(evaluator, args, 1);
-				Double result = new Double(o0.doubleValue() / o1.doubleValue());
-				return result;
+				Double o0 = getDoubleArg(evaluator, args, 0, null),
+						o1 = getDoubleArg(evaluator, args, 1, null);
+				if (o0 == null || o1 == null)
+					return null;
+				return new Double(o0.doubleValue() / o1.doubleValue());
 			}
 			// todo: use this, via reflection
 			public double evaluate(double d1, double d2) {
@@ -4591,7 +4598,9 @@ public class BuiltinFunTable extends FunTable {
 		});
 		define(new FunDefBase("-", "- <Numeric Expression>", "Returns the negative of a number.", "Pnn") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
-				Double o0 = getDoubleArg(evaluator, args, 0);
+				Double o0 = getDoubleArg(evaluator, args, 0, null);
+				if (o0 == null)
+					return null;
 				return new Double(- o0.doubleValue());
 			}
 			public void testUnaryMinus(FoodMartTestCase test) {

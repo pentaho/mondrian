@@ -141,7 +141,14 @@ public class FunUtil extends Util {
 		}
 	}
 
+
+	private static final Double nullValue = new Double(0);
+
 	static Double getDoubleArg(Evaluator evaluator, Exp[] args, int index) {
+		return getDoubleArg(evaluator, args, index, nullValue);
+	}
+
+	static Double getDoubleArg(Evaluator evaluator, Exp[] args, int index, Double nullValue) {
 		Object o = getScalarArg(evaluator, args, index);
 		if (o instanceof Double) {
 			return (Double) o;
@@ -149,8 +156,8 @@ public class FunUtil extends Util {
 			return new Double(((Number) o).doubleValue());
 		} else if (o instanceof Throwable) {
 			return new Double(Double.NaN);
-		} else if (o == Util.nullValue) {
-			return new Double(0);
+		} else if (o == null || o == Util.nullValue) {
+			return nullValue;
 		} else {
 			throw Util.newInternal("arg " + o + " cannot be converted to Double");
 		}
