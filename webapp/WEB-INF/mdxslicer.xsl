@@ -17,8 +17,11 @@ You must accept the terms of that agreement to use this software.
 
 <xsl:output method="html" indent="yes"/>
 
+<xsl:template match="/mdxtable">
+  <xsl:apply-templates select="slicers/position/member"/>
+</xsl:template>
 
-<xsl:template match="mdxtable/slicers/position/member">
+<xsl:template match="member">
   <xsl:if test="preceding-sibling::member">
     <xsl:text>, </xsl:text>
   </xsl:if>
