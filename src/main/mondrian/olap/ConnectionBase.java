@@ -23,6 +23,9 @@ package mondrian.olap;
 public abstract class ConnectionBase implements Connection
 {
 
+    protected ConnectionBase() {
+    }
+
     public String getFullConnectString()
     {
         String s = getConnectString(),

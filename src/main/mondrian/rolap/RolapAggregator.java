@@ -89,7 +89,14 @@ public abstract class RolapAggregator
      * <code>"sum(emp.sal)"</code>.
      */
     public String getExpression(String operand) {
-        return name_ + "(" + (distinct ? "distinct " : "") + operand + ")";
+        StringBuffer buf = new StringBuffer(64);
+        buf.append(name_);
+        buf.append('(');                                                                if (distinct) {
+            buf.append("distinct ");
+        }
+        buf.append(operand);
+        buf.append(')');
+        return buf.toString();
     }
     /**
      * If this is a distinct aggregator, returns the corresponding non-distinct

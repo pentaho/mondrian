@@ -11,6 +11,7 @@
 */
 
 package mondrian.olap;
+import java.util.List;
 import java.util.ArrayList;
 
 /**
@@ -24,8 +25,8 @@ public class CubeAccess
     Hierarchy[] noAccessHierarchies;
     /** array of members which have limited access */
     Member[]  limitedMembers;
-    final ArrayList hierarchyList;
-    final ArrayList memberList;
+    final List hierarchyList;
+    final List memberList;
     Cube mdxCube;
 
     /**
@@ -49,8 +50,8 @@ public class CubeAccess
     public boolean hasRestrictions(){ return hasRestrictions; }
     public Hierarchy[] getNoAccessHierarchies(){return noAccessHierarchies;}
     public Member[] getLimitedMembers(){return limitedMembers; }
-    public ArrayList getNoAccessHierarchyList(){ return hierarchyList; }
-    public ArrayList getLimitedMemberList(){ return memberList; }
+    public List getNoAccessHierarchyList(){ return hierarchyList; }
+    public List getLimitedMemberList(){ return memberList; }
     public boolean isHierarchyAllowed( Hierarchy mdxHierarchy )
     {
         String hierName = mdxHierarchy.getUniqueName();
@@ -135,8 +136,8 @@ public class CubeAccess
            return false;
         }
         CubeAccess cubeAccess = (CubeAccess) object;
-        ArrayList hierarchyList = cubeAccess.getNoAccessHierarchyList();
-        ArrayList limitedMemberList = cubeAccess.getLimitedMemberList();
+        List hierarchyList = cubeAccess.getNoAccessHierarchyList();
+        List limitedMemberList = cubeAccess.getLimitedMemberList();
 
         if ((this.hierarchyList.size() != hierarchyList.size()) ||
             (this.memberList.size() != limitedMemberList.size())) {

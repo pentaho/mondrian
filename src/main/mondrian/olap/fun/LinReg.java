@@ -8,6 +8,7 @@
 // You must accept the terms of that agreement to use this software.
 */
 
+
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
@@ -16,47 +17,71 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Base class for an MDX regression analysis function.
+ * FROM: http://www.graphpad.com/articles/interpret/corl_n_linear_reg/correlation.htm
+ * Correlation coefficient
  *
- * <p>Inner classes define the standard MDX regression analysis functions:
- * {@link Intercept LinRegIntercept},
- * {@link Point LinRegPoint},
- * {@link Variance LinRegVariance},
- * {@link R2 LinRegR2}.</p>
+ * The correlation coefficient, r, ranges from -1 to +1. The nonparametric
+ * Spearman correlation coefficient, abbreviated rs, has the same range.
  *
- * <p><a href="http://home.ubalt.edu/ntsbarsh/Business-stat/opre504.htm#rcomputeodel">
- * Dr Arsham's Statistics site</a> describes the statistics underlying these
- * functions.</p>
+ * Value of r (or rs)      Interpretation
+ * r= 0            The two variables do not vary together at all.
+ * 0 > r > 1       The two variables tend to increase or decrease together.
+ * r = 1.0         Perfect correlation.
+ * -1 > r > 0      One variable increases as the other decreases.
+ * r = -1.0        Perfect negative or inverse correlation.
  *
- * @author Richard Emberson
- * @since 17 January, 2005
- * @version $Id$
+ * If r or rs is far from zero, there are four possible explanations:
+ *
+ * The X variable helps determine the value of the Y variable.
+ *
+ *   The Y variable helps determine the value of the X variable.
+ *   Another variable influences both X and Y.
+ *   X and Y don't really correlate at all, and you just happened to observe
+ *   such a strong correlation by chance. The P value determines how often this
+ *   could occur. 
+ *
+ * r2
+ *
+ * Perhaps the best way to interpret the value of r is to square it to calculate
+ * r2. Statisticians call this quantity the coefficient of determination, but
+ * scientists call it r squared. It is has a value that ranges from zero to one,
+ * and is the fraction of the variance in the two variables that is shared. For
+ * example, if r2=0.59, then 59% of the variance in X can be explained by
+ * variation in Y.  Likewise, 59% of the variance in Y can be explained by (or
+ * goes along with) variation in X. More simply, 59% of the variance is shared
+ * between X and Y.
+ *
+ *
+ * Also see: http://mathworld.wolfram.com/LeastSquaresFitting.html
  */
-public abstract class LinReg extends FunkBase {
 
-    /**
-     * Helper class.
-     */
-    private static class Value {
+
+public abstract class LinReg extends FunkBase {
+    /////////////////////////////////////////////////////////////////////////
+    // 
+    // Helper
+    // 
+    /////////////////////////////////////////////////////////////////////////
+    static class Value {
         private List xs;
         private List ys;
         /**
          * The intercept for the linear regression model. Initialized
          * following a call to accuracy.
          */
-        private double intercept;
+        double intercept;
 
         /**
          * The slope for the linear regression model. Initialized following a
          * call to accuracy.
          */
-        private double slope;
+        double slope;
 
-        /** the coefficient of determination */
-        private double rSquared = Double.MAX_VALUE;
+         /** the coefficient of determination */
+        double rSquared = Double.MAX_VALUE;
 
         /** variance = sum square diff mean / n - 1 */
-        private double variance = Double.MAX_VALUE;
+        double variance = Double.MAX_VALUE;
 
         Value(double intercept, double slope, List xs, List ys) {
             this.intercept = intercept;
@@ -64,20 +89,20 @@ public abstract class LinReg extends FunkBase {
             this.xs = xs;
             this.ys = ys;
         }
-        public double getIntercept() {
+        public double getIntercept() {       
             return this.intercept;
         }
-        public double getSlope() {
+        public double getSlope() {       
             return this.slope;
         }
         public double getRSquared() {
             return this.rSquared;
         }
-
-        /**
+        
+        /** 
          * strength of the correlation
-         *
-         * @param rSquared
+         * 
+         * @param rSquared 
          */
         public void setRSquared(double rSquared) {
             this.rSquared = rSquared;
@@ -90,35 +115,30 @@ public abstract class LinReg extends FunkBase {
             this.variance = variance;
         }
         public String toString() {
-            return "LinReg.Value: slope of "
-                + slope
-                + " and an intercept of " + intercept
-                + ". That is, y="
-                + intercept
-                + (slope>0.0 ? " +" : " ")
-                + slope
+            return "LinReg.Value: slope of " 
+                + slope 
+                + " and an intercept of " + intercept 
+                + ". That is, y=" 
+                + intercept 
+                + (slope>0.0 ? " +" : " ") 
+                + slope 
                 + " * x.";
-        }
+        } 
     }
 
 
     /////////////////////////////////////////////////////////////////////////
-    //
-    // Implementations of LinRegXXX
-    //
+    // 
+    // Implementations of LinRegXXX 
+    // 
     /////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Definition of the <code>LinRegIntercept</code> MDX linear regression
-     * analysis function.
-     */
     public static class Intercept extends LinReg {
         public Intercept() {
             super();
         }
         // <Set>, <Numeric Expression>[, <Numeric  Expression>]
         public Object evaluate(Evaluator evaluator, Exp[] args) {
-//            debug("LinReg.Intercept.evaluator","TOP");
+debug("LinReg.Intercept.evaluator","TOP");
             LinReg.Value value = process(evaluator, args);
             if (value == null) {
                 return Util.nullValue;
@@ -126,28 +146,23 @@ public abstract class LinReg extends FunkBase {
             return new Double(value.getIntercept());
         }
     }
-
-    /**
-     * Definition of <code>LinRegPoint</code> MDX linear regression
-     * analysis function.
-     */
     public static class Point extends LinReg {
         public Point() {
             super();
         }
-        // <Numeric Expression>,
+        // <Numeric Expression>, 
         // <Set>, <Numeric Expression>[, <Numeric  Expression>]
         public Object evaluate(Evaluator evaluator, Exp[] args) {
-//            debug("LinReg.Point.evaluator","TOP");
-            double x = getDoubleArg(evaluator, args, 0).doubleValue();
-//            debug("LinReg.Point.evaluator","x=" +x);
+debug("LinReg.Point.evaluator","TOP");
+	    double x = getDoubleArg(evaluator, args, 0).doubleValue();
+debug("LinReg.Point.evaluator","x=" +x);
 
-//            debug("LinReg.Point.evaluator","args.length=" +args.length);
+debug("LinReg.Point.evaluator","args.length=" +args.length);
             // remove first arg and pass the rest to init
             Exp[] args2 = new Exp[args.length-1];
             System.arraycopy(args, 1, args2, 0, args.length-1);
 
-//            debug("LinReg.Point.evaluator","args2.length=" +args2.length);
+debug("LinReg.Point.evaluator","args2.length=" +args2.length);
             // remember: pass in args2!!! NOT args
             LinReg.Value value = process(evaluator, args2);
             if (value == null) {
@@ -156,22 +171,17 @@ public abstract class LinReg extends FunkBase {
 
             // use first arg to generate y position
             double y = x * value.getSlope() + value.getIntercept();
-//            debug("LinReg.Point.evaluator","y=" +y);
+debug("LinReg.Point.evaluator","y=" +y);
             return new Double(y);
         }
     }
-
-    /**
-     * Definition of <code>LinRegSlope</code> MDX linear regression
-     * analysis function.
-     */
     public static class Slope extends LinReg {
         public Slope() {
             super();
         }
         // <Set>, <Numeric Expression>[, <Numeric  Expression>]
         public Object evaluate(Evaluator evaluator, Exp[] args) {
-//            debug("LinReg.Slope.evaluator","TOP");
+debug("LinReg.Slope.evaluator","TOP");
             LinReg.Value value = process(evaluator, args);
             if (value == null) {
                 return Util.nullValue;
@@ -179,11 +189,6 @@ public abstract class LinReg extends FunkBase {
             return new Double(value.getSlope());
         }
     }
-
-    /**
-     * Definition of <code>LinRegR2</code> MDX linear regression
-     * analysis function.
-     */
     public static class R2 extends LinReg {
         public R2() {
             super();
@@ -191,7 +196,7 @@ public abstract class LinReg extends FunkBase {
 
         // <Set>, <Numeric Expression>[, <Numeric  Expression>]
         public Object evaluate(Evaluator evaluator, Exp[] args) {
-//            debug("LinReg.R2.evaluator","TOP");
+debug("LinReg.R2.evaluator","TOP");
 
             LinReg.Value value = accuracy(evaluator, args);
             if (value == null) {
@@ -200,11 +205,6 @@ public abstract class LinReg extends FunkBase {
             return new Double(value.getRSquared());
         }
     }
-
-    /**
-     * Definition of <code>LinRegVariance</code> MDX linear regression
-     * analysis function.
-     */
     public static class Variance extends LinReg {
         public Variance() {
             super();
@@ -212,7 +212,7 @@ public abstract class LinReg extends FunkBase {
 
         // <Set>, <Numeric Expression>[, <Numeric  Expression>]
         public Object evaluate(Evaluator evaluator, Exp[] args) {
-//            debug("LinReg.Variance.evaluator","TOP");
+debug("LinReg.Variance.evaluator","TOP");
 
             LinReg.Value value = accuracy(evaluator, args);
             if (value == null) {
@@ -222,12 +222,21 @@ public abstract class LinReg extends FunkBase {
         }
     }
 
-    // initialized by BuiltinFunTable; TODO: eliminate this
+    // HACK ALERT: got this from BuiltinFunTable instance
     static Exp valueFunCall;
+
+    protected static void debug(String type, String msg) {
+        // comment out for no output
+        //System.out.println(type + ": " +msg);
+    }
+
 
     protected LinReg() {
         super();
     }
+
+    public abstract Object evaluate(Evaluator evaluator, Exp[] args);
+
 
     // <Set>, <Numeric Expression>[, <Numeric  Expression>]
     protected LinReg.Value accuracy(Evaluator evaluator, Exp[] args) {
@@ -236,17 +245,48 @@ public abstract class LinReg extends FunkBase {
             return null;
         }
 
-        // for variance
-        double sumErrSquared = 0.0;
+        return accuracy(value);
+    }
 
+    // <Set>, <Numeric Expression>[, <Numeric  Expression>]
+    protected LinReg.Value process(Evaluator evaluator, Exp[] args) {
+        List members = (List) getArg(evaluator, args, 0);               
+debug("LinReg.process","members.size=" +members.size());
+        ExpBase expY = (ExpBase) getArgNoEval(args, 1);
+        ExpBase expX = (ExpBase) getArgNoEval(args, 2, valueFunCall);
+
+        evaluator = evaluator.push();
+
+        SetWrapper[] sws = evaluateSet(evaluator, members, 
+                new ExpBase[] {expY, expX});
+        SetWrapper swY = sws[0];
+        SetWrapper swX = sws[1];
+
+        if (swY.errorCount > 0) {
+debug("LinReg.process","ERROR error(s) count =" +swY.errorCount);
+            // TODO: throw exception
+            return null;
+        } else if (swY.v.size() == 0) {
+            return null;
+        } 
+
+        return linearReg(swX.v, swY.v);
+    }
+
+
+    public static LinReg.Value accuracy(LinReg.Value value) {
+        // for variance
+        double sumErrSquared = 0.0;                                     
+
+        double sumErr = 0.0;                                     
 
         // for r2
         // data
-        double sumSquaredY = 0.0;
-        double sumY = 0.0;
+        double sumSquaredY = 0.0;                                     
+        double sumY = 0.0;                                     
         // predicted
-        double sumSquaredYF = 0.0;
-        double sumYF = 0.0;
+        double sumSquaredYF = 0.0;                                     
+        double sumYF = 0.0;                                     
 
         // Obtain the forecast values for this model
         List yfs = forecast(value);
@@ -259,23 +299,21 @@ public abstract class LinReg extends FunkBase {
             double y = ((Double) ity.next()).doubleValue();
             double yf = ((Double) ityf.next()).doubleValue();
 
-            // Calculate error in forecast, and update sums appropriately
+            // Calculate error in forecast, and update sums appropriately   
 
             // the y residual or error
             double error = yf - y;
 
-            //sumErr += error;
-            //sumAbsErr += Math.abs(error);
-            //sumAbsPercentErr += Math.abs(error / y);
-
+            sumErr += error;
             sumErrSquared += error*error;
 
             sumY += y;
-            sumSquaredY += (y * y);
+            sumSquaredY += (y*y);
 
             sumYF =+ yf;
-            sumSquaredYF =+ (yf * yf);
+            sumSquaredYF =+ (yf*yf);
         }
+
 
         // Initialize the accuracy indicators
         int n = value.ys.size();
@@ -284,91 +322,91 @@ public abstract class LinReg extends FunkBase {
         // The estimate the value of the error variance is a measure of
         // variability of the y values about the estimated line.
         // http://home.ubalt.edu/ntsbarsh/Business-stat/opre504.htm
-        // s2 = SSE/(n-2) = sum (y - yf)2 /(n-2)
+        // s2 = SSE/(n-2) = sum (y - yf)2 /(n-2) 
         if (n > 2) {
-            double variance = sumErrSquared / (n - 2);
+            double variance = sumErrSquared / (n-2);
 
             value.setVariance(variance);
         }
 
         // R2
-        // calculate r squared
-        // http://home.ubalt.edu/ntsbarsh/Business-stat/opre504.htm
+        // R2 = 1 - (SSE/SST)
+        // SSE = sum square error = Sum( (error-MSE)*(error-MSE) )
+        // MSE = mean error = Sum( error )/n
+        // SST = sum square y diff = Sum( (y-MST)*(y-MST) )
+        // MST = mean y = Sum( y )/n
+        double MSE = sumErr/n;
+        double MST = sumY/n;
+        double SSE = 0.0;
+        double SST = 0.0;
+        ity = value.ys.iterator();
+        ityf = yfs.iterator();
+        while (ity.hasNext()) {
+            // Get next data point
+            double y = ((Double) ity.next()).doubleValue();
+            double yf = ((Double) ityf.next()).doubleValue();
 
-        // sum y*y - (sum y)(sum y)/n
-        double ssyy = sumSquaredY - (sumY * sumY) / n;
-        double ssff = sumSquaredYF - (sumYF * sumYF) / n;
-
-        // r2 = SSff / SSyy
-        if (ssyy != 0.0) {
-            double rSquared = ssff / ssyy;
+            double error = yf - y;
+            SSE += (error - MSE)*(error - MSE);
+            SST += (y - MST)*(y - MST);
+        }
+        if (SST != 0.0) {
+            double rSquared =  1 - (SSE/SST);
 
             value.setRSquared(rSquared);
         }
+
+
         return value;
     }
 
-
-    // <Set>, <Numeric Expression>[, <Numeric  Expression>]
-    protected LinReg.Value process(Evaluator evaluator, Exp[] args) {
-        List members = (List) getArg(evaluator, args, 0);
-        ExpBase expY = (ExpBase) getArgNoEval(args, 1);
-        ExpBase expX = (ExpBase) getArgNoEval(args, 2, valueFunCall);
-
-        evaluator = evaluator.push();
-//        debug("LinReg.process","before SetWrapper swY = evaluateSet(evaluator, members, expY)");
-        SetWrapper swY = evaluateSet(evaluator, members, expY);
-//        debug("LinReg.process","before SetWrapper swX = evaluateSet(evaluator, members, expX)");
-        SetWrapper swX = evaluateSet(evaluator, members, expX);
-
-        if (swY.errorCount > 0) {
-//            debug("LinReg.process","ERROR error(s) count =" +swY.errorCount);
-            // TODO: throw exception
-            return null;
-        } else if (swY.v.size() == 0) {
-            return null;
-        }
-
+    public static LinReg.Value linearReg(List xlist, List ylist) {
 
         // y and x have same number of points
-        int n = swY.v.size();
+        int size = ylist.size();
         double sumX = 0.0;
         double sumY = 0.0;
-        double sumXX = 0.0;
-        double sumXY = 0.0;
+        double sumXX = 0.0;                                                             double sumXY = 0.0;
+        
+debug("LinReg.linearReg","ylist.size()=" +ylist.size());
+debug("LinReg.linearReg","xlist.size()=" +xlist.size());
+        int n = 0;
+        for (int i = 0; i < size; i++) {
+            Object yo = ylist.get(i);
+            Object xo = xlist.get(i);
+            if ((yo == null) || (xo == null)) {
+                continue;
+            }
+            n++;
+            double y = ((Double) yo).doubleValue();
+            double x = ((Double) xo).doubleValue();
 
-//        debug("LinReg.process","svY.v.size()=" +swY.v.size());
-//        debug("LinReg.process","svX.v.size()=" +swX.v.size());
-        for (int i = 0; i < n; i++) {
-            double y = ((Double) swY.v.get(i)).doubleValue();
-            double x = ((Double) swX.v.get(i)).doubleValue();
-
-//            debug("LinReg.process"," " +i+ " (" +x+ "," +y+ ")");
+debug("LinReg.linearReg"," " +i+ " (" +x+ "," +y+ ")");
             sumX += x;
             sumY += y;
-            sumXX += x * x;
-            sumXY += x * y;
+            sumXX += x*x;
+            sumXY += x*y;
         }
-
+                  
         double xMean = sumX / n;
         double yMean = sumY / n;
 
-//        debug("LinReg.process", "yMean=" +yMean);
-//        debug("LinReg.process", "(n*sumXX - sumX*sumX)=" +(n*sumXX - sumX*sumX));
+debug("LinReg.linearReg", "yMean=" +yMean);
+debug("LinReg.linearReg", "(n*sumXX - sumX*sumX)=" +(n*sumXX - sumX*sumX));
         // The regression line is the line that minimizes the variance of the
         // errors. The mean error is zero; so, this means that it minimizes the
         // sum of the squares errors.
-        double slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+        double slope = (n*sumXY - sumX*sumY) / (n*sumXX - sumX*sumX);
         double intercept = yMean - slope*xMean;
 
-        LinReg.Value value = new LinReg.Value(intercept, slope, swX.v, swY.v);
-//        debug("LinReg.process","value=" +value);
+        LinReg.Value value = new LinReg.Value(intercept, slope, xlist, ylist);
+debug("LinReg.linearReg","value=" +value);
 
         return value;
     }
 
 
-    protected List forecast(LinReg.Value value) {
+    public static List forecast(LinReg.Value value) {
         List yfs = new ArrayList(value.xs.size());
 
         Iterator it = value.xs.iterator();
@@ -381,5 +419,3 @@ public abstract class LinReg extends FunkBase {
         return yfs;
     }
 }
-
-// End LinReg.java

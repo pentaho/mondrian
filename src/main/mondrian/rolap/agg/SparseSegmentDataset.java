@@ -15,6 +15,7 @@ package mondrian.rolap.agg;
 import mondrian.olap.Util;
 import mondrian.rolap.CellKey;
 
+import java.util.Map;
 import java.util.HashMap;
 
 /**
@@ -33,7 +34,7 @@ import java.util.HashMap;
  * @version $Id$
  **/
 class SparseSegmentDataset implements SegmentDataset {
-    private HashMap values = new HashMap();
+    private final Map values = new HashMap();
 
     SparseSegmentDataset(Segment segment) {
         Util.discard(segment);

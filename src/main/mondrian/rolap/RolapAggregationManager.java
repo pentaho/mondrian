@@ -13,11 +13,13 @@
 package mondrian.rolap;
 
 import mondrian.olap.Evaluator;
-import mondrian.olap.Util;
 import mondrian.olap.Hierarchy;
+import mondrian.olap.Level;
+import mondrian.olap.Member;
+import mondrian.olap.Util;
 import mondrian.rolap.agg.CellRequest;
 
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -46,7 +48,7 @@ public abstract class RolapAggregationManager implements CellReader {
      * query for levels below each current member. This additional context
      * makes the drill-through queries easier for humans to understand.
      **/
-    static CellRequest makeRequest(RolapMember[] members,
+    static CellRequest makeRequest(Member[] members,
             boolean extendedContext)
     {
         boolean showNames = extendedContext;
@@ -59,12 +61,10 @@ public abstract class RolapAggregationManager implements CellReader {
         Util.assertTrue(starMeasure != null);
         RolapStar star = starMeasure.table.star;
         CellRequest request = new CellRequest(starMeasure);
-        HashMap mapLevelToColumn = (HashMap)
-            star.mapCubeToMapLevelToColumn.get(measure.cube);
-        HashMap mapLevelNameToColumn = (HashMap)
-            star.mapCubeToMapLevelToNameColumn.get(measure.cube);
+        Map mapLevelToColumn = star.getMapLevelToColumn(measure.cube);
+        Map mapLevelNameToColumn = star.getMapLevelToNameColumn(measure.cube);
         for (int i = 1; i < members.length; i++) {
-            RolapMember member = members[i];
+            Member member = members[i];
             RolapLevel previousLevel = null;
             Hierarchy hierarchy = member.getHierarchy();
             if (extendedContext) {
@@ -87,10 +87,10 @@ public abstract class RolapAggregationManager implements CellReader {
                 //   and [State] = 'CA'
                 //
 
-                RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
+                Level[] levels = hierarchy.getLevels();
                 for (int j = levels.length - 1,
                         depth = member.getLevel().getDepth(); j > depth; j--) {
-                    final RolapLevel level = levels[j];
+                    final RolapLevel level = (RolapLevel) levels[j];
                     RolapStar.Column column = (RolapStar.Column)
                         mapLevelToColumn.get(level);
                     if (column != null) {
@@ -104,9 +104,9 @@ public abstract class RolapAggregationManager implements CellReader {
                     }
                 }
             }
-            for (RolapMember m = member; m != null; m = (RolapMember)
-                     m.getParentMember()) {
-                if (m.key == null) {
+            for (Member m = member; m != null; m = m.getParentMember()) {
+                RolapMember rm = (RolapMember) m;
+                if (rm.getKey() == null) {
                     if (m == m.getHierarchy().getNullMember()) {
                         // cannot form a request if one of the members is null
                         return null;
@@ -140,7 +140,7 @@ public abstract class RolapAggregationManager implements CellReader {
                             hierarchy.getDefaultMember();
                         assert allMember.isAll();
                         member = new RolapMember(allMember, level,
-                            ((RolapMember) member).key);
+                            ((RolapMember) member).getKey());
                     }
                 }
                 RolapStar.Column column =
@@ -165,10 +165,13 @@ public abstract class RolapAggregationManager implements CellReader {
         return request;
     }
 
+    protected RolapAggregationManager() {
+    }
+
     /**
      * Returns the value of a cell from an existing aggregation.
      **/
-    public Object getCellFromCache(RolapMember[] members)
+    public Object getCellFromCache(Member[] members)
     {
         CellRequest request = makeRequest(members, false);
         if (request == null) {
@@ -181,7 +184,7 @@ public abstract class RolapAggregationManager implements CellReader {
 
     public abstract Object getCellFromCache(CellRequest request, Set pinSet);
 
-    public Object getCell(RolapMember[] members)
+    public Object getCell(Member[] members)
     {
         CellRequest request = makeRequest(members, false);
         RolapMeasure measure = (RolapMeasure) members[0];
@@ -195,7 +198,7 @@ public abstract class RolapAggregationManager implements CellReader {
     // implement CellReader
     public Object get(Evaluator evaluator) {
         final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator;
-        return getCell(rolapEvaluator.currentMembers);
+        return getCell(rolapEvaluator.getCurrentMembers());
     }
 
     public abstract String getDrillThroughSQL(CellRequest request);

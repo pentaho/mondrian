@@ -34,8 +34,8 @@ import java.util.List;
  **/
 class SqlMemberSource implements MemberReader
 {
-    private RolapHierarchy hierarchy;
-    private DataSource dataSource;
+    private final RolapHierarchy hierarchy;
+    private final DataSource dataSource;
     private MemberCache cache;
     private int lastOrdinal = 0;
 
@@ -43,7 +43,7 @@ class SqlMemberSource implements MemberReader
     {
         this.hierarchy = hierarchy;
         this.dataSource =
-                hierarchy.getSchema().getInternalConnection().dataSource;
+            hierarchy.getRolapSchema().getInternalConnection().getDataSource();
     }
 
     // implement MemberSource
@@ -185,7 +185,7 @@ class SqlMemberSource implements MemberReader
         if (levelDepth == levels.length) {
             // "select count(*) from schema.customer"
             sqlQuery.addSelect("count(*)");
-            hierarchy.addToFrom(sqlQuery, level.keyExp, null);
+            hierarchy.addToFrom(sqlQuery, level.keyExp);
             return sqlQuery.toString();
         }
         if (!sqlQuery.allowsFromQuery()) {
@@ -227,7 +227,7 @@ class SqlMemberSource implements MemberReader
                             "': database supports neither SELECT-in-FROM nor compound COUNT DISTINCT");
                     }
                 }
-                hierarchy.addToFrom(sqlQuery, level2.keyExp, null);
+                hierarchy.addToFrom(sqlQuery, level2.keyExp);
 
                 String keyExp = level2.keyExp.getExpression(sqlQuery);
                 if (columnCount > 0 &&
@@ -256,7 +256,7 @@ class SqlMemberSource implements MemberReader
                 if (level2.isAll()) {
                     continue;
                 }
-                hierarchy.addToFrom(sqlQuery, level2.keyExp, null);
+                hierarchy.addToFrom(sqlQuery, level2.keyExp);
                 sqlQuery.addSelect(level2.keyExp.getExpression(sqlQuery));
                 if (level2.unique) {
                     break; // no further qualification needed
@@ -315,7 +315,7 @@ class SqlMemberSource implements MemberReader
                         hierarchy.xmlHierarchy.allMemberCaption.length() > 0)
                     root.setCaption(hierarchy.xmlHierarchy.allMemberCaption );
 
-                root.ordinal = lastOrdinal++;
+                root.setOrdinal(lastOrdinal++);
                 list.add(root);
             }
 
@@ -346,9 +346,13 @@ class SqlMemberSource implements MemberReader
                     member = (RolapMember) map.get(key);
                     if (member == null) {
                         member = new RolapMember(parent, level, value);
+                        member.setOrdinal(lastOrdinal++);
+/*
+RME is this right
                         if (level.ordinalExp != level.keyExp) {
-                            member.ordinal = lastOrdinal++;
+                            member.setOrdinal(lastOrdinal++);
                         }
+*/
                         if (value == RolapUtil.sqlNullValue) {
                             addAsOldestSibling(list, member);
                         } else {
@@ -359,8 +363,8 @@ class SqlMemberSource implements MemberReader
                     column++;
                     for (int j = 0; j < level.properties.length; j++) {
                         RolapProperty property = level.properties[j];
-                        member.setProperty(
-                                property.getName(), resultSet.getObject(column + 1));
+                        member.setProperty(property.getName(), 
+                                        resultSet.getObject(column + 1));
                         column++;
                     }
                 }
@@ -408,19 +412,19 @@ class SqlMemberSource implements MemberReader
                 continue;
             }
             MondrianDef.Expression exp = level.keyExp;
-            hierarchy.addToFrom(sqlQuery, exp, null);
+            hierarchy.addToFrom(sqlQuery, exp);
             String expString = exp.getExpression(sqlQuery);
             sqlQuery.addSelect(expString);
             sqlQuery.addGroupBy(expString);
             exp = level.ordinalExp;
-            hierarchy.addToFrom(sqlQuery, exp, null);
+            hierarchy.addToFrom(sqlQuery, exp);
             expString = exp.getExpression(sqlQuery);
             sqlQuery.addOrderBy(expString);
             sqlQuery.addGroupBy(expString);
             for (int j = 0; j < level.properties.length; j++) {
                 RolapProperty property = level.properties[j];
                 exp = property.exp;
-                hierarchy.addToFrom(sqlQuery, exp, null);
+                hierarchy.addToFrom(sqlQuery, exp);
                 expString = exp.getExpression(sqlQuery);
                 sqlQuery.addSelect(expString);
                 sqlQuery.addGroupBy(expString);
@@ -459,11 +463,11 @@ class SqlMemberSource implements MemberReader
             if (level2.isAll()) {
                 continue;
             }
-            hierarchy.addToFrom(sqlQuery, level2.keyExp, null);
+            hierarchy.addToFrom(sqlQuery, level2.keyExp);
             String keySql = level2.keyExp.getExpression(sqlQuery);
             sqlQuery.addSelect(keySql);
             sqlQuery.addGroupBy(keySql);
-            hierarchy.addToFrom(sqlQuery, level2.ordinalExp, null);
+            hierarchy.addToFrom(sqlQuery, level2.ordinalExp);
             String ordinalSql = level2.ordinalExp.getExpression(sqlQuery);
             sqlQuery.addGroupBy(ordinalSql);
             sqlQuery.addOrderBy(ordinalSql);
@@ -488,7 +492,7 @@ class SqlMemberSource implements MemberReader
             if (root == null) {
                 root = new RolapMember(null, level, null, allMemberName,
                         Member.ALL_MEMBER_TYPE);
-                root.ordinal = lastOrdinal++;
+                root.setOrdinal(lastOrdinal++);
                 cache.putMember(key, root);
                 if (hierarchy.xmlHierarchy != null &&
                     hierarchy.xmlHierarchy.allMemberCaption != null &&
@@ -656,9 +660,9 @@ class SqlMemberSource implements MemberReader
             if (level.isAll()) {
                 continue;
             }
-            hierarchy.addToFrom(sqlQuery, level.keyExp, null);
+            hierarchy.addToFrom(sqlQuery, level.keyExp);
             String q = level.keyExp.getExpression(sqlQuery);
-            sqlQuery.addWhere(q + " = " + m.quoteKeyForSql());
+            sqlQuery.addWhere(q, " = ", m.quoteKeyForSql());
             if (level.unique) {
                 break; // no further qualification needed
             }
@@ -666,11 +670,11 @@ class SqlMemberSource implements MemberReader
 
         RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
         RolapLevel level = levels[member.getLevel().getDepth() + 1];
-        hierarchy.addToFrom(sqlQuery, level.keyExp, null);
+        hierarchy.addToFrom(sqlQuery, level.keyExp);
         String q = level.keyExp.getExpression(sqlQuery);
         sqlQuery.addSelect(q);
         sqlQuery.addGroupBy(q);
-        hierarchy.addToFrom(sqlQuery, level.ordinalExp, null);
+        hierarchy.addToFrom(sqlQuery, level.ordinalExp);
         String orderBy = level.ordinalExp.getExpression(sqlQuery);
         sqlQuery.addOrderBy(orderBy);
         if (!orderBy.equals(q)) {
@@ -679,7 +683,7 @@ class SqlMemberSource implements MemberReader
         for (int j = 0; j < level.properties.length; j++) {
             RolapProperty property = level.properties[j];
             final MondrianDef.Expression exp = property.exp;
-            hierarchy.addToFrom(sqlQuery, exp, null);
+            hierarchy.addToFrom(sqlQuery, exp);
             final String s = exp.getExpression(sqlQuery);
             sqlQuery.addSelect(s);
             sqlQuery.addGroupBy(s);
@@ -797,7 +801,7 @@ class SqlMemberSource implements MemberReader
     {
         RolapMember member = new RolapMember(parentMember, childLevel, value);
         if (childLevel.ordinalExp != childLevel.keyExp) {
-            member.ordinal = lastOrdinal++;
+            member.setOrdinal(lastOrdinal++);
         }
         if (parentChild) {
             // Create a 'public' and a 'data' member. The public member is
@@ -845,27 +849,30 @@ class SqlMemberSource implements MemberReader
         RolapLevel level = (RolapLevel) member.getLevel().getChildLevel();
         Util.assertTrue(!level.isAll(), "all level cannot be parent-child");
         Util.assertTrue(level.unique, "parent-child level '" + level + "' must be unique");
-        hierarchy.addToFrom(sqlQuery, level.parentExp, null);
+        hierarchy.addToFrom(sqlQuery, level.parentExp);
         String parentId = level.parentExp.getExpression(sqlQuery);
-        String condition;
+        StringBuffer condition = new StringBuffer(64);
+        condition.append(parentId);
         if (level.nullParentValue == null ||
                 level.nullParentValue.equalsIgnoreCase("NULL")) {
-            condition = parentId + " IS NULL";
+            condition.append(" IS NULL");
         } else {
             // Quote the value if it doesn't seem to be a number.
             try {
                 Util.discard(Double.parseDouble(level.nullParentValue));
-                condition = parentId + " = " + level.nullParentValue;
+                condition.append(" = ");
+                condition.append(level.nullParentValue);
             } catch (NumberFormatException e) {
-                condition = parentId + " = " + RolapUtil.singleQuoteForSql(level.nullParentValue);
+                condition.append(" = ");
+                RolapUtil.singleQuoteForSql(level.nullParentValue, condition);
             }
         }
-        sqlQuery.addWhere(condition);
-        hierarchy.addToFrom(sqlQuery, level.keyExp, null);
+        sqlQuery.addWhere(condition.toString());
+        hierarchy.addToFrom(sqlQuery, level.keyExp);
         String childId = level.keyExp.getExpression(sqlQuery);
         sqlQuery.addSelect(childId);
         sqlQuery.addGroupBy(childId);
-        hierarchy.addToFrom(sqlQuery, level.ordinalExp, null);
+        hierarchy.addToFrom(sqlQuery, level.ordinalExp);
         String orderBy = level.ordinalExp.getExpression(sqlQuery);
         sqlQuery.addOrderBy(orderBy);
         if (!orderBy.equals(childId)) {
@@ -874,7 +881,7 @@ class SqlMemberSource implements MemberReader
         for (int j = 0; j < level.properties.length; j++) {
             RolapProperty property = level.properties[j];
             final MondrianDef.Expression exp = property.exp;
-            hierarchy.addToFrom(sqlQuery, exp, null);
+            hierarchy.addToFrom(sqlQuery, exp);
             final String s = exp.getExpression(sqlQuery);
             sqlQuery.addSelect(s);
             sqlQuery.addGroupBy(s);
@@ -899,15 +906,15 @@ class SqlMemberSource implements MemberReader
         RolapLevel level = (RolapLevel) member.getLevel();
         Util.assertTrue(!level.isAll(), "all level cannot be parent-child");
         Util.assertTrue(level.unique, "parent-child level '" + level + "' must be unique");
-        hierarchy.addToFrom(sqlQuery, level.parentExp, null);
+        hierarchy.addToFrom(sqlQuery, level.parentExp);
         String parentId = level.parentExp.getExpression(sqlQuery);
-        sqlQuery.addWhere(parentId + " = " + member.quoteKeyForSql());
+        sqlQuery.addWhere(parentId, " = ", member.quoteKeyForSql());
 
-        hierarchy.addToFrom(sqlQuery, level.keyExp, null);
+        hierarchy.addToFrom(sqlQuery, level.keyExp);
         String childId = level.keyExp.getExpression(sqlQuery);
         sqlQuery.addSelect(childId);
         sqlQuery.addGroupBy(childId);
-        hierarchy.addToFrom(sqlQuery, level.ordinalExp, null);
+        hierarchy.addToFrom(sqlQuery, level.ordinalExp);
         String orderBy = level.ordinalExp.getExpression(sqlQuery);
         sqlQuery.addOrderBy(orderBy);
         if (!orderBy.equals(childId)) {
@@ -916,7 +923,7 @@ class SqlMemberSource implements MemberReader
         for (int j = 0; j < level.properties.length; j++) {
             RolapProperty property = level.properties[j];
             final MondrianDef.Expression exp = property.exp;
-            hierarchy.addToFrom(sqlQuery, exp, null);
+            hierarchy.addToFrom(sqlQuery, exp);
             final String s = exp.getExpression(sqlQuery);
             sqlQuery.addSelect(s);
             sqlQuery.addGroupBy(s);
@@ -1009,7 +1016,7 @@ class SqlMemberSource implements MemberReader
             return true;
         }
 
-        Exp getExpression() {
+        public Exp getExpression() {
             final RolapHierarchy hierarchy = (RolapHierarchy) getHierarchy();
             return hierarchy.getAggregateChildrenExpression();
         }

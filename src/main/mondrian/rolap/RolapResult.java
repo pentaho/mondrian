@@ -29,25 +29,28 @@ import java.util.List;
  */
 class RolapResult extends ResultBase
 {
-    private RolapEvaluator evaluator;
-    private CellKey point;
-    HashMap cellValues;
-    AggregatingCellReader aggregatingReader;
-    FastBatchingCellReader batchingReader;
-    private int[] modulos;
     private static final int MAX_AGGREGATION_PASS_COUNT = 5;
 
+    private final RolapEvaluator evaluator;
+    private final CellKey point;
+
+    // SHOULD THIS BE AN INSTANCE VARIABLE???
+    HashMap cellValues;
+
+    final AggregatingCellReader aggregatingReader;
+    final FastBatchingCellReader batchingReader;
+    private final int[] modulos;
+
     RolapResult(Query query) {
-        this.query = query;
+        super(query, new RolapAxis[query.axes.length]);
+
         this.point = new CellKey(new int[query.axes.length]);
-        this.axes = new RolapAxis[query.axes.length];
         this.evaluator = new RolapEvaluator(
                 (RolapCube) query.getCube(),
                 (RolapConnection) query.getConnection());
         this.aggregatingReader = new AggregatingCellReader();
-        HashSet pinnedSegments = new HashSet();
-        this.batchingReader = new FastBatchingCellReader(
-            (RolapCube) query.getCube(), pinnedSegments);
+        this.batchingReader = new FastBatchingCellReader( 
+                                    (RolapCube) query.getCube());
         try {
             for (int i = -1; i < axes.length; i++) {
                 QueryAxis axis;
@@ -69,7 +72,7 @@ class RolapResult extends ResultBase
                 RolapAxis axisResult;
                 int attempt = 0;
                 while (true) {
-                    evaluator.cellReader = batchingReader;
+                    evaluator.setCellReader(batchingReader);
                     axisResult = executeAxis(evaluator.push(), axis);
                     evaluator.clearExpResultCache();
                     if (!batchingReader.loadAggregations()) {
@@ -82,7 +85,7 @@ class RolapResult extends ResultBase
                     }
                 }
 
-                evaluator.cellReader = aggregatingReader;
+                evaluator.setCellReader(aggregatingReader);
                 axisResult = executeAxis(evaluator.push(), axis);
                 evaluator.clearExpResultCache();
 
@@ -206,7 +209,7 @@ class RolapResult extends ResultBase
         while (true) {
             cellValues = new HashMap();
             //
-            evaluator.cellReader = this.batchingReader;
+            evaluator.setCellReader(this.batchingReader);
             executeStripe(query.axes.length - 1, (RolapEvaluator) evaluator.push());
             evaluator.clearExpResultCache();
 
@@ -239,7 +242,7 @@ class RolapResult extends ResultBase
         public Object get(Evaluator evaluator)
         {
             final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator;
-            return aggregationManager.getCellFromCache(rolapEvaluator.currentMembers);
+            return aggregationManager.getCellFromCache(rolapEvaluator.getCurrentMembers());
         }
     };
 

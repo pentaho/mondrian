@@ -10,6 +10,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.Evaluator;
+import mondrian.olap.Member;
 import mondrian.olap.Util;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
@@ -32,19 +33,19 @@ import java.util.*;
  */
 public class FastBatchingCellReader implements CellReader {
 
-    RolapCube cube;
-    Set pinnedSegments;
-    Map batches = new HashMap();
+    private final RolapCube cube;
+    private final Set pinnedSegments;
+    private final Map batches = new HashMap();
     RolapAggregationManager aggMgr = AggregationManager.instance();
 
-    public FastBatchingCellReader(RolapCube cube, Set pinnedSegments) {
+    public FastBatchingCellReader(RolapCube cube) {
         this.cube = cube;
-        this.pinnedSegments = pinnedSegments;
+        this.pinnedSegments = new HashSet();
     }
 
     public Object get(Evaluator evaluator) {
         final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator;
-        RolapMember[] currentMembers = rolapEvaluator.currentMembers;
+        Member[] currentMembers = rolapEvaluator.getCurrentMembers();
         CellRequest request =
                 RolapAggregationManager.makeRequest(currentMembers, false);
         if (request == null) {
@@ -68,7 +69,7 @@ public class FastBatchingCellReader implements CellReader {
         return RolapUtil.valueNotReadyException;
     }
 
-    int requestCount = 0;
+    private int requestCount = 0;
     void recordCellRequest(CellRequest request) {
         ++requestCount;
         Object key = request.getBatchKey();
@@ -101,9 +102,9 @@ public class FastBatchingCellReader implements CellReader {
 
     class Batch {
 
-        RolapStar.Column[] columns;
-        ArrayList measuresList = new ArrayList();
-        Set[] valueSets;
+        final RolapStar.Column[] columns;
+        final List measuresList = new ArrayList();
+        final Set[] valueSets;
 
         public Batch(CellRequest request) {
             columns = request.getColumns();
@@ -114,7 +115,7 @@ public class FastBatchingCellReader implements CellReader {
         }
 
         public void add(CellRequest request) {
-            ArrayList values = request.getValueList();
+            List values = request.getValueList();
             for (int j = 0; j < columns.length; j++) {
                 valueSets[j].add(values.get(j));
             }
@@ -158,7 +159,7 @@ public class FastBatchingCellReader implements CellReader {
                     break;
                 }
                 final String expr = distinctMeasure.expression.getGenericExpression();
-                final ArrayList distinctMeasuresList = new ArrayList();
+                final List distinctMeasuresList = new ArrayList();
                 for (int i = 0; i < measuresList.size();) {
                     RolapStar.Measure measure = (RolapStar.Measure) measuresList.get(i);
                     if (measure.aggregator.distinct &&
@@ -192,7 +193,7 @@ public class FastBatchingCellReader implements CellReader {
          * @param measuresList
          * @return
          */
-        RolapStar.Measure getFirstDistinctMeasure(ArrayList measuresList) {
+        RolapStar.Measure getFirstDistinctMeasure(List measuresList) {
             for (int i = 0; i < measuresList.size(); i++) {
                 RolapStar.Measure measure = (RolapStar.Measure) measuresList.get(i);
                 if (measure.aggregator.distinct) {

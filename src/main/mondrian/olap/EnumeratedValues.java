@@ -26,7 +26,7 @@ import java.util.*;
 public class EnumeratedValues implements Cloneable
 {
     /** map symbol names to values */
-    private HashMap valuesByName = new HashMap();
+    private Map valuesByName = new HashMap();
 
     /** the smallest ordinal value */
     private int min = Integer.MAX_VALUE;
@@ -93,7 +93,7 @@ public class EnumeratedValues implements Cloneable
         } catch(CloneNotSupportedException ex) {
             // IMPLEMENT internal error?
         }
-        clone.valuesByName = (HashMap) valuesByName.clone();
+        clone.valuesByName = (Map) ((HashMap) valuesByName).clone();
         clone.ordinalToValueMap = null;
         return clone;
     }
@@ -267,7 +267,7 @@ public class EnumeratedValues implements Cloneable
      * Returns the members of this enumeration, sorted by name.
      */
     public List getValuesSortedByName() {
-        ArrayList list = new ArrayList();
+        List list = new ArrayList();
         final String[] names = getNames();
         Arrays.sort(names);
         for (int i = 0; i < names.length; i++) {

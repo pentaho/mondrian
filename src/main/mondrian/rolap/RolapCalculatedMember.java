@@ -37,7 +37,7 @@ class RolapCalculatedMember extends RolapMember {
     }
 
     // override RolapMember
-    int getSolveOrder() {
+    public int getSolveOrder() {
         return formula.getSolveOrder();
     }
 
@@ -56,7 +56,7 @@ class RolapCalculatedMember extends RolapMember {
         return true;
     }
 
-    Exp getExpression() {
+    public Exp getExpression() {
         return formula.getExpression();
     }
 

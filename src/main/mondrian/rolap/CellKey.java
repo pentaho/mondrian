@@ -21,7 +21,7 @@ package mondrian.rolap;
  **/
 public class CellKey
 {
-    public int[] ordinals;
+    public final int[] ordinals;
     public CellKey(int[] ordinals)
     {
         this.ordinals = ordinals;

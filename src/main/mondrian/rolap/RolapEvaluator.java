@@ -34,12 +34,12 @@ import java.util.*;
  */
 class RolapEvaluator implements Evaluator
 {
-    RolapCube cube;
-    RolapConnection connection;
-    RolapMember[] currentMembers;
-    Evaluator parent;
-    CellReader cellReader;
-    int depth;
+    private RolapCube cube;
+    private RolapConnection connection;
+    private Member[] currentMembers;
+    private Evaluator parent;
+    private CellReader cellReader;
+    private int depth;
 
     Map expResultCache;
     private Member expandingMember;
@@ -49,13 +49,26 @@ class RolapEvaluator implements Evaluator
         this.cube = cube;
         this.connection = connection;
         SchemaReader scr = connection.getSchemaReader();
-        RolapDimension[] dimensions = (RolapDimension[]) cube.getDimensions();
-        currentMembers = new RolapMember[dimensions.length];
+        Dimension[] dimensions = cube.getDimensions();
+        currentMembers = new Member[dimensions.length];
         for (int i = 0; i < dimensions.length; i++) {
-            final RolapDimension dimension = dimensions[i];
+            final Dimension dimension = dimensions[i];
             final int ordinal = dimension.getOrdinal(cube);
             final Hierarchy hier = dimension.getHierarchy();
-            currentMembers[ordinal] = (RolapMember) scr.getHierarchyDefaultMember(hier);
+
+            Member member = scr.getHierarchyDefaultMember(hier);
+
+            HierarchyUsage[] hierarchyUsages = cube.getUsages(hier);
+            
+            // RME TODO what happends when there is more than one usage
+            if (hierarchyUsages.length != 0) {
+//System.out.println("     hierarchyUsages.length="+hierarchyUsages.length);
+                ((RolapMember) member).makeUniqueName(hierarchyUsages[0]);
+            }
+//System.out.println("     member.uniquename="+member.getUniqueName());
+
+
+            currentMembers[ordinal] = member;
         }
         this.parent = null;
         this.depth = 0;
@@ -63,9 +76,10 @@ class RolapEvaluator implements Evaluator
         this.expResultCache = new HashMap();
     }
 
-    private RolapEvaluator(
-        RolapCube cube, RolapConnection connection,
-        RolapMember[] currentMembers, RolapEvaluator parent)
+    private RolapEvaluator(RolapCube cube, 
+                           RolapConnection connection,
+                           Member[] currentMembers, 
+                           RolapEvaluator parent)
     {
         this.cube = cube;
         this.connection = connection;
@@ -74,6 +88,14 @@ class RolapEvaluator implements Evaluator
         this.depth = parent.getDepth() + 1;
         this.cellReader = parent.cellReader;
         this.expResultCache = parent.expResultCache;
+    }
+
+    Member[] getCurrentMembers() {
+        return this.currentMembers;
+    }
+
+    void setCellReader(CellReader cellReader) {
+        this.cellReader = cellReader;
     }
 
     public Cube getCube() {
@@ -109,8 +131,10 @@ class RolapEvaluator implements Evaluator
     }
 
     private final RolapEvaluator _push() {
-        RolapMember[] cloneCurrentMembers = (RolapMember[]) this.currentMembers.clone();
-        return new RolapEvaluator(cube, connection, cloneCurrentMembers, this);
+        Member[] cloneCurrentMembers = (Member[]) this.currentMembers.clone();
+        return new RolapEvaluator((RolapCube) cube, 
+                                    (RolapConnection) connection, 
+                                    cloneCurrentMembers, this);
     }
 
     public Evaluator pop() {
@@ -136,14 +160,26 @@ class RolapEvaluator implements Evaluator
     {
         RolapMember m = (RolapMember) member;
         int ordinal = m.getDimension().getOrdinal(cube);
-        RolapMember previous = currentMembers[ordinal];
+        Member previous = currentMembers[ordinal];
         currentMembers[ordinal] = m;
         return previous;
     }
     public void setContext(Member[] members)
     {
         for (int i = 0; i < members.length; i++) {
-            setContext(members[i]);
+            Member member = members[i];
+
+            // more than one usage
+            if (member == null) {
+                if (Log.isTrace()) {
+                    Log.trace(
+                        "RolapEvaluator.setContext: member == null "
+                         + " , count=" + i);
+                }
+                continue;
+            }
+
+            setContext(member);
         }
     }
     public Member getContext(Dimension dimension)
@@ -152,7 +188,7 @@ class RolapEvaluator implements Evaluator
     }
     public Object evaluateCurrent()
     {
-        RolapMember maxSolveMember = getMaxSolveMember();
+        Member maxSolveMember = getMaxSolveMember();
         if (maxSolveMember != null) {
             // There is at least one calculated member. Expand the first one
             // with the highest solve order.
@@ -174,11 +210,22 @@ class RolapEvaluator implements Evaluator
      * (b) has the highest solve order; returns null if there are no calculated
      * members.
      */
-    private RolapMember getMaxSolveMember() {
+    private Member getMaxSolveMember() {
         int maxSolve = Integer.MIN_VALUE;
-        RolapMember maxSolveMember = null;
+        Member maxSolveMember = null;
         for (int i = 0, count = currentMembers.length; i < count; i++) {
-            final RolapMember currentMember = currentMembers[i];
+            final Member currentMember = currentMembers[i];
+
+            // more than one usage
+            if (currentMember == null) {
+                if (Log.isTrace()) {
+                    Log.trace(
+                        "RolapEvaluator.getMinSolveMember: member == null "
+                         + " , count=" + i);
+                }
+                continue;
+            }
+
             if (currentMember.isCalculated()) {
                 int solve = currentMember.getSolveOrder();
                 if (solve > maxSolve) {
@@ -229,7 +276,19 @@ class RolapEvaluator implements Evaluator
                 continue;
             }
             for (int i = 0; i < eval.currentMembers.length; i++) {
-                RolapMember member = eval2.currentMembers[i];
+                Member member = eval2.currentMembers[i];
+
+                // more than one usage
+                if (member == null) {
+                    if (Log.isTrace()) {
+                        Log.trace(
+                            "RolapEvaluator.checkRecursion: member == null "
+                             + " , count=" + i);
+                    }
+                    continue;
+                }
+
+
                 Member parentMember = eval.getContext(member.getDimension());
                 if (member != parentMember) {
                     continue outer;
@@ -257,7 +316,7 @@ class RolapEvaluator implements Evaluator
             sb.append("(");
             int memberCount = 0;
             for (int j = 0; j < eval.currentMembers.length; j++) {
-                RolapMember m = eval.currentMembers[j];
+                Member m = eval.currentMembers[j];
                 if (skipDefaultMembers &&
                         m == m.getHierarchy().getDefaultMember()) {
                     continue;
@@ -278,7 +337,18 @@ class RolapEvaluator implements Evaluator
         Object o = null;
         int maxSolve = Integer.MIN_VALUE;
         for (int i = 0; i < currentMembers.length; i++) {
-            RolapMember member = currentMembers[i];
+            Member member = currentMembers[i];
+
+            // more than one usage
+            if (member == null) {
+                if (Log.isTrace()) {
+                    Log.trace(
+                        "RolapEvaluator.getProperty: member == null "
+                         + " , count=" + i);
+                }
+                continue;
+            }
+
             Object p = member.getPropertyValue(name);
             if (p != null) {
                 int solve = member.getSolveOrder();
@@ -339,7 +409,20 @@ class RolapEvaluator implements Evaluator
         List key = new ArrayList();
         key.add(exp);
         for (int i = 0; i < currentMembers.length; i++) {
-            Dimension dim = currentMembers[i].getDimension();
+            Member member = currentMembers[i];
+
+            // more than one usage
+            if (member == null) {
+                if (Log.isTrace()) {
+                    Log.trace(
+                        "RolapEvaluator.getExpResultCacheKey: member == null "
+                         + " , count=" + i);
+                }
+                continue;
+            }
+
+            Dimension dim = member.getDimension();
+
             if (exp.dependsOn(dim))
                 key.add(currentMembers[i]);
         }

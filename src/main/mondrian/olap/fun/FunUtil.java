@@ -1091,6 +1091,65 @@ public class FunUtil extends Util {
         return retval;
     }
 
+    /** 
+     * This evaluates one or more ExpBases against the member list returning
+     * a SetWrapper array. Where this differs very significantly from the
+     * above evaluateSet methods is how it count null values and Throwables;
+     * this method adds nulls to the SetWrapper Vector rather than not adding
+     * anything - as the above method does. The impact of this is that if, for
+     * example, one was creating a list of x,y values then each list will have
+     * the same number of values (though some might be null) - this allows
+     * higher level code to determine how to handle the lack of data rather than
+     * having a non-equal number (if one is plotting x,y values it helps to
+     * have the same number and know where a potential gap is the data is.
+     * 
+     * @param evaluator 
+     * @param members 
+     * @param exps 
+     * @return 
+     */
+    static SetWrapper[] evaluateSet(Evaluator evaluator, 
+                                    List members, 
+                                    ExpBase[] exps) {
+        Util.assertPrecondition(exps != null, "exps != null");
+        // todo: treat constant exps as evaluateMembers() does
+        SetWrapper[] retvals = new SetWrapper[exps.length];
+        for (int i = 0; i < exps.length; i++) {
+            retvals[i] = new SetWrapper();
+        }       
+        for (Iterator it = members.iterator(); it.hasNext();) {
+            Object obj = it.next();
+            if (obj instanceof Member[]) {
+                evaluator.setContext((Member[])obj); 
+            } else {
+                evaluator.setContext((Member)obj);
+            }       
+            for (int i = 0; i < exps.length; i++) {
+                ExpBase exp = exps[i];
+                SetWrapper retval = retvals[i];
+                Object o = exp.evaluateScalar(evaluator);
+                if (o == null || o == Util.nullValue) {
+                    retval.nullCount++;
+                    retval.v.add(null);
+                } else if (o instanceof Throwable) {
+                    // Carry on summing, so that if we are running in a
+                    // BatchingCellReader, we find out all the dependent cells
+                    // we
+                    // need
+                    retval.errorCount++;
+                    retval.v.add(null);
+                } else if (o instanceof Double) {
+                    retval.v.add(o);
+                } else if (o instanceof Number) {
+                    retval.v.add(new Double(((Number) o).doubleValue()));
+                } else {
+                    retval.v.add(o);
+                }
+            }
+        }
+        return retvals;
+    }
+
     static List periodsToDate(
             Evaluator evaluator, Level level, Member member) {
         if (member == null) {

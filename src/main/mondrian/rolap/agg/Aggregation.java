@@ -16,7 +16,8 @@ import mondrian.olap.Member;
 import mondrian.olap.SchemaReader;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapStar;
-import mondrian.rolap.cache.CachePool;
+// CachePool IS NO LONGER USED ANYWHERE
+//import mondrian.rolap.cache.CachePool;
 import mondrian.rolap.sql.SqlQuery;
 
 import java.lang.ref.SoftReference;

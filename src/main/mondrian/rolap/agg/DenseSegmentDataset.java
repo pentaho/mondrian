@@ -28,8 +28,8 @@ import mondrian.rolap.CellKey;
  **/
 class DenseSegmentDataset implements SegmentDataset
 {
-    private Segment segment;
-    private Object[] values; // length == m[0] * ... * m[axes.length-1]
+    private final Segment segment;
+    private final Object[] values; // length == m[0] * ... * m[axes.length-1]
 
     DenseSegmentDataset(Segment segment, Object[] values) {
         this.segment = segment;

@@ -23,13 +23,26 @@ public abstract class LevelBase
     extends OlapElementBase
     implements Level
 {
-    protected HierarchyBase hierarchy;
-    protected String name;
-    protected String uniqueName;
+    protected final Hierarchy hierarchy;
+    protected final String name;
+    protected final String uniqueName;
     protected String description;
-    protected int depth;
-    protected LevelType levelType;
+    protected final int depth;
+    protected final LevelType levelType;
     protected MemberFormatter memberFormatter = null;
+
+    protected LevelBase(
+        Hierarchy hierarchy,
+        String name,
+        int depth,
+        LevelType levelType
+    ) {
+        this.hierarchy = hierarchy;
+        this.name = name;
+        this.uniqueName = Util.makeFqName(hierarchy, name);
+        this.depth = depth;
+        this.levelType = levelType;
+    }
 
     // from Element
     public String getQualifiedName() {
@@ -44,25 +57,27 @@ public abstract class LevelBase
     public String getName() { return name; }
     public String getDescription() { return description; }
     public Hierarchy getHierarchy() { return hierarchy; }
-    public Dimension getDimension() { return hierarchy.dimension; }
+    public Dimension getDimension() { return hierarchy.getDimension(); }
     public boolean usesDimension(Dimension dimension) {
-        return hierarchy.dimension == dimension;
+        return ((HierarchyBase) hierarchy).dimension == dimension;
     }
     public int getDepth() { return depth; }
 
     public Level getChildLevel()
     {
         int childDepth = depth + 1;
-        return childDepth < hierarchy.levels.length ?
-            hierarchy.levels[childDepth] :
-            null;
+        Level[] levels = hierarchy.getLevels();
+        return childDepth < levels.length 
+            ? levels[childDepth] 
+            : null;
     }
     public Level getParentLevel()
     {
         int parentDepth = depth - 1;
-        return parentDepth >= 0 ?
-            hierarchy.levels[parentDepth] :
-            null;
+        Level[] levels = hierarchy.getLevels();
+        return parentDepth >= 0 
+            ? levels[parentDepth] 
+            : null;
     }
 
     // AdomdLevel and RolapLevel do it differently

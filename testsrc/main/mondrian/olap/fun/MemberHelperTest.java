@@ -283,5 +283,12 @@ public class MemberHelperTest extends TestCase {
         public Member getDataMember() {
             return null;
         }
+        public Exp getExpression() {
+            return null;
+        }   
+        public int getSolveOrder() {
+            return -1;
+        }
+
     }
 }

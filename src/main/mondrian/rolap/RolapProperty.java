@@ -26,9 +26,14 @@ class RolapProperty extends Property {
     static final RolapProperty[] emptyArray = new RolapProperty[0];
 
     private PropertyFormatter formatter = null;
-    private String caption=  null;
+    private String caption = null;
+    /** The column or expression which yields the property's value. */
+    MondrianDef.Expression exp;
 
-    RolapProperty(String name, int type, MondrianDef.Expression exp, String formatterDef, String caption) {
+
+    RolapProperty(String name, int type, 
+                  MondrianDef.Expression exp, 
+                  String formatterDef, String caption) {
         super(name, type);
         this.exp = exp;
         this.caption = caption;
@@ -47,9 +52,6 @@ class RolapProperty extends Property {
     public PropertyFormatter getFormatter() {
         return formatter;
     }
-
-    /** The column or expression which yields the property's value. */
-    MondrianDef.Expression exp;
 
     /**
      * @return Returns the caption.

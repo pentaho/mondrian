@@ -15,6 +15,7 @@ import mondrian.olap.Util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 
 /**
@@ -34,7 +35,7 @@ class CacheMemberReader implements MemberReader, MemberCache
     private MemberSource source;
     private RolapMember[] members;
     /** Maps a {@link MemberKey} to a {@link RolapMember}. **/
-    private HashMap mapKeyToMember;
+    private Map mapKeyToMember;
 
     CacheMemberReader(MemberSource source)
     {
@@ -46,7 +47,7 @@ class CacheMemberReader implements MemberReader, MemberCache
         this.mapKeyToMember = new HashMap();
         this.members = source.getMembers();
         for (int i = 0; i < members.length; i++) {
-            members[i].ordinal = i;
+            members[i].setOrdinal(i);
         }
     }
 
@@ -88,7 +89,7 @@ class CacheMemberReader implements MemberReader, MemberCache
 
     // don't need to implement this MemberCache method because we're never
     // used in a context where it is needed
-    public void putChildren(RolapMember member, ArrayList children) {
+    public void putChildren(RolapMember member, List children) {
         throw new UnsupportedOperationException();
     }
 
@@ -103,7 +104,7 @@ class CacheMemberReader implements MemberReader, MemberCache
     }
 
     public List getRootMembers() {
-        ArrayList list = new ArrayList();
+        List list = new ArrayList();
         for (int i = 0; i < members.length; i++) {
             if (members[i].getParentUniqueName() == null) {
                 list.add(members[i]);
@@ -114,13 +115,13 @@ class CacheMemberReader implements MemberReader, MemberCache
 
     public List getMembersInLevel(
             RolapLevel level, int startOrdinal, int endOrdinal) {
-        ArrayList list = new ArrayList();
+        List list = new ArrayList();
         int levelDepth = level.getDepth();
         for (int i = 0; i < members.length; i++) {
             RolapMember member = members[i];
             if (member.getLevel().getDepth() == levelDepth &&
-                startOrdinal <= member.ordinal &&
-                member.ordinal < endOrdinal) {
+                startOrdinal <= member.getOrdinal() &&
+                member.getOrdinal() < endOrdinal) {
                 list.add(members[i]);
             }
         }
@@ -147,7 +148,7 @@ class CacheMemberReader implements MemberReader, MemberCache
 
     public RolapMember getLeadMember(RolapMember member, int n) {
         if (n >= 0) {
-            for (int ordinal = member.ordinal; ordinal < members.length;
+            for (int ordinal = member.getOrdinal(); ordinal < members.length;
                  ordinal++) {
                 if (members[ordinal].getLevel() == member.getLevel() &&
                     n-- == 0) {
@@ -156,7 +157,7 @@ class CacheMemberReader implements MemberReader, MemberCache
             }
             return (RolapMember) member.getHierarchy().getNullMember();
         } else {
-            for (int ordinal = member.ordinal; ordinal >= 0; ordinal--) {
+            for (int ordinal = member.getOrdinal(); ordinal >= 0; ordinal--) {
                 if (members[ordinal].getLevel() == member.getLevel() &&
                     n++ == 0) {
                     return members[ordinal];
@@ -173,7 +174,7 @@ class CacheMemberReader implements MemberReader, MemberCache
         Util.assertPrecondition(endMember != null, "endMember != null");
         Util.assertPrecondition(startMember.getLevel() == endMember.getLevel(),
                 "startMember.getLevel() == endMember.getLevel()");
-        for (int i = startMember.ordinal; i <= endMember.ordinal; i++) {
+        for (int i = startMember.getOrdinal(); i <= endMember.getOrdinal(); i++) {
             if (members[i].getLevel() == endMember.getLevel()) {
                 list.add(members[i]);
             }
@@ -191,9 +192,9 @@ class CacheMemberReader implements MemberReader, MemberCache
         if (siblingsAreEqual && m1.getParentMember() == m2.getParentMember()) {
             return 0;
         }
-        Util.assertTrue(members[m1.ordinal] == m1);
-        Util.assertTrue(members[m2.ordinal] == m2);
-        return m1.ordinal < m2.ordinal ? -1 : 1;
+        Util.assertTrue(members[m1.getOrdinal()] == m1);
+        Util.assertTrue(members[m2.getOrdinal()] == m2);
+        return m1.getOrdinal() < m2.getOrdinal() ? -1 : 1;
     }
 
     public void getMemberDescendants(RolapMember member, List result,

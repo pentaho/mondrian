@@ -64,15 +64,15 @@ import mondrian.rolap.RolapUtil;
  **/
 public class Segment
 {
-    private int id; // for debug
+    private final int id; // for debug
     private static int nextId = 0; // generator for "id"
     private String desc;
-    Aggregation aggregation;
-    RolapStar.Measure measure;
+    final Aggregation aggregation;
+    final RolapStar.Measure measure;
 
     Aggregation.Axis[] axes;
     private SegmentDataset data;
-    private CellKey cellKey; // workspace
+    private final CellKey cellKey; // workspace
     /** State of the segment, values are described by {@link State}. */
     private int state;
 
@@ -189,12 +189,6 @@ public class Segment
     public String toString()
     {
         return desc;
-    }
-
-    // implement CachePool.Cacheable
-    public Object getKey()
-    {
-        return this;
     }
 
     /**

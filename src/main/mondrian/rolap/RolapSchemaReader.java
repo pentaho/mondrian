@@ -66,7 +66,8 @@ public abstract class RolapSchemaReader implements SchemaReader {
 
     public void getMemberRange(Level level, Member startMember, Member endMember, List list) {
         getMemberReader(level.getHierarchy()).getMemberRange(
-                (RolapLevel) level, (RolapMember) startMember, (RolapMember) endMember, list);
+                (RolapLevel) level, (RolapMember) startMember, 
+                (RolapMember) endMember, list);
     }
 
     public int compareMembersHierarchically(Member m1, Member m2) {

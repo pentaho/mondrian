@@ -16,10 +16,6 @@ package mondrian.olap;
  * <code>Property</code> is the definition of a member property.
  */
 public abstract class Property {
-    private String name;
-    /** The datatype; one of {@link #TYPE_STRING}, {@link #TYPE_NUMERIC},
-     * {@link #TYPE_BOOLEAN}. */
-    private int type;
     public static final int TYPE_STRING = 0;
     public static final int TYPE_NUMERIC = 1;
     public static final int TYPE_BOOLEAN = 2;
@@ -81,6 +77,11 @@ public abstract class Property {
     public static final String PROPERTY_LEVEL_UNIQUE_NAME = "LEVEL_UNIQUE_NAME";
     /** Member property for XML/A. */
     public static final String PROPERTY_LEVEL_NUMBER = "LEVEL_NUMBER";
+
+    private final String name;
+    /** The datatype; one of {@link #TYPE_STRING}, {@link #TYPE_NUMERIC},
+     * {@link #TYPE_BOOLEAN}. */
+    private final int type;
 
     protected Property(String name, int type) {
         this.name = name;

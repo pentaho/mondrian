@@ -21,9 +21,14 @@ import java.io.PrintWriter;
  * @version $Id$
  */
 public abstract class ResultBase implements Result {
-    protected Query query;
-    protected Axis[] axes;
+    protected final Query query;
+    protected final Axis[] axes;
     protected Axis slicerAxis;
+
+    protected ResultBase(Query query, Axis[] axes) {
+        this.query = query;
+        this.axes = axes;
+    }
 
     public Query getQuery() {
         return query;

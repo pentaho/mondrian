@@ -30,6 +30,11 @@ interface Resolver
      */
     String getName();
 
+    /**         
+     * Returns the description of the function or operator.
+     */             
+    String getDescription();
+
     /**
      * Returns the syntax with which the function or operator was invoked.
      */

@@ -25,13 +25,16 @@ public abstract class OlapElementBase
     implements OlapElement
 {
 
-  static {
-    Util.assertTrue(System.getProperty("java.version").compareTo("1.1") > 0,
-    "require at least JDK 1.2, because JDK 1.1 had a severe performance bug when hashing long, similar strings");
-  }
+    static {
+      Util.assertTrue(System.getProperty("java.version").compareTo("1.1") > 0,
+      "require at least JDK 1.2, because JDK 1.1 had a severe performance bug when hashing long, similar strings");
+    }
 
-  private String caption = null;
+    private String caption = null;
 
+    protected OlapElementBase() {
+    }           
+        
     public boolean equals(Object o)
     {
         return (o instanceof OlapElement) &&

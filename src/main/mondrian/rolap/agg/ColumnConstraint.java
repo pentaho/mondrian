@@ -17,7 +17,7 @@ import mondrian.rolap.RolapMember;
  */
 public class ColumnConstraint {
 
-    private Object value;
+    private final Object value;
     private RolapMember member = null;
 
     public ColumnConstraint(Object o) {
@@ -25,6 +25,7 @@ public class ColumnConstraint {
             member = (RolapMember) o;
             value = member.getSqlKey();
         } else {
+            member = null;
             value = o;
         }
     }
@@ -42,20 +43,25 @@ public class ColumnConstraint {
     }
 
     public boolean equals(Object other){
-        if (!(other instanceof ColumnConstraint))
+        if (!(other instanceof ColumnConstraint)) {
             return false;
-        if (member!= null)
+        }
+        if (member!= null) {
             return (member.equals(((ColumnConstraint)other).getMember()));
-        if (value != null)
+        }
+        if (value != null) {
             return (value.equals(((ColumnConstraint)other).getValue()));
+        }
         return (null == ((ColumnConstraint)other).getValue());
     }
 
     public int hashCode() {
-        if (member!= null)
+        if (member!= null) {
             return member.hashCode();
-        if (value != null)
+        }
+        if (value != null) {
             return value.hashCode();
+        }
         return 0;
     }
 

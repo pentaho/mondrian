@@ -34,7 +34,7 @@ class RolapHierarchy extends HierarchyBase
     MondrianDef.Hierarchy xmlHierarchy;
     private String memberReaderClass;
     private MondrianDef.Relation relation;
-    private RolapMember defaultMember;
+    private Member defaultMember;
     private RolapNullMember nullMember;
 
     /**
@@ -49,7 +49,6 @@ class RolapHierarchy extends HierarchyBase
      **/
     private String sharedHierarchy;
 
-    String foreignKey;
     private Exp aggregateChildrenExpression;
 
     // for newClosedPeerHierarchy() to copy; but never used??
@@ -57,17 +56,18 @@ class RolapHierarchy extends HierarchyBase
 
     RolapHierarchy(RolapDimension dimension, String subName, boolean hasAll)
     {
-        this.dimension = dimension;
-        this.subName = subName;
+        super(dimension, subName);
+
         this.hasAll = hasAll;
         this.levels = new RolapLevel[0];
-        this.name = dimension.getName();
         setCaption(dimension.getCaption());
+/*
         this.uniqueName = dimension.getUniqueName();
         if (this.subName != null) {
             this.name += "." + subName; // e.g. "Time.Weekly"
             this.uniqueName = Util.makeFqName(name); // e.g. "[Time.Weekly]"
         }
+*/
         if (hasAll) {
             Util.discard(newLevel("(All)",
                     RolapLevel.ALL | RolapLevel.UNIQUE));
@@ -120,7 +120,6 @@ class RolapHierarchy extends HierarchyBase
                 levels[i] = new RolapLevel(this, i, xmlHierarchy.levels[i]);
             }
         }
-        this.sharedHierarchy = null;
         if (xmlCubeDimension instanceof MondrianDef.DimensionUsage) {
             String sharedDimensionName =
                 ((MondrianDef.DimensionUsage) xmlCubeDimension).source;
@@ -128,6 +127,8 @@ class RolapHierarchy extends HierarchyBase
             if (subName != null) {
                 this.sharedHierarchy += "." + subName; // e.g. "Time.Weekly"
             }
+        } else {
+            this.sharedHierarchy = null;
         }
         if (xmlHierarchy.relation != null &&
                 xmlHierarchy.memberReaderClass != null) {
@@ -135,7 +136,6 @@ class RolapHierarchy extends HierarchyBase
                     .newHierarchyMustNotHaveMoreThanOneSource(getUniqueName());
         }
         this.primaryKey = xmlHierarchy.primaryKey;
-        this.foreignKey = xmlCubeDimension.foreignKey;
         if (!Util.isEmpty(xmlHierarchy.caption)) {
             setCaption(xmlHierarchy.caption);
         }
@@ -162,25 +162,28 @@ class RolapHierarchy extends HierarchyBase
     /**
      * Initializes a hierarchy within the context of a cube.
      */
-    void init(RolapCube cube)
+    void init(RolapCube cube, MondrianDef.CubeDimension xmlDimension)
     {
         for (int i = 0; i < levels.length; i++) {
-            ((RolapLevel) levels[i]).init(cube);
+            ((RolapLevel) levels[i]).init(cube, xmlDimension);
         }
         if (this.memberReader == null) {
-            this.memberReader = getSchema().createMemberReader(sharedHierarchy,
+            this.memberReader = getRolapSchema().createMemberReader(sharedHierarchy,
                 this, memberReaderClass);
         }
+// RME also not needed
         if (this.getDimension().isMeasures() ||
             this.memberReaderClass != null) {
-            Util.assertTrue(foreignKey == null);
             return;
         }
+/*
+RME not needed
         if (!cube.isVirtual()) {
             // virtual cubes don't create usages
             HierarchyUsage usage = getSchema().getUsage(this,cube);
             usage.init(cube, this, null);
         }
+*/
     }
 
     RolapLevel newLevel(String name, int flags) {
@@ -226,8 +229,8 @@ class RolapHierarchy extends HierarchyBase
         return false;
     }
 
-    RolapSchema getSchema() {
-        return ((RolapDimension) dimension).schema;
+    RolapSchema getRolapSchema() {
+        return (RolapSchema) dimension.getSchema();
     }
 
     MondrianDef.Relation getRelation() {
@@ -290,15 +293,21 @@ class RolapHierarchy extends HierarchyBase
      *    but measure readers do.
      */
     void addToFrom(
-            SqlQuery query, MondrianDef.Expression expression, RolapCube cube) {
+            SqlQuery query, MondrianDef.Expression expression
+/*
+RME not used anywhere
+            , RolapCube cube
+*/
+            ) {
         if (relation == null) {
             throw Util.newError(
                     "cannot add hierarchy " + getUniqueName() +
                     " to query: it does not have a <Table>, <View> or <Join>");
         }
         final boolean failIfExists = false;
+/*
         if (cube != null) {
-            HierarchyUsage hierarchyUsage = getSchema().getUsage(this,cube);
+            HierarchyUsage hierarchyUsage = getRolapSchema().getUsage(this,cube);
             query.addFrom(cube.getFact(), null, failIfExists);
             query.addFrom(hierarchyUsage.joinTable, null, failIfExists);
             query.addWhere(
@@ -307,6 +316,7 @@ class RolapHierarchy extends HierarchyBase
                     " = " +
                     hierarchyUsage.joinExp.getExpression(query));
         }
+*/
         MondrianDef.Relation subRelation = relation;
         if (relation instanceof MondrianDef.Join) {
             if (expression != null) {
@@ -351,6 +361,8 @@ class RolapHierarchy extends HierarchyBase
         }
     }
 
+/*
+RME not needed
     HierarchyUsage createUsage(RolapCube cube) {
         if (sharedHierarchy == null) {
             MondrianDef.Relation fact = cube.fact;
@@ -359,6 +371,7 @@ class RolapHierarchy extends HierarchyBase
             return new SharedHierarchyUsage(cube, sharedHierarchy, foreignKey);
         }
     }
+*/
 
     /**
      * Returns a member reader which enforces the access-control profile of
@@ -481,22 +494,23 @@ class RolapHierarchy extends HierarchyBase
      */
     RolapDimension createClosedPeerDimension(
         RolapLevel src,
-        MondrianDef.Closure clos)
+        MondrianDef.Closure clos,
+        RolapCube cube,
+        MondrianDef.CubeDimension xmlDimension)
     {
         // REVIEW (mb): What about attribute primaryKeyTable?
 
         // Create a peer dimension.
         RolapDimension peerDimension = new RolapDimension(
-            ((RolapDimension) dimension).schema,
+            dimension.getSchema(),
             dimension.getName() + "$Closure",
-            ++RolapDimension.nextOrdinal,
+            RolapDimension.getNextOrdinal(),
             DimensionType.StandardDimension);
 
         // Create a peer hierarchy.
         RolapHierarchy peerHier = peerDimension.newHierarchy(subName, true);
         peerHier.allMemberName = allMemberName;
         peerHier.sharedHierarchy = sharedHierarchy;
-        peerHier.foreignKey = foreignKey;
         peerHier.primaryKey = primaryKey;
         MondrianDef.Join join = new MondrianDef.Join();
         peerHier.relation = join;
@@ -535,6 +549,11 @@ class RolapHierarchy extends HierarchyBase
             null, RolapProperty.emptyArray, flags,
             src.hideMemberCondition, src.getLevelType());
         peerHier.levels = (RolapLevel[]) RolapUtil.addElement(peerHier.levels, sublevel);
+
+/* 
+RME HACK
+*/
+        cube.createUsage(peerHier, xmlDimension);
 
         return peerDimension;
     }

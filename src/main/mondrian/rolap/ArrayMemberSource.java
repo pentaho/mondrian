@@ -29,8 +29,8 @@ import java.util.Properties;
  **/
 abstract class ArrayMemberSource implements MemberSource
 {
-    RolapHierarchy hierarchy;
-    RolapMember[] members;
+    protected final RolapHierarchy hierarchy;
+    protected final RolapMember[] members;
     ArrayMemberSource(RolapHierarchy hierarchy, RolapMember[] members)
     {
         this.hierarchy = hierarchy;
@@ -96,20 +96,20 @@ class HasBoughtDairySource extends ArrayMemberSource
         RolapMember[] getMembers()
         {
             String[] values = new String[] {"False", "True"};
-            ArrayList list = new ArrayList();
+            List list = new ArrayList();
             int ordinal = 0;
             RolapMember root = null;
             RolapLevel level = (RolapLevel) hierarchy.getLevels()[0];
             if (hierarchy.hasAll()) {
                 root = new RolapMember(null, level, null,
                         hierarchy.getAllMemberName(), Member.ALL_MEMBER_TYPE);
-                root.ordinal = ordinal++;
+                root.setOrdinal(ordinal++);
                 list.add(root);
                 level = (RolapLevel) hierarchy.getLevels()[1];
             }
             for (int i = 0; i < values.length; i++) {
                 RolapMember member = new RolapMember(root, level, values[i]);
-                member.ordinal = ordinal++;
+                member.setOrdinal(ordinal++);
                 list.add(member);
             }
             return (RolapMember[]) list.toArray(RolapUtil.emptyMemberArray);

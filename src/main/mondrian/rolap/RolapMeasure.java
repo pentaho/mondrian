@@ -12,6 +12,7 @@
 
 package mondrian.rolap;
 import mondrian.olap.Literal;
+import mondrian.olap.Member;
 import mondrian.olap.Property;
 
 /**
@@ -35,7 +36,7 @@ abstract class RolapMeasure extends RolapMember
     Object starMeasure;
 
     RolapMeasure(
-            RolapMember parentMember, RolapLevel level, String name,
+            Member parentMember, RolapLevel level, String name,
             String formatString) {
         super(parentMember, level, name);
         if (formatString == null) {

@@ -20,7 +20,11 @@ package mondrian.olap;
  * @version $Id$
  **/
 public class Axis {
-    public Position[] positions;
+    public final Position[] positions;
+
+    protected Axis(Position[] positions) {
+        this.positions = positions;
+    }
 }
 
 // End Axis.java

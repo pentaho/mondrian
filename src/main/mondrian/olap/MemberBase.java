@@ -11,6 +11,7 @@
 */
 
 package mondrian.olap;
+import java.util.List;
 import java.util.ArrayList;
 
 /**
@@ -24,13 +25,22 @@ public abstract class MemberBase
     extends OlapElementBase
     implements Member
 {
-    protected MemberBase parentMember;
-    protected LevelBase level;
+    protected Member parentMember;
+    protected final Level level;
     protected String uniqueName;
     /** Combines member type and whether is hidden, according to the following
      * relation: <code>flags == (isHidden ? 8 : 0) | memberType</code>. */
-    protected int flags;
-    protected String parentUniqueName;
+    protected final int flags;
+    protected final String parentUniqueName;
+
+    protected MemberBase(Member parentMember, Level level, int flags) {
+        this.parentMember = parentMember;
+        this.level = level;
+        this.parentUniqueName = (parentMember == null)
+            ? null
+            : parentMember.getUniqueName();
+        this.flags = flags;
+    }
 
     // implement Exp, OlapElement, Member
     public String getQualifiedName() {
@@ -66,11 +76,11 @@ public abstract class MemberBase
     }
 
     public boolean usesDimension(Dimension dimension) {
-        return level.hierarchy.dimension == dimension;
+        return level.getHierarchy().getDimension() == dimension;
     }
 
     public final Hierarchy getHierarchy() {
-        return level.hierarchy;
+        return level.getHierarchy();
     }
 
     public final Level getLevel() {
@@ -86,7 +96,7 @@ public abstract class MemberBase
     }
 
     public final boolean isMeasure() {
-        return level.hierarchy.dimension.isMeasures();
+        return level.getHierarchy().getDimension().isMeasures();
     }
 
     public final boolean isAll() {
@@ -112,7 +122,8 @@ public abstract class MemberBase
         } else {
             boolean failIfNotFound = true;
             final Hierarchy hierarchy = getHierarchy();
-            final SchemaReader schemaReader = hierarchy.getDimension().getSchema().getSchemaReader();
+            final SchemaReader schemaReader = 
+                hierarchy.getDimension().getSchema().getSchemaReader();
             String[] parentUniqueNameParts = Util.explode(parentUniqueName);
             parentMember = (MemberBase) schemaReader.getMemberByUniqueName(
                     parentUniqueNameParts, failIfNotFound);
@@ -169,6 +180,20 @@ public abstract class MemberBase
         return getMemberType() == FORMULA_MEMBER_TYPE;
     }
 
+    public int getSolveOrder() {
+        return -1;
+    }
+    /**
+     * Returns the expression by which this member is calculated. The expression
+     * is not null if and only if the member is not calculated.
+     *
+     * @post (return != null) == (isCalculated())
+     */
+    public Exp getExpression() {
+        return null;
+    }
+
+
     public Exp resolve(Resolver resolver) {
         return this;
     }
@@ -176,8 +201,8 @@ public abstract class MemberBase
     // implement Member
     public Member[] getAncestorMembers()
     {
-        ArrayList list = new ArrayList();
-        MemberBase parentMember = (MemberBase) getParentMember();
+        List list = new ArrayList();
+        Member parentMember = getParentMember();
         while (parentMember != null) {
             list.add(parentMember);
             parentMember = (MemberBase) parentMember.getParentMember();

@@ -47,8 +47,8 @@ public class TestAggregationManager extends TestCase {
         final RolapAggregationManager aggMan = AggregationManager.instance();
         Object value = aggMan.getCellFromCache(request);
         assertNull(value); // before load, the cell is not found
-        Set pinnedSegments = new HashSet();
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(getCube("Sales"), pinnedSegments);
+        FastBatchingCellReader fbcr = 
+                new FastBatchingCellReader(getCube("Sales"));
         fbcr.recordCellRequest(request);
         fbcr.loadAggregations();
         value = aggMan.getCellFromCache(request); // after load, cell is found
@@ -164,7 +164,6 @@ public class TestAggregationManager extends TestCase {
 
     private void assertRequestSql(CellRequest[] requests, final String pattern, final String trigger) {
         final RolapAggregationManager aggMan = AggregationManager.instance();
-        Set pinnedSegments = new HashSet();
         RolapStar star = requests[0].getMeasure().table.star;
         String database = null;
         try {
@@ -185,7 +184,8 @@ public class TestAggregationManager extends TestCase {
         star.setDataSource(dataSource);
         Bomb bomb;
         try {
-            FastBatchingCellReader fbcr = new FastBatchingCellReader(getCube("Sales"), pinnedSegments);
+            FastBatchingCellReader fbcr = 
+                new FastBatchingCellReader(getCube("Sales"));
             for (int i = 0; i < requests.length; i++)
                 fbcr.recordCellRequest(requests[i]);
             fbcr.loadAggregations();

@@ -35,21 +35,32 @@ public class Util extends mondrian.xom.XOMUtil
     /** encodes string for MDX (escapes ] as ]] inside a name) */
     public static String mdxEncodeString(String st)
     {
-        String retString = new String();
+        StringBuffer retString = new StringBuffer(st.length()+20);
         for (int i = 0; i < st.length(); i++) {
-            if (st.charAt(i) == ']' && (i+1) < st.length()
-                && st.charAt(i+1) != '.')
-                retString += "]"; //escaping character
-            retString += st.charAt(i);
+            char c = st.charAt(i);
+            if ((c == ']') &&
+                ((i+1) < st.length()) &&
+                (st.charAt(i+1) != '.')) {
+                
+                retString.append(']'); //escaping character
+            }
+            retString.append(c);
         }
-        return retString;
+        return retString.toString();
     }
+
 
     /** Return quoted */
     public static String quoteForMdx(String val)
-    {
+    {   
+        StringBuffer buf = new StringBuffer(val.length()+20);
+        buf.append("\"");
+        
         String s0 = replace(val, "\"", "\"\"");
-        return "\"" + s0 + "\"";
+        buf.append(s0);
+        
+        buf.append("\"");
+        return buf.toString();
     }
 
     /**
@@ -58,21 +69,32 @@ public class Util extends mondrian.xom.XOMUtil
      * "[a [bracketed]] string]".
      */
     public static String quoteMdxIdentifier(String id) {
-        return "[" + replace(id, "]", "]]") + "]";
+        StringBuffer buf = new StringBuffer(id.length() + 20);
+        quoteMdxIdentifier(id, buf);
+        return buf.toString();
     }
+    public static void quoteMdxIdentifier(String id, StringBuffer buf) {
+        buf.append('[');
+        
+        String s0 = replace(id, "]", "]]");
+        buf.append(s0);
+        
+        buf.append(']');
+    }
+
 
     /**
      * Return identifiers quoted in [...].[...].  For example, {"Store", "USA",
      * "California"} becomes "[Store].[USA].[California]".
      **/
     public static String quoteMdxIdentifier(String[] ids)
-    {
-        StringBuffer sb = new StringBuffer();
+    {   
+        StringBuffer sb = new StringBuffer(64);
         for (int i = 0; i < ids.length; i++) {
             if (i > 0) {
-                sb.append(".");
+                sb.append('.');
             }
-            sb.append(quoteMdxIdentifier(ids[i]));
+            quoteMdxIdentifier(ids[i], sb);
         }
         return sb.toString();
     }
@@ -81,31 +103,28 @@ public class Util extends mondrian.xom.XOMUtil
      * Returns true if two objects are equal, or are both null.
      */
     public static boolean equals(Object s, Object t) {
-        return s == null ?
-            t == null :
-            s.equals(t);
+        return (s == null) ? (t == null) : s.equals(t);
     }
 
     /** Does not modify the original string */
-    public static String replace(String s,String find,String replace)
+    public static String replace(String s, String find, String replace)
     {
         // let's be optimistic
         int found = s.indexOf(find);
         if (found == -1) {
             return s;
         }
-        StringBuffer sb = new StringBuffer(s.length());
+        StringBuffer sb = new StringBuffer(s.length() + 20);
         int start = 0;
+        char[] chars = s.toCharArray();
         for (;;) {
-            for (; start < found; start++) {
-                sb.append(s.charAt(start));
-            }
+            sb.append(chars, start, found-start);
             if (found == s.length()) {
                 break;
             }
             sb.append(replace);
-            start += find.length();
-            found = s.indexOf(find,start);
+            start += (find.length() + found);
+            found = s.indexOf(find, start);
             if (found == -1) {
                 found = s.length();
             }
@@ -113,9 +132,10 @@ public class Util extends mondrian.xom.XOMUtil
         return sb.toString();
     }
 
+
     public static String[] explode(String s)
     {
-        ArrayList list = new ArrayList();
+        List list = new ArrayList();
         int i = 0;
         while (i < s.length()) {
             if (s.charAt(i) != '[') {
@@ -126,7 +146,7 @@ public class Util extends mondrian.xom.XOMUtil
             // escaped ']]' sequences)
             int j = s.indexOf("].", i);
             if (j == -1) {
-                j = s.lastIndexOf("]");
+                j = s.lastIndexOf(']');
             }
             if (j <= i) {
                 throw getRes().newMdxInvalidMember(s);
@@ -144,18 +164,19 @@ public class Util extends mondrian.xom.XOMUtil
     }
 
     public static String implode(String[] names)
-    {
+    {   
         if (names.length == 0) {
             return "";
         }
-        StringBuffer sb = new StringBuffer("[");
+        StringBuffer sb = new StringBuffer(64);
+        sb.append('['); 
         for (int i = 0; i < names.length; i++) {
             if (i > 0) {
                 sb.append("].[");
             }
             sb.append(names[i]);
         }
-        sb.append("]");
+        sb.append(']');
         return sb.toString();
     }
 
@@ -169,18 +190,28 @@ public class Util extends mondrian.xom.XOMUtil
         if (parent == null) {
             return Util.quoteMdxIdentifier(name);
         } else {
-            return parent.getUniqueName() + "." + quoteMdxIdentifier(name);
+            StringBuffer buf = new StringBuffer(64);
+            buf.append(parent.getUniqueName());
+            buf.append('.');
+            Util.quoteMdxIdentifier(name, buf);
+            return buf.toString();
         }
     }
 
     public static String makeFqName(String parentUniqueName, String name)
-    {
+    {   
         if (parentUniqueName == null) {
             return quoteMdxIdentifier(name);
         } else {
-            return parentUniqueName + "." + quoteMdxIdentifier(name);
+            StringBuffer buf = new StringBuffer(64);
+            buf.append(parentUniqueName);
+            buf.append('.');
+            Util.quoteMdxIdentifier(name, buf);
+            return buf.toString();
+            //return parentUniqueName + "." + quoteMdxIdentifier(name);
         }
     }
+
 
     /**
      * Resolves a name such as
@@ -207,6 +238,26 @@ public class Util extends mondrian.xom.XOMUtil
         int category)
     {
         Util.assertPrecondition(parent != null, "parent != null");
+
+        if (Log.isTrace()) {
+            StringBuffer buf = new StringBuffer(64);
+            buf.append("Util.lookupCompound: ");
+            buf.append("parent.name=");
+            buf.append(parent.getName());
+            buf.append(", category=");
+            buf.append(Category.instance.getName(category));
+            buf.append(", names=");
+            for (int i = 0; i < names.length; i++) {
+                buf.append('[');
+                buf.append(names[i]);
+                buf.append(']');
+                if (i+1 < names.length) {
+                    buf.append('.');
+                }
+            }
+            Log.trace(buf.toString());
+        }
+
         // First look up a member from the cache of calculated members
         // (cubes and queries both have them).
         switch (category) {
@@ -222,6 +273,16 @@ public class Util extends mondrian.xom.XOMUtil
             String name = names[i];
             final OlapElement child = schemaReader.getElementChild(parent, name);
             if (child == null) {
+                if (Log.isTrace()) {
+                    StringBuffer buf = new StringBuffer(64);
+                    buf.append("Util.lookupCompound: ");
+                    buf.append("parent.name=");
+                    buf.append(parent.getName());
+                    buf.append(" has no child with name=");
+                    buf.append(name);
+                    Log.trace(buf.toString());
+                }
+
                 if (failIfNotFound) {
                     throw getRes().newMdxChildObjectNotFound(
                         name, parent.getQualifiedName());
@@ -231,6 +292,16 @@ public class Util extends mondrian.xom.XOMUtil
             }
             parent = child;
         }
+        if (Log.isTrace()) {
+            StringBuffer buf = new StringBuffer(64);
+            buf.append("Util.lookupCompound: ");
+            buf.append("found child.name=");
+            buf.append(parent.getName());
+            buf.append(", child.class=");
+            buf.append(parent.getClass().getName());
+            Log.trace(buf.toString());
+        }
+
         switch (category) {
         case Category.Dimension:
             if (parent instanceof Dimension) {
@@ -359,14 +430,13 @@ public class Util extends mondrian.xom.XOMUtil
      * @param member
      * @return
      */
-    public static int getMemberOrdinalInParent(SchemaReader reader, Member member) {
+    public static int getMemberOrdinalInParent(SchemaReader reader, 
+                                               Member member) {
         Member parent = member.getParentMember();
-        Member[] siblings;
-        if (parent == null) {
-            siblings = reader.getHierarchyRootMembers(member.getHierarchy());
-        } else {
-            siblings = reader.getMemberChildren(parent);
-        }
+        Member[] siblings =  (parent == null)
+            ? reader.getHierarchyRootMembers(member.getHierarchy())
+            : reader.getMemberChildren(parent);
+
         for (int i = 0; i < siblings.length; i++) {
             if (siblings[i] == member) {
                 return i;
@@ -517,7 +587,7 @@ public class Util extends mondrian.xom.XOMUtil
      **/
     public static String[] convertStackToString(Throwable e)
     {
-        ArrayList list = new ArrayList();
+        List list = new ArrayList();
         while (e != null) {
             String sMsg = getErrorMessage(e);
             list.add(sMsg);
@@ -598,7 +668,7 @@ public class Util extends mondrian.xom.XOMUtil
      **/
     public static class PropertyList
     {
-        ArrayList list = new ArrayList();
+        List list = new ArrayList();
 
         public String get(String key)
         {
@@ -635,14 +705,14 @@ public class Util extends mondrian.xom.XOMUtil
 
         public String toString()
         {
-            StringBuffer sb = new StringBuffer();
+            StringBuffer sb = new StringBuffer(64);
             for (int i = 0, n = list.size(); i < n; i++) {
                 String[] pair = (String[]) list.get(i);
                 if (i > 0) {
                     sb.append("; ");
                 }
                 sb.append(pair[0]);
-                sb.append("=");
+                sb.append('=');
                 sb.append(pair[1]);
             }
             return sb.toString();
@@ -676,8 +746,8 @@ public class Util extends mondrian.xom.XOMUtil
         String s;
         int i;
         int n;
-        StringBuffer nameBuf = new StringBuffer();
-        StringBuffer valueBuf = new StringBuffer();
+        StringBuffer nameBuf = new StringBuffer(64);
+        StringBuffer valueBuf = new StringBuffer(64);
         PropertyList parse(String s) {
             this.s = s;
             this.i = 0;

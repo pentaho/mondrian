@@ -12,7 +12,7 @@
 
 package mondrian.rolap;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A <code>MemberCache</code> can retrieve members based upon their parent and
@@ -37,7 +37,7 @@ interface MemberCache {
     boolean hasChildren(RolapMember member);
     /** Registers that the children of <code>member</code> are
      * <code>children</code> (a list of {@link RolapMember}s). */
-    void putChildren(RolapMember member, ArrayList children);
+    void putChildren(RolapMember member, List children);
 }
 
 

@@ -41,7 +41,7 @@ public class Role {
      * {@link Cube} to {@link Integer},
      * {@link Dimension} to {@link Integer},
      * {@link Hierarchy} to {@link HierarchyAccess}. */
-    private HashMap grants = new HashMap();
+    private Map grants = new HashMap();
     private static Integer integers[] = {
         new Integer(0), new Integer(1), new Integer(2), new Integer(3),
         new Integer(4),
@@ -160,11 +160,11 @@ public class Role {
      * Represents the access that a role has to a particular hierarchy.
      */
     public static class HierarchyAccess {
-        private Hierarchy hierarchy;
-        private Level topLevel;
-        private int access;
-        private Level bottomLevel;
-        private HashMap memberGrants = new HashMap();
+        private final Hierarchy hierarchy;
+        private final Level topLevel;
+        private final int access;
+        private final Level bottomLevel;
+        private final Map memberGrants = new HashMap();
 
         /**
          * Creates a <code>HierarchyAccess</code>

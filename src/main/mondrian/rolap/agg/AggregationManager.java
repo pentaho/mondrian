@@ -35,10 +35,6 @@ import mondrian.rolap.sql.SqlQuery;
 public class AggregationManager extends RolapAggregationManager {
     private static AggregationManager instance;
 
-    AggregationManager()
-    {
-    }
-
     /** Returns or creates the singleton. **/
     public static synchronized AggregationManager instance()
     {
@@ -48,6 +44,10 @@ public class AggregationManager extends RolapAggregationManager {
         return instance;
     }
 
+    AggregationManager()
+    {
+        super();
+    }
 
     public void loadAggregation(
         RolapStar.Measure[] measures, RolapStar.Column[] columns,

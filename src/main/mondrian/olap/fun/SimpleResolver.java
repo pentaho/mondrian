@@ -32,6 +32,10 @@ class SimpleResolver implements Resolver {
         return funDef.getName();
     }
 
+    public String getDescription() {
+        return funDef.getDescription();
+    }       
+
     public Syntax getSyntax() {
         return funDef.getSyntax();
     }

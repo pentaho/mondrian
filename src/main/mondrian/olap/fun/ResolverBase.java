@@ -39,6 +39,10 @@ abstract class ResolverBase extends FunUtil implements Resolver {
         return name;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
     public Syntax getSyntax() {
         return syntax;
     }

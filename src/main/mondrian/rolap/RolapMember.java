@@ -28,8 +28,8 @@ public class RolapMember extends MemberBase
     /** Ordinal of the member within the hierarchy. Some member readers do not
      * use this property; in which case, they should leave it as its default,
      * -1. */
-    int ordinal;
-    Object key;
+    private int ordinal;
+    private final Object key;
     /**
      * Maps property name to property value.
      *
@@ -49,15 +49,15 @@ public class RolapMember extends MemberBase
      * @param name Name of this member
      * @param flags Flags describing this member (see {@link #flags}
      */
-    RolapMember(RolapMember parentMember, RolapLevel level, Object key,
-            String name, int flags) {
-        this.parentMember = parentMember;
-        this.parentUniqueName = parentMember == null ? null:
-            parentMember.getUniqueName();
-        this.level = level;
+    RolapMember(Member parentMember, 
+                RolapLevel level, 
+                Object key,
+                String name, 
+                int flags) {
+        super(parentMember, level, flags);
+
         this.key = key;
         this.ordinal = -1;
-        this.flags = flags;
         if (name != null &&
                 !(key != null && name.equals(key.toString()))) {
             // Save memory by only saving the name as a property if it's
@@ -67,6 +67,27 @@ public class RolapMember extends MemberBase
             setUniqueName(key);
         }
     }
+
+    RolapLevel getRolapLevel() {
+        return (RolapLevel) level;
+    }
+    RolapHierarchy getRolapHierarchy() {
+        return (RolapHierarchy) getHierarchy();
+    }
+    void makeUniqueName(HierarchyUsage hierarchyUsage) {
+        if (parentMember == null && key != null) {
+            String n = hierarchyUsage.getName();
+            if (n != null) {
+                String name = keyToString(key);
+                n = Util.quoteMdxIdentifier(n);
+                this.uniqueName = Util.makeFqName(n, name);
+                if (Log.isTrace()) {
+                    Log.trace("RolapMember.makeUniqueName: uniqueName="
+                            +uniqueName);
+                }
+            }
+        } 
+    }       
 
     private void setUniqueName(Object key) {
         String name = keyToString(key);
@@ -94,7 +115,7 @@ public class RolapMember extends MemberBase
         return name;
     }
 
-    RolapMember(RolapMember parentMember, RolapLevel level, Object value) {
+    RolapMember(Member parentMember, RolapLevel level, Object value) {
         this(parentMember, level, value, null, REGULAR_MEMBER_TYPE);
     }
 
@@ -137,7 +158,7 @@ public class RolapMember extends MemberBase
     public Object getPropertyValue(String name) {
         if (name.equals(Property.PROPERTY_CONTRIBUTING_CHILDREN)) {
             List list = new ArrayList();
-            ((RolapHierarchy) getHierarchy()).memberReader.getMemberChildren(this, list);
+            getRolapHierarchy().memberReader.getMemberChildren(this, list);
             return list;
         } else if (name.equals(Property.PROPERTY_MEMBER_UNIQUE_NAME)) {
             return getUniqueName();
@@ -166,35 +187,37 @@ public class RolapMember extends MemberBase
 
     String quoteKeyForSql()
     {
-        if ((((RolapLevel) level).flags & RolapLevel.NUMERIC) != 0) {
+        if ((getRolapLevel().flags & RolapLevel.NUMERIC) != 0) {
             return key.toString();
         } else {
             return RolapUtil.singleQuoteForSql(key.toString());
         }
     }
 
-    int getSolveOrder() {
+/*
+    public int getSolveOrder() {
         return -1;
     }
+*/
 
     /**
      * Returns whether this member is calculated using an expression.
      * (<code>member.{@link #isCalculated}()</code> is equivalent to
      * <code>member.{@link #getExpression}() != null</code>.)
-     */
     public boolean isCalculated() {
         return false;
     }
+     */
 
     /**
      * Returns the expression by which this member is calculated. The expression
      * is not null if and only if the member is not calculated.
      *
      * @post (return != null) == (isCalculated())
-     */
-    Exp getExpression() {
+    public Exp getExpression() {
         return null;
     }
+     */
 
     /**
      * Returns the ordinal of the Rolap Member
@@ -202,11 +225,21 @@ public class RolapMember extends MemberBase
     public int getOrdinal() {
         return ordinal;
     }
+    void setOrdinal(int ordinal) {
+        this.ordinal = ordinal;
+    }   
+    Object getKey() {
+        return this.key;
+    }
 
+
+/*
+RME remove
     // implement the Comparable interface
     public final int compareTo(Object o) {
         return compareTo((RolapMember) o);
     }
+*/
 
     /**
      * Compares this member to another {@link RolapMember}.
@@ -221,38 +254,39 @@ public class RolapMember extends MemberBase
      *
      * @return -1 if this is less, 0 if this is the same, 1 if this is greater
      */
-    public int compareTo(RolapMember that) {
-        if (this.key != null && that.key == null) {
+    public int compareTo(Object o) {
+        RolapMember other = (RolapMember)o;
+        if (this.key != null && other.key == null) {
             return 1; // not null is greater than null
         }
-        if (this.key == null && that.key != null) {
+        if (this.key == null && other.key != null) {
             return -1; // null is less than not null
         }
         // compare by unique name, if both keys are null
-        if (this.key == null && that.key == null) {
-            return this.getUniqueName().compareTo(that.getUniqueName());
+        if (this.key == null && other.key == null) {
+            return this.getUniqueName().compareTo(other.getUniqueName());
         }
         // compare by unique name, if one ore both members are null
         if (this.key == RolapUtil.sqlNullValue ||
-            that.key == RolapUtil.sqlNullValue) {
-            return this.getUniqueName().compareTo(that.getUniqueName());
+            other.key == RolapUtil.sqlNullValue) {
+            return this.getUniqueName().compareTo(other.getUniqueName());
         }
         // as both keys are not null, compare by key
         //  String, Double, Integer should be possible
         //  any key object should be "Comparable"
         // anyway - keys should be of the same class
-        if (this.key.getClass().equals(that.key.getClass())) {
-            return ((Comparable)this.key).compareTo(that.key);
+        if (this.key.getClass().equals(other.key.getClass())) {
+            return ((Comparable)this.key).compareTo(other.key);
         }
         // Compare by unique name in case of different key classes.
         // This is possible, if a new calculated member is created
         //  in a dimension with an Integer key. The calculated member
         //  has a key of type String.
-        return this.getUniqueName().compareTo(that.getUniqueName());
+        return this.getUniqueName().compareTo(other.getUniqueName());
     }
 
     public boolean isHidden() {
-        final RolapLevel rolapLevel = (RolapLevel) level;
+        final RolapLevel rolapLevel = getRolapLevel();
         switch (rolapLevel.hideMemberCondition.ordinal_) {
         case RolapLevel.HideMemberCondition.NeverORDINAL:
             return false;
@@ -293,8 +327,7 @@ public class RolapMember extends MemberBase
      */
     public String getPropertyFormattedValue(String propertyName){
         // do we have a formatter ? if yes, use it
-        RolapLevel lev = (RolapLevel) this.getLevel();
-        Property[] props = lev.getProperties();
+        Property[] props = getLevel().getProperties();
         Property prop = null;
         for(int i = 0; i < props.length; i++){
             if(props[i].getName().equals(propertyName)){

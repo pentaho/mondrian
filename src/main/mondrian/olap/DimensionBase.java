@@ -12,6 +12,7 @@
 
 package mondrian.olap;
 
+import java.util.List;
 import java.util.ArrayList;
 
 /**
@@ -25,12 +26,26 @@ public abstract class DimensionBase
     extends OlapElementBase
     implements Dimension
 {
-    protected String name;
-    protected String uniqueName;
-    protected String description;
-    protected HierarchyBase[] hierarchies;
-    protected int globalOrdinal;
+    protected final String name;
+    protected final String uniqueName;
+    protected final String description;
+    protected final int globalOrdinal;
+    protected Hierarchy[] hierarchies;
     protected DimensionType dimensionType;
+
+    protected DimensionBase(
+        String name,
+        String uniqueName,
+        String description,
+        int globalOrdinal,
+        DimensionType dimensionType
+    ) {
+        this.name = name; 
+        this.uniqueName = Util.makeFqName(name);
+        this.description = null;
+        this.globalOrdinal = globalOrdinal;
+        this.dimensionType = dimensionType;
+    }
 
     // implement Element
     public String getUniqueName() { return uniqueName; }
@@ -54,19 +69,33 @@ public abstract class DimensionBase
 
     public OlapElement lookupChild(SchemaReader schemaReader, String s)
     {
-        Hierarchy mdxHierarchy = lookupHierarchy(s);
+        OlapElement oe = lookupHierarchy(s);
 
         // If the user is looking for [Marital Status].[Marital Status] we
-        // should not return mdxHierarchy "Marital Status", because he is
+        // should not return oe "Marital Status", because he is
         // looking for level - we can check that by checking of hierarchy and
         // dimension name is the same.
-        if (mdxHierarchy != null &&
-            !mdxHierarchy.getName().equalsIgnoreCase(getName())) {
-            return mdxHierarchy;
+        if ((oe == null) || oe.getName().equalsIgnoreCase(getName())) {
+            oe = getHierarchy().lookupChild(schemaReader, s);
         }
 
-        // Defer to the default hierarchy.
-        return getHierarchy().lookupChild(schemaReader, s);
+        if (Log.isTrace()) { 
+            StringBuffer buf = new StringBuffer(64);
+            buf.append("DimensionBase.lookupChild: ");
+            buf.append("name=");
+            buf.append(getName());
+            buf.append(", childname=");
+            buf.append(s);
+            if (oe == null) {
+                buf.append(" returning null");
+            } else {
+                buf.append(" returning elementname="+oe.getName());
+            }
+            Log.trace(buf.toString());
+        }
+
+
+        return oe;
     }
 
     private Hierarchy lookupHierarchy(String s)
@@ -104,7 +133,7 @@ public abstract class DimensionBase
 
     protected Object[] getAllowedChildren(CubeAccess cubeAccess)
     {
-        ArrayList hierarchyList = new ArrayList();
+        List hierarchyList = new ArrayList();
         Hierarchy[] mdxHierarchies = getHierarchies();
         for (int i = 0; i < mdxHierarchies.length; i++) {
             if (cubeAccess.isHierarchyAllowed(mdxHierarchies[i])) {

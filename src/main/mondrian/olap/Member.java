@@ -100,6 +100,8 @@ public interface Member extends OlapElement, Comparable {
      * member</code> clause in an mdx query or a calculated member defined in
      * cube. */
     boolean isCalculated();
+    int getSolveOrder();
+    Exp getExpression();
 
     /**
      * Returns array of all members, which are ancestor to <code>this</code>.

@@ -15,7 +15,7 @@ import mondrian.olap.Position;
 class RolapAxis extends Axis
 {
     RolapAxis(Position[] positions) {
-        this.positions = positions;
+        super(positions);    
     }
 }
 

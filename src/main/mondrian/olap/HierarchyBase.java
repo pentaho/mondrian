@@ -23,7 +23,7 @@ public abstract class HierarchyBase
     extends OlapElementBase
     implements Hierarchy
 {
-    protected DimensionBase dimension;
+    protected final Dimension dimension;
     /**
      * <code>name</code> and <code>subName</code> are the name of the
      * hierarchy, respectively containing and not containing dimension
@@ -34,13 +34,32 @@ public abstract class HierarchyBase
      * <tr> <td>[Customers]</td>   <td>Customers</td>   <td>null</td></tr>
      * </table>
      **/
-    protected String subName;
-    protected String name;
-    protected String uniqueName;
+    protected final String subName;
+    protected final String name;
+    protected final String uniqueName;
     protected String description;
-    protected LevelBase[] levels;
+    protected Level[] levels;
     protected boolean hasAll;
     protected String allMemberName;
+
+    protected HierarchyBase(Dimension dimension, String subName) {
+        this.dimension = dimension;
+        setCaption(dimension.getCaption());
+
+        this.subName = subName;
+        String name = dimension.getName();
+        if (this.subName != null) {
+            // e.g. "Time.Weekly"
+            this.name = name + "." + subName;
+            // e.g. "[Time.Weekly]"
+            this.uniqueName = Util.makeFqName(this.name);
+        } else {
+            // e.g. "Time"
+            this.name = name;
+            // e.g. "[Time]"
+            this.uniqueName = dimension.getUniqueName();
+        }
+    }
 
     // implement MdxElement
     public String getUniqueName() { return uniqueName; }
@@ -69,11 +88,25 @@ public abstract class HierarchyBase
     /** find a child object */
     public OlapElement lookupChild(SchemaReader schemaReader, String s)
     {
-        Level mdxLevel = Util.lookupHierarchyLevel(this, s);
-        if (mdxLevel != null) {
-            return mdxLevel;
+        OlapElement oe = Util.lookupHierarchyLevel(this, s);
+        if (oe == null) {
+            oe = Util.lookupHierarchyRootMember(schemaReader, this, s);
         }
-        return Util.lookupHierarchyRootMember(schemaReader, this, s);
+        if (Log.isTrace()) {
+            StringBuffer buf = new StringBuffer(64);
+            buf.append("HierarchyBase.lookupChild: ");
+            buf.append("name=");
+            buf.append(getName());
+            buf.append(", childname=");
+            buf.append(s);
+            if (oe == null) {
+                buf.append(" returning null");
+            } else {
+                buf.append(" returning elementname="+oe.getName());
+            }
+            Log.trace(buf.toString());
+        }
+        return oe;
     }
 
     public Object[] getChildren() {

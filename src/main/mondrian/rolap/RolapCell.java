@@ -66,12 +66,12 @@ class RolapCell implements Cell
         RolapAggregationManager aggregationManager =
             AggregationManager.instance();
         final RolapEvaluator evaluator = getEvaluator();
-        final RolapMember[] currentMembers = evaluator.currentMembers;
+        final Member[] currentMembers = evaluator.getCurrentMembers();
         for (int i = 0; i < currentMembers.length; i++) {
-            RolapMember member = currentMembers[i];
+            Member member = currentMembers[i];
             final RolapLevel level = (RolapLevel) member.getLevel();
             if (level.hasClosedPeer()) {
-                currentMembers[i] = (RolapMember) member.getDataMember();
+                currentMembers[i] = member.getDataMember();
             }
         }
         CellRequest cellRequest = RolapAggregationManager.makeRequest(
@@ -91,7 +91,7 @@ class RolapCell implements Cell
      */
     public boolean canDrillThrough() {
         // get current members
-        final RolapMember[] currentMembers = getEvaluator().currentMembers;
+        final Member[] currentMembers = getEvaluator().getCurrentMembers();
         // First member is the measure, test if it is stored measure, return
         // true if it is, false if not.
         return (currentMembers[0] instanceof RolapStoredMeasure);

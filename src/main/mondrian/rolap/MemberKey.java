@@ -21,8 +21,8 @@ package mondrian.rolap;
  **/
 class MemberKey
 {
-    RolapMember parent;
-    Object value;
+    final RolapMember parent;
+    final Object value;
     MemberKey(RolapMember parent, Object value)
     {
         this.parent = parent;
@@ -41,8 +41,9 @@ class MemberKey
     // override Object
     public int hashCode()
     {
-        return (parent == null ? 0 : parent.hashCode() << 16) ^
-            value.hashCode();
+        return (parent == null 
+            ? 0 
+            : parent.hashCode() << 16) ^ value.hashCode();
     }
 }
 

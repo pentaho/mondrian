@@ -26,6 +26,10 @@ import java.util.Iterator;
  */
 class RolapLevel extends LevelBase
 {
+    static final int NUMERIC = 1;
+    static final int ALL = 2;
+    static final int UNIQUE = 4;
+
     /** The column or expression which yields the level's key. */
     final MondrianDef.Expression keyExp;
     /** The column or expression which yields the level's ordinal. */
@@ -35,9 +39,6 @@ class RolapLevel extends LevelBase
      * member). **/
     final boolean unique;
     int flags;
-    static final int NUMERIC = 1;
-    static final int ALL = 2;
-    static final int UNIQUE = 4;
     RolapProperty[] properties;
     RolapProperty[] inheritedProperties;
 
@@ -82,20 +83,19 @@ class RolapLevel extends LevelBase
         hideMemberCondition,
         LevelType levelType)
     {
+        super(hierarchy, name, depth, levelType);
+
         Util.assertPrecondition(properties != null, "properties != null");
         Util.assertPrecondition(hideMemberCondition != null,
                 "hideMemberCondition != null");
         Util.assertPrecondition(levelType != null, "levelType != null");
-        this.hierarchy = hierarchy;
-        this.name = name;
-        this.uniqueName = Util.makeFqName(hierarchy, name);
+
         if (keyExp instanceof MondrianDef.Column) {
             checkColumn((MondrianDef.Column) keyExp);
         }
         this.flags = flags;
         final boolean isAll = (flags & ALL) == ALL;
         this.unique = (flags & UNIQUE) == UNIQUE;
-        this.depth = depth;
         this.keyExp = keyExp;
         if (nameExp != null) {
             if (nameExp instanceof MondrianDef.Column) {
@@ -148,7 +148,7 @@ class RolapLevel extends LevelBase
         }
         this.inheritedProperties = (RolapProperty[]) list.toArray(
                 RolapProperty.emptyArray);
-        this.levelType = levelType;
+
         Dimension dim = hierarchy.getDimension();
         if (dim.getDimensionType() == DimensionType.TimeDimension) {
             if (!levelType.isTime() && !isAll) {
@@ -255,12 +255,12 @@ class RolapLevel extends LevelBase
         }
     }
 
-    void init(RolapCube cube)
+    void init(RolapCube cube, MondrianDef.CubeDimension xmlDimension)
     {
         if (xmlClosure != null) {
             final RolapDimension dimension = ((RolapHierarchy) hierarchy)
-                .createClosedPeerDimension(this, xmlClosure);
-            dimension.init(cube);
+                .createClosedPeerDimension(this, xmlClosure, cube, xmlDimension);
+            dimension.init(cube, xmlDimension);
             cube.registerDimension(dimension);
             this.closedPeer = (RolapLevel) dimension.getHierarchies()[0].getLevels()[1];
         }

@@ -61,27 +61,51 @@ public class RolapUtil {
      **/
     static String singleQuoteForSql(String val)
     {
+        StringBuffer buf = new StringBuffer(64);
+        singleQuoteForSql(val, buf);
+        return buf.toString();
+    }
+    static void singleQuoteForSql(String val, StringBuffer buf) {
         if (val == null) {
-            return "NULL";
+            buf.append("NULL");
+        } else {
+            buf.append('\'');
+
+            String s0 = replace(val, "'", "''");
+            buf.append(s0);
+
+            buf.append('\'');
         }
-        String s0 = replace(val, "'", "''");
-        return "'" + s0 + "'";
     }
 
     /**
      * Returns <code>s</code> with <code>find</code> replaced everywhere with
      * <code>replace</code>.
      **/
-    static String replace(String s,String find,String replace)
+    static String replace(String s, String find, String replace)
     {
         // let's be optimistic
         int found = s.indexOf(find);
         if (found == -1) {
             return s;
         }
-        StringBuffer sb = new StringBuffer(s.length());
+        StringBuffer sb = new StringBuffer(s.length() + 20);
+        char[] chars = s.toCharArray();
         int start = 0;
         for (;;) {
+            sb.append(chars, start, found-start);
+            if (found == s.length()) {
+                break;
+            }
+            sb.append(replace);
+            start += (find.length() + found);
+            found = s.indexOf(find,start);
+            if (found == -1) {
+                found = s.length();
+            }
+
+/*
+RME replace
             for (; start < found; start++) {
                 sb.append(s.charAt(start));
             }
@@ -94,11 +118,12 @@ public class RolapUtil {
             if (found == -1) {
                 found = s.length();
             }
+*/
         }
         return sb.toString();
     }
 
-    static final void add(ArrayList list, Object[] array)
+    static final void add(List list, Object[] array)
     {
         for (int i = 0; i < array.length; i++) {
             list.add(array[i]);
@@ -112,7 +137,10 @@ public class RolapUtil {
     }
 
     static RolapMember lookupMember(
-            MemberReader reader, String[] uniqueNameParts, boolean failIfNotFound) {
+            MemberReader reader, 
+            String[] uniqueNameParts, 
+            boolean failIfNotFound) {
+
         RolapMember member = null;
         for (int i = 0; i < uniqueNameParts.length; i++) {
             String name = uniqueNameParts[i];
@@ -172,8 +200,9 @@ public class RolapUtil {
             // don't care, use System.out
           }
                 }
-                if ( debugOut == null )
-                debugOut = new PrintWriter(System.out, true);
+                if ( debugOut == null ) {
+                    debugOut = new PrintWriter(System.out, true);
+                }
             }
         }
     }
@@ -361,13 +390,13 @@ public class RolapUtil {
         // (a city). This is why we repeat the before/self/after logic for
         // each member.
         final int levelDepth = level.getDepth();
-        ArrayList members = new ArrayList();
+        List members = new ArrayList();
         members.add(ancestor);
         // Each pass, "fertileMembers" has the same contents as "members",
         // except that we omit members whose children we are not interested
         // in. We allocate it once, and clear it each pass, to save a little
         // memory allocation.
-        ArrayList fertileMembers = new ArrayList();
+        List fertileMembers = new ArrayList();
         do {
             fertileMembers.clear();
             for (int i = 0; i < members.size(); i++) {

@@ -38,12 +38,12 @@ import java.util.*;
  * @version $Id$
  */
 public class RolapConnection extends ConnectionBase {
-    Util.PropertyList connectInfo;
+    private final Util.PropertyList connectInfo;
     /** Factory for JDBC connections to talk to the RDBMS. This factory will
      * usually use a connection pool. */
-    DataSource dataSource;
-    String catalogName;
-    RolapSchema schema;
+    private final DataSource dataSource;
+    private final String catalogName;
+    private final RolapSchema schema;
     private SchemaReader schemaReader;
     protected Role role;
     private Locale locale = Locale.US;
@@ -105,6 +105,8 @@ public class RolapConnection extends ConnectionBase {
             Util.PropertyList connectInfo,
             RolapSchema schema,
             DataSource dataSource) {
+        super();
+
         String provider = connectInfo.get(RolapConnectionProperties.Provider);
         Util.assertTrue(provider.equalsIgnoreCase("mondrian"));
         this.connectInfo = connectInfo;
@@ -128,14 +130,20 @@ public class RolapConnection extends ConnectionBase {
                     connectInfo.get(RolapConnectionProperties.JdbcUser);
                 final String strDataSource =
                     connectInfo.get(RolapConnectionProperties.DataSource);
-                final String key = jdbcConnectString +
+                final String connectionKey = jdbcConnectString +
                 getJDBCProperties(connectInfo).toString();
 
                 schema = RolapSchema.Pool.instance().get(
-                    catalogName, key, jdbcUser, strDataSource, connectInfo);
+                            catalogName, 
+                            connectionKey, 
+                            jdbcUser, 
+                            strDataSource, 
+                            connectInfo);
             } else {
                 schema = RolapSchema.Pool.instance().get(
-                        catalogName, dataSource, connectInfo);
+                            catalogName, 
+                            dataSource, 
+                            connectInfo);
             }
             String roleName = connectInfo.get(RolapConnectionProperties.Role);
             if (roleName != null) {
@@ -416,13 +424,15 @@ class NonEmptyResult extends ResultBase {
     private int[] pos;
 
     NonEmptyResult(Result result, Query query, int axis) {
+        super(query, (Axis[]) result.getAxes().clone());
+
         this.underlying = result;
         this.axis = axis;
         this.map = new HashMap();
         int axisCount = underlying.getAxes().length;
         this.pos = new int[axisCount];
-        this.query = query;
-        this.axes = (Axis[]) underlying.getAxes().clone();
+        //this.query = query;
+        //this.axes = (Axis[]) underlying.getAxes().clone();
         this.slicerAxis = underlying.getSlicerAxis();
         Position[] positions = underlying.getAxes()[axis].positions;
         ArrayList positionsList = new ArrayList();

@@ -31,7 +31,7 @@ class RolapStoredMeasure extends RolapMeasure
     final RolapAggregator aggregator;
     final RolapCube cube;
 
-    CellFormatter formatter = null;
+    private CellFormatter formatter = null;
 
     RolapStoredMeasure(
             RolapCube cube, RolapMember parentMember, RolapLevel level, String name,
@@ -51,15 +51,14 @@ class RolapStoredMeasure extends RolapMeasure
     RolapStoredMeasure(
             RolapCube cube, RolapMember parentMember, RolapLevel level,
             String name, String formatString, String column, String aggregator) {
-        this(
-                cube, parentMember, level, name, formatString,
+        this(cube, parentMember, level, name, formatString,
                 new MondrianDef.Column(cube.fact.getAlias(), column),
                 aggregator);
     }
 
     // implement RolapMeasure
     CellReader getCellReader() {
-        return cube.cellReader;
+        return cube.getCellReader();
     }
 
     public CellFormatter getFormatter(){

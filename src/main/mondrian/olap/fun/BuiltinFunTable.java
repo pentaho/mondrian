@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2005 Kana Software, Inc. and others.
+// Copyright (C) 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -61,6 +61,7 @@ public class BuiltinFunTable extends FunTable {
     private void init() {
         resolvers = new ArrayList();
         defineFunctions();
+        Collections.sort(this.funInfoList);
         // Map upper-case function names to resolvers.
         mapNameToResolvers = new HashMap();
         for (int i = 0, n = resolvers.size(); i < n; i++) {
@@ -86,6 +87,8 @@ public class BuiltinFunTable extends FunTable {
     }
 
     protected void define(Resolver resolver) {
+        addFunInfo(resolver);
+
         resolvers.add(resolver);
         final String[] reservedWords = resolver.getReservedWords();
         for (int i = 0; i < reservedWords.length; i++) {
@@ -93,6 +96,10 @@ public class BuiltinFunTable extends FunTable {
             defineReserved(reservedWord);
         }
     }
+    protected void addFunInfo(Resolver resolver) {
+        this.funInfoList.add(FunInfo.make(resolver));
+    }
+
 
     /**
      * Converts an argument to a parameter type.
@@ -574,7 +581,6 @@ public class BuiltinFunTable extends FunTable {
                     }
                 }));
 
-        define(new FunDefBase("IsEmpty", "IsEmpty(<Value Expression>)", "Determines if an expression evaluates to the empty cell value.", "fbn"));
         //
         // MEMBER FUNCTIONS
         define(new FunkResolver("Ancestor",
@@ -964,10 +970,10 @@ public class BuiltinFunTable extends FunTable {
                     getDoubleArg(evaluator, args, 2, null);
                     return new Double(Double.NaN);
                 }
-                if (b.booleanValue())
-                    return getDoubleArg(evaluator, args, 1, null);
-                else
-                    return getDoubleArg(evaluator, args, 2, null);
+                Object o = (b.booleanValue())
+                    ? getDoubleArg(evaluator, args, 1, null)
+                    : getDoubleArg(evaluator, args, 2, null);
+                return o;
             }
         });
 
@@ -1372,7 +1378,7 @@ public class BuiltinFunTable extends FunTable {
         if (false) define(new FunDefBase("DrillupMember", "DrillupMember(<Set1>, <Set2>)", "Drills up the members in a set that are present in a second specified set.", "fx*"));
         define(new FunkResolver(
                 "Except", "Except(<Set1>, <Set2>[, ALL])", "Finds the difference between two sets, optionally retaining duplicates.",
-                new String[]{"fxxx", "fxxxs"},
+                new String[]{"fxxx", "fxxxy"},
                 new FunkBase() {
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         // todo: implement ALL
@@ -1918,11 +1924,10 @@ public class BuiltinFunTable extends FunTable {
                     getStringArg(evaluator, args, 2, null);
                     return null;
                 }
-                if (b.booleanValue()) {
-                    return getStringArg(evaluator, args, 1, null);
-                } else {
-                    return getStringArg(evaluator, args, 2, null);
-                }
+                Object o = (b.booleanValue())
+                    ? getStringArg(evaluator, args, 1, null)
+                    : getStringArg(evaluator, args, 2, null);
+                return o;
             }
         });
         define(new FunDefBase("Caption", "<Dimension>.Caption", "Returns the caption of a dimension.", "pSd") {
@@ -2250,7 +2255,7 @@ public class BuiltinFunTable extends FunTable {
         // PARAMETER FUNCTIONS
         define(new MultiResolver("Parameter", "Parameter(<Name>, <Type>, <DefaultValue>, <Description>)", "Returns default value of parameter.",
                 new String[] {
-                    "fS#yS#", "fs#yS", // Parameter(string const, symbol, string[, string const]): string
+                    "fS#yS#", "fS#yS", // Parameter(string const, symbol, string[, string const]): string
                     "fn#yn#", "fn#yn", // Parameter(string const, symbol, numeric[, string const]): numeric
                     "fm#hm#", "fm#hm",  // Parameter(string const, hierarchy constant, member[, string const]): member
                 }) {

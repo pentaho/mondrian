@@ -26,7 +26,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
+import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.HashMap;
 
 /**
@@ -51,20 +53,20 @@ public class RolapStar {
      * necessary because in different cubes, a shared hierarchy might be joined
      * onto the fact table at different levels.
      */
-    final HashMap mapCubeToMapLevelToColumn = new HashMap();
+    final Map mapCubeToMapLevelToColumn = new HashMap();
     /**
      * As {@link #mapCubeToMapLevelToColumn}, but holds name columns.
      */
-    final HashMap mapCubeToMapLevelToNameColumn = new HashMap();
+    final Map mapCubeToMapLevelToNameColumn = new HashMap();
 
     /**
      * Maps {@link Column} to {@link String} for each column which is a key
      * to a level.
      */
-    final HashMap mapColumnToName = new HashMap();
+    final Map mapColumnToName = new HashMap();
 
     /** holds all aggregations of this star */
-    ArrayList aggregations = new ArrayList();
+    List aggregations = new ArrayList();
 
     /**
      * Creates a RolapStar. Please use
@@ -81,6 +83,25 @@ public class RolapStar {
             aggregations.add(agg);
         }
     }
+
+    Map getMapLevelToColumn(RolapCube cube) {
+        Map mapLevelToColumn = (Map) this.mapCubeToMapLevelToColumn.get(cube);
+        if (mapLevelToColumn == null) {
+            mapLevelToColumn = new HashMap();
+            this.mapCubeToMapLevelToColumn.put(cube, mapLevelToColumn);
+}
+        return mapLevelToColumn;
+    }
+    Map getMapLevelToNameColumn(RolapCube cube) {
+        Map mapLevelToNameColumn = (HashMap)
+            this.mapCubeToMapLevelToNameColumn.get(cube);
+        if (mapLevelToNameColumn == null) {
+            mapLevelToNameColumn = new HashMap();
+            this.mapCubeToMapLevelToNameColumn.put(cube, mapLevelToNameColumn);
+        }
+        return mapLevelToNameColumn;
+    }
+
 
     /**
      * Looks up an aggregation or creates one if it does not exist in an
@@ -189,8 +210,8 @@ public class RolapStar {
     /**
      * Returns a list of all aliases used in this star.
      */
-    public ArrayList getAliasList() {
-        ArrayList aliasList = new ArrayList();
+    public List getAliasList() {
+        List aliasList = new ArrayList();
         if (factTable != null) {
             collectAliases(aliasList, factTable);
         }
@@ -200,7 +221,7 @@ public class RolapStar {
     /**
      * Finds all of the table aliases in a table and its children.
      */
-    private static void collectAliases(ArrayList aliasList, Table table) {
+    private static void collectAliases(List aliasList, Table table) {
         aliasList.add(table.getAlias());
         for (int i = 0; i < table.children.size(); i++) {
             Table child = (Table) table.children.get(i);
@@ -295,6 +316,10 @@ public class RolapStar {
         return (String) mapColumnToName.get(column);
     }
 
+    void addColumnToName(Column column, String name) {
+        this.mapColumnToName.put(column, name);
+    }   
+
     private boolean containsColumn(String tableName, String columnName) {
         final Connection jdbcConnection = getJdbcConnection();
         try {
@@ -337,13 +362,13 @@ public class RolapStar {
             return expression.getExpression(query);
         }
 
-        String quoteValue(Object o)
+        private void quoteValue(Object o, StringBuffer buf)
         {
             String s = o.toString();
             if (isNumeric) {
-                return s;
+                buf.append(s);
             } else {
-                return RolapUtil.singleQuoteForSql(s);
+                RolapUtil.singleQuoteForSql(s, buf);
             }
         }
 
@@ -446,7 +471,11 @@ public class RolapStar {
                 final ColumnConstraint constraint = constraints[0];
                 Object key = constraint.getValue();
                 if (key != RolapUtil.sqlNullValue) {
-                    return expr + " = " + quoteValue(key);
+                    StringBuffer buf = new StringBuffer(64);
+                    buf.append(expr);
+                    buf.append(" = ");
+                    quoteValue(key, buf);
+                    return buf.toString();
                 }
             }
             int notNullCount = 0;
@@ -462,9 +491,9 @@ public class RolapStar {
                     sb.append(", ");
                 }
                 ++notNullCount;
-                sb.append(quoteValue(key));
+                quoteValue(key, sb);
             }
-            sb.append(")");
+            sb.append(')');
             if (notNullCount < constraints.length) {
                 // There was at least one null.
                 switch (notNullCount) {
@@ -472,16 +501,40 @@ public class RolapStar {
                     // Special case -- there were no values besides null.
                     // Return, for example, "x is null".
                     return expr + " is null";
-                case 1:
+                case 1: {
                     // Special case -- one not-null value, and null, for
                     // example "(x is null or x = 1)".
+/*
+RME replace
                     return "(" + expr + " = " + quoteValue(constraints[0].getValue()) +
                             " or " + expr + " is null)";
-                default:
+*/
+                    StringBuffer buf = new StringBuffer(64);
+                    buf.append('(');
+                    buf.append(expr);
+                    buf.append(" = ");
+                    quoteValue(constraints[0].getValue(), buf);
+                    buf.append(" or ");
+                    buf.append(expr);
+                    buf.append(" is null");
+                    return buf.toString();
+                }
+                default: {
                     // Nulls and values, for example,
                     // "(x in (1, 2) or x IS NULL)".
+/*
+RME replace
                     return "(" + sb.toString() + " or " + expr +
                             "is null)";
+*/
+                    StringBuffer buf = new StringBuffer(64);
+                    buf.append('(');
+                    buf.append(sb.toString());
+                    buf.append(" or ");
+                    buf.append(expr);
+                    buf.append(" is null");
+                    return buf.toString();
+                }
                 }
             } else {
                 // No nulls. Return, for example, "x in (1, 2, 3)".
@@ -518,9 +571,9 @@ public class RolapStar {
         MondrianDef.Relation relation;
         public String primaryKey;
         public String foreignKey;
-        ArrayList columns = new ArrayList();
+        List columns = new ArrayList();
         public Table parent;
-        public ArrayList children = new ArrayList();
+        public List children = new ArrayList();
         /** Condition with which it is connected to its parent. **/
         Condition joinCondition;
         private final String alias;
@@ -545,7 +598,7 @@ public class RolapStar {
 
         /** Chooses an alias which is unique within the star. */
         private String chooseAlias() {
-            ArrayList aliasList = star.getAliasList();
+            List aliasList = star.getAliasList();
             for (int i = 0;; ++i) {
                 String candidateAlias = relation.getAlias();
                 if (i > 0) {

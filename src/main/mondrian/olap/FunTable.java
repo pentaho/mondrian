@@ -13,6 +13,8 @@ package mondrian.olap;
 import mondrian.olap.fun.BuiltinFunTable;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Collections;
 
 /**
  * A <code>FunTable</code> resolves a function call, using a particular syntax
@@ -26,7 +28,9 @@ public abstract class FunTable {
     /** the singleton **/
     private static FunTable instance;
     /** used during initialization **/
-    protected ArrayList resolvers;
+    protected List resolvers;
+    protected List funInfoList;
+
 
     /** Returns (creating if necessary) the singleton. **/
     public static FunTable instance() {
@@ -34,6 +38,10 @@ public abstract class FunTable {
             instance = new BuiltinFunTable();
         }
         return instance;
+    }
+
+    protected FunTable() {
+        this.funInfoList = new ArrayList();
     }
 
     /**
@@ -70,6 +78,11 @@ public abstract class FunTable {
      */
     public abstract boolean requiresExpression(FunCall funCall, int k,
             Exp.Resolver resolver);
+
+    public List getFunInfoList() {
+        return Collections.unmodifiableList(this.funInfoList);
+    }
+
 }
 
 // End FunTable.java

@@ -17,6 +17,7 @@ import mondrian.olap.Util;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.ArrayList;
 
 /**
@@ -66,17 +67,17 @@ public class SqlQuery
     DatabaseMetaData databaseMetaData;
     // todo: replace {select, selectCount} with a StringList; etc.
     boolean distinct;
-    private final ClauseList select = new ClauseList(true),
-        from = new ClauseList(true),
-        where = new ClauseList(false),
-        groupBy = new ClauseList(false),
-        having = new ClauseList(false),
-        orderBy = new ClauseList(false);
-    private final ArrayList fromAliases = new ArrayList();
+    private final ClauseList select = new ClauseList(true);
+    private final ClauseList from = new ClauseList(true);
+    private final ClauseList where = new ClauseList(false);
+    private final ClauseList groupBy = new ClauseList(false);
+    private final ClauseList having = new ClauseList(false);
+    private final ClauseList orderBy = new ClauseList(false);
+    private final List fromAliases = new ArrayList();
     private String quoteIdentifierString = null;
 
     /** Scratch buffer. Clear it before use. */
-    private StringBuffer buf = new StringBuffer();
+    private final StringBuffer buf = new StringBuffer();
 
     /**
      * Creates a <code>SqlQuery</code>
@@ -118,7 +119,21 @@ public class SqlQuery
                 quoteIdentifierString = "";
             }
         }
+        // set to null so that quoteIdentifier method need only test for null
+        if (quoteIdentifierString != null && quoteIdentifierString.trim().equals("")) {
+            quoteIdentifierString = null;
+        }
     }
+
+    /**         
+     * The size required to add quotes around a string - this ought to be
+     * large enough to prevent a reallocation.
+     */ 
+    private static final int SINGLE_QUOTE_SIZE = 10;
+    /**
+     * Two strings are quoted and the character '.' is placed between them.
+     */
+    private static final int DOUBLE_QUOTE_SIZE = 2 * SINGLE_QUOTE_SIZE + 1;
 
     /**
      * Encloses an identifier in quotation marks appropriate for the
@@ -128,9 +143,17 @@ public class SqlQuery
      * <code>[emp]</code> in Access.
      **/
     public String quoteIdentifier(String val) {
+        int size = val.length() + SINGLE_QUOTE_SIZE;
+        StringBuffer buf = new StringBuffer(size);
+        quoteIdentifier(val, buf);
+        return buf.toString();
+    }   
+    public void quoteIdentifier(String val, StringBuffer buf) {
         String q = getQuoteIdentifierString();
-        if (q == null || q.trim().equals("")) {
-            return val; // quoting is not supported
+        if (q == null) {
+            // quoting is not supported
+            buf.append(val);
+            return;
         }
         // if the value is already quoted, do nothing
         //  if not, then check for a dot qualified expression
@@ -138,18 +161,29 @@ public class SqlQuery
         //  In that case, prefix the single parts separately.
         if (val.startsWith(q) && val.endsWith(q)) {
             // already quoted - nothing to do
-            return val;
+            buf.append(val);
+            return;
         }
         int k = val.indexOf('.');
         if (k > 0) {
             // qualified
             String val1 = Util.replace(val.substring(0,k), q, q + q);
             String val2 = Util.replace(val.substring(k+1), q, q + q);
-            return q + val1 + q + "." +  q + val2 + q ;
+            buf.append(q);
+            buf.append(val1);
+            buf.append(q);
+            buf.append(".");
+            buf.append(q);
+            buf.append(val2);
+            buf.append(q);
+            //return q + val1 + q + "." +  q + val2 + q ;
         } else {
             // not Qualified
             String val2 = Util.replace(val, q, q + q);
-            return q + val2 + q;
+            buf.append(q);
+            buf.append(val2);
+            buf.append(q);
+            //return q + val2 + q;
         }
     }
 
@@ -165,16 +199,36 @@ public class SqlQuery
      * @param name Name to be quoted.
      **/
     public String quoteIdentifier(String qual, String name) {
+        // We know if the qalifier is null, then only the name is going
+        // to be quoted.
+        int size = name.length()
+            + ((qual == null) 
+                ? SINGLE_QUOTE_SIZE
+                : (qual.length() + DOUBLE_QUOTE_SIZE));
+        StringBuffer buf = new StringBuffer(size);
+        quoteIdentifier(qual, name, buf);
+        return buf.toString();
+    } 
+
+    /**     
+     * This implements the quoting of a qualifier and name allowing one to 
+     * pass in a StringBuffer thus saving the allocation and copying.
+     *      
+     * @param qual 
+     * @param name 
+     * @param buf 
+     */     
+    public void quoteIdentifier(String qual, String name, StringBuffer buf) {
         if (qual == null) {
-            return quoteIdentifier(name);
+            quoteIdentifier(name, buf);
         } else {
             Util.assertTrue(
                 !qual.equals(""),
                 "qual should probably be null, not empty");
 
-            return quoteIdentifier(qual) +
-                "." +
-                quoteIdentifier(name);
+            quoteIdentifier(qual, buf);
+            buf.append('.');
+            quoteIdentifier(name, buf);
         }
     }
 
@@ -341,17 +395,17 @@ public class SqlQuery
             }
         }
         buf.setLength(0);
-        buf.append("(");
+        buf.append('(');
         buf.append(query);
-        buf.append(")");
+        buf.append(')');
         if (alias != null) {
             Util.assertTrue(!alias.equals(""));
             if (allowsAs()) {
                 buf.append(" as ");
             } else {
-                buf.append(" ");
+                buf.append(' ');
             }
-            buf.append(quoteIdentifier(alias));
+            quoteIdentifier(alias, buf);
             fromAliases.add(alias);
         }
         from.add(buf.toString());
@@ -368,8 +422,11 @@ public class SqlQuery
      * @pre alias != null
      * @return true if table *was* added
      */
-    private boolean addFromTable(
-            String schema, String table, String alias, String filter, boolean failIfExists) {
+    private boolean addFromTable(String schema, 
+                                 String table, 
+                                 String alias, 
+                                 String filter, 
+                                 boolean failIfExists) {
         if (fromAliases.contains(alias)) {
             if (failIfExists) {
                 throw Util.newInternal(
@@ -379,7 +436,7 @@ public class SqlQuery
             }
         }
         buf.setLength(0);
-        buf.append(quoteIdentifier(schema, table));
+        quoteIdentifier(schema, table, buf);
         if (alias != null) {
             Util.assertTrue(!alias.equals(""));
             if (allowsAs()) {
@@ -387,13 +444,13 @@ public class SqlQuery
             } else {
                 buf.append(" ");
             }
-            buf.append(quoteIdentifier(alias));
+            quoteIdentifier(alias, buf);
             fromAliases.add(alias);
         }
         from.add(buf.toString());
         if (filter != null) {
             // append filter condition to where clause
-            where.add("(" + filter + ")");
+            addWhere("(", filter, ")");
         }
         return true;
     }
@@ -445,11 +502,15 @@ public class SqlQuery
             if (addFrom(join.right, rightAlias, failIfExists)) {
                 added = true;
             }
-            if (added)
-                addWhere(
-                    quoteIdentifier(leftAlias, join.leftKey) +
-                    " = " +
-                    quoteIdentifier(rightAlias, join.rightKey));
+            if (added) {
+                buf.setLength(0);
+
+                quoteIdentifier(leftAlias, join.leftKey, buf);
+                buf.append(" = ");
+                quoteIdentifier(rightAlias, join.rightKey, buf);
+
+                addWhere(buf.toString());
+            }
             return added;
         } else {
             throw Util.newInternal("bad relation type " + relation);
@@ -457,7 +518,6 @@ public class SqlQuery
     }
     /**
      * @pre alias != null
-     */
     public void addJoin(
             String type, String query, String alias, String condition) {
         Util.assertPrecondition(alias != null);
@@ -471,6 +531,7 @@ public class SqlQuery
         from.set(from.size() - 1, last);
         fromAliases.add(alias);
     }
+     */
 
     /**
      * Adds an expression to the select clause, automatically creating a
@@ -488,12 +549,26 @@ public class SqlQuery
     /** Adds an expression to the select clause, with a specified column
      * alias. **/
     public void addSelect(String expression, String alias) {
+        buf.setLength(0);
+
+        buf.append(expression);
         if (alias != null) {
-            expression += " as " + quoteIdentifier(alias);
+            buf.append(" as ");
+            quoteIdentifier(alias, buf);
         }
-        select.add(expression);
+
+        select.add(buf.toString());
     }
 
+    public void addWhere(String exprLeft, String exprMid, String exprRight)
+    {
+        int len = exprLeft.length() + exprMid.length() + exprRight.length();
+        StringBuffer buf = new StringBuffer(len);
+        buf.append(exprLeft);
+        buf.append(exprMid);
+        buf.append(exprRight);
+        addWhere(buf.toString());
+    }
     public void addWhere(String expression)
     {
         where.add(expression);
