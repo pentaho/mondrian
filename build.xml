@@ -41,6 +41,7 @@
   <property name="dist.data.file" value="${dist.dir}/${name}-data.zip"/>
   <property name="dist.bin.file" value="${dist.dir}/${dist.name}-bin.zip"/>
   <property name="jar.file" value="${lib.dir}/${name}.jar"/>
+  <property name="workbench.jar.file" value="workbench.jar"/>
   <property name="boot.jar.file" value="${lib.dir}/boot.jar"/>
   <property name="war.file" value="${lib.dir}/mondrian.war"/>
   <property name="jdk.home" value="${myenv.JAVA_HOME}"/>
@@ -607,4 +608,12 @@ junit.jar"/>
     </exec>
   </target>
 
+  <target name="workbench" depends="compile">
+    <jar jarfile="${workbench.jar.file}" manifest="misc/workbench-manifest.mf">
+      <fileset
+          dir="${classes.dir}"
+          includes="**/*.class"/>
+    </jar>
+    
+  </target>
 </project>
