@@ -43,7 +43,8 @@
   <property name="dist.bin.file" value="${dist.dir}/${dist.name}.zip"/>
   <property name="jar.file" value="${lib.dir}/${name}.jar"/>
   <property name="workbench.jar.file" value="workbench.jar"/>
-  <property name="boot.jar.file" value="${lib.dir}/boot.jar"/>
+  <property name="resource.jar.file" value="${lib.dir}/mondrian-resource.jar"/>
+  <property name="xom.jar.file" value="${lib.dir}/mondrian-xom.jar"/>
   <property name="war.file" value="${lib.dir}/${name}.war"/>
   <property name="jdk.home" value="${env.JAVA_HOME}"/>
   <property name="catalina.home" value="${env.CATALINA_HOME}"/>
@@ -101,7 +102,8 @@ demo/mysql/FoodMartData.sql"/>
 
   <path id="project.boot.classpath">
     <path refid="project.classpath"/>
-    <pathelement location="${boot.jar.file}"/>
+    <pathelement location="${resource.jar.file}"/>
+    <pathelement location="${xom.jar.file}"/>
   </path>
 
   <taskdef name="javacup" classname="java_cup.JavaCUPTask">
@@ -433,7 +435,8 @@ ${java.dir}/mondrian/resource/Resource.xml,
 ${java.dir}/mondrian/olap/Mondrian.xml,
 ${java.dir}/mondrian/xom/Meta.xml,
 ${java.dir}/javax/jmi/model/resources/mof.xml,
-${lib.dir}/boot.jar,
+${lib.dir}/mondrian-xom.jar,
+${lib.dir}/mondrian-resource.jar,
 ${lib.dir}/javacup.jar,
 ${lib.dir}/jmi.jar,
 ${lib.dir}/mof.jar,
@@ -577,14 +580,21 @@ VERSION.txt"/>
   </target>
 
   <target name="bootjar"
-      description="Builds a jar file of the classes we need in order to run ant; when the new versions have built, we can replace them. Run this target when the bootstrap files have changed so much that you can't bootstrap, and you need o generate a new boot.jar to check in to source control.">
+      description="Builds a jar file of the classes we need in order to run ant; when the new versions have built, we can replace them. Run this target when the bootstrap files have changed so much that you can't bootstrap, and you need o generate a new mondrian-xom.jar or mondrian-resource.jar to check in to source control.">
     <mkdir dir="${lib.dir}" />
-    <delete file="${boot.jar.file}"/>
-    <jar jarfile="${boot.jar.file}">
+
+    <delete file="${xom.jar.file}"/>
+    <jar jarfile="${xom.jar.file}">
       <fileset
           dir="${classes.dir}"
-          includes="mondrian/xom/**/*.class,
-mondrian/resource/**/*.class"/>
+          includes="mondrian/xom/**/*.class"/>
+    </jar>
+
+    <delete file="${resource.jar.file}"/>
+    <jar jarfile="${resource.jar.file}">
+      <fileset
+          dir="${classes.dir}"
+          includes="mondrian/resource/**/*.class"/>
     </jar>
   </target>
 

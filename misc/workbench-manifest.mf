@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Main-Class: mondrian.gui.Workbench
-Class-Path: . lib/jlfgr-1_0.jar lib/boot.jar lib/javacup.jar lib/jmi.jar lib/mm.mysql-2.0.14-bin.jar lib/mof.jar lib/junit.jar
+Class-Path: . lib/jlfgr-1_0.jar lib/mondrian-xom.jar lib/mondrian-resource.jar lib/javacup.jar lib/jmi.jar lib/mm.mysql-2.0.14-bin.jar lib/mof.jar lib/junit.jar
 
 Name: Mondrian Workbench
 

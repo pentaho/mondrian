@@ -49,7 +49,7 @@
 @goto end
 :catalinaHomeOk
 
-@set CLASSPATH=%SRCROOT%/classes;%SRCROOT%/lib/javacup.jar;%SRCROOT%/lib/boot.jar
+@set CLASSPATH=%SRCROOT%/classes;%SRCROOT%/lib/javacup.jar;%SRCROOT%/lib/mondrian-xom.jar;%SRCROOT%/lib/mondrian-resource.jar
 
 @rem To use Oracle, uncomment the next line and modify appropriately
 @rem set ORACLE_HOME=%HOME_DRIVE%:/oracle/ora81
