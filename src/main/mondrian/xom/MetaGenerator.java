@@ -1346,9 +1346,11 @@ public class MetaGenerator {
 	private static boolean hasContentType(MetaDef.Content[] content,
 										  Class match)
 	{
-		for(int i=0; i<content.length; i++)
-			if(content[i].getClass().equals(match))
+		for (int i=0; i<content.length; i++) {
+			if (content[i].getClass() == match) {
 				return true;
+			}
+		}
 		return false;
 	}
 

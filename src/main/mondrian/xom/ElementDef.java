@@ -94,7 +94,7 @@ public abstract class ElementDef implements NodeDef, Serializable, Cloneable
 		Constructor elemConstructor = null;
 		for(int i=0; i<constructors.length; i++) {
 			Class[] params = constructors[i].getParameterTypes();
-			if(params.length == 1 && params[0].equals(DOMWrapper.class)) {
+			if(params.length == 1 && params[0] == DOMWrapper.class) {
 				elemConstructor = constructors[i];
 				break;
 			}
@@ -490,7 +490,7 @@ public abstract class ElementDef implements NodeDef, Serializable, Cloneable
 		}		
 
 		// Verify that types match
-		if(!(value1.getClass().equals(value2.getClass()))) {
+		if (value1.getClass() != value2.getClass()) {
 			if(out != null) {
 				displayIndent(out, indent);
 				out.println("Attribute " + name + ": class mismatch: "
@@ -553,7 +553,7 @@ public abstract class ElementDef implements NodeDef, Serializable, Cloneable
 		}		
 
 		// Verify that types match
-		if(!(value1.getClass().equals(value2.getClass()))) {
+		if (value1.getClass() != value2.getClass()) {
 			if(out != null) {
 				displayIndent(out, indent);
 				out.println("Object " + name + ": class mismatch: "

@@ -145,18 +145,10 @@ public class DOMElementParser {
 													 thisEnclosure, 
 													 prefix);
 
-		// Return false immediately if nextClass is null
-		if(nextClass == null)
-			return false;
-
 		// Determine if nextClass is a subclass of clazz.  Return true if so.
-		while(nextClass != null) {
-			if(clazz.equals(nextClass))
-				return true;
-			nextClass = nextClass.getSuperclass();
-		}
-		return false;
-	}	
+		return nextClass != null &&
+				clazz.isAssignableFrom(nextClass);
+	}
 
 	/**
 	 * This function retrieves a required String element from this parser,
@@ -795,7 +787,7 @@ public class DOMElementParser {
 			// Must be static, take no args, and return Class.
 			if(methods[i].getParameterTypes().length != 0)
 				continue;
-			if(!(methods[i].getReturnType().equals(Class.class)))
+			if(!(methods[i].getReturnType() == Class.class))
 				continue;
 			if(!(Modifier.isStatic(methods[i].getModifiers())))
 				continue;
