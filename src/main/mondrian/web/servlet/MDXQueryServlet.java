@@ -100,9 +100,12 @@ public class MDXQueryServlet extends HttpServlet {
 					rowWidth = result.getAxes()[1].positions[0].members.length;
 	
 			for (int j=0; j<columnWidth; j++) {
-				if (j == 0) {
+				html.append("<tr>");
+
+				// if it has more than 1 dimension
+				if (j == 0 && result.getAxes().length > 1) {
 					// Print the top-left cell, and fill it with slicer members.
-					html.append("<tr><td nowrap class='slicer' rowspan='" +
+					html.append("<td nowrap class='slicer' rowspan='" +
 							columnWidth + "' colspan='" + rowWidth + "'>");
 					for (int i=0; i<slicers.length; i++) {
 						Position position = slicers[i];
@@ -115,9 +118,8 @@ public class MDXQueryServlet extends HttpServlet {
 						}
 					}
 					html.append("&nbsp;</td>" + nl);
-				} else {
-					html.append("<tr>");
 				}
+
 				// Print the column headings.
 				for (int i=0; i<columns.length; i++) {
 					Member member = columns[i].members[j];
@@ -132,7 +134,7 @@ public class MDXQueryServlet extends HttpServlet {
 				}
 				html.append("</tr>" + nl);
 			}
-
+			//if is two axes, show 
 			if (result.getAxes().length > 1) {
 				for (int i=0; i<rows.length; i++) {
 					html.append("<tr>");
@@ -143,18 +145,17 @@ public class MDXQueryServlet extends HttpServlet {
 								member.getUniqueName() + "</td>");
 					}
 					for (int j=0; j<columns.length; j++) {
-						Cell cell = result.getCell(new int[]{j,i});
-						html.append("<td class='cell'>" + cell.getFormattedValue() + "</td>");
+						showCell(html,result.getCell(new int[]{j,i}));
 					}
 					html.append("</tr>");
 				}
 			} else {
+				html.append("<tr>");
 				for (int i=0; i<columns.length; i++) {
-					Cell cell = result.getCell(new int[]{i});
-					html.append("<tr><td></td><td class='cell'>" + cell.getFormattedValue() + "</td></tr>");
+					showCell(html,result.getCell(new int[]{i}));
 				}
+				html.append("</tr>");
 			}
-
 			html.append("</table>");
 		} catch (Throwable e) {
 			final String[] strings = Util.convertStackToString(e);
@@ -174,6 +175,9 @@ public class MDXQueryServlet extends HttpServlet {
 		getServletContext().getRequestDispatcher("/adhoc.jsp").include(request, response);
 	}
 
+	private void showCell( StringBuffer out, Cell cell) {
+		out.append("<td class='cell'>" + cell.getFormattedValue() + "</td>");
+	}
 	private void processTransform(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		String queryName = request.getParameter("query");
