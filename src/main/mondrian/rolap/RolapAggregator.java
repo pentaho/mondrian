@@ -68,6 +68,11 @@ public abstract class RolapAggregator
         public Object aggregate(Evaluator evaluator, List members, Exp exp) {
             throw new UnsupportedOperationException();
         }
+
+        public String getExpression(String operand) {
+			return "count(distinct " + operand + ")";
+		}
+
     };
     /**
      * List of all valid aggregation operators.
