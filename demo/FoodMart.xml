@@ -202,10 +202,10 @@ lname
   <CalculatedMember
       name="Profit last Period"
       dimension="Measures"
-      formula="([Measures].[Profit], ParallelPeriod())"
+      formula="COALESCEEMPTY((Measures.[Profit], [Time].PREVMEMBER),    Measures.[Profit])"
       visible="false"/>
   <CalculatedMember
-      name="Profit growth"
+      name="Profit Growth"
       dimension="Measures"
       formula="([Measures].[Profit] - [Measures].[Profit last Period]) / [Measures].[Profit last Period]"
       visible="true">

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2002-2004 Kana Software, Inc. and others.
+// Copyright (C) 2002-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -152,16 +152,18 @@ public class TestCalculatedMembers extends FoodMartTestCase {
     }
 
     public void testCalculatedMemberInCubeAndQuery() {
-        runQueryCheckResult("WITH MEMBER [Measures].[Profit Growth]" + nl +
+        // Profit is defined in the cube.
+        // Profit Change is defined in the query.
+        runQueryCheckResult("WITH MEMBER [Measures].[Profit Change]" + nl +
             " AS '[Measures].[Profit] - ([Measures].[Profit], [Time].PrevMember)'" + nl +
-            "SELECT {[Measures].[Profit], [Measures].[Profit Growth]} ON COLUMNS," + nl +
+            "SELECT {[Measures].[Profit], [Measures].[Profit Change]} ON COLUMNS," + nl +
             " {[Time].[1997].[Q2].children} ON ROWS" + nl +
             "FROM [Sales]",
             "Axis #0:" + nl +
             "{}" + nl +
             "Axis #1:" + nl +
             "{[Measures].[Profit]}" + nl +
-            "{[Measures].[Profit Growth]}" + nl +
+            "{[Measures].[Profit Change]}" + nl +
             "Axis #2:" + nl +
             "{[Time].[1997].[Q2].[4]}" + nl +
             "{[Time].[1997].[Q2].[5]}" + nl +

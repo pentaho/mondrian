@@ -3306,28 +3306,6 @@ public class FunctionTest extends FoodMartTestCase {
         Assert.assertEquals("4", s);
     }
 
-/*
-LinRegPoint(
-    <<numeric exprssion>>,
-    <<set>>,
-    <<y numeric exprssion>>
-    [, <<x numeric exprssion>>]
-)
-With member
-[Measures].[Test] as
-'LinRegPoint(
-  Rank(Time.CurrentMember, Time.CurrentMember.Level.Members) ,
-  Descendants([Time].[All Periods].[2004], [Time].[Month]),
-  [Measures].[Wholesaler 867 Shipped Qty],
-  Rank(Time.CurrentMember, Time.CurrentMember.Level.Members)
-)'
-Select
-  {[Measures].[Test]} ON ROWS,
-  {[Time].[All Periods].[2004]} ON COLUMNS
-from
-  [Wholesaler Shipments]
-*/
-
     /**
      * Executes a scalar expression, and asserts that the result is as
      * expected. For example, <code>assertExprReturns("1 + 2", "3")</code>
@@ -3402,14 +3380,12 @@ from
     }
 
     public void testLinRegPointQuarter() {
-        String query = "WITH MEMBER " + nl +
-                "[Measures].[Test] as " + nl +
-                "'LinRegPoint(" + nl +
-                "Rank(Time.CurrentMember, Time.CurrentMember.Level.Members) ," + nl +
-                "Descendants([Time].[1997], [Time].[Quarter]), " + nl +
-                "[Measures].[Store Sales], " + nl +
-                "Rank(Time.CurrentMember, Time.CurrentMember.Level.Members)" + nl +
-                ")' " + nl +
+        String query = "WITH MEMBER [Measures].[Test] as " + nl +
+                "  'LinRegPoint(" + nl +
+                "    Rank(Time.CurrentMember, Time.CurrentMember.Level.Members)," + nl +
+                "    Descendants([Time].[1997], [Time].[Quarter]), " + nl +
+                     "[Measures].[Store Sales], " + nl +
+                "    Rank(Time.CurrentMember, Time.CurrentMember.Level.Members))' " + nl +
                 "SELECT " + nl +
                 "{[Measures].[Test],[Measures].[Store Sales]} ON ROWS, " + nl +
                 "{[Time].[1997].Children} ON COLUMNS " + nl +
@@ -3436,7 +3412,80 @@ from
         runQueryCheckResult(query, expected);
     }
 
-    public void testLinRegPointMonth() {
+    /**
+     * Tests all of the linear regression functions, as suggested by
+     * <a href="http://support.microsoft.com/kb/q307276/">a Microsoft knowledge
+     * base article</a>.
+     */
+    public void _testLinRegAll() {
+        // We have not implemented the LastPeriods function, so we use
+        //   [Time].CurrentMember.Lag(9) : [Time].CurrentMember
+        // is equivalent to
+        //   LastPeriods(10)
+        String query = "WITH MEMBER " + nl +
+                "[Measures].[Intercept] AS " + nl +
+                "  'LinRegIntercept([Time].CurrentMember.Lag(10) : [Time].CurrentMember, [Measures].[Unit Sales], [Measures].[Store Sales])' " + nl +
+                "MEMBER [Measures].[Regression Slope] AS" + nl +
+                "  'LinRegSlope([Time].CurrentMember.Lag(9) : [Time].CurrentMember,[Measures].[Unit Sales],[Measures].[Store Sales]) '" + nl +
+                "MEMBER [Measures].[Predict] AS" + nl +
+                "  'LinRegPoint([Measures].[Unit Sales],[Time].CurrentMember.Lag(9) : [Time].CurrentMember,[Measures].[Unit Sales],[Measures].[Store Sales])'," + nl +
+                "  FORMAT_STRING = 'Standard' " + nl +
+                "MEMBER [Measures].[Predict Formula] AS" + nl +
+                "  '([Measures].[Regression Slope] * [Measures].[Unit Sales]) + [Measures].[Intercept]'," + nl +
+                "  FORMAT_STRING='Standard'" + nl +
+                "MEMBER [Measures].[Good Fit] AS" + nl +
+                "  'LinRegR2([Time].CurrentMember.Lag(9) : [Time].CurrentMember, [Measures].[Unit Sales],[Measures].[Store Sales])'," + nl +
+                "  FORMAT_STRING='#,#.00'" + nl +
+                "MEMBER [Measures].[Variance] AS" + nl +
+                "  'LinRegVariance([Time].CurrentMember.Lag(9) : [Time].CurrentMember,[Measures].[Unit Sales],[Measures].[Store Sales])'" + nl +
+                "SELECT " + nl +
+                "  {[Measures].[Store Sales], " + nl +
+                "   [Measures].[Intercept], " + nl +
+                "   [Measures].[Regression Slope], " + nl +
+                "   [Measures].[Predict], " + nl +
+                "   [Measures].[Predict Formula], " + nl +
+                "   [Measures].[Good Fit], " + nl +
+                "   [Measures].[Variance] } ON COLUMNS, " + nl +
+                "  Descendants([Time].[1997], [Time].[Month]) ON ROWS" + nl +
+                "FROM Sales";
+
+        String expected = "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Store Sales]}" + nl +
+                "{[Measures].[Intercept]}" + nl +
+                "{[Measures].[Regression Slope]}" + nl +
+                "{[Measures].[Predict]}" + nl +
+                "{[Measures].[Predict Formula]}" + nl +
+                "{[Measures].[Good Fit]}" + nl +
+                "{[Measures].[Variance]}" + nl +
+                "Axis #2:" + nl +
+                "{[Time].[1997].[Q1].[1]}" + nl +
+                "{[Time].[1997].[Q1].[2]}" + nl +
+                "{[Time].[1997].[Q1].[3]}" + nl +
+                "{[Time].[1997].[Q2].[4]}" + nl +
+                "{[Time].[1997].[Q2].[5]}" + nl +
+                "{[Time].[1997].[Q2].[6]}" + nl +
+                "{[Time].[1997].[Q3].[7]}" + nl +
+                "{[Time].[1997].[Q3].[8]}" + nl +
+                "{[Time].[1997].[Q3].[9]}" + nl +
+                "{[Time].[1997].[Q4].[10]}" + nl +
+                "{[Time].[1997].[Q4].[11]}" + nl +
+                "{[Time].[1997].[Q4].[12]}" + nl +
+                "Row #0: 45,539.69" + nl +
+                "Row #0: 68711.40" + nl +
+                "Row #0: -1.033" + nl +
+                "Row #0: 46,350.26" + nl +
+                "Row #0: 46.350.26" + nl +
+                "Row #0: -1.#INF" + nl +
+                "Row #0: 5.17E-08" + nl +
+                "..." + nl +
+                "Row #11: 15343.67" + nl;
+
+        runQueryCheckResult(query, expected);
+    }
+
+    public void _testLinRegPointMonth() {
         String query = "WITH MEMBER " + nl +
                 "[Measures].[Test] as " + nl +
                 "  'LinRegPoint(" + nl +
@@ -3495,4 +3544,121 @@ from
 
         runQueryCheckResult(query, expected);
     }
+
+    public void _testLinRegIntercept() {
+        assertExprReturns("LinRegIntercept([Time].[Month].members," +
+                " [Measures].[Unit Sales], [Measures].[Store Sales])",
+                "-126.65");
+
+        // empty set
+        assertExprReturns("LinRegIntercept({[Time].Parent}," +
+                " [Measures].[Unit Sales], [Measures].[Store Sales])",
+                "-1.#IND"); // MSAS returns -1.#IND (whatever that means)
+
+        // first expr constant
+        assertExprReturns("LinRegIntercept([Time].[Month].members," +
+                " 7, [Measures].[Store Sales])",
+                "$7.00");
+
+        // second expr constant
+        assertExprReturns("LinRegIntercept([Time].[Month].members," +
+                " [Measures].[Unit Sales], 4)",
+                "-1.#IND"); // MSAS returns -1.#IND (whatever that means)
+    }
+
+    public void _testLinRegSlope() {
+        assertExprReturns("LinRegSlope([Time].[Month].members," +
+                " [Measures].[Unit Sales], [Measures].[Store Sales])",
+                "0.4746");
+
+        // empty set
+        assertExprReturns("LinRegSlope({[Time].Parent}," +
+                " [Measures].[Unit Sales], [Measures].[Store Sales])",
+                "-1.#IND"); // MSAS returns -1.#IND (whatever that means)
+
+        // first expr constant
+        assertExprReturns("LinRegSlope([Time].[Month].members," +
+                " 7, [Measures].[Store Sales])",
+                "$7.00");
+
+        // second expr constant
+        assertExprReturns("LinRegSlope([Time].[Month].members," +
+                " [Measures].[Unit Sales], 4)",
+                "-1.#IND"); // MSAS returns -1.#IND (whatever that means)
+    }
+
+    public void _testLinRegPoint() {
+        assertExprReturns("LinRegPoint([Measures].[Unit Sales]," +
+                " [Time].CurrentMember[Time].[Month].members," +
+                " [Measures].[Unit Sales], [Measures].[Store Sales])",
+                "0.4746");
+
+        // empty set
+        assertExprReturns("LinRegPoint([Measures].[Unit Sales]," +
+                " {[Time].Parent}," +
+                " [Measures].[Unit Sales], [Measures].[Store Sales])",
+                "-1.#IND"); // MSAS returns -1.#IND (whatever that means)
+
+        // zeroth expr constant
+        assertExprReturns("LinRegPoint(-1," +
+                " [Time].[Month].members," +
+                " 7, [Measures].[Store Sales])",
+                "-127.124");
+
+        // first expr constant
+        assertExprReturns("LinRegPoint([Measures].[Unit Sales]," +
+                " [Time].[Month].members," +
+                " 7, [Measures].[Store Sales])",
+                "$7.00");
+
+        // second expr constant
+        assertExprReturns("LinRegPoint([Measures].[Unit Sales]," +
+                " [Time].[Month].members," +
+                " [Measures].[Unit Sales], 4)",
+                "-1.#IND"); // MSAS returns -1.#IND (whatever that means)
+    }
+
+    public void _testLinRegR2() {
+        assertExprReturns("LinRegR2([Time].[Month].members," +
+                " [Measures].[Unit Sales], [Measures].[Store Sales])",
+                "0.4746");
+
+        // empty set
+        assertExprReturns("LinRegR2({[Time].Parent}," +
+                " [Measures].[Unit Sales], [Measures].[Store Sales])",
+                "-1.#IND"); // MSAS returns -1.#IND (whatever that means)
+
+        // first expr constant
+        assertExprReturns("LinRegR2([Time].[Month].members," +
+                " 7, [Measures].[Store Sales])",
+                "$7.00");
+
+        // second expr constant
+        assertExprReturns("LinRegR2([Time].[Month].members," +
+                " [Measures].[Unit Sales], 4)",
+                "-1.#IND"); // MSAS returns -1.#IND (whatever that means)
+    }
+
+    public void _testLinRegVariance() {
+        assertExprReturns("LinRegVariance([Time].[Month].members," +
+                " [Measures].[Unit Sales], [Measures].[Store Sales])",
+                "0.4746");
+
+        // empty set
+        assertExprReturns("LinRegVariance({[Time].Parent}," +
+                " [Measures].[Unit Sales], [Measures].[Store Sales])",
+                "-1.#IND"); // MSAS returns -1.#IND (whatever that means)
+
+        // first expr constant
+        assertExprReturns("LinRegVariance([Time].[Month].members," +
+                " 7, [Measures].[Store Sales])",
+                "$7.00");
+
+        // second expr constant
+        assertExprReturns("LinRegVariance([Time].[Month].members," +
+                " [Measures].[Unit Sales], 4)",
+                "-1.#IND"); // MSAS returns -1.#IND (whatever that means)
+    }
 }
+
+// End FunctionTest.java
