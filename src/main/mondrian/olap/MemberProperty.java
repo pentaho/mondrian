@@ -20,7 +20,7 @@ public class MemberProperty extends QueryPart {
 	String name;
 	Exp exp;
 
-	MemberProperty(String name, Exp exp) {
+	public MemberProperty(String name, Exp exp) {
 		this.name = name;
 		this.exp = exp;
 	}
