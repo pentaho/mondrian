@@ -1444,9 +1444,75 @@ public class BuiltinFunTable extends FunTable {
 		//
 		// SET FUNCTIONS
 		if (false) define(new FunDefBase("AddCalculatedMembers", "AddCalculatedMembers(<Set>)", "Adds calculated members to a set.", "fx*"));
-		if (false) define(new FunDefBase("BottomCount", "BottomCount(<Set>, <Count>[, <Numeric Expression>])", "Returns a specified number of items from the bottom of a set, optionally ordering the set first.", "fx*"));
-		if (false) define(new FunDefBase("BottomPercent", "BottomPercent(<Set>, <Percentage>, <Numeric Expression>)", "Sorts a set and returns the bottom N elements whose cumulative total is at least a specified percentage.", "fx*"));
-		if (false) define(new FunDefBase("BottomSum", "BottomSum(<Set>, <Value>, <Numeric Expression>)", "Sorts a set and returns the bottom N elements whose cumulative total is at least a specified value.", "fx*"));
+		define(new MultiResolver(
+			"BottomCount",
+			"BottomCount(<Set>, <Count>[, <Numeric Expression>])",
+			"Returns a specified number of items from the bottom of a set, optionally ordering the set first.",
+			new String[]{"fxxnN", "fxxn"},
+			new FunkBase() {
+				public Object evaluate(Evaluator evaluator, Exp[] args) {
+					Vector set = (Vector) getArg(evaluator, args, 0);
+					int n = getIntArg(evaluator, args, 1);
+					ExpBase exp = (ExpBase) getArg(evaluator, args, 2, null);
+					if (exp != null) {
+						boolean desc = false, brk = true;
+						sort(evaluator, set, exp, desc, brk);
+					}
+					if (n < set.size()) {
+						set.setSize(n);
+					}
+					return set;
+				}
+				public void testBottomCount(FoodMartTestCase test) {
+					Axis axis = test.executeAxis2(
+							"BottomCount({[Promotion Media].[Media Type].members}, 2, [Measures].[Unit Sales])");
+					String expected = "[Promotion Media].[All Promotion Media].[Radio], " +
+							"[Promotion Media].[All Promotion Media].[Sunday Paper, Radio, TV]";
+					test.assertEquals(expected, test.toString(axis.positions));
+				}
+				//todo: test unordered
+
+			}));
+		define(new MultiResolver(
+			"BottomPercent", "BottomPercent(<Set>, <Percentage>, <Numeric Expression>)", "Sorts a set and returns the bottom N elements whose cumulative total is at least a specified percentage.",
+			new String[]{"fxxnN"},
+			new FunkBase() {
+				public Object evaluate(Evaluator evaluator, Exp[] args) {
+					Vector members = (Vector) getArg(evaluator, args, 0);
+					ExpBase exp = (ExpBase) getArg(evaluator, args, 2);
+					Double n = getDoubleArg(evaluator, args, 1);
+					return topOrBottom(evaluator.push(), members, exp, false, true, n.doubleValue());
+					
+				}
+				public void testBottomPercent(FoodMartTestCase test) {
+					Axis axis = test.executeAxis2(
+							"BottomPercent({[Promotion Media].[Media Type].members}, 1, [Measures].[Unit Sales])");
+					String expected = "[Promotion Media].[All Promotion Media].[Radio], " +
+							"[Promotion Media].[All Promotion Media].[Sunday Paper, Radio, TV]";
+					test.assertEquals(expected, test.toString(axis.positions));
+				}
+				//todo: test precision
+			}));
+
+		define(new MultiResolver(
+			"BottomSum", "BottomSum(<Set>, <Value>, <Numeric Expression>)", "Sorts a set and returns the bottom N elements whose cumulative total is at least a specified value.",
+			new String[]{"fxxnN"},
+			new FunkBase() {
+				public Object evaluate(Evaluator evaluator, Exp[] args) {
+					Vector members = (Vector) getArg(evaluator, args, 0);
+					ExpBase exp = (ExpBase) getArg(evaluator, args, 2);
+					Double n = getDoubleArg(evaluator, args, 1);
+					return topOrBottom(evaluator.push(), members, exp, false, false, n.doubleValue());
+					
+				}
+				public void testBottomSum(FoodMartTestCase test) {
+					Axis axis = test.executeAxis2(
+							"BottomSum({[Promotion Media].[Media Type].members}, 5000, [Measures].[Unit Sales])");
+					String expected = "[Promotion Media].[All Promotion Media].[Radio], " +
+							"[Promotion Media].[All Promotion Media].[Sunday Paper, Radio, TV]";
+					test.assertEquals(expected, test.toString(axis.positions));
+				}
+			}));
 		define(new FunDefBase("Children", "<Member>.Children", "Returns the children of a member.", "pxm") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Member member = getMemberArg(evaluator, args, 0, true);
@@ -1826,9 +1892,55 @@ public class BuiltinFunTable extends FunTable {
 						}
 						return set;
 					}
+					public void testTopCount(FoodMartTestCase test) {
+						Axis axis = test.executeAxis2(
+								"TopCount({[Promotion Media].[Media Type].members}, 2, [Measures].[Unit Sales])");
+						String expected = "[Promotion Media].[All Promotion Media].[No Media], " +
+								"[Promotion Media].[All Promotion Media].[Daily Paper, Radio, TV]";
+						test.assertEquals(expected, test.toString(axis.positions));
+					}
 				}));
-		if (false) define(new FunDefBase("TopPercent", "TopPercent(<Set>, <Percentage>, <Numeric Expression>)", "Sorts a set and returns the top N elements whose cumulative total is at least a specified percentage.", "fx*"));
-		if (false) define(new FunDefBase("TopSum", "TopSum(<Set>, <Value>, <Numeric Expression>)", "Sorts a set and returns the top N elements whose cumulative total is at least a specified value.", "fx*"));
+
+		define(new MultiResolver(
+			"TopPercent", "TopPercent(<Set>, <Percentage>, <Numeric Expression>)", "Sorts a set and returns the top N elements whose cumulative total is at least a specified percentage.",
+			new String[]{"fxxnN"},
+			new FunkBase() {
+				public Object evaluate(Evaluator evaluator, Exp[] args) {
+					Vector members = (Vector) getArg(evaluator, args, 0);
+					ExpBase exp = (ExpBase) getArg(evaluator, args, 2);
+					Double n = getDoubleArg(evaluator, args, 1);
+					return topOrBottom(evaluator.push(), members, exp, true, true, n.doubleValue());
+					
+				}
+				public void testTopPercent(FoodMartTestCase test) {
+					Axis axis = test.executeAxis2(
+							"TopPercent({[Promotion Media].[Media Type].members}, 70, [Measures].[Unit Sales])");
+					String expected = "[Promotion Media].[All Promotion Media].[No Media]";
+					test.assertEquals(expected, test.toString(axis.positions));
+				}
+				//todo: test precision
+			}));
+
+		define(new MultiResolver(
+			"TopSum", "TopSum(<Set>, <Value>, <Numeric Expression>)", "Sorts a set and returns the top N elements whose cumulative total is at least a specified value.",
+			new String[]{"fxxnN"},
+			new FunkBase() {
+				public Object evaluate(Evaluator evaluator, Exp[] args) {
+					Vector members = (Vector) getArg(evaluator, args, 0);
+					ExpBase exp = (ExpBase) getArg(evaluator, args, 2);
+					Double n = getDoubleArg(evaluator, args, 1);
+					return topOrBottom(evaluator.push(), members, exp, true, false, n.doubleValue());
+					
+				}
+				public void testTopSum(FoodMartTestCase test) {
+					Axis axis = test.executeAxis2(
+							"TopSum({[Promotion Media].[Media Type].members}, 200000, [Measures].[Unit Sales])");
+					String expected = "[Promotion Media].[All Promotion Media].[No Media], " +
+							"[Promotion Media].[All Promotion Media].[Daily Paper, Radio, TV]";
+					test.assertEquals(expected, test.toString(axis.positions));
+				}
+			}));
+
 		if (false) define(new FunDefBase("Union", "Union(<Set1>, <Set2>[, ALL])", "Returns the union of two sets, optionally retaining duplicates.", "fx*"));
 		if (false) define(new FunDefBase("VisualTotals", "VisualTotals(<Set>, <Pattern>)", "Dynamically totals child members specified in a set using a pattern for the total label in the result set.", "fx*"));
 		define(new MultiResolver(

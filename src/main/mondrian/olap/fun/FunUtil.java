@@ -250,14 +250,19 @@ public class FunUtil extends Util {
 
 	static HashMap evaluateMembers(
 			Evaluator evaluator, ExpBase exp, Vector members) {
-		Member[] constantTuple = exp.isConstantTuple();
-		if (constantTuple == null) {
-			return _evaluateMembers(evaluator.push(), exp, members);
-		} else {
-			// exp is constant -- add it to the context before the loop, rather
-			// than at every step
-			return evaluateMembers(evaluator.push(constantTuple), members);
-		}
+		//if (exp == null) { //needed?
+		//	return evaluateMembers(evaluator.push(), members);
+		//}
+		//else {			
+			Member[] constantTuple = exp.isConstantTuple();
+			if (constantTuple == null) {
+				return _evaluateMembers(evaluator.push(), exp, members);
+			} else {
+				// exp is constant -- add it to the context before the loop, rather
+				// than at every step
+				return evaluateMembers(evaluator.push(constantTuple), members);
+			}
+		//}
 	}
 
 	private static HashMap _evaluateMembers(
@@ -311,6 +316,54 @@ public class FunUtil extends Util {
 		}
 	}
 
+	/**
+	 * Turns the mapped values into relative values (percentages) for easy
+	 * use by the general topOrBottom function. This might also be a useful
+	 * function in itself.
+	 */
+	static void toPercent (Vector members, HashMap mapMemberToValue) {
+		double total = 0;
+		int numMembers = members.size();
+		for (int i = 0; i < numMembers; i++) {
+			Object o = mapMemberToValue.get(members.elementAt(i));
+			if (o instanceof Double) {
+				total += ((Double) o).doubleValue();
+			}
+		}
+		for (int i = 0; i < numMembers; i++) {
+			Object o = mapMemberToValue.get(members.elementAt(i));
+			if (o instanceof Double) {
+				mapMemberToValue.put(members.elementAt(i), new Double(((Double) o).doubleValue() / total * 100));
+			}
+		}
+		
+	}
+
+	/**
+	 * Handles TopSum, TopPercent, BottomSum, BottomPercent by
+	 * evaluating members, sorting appropriately, and returning a 
+	 * truncated vector of members
+	 */
+	static Object topOrBottom (Evaluator evaluator, Vector members, ExpBase exp, boolean isTop, boolean isPercent, double target) {
+		HashMap mapMemberToValue = evaluateMembers(evaluator, exp, members);
+		Comparator comparator = new MemberComparator(
+				mapMemberToValue, isTop, true);
+		sort(comparator, members);
+		if (isPercent) {
+			toPercent(members, mapMemberToValue);
+		}
+		int numMembers = members.size();
+		double runningTotal = 0; int i = 0;
+		for (; (i < numMembers) && (runningTotal < target); i++) {
+			Object o = mapMemberToValue.get(members.elementAt(i));
+			//todo: figure out why we have non-doubles, add error handling	
+			if (o instanceof Double) {
+				runningTotal += ((Double) o).doubleValue();
+			}
+		}
+		members.setSize(i);
+		return members;
+	}
 	static class SetWrapper {
 		Vector v = new Vector();
 		public int errorCount = 0, nullCount = 0;
@@ -404,7 +457,10 @@ public class FunUtil extends Util {
 	}
 
 	/**
-	 * Evluates exp over members to generate a Vector of doubles and meta information
+	 * Evluates <code>exp</code> over <code>members</code> to generate a 
+	 * <code>Vector</code> of <code>SetWrapper</code>, which contains a
+	 * <code>Double</code> value and meta information, unlike 
+	 * <code>evaluateMembers</code>, which only produces values
 	 */
 	static SetWrapper evaluateSet(Evaluator evaluator, Vector members, ExpBase exp) {
 		// todo: treat constant exps as evaluateMembers() does
