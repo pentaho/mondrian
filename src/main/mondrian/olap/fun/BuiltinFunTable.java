@@ -2704,6 +2704,105 @@ public class BuiltinFunTable extends FunTable {
 						"Row #3: 19,477.23" + nl +
 						"Row #3: 48,836.21" + nl);
 			}
+			public void testOrderBug712702_Simplified(FoodMartTestCase test) {
+				test.runQueryCheckResult("SELECT Order({[Time].[Year].members}, [Measures].[Unit Sales]) on columns" + nl +
+						"from [Sales]",
+						"Axis #0:" + nl +
+						"{}" + nl +
+						"Axis #1:" + nl +
+						"{[Time].[1997]}" + nl +
+						"{[Time].[1998]}" + nl +
+						"Row #0: 266,773" + nl +
+						"Row #0: (null)" + nl);
+			}
+			public void testOrderBug712702_Original(FoodMartTestCase test) {
+				test.runQueryCheckResult("with member [Measures].[Average Unit Sales] as 'Avg(Descendants([Time].CurrentMember, [Time].[Month]), " + nl +
+						"[Measures].[Unit Sales])' " + nl +
+						"member [Measures].[Max Unit Sales] as 'Max(Descendants([Time].CurrentMember, [Time].[Month]), [Measures].[Unit Sales])' " + nl +
+						"select {[Measures].[Average Unit Sales], [Measures].[Max Unit Sales], [Measures].[Unit Sales]} ON columns, " + nl +
+						"  NON EMPTY Order(" + nl +
+						"    Crossjoin( " + nl +
+						"      {[Store].[All Stores].[USA].[OR].[Portland]," + nl +
+						"       [Store].[All Stores].[USA].[OR].[Salem]," + nl +
+						"       [Store].[All Stores].[USA].[OR].[Salem].[Store 13]," + nl +
+						"       [Store].[All Stores].[USA].[CA].[San Francisco]," + nl +
+						"       [Store].[All Stores].[USA].[CA].[San Diego]," + nl +
+						"       [Store].[All Stores].[USA].[CA].[Beverly Hills]," + nl +
+						"       [Store].[All Stores].[USA].[CA].[Los Angeles]," + nl +
+						"       [Store].[All Stores].[USA].[WA].[Walla Walla]," + nl +
+						"       [Store].[All Stores].[USA].[WA].[Bellingham]," + nl +
+						"       [Store].[All Stores].[USA].[WA].[Yakima]," + nl +
+						"       [Store].[All Stores].[USA].[WA].[Spokane]," + nl +
+						"       [Store].[All Stores].[USA].[WA].[Seattle], " + nl +
+						"       [Store].[All Stores].[USA].[WA].[Bremerton]," + nl +
+						"       [Store].[All Stores].[USA].[WA].[Tacoma]}," + nl +
+						"     [Time].[Year].Members), " + nl +
+						"  [Measures].[Average Unit Sales], ASC) ON rows" + nl +
+						"from [Sales] ",
+						"Axis #0:" + nl +
+						"{}" + nl +
+						"Axis #1:" + nl +
+						"{[Measures].[Average Unit Sales]}" + nl +
+						"{[Measures].[Max Unit Sales]}" + nl +
+						"{[Measures].[Unit Sales]}" + nl +
+						"Axis #2:" + nl +
+						"{[Store].[All Stores].[USA].[OR].[Portland], [Time].[1997]}" + nl +
+						"{[Store].[All Stores].[USA].[OR].[Salem], [Time].[1997]}" + nl +
+						"{[Store].[All Stores].[USA].[OR].[Salem].[Store 13], [Time].[1997]}" + nl +
+						"{[Store].[All Stores].[USA].[CA].[San Francisco], [Time].[1997]}" + nl +
+						"{[Store].[All Stores].[USA].[CA].[Beverly Hills], [Time].[1997]}" + nl +
+						"{[Store].[All Stores].[USA].[CA].[San Diego], [Time].[1997]}" + nl +
+						"{[Store].[All Stores].[USA].[CA].[Los Angeles], [Time].[1997]}" + nl +
+						"{[Store].[All Stores].[USA].[WA].[Walla Walla], [Time].[1997]}" + nl +
+						"{[Store].[All Stores].[USA].[WA].[Bellingham], [Time].[1997]}" + nl +
+						"{[Store].[All Stores].[USA].[WA].[Yakima], [Time].[1997]}" + nl +
+						"{[Store].[All Stores].[USA].[WA].[Spokane], [Time].[1997]}" + nl +
+						"{[Store].[All Stores].[USA].[WA].[Bremerton], [Time].[1997]}" + nl +
+						"{[Store].[All Stores].[USA].[WA].[Seattle], [Time].[1997]}" + nl +
+						"{[Store].[All Stores].[USA].[WA].[Tacoma], [Time].[1997]}" + nl +
+						"Row #0: 2,173" + nl +
+						"Row #0: 2,933" + nl +
+						"Row #0: 26,079" + nl +
+						"Row #1: 3,465" + nl +
+						"Row #1: 5,891" + nl +
+						"Row #1: 41,580" + nl +
+						"Row #2: 3,465" + nl +
+						"Row #2: 5,891" + nl +
+						"Row #2: 41,580" + nl +
+						"Row #3: 176" + nl +
+						"Row #3: 222" + nl +
+						"Row #3: 2,117" + nl +
+						"Row #4: 1,778" + nl +
+						"Row #4: 2,545" + nl +
+						"Row #4: 21,333" + nl +
+						"Row #5: 2,136" + nl +
+						"Row #5: 2,686" + nl +
+						"Row #5: 25,635" + nl +
+						"Row #6: 2,139" + nl +
+						"Row #6: 2,669" + nl +
+						"Row #6: 25,663" + nl +
+						"Row #7: 184" + nl +
+						"Row #7: 301" + nl +
+						"Row #7: 2,203" + nl +
+						"Row #8: 186" + nl +
+						"Row #8: 275" + nl +
+						"Row #8: 2,237" + nl +
+						"Row #9: 958" + nl +
+						"Row #9: 1,163" + nl +
+						"Row #9: 11,491" + nl +
+						"Row #10: 1,966" + nl +
+						"Row #10: 2,634" + nl +
+						"Row #10: 23,591" + nl +
+						"Row #11: 2,048" + nl +
+						"Row #11: 2,623" + nl +
+						"Row #11: 24,576" + nl +
+						"Row #12: 2,084" + nl +
+						"Row #12: 2,304" + nl +
+						"Row #12: 25,011" + nl +
+						"Row #13: 2,938" + nl +
+						"Row #13: 3,818" + nl +
+						"Row #13: 35,257" + nl);
+			}
 		});
 
 		define(new FunkResolver(
@@ -3225,7 +3324,7 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testBug714707(FoodMartTestCase test) {
 				// Same issue as bug 715177 -- "children" returns immutable
-				// list, which set operator must make mutable. 
+				// list, which set operator must make mutable.
 				test.assertAxisReturns("{[Store].[USA].[CA].children, [Store].[USA]}",
 						"[Store].[All Stores].[USA].[CA].[Alameda]" + nl +
 						"[Store].[All Stores].[USA].[CA].[Beverly Hills]" + nl +

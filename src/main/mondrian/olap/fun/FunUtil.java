@@ -532,7 +532,7 @@ public class FunUtil extends Util {
 	static class SetWrapper {
 		Vector v = new Vector();
 		public int errorCount = 0, nullCount = 0;
-			
+
 		//private double avg = Double.NaN;
 		//todo: parameterize inclusion of nulls
 		//by making this a method of the SetWrapper, we can cache the result
@@ -622,7 +622,7 @@ public class FunUtil extends Util {
 			return new Double(stdev / n);
 		}
 	}
-	
+
 	static Object correlation(Evaluator evaluator, List members, ExpBase exp1, ExpBase exp2) {
 		SetWrapper sw1 = evaluateSet(evaluator, members, exp1);
 		SetWrapper sw2 = evaluateSet(evaluator, members, exp2);
@@ -636,8 +636,8 @@ public class FunUtil extends Util {
 		else {
 			return Util.nullValue;
 		}
-	} 
-				
+	}
+
 	static Object covariance(Evaluator evaluator, List members, ExpBase exp1, ExpBase exp2, boolean biased) {
 		SetWrapper sw1 = evaluateSet(evaluator.push(), members, exp1);
 		SetWrapper sw2 = evaluateSet(evaluator.push(), members, exp2);
@@ -645,8 +645,8 @@ public class FunUtil extends Util {
 		//lead to mismatched vectors and is therefore not robust
 		return _covariance(sw1, sw2, biased);
 	}
-	
-	
+
+
 	private static Object _covariance(SetWrapper sw1, SetWrapper sw2, boolean biased) {
 		if (sw1.v.size() != sw2.v.size()) {
 			return Util.nullValue;
@@ -662,9 +662,9 @@ public class FunUtil extends Util {
 		}
 		int n = sw1.v.size();
 		if (!biased) { n--; }
-		return new Double(covar / n);	
+		return new Double(covar / n);
 	}
-	
+
 	static Object stdev(Evaluator evaluator, List members, ExpBase exp, boolean biased) {
 		Object o = var(evaluator, members, exp, biased);
 		if (o instanceof Double) {
@@ -850,32 +850,34 @@ public class FunUtil extends Util {
 		return children[children.length - 1];
 	}
 
+	static boolean equals(Member m1, Member m2) {
+		return m1 == null ?
+				m2 == null :
+				m1.equals(m2);
+	}
+
 	static int compareHierarchically(Member m1, Member m2, boolean post) {
-		//if (m1 == m2) {
-    if (m1.equals(m2)) {
+		if (equals(m1, m2)) {
 			return 0;
 		}
 		while (true) {
 			int levelDepth1 = m1.getLevel().getDepth(),
-				levelDepth2 = m2.getLevel().getDepth();
+					levelDepth2 = m2.getLevel().getDepth();
 			if (levelDepth1 < levelDepth2) {
 				m2 = m2.getParentMember();
-				//if (m1 == m2) {
-        if (m1.equals(m2)) {
+				if (equals(m1, m2)) {
 					return post ? 1 : -1;
 				}
 			} else if (levelDepth1 > levelDepth2) {
 				m1 = m1.getParentMember();
-        //if (m1 == m2) {
-        if (m1.equals(m2)) {
+				if (equals(m1, m2)) {
 					return post ? -1 : 1;
 				}
 			} else {
 				Member prev1 = m1, prev2 = m2;
 				m1 = m1.getParentMember();
 				m2 = m2.getParentMember();
-        //if (m1 == m2) {
-        if (m1.equals(m2)) {
+				if (equals(m1, m2)) {
 					// todo: use ordinal not caption
 					return FunUtil.compareValues(prev1.getCaption(), prev2.getCaption());
 				}
@@ -965,8 +967,7 @@ abstract class MemberComparator implements Comparator {
 	}
 
 	protected int compareHierarchicallyButSiblingsByValue(Member m1, Member m2) {
-		//if (m1 == m2) {
-		if (m1.equals(m2)) {
+		if (FunUtil.equals(m1, m2)) {
 			return 0;
 		}
 		while (true) {
@@ -974,22 +975,19 @@ abstract class MemberComparator implements Comparator {
 					levelDepth2 = m2.getLevel().getDepth();
 			if (levelDepth1 < levelDepth2) {
 				m2 = m2.getParentMember();
-				//if (m1 == m2) {
-				if (m1.equals(m2)) {
+				if (FunUtil.equals(m1, m2)) {
 					return -1;
 				}
 			} else if (levelDepth1 > levelDepth2) {
 				m1 = m1.getParentMember();
-				//if (m1 == m2) {
-				if (m1.equals(m2)) {
+				if (FunUtil.equals(m1, m2)) {
 					return 1;
 				}
 			} else {
 				Member prev1 = m1, prev2 = m2;
 				m1 = m1.getParentMember();
 				m2 = m2.getParentMember();
-				//if (m1 == m2) {
-				if (m1.equals(m2)) {
+				if (FunUtil.equals(m1, m2)) {
 					// including case where both parents are null
 					return compareByValue(prev1, prev2);
 				}
@@ -1094,31 +1092,27 @@ class HierarchicalArrayComparator extends ArrayExpComparator {
 		return 0;
 	}
 	protected int compareHierarchicallyButSiblingsByValue(Member m1, Member m2) {
-		//if (m1 == m2) {
-    if (m1.equals(m2)) {
+		if (FunUtil.equals(m1, m2)) {
 			return 0;
 		}
 		while (true) {
 			int levelDepth1 = m1.getLevel().getDepth(),
-				levelDepth2 = m2.getLevel().getDepth();
+					levelDepth2 = m2.getLevel().getDepth();
 			if (levelDepth1 < levelDepth2) {
 				m2 = m2.getParentMember();
-				//if (m1 == m2) {
-          if (m1.equals(m2)) {
+				if (FunUtil.equals(m1, m2)) {
 					return -1;
 				}
 			} else if (levelDepth1 > levelDepth2) {
 				m1 = m1.getParentMember();
-				//if (m1 == m2) {
-        if (m1.equals(m2)) {
+				if (FunUtil.equals(m1, m2)) {
 					return 1;
 				}
 			} else {
 				Member prev1 = m1, prev2 = m2;
 				m1 = m1.getParentMember();
 				m2 = m2.getParentMember();
-				//if (m1 == m2) {
-        if (m1.equals(m2)) {
+				if (FunUtil.equals(m1, m2)) {
 					// including case where both parents are null
 					int c = compareByValue(prev1, prev2);
 					if (c == 0) {
