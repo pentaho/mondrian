@@ -47,13 +47,14 @@ class RolapEvaluator implements Evaluator
 	{
 		this.cube = cube;
 		this.connection = connection;
+		SchemaReader scr = connection.getSchemaReader();
 		RolapDimension[] dimensions = (RolapDimension[]) cube.getDimensions();
 		currentMembers = new RolapMember[dimensions.length];
 		for (int i = 0; i < dimensions.length; i++) {
 			final RolapDimension dimension = dimensions[i];
 			final int ordinal = dimension.getOrdinal(cube);
-			currentMembers[ordinal] = (RolapMember)
-					dimension.getHierarchy().getDefaultMember();
+			final Hierarchy hier = dimension.getHierarchy();
+			currentMembers[ordinal] = (RolapMember) scr.getHierarchyDefaultMember(hier);
 		}
 		this.parent = null;
 		this.depth = 0;

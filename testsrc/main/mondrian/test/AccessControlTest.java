@@ -67,13 +67,25 @@ public class AccessControlTest extends FoodMartTestCase {
 		Assert.assertEquals(memberName, Access.instance().getName(expectedAccess), Access.instance().getName(actualAccess));
 	}
 
-	public void testGrantHierarchy() {
+	public void testGrantHierarchy1a() {
 		// assert: can access Mexico (explicitly granted)
 		// assert: can not access Canada (explicitly denied)
 		// assert: can access USA (rule 3 - parent of allowed member San Francisco)
-		assertAxisReturns(getRestrictedConnection(), "[Store].children",
+		assertAxisReturns(getRestrictedConnection(), "[Store].level.members",
 				"[Store].[All Stores].[Mexico]" + nl +
-				"[Store].[All Stores].[USA]");
+				"[Store].[All Stores].[USA]");				
+	}
+
+	public void testGrantHierarchy1b() {
+		// can access Mexico (explicitly granted) which is the first accessible one
+		assertAxisReturns(getRestrictedConnection(), "[Store].defaultMember",
+				"[Store].[All Stores].[Mexico]");
+	}
+	
+	public void testGrantHierarchy1c() {
+		// can access Mexico (explicitly granted) which is the first accessible one
+		assertAxisReturns(getRestrictedConnection(), "[Customers].defaultMember",
+				"[Customers].[All Customers].[Canada].[BC]");
 	}
 	public void testGrantHierarchy2() {
 		// assert: can access California (parent of allowed member)
@@ -163,7 +175,7 @@ public class AccessControlTest extends FoodMartTestCase {
 		//    {[Gender].children} on rows
 		//   from Sales
 		//   where ([Marital Status].[S], [Store].[SF LA])
-		Result result = execute(getRestrictedConnection(),
+		Result result = execute(getRestrictedConnection(false),
 				"with member [Measures].[California Unit Sales] as " +
 				" 'Aggregate({[Store].[USA].[CA].children}, [Measures].[Unit Sales])'" + nl +
 				"select {[Measures].[California Unit Sales]} on columns," + nl +
@@ -183,7 +195,7 @@ public class AccessControlTest extends FoodMartTestCase {
 	}
 	public void testGrantHierarchyA() {
 		// assert: totals for USA include missing cells
-		Result result = execute(getRestrictedConnection(),
+		Result result = execute(getRestrictedConnection(false),
 				"select {[Unit Sales]} on columns," + nl +
 				"{[Store].[USA], [Store].[USA].children} on rows" + nl +
 				"from [Sales]");
@@ -200,6 +212,15 @@ public class AccessControlTest extends FoodMartTestCase {
 	}
 
 	private Connection getRestrictedConnection() {
+		return getRestrictedConnection(true);
+	}
+	/**
+	 * @param restrictCustomers true to restrict access to the customers
+	 * dimension. This will change the defaultMember of the dimension,
+	 * all cell values will be null because there are no sales data
+	 * for Canada
+	 */
+	private Connection getRestrictedConnection(boolean restrictCustomers) {
 		Connection connection = getConnection();
 		Role role = new Role();
 		Schema schema = connection.getSchema();
@@ -217,11 +238,13 @@ public class AccessControlTest extends FoodMartTestCase {
 		role.grant(schemaReader.getMemberByUniqueName(Util.explode("[Store].[All Stores].[USA].[CA].[Los Angeles]"), fail), Access.ALL);
 		role.grant(schemaReader.getMemberByUniqueName(Util.explode("[Store].[All Stores].[Mexico]"), fail), Access.ALL);
 		role.grant(schemaReader.getMemberByUniqueName(Util.explode("[Store].[All Stores].[Canada]"), fail), Access.NONE);
-		Hierarchy customersHierarchy = salesCube.lookupHierarchy("Customers", false);
-		Level stateProvinceLevel = Util.lookupHierarchyLevel(customersHierarchy, "State Province");
-		Level customersCityLevel = Util.lookupHierarchyLevel(customersHierarchy, "City");
-		role.grant(customersHierarchy, Access.CUSTOM, stateProvinceLevel, customersCityLevel);
-		role.grant(schemaReader.getMemberByUniqueName(Util.explode("[Customers].[All Customers]"), fail), Access.ALL);
+		if (restrictCustomers) {
+			Hierarchy customersHierarchy = salesCube.lookupHierarchy("Customers", false);
+			Level stateProvinceLevel = Util.lookupHierarchyLevel(customersHierarchy, "State Province");
+			Level customersCityLevel = Util.lookupHierarchyLevel(customersHierarchy, "City");
+			role.grant(customersHierarchy, Access.CUSTOM, stateProvinceLevel, customersCityLevel);
+			role.grant(schemaReader.getMemberByUniqueName(Util.explode("[Customers].[All Customers]"), fail), Access.ALL);
+		}
 		role.makeImmutable();
 		connection.setRole(role);
 		return connection;

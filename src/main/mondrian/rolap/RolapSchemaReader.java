@@ -191,37 +191,10 @@ abstract class RolapSchemaReader implements SchemaReader {
 
 	public Member getHierarchyDefaultMember(Hierarchy hierarchy) {
         Util.assertPrecondition(hierarchy != null, "hierarchy != null");
-		RolapMember member = (RolapMember) hierarchy.getDefaultMember();
-		final Role.HierarchyAccess hierarchyAccess = role.getAccessDetails(hierarchy);
-		if (hierarchyAccess != null) {
-			final Level level = member.getLevel();
-			final int levelDepth = level.getDepth();
-			final Level topLevel = hierarchyAccess.getTopLevel();
-			final MemberReader unrestrictedMemberReader = ((RolapHierarchy) hierarchy).memberReader;
-			if (topLevel != null &&
-					topLevel.getDepth() > levelDepth) {
-				// Find the first child of the first child... until we get to
-				// a level we can see.
-				ArrayList children = new ArrayList();
-				do {
-					unrestrictedMemberReader.getMemberChildren(member, children);
-					Util.assertTrue(children.size() > 0);
-					member = (RolapMember) children.get(0);
-					children.clear();
-				} while (member.getLevel() != topLevel);
-				return member;
-			}
-			final Level bottomLevel = hierarchyAccess.getBottomLevel();
-			if (bottomLevel != null &&
-					bottomLevel.getDepth() < levelDepth) {
-				do {
-					member = (RolapMember) member.getParentMember();
-					Util.assertTrue(member != null);
-				} while (member.getLevel() != bottomLevel);
-				return member;
-			}
-		}
-		return member;
+		Member[] rootMembers = this.getHierarchyRootMembers(hierarchy);
+		if (rootMembers.length > 0)
+			return rootMembers[0];
+		return null;
 	}
 
     public boolean isDrillable(Member member) {
