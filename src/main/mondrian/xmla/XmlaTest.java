@@ -16,6 +16,7 @@ import junit.framework.TestCase;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.regex.Pattern;
 
 /**
@@ -63,8 +64,9 @@ public class XmlaTest extends TestCase {
      * Returns a list of all requests in this test. (These requests are used
      * in the sample web page, <code>xmlaTest.jsp</code>.)
      */
-    public synchronized String[] getRequests() {
+    public synchronized HashMap getRequests() {
         this.requestList = new ArrayList();
+        HashMap mapNameToRequest = new HashMap();
         Method[] methods = getClass().getMethods();
         for (int i = 0; i < methods.length; i++) {
             Method method = methods[i];
@@ -74,18 +76,50 @@ public class XmlaTest extends TestCase {
                 } catch (Throwable e) {
                     // ignore
                 }
+                mapNameToRequest.put(method.getName(),
+                        requestList.get(requestList.size() - 1));
             }
         }
-        final String[] requests = (String[])
-                requestList.toArray(new String[requestList.size()]);
         this.requestList = null;
-        return requests;
+        return mapNameToRequest;
     }
 
     private void assertRequestYields(String request, String expected) {
         final String response = executeRequest(request);
         assertEquals(expected, response);
     }
+
+    private String wrap(String request) {
+        return "<SOAP-ENV:Envelope" + nl +
+                "    xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"" + nl +
+                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "    <SOAP-ENV:Body>" + nl +
+                request + nl +
+                "    </SOAP-ENV:Body>" + nl +
+                "</SOAP-ENV:Envelope>";
+    }
+
+    /**
+     * Asserts that a string matches a pattern. If they are not
+     * an AssertionFailedError is thrown.
+     */
+    static public void assertMatches(String message, String pattern, String actual) {
+        if (actual != null && Pattern.matches(pattern, actual)) {
+            return;
+        }
+        String formatted= "";
+        if (message != null) {
+            formatted= message+" ";
+        }
+        fail(formatted+"expected pattern:<"+pattern+"> but was:<"+actual+">");
+    }
+
+    private void assertRequestMatches(String request, String responsePattern) {
+        final String response = executeRequest(request);
+        assertMatches("Request " + request, responsePattern, response);
+    }
+
+    // tests follow
 
     public void _testDataSources() {
         String s = executeRequest("<Discover>" + nl +
@@ -171,16 +205,6 @@ public class XmlaTest extends TestCase {
                 "</SOAP-ENV:Envelope>");
     }
 
-    private String wrap(String request) {
-        return "<SOAP-ENV:Envelope" + nl +
-                "    xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"" + nl +
-                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "    <SOAP-ENV:Body>" + nl +
-                request + nl +
-                "    </SOAP-ENV:Body>" + nl +
-                "</SOAP-ENV:Envelope>";
-    }
-
     public void testCubesRestricted() {
         assertRequestYields(wrap(
                 "        <Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
@@ -244,26 +268,6 @@ public class XmlaTest extends TestCase {
                 "        </Discover>"),
 
                 "(?s).*Rowset 'MDSCHEMA_CUBES' column 'IS_WRITE_ENABLED' does not allow restrictions.*");
-    }
-
-    /**
-     * Asserts that a string matches a pattern. If they are not
-     * an AssertionFailedError is thrown.
-     */
-    static public void assertMatches(String message, String pattern, String actual) {
-        if (actual != null && Pattern.matches(pattern, actual)) {
-            return;
-        }
-        String formatted= "";
-        if (message != null) {
-            formatted= message+" ";
-        }
-        fail(formatted+"expected pattern:<"+pattern+"> but was:<"+actual+">");
-    }
-
-    private void assertRequestMatches(String request, String responsePattern) {
-        final String response = executeRequest(request);
-        assertMatches("Request " + request, responsePattern, response);
     }
 
     public void testCubesRestrictedOnBadColumn() {
