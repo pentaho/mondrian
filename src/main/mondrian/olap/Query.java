@@ -29,9 +29,11 @@ public class Query extends QueryPart implements NameResolver {
 		new int[] {-2, -1, 0, 1});
 
 	// enum sortDirection
-	public static final int ascDirection = 0;
-	public static final int descDirection = 1;
-	public static final int noneDirection = 2;
+	public static final int ascDirection = 0; // ascending inside hierarchy
+	public static final int descDirection = 1; // descending inside hierarchy
+  public static final int bascDirection = 2; // ascending disregarding hierarchy
+  public static final int bdescDirection = 3; // descending disregarding hierarchy
+	public static final int noneDirection = -1;
 	public static final EnumeratedValues directionEnum = new EnumeratedValues(
 		new String[] {"ascending", "descending", "none"});
 
@@ -1028,6 +1030,8 @@ public class Query extends QueryPart implements NameResolver {
 		switch (direction) {
 		case ascDirection: sDirection = "ASC"; break;
 		case descDirection: sDirection = "DESC"; break;
+    case bascDirection: sDirection = "BASC"; break;
+    case bdescDirection: sDirection = "BDESC"; break;
 		case noneDirection: /*we already removed the sort*/ return;
 		default:
 				throw Util.getRes().newInternal("bad direction code " + direction);
