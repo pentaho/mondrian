@@ -231,7 +231,7 @@ CREATE TABLE store(
   prepared_food BIT,
   florist BIT);
 CREATE TABLE time_by_day(
-  time_id INTEGER NOT NULL,
+  time_id INTEGER NOT NULL PRIMARY KEY,
   the_date TIMESTAMP,
   the_day VARCHAR(30),
   the_month VARCHAR(30),

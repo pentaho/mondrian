@@ -63,4 +63,5 @@ CREATE        INDEX i_sales_1998_store_id ON sales_fact_1998 ( store_id );
 CREATE        INDEX i_sales_1998_time_id ON sales_fact_1998 ( time_id );
 CREATE UNIQUE INDEX i_store_id ON store ( store_id );
 CREATE        INDEX i_store_region_id ON store ( region_id );
+CREATE UNIQUE INDEX i_time_by_day_id ON time_by_day ( time_id );
 # End FoodMartIndexes.sql
