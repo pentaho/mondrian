@@ -1954,6 +1954,30 @@ public class BuiltinFunTable extends FunTable {
 					return getStringArg(evaluator, args, 2, null);
 			}
 		});
+		define(new FunDefBase("Caption", "<Dimension>.Caption", "Returns the caption of a dimension.", "pSd") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				Dimension dimension = getDimensionArg(evaluator, args, 0, true);
+				return dimension.getCaption();
+			}
+		});
+		define(new FunDefBase("Caption", "<Hierarchy>.Caption", "Returns the caption of a hierarchy.", "pSh") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				Hierarchy hierarchy = getHierarchyArg(evaluator, args, 0, true);
+				return hierarchy.getCaption();
+			}
+		});
+		define(new FunDefBase("Caption", "<Level>.Caption", "Returns the caption of a level.", "pSl") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				Level level = getLevelArg(evaluator, args, 0, true);
+				return level.getCaption();
+			}
+		});
+		define(new FunDefBase("Caption", "<Member>.Caption", "Returns the caption of a member.", "pSm") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				Member member = getMemberArg(evaluator, args, 0, true);
+				return member.getCaption();
+			}
+		});
 		define(new FunDefBase("Name", "<Dimension>.Name", "Returns the name of a dimension.", "pSd") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Dimension dimension = getDimensionArg(evaluator, args, 0, true);

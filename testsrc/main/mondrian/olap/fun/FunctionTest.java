@@ -1623,7 +1623,28 @@ public class FunctionTest extends FoodMartTestCase {
         Assert.assertEquals("Yes", s);
     }
 
+    
+    public void testDimensionCaption() {
+        String s = executeExpr("[Time].[1997].Dimension.Caption");
+        Assert.assertEquals("Time", s);
+    }
 
+    public void testHierarchyCaption() {
+        String s = executeExpr("[Time].[1997].Hierarchy.Caption");
+        Assert.assertEquals("Time", s);
+    }
+
+    public void testLevelCaption() {
+        String s = executeExpr("[Time].[1997].Level.Caption");
+        Assert.assertEquals("Year", s);
+    }
+
+    public void testMemberCaption() {
+        String s = executeExpr("[Time].[1997].Caption");
+        Assert.assertEquals("1997", s);
+    }
+
+    
     public void testDimensionName() {
         String s = executeExpr("[Time].[1997].Dimension.Name");
         Assert.assertEquals("Time", s);
@@ -1633,18 +1654,18 @@ public class FunctionTest extends FoodMartTestCase {
         String s = executeExpr("[Time].[1997].Hierarchy.Name");
         Assert.assertEquals("Time", s);
     }
-
+    
     public void testLevelName() {
         String s = executeExpr("[Time].[1997].Level.Name");
         Assert.assertEquals("Year", s);
     }
-
+    
     public void testMemberName() {
         String s = executeExpr("[Time].[1997].Name");
         Assert.assertEquals("1997", s);
     }
 
-
+    
     public void testDimensionUniqueName() {
         String s = executeExpr("[Gender].DefaultMember.Dimension.UniqueName");
         Assert.assertEquals("[Gender]", s);
