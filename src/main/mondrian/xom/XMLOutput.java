@@ -77,8 +77,8 @@ public class XMLOutput {
 	}	
 
 	/**
-	 * Construct a new XMLOutput based on any Writer.
-	 * @out the writer to which this XMLOutput generates results.
+	 * Constructs a new XMLOutput based on any Writer.
+	 * @param out the writer to which this XMLOutput generates results.
 	 */
 	public XMLOutput(Writer out) 
 	{

@@ -1,36 +1,55 @@
 <html>
+<!--
+  == $Id$
+  == This software is subject to the terms of the Common Public License
+  == Agreement, available at the following URL:
+  == http://www.opensource.org/licenses/cpl.html.
+  == (C) Copyright 2001-2002 Kana Software, Inc. and others.
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  == jhyde, 24 September, 2002
+  -->
 
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Language" content="en-us">
 <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
-<title>Mondrian installation guide</title>
-<link rel="stylesheet" type="text/css" href="stylesheet.css" />
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>How to download, build and install Mondrian</title>
+<link rel="stylesheet" href="stylesheet.css" type="text/css" />
 </head>
 
-<body bgcolor="#ffffff">
+<body>
+<h1><font size="7">Mondrian</font></h1>
+<hr>
 
-<table border="1" class="clsStd" width="100%">
-  <tr>
-    <td colspan="2"><a href="index.html">Top</a> |
-    <a href="http://66.123.172.226:8080/open/mondrian/doc/install.html">Web</a> |
-    <a href="http://sourceforge.net/projects/mondrian/">SourceForge home</a></td>
-    <td width="0" align="right" rowspan="2">
-    <a href="http://sourceforge.net"><img src="http://sourceforge.net/sflogo.php?group_id=35302&type=1" width="88" height="31" border="0" alt="SourceForge.net Logo"></a></td>
-  </tr>
-  <tr>
-    <td colspan="2"><em>$Id$</em></td>
-  </tr>
-  <tr>
-    <td colspan="3"><em>(C) Copyright 2002, Kana Software, Inc.</em></td>
-  </tr>
-  <tr>
-    <th align="right" width="30%">Author</th>
-    <td colspan="2">Julian Hyde (<a href="mailto:jhyde@users.sourceforge.net">jhyde@users.sourceforge.net</a>)</td>
-  </tr>
-</table>
+<table cellSpacing="0" cellPadding="0" border="0">
+<tr>
+<!-- Start links -->
+<td valign="top">
+<p dir="ltr">
+<a href="index.html">Home</a><br>
+<a href="install.html">Download</a><br>
+Overview<br>
+&nbsp;&nbsp;&nbsp;<a href="olap.html">What&nbsp;is&nbsp;OLAP?</a><br>
+&nbsp;&nbsp;&nbsp;<a href="architecture.html">Architecture</a><br>
+&nbsp;&nbsp;&nbsp;<a href="faq.html">FAQ</a><br>
+Design<br>
+&nbsp;&nbsp;&nbsp;<a href="components.html">Components</a><br>
+&nbsp;&nbsp;&nbsp;<a href="api/index.html">API</a><br>
+<a href="links.html">Links</a><br>
+&nbsp;&nbsp;&nbsp;<a href="people.html">People</a><br>
+&nbsp;&nbsp;&nbsp;<a href="http://sourceforge.net/projects/mondrian/">Project</a><br>
+&nbsp;&nbsp;&nbsp;<a href="help.html">Help</a><br>
+</td>
+<!-- End links -->
 
-<h1>How to build and install Mondrian</h1>
+<td width="5"><img height="1" src="spacer.gif" width="5" border="0"></td>
+<td width="1" bgcolor="#999999"><img height="1" src="spacer.gif" width="1" border="0"></td>
+<td width="5"><img height="1" src="spacer.gif" width="5" border="0"></td>
+<td valign="top">
+
+<h1>How to download, build and install Mondrian</h1>
 
 <h2><a name="1_Contents">1. Contents</a></h2>
 <ol>
@@ -59,7 +78,7 @@
   to debug Tomcat using IntelliJ</a></ol>
 
 <h2><a name="2_Modification_history">2. Modification history</a></h2>
-<table border="1" class="clsStd" width="100%">
+<table border="1" class="clsStd" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0">
   <tr>
     <th>Date</th>
     <th>Revision</th>
@@ -529,7 +548,7 @@ source tree.</p>
 <p>Where the instructions suggest setting an environment variable, it is often 
 sufficient to edit the corresponding line in <code><i>${project.location}</i>/build.bat</code>.</p>
 
-<table border="1" class="clsStd" width="100%">
+<table border="1" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0">
   <tr>
     <th>Product</th>
     <th>Required?</th>
@@ -709,7 +728,9 @@ Weblogic and Xerces</a></h2>
 <p>Weblogic 6.1 ships with an older, incompatible, version of Xerces. The 
 symptom is the error</p>
 <blockquote>
-  <pre>java.lang.VerifyError: (class: mondrian/xom/wrappers/XercesDOMParser, method: parse signature: (Lorg/xml/sax/InputSource;)Lorg/w3c/dom/Document;) Incompatible object argument for function call 
+  <pre>java.lang.VerifyError: (class: mondrian/xom/wrappers/XercesDOMParser,
+ method: parse signature: (Lorg/xml/sax/InputSource;)Lorg/w3c/dom/Document;)
+ Incompatible object argument for function call 
 at java.lang.Class.forName0(Native Method) 
 at java.lang.Class.forName(Class.java:120) 
 at mondrian.xom.XOMUtil.createDefaultParser(XOMUtil.java:165) 
@@ -725,17 +746,29 @@ explicitly uses Xerces.&nbsp; Fyi,
 <a href="http://xml.apache.org/soap/faq/faq-for-WL6.1beta.html">this note</a> 
 describes how to change Weblogic's default XML parser.</p>
 
-<p>&nbsp;</p>
+</td>
+</tr>
+</table>
 
 <b>
-  <table border="1" width="100%" class="clsStd">
-    <tr>
-      <td>End <i>$Id$</i></td>
-    </tr>
-  </table>
-  <p>&nbsp;&nbsp;&nbsp; </p>
 </b>
 
+
+<hr>
+
+<table border="0" class="clsStd" width="100%" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0">
+  <tr>
+    <td>
+      <a href="http://apoptosis.dyndns.org:8080/open/mondrian/doc/install.html">$Id$
+      </a>(<a href="http://apoptosis.dyndns.org:8080/open/mondrian/doc/install.html?ac=22">log</a>)</td>
+    <td align="right">
+      <a href="http://sourceforge.net">
+        <img src="http://sourceforge.net/sflogo.php?group_id=35302&type=1" width="88" height="31" border="0" alt="SourceForge.net Logo">
+      </a>
+    </td>
+  </tr>
+</table>
+  
 </body>
 
 </html>

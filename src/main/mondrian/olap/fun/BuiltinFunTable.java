@@ -142,9 +142,7 @@ public class BuiltinFunTable extends FunTable {
 	}
 
 	/**
-	 * Converts an argument to a parameter type
-	 *
-	 * @see #canConvert
+	 * Converts an argument to a parameter type.
 	 */
 	public Exp convert(Exp fromExp, int to) {
 		Exp exp = convert_(fromExp, to);

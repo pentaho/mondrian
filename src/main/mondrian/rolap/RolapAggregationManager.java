@@ -18,12 +18,12 @@ import mondrian.olap.Evaluator;
 import java.util.*;
 
 /**
- * <code>RolapAggregationManager</code> manages all {@link Aggregation}s
- * in the system. It is a singleton class.
+ * <code>RolapAggregationManager</code> manages all {@link
+ * mondrian.rolap.agg.Aggregation}s in the system. It is a singleton class.
  *
  * <p> The bits of the implementation which depend upon dimensional concepts
- * ({@link RolapMember}, etc.) live in this class, and the other bits live in
- * the derived class, {@link mondrian.rolap.agg.AggregationManager}.
+ * <code>RolapMember</code>, etc.) live in this class, and the other bits live
+ * in the derived class, {@link mondrian.rolap.agg.AggregationManager}.
  *
  * @author jhyde
  * @since 30 August, 2001
@@ -38,7 +38,7 @@ public abstract class RolapAggregationManager implements CellReader {
 	 * @param arity The number of dimensions in the cube, and the number of
 	 *     members in each key.
 	 * @param keySet A set whose keys are {@link ArrayList}s
-	 *     which contain {@link RolapMember}s
+	 *     which contain {@link mondrian.olap.Member}s
 	 * @param pinned Writes each loaded aggregation into here. The client must
 	 *     call {@link CachePool#unpin} on this list.
 	 **/

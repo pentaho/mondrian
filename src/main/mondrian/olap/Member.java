@@ -64,7 +64,7 @@ public interface Member extends OlapElement {
 	static final int FORMULA_MEMBER_TYPE = 4;
 	/**
 	 * This member is its hierarchy's NULL member (such as is returned by
-	 * <code>[Gender].[All Gender].PrevMember</code>, for example)
+	 * <code>[Gender]&#46;[All Gender]&#46;PrevMember</code>, for example).
 	 */
 	static final int NULL_MEMBER_TYPE = 5;
 
@@ -104,8 +104,9 @@ public interface Member extends OlapElement {
 	 **/
 	boolean isChildOrEqualTo(Member member);
 
-	/** Returns whether this member is computed from a 'with member ...'
-	 * formula in an mdx query OR it's calculated member defined in cube */
+	/** Returns whether this member is computed using either a <code>with
+	 * member</code> clause in an mdx query or a calculated member defined in
+	 * cube. */
 	boolean isCalculated();
 
 	/**
@@ -124,8 +125,8 @@ public interface Member extends OlapElement {
 	Member[] getAncestorMembers();
 
 	/**
-	 * Returns whether this member is computed from a 'with member ...'
-	 * formula in an mdx query.
+	 * Returns whether this member is computed from a <code>with member</code>
+	 * clause in an mdx query.
 	 **/
 	boolean isCalculatedInQuery();
 

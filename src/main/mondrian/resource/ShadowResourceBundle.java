@@ -94,11 +94,11 @@ public abstract class ShadowResourceBundle extends ResourceBundle {
 	}
 
 	/**
-	 * Returns the instance of the <code>baseName</code> resource bundle
-	 * for the current thread's locale. For example, if called with
-	 * "mondrian.olap.MondrianResource", from a thread which has called
-	 * {@link Util#setThreadLocale}({@Locale#FRENCH}), will get an instance
-	 * of "mondrian.olap.MondrianResource_FR" from the cache.
+	 * Returns the instance of the <code>baseName</code> resource bundle for
+	 * the current thread's locale. For example, if called with
+	 * "mondrian.olap.MondrianResource", from a thread which has called {@link
+	 * #setThreadLocale}({@link Locale#FRENCH}), will get an instance of
+	 * "mondrian.olap.MondrianResource_FR" from the cache.
 	 *
 	 * <p> This method should be called from a derived class, with the proper
 	 * casting:<blockquote>
@@ -106,9 +106,9 @@ public abstract class ShadowResourceBundle extends ResourceBundle {
 	 * <pre>class MyResource extends ShadowResourceBundle {
 	 *    ...
 	 *    /&#42;&#42;
-	 *      &#42; Retrieves the instance of {@link MyResource} appropriate to
-	 *      &#42; the current locale. If this thread has specified a locale by
-	 *      &#42; calling {@link #setThreadLocale}, this locale is used,
+	 *      &#42; Retrieves the instance of {&#64;link MyResource} appropriate
+	 *      &#42; to the current locale. If this thread has specified a locale
+	 *      &#42; by calling {&#64;link #setThreadLocale}, this locale is used,
 	 *      &#42; otherwise the default locale is used.
 	 *      &#42;&#42;/
 	 *    public static MyResource instance() {

@@ -248,8 +248,8 @@ public class CachePool {
 	 * }</pre></blockquote>
 	 *
 	 * <p>Since several clients can be interested in the same object, this
-	 * method increments a <dfn>pin count</dfn>. {@link #unpin(Cacheable)}
-	 * decrements the pin count.
+	 * method increments a <dfn>pin count</dfn>. {@link
+	 * #unpin(Cache.Cacheable)} decrements the pin count.
 	 **/
 	public void pin(Cacheable cacheable, Collection newlyPinned)
 	{

@@ -184,9 +184,9 @@ public class Util extends mondrian.xom.XOMUtil
 	}
 
 	/**
-	 * Resolves a name such as '[Products].[Product Department].[Produce]' by
-	 * parsing out the components ('Products', etc.) and resolving them one at
-	 * a time.
+	 * Resolves a name such as '[Products]&#46;[Product
+	 * Department]&#46;[Produce]' by parsing out the components ('Products',
+	 * and so forth) and resolving them one at a time.
 	 */
 	public static OlapElement lookupCompound(
 		NameResolver st, String s, OlapElement mdxElement)

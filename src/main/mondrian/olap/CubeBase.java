@@ -143,22 +143,6 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 
 	// ------------------------------------------------------------------------
 
-	/** find a child element of 'mdxElement' called 's'; if no such element
-		exists, 'failIfNotFound' controls whether to raise an error or return
-		null. o/
-	public OlapElement lookup(
-		String s, OlapElement mdxElement, boolean failIfNotFound)
-	{
-		return mdxElement.lookup(this, s, failIfNotFound);
-	}
-*/
-	/** find a child element of 'mdxElement' called 's'; if no such element
-		exists, return null. o/
-	public OlapElement lookup(String s, OlapElement mdxElement)
-	{
-		return lookup(mdxElement, s);
-	}
-*/
 	// implement NameResolver
 	public OlapElement lookupChild(
 		OlapElement parent, String s, boolean failIfNotFound)

@@ -25,15 +25,13 @@ import java.util.*;
  *
  * </blockquote>For example,<blockquote>
  *
- * <pre>jview mondrian.resource.ResourceGen ServerResource_en.xml</pre>
+ * <pre>java mondrian.resource.ResourceGen MyResource_en.xml</pre>
  *
  * </blockquote></p>
  *
- * <p>This will create class {@link Broadbase.util.ServerResource}, with a
+ * <p>This will create class <code>MyResource</code>, with a
  * function corresponding to each error message in
- * <code>ServerResource_en.xml</code>.  The installer is required to set root
- * path to a appropriate properties files <code>global.asa</code> or
- * <code>bbinst.ini</code></p>.
+ * <code>MyResource_en.xml</code>.</p>
  *
  * @author jhyde
  * @since 3 December, 2001

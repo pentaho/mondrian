@@ -267,10 +267,13 @@ public class Query extends QueryPart implements NameResolver {
 	}
 
 	/**
-	 * Suppose that they've written
+	 * Returns the axis which the result axis is based on, taking into account
+	 * any axis re-ordering.
+	 *
+	 * <p>Suppose that they've written
 	 * <pre>select {} on rows, {} on pages from Sales</pre>
 	 *
-	 * Then we will execute
+	 * <p>Then we will execute
 	 * <pre>select {} on columns, {} on rows from Sales</pre>
 	 *
 	 * getLogicalAxis(0) = 1, meaning that axis 0 of the Plato cellset matches

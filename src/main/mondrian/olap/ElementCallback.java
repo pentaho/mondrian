@@ -36,8 +36,11 @@ public class ElementCallback
 		return false;
 	}
 	
-	/** if hidden calculated member exists for given uName, it returns
-	 * it. this is used to format existing members*/
+	/**
+	 * If hidden calculated member exists for given uName, it returns it.
+	 *
+	 * This method is used to format existing members.
+	 */
 	public String findHiddenName(String uName)
 	{return null;}
 	

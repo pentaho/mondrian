@@ -1944,8 +1944,7 @@ public class MetaGenerator {
 	}	
 
 	/**
-	 * Main function for MetaGenerator
-	 * <p>Arguments:
+	 * Main function for MetaGenerator. Arguments:
 	 * <ol>
 	 * <li>Name of XML file describing input model.
 	 * <li>Name of output file directory.

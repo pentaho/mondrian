@@ -193,8 +193,9 @@ public class SqlQuery
 	}
 
 	/**
-	 * Chooses the variant within an array of {@link MondrianDef.SQL} which
-	 * best matches the current SQL dialect.
+	 * Chooses the variant within an array of {@link
+	 * mondrian.olap.MondrianDef.SQL} which best matches the current SQL
+	 * dialect.
 	 */
 	public String chooseQuery(MondrianDef.SQL[] sqls) {
 		String best;

@@ -1,121 +1,341 @@
-<body>
 <html>
+<!--
+  == $Id$
+  == This software is subject to the terms of the Common Public License
+  == Agreement, available at the following URL:
+  == http://www.opensource.org/licenses/cpl.html.
+  == (C) Copyright 2001-2002 Kana Software, Inc. and others.
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  == jhyde, 24 September, 2002
+  -->
 
 <head>
 <meta http-equiv="Content-Language" content="en-us">
 <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<base target="_top">
-<title>Mondrian overview</title>
 
 <style>
 
-A:link { color:#000066; }
-A:visited { color:#666666; }
-
-A.clsIncCpyRt,
-A.clsIncCpyRt:visited,
-P.clsIncCpyRt {
-  font-weight:normal; font-size:75%; font-family:verdana,arial,helvetica,sans-serif;
-  color:black;
-  text-decoration:none;
+a:link {
+  color: #990000;
+  text-decoration: none;
+  font-size: 12px;
+  line-height: 14px;
+  font-family: verdana, arial, helvetica, sans-serif;
 }
 
-A.clsLeftMenu,
-A.clsLeftMenu:visited {
-  color:#000000;
-  text-decoration:none;
-  font-weight:bold; font-size:8pt;
+a:visited {
+  color: #990000;
+  text-decoration: none;
+  font-size: 12px;
+  line-height: 14px;
+  font-family: verdana, arial, helvetica, sans-serif;
 }
 
-A.clsBackTop,
-A.clsBackTop:visited {
-  margin-top:10; margin-bottom:0;
-  padding-bottom:0;
-  font-size:75%;
-  color:black;
+a.nav:link {
+  color: #990000;
+  text-decoration: none;
+  font-size: 12px;
+  line-height: 14px;
+  font-family: verdana, arial, helvetica, sans-serif;
 }
 
-A:hover,
-A.clsBackTop:hover,
-A.clsIncCpyRt:hover,
-A:active { color:blue; }
-
-A.clsGlossary {
-  font-size:10pt;
-  color:green;
+a.nav:visited {
+  color: #990000;
+  text-decoration: none;
+  font-size: 12px;
+  line-height: 14px;
+  font-family: verdana, arial, helvetica, sans-serif;
 }
 
-BODY { font-size:80%; font-family:verdana,arial,helvetica,sans-serif; }
-
-BUTTON.clsShowme,
-BUTTON.clsShowme5 {
-  font-weight:bold; font-size:11; font-family:arial;
-  width:68; height:23;
-  position:relative; top:2;
-  background-color:#002F90;
-  color:#FFFFFF;
+a.body:link {
+  color: #990000;
+  text-decoration: none;
+  font-size: 12px;
+  line-height: 14px;
+  font-family: verdana, arial, helvetica, sans-serif;
 }
 
-DIV.clsBeta {
-  font-weight:bold;
-  color:red;
+a.body:visited {
+  color: #990000;
+  text-decoration: none;
+  font-size: 12px;
+  line-height: 14px;
+  font-family: verdana, arial, helvetica, sans-serif;
 }
 
-DIV.clsDocBody { margin-left:10px; margin-right:10px; }
-
-DIV.clsDocBody HR { margin-top:0; }
-
-DIV.clsDesFooter { margin:10px 10px 0px 223px; }
-
-DIV.clsFPfig { font-size:80%; }
-
-DIV.clsHi {
-	padding-left:2em;
-	text-indent:-2em
+a.purple:link {
+/*  color: #990099; */
+  color: #C8A8FF;
+  text-decoration: none;
+  font-size: x-small;
+  font-style: normal;
+  font-weight: normal;
+  font-family: verdana, arial, helvetica, sans-serif;
 }
 
-DIV.clsShowme { margin-bottom:.5em; margin-top:.5em; }
-
-H1{
-  font-size:145%;
-  margin-top:1.25em; margin-bottom:0em;
+a.purple:visited {
+/*  color: #990099; */
+  color: #C8A8FF;
+  text-decoration: none;
+  font-size: x-small;
+  font-style: normal;
+  font-weight: normal;
+  font-family: verdana, arial, helvetica, sans-serif;
 }
 
-H2 {
-  font-size:135%;
-  margin-top:1.25em; margin-bottom:.5em;
+a.td:link {
+  color: #990000;
+  text-decoration: none;
+  font-size: 10px;
+  line-height: 12px;
+  font-family: verdana, arial, helvetica, sans-serif;
 }
 
-H3 {
-  font-size:128%;
-  margin-top:1em; margin-bottom:0em;
+a.td:visited {
+  color: #990000;
+  text-decoration: none;
+  font-size: 10px;
+  line-height: 12px;
+  font-family: verdana, arial, helvetica, sans-serif;
 }
 
-H4 {
-  font-size:120%;
-  margin-top:.8em; margin-bottom:0em;
+a.subnav:link {
+  color: #333333;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 14px;
+  font-family: verdana, arial, helvetica, sans-serif;
 }
 
-H5 {
-  font-size:110%;
-  margin-top:.8em; margin-bottom:0em;
+a.subnav:visited {
+  color: #333333;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 14px;
+  font-family: verdana, arial, helvetica, sans-serif;
 }
 
-H6 {
-  font-size:70%;
-  margin-top:.6em; margin-bottom:0em;
+dl {
+  color: #333333;
+  text-decoration: none;
+  font-size: 12px;
+  line-height: 14px;
+  font-family: verdana, arial, helvetica, sans-serif;
 }
 
-HR.clsTransHR {
-	position:relative; top:20;
-	margin-bottom:15;
+dt {
+  color: #333333;
+  text-decoration: none;
+  font-size: 12px;
+  line-height: 14px;
+  font-family: verdana, arial, helvetica, sans-serif;
 }
 
-P.clsRef {
-  font-weight:bold;
-  margin-top:12pt; margin-bottom:0pt;
+dd {
+  color: #333333;
+  text-decoration: none;
+  font-size: 12px;
+  line-height: 14px;
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+
+td.content {
+  color: #333333;
+  text-decoration: none;
+  font-size: 12px;
+  line-height: 14px;
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+
+td.collcontent {
+  color: #000000;
+  text-decoration: none;
+  font-size: 10px;
+  line-height: 12px;
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+
+span.subtitle1 {
+  color: #990000;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 18px;
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+
+span.subtitle2 {
+  color: #333333;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 18px;
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+
+span.subtitle3 {
+  color: #990000;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 14px;
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+
+span.subtitle4 {
+  color: #333333;
+  text-decoration: none;
+  font-size: 10px;
+  font-weight: bold;
+  line-height: 12px;
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+
+span.subtitle5 {
+  color: #333333;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 14px;
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+
+span.colldate {
+  color: #333333;
+  text-decoration: none;
+  font-size: 10px;
+  font-style: oblique;
+  line-height: 12px;
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+
+span.highlight {
+  background-color: #eeeeee;
+}
+
+textarea {
+  color: #333333;
+  text-decoration: none;
+  font-size: 12px;
+  line-height: 14px;
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+
+p {
+  color: #333333;
+  text-decoration: none;
+  font-size: 12px;
+  line-height: 14px;
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+
+p.award {
+  color: #333333;
+  text-decoration: none;
+  font-size: 10px;
+  line-height: 12px;
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+
+p.coll {
+  color: #333333;
+  text-decoration: none;
+  font-size: 10px;
+  line-height: 12px;
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+
+h1 {
+  color: #990000;
+  text-decoration: bold;
+  font-size: 24px;
+  line-height: 18px;
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+
+h2 {
+  color: #990000;
+  text-decoration: none;
+  font-size: 18px;
+  line-height: 18px;
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+
+h3 {
+  color: #333333;
+  text-decoration: none;
+  font-size: 12px;
+  line-height: 14px;
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+
+h4 {
+  color: #333333;
+  text-decoration: none;
+  font-size: 10px;
+  line-height: 10px;
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+
+h5 {
+  color: #990000;
+  text-decoration: none;
+  font-size: 10px;
+  line-height: 10px;
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+
+ul {
+  color: #333333;
+  text-decoration: none;
+  font-size: 12px;
+  line-height: 14px;
+  font-family: verdana, helvetica, arial, sans-serif;
+}
+
+ul.coll {
+  color: #333333;
+  text-decoration: none;
+  font-size: 10px;
+  line-height: 12px;
+  font-family: verdana, helvetica, arial, sans-serif;
+}
+
+li {
+  color: #333333;
+  text-decoration: none;
+  font-size: 12px;
+  line-height: 14px;
+  font-family: verdana, helvetica, arial, sans-serif;
+}
+
+ol {
+  color: #333333;
+  text-decoration: none;
+  font-size: 12px;
+  line-height: 14px;
+  font-family: verdana, helvetica, arial, sans-serif;
+}
+
+ol.coll {
+  color: #333333;
+  text-decoration: none;
+  font-size: 10px;
+  line-height: 12px;
+  font-family: verdana, helvetica, arial, sans-serif;
+}
+
+.footer {
+  color: #990000;
+  text-decoration: none;
+  font-size: 10px;
+  line-height: 10px;
+  font-family: verdana, arial, helvetica, sans-serif;
 }
 
 PRE {
@@ -128,514 +348,16 @@ PRE.clsCode, CODE.clsText { font-family:'courier new',courier,serif; font-size:1
 
 PRE.clsSyntax { font-family:verdana,arial,helvetica,sans-serif; font-size:120%; }
 
-SPAN.clsEntryText {
-  line-height:12pt;
-  font-size:8pt;
-}
-
-SPAN.clsHeading {
-  color:#00319C;
-  font-size:11pt; font-weight:bold;
-}
-
-SPAN.clsDefValue, TD.clsDefValue { font-weight:bold; font-family:'courier new' }
-
-SPAN.clsLiteral, TD.clsLiteral { font-family:'courier new'; }
-
-SPAN.clsRange, TD.clsRange { font-style:italic; }
-
-SPAN.clsShowme {
-  width:100%;
-  filter:dropshadow(color=#000000,OffX=2.5,OffY=2.5,Positive=1);
-  position:relative;
-  top:-8;
-}
-
-TABLE { font-size:100%; }
-
-TABLE.clsStd {
-	background-color:#444;
-	border:1px none;
-	cellspacing:0;
-	cellpadding:0
-}
-
-TABLE.clsStd TH,
-BLOCKQUOTE TH {
-	font-size:100%;
-	text-align:left; vertical-align:top;
-	background-color:#DDD;
-	padding:2px;
-}
-
-TABLE.clsStd TD,
-BLOCKQUOTE TD {
-	font-size:100%;
-	vertical-align:top;
-	background-color:#EEE;
-	padding:2px;
-}
-
-TABLE.clsParamVls,
-TABLE.clsParamVls TD { padding-left:2pt; padding-right:2pt; }
-
-#TOC { visibility:hidden; }
-
-UL UL, OL UL { list-style-type:square; }
-
-.clsHide { display:none; }
-
-.clsShow { }
-
-.clsShowDiv {
-  visibility:hidden;
-  position:absolute;
-  left:230px; top:140px;
-  height:0px; width:170px;
-  z-index:-1;
-}
-
-.#pBackTop { display:none; }
-
-#idTransDiv {
-	position:relative;
-	width:90%; top:20;
-  filter:revealTrans(duration=1.0, transition=23);
-}
-
-
-/*** INDEX-SPECIFIC ***/
-
-A.clsDisabled {
-  text-decoration:none;
-  color:black;
-  cursor:text;
-}
-
-A.clsEnabled { cursor:auto; }
-
-SPAN.clsAccess { text-decoration:underline; }
-
-TABLE.clsIndex {
-  font-size:100%;
-  padding-left:2pt; padding-right:2pt;
-	margin-top: 17pt;
-}
-
-TABLE.clsIndex TD {
-  margin:3pt;
-  background-color:#EEEEEE;
-}
-
-TR.clsEntry { vertical-align:top; }
-
-TABLE.clsIndex TD.clsLetters {
-  background-color:#CCCCCC;
-  text-align:center;
-}
-
-TD.clsMainHead {
-  background-color:#FFFFFF;
-  vertical-align:top;
-  font-size:145%; font-weight:bold;
-  margin-top:1.35em; margin-bottom:.5em;
-}
-
-UL.clsIndex { margin-left:20pt; margin-top:0pt; margin-bottom:5pt; }
-
-LI OL { padding-bottom: 1.5em }
-
-
-/*** GALLERY/TOOLS/SAMPLES ***/
-
-FORM.clsSamples { margin-bottom:0; margin-top:0; }
-
-H1.clsSampH1 {
-	font-size:145%;
-  margin-top:.25em; margin-bottom:.25em;
-}
-
-H1.clsSampHead {
-  margin-top:5px; margin-bottom:5px;
-  font-size:24px; font-weight:bold; font-family:verdana,arial,helvetica,sans-serif;
-}
-
-H2.clsSampTitle {
-  font-size:128%;
-  margin-top:.2em; margin-bottom:0em;
-}
-
-TD.clsDemo {
-  font-size:8pt;
-  color:#00319C;
-  text-decoration:underline;
-}
-
-.clsSampDnldMain { font-size:11px; font-family:verdana,arial,helvetica,sans-serif; }
-
-.clsShowDesc { cursor:hand; }
-
-A.clsTools {
-  color:#0B3586;
-  font-weight:bold;
-}
-
-H1.clsTools, H2.clsTools {
-  color:#0B3586;
-  margin-top:5px;
-}
-
-TD.clsToolsHome {
-  font-size:9pt;
-  line-height:15pt;
-}
-
-SPAN.clsToolsTitle {
-  color:#00319C;
-  font-size:11pt; font-weight:bold;
-  text-decoration:none;
-}
-
-
-/*** DESIGN ***/
-P.cat {
-	font-size:13pt;
-	color:#787800;
-	text-decoration:none;
-	margin-top:18px;
-}
-
-P.author {
-	font-size:9pt; font-style:italic;
-	line-height:13pt;
-	margin-top:10px;
-}
-
-P.date {
-	font-size:8pt;
-	line-height:12px;
-	margin-top:0px;
-	color:#3366FF;
-}
-
-P.graph1 {
-	line-height:13pt;
-	margin-top:-10px;
-}
-
-P.col {
-	line-height:13pt;
-	margin-top:10px; margin-left:5px;
-}
-
-P.cal1 {
-	text-decoration:none;
-	margin-top:-10px;
-}
-
-P.cal2 {margin-top:-10px; }
-P.photo { font-size:8pt; }
-
-
-/*** DOCTOP ***/
-
-#tblNavLinks A {
-	color:black;
-	text-decoration:none;
-	font-family:verdana,arial,helvetica,sans-serif;
-}
-#lnkShowText, #lnkSyncText, #lnkSearchText, #lnkIndexText { font-size:8pt; font-weight:bold; }
-#lnkPrevText, #lnkNextText, #lnkUpText { font-size:7.5pt; font-weight:normal; }
-
-
-DIV.clsBucketBranch {
-	margin-left:10px; margin-top:15px; margin-bottom:-10pt;
-	font-style:italic; font-size:85%;
-}
-
-DIV.clsBucketBranch A,
-DIV.clsBucketBranch A:link,
-DIV.clsBucketBranch A:active,
-DIV.clsBucketBranch A:visited { text-decoration:none; color:black; }
-DIV.clsBucketBranch A:hover { color:blue; }
-
-
-/*** SDK, IE4 ONLY ***/
-
-DIV.clsExpanded, A.clsExpanded { display:inline; color:black; }
-DIV.clsCollapsed, A.clsCollapsed { display:none; }
-SPAN.clsPropattr { font-weight:bold; }
-
-#pStyles,	#pCode, #pSyntax, #pEvents, #pStyles {display:none; text-decoration:underline; cursor:hand; }
-
-/*** jhyde added ***/
-CODE { color:maroon; font-family:'courier new' }
-
-DFN { font-weight:bold; font-style:italic; }
-
-
 </style>
+
 
 </head>
 
-<!-- 
+<body>
+Mondrian is an OLAP server implemented in Java.
 
-This sentence is here to fool javadoc (which is looking for a period, and otherwise finds one
-inside one of our header tables).
-
- -->
-
-<table border="1" class="clsStd" width="100%">
-  <tr>
-    <td colspan="2"><a href="index.html" target=_top>Top</a> |
-    <a href="http://66.123.172.226:8080/open/mondrian/doc/overview.html" target=_top>Web</a> |
-    <a href="http://sourceforge.net/projects/mondrian/">SourceForge home</a></td>
-    <td width="0" align="right" rowspan="2">
-    <a href="http://sourceforge.net"><img src="http://sourceforge.net/sflogo.php?group_id=35302&type=1" width="88" height="31" border="0" alt="SourceForge.net Logo"></a></td>
-  </tr>
-  <tr>
-    <td colspan="2"><em>$Id$</em></td>
-  </tr>
-  <tr>
-    <td colspan="3"><em>(C) Copyright 2002, Kana Software, Inc. and others</em></td>
-  </tr>
-  <tr>
-    <th align="right" width="30%">Author</th>
-    <td colspan="2">Julian Hyde (<a href="mailto:jhyde@users.sourceforge.net">jhyde@users.sourceforge.net</a>)</td>
-  </tr>
-  <tr>
-    <th align="right" width="30%">Created</th>
-    <td colspan="2">February 13<sup><font face="Verdana">th</font></sup>, 2002</td>
-  </tr>
-</table>
-
-<h1>Mondrian overview</h1>
-
-<p>Mondrian is an OLAP engine written in Java. It executes queries written in 
-the MDX language, reading data from a relational database (RDBMS), and presents 
-the results in a multidimensional format via a Java API. Let's go into what that 
-means.</p>
-<h2>Online Analytical Processing</h2>
-<p><dfn><font face="Verdana">Online Analytical Processing (OLAP)</font></dfn> 
-means analysing large quantities of data in real-time. Unlike Online Transaction 
-Processing (OLTP), where typical operations read and modify individual and small 
-numbers of records, OLAP deals with data in bulk, and operations are generally 
-read-only. The term 'online' implies that even though huge quantities of data 
-are involved — typically many millions of records, occupying several gigabytes 
-— the system must respond to queries fast enough to allow an interactive 
-exploration of the data. As we shall see, that presents considerable technical 
-challenges.</p>
-<p>OLAP employs a technique called <dfn><font face="Verdana">Multidimensional Analysis</font></dfn>. Whereas a 
-relational database stores all data in the form of rows and columns, a 
-multidimensional dataset consists of <dfn><font face="Verdana">axes</font></dfn> and 
-<dfn><font face="Verdana">cells</font></dfn>. Consider the dataset</p>
-<blockquote>
-  <table border="0" style="clsStd" id="AutoNumber1" cellpadding="2">
-    <tr>
-      <td nowrap><i>Year</i></td>
-      <th align="right" colspan="2">2000</th>
-      <th align="right" colspan="2">2001</th>
-      <th align="right" colspan="2">Growth</th>
-    </tr>
-    <tr>
-      <td nowrap><i>Product</i></td>
-      <th align="right">Dollar sales</th>
-      <th align="right">Unit sales</th>
-      <th align="right">Dollar sales</th>
-      <th align="right">Unit sales</th>
-      <th align="right">Dollar sales</th>
-      <th align="right">Unit sales</th>
-    </tr>
-    <tr>
-      <th nowrap>Total</th>
-      <td align="right">$17,165</td>
-      <td align="right">$2,825</td>
-      <td align="right">$18,867</td>
-      <td align="right">3,163</td>
-      <td align="right">10%</td>
-      <td align="right">12%</td>
-    </tr>
-    <tr>
-      <th nowrap>— Books</th>
-      <td align="right">$12,845</td>
-      <td align="right">956</td>
-      <td align="right">$14,562</td>
-      <td align="right">1,121</td>
-      <td align="right">13%</td>
-      <td align="right">17%</td>
-    </tr>
-    <tr>
-      <th nowrap>—— Fiction</th>
-      <td align="right">$1,341</td>
-      <td align="right">424</td>
-      <td align="right">$1,202</td>
-      <td align="right">380</td>
-      <td align="right">16%</td>
-      <td align="right">37%</td>
-    </tr>
-    <tr>
-      <th nowrap>—— Non-fiction</th>
-      <td align="right">$1,412</td>
-      <td align="right">400</td>
-      <td align="right">$1,224</td>
-      <td align="right">386</td>
-      <td align="right">11%</td>
-      <td align="right">2%</td>
-    </tr>
-    <tr>
-      <th nowrap>— Magazines</th>
-      <td align="right">$2,753</td>
-      <td align="right">824</td>
-      <td align="right">$2,426</td>
-      <td align="right">766</td>
-      <td align="right">-12%</td>
-      <td align="right">-7%</td>
-    </tr>
-    <tr>
-      <th nowrap>&mdash; Greetings cards</th>
-      <td align="right">$1,567</td>
-      <td align="right">1,045</td>
-      <td align="right">$1,879</td>
-      <td align="right">1,276</td>
-      <td align="right">20%</td>
-      <td align="right">22%</td>
-    </tr>
-    </table>
-</blockquote>
-
-
-<p>The rows axis consists of the members 'All products', 'Books', 'Fiction', and 
-so forth, 
-and the columns axis consists of the cartesian product of the years '2000' and 
-'2001', and the <font face="Verdana">calculation</font> 'Growth', and the 
-<dfn>measures</dfn> 'Unit sales' and 'Dollar sales'. Each cell 
-represents the sales of a product category in a particular year; for example, 
-the dollar sales of Magazines in 2001 were $2426.</p>
-<p>This is a richer view of the data than would be presented by a relational 
-database. The members of a multidimensional dataset are not always values 
-from a relational column. 'Total', 'Books' and 'Fiction' are members at 
-successive levels in a <dfn>hierarchy</dfn>, each of 
-which is rolled up to the next. And even though it is alongside the years '2000' 
-and '2001', 'Growth' is 
-a <dfn>calculated member</dfn>, which introduces a
-formula for computing cells from other 
-cells.</p>
-<p>The dimensions used here — products, time, and measures — are just three of 
-many dimensions by which the dataset can be categorized and filtered. The 
-collection of dimensions, hierarchies and measures is called a <dfn>
-<font face="Verdana">cube</font></dfn>.</p>
-<p>I hope I have demonstrated that multidimensional  is above all a way of <em>
-<font face="Verdana">presenting</font></em> data. Although some multidimensional 
-databases <em><font face="Verdana">store</font></em> the data in multidimensional format, 
-I shall argue that it is simpler to store the data in relational format. It's 
-time to look at the architecture of an OLAP system.</p>
-<h2>Architecture</h2>
-<p>A Mondrian OLAP System consists of four layers; working from the eyes of the 
-end-user to the bowels of the data center, these are the presentation layer, the 
-calculation layer, the aggregation layer, and the storage layer.</p>
-<p>The <dfn><font face="Verdana">presentation layer</font></dfn> determines what 
-the end-user sees on his or her monitor, and how he or she can interact to ask 
-new questions. There are many ways to present multidimensional datasets, 
-including pivot tables (an interactive version of the table shown above), pie, 
-line and bar charts, and advanced visualization tools such as clickable maps and 
-dynamic graphics. These might be written in Swing or JSP, charts rendered in 
-JPEG or GIF format, or transmitted to a remote application via XML. What all of 
-these forms of presentation have in common is the multidimensional 'grammar' of 
-dimensions, measures and cells in which the presentation layer asks the question 
-is asked, and OLAP server returns the answer.</p>
-<p>The second layer is the <dfn><font face="Verdana">calculation layer</font></dfn>. 
-The calculation layer parses, validates and executes MDX queries. A query is 
-evaluted in multiple phases. The axes are computed first, then the values of the 
-cells within the axes. For efficiency, the calculation layer sends cell-requests 
-to the aggregation layer in batches. A <dfn>
-<font face="Verdana">query transformer</font></dfn> allows the application to 
-manipulate existing queries, rather than building an MDX statement from scratch 
-for each request. And <dfn>
-<font face="Verdana">metadata</font></dfn> describes the the dimensional model, 
-and how it maps onto the relational model.</p>
-<p>The third layer is the <dfn><font face="Verdana">aggregation layer</font></dfn>. 
-An aggregation is a set of measure values ('cells') in memory, qualified by a 
-set of dimension column values. The calculation layer sends requests for sets of 
-cells. If the requested cells are not in the cache, or derivable by rolling up 
-an aggregation in the cache, the aggregation manager and sends a request to the 
-storage layer.</p>
-<p>The <dfn><font face="Verdana">storage layer</font></dfn> is an RDBMS. It is 
-responsible for providing aggregated cell data, and members from dimension 
-tables. I describe <a href="#Storage_and_aggregation_strategies">below</a> why I 
-decided to use the features of the RDBMS rather than developing a storage system 
-optimized for multidimensional data.</p>
-<p>All four of these components can exist on the same machine. Layers 2 and 3, 
-which comprise the Mondrian server, must be on the same machine. The storage 
-layer could be on another machine, accessed via remote JDBC connection. In a 
-multi-user system, the presentation layer would exist on each end-user's machine 
-(except in the case of JSP pages generated on the server).</p>
-<h3><a name="Storage_and_aggregation_strategies">Storage and aggregation 
-strategies</a></h3>
-<p>OLAP Servers are generally categorized according to how they store their 
-data:</p>
-<ul>
-  <li>A <font face="Verdana"><dfn>MOLAP (multidimensional OLAP)</dfn></font> 
-  server stores all of its data on disk in structures optimized for 
-  multidimensional access. Typically, data is stored in dense arrays, requiring 
-  only 4 or 8 bytes per cell value.</li>
-  <li>A <font face="Verdana"><dfn>ROLAP (relational OLAP)</dfn></font> server 
-  stores its data in a relational database. Each row in a fact table has a 
-  column for each dimension and measure.</li>
-</ul>
-<p>Three kinds of data need to be stored: fact table data (the transactional 
-records), aggregates, and dimensions.</p>
-<p>MOLAP databases store fact data in multidimensional format, but if there are 
-more than a few dimensions, this data will be sparse, and the multidimensional 
-format does not perform well. A <font face="Verdana"><dfn>HOLAP (hybrid OLAP)</dfn></font> 
-system solves this problem by leaving the most granular data in the relational 
-database, but stores aggregates in multidimensional format.</p>
-<p>Pre-computed aggregates are necessary for large data sets, otherwise certain 
-queries could not be answered without reading the entire contents of the fact 
-table. MOLAP aggregates are often an image of the in-memory data structure, 
-broken up into pages and stored on disk. ROLAP aggregates are stored in tables. 
-In some ROLAP systems these are explicitly managed by the OLAP server; in other 
-systems, the tables are declared as materialized views, and they are implicitly 
-used when the OLAP server issues a query with the right combination of columns 
-in the <code>group by</code> clause.</p>
-<p>The final component of the aggregation strategy is the cache. The cache holds 
-pre-computed aggregations in memory so subsequent queries can access cell values 
-without going to disk. If the cache holds the required data set at a lower level 
-of aggregation, it can compute the required data set by rolling up.</p>
-<p>The cache is arguably the most important part of the aggregation strategy 
-because it is <em><font face="Verdana">adaptive</font></em>. It is difficult to 
-choose a set of aggregations to pre-compute which speed up the system without 
-using huge amounts of disk, particularly those with a high dimensionality or if 
-the users are submitting unpredictable queries. And in a system where data is 
-changing in real-time, it is impractical to maintain pre-computed aggregates. A 
-reasonably sized cache can allow a system to perform adequately in the face of 
-unpredictable queries, with few or no pre-computed aggregates.</p>
-<p>Mondrian's aggregation strategy is as follows:</p>
-<ul>
-  <li>Fact data is stored in the RDBMS. Why develop a storage manager when the 
-  RDBMS already has one?</li>
-  <li>Read aggregate data into the cache by submitting <code>group by</code> 
-  queries. Again, why develop an aggregator when the RDBMS has one?</li>
-  <li><em><font face="Verdana">If</font></em> the RDBMS supports materialized 
-  views, <em><font face="Verdana">and </font></em>the database administrator 
-  chooses to create materialized views for particular aggregations, then 
-  Mondrian will use them implicitly. Ideally, Mondrian's aggregation manager 
-  should be aware that these materialized views exist and that those particular 
-  aggregations are cheap to compute. If should even offer tuning suggestings to 
-  the database administrator.</li>
-</ul>
-<p>The general idea is to delegate unto the database what is the database's. 
-This places additional burden on the database, but once those features are added 
-to the database, all clients of the database will benefit from them. 
-Multidimensional storage would reduce I/O and result in faster operation in some 
-circumstances, but I don't think it warrants the complexity at this stage.</p>
-<p>A wonderful side-effect is that because Mondrian requires no storage of its 
-own, it can be installed by adding a JAR file to the class path and be up and 
-running immediately. Because there are no redundant data sets to manage, the 
-data-loading process is easier, and Mondrian is ideally suited to do OLAP on 
-data sets which change in real time.</p>
-<p><i>Note to self</i>: The cache manager ought to distinguish between data which is being 
-pulled into the cache to be rolled up immediately into some other aggregation, 
-and an aggregation which is explicitly needed.</p>
+<h2>Introduction</h2>
+<p>See <a href="../architecture.html">architecture</a>.</p>
 <h2>Components</h2>
 <h3>Query transformer</h3>
 <p>See {@link mondrian.olap.Parser}.</p>
@@ -674,72 +396,16 @@ cost/benefit ratio. The 'benefit' of an item is the effort it took to produce
 (effort which it is saving future queries) multiplied by its 'usefulness' which 
 declines exponentially if it is not used over time. The 'cost' of an item is its 
 size.</p>
-<h2>How do I use Mondrian in my application?</h2>
-<p>Something like this.</p>
-<ol>
-  <li>Install the JAR.</li>
-  <li>Create an XML mapping file.</li>
-  <li>Create a Mondrian connection, specifying the JDBC URL of the RDBMS, and the 
-URL of the mapping file.</li>
-  <li>Execute an MDX statement.</li>
-  <li>Render it. (There are currently no presentation tools which can render it.)</li>
-  <li>In response to user actions such as drill-down and pivot, use the query 
-transformer services to transform the query, and re-execute.</li>
-</ol>
-<h2>Why doesn't Mondrian use a standard API?</h2>
-<p>Because there isn't one. MDX is a component of Microsoft's OLE DB for OLAP 
-standard which, as the name implies, only runs on Windows. Mondrian's API is 
-fairly similar in flavor to ADO MD (ActiveX Data Objects for Multidimensional), 
-a API which Microsoft built in order to make OLE DB for OLAP easier to use.</p>
-<p>XML for Analysis is pretty much OLE DB for OLAP expressed in Web Services 
-rather than COM, and therefore seems to offer a platform-neutral standard for 
-OLAP, but take-up seems to be limited to vendors who supported OLE DB for OLAP 
-already.</p>
-<p>The other query vendors failed to reach consensus several years ago with the 
-OLAP Council API, and are now encamped on the JOLAP specification.</p>
-<p>I plan to provide a JOLAP API to Mondrian as soon as JOLAP is available.</p>
-<h2>How does Mondrian's dialect of MDX differ from MSOLAP's?</h2>
-<p>Not very much.</p>
-<ol>
-  <li>The <code>StrToSet()</code> and <code>StrToTuple()</code> functions take 
-  an extra parameter.</li>
-  <li>Parsing is case-sensitive.</li>
-  <li>Pseudo-functions <code>Param()</code> and <code>ParamRef()</code> allow 
-  you to create parameterized MDX statements.</li>
-</ol>
-<h2>How can Mondrian be extended?</h2>
-<p><i>todo</i>: <a name="User_defined_functions">User-defined functions</a></p>
-<p><i>todo</i>: Cell readers</p>
-<p><i>todo</i>: Member readers</p>
-<h2>Can Mondrian handle large datasets?</h2>
-<p>Yes, if your RDBMS can. We delegate the aggregation to the RDBMS, and if your 
-RDBMS happens to have materialized group by views created, your query will fly. 
-And the next time you run the same or a similar query, that will really fly, 
-because the results will be in the aggregation cache.</p>
-<h2>Where is Mondrian going in the future?</h2>
-<ol>
-  <li>Presentation layer</li>
-  <li>Complete implementation of MDX (not many functions implemented yet)</li>
-  <li>Tuning</li>
-  <li>Support JOLAP API.</li>
-</ol>
-<h2>Mondrian is fantastic! How can I possibly thank you?</h2>
-<p>Please send me an email, and let me know what you liked and didn't like about 
-it. If you can think of ways that Mondrian can be improved, roll up your sleeves 
-and help make it better. If you use Mondrian in your application, consider 
-sharing your work so that everyone can use it.</p>
 
+<hr>
 
-
-<b>
-  <table border="1" width="100%" class="clsStd">
-    <tr>
-      <td>End <i>$Id$</i></td>
-    </tr>
-  </table>
-  <p>&nbsp;</p>
-</b>
-
-</html>
-
+<table border="0" class="clsStd" width="100%" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0">
+  <tr>
+    <td>
+      <a href="http://apoptosis.dyndns.org:8080/open/mondrian/src/main/overview.html">$Id$
+      </a>(<a href="http://apoptosis.dyndns.org:8080/open/mondrian/src/main/overview.html?ac=22">log</a>)</td>
+  </tr>
+</table>
+  
 </body>
+</html>

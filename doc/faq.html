@@ -1,0 +1,126 @@
+<html>
+<!--
+  == $Id$
+  == This software is subject to the terms of the Common Public License
+  == Agreement, available at the following URL:
+  == http://www.opensource.org/licenses/cpl.html.
+  == (C) Copyright 2001-2002 Kana Software, Inc. and others.
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  == jhyde, 24 September, 2002
+  -->
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Mondrian FAQs</title>
+<link rel="stylesheet" href="stylesheet.css" type="text/css" />
+</head>
+
+<body>
+<h1><font size="7">Mondrian</font></h1>
+<hr>
+
+<table cellSpacing="0" cellPadding="0" border="0">
+<tr>
+<!-- Start links -->
+<td valign="top">
+<p dir="ltr">
+<a href="index.html">Home</a><br>
+<a href="install.html">Download</a><br>
+Overview<br>
+&nbsp;&nbsp;&nbsp;<a href="olap.html">What&nbsp;is&nbsp;OLAP?</a><br>
+&nbsp;&nbsp;&nbsp;<a href="architecture.html">Architecture</a><br>
+&nbsp;&nbsp;&nbsp;<a href="faq.html">FAQ</a><br>
+Design<br>
+&nbsp;&nbsp;&nbsp;<a href="components.html">Components</a><br>
+&nbsp;&nbsp;&nbsp;<a href="api/index.html">API</a><br>
+<a href="links.html">Links</a><br>
+&nbsp;&nbsp;&nbsp;<a href="people.html">People</a><br>
+&nbsp;&nbsp;&nbsp;<a href="http://sourceforge.net/projects/mondrian/">Project</a><br>
+&nbsp;&nbsp;&nbsp;<a href="help.html">Help</a><br>
+</td>
+<!-- End links -->
+<td width="5"><img height="1" src="spacer.gif" width="5" border="0"></td>
+<td width="1" bgcolor="#999999"><img height="1" src="spacer.gif" width="1" border="0"></td>
+<td width="5"><img height="1" src="spacer.gif" width="5" border="0"></td>
+<td valign="top">
+
+<h1>Mondrian FAQs</h1>
+<h2>How do I use Mondrian in my application?</h2>
+<p>There are several ways. If you have a fixed set of queries which you'd like 
+to display as HTML tables, use the tab library. <a href="../webapp/taglib.jsp">
+webapp/taglib.jsp</a> is an example of this.</p>
+<p>The pivot table <a href="../webapp/morph.jsp">webapp/morph.jsp</a> (still 
+under development) will allow you to dynamically explore a dataset over the web.
+</p>
+<p>You could also build a pivot table in a client technology such as Swing.</p>
+<h2>Why doesn't Mondrian use a standard API?</h2>
+<p>Because there isn't one. MDX is a component of Microsoft's OLE DB for OLAP 
+standard which, as the name implies, only runs on Windows. Mondrian's API is 
+fairly similar in flavor to ADO MD (ActiveX Data Objects for Multidimensional), 
+a API which Microsoft built in order to make OLE DB for OLAP easier to use.</p>
+<p>XML for Analysis is pretty much OLE DB for OLAP expressed in Web Services 
+rather than COM, and therefore seems to offer a platform-neutral standard for 
+OLAP, but take-up seems to be limited to vendors who supported OLE DB for OLAP 
+already.</p>
+<p>The other query vendors failed to reach consensus several years ago with the 
+OLAP Council API, and are now encamped on the JOLAP specification.</p>
+<p>We plan to provide a JOLAP API to Mondrian as soon as JOLAP is available.</p>
+<h2>How does Mondrian's dialect of MDX differ from MSOLAP's?</h2>
+<p>Not very much.</p>
+<ol>
+  <li>The <code>StrToSet()</code> and <code>StrToTuple()</code> functions take 
+  an extra parameter.</li>
+  <li>Parsing is case-sensitive.</li>
+  <li>Pseudo-functions <code>Param()</code> and <code>ParamRef()</code> allow 
+  you to create parameterized MDX statements.</li>
+  <li>We do not support the </li>
+</ol>
+<h2>How can Mondrian be extended?</h2>
+<p><i>todo</i>: <a name="User_defined_functions">User-defined functions</a></p>
+<p><i>todo</i>: Cell readers</p>
+<p><i>todo</i>: Member readers</p>
+<h2>Can Mondrian handle large datasets?</h2>
+<p>Yes, if your RDBMS can. We delegate the aggregation to the RDBMS, and if your 
+RDBMS happens to have materialized group by views created, your query will fly. 
+And the next time you run the same or a similar query, that will really fly, 
+because the results will be in the aggregation cache.</p>
+<h2>Where is Mondrian going in the future?</h2>
+<ol>
+  <li>Presentation layer</li>
+  <li>Complete implementation of MDX (not all of the functions implemented yet)</li>
+  <li>Tuning</li>
+  <li>Support JOLAP API.</li>
+</ol>
+<h2>Mondrian is wonderful! How can I possibly thank you?</h2>
+<p>We'd <a href="mailto:jhyde@users.sourceforge.net">love to hear</a> what you liked and didn't like about 
+it. If you can think of ways that Mondrian can be improved, roll up your sleeves 
+and help make it better. If you use Mondrian in your application, consider 
+sharing your work so that everyone can use it.</p>
+
+
+
+</td>
+</tr>
+</table>
+
+<hr>
+
+<table border="0" class="clsStd" width="100%" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0">
+  <tr>
+    <td>
+      <a href="http://apoptosis.dyndns.org:8080/open/mondrian/doc/faq.html">$Id$
+      </a>(<a href="http://apoptosis.dyndns.org:8080/open/mondrian/doc/faq.html?ac=22">log</a>)</td>
+    <td align="right">
+      <a href="http://sourceforge.net">
+        <img src="http://sourceforge.net/sflogo.php?group_id=35302&type=1" width="88" height="31" border="0" alt="SourceForge.net Logo">
+      </a>
+    </td>
+  </tr>
+</table>
+  
+</body>
+</html>

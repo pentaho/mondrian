@@ -77,6 +77,8 @@ ${lib.dir}/xml-apis.jar"/>
     <!-- Weblogic must be after xml-apis.jar and xercesImpl.jar, because it
          contains an incompatible version of xerces. -->
     <pathelement location="${weblogic.home}/lib/weblogic.jar"/>
+    <pathelement location="${ant.home}/lib/ant.jar"/>
+    <pathelement location="${ant.home}/lib/optional.jar"/>
   </path>
 
   <path id="project.boot.classpath">
@@ -455,10 +457,10 @@ mondrian/resource/**/*.class"/>
         classpathref="project.classpath"
         destdir="${javadoc.dir}"
         packagenames="mondrian.*"
-        overview="${doc.dir}/overview.html"
+        overview="${java.dir}/overview.html"
         footer="&lt;a href=&quot;http://sourceforge.net/projects/mondrian&quot;&gt;&lt;img src=&quot;http://sourceforge.net/sflogo.php?group_id=35302&#38;type=1&quot; width=&quot;88&quot; height=&quot;31&quot; border=&quot;0&quot; alt=&quot;SourceForge.net_Logo&quot;&gt;&lt;/a&gt;"
         author="true">
-        <link href="http://www.javasoft.com/j2se/1.3/docs/api/"/>
+        <link href="http://java.sun.com/j2se/1.4/docs/api/"/>
         <link href="http://www.junit.org/junit/javadoc/3.7/"/>
         <link href="http://java.sun.com/products/servlet/2.2/javadoc/"/>
     </javadoc>

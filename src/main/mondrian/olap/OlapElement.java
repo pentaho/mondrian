@@ -26,7 +26,6 @@ public interface OlapElement extends Exp
 	// todo: replace with 'visit'
 	void unparse(PrintWriter pw, ElementCallback callback);
 	Cube getCube();
-	/** Outputs object as an XML string. todo: return ElementDef **/
 	void accept(Visitor visitor);
 	void childrenAccept(Visitor visitor);
 	/** Looks up a child element, returning null if it does not exist. */

@@ -242,8 +242,10 @@ todo:
 		</Attribute>
 		<Object name="relation" type="Relation">
 			<Doc>
-				The {@link #Table table}, {@link #Join set of tables}, or
-				{@link #View SQL statement} which populates this hierarchy.
+				The {@link MondrianDef.Table table},
+				{@link MondrianDef.Join set of tables}, or
+				{@link MondrianDef.View SQL statement} which populates this
+				hierarchy.
 			</Doc>
 		</Object>
 		<Array name="levels" type="Level"><Doc></Doc></Array>

@@ -1452,7 +1452,7 @@ public class Format {
 	/**
 	 * Constructs a <code>Format</code> in the default locale.
 	 *
-	 * @deprecated use {@link #Format(String,FormatLocale)} for
+	 * @deprecated use {@link Format#Format(String, Format.FormatLocale)} for
 	 *   locale-specific behavior.
 	 */
 	public Format(String formatString)

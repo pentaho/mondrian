@@ -50,7 +50,8 @@ public interface DOMWrapper {
 
 	/**
 	 * CDATA is a type of DOM Element representing a piece of text embedded in
-	 * a CDATA section, for example, <code>&lt;![CDATA[Some text]]&gt;</code>.
+	 * a CDATA section, for example,
+	 * <code>&lt;&#33;[CDATA[Some text]]&gt;</code>.
 	 * CDATA elements always have a tag name of NULL and have no children.  It
 	 * maps to a {@link CdataDef}.
 	 **/

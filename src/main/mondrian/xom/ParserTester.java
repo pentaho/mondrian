@@ -108,8 +108,7 @@ public class ParserTester {
 	}	
 
 	/**
-	 * The ParserTester tests MSXML parser and Xerces Parser
-	 * <p> Arguments:
+	 * The ParserTester tests MSXML parser and Xerces Parser. Arguments:
 	 * <ol>
 	 * <li> The DTD file of the XML file
 	 * <li> The XML file for this DTD file

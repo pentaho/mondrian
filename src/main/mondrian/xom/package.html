@@ -61,7 +61,7 @@ provides complete typesafe access to the whole document!</p>
 <ol>
 <li>Instantiate your parser, parse the document (validation against the DTD is optional),
 and retrieve the parsed {@link org.w3c.dom.Document} object.</li>
-<li>Call {@link org.w3c.dom.Document.getDocumentElement()} to retrieve the toplevel Node
+<li>Call {@link org.w3c.dom.Document#getDocumentElement()} to retrieve the toplevel Node
 in the document.</li>
 <li>Wrap the toplevel node in an instance of 
 {@link mondrian.xom.wrappers.W3CDOMWrapper}.</li>
@@ -118,7 +118,7 @@ $</pre></blockquote>
 works.&nbsp; It is class {@link MetaTester}, and you invoke it as follows:</p>
 <blockquote><pre>jview &lt;classpath_options&gt; mondrian.xom.MetaTester [-debug]
         [-msxml | -xerces] &lt;XML model file&gt; &lt;output dir&gt; [&lt;tests&gt;...]</pre></blockquote>
-All the arguments are the same as the ones for {@link MetaGenerator}, except for
+All the arguments are the same as the ones for {@link mondrian.xom.MetaGenerator}, except for
 tests.&nbsp; &lt;tests&gt; is a list of test .xml files that should be valid
 according to the generated DTD.&nbsp; The tester will validate the java files
 against the DTD and also against the java class.&nbsp; It also runs some basic
@@ -126,7 +126,7 @@ checks on the java class to make sure that it works.
 <p>We run both utilities from a test harness in the mining directory.&nbsp; Look
 at any of the runtest.sh files under the <code>mining/test/metamodel/&lt;anydir&gt;</code>
 hierarchy.&nbsp; These files ultimately call down to a common script file.&nbsp;
-The test script runs {@link MetaGenerator}, compiles the generated java
+The test script runs {@link mondrian.xom.MetaGenerator}, compiles the generated java
 class (to verify that it was created correctly), tests one or more test xml
 files against the model, and optionally installs the generated files into the
 build tree (it was easier to generate the files and check them in than to run
@@ -160,8 +160,6 @@ from perforce.</p>
 <p>This package is dependent upon the following other packages:</p>
 <ul>
   <li>{@link mondrian.resource}</li>
-  <li>{@link com.ms.xml} -- MetaGenerator and MetaTester currently depend on 
-    the Microsoft XML Parser.  The remaining classes are parser-independent.</li>
   <li>{@link java.lang}, {@link java.io}, {@link java.util}</li>
 </ul>
 <p>Class {@link XOMGenTask} <em>only</em> is dependent upon {@link org.apache.tools.ant}. You therefore require <code>ant.jar</code> to build, but not to run.<p>
