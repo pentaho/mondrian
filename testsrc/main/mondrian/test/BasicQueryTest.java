@@ -3817,7 +3817,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 	}
 
     /**
-     * This results in an OutOfMemoryException
+     * This resulted in an OutOfMemoryException
      */
     public void testNonEmptyCrossJoin() {
         CachePool.instance().flush();
@@ -3835,6 +3835,67 @@ public class BasicQueryTest extends FoodMartTestCase {
         // ok if no OutOfMemoryException occurs
         Axis a = result.getAxes()[1];
         assertEquals(67, a.positions.length);
+    }
+
+    /**
+     * NonEmptyCrossJoin() is not the same as NON EMPTY CrossJoin()
+     * because it's evaluated independently of the other axes.
+     * (see http://blogs.msdn.com/bi_systems/articles/162841.aspx)
+     */
+    public void testNonEmptyNonEmptyCrossJoin1() {
+        CachePool.instance().flush();
+        Result result = runQuery(
+           "select {[Education Level].[All Education Levels].[Graduate Degree]} on columns," + nl +
+           "   CrossJoin(" + nl +
+           "      {[Store Type].[Store Type].members}," + nl +
+           "      {[Promotions].[Promotion Name].members})" + nl +
+           "   on rows" + nl +
+           "from Sales" + nl +
+           "where ([Customers].[All Customers].[USA].[WA].[Anacortes])" + nl);
+        Axis a = result.getAxes()[1];
+        assertEquals(306, a.positions.length);
+    }
+
+    public void testNonEmptyNonEmptyCrossJoin2() {
+        CachePool.instance().flush();
+        Result result = runQuery(
+           "select {[Education Level].[All Education Levels].[Graduate Degree]} on columns," + nl +
+           "   NonEmptyCrossJoin(" + nl +
+           "      {[Store Type].[Store Type].members}," + nl +
+           "      {[Promotions].[Promotion Name].members})" + nl +
+           "   on rows" + nl +
+           "from Sales" + nl +
+           "where ([Customers].[All Customers].[USA].[WA].[Anacortes])" + nl);
+        Axis a = result.getAxes()[1];
+        assertEquals(10, a.positions.length);
+    }
+
+    public void testNonEmptyNonEmptyCrossJoin3() {
+        CachePool.instance().flush();
+        Result result = runQuery(
+           "select {[Education Level].[All Education Levels].[Graduate Degree]} on columns," + nl +
+           "   Non Empty CrossJoin(" + nl +
+           "      {[Store Type].[Store Type].members}," + nl +
+           "      {[Promotions].[Promotion Name].members})" + nl +
+           "   on rows" + nl +
+           "from Sales" + nl +
+           "where ([Customers].[All Customers].[USA].[WA].[Anacortes])" + nl);
+        Axis a = result.getAxes()[1];
+        assertEquals(1, a.positions.length);
+    }
+
+    public void testNonEmptyNonEmptyCrossJoin4() {
+        CachePool.instance().flush();
+        Result result = runQuery(
+           "select {[Education Level].[All Education Levels].[Graduate Degree]} on columns," + nl +
+           "   Non Empty NonEmptyCrossJoin(" + nl +
+           "      {[Store Type].[Store Type].members}," + nl +
+           "      {[Promotions].[Promotion Name].members})" + nl +
+           "   on rows" + nl +
+           "from Sales" + nl +
+           "where ([Customers].[All Customers].[USA].[WA].[Anacortes])" + nl);
+        Axis a = result.getAxes()[1];
+        assertEquals(1, a.positions.length);
     }
 
     /**

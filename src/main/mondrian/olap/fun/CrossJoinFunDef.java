@@ -123,7 +123,7 @@ class CrossJoinFunDef extends FunDefBase {
         }
     }
 
-    private static List nonEmptyList(Evaluator evaluator, List list) {
+    protected static List nonEmptyList(Evaluator evaluator, List list) {
         if (list.isEmpty())
             return list;
         List result = new ArrayList();

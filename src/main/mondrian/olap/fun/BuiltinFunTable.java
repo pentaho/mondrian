@@ -1309,6 +1309,13 @@ public class BuiltinFunTable extends FunTable {
                 return new CrossJoinFunDef(dummyFunDef);
             }
 		});
+		define(new MultiResolver(
+                "NonEmptyCrossJoin", "NonEmptyCrossJoin(<Set1>, <Set2>)", "Returns the cross product of two sets, excluding empty tuples and tuples without associated fact table data.",
+                new String[]{"fxxx"}) {
+            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+                return new NonEmptyCrossJoinFunDef(dummyFunDef);
+            }
+		});
         define(new MultiResolver(
                 "*", "<Set1> * <Set2>", "Returns the cross product of two sets.",
                 new String[]{"ixxx", "ixmx", "ixxm", "ixmm"}) {
