@@ -217,6 +217,14 @@ It has been tested against Oracle, Postgres, MySQL and Microsoft Access.</p>
 <p>If you the target is a JDBC database, you must create the necessary database 
 or schema first. This is database-specific.</p>
 
+<p>You can safely ignore any log4j warnings:</p>
+
+<blockquote>
+
+	<p><code>log4j:WARN No appenders could be found for logger (mondrian.rolap.RolapUtil).&nbsp;<br>
+	log4j:WARN Please initialize the log4j system properly.</code></p>
+</blockquote>
+
 <h4>Examples</h4>
 
 <p>On Linux, create a MySQL schema called 'foodmart', and create FoodMart tables from the test dataset in the SQL
@@ -224,7 +232,9 @@ scripts:</p>
 
 <blockquote>
   <p><code><i><b>$</b></i> mysqladmin create foodmart<b><i><br>
-	$</i></b> java -cp &quot;/mondrian/lib/mondrian.jar:/mondrian/lib/log4j-1.2.9.jar&quot; mondrian.test.loader.MondrianFoodMartLoader<br>&nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes -jdbcDrivers=com.mysql.jdbc.Driver<br>&nbsp;&nbsp;&nbsp;&nbsp; -inputFile=/mondrian/demo/FoodMartCreateData.sql <br>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL=&quot;jdbc:mysql://localhost/foodmart?user=root&amp;password=myAdmin&quot;</code><br>
+	$</i></b> java -cp &quot;/mondrian/lib/mondrian.jar:/mondrian/lib/log4j-1.2.9.jar:/mondrian/lib/eigenbase-xom.jar:/usr/local/mysql/mysql-connector-java-3.0.16-ga-bin.jar&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp; mondrian.test.loader.MondrianFoodMartLoader<br>&nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes<br>
+&nbsp;&nbsp;&nbsp;&nbsp; -jdbcDrivers=com.mysql.jdbc.Driver<br>&nbsp;&nbsp;&nbsp;&nbsp; -inputFile=/mondrian/demo/FoodMartCreateData.sql <br>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL=&quot;jdbc:mysql://localhost/foodmart?user=root&amp;password=myAdmin&quot;</code><br>
 	</p>
 </blockquote>
 
@@ -232,11 +242,15 @@ scripts:</p>
 the Access database:</p>
 
 <blockquote>
-  <p><code><i><b>C:\mondrian&gt;</b></i> $ java -cp &quot;C:\mondrian\lib\mondrian.jar;C:\mondrian\lib\log4j-1.2.9.jar&quot; mondrian.test.loader.MondrianFoodMartLoader<br>
-&nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes -jdbcDrivers=&quot;org.postgresql.Driver,sun.jdbc.odbc.JdbcOdbcDriver&quot;<br>
+  <p><code><i><b>C:\mondrian&gt;</b></i> java -cp &quot;C:\mondrian\lib\mondrian.jar;C:\mondrian\lib\log4j-1.2.9.jar;C:\mondrian\lib\eigenbase-xom.jar;C:\mondrian\lib\postgres-jdbc.jar&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp; mondrian.test.loader.MondrianFoodMartLoader<br>
+&nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes<br>
+&nbsp;&nbsp;&nbsp;&nbsp; -jdbcDrivers=&quot;org.postgresql.Driver,sun.jdbc.odbc.JdbcOdbcDriver&quot;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;
      -inputJdbcURL=&quot;jdbc:odbc:MondrianFoodMart&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL=&quot;jdbc:postgresql://localhost/foodmart&quot; -outputJdbcUser=postgres -outputJdbcPassword=password</code></p>
+&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL=&quot;jdbc:postgresql://localhost/foodmart&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcUser=postgres<br>
+&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcPassword=password</code></p>
 </blockquote>
 
 <h2><a name="4_Configure_exec_environment">4. Configure the execution environment for testing</a>
