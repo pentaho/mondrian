@@ -1655,35 +1655,7 @@ public class Query extends QueryPart {
             if (mdxElement != null) {
                 return mdxElement;
             }
-            // then look in defined members
-            Iterator definedMembers = getDefinedMembers().iterator();
-            definedMemberLoop:
-            while (definedMembers.hasNext()) {
-                Member mdxMember = (Member) definedMembers.next();
-                if (parent != null) {
-                    // make sure that parent (Level,Hierarchy,Dimension)
-                    //  matches the MDX member
-                    Level lev = mdxMember.getLevel();
-                    if (parent instanceof Level) {
-                        if ( !parent.equals(lev))
-                            continue definedMemberLoop;
-                    } else {
-                        Hierarchy hier = lev.getHierarchy();
-                        if (parent instanceof Hierarchy) {
-                            if (!parent.equals(hier))
-                                continue definedMemberLoop;
-                        } else {
-                            Dimension dim = hier.getDimension();
-                            if (parent instanceof Dimension && !parent.equals(dim))
-                                continue definedMemberLoop;
-                        }
-                    }
-                } // parent check
-                if (mdxMember.getName().equalsIgnoreCase(s)) {
-                    // allow member to be referenced without dimension name
-                    return mdxMember;
-                }
-            }
+            // then look in defined members (removed sf#1084651)
 
             // then in defined sets
             for (int i = 0; i < formulas.length; i++) {

@@ -790,6 +790,59 @@ public class BasicQueryTest extends FoodMartTestCase {
 		runQueryCheckResult(query, desiredResult);
 	}
 
+	public void testMultipleCalculatedMembersWhichAreNotMeasures() {
+		String query = "WITH" + nl +
+				"  MEMBER [Store].[x] AS '1'" + nl +
+				"  MEMBER [Product].[x] AS '1'" + nl +
+				"SELECT {[Store].[x]} ON COLUMNS" + nl +
+				"FROM Sales";
+		String desiredResult = "Axis #0:" + nl +
+				"{}" + nl +
+				"Axis #1:" + nl +
+				"{[Store].[x]}" + nl +
+				"Row #0: 1" + nl;
+		runQueryCheckResult(query, desiredResult);
+	}
+
+	/**
+	 * There used to be something wrong with non-measure calculated members
+	 * where the ordering of the WITH MEMBER would determine whether or not
+	 * the member would be found in the cube. This test would fail but the
+	 * previous one would work ok. (see sf#1084651)
+	 */
+	public void testMultipleCalculatedMembersWhichAreNotMeasures2() {
+		String query = "WITH" + nl +
+				"  MEMBER [Product].[x] AS '1'" + nl +
+				"  MEMBER [Store].[x] AS '1'" + nl +
+				"SELECT {[Store].[x]} ON COLUMNS" + nl +
+				"FROM Sales";
+		String desiredResult = "Axis #0:" + nl +
+				"{}" + nl +
+				"Axis #1:" + nl +
+				"{[Store].[x]}" + nl +
+				"Row #0: 1" + nl;
+		runQueryCheckResult(query, desiredResult);
+	}
+	
+	/**
+	 * This one had the same problem. It wouldn't find the
+	 * [Store].[All Stores].[x] member because it has the same leaf
+	 * name as [Product].[All Products].[x]. (see sf#1084651)
+	 */
+	public void testMultipleCalculatedMembersWhichAreNotMeasures3() {
+		String query = "WITH" + nl +
+				"  MEMBER [Product].[All Products].[x] AS '1'" + nl +
+				"  MEMBER [Store].[All Stores].[x] AS '1'" + nl +
+				"SELECT {[Store].[All Stores].[x]} ON COLUMNS" + nl +
+				"FROM Sales";
+		String desiredResult = "Axis #0:" + nl +
+				"{}" + nl +
+				"Axis #1:" + nl +
+				"{[Store].[All Stores].[x]}" + nl +
+				"Row #0: 1" + nl;
+		runQueryCheckResult(query, desiredResult);
+	}
+
 	public void testConstantString() {
 		String s = executeExpr(" \"a string\" ");
         assertEquals("a string", s);
