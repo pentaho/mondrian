@@ -514,7 +514,7 @@ public class BuiltinFunTable extends FunTable {
 
 			public void testDimensionHierarchy(FoodMartTestCase test) {
 				String s = test.executeExpr("[Time].Dimension.Name");
-				Assert.assertEquals("Time", s);
+        Assert.assertEquals("Time", s);
 			}
 		});
 
@@ -2427,7 +2427,52 @@ public class BuiltinFunTable extends FunTable {
 			}
 		});
 
-		if (false) define(new FunDefBase("Intersect", "Intersect(<Set1>, <Set2>[, ALL])", "Returns the intersection of two input sets, optionally retaining duplicates.", "fx*"));
+		define(new MultiResolver(
+				"Intersect", "Intersect(<Set1>, <Set2>[, ALL])", "Returns the intersection of two input sets, optionally retaining duplicates.",
+				new String[] {"fxxxy", "fxxx"}) {
+			protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+				final boolean all = getLiteralArg(args, 2, "", new String[] {"ALL"}, dummyFunDef).equalsIgnoreCase("ALL");
+				return new FunDefBase(dummyFunDef) {
+					public Object evaluate(Evaluator evaluator, Exp[] args) {
+						List left = (List) getArg(evaluator, args, 0);
+						if (left == null) {
+							left = Collections.EMPTY_LIST;
+						}
+						List right = (List) getArg(evaluator, args, 1);
+						if (right == null) {
+							right = Collections.EMPTY_LIST;
+						}
+						ArrayList result = new ArrayList();
+						for (Iterator i = left.iterator(); i.hasNext();) {
+							Object leftObject = i.next();
+							if (right.contains(leftObject)) {
+								if (all || !result.contains(leftObject)) {
+									result.add(leftObject);
+								}
+							}
+						}
+						return result;
+					}
+				};
+			}
+			public void testIntersect(FoodMartTestCase test) {
+				// Note: duplicates retained from left, not from right; and order is preserved.
+				test.assertAxisReturns("Intersect({[Time].[1997].[Q2], [Time].[1997], [Time].[1997].[Q1], [Time].[1997].[Q2]}, " +
+						"{[Time].[1998], [Time].[1997], [Time].[1997].[Q2], [Time].[1997]}, " +
+						"ALL)",
+						"[Time].[1997].[Q2]" + nl +
+						"[Time].[1997]" + nl +
+						"[Time].[1997].[Q2]");
+			}
+			public void testIntersectRightEmpty(FoodMartTestCase test) {
+				test.assertAxisReturns("Intersect({[Time].[1997]}, {})",
+						"");
+			}
+			public void testIntersectLeftEmpty(FoodMartTestCase test) {
+				test.assertAxisReturns("Intersect({}, {[Store].[USA].[CA]})",
+						"");
+			}
+		});
 		if (false) define(new FunDefBase("LastPeriods", "LastPeriods(<Index>[, <Member>])", "Returns a set of members prior to and including a specified member.", "fx*"));
 		define(new FunDefBase("Members", "<Dimension>.Members", "Returns the set of all members in a dimension.", "pxd") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
@@ -2827,6 +2872,37 @@ public class BuiltinFunTable extends FunTable {
 					}
 				}));
 		if (false) define(new FunDefBase("StripCalculatedMembers", "StripCalculatedMembers(<Set>)", "Removes calculated members from a set.", "fx*"));
+		// "Siblings" is not a standard MDX function.
+		define(new FunDefBase("Siblings", "<Member>.Siblings", "Returns the set of siblings of the specified member.", "pxm") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				Member member = getMemberArg(evaluator, args, 0, true);
+				Member parent = member.getParentMember();
+				final SchemaReader schemaReader = evaluator.getSchemaReader();
+				Member[] siblings;
+				if (parent == null) {
+					siblings = schemaReader.getHierarchyRootMembers(member.getHierarchy());
+				} else {
+					siblings = schemaReader.getMemberChildren(parent);
+				}
+				return Arrays.asList(siblings);
+			}
+			public void testSiblingsA(FoodMartTestCase test) {
+				test.assertAxisReturns("{[Time].[1997].Siblings}",
+						"[Time].[1997]" + nl +
+						"[Time].[1998]");
+			}
+			public void testSiblingsB(FoodMartTestCase test) {
+				test.assertAxisReturns("{[Store].Siblings}",
+						"[Store].[All Stores]");
+			}
+			public void testSiblingsC(FoodMartTestCase test) {
+				test.assertAxisReturns("{[Store].[USA].[CA].Siblings}",
+						"[Store].[All Stores].[USA].[CA]" + nl +
+						"[Store].[All Stores].[USA].[OR]" + nl +
+						"[Store].[All Stores].[USA].[WA]");
+			}
+		});
+
 		define(new FunDefBase("StrToSet", "StrToSet(<String Expression>)", "Constructs a set from a string expression.", "fxS") {
 			public void unparse(Exp[] args, PrintWriter pw, ElementCallback callback) {
 				if (callback.isPlatoMdx()) {
