@@ -13,6 +13,10 @@ import junit.framework.Assert;
 import mondrian.olap.*;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
+import mondrian.xom.StringEscaper;
+
+import java.util.List;
+import java.io.*;
 
 /**
  * <code>FunctionTest</code> tests the functions defined in
@@ -3751,6 +3755,55 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprReturns("LinRegVariance([Time].[Month].members," +
                 " [Measures].[Unit Sales], 4)",
                 "-1.#IND"); // MSAS returns -1.#IND (whatever that means)
+    }
+
+    /**
+     * Tests {@link mondrian.olap.FunTable#getFunInfoList()}, but more
+     * importantly, generates an HTML table of all implemented functions into
+     * a file called "functions.html". You can manually include that table
+     * in the <a href="http://mondrian.sourceforge.net/mdx.html">MDX
+     * specification</a>.
+     */
+    public void testDumpFunctions() throws IOException {
+        final List funInfoList = FunTable.instance().getFunInfoList();
+        final File file = new File("functions.html");
+        final FileOutputStream os = new FileOutputStream(file);
+        final PrintWriter pw = new PrintWriter(os);
+        pw.println("<table border='1'>");
+        pw.println("<tr>");
+        pw.println("<th>Name</th>");
+        pw.println("<th>Description</th>");
+        pw.println("</tr>");
+        for (int i = 0; i < funInfoList.size(); i++) {
+            FunInfo funInfo = (FunInfo) funInfoList.get(i);
+            pw.println("<tr>");
+            pw.print("  <td valign=top>");
+            printHtml(pw, funInfo.getName());
+            pw.println("</td>");
+            pw.print("  <td>");
+            if (funInfo.getDescription() != null) {
+                printHtml(pw, funInfo.getDescription());
+            }
+            final String[] signatures = funInfo.getSignatures();
+            if (signatures != null) {
+                pw.println("    <p><b>Syntax</b></p>");
+                for (int j = 0; j < signatures.length; j++) {
+                    String signature = signatures[j];
+                    pw.print("    <code>");
+                    printHtml(pw, signature);
+                    pw.println("</code><br/>");
+                }
+            }
+            pw.println("  </td>");
+            pw.println("</tr>");
+        }
+        pw.println("</table>");
+        pw.close();
+    }
+
+    private static void printHtml(PrintWriter pw, String s) {
+        final String escaped = StringEscaper.htmlEscaper.escapeString(s);
+        pw.print(escaped);
     }
 }
 
