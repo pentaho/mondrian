@@ -49,7 +49,7 @@
   to debug Tomcat using IntelliJ</a></ol>
 
 <h2><a name="2_Modification_history">2. Modification history</a></h2>
-<table border="1" class="clsStd" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0">
+<table border="1" class="clsStd" style="border-collapse: collapse" bordercolor="#111111" cellpadding="2" cellspacing="0">
   <tr>
     <th>Date</th>
     <th>Revision</th>
@@ -296,7 +296,7 @@ SQL> <b>exit</b>
 Disconnected from Oracle8i Enterprise Edition Release 8.1.7.3.0 - Production
 With the Partitioning option
 JServer Release 8.1.7.3.0 - Production
-$ <b>imp foodmart/foodmart full=y file=C:/mondrian/demo/oracle/FoodMart.dmp</b>
+$ <b>imp foodmart/foodmart touser=foodmart file=C:/mondrian/demo/oracle/FoodMart.dmp</b>
 
 Import: Release 8.1.7.3.0 - Production on Mon Aug 5 11:37:35 2002
 
@@ -346,7 +346,7 @@ Import terminated successfully without warnings.</pre>
 <p>Create and populate the schema  by running the scripts <code>FoodMartTables.sql</code>,
     <code>FoodMartData.sql</code> and <code>FoodMartIndexes.sql</code> in <code>${project.location}/demo/</code>.</p>
 <h3><a name="5_4_MySQL">5.4. MySQL</a></h3>
-<p>First, <a href="#MySQL">install</a>. Then
+<p>First, <a href="#MySQL">install MySQL</a>. Then
 <a href="http://www.mysql.com/doc/en/Adding_users.html">create a user</a> and a 
 database:</p>
 <blockquote>
@@ -428,6 +428,21 @@ Query OK, 10281 rows affected (0.63 sec)
 Records: 10281 Duplicates: 0 Warnings: 0
 ...
 
+mysql&gt; <b>select customer.gender as c0,
+</b>-&gt; <b>sum(sales_fact_1997.unit_sales) as c1,
+</b>-&gt; <b>sum(sales_fact_1997.store_sales) as c2
+</b>-&gt; <b>from customer customer,
+</b>-&gt; <b>sales_fact_1997 sales_fact_1997
+</b>-&gt; <b>where sales_fact_1997.customer_id = customer.customer_id
+</b>-&gt; <b>group by customer.gender</b>;
++------+--------+-----------+
+| c0   | c1     | c2        |
++------+--------+-----------+
+| F    | 131558 | 280226.21 |
+| M    | 135215 | 285011.92 |
++------+--------+-----------+
+2 rows in set (9 min 45.88 sec)
+
 mysql&gt; <b>exit</b></pre>
 </blockquote>
 
@@ -478,10 +493,7 @@ mondrian test</pre>
   <li>Run <code>build deploy-webapp</code> (or <code>mondrian deploy-to-tomcat</code>, 
   if this is a a runtime environment).</li>
   <li>Start up tomcat. (If this is a build environment, <code>build start.tomcat</code> is an easy way to do this.)</li>
-  <li>Hit <a href="http://localhost:8080/mondrian" target="_new">http://localhost:8080/mondrian</a>. 
-  Also try <a target="_new" href="http://localhost:8080/mondrian/taglib.jsp">http://localhost:8080/mondrian/taglib.jsp</a> 
-  and <a target="_new" href="http://localhost:8080/mondrian/morph.jsp">http://localhost:8080/mondrian/morph.jsp</a> 
-  (still under construction).</li>
+  <li>Hit <a href="http://localhost:8080/mondrian" target="_new">http://localhost:8080/mondrian</a>.</li>
 </ol>
 <h2><a name="8_Miscellaneous">8. Miscellaneous</a></h2>
 <h3><a name="8_1_Coding_guidelines">8.1. Coding guidelines</a></h3>
@@ -519,7 +531,7 @@ source tree.</p>
 <p>Where the instructions suggest setting an environment variable, it is often 
 sufficient to edit the corresponding line in <code><i>${project.location}</i>/build.bat</code>.</p>
 
-<table border="1" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0">
+<table border="1" style="border-collapse: collapse" bordercolor="#111111" cellpadding="2" cellspacing="0">
   <tr>
     <th>Product</th>
     <th>Required?</th>
@@ -529,7 +541,7 @@ sufficient to edit the corresponding line in <code><i>${project.location}</i>/bu
   <tr>
     <td><a name="JDK">JDK</a></td>
     <td>Yes</td>
-    <td>1.2 or later (I use version 1.4.1.)</td>
+    <td>1.3 or later (I use version 1.4.1.)</td>
     <td>Available from <a href="http://developer.java.sun.com/" target="_blank">http://developer.java.sun.com/</a>.
       I downloaded <code>j2sdk-1_4_1-windows-i586.exe</code>, and extracted to <code>E:/j2sdk1.4.1</code>. Set
       <code>JAVA_HOME</code> to same.</td>
@@ -723,7 +735,7 @@ describes how to change Weblogic's default XML parser.</p>
   <tr>
     <td class="content">
       <a target="_top" href="index.html">Home</a> |
-      <a target="_top" href="noframes.html">No frames</a> | This file is<i>
+      <a target="_top" href="#">No frames</a> | This file is<i>
       <a href="http://apoptosis.dyndns.org:8080/open/mondrian/doc/install.html">$Id$
       </a></i> (<a href="http://apoptosis.dyndns.org:8080/open/mondrian/doc/install.html?ac=22">log</a>)</td>
     <td align="right">

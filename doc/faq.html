@@ -17,19 +17,36 @@
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
 <title>Mondrian FAQs</title>
 <link rel="stylesheet" href="stylesheet.css" type="text/css" />
+<style>
+<!--
+.small { font-family: verdana,arial,helvetica,sans-serif; font-size: x-small; }
+-->
+</style>
 </head>
 
 <body>
 <h1>Mondrian FAQs</h1>
-<h2>How do I use Mondrian in my application?</h2>
+<ul>
+  <li><a href="#Applications">How do I use Mondrian in my application?</a></li>
+  <li><a href="#API">Why doesn't Mondrian use a standard API?</a></li>
+  <li><a href="#MDX_dialect">How does Mondrian's dialect of MDX differ from 
+  MSOLAP's?</a></li>
+  <li><a href="#Extensiblity">How can Mondrian be extended?</a></li>
+  <li><a href="#Scalability">Can Mondrian handle large datasets?</a></li>
+  <li><a href="#Tracing">How do I enable tracing?</a></li>
+  <li><a href="#Roadmap">Where is Mondrian going in the future?</a></li>
+  <li><a href="#Further_reading">Where can I find out more? (Further reading)</a></li>
+  <li><a href="#Feedback">Mondrian is wonderful! How can I possibly thank you?</a></li>
+</ul>
+<h2><a name="Applications">How do I use Mondrian in my application?</a></h2>
 <p>There are several ways. If you have a fixed set of queries which you'd like 
 to display as HTML tables, use the tab library. <a href="../webapp/taglib.jsp">
 webapp/taglib.jsp</a> is an example of this.</p>
-<p>The pivot table <a href="../webapp/morph.jsp">webapp/morph.jsp</a> (still 
-under development) will allow you to dynamically explore a dataset over the web.
-</p>
+<p dir="ltr">The JPivot project (<a href="http://jpivot.sourceforge.net">http://jpivot.sourceforge.net</a>) 
+is a JSP-based pivot table, and will allow you to dynamically explore a dataset 
+over the web. It replaces the prototype pivot table <a href="../webapp/morph.jsp">webapp/morph.jsp</a>.</p>
 <p>You could also build a pivot table in a client technology such as Swing.</p>
-<h2>Why doesn't Mondrian use a standard API?</h2>
+<h2><a name="API">Why doesn't Mondrian use a standard API?</a></h2>
 <p>Because there isn't one. MDX is a component of Microsoft's OLE DB for OLAP 
 standard which, as the name implies, only runs on Windows. Mondrian's API is 
 fairly similar in flavor to ADO MD (ActiveX Data Objects for Multidimensional), 
@@ -41,7 +58,7 @@ already.</p>
 <p>The other query vendors failed to reach consensus several years ago with the 
 OLAP Council API, and are now encamped on the JOLAP specification.</p>
 <p>We plan to provide a JOLAP API to Mondrian as soon as JOLAP is available.</p>
-<h2>How does Mondrian's dialect of MDX differ from MSOLAP's?</h2>
+<h2><a name="MDX_dialect">How does Mondrian's dialect of MDX differ from MSOLAP's?</a></h2>
 <p>Not very much.</p>
 <ol>
   <li>The <code>StrToSet()</code> and <code>StrToTuple()</code> functions take 
@@ -49,13 +66,12 @@ OLAP Council API, and are now encamped on the JOLAP specification.</p>
   <li>Parsing is case-sensitive.</li>
   <li>Pseudo-functions <code>Param()</code> and <code>ParamRef()</code> allow 
   you to create parameterized MDX statements.</li>
-  <li>We do not support the </li>
 </ol>
-<h2>How can Mondrian be extended?</h2>
+<h2><a name="Extensiblity">How can Mondrian be extended?</a></h2>
 <p><i>todo</i>: <a name="User_defined_functions">User-defined functions</a></p>
 <p><i>todo</i>: Cell readers</p>
 <p><i>todo</i>: Member readers</p>
-<h2>Can Mondrian handle large datasets?</h2>
+<h2><a name="Scalability">Can Mondrian handle large datasets?</a></h2>
 <p>Yes, if your RDBMS can. We delegate the aggregation to the RDBMS, and if your 
 RDBMS happens to have materialized group by views created, your query will fly. 
 And the next time you run the same or a similar query, that will really fly, 
@@ -80,7 +96,7 @@ statement, like this:</p>
   when you re-start Tomcat. The output goes to the console from which you 
   started Tomcat.</li>
 </ul>
-<h2>Where is Mondrian going in the future?</h2>
+<h2><a name="Roadmap">Where is Mondrian going in the future?</a></h2>
 <ol>
   <li>Presentation layer (see <a href="http://sourceforge.net/projects/jpivot">
   JPivot</a> for more details).</li>
@@ -88,7 +104,31 @@ statement, like this:</p>
   <li>Tuning</li>
   <li>Support JOLAP API.</li>
 </ol>
-<h2>Mondrian is wonderful! How can I possibly thank you?</h2>
+<h2><a name="Further_reading">Where can I find out more?</a></h2>
+<p>
+<a href="http://www.amazon.com/exec/obidos/tg/detail/-/0471400467/ref=pd_bxgy_text_1/002-1268646-6661668?v=glance&s=books">
+<i>MDX Solutions with Microsoft SQL Server Analysis Services</i> by George 
+Spofford</a> is the best book I have found on MDX. Despite the title,  principles 
+it describes can be applied to any RDBMS.</p>
+<p>
+<a href="http://www.amazon.com/exec/obidos/tg/detail/-/0471400300/ref=pd_sim_books_4/002-1268646-6661668?v=glance&s=books">
+<i>OLAP Solutions: Building Multidimensional Information Systems</i>
+by Erik Thomsen</a> is a great overview of multidimensional databases, but does 
+not deal with MDX.</p>
+<p>
+The reference work on data warehousing is
+<a href="http://www.amazon.com/exec/obidos/tg/detail/-/0471200247/qid=1038277569/sr=1-2/ref=sr_1_2/002-1268646-6661668?v=glance&s=books">
+<i>The Data Warehouse Toolkit: The Complete Guide to Dimensional Modeling (Second 
+Edition)</i>, by Ralph Kimball, Margy Ross</a>. It covers the business process 
+well, but the focus is more on star schemas and ROLAP than OLAP.</font></span></p>
+<p>
+The
+<a href="http://msdn.microsoft.com/library/en-us/olapdmad/agmdxbasics_04qg.asp">
+Microsoft Analysis Services online documentation</a> has excellent online 
+documentation of MDX, including a
+<a href="http://msdn.microsoft.com/library/en-us/olapdmad/agmdxfunctions_9elw.asp">
+list of MDX functions</a>.</p>
+<h2><a name="Feedback">Mondrian is wonderful! How can I possibly thank you?</a></h2>
 <p>We'd <a href="mailto:jhyde@users.sourceforge.net">love to hear</a> what you liked and didn't like about 
 it. If you can think of ways that Mondrian can be improved, roll up your sleeves 
 and help make it better. If you use Mondrian in your application, consider 
@@ -100,7 +140,7 @@ sharing your work so that everyone can use it.</p>
   <tr>
     <td class="content">
       <a target="_top" href="index.html">Home</a> |
-      <a target="_top" href="noframes.html">No frames</a> | This file is<i>
+      <a target="_top" href="#">No frames</a> | This file is<i>
       <a href="http://apoptosis.dyndns.org:8080/open/mondrian/doc/faq.html">$Id$</a></i><a href="http://apoptosis.dyndns.org:8080/open/mondrian/doc/faq.html">
       </a>(<a href="http://apoptosis.dyndns.org:8080/open/mondrian/doc/faq.html?ac=22">log</a>)</td>
     <td align="right">
