@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2003 Julian Hyde
+// (C) Copyright 2003-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -54,14 +54,14 @@ public class RolapConnectionProperties extends EnumeratedValues {
 	/**
 	 * @{value} is the URL of the catalog, an XML file which describes
 	 * the schema: cubes, hierarchies, and so forth. Catalogs are described
-	 * <a target="_top" href="http://perforce.eigenbase.org:8080/open/mondrian/doc/schema.html">here</a>.
+	 * <a target="_top" href="http://mondrian.sourceforge.net/schema.html">here</a>.
 	 * See also {@link #CatalogContent}.
 	 */
 	public static final String Catalog = "Catalog";
 	/**
 	 * @{value} is an XML string representing
 	 * the schema: cubes, hierarchies, and so forth. Catalogs are described
-	 * <a target="_top" href="http://perforce.eigenbase.org:8080/open/mondrian/doc/schema.html">here</a>.
+	 * <a target="_top" href="http://mondrian.sourceforge.net/schema.html">here</a>.
 	 * See also {@link #Catalog}.
 	 */
 	public static final String CatalogContent = "CatalogContent";

@@ -44,6 +44,7 @@
   <property name="dist.data.file" value="${dist.dir}/${name}-data.zip"/>
   <property name="dist.data.mysql.file" value="${dist.dir}/${name}-data-mysql.zip"/>
   <property name="dist.bin.file" value="${dist.dir}/${dist.name}.zip"/>
+  <property name="dist.doc.file" value="${dist.dir}/doc.tar.gz"/>
   <property name="jar.file" value="${lib.dir}/${name}.jar"/>
   <property name="workbench.jar.file" value="workbench.jar"/>
   <property name="resource.jar.file" value="${lib.dir}/mondrian-resource.jar"/>
@@ -256,7 +257,7 @@ copy.properties"/>
         classpathref="project.classpath"
         source="1.4">
       <include name="mondrian/olap/MondrianException.java" />
-   	  <include name="mondrian/olap/ResultLimitExceeded.java" />
+      <include name="mondrian/olap/ResultLimitExceeded.java" />
     </javac>
 
     <resgen srcdir="${java.dir}" locales="en_US,de_DE">
@@ -481,7 +482,8 @@ ${javadoc.dir}/**,
 **/_vti*/*,
 **/*~,
 **/junit-results/**,
-${generated.java.files}" />
+${generated.java.files},
+doc/deployDoc.sh" />
     </zip>
   </target>
 
@@ -583,6 +585,32 @@ ${doc.dir}/api/src-html/**/*"/>
     </zip>
   </target>
 
+  <target
+      name="doczip"
+      depends="javadoc"
+      description="Builds a zipfile of the documentation, which can then be
+                   deployed to sf.net. See also doc/deployDoc.sh.">
+    <mkdir dir="${dist.dir}" />
+    <tar
+        destfile="${dist.doc.file}"
+        compression="gzip">
+      <tarfileset
+          dir="."
+          includes="
+doc/api/**/*,
+doc/**/*.html,
+doc/**/*.gif,
+doc/**/*.jpg,
+doc/**/*.css,
+doc/**/*.xml"
+          excludes="
+**/*~,
+**/_vti*/*,
+**/*.psp,
+**/*.sh"/>
+    </tar>
+  </target>
+
   <target name="jar" depends="compile">
     <mkdir dir="${lib.dir}" />
     <zip
@@ -632,6 +660,7 @@ VERSION.txt"/>
         footer="&lt;a href=&quot;http://sourceforge.net/projects/mondrian&quot;&gt;&lt;img src=&quot;http://sourceforge.net/sflogo.php?group_id=35302&#38;type=1&quot; width=&quot;88&quot; height=&quot;31&quot; border=&quot;0&quot; alt=&quot;SourceForge.net_Logo&quot;&gt;&lt;/a&gt;"
         author="true"
         source="1.4"
+        access="package"
         additionalparam="-linksource">
       <tag name="pre" description="Pre-condition:"
            scope="constructors,methods"/>
