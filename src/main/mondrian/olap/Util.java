@@ -754,16 +754,28 @@ public class Util extends mondrian.xom.XOMUtil
 							" in '" + s + "'");
 				}
 			} else {
-				String value;
-				int semi = s.indexOf(';', i);
+				StringBuffer sbValue = new StringBuffer();
+				// a jdbc url can contain semicolons (sql server: ...;SelectMethod=cursor)
+				// in this case the semicolon must be escaped by a backslash
+				int semi;
+				while (true) {
+					semi = s.indexOf(';', i);
+					if (semi > 0 && s.charAt(semi -1) == '\\') {
+						sbValue.append(s.substring(i, semi-1));
+						sbValue.append(";");
+						i = semi +1; // the semi is escaped
+				    } else
+				    	break;
+			    }
+
 				if (semi >= 0) {
-					value = s.substring(i, semi);
+					sbValue.append(s.substring(i, semi));
 					i = semi + 1;
 				} else {
-					value = s.substring(i);
+					sbValue.append(s.substring(i));
 					i = n;
 				}
-				return value.trim();
+				return sbValue.toString().trim();
 			}
 		}
 		/**
