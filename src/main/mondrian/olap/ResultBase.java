@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// (C) Copyright 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -14,7 +14,7 @@ package mondrian.olap;
 import java.io.PrintWriter;
 
 /**
- * todo:
+ * Skeleton implementation of {@link Result}.
  *
  * @author jhyde
  * @since 10 August, 2001
@@ -95,8 +95,10 @@ public abstract class ResultBase implements Result {
 		pw.print(cell.getFormattedValue());
 	}
 
-	public Member getMember(int[] pos, Dimension dimension)
-	{
+    /**
+     * Returns the current member of a given dimension at a given location.
+     **/
+	public Member getMember(int[] pos, Dimension dimension) {
 		for (int i = -1; i < axes.length; i++) {
 			Axis axis = slicerAxis;
 			int index = 0;
@@ -115,8 +117,8 @@ public abstract class ResultBase implements Result {
 		return dimension.getHierarchy().getDefaultMember();
 	}
 
-	// implement Result
-	public void close() {}
+	public void close() {
+    }
 }
 
 

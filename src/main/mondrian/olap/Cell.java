@@ -81,6 +81,22 @@ public interface Cell {
      */
     Object getPropertyValue(String propertyName);
 
+    /**
+     * Returns the context member for a particular dimension.
+     *
+     * The member is defined as follows (note that there is always a
+     * member):<ul>
+     *
+     * <li>If the dimension appears on one of the visible axes, the context
+     * member is simply the member on the current row or column.
+     *
+     * <li>If the dimension appears in the slicer, the context member is the
+     * member of that dimension in the slier.
+     *
+     * <li>Otherwise, the context member is the default member of that
+     * dimension (usually the 'all' member).</ul>
+     */
+    Member getContextMember(Dimension dimension);
 }
 
 // End Cell.java

@@ -546,6 +546,10 @@ class RolapCell implements Cell
             return getEvaluator().getProperty(propertyName);
         }
     }
+
+    public Member getContextMember(Dimension dimension) {
+        return result.getMember(result.getCellPos(ordinal), dimension);
+    }
 }
 
 // End RolapResult.java

@@ -404,14 +404,6 @@ class NonEmptyResult extends ResultBase {
 	private int mapOffsetToUnderlying(int offset) {
 		return ((Integer) map.get(new Integer(offset))).intValue();
 	}
-	// synchronized because we use 'pos'
-	public synchronized Member getMember(int[] externalPos, Dimension dimension) {
-		System.arraycopy(externalPos, 0, this.pos, 0, externalPos.length);
-		int offset = externalPos[axis];
-		int mappedOffset = mapOffsetToUnderlying(offset);
-		pos[axis] = mappedOffset;
-		return underlying.getMember(pos, dimension);
-	}
 
 	public void close() {
 		underlying.close();
