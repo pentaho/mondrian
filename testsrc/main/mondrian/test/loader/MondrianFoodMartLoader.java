@@ -18,7 +18,9 @@ import java.io.*;
 import java.math.BigDecimal;
 //import java.math.BigDecimal;
 import java.sql.*;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -350,13 +352,19 @@ public class MondrianFoodMartLoader {
 
         String[] batch = new String[inputBatchSize];
         int batchSize = 0;
+        boolean displayedInsert = false;
 
         while (rs.next()) {
             /*
              * Get a batch of insert statements, then save a batch
              */
 
-            batch[batchSize++] = createInsertStatement(rs, name, columns);
+            String insertStatement = createInsertStatement(rs, name, columns);
+            if (!displayedInsert && verbose) {
+            	System.out.println("Example Insert statement: " + insertStatement);
+            	displayedInsert = true;
+            }
+            batch[batchSize++] = insertStatement;
             if (batchSize >= inputBatchSize) {
                 rowsAdded += writeBatch(batch, batchSize);
                 batchSize = 0;
@@ -435,7 +443,16 @@ public class MondrianFoodMartLoader {
                 for (int i = 0; i < batchSize; i++) {
                     stmt.addBatch(batch[i]);
                 }
-                int [] updateCounts = stmt.executeBatch();
+                int [] updateCounts = null;
+                
+                try {
+                	updateCounts = stmt.executeBatch();
+                } catch (SQLException e) {
+                    for (int i = 0; i < batchSize; i++) {
+                    	System.out.println("Error in SQL batch: " + batch[i]);
+                    }
+                    throw e;
+                }
                 int updates = 0;
                 for (int i = 0; i < updateCounts.length; updates += updateCounts[i], i++) {
                     if (updateCounts[i] == 0) {
@@ -606,10 +623,18 @@ public class MondrianFoodMartLoader {
             fileOutput = new FileWriter(new File(outputDirectory, "createTables.sql"));
         }
 
-        String booleanColumnType = "BIT";
+        String booleanColumnType = "SMALLINT";
         if (sqlQuery.isPostgres()) {
             booleanColumnType = "BOOLEAN";
+        } else if (sqlQuery.isMySQL()) {
+            booleanColumnType = "BIT";
         }
+        
+        String bigIntColumnType = "BIGINT";
+        if (sqlQuery.isOracle()) {
+        	bigIntColumnType = "DECIMAL(15,0)";
+        }
+
         createTable("sales_fact_1997", new Column[] {
           new Column("product_id", "INTEGER", "NOT NULL"),
           new Column("time_id", "INTEGER", "NOT NULL"),
@@ -664,6 +689,12 @@ public class MondrianFoodMartLoader {
           new Column("supply_time", "SMALLINT", ""),
           new Column("store_invoice", "DECIMAL(10,4)", ""),
         });
+        createTable("currency", new Column[] {
+                new Column("currency_id", "INTEGER", "NOT NULL"),
+                new Column("date", "DATE", "NOT NULL"),
+                new Column("currency", "VARCHAR(30)", "NOT NULL"),
+                new Column("conversion_ratio", "DECIMAL(10,4)", "NOT NULL"),
+              });
         createTable("account", new Column[] {
           new Column("account_id", "INTEGER", "NOT NULL"),
           new Column("account_parent", "INTEGER", ""),
@@ -678,15 +709,9 @@ public class MondrianFoodMartLoader {
           new Column("category_description", "VARCHAR(30)", "NOT NULL"),
           new Column("category_rollup", "VARCHAR(30)", ""),
         });
-        createTable("currency", new Column[] {
-          new Column("currency_id", "INTEGER", "NOT NULL"),
-          new Column("date", "DATE", "NOT NULL"),
-          new Column("currency", "VARCHAR(30)", "NOT NULL"),
-          new Column("conversion_ratio", "DECIMAL(10,4)", "NOT NULL"),
-        });
         createTable("customer", new Column[] {
           new Column("customer_id", "INTEGER", "NOT NULL"),
-          new Column("account_num", "BIGINT", "NOT NULL"),
+          new Column("account_num", bigIntColumnType, "NOT NULL"),
           new Column("lname", "VARCHAR(30)", "NOT NULL"),
           new Column("fname", "VARCHAR(30)", "NOT NULL"),
           new Column("mi", "VARCHAR(30)", ""),
@@ -768,7 +793,7 @@ public class MondrianFoodMartLoader {
           new Column("product_id", "INTEGER", "NOT NULL"),
           new Column("brand_name", "VARCHAR(60)", ""),
           new Column("product_name", "VARCHAR(60)", "NOT NULL"),
-          new Column("SKU", "BIGINT", "NOT NULL"),
+          new Column("SKU", bigIntColumnType, "NOT NULL"),
           new Column("SRP", "DECIMAL(10,4)", ""),
           new Column("gross_weight", "REAL", ""),
           new Column("net_weight", "REAL", ""),
@@ -950,6 +975,9 @@ public class MondrianFoodMartLoader {
                     // the table, so let's remove the data.
                     final Statement statement = connection.createStatement();
                     try {
+                        if (verbose) {
+                        	System.out.println("DELETE FROM " + quoteId(name));
+                        }
                         statement.execute("DELETE FROM " + quoteId(name));
                     } catch (SQLException e) {
                         throw MondrianResource.instance().newCreateTableFailed(name, e);
@@ -973,16 +1001,22 @@ public class MondrianFoodMartLoader {
             }
             buf.append(")");
             final String ddl = buf.toString();
-
-            if (verbose) {
-                System.out.println(ddl);
-            }
             if (jdbcOutput) {
                 final Statement statement = connection.createStatement();
                 try {
+                    if (verbose) {
+                    	System.out.println("DROP TABLE " + quoteId(name));
+                    }
                     statement.execute("DROP TABLE " + quoteId(name));
                 } catch (SQLException e) {
                     // ignore 'table does not exist' error
+                    if (verbose) {
+                    	System.out.println("DROP TABLE exception: " + e.getMessage());
+                    }
+                }
+
+                if (verbose) {
+                    System.out.println(ddl);
                 }
                 statement.execute(ddl);
             } else {
@@ -1022,8 +1056,11 @@ public class MondrianFoodMartLoader {
         String columnType = column.type;
         final Pattern regex = Pattern.compile("DECIMAL\\((.*),(.*)\\)");
         final DecimalFormat integerFormatter = new DecimalFormat(decimalFormat(15, 0));
+        final String dateFormatString = "yyyy-MM-dd";
+        final String oracleDateFormatString = "YYYY-MM-DD";
+		final DateFormat dateFormatter = new SimpleDateFormat(dateFormatString);
 
-        Object obj = rs.getObject(column.name);
+		Object obj = rs.getObject(column.name);
         if (obj == null) {
             return "NULL";
         }
@@ -1056,9 +1093,22 @@ public class MondrianFoodMartLoader {
          * in the result set 
          */
         } else if (columnType.startsWith("SMALLINT")) {
-        	Integer result = (Integer) obj;
-            return result.toString();
-            
+            if (obj.getClass() == Boolean.class) {
+               	Boolean result = (Boolean) obj;
+               	if (result.booleanValue()) {
+               		return "1";
+               	} else {
+               		return "0";
+               	}
+            } else {
+	        	try {
+		        	Integer result = (Integer) obj;
+		            return result.toString();
+	        	} catch (ClassCastException cce) {
+	        		System.out.println("CCE: "  + column.name + " to Integer from: " + obj.getClass().getName() + " - " + obj.toString());
+	        		throw cce;
+	        	}
+            }
         /*
          * Output for an BIGINT column, handling Doubles and Longs 
          * in the result set 
@@ -1069,7 +1119,7 @@ public class MondrianFoodMartLoader {
 	            	Double result = (Double) obj;
 		            return integerFormatter.format(result.doubleValue());
             	} catch (ClassCastException cce) {
-            		System.out.println("CCE: "  + column.name + " to Long from: " + obj.getClass().getName() + " - " + obj.toString());
+            		System.out.println("CCE: "  + column.name + " to Double from: " + obj.getClass().getName() + " - " + obj.toString());
             		throw cce;
             	}
             } else {
@@ -1093,14 +1143,23 @@ public class MondrianFoodMartLoader {
          */
         } else if (columnType.startsWith("TIMESTAMP")) {
             Timestamp ts = (Timestamp) obj;
-            return "'" + ts + "'" ;
+            if (sqlQuery.isOracle()) {
+            	return "TIMESTAMP '" + ts + "'";
+            } else {
+            	return "'" + ts + "'";
+            }
+            //return "'" + ts + "'" ;
             
         /*
          * Output for a DATE
          */
         } else if (columnType.startsWith("DATE")) {
             Date dt = (Date) obj;
-            return "'" + dt + "'" ;
+            if (sqlQuery.isOracle()) {
+            	return "DATE '" + dateFormatter.format(dt) + "'";
+            } else {
+            	return "'" + dateFormatter.format(dt) + "'";
+            }
             
         /*
          * Output for a FLOAT
@@ -1197,7 +1256,7 @@ public class MondrianFoodMartLoader {
      * 
      * @param length  int: number of digits to format
      * @param places  int: number of decimal places
-     * @return number format, ie. length = 6, places = 2 => "####.##"
+     * @return number format, ie. length = 6, places = 2 => "###0.00"
      */
     private String decimalFormat(int length, int places) {
         StringBuffer sb = new StringBuffer();
@@ -1205,7 +1264,11 @@ public class MondrianFoodMartLoader {
             if ((length - i) == places) {
                 sb.append('.');
             }
-            sb.append("#");
+            if ((length - i) <= (places + 1)) {
+            	sb.append("0");
+            } else {
+            	sb.append("#");
+            }
         }
         return sb.toString();
     }
