@@ -669,6 +669,10 @@ build mondrian.war as in the runtime environment.">
           <fileset dir="${xalan.home}/bin" includes="xalan.jar,xml-apis.jar,xercesImpl.jar"/>
           <fileset dir="${catalina.home}/common/lib" includes="commons-dbcp.jar,commons-pool.jar,commons-collections.jar"/>
         </copy>
+        <copy todir="${testlib.dir}">
+          <fileset dir="${junit.home}" includes="junit.jar"/>
+        </copy>
+        <!--
         <extension id="junit.ext" extensionName="junit"/>
         <jarlib-resolve property="junit.library" failOnError="false" checkExtension="false">
             <extension refid="junit.ext"/>
@@ -717,6 +721,7 @@ build mondrian.war as in the runtime environment.">
             <location location="${lib.dir}/xercesImpl.jar"/>
             <url url="http://gump.covalent.net/jars/latest/xml-xerces2/xercesImpl.jar" destfile="${lib.dir}/xercesImpl.jar"/>
         </jarlib-resolve>
+        -->
     </target>
 
   <target name="war" depends="jar,copy-jars" description="
