@@ -84,10 +84,10 @@ public class MondrianProperties extends PropertiesPlus {
                     file.getAbsolutePath() + "' not found");
         }
         */
-		// If we're in a servlet, read "mondrian.properties" from JAR file.
+		// If we're in a servlet, read "mondrian.properties" from WEB-INF directory.
 		if (servletContext != null) {
 			try {
-				final URL resourceUrl = servletContext.getResource("/" + mondrianDotProperties);
+				final URL resourceUrl = servletContext.getResource("/WEB-INF/" + mondrianDotProperties);
 				if (resourceUrl != null) {
 					load(resourceUrl);
 				}
