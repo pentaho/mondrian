@@ -22,7 +22,7 @@ import java.util.*;
  * Note: Boolean expressions return either Boolean.TRUE or Boolean.FALSE or null. null
  * is returned, if the expression can not be evaluated because some values have not
  * been loaded from database yet.
- * 
+ *
  *
  * @author jhyde
  * @since 26 February, 2002
@@ -800,7 +800,14 @@ public class BuiltinFunTable extends FunTable {
 			}
 		});
 
-		if (false) define(new FunDefBase("Item", "<Tuple>.Item(<Numeric Expression>)", "Returns a member from a tuple.", "mm*"));
+		define(new FunDefBase("Item", "<Tuple>.Item(<Numeric Expression>)", "Returns a member from a tuple.", "mmtn") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				Member[] members = getTupleArg(evaluator, args, 0);
+				Double n = getDoubleArg(evaluator, args, 1);
+				int i = n.intValue();
+				return members[i];
+			}
+		});
 
 		define(new FunkResolver(
 				"Lag", "<Member>.Lag(<Numeric Expression>)", "Returns a member further along the specified member's dimension.",
@@ -884,6 +891,18 @@ public class BuiltinFunTable extends FunTable {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Member member = getMemberArg(evaluator, args, 0, true);
 				return evaluator.getSchemaReader().getLeadMember(member, -1);
+			}
+		});
+
+		define(new FunDefBase("StrToMember", "StrToMember(<String Expression>)", "Returns a member from a unique name String in MDX format.", "fmS") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				String mname = getStringArg(evaluator, args, 0, null);
+				Cube cube = evaluator.getCube();
+				SchemaReader schemaReader = evaluator.getSchemaReader();
+				String[] uniqueNameParts = Util.explode(mname);
+				Member member = Util.lookupMemberCompound(schemaReader, cube, uniqueNameParts, true);
+				// Member member = schemaReader.getMemberByUniqueName(uniqueNameParts, false);
+				return member;
 			}
 		});
 
@@ -1990,7 +2009,28 @@ public class BuiltinFunTable extends FunTable {
 		//
 		// TUPLE FUNCTIONS
 		define(new FunDefBase("Current", "<Set>.Current", "Returns the current tuple from a set during an iteration.", "ptx"));
-		if (false) define(new FunDefBase("Item", "<Set>.Item(<String Expression>[, <String Expression>...] | <Index>)", "Returns a tuple from a set.", "mt*"));
+
+		//if (false) define(new FunDefBase("Item", "<Set>.Item(<String Expression>[, <String Expression>...] | <Index>)", "Returns a tuple from a set.", "mt*"));
+		// we do not support the <String expression> arguments
+		define(new FunDefBase("Item", "<Set>.Item(<Numeric Expression>)", "Returns a tuple from a set.", "mtxn") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				// as the first arg is as set, it evaluates to a List
+				List list = (List) args[0].evaluate(evaluator);
+				Double n = getDoubleArg(evaluator, args, 1);
+				int i = n.intValue();
+				if (list.size() <= i)
+					return null;
+				if(list.get(0) instanceof Member) {
+					// List of members
+					return new Member[] { (Member)list.get(i)};
+				} else {
+					// List of tuples
+					Member[] memberExps = (Member[]) list.get(i);
+					return memberExps;
+				}
+			}
+		});
+
 		define(new FunDefBase("StrToTuple", "StrToTuple(<String Expression>)", "Constructs a tuple from a string.", "ftS") {
 			public Hierarchy getHierarchy(Exp[] args) {
 				// StrToTuple(s, <Hie1>, ... <HieN>) is of type [Hie1] x
@@ -2491,7 +2531,7 @@ public class BuiltinFunTable extends FunTable {
 				return toBoolean(o0.compareTo(o1) <= 0);
 			}
 		});
-		
+
 		define(new FunDefBase(">", "<Numeric Expression> > <Numeric Expression>", "Returns whether an expression is greater than another.", "ibnn") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Double o0 = getDoubleArg(evaluator, args, 0),
@@ -2510,7 +2550,7 @@ public class BuiltinFunTable extends FunTable {
 				return toBoolean(o0.compareTo(o1) > 0);
 			}
 		});
-		
+
 		define(new FunDefBase(">=", "<Numeric Expression> >= <Numeric Expression>", "Returns whether an expression is greater than or equal to another.", "ibnn") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Double o0 = getDoubleArg(evaluator, args, 0),
@@ -2723,18 +2763,18 @@ public class BuiltinFunTable extends FunTable {
 		public Object evaluate(Evaluator evaluator, Exp[] args) {
 			List set0 = getArgAsList(evaluator, args, 0);
 			List set1 = getArgAsList(evaluator, args, 1);
-			
+
 			// optimize nonempty(crossjoin(a,b)) == nonempty(crossjoin(nonempty(a),nonempty(b))
 			long size = (long)set0.size() * (long)set1.size();
 			if (size > 1000 && evaluator.isNonEmpty()) {
 				set0 = nonEmptyList(evaluator, set0);
 				set1 = nonEmptyList(evaluator, set1);
 			}
-			
+
 			if (set0.isEmpty() || set1.isEmpty()) {
 				return Collections.EMPTY_LIST;
 			}
-			
+
 			boolean neitherSideIsTuple = true;
 			int arity0 = 1,
 				arity1 = 1;
@@ -2801,13 +2841,13 @@ public class BuiltinFunTable extends FunTable {
 				return list;
 			}
 		}
-		
+
 		private static List nonEmptyList(Evaluator evaluator, List list) {
 			if (list.isEmpty())
 				return list;
 			List result = new ArrayList();
 			evaluator = evaluator.push();
-			if (list.get(0) instanceof Member[]) { 
+			if (list.get(0) instanceof Member[]) {
 				for (Iterator it = list.iterator(); it.hasNext();) {
 					Member[] m = (Member[]) it.next();
 					evaluator.setContext(m);

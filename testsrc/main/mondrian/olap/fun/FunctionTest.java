@@ -2553,4 +2553,21 @@ public class FunctionTest extends TestCase {
         final Axis rowsAxis = result.getAxes()[1];
         Assert.assertEquals(45, rowsAxis.positions.length);
     }
+    
+    public void testItemMember() {
+        String s = mTest.executeExpr("Descendants([Time].[1997], [Time].[Month]).Item(1).Item(0).UniqueName");
+        Assert.assertEquals("[Time].[1997].[Q1].[2]", s);
+    }
+
+    public void testItemTuple() {
+        String s = mTest.executeExpr("CrossJoin([Gender].[All Gender].children, " +
+        		"[Time].[1997].[Q2].children).Item(0).Item(1).UniqueName");
+        Assert.assertEquals("[Time].[1997].[Q2].[4]", s);
+    }
+    
+    public void testStrToMember() {
+        String s = mTest.executeExpr("StrToMember(\"[Time].[1997].[Q2].[4]\").Name");
+        Assert.assertEquals("4", s);
+    }
+
 }
