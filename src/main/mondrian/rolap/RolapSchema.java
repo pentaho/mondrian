@@ -351,7 +351,7 @@ public class RolapSchema implements Schema
             // no caching
             return new RolapSchema(catalogName, connectInfo, externalDataSource);
         }
-        String dataSourceId = "#external#" + externalDataSource.toString();
+        String dataSourceId = "external#" + System.identityHashCode(externalDataSource);
         final String key = makeKey(catalogName, dataSourceId);
         RolapSchema schema = (RolapSchema) mapUrlToSchema.get(key);
         if (schema == null) {
