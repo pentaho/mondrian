@@ -3,10 +3,9 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == (C) Copyright 2001-2003 Kana Software, Inc. and others.
+  == (C) Copyright 2001-2004 Kana Software, Inc. and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
-  == jhyde, 31 October, 2001
   -->
 <project name="mondrian" default="compile">
   <property environment="env"/>
@@ -17,7 +16,7 @@
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
-  <property name="version" value="1.0"/>
+  <property name="version" value="1.1.0"/>
 
   <!--
     ===================================================================
@@ -228,7 +227,6 @@ copy.properties"/>
         classpathref="project.boot.classpath"
         source="1.4">
       <include name="mondrian/xom/**/*.java" />
-      <include name="mondrian/olap/MondrianException.java" />
     </javac>
   </target>
 
@@ -252,6 +250,17 @@ copy.properties"/>
     <taskdef name="resgen" classname="mondrian.resource.ResourceGenTask">
       <classpath refid="project.classpath"/>
     </taskdef>
+
+    <!-- Compile MondrianException first, so that resgen can use
+         reflection on it. -->
+    <javac
+        srcdir="${java.dir}"
+        destdir="${classes.dir}"
+        debug="${project.build.debug}"
+        classpathref="project.classpath"
+        source="1.4">
+      <include name="mondrian/olap/MondrianException.java" />
+    </javac>
 
     <resgen srcdir="${java.dir}" locales="en_US,de_DE">
       <include name="mondrian/olap/MondrianResource.xml"/>
@@ -481,6 +490,7 @@ ${lib.dir}/mondrian-resource.jar,
 ${lib.dir}/javacup.jar,
 ${lib.dir}/jmi.jar,
 ${lib.dir}/mof.jar,
+${testsrc.dir}/queryFiles/**/*.xml,
 ${webapp.dir}/WEB-INF/web*.xml,
 ${webapp.dir}/**/*.jsp,
 ${webapp.dir}/WEB-INF/*.xsl,
@@ -651,12 +661,18 @@ VERSION.txt"/>
         author="true"
         source="1.4"
         additionalparam="-linksource">
-      <link href="http://javadoc.dyndns.org/joogle/api"/>
+      <tag name="pre" description="Pre-condition:"
+           scope="constructors,methods"/>
+      <tag name="post" description="Post-condition:"
+           scope="constructors,methods"/>
+      <tag name="testcase" description="Test-case:"
+           scope="constructors,methods,types"/>
 <!--
-      <link href="http://java.sun.com/j2se/1.4/docs/api/"/>
-      <link href="http://www.junit.org/junit/javadoc/3.7/"/>
-      <link href="http://java.sun.com/products/servlet/2.2/javadoc/"/>
+      <link href="http://javadoc.dyndns.org/joogle/api"/>
  -->
+      <link href="http://java.sun.com/j2se/1.4/docs/api/"/>
+      <link href="http://www.junit.org/junit/javadoc/3.8/"/>
+      <link href="http://java.sun.com/products/servlet/2.2/javadoc/"/>
     </javadoc>
     <copy file="${java.dir}/mondrian/xom/meta.xml"
         todir="${javadoc.dir}/mondrian/xom"/>
@@ -669,11 +685,11 @@ VERSION.txt"/>
   <target name="upload-javadoc" depends="javadoc" description="
 Copies javadoc to sourceforge, where it will be accessible via
 http://mondrian.sourceforge.net/api/index.html.
-You should set pscp.user, pscp.password and pscp.path in build.properties">
-    <exec executable="pscp.exe">
-      <arg line="-pw ${pscp.password}"/>
-      <arg line="-r ${javadoc.dir}"/>
-      <arg line="${pscp.user}:${pscp.path}"/>
+You should set scp.user, scp.password and scp.path in build.properties">
+    <exec executable="scp">
+      <arg line="-r"/>
+      <arg line="${javadoc.dir}"/>
+      <arg line="${scp.user}:${scp.path}"/>
     </exec>
   </target>
 
@@ -685,59 +701,6 @@ build mondrian.war as in the runtime environment.">
           <fileset dir="${xalan.home}/bin" includes="xalan.jar,xml-apis.jar,xercesImpl.jar"/>
           <fileset dir="${catalina.home}/common/lib" includes="commons-dbcp.jar,commons-pool.jar,commons-collections.jar"/>
         </copy>
-        <copy todir="${testlib.dir}">
-          <fileset dir="${junit.home}" includes="junit.jar"/>
-        </copy>
-
-        <extension id="junit.ext" extensionName="junit"/>
-        <jarlib-resolve property="junit.library" failOnError="false" checkExtension="false">
-            <extension refid="junit.ext"/>
-            <location location="${testlib.dir}/junit.jar"/>
-            <url url="http://gump.covalent.net/jars/latest/junit/junit.jar" destfile="${testlib.dir}/junit.jar"/>
-        </jarlib-resolve>
-
-        <extension id="commons-dbcp.ext" extensionName="org.apache.commons.dbcp"/>
-        <jarlib-resolve property="commons-dbcp.library" failOnError="false" checkExtension="false">
-            <extension refid="commons-dbcp.ext"/>
-            <location location="${lib.dir}/commons-dbcp.jar"/>
-            <url url="http://gump.covalent.net/jars/latest/jakarta-commons/commons-dbcp.jar" destfile="${lib.dir}/commons-dbcp.jar"/>
-        </jarlib-resolve>
-
-        <extension id="commons-pool.ext" extensionName="org.apache.commons.pool"/>
-        <jarlib-resolve property="commons-pool.library" failOnError="false" checkExtension="false">
-            <extension refid="commons-pool.ext"/>
-            <location location="${lib.dir}/commons-pool.jar"/>
-            <url url="http://gump.covalent.net/jars/latest/jakarta-commons/commons-pool.jar" destfile="${lib.dir}/commons-pool.jar"/>
-        </jarlib-resolve>
-
-        <extension id="commons-collections.ext" extensionName="org.apache.commons.collections"/>
-        <jarlib-resolve property="commons-collections.library" failOnError="false" checkExtension="false">
-            <extension refid="commons-collections.ext"/>
-            <location location="${lib.dir}/commons-collections.jar"/>
-            <url url="http://gump.covalent.net/jars/latest/jakarta-commons/commons-collections.jar" destfile="${lib.dir}/commons-collections.jar"/>
-        </jarlib-resolve>
-
-        <extension id="xalan.ext" extensionName="org.apache.xalan"/>
-        <jarlib-resolve property="xalan.library" failOnError="false" checkExtension="false">
-            <extension refid="xalan.ext"/>
-            <location location="${lib.dir}/xalan.jar"/>
-            <url url="http://gump.covalent.net/jars/latest/xml-xalan/xalan.jar" destfile="${lib.dir}/xalan.jar"/>
-        </jarlib-resolve>
-
-        <extension id="xml.ext" extensionName="org.xml"/>
-        <jarlib-resolve property="xml.library" failOnError="false" checkExtension="false">
-            <extension refid="xml.ext"/>
-            <location location="${lib.dir}/xml-apis.jar"/>
-            <url url="http://gump.covalent.net/jars/latest/xml-commons/xml-apis.jar" destfile="${lib.dir}/xml-apis.jar"/>
-        </jarlib-resolve>
-
-        <extension id="xerces.ext" extensionName="org.apache.xerces"/>
-        <jarlib-resolve property="xerces.library" failOnError="false" checkExtension="false">
-            <extension refid="xerces.ext"/>
-            <location location="${lib.dir}/xercesImpl.jar"/>
-            <url url="http://gump.covalent.net/jars/latest/xml-xerces2/xercesImpl.jar" destfile="${lib.dir}/xercesImpl.jar"/>
-        </jarlib-resolve>
-
     </target>
 
   <target name="war" depends="jar,copy-jars" description="
