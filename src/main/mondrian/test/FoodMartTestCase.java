@@ -552,13 +552,17 @@ public class FoodMartTestCase extends TestCase {
 
 	public void testCellValue() {
 		Result result = runQuery(
-				"select {[Measures].[Unit Sales]} on columns," + nl +
+				"select {[Measures].[Unit Sales],[Measures].[Store Sales]} on columns," + nl +
 				" {[Gender].[M]} on rows" + nl +
 				"from Sales");
 		Cell cell = result.getCell(new int[] {0,0});
 		Object value = cell.getValue();
 		assertTrue(value instanceof Number);
 		assertEquals(135215, ((Number) value).intValue());
+		cell = result.getCell(new int[] {1,0});
+		value = cell.getValue();
+		assertTrue(value instanceof Number);
+		assertEquals(285011, ((Number) value).intValue());
 	}
 }
 

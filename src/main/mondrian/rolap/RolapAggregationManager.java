@@ -77,10 +77,11 @@ public abstract class RolapAggregationManager implements CellReader {
 	{
 		RolapMeasure measure = (RolapMeasure) members[0];
 		Util.assertTrue(measure instanceof RolapStoredMeasure);
-		RolapStar star = (RolapStar) measure.star;
-		Util.assertTrue(star != null);
-		CellRequest request = new CellRequest(
-			(RolapStar.Measure) star.factTable.columns.get(0)); // yeuck!!
+		final RolapStar.Measure starMeasure = (RolapStar.Measure)
+				measure.starMeasure;
+		Util.assertTrue(starMeasure != null);
+		RolapStar star = starMeasure.table.star;
+		CellRequest request = new CellRequest(starMeasure);
 		for (int i = 1; i < members.length; i++) {
 			RolapMember member = members[i];
 			for (RolapMember m = member; m != null; m = (RolapMember)
@@ -99,8 +100,8 @@ public abstract class RolapAggregationManager implements CellReader {
 				RolapStar.Column column = (RolapStar.Column)
 					star.mapLevelToColumn.get(level);
 				if (column == null) {
-					// This hierarchy is not one which qualifies the measure (this happens in
-					// virtual cubes). The measure only has a value for the 'all' member of
+					// This hierarchy is not one which qualifies the starMeasure (this happens in
+					// virtual cubes). The starMeasure only has a value for the 'all' member of
 					// the hierarchy (which this is not).
 					return null;
 				} else {
@@ -144,7 +145,10 @@ public abstract class RolapAggregationManager implements CellReader {
 	{
 		CellRequest request = makeRequest(members);
 		RolapMeasure measure = (RolapMeasure) members[0];
-		RolapStar star = (RolapStar) measure.star;
+		final RolapStar.Measure starMeasure = (RolapStar.Measure)
+				measure.starMeasure;
+		Util.assertTrue(starMeasure != null);
+		RolapStar star = starMeasure.table.star;
 		return star.getCell(request);
 	}
 

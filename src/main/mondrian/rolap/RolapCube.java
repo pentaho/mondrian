@@ -240,6 +240,7 @@ class RolapCube extends CubeBase
 			measure.name = storedMeasure.column;
 			measure.aggregator = storedMeasure.aggregator;
 			measure.isNumeric = true;
+			storedMeasure.starMeasure = measure; // reverse mapping
 			star.factTable.columns.add(measure);
 			// create dimension tables
 			RolapDimension[] dimensions =
@@ -288,7 +289,6 @@ class RolapCube extends CubeBase
 			}
 			star.tables = (RolapStar.Table[]) tables.toArray(
 					new RolapStar.Table[tables.size()]);
-			storedMeasure.star = star;
 		}
 	}
 

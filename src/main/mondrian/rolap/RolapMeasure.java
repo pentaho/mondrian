@@ -25,10 +25,12 @@ import mondrian.olap.Exp;
  **/
 abstract class RolapMeasure extends RolapMember
 {
-	/** Holds the {@link mondrian.rolap.RolapStar} from which this member is computed.
-	 * Untyped, because another implementation might store it somewhere else.
+	/**
+	 * Holds the {@link mondrian.rolap.RolapStar.Measure} from which this
+	 * member is computed. Untyped, because another implementation might store
+	 * it somewhere else.
 	 */
-	Object star;
+	Object starMeasure;
 
 	RolapMeasure(
 			RolapMember parentMember, RolapLevel level, String name,
