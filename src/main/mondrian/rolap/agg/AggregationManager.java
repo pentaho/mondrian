@@ -30,67 +30,67 @@ import java.sql.DatabaseMetaData;
  * @version $Id$
  **/
 public class AggregationManager extends RolapAggregationManager {
-  private static AggregationManager instance;
-  ArrayList aggregations;
+	private static AggregationManager instance;
+	ArrayList aggregations;
 
-  AggregationManager()
-  {
-    this.aggregations = new ArrayList();
-  }
+	AggregationManager()
+	{
+		this.aggregations = new ArrayList();
+	}
 
-  /** Returns or creates the singleton. **/
-  public static synchronized RolapAggregationManager instance()
-  {
-    if (instance == null) {
-      instance = new AggregationManager();
-    }
-    return instance;
-  }
+ 	/** Returns or creates the singleton. **/
+	public static synchronized RolapAggregationManager instance()
+	{
+		if (instance == null) {
+			instance = new AggregationManager();
+		}
+		return instance;
+	}
 
-  public void loadAggregations(ArrayList batches, Collection pinnedSegments) {
-    for (Iterator batchIter = batches.iterator(); batchIter.hasNext();) {
-      Batch batch = (Batch) batchIter.next();
-      ArrayList requests = batch.requests;
-      CellRequest firstRequest = (CellRequest) requests.get(0);
-      RolapStar.Column[] columns = firstRequest.getColumns();
-      ArrayList measuresList = new ArrayList();
-      HashSet[] valueSets = new HashSet[columns.length];
-      for (int i = 0; i < valueSets.length; i++) {
-        valueSets[i] = new HashSet();
-      }
-      for (int i = 0, count = requests.size(); i < count; i++) {
-        CellRequest request = (CellRequest) requests.get(i);
-        for (int j = 0; j < columns.length; j++) {
-          Object value = request.getValueList().get(j);
-          Util.assertTrue(
-            !(value instanceof Object[]),
-            "multi-valued key not valid in this cell request");
+	public void loadAggregations(ArrayList batches, Collection pinnedSegments) {
+		for (Iterator batchIter = batches.iterator(); batchIter.hasNext();) {
+			Batch batch = (Batch) batchIter.next();
+			ArrayList requests = batch.requests;
+			CellRequest firstRequest = (CellRequest) requests.get(0);
+			RolapStar.Column[] columns = firstRequest.getColumns();
+			ArrayList measuresList = new ArrayList();
+			HashSet[] valueSets = new HashSet[columns.length];
+			for (int i = 0; i < valueSets.length; i++) {
+				valueSets[i] = new HashSet();
+			}
+			for (int i = 0, count = requests.size(); i < count; i++) {
+				CellRequest request = (CellRequest) requests.get(i);
+				for (int j = 0; j < columns.length; j++) {
+					Object value = request.getValueList().get(j);
+					Util.assertTrue(
+						!(value instanceof Object[]),
+						"multi-valued key not valid in this cell request");
                     valueSets[j].add(value);
-        }
-        RolapStar.Measure measure = request.getMeasure();
-        if (!measuresList.contains(measure)) {
-          if (measuresList.size() > 0) {
-            Util.assertTrue(
-                measure.table.star ==
-                ((RolapStar.Measure) measuresList.get(0)).table.star);
-          }
-          measuresList.add(measure);
-        }
-      }
-      Object[][] constraintses = new Object[columns.length][];
-      for (int j = 0; j < columns.length; j++) {
-        Object[] constraints;
-        HashSet valueSet = valueSets[j];
-        if (valueSet == null) {
-          constraints = null;
-        } else {
-          constraints = valueSet.toArray();
-        }
-        constraintses[j] = constraints;
-      }
-      // todo: optimize key sets; drop a constraint if more than x% of
-      // the members are requested; whether we should get just the cells
-      // requested or expand to a n-cube
+				}
+				RolapStar.Measure measure = request.getMeasure();
+				if (!measuresList.contains(measure)) {
+					if (measuresList.size() > 0) {
+						Util.assertTrue(
+								measure.table.star ==
+								((RolapStar.Measure) measuresList.get(0)).table.star);
+					}
+					measuresList.add(measure);
+				}
+			}
+			Object[][] constraintses = new Object[columns.length][];
+			for (int j = 0; j < columns.length; j++) {
+				Object[] constraints;
+				HashSet valueSet = valueSets[j];
+				if (valueSet == null) {
+					constraints = null;
+				} else {
+					constraints = valueSet.toArray();
+				}
+				constraintses[j] = constraints;
+			}
+			// todo: optimize key sets; drop a constraint if more than x% of
+			// the members are requested; whether we should get just the cells
+			// requested or expand to a n-cube
 
             // If the database cannot execute "count(distinct ...)", split the
             // distinct aggregations out.
@@ -118,11 +118,14 @@ public class AggregationManager extends RolapAggregationManager {
                         distinctMeasuresList.toArray(new RolapStar.Measure[0]);
                 loadAggregation(measures, columns, constraintses, pinnedSegments);
             }
-      RolapStar.Measure[] measures = (RolapStar.Measure[])
-          measuresList.toArray(new RolapStar.Measure[0]);
-      loadAggregation(measures, columns, constraintses, pinnedSegments);
-    }
-  }
+            final int measureCount = measuresList.size();
+            if (measureCount > 0) {
+                RolapStar.Measure[] measures = (RolapStar.Measure[])
+                        measuresList.toArray(new RolapStar.Measure[measureCount]);
+                loadAggregation(measures, columns, constraintses, pinnedSegments);
+            }
+		}
+	}
 
     /**
      * Returns the first measure based upon a distinct aggregation, or null if
@@ -141,99 +144,99 @@ public class AggregationManager extends RolapAggregationManager {
     }
 
     private synchronized void loadAggregation(
-    RolapStar.Measure[] measures, RolapStar.Column[] columns,
-    Object[][] constraintses, Collection pinnedSegments)
-  {
-    RolapStar star = measures[0].table.star;
-    Aggregation aggregation = lookupAggregation(star, columns);
-    if (aggregation == null) {
-      aggregation = new Aggregation(star, columns);
-      this.aggregations.add(aggregation);
-    }
-    constraintses = aggregation.optimizeConstraints(constraintses);
-    aggregation.load(measures, constraintses, pinnedSegments);
-  }
+		RolapStar.Measure[] measures, RolapStar.Column[] columns,
+		Object[][] constraintses, Collection pinnedSegments)
+	{
+		RolapStar star = measures[0].table.star;
+		Aggregation aggregation = lookupAggregation(star, columns);
+		if (aggregation == null) {
+			aggregation = new Aggregation(star, columns);
+			this.aggregations.add(aggregation);
+		}
+		constraintses = aggregation.optimizeConstraints(constraintses);
+		aggregation.load(measures, constraintses, pinnedSegments);
+	}
 
-  /**
-   * Looks for an existing aggregation over a given set of columns, or
-   * returns <code>null</code> if there is none.
-   *
-   * <p>Must be called from synchronized context.
-   **/
-  private Aggregation lookupAggregation(
-      RolapStar star, RolapStar.Column[] columns)
-  {
-    for (int i = 0, count = aggregations.size(); i < count; i++) {
-      Aggregation aggregation = (Aggregation) aggregations.get(i);
-      if (aggregation.star == star &&
-          equals(aggregation.columns, columns)) {
-        return aggregation;
-      }
-    }
-    return null;
-  }
+	/**
+	 * Looks for an existing aggregation over a given set of columns, or
+	 * returns <code>null</code> if there is none.
+	 *
+	 * <p>Must be called from synchronized context.
+	 **/
+	private Aggregation lookupAggregation(
+			RolapStar star, RolapStar.Column[] columns)
+	{
+		for (int i = 0, count = aggregations.size(); i < count; i++) {
+			Aggregation aggregation = (Aggregation) aggregations.get(i);
+			if (aggregation.star == star &&
+					equals(aggregation.columns, columns)) {
+				return aggregation;
+			}
+		}
+		return null;
+	}
 
-  /** Return whether two arrays of columns are identical. **/
-  private static boolean equals(
-      RolapStar.Column[] columns1, RolapStar.Column[] columns2) {
-    int count = columns1.length;
-    if (count != columns2.length) {
-      return false;
-    }
-    for (int j = 0; j < count; j++) {
-      if (columns1[j] != columns2[j]) {
-        return false;
-      }
-    }
-    return true;
-  }
+	/** Return whether two arrays of columns are identical. **/
+	private static boolean equals(
+			RolapStar.Column[] columns1, RolapStar.Column[] columns2) {
+		int count = columns1.length;
+		if (count != columns2.length) {
+			return false;
+		}
+		for (int j = 0; j < count; j++) {
+			if (columns1[j] != columns2[j]) {
+				return false;
+			}
+		}
+		return true;
+	}
 
-  public Object getCellFromCache(CellRequest request) {
-    RolapStar.Measure measure = request.getMeasure();
-    Aggregation aggregation = lookupAggregation(
-        measure.table.star, request.getColumns());
-    if (aggregation == null) {
-      return null; // cell is not in any aggregation
-    }
-    Object o = aggregation.get(
-        measure, request.getSingleValues(), null);
-    if (o != null) {
-      return o;
-    }
-    throw Util.getRes().newInternal("not found");
-  }
+	public Object getCellFromCache(CellRequest request) {
+		RolapStar.Measure measure = request.getMeasure();
+		Aggregation aggregation = lookupAggregation(
+				measure.table.star, request.getColumns());
+		if (aggregation == null) {
+			return null; // cell is not in any aggregation
+		}
+		Object o = aggregation.get(
+				measure, request.getSingleValues(), null);
+		if (o != null) {
+			return o;
+		}
+		throw Util.getRes().newInternal("not found");
+	}
 
-  public Object getCellFromCache(CellRequest request, Set pinSet) {
-    Util.assertPrecondition(pinSet != null);
-    RolapStar.Measure measure = request.getMeasure();
-    Aggregation aggregation = lookupAggregation(
-        measure.table.star, request.getColumns());
-    if (aggregation == null) {
-      return null; // cell is not in any aggregation
-    }
-    return aggregation.get(
-        measure, request.getSingleValues(), pinSet);
-  }
+	public Object getCellFromCache(CellRequest request, Set pinSet) {
+		Util.assertPrecondition(pinSet != null);
+		RolapStar.Measure measure = request.getMeasure();
+		Aggregation aggregation = lookupAggregation(
+				measure.table.star, request.getColumns());
+		if (aggregation == null) {
+			return null; // cell is not in any aggregation
+		}
+		return aggregation.get(
+				measure, request.getSingleValues(), pinSet);
+	}
 
-  public String getDrillThroughSQL(final CellRequest request) {
+	public String getDrillThroughSQL(final CellRequest request) {
         return generateSQL(new DrillThroughQuerySpec(request), false);
-  }
+	}
 
     /**
-   * Generates the query to retrieve the cells for a list of segments.
-   */
-  static String generateSQL(Segment[] segments) {
-    return generateSQL(new SegmentArrayQuerySpec(segments), true);
-  }
+	 * Generates the query to retrieve the cells for a list of segments.
+	 */
+	static String generateSQL(Segment[] segments) {
+		return generateSQL(new SegmentArrayQuerySpec(segments), true);
+	}
 
     /**
-   * Generates the query to retrieve the cells for a list of segments.
+	 * Generates the query to retrieve the cells for a list of segments.
      *
      * @param spec Query specification
      * @param aggregate Whether to aggregate; <code>true</code> for populating
      *   a segment, <code>false</code> for drill-through
-   */
-  private static String generateSQL(QuerySpec spec, boolean aggregate) {
+	 */
+	private static String generateSQL(QuerySpec spec, boolean aggregate) {
         java.sql.Connection jdbcConnection = spec.getStar().getJdbcConnection();
         try {
             return generateSql(spec, jdbcConnection, aggregate);
@@ -357,73 +360,73 @@ public class AggregationManager extends RolapAggregationManager {
     }
 
     /**
-   * Contains the information necessary to generate a SQL statement to
-   * retrieve a set of cells.
-   */
-  private interface QuerySpec {
-    int getMeasureCount();
-    RolapStar.Measure getMeasure(int i);
+	 * Contains the information necessary to generate a SQL statement to
+	 * retrieve a set of cells.
+	 */
+	private interface QuerySpec {
+		int getMeasureCount();
+		RolapStar.Measure getMeasure(int i);
         String getMeasureAlias(int i);
-    RolapStar getStar();
-    RolapStar.Column[] getColumns();
+		RolapStar getStar();
+		RolapStar.Column[] getColumns();
         String getColumnAlias(int i);
-    Object[] getConstraints(int i);
+		Object[] getConstraints(int i);
     }
 
-  /**
-   * Provides the information necessary to generate a SQL statement to
-   * retrieve a list of segments.
-   */
-  private static class SegmentArrayQuerySpec implements QuerySpec {
-    private final Segment[] segments;
+	/**
+	 * Provides the information necessary to generate a SQL statement to
+	 * retrieve a list of segments.
+	 */
+	private static class SegmentArrayQuerySpec implements QuerySpec {
+		private final Segment[] segments;
 
-    SegmentArrayQuerySpec(Segment[] segments) {
-      this.segments = segments;
-      Util.assertPrecondition(segments.length > 0, "segments.length > 0");
-      for (int i = 0; i < segments.length; i++) {
-        Segment segment = segments[i];
-        Util.assertPrecondition(segment.aggregation == segments[0].aggregation);
-        int n = segment.axes.length;
-        Util.assertTrue(n == segments[0].axes.length);
-        for (int j = 0; j < segment.axes.length; j++) {
-          // We only require that the two arrays have the same
-          // contents, we but happen to know they are the same array,
-          // because we constructed them at the same time.
-          Util.assertTrue(
-              segment.axes[j].constraints ==
-              segments[0].axes[j].constraints);
-        }
-      }
-    }
+		SegmentArrayQuerySpec(Segment[] segments) {
+			this.segments = segments;
+			Util.assertPrecondition(segments.length > 0, "segments.length > 0");
+			for (int i = 0; i < segments.length; i++) {
+				Segment segment = segments[i];
+				Util.assertPrecondition(segment.aggregation == segments[0].aggregation);
+				int n = segment.axes.length;
+				Util.assertTrue(n == segments[0].axes.length);
+				for (int j = 0; j < segment.axes.length; j++) {
+					// We only require that the two arrays have the same
+					// contents, we but happen to know they are the same array,
+					// because we constructed them at the same time.
+					Util.assertTrue(
+							segment.axes[j].constraints ==
+							segments[0].axes[j].constraints);
+				}
+			}
+		}
 
-    public int getMeasureCount() {
-      return segments.length;
-    }
+		public int getMeasureCount() {
+			return segments.length;
+		}
 
-    public RolapStar.Measure getMeasure(int i) {
-      return segments[i].measure;
-    }
+		public RolapStar.Measure getMeasure(int i) {
+			return segments[i].measure;
+		}
 
         public String getMeasureAlias(int i) {
             return "m" + i;
         }
 
-    public RolapStar getStar() {
-      return segments[0].aggregation.star;
-    }
+		public RolapStar getStar() {
+			return segments[0].aggregation.star;
+		}
 
-    public RolapStar.Column[] getColumns() {
-      return segments[0].aggregation.columns;
-    }
+		public RolapStar.Column[] getColumns() {
+			return segments[0].aggregation.columns;
+		}
 
         public String getColumnAlias(int i) {
             return "c" + i;
         }
 
-    public Object[] getConstraints(int i) {
-      return segments[0].axes[i].constraints;
-    }
-  }
+		public Object[] getConstraints(int i) {
+			return segments[0].axes[i].constraints;
+		}
+	}
 
     /**
      * Provides the information necessary to generate SQL for a drill-through
