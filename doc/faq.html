@@ -39,6 +39,8 @@
   <li><a href="#Feedback">Mondrian is wonderful! How can I possibly thank you?</a></li>
   <li><a href="#Modeling">Modeling</a><ul>
     <li><a href="#measures_not_stored_in_the_fact_table">Measures not in the fact table</a></li>
+  <li><a href="#fact_table_based_upon_query">How can I define my fact table based on an arbitrary SQL statement?</a></li>
+  <li><a href="#case_sensitive_table_names">Why can't Mondrian find my tables?</a></li>
   </ul></li>
   <li><a href="#Build_install">Build/install</a></li>
   <li><a href="#Performance">Performance</a><ul>
@@ -166,6 +168,82 @@ sharing your work so that everyone can use it.</p>
 
 <hr noshade color="#000000" size="1">
 
+<h3><a name="fact_table_based_upon_query">How can I define my fact table based 
+on an arbitrary SQL statement?</a></h3>
+
+<p>Use the &lt;View&gt; element INSTEAD OF the &lt;Table&gt; element. You need to specify 
+the 'alias' attribute, which Mondrian uses as a table alias.</p>
+
+<p>The XML 'CDATA' construct is useful in case there are strange characters in 
+your SQL, but isn't essential.</p>
+
+<pre>&lt;View alias=&quot;DFACD_filtered&quot;&gt;
+    &lt;SQL dialect=&quot;generic&quot;&gt;
+        &lt;![CDATA[select * from DFACD where CSOC = '09']]&gt;
+    &lt;/SQL&gt;
+&lt;/View&gt;</pre> <p>
+
+<hr noshade color="#000000" size="1">
+
+<h3><a name="case_sensitive_table_names">Why can't Mondrian find my tables?</a></h3>
+
+<p>Consider this scenario. I have created some tables in Oracle, like this:</p>
+
+<blockquote><pre>CREATE TABLE sales (
+    prodid INTEGER, 
+    day INTEGER, 
+    amount NUMBER);</pre></blockquote>
+
+<p>and referenced it in my schema.xml like this:</p>
+
+<blockquote><pre>&lt;Cube name=&quot;Sales&quot;&gt;
+    &lt;Table name=&quot;sales&quot;/&gt;
+    ...
+    &lt;Measure name=&quot;Sales&quot; column=&quot;amount&quot; aggregator=&quot;sum&quot;/&gt;
+    &lt;Measure name=&quot;Sales count&quot; column=&quot;prodid&quot; aggregator=&quot;count&quot;/&gt;
+&lt;/Cube&gt;</pre></blockquote>
+
+<p>Now I start up Mondrian and get an error 
+<code>ORA-00942: Table or view &quot;sales&quot; does not exist</code> while executing the 
+SQL statement
+<code>SELECT &quot;prodid&quot;, count(*) FROM &quot;sales&quot; GROUP BY &quot;prodid&quot;</code>. The query 
+looks valid, and the table exists, so why is Oracle giving an error?</p>
+
+<p>The problem is that table and column names are case-sensitive. You told 
+Mondrian to look for a table called &quot;sales&quot;, not &quot;SALES&quot; or &quot;Sales&quot;.
+
+<p>Oracle's table and column names are case-sensitive too, provided that you 
+enclose them in double-quotes, like this:
+
+<blockquote><pre>CREATE TABLE &quot;sales&quot; (
+    &quot;prodid&quot; INTEGER, 
+    &quot;day&quot; INTEGER, 
+    &quot;amount&quot; NUMBER);</pre></blockquote>
+
+<p>If you omit the double-quotes, Oracle automatically converts the identifiers 
+to upper-case, so the first <code>CREATE TABLE</code> command actually created a 
+table called &quot;SALES&quot;. When the query gets run, Mondrian is looking for a table 
+called &quot;sales&quot; (because that's what you called it in your schema.xml), yet 
+Oracle only has a table called &quot;SALES&quot;.</p>
+
+<p>There are two possible solutions. The simplest is to change the objects to 
+upper-case in your schema.xml file:</p>
+
+<blockquote><pre>&lt;Cube name=&quot;Sales&quot;&gt;
+    &lt;Table name=&quot;<b><font color="#FF0000">SALES</font></b>&quot;/&gt;
+    ...
+    &lt;Measure name=&quot;Sales&quot; column=&quot;<b><font color="#FF0000">AMOUNT</font></b>&quot; aggregator=&quot;sum&quot;/&gt;
+    &lt;Measure name=&quot;Sales count&quot; column=&quot;<b><font color="#FF0000">PRODID</font></b>&quot; aggregator=&quot;count&quot;/&gt;
+&lt;/Cube&gt;</pre></blockquote>
+
+<p>Alternatively, if you decide you would like your table and column names to be 
+in lower or mixed case (or even, for that matter, to contain spaces), then you 
+must double-quote object names when you issue <code>CREATE TABLE</code> 
+statements to Oracle.</p>
+
+<hr noshade color="#000000" size="1">
+
+
 <h2><a name="Build_install">Build/install</a></h2>
 <h3><a name="compilation_errors">I get compilation errors? Why is this?</a></h3>
 <p>For example:</p>
@@ -212,6 +290,7 @@ following piece of code, which flushes the entire contents:</p>
 information.</p>
 
 <hr noshade color="#000000" size="1">
+
 
 <table border="0" class="clsStd" width="100%" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0">
   <tr>
