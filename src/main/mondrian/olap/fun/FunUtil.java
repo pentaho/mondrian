@@ -462,9 +462,9 @@ public class FunUtil extends Util {
 			// one of the values is not in cache; continue as best as we can
 			return 0;
 		} else if (value0 == Util.nullValue) {
-			return 1; // null == +infinity
+			return -1; // null == -infinity
 		} else if (value1 == Util.nullValue) {
-			return -1; // null == +infinity
+			return 1; // null == -infinity
 		} else if (value0 instanceof String) {
 			return ((String) value0).compareTo((String) value1);
 		} else if (value0 instanceof Number) {
