@@ -373,7 +373,7 @@ public class Util extends mondrian.xom.XOMUtil
 		throw Util.newInternal(
 				"could not find member " + member + " amongst its siblings");
 	}
-	
+
 	/**
 	 * returns the first descendant on the level underneath parent.
 	 * If parent = [Time].[1997] and level = [Time].[Month], then
@@ -388,8 +388,15 @@ public class Util extends mondrian.xom.XOMUtil
 		return m;
 	}
 
+    /**
+     * Returns whether a string is null or empty.
+     */
+    public static boolean isEmpty(String s) {
+        return s == null || s.length() == 0;
+    }
 
-	/**
+
+    /**
 	 * A <code>NullCellValue</code> is a placeholder value used when cells have
 	 * a null value. It is a singleton.
 	 */
@@ -821,6 +828,50 @@ public class Util extends mondrian.xom.XOMUtil
 			return new ArrayList(list);
 		}
 	}
+
+    /**
+     * Combines two integers into a hash code.
+     */
+    public static int hash(
+        int i,
+        int j)
+    {
+        return (i << 4) ^ j;
+    }
+
+    /**
+     * Computes a hash code from an existing hash code and an object (which
+     * may be null).
+     */
+    public static int hash(
+        int h,
+        Object o)
+    {
+        int k = (o == null) ? 0 : o.hashCode();
+        return ((h << 4) | h) ^ k;
+    }
+
+    /**
+     * Computes a hash code from an existing hash code and an array of objects
+     * (which may be null).
+     */
+    public static int hashArray(
+        int h,
+        Object [] a)
+    {
+        // The hashcode for a null array and an empty array should be different
+        // than h, so use magic numbers.
+        if (a == null) {
+            return hash(h, 19690429);
+        }
+        if (a.length == 0) {
+            return hash(h, 19690721);
+        }
+        for (int i = 0; i < a.length; i++) {
+            h = hash(h, a[i]);
+        }
+        return h;
+    }
 
     /**
      * Creates a very simple implementation of {@link Exp.Resolver}. (Only

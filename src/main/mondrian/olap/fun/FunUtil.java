@@ -26,8 +26,13 @@ public class FunUtil extends Util {
 	static final String nl = System.getProperty("line.separator");
     static final String[] emptyStringArray = new String[0];
 
+    /**
+     * Creates an exception which indicates that an error has occurred while
+     * executing a given function.
+     */
     public static RuntimeException newEvalException(
 			FunDef funDef, String message) {
+        Util.discard(funDef); // TODO: use this
 		return new MondrianEvaluationException(message);
 	}
 
@@ -570,7 +575,158 @@ public class FunUtil extends Util {
 		return members;
 	}
 
-	static class SetWrapper {
+    /**
+     * Decodes the syntactic type of an operator.
+     *
+     * @param flags A encoded string which represents an operator signature,
+     *   as used by the <code>flags</code> parameter used to construct a
+     *   {@link FunDefBase}.
+     *
+     * @return A {@link Syntax}
+     */
+    public static Syntax decodeSyntacticType(String flags) {
+		char c = flags.charAt(0);
+		switch (c) {
+		case 'p':
+			return Syntax.Property;
+		case 'f':
+			return Syntax.Function;
+		case 'm':
+			return Syntax.Method;
+		case 'i':
+			return Syntax.Infix;
+		case 'P':
+			return Syntax.Prefix;
+		case 'I':
+			return Syntax.Internal;
+		default:
+			throw newInternal(
+					"unknown syntax code '" + c + "' in string '" + flags + "'");
+		}
+	}
+
+    /**
+     * Decodes the signature of a function into a category code which describes
+     * the return type of the operator.
+     *
+     * <p>For example, <code>decodeReturnType("fnx")</code> returns
+     * <code>{@link Category#Numeric}</code>, indicating this function has a
+     * numeric return value.
+     *
+     * @param flags The signature of an operator,
+     *   as used by the <code>flags</code> parameter used to construct a
+     *   {@link FunDefBase}.
+     *
+     * @return An array {@link Category} codes.
+     */
+    public static int decodeReturnType(String flags) {
+		final int returnType = decodeType(flags, 1);
+		if ((returnType & Category.Mask) != returnType) {
+			throw newInternal("bad return code flag in flags '" + flags + "'");
+		}
+		return returnType;
+	}
+
+    /**
+     * Decodes the <code>offset</code>th character of an encoded method
+     * signature into a type category.
+     *
+     * <p>The codes are:
+     * <table border="1">
+     *
+     * <tr><td>a</td><td>{@link Category#Array}</td></tr>
+     *
+     * <tr><td>d</td><td>{@link Category#Dimension}</td></tr>
+     *
+     * <tr><td>h</td><td>{@link Category#Hierarchy}</td></tr>
+     *
+     * <tr><td>l</td><td>{@link Category#Level}</td></tr>
+     *
+     * <tr><td>b</td><td>{@link Category#Logical}</td></tr>
+     *
+     * <tr><td>m</td><td>{@link Category#Member}</td></tr>
+     *
+     * <tr><td>N</td><td>Constant {@link Category#Numeric}</td></tr>
+     *
+     * <tr><td>n</td><td>{@link Category#Numeric}</td></tr>
+     *
+     * <tr><td>x</td><td>{@link Category#Set}</td></tr>
+     *
+     * <tr><td>#</td><td>Constant {@link Category#String}</td></tr>
+     *
+     * <tr><td>S</td><td>{@link Category#String}</td></tr>
+     *
+     * <tr><td>t</td><td>{@link Category#Tuple}</td></tr>
+     *
+     * <tr><td>v</td><td>{@link Category#Value}</td></tr>
+     *
+     * <tr><td>y</td><td>{@link Category#Symbol}</td></tr>
+     *
+     * </table>
+     *
+     * @param flags Encoded signature string
+     * @param offset 0-based offset of character within string
+     * @return A {@link Category}
+     */
+    public static int decodeType(String flags, int offset) {
+		char c = flags.charAt(offset);
+		switch (c) {
+		case 'a':
+			return Category.Array;
+		case 'd':
+			return Category.Dimension;
+		case 'h':
+			return Category.Hierarchy;
+		case 'l':
+			return Category.Level;
+		case 'b':
+			return Category.Logical;
+		case 'm':
+			return Category.Member;
+		case 'N':
+			return Category.Numeric | Category.Constant;
+		case 'n':
+			return Category.Numeric;
+		case 'x':
+			return Category.Set;
+		case '#':
+			return Category.String | Category.Constant;
+		case 'S':
+			return Category.String;
+		case 't':
+			return Category.Tuple;
+		case 'v':
+			return Category.Value;
+		case 'y':
+			return Category.Symbol;
+		default:
+			throw newInternal(
+					"unknown type code '" + c + "' in string '" + flags + "'");
+		}
+	}
+
+    /**
+     * Decodes a string of parameter types into an array of type codes.
+     *
+     * <p>Each character is decoded using {@link #decodeType(String, int)}.
+     * For example, <code>decodeParameterTypes("nx")</code> returns
+     * <code>{{@link Category#Numeric}, {@link Category#Set}}</code>.
+     *
+     * @param flags The signature of an operator,
+     *   as used by the <code>flags</code> parameter used to construct a
+     *   {@link FunDefBase}.
+     *
+     * @return An array {@link Category} codes.
+     */
+    public static int[] decodeParameterTypes(String flags) {
+		int[] parameterTypes = new int[flags.length() - 2];
+		for (int i = 0; i < parameterTypes.length; i++) {
+			parameterTypes[i] = decodeType(flags, i + 2);
+		}
+		return parameterTypes;
+	}
+
+    static class SetWrapper {
 		ArrayList v = new ArrayList();
 		public int errorCount = 0, nullCount = 0;
 

@@ -93,73 +93,7 @@ public class BuiltinFunTable extends FunTable {
         }
     }
 
-	static Syntax decodeSyntacticType(String flags) {
-		char c = flags.charAt(0);
-		switch (c) {
-		case 'p':
-			return Syntax.Property;
-		case 'f':
-			return Syntax.Function;
-		case 'm':
-			return Syntax.Method;
-		case 'i':
-			return Syntax.Infix;
-		case 'P':
-			return Syntax.Prefix;
-		case 'I':
-			return Syntax.Internal;
-		default:
-			throw Util.newInternal(
-					"unknown syntax code '" + c + "' in string '" + flags + "'");
-		}
-	}
-
-	static int decodeReturnType(String flags) {
-		final int returnType = decodeType(flags, 1);
-		if ((returnType & Category.Mask) != returnType) {
-			throw Util.newInternal("bad return code flag in flags '" + flags + "'");
-		}
-		return returnType;
-	}
-
-	static int decodeType(String flags, int offset) {
-		char c = flags.charAt(offset);
-		switch (c) {
-		case 'a':
-			return Category.Array;
-		case 'd':
-			return Category.Dimension;
-		case 'h':
-			return Category.Hierarchy;
-		case 'l':
-			return Category.Level;
-		case 'b':
-			return Category.Logical;
-		case 'm':
-			return Category.Member;
-		case 'N':
-			return Category.Numeric | Category.Constant;
-		case 'n':
-			return Category.Numeric;
-		case 'x':
-			return Category.Set;
-		case '#':
-			return Category.String | Category.Constant;
-		case 'S':
-			return Category.String;
-		case 't':
-			return Category.Tuple;
-		case 'v':
-			return Category.Value;
-		case 'y':
-			return Category.Symbol;
-		default:
-			throw Util.newInternal(
-					"unknown type code '" + c + "' in string '" + flags + "'");
-		}
-	}
-
-	/**
+    /**
 	 * Converts an argument to a parameter type.
 	 */
 	public Exp convert(Exp fromExp, int to, Exp.Resolver resolver) {
@@ -394,15 +328,7 @@ public class BuiltinFunTable extends FunTable {
 		}
 	}
 
-	static int[] decodeParameterTypes(String flags) {
-		int[] parameterTypes = new int[flags.length() - 2];
-		for (int i = 0; i < parameterTypes.length; i++) {
-			parameterTypes[i] = decodeType(flags, i + 2);
-		}
-		return parameterTypes;
-	}
-
-	public FunDef getDef(FunCall call, Exp.Resolver resolver) {
+    public FunDef getDef(FunCall call, Exp.Resolver resolver) {
         String key = makeResolverKey(call.getFunName(), call.getSyntax());
 
 		// Resolve function by its upper-case name first.  If there is only one
@@ -1866,8 +1792,7 @@ public class BuiltinFunTable extends FunTable {
 								getMemberArg(evaluator, args, 0, false));
 					}
 				}));
-		define(new FunDefBase(
-				":", "<Member>:<Member>", "Infix colon operator returns the set of members between a given pair of members.", "ixmm") {
+		define(new FunDefBase(":", "<Member>:<Member>", "Infix colon operator returns the set of members between a given pair of members.", "ixmm") {
 			// implement FunDef
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				final Member member0 = getMemberArg(evaluator, args, 0, true);

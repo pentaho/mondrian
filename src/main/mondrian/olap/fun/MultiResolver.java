@@ -34,9 +34,9 @@ abstract class MultiResolver extends FunUtil implements Resolver {
 		this.description = description;
 		this.signatures = signatures;
 		Util.assertTrue(signatures.length > 0);
-		this.syntax = BuiltinFunTable.decodeSyntacticType(signatures[0]);
+		this.syntax = decodeSyntacticType(signatures[0]);
 		for (int i = 1; i < signatures.length; i++) {
-			Util.assertTrue(BuiltinFunTable.decodeSyntacticType(
+			Util.assertTrue(decodeSyntacticType(
                     signatures[i]) == syntax);
 		}
 	}
@@ -56,7 +56,7 @@ abstract class MultiResolver extends FunUtil implements Resolver {
 	public FunDef resolve(Exp[] args, int[] conversionCount) {
 outer:
 		for (int j = 0; j < signatures.length; j++) {
-			int[] parameterTypes = BuiltinFunTable.decodeParameterTypes(
+			int[] parameterTypes = decodeParameterTypes(
                     signatures[j]);
 			if (parameterTypes.length != args.length) {
 				continue;
@@ -68,7 +68,7 @@ outer:
 				}
 			}
 			final String signature = signatures[j];
-			int returnType = BuiltinFunTable.decodeReturnType(signature);
+			int returnType = decodeReturnType(signature);
 			FunDef dummy = new FunDefBase(this, returnType, parameterTypes);
 			return createFunDef(args, dummy);
 		}
@@ -77,7 +77,7 @@ outer:
 
     public boolean requiresExpression(int k) {
         for (int j = 0; j < signatures.length; j++) {
-            int[] parameterTypes = BuiltinFunTable.decodeParameterTypes(
+            int[] parameterTypes = decodeParameterTypes(
                     signatures[j]);
             if (k < parameterTypes.length &&
                     parameterTypes[k] == Category.Set) {
