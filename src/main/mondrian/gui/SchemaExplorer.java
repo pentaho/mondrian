@@ -1,17 +1,27 @@
-/*
+/* 
  * SchemaExplorer.java
- *
+ * 
+ * This software is subject to the terms of the Common Public License
+ * Agreement, available at the following URL:
+ * http://www.opensource.org/licenses/cpl.html.
+ * Copyright (C) 1999-2003 Kana Software, Inc. and others.
+ * All Rights Reserved.
+ * You must accept the terms of that agreement to use this software.
+ * 
  * Created on October 2, 2002, 5:42 PM
+ * Modified on 15-Jun-2003 by ebengtso
+ *  
  */
+
 
 package mondrian.gui;
 
-import javax.swing.event.*;
-import javax.swing.*;
-import java.io.*;
+import java.io.File;
 
-import mondrian.olap.*;
-import mondrian.xom.*;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+
+import mondrian.olap.MondrianDef;
 
 /**
  *
@@ -127,24 +137,23 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         jSplitPane1.setLeftComponent(jPanel2);
 
         add(jSplitPane1, java.awt.BorderLayout.CENTER);
-
-        addCubeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/addCube24.gif")));
+        addCubeButton.setIcon(new javax.swing.ImageIcon("images/addCube24.gif"));
         addCubeButton.setToolTipText("Add Cube");
         jToolBar1.add(addCubeButton);
 
-        addDimensionButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/addDimension24.gif")));
+        addDimensionButton.setIcon(new javax.swing.ImageIcon("images/addDimension24.gif"));
         addDimensionButton.setToolTipText("Add Dimension");
         jToolBar1.add(addDimensionButton);
 
-        addMeasureButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/addMeasure24.gif")));
+        addMeasureButton.setIcon(new javax.swing.ImageIcon("images/addMeasure24.gif"));
         addMeasureButton.setToolTipText("Add Measure");
         jToolBar1.add(addMeasureButton);
 
-        addLevelButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/addLevel24.gif")));
+        addLevelButton.setIcon(new javax.swing.ImageIcon("images/addLevel24.gif"));
         addLevelButton.setToolTipText("Add Level");
         jToolBar1.add(addLevelButton);
 
-        addPropertyButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/addProperty24.gif")));
+        addPropertyButton.setIcon(new javax.swing.ImageIcon("images/addProperty24.gif"));
         addPropertyButton.setToolTipText("Add Property");
         jToolBar1.add(addPropertyButton);
 
