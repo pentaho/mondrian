@@ -12,6 +12,7 @@
 
 package mondrian.xom;
 import java.io.InputStream;
+import java.io.Reader;
 import java.net.URL;
 
 /**
@@ -32,6 +33,8 @@ public interface Parser {
 	DOMWrapper parse(InputStream is) throws XOMException;
 	/** Parses the contents of a URL and returns a wrapped element .**/
 	DOMWrapper parse(URL url) throws XOMException;
+	/** Parses the contents of a reader and returns a wrapped element. **/
+	DOMWrapper parse(Reader reader) throws XOMException;
 	/** Creates a wrapper representing an XML element. **/
 	DOMWrapper create(String tagName);
 }

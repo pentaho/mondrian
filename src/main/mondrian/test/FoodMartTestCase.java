@@ -1844,6 +1844,31 @@ public class FoodMartTestCase extends TestCase {
 				"from [Sales] " +
 				"where ([Time].[1997])");
 	}
+
+	public void testCatalogHierarchyBasedOnView() {
+		Schema schema = getConnection().getSchema();
+		final Cube salesCube = schema.lookupCube("Sales", true);
+		schema.createDimension(
+				salesCube,
+				"<Dimension name=\"Gender2\" foreignKey=\"customer_id\">" + nl +
+				"  <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">" + nl +
+				"    <View alias=\"gender2\">" + nl +
+				"      <SQL dialect=\"generic\">" + nl +
+				"        <![CDATA[SELECT * FROM customer]]>" + nl +
+				"      </SQL>" + nl +
+				"      <SQL dialect=\"oracle\">" + nl +
+				"        <![CDATA[SELECT * FROM \"customer\"]]>" + nl +
+				"      </SQL>" + nl +
+				"    </View>" + nl +
+				"    <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>" + nl +
+				"  </Hierarchy>" + nl +
+				"</Dimension>");
+		final Axis axis = executeAxis2("[Gender2].members");
+		assertEquals("[Gender2].[All Gender]" + nl +
+				"[Gender2].[All Gender].[F]" + nl +
+				"[Gender2].[All Gender].[M]",
+				toString(axis.positions));
+	}
 	public void testParallelButSingle() {
 		runParallelQueries(1, 1);
 	}

@@ -12,13 +12,15 @@
 
 package mondrian.rolap;
 import mondrian.olap.*;
+import mondrian.xom.XOMUtil;
+import mondrian.xom.Parser;
+import mondrian.xom.XOMException;
+import mondrian.xom.DOMWrapper;
 
-import java.sql.SQLException;
-import java.util.*;
-import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
+import java.util.HashMap;
+import java.util.Properties;
 
 /**
  * A <code>RolapSchema</code> is a collection of {@link RolapCube}s and
@@ -92,6 +94,27 @@ public class RolapSchema implements Schema
 			RolapCube cube = new RolapCube(this, xmlSchema, xmlVirtualCube);
 			mapNameToCube.put(xmlVirtualCube.name, cube);
 		}
+	}
+
+	public Dimension createDimension(Cube cube, String xml) {
+		MondrianDef.CubeDimension xmlDimension = null;
+		try {
+			final Parser xmlParser = XOMUtil.createDefaultParser();
+			final DOMWrapper def = xmlParser.parse(xml);
+			final String tagName = def.getTagName();
+			if (tagName.equals("Dimension")) {
+				xmlDimension = new MondrianDef.Dimension(def);
+			} else if (tagName.equals("DimensionUsage")) {
+				xmlDimension = new MondrianDef.DimensionUsage(def);
+			} else {
+				throw new XOMException("Got <" + tagName +
+						"> when expecting <Dimension> or <DimensionUsage>");
+			}
+		} catch (XOMException e) {
+			throw Util.newError(e, "Error while adding dimension to cube '" +
+					cube + "' from XML [" + xml + "]");
+		}
+		return ((RolapCube) cube).createDimension(xmlDimension);
 	}
 
 	private static Pool pool = new Pool();

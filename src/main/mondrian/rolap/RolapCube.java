@@ -13,10 +13,7 @@
 package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.rolap.agg.AggregationManager;
-import mondrian.rolap.sql.SqlQuery;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -216,7 +213,6 @@ class RolapCube extends CubeBase
 	void init()
 	{
 		int max = -1;
-		HashMap map = new HashMap();
 		for (int i = 0; i < dimensions.length; i++) {
 			final RolapDimension dimension = (RolapDimension) dimensions[i];
 			dimension.init(this);
@@ -346,6 +342,33 @@ class RolapCube extends CubeBase
     boolean isVirtual() {
 		return fact == null;
     }
+
+	RolapDimension createDimension(MondrianDef.CubeDimension xmlCubeDimension) {
+		final RolapDimension dimension = new RolapDimension(
+						schema, this, (MondrianDef.Dimension) xmlCubeDimension, xmlCubeDimension);
+		dimension.init(this);
+		// add to dimensions array
+		final RolapDimension[] newDimensions = new RolapDimension[dimensions.length + 1];
+		System.arraycopy(dimensions, 0, newDimensions, 0, dimensions.length);
+		final int localOrdinal = newDimensions.length - 1;
+		newDimensions[localOrdinal] = dimension;
+		// write arrays into members; todo: prevent threading issues
+		this.dimensions = newDimensions;
+		// add to ordinals array
+		final int globalOrdinal = dimension.getGlobalOrdinal();
+		if (globalOrdinal >= localDimensionOrdinals.length) {
+			int[] newLocalDimensionOrdinals = new int[globalOrdinal + 1];
+			System.arraycopy(localDimensionOrdinals, 0,
+					newLocalDimensionOrdinals, 0, localDimensionOrdinals.length);
+			Arrays.fill(newLocalDimensionOrdinals,
+					localDimensionOrdinals.length,
+					newLocalDimensionOrdinals.length, -1);
+			this.localDimensionOrdinals = newLocalDimensionOrdinals;
+		}
+		Util.assertTrue(localDimensionOrdinals[globalOrdinal] == -1);
+		localDimensionOrdinals[globalOrdinal] = localOrdinal;
+		return dimension;
+	}
 }
 
 // End RolapCube.java

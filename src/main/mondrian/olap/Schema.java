@@ -27,4 +27,12 @@ public interface Schema {
 	 **/
 	String[] listCubeNames();
 
+	/**
+	 * Creates a dimension in the given cube by parsing an XML string. The XML
+	 * string must be either a &lt;Dimension&gt; or a &lt;DimensionUsage&gt;.
+	 * Returns the dimension created.
+	 **/
+	Dimension createDimension(Cube cube, String xml);
 }
+
+// End Schema.java

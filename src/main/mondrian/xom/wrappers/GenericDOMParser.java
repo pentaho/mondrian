@@ -44,28 +44,24 @@ abstract class GenericDOMParser implements ErrorHandler, mondrian.xom.Parser {
 	static final String VALIDATION_FEATURE =
 			"http://xml.org/sax/features/validation";
 
-	// implement Parser
 	public DOMWrapper create(String tagName) {
 		Element element = document.createElement(tagName);
 		return new W3CDOMWrapper(element);
 	}
 
-	// implement Parser
 	public DOMWrapper parse(InputStream is) throws XOMException {
 		InputSource source = new InputSource(is);
 		Document document = parseInputSource(source);
 		return new W3CDOMWrapper(document.getDocumentElement());
 	}
 
-	// implement Parser
 	public DOMWrapper parse(String xmlString) throws XOMException {
 		return parse(new StringReader(xmlString));
 	}
 
-	// todo: add this to Parser interface
 	public DOMWrapper parse(Reader reader) throws XOMException {
 		Document document = parseInputSource(new InputSource(reader));
-		return new W3CDOMWrapper(document);
+		return new W3CDOMWrapper(document.getDocumentElement());
 	}
 
 	/** Parses the specified URI and returns the document. */

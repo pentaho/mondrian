@@ -854,7 +854,7 @@ public class MetaGenerator {
 	 * Create all files associated with the metamodel, including a Java class
 	 * and a DTD file.  The DTD is primarily for reference--it will not work
 	 * if any advanced features (plugins, includes) are used.
-	 * @param outputDir the output directory in which to generate the files.
+	 * @param outputDirName the output directory in which to generate the files.
 	 */
 	public void writeFiles(String outputDirName, String dtdFileName)
 		throws XOMException, IOException
@@ -1009,10 +1009,9 @@ public class MetaGenerator {
 	 * definitions must appear before use in a DTD, this function must be
 	 * called for each defined class before processing the rest of the model.
 	 * @param out PrintWriter to write the DTD.
-	 * @param class Class definition on which the Entity will be based.
+	 * @param _class Class definition on which the Entity will be based.
 	 */
 	private void writeDtdEntity(PrintWriter out, MetaDef.Class _class)
-		throws XOMException
 	{
 		// Documentation first
 		if(_class.doc != null)
@@ -1262,7 +1261,6 @@ public class MetaGenerator {
 	 * version if the name is a keyword.
 	 */
 	private String getDeclaredName(String name)
-		throws XOMException
 	{
 		String mappedName = (String)(keywordMap.get(name));
 		if(mappedName == null)
@@ -1305,7 +1303,6 @@ public class MetaGenerator {
 	}
 
 	private void writeDtdAttribute(PrintWriter out, MetaDef.Attribute attr)
-		throws XOMException
 	{
 		// Attribute name
 		out.print(attr.name + " ");
@@ -1428,11 +1425,7 @@ public class MetaGenerator {
 		out.print("(" + attr.type + ")_parser.getAttribute(");
 		out.print("\"" + attr.name + "\", \"" + attr.type + "\", ");
 		if(attr._default == null) {
-			if (attr.values.length == 0 && attr.type.equals("String") &&
-				attr.required.booleanValue() == true)
-				out.print("\"\", ");
-			else
-				out.print("null, ");
+			out.print("null, ");
 		} else {
 			out.print("\"" + attr._default + "\", ");
 		}

@@ -558,11 +558,11 @@ public class DOMElementParser {
 
 		// Now, check for size violations
 		if(min > 0 && vec.size() < min)
-			throw new XOMException("Expecting at least " + min 
+			throw new XOMException("Expecting at least " + min + " <"
 									  + elemClass.getName()
 									  + "> but found " + vec.size());
 		if(max > 0 && vec.size() > max)
-			throw new XOMException("Expecting at most " + max 
+			throw new XOMException("Expecting at most " + max + " <"
 									  + elemClass.getName()
 									  + "> but found " +
 									  vec.size());
