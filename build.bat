@@ -21,12 +21,12 @@
 
 @set PATH=%JAVA_HOME%/bin;%PATH%
 
-@if exist "%ANT_HOME%" goto javaHomeOk
+@if exist "%ANT_HOME%" goto antHomeOk
 @set ANT_HOME=%HOME_DRIVE%:\jakarta-ant-1.5
-@if exist "%ANT_HOME%" goto javaHomeOk
+@if exist "%ANT_HOME%" goto antHomeOk
 @echo ANT_HOME (%ANT_HOME%) does not exist
 @goto end
-:javaHomeOk
+:antHomeOk
 
 @if exist "%XALAN_HOME%" goto xalanHomeOk
 @set XALAN_HOME=%HOME_DRIVE%:/xalan-j_2_4_1
