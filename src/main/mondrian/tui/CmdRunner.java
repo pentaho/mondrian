@@ -62,7 +62,7 @@ public class CmdRunner {
     }
 
     void setError(Throwable t) {
-        this.error = t.toString();
+        this.error = formatError(t);
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         t.printStackTrace(pw);
@@ -74,6 +74,13 @@ public class CmdRunner {
         this.error = null;
         this.stack = null;
     }
+
+	private String formatError(Throwable mex) {
+		String message = mex.getMessage();
+		if (mex.getCause() != null && mex.getCause() != mex)
+			message = message + "\n" + formatError(mex.getCause());
+		return message;
+	}
 
     public static void listPropertyNames(StringBuffer buf) {
         for (int i = 0; i < propertyNames.length; i++) {
@@ -304,13 +311,25 @@ public class CmdRunner {
         InputStream in,
         boolean interactive) throws IOException {
 
-        StringBuffer buf = new StringBuffer(2048);
+        StringBuffer buf = null;
         BufferedReader br = new BufferedReader(new InputStreamReader(in));
         boolean inMDXCmd = false;
-        if (interactive) {
-            System.out.print(COMMAND_PROMPT_START);
-        }
+    	String resultString = null;
+
         for(;;) {
+            if (resultString != null) {
+                printResults(resultString);
+                resultString = null;
+            }
+            if (interactive) {
+            	if (inMDXCmd)
+                    System.out.print(COMMAND_PROMPT_MID);
+            	else
+            		System.out.print(COMMAND_PROMPT_START);
+            }
+            if (!inMDXCmd) {
+            	buf = new StringBuffer(2048);
+            }
             String line = br.readLine();
             if (line != null) {
                 line = line.trim();
@@ -330,8 +349,6 @@ public class CmdRunner {
             // user command.
             if (! inMDXCmd) {
                 String cmd = line;
-
-                String resultString = null;
                 if (cmd.startsWith("help")) {
                     resultString = executeHelp(cmd);
                 } else if (cmd.startsWith("set")) {
@@ -346,12 +363,7 @@ public class CmdRunner {
                     resultString = executeExit(cmd);
                 }
                 if (resultString != null) {
-                    printResults(resultString);
                     inMDXCmd = false;
-                    buf.setLength(0);
-                    if (interactive) {
-                        System.out.print(COMMAND_PROMPT_START);
-                    }
                     continue;
                 }
             }
@@ -368,29 +380,25 @@ public class CmdRunner {
                     String mdxCmd = buf.toString().trim();
                     debug("mdxCmd=\""+mdxCmd+"\"");
 
-                    String resultString = executeMDXCmd(mdxCmd);
-                    if (resultString != null) {
-                        printResults(resultString);
-                    }
+                    resultString = executeMDXCmd(mdxCmd);
                 }
 
                 inMDXCmd = false;
-                buf.setLength(0);
-                if (interactive) {
-                    System.out.print(COMMAND_PROMPT_START);
-                }
-
+                
             } else if (line.length() > 0) {
                 // OK, just add the line to the mdx query we are building.
                 inMDXCmd = true;
                 buf.append(line);
-                // add carriage return so that query keeps formatting
-                buf.append('\n');
-                if (interactive) {
-                    System.out.print(COMMAND_PROMPT_MID);
-                }
+                if (line.endsWith(";")) {
+                    String mdxCmd = buf.toString().trim();
+                    debug("mdxCmd=\""+mdxCmd+"\"");
+                    resultString = executeMDXCmd(mdxCmd);
+                    inMDXCmd = false;
+                } else {
+	                // add carriage return so that query keeps formatting
+	                buf.append('\n');
+	            }
             }
-
         }
     }
 
@@ -556,6 +564,12 @@ public class CmdRunner {
             buf.append('\n');
             appendIndent(buf, 3);
             buf.append("the command interpreter.");
+            buf.append('\n');
+            appendIndent(buf, 2);
+            buf.append("Queries can also be ended by using a semicolon (;)");
+            buf.append('\n');
+            appendIndent(buf, 3);
+            buf.append("at the end of a line.");
         }
 
         if ((cmd & ERROR_CMD) != 0) {
@@ -830,19 +844,18 @@ public class CmdRunner {
         this.mdxCmd = mdxCmd;
         try {
 
-            String resultString = context.cmdRunner.execute(mdxCmd);
+            String resultString = execute(mdxCmd);
             mdxResult = resultString;
             clearError();
             return resultString;
 
         } catch (MondrianException mex) {
             setError(mex);
-            return mex.getMessage();
+            return error;
         }
     }
 
-
-    /////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////
     // context
     /////////////////////////////////////////////////////////////////////////
     private static class Context {
