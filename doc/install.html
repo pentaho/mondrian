@@ -57,7 +57,7 @@
 </ol>
 
 <h2><a name="2_Modification_history">2. Modification history</a></h2>
-<table border="1" class="clsStd" style="border-collapse: collapse" bordercolor="#111111" cellpadding="2" cellspacing="0">
+<table border="1" class="clsStd" style="border-collapse: collapse" bordercolor="#111111" cellpadding="3" cellspacing="0">
   <tr>
     <th>Date</th>
     <th>Revision</th>
@@ -118,6 +118,13 @@
     <td><em>8</em></td>
     <td nowrap><i>Julian Hyde</i></td>
     <td><em>Revised installation instructions for binary release.</em></td>
+  </tr>
+  
+   <tr>
+    <td nowrap><i>Februrary 12<sup>th</sup>, 2003</i></td>
+    <td><em>9</em></td>
+    <td nowrap><i>Julian Hyde</i></td>
+    <td><em>New versions of Xalan, Tomcat, JDK.</em></td>
   </tr>
 </table>
 
@@ -253,7 +260,9 @@ and check in changes, you should connect to the Perforce source-code server:</p>
   <li>Set <code>Port</code> to <code>66.123.172.226:1666</code>; set <code>User</code> 
   to your SourceForge username (for example, <code>jhyde</code>); set <code>
   Client</code> to your username plus the name of your machine (for example,
-  <code>jhyde.notebook</code>).</li>
+  <code>jhyde.notebook</code>). <b>Note</b>: The number of perforce user
+  licenses is limited, so if you don't intend to check anything in,
+  please use the <code>guest</code> user.</li>
   <li>Choose <code>ClientSpec</code> &gt; <code>New...</code> and create a client 
   with the same name. Set its root to something like 'C:\' or 'D:\work', and 
   view specification of<blockquote>
@@ -597,7 +606,8 @@ jakarta-ant-1.5-bin.zip</a>,  extracted to <code>E:/jakarta-ant-1.5</code>,
     <td>Available from <a href="http://xml.apache.org/xalan-j/" target="_blank">
     http://xml.apache.org/xalan-j/</a>. I downloaded <code>xalan-j_2_4_1-bin.zip</code>, 
     extracted to <code>E:/xalan-j_2_4_1</code>, and set <code>XALAN_HOME</code> 
-    to the same.</td>
+    to the same.<p><b>Important</b>: copy <i><code>XALAN_HOME</code></i><code>/bin/xalan.jar</code> 
+    to <i></i><code><i>TOMCAT_HOME</i>/common/endorsed/</code>.</td>
   </tr>
   <tr>
     <td><a name="JUnit">JUnit</a></td>
@@ -687,7 +697,7 @@ The MySql service was started successfully.</code></pre>
     <td>
     <ol>
       <li>Extract <code>xml-apis.jar</code> and <code>xercesImpl.jar</code> from
-      <code>mondrian.war</code> and place them in <code>${weblogic.home}/lib</code>.</li>
+      <code>mondrian.war</code> and place them in <code><i>WEBLOGIC_HOME</i>/lib</code>.</li>
       <li>Edit <code>startWeblogic.cmd</code>, or whichever script you use to 
       start Weblogic, and place <code>xml-apis.jar</code> and <code>
       xercesImpl.jar</code> before <code>weblogic.jar</code> on the class-path.</li>
@@ -700,9 +710,9 @@ The MySql service was started successfully.</code></pre>
 <h2><a name="Appendix_B_How_to_debug_Tomcat_using_IntelliJ">Appendix B. How to debug 
 Tomcat using IntelliJ</a></h2>
 <ol>
-  <li>add <code><i>${tomcat.home}</i>/webapps/mondrian.war</code> to intellij's 
+  <li>add <code><i>TOMCAT_HOME</i>/webapps/mondrian.war</code> to intellij's 
   classpath</li>
-  <li>edit <code><i>${tomcat.home}</i>/bin/catalina.bat</code> as follows:
+  <li>edit <code><i>TOMCAT_HOME</i>/bin/catalina.bat</code> as follows:
   <blockquote>
 <pre><code>:doJpda
 if not &quot;%SECURITY_POLICY_FILE%&quot; == &quot;&quot; goto doSecurityJpda
@@ -714,7 +724,7 @@ if not &quot;%SECURITY_POLICY_FILE%&quot; == &quot;&quot; goto doSecurityJpda
 goto end</code></pre>
   </blockquote>
   </li>
-  <li>create <code><i>${tomcat.home}</i>/bin/setenv.bat</code> as follows:
+  <li>create <code><i>TOMCAT_HOME</i>/bin/setenv.bat</code> as follows:
   <blockquote>
 <pre><code>set JPDA_ADDRESS=5000</code></pre>
   </blockquote>
@@ -752,13 +762,14 @@ describes how to change Weblogic's default XML parser.</p>
 <h3><font color="#990000"><a name="Appendix_C_2_Xalan_and_Tomcat">C.2. JDK, Xalan and Tomcat</a></font></h3>
 
 <p>Mondrian binaries, as shipped, require JDK 1.4, Xalan 2.4.1, and Tomcat 
-4.1.18 or later.</p>
+4.1.18 or later. Things work better that way.</p>
 
 <p>If you are running JDK 1.3.<i>x</i>, you will need to add <code>xml-apis.jar</code> 
 and <code>xercesImpl.jar</code> to <code>mondrian.war</code> (since JDK 1.3 does 
 not include the an XML parser), and copy <code>
-  xalan.jar</code> and <code>xml-apis.jar</code> from <code><i>${xalan.home}</i>/bin</code> 
-to <code><i>${tomcat.home}</i>/common/lib</code>.</p>
+  xalan.jar</code> and <code>xml-apis.jar</code> from <code><i>XALAN_HOME</i>/bin</code> 
+to <code><i>TOMCAT_HOME</i>/common/lib</code>. (or <code><i>TOMCAT_HOME</i>/common/endorsed</code>, 
+if your version of Tomcat has one). </p>
 
 <p>If you get the configuration wrong, a typical error is</p>
 
@@ -784,8 +795,8 @@ at org.apache.xerces.parsers.IntegratedParserConfiguration.&lt;init&gt;(Unknown 
 at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)</pre>
 </blockquote>
 <p>This error occurred under JDK 1.3.1, Tomcat 4.1.18, Xalan 2.4.1. The 
-solutions to the error were (a) move to JDK 1.4 and remove xml-apis.jar and 
-xercesImpl.jar from mondrian.war, or (b) revert to Xalan 2.3.1.</p>
+solutions to the error were (a) move to JDK 1.4 and remove <code>xml-apis.jar</code> and 
+<code>xercesImpl.jar</code> from <code>mondrian.war</code>, or (b) revert to Xalan 2.3.1.</p>
 
 <hr>
 
