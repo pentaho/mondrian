@@ -14,46 +14,28 @@ package mondrian.rolap;
 import mondrian.olap.*;
 
 /**
- * todo:
+ * <code>RolapCalculatedMember</code> is a member based upon a {@link Formula}.
+ *
+ * <p>It is created before the formula has been resolved; the formula is
+ * responsible for setting the "format_string" property.
  *
  * @author jhyde
  * @since 26 August, 2001
  * @version $Id$
  **/
 public class RolapCalculatedMember extends RolapMember {
-	private Formula formula;
-
-	static final String[] FORMAT_PROPERTIES = {
-		"format", "format_string", "FORMAT", "FORMAT_STRING"
-	};
+	final Formula formula;
 
 	RolapCalculatedMember(
-		RolapMember parentMember, RolapLevel level, String name,
-		Formula formula)
-	{
+			RolapMember parentMember, RolapLevel level, String name,
+			Formula formula) {
 		super(parentMember, level, name);
 		this.formula = formula;
-		Exp formatExp = null;
-		for (int i = 0; i < FORMAT_PROPERTIES.length; i++) {
-			formatExp = formula.getMemberProperty(FORMAT_PROPERTIES[i]);
-			if (formatExp != null) {
-				break;
-			}
-		}
-		if (formatExp == null) {
-			formatExp = Literal.emptyString;
-		}
-		setProperty(Property.PROPERTY_FORMAT_EXP, formatExp);
 	}
 
 	// override RolapMember
-	int getSolveOrder()
-	{
+	int getSolveOrder() {
 		return 0;
-	}
-
-	Exp getExpression() {
-		return formula.getExpression();
 	}
 }
 

@@ -24,7 +24,8 @@ public abstract class Property {
 	public static final int TYPE_NUMERIC = 1;
 	public static final int TYPE_BOOLEAN = 2;
 
-	/** The name of the property which holds the parsed format string. Internal. **/
+	/** The name of the property which holds the parsed format string (an object
+	 * of type {@link Exp}). Internal. **/
 	public static final String PROPERTY_FORMAT_EXP = "$format_exp";
 	/** The name of the property which holds the aggregation type. This is
 	 * automatically set for stored measures, based upon their SQL

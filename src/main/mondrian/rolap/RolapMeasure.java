@@ -14,7 +14,11 @@ package mondrian.rolap;
 import mondrian.olap.*;
 
 /**
- * todo:
+ * A <code>RolapMeasure</code> is a member of the "Measures" dimension.
+ *
+ * <p>The only derived class currently is {@link RolapStoredMeasure}.
+ * ({@link RolapCalculatedMember calculated members} are not always measures,
+ * so they do not derive from this class.)
  *
  * @author jhyde
  * @since 10 August, 2001
@@ -31,17 +35,13 @@ abstract class RolapMeasure extends RolapMember
 
 	RolapMeasure(
 			RolapMember parentMember, RolapLevel level, String name,
-			String formatString)
-	{
+			String formatString) {
 		super(parentMember, level, name);
 		if (formatString == null) {
 			formatString = "";
 		}
-		RolapConnection connection = ((RolapDimension) getDimension()).schema.getInternalConnection();
-		Exp formatExp = connection.parseExpression("'" + formatString + "'");
-		setProperty(Property.PROPERTY_FORMAT_EXP, formatExp);
+		setProperty(Property.PROPERTY_FORMAT_EXP, Literal.createString(formatString));
 	}
-
 }
 
 

@@ -185,9 +185,6 @@ public abstract class MemberBase
 		// don't generally traverse to children -- we could implement, if
 		// necessary
 	}
-	public Exp getFormatStringExp() {
-		return Literal.emptyString;
-	}
 }
 
 // End MemberBase.java

@@ -162,7 +162,7 @@ class RolapEvaluator implements Evaluator
 					defaultMember != minSolveMember,
 					"default member must not be calculated");
 			Evaluator evaluator = push(defaultMember);
-			return minSolveMember.getExpression().evaluateScalar(evaluator);
+			return minSolveMember.formula.getExpression().evaluateScalar(evaluator);
 		}
 		return cellReader.get(this);
 	}
@@ -220,6 +220,9 @@ class RolapEvaluator implements Evaluator
 	private String getFormatString()
 	{
 		Exp formatExp = (Exp) getProperty(Property.PROPERTY_FORMAT_EXP);
+		if (formatExp == null) {
+			return "Standard";
+		}
 		Object o = formatExp.evaluate(this);
 		return o.toString();
 	}
@@ -243,6 +246,8 @@ class RolapEvaluator implements Evaluator
 			return "(null)";
 		} else if (o instanceof Throwable) {
 			return "#ERR: " + o.toString();
+		} else if (o instanceof String) {
+			return (String) o;
 		} else {
 			Format format = getFormat();
 			return format.format(o);

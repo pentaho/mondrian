@@ -110,16 +110,14 @@ public interface Member extends OlapElement {
 	boolean isCalculatedInQuery();
 
 	/**
-	 * Returns the expression which yields a format string for this member. If
-	 * the format string is a constant, then the expression will be a string
-	 * {@link Literal}.
-	 **/
-	Exp getFormatStringExp();
-
-	/**
 	 * Returns the value of the property named <code>propertyName</code>.
 	 */
 	Object getPropertyValue(String propertyName);
+
+	/**
+	 * Sets a property of this member to a given value.
+	 */
+	void setProperty(String name, Object value);
 
 	/**
 	 * Returns the definitions of the properties this member may have.

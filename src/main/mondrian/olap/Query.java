@@ -126,10 +126,12 @@ public class Query extends QueryPart {
 			//resolving of formulas should be done in two parts
 			//because formulas might depend on each other, so all calculated
 			//mdx elements have to be defined during resolve
-			for (int i = 0; i < formulas.length; i++)
-				formulas[i] = (Formula) formulas[i].createElement(q);
-			for (int i = 0; i < formulas.length; i++)
-				formulas[i] = (Formula) formulas[i].resolve(q);
+			for (int i = 0; i < formulas.length; i++) {
+				formulas[i].createElement(q);
+			}
+			for (int i = 0; i < formulas.length; i++) {
+				formulas[i].resolve(q);
+			}
 		}
 
 		if (axes != null)

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2000-2002 Kana Software, Inc. and others.
+// (C) Copyright 2000-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -24,10 +24,20 @@ public class Formula extends QueryPart {
    /** defining expression **/
    ExpBase exp;
    MemberProperty[] memberProperties; // properties/solve order of member
-   boolean isMember;       // whether member or set
+	/**
+	 * <code>true</code> is this is a member, <code>false</code> if it is a
+	 * set.
+	 */
+	boolean isMember;
 
    Member mdxMember;
    Set mdxSet;
+	/**
+	 * The various property names which define a format string.
+	 */
+	static final String[] FORMAT_PROPERTIES = {
+		"format", "format_string", "FORMAT", "FORMAT_STRING"
+	};
 
    /** Construct formula specifying a set. */
    Formula(String[] names, Exp exp) {
@@ -64,8 +74,11 @@ public class Formula extends QueryPart {
       return x2;
    }
 
-	public QueryPart resolve(Query q)
-	{
+	/**
+	 * Resolves identifiers into objects.
+	 * @param q The query which contains this formula.
+	 */
+	void resolve(Query q) {
 		exp = (ExpBase) exp.resolve(q);
 		String id = Util.quoteMdxIdentifier(names);
 		if (isMember) {
@@ -81,46 +94,54 @@ public class Formula extends QueryPart {
 		for (int i = 0; i < memberProperties.length; i++) {
 			memberProperties[i] = (MemberProperty) memberProperties[i].resolve(q);
 		}
-		return this;
+		// Get the format expression from the property list, or derive it from
+		// the formula.
+		Exp formatExp = getFormatExp();
+		if (formatExp != null) {
+			mdxMember.setProperty(Property.PROPERTY_FORMAT_EXP, formatExp);
+		}
 	}
 
-   public QueryPart createElement(Query q)
-   {
-      // first resolve the name, bit by bit
-      if (isMember) {
-         OlapElement mdxElement = q.getCube();
-         for (int i = 0; i < names.length; i++) {
-            OlapElement parent = mdxElement;
-            mdxElement = q.getSchemaReader().getElementChild(parent, names[i]);
-            if (mdxElement == null) {
-               // this part of the name was not found... define it
-               Level level;
-               Member parentMember = null;
-               if (parent instanceof Member) {
-                  parentMember = (Member) parent;
-                  level = parentMember.getLevel().getChildLevel();
-               } else {
-                  Hierarchy hierarchy = parent.getHierarchy();
-                  if (hierarchy == null) {
-                     throw Util.getRes().newMdxCalculatedHierarchyError(
-                        Util.quoteMdxIdentifier(names));
-                  }
-                  level = hierarchy.getLevels()[0];
-               }
-               Member mdxMember = level.getHierarchy().createMember(
-                  parentMember, level, names[i], this);
-               mdxElement = mdxMember;
-            }
-         }
-         this.mdxMember = (Member) mdxElement;
-      } else {
-         // don't need to tell query... it's already in query.formula
-         Util.assertTrue(
-            names.length == 1, "set names must not be compound");
-         mdxSet = new SetBase(names[0], exp);
-      }
-      return this;
-   }
+	/**
+	 * Creates the {@link Member} or {@link Set} object which this formula
+	 * defines.
+	 */
+	void createElement(Query q) {
+		// first resolve the name, bit by bit
+		if (isMember) {
+			OlapElement mdxElement = q.getCube();
+			final SchemaReader schemaReader = q.getSchemaReader();
+			for (int i = 0; i < names.length; i++) {
+				OlapElement parent = mdxElement;
+				mdxElement = schemaReader.getElementChild(parent, names[i]);
+				if (mdxElement == null) {
+					// this part of the name was not found... define it
+					Level level;
+					Member parentMember = null;
+					if (parent instanceof Member) {
+						parentMember = (Member) parent;
+						level = parentMember.getLevel().getChildLevel();
+					} else {
+						Hierarchy hierarchy = parent.getHierarchy();
+						if (hierarchy == null) {
+							throw Util.getRes().newMdxCalculatedHierarchyError(
+									Util.quoteMdxIdentifier(names));
+						}
+						level = hierarchy.getLevels()[0];
+					}
+					Member mdxMember = level.getHierarchy().createMember(
+							parentMember, level, names[i], this);
+					mdxElement = mdxMember;
+				}
+			}
+			this.mdxMember = (Member) mdxElement;
+		} else {
+			// don't need to tell query... it's already in query.formula
+			Util.assertTrue(
+					names.length == 1, "set names must not be compound");
+			mdxSet = new SetBase(names[0], exp);
+		}
+	}
 
    public Object[] getChildren()
    {
@@ -153,35 +174,26 @@ public class Formula extends QueryPart {
       }
    }
 
-   /** returns type of formulae ("member" or "set") as a string*/
-   public String getTypeAsString()
-   {
-      if (isMember)
-         return "member";
-      return "set";
+	public boolean isMember() {
+		return isMember;
+	}
+
+   /** Returns this formula's name. */
+   public String getName() {
+	   if (isMember) {
+		   return mdxMember.getName();
+	   } else {
+		   return mdxSet.getName();
+	   }
    }
 
-   public boolean isMember() {return isMember;}
-
-   /** returns name of formula*/
-   public String getName()
-   {
-      if (isMember)
-         return mdxMember.getName();
-      return mdxSet.getName();
-   }
-
-   public String[] getNames()
-   {
-      return names;
-   }
-
-   /** returns caption of formula*/
-   public String getCaption()
-   {
-      if (isMember)
-         return mdxMember.getCaption();
-      return mdxSet.getName();
+   /** Returns this formula's caption. */
+   public String getCaption() {
+	   if (isMember) {
+		   return mdxMember.getCaption();
+	   } else {
+		   return mdxSet.getName();
+	   }
    }
 
    /**
@@ -203,48 +215,13 @@ public class Formula extends QueryPart {
       }
    }
 
-   /** returns uniqueName of formula*/
-   public String getUniqueName()
-   {
-      if(isMember)
-         return mdxMember.getUniqueName();
-      return mdxSet.getUniqueName();
-   }
-
-   /** returns name of associated hierachy if there is one*/
-   public String getHierarchyName()
-   {
-      if (!isMember)
-         return "";
-      return mdxMember.getHierarchy().getUniqueName();
-   }
-
-   /** returns depth of a member. If it's a set, returns -1 */
-   public int getDepth()
-   {
-      if (!isMember)
-         return -1;
-      return mdxMember.getDepth();
-   }
-
-   /** prints member properties as xml*/
-   public void printMemberPropertiesAsXml(PrintWriter pw)
-   {
-      if (!isMember)
-         return;
-      if (memberProperties != null) {
-         for (int i = 0; i < memberProperties.length; i++)
-            memberProperties[i].printAsXml(pw);
-      }
-   }
-
-   //** returns formula's expresion as string*/
-   public String expToString()
-   {
-      StringWriter sw = new StringWriter();
-      PrintWriter pw = new PrintWriter(sw);
-      exp.unparse(pw, new ElementCallback());
-      return sw.toString();
+   /** Returns the unique name of the member or set. */
+   String getUniqueName() {
+	   if (isMember) {
+		   return mdxMember.getUniqueName();
+	   } else {
+		   return mdxSet.getUniqueName();
+	   }
    }
 
    OlapElement getElement()
@@ -256,15 +233,6 @@ public class Formula extends QueryPart {
       }
    }
 
-    /*returns parent's unique name (member's name) or "", if parent does not
-      exist*/
-   public String getParentUname()
-   {
-      if (isMember && mdxMember != null)
-         return mdxMember.getParentUniqueName();
-      return "";
-   }
-
    /** Returns whether this formula represents hidden member (unique name
     * contains {@link Query#hidden} string). */
    public boolean isHidden()
@@ -272,24 +240,13 @@ public class Formula extends QueryPart {
       return getElement().getUniqueName().indexOf(Query.hidden) >= 0;
    }
 
-   /** returns expression of this formula */
-   public String getExpString()
-   {
-      StringWriter sw = new StringWriter();
-      PrintWriter pw = new PrintWriter(sw);
-      exp.unparse(pw, new ElementCallback());
-      return sw.toString();
-   }
+	public Exp getExpression() {
+		return exp;
+	}
 
-   public Exp getExpression()
-   {
-      return exp;
-   }
-
-   public Exp getMemberProperty(String name)
-   {
-      return MemberProperty.get(memberProperties, name);
-   }
+	Exp getMemberProperty(String name) {
+		return MemberProperty.get(memberProperties, name);
+	}
 
    /**
     * Returns the Member. (Not valid if this formula defines a set.)
@@ -301,7 +258,32 @@ public class Formula extends QueryPart {
      return mdxMember;
    }
 
+	/**
+	 * Deduces a formatting expression for this calculated member. First it
+	 * looks for properties called "format", "format_string", etc. Then it looks
+	 * inside the expression, and returns the formatting expression for the
+	 * first member it finds.
+	 */
+	private Exp getFormatExp() {
+		for (int i = 0; i < FORMAT_PROPERTIES.length; i++) {
+			Exp formatExp = getMemberProperty(FORMAT_PROPERTIES[i]);
+			if (formatExp != null) {
+				return formatExp;
+			}
+		}
+		Walker walker = new Walker(exp);
+		while (walker.hasMoreElements()) {
+			final Object o = walker.nextElement();
+			if (o instanceof Member) {
+				Exp formatExp = (Exp) ((Member) o).getPropertyValue(
+						Property.PROPERTY_FORMAT_EXP);
+				if (formatExp != null) {
+					return formatExp;
+				}
+			}
+		}
+		return null;
+	}
 }
-
 
 // End Formula.java
