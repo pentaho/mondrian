@@ -159,9 +159,25 @@ demo/mysql/FoodMartData.sql"/>
           Deletes build output.
       - test
           Runs a simple test.
+      - info
+          shows configuration info
       </echo>
   </target>
-
+  
+  <target name="info">
+  <echo>==============================================================</echo>  
+  <echo>| Mondrian configuration info                                |</echo>  
+  <echo>==============================================================</echo>  
+  <echo>project.location      = ${project.location}</echo>
+  <echo>jdk.home              = ${env.JAVA_HOME}</echo>
+  <echo>catalina.home         = ${env.CATALINA_HOME}</echo>
+  <echo>xalan.home            = ${env.XALAN_HOME}</echo>
+  <echo>junit.home            = ${env.JUNIT_HOME}</echo>
+  <echo>weblogic.home         = ${env.WEBLOGIC_HOME}</echo>
+  <echo>mondrian.foodmart.catalogURL = ${mondrian.foodmart.catalogURL}</echo>
+  <echo>==============================================================</echo>
+  </target>
+  
   <target name="all" depends="clean,compile,test"/>
 
   <target name="clean">
@@ -328,9 +344,11 @@ in {mondrian.foodmart.jdbcURL}.">
     <echo>Connecting to ${mondrian.foodmart.jdbcURL}</echo>
     <java classpathref="project.classpath" classname="mondrian.test.Main"
         fork="yes">
-      <jvmarg value="-Dmondrian.jdbcDrivers=${mondrian.jdbcDrivers}"/>
-      <jvmarg value="-Dmondrian.foodmart.jdbcURL=${mondrian.foodmart.jdbcURL}"/>
-      <jvmarg value="-Dmondrian.test.connectString=Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}'"/>
+
+      <sysproperty key="mondrian.jdbcDrivers"     	value="${mondrian.jdbcDrivers}"/>
+      <sysproperty key="mondrian.foodmart.jdbcURL"	value="${mondrian.foodmart.jdbcURL}"/>
+      <sysproperty key="mondrian.test.connectString"	value="Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}'"/>
+
     </java>
   </target>
 
@@ -340,8 +358,10 @@ in {mondrian.foodmart.jdbcURL}.">
         <classpath>
             <path refid="project.classpath"/>
         </classpath>
-        <jvmarg value="-Dmondrian.jdbcDrivers=${mondrian.jdbcDrivers}"/>
-        <jvmarg value="-Dmondrian.test.connectString=Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}'"/>
+	<sysproperty key="mondrian.jdbcDrivers"     		value="${mondrian.jdbcDrivers}"/>
+	<sysproperty key="mondrian.test.connectString"		value="Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}'"/>
+	<sysproperty key="mondrian.test.foodmart.catalogURL"	value="${mondrian.foodmart.catalogURL}"/>
+
         <formatter type="xml" />
 
         <batchtest fork="yes" todir="junit-results">

@@ -36,6 +36,9 @@ import java.util.Hashtable;
  **/
 public class MondrianJolapConnectionFactory extends RefObjectSupport
 		implements ConnectionFactory, InitialContextFactory {
+
+	private static final String FOODMART_CATALOG_URL = "mondrian.test.foodmart.catalogURL";
+
 	/** Creates a <code>MondrianJolapConnectionFactory</code>. Generally, the
 	 * driver manager will call this, as long as you provide it with the name
 	 * of this class. **/
@@ -52,7 +55,10 @@ public class MondrianJolapConnectionFactory extends RefObjectSupport
 		propertyList.put("User", properties.getName());
 		propertyList.put("Password", properties.getPassword());
 		propertyList.put("Jdbc", "jdbc:odbc:MondrianFoodMart");
-		propertyList.put("Catalog", "file:///e:/mondrian/demo/FoodMart.xml");
+		if( System.getProperty(FOODMART_CATALOG_URL) != null )
+			propertyList.put("Catalog", System.getProperty(FOODMART_CATALOG_URL));
+		else
+			propertyList.put("Catalog", "file:///e:/mondrian/demo/FoodMart.xml");
 		propertyList.put("JdbcDrivers", "sun.jdbc.odbc.JdbcOdbcDriver,oracle.jdbc.OracleDriver,com.mysql.jdbc.Driver");
 		final boolean fresh = false;
 		mondrian.olap.Connection mondrianConnection =
@@ -93,11 +99,15 @@ public class MondrianJolapConnectionFactory extends RefObjectSupport
  */
 class MondrianJolapConnectionSpec implements ConnectionSpec {
 	Util.PropertyList propertyList = new Util.PropertyList();
+	private static final String FOODMART_CATALOG_URL = "mondrian.test.foodmart.catalogURL";
 
 	MondrianJolapConnectionSpec() {
 		propertyList.put("Provider", "mondrian");
 		propertyList.put("Jdbc", "jdbc:odbc:MondrianFoodMart");
-		propertyList.put("Catalog", "file:///e:/mondrian/demo/FoodMart.xml");
+		if( System.getProperty(FOODMART_CATALOG_URL) != null )
+			propertyList.put("Catalog", System.getProperty(FOODMART_CATALOG_URL));
+		else
+			propertyList.put("Catalog", "file:///e:/mondrian/demo/FoodMart.xml");
 		propertyList.put("JdbcDrivers", "sun.jdbc.odbc.JdbcOdbcDriver,oracle.jdbc.OracleDriver,com.mysql.jdbc.Driver");
 	}
 	public void setName(String name) {
