@@ -741,9 +741,11 @@ public class MondrianFoodMartLoader {
             if (jdbcOutput) {
 	            try {
 					buf.append("DROP INDEX ")
-						.append(quoteId(indexName))
-						.append(" ON ")
-						.append(quoteId(tableName));
+						.append(quoteId(indexName));
+					if (sqlQuery.isMySQL()) {
+						buf.append(" ON ")
+							.append(quoteId(tableName));
+					}
 					final String deleteDDL = buf.toString();
 					executeDDL(deleteDDL);
 				} catch (Exception e1) {
