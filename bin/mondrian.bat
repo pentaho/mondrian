@@ -15,7 +15,9 @@ echo LIB=%LIB%
 @goto end
 :javaOk
 
-%JAVA_HOME%/bin/java -classpath %LIB%/ant.jar;%LIB%/optional.jar;%LIB%/xercesImpl.jar;%LIB%/xml-apis.jar -Dant.home="%SRCROOT%" org.apache.tools.ant.Main -buildfile runtime.xml %1 %2 %3 %4 %5 %6 %7 %8 %9
+@set CLASSPATH="%LIB%\ant.jar;%LIB%\optional.jar;%LIB%\xercesImpl.jar;%LIB%\xml-apis.jar;%LIB%\junit.jar"
+
+%JAVA_HOME%\bin\java -classpath "%CLASSPATH%" -Dant.home="%SRCROOT%" org.apache.tools.ant.Main -buildfile runtime.xml %1 %2 %3 %4 %5 %6 %7 %8 %9
 
 :end
 @rem End mondrian.bat

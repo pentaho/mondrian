@@ -28,14 +28,10 @@ import java.util.Properties;
 /**
  * <code>Main</code> is the main test suite for Mondrian.
  **/
-public class Main extends TestCase {
+public class Main {
 	static public void main(String[] args) {
         new Main().runSafe(args);
     }
-
-    Main() {
-		super("mondrian");
-	}
 
     private void runSafe(String[] args) {
         try {
@@ -113,7 +109,7 @@ public class Main extends TestCase {
 		}
 		TestSuite suite = new TestSuite();
 		suite.addTestSuite(FoodMartTestCase.class);
-		suite.addTest(BuiltinFunTable.instance().suite());
+		suite.addTest(BuiltinFunTable.suite());
 		suite.addTestSuite(Schedule.ScheduleTestCase.class);
 		suite.addTest(Util.suite());
 		suite.addTest(CachePool.suite());

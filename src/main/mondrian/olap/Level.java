@@ -34,7 +34,10 @@ public interface Level extends OlapElement {
 	static final int MONTHS = 3;
 	static final int WEEKS = 4;
 	static final int DAYS = 5;
+	/** Returns properties defined against this level. **/
 	Property[] getProperties();
+	/** Returns properties defined against this level and parent levels. **/
+	Property[] getInheritedProperties();
 }
 
 // End Level.java

@@ -11,10 +11,7 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.Evaluator;
-import mondrian.olap.Member;
-import mondrian.olap.MemberBase;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -95,8 +92,11 @@ class RolapMember extends MemberBase
 		}
 		mapPropertyNameToValue.put(name, value);
 	}
-	public Object getProperty(String name) {
+	public Object getPropertyValue(String name) {
 		return mapPropertyNameToValue.get(name);
+	}
+	public Property[] getProperties() {
+		return level.getInheritedProperties();
 	}
 	// implement Exp
 	public Object evaluateScalar(Evaluator evaluator)

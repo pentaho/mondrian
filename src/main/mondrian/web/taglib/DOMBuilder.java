@@ -301,7 +301,7 @@ public class DOMBuilder {
 		if (props != null) {
 		  for (int i = 0; i < props.length; i++) {
 		  	String propName = props[i].getName();
-		  	String propValue = "" + m.getProperty(propName);
+		  	String propValue = "" + m.getPropertyValue(propName);
 		  	Element propElem = elem("property", e);
 		  	propElem.setAttribute("name", propName);
 		  	propElem.setAttribute("value", propValue);

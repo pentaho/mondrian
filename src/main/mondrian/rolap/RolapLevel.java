@@ -14,6 +14,9 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.rolap.sql.SqlQuery;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
 /**
  * <code>RolapLevel</code> implements {@link Level} for a ROLAP database.
  *
@@ -35,6 +38,7 @@ class RolapLevel extends LevelBase
 	static final int NUMERIC = 1;
 	static final int ALL = 2;
 	RolapProperty[] properties;
+	RolapProperty[] inheritedProperties;
 
 	/**
 	 * Creates a level.
@@ -64,6 +68,27 @@ class RolapLevel extends LevelBase
 			}
 		}
 		this.properties = properties;
+		ArrayList list = new ArrayList();
+		for (Level level = this; level != null;
+				level = level.getParentLevel()) {
+			final Property[] levelProperties = level.getProperties();
+			for (int i = 0; i < levelProperties.length; i++) {
+				final Property levelProperty = levelProperties[i];
+				Property existingProperty = lookupProperty(
+						list, levelProperty.getName());
+				if (existingProperty == null) {
+					list.add(levelProperty);
+				} else if (existingProperty.getType() !=
+						levelProperty.getType()) {
+					throw Util.newError(
+							"Property " + this.getName() + "." +
+							levelProperty.getName() + " overrides a " +
+							"property with the same name but different type");
+				}
+			}
+		}
+		this.inheritedProperties = (RolapProperty[]) list.toArray(
+				new RolapProperty[0]);
 		this.flags = flags;
 		this.depth = depth;
 		this.levelType = Level.STANDARD;
@@ -76,6 +101,18 @@ class RolapLevel extends LevelBase
 				this.levelType = Level.MONTHS;
 			}
 		}
+	}
+
+	private Property lookupProperty(ArrayList list, String propertyName) {
+		Property existingProperty = null;
+		for (Iterator iterator = list.iterator(); iterator.hasNext();) {
+			Property property = (Property) iterator.next();
+			if (property.getName().equals(propertyName)) {
+				existingProperty = property;
+				break;
+			}
+		}
+		return existingProperty;
 	}
 
 	RolapLevel(RolapHierarchy hierarchy, int depth, MondrianDef.Level xmlLevel)
@@ -155,6 +192,10 @@ class RolapLevel extends LevelBase
 
 	public Property[] getProperties() {
 		return properties;
+	}
+
+	public Property[] getInheritedProperties() {
+		return inheritedProperties;
 	}
 }
 

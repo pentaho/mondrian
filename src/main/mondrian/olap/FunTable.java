@@ -61,10 +61,6 @@ public abstract class FunTable {
 	}
 
 	protected abstract void define(FunDef funDef);
-
-	/**
-	 * Creates a JUnit test suite which calls every method of every function
-	 * which starts with 'test'.
-	 */
-	public abstract TestSuite suite();
 }
+
+// End FunTable.java

@@ -15,7 +15,24 @@ import java.io.*;
 import java.util.*;
 
 /**
- * todo:
+ * A <code>Member</code> is a 'point' on a dimension of a cube. Examples are
+ * <code>[Time].[1997].[January]</code>,
+ * <code>[Customer].[All Customers]</code>,
+ * <code>[Customer].[USA].[CA]</code>,
+ * <code>[Measures].[Unit Sales]</code>.
+ *
+ * <p> Every member belongs to a {@link Level} of a {@link Hierarchy}. Members
+ * except the root member have a parent, and members not at the leaf level
+ * have one or more children.
+ *
+ * <p> Measures are a special kind of member. They belong to their own
+ * dimension, <code>[Measures]</code>.
+ *
+ * <p> There are also special members representing the 'All' value of a
+ * hierarchy, the null value, and the error value.
+ *
+ * <p> Members can have member properties. Their {@link Level#getProperties}
+ * defines which are allowed.
  **/
 public interface Member extends OlapElement {
 
@@ -122,7 +139,12 @@ public interface Member extends OlapElement {
 	/**
 	 * Returns the value of the property named <code>propertyName</code>.
 	 */
-	Object getProperty(String propertyName);
+	Object getPropertyValue(String propertyName);
+
+	/**
+	 * Returns the definitions of the properties this member may have.
+	 */
+	Property[] getProperties();
 }
 
 // End Member.java

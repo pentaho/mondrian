@@ -203,7 +203,7 @@ class RolapEvaluator implements Evaluator
 		int maxSolve = Integer.MIN_VALUE;
 		for (int i = 0; i < currentMembers.length; i++) {
 			RolapMember member = currentMembers[i];
-			Object p = member.getProperty(name);
+			Object p = member.getPropertyValue(name);
 			if (p != null) {
 				int solve = member.getSolveOrder();
 				if (solve > maxSolve) {

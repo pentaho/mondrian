@@ -25,6 +25,7 @@
   <property name="tomcat.home" value="${myenv.TOMCAT_HOME}"/>
 
   <path id="project.classpath">
+    <pathelement location="${lib.location}/${name}.jar"/>
     <pathelement location="${tomcat.home}/common/lib/servlet.jar"/>
     <pathelement location="${lib.location}/javacup.jar"/>
     <pathelement location="${lib.location}/xalan.jar"/>
@@ -65,8 +66,8 @@ junit.jar"/>
         todir="${tomcat.home}/webapps"/>
   </target>
 
-  <target name="junit-main">
-        <mkdir dir="junit-results"/>
+  <target name="junit">
+    <mkdir dir="junit-results"/>
     <junit printsummary="yes" fork="yes" haltonfailure="no" >
         <classpath>
             <path refid="project.classpath"/>
@@ -75,13 +76,7 @@ junit.jar"/>
         <jvmarg value="-Dmondrian.test.connectString=Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}'"/>
         <formatter type="xml" />
 
-        <batchtest fork="yes" todir="junit-results">
-            <fileset dir="classes">
-              <include name="mondrian/test/**/*Test*.class" />
-              <exclude name="mondrian/test/**/*Testable*.class" />
-              <exclude name="mondrian/test/**/*TestContext*.class" />
-            </fileset>
-        </batchtest>
+        <test fork="yes" name="mondrian.test.Main" todir="junit-results"/>
     </junit>
 
     <junitreport todir="junit-results">
@@ -91,6 +86,7 @@ junit.jar"/>
       <report format="frames" todir="junit-results/html"/>
     </junitreport>
 
+    <echo>See results at junit-results/html/index.html.</echo>
   </target>
 
 </project>

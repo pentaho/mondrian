@@ -14,6 +14,7 @@ package mondrian.olap.fun;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import junit.framework.Test;
 import mondrian.olap.*;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
@@ -2026,6 +2027,18 @@ public class BuiltinFunTable extends FunTable {
 						"FROM [Sales]");
 				test.assertEquals(8, result.getAxes()[1].positions.length);
 			}
+
+			public void testPropertyInCalculatedMember(FoodMartTestCase test) {
+				Result result = test.execute(
+					"WITH MEMBER [Measures].[Store Sales per Sqft]" + nl +
+					"AS '[Measures].[Store Sales] / " +
+					"  [Store].CurrentMember.Properties(\"Store Sqft\")'" + nl +
+					"SELECT " + nl +
+					"  {[Measures].[Unit Sales], [Measures].[Store Sales per Sqft]} ON COLUMNS," + nl +
+					"  {[Store].[Store Name].members} ON ROWS" + nl +
+					"FROM Sales");
+				test.assertEquals("foo", result.getCell(new int[] {0,0}).getFormattedValue());
+			}
 		});
 
 		//
@@ -2101,7 +2114,7 @@ public class BuiltinFunTable extends FunTable {
 		return b ? Boolean.TRUE : Boolean.FALSE;
 	}
 
-	public TestSuite suite() {
+	TestSuite createSuite() {
 		TestSuite suite = new TestSuite("builtin functions");
 		for (Iterator resolverses = upperName2Resolvers.values().iterator();
 			 resolverses.hasNext();) {
@@ -2112,6 +2125,11 @@ public class BuiltinFunTable extends FunTable {
 			}
 		}
 		return suite;
+	}
+
+	/** Standard method recognised by JUnit. **/
+	public static Test suite() {
+		return ((BuiltinFunTable) instance()).createSuite();
 	}
 
 	void test() {
@@ -2181,7 +2199,7 @@ public class BuiltinFunTable extends FunTable {
 		public Object evaluate(Evaluator evaluator, Exp[] args) {
 			Member member = getMemberArg(evaluator, args, 0, true);
 			String s = getStringArg(evaluator, args, 1, null);
-			Object o = member.getProperty(s);
+			Object o = member.getPropertyValue(s);
 			if (o == null) {
 				if (isValidProperty(member, s)) {
 					o = member.getHierarchy().getNullMember();
