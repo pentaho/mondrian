@@ -762,9 +762,12 @@ public class FunUtil extends Util {
 		Util.assertPrecondition(exp != null, "exp != null");
 		// todo: treat constant exps as evaluateMembers() does
 		SetWrapper retval = new SetWrapper();
-		for (int i = 0, count = members.size(); i < count; i++) {
-			Member member = (Member) members.get(i);
-			evaluator.setContext(member);
+		for (Iterator it = members.iterator(); it.hasNext();) {
+			Object obj = it.next();
+			if (obj instanceof Member[]) 
+				evaluator.setContext((Member[])obj);
+			else 
+				evaluator.setContext((Member)obj);
 			Object o = exp.evaluateScalar(evaluator);
 			if (o == null || o == Util.nullValue) {
 				retval.nullCount++;
