@@ -106,13 +106,13 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
   <property name="mondrian.foodmart.jdbcURL.hsqldb"
       value="jdbc:hsqldb:demo/hsql/FoodMart"/>
   <property name="mondrian.foodmart.jdbcURL.mysql"
-      value="jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart"/>
+      value="jdbc:mysql://localhost/foodmart?user=foodmart&#38;password=foodmart"/>
   <property name="mondrian.foodmart.jdbcURL.oracle"
       value="jdbc:oracle:oci8:foodmart/foodmart@realm1"/>
   <property name="mondrian.foodmart.jdbcURL.postgres"
       value="jdbc:??"/>
   <property name="mondrian.foodmart.jdbcURL"
-      refid="mondrian.foodmart.jdbcURL.access"/>
+      value="${mondrian.foodmart.jdbcURL.access}"/>
   <!-- URL of the catalog definition. -->
   <property name="mondrian.foodmart.catalogURL"
       value="file:///${project.location}/${demo.dir}/FoodMart.xml"/>
@@ -256,6 +256,36 @@ in {mondrian.foodmart.jdbcURL}.">
     </java>
   </target>
 
+<target name="junit-main" depends="compile">
+		<mkdir dir="junit-results"/>
+	<junit printsummary="yes" fork="yes" haltonfailure="no" >
+		<classpath>
+			<path refid="project.classpath"/>
+		</classpath>
+
+	        <jvmarg value="-Dmondrian.jdbcDrivers=${mondrian.jdbcDrivers}"/>
+	        <jvmarg value="-Dmondrian.resourceURL=${mondrian.resourceURL}"/>
+	       	<jvmarg value="-Dmondrian.test.connectString=Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}'"/>
+		<formatter type="xml" />
+
+		  <batchtest fork="yes" todir="junit-results">
+		    <fileset dir="classes">
+		      <include name="mondrian/test/**/*Test*.class" />
+		      <exclude name="mondrian/test/**/*Testable*.class" />
+		      <exclude name="mondrian/test/**/*TestContext*.class" />
+		    </fileset>
+		  </batchtest>
+	</junit>
+
+<junitreport todir="junit-results">
+  <fileset dir="junit-results">
+    <include name="TEST-*.xml"/>
+  </fileset>
+  <report format="frames" todir="junit-results/html"/>
+</junitreport>
+
+	
+</target>
 
   <target name="etags">
     <exec dir="${project.location}" executable="find" output="javaFiles">
