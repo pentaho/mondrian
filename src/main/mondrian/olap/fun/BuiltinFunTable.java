@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002-2003 Kana Software, Inc. and others.
+// (C) Copyright 2002-2004 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -696,7 +696,7 @@ public class BuiltinFunTable extends FunTable {
 				return openClosingPeriod(evaluator, this, member, level);
 			}
 		});
-		define(new FunDefBase("ClosingPeriod", "ClosingPeriod([<Level>[, <Member>]])", "Returns the last sibling among the descendants of a member at a level.", "fmm") {
+		define(new FunDefBase("ClosingPeriod", "ClosingPeriod([<Member>])", "Returns the last sibling among the descendants of a member at a level.", "fmm") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Member member = getMemberArg(evaluator, args, 0, true);
 				Level level = member.getLevel().getChildLevel();
@@ -1338,12 +1338,11 @@ public class BuiltinFunTable extends FunTable {
                 List result = new ArrayList();
 
                 while (iter.hasNext()) {
-                    Object element = (Object) iter.next();
+                    Object element = iter.next();
                     MemberHelper lookupObj = new MemberHelper(element);
 
-                    if (!hashSet.contains(lookupObj)) {
+                    if (hashSet.add(lookupObj)) {
                         result.add(element);
-                        hashSet.add(lookupObj);
                     }
                 }
                 return result;
