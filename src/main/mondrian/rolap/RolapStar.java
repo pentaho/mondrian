@@ -218,19 +218,8 @@ public class RolapStar {
 				return RolapUtil.singleQuoteForSql(s);
 			}
 		}
-		public String quoteValues(Object[] values)
-		{
-			StringBuffer sb = new StringBuffer("(");
-			for (int i = 0; i < values.length; i++) {
-				if (i > 0) {
-					sb.append(", ");
-				}
-				sb.append(quoteValue(values[i]));
-			}
-			sb.append(")");
-			return sb.toString();
-		}
-		public int getCardinality()
+
+        public int getCardinality()
 		{
 			if (cardinality == -1) {
 				Connection jdbcConnection = table.star.getJdbcConnection();
@@ -297,6 +286,72 @@ public class RolapStar {
                 } catch (SQLException e) {
                     // ignore
                 }
+            }
+        }
+
+        /**
+         * Generates a predicate that a column matches one of a list of values.
+         *
+         * <p>
+         * Several possible outputs, depending upon whether the there are
+         * nulls:<ul>
+         *
+         * <li>One not-null value: <code>foo.bar = 1</code>
+         *
+         * <li>All values not null: <code>foo.bar in (1, 2, 3)</code></li
+         *
+         * <li>Null and not null values:
+         * <code>(foo.bar is null or foo.bar in (1, 2))</code></li>
+         *
+         * <li>Only null values:
+         * <code>foo.bar is null</code></li>
+         *
+         * <li>String values: <code>foo.bar in ('a', 'b', 'c')</code></li></ul>
+         */
+        public String createInExpr(String expr, Object[] constraints) {
+            if (constraints.length == 1) {
+                final Object constraint = constraints[0];
+                if (constraint != RolapUtil.sqlNullValue) {
+                    // One value, not null, for example "x = 1".
+                    return expr + " = " + quoteValue(constraint);
+                }
+            }
+            int notNullCount = 0;
+            StringBuffer sb = new StringBuffer(expr);
+            sb.append(" in (");
+            for (int i = 0; i < constraints.length; i++) {
+                final Object constraint = constraints[i];
+                if (constraint == RolapUtil.sqlNullValue) {
+                    continue;
+                }
+                if (notNullCount > 0) {
+                    sb.append(", ");
+                }
+                ++notNullCount;
+                sb.append(quoteValue(constraint));
+            }
+            sb.append(")");
+            if (notNullCount < constraints.length) {
+                // There was at least one null.
+                switch (notNullCount) {
+                case 0:
+                    // Special case -- there were no values besides null.
+                    // Return, for example, "x is null".
+                    return expr + " is null";
+                case 1:
+                    // Special case -- one not-null value, and null, for
+                    // example "(x is null or x = 1)".
+                    return "(" + expr + " = " + quoteValue(constraints[0]) +
+                            " or " + expr + " is null)";
+                default:
+                    // Nulls and values, for example,
+                    // "(x in (1, 2) or x IS NULL)".
+                    return "(" + sb.toString() + " or " + expr +
+                            "is null)";
+                }
+            } else {
+                // No nulls. Return, for example, "x in (1, 2, 3)".
+                return sb.toString();
             }
         }
     }
