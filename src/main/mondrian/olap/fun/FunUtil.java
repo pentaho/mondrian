@@ -161,9 +161,6 @@ public class FunUtil extends Util {
 		}
 		Exp arg = args[index];
 		Object o = arg.evaluate(evaluator);
-        if (true) {
-            return (Member) o;
-        }
 		if (o instanceof Member) {
 			return (Member) o;
 		} else if (o instanceof Hierarchy) {
