@@ -14,7 +14,7 @@ package mondrian.rolap;
 
 import mondrian.olap.Util;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  * A <code>CellRequest</code> contains the context necessary to get a cell value from a star.
@@ -26,22 +26,22 @@ import java.util.Vector;
 public class CellRequest
 {
 	private RolapStar.Measure measure;
-	private HashableVector columnsVector = new HashableVector();
-	private Vector valuesVector = new Vector();
+	private ArrayList columnList = new ArrayList();
+	private ArrayList valueList = new ArrayList();
 	CellRequest(RolapStar.Measure measure)
 	{
 		this.measure = measure;
-		this.columnsVector.addElement(measure);
+		this.columnList.add(measure);
 	}
 	void addConstrainedColumn(RolapStar.Column column, Object[] values)
 	{
-		columnsVector.addElement(column);
-		valuesVector.addElement(values);
+		columnList.add(column);
+		valueList.add(values);
 	}
 	void addConstrainedColumn(RolapStar.Column column, Object value)
 	{
-		columnsVector.addElement(column);
-		valuesVector.addElement(value);
+		columnList.add(column);
+		valueList.add(value);
 	}
 	void addColumn(RolapStar.Column column)
 	{
@@ -52,33 +52,26 @@ public class CellRequest
 		return measure;
 	}
 	public RolapStar.Column[] getColumns() {
-		// ignore the measure, the 0th element of columnsVector
-		RolapStar.Column[] a = new RolapStar.Column[columnsVector.size() - 1];
+		// ignore the measure, the 0th element of columnList
+		RolapStar.Column[] a = new RolapStar.Column[columnList.size() - 1];
 		for (int i = 0; i < a.length; i++) {
-			a[i] = (RolapStar.Column) columnsVector.elementAt(i + 1);
+			a[i] = (RolapStar.Column) columnList.get(i + 1);
 		}
 		return a;
 	}
-	/** Returns a vector which identifies which batch this request will
-	 * belong to. The vector contains the measure as well as the
+	/** Returns a list which identifies which batch this request will
+	 * belong to. The list contains the measure as well as the
 	 * columns. **/
-	HashableVector getBatchKey() {
-		return columnsVector;
+	ArrayList getBatchKey() {
+		return columnList;
 	}
-	public Vector getValuesVector() {
-		return valuesVector;
+	public ArrayList getValueList() {
+		return valueList;
 	}
-/*
-		Object[][] getMultiValues() {
-			Object[][] a = new Object[valuesVector.size()][];
-			valuesVector.copyInto(a);
-			return a;
-		}
-*/
 	public Object[] getSingleValues() {
-		Object[] a = new Object[valuesVector.size()];
-		for (int i = 0, n = valuesVector.size(); i < n; i++) {
-			Object value = valuesVector.elementAt(i);
+		Object[] a = new Object[valueList.size()];
+		for (int i = 0, n = valueList.size(); i < n; i++) {
+			Object value = valueList.get(i);
 			if (value instanceof Object[]) {
 				throw Util.newInternal("multi value in cell request");
 			}

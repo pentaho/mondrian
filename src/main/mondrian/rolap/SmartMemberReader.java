@@ -11,13 +11,14 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.*;
+import mondrian.olap.Level;
+import mondrian.olap.Util;
 import mondrian.rolap.sql.SqlQuery;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.WeakHashMap;
 import java.util.Iterator;
+import java.util.WeakHashMap;
 
 /**
  * <code>SmartMemberReader</code> implements {@link MemberReader} by keeping a
@@ -37,7 +38,7 @@ import java.util.Iterator;
 class SmartMemberReader implements MemberReader, MemberCache
 {
 	private MemberReader source;
-	/** Maps {@link RolapMember} to a {@link Vector} of its children, and
+	/** Maps {@link RolapMember} to a {@link ChildrenList} of its children, and
 	 * records usages. **/
 	private HashMap mapMemberToChildren;
 	/** Maps a {@link MemberKey} to a {@link RolapMember}. Implemented using a

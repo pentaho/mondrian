@@ -11,7 +11,8 @@
 */
 
 package mondrian.olap;
-import java.io.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.*;
 
 /**
@@ -43,8 +44,6 @@ public class Query extends QueryPart implements NameResolver {
 	public Exp slicer;
 	public QueryPart cellProps[];
 	private Parameter parameters[]; // stores definitions of parameters
-
-	private static Hashtable threadErrors = new Hashtable();
 
 	public Query()
 		{}
@@ -201,14 +200,11 @@ public class Query extends QueryPart implements NameResolver {
 	 * query is intended for Plato and substitute hidden members with existing
 	 * ones */
 	class PlatoCallBack extends ElementCallback {
-		Hashtable hiddenNames; //tabe of mapping between existing and hidden
-                               // members
-		boolean disableLookup;
+        /** Maps between existing and hidden members **/
+		HashMap hiddenNames = new HashMap();
+		boolean disableLookup = false;
 
-		public PlatoCallBack()
-		{
-			hiddenNames = new Hashtable();
-			disableLookup = false;
+		public PlatoCallBack() {
 		}
 
 		/**creates PlatoCallBack object and initializes hiddenMembers mapping,
@@ -218,10 +214,9 @@ public class Query extends QueryPart implements NameResolver {
 		 * feature call other constructor*/
 		public PlatoCallBack(Formula formulas[])
 		{
-			hiddenNames = new Hashtable();
-			disableLookup = false;
-			if (formulas == null)
+			if (formulas == null) {
 				return;
+            }
 			for (int i = 0; i < formulas.length; i++) {
 				if (!formulas[i].isHidden())
 					continue;
@@ -240,14 +235,16 @@ public class Query extends QueryPart implements NameResolver {
 		 * used for formatting existing measures*/
 		public String findHiddenName(String uName)
 		{
-			if (!disableLookup)
-				return (String)hiddenNames.get(uName);
-			return null;
+			if (disableLookup) {
+                return null;
+            }
+            return (String) hiddenNames.get(uName);
 		}
 
         /** disables or enables hidden name lookup*/
-		public void disableHiddenNameLookup(boolean disableLookup)
-		{this.disableLookup = disableLookup;}
+		public void disableHiddenNameLookup(boolean disableLookup) {
+            this.disableLookup = disableLookup;
+        }
 	}
 
 	public String toPlatoMdx()
@@ -375,19 +372,17 @@ public class Query extends QueryPart implements NameResolver {
 	{
 		// Chidren are axes, slicer, and formulas (in that order, to be
 		// consistent with replaceChild).
-		Vector v = new Vector();
+		ArrayList list = new ArrayList();
 		for (int i = 0; i < axes.length; i++) {
-			v.addElement(axes[i]);
+			list.add(axes[i]);
 		}
 		if (slicer != null) {
-			v.addElement(slicer);
+			list.add(slicer);
 		}
 		for (int i = 0; i < formulas.length; i++) {
-			v.addElement(formulas[i]);
+			list.add(formulas[i]);
 		}
-		Object children[] = new Object[v.size()];
-		v.copyInto(children);
-		return children;
+		return list.toArray();
 	}
 
 	public void replaceChild(int i, QueryPart with)
@@ -472,13 +467,9 @@ public class Query extends QueryPart implements NameResolver {
 
 	/** Returns an enumeration, each item of which is an Ob containing a
 	 * dimension which does not appear in any Axis or in the slicer. */
-	public Enumeration unusedDimensions()
-	{
+	public Iterator unusedDimensions() {
 		Dimension[] mdxDimensions = mdxCube.getDimensions();
-		Vector dimensions = new Vector();
-		for (int i=0; i < mdxDimensions.length; i++)
-			dimensions.addElement(mdxDimensions[i]);
-		return dimensions.elements();
+        return Arrays.asList(mdxDimensions).iterator();
 	}
 
 	public void addLevelToAxis(int iAxis, Level level)
@@ -542,7 +533,7 @@ public class Query extends QueryPart implements NameResolver {
 	private Hierarchy[] collectHierarchies(QueryPart queryPart)
 	{
 		Walker walker = new Walker(queryPart);
-		Vector v = new Vector();
+		HashSet set = new HashSet();
 		while (walker.hasMoreElements()) {
 			Object o = walker.nextElement();
 			if (o instanceof Exp) {
@@ -568,15 +559,11 @@ public class Query extends QueryPart implements NameResolver {
 					// set must have a dimension (e.g. disallow CrossJoin)
 					continue;
 
-				if (!v.contains(obExpHierarchy)) {
-					v.addElement(obExpHierarchy);
-				}
+				set.add(obExpHierarchy);
 			}
 		}
 
-		Hierarchy[] hierarchies = new Hierarchy[v.size()];
-		v.copyInto(hierarchies);
-		return hierarchies;
+		return (Hierarchy[]) set.toArray(new Hierarchy[0]);
 	}
 
 	/** Place expression 'exp' at position 'iPositionOnAxis' on axis 'axis'. */
@@ -1139,8 +1126,8 @@ public class Query extends QueryPart implements NameResolver {
 	 * would have to be applied after query execution. (it is very hard to
 	 * apply limited members on expressions like [Food].children)
 	 * */
-	public String  processFilterQuery(
-		CubeAccess cubeAccess, Vector oFilterAxesMembers[])
+	public String processFilterQuery(
+		CubeAccess cubeAccess, ArrayList oFilterAxesMembers[])
 	{
 		if (!cubeAccess.hasRestrictions()){
 			return this.toPlatoMdx();
@@ -1160,9 +1147,9 @@ public class Query extends QueryPart implements NameResolver {
 	 * array of limited members, which could not be applied. It means, that the
 	 * we need to parse the results before showing them to the user.
 	 */
-	private Vector applyPermissions(CubeAccess cubeAccess)
+	private ArrayList applyPermissions(CubeAccess cubeAccess)
 	{
-		Vector vFilterAxesMembers = null;
+		ArrayList filterAxesMemberList = null;
 		// first check: if query contains any forbidden hierarchies
 		Hierarchy[]  noAccessHierarchies =
 			cubeAccess.getNoAccessHierarchies();
@@ -1231,16 +1218,16 @@ public class Query extends QueryPart implements NameResolver {
 							// there might be an expression on the axes.  we
 							// will filter the result set, so we need to build
 							// filters
-							if (vFilterAxesMembers == null) {
-								vFilterAxesMembers = new Vector();
+							if (filterAxesMemberList == null) {
+								filterAxesMemberList = new ArrayList();
 							}
-							vFilterAxesMembers.addElement(limitedMembers[i]);
+							filterAxesMemberList.add(limitedMembers[i]);
 						}
 					}
 				}
 			}
 		}
-		return vFilterAxesMembers;
+		return filterAxesMemberList;
 	}
 
 	/**
@@ -1335,15 +1322,14 @@ public class Query extends QueryPart implements NameResolver {
 	void resolveParameters()
 	{
 		//validate definitions
-		Vector validParameters = new Vector();
+		ArrayList validParameters = new ArrayList();
 		for (int i = 0; i < parameters.length; i++) {
 			if (!parameters[i].isToBeDeleted()) {
 				parameters[i].validate(this);
-				validParameters.addElement(parameters[i]);
+				validParameters.add(parameters[i]);
 			}
 		}
-		parameters = new Parameter[validParameters.size()];
-		validParameters.copyInto(parameters);
+		parameters = (Parameter[]) validParameters.toArray(new Parameter[0]);
 
 		//calculate usage
 		for (int i = 0; i < parameters.length; i++) {
@@ -1414,9 +1400,9 @@ public class Query extends QueryPart implements NameResolver {
 			return mdxElement;
 
 		// then look in defined members
-		Enumeration enum = getDefinedMembers().elements();
-		while (enum.hasMoreElements()) {
-			Member mdxMember = (Member) enum.nextElement();
+		Iterator definedMembers = getDefinedMembers().iterator();
+		while (definedMembers.hasNext()) {
+			Member mdxMember = (Member) definedMembers.next();
 			if (mdxMember.getName().equalsIgnoreCase(s)) //member might be
 				// referenced without dimension name in the query - bug21327
 				return mdxMember;
@@ -1466,9 +1452,9 @@ public class Query extends QueryPart implements NameResolver {
 	// implement NameResolver
 	public Member lookupMemberFromCache(String s) {
 		// first look in defined members
-		Enumeration enum = getDefinedMembers().elements();
-		while (enum.hasMoreElements()) {
-			Member mdxMember = (Member) enum.nextElement();
+		Iterator definedMembers = getDefinedMembers().iterator();
+		while (definedMembers.hasNext()) {
+			Member mdxMember = (Member) definedMembers.next();
 			if (mdxMember.getUniqueName().equals(s)) {
 				return mdxMember;
 			}
@@ -1537,15 +1523,15 @@ public class Query extends QueryPart implements NameResolver {
 		}
 
 		//remove formula from query
-		Vector vFormulas = new Vector();
+		ArrayList formulaList = new ArrayList();
 		for (int i = 0; i < formulas.length; i++) {
-			if (!formulas[i].getUniqueName().equalsIgnoreCase(uniqueName))
-				vFormulas.addElement(formulas[i]);
+			if (!formulas[i].getUniqueName().equalsIgnoreCase(uniqueName)) {
+				formulaList.add(formulas[i]);
+			}
 		}
 
         // it has been found and removed
-		formulas = new Formula[vFormulas.size()];
-		vFormulas.copyInto(formulas);
+		this.formulas = (Formula[]) formulaList.toArray(new Formula[0]);
 	}
 
 	/** finds calculated member or set in array of formulas */
@@ -1568,15 +1554,15 @@ public class Query extends QueryPart implements NameResolver {
 		formula.rename(newName);
 	}
 
-	Vector getDefinedMembers()
+	ArrayList getDefinedMembers()
 	{
-		Vector vDefinedMembers = new Vector();
+		ArrayList definedMembers = new ArrayList();
 		for (int i = 0; i < formulas.length; i++) {
-			if (formulas[i].isMember && formulas[i].getElement() != null)
-				vDefinedMembers.addElement(
-					(Member)formulas[i].getElement());
+			if (formulas[i].isMember && formulas[i].getElement() != null) {
+				definedMembers.add((Member)formulas[i].getElement());
+            }
 		}
-		return vDefinedMembers;
+		return definedMembers;
 	}
 
 	/** finds axis by index and sets flag to show empty cells on that axis*/
@@ -1596,7 +1582,7 @@ public class Query extends QueryPart implements NameResolver {
 	 * mdxMembers */
 	public void setAxisShowSubtotals(int axis, boolean showSubtotals)
 	{
-		if (axis >= axes.length || axis < 0){
+		if (axis >= axes.length || axis < 0) {
 			//based on Prashant request: don't throw error-just return
 			return;
 		}
@@ -1632,19 +1618,19 @@ public class Query extends QueryPart implements NameResolver {
 				mdxCube.getUniqueName() + "]";
 			Member[] mdxMembers = mdxCube.getMembersForQuery(
 				sQuery, getDefinedMembers());
-			Vector v = new Vector();
+			HashSet set = new HashSet();
 			if (showSubtotals) {
 				// we need to put all those members plus all their parent
 				// members
 				for (int i = 0; i < mdxMembers.length; i++){
-					if (!v.contains(mdxMembers[i])) {
+					if (!set.contains(mdxMembers[i])) {
 						Member[] parentMembers =
 							mdxMembers[i].getAncestorMembers();
 						for (int k = parentMembers.length - 1; k >= 0; k--) {
-							if (!v.contains(parentMembers[k]))
-								v.addElement(parentMembers[k]);
+							if (!set.contains(parentMembers[k]))
+								set.add(parentMembers[k]);
 						}
-						v.addElement(mdxMembers[i]);
+						set.add(mdxMembers[i]);
 					}
 				}
 			} else {
@@ -1655,12 +1641,12 @@ public class Query extends QueryPart implements NameResolver {
 						nMaxDepth = mdxMembers[i].getDepth();
 				}
 				for (int i = 0; i < mdxMembers.length; i++){
-					if (nMaxDepth == mdxMembers[i].getDepth())
-						v.addElement(mdxMembers[i]);
+					if (nMaxDepth == mdxMembers[i].getDepth()) {
+						set.add(mdxMembers[i]);
+					}
 				}
 			}
-			Member[] goodMembers = new Member[v.size()];
-			v.copyInto(goodMembers);
+			Member[] goodMembers = (Member[]) set.toArray(new Member[0]);
 			filterHierarchy(mdxHierarchies[j], axis, goodMembers);
 		}
 		axes[axis].setShowSubtotals(showSubtotals);

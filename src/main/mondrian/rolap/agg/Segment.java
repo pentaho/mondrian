@@ -12,20 +12,19 @@
 */
 package mondrian.rolap.agg;
 
+import mondrian.olap.Util;
 import mondrian.rolap.CachePool;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.RolapUtil;
 import mondrian.rolap.sql.SqlQuery;
-import mondrian.olap.Util;
 
-import java.util.Hashtable;
-import java.util.Vector;
-import java.util.Enumeration;
-import java.io.StringWriter;
 import java.io.PrintWriter;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.io.StringWriter;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * <code>Segment</code> todo:
@@ -66,7 +65,7 @@ public class Segment implements CachePool.Cacheable
 				this.axes[i] = new Aggregation.Axis();
 			axis.column = aggregation.columns[i];
 			axis.constraints = constraintses[i];
-			axis.mapKeyToOffset = new Hashtable();
+			axis.mapKeyToOffset = new HashMap();
 		}
 		this.pos = new int[axisCount];
 		this.data = load();
@@ -247,13 +246,13 @@ public class Segment implements CachePool.Cacheable
 		try {
 			resultSet = RolapUtil.executeQuery(
 					star.getJdbcConnection(), sql, "Segment.load");
-			Vector rows = new Vector();
+			ArrayList rows = new ArrayList();
 			while (resultSet.next()) {
 				Object[] row = new Object[arity + 1];
 				// get the columns
 				for (int i = 0; i < arity; i++) {
 					Object o = resultSet.getObject(i + 1);
-					Hashtable h = this.axes[i].mapKeyToOffset;
+					HashMap h = this.axes[i].mapKeyToOffset;
 					Integer offsetInteger = (Integer) h.get(o);
 					if (offsetInteger == null) {
 						h.put(o, new Integer(h.size()));
@@ -266,7 +265,7 @@ public class Segment implements CachePool.Cacheable
 					o = Util.nullValue; // convert to placeholder
 				}
 				row[arity] = o;
-				rows.addElement(row);
+				rows.add(row);
 			}
 			// figure out size of dense array, and allocate it (todo: use
 			// sparse array sometimes)
@@ -275,21 +274,20 @@ public class Segment implements CachePool.Cacheable
 				Aggregation.Axis axis = this.axes[i];
 				int size = axis.mapKeyToOffset.size();
 				axis.keys = new Object[size];
-				Enumeration keys = axis.mapKeyToOffset.keys();
-				while (keys.hasMoreElements()) {
-					Object o = keys.nextElement();
-					Integer offsetInteger = (Integer)
-						axis.mapKeyToOffset.get(o);
+				for (Iterator keys = axis.mapKeyToOffset.keySet().iterator();
+					 keys.hasNext();) {
+					Object key = keys.next();
+					Integer offsetInteger = (Integer) axis.mapKeyToOffset.get(key);
 					int offset = offsetInteger.intValue();
 					Util.assertTrue(axis.keys[offset] == null);
-					axis.keys[offset] = o;
+					axis.keys[offset] = key;
 				}
 				n *= size;
 			}
 			Object[] values = new Object[n];
 			// now convert the rows into a dense array
 			for (int i = 0, count = rows.size(); i < count; i++) {
-				Object[] row = (Object[]) rows.elementAt(i);
+				Object[] row = (Object[]) rows.get(i);
 				int k = 0;
 				for (int j = 0; j < arity; j++) {
 					k *= this.axes[j].keys.length;

@@ -31,7 +31,7 @@ import java.sql.SQLException;
  * @version $Id$
  **/
 public class RolapUtil {
-	private static final RolapMember[] emptyMemberArray = new RolapMember[0];
+	static final RolapMember[] emptyMemberArray = new RolapMember[0];
 	public static PrintWriter debugOut;
 
 	/**

@@ -12,14 +12,12 @@
 
 package mondrian.rolap;
 import mondrian.olap.*;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.agg.AggregationManager;
+import mondrian.rolap.sql.SqlQuery;
 
-import java.util.Hashtable;
-import java.util.Vector;
-import java.util.Properties;
-import java.sql.*;
-import java.io.PrintWriter;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * <code>RolapCube</code> implements {@link Cube} for a ROLAP database.
@@ -31,8 +29,7 @@ import java.io.PrintWriter;
 class RolapCube extends CubeBase
 {
 	RolapHierarchy measuresHierarchy;
-	Hashtable mapNameToMember = new Hashtable();
-	Hashtable mapElementToElement = new Hashtable();
+	HashMap mapNameToMember = new HashMap();
 	/** For SQL generator. Name of fact table. */
 	String factTable;
     /** For SQL generator. Name of fact table's schema. May be null. */
@@ -222,19 +219,19 @@ class RolapCube extends CubeBase
 
 	void register()
 	{
-		Vector v = new Vector();
+		ArrayList list = new ArrayList();
 		Member[] measures = getMeasures();
 		for (int i = 0; i < measures.length; i++) {
 			if (measures[i] instanceof RolapStoredMeasure) {
-				v.addElement(measures[i]);
+				list.add(measures[i]);
 			}
 		}
-		RolapStoredMeasure[] storedMeasures = new RolapStoredMeasure[v.size()];
-		v.copyInto(storedMeasures);
+		RolapStoredMeasure[] storedMeasures = (RolapStoredMeasure[])
+				list.toArray(new RolapStoredMeasure[list.size()]);
 		// create measures (and stars for them, if necessary)
 		for (int i = 0; i < storedMeasures.length; i++) {
 			RolapStoredMeasure storedMeasure = storedMeasures[i];
-			Vector tablesVector = new Vector();
+			ArrayList tables = new ArrayList();
 			RolapStar star = RolapStar.Pool.instance().getOrCreateStar(
 					(RolapConnection) getConnection(), this.factSchema,
 					this.factTable, this.getAlias());
@@ -286,11 +283,11 @@ class RolapCube extends CubeBase
 							Util.newInternal("bad exp type " + level.nameExp);
 						}
 					}
-					tablesVector.addElement(table);
+					tables.add(table);
 				}
 			}
-			star.tables = new RolapStar.Table[tablesVector.size()];
-			tablesVector.copyInto(star.tables);
+			star.tables = (RolapStar.Table[]) tables.toArray(
+					new RolapStar.Table[tables.size()]);
 			storedMeasure.star = star;
 		}
 	}
@@ -308,11 +305,10 @@ class RolapCube extends CubeBase
 		return (Member) mapNameToMember.get(s);
 	}
 
-	public void lookupMembers(
-		Vector memberNames, Hashtable mapNameToMember)
-	{
-		throw new Error("unsupported");
-	}
+    public void lookupMembers(Collection memberNames, Map mapNameToMember) {
+		throw new UnsupportedOperationException();
+    }
+
 	public Member[] getMemberChildren(Member[] parentOlapMembers)
 	{
 		if (parentOlapMembers.length == 0) {
@@ -332,11 +328,11 @@ class RolapCube extends CubeBase
 		return hierarchy.memberReader.getMemberChildren(
 			(RolapMember[]) parentOlapMembers);
 	}
-	public Member[] getMembersForQuery(
-		String sQuery, Vector calcMembers)
-	{
-		throw new Error("unsupported");
-	}
+
+    public Member[] getMembersForQuery(String query, List calcMembers) {
+        throw new UnsupportedOperationException();
+    }
+
 	String getAlias()
 	{
 		return "fact";

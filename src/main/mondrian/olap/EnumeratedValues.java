@@ -10,8 +10,8 @@
 */
 
 package mondrian.olap;
-import java.util.Hashtable;
-import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * <code>EnumeratedValues</code> is a helper class for declaring a set of
@@ -29,7 +29,7 @@ import java.util.Enumeration;
 public class EnumeratedValues implements Cloneable
 {
 	/** map symbol names to ordinal values */
-	private Hashtable nameToOrdinalMap;
+	private HashMap nameToOrdinalMap;
 
 	/** the smallest ordinal value */
 	private int min;
@@ -44,17 +44,17 @@ public class EnumeratedValues implements Cloneable
 	private String [] ordinalToNameMap;
 
 	/**
-	 * Create a new empty, mutable enumeration.
+	 * Creates a new empty, mutable enumeration.
 	 */
 	public EnumeratedValues()
 	{
-		nameToOrdinalMap = new Hashtable();
+		nameToOrdinalMap = new HashMap();
 		this.min = Integer.MAX_VALUE;
 		this.max = Integer.MIN_VALUE;
 	}
 
-	/** Create an enumeration, initialize it with an array of strings, and
-	 * freeze it. */
+	/** Creates an enumeration, initialize it with an array of strings, and
+	 * freezes it. */
 	public EnumeratedValues(String[] names)
 	{
 		this();
@@ -64,8 +64,8 @@ public class EnumeratedValues implements Cloneable
 		makeImmutable();
 	}
 
-	/** Create an enumeration, initialize it with arrays of code/name pairs,
-	 * and freeze it. */
+	/** Create an enumeration, initializes it with arrays of code/name pairs,
+	 * and freezes it. */
 	public EnumeratedValues(String[] names, int[] codes)
 	{
 		this();
@@ -83,13 +83,13 @@ public class EnumeratedValues implements Cloneable
 		} catch(CloneNotSupportedException ex) {
 			// IMPLEMENT internal error?
 		}
-		clone.nameToOrdinalMap = (Hashtable) nameToOrdinalMap.clone();
+		clone.nameToOrdinalMap = (HashMap) nameToOrdinalMap.clone();
 		clone.ordinalToNameMap = null;
 		return clone;
 	}
 	
 	/**
-	 * Create a mutable enumeration from an existing enumeration, which may
+	 * Creates a mutable enumeration from an existing enumeration, which may
 	 * already be immutable.
 	 */
 	public EnumeratedValues getMutableClone()
@@ -98,26 +98,27 @@ public class EnumeratedValues implements Cloneable
 	}
 	
 	/**
-	 * Associate a symbolic name with an ordinal value.
-	 * PRECONDITION:  !isImmutable()
+	 * Associates a symbolic name with an ordinal value.
+     *
+	 * @pre !isImmutable()
 	 */
 	public void putName(int ordinal,String name)
 	{
-		// IMPLEMENT assert(!isImmutable());
+		Util.assertPrecondition(!isImmutable());
 		nameToOrdinalMap.put(name,new Integer(ordinal));
 		min = Math.min(min,ordinal);
 		max = Math.max(max,ordinal);
 	}
 
 	/**
-	 * Freeze the enumeration, preventing it from being further modified.
+	 * Freezes the enumeration, preventing it from being further modified.
 	 */
 	public void makeImmutable()
 	{
 		ordinalToNameMap = new String[1+max-min];
-		Enumeration names = nameToOrdinalMap.keys();
-		while (names.hasMoreElements()) {
-			String name = (String) names.nextElement();
+		for (Iterator names = nameToOrdinalMap.keySet().iterator();
+                names.hasNext(); ) {
+			String name = (String) names.next();
 			int ordinal = getOrdinal(name);
 			ordinalToNameMap[ordinal-min] = name;
 		}
@@ -129,7 +130,7 @@ public class EnumeratedValues implements Cloneable
 	}
 
 	/**
-	 * Get the smallest ordinal defined by this enumeration.
+	 * Returns the smallest ordinal defined by this enumeration.
 	 */
 	public final int getMin()
 	{
@@ -137,7 +138,7 @@ public class EnumeratedValues implements Cloneable
 	}
 
 	/**
-	 * Get the largest ordinal defined by this enumeration.
+	 * Returns the largest ordinal defined by this enumeration.
 	 */
 	public final int getMax()
 	{
@@ -156,29 +157,33 @@ public class EnumeratedValues implements Cloneable
 	}
 	
 	/**
-	 * Get the name associated with an ordinal; the return value
+	 * Returns the name associated with an ordinal; the return value
 	 * is null if the ordinal is not a member of the enumeration.
-	 * PRECONDITION:  isImmutable()
+     *
+	 * @pre isImmutable()
 	 */
 	public final String getName(int ordinal)
 	{
-		// IMPLEMENT assert(isImmutable());
+		Util.assertPrecondition(isImmutable());
 		return ordinalToNameMap[ordinal-min];
 	}
 
 	/**
-	 * Get the ordinal associated with a name; an Error is thrown
-	 * if the name is not a member of the enumeration.
+	 * Returns the ordinal associated with a name
+     *
+     * @throws {@link Error} if the name is not a member of the enumeration
 	 */
 	public final int getOrdinal(String name)
 	{
 		Integer i = findOrdinal(name);
-		if (i == null) throw new Error("Unknown enum name:  "+name);
+		if (i == null) {
+            throw new Error("Unknown enum name:  "+name);
+        }
 		return i.intValue();
 	}
 	
 	/**
-	 * Get the ordinal associated with a name; the return value is
+	 * Returns the ordinal associated with a name; the return value is
 	 * null if the name is not a member of the enumeration.
 	 */
 	public final Integer findOrdinal(String name)

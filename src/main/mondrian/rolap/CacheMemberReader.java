@@ -11,11 +11,10 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.*;
+import mondrian.olap.Util;
 import mondrian.rolap.sql.SqlQuery;
 
-import java.util.Properties;
-import java.util.Vector;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -84,31 +83,27 @@ class CacheMemberReader implements MemberReader, MemberCache
 
 	public RolapMember[] getRootMembers()
 	{
-		Vector v = new Vector();
+		ArrayList list = new ArrayList();
 		for (int i = 0; i < members.length; i++) {
 			if (members[i].getParentUniqueName() == null) {
-				v.addElement(members[i]);
+				list.add(members[i]);
 			}
 		}
-		RolapMember[] results = new RolapMember[v.size()];
-		v.copyInto(results);
-		return results;
+		return (RolapMember[]) list.toArray(RolapUtil.emptyMemberArray);
 	}
 	public RolapMember[] getMembersInLevel(
 		RolapLevel level, int startOrdinal, int endOrdinal)
 	{
-		Vector v = new Vector();
+		ArrayList list = new ArrayList();
 		for (int i = 0; i < members.length; i++) {
 			RolapMember member = members[i];
 			if (member.getLevel() == level &&
 				startOrdinal <= member.ordinal &&
 				member.ordinal < endOrdinal) {
-				v.addElement(members[i]);
+				list.add(members[i]);
 			}
 		}
-		RolapMember[] results = new RolapMember[v.size()];
-		v.copyInto(results);
-		return results;
+		return (RolapMember[]) list.toArray(RolapUtil.emptyMemberArray);
 	}
 	public RolapMember[] getMemberChildren(
 		RolapMember[] parentOlapMembers)
@@ -116,18 +111,16 @@ class CacheMemberReader implements MemberReader, MemberCache
 		// Find the children by simply scanning the array of all
 		// members. This won't be efficient when there are a lot of
 		// members.
-		Vector childrenVector = new Vector();
+		ArrayList list = new ArrayList();
 		for (int i = 0; i < members.length; i++) {
 			RolapMember member = (RolapMember) members[i];
 			for (int j = 0; j < parentOlapMembers.length; j++) {
 				if (member.getParentMember() == parentOlapMembers[j]) {
-					childrenVector.addElement(member);
+					list.add(member);
 				}
 			}
 		}
-		RolapMember[] children = new RolapMember[childrenVector.size()];
-		childrenVector.copyInto(children);
-		return children;
+		return (RolapMember[]) list.toArray(RolapUtil.emptyMemberArray);
 	}
 	public RolapMember getLeadMember(RolapMember member, int n)
 	{
@@ -153,7 +146,7 @@ class CacheMemberReader implements MemberReader, MemberCache
 	public RolapMember[] getPeriodsToDate(
 		RolapLevel level, RolapMember member)
 	{
-		Vector vector = new Vector();
+		ArrayList list = new ArrayList();
 		int startOrdinal = -1;
 		for (RolapMember m = member; m != null; m = (RolapMember) m.getParentMember()) {
 			if (m.getLevel() == level) {
@@ -165,12 +158,10 @@ class CacheMemberReader implements MemberReader, MemberCache
 		}
 		for (int i = startOrdinal; i <= member.ordinal; i++) {
 			if (members[i].getLevel() == member.getLevel()) {
-				vector.addElement(members[i]);
+				list.add(members[i]);
 			}
 		}
-		RolapMember[] members = new RolapMember[vector.size()];
-		vector.copyInto(members);
-		return members;
+		return (RolapMember[]) list.toArray(RolapUtil.emptyMemberArray);
 	}
 	public int getMemberCount()
 	{

@@ -11,11 +11,12 @@
 */
 
 package mondrian.rolap.agg;
-import mondrian.olap.*;
-import mondrian.rolap.*;
+import mondrian.olap.Util;
+import mondrian.rolap.CellRequest;
+import mondrian.rolap.RolapAggregationManager;
+import mondrian.rolap.RolapStar;
 
 import java.util.*;
-import java.util.Set;
 
 /**
  * <code>RolapAggregationManager</code> manages all {@link Aggregation}s
@@ -27,11 +28,11 @@ import java.util.Set;
  **/
 public class AggregationManager extends RolapAggregationManager {
 	private static AggregationManager instance;
-	Vector aggregations;
+	ArrayList aggregations;
 
 	AggregationManager()
 	{
-		this.aggregations = new Vector();
+		this.aggregations = new ArrayList();
 	}
 
  	/** Returns or creates the singleton. **/
@@ -46,41 +47,32 @@ public class AggregationManager extends RolapAggregationManager {
 	public void loadAggregations(ArrayList batches, Collection pinnedSegments) {
 		for (Iterator batchIter = batches.iterator(); batchIter.hasNext();) {
 			Batch batch = (Batch) batchIter.next();
-			Vector requests = batch.requests;
-			CellRequest firstRequest = (CellRequest)
-				requests.elementAt(0);
+			ArrayList requests = batch.requests;
+			CellRequest firstRequest = (CellRequest) requests.get(0);
 			RolapStar.Column[] columns = firstRequest.getColumns();
 			RolapStar.Measure measure = firstRequest.getMeasure();
-			Hashtable[] valueSets = new Hashtable[columns.length];
+			HashSet[] valueSets = new HashSet[columns.length];
 			for (int i = 0; i < valueSets.length; i++) {
-				valueSets[i] = new Hashtable();
+				valueSets[i] = new HashSet();
 			}
 			for (int i = 0, count = requests.size(); i < count; i++) {
-				CellRequest request = (CellRequest) requests.elementAt(i);
+				CellRequest request = (CellRequest) requests.get(i);
 				for (int j = 0; j < columns.length; j++) {
-					Object value = request.getValuesVector().elementAt(j);
+					Object value = request.getValueList().get(j);
 					Util.assertTrue(
 						!(value instanceof Object[]),
 						"multi-valued key not valid in this cell request");
-					Hashtable valueSet = valueSets[j];
-					if (valueSet.get(value) == null) {
-						valueSet.put(value, value);
-					}
+                    valueSets[j].add(value);
 				}
 			}
 			Object[][] constraintses = new Object[columns.length][];
 			for (int j = 0; j < columns.length; j++) {
 				Object[] constraints;
-				Hashtable valueSet = valueSets[j];
+				HashSet valueSet = valueSets[j];
 				if (valueSet == null) {
 					constraints = null;
 				} else {
-					int i = 0;
-					constraints = new Object[valueSet.size()];
-					Enumeration values = valueSet.keys();
-					while (values.hasMoreElements()) {
-						constraints[i++] = values.nextElement();
-					}
+					constraints = valueSet.toArray();
 				}
 				constraintses[j] = constraints;
 			}
@@ -102,7 +94,7 @@ public class AggregationManager extends RolapAggregationManager {
 		}
 		constraintses = aggregation.optimizeConstraints(constraintses);
 		aggregation.load(constraintses, pinnedSegments);
-		aggregations.addElement(aggregation);
+		aggregations.add(aggregation);
 	}
 
 	/**
@@ -113,8 +105,7 @@ public class AggregationManager extends RolapAggregationManager {
 			RolapStar.Measure measure, RolapStar.Column[] columns)
 	{
 		for (int i = 0, count = aggregations.size(); i < count; i++) {
-			Aggregation aggregation = (Aggregation)
-				aggregations.elementAt(i);
+			Aggregation aggregation = (Aggregation) aggregations.get(i);
 			if (aggregation.measure == measure &&
 					equals(aggregation.columns, columns)) {
 				return aggregation;

@@ -30,37 +30,38 @@ import java.util.*;
  * @version $Id$
  **/
 public abstract class RolapAggregationManager implements CellReader {
+
 	/**
 	 * Looks through a set of requests and loads aggregations
 	 * accordingly.
 	 *
 	 * @param arity The number of dimensions in the cube, and the number of
 	 *     members in each key.
-	 * @param keySet A set whose keys are {@link HashableVector}s
+	 * @param keySet A set whose keys are {@link ArrayList}s
 	 *     which contain {@link RolapMember}s
 	 * @param pinned Writes each loaded aggregation into here. The client must
 	 *     call {@link CachePool#unpin} on this list.
 	 **/
 	public void loadAggregations(int arity, Set keySet, Collection pinnedSegments)
 	{
-		RolapMember[] members = new RolapMember[arity];
+		RolapMember[] members = RolapUtil.emptyMemberArray;
 		Hashtable mapColumnSetToBatch = new Hashtable();
 		ArrayList batches = new ArrayList();
 		for (Iterator keys = keySet.iterator(); keys.hasNext(); ) {
-			HashableVector key = (HashableVector) keys.next();
-			key.copyInto(members);
+			ArrayList key = (ArrayList) keys.next();
+			members = (RolapMember[]) key.toArray(members);
 			CellRequest request = makeRequest(members);
 			if (request == null) {
 				continue; // invalid location -- ignore it
 			}
-			HashableVector columnsVector = request.getBatchKey();
-			Batch batch = (Batch) mapColumnSetToBatch.get(columnsVector);
+			ArrayList columnList = request.getBatchKey();
+			Batch batch = (Batch) mapColumnSetToBatch.get(columnList);
 			if (batch == null) {
 				batch = new Batch();
-				mapColumnSetToBatch.put(columnsVector, batch);
+				mapColumnSetToBatch.put(columnList, batch);
 				batches.add(batch);
 			}
-			batch.requests.addElement(request);
+			batch.requests.add(request);
 		}
 		loadAggregations(batches, pinnedSegments);
 	}
@@ -154,8 +155,8 @@ public abstract class RolapAggregationManager implements CellReader {
 
 	public static class Batch
 	{
-		public Vector requests = new Vector();
-	};
+		public ArrayList requests = new ArrayList();
+	}
 }
 
 // End RolapAggregationManager.java

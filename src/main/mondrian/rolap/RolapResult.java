@@ -15,12 +15,10 @@ import mondrian.olap.*;
 import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.rolap.agg.AggregationManager;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Vector;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ArrayList;
 
 /**
  * todo:
@@ -198,16 +196,19 @@ class RolapResult extends ResultBase
 	{
 		RolapCube cube;
 		HashSet keys;
-		java.util.Set pinnedSegments;
-		HashableVector key; // contains [RolapMember 0, ..., RolapMember n - 1]
+		HashSet pinnedSegments;
+		ArrayList key; // contains [RolapMember 0, ..., RolapMember n - 1]
 
-		BatchingCellReader(RolapCube cube, java.util.Set pinnedSegments)
+		BatchingCellReader(RolapCube cube, HashSet pinnedSegments)
 		{
 			this.cube = cube;
 			this.keys = new HashSet();
 			this.pinnedSegments = pinnedSegments;
-			this.key = new HashableVector();
-			this.key.setSize(cube.getDimensions().length);
+			int dimensionCount = cube.getDimensions().length;
+			this.key = new ArrayList(dimensionCount);
+			for (int i = 0; i < dimensionCount; i++) {
+				this.key.add(null);
+			}
 		}
 		void clear()
 		{
@@ -228,10 +229,10 @@ class RolapResult extends ResultBase
 			// if there is no such cell, record that we need to fetch it, and
 			// return 'error'
 			for (int i = 0, count = currentMembers.length; i < count; i++) {
-				key.setElementAt(currentMembers[i], i);
+				key.set(i, currentMembers[i]);
 			}
 			if (!keys.contains(key)) {
-				HashableVector clone = (HashableVector) key.clone();
+				ArrayList clone = (ArrayList) key.clone();
 				keys.add(clone);
 			}
 			return cube.valueNotReadyException;

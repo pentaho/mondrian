@@ -11,12 +11,12 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.*;
+import mondrian.olap.Util;
 import mondrian.rolap.sql.SqlQuery;
 
-import java.util.Properties;
-import java.util.Vector;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Properties;
 
 /**
  * <code>ArrayMemberSource</code> implements a flat, static hierarchy. There is
@@ -92,7 +92,7 @@ class HasBoughtDairySource extends ArrayMemberSource
 		RolapMember[] getMembers()
 		{
 			String[] values = new String[] {"False", "True"};
-			Vector vector = new Vector();
+			ArrayList list = new ArrayList();
 			int ordinal = 0;
 			RolapMember root = null;
 			RolapLevel level = (RolapLevel) hierarchy.getLevels()[0];
@@ -100,19 +100,17 @@ class HasBoughtDairySource extends ArrayMemberSource
 				root = new RolapMember(
 					null, level, null, hierarchy.getAllMemberName());
 				root.ordinal = ordinal++;
-				vector.addElement(root);
+				list.add(root);
 				level = (RolapLevel) hierarchy.getLevels()[1];
 			}
 			for (int i = 0; i < values.length; i++) {
 				RolapMember member = new RolapMember(root, level, values[i]);
 				member.ordinal = ordinal++;
-				vector.addElement(member);
+				list.add(member);
 			}
-			RolapMember[] members = new RolapMember[vector.size()];
-			vector.copyInto(members);
-			return members;
+			return (RolapMember[]) list.toArray(RolapUtil.emptyMemberArray);
 		}
-	};
+	}
 
 	// implement MemberReader
 	public void qualifyQuery(

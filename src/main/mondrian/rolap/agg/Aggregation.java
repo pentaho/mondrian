@@ -241,7 +241,7 @@ public class Aggregation
 		RolapStar.Column column;
 		Object[] constraints; // null if no constraint
 		Object[] keys; // actual keys retrieved
-		Hashtable mapKeyToOffset; // inversion of keys
+		HashMap mapKeyToOffset; // inversion of keys
 
 		boolean contains(Object key)
 		{

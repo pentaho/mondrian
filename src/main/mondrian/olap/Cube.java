@@ -11,8 +11,10 @@
 */
 
 package mondrian.olap;
-import java.util.Hashtable;
-import java.util.Vector;
+
+import java.util.List;
+import java.util.Collection;
+import java.util.Map;
 
 public interface Cube extends OlapElement, NameResolver {
 
@@ -49,13 +51,13 @@ public interface Cube extends OlapElement, NameResolver {
 	 * format of something like "[with calculated members] select *members* on
 	 * columns from <code>this</code>".
 	 **/
-	Member[] getMembersForQuery(String query, Vector calcMembers);
+	Member[] getMembersForQuery(String query, List calcMembers);
 
 	/**
 	 * Looks up a {@link Member} for each unique name in
-	 * <code>memberNames</code>, and places them in a hash table.
+	 * <code>memberNames</code>, and places them in a map.
 	 **/
-	void lookupMembers(Vector memberNames, Hashtable mapNameToMember);
+	void lookupMembers(Collection memberNames, Map mapNameToMember);
 
 	Level getYearLevel();
 	Level getQuarterLevel();
