@@ -55,12 +55,11 @@ public class Util extends mondrian.xom.XOMUtil
 
 	/**
 	 * Return string quoted in [...].  For example, "San Francisco" becomes
-	 * "[San Francisco]".  todo: "a [bracketed] string" should become "[a
-	 * [bracketed]] string]", but does not at present.
+	 * "[San Francisco]"; "a [bracketed] string" becomes
+     * "[a [bracketed]] string]".
 	 */
-	public static String quoteMdxIdentifier(String id)
-	{
-		return "[" + id + "]";
+	public static String quoteMdxIdentifier(String id) {
+		return "[" + replace(id, "]", "]]") + "]";
 	}
 
 	/**
@@ -406,6 +405,7 @@ public class Util extends mondrian.xom.XOMUtil
 			// read properties from the file "mondrian.properties", if it
 			// exists
 			File file = new File("mondrian.properties");
+//			System.out.println("looking in " + file.getAbsolutePath());
 			if (file.exists()) {
 				try {
 					properties.load(new FileInputStream(file));
@@ -864,6 +864,11 @@ public class Util extends mondrian.xom.XOMUtil
 				// To set the Window Handle (DBPROP_INIT_HWND) property in a
 				// connection string, a long integer value is typically used.
 			}
+		}
+		public void testQuoteMdxIdentifier() {
+			assertEquals("[San Francisco]", quoteMdxIdentifier("San Francisco"));
+			assertEquals("[a [bracketed]] string]", quoteMdxIdentifier("a [bracketed] string"));
+			assertEquals("[Store].[USA].[California]", quoteMdxIdentifier(new String[] {"Store", "USA", "California"}));
 		}
 	}
 }

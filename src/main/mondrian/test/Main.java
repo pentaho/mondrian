@@ -66,11 +66,8 @@ public class Main {
 	 * automatically by JUnit test-harnesses; see {@link TestSuite}.
 	 */
 	public static Test suite() throws Exception {
+		RolapUtil.checkTracing();
 		Util.PropertiesPlus properties = Util.getProperties();
-		int trace = properties.getIntProperty("mondrian.trace.level");
-		if (trace > 0) {
-			RolapUtil.debugOut = new PrintWriter(System.out, true);
-		}
 		String testName = properties.getProperty("mondrian.test.Name"),
 			testClass = properties.getProperty("mondrian.test.Class"),
 			testSuite = properties.getProperty("mondrian.test.Suite");

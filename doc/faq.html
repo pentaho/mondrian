@@ -60,9 +60,30 @@ OLAP Council API, and are now encamped on the JOLAP specification.</p>
 RDBMS happens to have materialized group by views created, your query will fly. 
 And the next time you run the same or a similar query, that will really fly, 
 because the results will be in the aggregation cache.</p>
+<h2><a name="Tracing">How do I enable tracing?</a></h2>
+<p>To enable tracing, set <code>mondrian.trace.level</code> to 1 in <code>
+mondrian.properties</code>. You will see text and execution time of each SQL 
+statement, like this:</p>
+<blockquote>
+  <p dir="ltr"><font face="Courier">SqlMemberSource.getLevelMemberCount: 
+  executing sql [select count(*) as `c0` from (select distinct `store`.`store_country` 
+  as `c0` from `store` as `store`) as `foo`], 110 ms<br>
+  SqlMemberSource.getMembers: executing sql [select distinct `store`.`store_sqft` 
+  as `c0` from `store` as `store` order by `store`.`store_sqft`], 50 ms</font></p>
+</blockquote>
+<p>Notes:</p>
+<ul>
+  <li>If you are running mondrian from the command-line, or via Ant, <code>
+  mondrian.properties</code> should be in the current directory.</li>
+  <li>If you are running in Tomcat, <code>mondrian.properties</code> should be 
+  in <i></i><code><i>TOMCAT_HOME</i>/bin</code>. Changes will only take effect 
+  when you re-start Tomcat. The output goes to the console from which you 
+  started Tomcat.</li>
+</ul>
 <h2>Where is Mondrian going in the future?</h2>
 <ol>
-  <li>Presentation layer</li>
+  <li>Presentation layer (see <a href="http://sourceforge.net/projects/jpivot">
+  JPivot</a> for more details).</li>
   <li>Complete implementation of MDX (not all of the functions implemented yet)</li>
   <li>Tuning</li>
   <li>Support JOLAP API.</li>

@@ -115,6 +115,17 @@ public class RolapUtil {
 	}
 
 	/**
+	 * Enables tracing if "mondrian.trace.level" &gt; 0.
+	 */
+	public static void checkTracing() {
+		Util.PropertiesPlus properties = Util.getProperties();
+		int trace = properties.getIntProperty("mondrian.trace.level");
+		if (trace > 0) {
+			debugOut = new PrintWriter(System.out, true);
+		}
+	}
+
+	/**
 	 * Executes a query, printing to the trace log if tracing is enabled.
 	 * If the query fails, it throws the same {@link SQLException}, and closes
 	 * the result set. If it succeeds, the caller must close the returned
@@ -123,6 +134,7 @@ public class RolapUtil {
 	public static ResultSet executeQuery(
 			Connection jdbcConnection, String sql, String component)
 			throws SQLException {
+		checkTracing();
 		getQuerySemaphore().enter();
 		Statement statement = null;
 		ResultSet resultSet = null;
