@@ -53,16 +53,54 @@ public abstract class ShadowResourceBundle extends ResourceBundle {
 	 * Creates a <code>ShadowResourceBundle</code>, and reads resources from
 	 * a <code>.properties</code> file with the same name as the current class.
 	 * For example, if the class is called <code>foo.MyResource_en_US</code>,
-	 * reads from <code>foo/MyResource_en_US.properties</code>.
+	 * reads from <code>foo/MyResource_en_US.properties</code>, then
+	 * <code>foo/MyResource_en.properties</code>, then
+	 * <code>foo/MyResource.properties</code>.
 	 */
 	protected ShadowResourceBundle() throws IOException {
 		super();
-		final InputStream stream = openPropertiesFile(getClass());
+		Class clazz = getClass();
+		InputStream stream = openPropertiesFile(clazz);
 		if (stream == null) {
 			throw new IOException("could not open properties file for " + getClass());
 		}
-		bundle = new PropertyResourceBundle(stream);
+		MyPropertyResourceBundle previousBundle =
+				new MyPropertyResourceBundle(stream);
+		bundle = previousBundle;
 		stream.close();
+		// Now load properties files for parent locales, which we deduce from
+		// the names of our super-class, and its super-class.
+		while (true) {
+			clazz = clazz.getSuperclass();
+			if (clazz == null ||
+					clazz == ShadowResourceBundle.class ||
+					!ResourceBundle.class.isAssignableFrom(clazz)) {
+				break;
+			}
+			stream = openPropertiesFile(clazz);
+			if (stream == null) {
+				continue;
+			}
+			MyPropertyResourceBundle newBundle =
+					new MyPropertyResourceBundle(stream);
+			stream.close();
+			if (previousBundle != null) {
+				previousBundle.setParentTrojan(newBundle);
+			} else {
+				bundle = newBundle;
+			}
+			previousBundle = newBundle;
+		}
+	}
+
+	static class MyPropertyResourceBundle extends PropertyResourceBundle {
+		public MyPropertyResourceBundle(InputStream stream) throws IOException {
+			super(stream);
+		}
+
+		void setParentTrojan(ResourceBundle parent) {
+			super.setParent(parent);
+		}
 	}
 
 	/**

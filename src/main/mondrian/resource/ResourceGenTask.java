@@ -20,29 +20,32 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.StringTokenizer;
 import java.net.URL;
 
 /**
  * A <code>ResourceGenTask</code> is an ANT task to invoke the mondrian
  * Resource Generator.
  *
- * Example:
- *   <ResourceGen srcdir="source" locale="en_US">
- *     <include name="happy/BirthdayResource.xml"/>
- *   </ResourceGen>
+ * <p>Example:<blockquote>
  *
- * Generates
- *   source/happy/BirthdayResource_en_US.properties
- *   source/happy/BirthdayResource.java
- *   source/happy/BirthdayResource_en_US.java
+ * <pre>&lt;resgen srcdir="source" locales="en_US"&gt;
+ *    &lt;include name="happy/BirthdayResource.xml"/&gt;
+ *&lt;/resgen&gt;</pre>
  *
- * Files are not generated if there is an existing newer one.
+ * </blockquote>generates<blockquote>
  *
+ * <pre>source/happy/BirthdayResource.properties
+ *source/happy/BirthdayResource_en_US.properties
+ *source/happy/BirthdayResource.java
+ *source/happy/BirthdayResource_en_US.java</pre>
+ *
+ * </blockquote>Files are not generated if there is an existing newer one.
  * The output path is determined by 'dest' and the package-name.
  *
  * <h2>Element &lt;resourceGen&gt;</h2>
  *
- * <table>
+ * <table border="2">
  * <tr>
  * <th>Attribute</th>
  * <th>Description</th>
@@ -66,6 +69,13 @@ import java.net.URL;
  * </tr>
  *
  * <tr>
+ * <td><a name="locales">locales</a></td>
+ * <td>Comma-separated list of locales to generate <code>.properties</code>
+ *     and <code>.java</code> files for.</td>
+ * <td>No</td>
+ * </tr>
+ *
+ * <tr>
  * <td><a name="static">static</a></td>
  * <td>Whether to generate static or dynamic accessor methods. Default is
  *     true (generate static methods). Not yet implemented.</td>
@@ -74,7 +84,7 @@ import java.net.URL;
  *
  * </table>
  *
- * Nested element: &lt;{@link ResourceGen.Include include}&gt;.
+ * Nested element: &lt;{@link Include include}&gt;.
  *
  * @author jhyde
  * @since Oct 8, 2002
@@ -85,6 +95,7 @@ public class ResourceGenTask extends Task {
 	File src;
 	File dest;
 	boolean statik = true;
+	String locales;
 
 	public ResourceGenTask() {
 	}
@@ -133,12 +144,16 @@ public class ResourceGenTask extends Task {
 		throw new BuildException(
 				"The 'static' parameter is not implemented yet");
 	}
+	/** Sets <a href="#locales">locales</a>. **/
+	public void setLocales(String locales) throws BuildException {
+		this.locales = locales;
+	}
 
 	/**
 	 * <code>Include</code> implements &lt;include&gt; element nested
 	 * within a &lt;resgen&gt; task (see {@link ResourceGenTask}).
 	 *
-	 * <table>
+	 * <table border="2">
 	 * <tr>
 	 * <th>Attribute</th>
 	 * <th>Description</th>
@@ -147,8 +162,8 @@ public class ResourceGenTask extends Task {
 	 *
 	 * <tr>
 	 * <td><a name="name">name</a></td>
-	 * <td>The name, relative to <a href="#srcdir">, of the XML file which
-	 *     defines the resources.</td>
+	 * <td>The name, relative to <a href="#srcdir">srcdir</a>, of the XML file
+	 *     which defines the resources.</td>
 	 * <td>Yes</td>
 	 * </tr>
 	 *

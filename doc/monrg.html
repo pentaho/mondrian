@@ -60,7 +60,7 @@ string.</p>
 &lt;/taskdef&gt;
 
 &lt;target name=&quot;generate.resources&quot;&gt;
-  &lt;resgen srcdir=&quot;source&quot;&gt;
+  &lt;resgen srcdir=&quot;source&quot; locales=&quot;en_US&quot;&gt;
     &lt;include name=&quot;happy/BirthdayResource_en_US.xml&quot;/&gt;
   &lt;/resgen&gt;
 &lt;/target&gt;
@@ -99,7 +99,7 @@ BUILD SUCCESSFUL
 
 Total time: 3 seconds</pre>
 </blockquote>
-<p>Three files are generated.</p>
+<p>Four files are generated.</p>
 <p><code>source/happy/BirthdayResource.java</code>:</p>
 <blockquote>
   <pre>package happy;
@@ -157,10 +157,16 @@ public class BirthdayResource_en_US extends BirthdayResource {
     public BirthdayResource_en_US() throws IOException {}
 }</pre>
 </blockquote>
-<p><code>source/happy/BirthdayResource_en_US.properties</code>:</p>
+<p><code>source/happy/BirthdayResource.properties</code>:</p>
 <blockquote>
   <pre>HappyBirthday=Happy Birthday, {0}! You don't look {1,number}.
 TooYoung={0} has not been born yet.</pre>
+</blockquote>
+<p><code>source/happy/BirthdayResource_en_US.properties</code>:</p>
+<blockquote>
+  <pre># This file is intentionally blank. Add property values
+# to this file to override the translations in the base
+# properties file, BirthdayResource.properties.</pre>
 </blockquote>
 <p>For each resource, a <code>get</code><code><i>Xxx</i>()</code> method is 
 generated to retrieve that resource in the current locale, substituting 
@@ -267,12 +273,14 @@ were dealing with the following set of files.</p>
     <tr>
       <th>Generated files</th>
       <td valign="top">happy/BirthdayResource.java<br>
+      happy/BirthdayResource.properties<br>
       happy/BirthdayResource_en_US.java<br>
       happy/BirthdayResource_en_US.properties</td>
     </tr>
     <tr>
       <th>Runtime files</th>
       <td valign="top">happy/BirthdayResource.class<br>
+      happy/BirthdayResource.properties<br>
       happy/BirthdayResource_en_US.class<br>
       happy/BirthdayResource_en_US.properties</td>
     </tr>
@@ -280,7 +288,7 @@ were dealing with the following set of files.</p>
 </blockquote>
 <p>Do the following steps:</p>
 <ol>
-  <li>Copy <code>happy/BirthdayResource_en_US.properties</code>&nbsp; to <code>happy/BirthdayResource_fr_FR.properties</code>, 
+  <li>Copy <code>happy/BirthdayResource.properties</code>&nbsp; to <code>happy/BirthdayResource_fr_FR.properties</code>, 
   and translate the messages as appropriate for the new locale:<blockquote>
   <pre>HappyBirthday=Bon anniversaire, {0}! {1,number}, c'est un bon age.
 TooYoung={0} n'est pas encore n&eacute;(e).</pre>
@@ -288,9 +296,9 @@ TooYoung={0} n'est pas encore n&eacute;(e).</pre>
   <p>&nbsp;</li>
   <li>Add <code>happy/BirthdayResource_fr_FR.properties</code> to the ANT task:<blockquote>
     <pre>&lt;target name=&quot;generate.resources&quot;&gt;
-  &lt;resgen srcdir=&quot;source&quot;&gt;
+  &lt;resgen srcdir=&quot;source&quot; <font color="#FF0000"><i>locales=&quot;en_US,fr_FR&quot;</i></font>&gt;
     &lt;include name=&quot;happy/BirthdayResource_en_US.xml&quot;/&gt;
-    &lt;include name=&quot;happy/BirthdayResource_fr_FR.properties&quot;/&gt;
+    <font color="#FF0000"><i>&lt;include name=&quot;happy/BirthdayResource_fr_FR.properties&quot;/&gt;</i></font>
    &lt;/resgen&gt;
 &lt;/target&gt;</pre>
     </blockquote></li>
@@ -312,6 +320,7 @@ follows (new files are shown in <i>italic</i>):</p><blockquote>
     <tr>
       <th>Generated files</th>
       <td dir="ltr" valign="top">happy/BirthdayResource.java<br>
+      happy/BirthdayResource.properties<br>
       happy/BirthdayResource_en_US.java<br>
       happy/BirthdayResource_en_US.properties<br>
       <i>happy/BirthdayResource_fr_FR.java</i></td>
@@ -319,6 +328,7 @@ follows (new files are shown in <i>italic</i>):</p><blockquote>
     <tr>
       <th>Runtime files</th>
       <td dir="ltr" valign="top">happy/BirthdayResource.class<br>
+      happy/BirthdayResource.properties<br>
       happy/BirthdayResource_en_US.class<br>
       happy/BirthdayResource_en_US.properties<br>
       <i>happy/BirthdayResource_fr_FR.class<br>
@@ -428,7 +438,7 @@ Julian Hyde</a>.</p>
   <tr>
     <td class="content">
       <a target="_top" href="index.html">Home</a> |
-      <a target="_top" href="noframes.html">No frames</a> | This file is<i>
+      <a target="_top" href="monrg.html">No frames</a> | This file is<i>
       <a href="http://apoptosis.dyndns.org:8080/open/mondrian/doc/resgen.html">$Id$
       </a></i> (<a href="http://apoptosis.dyndns.org:8080/open/mondrian/doc/resgen.html?ac=22">log</a>)</td>
     <td align="right">

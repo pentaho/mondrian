@@ -200,7 +200,7 @@ copy.properties"/>
       <classpath refid="project.classpath"/>
     </taskdef>
 
-    <resgen srcdir="${java.dir}">
+    <resgen srcdir="${java.dir}" locales="en_US,de_DE">
       <include name="mondrian/olap/MondrianResource.xml"/>
     </resgen>
 

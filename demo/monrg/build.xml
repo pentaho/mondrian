@@ -16,7 +16,7 @@
   </taskdef>
 
   <target name="generate.resources">
-    <resgen srcdir="source">
+    <resgen srcdir="source" locales="en_US,fr_FR">
       <include name="happy/BirthdayResource.xml"/>
       <include name="happy/BirthdayResource_fr_FR.properties"/>
     </resgen>
