@@ -249,7 +249,29 @@ public class RolapMember extends MemberBase
 	public Object getSqlKey() {
 		return key;
 	}
-}
 
+	/**
+	 * Returns the formatted value of the property named <code>propertyName</code>.
+	 */
+	public String getPropertyFormattedValue(String propertyName){
+		// do we have a formatter ? if yes, use it
+		RolapLevel lev = (RolapLevel) this.getLevel();
+		Property[] props = lev.getProperties();
+		Property prop = null;
+		for(int i = 0; i < props.length; i++){
+			if(props[i].getName().equals(propertyName)){
+				prop = props[i];
+				break;
+			}
+		}
+		PropertyFormatter pf;
+		if (prop!=null && (pf = prop.getFormatter()) != null) {
+			return pf.formatProperty(this, propertyName, getPropertyValue(propertyName)); 
+		}
+		
+		return getPropertyValue(propertyName).toString();
+	}
+ 
+}
 
 // End RolapMember.java

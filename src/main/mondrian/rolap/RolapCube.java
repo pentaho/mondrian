@@ -75,7 +75,7 @@ class RolapCube extends CubeBase
 					this, null, measuresLevel, xmlMeasure.name, xmlMeasure.formatString,
 					xmlMeasure.column, xmlMeasure.aggregator);
 
-			if (xmlMeasure.formatter != null) {
+			if (xmlMeasure.formatter != null && xmlMeasure.formatter.length() > 0) {
 				// there is a special cell formatter class
 				try {
 					Class clazz = Class.forName(xmlMeasure.formatter);

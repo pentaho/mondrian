@@ -81,6 +81,9 @@ public abstract class Property {
 	public int getType() {
 		return type;
 	}
+	public PropertyFormatter getFormatter() {
+		return null;
+	}
 }
 
 // End Property.java

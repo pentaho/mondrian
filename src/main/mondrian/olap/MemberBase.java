@@ -202,6 +202,14 @@ public abstract class MemberBase
     public boolean isHidden() {
         return false;
     }
+    
+	/**
+	 * Returns the formatted value of the property named <code>propertyName</code>.
+	 */
+	public String getPropertyFormattedValue(String propertyName){
+		return getPropertyValue(propertyName).toString();
+	}
+ 
 }
 
 // End MemberBase.java

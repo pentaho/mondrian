@@ -451,6 +451,13 @@ todo:
 			<Value>Numeric</Value>
 			<Value>Boolean</Value>
 		</Attribute>
+		<Attribute name="formatter" required="false">
+			<Doc>
+				Name of a formatter class for the appropriate property value beeing displayed.
+				The class must implement the mondrian.olap.PropertyFormatter interface.
+			</Doc>
+		</Attribute>
+		
 	</Element>
 
 	<Element type="Measure">

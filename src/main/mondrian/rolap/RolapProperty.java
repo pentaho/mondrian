@@ -11,8 +11,11 @@
 */
 package mondrian.rolap;
 
+import java.lang.reflect.Constructor;
+
 import mondrian.olap.MondrianDef;
 import mondrian.olap.Property;
+import mondrian.olap.PropertyFormatter;
 
 /**
  * <code>RolapProperty</code> is the definition of a member property.
@@ -20,13 +23,31 @@ import mondrian.olap.Property;
 class RolapProperty extends Property {
     /** Array of RolapProperty of length 0. */
     static final RolapProperty[] emptyArray = new RolapProperty[0];
-
-    RolapProperty(String name, int type, MondrianDef.Expression exp) {
+	
+    private PropertyFormatter formatter = null;
+	
+    RolapProperty(String name, int type, MondrianDef.Expression exp, String formatterDef) {
 		super(name, type);
 		this.exp = exp;
+		if (formatterDef != null && formatterDef.length() > 0) {
+			// there is a special property formatter class
+			try {
+				Class clazz = Class.forName(formatterDef);
+				Constructor ctor = clazz.getConstructor(new Class[0]);
+				formatter = (PropertyFormatter) ctor.newInstance(new Object[0]);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}			
+		}
 	}
+    
+	public PropertyFormatter getFormatter() {
+		return formatter;
+	}
+
 	/** The column or expression which yields the property's value. */
 	MondrianDef.Expression exp;
+
 }
 
 // End RolapProperty.java

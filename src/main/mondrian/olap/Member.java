@@ -120,6 +120,11 @@ public interface Member extends OlapElement, Comparable {
 	Object getPropertyValue(String propertyName);
 
 	/**
+	 * Returns the formatted value of the property named <code>propertyName</code>.
+	 */
+	String getPropertyFormattedValue(String propertyName);
+	
+	/**
 	 * Sets a property of this member to a given value.
 	 */
 	void setProperty(String name, Object value);
