@@ -206,6 +206,13 @@ public abstract class ExpBase
 			return "{" + getTypeDescriptionCommaList(argTypes, 0) + "}";
 		case FunDef.TypeParentheses:
 			return "(" + getTypeDescriptionCommaList(argTypes, 0) + ")";
+		case FunDef.TypeCase:
+			String s = getTypeDescription(argTypes[0]);
+			if (argTypes[0] == CatLogical) {
+				return "CASE WHEN " + s + " THEN <Expression> ... END";
+			} else {
+				return "CASE " + s + " WHEN " + s + " THEN <Expression> ... END";
+			}
 		default:
 			throw Util.newInternal("unknown syntactic type " + syntacticType);
 		}

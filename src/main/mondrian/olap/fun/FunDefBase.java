@@ -165,6 +165,29 @@ class FunDefBase extends FunUtil implements FunDef {
 			pw.print(fun);
 			return;
 
+		case TypeCase:
+			pw.print("CASE");
+			int j = 0;
+			if (fun.equals("CaseTest")) {
+				pw.print(" ");
+				args[j++].unparse(pw,callback);
+			} else {
+				Util.assertTrue(fun.equals("CaseMatch"));
+			}
+			int clauseCount = (args.length - j) / 2;
+			for (int i = 0; i < clauseCount; i++) {
+				pw.print(" WHEN ");
+				args[j++].unparse(pw, callback);
+				pw.print(" THEN ");
+				args[j++].unparse(pw, callback);
+			}
+			if (j < args.length) {
+				pw.print(" ELSE ");
+				args[j++].unparse(pw, callback);
+			}
+			Util.assertTrue(j == args.length);
+			pw.print(" END");
+			return;
 		default:
 			throw Util.newInternal(
 				"unknown syntactic type " + getSyntacticType());

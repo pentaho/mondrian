@@ -139,6 +139,7 @@ public class Scanner {
 //		initResword(ParserSym.BACK_COLOR          ,"BACK_COLOR");
 //		initResword(ParserSym.BASC                ,"BASC");
 //		initResword(ParserSym.BDESC               ,"BDESC");
+		initResword(ParserSym.CASE                ,"CASE");
 		initResword(ParserSym.CELL                ,"CELL");
 //		initResword(ParserSym.CELL_ORDINAL        ,"CELL_ORDINAL");
 //		initResword(ParserSym.CHAPTERS            ,"CHAPTERS");
@@ -146,7 +147,9 @@ public class Scanner {
 //		initResword(ParserSym.COLUMNS             ,"COLUMNS");
 //		initResword(ParserSym.DESC                ,"DESC");
 		initResword(ParserSym.DIMENSION           ,"DIMENSION");
+		initResword(ParserSym.ELSE                ,"ELSE");
 		initResword(ParserSym.EMPTY               ,"EMPTY");
+		initResword(ParserSym.END                 ,"END");
 //		initResword(ParserSym.FIRSTCHILD          ,"FIRSTCHILD");
 //		initResword(ParserSym.FIRSTSIBLING        ,"FIRSTSIBLING");
 //		initResword(ParserSym.FONT_FLAGS          ,"FONT_FLAGS");
@@ -177,7 +180,9 @@ public class Scanner {
 		initResword(ParserSym.SELECT              ,"SELECT");
 		initResword(ParserSym.SET                 ,"SET");
 //		initResword(ParserSym.SOLVE_ORDER         ,"SOLVE_ORDER");
+		initResword(ParserSym.THEN                ,"THEN");
 		initResword(ParserSym.VALUE               ,"VALUE");
+		initResword(ParserSym.WHEN                ,"WHEN");
 		initResword(ParserSym.WHERE               ,"WHERE");
 		initResword(ParserSym.WITH                ,"WITH");
 		initResword(ParserSym.XOR                 ,"XOR");

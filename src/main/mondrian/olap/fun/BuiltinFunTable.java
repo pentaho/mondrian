@@ -1991,6 +1991,159 @@ public class BuiltinFunTable extends FunTable {
 		});
 
 		define(new ResolverBase(
+				"_CaseTest",
+				"Case When <Logical Expression> Then <Expression> [...] [Else <Expression>] End",
+				"Evaluates various conditions, and returns the corresponding expression for the first which evaluates to true.",
+				FunDef.TypeCase) {
+			protected FunDef resolve(Exp[] args, int[] conversionCount) {
+				if (args.length < 1) {
+					return null;
+				}
+				int j = 0,
+						clauseCount = args.length / 2,
+						mismatchingArgs = 0;
+				int returnType = args[1].getType();
+				for (int i = 0; i < clauseCount; i++) {
+					if (!canConvert(args[j++], Exp.CatLogical, conversionCount)) {
+						mismatchingArgs++;
+					}
+					if (!canConvert(args[j++], returnType, conversionCount)) {
+						mismatchingArgs++;
+					}
+				}
+				if (j < args.length) {
+					if (!canConvert(args[j++], returnType, conversionCount)) {
+						mismatchingArgs++;
+					}
+				}
+				Util.assertTrue(j == args.length);
+				if (mismatchingArgs == 0) {
+					return new FunDefBase(
+							this, FunDef.TypeFunction, returnType,
+							ExpBase.getTypes(args)) {
+						// implement FunDef
+						public Object evaluate(Evaluator evaluator, Exp[] args) {
+							return evaluateCaseTest(evaluator, args);
+						}
+					};
+				} else {
+					return null;
+				}
+			}
+			Object evaluateCaseTest(Evaluator evaluator, Exp[] args) {
+				int clauseCount = args.length / 2,
+					j = 0;
+				for (int i = 0; i < clauseCount; i++) {
+					boolean logical = getBooleanArg(evaluator, args, j++);
+					if (logical) {
+						return getArg(evaluator, args, j);
+					} else {
+						j++;
+					}
+				}
+				if (j < args.length) {
+					return getArg(evaluator,  args, j); // ELSE
+				} else {
+					return null;
+				}
+			}
+			public void testCaseTestMatch(FoodMartTestCase test) {
+				String s = test.executeExpr(
+						"CASE WHEN 1=0 THEN \"first\" WHEN 1=1 THEN \"second\" WHEN 1=2 THEN \"third\" ELSE \"fourth\" END");
+				test.assertEquals("second", s);
+			}
+			public void testCaseTestMatchElse(FoodMartTestCase test) {
+				String s = test.executeExpr(
+						"CASE WHEN 1=0 THEN \"first\" ELSE \"fourth\" END");
+				test.assertEquals("fourth", s);
+			}
+			public void testCaseTestMatchNoElse(FoodMartTestCase test) {
+				String s = test.executeExpr(
+						"CASE WHEN 1=0 THEN \"first\" END");
+				test.assertEquals("(null)", s);
+			}
+		});
+
+		define(new ResolverBase(
+				"_CaseMatch",
+				"Case <Expression> When <Expression> Then <Expression> [...] [Else <Expression>] End",
+				"Evaluates various expressions, and returns the corresponding expression for the first which matches a particular value.",
+				FunDef.TypeCase) {
+			protected FunDef resolve(Exp[] args, int[] conversionCount) {
+				if (args.length < 3) {
+					return null;
+				}
+				int valueType = args[0].getType();
+				int returnType = args[2].getType();
+				int j = 0,
+						clauseCount = (args.length - 1) / 2,
+						mismatchingArgs = 0;
+				if (!canConvert(args[j++], valueType, conversionCount)) {
+					mismatchingArgs++;
+				}
+				for (int i = 0; i < clauseCount; i++) {
+					if (!canConvert(args[j++], valueType, conversionCount)) {
+						mismatchingArgs++;
+					}
+					if (!canConvert(args[j++], returnType, conversionCount)) {
+						mismatchingArgs++;
+					}
+				}
+				if (j < args.length) {
+					if (!canConvert(args[j++], returnType, conversionCount)) {
+						mismatchingArgs++;
+					}
+				}
+				Util.assertTrue(j == args.length);
+				if (mismatchingArgs == 0) {
+					return new FunDefBase(
+							this, FunDef.TypeFunction, returnType,
+							ExpBase.getTypes(args)) {
+						// implement FunDef
+						public Object evaluate(Evaluator evaluator, Exp[] args) {
+							return evaluateCaseMatch(evaluator, args);
+						}
+					};
+				} else {
+					return null;
+				}
+			}
+			Object evaluateCaseMatch(Evaluator evaluator, Exp[] args) {
+				int clauseCount = (args.length - 1)/ 2,
+					j = 0;
+				Object value = getArg(evaluator, args, j++);
+				for (int i = 0; i < clauseCount; i++) {
+					Object match = getArg(evaluator, args, j++);
+					if (match.equals(value)) {
+						return getArg(evaluator, args, j);
+					} else {
+						j++;
+					}
+				}
+				if (j < args.length) {
+					return getArg(evaluator,  args, j); // ELSE
+				} else {
+					return null;
+				}
+			}
+			public void testCaseMatch(FoodMartTestCase test) {
+				String s = test.executeExpr(
+						"CASE 2 WHEN 1 THEN \"first\" WHEN 2 THEN \"second\" WHEN 3 THEN \"third\" ELSE \"fourth\" END");
+				test.assertEquals("second", s);
+			}
+			public void testCaseMatchElse(FoodMartTestCase test) {
+				String s = test.executeExpr(
+						"CASE 7 WHEN 1 THEN \"first\" ELSE \"fourth\" END");
+				test.assertEquals("fourth", s);
+			}
+			public void testCaseMatchNoElse(FoodMartTestCase test) {
+				String s = test.executeExpr(
+						"CASE 8 WHEN 0 THEN \"first\" END");
+				test.assertEquals("(null)", s);
+			}
+		});
+
+		define(new ResolverBase(
 					   "Properties",
 					   "<Member>.Properties(<String Expression>)",
 					   "Returns the value of a member property.",
@@ -2064,7 +2217,20 @@ public class BuiltinFunTable extends FunTable {
 					"  {[Measures].[Unit Sales], [Measures].[Store Sales per Sqft]} ON COLUMNS," + nl +
 					"  {[Store].[Store Name].members} ON ROWS" + nl +
 					"FROM Sales");
-				test.assertEquals("foo", result.getCell(new int[] {0,0}).getFormattedValue());
+				Member member;
+				Cell cell;
+				member = result.getAxes()[1].positions[17].members[0];
+				test.assertEquals("[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]", member.getUniqueName());
+				cell = result.getCell(new int[] {0,17});
+				test.assertEquals("2237.0", cell.getFormattedValue());
+				cell = result.getCell(new int[] {1,17});
+				test.assertEquals("0.16802205204566403", cell.getFormattedValue());
+				member = result.getAxes()[1].positions[3].members[0];
+				test.assertEquals("[Store].[All Stores].[Mexico].[DF].[San Andres].[Store 21]", member.getUniqueName());
+				cell = result.getCell(new int[] {0,3});
+				test.assertEquals("(null)", cell.getFormattedValue());
+				cell = result.getCell(new int[] {1,3});
+				test.assertEquals("NaN", cell.getFormattedValue());
 			}
 		});
 
@@ -2081,6 +2247,10 @@ public class BuiltinFunTable extends FunTable {
 						o1 = getDoubleArg(evaluator, args, 1);
 				return new Double(o0.doubleValue() + o1.doubleValue());
 			}
+			public void testPlus(FoodMartTestCase test) {
+				String s = test.executeExpr("1+2");
+				test.assertEquals("3.0", s);
+			}
 		});
 		define(new FunDefBase("-", "<Numeric Expression> - <Numeric Expression>", "Subtracts two numbers.", "innn") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
@@ -2088,12 +2258,29 @@ public class BuiltinFunTable extends FunTable {
 						o1 = getDoubleArg(evaluator, args, 1);
 				return new Double(o0.doubleValue() - o1.doubleValue());
 			}
+			public void testMinus(FoodMartTestCase test) {
+				String s = test.executeExpr("1-3");
+				test.assertEquals("-2.0", s);
+			}
+			public void testMinusAssociativity(FoodMartTestCase test) {
+				String s = test.executeExpr("11-7-5");
+				// right-associative would give 11-(7-5) = 9, which is wrong
+				test.assertEquals("-1.0", s);
+			}
 		});
 		define(new FunDefBase("*", "<Numeric Expression> * <Numeric Expression>", "Multiplies two numbers.", "innn") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Double o0 = getDoubleArg(evaluator, args, 0),
 						o1 = getDoubleArg(evaluator, args, 1);
 				return new Double(o0.doubleValue() * o1.doubleValue());
+			}
+			public void testMultiply(FoodMartTestCase test) {
+				String s = test.executeExpr("4*7");
+				test.assertEquals("28.0", s);
+			}
+			public void testMultiplyPrecedence(FoodMartTestCase test) {
+				String s = test.executeExpr("3 + 4 * 5 + 6");
+				test.assertEquals("29.0", s);
 			}
 		});
 		define(new FunDefBase("/", "<Numeric Expression> / <Numeric Expression>", "Divides two numbers.", "innn") {
@@ -2103,13 +2290,41 @@ public class BuiltinFunTable extends FunTable {
 				Double result = new Double(o0.doubleValue() / o1.doubleValue());
 				return result;
 			}
-
 			// todo: use this, via reflection
 			public double evaluate(double d1, double d2) {
 				return d1 / d2;
 			}
+			public void testDivide(FoodMartTestCase test) {
+				String s = test.executeExpr("10 / 5");
+				test.assertEquals("2.0", s);
+			}
+			public void testDivideByZero(FoodMartTestCase test) {
+				String s = test.executeExpr("-3 / (2 - 2)");
+				test.assertEquals("-Infinity", s);
+			}
+			public void testDividePrecedence(FoodMartTestCase test) {
+				String s = test.executeExpr("24 / 4 / 2 * 10 - -1");
+				test.assertEquals("31.0", s);
+			}
 		});
-		define(new FunDefBase("-", "- <Numeric Expression>", "Returns the negative of a number.", "Pnn"));
+		define(new FunDefBase("-", "- <Numeric Expression>", "Returns the negative of a number.", "Pnn") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				Double o0 = getDoubleArg(evaluator, args, 0);
+				return new Double(- o0.doubleValue());
+			}
+			public void testUnaryMinus(FoodMartTestCase test) {
+				String s = test.executeExpr("-3");
+				test.assertEquals("-3.0", s);
+			}
+			public void testUnaryMinusMember(FoodMartTestCase test) {
+				String s = test.executeExpr("- ([Measures].[Unit Sales],[Gender].[F])");
+				test.assertEquals("-131558.0", s);
+			}
+			public void testUnaryMinusPrecedence(FoodMartTestCase test) {
+				String s = test.executeExpr("1 - -10.5 * 2 -3");
+				test.assertEquals("19.0", s);
+			}
+		});
 		define(new FunDefBase("||", "<String Expression> || <String Expression>", "Concatenates two strings.", "iSSS") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				String o0 = getStringArg(evaluator, args, 0, null),
@@ -2125,30 +2340,185 @@ public class BuiltinFunTable extends FunTable {
 				test.assertEquals("fooM", s);
 			}
 		});
-		define(new FunDefBase("AND", "<Logical Expression> AND <Logical Expression>", "Returns the conjunction of two conditions.", "ibbb"));
-		define(new FunDefBase("OR", "<Logical Expression> OR <Logical Expression>", "Returns the disjunction of two conditions.", "ibbb"));
-		define(new FunDefBase("XOR", "<Logical Expression> XOR <Logical Expression>", "Returns whether two conditions are mutually exclusive.", "ibbb"));
-		define(new FunDefBase("NOT", "NOT <Logical Expression>", "Returns the negation of a condition.", "Pbb"));
+		define(new FunDefBase("AND", "<Logical Expression> AND <Logical Expression>", "Returns the conjunction of two conditions.", "ibbb") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				return toBoolean(
+						getBooleanArg(evaluator, args, 0) &&
+						getBooleanArg(evaluator, args, 1));
+			}
+			public void testAnd(FoodMartTestCase test) {
+				String s = test.executeBooleanExpr(" 1=1 AND 2=2 ");
+				test.assertEquals("true", s);
+			}
+			public void testAnd2(FoodMartTestCase test) {
+				String s = test.executeBooleanExpr(" 1=1 AND 2=0 ");
+				test.assertEquals("false", s);
+			}
+		});
+		define(new FunDefBase("OR", "<Logical Expression> OR <Logical Expression>", "Returns the disjunction of two conditions.", "ibbb") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				// Only evaluate 2nd if first is false.
+				return toBoolean(
+						getBooleanArg(evaluator, args, 0) ||
+						getBooleanArg(evaluator, args, 1));
+			}
+			public void testOr(FoodMartTestCase test) {
+				String s = test.executeBooleanExpr(" 1=0 OR 2=0 ");
+				test.assertEquals("false", s);
+			}
+			public void testOr2(FoodMartTestCase test) {
+				String s = test.executeBooleanExpr(" 1=0 OR 0=0 ");
+				test.assertEquals("true", s);
+			}
+			public void testOrAssociativity1(FoodMartTestCase test) {
+				String s = test.executeBooleanExpr(" 1=1 AND 1=0 OR 1=1 ");
+				// Would give 'false' if OR were stronger than AND (wrong!)
+				test.assertEquals("true", s);
+			}
+			public void testOrAssociativity2(FoodMartTestCase test) {
+				String s = test.executeBooleanExpr(" 1=1 OR 1=0 AND 1=1 ");
+				// Would give 'false' if OR were stronger than AND (wrong!)
+				test.assertEquals("true", s);
+			}
+			public void testOrAssociativity3(FoodMartTestCase test) {
+				String s = test.executeBooleanExpr(" (1=0 OR 1=1) AND 1=1 ");
+				test.assertEquals("true", s);
+			}
+		});
+		define(new FunDefBase("XOR", "<Logical Expression> XOR <Logical Expression>", "Returns whether two conditions are mutually exclusive.", "ibbb") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				final boolean b0 = getBooleanArg(evaluator, args, 0);
+				final boolean b1 = getBooleanArg(evaluator, args, 1);
+				return toBoolean(b0 != b1);
+			}
+			public void testXor(FoodMartTestCase test) {
+				String s = test.executeBooleanExpr(" 1=1 XOR 2=2 ");
+				test.assertEquals("false", s);
+			}
+			public void testXorAssociativity(FoodMartTestCase test) {
+				// Would give 'false' if XOR were stronger than AND (wrong!)
+				String s = test.executeBooleanExpr(" 1 = 1 AND 1 = 1 XOR 1 = 0 ");
+				test.assertEquals("true", s);
+			}
+		});
+		define(new FunDefBase("NOT", "NOT <Logical Expression>", "Returns the negation of a condition.", "Pbb") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				return toBoolean(!getBooleanArg(evaluator, args, 0));
+			}
+			public void testNot(FoodMartTestCase test) {
+				String s = test.executeBooleanExpr(" NOT 1=1 ");
+				test.assertEquals("false", s);
+			}
+			public void testNotNot(FoodMartTestCase test) {
+				String s = test.executeBooleanExpr(" NOT NOT 1=1 ");
+				test.assertEquals("true", s);
+			}
+			public void testNotAssociativity(FoodMartTestCase test) {
+				String s = test.executeBooleanExpr(" 1=1 AND NOT 1=1 OR NOT 1=1 AND 1=1 ");
+				test.assertEquals("false", s);
+			}
+		});
 		define(new FunDefBase("=", "<String Expression> = <String Expression>", "Returns whether two expressions are equal.", "ibSS") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				String o0 = getStringArg(evaluator, args, 0, null),
 						o1 = getStringArg(evaluator, args, 1, null);
 				return toBoolean(o0.equals(o1));
 			}
+			public void testStringEquals(FoodMartTestCase test) {
+				String s = test.executeBooleanExpr(" \"foo\" = \"bar\" ");
+				test.assertEquals("false", s);
+			}
+			public void testStringEqualsAssociativity(FoodMartTestCase test) {
+				String s = test.executeBooleanExpr(" \"foo\" = \"fo\" || \"o\" ");
+				test.assertEquals("true", s);
+			}
+			public void testStringEqualsEmpty(FoodMartTestCase test) {
+				String s = test.executeBooleanExpr(" \"\" = \"\" ");
+				test.assertEquals("true", s);
+			}
 		});
-		define(new FunDefBase("=", "<Numeric Expression> = <Numeric Expression>", "Returns whether two expressions are equal.", "ibnn"));
-		define(new FunDefBase("<>", "<String Expression> <> <String Expression>", "Returns whether two expressions are not equal.", "ibSS"));
-		define(new FunDefBase("<>", "<Numeric Expression> <> <Numeric Expression>", "Returns whether two expressions are not equal.", "ibnn"));
-		define(new FunDefBase("<", "<Numeric Expression> < <Numeric Expression>", "Returns whether an expression is less than another.", "ibnn"));
-		define(new FunDefBase("<=", "<Numeric Expression> <= <Numeric Expression>", "Returns whether an expression is less than or equal to another.", "ibnn"));
+		define(new FunDefBase("=", "<Numeric Expression> = <Numeric Expression>", "Returns whether two expressions are equal.", "ibnn") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				Double o0 = getDoubleArg(evaluator, args, 0),
+						o1 = getDoubleArg(evaluator, args, 1);
+				return toBoolean(o0.equals(o1));
+			}
+			public void testEq(FoodMartTestCase test) {
+				String s = test.executeBooleanExpr(" 1.0 = 1 ");
+				test.assertEquals("true", s);
+			}
+		});
+		define(new FunDefBase("<>", "<String Expression> <> <String Expression>", "Returns whether two expressions are not equal.", "ibSS") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				String o0 = getStringArg(evaluator, args, 0, null),
+						o1 = getStringArg(evaluator, args, 1, null);
+				return toBoolean(!o0.equals(o1));
+			}
+			public void testStringNe(FoodMartTestCase test) {
+				String s = test.executeBooleanExpr(" \"foo\" <> \"bar\" ");
+				test.assertEquals("true", s);
+			}
+		});
+		define(new FunDefBase("<>", "<Numeric Expression> <> <Numeric Expression>", "Returns whether two expressions are not equal.", "ibnn") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				Double o0 = getDoubleArg(evaluator, args, 0),
+						o1 = getDoubleArg(evaluator, args, 1);
+				return toBoolean(!o0.equals(o1));
+			}
+			public void testNe(FoodMartTestCase test) {
+				String s = test.executeBooleanExpr(" 2 <> 1.0 + 1.0 ");
+				test.assertEquals("false", s);
+			}
+			public void testNeInfinity(FoodMartTestCase test) {
+				String s = test.executeBooleanExpr("(1 / 0) <> (1 / 0)");
+				// Infinity does not equal itself
+				test.assertEquals("false", s);
+			}
+		});
+		define(new FunDefBase("<", "<Numeric Expression> < <Numeric Expression>", "Returns whether an expression is less than another.", "ibnn") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				Double o0 = getDoubleArg(evaluator, args, 0),
+						o1 = getDoubleArg(evaluator, args, 1);
+				return toBoolean(o0.compareTo(o1) < 0);
+			}
+			public void testLt(FoodMartTestCase test) {
+				String s = test.executeBooleanExpr(" 2 < 1.0 + 1.0 ");
+				test.assertEquals("false", s);
+			}
+		});
+		define(new FunDefBase("<=", "<Numeric Expression> <= <Numeric Expression>", "Returns whether an expression is less than or equal to another.", "ibnn") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				Double o0 = getDoubleArg(evaluator, args, 0),
+						o1 = getDoubleArg(evaluator, args, 1);
+				return toBoolean(o0.compareTo(o1) <= 0);
+			}
+			public void testLe(FoodMartTestCase test) {
+				String s = test.executeBooleanExpr(" 2 <= 1.0 + 1.0 ");
+				test.assertEquals("true", s);
+			}
+		});
 		define(new FunDefBase(">", "<Numeric Expression> > <Numeric Expression>", "Returns whether an expression is greater than another.", "ibnn") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Double o0 = getDoubleArg(evaluator, args, 0),
 						o1 = getDoubleArg(evaluator, args, 1);
-				return toBoolean(o0.doubleValue() > o1.doubleValue());
+				return toBoolean(o0.compareTo(o1) > 0);
+			}
+			public void testGt(FoodMartTestCase test) {
+				String s = test.executeBooleanExpr(" 2 > 1.0 + 1.0 ");
+				test.assertEquals("false", s);
 			}
 		});
-		define(new FunDefBase(">=", "<Numeric Expression> >= <Numeric Expression>", "Returns whether an expression is greater than or equal to another.", "ibnn"));
+		define(new FunDefBase(">=", "<Numeric Expression> >= <Numeric Expression>", "Returns whether an expression is greater than or equal to another.", "ibnn") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				Double o0 = getDoubleArg(evaluator, args, 0),
+						o1 = getDoubleArg(evaluator, args, 1);
+				return toBoolean(o0.compareTo(o1) >= 0);
+			}
+			public void testGe(FoodMartTestCase test) {
+				String s = test.executeBooleanExpr(" 2 > 1.0 + 1.0 ");
+				test.assertEquals("false", s);
+			}
+		});
 	}
 
 	private Boolean toBoolean(boolean b) {

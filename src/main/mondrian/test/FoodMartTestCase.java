@@ -147,6 +147,11 @@ public class FoodMartTestCase extends TestCase {
 		return cell.getFormattedValue();
 	}
 
+	/** Executes an expression which returns a boolean result. **/
+	public String executeBooleanExpr(String expression) {
+		return executeExpr("Iif(" + expression + ",\"true\",\"false\")");
+	}
+
 	/**
 	 * Runs an expression, and asserts that it is the error cell which contains
 	 * a particular pattern.

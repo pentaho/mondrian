@@ -37,6 +37,7 @@ public interface FunDef extends Testable {
 	 * <dt>{@link #TypeParentheses}</dt><dd>invoked <code>(ARG)</code> or
 	 *      <code>(ARG,...)</code>; that is, parentheses for grouping
 	 *     expressions, and the tuple construction operator.</dd>
+	 * <dt>{@link #TypeCase}</dt><dd>invoked <code>CASE ... END</code>.</dd>
 	 * </dl>
 	 **/
 	int getSyntacticType();
@@ -55,6 +56,8 @@ public interface FunDef extends Testable {
 	int TypeBraces = 5;
 	/** @see #getSyntacticType **/
 	int TypeParentheses = 6;
+	/** @see #getSyntacticType **/
+	int TypeCase = 7;
 
 	int TypeMask = 0xFF;
 	int TypePropertyQuoted = TypeProperty | 0x100;

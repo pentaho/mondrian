@@ -37,10 +37,14 @@ public abstract class ConnectionBase implements Connection
 	}
 
 	public Query parseQuery(String s) {
-		boolean debug = false;
-		Parser parser = new Parser();
-		Query q = (Query) parser.parseInternal(this, s, debug);
-		return q;
+		try {
+			boolean debug = false;
+			Parser parser = new Parser();
+			Query q = (Query) parser.parseInternal(this, s, debug);
+			return q;
+		} catch (Throwable e) {
+			throw Util.newError(e, "Failed to parse query [" + s + "]");
+		}
 	}
 
 	public Exp parseExpression(String s) {

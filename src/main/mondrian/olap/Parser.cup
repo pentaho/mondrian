@@ -14,6 +14,7 @@
 */
 
 import java_cup.runtime.*;
+import java.util.ArrayList;
 
 // Preliminaries to set up and use the scanner.
 // action code {: ... :};
@@ -118,10 +119,13 @@ scan with {:
 terminal
 	AND,
 	AS,
+	CASE,
 	CELL,
 	CELL_ORDINAL,
 	DIMENSION,
+	ELSE,
 	EMPTY,
+	END,
 	FORMATTED_VALUE,
 	FROM,
 	MEMBER,
@@ -133,7 +137,9 @@ terminal
 	QUOTE,
 	SELECT,
 	SET,
+	THEN,
 	VALUE,
+	WHEN,
 	WHERE,
 	XOR,
 	WITH;
@@ -173,13 +179,20 @@ non terminal QueryAxis
 	axis_specification_list,
 	axis_specification_list_opt;
 non terminal Exp
+	case_expression,
+    else_clause_opt,
 	exp_list,
 	exp_list_opt,
 	expression,
 	factor,
 	slicer_specification,
 	term,
+	term2,
+	term3,
+	term4,
+	term5,
 	value_expression,
+	value_expression_opt,
 	value_expression_primary,
 	where_clause_opt;
 non terminal QueryPart
@@ -227,6 +240,12 @@ non terminal
 
 non terminal Boolean
 	non_empty_opt;
+
+non terminal ArrayList
+	when_list;
+
+non terminal Exp[]
+	when_clause;
 
 // Start symbol
 start with select_statement;
@@ -478,23 +497,49 @@ cube_name ::= compound_id ;
 // <numeric_value_expression> ::= <term> 
 // 					  | <numeric_value_expression> {<plus> | <minus>} <term>
 value_expression ::=
-		term
-	|	value_expression:x PLUS term:y {:
-			RESULT = new FunCall("+", new Exp[] {x, y}, FunDef.TypeInfix);
-		:}
-	|	value_expression:x MINUS term:y {:
-			RESULT = new FunCall("-", new Exp[] {x, y}, FunDef.TypeInfix);
-		:}
-	|	value_expression:x OR term:y {:
+		term5
+	|	value_expression:x OR term5:y {:
 			RESULT = new FunCall("OR", new Exp[] {x, y}, FunDef.TypeInfix);
 		:}
-	|	value_expression:x XOR term:y {:
+	|	value_expression:x XOR term5:y {:
 			RESULT = new FunCall("XOR", new Exp[] {x, y}, FunDef.TypeInfix);
 		:}
-	|	value_expression:x CONCAT term:y {:
+	;
+
+term5 ::= 
+		term4
+	|	term5:x AND term4:y {:
+			RESULT = new FunCall("AND", new Exp[] {x, y}, FunDef.TypeInfix);
+		:}
+	;
+
+term4 ::=
+		term3
+	|	NOT term4:p {:
+			RESULT = new FunCall("NOT", new Exp[] {p}, FunDef.TypePrefix);
+		:}
+	;
+
+term3 ::=
+		term2
+	|	term3:x comp_op:op term2:y {: // e.g. 1 < 5
+			RESULT = new FunCall(op, new Exp[] {x, y}, FunDef.TypeInfix);
+		:}
+	;
+
+term2 ::=
+		term
+	|	term2:x PLUS term:y {:
+			RESULT = new FunCall("+", new Exp[] {x, y}, FunDef.TypeInfix);
+		:}
+	|	term2:x MINUS term:y {:
+			RESULT = new FunCall("-", new Exp[] {x, y}, FunDef.TypeInfix);
+		:}
+	|	term2:x CONCAT term:y {:
 			RESULT = new FunCall("||", new Exp[] {x, y}, FunDef.TypeInfix);
 		:}
 	;
+	
 //
 // <term> ::= <factor> | <term> {<asterisk> | <solidus>} <factor>
 term ::=
@@ -504,9 +549,6 @@ term ::=
 		:}
 	|	term:x SOLIDUS factor:y {:
 			RESULT = new FunCall("/", new Exp[] {x, y}, FunDef.TypeInfix);
-		:}
-	|	term:x AND factor:y {:
-			RESULT = new FunCall("AND", new Exp[] {x, y}, FunDef.TypeInfix);
 		:}
 	;
 // 
@@ -519,9 +561,6 @@ factor ::=
 		:}
 	|	MINUS value_expression_primary:p {:
 			RESULT = new FunCall("-", new Exp[] {p}, FunDef.TypePrefix);
-		:}
-	|	NOT value_expression_primary:p {:
-			RESULT = new FunCall("NOT", new Exp[] {p}, FunDef.TypePrefix);
 		:}
 	;
 // <sign> ::= + | -
@@ -596,7 +635,64 @@ value_expression_primary ::=
 			RESULT = new FunCall(
 				"{}", ExpBase.makeArray(lis), FunDef.TypeBraces);
 		:}
+	|	case_expression
 	;
+
+case_expression ::=
+		CASE value_expression_opt:x
+		when_list:y
+		else_clause_opt:z
+		END {:
+			ArrayList v = new ArrayList();
+			if (x != null) {
+				v.add(x);
+			}
+			for (int i = 0; i < y.size(); i++) {
+				Exp[] exps = (Exp[]) y.get(i);
+				Util.assertTrue(exps.length == 2);
+				v.add(exps[0]);
+				v.add(exps[1]);
+			}
+			if (z != null) {
+				v.add(z);
+			}
+			if (x == null) {
+				RESULT = new FunCall(
+					"_CaseTest", (Exp[]) v.toArray(new Exp[0]), FunDef.TypeCase);
+			} else {
+				RESULT = new FunCall(
+					"_CaseMatch", (Exp[]) v.toArray(new Exp[0]), FunDef.TypeCase);
+			}
+		:}
+	;
+
+value_expression_opt ::=
+		/* empty */
+	|	value_expression
+	;
+
+when_list ::=
+		/* empty */ {:
+			RESULT = new ArrayList();
+		:}
+	|	when_list:x when_clause:y {:
+			RESULT = x; x.add(y);
+		:}
+	;
+
+when_clause ::=
+		WHEN value_expression:x THEN value_expression:y {:
+			RESULT = new Exp[] {x,y};
+		:}
+	;
+
+else_clause_opt ::=
+		/* empty */
+	|	ELSE value_expression:x {:
+			RESULT = x;
+		:}
+	;
+
 // 
 // <conditional_expression> ::= <if_expression> | <case_expression>
 // 
@@ -845,9 +941,6 @@ comp_op ::=
 expression ::=
 		expression:x COLON value_expression:y {: // range yields set
 			RESULT = new FunCall(":", new Exp[] {x, y}, FunDef.TypeInfix);
-		:}
-	|	expression:x comp_op:op value_expression:y {: // e.g. 1 < 5
-			RESULT = new FunCall(op, new Exp[] {x, y}, FunDef.TypeInfix);
 		:}
 	|	value_expression
 	;
