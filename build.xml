@@ -25,6 +25,7 @@
   -->
   <property name="src.dir" value="src"/>
   <property name="java.dir" value="${src.dir}/main"/>
+  <property name="etc.dir" value="${src.dir}/etc"/>
   <property name="lib.dir" value="lib"/>
   <property name="doc.dir" value="doc"/>
   <property name="resource.location" location="resource"/>
@@ -45,7 +46,14 @@
   <property name="tomcat.home" value="${myenv.TOMCAT_HOME}"/>
   <property name="xalan.home" value="${myenv.XALAN_HOME}"/>
   <property name="junit.home" value="${myenv.JUNIT_HOME}"/>
-  <property name="generated.java.files" value="${java.dir}/mondrian/olap/Parser.java, ${java.dir}/mondrian/olap/ParserSym.java, ${java.dir}/mondrian/resource/ResourceDef.java, ${java.dir}/mondrian/olap/MondrianDef.java, ${java.dir}/mondrian/xom/MetaDef.java"/>
+  <property name="weblogic.home" value="${myenv.WEBLOGIC_HOME}"/>
+  <property name="generated.java.files" value="
+${java.dir}/mondrian/olap/Parser.java,
+${java.dir}/mondrian/olap/ParserSym.java,
+${java.dir}/mondrian/resource/ResourceDef.java,
+${java.dir}/mondrian/olap/MondrianDef.java,
+${java.dir}/mondrian/xom/MetaDef.java,
+${etc.dir}/mondrian/web/jsp/**/*.java"/>
 
   <path id="project.classpath">
     <pathelement location="${classes.dir}"/>
@@ -55,6 +63,7 @@
     <pathelement location="${xalan.home}/bin/xml-apis.jar"/>
     <pathelement location="${xalan.home}/bin/xalan.jar"/>
     <pathelement location="${junit.home}/junit.jar"/>
+    <pathelement location="${weblogic.home}/lib/weblogic.jar"/>
     <pathelement path="${myenv.CLASSPATH}"/>
   </path>
 
@@ -65,6 +74,13 @@
 
   <taskdef name="javacup" classname="java_cup.JavaCUPTask"/>
   <taskdef name="xomgen" classname="mondrian.xom.XOMGenTask"/>
+
+  <target name="sniff"
+        description="Figures out which components are available">
+    <available property="weblogic.available" 
+        classname="weblogic.jspc"
+        classpathref="project.classpath"/>
+  </target>
 
   <!--
     ===================================================================
@@ -116,7 +132,7 @@
     <mkdir dir="${classes.dir}"/>
   </target>
 
-  <target name="compile" depends="prepare,parser,def,compile.java"/>
+  <target name="compile" depends="sniff,prepare,parser,def,compile.jsp.maybe,compile.java"/>
 
   <target name="compile.java">
     <javac
@@ -151,6 +167,22 @@
 		destdir="${java.dir}"
 		classname="mondrian.resource.ResourceDef"
 		dtdname="Resource.dtd"/>
+  </target>
+
+  <target name="compile.jsp.maybe" depends="compile.java"
+      if="weblogic.available"
+      description="Compiles jsp pages, but only if weblogic is available">
+    <antcall target="compile.jsp"/>
+  </target>
+
+  <target name="compile.jsp"
+      description="Compiles jsp pages, fails if weblogic is not available.">
+    <mkdir dir="${etc.dir}"/>
+    <wljspc src="${webapp.dir}" dest="${etc.dir}"
+        package="mondrian.web.jsp">
+      <classpath refid="project.classpath"/>
+      <include name="**/*.jsp"/>
+    </wljspc>
   </target>
 
   <!-- FoodMartTest runs a few queries using the FoodMart schema. Before you

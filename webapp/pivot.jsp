@@ -22,11 +22,14 @@ select
   {[Measures].[Unit Sales], [Measures].[Store Sales]} on columns,
   Order([Product].children, [Measures].[Store Sales], DESC) on rows
 from Sales
+where ([Time].[1997], [Gender].[M])
 </mdx:query>
 
 <h1>Mondrian Pivot Table</h1>
 
 <mdx:transform query="pivotQuery" xsltURI="/WEB-INF/mdxpivot.xsl" xsltCache="false"/>
+
+<p>[<a href="morph_pivot.jsp">Morph</a>]</p>
 
 <p>Query:<blockquote><pre>
 <mdx:transform query="pivotQuery" xsltURI="/WEB-INF/mdxquery.xsl" xsltCache="false"/>
