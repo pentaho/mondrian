@@ -12,6 +12,7 @@
 package mondrian.test;
 
 import mondrian.olap.Result;
+import mondrian.olap.Util;
 import junit.framework.Assert;
 
 /**
@@ -185,53 +186,36 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             " { [Time].[1997].[Q2]} on rows" + nl +
             "from [Sales]");
         String resultString = toString(result);
-        final String[] expected = {
-            "Axis #0:" + nl +
-            "{}" + nl +
-            "Axis #1:" + nl +
-            "{[Measures].[Unit Sales]}" + nl +
-            "{[Measures].[Foo]}" + nl +
-            "Axis #2:" + nl +
-            "{[Time].[1997].[Q2]}" + nl +
-            "Row #0: 62,610" + nl +
-            "Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: Infinite loop while evaluating calculated member '[Measures].[Foo]'; context stack is {([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2])}" + nl,
 
-            "Axis #0:" + nl +
-            "{}" + nl +
-            "Axis #1:" + nl +
-            "{[Measures].[Unit Sales]}" + nl +
-            "{[Measures].[Foo]}" + nl +
-            "Axis #2:" + nl +
-            "{[Time].[1997].[Q2]}" + nl +
-            "Row #0: (null)" + nl +
-            "Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: Infinite loop while evaluating calculated member '[Measures].[Foo]'; context stack is {([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2])}" + nl,
-
-            "Axis #0:" + nl +
-            "{}" + nl +
-            "Axis #1:" + nl +
-            "{[Measures].[Unit Sales]}" + nl +
-            "{[Measures].[Foo]}" + nl +
-            "Axis #2:" + nl +
-            "{[Time].[1997].[Q2]}" + nl +
-            "Row #0: (null)" + nl +
-            "Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: Infinite loop while evaluating calculated member '[Measures].[Foo]'; context stack is {([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2])}" + nl,
-
-            "Axis #0:" + nl +
-            "{}" + nl +
-            "Axis #1:" + nl +
-            "{[Measures].[Unit Sales]}" + nl +
-            "{[Measures].[Foo]}" + nl +
-            "Axis #2:" + nl +
-            "{[Time].[1997].[Q2]}" + nl +
-            "Row #0: 62,610" + nl +
-            "Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: Infinite loop while evaluating calculated member '[Measures].[Foo]'; context stack is {([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2])}"
-        };
-        if (!resultString.equals(expected[0]) &&
-            !resultString.equals(expected[1]) &&
-            !resultString.equals(expected[2]) &&
-            !resultString.equals(expected[3])) {
+        // The precise moment when the cycle is detected depends upon the state
+        // of the cache, so this test can throw various errors. Here are come
+        // examples:
+        //
+        // Axis #0:
+        // {}
+        // Axis #1:
+        // {[Measures].[Unit Sales]}
+        // {[Measures].[Foo]}
+        // Axis #2:
+        // {[Time].[1997].[Q2]}
+        // Row #0: 62,610
+        // Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: Infinite loop while evaluating calculated member '[Measures].[Foo]'; context stack is {([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2].[4]), ([Time].[1997].[Q2])}
+        //
+        // Axis #0:
+        // {}
+        // Axis #1:
+        // {[Measures].[Unit Sales]}
+        // {[Measures].[Foo]}
+        // Axis #2:
+        // {[Time].[1997].[Q2]}
+        // Row #0: (null)
+        // Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: Infinite loop while evaluating calculated member '[Measures].[Foo]'; context stack is {([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2].[4]), ([Store].[All Stores].[Mexico], [Time].[1997].[Q2])}"
+        //
+        // So encapsulate the error string as a pattern.
+        final String expectedPattern = "(?s).*Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException.*: Infinite loop while evaluating calculated member \\'\\[Measures\\].\\[Foo\\]\\'; context stack is.*";
+        if (!resultString.matches(expectedPattern)) {
             System.out.println(resultString);
-            Assert.assertEquals(expected, resultString);
+            Assert.assertEquals(expectedPattern, resultString);
         }
     }
 }
