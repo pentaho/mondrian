@@ -38,6 +38,7 @@ public class RolapConnection extends ConnectionBase {
 	RolapSchema schema;
 	private SchemaReader schemaReader;
 	protected Role role;
+  private Locale locale = Locale.US;
 
 	/**
 	 * Creates a connection.
@@ -171,9 +172,15 @@ public class RolapConnection extends ConnectionBase {
 	{
 		return catalogName;
 	}
-	public Locale getLocale()
+
+  public Locale getLocale()
+  {
+    return locale;
+  }
+
+	public void setLocale(Locale locale)
 	{
-		return Locale.US;
+		this.locale = locale;
 	}
 
 	public SchemaReader getSchemaReader() {

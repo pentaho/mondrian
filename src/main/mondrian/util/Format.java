@@ -99,6 +99,28 @@ public class Format {
 	static final FormatLocale locale_US = createLocale(
 		'\0', '\0', null, null, null, null, null, null, null, null, Locale.US);
 
+  static final FormatLocale localeGer = createLocale(
+    '.', // thousandSeparator = ',' in en
+    ',', // decimalPlaceholder = '.' in en
+    ".", // dateSeparator = "/" in en
+    ":", // timeSeparator = ":" in en
+    "EUR", // currencySymbol = "$" in en
+    "#.##0,00EUR", // currencyFormat = "$#,##0.##" in en
+    new String[] {
+      "So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"},
+    new String[] {
+      "Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag",
+      "Samstag"},
+    new String[] {
+      "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep",
+      "Okt", "Nov", "Dez"},
+    new String[] {
+      "Januar", "Februar", "März", "April", "Mai", "Juni",
+      "Juli", "August", "September", "Oktober", "November",
+      "Dezember"},
+    Locale.GERMAN);
+
+
 	public static void main(String[] args)
 	{
 		PrintWriter pw = new PrintWriter(
@@ -173,6 +195,7 @@ public class Format {
 				"Juillet", "Aout", "Septembre", "Octobre", "Novembre",
 				"Decembre"},
 			Locale.FRENCH);
+
 
 		Object[] numbers = {
 			new Double(6), new Double(-6), new Double(0), new Double(.6),
