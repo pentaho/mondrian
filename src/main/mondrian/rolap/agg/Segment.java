@@ -479,8 +479,8 @@ public class Segment implements CachePool.Cacheable
 		if (countThreshold < 0) {
 			countThreshold = 0;
 		}
-		boolean sparse = (possibleCount - countThreshold) >
-				(actualCount * densityThreshold);
+		boolean sparse =
+			(possibleCount - countThreshold) * densityThreshold > actualCount;
 		if (possibleCount < countThreshold) {
 			Util.assertTrue(!sparse);
 		}
