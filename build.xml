@@ -265,6 +265,7 @@ copy.properties"/>
         classpathref="project.classpath"
         source="1.4">
       <include name="mondrian/olap/MondrianException.java" />
+   	  <include name="mondrian/olap/ResultLimitExceeded.java" />
     </javac>
 
     <resgen srcdir="${java.dir}" locales="en_US,de_DE">

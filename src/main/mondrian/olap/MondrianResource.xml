@@ -387,7 +387,7 @@
 <!-- ====================================================================== -->
 <!-- Runtime limit overflow -->
 
-<exception id="600010" name="LimitExceededDuringCrossjoin">
+<exception id="600010" name="LimitExceededDuringCrossjoin" className="mondrian.olap.ResultLimitExceeded">
    <text>Size of CrossJoin result ({0,number}) exceeded limit ({1,number})</text>
 </exception>
 
