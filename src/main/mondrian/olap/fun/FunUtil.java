@@ -104,7 +104,7 @@ public class FunUtil extends Util {
 	}
 
 	static int getIntArg(Evaluator evaluator, Exp[] args, int index) {
-		Object o = args[index].evaluateScalar(evaluator);
+		Object o = getScalarArg(evaluator, args, index);
 		if (o instanceof Number) {
 			return ((Number) o).intValue();
 		} else {
@@ -115,9 +115,12 @@ public class FunUtil extends Util {
 		}
 	}
 
-	static BigDecimal getDecimalArg(
-			Evaluator evaluator, Exp[] args, int index) {
-		Object o = args[index].evaluateScalar(evaluator);
+	static Object getScalarArg(Evaluator evaluator, Exp[] args, int index) {
+		return args[index].evaluateScalar(evaluator);
+	}
+
+	static BigDecimal getDecimalArg(Evaluator evaluator, Exp[] args, int index) {
+		Object o = getScalarArg(evaluator, args, index);
 		if (o instanceof BigDecimal) {
 			return (BigDecimal) o;
 		} else if (o instanceof BigInteger) {
@@ -131,7 +134,7 @@ public class FunUtil extends Util {
 	}
 
 	static Double getDoubleArg(Evaluator evaluator, Exp[] args, int index) {
-		Object o = args[index].evaluateScalar(evaluator);
+		Object o = getScalarArg(evaluator, args, index);
 		if (o instanceof Double) {
 			return (Double) o;
 		} else if (o instanceof Number) {

@@ -59,7 +59,7 @@ class SetFunDef extends FunDefBase {
 			if (o instanceof List) {
 				List list2 = (List) o;
 				if (list == null) {
-					list = list2;
+					list = makeMutable(list2);
 				} else {
 					for (int j = 0, count = list2.size(); j <
 							 count; j++) {
@@ -84,6 +84,7 @@ class SetFunDef extends FunDefBase {
 		}
 		return list;
 	}
+
 }
 
 // End SetFunDef.java

@@ -710,7 +710,44 @@ public class BuiltinFunTable extends FunTable {
 
 		//
 		// LOGICAL FUNCTIONS
-		define(new FunDefBase("IsEmpty", "IsEmpty(<Value Expression>)", "Determines if an expression evaluates to the empty cell value.", "fbS"));
+		define(new FunkResolver("IsEmpty", "IsEmpty(<Value Expression>)", "Determines if an expression evaluates to the empty cell value.",
+				new String[] {"fbS", "fbn"},
+				new FunkBase() {
+					public Object evaluate(Evaluator evaluator, Exp[] args) {
+						Object o = getScalarArg(evaluator, args, 0);
+						if (o == Util.nullValue) {
+							return Boolean.TRUE;
+						} else {
+							return Boolean.FALSE;
+						}
+					}
+					public void testIsEmpty(FoodMartTestCase test) {
+						test.runQueryCheckResult(
+								"WITH MEMBER [Measures].[Foo] AS 'Iif(IsEmpty([Measures].[Unit Sales]), 5, [Measures].[Unit Sales])'" + nl +
+								"SELECT {[Store].[USA].[WA].children} on columns" + nl +
+								"FROM Sales" + nl +
+								"WHERE ( [Time].[1997].[Q4].[12]," + nl +
+								" [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer]," + nl +
+								" [Measures].[Foo])",
+								"Axis #0:" + nl +
+								"{[Time].[1997].[Q4].[12], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer], [Measures].[Foo]}" + nl +
+								"Axis #1:" + nl +
+								"{[Store].[All Stores].[USA].[WA].[Bellingham]}" + nl +
+								"{[Store].[All Stores].[USA].[WA].[Bremerton]}" + nl +
+								"{[Store].[All Stores].[USA].[WA].[Seattle]}" + nl +
+								"{[Store].[All Stores].[USA].[WA].[Spokane]}" + nl +
+								"{[Store].[All Stores].[USA].[WA].[Tacoma]}" + nl +
+								"{[Store].[All Stores].[USA].[WA].[Walla Walla]}" + nl +
+								"{[Store].[All Stores].[USA].[WA].[Yakima]}" + nl +
+								"Row #0: 5" + nl +
+								"Row #0: 5" + nl +
+								"Row #0: 2" + nl +
+								"Row #0: 5" + nl +
+								"Row #0: 11" + nl +
+								"Row #0: 5" + nl +
+								"Row #0: 4" + nl);
+					}
+				}));
 
 		define(new FunDefBase("IsEmpty", "IsEmpty(<Value Expression>)", "Determines if an expression evaluates to the empty cell value.", "fbn"));
 		//
@@ -1517,7 +1554,18 @@ public class BuiltinFunTable extends FunTable {
 					test.assertEquals("2,033,642,849", result);
 				}
 			}));
-		define(new FunDefBase("IIf", "IIf(<Logical Expression>, <Numeric Expression1>, <Numeric Expression2>)", "Returns one of two numeric values determined by a logical test.", "fnbnn"));
+		define(new FunDefBase("IIf", "IIf(<Logical Expression>, <Numeric Expression1>, <Numeric Expression2>)", "Returns one of two numeric values determined by a logical test.", "fnbnn") {
+			public Object evaluate(Evaluator evaluator, Exp[] args) {
+				boolean logical = getBooleanArg(evaluator, args, 0);
+				return getDoubleArg(evaluator, args, logical ? 1 : 2);
+			}
+
+			public void testIIfNumeric(FoodMartTestCase test) {
+				String s = test.executeExpr(
+						"IIf(([Measures].[Unit Sales],[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]) > 100, 45, 32)");
+				test.assertEquals("45", s);
+			}
+		});
 		if (false) define(new FunDefBase("LinRegIntercept", "LinRegIntercept(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Calculates the linear regression of a set and returns the value of b in the regression line y = ax + b.", "fn*"));
 		if (false) define(new FunDefBase("LinRegPoint", "LinRegPoint(<Numeric Expression>, <Set>, <Numeric Expression>[, <Numeric Expression>])", "Calculates the linear regression of a set and returns the value of y in the regression line y = ax + b.", "fn*"));
 		if (false) define(new FunDefBase("LinRegR2", "LinRegR2(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Calculates the linear regression of a set and returns R2 (the coefficient of determination).", "fn*"));
@@ -3149,6 +3197,46 @@ public class BuiltinFunTable extends FunTable {
 				test.assertAxisThrows(
 						"[Store].[Store City]",
 						"no function matches signature '{<Level>}'");
+			}
+			public void testBug715177(FoodMartTestCase test) {
+				test.runQueryCheckResult(
+						"WITH MEMBER [Product].[All Products].[Non-Consumable].[Other] AS" + nl +
+						" 'Sum( Except( [Product].[Product Department].Members," + nl +
+						"       TopCount( [Product].[Product Department].Members, 3 ))," + nl +
+						"       Measures.[Unit Sales] )'" + nl +
+						"SELECT" + nl +
+						"  { [Measures].[Unit Sales] } ON COLUMNS ," + nl +
+						"  { TopCount( [Product].[Product Department].Members,3 )," + nl +
+						"              [Product].[All Products].[Non-Consumable].[Other] } ON ROWS" + nl +
+						"FROM [Sales]",
+						"Axis #0:" + nl +
+						"{}" + nl +
+						"Axis #1:" + nl +
+						"{[Measures].[Unit Sales]}" + nl +
+						"Axis #2:" + nl +
+						"{[Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
+						"{[Product].[All Products].[Drink].[Beverages]}" + nl +
+						"{[Product].[All Products].[Drink].[Dairy]}" + nl +
+						"{[Product].[All Products].[Non-Consumable].[Other]}" + nl +
+						"Row #0: 6,838" + nl +
+						"Row #1: 13,573" + nl +
+						"Row #2: 4,186" + nl +
+						"Row #3: 242,176" + nl);
+			}
+			public void testBug714707(FoodMartTestCase test) {
+				// Same issue as bug 715177 -- "children" returns immutable
+				// list, which set operator must make mutable. 
+				test.assertAxisReturns("{[Store].[USA].[CA].children, [Store].[USA]}",
+						"[Store].[All Stores].[USA].[CA].[Alameda]" + nl +
+						"[Store].[All Stores].[USA].[CA].[Beverly Hills]" + nl +
+						"[Store].[All Stores].[USA].[CA].[Los Angeles]" + nl +
+						"[Store].[All Stores].[USA].[CA].[San Diego]" + nl +
+						"[Store].[All Stores].[USA].[CA].[San Francisco]" + nl +
+						"[Store].[All Stores].[USA]");
+			}
+			public void todo_testBug715177c(FoodMartTestCase test) {
+				test.assertAxisReturns("Order(TopCount({[Store].[USA].[CA].children}, [Measures].[Unit Sales], 2), [Measures].[Unit Sales])",
+						"foo");
 			}
 		});
 

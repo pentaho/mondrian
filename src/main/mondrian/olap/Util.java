@@ -810,6 +810,20 @@ public class Util extends mondrian.xom.XOMUtil
 		return suite;
 	}
 
+	/**
+	 * Converts a list, which may or may not be mutable, into a mutable list.
+	 * Non-mutable lists are returned by, for example,
+	 * {@link List#subList}, {@link Arrays#asList},
+	 * {@link Collections#unmodifiableList}.
+	 */
+	public static List makeMutable(List list) {
+		if (list instanceof ArrayList) {
+			return list;
+		} else {
+			return new ArrayList(list);
+		}
+	}
+
 	public static class UtilTestCase extends TestCase {
 		public UtilTestCase(String s) {
 			super(s);
