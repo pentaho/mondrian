@@ -25,7 +25,7 @@ import java.io.PrintWriter;
  * @version $Id$
  **/
 class ValueFunDef extends FunDefBase {
-    int[] argTypes;
+    private final int[] argTypes;
 
     ValueFunDef(int[] argTypes) {
         super(

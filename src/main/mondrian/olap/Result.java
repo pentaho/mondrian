@@ -22,8 +22,7 @@ import java.io.PrintWriter;
  * @since 6 August, 2001
  * @version $Id$
  **/
-public interface Result
-{
+public interface Result {
     /** Returns the query which generated this result. **/
     Query getQuery();
     /** Returns the non-slicer axes. **/

@@ -13,6 +13,7 @@ package mondrian.olap;
 
 import mondrian.util.PropertiesPlus;
 
+import org.apache.log4j.Logger;
 import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +36,8 @@ import java.util.Properties;
  * @version $Id$
  **/
 public class MondrianProperties extends PropertiesPlus {
+    private static final Logger LOGGER = Logger.getLogger(MondrianProperties.class);
+
     /**
      * Properties, drawn from {@link System#getProperties}, plus the contents
      * of "mondrian.properties" if it exists. A singleton.
@@ -42,6 +45,7 @@ public class MondrianProperties extends PropertiesPlus {
     private static MondrianProperties instance;
     private static final String mondrianDotProperties = "mondrian.properties";
     private static final String buildDotProperties = "build.properties";
+
     private int populateCount;
 
     public static synchronized MondrianProperties instance() {
@@ -76,12 +80,16 @@ public class MondrianProperties extends PropertiesPlus {
                     load(url);
                 }
             } catch (MalformedURLException e) {
-                System.out.println("Mondrian: file '" + file.getAbsolutePath() +
-                        "' could not be loaded (" + e + ")");
+                LOGGER.error("Mondrian: file '" 
+                    + file.getAbsolutePath() 
+                    + "' could not be loaded (" 
+                    + e 
+                    + ")");
             }
         } else if (populateCount == 0 && false) {
-            System.out.println("Mondrian: Warning: file '" +
-                    file.getAbsolutePath() + "' not found");
+            LOGGER.warn("Mondrian: Warning: file '" 
+                + file.getAbsolutePath() 
+                + "' not found");
         }
 
         // If we're in a servlet, read "mondrian.properties" from WEB-INF
@@ -94,14 +102,15 @@ public class MondrianProperties extends PropertiesPlus {
                     load(resourceUrl);
                 }
                 else if (populateCount == 0 && false) {
-                    System.out.println(
-                            "Mondrian: Warning: servlet resource '" +
-                            mondrianDotProperties + "' not found");
+                    LOGGER.warn("Mondrian: Warning: servlet resource '" 
+                        + mondrianDotProperties 
+                        + "' not found");
                 }
             } catch (MalformedURLException e) {
-                System.out.println("Mondrian: '" + mondrianDotProperties +
-                        "' could not be loaded from servlet context (" + e +
-                        ")");
+                LOGGER.error("Mondrian: '" + mondrianDotProperties 
+                    + "' could not be loaded from servlet context (" 
+                    + e 
+                    + ")");
             }
         }
         // copy in all system properties which start with "mondrian."
@@ -116,8 +125,9 @@ public class MondrianProperties extends PropertiesPlus {
             }
         }
         if (populateCount++ == 0) {
-            System.out.println("Mondrian: loaded " + count +
-                    " system properties");
+            LOGGER.info("Mondrian: loaded " 
+                + count 
+                + " system properties");
         }
     }
 
@@ -127,12 +137,17 @@ public class MondrianProperties extends PropertiesPlus {
         try {
             load(url.openStream());
             if (populateCount == 0) {
-                System.out.println("Mondrian: properties loaded from '" + url +
-                        "'");
+                LOGGER.info("Mondrian: properties loaded from '" 
+                    + url 
+                    + "'");
             }
         } catch (IOException e) {
-            System.out.println("Mondrian: error while loading properties " +
-                    "from '" + url + "' (" + e + ")");
+            LOGGER.error("Mondrian: error while loading properties " 
+                + "from '" 
+                + url 
+                + "' (" 
+                + e 
+                + ")");
         }
     }
 
@@ -164,10 +179,11 @@ public class MondrianProperties extends PropertiesPlus {
     /** Property {@value}. */
     public static final String JdbcDrivers = "mondrian.jdbcDrivers";
     /** Values is {@value}. */
-    public static final String JdbcDrivers_Default = "sun.jdbc.odbc.JdbcOdbcDriver," +
-            "org.hsqldb.jdbcDriver," +
-            "oracle.jdbc.OracleDriver," +
-            "com.mysql.jdbc.Driver";
+    public static final String JdbcDrivers_Default = 
+            "sun.jdbc.odbc.JdbcOdbcDriver," 
+            + "org.hsqldb.jdbcDriver," 
+            + "oracle.jdbc.OracleDriver," 
+            + "com.mysql.jdbc.Driver";
 
     /** Retrieves the value of the {@link #ResultLimit} property. */
     public int getResultLimit() {
@@ -193,14 +209,16 @@ public class MondrianProperties extends PropertiesPlus {
         return getBooleanProperty(PrintCacheablesAfterQuery);
     }
     /** Property {@value}. */
-    public static final String PrintCacheablesAfterQuery = "mondrian.rolap.RolapResult.printCacheables";
+    public static final String PrintCacheablesAfterQuery = 
+                "mondrian.rolap.RolapResult.printCacheables";
 
     /** Retrieves the value of the {@link #FlushAfterQuery} property. */
     public boolean getFlushAfterQuery() {
         return getBooleanProperty(FlushAfterQuery);
     }
     /** Property {@value}. */
-    public static final String FlushAfterQuery = "mondrian.rolap.RolapResult.flushAfterEachQuery";
+    public static final String FlushAfterQuery = 
+                "mondrian.rolap.RolapResult.flushAfterEachQuery";
 
     // mondrian.test properties
 
@@ -237,7 +255,8 @@ public class MondrianProperties extends PropertiesPlus {
         return getProperty(TestConnectString);
     }
     /** Property {@value} */
-    public static final String TestConnectString = "mondrian.test.connectString";
+    public static final String TestConnectString = 
+                "mondrian.test.connectString";
 
 
     // miscellaneous
@@ -265,7 +284,8 @@ public class MondrianProperties extends PropertiesPlus {
         return getIntProperty(LargeDimensionThreshold, LargeDimensionThreshold_Default);
     }
     /** Property {@value}. */
-    public static final String LargeDimensionThreshold = "mondrian.rolap.LargeDimensionThreshold";
+    public static final String LargeDimensionThreshold = 
+                "mondrian.rolap.LargeDimensionThreshold";
     /** Value is {@value}. */
     public static final int LargeDimensionThreshold_Default = 100;
 
@@ -296,7 +316,8 @@ public class MondrianProperties extends PropertiesPlus {
         return getIntProperty(SparseSegmentCountThreshold, SparseSegmentCountThreshold_Default);
     }
     /** Property {@value}. */
-    public static final String SparseSegmentCountThreshold = "mondrian.rolap.SparseSegmentValueThreshold";
+    public static final String SparseSegmentCountThreshold = 
+                "mondrian.rolap.SparseSegmentValueThreshold";
     /** Value is {@value}. */
     public static final int SparseSegmentCountThreshold_Default = 1000;
 
@@ -306,16 +327,19 @@ public class MondrianProperties extends PropertiesPlus {
         return getDoubleProperty(SparseSegmentDensityThreshold, SparseSegmentDensityThreshold_Default);
     }
     /** Property {@value}. */
-    public static final String SparseSegmentDensityThreshold = "mondrian.rolap.SparseSegmentDensityThreshold";
+    public static final String SparseSegmentDensityThreshold = 
+                "mondrian.rolap.SparseSegmentDensityThreshold";
     /** Value is {@value}. */
     public static final double SparseSegmentDensityThreshold_Default = 0.5;
 
-    public static final String QueryFilePattern = "mondrian.test.QueryFilePattern";
+    public static final String QueryFilePattern = 
+                "mondrian.test.QueryFilePattern";
     public String getQueryFilePattern() {
         return getProperty(QueryFilePattern);
     }
 
-    public static final String QueryFileDirectory = "mondrian.test.QueryFileDirectory";
+    public static final String QueryFileDirectory = 
+                "mondrian.test.QueryFileDirectory";
     public String getQueryFileDirectory() {
         return getProperty(QueryFileDirectory);
     }

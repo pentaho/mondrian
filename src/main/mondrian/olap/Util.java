@@ -27,16 +27,15 @@ import java.util.*;
  * @since 6 August, 2001
  * @version $Id$
  **/
-public class Util extends mondrian.xom.XOMUtil
-{
+public class Util extends mondrian.xom.XOMUtil {
+
     private static final Logger LOGGER = Logger.getLogger(Util.class);
     // properties
 
     public static final Object nullValue = new NullCellValue();
 
     /** encodes string for MDX (escapes ] as ]] inside a name) */
-    public static String mdxEncodeString(String st)
-    {
+    public static String mdxEncodeString(String st) {
         StringBuffer retString = new StringBuffer(st.length()+20);
         for (int i = 0; i < st.length(); i++) {
             char c = st.charAt(i);
@@ -53,8 +52,7 @@ public class Util extends mondrian.xom.XOMUtil
 
 
     /** Return quoted */
-    public static String quoteForMdx(String val)
-    {   
+    public static String quoteForMdx(String val) {   
         StringBuffer buf = new StringBuffer(val.length()+20);
         buf.append("\"");
         
@@ -89,8 +87,7 @@ public class Util extends mondrian.xom.XOMUtil
      * Return identifiers quoted in [...].[...].  For example, {"Store", "USA",
      * "California"} becomes "[Store].[USA].[California]".
      **/
-    public static String quoteMdxIdentifier(String[] ids)
-    {   
+    public static String quoteMdxIdentifier(String[] ids) {   
         StringBuffer sb = new StringBuffer(64);
         for (int i = 0; i < ids.length; i++) {
             if (i > 0) {
@@ -109,8 +106,7 @@ public class Util extends mondrian.xom.XOMUtil
     }
 
     /** Does not modify the original string */
-    public static String replace(String s, String find, String replace)
-    {
+    public static String replace(String s, String find, String replace) {
         // let's be optimistic
         int found = s.indexOf(find);
         if (found == -1) {
@@ -135,8 +131,7 @@ public class Util extends mondrian.xom.XOMUtil
     }
 
 
-    public static String[] explode(String s)
-    {
+    public static String[] explode(String s) {
         List list = new ArrayList();
         int i = 0;
         while (i < s.length()) {
@@ -165,8 +160,7 @@ public class Util extends mondrian.xom.XOMUtil
         return names;
     }
 
-    public static String implode(String[] names)
-    {   
+    public static String implode(String[] names) {   
         if (names.length == 0) {
             return "";
         }
@@ -182,13 +176,11 @@ public class Util extends mondrian.xom.XOMUtil
         return sb.toString();
     }
 
-    public static String makeFqName(String name)
-    {
+    public static String makeFqName(String name) {
         return quoteMdxIdentifier(name);
     }
 
-    public static String makeFqName(OlapElement parent, String name)
-    {
+    public static String makeFqName(OlapElement parent, String name) {
         if (parent == null) {
             return Util.quoteMdxIdentifier(name);
         } else {
@@ -200,8 +192,7 @@ public class Util extends mondrian.xom.XOMUtil
         }
     }
 
-    public static String makeFqName(String parentUniqueName, String name)
-    {   
+    public static String makeFqName(String parentUniqueName, String name) {   
         if (parentUniqueName == null) {
             return quoteMdxIdentifier(name);
         } else {
@@ -237,8 +228,8 @@ public class Util extends mondrian.xom.XOMUtil
         OlapElement parent,
         String[] names,
         boolean failIfNotFound,
-        int category)
-    {
+        int category) {
+
         Util.assertPrecondition(parent != null, "parent != null");
 
         if (LOGGER.isDebugEnabled()) {
@@ -349,10 +340,8 @@ public class Util extends mondrian.xom.XOMUtil
         }
     }
 
-    public static OlapElement lookup(
-        Query q,
-        String[] namesArray)
-    {
+    public static OlapElement lookup(Query q, String[] namesArray) {
+
         // First, look for a calculated member defined in the query.
         final String fullName = quoteMdxIdentifier(namesArray);
         // Look for any kind of object (member, level, hierarchy,
@@ -380,8 +369,9 @@ public class Util extends mondrian.xom.XOMUtil
      * @param memberName
      * @return Member, or null if not found
      */
-    public static Member lookupHierarchyRootMember(
-            SchemaReader reader, Hierarchy hierarchy, String memberName) {
+    public static Member lookupHierarchyRootMember(SchemaReader reader, 
+                                                   Hierarchy hierarchy, 
+                                                   String memberName) {
         // Lookup member at first level.
         Member[] rootMembers = reader.getHierarchyRootMembers(hierarchy);
         for (int i = 0; i < rootMembers.length; i++) {
@@ -392,10 +382,9 @@ public class Util extends mondrian.xom.XOMUtil
         // If the first level is 'all', lookup member at second level. For
         // example, they could say '[USA]' instead of '[(All
         // Customers)].[USA]'.
-        if (rootMembers.length == 1 && rootMembers[0].isAll()) {
-            return lookupMemberChildByName(reader, rootMembers[0], memberName);
-        }
-        return null;
+        return (rootMembers.length == 1 && rootMembers[0].isAll())
+            ? lookupMemberChildByName(reader, rootMembers[0], memberName)
+            : null;
     }
 
     /**
@@ -453,7 +442,9 @@ public class Util extends mondrian.xom.XOMUtil
      * If parent = [Time].[1997] and level = [Time].[Month], then
      * the member [Time].[1997].[Q1].[1] will be returned
      */
-    public static Member getFirstDescendantOnLevel(SchemaReader reader, Member parent, Level level) {
+    public static Member getFirstDescendantOnLevel(SchemaReader reader, 
+                                                   Member parent, 
+                                                   Level level) {
         Member m = parent;
         while (m.getLevel() != level) {
             Member[] children = reader.getMemberChildren(m);
@@ -466,7 +457,7 @@ public class Util extends mondrian.xom.XOMUtil
      * Returns whether a string is null or empty.
      */
     public static boolean isEmpty(String s) {
-        return s == null || s.length() == 0;
+        return (s == null) || (s.length() == 0);
     }
 
 
@@ -474,18 +465,14 @@ public class Util extends mondrian.xom.XOMUtil
      * A <code>NullCellValue</code> is a placeholder value used when cells have
      * a null value. It is a singleton.
      */
-    public static class NullCellValue
-    {
-        public String toString()
-        {
+    public static class NullCellValue {
+        public String toString() {
             return "#NULL";
         }
     };
 
-    public static class ErrorCellValue
-    {
-        public String toString()
-        {
+    public static class ErrorCellValue {
+        public String toString() {
             return "#ERR";
         }
     };
@@ -587,8 +574,7 @@ public class Util extends mondrian.xom.XOMUtil
      * @param e the error; may be null. Errors are chained according to their
      *    {@link Throwable#getCause cause}.
      **/
-    public static String[] convertStackToString(Throwable e)
-    {
+    public static String[] convertStackToString(Throwable e) {
         List list = new ArrayList();
         while (e != null) {
             String sMsg = getErrorMessage(e);
@@ -605,8 +591,7 @@ public class Util extends mondrian.xom.XOMUtil
      * class name if the exception is derived from {@link java.sql.SQLException}
      * or is exactly a {@link java.lang.Exception}.
      **/
-    public static String getErrorMessage(Throwable err)
-    {
+    public static String getErrorMessage(Throwable err) {
         boolean prependClassName =
             !(err instanceof java.sql.SQLException ||
               err.getClass() == java.lang.Exception.class);
@@ -623,9 +608,8 @@ public class Util extends mondrian.xom.XOMUtil
      *   is derived from {@link java.sql.SQLException} or is exactly a {@link
      *   java.lang.Exception}
      */
-    public static String getErrorMessage(
-        Throwable err, boolean prependClassName)
-    {
+    public static String getErrorMessage(Throwable err, 
+                                         boolean prependClassName) {
         String errMsg = err.getMessage();
         if ((errMsg == null) || (err instanceof RuntimeException)) {
             StringWriter sw = new StringWriter();
@@ -633,11 +617,9 @@ public class Util extends mondrian.xom.XOMUtil
             err.printStackTrace(pw);
             return sw.toString();
         } else {
-            if (prependClassName) {
-                return err.getClass().getName() + ": " + errMsg;
-            } else {
-                return errMsg;
-            }
+            return (prependClassName)
+                ? err.getClass().getName() + ": " + errMsg
+                : errMsg;
 
         }
     }
@@ -668,26 +650,22 @@ public class Util extends mondrian.xom.XOMUtil
      * <code>PropertyList</code> is an order-preserving list of key-value
      * pairs. Lookup is case-insensitive, but the case of keys is preserved.
      **/
-    public static class PropertyList
-    {
+    public static class PropertyList {
         List list = new ArrayList();
 
-        public String get(String key)
-        {
+        public String get(String key) {
             for (int i = 0, n = list.size(); i < n; i++) {
                 String[] pair = (String[]) list.get(i);
                 if (pair[0].equalsIgnoreCase(key)) {
                     return pair[1];
                 }
             }
-            if (key.equalsIgnoreCase("Provider")) {
-                return "MSDASQL";
-            }
-            return null;
+            return (key.equalsIgnoreCase("Provider"))
+                ? "MSDASQL"
+                : null;
         }
 
-        public String put(String key, String value)
-        {
+        public String put(String key, String value) {
             for (int i = 0, n = list.size(); i < n; i++) {
                 String[] pair = (String[]) list.get(i);
                 if (pair[0].equalsIgnoreCase(key)) {
@@ -705,8 +683,7 @@ public class Util extends mondrian.xom.XOMUtil
             return null;
         }
 
-        public String toString()
-        {
+        public String toString() {
             StringBuffer sb = new StringBuffer(64);
             for (int i = 0, n = list.size(); i < n; i++) {
                 String[] pair = (String[]) list.get(i);
@@ -741,19 +718,25 @@ public class Util extends mondrian.xom.XOMUtil
      * a look at the <code>mondrian.olap.UtilTestCase</code> test case.
      **/
     public static PropertyList parseConnectString(String s) {
-        return new ConnectStringParser().parse(s);
+        return new ConnectStringParser(s).parse();
     }
 
     private static class ConnectStringParser {
-        String s;
-        int i;
-        int n;
-        StringBuffer nameBuf = new StringBuffer(64);
-        StringBuffer valueBuf = new StringBuffer(64);
-        PropertyList parse(String s) {
+        private final String s;
+        private final int n;
+        private int i;
+        private final StringBuffer nameBuf;
+        private final StringBuffer valueBuf;
+
+        private ConnectStringParser(String s) {
             this.s = s;
             this.i = 0;
             this.n = s.length();
+            this.nameBuf = new StringBuffer(64);
+            this.valueBuf = new StringBuffer(64);
+        }
+
+        PropertyList parse() {
             PropertyList list = new PropertyList();
             while (i < n) {
                 parsePair(list);
@@ -896,20 +879,15 @@ public class Util extends mondrian.xom.XOMUtil
      * {@link Collections#unmodifiableList}.
      */
     public static List makeMutable(List list) {
-        if (list instanceof ArrayList) {
-            return list;
-        } else {
-            return new ArrayList(list);
-        }
+        return (list instanceof ArrayList)
+            ? list
+            : new ArrayList(list);
     }
 
     /**
      * Combines two integers into a hash code.
      */
-    public static int hash(
-        int i,
-        int j)
-    {
+    public static int hash(int i, int j) {
         return (i << 4) ^ j;
     }
 
@@ -917,10 +895,7 @@ public class Util extends mondrian.xom.XOMUtil
      * Computes a hash code from an existing hash code and an object (which
      * may be null).
      */
-    public static int hash(
-        int h,
-        Object o)
-    {
+    public static int hash(int h, Object o) {
         int k = (o == null) ? 0 : o.hashCode();
         return ((h << 4) | h) ^ k;
     }
@@ -929,10 +904,7 @@ public class Util extends mondrian.xom.XOMUtil
      * Computes a hash code from an existing hash code and an array of objects
      * (which may be null).
      */
-    public static int hashArray(
-        int h,
-        Object [] a)
-    {
+    public static int hashArray(int h, Object [] a) {
         // The hashcode for a null array and an empty array should be different
         // than h, so use magic numbers.
         if (a == null) {

@@ -25,8 +25,8 @@ class SetBase extends OlapElementBase implements Set {
 
     private static final Logger LOGGER = Logger.getLogger(SetBase.class);
 
-    String name;
-    Exp exp;
+    private String name;
+    private final Exp exp;
 
     SetBase(String name, Exp exp) {
         this.name = name;
@@ -38,11 +38,21 @@ class SetBase extends OlapElementBase implements Set {
     }
 
     // from Element
-    public Object getObject() { return null; }
-    public String getUniqueName() { return "[" + name + "]"; }
-    public String getName() { return name; }
-    public String getQualifiedName() { return null; }
-    public String getDescription() { return null; }
+    public Object getObject() { 
+        return null; 
+    }
+    public String getUniqueName() { 
+        return "[" + name + "]"; 
+    }
+    public String getName() { 
+        return name; 
+    }
+    public String getQualifiedName() { 
+        return null; 
+    }
+    public String getDescription() { 
+        return null; 
+    }
 
     public int getType() {
         return Category.Set;

@@ -37,9 +37,9 @@ class SetFunDef extends FunDefBase {
         // All of the members in {<Member1>[,<MemberI>]...} must have the same
         // Hierarchy.  But if there are no members, we can't derive a
         // Hierarchy, so we return null.
-        return (args.length == 0) ?
-            null :
-            args[0].getHierarchy();
+        return (args.length == 0) 
+            ? null 
+            : args[0].getHierarchy();
     }
     public Object evaluate(Evaluator evaluator, Exp[] args) {
         List list = null;
@@ -61,19 +61,16 @@ class SetFunDef extends FunDefBase {
                 if (list == null) {
                     list = makeMutable(list2);
                 } else {
-                    for (int j = 0, count = list2.size(); j <
-                             count; j++) {
+                    for (int j = 0, count = list2.size(); j < count; j++) {
                         Object o2 = list2.get(j);
-                        if (o2 instanceof Member &&
-                                ((Member) o2).isNull()) {
+                        if (o2 instanceof Member && ((Member) o2).isNull()) {
                             continue;
                         }
                         list.add(o2);
                     }
                 }
             } else {
-                if (o instanceof Member &&
-                        ((Member) o).isNull()) {
+                if (o instanceof Member && ((Member) o).isNull()) {
                     continue;
                 }
                 if (list == null) {

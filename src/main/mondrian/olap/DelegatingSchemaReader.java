@@ -62,15 +62,13 @@ public class DelegatingSchemaReader implements SchemaReader {
     }
 
     public Member getMemberByUniqueName(String[] uniqueNameParts,
-        boolean failIfNotFound)
-    {
+        boolean failIfNotFound) {
         return schemaReader.getMemberByUniqueName(uniqueNameParts,
             failIfNotFound);
     }
 
     public OlapElement lookupCompound(OlapElement parent, String[] names,
-        boolean failIfNotFound, int category)
-    {
+        boolean failIfNotFound, int category) {
         return schemaReader.lookupCompound(parent, names, failIfNotFound,
             category);
     }
@@ -79,7 +77,10 @@ public class DelegatingSchemaReader implements SchemaReader {
         return schemaReader.getCalculatedMember(nameParts);
     }
 
-    public void getMemberRange(Level level, Member startMember, Member endMember, List list) {
+    public void getMemberRange(Level level, 
+                               Member startMember, 
+                               Member endMember, 
+                               List list) {
         schemaReader.getMemberRange(level, startMember, endMember, list);
     }
 

@@ -17,8 +17,7 @@ import java.util.ArrayList;
 /**
  * Definition of the <code>DESCENDANTS</code> MDX function.
  */
-class DescendantsFunDef extends FunDefBase
-{
+class DescendantsFunDef extends FunDefBase {
     private final boolean self;
     private final boolean before;
     private final boolean after;
@@ -29,12 +28,12 @@ class DescendantsFunDef extends FunDefBase
             FunDef dummyFunDef,
             int flag,
             boolean depthSpecified,
-            int depthLimit)
-    {
+            int depthLimit) {
         super(dummyFunDef);
-        self = FunUtil.checkFlag(flag, Flags.SELF, true);
-        after = FunUtil.checkFlag(flag, Flags.AFTER, true);
-        before = FunUtil.checkFlag(flag, Flags.BEFORE, true);
+
+        this.self = FunUtil.checkFlag(flag, Flags.SELF, true);
+        this.after = FunUtil.checkFlag(flag, Flags.AFTER, true);
+        this.before = FunUtil.checkFlag(flag, Flags.BEFORE, true);
 //      leaves = FunUtil.checkFlag(flag, Flags.LEAVES, true);
         this.depthSpecified = depthSpecified;
         this.depthLimit = depthLimit;
@@ -43,15 +42,14 @@ class DescendantsFunDef extends FunDefBase
     public Object evaluate(Evaluator evaluator, Exp[] args) {
         Member member = getMemberArg(evaluator, args, 0, true);
         List result = new ArrayList();
-        final SchemaReader schemaReader =
-                evaluator.getSchemaReader();
+        final SchemaReader schemaReader = evaluator.getSchemaReader();
         if (depthSpecified) {
             descendantsByDepth(member, result, schemaReader,
                     depthLimit, before, self, after);
         } else {
-            final Level level = args.length > 1 ?
-                getLevelArg(evaluator, args, 1, true) :
-                member.getLevel();
+            final Level level = args.length > 1 
+                ?  getLevelArg(evaluator, args, 1, true) 
+                : member.getLevel();
             schemaReader.getMemberDescendants(member, result,
                     level, before, self, after);
         }
@@ -61,9 +59,13 @@ class DescendantsFunDef extends FunDefBase
         return result;
     }
 
-    private static void descendantsByDepth(Member member, List result,
-            final SchemaReader schemaReader, final int depthLimitFinal,
-            final boolean before, final boolean self, final boolean after) {
+    private static void descendantsByDepth(Member member, 
+                                           List result,
+                                           final SchemaReader schemaReader, 
+                                           final int depthLimitFinal,
+                                           final boolean before, 
+                                           final boolean self, 
+                                           final boolean after) {
         Member[] children = {member};
         for (int depth = 0;; ++depth) {
             if (depth == depthLimitFinal) {
@@ -122,10 +124,8 @@ class DescendantsFunDef extends FunDefBase
     /**
      * Resolves calls to the <code>DESCENDANTS</code> function.
      */
-    static class Resolver extends MultiResolver
-    {
-        public Resolver()
-        {
+    static class Resolver extends MultiResolver {
+        public Resolver() {
             super("Descendants",
                 "Descendants(<Member>[, <Level>[, <Desc_flag>]])",
                 "Returns the set of descendants of a member at a specified level, optionally including or excluding descendants in other levels.",
@@ -159,8 +159,9 @@ class DescendantsFunDef extends FunDefBase
                 // LEAVES isn't supported
                 throw MondrianResource.instance().newLeavesNotSupported();
             }
-            final int depthLimitFinal = depthLimit < 0 ?
-                Integer.MAX_VALUE : depthLimit;
+            final int depthLimitFinal = depthLimit < 0 
+                ?  Integer.MAX_VALUE 
+                : depthLimit;
             final int flagFinal = flag;
             final boolean depthSpecifiedFinal = depthSpecified;
             return new DescendantsFunDef(dummyFunDef, flagFinal,

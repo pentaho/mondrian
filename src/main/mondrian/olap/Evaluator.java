@@ -21,31 +21,47 @@ package mondrian.olap;
  * @version $Id$
  **/
 public interface Evaluator {
+
     /** Returns the current cube. */
     Cube getCube();
+
     /** Creates a new evaluator with the same state. */
     Evaluator push(Member[] members);
+
     /** Creates a new evaluator with the same state.
     * Equivalent to {@link #push(Member[]) push(new Member[0])}. **/
     Evaluator push();
+
     /** Creates a new evaluator with the same state except for one member.
      * Equivalent to {@link #push(Member[]) push(new Member[]
      * &#124;member&#125;)}. **/
     Evaluator push(Member member);
+
     /** Restores previous evaluator. */
     Evaluator pop();
+
     /** Makes <code>member</code> the current member of its dimension. Returns
      * the previous context. */
     Member setContext(Member member);
+
     void setContext(Member[] members);
+
     Member getContext(Dimension dimension);
+
     Object evaluateCurrent();
+
     Object xx(Literal literal);
+
     Object xx(FunCall funCall);
+
     Object xx(Id id);
+
     Object xx(OlapElement mdxElement);
+
     Object xx(Parameter parameter);
+
     String format(Object o);
+
     /**
      * Returns number of ancestor evaluators. Used to check for infinite
      * loops.
@@ -53,16 +69,19 @@ public interface Evaluator {
      * @post return getParent() == null ? 0 : getParent().getDepth() + 1
      */
     int getDepth();
+
     /**
      * Returns parent evaluator.
      */
     Evaluator getParent();
+
     /**
      * Retrieves the value of property <code>name</code>. If more than one
      * member in the current context defines that property, the one with the
      * highest solve order has precedence.
      */
     Object getProperty(String name);
+
     /**
      * Returns a {@link SchemaReader} appropriate for the current access-control
      * context.
@@ -77,6 +96,7 @@ public interface Evaluator {
      * @see Exp#dependsOn
      */
     Object getCachedResult(Exp key);
+
     /**
      * @see #getCachedResult
      */
@@ -90,6 +110,7 @@ public interface Evaluator {
      * I.e. nonempty(crossjoin(a,b)) == nonempty(crossjoin(nonempty(a), nonempty(b));
      */
     boolean isNonEmpty();
+
     /**
      * allows expressions to modify non empty flag to evaluate their children.
      */

@@ -20,18 +20,19 @@ import java.io.PrintWriter;
 public class Formula extends QueryPart {
 
     /** name of set or member **/
-    String[] names;
+    private final String[] names;
     /** defining expression **/
-    ExpBase exp;
-    MemberProperty[] memberProperties; // properties/solve order of member
+    private ExpBase exp;
+    // properties/solve order of member
+    private final MemberProperty[] memberProperties; 
     /**
      * <code>true</code> is this is a member, <code>false</code> if it is a
      * set.
      */
-    boolean isMember;
+    private final boolean isMember;
 
-    Member mdxMember;
-    Set mdxSet;
+    private Member mdxMember;
+    private Set mdxSet;
 
     /** Construct formula specifying a set. */
     Formula(String[] names, Exp exp) {
@@ -43,10 +44,10 @@ public class Formula extends QueryPart {
         this(true, names, (ExpBase) exp, memberProperties);
     }
 
-    private Formula(
-        boolean isMember, String[] names, ExpBase exp,
-        MemberProperty[] memberProperties)
-    {
+    private Formula(boolean isMember, 
+                    String[] names, 
+                    ExpBase exp,
+                    MemberProperty[] memberProperties) {
         this.isMember = isMember;
         this.names = names;
         this.exp = exp;
@@ -55,16 +56,17 @@ public class Formula extends QueryPart {
 
     public Object clone()
     {
-        return new Formula(
-            isMember, names, (ExpBase) exp.clone(),
-            MemberProperty.cloneArray(memberProperties));
+        return new Formula(isMember, 
+                           names, 
+                           (ExpBase) exp.clone(),
+                           MemberProperty.cloneArray(memberProperties));
     }
 
-    static Formula[] cloneArray(Formula[] x)
-    {
+    static Formula[] cloneArray(Formula[] x) {
         Formula[] x2 = new Formula[x.length];
-        for (int i = 0; i < x.length; i++)
+        for (int i = 0; i < x.length; i++) {
             x2[i] = (Formula) x[i].clone();
+        }
         return x2;
     }
 
@@ -177,22 +179,26 @@ public class Formula extends QueryPart {
         return isMember;
     }
 
+    Set getMDXSet() {
+        return mdxSet;
+    }
+
+    String[] getNames() {
+        return names;
+    }
+
     /** Returns this formula's name. */
     public String getName() {
-        if (isMember) {
-            return mdxMember.getName();
-        } else {
-            return mdxSet.getName();
-        }
+        return (isMember)
+            ? mdxMember.getName()
+            : mdxSet.getName();
     }
 
     /** Returns this formula's caption. */
     public String getCaption() {
-        if (isMember) {
-            return mdxMember.getCaption();
-        } else {
-            return mdxSet.getName();
-        }
+        return (isMember)
+            ? mdxMember.getCaption()
+            : mdxSet.getName();
     }
 
     /**
@@ -216,27 +222,21 @@ public class Formula extends QueryPart {
 
     /** Returns the unique name of the member or set. */
     String getUniqueName() {
-        if (isMember) {
-            return mdxMember.getUniqueName();
-        } else {
-            return mdxSet.getUniqueName();
-        }
+        return (isMember)
+            ? mdxMember.getUniqueName()
+            : mdxSet.getUniqueName();
     }
 
-    OlapElement getElement()
-    {
-        if (isMember) {
-            return mdxMember;
-        } else {
-            return mdxSet;
-        }
+    OlapElement getElement() {
+        return (isMember)
+            ? (OlapElement) mdxMember
+            : (OlapElement) mdxSet;
     }
 
     /** Returns whether this formula represents hidden member (unique name
      * contains {@link Query#hidden} string). */
-    public boolean isHidden()
-    {
-        return getElement().getUniqueName().indexOf(Query.hidden) >= 0;
+    public boolean isHidden() {
+        return getElement().getUniqueName().indexOf(Query.HIDDEN) >= 0;
     }
 
     public Exp getExpression() {
@@ -265,10 +265,9 @@ public class Formula extends QueryPart {
      */
     public int getSolveOrder() {
         Exp exp = getMemberProperty(Property.PROPERTY_SOLVE_ORDER);
-        if (exp != null && exp.getType() == Category.Numeric)
-            return ((Literal)exp).getIntValue();
-        else
-            return 0;
+        return ((exp != null) && (exp.getType() == Category.Numeric))
+            ? ((Literal)exp).getIntValue()
+            : 0;
     }
 
     /**

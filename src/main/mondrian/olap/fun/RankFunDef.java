@@ -29,7 +29,6 @@ public class RankFunDef extends FunkBase {
 
     // Rank(<<Tuple>>, <<Set>>[, <<Calc Expression>>])
     public Object evaluate(Evaluator evaluator, Exp[] args) {
-//        debug("TOP");
         // get tuple
         Member[] tuple = getTupleOrMemberArg(evaluator, args, 0);
         for (int i = 0; i < tuple.length; i++) {
@@ -40,11 +39,9 @@ public class RankFunDef extends FunkBase {
             }
         }
 
-        //debug("tuple.length=" +tuple.length);
         // get set
         List members = (List) getArg(evaluator, args, 1);
         // TODO: ignore the "calc expression" third arg for now
-//        debug("Rank: members.size()=" +members.size());
 
         if (members == null) {
             return new Double(0);

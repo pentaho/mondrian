@@ -178,9 +178,10 @@ class RolapResult extends ResultBase
         if (axis == null) {
             // Create an axis containing one position with no members (not
             // the same as an empty axis).
-            RolapPosition position = new RolapPosition();
-            position.members = new Member[0];
+            Member[] members = new Member[0];
+            RolapPosition position = new RolapPosition(members);
             positions = new Position[] {position};
+
         } else {
             Exp exp = axis.set;
             evaluator.setNonEmpty(axis.nonEmpty);
@@ -193,17 +194,18 @@ class RolapResult extends ResultBase
             List vector = (List) value;
             positions = new Position[vector.size()];
             for (int i = 0; i < vector.size(); i++) {
-                RolapPosition position = new RolapPosition();
+                Member[] members = null;
                 Object o = vector.get(i);
                 if (o instanceof Object[]) {
                     Object[] a = (Object[]) o;
-                    position.members = new Member[a.length];
+                    members = new Member[a.length];
                     for (int j = 0; j < a.length; j++) {
-                        position.members[j] = (Member) a[j];
+                        members[j] = (Member) a[j];
                     }
                 } else {
-                    position.members = new Member[] {(Member) o};
+                    members = new Member[] {(Member) o};
                 }
+                RolapPosition position = new RolapPosition(members);
                 positions[i] = position;
             }
         }

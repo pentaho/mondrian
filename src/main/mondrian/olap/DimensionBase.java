@@ -24,8 +24,7 @@ import java.util.ArrayList;
  **/
 public abstract class DimensionBase
     extends OlapElementBase
-    implements Dimension
-{
+    implements Dimension {
 
     protected final String name;
     protected final String uniqueName;
@@ -34,13 +33,11 @@ public abstract class DimensionBase
     protected Hierarchy[] hierarchies;
     protected DimensionType dimensionType;
 
-    protected DimensionBase(
-        String name,
-        String uniqueName,
-        String description,
-        int globalOrdinal,
-        DimensionType dimensionType
-    ) {
+    protected DimensionBase(String name,
+                            String uniqueName,
+                            String description,
+                            int globalOrdinal,
+                            DimensionType dimensionType) {
         this.name = name; 
         this.uniqueName = Util.makeFqName(name);
         this.description = null;
@@ -49,14 +46,24 @@ public abstract class DimensionBase
     }
 
     // implement Element
-    public String getUniqueName() { return uniqueName; }
-    public String getName() { return name; }
-    public String getDescription() { return description; }
-    public Hierarchy[] getHierarchies() { return hierarchies; }
+    public String getUniqueName() { 
+        return uniqueName; 
+    }
+    public String getName() { 
+        return name; 
+    }
+    public String getDescription() { 
+        return description; 
+    }
+    public Hierarchy[] getHierarchies() { 
+        return hierarchies; 
+    }
     public int getType() {
         return Category.Dimension;
     }
-    public DimensionType getDimensionType() { return dimensionType; }
+    public DimensionType getDimensionType() { 
+        return dimensionType; 
+    }
     public String getQualifiedName() {
         return Util.getRes().getMdxDimensionName(getUniqueName());
     }
@@ -68,8 +75,7 @@ public abstract class DimensionBase
         return dimension == this;
     }
 
-    public OlapElement lookupChild(SchemaReader schemaReader, String s)
-    {
+    public OlapElement lookupChild(SchemaReader schemaReader, String s) {
         OlapElement oe = lookupHierarchy(s);
 
         // If the user is looking for [Marital Status].[Marital Status] we
@@ -99,8 +105,7 @@ public abstract class DimensionBase
         return oe;
     }
 
-    private Hierarchy lookupHierarchy(String s)
-    {
+    private Hierarchy lookupHierarchy(String s) {
         for (int i = 0; i < hierarchies.length; i++) {
             if (hierarchies[i].getName().equalsIgnoreCase(s))
                 return hierarchies[i];
@@ -132,8 +137,7 @@ public abstract class DimensionBase
 
     public Object[] getChildren() {return getHierarchies();}
 
-    protected Object[] getAllowedChildren(CubeAccess cubeAccess)
-    {
+    protected Object[] getAllowedChildren(CubeAccess cubeAccess) {
         List hierarchyList = new ArrayList();
         Hierarchy[] mdxHierarchies = getHierarchies();
         for (int i = 0; i < mdxHierarchies.length; i++) {
@@ -144,12 +148,10 @@ public abstract class DimensionBase
         return hierarchyList.toArray(new Hierarchy[hierarchyList.size()]);
     }
 
-    public void accept(Visitor visitor)
-    {
+    public void accept(Visitor visitor) {
         visitor.visit(this);
     }
-    public void childrenAccept(Visitor visitor)
-    {
+    public void childrenAccept(Visitor visitor) {
         Hierarchy[] hierarchies = getHierarchies();
         for (int i = 0; i < hierarchies.length; i++) {
             hierarchies[i].accept(visitor);

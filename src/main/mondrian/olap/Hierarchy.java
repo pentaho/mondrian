@@ -47,6 +47,7 @@ public interface Hierarchy extends OlapElement {
      * @post return != null
      */
     Member getNullMember();
+
     boolean hasAll();
     /**
      * Creates a member of this hierarchy. If this is the measures hierarchy, a

@@ -23,8 +23,8 @@ import java.util.ArrayList;
  **/
 public abstract class MemberBase
     extends OlapElementBase
-    implements Member
-{
+    implements Member {
+
     protected Member parentMember;
     protected final Level level;
     protected String uniqueName;
@@ -65,10 +65,9 @@ public abstract class MemberBase
             return mf.formatMember(this);
         }
         final String caption = super.getCaption();
-        if (caption != null) {
-            return caption;
-        }
-        return getName();
+        return (caption != null)
+            ? caption
+            : getName();
     }
 
     public final String getParentUniqueName() {
@@ -112,8 +111,7 @@ public abstract class MemberBase
     }
 
     // implement Member
-    public Member getParentMember()
-    {
+    public Member getParentMember() {
         // use the cache if possible (getAdoMember can be very expensive)
         if (parentUniqueName == null) {
             return null; // we are root member, which has no parent
@@ -132,13 +130,10 @@ public abstract class MemberBase
     }
 
     // implement Member
-    public boolean isChildOrEqualTo(Member member)
-    {
-        if (member == null) {
-            return false;
-        } else {
-            return isChildOrEqualTo(member.getUniqueName());
-        }
+    public boolean isChildOrEqualTo(Member member) {
+        return (member == null)
+            ? false
+            : isChildOrEqualTo(member.getUniqueName());
     }
 
    /**
@@ -146,8 +141,7 @@ public abstract class MemberBase
     * child of, or a descendent of a member whose unique name is
     * <code>uniqueName</code>.
     **/
-    public boolean isChildOrEqualTo(String uniqueName)
-    {
+    public boolean isChildOrEqualTo(String uniqueName) {
         if (uniqueName == null) {
             return false;
         }
@@ -160,24 +154,21 @@ public abstract class MemberBase
             return true;
         }
         String parentUniqueName = getParentUniqueName();
-        if (parentUniqueName == null) {
-            return false; // have reached root
-        } else {
+        return (parentUniqueName == null)
+            // have reached root
+            ? false 
             // try candidate's parentMember
-            return ((MemberBase) getParentMember()).isChildOrEqualTo(uniqueName);
-        }
+            : ((MemberBase) getParentMember()).isChildOrEqualTo(uniqueName);
     }
 
     // implement Member
-    public boolean isCalculated()
-    {
-        if (isCalculatedInQuery()) {
-            return true;
-        }
-        // If the member is not created from the "with member ..." MDX, the
-        // calculated will be null. But it may be still a calculated measure
-        // stored in the cube.
-        return getMemberType() == FORMULA_MEMBER_TYPE;
+    public boolean isCalculated() {
+        return (isCalculatedInQuery()) 
+            ? true
+            // If the member is not created from the "with member ..." MDX, the
+            // calculated will be null. But it may be still a calculated measure
+            // stored in the cube.
+            : getMemberType() == FORMULA_MEMBER_TYPE;
     }
 
     public int getSolveOrder() {
@@ -199,8 +190,7 @@ public abstract class MemberBase
     }
 
     // implement Member
-    public Member[] getAncestorMembers()
-    {
+    public Member[] getAncestorMembers() {
         List list = new ArrayList();
         Member parentMember = getParentMember();
         while (parentMember != null) {
@@ -210,13 +200,11 @@ public abstract class MemberBase
         return (Member[]) list.toArray(new Member[list.size()]);
     }
 
-    public void accept(Visitor visitor)
-    {
+    public void accept(Visitor visitor) {
         visitor.visit(this);
     }
 
-    public void childrenAccept(Visitor visitor)
-    {
+    public void childrenAccept(Visitor visitor) {
         // don't generally traverse to children -- we could implement, if
         // necessary
     }

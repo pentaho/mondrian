@@ -23,21 +23,22 @@ import mondrian.olap.*;
  * @version $Id$
  **/
 abstract class MultiResolver extends FunUtil implements Resolver {
-    String name;
-    String description;
-    String[] signatures;
-    Syntax syntax;
+    private final String name;
+    private final String description;
+    private final String[] signatures;
+    private final Syntax syntax;
 
-    MultiResolver(String name, String signature, String description,
-            String[] signatures) {
+    MultiResolver(String name, 
+                  String signature, 
+                  String description,
+                  String[] signatures) {
         this.name = name;
         this.description = description;
         this.signatures = signatures;
         Util.assertTrue(signatures.length > 0);
         this.syntax = decodeSyntacticType(signatures[0]);
         for (int i = 1; i < signatures.length; i++) {
-            Util.assertTrue(decodeSyntacticType(
-                    signatures[i]) == syntax);
+            Util.assertTrue(decodeSyntacticType(signatures[i]) == syntax);
         }
     }
 
@@ -56,12 +57,14 @@ abstract class MultiResolver extends FunUtil implements Resolver {
     public String[] getReservedWords() {
         return emptyStringArray;
     }
+    public String[] getSignatures() {
+        return signatures;
+    }
 
     public FunDef resolve(Exp[] args, int[] conversionCount) {
 outer:
         for (int j = 0; j < signatures.length; j++) {
-            int[] parameterTypes = decodeParameterTypes(
-                    signatures[j]);
+            int[] parameterTypes = decodeParameterTypes(signatures[j]);
             if (parameterTypes.length != args.length) {
                 continue;
             }
@@ -81,9 +84,8 @@ outer:
 
     public boolean requiresExpression(int k) {
         for (int j = 0; j < signatures.length; j++) {
-            int[] parameterTypes = decodeParameterTypes(
-                    signatures[j]);
-            if (k < parameterTypes.length &&
+            int[] parameterTypes = decodeParameterTypes(signatures[j]);
+            if ((k < parameterTypes.length) &&
                     parameterTypes[k] == Category.Set) {
                 return false;
             }

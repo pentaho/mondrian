@@ -23,8 +23,7 @@ import java.util.*;
  * <i>ClassName</i> instance</code> member to hold the singleton instance.
  * {@link Access} is a simple example of this.</p>
  **/
-public class EnumeratedValues implements Cloneable
-{
+public class EnumeratedValues implements Cloneable {
     /** map symbol names to values */
     private Map valuesByName = new HashMap();
 
@@ -57,8 +56,7 @@ public class EnumeratedValues implements Cloneable
 
     /** Creates an enumeration, initialize it with an array of strings, and
      * freezes it. */
-    public EnumeratedValues(String[] names)
-    {
+    public EnumeratedValues(String[] names) {
         for (int i = 0; i < names.length; i++) {
             register(new BasicValue(names[i], i, names[i]));
         }
@@ -67,8 +65,7 @@ public class EnumeratedValues implements Cloneable
 
     /** Create an enumeration, initializes it with arrays of code/name pairs,
      * and freezes it. */
-    public EnumeratedValues(String[] names, int[] codes)
-    {
+    public EnumeratedValues(String[] names, int[] codes) {
         for (int i = 0; i < names.length; i++) {
             register(new BasicValue(names[i], codes[i], names[i]));
         }
@@ -77,16 +74,14 @@ public class EnumeratedValues implements Cloneable
 
     /** Create an enumeration, initializes it with arrays of code/name pairs,
      * and freezes it. */
-    public EnumeratedValues(String[] names, int[] codes, String[] descriptions)
-    {
+    public EnumeratedValues(String[] names, int[] codes, String[] descriptions) {
         for (int i = 0; i < names.length; i++) {
             register(new BasicValue(names[i], codes[i], descriptions[i]));
         }
         makeImmutable();
     }
 
-    protected Object clone()
-    {
+    protected Object clone() {
         EnumeratedValues clone = null;
         try {
             clone = (EnumeratedValues) super.clone();
@@ -102,8 +97,7 @@ public class EnumeratedValues implements Cloneable
      * Creates a mutable enumeration from an existing enumeration, which may
      * already be immutable.
      */
-    public EnumeratedValues getMutableClone()
-    {
+    public EnumeratedValues getMutableClone() {
         return (EnumeratedValues) clone();
     }
 
@@ -131,8 +125,7 @@ public class EnumeratedValues implements Cloneable
     /**
      * Freezes the enumeration, preventing it from being further modified.
      */
-    public void makeImmutable()
-    {
+    public void makeImmutable() {
         ordinalToValueMap = new Value[1 + max - min];
         for (Iterator values = valuesByName.values().iterator();
                 values.hasNext(); ) {
@@ -145,24 +138,21 @@ public class EnumeratedValues implements Cloneable
         }
     }
 
-    public final boolean isImmutable()
-    {
+    public final boolean isImmutable() {
         return (ordinalToValueMap != null);
     }
 
     /**
      * Returns the smallest ordinal defined by this enumeration.
      */
-    public final int getMin()
-    {
+    public final int getMin() {
         return min;
     }
 
     /**
      * Returns the largest ordinal defined by this enumeration.
      */
-    public final int getMax()
-    {
+    public final int getMax() {
         return max;
     }
 
@@ -178,8 +168,7 @@ public class EnumeratedValues implements Cloneable
      * @param ordinal Suspected ordinal from this enumeration.
      * @return Whether <code>ordinal</code> is valid.
      */
-    public final boolean isValid(int ordinal)
-    {
+    public final boolean isValid(int ordinal) {
         if ((ordinal < min) || (ordinal > max)) {
             return false;
         }
@@ -197,6 +186,7 @@ public class EnumeratedValues implements Cloneable
      */
     public final Value getValue(int ordinal) {
         Util.assertPrecondition(isImmutable());
+
         return ordinalToValueMap[ordinal - min];
     }
 
@@ -206,15 +196,11 @@ public class EnumeratedValues implements Cloneable
      *
      * @pre isImmutable()
      */
-    public final String getName(int ordinal)
-    {
+    public final String getName(int ordinal) {
         Util.assertPrecondition(isImmutable());
+
         final Value value = ordinalToValueMap[ordinal - min];
-        if (value == null) {
-            return null;
-        } else {
-            return value.getName();
-        }
+        return (value == null) ? null : value.getName();
     }
 
     /**
@@ -226,12 +212,9 @@ public class EnumeratedValues implements Cloneable
     public final String getDescription(int ordinal)
     {
         Util.assertPrecondition(isImmutable());
+
         final Value value = ordinalToValueMap[ordinal - min];
-        if (value == null) {
-            return null;
-        } else {
-            return value.getDescription();
-        }
+        return (value == null) ? null : value.getDescription();
     }
 
     /**

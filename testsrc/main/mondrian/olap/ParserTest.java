@@ -38,7 +38,8 @@ public class ParserTest extends TestCase {
             QueryAxis[] axes = data.getAxes();
 
             assertEquals("Number of axes must be 1", 1, axes.length);
-            assertEquals("Axis index name must be correct", AxisOrdinal.instance.getName(idx), axes[0].axisName);
+            assertEquals("Axis index name must be correct",
+                AxisOrdinal.instance.getName(idx), axes[0].getAxisName());
         }
     }
 
@@ -107,15 +108,19 @@ public class ParserTest extends TestCase {
         QueryAxis[] axes = data.getAxes();
 
         assertEquals("Number of axes", 2, axes.length);
-        assertEquals("Axis index name must be correct", AxisOrdinal.instance.getName(0), axes[0].axisName);
-        assertEquals("Axis index name must be correct", AxisOrdinal.instance.getName(1), axes[1].axisName);
+        assertEquals("Axis index name must be correct",
+            AxisOrdinal.instance.getName(0), axes[0].getAxisName());
+        assertEquals("Axis index name must be correct",
+            AxisOrdinal.instance.getName(1), axes[1].getAxisName());
 
         query = "select {[axis1mbr]} on aXiS(1), "
                 + "{[axis0mbr]} on AxIs(0) from cube";
 
         assertEquals("Number of axes", 2, axes.length);
-        assertEquals("Axis index name must be correct", AxisOrdinal.instance.getName(0), axes[0].axisName);
-        assertEquals("Axis index name must be correct", AxisOrdinal.instance.getName(1), axes[1].axisName);
+        assertEquals("Axis index name must be correct",
+            AxisOrdinal.instance.getName(0), axes[0].getAxisName());
+        assertEquals("Axis index name must be correct",
+            AxisOrdinal.instance.getName(1), axes[1].getAxisName());
 
         Object[] tuples = axes[0].getChildren();
         assertEquals("Column tuples", 1, tuples.length);

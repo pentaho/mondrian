@@ -39,18 +39,15 @@ public abstract class ResultBase implements Result {
     }
 
     // implement Result
-    public Axis[] getAxes()
-    {
+    public Axis[] getAxes() {
         return axes;
     }
     // implement Result
-    public Axis getSlicerAxis()
-    {
+    public Axis getSlicerAxis() {
         return slicerAxis;
     }
     // implement Result
-    public void print(PrintWriter pw)
-    {
+    public void print(PrintWriter pw) {
         for (int i = -1; i < axes.length; i++) {
             pw.println("Axis #" + (i + 1) + ":");
             printAxis(pw, i < 0 ? slicerAxis : axes[i]);
@@ -61,8 +58,7 @@ public abstract class ResultBase implements Result {
         int[] pos = new int[axes.length];
         printRows(pw, axes.length - 1, pos);
     }
-    private void printRows(PrintWriter pw, int axis, int[] pos)
-    {
+    private void printRows(PrintWriter pw, int axis, int[] pos) {
         Axis _axis = axis < 0 ? slicerAxis : axes[axis];
         for (int i = 0, count = _axis.positions.length; i < count; i++) {
             if (axis < 0) {
@@ -83,8 +79,7 @@ public abstract class ResultBase implements Result {
             }
         }
     }
-    private void printAxis(PrintWriter pw, Axis axis)
-    {
+    private void printAxis(PrintWriter pw, Axis axis) {
         for (int i = 0; i < axis.positions.length; i++) {
             Position position = axis.positions[i];
             pw.print("{");
@@ -98,8 +93,7 @@ public abstract class ResultBase implements Result {
             pw.println("}");
         }
     }
-    private void printCell(PrintWriter pw, int[] pos)
-    {
+    private void printCell(PrintWriter pw, int[] pos) {
         Cell cell = getCell(pos);
         pw.print(cell.getFormattedValue());
     }

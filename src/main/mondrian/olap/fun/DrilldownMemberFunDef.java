@@ -12,6 +12,7 @@ package mondrian.olap.fun;
 import mondrian.olap.*;
 
 import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -44,10 +45,9 @@ class DrilldownMemberFunDef extends FunDefBase {
      *
      */
     protected void drillDownObj(Evaluator evaluator,
-        Object element,
-        HashSet memberSet,
-        List resultList)
-    {
+                                Object element,
+                                Set memberSet,
+                                List resultList) {
         if (null == element) {
             return;
         }
@@ -105,7 +105,7 @@ class DrilldownMemberFunDef extends FunDefBase {
             return v0;
         }
 
-        HashSet set1 = new HashSet();
+        Set set1 = new HashSet();
         set1.addAll(v1);
 
         List result = new ArrayList();

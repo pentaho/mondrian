@@ -18,62 +18,52 @@ import java.io.PrintWriter;
  **/
 public class Id
     extends ExpBase
-    implements Cloneable
-{
+    implements Cloneable {
+
     private final String[] names;
     private final boolean[] keys;
 
-    Id(String s, boolean key)
-    {
+    Id(String s, boolean key) {
         names = new String[] {s};
         keys = new boolean[] {key};
     }
 
-    Id(String s)
-    {
+    Id(String s) {
         this(s, false);
     }
 
-    private Id(String[] names, boolean[] keys)
-    {
+    private Id(String[] names, boolean[] keys) {
         this.names = names;
         this.keys = keys;
     }
 
-    public Object clone()
-    {
+    public Object clone() {
         // This is immutable, so no need to clone.
         return this;
     }
 
-    public int getType()
-    {
+    public int getType() {
         return Category.Unknown;
     }
 
-    public boolean usesDimension(Dimension dimension)
-    {
+    public boolean usesDimension(Dimension dimension) {
         // don't know til we resolve
         return false;
     }
 
-    public String toString()
-    {
+    public String toString() {
         return Util.quoteMdxIdentifier(toStringArray());
     }
 
-    public String[] toStringArray()
-    {
+    public String[] toStringArray() {
         return (String[]) names.clone();
     }
 
-    public String getElement(int i)
-    {
+    public String getElement(int i) {
         return names[i];
     }
 
-    public Id append(String s, boolean key)
-    {
+    public Id append(String s, boolean key) {
         String[] newNames = new String[names.length + 1];
         boolean[] newKeys = new boolean[keys.length + 1];
         System.arraycopy(names, 0, newNames, 0, names.length);
@@ -83,13 +73,11 @@ public class Id
         return new Id(newNames, newKeys);
     }
 
-    public void append(String s)
-    {
+    public void append(String s) {
         append(s, false);
     }
 
-    public Exp resolve(Resolver resolver)
-    {
+    public Exp resolve(Resolver resolver) {
         if (names.length == 1) {
             final String s = names[0];
             if (FunTable.instance().isReserved(s)) {
@@ -99,8 +87,7 @@ public class Id
         return Util.lookup(resolver.getQuery(), names);
     }
 
-    public void unparse(PrintWriter pw)
-    {
+    public void unparse(PrintWriter pw) {
         for (int i = 0; i < names.length; i++) {
             String s = names[i];
             if (i > 0) {
@@ -115,8 +102,7 @@ public class Id
     }
 
     // implement Exp
-    public Object evaluate(Evaluator evaluator)
-    {
+    public Object evaluate(Evaluator evaluator) {
         return evaluator.xx(this);
     }
 

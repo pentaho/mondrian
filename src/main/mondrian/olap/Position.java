@@ -21,10 +21,27 @@ package mondrian.olap;
  * @version $Id$
  **/
 public class Position {
-    public Member[] members;
+    /** 
+     * NOTE: This must be public because JPivoi directly accesses this instance
+     * variable.
+     * Currently, the JPivoi usages are:
+     * monMembers = monPositions[i].members;
+     *
+     * This usage is deprecated: please use the members's getter methods:
+     *   public Member[] getMembers()
+     */
+    public final Member[] members;
+
+    protected Position(Member[] members) {
+        this.members = members;
+    }
+
+    public Member[] getMembers() {
+        return members;
+    }
+
     // override Object
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
         if (o instanceof Position) {
             Position other = (Position) o;
             if (other.members.length == this.members.length) {
@@ -39,8 +56,7 @@ public class Position {
         return false;
     }
     // override Object
-    public int hashCode()
-    {
+    public int hashCode() {
         int h = 0;
         for (int i = 0; i < members.length; i++) {
             h = (h << 4) ^ members[i].hashCode();

@@ -18,7 +18,9 @@ import java.io.PrintWriter;
  * An <code>Exp</code> is an MDX expression.
  **/
 public interface Exp {
+
     Object clone();
+
     /**
      * Returns the {@link Category} of the expression.
      * @post Category.instance().isValid(return)
@@ -26,9 +28,13 @@ public interface Exp {
     int getType();
 
     boolean isSet();
+
     boolean isMember();
+
     boolean isElement();
+
     boolean isEmptySet();
+
     /**
      * Returns the dimension of a this expression, or null if no dimension is
      * defined. Applicable only to set expressions.
@@ -56,9 +62,13 @@ public interface Exp {
      * can't represent that, so we return null);</p>
      **/
     Dimension getDimension();
+
     Hierarchy getHierarchy();
+
     void unparse(PrintWriter pw);
+
     Exp resolve(Resolver resolver);
+
     boolean usesDimension(Dimension dimension);
 
     /**
@@ -81,7 +91,9 @@ public interface Exp {
      * under this node.
      **/
     int addAtPosition(Exp e, int iPosition);
+
     Object evaluate(Evaluator evaluator);
+
     Object evaluateScalar(Evaluator evaluator);
 
     /**
@@ -92,14 +104,23 @@ public interface Exp {
      * which in turn calls {@link Exp#resolve}.
      */
     interface Resolver {
+
         Query getQuery();
+
         Exp resolveChild(Exp exp);
+
         Parameter resolveChild(Parameter parameter);
+
         void resolveChild(MemberProperty memberProperty);
+
         void resolveChild(QueryAxis axis);
+
         void resolveChild(Formula formula);
+
         boolean requiresExpression();
+
         FunTable getFunTable();
+
         /**
          * Creates or retrieves the parameter corresponding to a "Parameter" or
          * "ParamRef" function call.

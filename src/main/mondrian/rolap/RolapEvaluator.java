@@ -155,7 +155,7 @@ class RolapEvaluator implements Evaluator
     }
     public Object xx(FunCall funCall) {
         FunDef funDef = funCall.getFunDef();
-        return funDef.evaluate(this, funCall.args);
+        return funDef.evaluate(this, funCall.getArgs());
     }
     public Object xx(Id id) {
         throw new Error("unsupported");

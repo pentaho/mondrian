@@ -17,24 +17,24 @@ import java.io.PrintWriter;
  * Member property or solve order specification.
  **/
 public class MemberProperty extends QueryPart {
-    String name;
-    Exp exp;
+
+    private final String name;
+    private Exp exp;
 
     public MemberProperty(String name, Exp exp) {
         this.name = name;
         this.exp = exp;
     }
 
-    protected Object clone()
-    {
+    protected Object clone() {
         return new MemberProperty(name, (Exp) exp.clone());
     }
 
-    static MemberProperty[] cloneArray(MemberProperty[] x)
-    {
+    static MemberProperty[] cloneArray(MemberProperty[] x) {
         MemberProperty[] x2 = new MemberProperty[x.length];
-        for (int i = 0; i < x.length; i++)
+        for (int i = 0; i < x.length; i++) {
             x2[i] = (MemberProperty) x[i].clone();
+        }
         return x2;
     }
 
@@ -42,8 +42,7 @@ public class MemberProperty extends QueryPart {
         exp = resolver.resolveChild(exp);
     }
 
-    public Object[] getChildren()
-    {
+    public Object[] getChildren() {
         return new Exp[] {exp};
     }
 

@@ -23,9 +23,9 @@ import java.io.PrintWriter;
  * @since 3 March, 2002
  * @version $Id$
  **/
-class TupleFunDef extends FunDefBase
-{
-    int[] argTypes;
+class TupleFunDef extends FunDefBase {
+    private final int[] argTypes;
+
     TupleFunDef(int[] argTypes) {
         super(
             "()",

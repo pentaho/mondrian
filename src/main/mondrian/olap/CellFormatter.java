@@ -15,11 +15,11 @@ package mondrian.olap;
  */
 public interface CellFormatter {
 
-  /**
-   * user provided cell formatting function
-   * @param value
-   * @return the formatted value
-   */
-  public String formatCell(Object value);
+    /**
+     * user provided cell formatting function
+     * @param value
+     * @return the formatted value
+     */
+    String formatCell(Object value);
 
 } // CellFormatter

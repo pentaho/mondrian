@@ -18,17 +18,21 @@ import java.io.PrintWriter;
  **/
 public abstract class ExpBase
     extends QueryPart
-    implements Exp
-{
-    public abstract Object clone();
+    implements Exp {
 
-    static Exp[] cloneArray(Exp[] a)
-    {
+
+    static Exp[] cloneArray(Exp[] a) {
         Exp[] a2 = new Exp[a.length];
-        for (int i = 0; i < a.length; i++)
+        for (int i = 0; i < a.length; i++) {
             a2[i] = (Exp) a[i].clone();
+        }
         return a2;
     }
+
+    protected ExpBase() {
+    }
+
+    public abstract Object clone();
 
     /**
      * Returns the dimension of a this expression, or null if no dimension is
@@ -56,46 +60,38 @@ public abstract class ExpBase
      * has no dimension (well, actually it is [Product] x [Gender], but we
      * can't represent that, so we return null);</p>
      **/
-    public Dimension getDimension()
-    {
+    public Dimension getDimension() {
         Hierarchy mdxHierarchy = getHierarchy();
-        if (mdxHierarchy != null) {
-            return mdxHierarchy.getDimension();
-        }
+        return (mdxHierarchy == null) ? null : mdxHierarchy.getDimension();
+    }
+
+    public Hierarchy getHierarchy() {
         return null;
     }
 
-    public Hierarchy getHierarchy()
-    {
-        return null;
-    }
-
-    public final boolean isSet()
-    {
+    public final boolean isSet() {
         int cat = getType();
-        return cat == Category.Set || cat == Category.Tuple;
+        return (cat == Category.Set) || (cat == Category.Tuple);
     }
 
-    public final boolean isMember()
-    {
-        return getType() == Category.Member;
+    public final boolean isMember() {
+        return (getType() == Category.Member);
     }
 
-    public final boolean isElement()
-    {
+    public final boolean isElement() {
         int category = getType();
         return isMember() ||
-            category == Category.Hierarchy ||
-            category == Category.Level ||
-            category == Category.Dimension;
+            (category == Category.Hierarchy) ||
+            (category == Category.Level) ||
+            (category == Category.Dimension);
     }
 
     public final boolean isEmptySet()
     {
         if (this instanceof FunCall) {
             FunCall f = (FunCall) this;
-            return f.getSyntax() == Syntax.Braces &&
-                f.args.length == 0;
+            return (f.getSyntax() == Syntax.Braces) && 
+                   (f.getArgLength() == 0);
         } else {
             return false;
         }
@@ -117,21 +113,25 @@ public abstract class ExpBase
         if (!f.isCallToTuple()) {
             return null;
         }
-        for (int i = 0; i < f.args.length; i++) {
-            if (!(f.args[i] instanceof Member)) {
+        // Make sure all of the Exp are Members
+        int len = f.getArgLength();
+        for (int i = 0; i < len; i++) {
+            if (!(f.getArg(i) instanceof Member)) {
                 return null;
             }
         }
-        Member[] members = new Member[f.args.length];
-        System.arraycopy(f.args, 0, members, 0, f.args.length);
+        Member[] members = new Member[len];
+        // non-type checking copy
+        System.arraycopy(f.getArgs(), 0, members, 0, len);
         return members;
     }
 
     protected static boolean arrayUsesDimension(Exp[] exps, Dimension dim)
     {
         for (int i = 0; i < exps.length; i++)
-            if (exps[i].usesDimension(dim))
+            if (exps[i].usesDimension(dim)) {
                 return true;
+            }
         return false;
     }
 

@@ -23,8 +23,7 @@ package mondrian.olap;
 public abstract class Visitor {
     public boolean returnMeasures;
 
-    public void visit(OlapElement element)
-    {
+    public void visit(OlapElement element) {
         element.accept(this);
     }
     public abstract void visit(Cube cube);

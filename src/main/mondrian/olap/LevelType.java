@@ -19,6 +19,7 @@ package mondrian.olap;
  * @version $Id$
  */
 public class LevelType extends EnumeratedValues.BasicValue {
+
     private LevelType(String name, int ordinal) {
         super(name, ordinal, null);
     }

@@ -58,8 +58,8 @@ class CrossJoinFunDef extends FunDefBase {
         }
 
         boolean neitherSideIsTuple = true;
-        int arity0 = 1,
-            arity1 = 1;
+        int arity0 = 1;
+        int arity1 = 1;
         if (set0.get(0) instanceof Member[]) {
             arity0 = ((Member[]) set0.get(0)).length;
             neitherSideIsTuple = false;
@@ -126,8 +126,9 @@ class CrossJoinFunDef extends FunDefBase {
     }
 
     protected static List nonEmptyList(Evaluator evaluator, List list) {
-        if (list.isEmpty())
+        if (list.isEmpty()) {
             return list;
+        }
         List result = new ArrayList();
         evaluator = evaluator.push();
         if (list.get(0) instanceof Member[]) {
@@ -135,16 +136,18 @@ class CrossJoinFunDef extends FunDefBase {
                 Member[] m = (Member[]) it.next();
                 evaluator.setContext(m);
                 Object value = evaluator.evaluateCurrent();
-                if (value != Util.nullValue && !(value instanceof Throwable))
+                if (value != Util.nullValue && !(value instanceof Throwable)) {
                     result.add(m);
+                }
             }
         } else {
             for (Iterator it = list.iterator(); it.hasNext();) {
                 Member m = (Member) it.next();
                 evaluator.setContext(m);
                 Object value = evaluator.evaluateCurrent();
-                if (value != Util.nullValue && !(value instanceof Throwable))
+                if (value != Util.nullValue && !(value instanceof Throwable)) {
                     result.add(m);
+                }
             }
         }
         return result;

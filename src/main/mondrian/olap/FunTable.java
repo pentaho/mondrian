@@ -25,12 +25,6 @@ import java.util.Collections;
  * mondrian.olap.fun.BuiltinFunTable}.
  **/
 public abstract class FunTable {
-    /** the singleton **/
-    private static FunTable instance;
-    /** used during initialization **/
-    protected List resolvers;
-    protected List funInfoList;
-
 
     /** Returns (creating if necessary) the singleton. **/
     public static FunTable instance() {
@@ -39,9 +33,18 @@ public abstract class FunTable {
         }
         return instance;
     }
+    /** the singleton **/
+    private static FunTable instance;
+
+
+    /** used during initialization **/
+    protected List resolvers;
+    protected final List funInfoList;
+
 
     protected FunTable() {
         this.funInfoList = new ArrayList();
+        this.resolvers = new ArrayList();
     }
 
     /**
@@ -76,8 +79,9 @@ public abstract class FunTable {
      * Returns whether the <code>k</code>th argument to a function call
      * has to be an expression.
      */
-    public abstract boolean requiresExpression(FunCall funCall, int k,
-            Exp.Resolver resolver);
+    public abstract boolean requiresExpression(FunCall funCall, 
+                                               int k,
+                                               Exp.Resolver resolver);
 
     public List getFunInfoList() {
         return Collections.unmodifiableList(this.funInfoList);

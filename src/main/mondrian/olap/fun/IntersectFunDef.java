@@ -36,11 +36,10 @@ class IntersectFunDef extends FunDefBase
         Collection right = (List) getArg(evaluator, args, 1);
         if (right == null) {
             right = Collections.EMPTY_LIST;
-        }
-        else {
+        } else {
             right = buildSearchableCollection(right);
         }
-        ArrayList result = new ArrayList();
+        List result = new ArrayList();
 
         for (Iterator i = left.iterator(); i.hasNext();) {
             Object leftObject = i.next();
@@ -61,7 +60,7 @@ class IntersectFunDef extends FunDefBase
 
     private static Collection buildSearchableCollection(Collection right) {
         Iterator iter = right.iterator();
-        HashSet result = new HashSet(right.size(), 1);
+        Set result = new HashSet(right.size(), 1);
         while (iter.hasNext()) {
             Object element = iter.next();
 

@@ -16,21 +16,22 @@ import mondrian.olap.Member;
  * whether or not elements of different types within a set are equal.
  */
 public class MemberHelper {
-    private Object mObject;
+    private final Object mObject;
     public MemberHelper(Object entry) {
-        if (entry == null || entry instanceof Member || entry instanceof Member[]) {
+        if ((entry == null) || 
+            (entry instanceof Member) || 
+            (entry instanceof Member[])) {
+
             mObject = entry;
-        }
-        else {
+        } else {
             throw new IllegalArgumentException("Expected Member or Member[]");
         }
     }
 
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof MemberHelper)) {
+        if ((obj == null) || !(obj instanceof MemberHelper)) {
             return false;
-        }
-        else if (this == obj) {
+        } else if (this == obj) {
             return true;
         }
 
@@ -38,11 +39,11 @@ public class MemberHelper {
 
         if (this.mObject == null) {
             return mh.mObject == null;
-        }
-        else if (mh.mObject instanceof Member && mObject instanceof Member) {
+        } else if (mh.mObject instanceof Member && mObject instanceof Member) {
             return ((Member)mObject).equals(mh.mObject);
-        }
-        else if (mh.mObject instanceof Member[] && mObject instanceof Member[]) {
+        } else if (mh.mObject instanceof Member[] && 
+            mObject instanceof Member[]) {
+
             Member[] array1 = (Member[])mh.mObject;
             Member[] array2 = (Member[])this.mObject;
 
@@ -57,8 +58,7 @@ public class MemberHelper {
             }
 
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
@@ -66,8 +66,7 @@ public class MemberHelper {
     public int hashCode() {
         if (mObject instanceof Member) {
             return mObject.hashCode();
-        }
-        else if (mObject instanceof Member[]) {
+        } else if (mObject instanceof Member[]) {
             int hash = 0;
 
             Member[] array = (Member[]) mObject;
@@ -77,8 +76,7 @@ public class MemberHelper {
             }
 
             return hash;
-        }
-        else {
+        } else {
             return mObject.hashCode();
         }
     }

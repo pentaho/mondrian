@@ -24,7 +24,7 @@ import mondrian.olap.FunDef;
  * @version $Id$
  **/
 class FunkResolver extends MultiResolver {
-    Funk funk;
+    private final Funk funk;
 
     FunkResolver(
             String name, String signature, String description,
@@ -37,6 +37,10 @@ class FunkResolver extends MultiResolver {
 //      super.addTests(suite, pattern);
 //      funk.addTests(suite, pattern);
 //  }
+
+    Funk getFunk() {
+        return funk;
+    }
 
     protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
         return new FunDefBase(this, dummyFunDef.getReturnType(),

@@ -16,33 +16,28 @@ import java.io.PrintWriter;
 /**
  * Component of an MDX query (derived classes include Query, Axis, Exp, Level).
  **/
-public abstract class QueryPart implements Walkable
-{
+public abstract class QueryPart implements Walkable {
     QueryPart() {
     }
 
-    public void unparse(PrintWriter pw)
-    {
+    public void unparse(PrintWriter pw) {
         pw.print(toString());
     }
 
     /** Replace the <code>ordinal</code>th child (as it appeared in the array
      * returned from <code>getChildren()</code>) with <code>with</code>. */
-    public void replaceChild(int ordinal, QueryPart with)
-    {
+    public void replaceChild(int ordinal, QueryPart with) {
         // By default, a QueryPart is atomic (has no children).
         throw new Error("unsupported");
     }
 
     // implement Walkable
-    public Object[] getChildren()
-    {
+    public Object[] getChildren() {
         // By default, a QueryPart is atomic (has no children).
         return null;
     }
 
-    protected Object[] getAllowedChildren( CubeAccess cubeAccess )
-    {
+    protected Object[] getAllowedChildren(CubeAccess cubeAccess) {
         // By default, a QueryPart is atomic (has no children).
         return null;
     }

@@ -17,8 +17,7 @@ import java.io.PrintWriter;
  * An <code>OlapElement</code> is a catalog object (dimension, hierarchy, level,
  * member).  It is also a node in a parse tree.
  **/
-public interface OlapElement extends Exp
-{
+public interface OlapElement extends Exp {
     String getUniqueName();
     String getName();
     String getDescription();

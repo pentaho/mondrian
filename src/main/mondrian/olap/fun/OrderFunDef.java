@@ -16,13 +16,11 @@ import java.util.List;
 /**
  * Definition of the <code>ORDER</code> MDX function.
  */
-class OrderFunDef extends FunDefBase
-{
+class OrderFunDef extends FunDefBase {
     private final boolean desc;
     private final boolean brk;
 
-    public OrderFunDef(FunDef dummyFunDef, boolean desc, boolean brk)
-    {
+    public OrderFunDef(FunDef dummyFunDef, boolean desc, boolean brk) {
         super(dummyFunDef);
         this.desc = desc;
         this.brk = brk;
@@ -38,10 +36,8 @@ class OrderFunDef extends FunDefBase
     /**
      * Resolves calls to the <code>ORDER</code> MDX function.
      */
-    static class OrderResolver extends MultiResolver
-    {
-        public OrderResolver()
-        {
+    static class OrderResolver extends MultiResolver {
+        public OrderResolver() {
             super("Order",
                 "Order(<Set>, <Value Expression>[, ASC | DESC | BASC | BDESC])",
                 "Arranges members of a set, optionally preserving or breaking the hierarchy.",

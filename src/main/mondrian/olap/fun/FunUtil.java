@@ -41,33 +41,39 @@ public class FunUtil extends Util {
     }
 
     static Exp getArgNoEval(Exp[] args, int index, Exp defaultValue) {
-        if (index >= args.length)
-            return defaultValue;
-        return args[index];
+        return (index >= args.length)
+            ? defaultValue
+            : args[index];
     }
 
     static Object getArg(Evaluator evaluator, Exp[] args, int index) {
         return getArg(evaluator, args, index, null);
     }
 
-    static Object getArg(
-            Evaluator evaluator, Exp[] args, int index, Object defaultValue) {
-        if (index >= args.length) {
-            return defaultValue;
-        }
-        Exp exp = args[index];
-        return exp.evaluate(evaluator);
+    static Object getArg(Evaluator evaluator, 
+                         Exp[] args, 
+                         int index, 
+                         Object defaultValue) {
+        return (index >= args.length)
+            ? defaultValue
+            : args[index].evaluate(evaluator);
     }
 
-    static String getStringArg(
-            Evaluator evaluator, Exp[] args, int index, String defaultValue) {
+    static String getStringArg(Evaluator evaluator, 
+                               Exp[] args, 
+                               int index, 
+                               String defaultValue) {
         return (String) getArg(evaluator, args, index, defaultValue);
     }
 
     /** Returns an argument whose value is a literal. Unlike the other
      * <code>get<i>Xxx</i>Arg</code> methods, an evalutor is not required,
      * and hence this can be called at resolve-time. */
-    static String getLiteralArg(Exp[] args, int i, String defaultValue, String[] allowedValues, FunDef funDef) {
+    static String getLiteralArg(Exp[] args, 
+                                int i, 
+                                String defaultValue, 
+                                String[] allowedValues, 
+                                FunDef funDef) {
         if (i >= args.length) {
             if (defaultValue == null) {
                 throw newEvalException(funDef, "Required argument is missing");
@@ -81,7 +87,7 @@ public class FunUtil extends Util {
             throw newEvalException(funDef, "Expected a symbol, found '" + arg + "'");
         }
         String s = (String) ((Literal) arg).getValue();
-        StringBuffer sb = new StringBuffer();
+        StringBuffer sb = new StringBuffer(64);
         for (int j = 0; j < allowedValues.length; j++) {
             String allowedValue = allowedValues[j];
             if (allowedValue.equalsIgnoreCase(s)) {
@@ -97,23 +103,32 @@ public class FunUtil extends Util {
 
     /** Returns the ordinal of a literal argument. If the argument does not
      * belong to the supplied enumeration, returns -1. */
-    static int getLiteralArg(Exp[] args, int i, int defaultValue, EnumeratedValues allowedValues, FunDef funDef) {
-        final String literal = getLiteralArg(args, i, allowedValues.getName(defaultValue), allowedValues.getNames(), funDef);
-        if (literal == null) {
-            return -1;
-        }
-        return allowedValues.getOrdinal(literal);
+    static int getLiteralArg(Exp[] args, 
+                             int i, 
+                             int defaultValue, 
+                             EnumeratedValues allowedValues, 
+                             FunDef funDef) {
+        final String literal = getLiteralArg(args, i, 
+            allowedValues.getName(defaultValue), 
+            allowedValues.getNames(), funDef);
+
+        return (literal == null) 
+            ? -1
+            : allowedValues.getOrdinal(literal);
     }
 
     /**
      * returns defaultValue, if the expression can not be evaluated because
      * some required operands have not been loaded from the database yet.
      */
-    static boolean getBooleanArg(Evaluator evaluator, Exp[] args, int index, boolean defaultValue) {
+    static boolean getBooleanArg(Evaluator evaluator, 
+                                 Exp[] args, 
+                                 int index, 
+                                 boolean defaultValue) {
         Object o = getArg(evaluator, args, index);
-        if (o == null)
-            return defaultValue;
-        return ((Boolean) o).booleanValue();
+        return (o == null)
+            ? defaultValue
+            : ((Boolean) o).booleanValue();
     }
 
     /**
@@ -160,11 +175,16 @@ public class FunUtil extends Util {
 
     private static final Double nullValue = new Double(0);
 
-    protected static Double getDoubleArg(Evaluator evaluator, Exp[] args, int index) {
+    protected static Double getDoubleArg(Evaluator evaluator, 
+                                         Exp[] args, 
+                                         int index) {
         return getDoubleArg(evaluator, args, index, nullValue);
     }
 
-    static Double getDoubleArg(Evaluator evaluator, Exp[] args, int index, Double nullValue) {
+    static Double getDoubleArg(Evaluator evaluator, 
+                               Exp[] args, 
+                               int index, 
+                               Double nullValue) {
         Object o = getScalarArg(evaluator, args, index);
         if (o instanceof Double) {
             return (Double) o;
@@ -179,8 +199,10 @@ public class FunUtil extends Util {
         }
     }
 
-    static Member getMemberArg(
-            Evaluator evaluator, Exp[] args, int index, boolean fail) {
+    static Member getMemberArg(Evaluator evaluator, 
+                               Exp[] args, 
+                               int index, 
+                               boolean fail) {
         if (index >= args.length) {
             if (fail) {
                 throw Util.getRes().newInternal("missing member argument");
@@ -193,8 +215,7 @@ public class FunUtil extends Util {
         if (o instanceof Member) {
             return (Member) o;
         } else if (o instanceof Hierarchy) {
-            return evaluator.getContext(
-                    ((Hierarchy) o).getDimension());
+            return evaluator.getContext(((Hierarchy) o).getDimension());
         } else if (o instanceof Dimension) {
             return evaluator.getContext((Dimension) o);
         } else {
@@ -214,8 +235,9 @@ public class FunUtil extends Util {
      * @return A tuple, represented as usual by an array of {@link Member}
      *   objects.
      */
-    public static Member[] getTupleArg(
-            Evaluator evaluator, Exp[] args, int index) {
+    public static Member[] getTupleArg(Evaluator evaluator, 
+                                       Exp[] args, 
+                                       int index) {
         Exp arg = args[index];
         Object o = arg.evaluate(evaluator);
         return (Member[]) o;
@@ -237,9 +259,9 @@ public class FunUtil extends Util {
      * @throws ArrayIndexOutOfBoundsException if <code>index</code> is out of
      *   range
      */
-    public static Member[] getTupleOrMemberArg(
-        Evaluator evaluator, Exp[] args, int index)
-    {
+    public static Member[] getTupleOrMemberArg(Evaluator evaluator, 
+                                               Exp[] args, 
+                                               int index) {
         Exp arg = args[index];
         Object o0 = arg.evaluate(evaluator);
         if (o0 instanceof Member[]) {
@@ -251,8 +273,10 @@ public class FunUtil extends Util {
         }
     }
 
-    static Level getLevelArg(
-            Evaluator evaluator, Exp[] args, int index, boolean fail) {
+    static Level getLevelArg(Evaluator evaluator, 
+                             Exp[] args, 
+                             int index, 
+                             boolean fail) {
         if (index >= args.length) {
             if (fail) {
                 throw Util.getRes().newInternal("missing level argument");
@@ -265,8 +289,10 @@ public class FunUtil extends Util {
         return (Level) o;
     }
 
-    static Hierarchy getHierarchyArg(
-            Evaluator evaluator, Exp[] args, int index, boolean fail) {
+    static Hierarchy getHierarchyArg(Evaluator evaluator, 
+                                     Exp[] args, 
+                                     int index, 
+                                     boolean fail) {
         if (index >= args.length) {
             if (fail) {
                 throw Util.getRes().newInternal("missing hierarchy argument");
@@ -292,8 +318,10 @@ public class FunUtil extends Util {
         }
     }
 
-    static Dimension getDimensionArg(
-            Evaluator evaluator, Exp[] args, int index, boolean fail) {
+    static Dimension getDimensionArg(Evaluator evaluator, 
+                                     Exp[] args, 
+                                     int index, 
+                                     boolean fail) {
         if (index >= args.length) {
             if (fail) {
                 throw Util.getRes().newInternal("missing dimension argument");
@@ -349,15 +377,15 @@ public class FunUtil extends Util {
      * @return <code>true</code> if the correct bits in <code>mask</code> are set.
      */
     static boolean checkFlag(int value, int mask, boolean strict) {
-        if (strict) {
-            return (value & mask) == mask;
-        } else {
-            return (value & mask) != 0;
-        }
+        return (strict)
+            ? ((value & mask) == mask)
+            : ((value & mask) != 0);
     }
 
-    /** Adds every element of <code>right</code> which is not in <code>set</code>
-     * to both <code>set</code> and <code>left</code>. **/
+    /** 
+     * Adds every element of <code>right</code> which is not in <code>set</code>
+     * to both <code>set</code> and <code>left</code>. 
+     **/
     static void addUnique(List left, List right, Set set) {
         if (right == null) {
             return;
@@ -374,15 +402,20 @@ public class FunUtil extends Util {
         }
     }
 
-    static List addMembers(SchemaReader schemaReader, List members, Hierarchy hierarchy) {
-        Level[] levels = schemaReader.getHierarchyLevels(hierarchy); // only accessible levels
+    static List addMembers(SchemaReader schemaReader, 
+                           List members, 
+                           Hierarchy hierarchy) {
+        // only accessible levels
+        Level[] levels = schemaReader.getHierarchyLevels(hierarchy); 
         for (int i = 0; i < levels.length; i++) {
             addMembers(schemaReader, members, levels[i]);
         }
         return members;
     }
 
-    static List addMembers(SchemaReader schemaReader, List members, Level level) {
+    static List addMembers(SchemaReader schemaReader, 
+                           List members, 
+                           Level level) {
         Member[] levelMembers = schemaReader.getLevelMembers(level);
         addAll(members, levelMembers);
         return members;
@@ -412,21 +445,24 @@ public class FunUtil extends Util {
     /**
      * @pre exp != null
      */
-    static HashMap evaluateMembers(
-            Evaluator evaluator, ExpBase exp, List members, boolean parentsToo) {
+    static Map evaluateMembers(Evaluator evaluator, 
+                               ExpBase exp, 
+                               List members, 
+                               boolean parentsToo) {
         Member[] constantTuple = exp.isConstantTuple();
-        if (constantTuple == null) {
-            return _evaluateMembers(evaluator.push(), exp, members, parentsToo);
-        } else {
+        return (constantTuple == null)
+            ? _evaluateMembers(evaluator.push(), exp, members, parentsToo)
             // exp is constant -- add it to the context before the loop, rather
             // than at every step
-            return evaluateMembers(evaluator.push(constantTuple), members, parentsToo);
-        }
+            : evaluateMembers(evaluator.push(constantTuple), 
+                members, parentsToo);
     }
 
-    private static HashMap _evaluateMembers(
-            Evaluator evaluator, ExpBase exp, List members, boolean parentsToo) {
-        HashMap mapMemberToValue = new HashMap();
+    private static Map _evaluateMembers(Evaluator evaluator, 
+                                        ExpBase exp, 
+                                        List members, 
+                                        boolean parentsToo) {
+        Map mapMemberToValue = new HashMap();
         for (int i = 0, count = members.size(); i < count; i++) {
             Member member = (Member) members.get(i);
             while (true) {
@@ -448,8 +484,10 @@ public class FunUtil extends Util {
         return mapMemberToValue;
     }
 
-    static HashMap evaluateMembers(Evaluator evaluator, List members, boolean parentsToo) {
-        HashMap mapMemberToValue = new HashMap();
+    static Map evaluateMembers(Evaluator evaluator, 
+                               List members, 
+                               boolean parentsToo) {
+        Map mapMemberToValue = new HashMap();
         for (int i = 0, count = members.size(); i < count; i++) {
             Member member = (Member) members.get(i);
             while (true) {
@@ -471,9 +509,10 @@ public class FunUtil extends Util {
         return mapMemberToValue;
     }
 
-    static void sort(
-            Evaluator evaluator, List members, ExpBase exp, boolean desc,
-            boolean brk) {
+    static void sort(Evaluator evaluator, 
+                     List members, 
+                     ExpBase exp, 
+                     boolean desc, boolean brk) {
         if (members.isEmpty()) {
             return;
         }
@@ -481,7 +520,7 @@ public class FunUtil extends Util {
         Comparator comparator;
         if (first instanceof Member) {
             final boolean parentsToo = !brk;
-            HashMap mapMemberToValue = evaluateMembers(evaluator, exp, members, parentsToo);
+            Map mapMemberToValue = evaluateMembers(evaluator, exp, members, parentsToo);
             if (brk) {
                 comparator = new BreakMemberComparator(mapMemberToValue, desc);
             } else {
@@ -519,21 +558,27 @@ public class FunUtil extends Util {
     }
 
     static int sign(double d) {
-        return d == 0 ? 0 :
-                d < 0 ? -1 :
-                1;
+        return (d == 0) 
+            ? 0 
+            : (d < 0) 
+                ? -1 
+                : 1;
     }
 
     static int compareValues(double d1, double d2) {
-        return d1 == d2 ? 0 :
-                d1 < d2 ? -1 :
-                1;
+        return (d1 == d2) 
+            ? 0 
+            : (d1 < d2) 
+                ? -1 
+                : 1;
     }
 
     static int compareValues(int i, int j) {
-        return i == j ? 0 :
-                i < j ? -1 :
-                1;
+        return (i == j) 
+            ? 0 
+            : (i < j) 
+                ? -1 
+                : 1;
     }
 
     static int compareValues(Object value0, Object value1) {
@@ -571,7 +616,7 @@ public class FunUtil extends Util {
      * use by the general topOrBottom function. This might also be a useful
      * function in itself.
      */
-    static void toPercent(List members, HashMap mapMemberToValue) {
+    static void toPercent(List members, Map mapMemberToValue) {
         double total = 0;
         int numMembers = members.size();
         for (int i = 0; i < numMembers; i++) {
@@ -598,10 +643,13 @@ public class FunUtil extends Util {
      * evaluating members, sorting appropriately, and returning a
      * truncated list of members
      */
-    static Object topOrBottom(Evaluator evaluator, List members, ExpBase exp,
-        boolean isTop, boolean isPercent, double target)
-    {
-        HashMap mapMemberToValue = evaluateMembers(evaluator, exp, members, false);
+    static Object topOrBottom(Evaluator evaluator, 
+                              List members, 
+                              ExpBase exp,
+                              boolean isTop, 
+                              boolean isPercent, 
+                              double target) {
+        Map mapMemberToValue = evaluateMembers(evaluator, exp, members, false);
         Comparator comparator = new BreakMemberComparator(mapMemberToValue, isTop);
         Collections.sort(members, comparator);
         if (isPercent) {
@@ -630,12 +678,10 @@ public class FunUtil extends Util {
         // MSAS exhibits the following behavior. If the value of all members is
         // null, then the first (or last) member of the set is returned for percent
         // operations.
-        if (numMembers > 0 && isPercent && nullCount == numMembers) {
-            if (isTop) {
-                return members.subList(0, 1);
-            } else {
-                return members.subList(numMembers - 1, numMembers);
-            }
+        if ((numMembers > 0) && isPercent && (nullCount == numMembers)) {
+            return (isTop)
+                ? members.subList(0, 1)
+                : members.subList(numMembers - 1, numMembers);
         }
         return members;
     }
@@ -792,7 +838,7 @@ public class FunUtil extends Util {
     }
 
     static class SetWrapper {
-        ArrayList v = new ArrayList();
+        List v = new ArrayList();
         public int errorCount = 0, nullCount = 0;
 
         //private double avg = Double.NaN;
@@ -835,14 +881,11 @@ public class FunUtil extends Util {
          * (entries[length/2 - 1] + entries[length/2]) / 2.
          */
         int length = asArray.length;
-        Double result;
-        if ((length & 1) == 1) {
+        Double result = ((length & 1) == 1)
             // The length is odd. Note that length/2 is an integer expression,
             // and it's positive so we save ourselves a divide...
-            result = new Double(asArray[length >> 1]);
-        } else {
-            result = new Double((asArray[(length >> 1) - 1] + asArray[length >> 1]) / 2.0);
-        }
+            ? new Double(asArray[length >> 1])
+            : new Double((asArray[(length >> 1) - 1] + asArray[length >> 1]) / 2.0);
 
         return result;
     }
@@ -858,28 +901,32 @@ public class FunUtil extends Util {
      *
      * @pre range >= 1 && range <= 3
      */
-    static Object quartile(Evaluator evaluator, List members, ExpBase exp, int range) {
+    static Object quartile(Evaluator evaluator, 
+                           List members, 
+                           ExpBase exp, 
+                           int range) {
         Util.assertPrecondition(range >= 1 && range <= 3, "range >= 1 && range <= 3");
+
         SetWrapper sw = evaluateSet(evaluator, members, exp);
         if (sw.errorCount > 0) {
             return new Double(Double.NaN);
         } else if (sw.v.size() == 0) {
             return Util.nullValue;
         }
+
         double[] asArray = new double[sw.v.size()];
         for (int i = 0; i < asArray.length; i++) {
             asArray[i] = ((Double) sw.v.get(i)).doubleValue();
         }
+
         Arrays.sort(asArray);
         // get a quartile, median is a second q
         double dm = (asArray.length * range) / 4;
         int median = (int) Math.floor(dm);
-        if (dm == median && median < asArray.length - 1) {
+        return ((dm == median) && (median < asArray.length - 1))
             //have more elements
-            return new Double((asArray[median] + asArray[median+1])/2);
-        } else {
-            return new Double(asArray[median]);
-        }
+            ? new Double((asArray[median] + asArray[median+1])/2)
+            : new Double(asArray[median]);
     }
 
     public static Object min(Evaluator evaluator, List members, Exp exp) {
@@ -892,7 +939,9 @@ public class FunUtil extends Util {
             double min = Double.MAX_VALUE;
             for (int i = 0; i < sw.v.size(); i++) {
                 double iValue = ((Double) sw.v.get(i)).doubleValue();
-                if (iValue < min) { min = iValue; }
+                if (iValue < min) { 
+                    min = iValue; 
+                }
             }
             return new Double(min);
         }
@@ -908,13 +957,18 @@ public class FunUtil extends Util {
             double max = Double.MIN_VALUE;
             for (int i = 0; i < sw.v.size(); i++) {
                 double iValue = ((Double) sw.v.get(i)).doubleValue();
-                if (iValue > max) { max = iValue; }
+                if (iValue > max) { 
+                    max = iValue; 
+                }
             }
             return new Double(max);
         }
     }
 
-    static Object var(Evaluator evaluator, List members, ExpBase exp, boolean biased) {
+    static Object var(Evaluator evaluator, 
+                      List members, 
+                      ExpBase exp, 
+                      boolean biased) {
         SetWrapper sw = evaluateSet(evaluator, members, exp);
         return _var(sw, biased);
     }
@@ -938,7 +992,10 @@ public class FunUtil extends Util {
         }
     }
 
-    static Object correlation(Evaluator evaluator, List members, ExpBase exp1, ExpBase exp2) {
+    static Object correlation(Evaluator evaluator, 
+                              List members, 
+                              ExpBase exp1, 
+                              ExpBase exp2) {
         SetWrapper sw1 = evaluateSet(evaluator, members, exp1);
         SetWrapper sw2 = evaluateSet(evaluator, members, exp2);
         Object covar = _covariance(sw1, sw2, false);
@@ -964,7 +1021,9 @@ public class FunUtil extends Util {
     }
 
 
-    private static Object _covariance(SetWrapper sw1, SetWrapper sw2, boolean biased) {
+    private static Object _covariance(SetWrapper sw1, 
+                                      SetWrapper sw2, 
+                                      boolean biased) {
         if (sw1.v.size() != sw2.v.size()) {
             return Util.nullValue;
         }
@@ -972,34 +1031,36 @@ public class FunUtil extends Util {
         double avg2 = _avg(sw2);
         double covar = 0.0;
         for (int i = 0; i < sw1.v.size(); i++) {
-            //all of this casting seems inefficient - can we make SetWrapper contain an array of double instead?
+            //all of this casting seems inefficient - can we make SetWrapper
+            //contain an array of double instead?
             double diff1 = (((Double) sw1.v.get(i)).doubleValue() - avg1);
             double diff2 = (((Double) sw2.v.get(i)).doubleValue() - avg2);
             covar += (diff1 * diff2);
         }
         int n = sw1.v.size();
-        if (!biased) { n--; }
+        if (!biased) { 
+            n--; 
+        }
         return new Double(covar / (double) n);
     }
 
-    static Object stdev(Evaluator evaluator, List members, ExpBase exp, boolean biased) {
+    static Object stdev(Evaluator evaluator, 
+                        List members, 
+                        ExpBase exp, 
+                        boolean biased) {
         Object o = var(evaluator, members, exp, biased);
-        if (o instanceof Double) {
-            return new Double(Math.sqrt(((Double) o).doubleValue()));
-        } else {
-            return o;
-        }
+        return (o instanceof Double)
+            ? new Double(Math.sqrt(((Double) o).doubleValue()))
+            : o;
     }
 
     public static Object avg(Evaluator evaluator, List members, Exp exp) {
         SetWrapper sw = evaluateSet(evaluator, members, (ExpBase) exp);
-        if (sw.errorCount > 0) {
-            return new Double(Double.NaN);
-        } else if (sw.v.size() == 0) {
-            return Util.nullValue;
-        } else {
-            return new Double(_avg(sw));
-        }
+        return (sw.errorCount > 0) 
+            ? new Double(Double.NaN)
+            : (sw.v.size() == 0)
+                ? Util.nullValue
+                : new Double(_avg(sw));
     }
 
     //todo: parameterize inclusion of nulls
@@ -1032,7 +1093,9 @@ public class FunUtil extends Util {
         }
     }
 
-    public static Object count(Evaluator evaluator, List members, boolean includeEmpty) {
+    public static Object count(Evaluator evaluator, 
+                               List members, 
+                               boolean includeEmpty) {
         if (includeEmpty) {
             return new Double(members.size());
         } else {
@@ -1061,8 +1124,11 @@ public class FunUtil extends Util {
      *
      * @pre exp != null
      */
-    static SetWrapper evaluateSet(Evaluator evaluator, List members, ExpBase exp) {
+    static SetWrapper evaluateSet(Evaluator evaluator, 
+                                  List members, 
+                                  ExpBase exp) {
         Util.assertPrecondition(exp != null, "exp != null");
+
         // todo: treat constant exps as evaluateMembers() does
         SetWrapper retval = new SetWrapper();
         for (Iterator it = members.iterator(); it.hasNext();) {
@@ -1112,6 +1178,7 @@ public class FunUtil extends Util {
                                     List members, 
                                     ExpBase[] exps) {
         Util.assertPrecondition(exps != null, "exps != null");
+
         // todo: treat constant exps as evaluateMembers() does
         SetWrapper[] retvals = new SetWrapper[exps.length];
         for (int i = 0; i < exps.length; i++) {
@@ -1150,11 +1217,11 @@ public class FunUtil extends Util {
         return retvals;
     }
 
-    static List periodsToDate(
-            Evaluator evaluator, Level level, Member member) {
+    static List periodsToDate(Evaluator evaluator, 
+                              Level level, 
+                              Member member) {
         if (member == null) {
-            member = evaluator.getContext(
-                    level.getHierarchy().getDimension());
+            member = evaluator.getContext(level.getHierarchy().getDimension());
         }
         Member m = member;
         while (m != null) {
@@ -1166,7 +1233,7 @@ public class FunUtil extends Util {
         // If m == null, then "level" was lower than member's level.
         // periodsToDate( [Time].[Quarter], [Time].[1997] is valid,
         //  but will return an empty List
-        ArrayList members = new ArrayList();
+        List members = new ArrayList();
         if (m != null) {
             // e.g. m is [Time].[1997] and member is [Time].[1997].[Q1].[3]
             // we now have to make m to be the first member of the range,
@@ -1178,22 +1245,27 @@ public class FunUtil extends Util {
         return members;
     }
 
-    static List memberRange(Evaluator evaluator, Member startMember, Member endMember) {
+    static List memberRange(Evaluator evaluator, 
+                            Member startMember, 
+                            Member endMember) {
         final Level level = startMember.getLevel();
         assertTrue(level == endMember.getLevel());
-        ArrayList members = new ArrayList();
-        evaluator.getSchemaReader().getMemberRange(level, startMember, endMember, members);
+        List members = new ArrayList();
+        evaluator.getSchemaReader().getMemberRange(level, 
+            startMember, endMember, members);
+
         if (members.isEmpty()) {
             // The result is empty, so maybe the members are reversed. This is
             // cheaper than comparing the members before we call getMemberRange.
-            evaluator.getSchemaReader().getMemberRange(level, endMember, startMember, members);
+            evaluator.getSchemaReader().getMemberRange(level, 
+                endMember, startMember, members);
         }
         return members;
     }
 
     /**
-     * Returns the member under ancestorMember having the same relative position under
-     * member's parent.
+     * Returns the member under ancestorMember having the same relative position
+     * under member's parent.
      * <p>For exmaple, cousin([Feb 2001], [Q3 2001]) is [August 2001].
      * @param schemaReader The reader to use
      * @param member The member for which we'll find the cousin.
@@ -1201,7 +1273,9 @@ public class FunUtil extends Util {
      * @return The child of <code>ancestorMember</code> in the same position under
      * <code>ancestorMember</code> as <code>member</code> is under its parent.
      */
-    static Member cousin(SchemaReader schemaReader, Member member, Member ancestorMember) {
+    static Member cousin(SchemaReader schemaReader, 
+                         Member member, 
+                         Member ancestorMember) {
         if (ancestorMember.isNull()) {
             return ancestorMember;
         }
@@ -1221,7 +1295,9 @@ public class FunUtil extends Util {
         return cousin;
     }
 
-    static private Member cousin2(SchemaReader schemaReader, Member member1, Member member2) {
+    static private Member cousin2(SchemaReader schemaReader, 
+                                  Member member1, 
+                                  Member member2) {
         if (member1.getLevel() == member2.getLevel()) {
             return member2;
         }
@@ -1256,9 +1332,14 @@ public class FunUtil extends Util {
      * @return The ancestor member, or <code>null</code> if no such
      * ancestor exists.
      */
-    static Member ancestor(Evaluator evaluator, Member member, int distance, Level targetLevel) {
-        if (targetLevel != null && member.getHierarchy() != targetLevel.getHierarchy()) {
-            throw MondrianResource.instance().newMemberNotInLevelHierarchy(member.getUniqueName(), targetLevel.getUniqueName());
+    static Member ancestor(Evaluator evaluator, 
+                           Member member, 
+                           int distance, 
+                           Level targetLevel) {
+        if ((targetLevel != null) && 
+            (member.getHierarchy() != targetLevel.getHierarchy())) {
+            throw MondrianResource.instance().newMemberNotInLevelHierarchy(
+                member.getUniqueName(), targetLevel.getUniqueName());
         }
 
         if (distance == 0) {
@@ -1297,17 +1378,18 @@ public class FunUtil extends Util {
                     distance--;
 
                     //
-                    // Make sure that this ancestor is really on the right targetLevel. If
-                    // a targetLevel was specified and at least one of the ancestors was
-                    // hidden, this this algorithm goes too far up the ancestor
-                    // list. It's not a problem, except that we need to check
-                    // if it's happened and return the hierarchy's null member
-                    // instead.
+                    // Make sure that this ancestor is really on the right
+                    // targetLevel. If a targetLevel was specified and at least
+                    // one of the ancestors was hidden, this this algorithm goes
+                    // too far up the ancestor list. It's not a problem, except
+                    // that we need to check if it's happened and return the
+                    // hierarchy's null member instead.
                     //
                     // For example, consider what happens with
-                    // Ancestor([Store].[Israel].[Haifa], [Store].[Store State]). The
-                    // distance from [Haifa] to [Store State] is 1, but that lands us at
-                    // the country targetLevel, which is clearly wrong.
+                    // Ancestor([Store].[Israel].[Haifa], [Store].[Store State]). 
+                    // The distance from [Haifa] to [Store State] is 1, but that
+                    // lands us at the country targetLevel, which is clearly
+                    // wrong.
                     //
                     if (distance == 0) {
                         if (targetLevel == null || ancestorMember.getLevel() == targetLevel) {
@@ -1339,17 +1421,15 @@ public class FunUtil extends Util {
      *   0 if m1 equals m2,
      *   1 if m1 collates after m2
      */
-    public static int compareHierarchically(
-            Member m1,
-            Member m2,
-            boolean post)
-    {
+    public static int compareHierarchically(Member m1,
+                                            Member m2,
+                                            boolean post) {
         if (equals(m1, m2)) {
             return 0;
         }
         while (true) {
-            int depth1 = m1.getDepth(),
-                    depth2 = m2.getDepth();
+            int depth1 = m1.getDepth();
+            int depth2 = m2.getDepth();
             if (depth1 < depth2) {
                 m2 = m2.getParentMember();
                 if (equals(m1, m2)) {
@@ -1361,7 +1441,8 @@ public class FunUtil extends Util {
                     return post ? -1 : 1;
                 }
             } else {
-                Member prev1 = m1, prev2 = m2;
+                Member prev1 = m1; 
+                Member prev2 = m2;
                 m1 = m1.getParentMember();
                 m2 = m2.getParentMember();
                 if (equals(m1, m2)) {
@@ -1392,6 +1473,12 @@ public class FunUtil extends Util {
     static int compareSiblingMembers(Member m1, Member m2) {
         final int ordinal1 = m1.getOrdinal();
         final int ordinal2 = m2.getOrdinal();
+        return (ordinal1 == ordinal2)
+            ? m1.compareTo(m2)
+            : (ordinal1 < ordinal2)
+                ? -1
+                : 1;
+/*
         if (ordinal1 == ordinal2) {
             ;
         } else if (ordinal1 < ordinal2) {
@@ -1400,6 +1487,7 @@ public class FunUtil extends Util {
             return 1;
         }
         return m1.compareTo(m2);
+*/
     }
 
     /**

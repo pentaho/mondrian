@@ -16,10 +16,7 @@ import java.io.PrintWriter;
 /**
  * Constant (just strings and symbols for now).
  **/
-public class Literal extends ExpBase
-{
-    public int type;
-    private Object o;
+public class Literal extends ExpBase {
 
     public static final Literal emptyString = new Literal("", false);
     public static final Literal zero = new Literal(new Integer(0));
@@ -29,23 +26,16 @@ public class Literal extends ExpBase
     public static final Literal doubleOne = new Literal(new Double(1.0));
     public static final Literal doubleNegativeOne = new Literal(new Double(-1.0));
 
-    private Literal(String s, boolean isSymbol)
-    {
-        this.o = s;
-        this.type = isSymbol ? Category.Symbol : Category.String;
-    }
-
     /**
      * Creates a string literal.
      * @see #createSymbol
      */
     public static Literal createString(String s) {
-        if (s.equals("")) {
-            return emptyString;
-        } else {
-            return new Literal(s, false);
-        }
+        return (s.equals("")) 
+            ? emptyString
+            : new Literal(s, false);
     }
+
     /**
      * Creates a symbol.
      * @see #createString
@@ -53,32 +43,49 @@ public class Literal extends ExpBase
     public static Literal createSymbol(String s) {
         return new Literal(s, true);
     }
-    private Literal(Double d) {
-        this.o = d;
-        this.type = Category.Numeric;
-    }
+
     public static Literal create(Double d) {
-        if (d.doubleValue() == 0.0) {
+        double dv = d.doubleValue();
+        if (dv == 0.0) {
             return doubleZero;
-        } else if (d.doubleValue() == 1.0) {
+        } else if (dv == 1.0) {
             return doubleOne;
+        } else if (dv == -1.0) {
+            return doubleNegativeOne;
         } else {
             return new Literal(d);
         }
     }
+
+    public static Literal create(Integer i) {
+        switch (i.intValue()) {
+        case -1:
+            return negativeOne;
+        case 0:
+            return zero;
+        case 1:
+            return one;
+        default:
+            return new Literal(i);
+        }
+    }
+
+
+    public final int type;
+    private final Object o;
+
+    private Literal(String s, boolean isSymbol) {
+        this.o = s;
+        this.type = isSymbol ? Category.Symbol : Category.String;
+    }
+
+    private Literal(Double d) {
+        this.o = d;
+        this.type = Category.Numeric;
+    }
     private Literal(Integer i) {
         this.o = i;
         this.type = Category.Numeric;
-    }
-
-    public static Literal create(Integer i) {
-        if (i.intValue() == 0) {
-            return zero;
-        } else if (i.intValue() == 1) {
-            return one;
-        } else {
-            return new Literal(i);
-        }
     }
 
     public Object clone() {
@@ -100,8 +107,12 @@ public class Literal extends ExpBase
     }
 
     // from Exp
-    public int getType() { return type; }
-    public Hierarchy getHierarchy() { return null; }
+    public int getType() { 
+        return type; 
+    }
+    public Hierarchy getHierarchy() { 
+        return null; 
+    }
 
     public Exp resolve(Resolver resolver) {
         return this;

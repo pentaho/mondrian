@@ -76,12 +76,11 @@ import java.io.PrintWriter;
  * @version $Id$
  **/
 public class FunDefBase extends FunUtil implements FunDef {
-    protected int flags;
-    private String name;
-    private String description;
-    protected int returnType;
-    protected int[] parameterTypes;
-    boolean isAbstract = false;
+    protected final int flags;
+    private final String name;
+    private final String description;
+    protected final int returnType;
+    protected final int[] parameterTypes;
 
     /**
      * Creates an operator.
@@ -103,9 +102,12 @@ public class FunDefBase extends FunUtil implements FunDef {
      * @param parameterTypes An array of {@link Category} codes, one for
      *   each parameter.
      */
-    FunDefBase(
-            String name, String signature, String description,
-            Syntax syntax, int returnType, int[] parameterTypes) {
+    FunDefBase(String name, 
+               String signature, 
+               String description,
+               Syntax syntax, 
+               int returnType, 
+               int[] parameterTypes) {
         this.name = name;
         Util.discard(signature);
         this.description = description;
@@ -131,8 +133,10 @@ public class FunDefBase extends FunUtil implements FunDef {
      *    {@link Syntax#Property property} syntax (p) which returns a set
      *    (x) and takes a dimension (d) as its argument".
      */
-    protected FunDefBase(
-            String name, String signature, String description, String flags) {
+    protected FunDefBase(String name, 
+                         String signature, 
+                         String description, 
+                         String flags) {
         this(name,
             signature,
             description,
@@ -144,17 +148,24 @@ public class FunDefBase extends FunUtil implements FunDef {
      * Convenience constructor when we are created by a {@link Resolver}.
      **/
     FunDefBase(Resolver resolver, int returnType, int[] parameterTypes) {
-        this(resolver.getName(), null, null, resolver.getSyntax(), returnType,
-                parameterTypes);
+        this(resolver.getName(), 
+             null, 
+             null, 
+             resolver.getSyntax(), 
+             returnType,
+             parameterTypes);
     }
 
     /**
      * Copy constructor.
      */
     FunDefBase(FunDef funDef) {
-        this(funDef.getName(), funDef.getSignature(),
-                funDef.getDescription(), funDef.getSyntax(),
-                funDef.getReturnType(), funDef.getParameterTypes());
+        this(funDef.getName(), 
+             funDef.getSignature(),
+             funDef.getDescription(), 
+             funDef.getSyntax(),
+             funDef.getReturnType(), 
+             funDef.getParameterTypes());
     }
 
     public String getName() {
@@ -174,8 +185,7 @@ public class FunDefBase extends FunUtil implements FunDef {
     }
 
     // implement FunDef
-    public Hierarchy getHierarchy(Exp[] args)
-    {
+    public Hierarchy getHierarchy(Exp[] args) {
         switch (getReturnType()) {
         case Category.Set:
         case Category.Tuple:
@@ -212,9 +222,12 @@ public class FunDefBase extends FunUtil implements FunDef {
      * of the arguments depends on <code>dimension</code>
      */
     public boolean dependsOn(Exp[] args, Dimension dimension) {
-        for (int i = 0; i < args.length; i++)
-            if (args[i] != null && args[i].dependsOn(dimension))
+        for (int i = 0; i < args.length; i++) {
+            Exp exp = args[i];
+            if ((exp != null) && args[i].dependsOn(dimension)) {
                 return true;
+            }
+        }
         return false;
     }
 
@@ -227,9 +240,12 @@ public class FunDefBase extends FunUtil implements FunDef {
      * instead of the default implementation.
      */
     protected boolean dependsOnIntersection(Exp[] args, Dimension dimension) {
-        for (int i = 0; i < args.length; i++)
-            if (args[i] != null && !args[i].dependsOn(dimension))
+        for (int i = 0; i < args.length; i++) {
+            Exp exp = args[i];
+            if ((exp != null) && !exp.dependsOn(dimension)) {
                 return false;
+            }
+        }
         return true;
     }
 }

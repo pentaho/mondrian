@@ -22,13 +22,15 @@ import mondrian.olap.Syntax;
  * @version $Id$
  **/
 abstract class ResolverBase extends FunUtil implements Resolver {
-    final String name;
-    final String signature;
-    final String description;
-    final Syntax syntax;
+    private final String name;
+    private final String signature;
+    private final String description;
+    private final Syntax syntax;
 
-    ResolverBase(String name, String signature, String description,
-            Syntax syntax) {
+    ResolverBase(String name, 
+                 String signature, 
+                 String description,
+                 Syntax syntax) {
         this.name = name;
         this.signature = signature;
         this.description = description;
@@ -37,6 +39,9 @@ abstract class ResolverBase extends FunUtil implements Resolver {
 
     public String getName() {
         return name;
+    }
+    public String getSignature () {
+        return signature;
     }
 
     public String getDescription() {

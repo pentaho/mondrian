@@ -51,58 +51,47 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
     }
 
     // implement OlapElement
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public String getUniqueName()
-    {
+    public String getUniqueName() {
         return name;
     }
 
-    public String getQualifiedName()
-    {
+    public String getQualifiedName() {
         return Util.getRes().getMdxCubeName(getName());
     }
 
-    public Hierarchy getHierarchy()
-    {
+    public Hierarchy getHierarchy() {
         return null;
     }
 
-    public String getDescription()
-    {
+    public String getDescription() {
         return null;
     }
 
-    public Cube getCube()
-    {
+    public Cube getCube() {
         return this;
     }
 
-    public int getType()
-    {
+    public int getType() {
         return Category.Cube;
     }
 
-    public boolean usesDimension(Dimension dimension)
-    {
+    public boolean usesDimension(Dimension dimension) {
         return false;
     }
 
-    public Dimension[] getDimensions()
-    {
+    public Dimension[] getDimensions() {
         return dimensions;
     }
 
-    public Object[] getChildren()
-    {
+    public Object[] getChildren() {
         return dimensions;
     }
 
-    public Hierarchy lookupHierarchy(String s, boolean unique)
-    {
+    public Hierarchy lookupHierarchy(String s, boolean unique) {
         for (int i = 0; i < dimensions.length; i++) {
             Dimension dimension = dimensions[i];
             Hierarchy[] hierarchies = dimension.getHierarchies();
@@ -118,8 +107,7 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
         return null;
     }
 
-    public OlapElement lookupChild(SchemaReader schemaReader, String s)
-    {
+    public OlapElement lookupChild(SchemaReader schemaReader, String s) {
         Dimension mdxDimension = (Dimension)lookupDimension(s);
         if (mdxDimension != null) {
             return mdxDimension;
@@ -145,8 +133,7 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
         return null;
     }
 
-    public OlapElement lookupDimension(String s)
-    {
+    public OlapElement lookupDimension(String s) {
         for (int i = 0; i < dimensions.length; i++) {
             if (dimensions[i].getName().equalsIgnoreCase(s)) {
                 return dimensions[i];
@@ -155,8 +142,7 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
         return null;
     }
 
-    protected Object[] getAllowedChildren(CubeAccess cubeAccess)
-    {
+    protected Object[] getAllowedChildren(CubeAccess cubeAccess) {
         // cubeAccess sets permissions on hierarchies and members only
         return getChildren();
     }
@@ -183,40 +169,33 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
         return null;
     }
 
-    public Level getYearLevel()
-    {
+    public Level getYearLevel() {
         return getTimeLevel(LevelType.TimeYears);
     }
 
-    public Level getQuarterLevel()
-    {
+    public Level getQuarterLevel() {
         return getTimeLevel(LevelType.TimeQuarters);
     }
 
-    public Level getMonthLevel()
-    {
+    public Level getMonthLevel() {
         return getTimeLevel(LevelType.TimeMonths);
     }
 
-    public Level getWeekLevel()
-    {
+    public Level getWeekLevel() {
         return getTimeLevel(LevelType.TimeWeeks);
     }
 
-    public void accept(Visitor visitor)
-    {
+    public void accept(Visitor visitor) {
         visitor.visit(this);
     }
 
-    public void childrenAccept(Visitor visitor)
-    {
+    public void childrenAccept(Visitor visitor) {
         for (int i = 0; i < dimensions.length; i++) {
             dimensions[i].accept(visitor);
         }
     }
 
-    public boolean dependsOn(Dimension dimension)
-    {
+    public boolean dependsOn(Dimension dimension) {
         throw new UnsupportedOperationException();
     }
 }

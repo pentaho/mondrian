@@ -16,28 +16,41 @@ import java.io.PrintWriter;
 /**
  * A <code>FunCall</code> is a function applied to a list of operands.
  **/
-public class FunCall extends ExpBase
-{
+public class FunCall extends ExpBase {
     /** Name of the function. **/
-    private String fun;
-    /** The arguments to the function call.  Note that for methods, 0-th arg is
-     * 'this'. **/
+    private final String fun;
+
+    /** 
+     * The arguments to the function call.  Note that for methods, 0-th arg is
+     * 'this'. 
+     *
+     *
+     * NOTE: This must be public because JPivoi directly accesses this instance
+     * variable.
+     * Currently, the JPivoi usages are:
+     * = f.args[0]
+     * f.args.length
+     *
+     * This usage is deprecated: please use the args's getter methods:
+     *   public Exp[] getArgs()
+     */
     public Exp[] args;
+
     /** Definition, set after resolve. **/
     private FunDef funDef;
 
     /** As {@link FunDef#getSyntax}. **/
-    private Syntax syntax;
+    private final Syntax syntax;
 
     public FunCall(String fun, Exp[] args) {
         this(fun, Syntax.Function, args);
     }
 
-    public FunCall(String fun, Syntax syntax, Exp[] args)
-    {
+    public FunCall(String fun, Syntax syntax, Exp[] args) {
         this.fun = fun;
         this.args = args;
         this.syntax = syntax;
+
         if (syntax == Syntax.Braces) {
             Util.assertTrue(fun.equals("{}"));
         } else if (syntax == Syntax.Parentheses) {
@@ -59,11 +72,52 @@ public class FunCall extends ExpBase
     public Object clone() {
         return new FunCall(fun, syntax, ExpBase.cloneArray(args));
     }
+    
+    /** 
+     * Get the function name. 
+     * 
+     * @return function name.
+     */
     public String getFunName() {
         return fun;
     }
+    /** 
+     * Get the Syntax. 
+     * 
+     * @return the Syntax.
+     */
     public Syntax getSyntax() {
         return syntax;
+    }
+    
+    /** 
+     * Returns the Exp argument at the specified index. 
+     * 
+     * @param      index   the index of the Exp.
+     * @return     the Exp at the specified index of this array of Exp.
+     *             The first Exp is at index <code>0</code>.
+     */
+    public Exp getArg(int index) {
+        return args[index];
+    }
+    
+    /** 
+     * Return the internal array of Exp arguments. 
+     * Note: this does NOT do a copy. 
+     * 
+     * @return the array of Exps.
+     */
+    public Exp[] getArgs() {
+        return args;
+    }
+    
+    /** 
+     * Returns the number of Exps in the argument array. 
+     * 
+     * @return number of arguments.
+     */
+    public int getArgLength() {
+        return args.length;
     }
     public final boolean isCallTo(String funName) {
         return fun.equalsIgnoreCase(funName);
@@ -154,8 +208,7 @@ public class FunCall extends ExpBase
         return this;
     }
 
-    public void unparse(PrintWriter pw)
-    {
+    public void unparse(PrintWriter pw) {
         funDef.unparse(args, pw);
     }
 
@@ -163,8 +216,7 @@ public class FunCall extends ExpBase
      * See {@link ExpBase#addAtPosition} for description (although this
      * refinement does most of the work).
      **/
-    public int addAtPosition(Exp e, int iPosition)
-    {
+    public int addAtPosition(Exp e, int iPosition) {
         if (isCallToCrossJoin()) {
             Exp left = args[0], right = args[1];
             int nLeft = left.addAtPosition(e, iPosition),
@@ -187,10 +239,9 @@ public class FunCall extends ExpBase
                     "left tree had enough dimensions, yet still failed to " +
                     "place expression");
                 nRight = right.addAtPosition(e, iPosition - nLeft);
-                if (nRight == -1)
-                    return -1; // added successfully
-                else
-                    return nLeft + nRight; // not added
+                return (nRight == -1)
+                    ? -1 // added successfully
+                    : nLeft + nRight; // not added
             }
         } else if( isCallToTuple() ){
             // For all functions besides CrossJoin, the dimensionality is
@@ -224,13 +275,13 @@ public class FunCall extends ExpBase
             args = newArgs;
             return -1;
         } else {
-            if (getSyntax() == Syntax.Braces &&
-                args[0] instanceof FunCall &&
+            if ((getSyntax() == Syntax.Braces) &&
+                (args[0] instanceof FunCall) &&
                 ((FunCall)args[0]).isCallToTuple()){
                 // DO not add to the tuple, return -1 to create new CrossJoin
                 return 1;
             }
-            return args[0].addAtPosition( e, iPosition );
+            return args[0].addAtPosition(e, iPosition);
         }
     }
 

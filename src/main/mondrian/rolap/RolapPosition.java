@@ -16,11 +16,12 @@ import mondrian.rolap.agg.CellRequest;
 
 import java.util.*;
 
-class RolapPosition extends Position
-{
+class RolapPosition extends Position {
+    RolapPosition(Member[] members) {
+        super(members);
+    }
     // override Object
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
         if (o instanceof RolapPosition) {
             RolapPosition other = (RolapPosition) o;
             if (other.members.length == this.members.length) {
@@ -35,8 +36,7 @@ class RolapPosition extends Position
         return false;
     }
     // override Object
-    public int hashCode()
-    {
+    public int hashCode() {
         int h = 0;
         for (int i = 0; i < members.length; i++) {
             h = (h << 4) ^ members[i].hashCode();

@@ -6,9 +6,12 @@ import mondrian.olap.*;
  * Defines the <code>PROPERTIES</code> MDX function.
  */
 class PropertiesFunDef extends FunDefBase {
-    public PropertiesFunDef(
-            String name, String signature, String description,
-            Syntax syntax, int returnType, int[] parameterTypes) {
+    public PropertiesFunDef(String name, 
+                            String signature, 
+                            String description,
+                            Syntax syntax, 
+                            int returnType, 
+                            int[] parameterTypes) {
         super(name, signature, description, syntax, returnType, parameterTypes);
     }
 
@@ -37,8 +40,7 @@ class PropertiesFunDef extends FunDefBase {
      * Finds a member property called <code>propertyName</code> at, or above,
      * <code>level</code>.
      */
-    private static Property lookupProperty(
-            Level level, String propertyName) {
+    private static Property lookupProperty(Level level, String propertyName) {
         do {
             Property[] properties = level.getProperties();
             for (int i = 0; i < properties.length; i++) {
@@ -55,19 +57,19 @@ class PropertiesFunDef extends FunDefBase {
     /**
      * Resolves calls to the <code>PROPERTIES</code> MDX function.
      */
-    static class Resolver extends ResolverBase
-    {
-        Resolver()
-        {
-            super("Properties", "<Member>.Properties(<String Expression>)",
-                "Returns the value of a member property.", Syntax.Method);
+    static class Resolver extends ResolverBase {
+        Resolver() {
+            super("Properties", 
+                  "<Member>.Properties(<String Expression>)",
+                  "Returns the value of a member property.", 
+                  Syntax.Method);
         }
 
         public FunDef resolve(Exp[] args, int[] conversionCount) {
             final int[] argTypes = new int[]{Category.Member, Category.String};
-            if (args.length != 2 ||
-                    args[0].getType() != Category.Member ||
-                    args[1].getType() != Category.String) {
+            if ((args.length != 2) ||
+                    (args[0].getType() != Category.Member) ||
+                    (args[1].getType() != Category.String)) {
                 return null;
             }
             int returnType;
@@ -92,13 +94,19 @@ class PropertiesFunDef extends FunDefBase {
                         returnType = Category.String;
                         break;
                     default:
-                        throw Util.newInternal("Unknown property type " + property.getType());
+                        throw Util.newInternal("Unknown property type " 
+                            + property.getType());
                     }
                 }
             } else {
                 returnType = Category.Value;
             }
-            return new PropertiesFunDef(name, signature, description, syntax, returnType, argTypes);
+            return new PropertiesFunDef(getName(), 
+                                        getSignature(), 
+                                        getDescription(), 
+                                        getSyntax(), 
+                                        returnType, 
+                                        argTypes);
         }
 
         public boolean requiresExpression(int k) {

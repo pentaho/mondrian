@@ -43,7 +43,10 @@ public class Role {
      * {@link Hierarchy} to {@link HierarchyAccess}. */
     private Map grants = new HashMap();
     private static Integer integers[] = {
-        new Integer(0), new Integer(1), new Integer(2), new Integer(3),
+        new Integer(0), 
+        new Integer(1), 
+        new Integer(2), 
+        new Integer(3),
         new Integer(4),
     };
 
@@ -171,8 +174,10 @@ public class Role {
          *
          * @pre Access.instance().isValid(access)
          */
-        HierarchyAccess(Hierarchy hierarchy, int access, Level topLevel,
-                Level bottomLevel) {
+        HierarchyAccess(Hierarchy hierarchy, 
+                        int access, 
+                        Level topLevel,
+                        Level bottomLevel) {
             this.hierarchy = hierarchy;
             this.access = access;
             this.topLevel = topLevel;
@@ -323,9 +328,10 @@ public class Role {
      * @pre bottomLevel == null || bottomLevel.getHierarchy() == hierarchy
      * @pre isMutable()
      */
-    public void grant(
-            Hierarchy hierarchy, int access, Level topLevel,
-            Level bottomLevel) {
+    public void grant(Hierarchy hierarchy, 
+                      int access, 
+                      Level topLevel,
+                      Level bottomLevel) {
         Util.assertPrecondition(hierarchy != null, "hierarchy != null");
         Util.assertPrecondition(Access.instance().isValid(access));
         Util.assertPrecondition((access == Access.CUSTOM) || (topLevel == null && bottomLevel == null), "access == Access.CUSTOM) || (topLevel == null && bottomLevel == null)");

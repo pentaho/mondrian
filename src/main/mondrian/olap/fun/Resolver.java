@@ -23,8 +23,7 @@ import mondrian.olap.Syntax;
  * @since 3 March, 2002
  * @version $Id$
  **/
-interface Resolver
-{
+interface Resolver {
     /**
      * Returns the name of the function or operator.
      */

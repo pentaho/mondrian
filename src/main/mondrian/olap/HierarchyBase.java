@@ -21,8 +21,8 @@ package mondrian.olap;
  **/
 public abstract class HierarchyBase
     extends OlapElementBase
-    implements Hierarchy
-{
+    implements Hierarchy {
+
     protected final Dimension dimension;
     /**
      * <code>name</code> and <code>subName</code> are the name of the
@@ -62,32 +62,45 @@ public abstract class HierarchyBase
     }
 
     // implement MdxElement
-    public String getUniqueName() { return uniqueName; }
-    public String getName() { return name; }
+    public String getUniqueName() { 
+        return uniqueName; 
+    }
+    public String getName() { 
+        return name; 
+    }
     public String getQualifiedName() {
         return Util.getRes().getMdxHierarchyName(getUniqueName());
     }
-    public String getDescription() { return description; }
-    public Dimension getDimension() { return dimension; }
-    public boolean usesDimension(Dimension dimension) {
-        return this.dimension == dimension;
+    public String getDescription() { 
+        return description; 
     }
-    public Level[] getLevels() { return levels; }
-    public Hierarchy getHierarchy() { return this; }
+    public Dimension getDimension() { 
+        return dimension; 
+    }
+    public boolean usesDimension(Dimension dimension) {
+        return (this.dimension == dimension);
+    }
+    public Level[] getLevels() { 
+        return levels; 
+    }
+    public Hierarchy getHierarchy() { 
+        return this; 
+    }
     public int getType() {
         return Category.Hierarchy;
     }
-    public boolean hasAll() { return hasAll; }
+    public boolean hasAll() { 
+        return hasAll; 
+    }
 
     public boolean equals(OlapElement mdxElement) {
         // Use object identity, because a private hierarchy can have the same
         // name as a public hierarchy.
-        return this == mdxElement;
+        return (this == mdxElement);
     }
 
     /** find a child object */
-    public OlapElement lookupChild(SchemaReader schemaReader, String s)
-    {
+    public OlapElement lookupChild(SchemaReader schemaReader, String s) {
         OlapElement oe = Util.lookupHierarchyLevel(this, s);
         if (oe == null) {
             oe = Util.lookupHierarchyRootMember(schemaReader, this, s);
@@ -113,8 +126,7 @@ public abstract class HierarchyBase
         return getLevels();
     }
 
-    protected Object[] getAllowedChildren(CubeAccess cubeAccess)
-    {
+    protected Object[] getAllowedChildren(CubeAccess cubeAccess) {
         // cubeAccess sets permissions on hierarchies and members only
         return getChildren();
     }
@@ -122,20 +134,18 @@ public abstract class HierarchyBase
 //      /** find a named member in this hierarchy */
 //      public abstract Member lookupMember(NameResolver st, String s);
 
-    public void accept(Visitor visitor)
-    {
+    public void accept(Visitor visitor) {
         visitor.visit(this);
     }
-    public void childrenAccept(Visitor visitor)
-    {
+
+    public void childrenAccept(Visitor visitor) {
         Level[] levels = getLevels();
         for (int i = 0; i < levels.length; i++) {
             levels[i].accept(visitor);
         }
     }
 
-    public String getAllMemberName()
-    {
+    public String getAllMemberName() {
         return allMemberName;
     }
 }

@@ -24,9 +24,13 @@ import mondrian.olap.Syntax;
  * @version $Id$
  **/
 class SimpleResolver implements Resolver {
-    FunDef funDef;
+    private  final FunDef funDef;
+
     SimpleResolver(FunDef funDef) {
         this.funDef = funDef;
+    }
+    public FunDef getFunDef() {
+        return funDef;
     }
     public String getName() {
         return funDef.getName();
@@ -59,11 +63,8 @@ class SimpleResolver implements Resolver {
 
     public boolean requiresExpression(int k) {
         int[] parameterTypes = funDef.getParameterTypes();
-        if (k < parameterTypes.length &&
-                parameterTypes[k] == Category.Set) {
-            return false;
-        }
-        return true;
+        return ((k >= parameterTypes.length) || 
+               (parameterTypes[k] != Category.Set));
     }
 
 //  public void addTests(TestSuite suite, Pattern pattern) {

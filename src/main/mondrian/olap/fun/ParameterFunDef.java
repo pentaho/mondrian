@@ -26,19 +26,27 @@ import mondrian.olap.Hierarchy;
  * @version $Id$
  **/
 public class ParameterFunDef extends FunDefBase {
-    public String parameterName;
-    private Hierarchy hierarchy;
-    public Exp exp;
-    public String parameterDescription;
+    public final String parameterName;
+    private final Hierarchy hierarchy;
+    public final Exp exp;
+    public final String parameterDescription;
 
-    ParameterFunDef(FunDef funDef, String parameterName, Hierarchy hierarchy,
-                    int returnType, Exp exp, String description) {
-        super(funDef);
+    ParameterFunDef(FunDef funDef, 
+                    String parameterName, 
+                    Hierarchy hierarchy,
+                    int returnType, 
+                    Exp exp, 
+                    String description) {
+        super(funDef.getName(), 
+             funDef.getSignature(),
+             funDef.getDescription(), 
+             funDef.getSyntax(),
+             returnType,
+             funDef.getParameterTypes());
         assertPrecondition(getName().equals("Parameter") ||
                 getName().equals("ParamRef"));
         this.parameterName = parameterName;
         this.hierarchy = hierarchy;
-        this.returnType = returnType;
         this.exp = exp;
         this.parameterDescription = description;
     }

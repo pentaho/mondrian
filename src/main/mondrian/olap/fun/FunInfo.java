@@ -25,7 +25,7 @@ public class FunInfo implements Comparable {
     static FunInfo make(Resolver resolver) {
         FunInfo funInfo = null;
         if (resolver instanceof SimpleResolver) {
-            FunDef funDef = ((SimpleResolver) resolver).funDef;
+            FunDef funDef = ((SimpleResolver) resolver).getFunDef();
             funInfo = new FunInfo(funDef);
 
         } else if (resolver instanceof MultiResolver) {
@@ -55,7 +55,7 @@ public class FunInfo implements Comparable {
         this.name = multiResolver.getName();
         this.description = multiResolver.getDescription();
 
-        String[] signatures = multiResolver.signatures;
+        String[] signatures = multiResolver.getSignatures();
         this.returnTypes = new int[signatures.length];
         this.parameterTypes = new int[signatures.length][];
         for (int i = 0; i < signatures.length; i++) {

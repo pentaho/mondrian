@@ -11,6 +11,7 @@
 */
 
 package mondrian.olap;
+
 import java.util.Locale;
 
 /**
@@ -19,8 +20,26 @@ import java.util.Locale;
  * @see DriverManager
  **/
 public interface Connection {
+    
+    /** 
+     * Get the Connect String associated with this Connection. 
+     * 
+     * @return the Connect String (never null).
+     */
     String getConnectString();
+
+    /** 
+     * Get the name of the Catalog associated with this Connection.
+     * 
+     * @return the Catalog name (never null).
+     */
     String getCatalogName();
+    
+    /** 
+     * Get the Schema associated with this Connection. 
+     * 
+     * @return the Schema (never null).
+     */
     Schema getSchema();
 
     /**
@@ -66,6 +85,7 @@ public interface Connection {
      * @post role.isMutable()
      */
     Role getRole();
+
     /**
      * Returns a schema reader with access control appropriate to the current
      * role.
