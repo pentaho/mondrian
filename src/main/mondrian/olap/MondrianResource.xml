@@ -384,6 +384,17 @@
     <text>Input line is not a valid INSERT statement; line {0,number}: {1}.</text>
 </exception>
 
+<!-- ====================================================================== -->
+<!-- Runtime limit overflow -->
+
+<message id="600010" name="LimitExceededDuringCrossjoin">
+   <text>Size of CrossJoin result ({0,number}) exceeded limit ({1,number})</text>
+</message>
+
+<message id="600020" name="MemberFetchLimitExceeded">
+   <text>Number of Members to be read exceeded limit ({0,number})</text>
+</message>
+
 <!-- End of last error section ============================================ -->
 
 </resourceBundle>

@@ -17,6 +17,7 @@ import mondrian.olap.Util;
 import mondrian.olap.MondrianResource;
 import mondrian.rolap.agg.Aggregation;
 import mondrian.rolap.agg.CellRequest;
+import mondrian.rolap.agg.ColumnConstraint;
 import mondrian.rolap.sql.SqlQuery;
 
 import javax.sql.DataSource;
@@ -336,13 +337,9 @@ public class RolapStar {
 			return expression.getExpression(query);
 		}
 
-		String quoteValue(Object value)
+		String quoteValue(Object o)
 		{
-			String s;
-			if (value instanceof RolapMember)
-				s = ((RolapMember)value).getSqlKey().toString();
-			else
-				s = value.toString();
+			String s = o.toString();
 			if (isNumeric) {
 				return s;
 			} else {
@@ -444,30 +441,20 @@ public class RolapStar {
          *
          * <li>String values: <code>foo.bar in ('a', 'b', 'c')</code></li></ul>
          */
-        public String createInExpr(String expr, Object[] constraints) {
+        public String createInExpr(String expr, ColumnConstraint[] constraints) {
             if (constraints.length == 1) {
-                final Object constraint = constraints[0];
-                Object key;
-                if (constraint instanceof RolapMember) {
-                	key = ((RolapMember)constraint).getSqlKey();
-                } else {
-                	key = constraint;
-                }
+                final ColumnConstraint constraint = constraints[0];
+                Object key = constraint.getValue();
                 if (key != RolapUtil.sqlNullValue) {
-                    return expr + " = " + quoteValue(constraint);
+                    return expr + " = " + quoteValue(key);
                 }
             }
             int notNullCount = 0;
             StringBuffer sb = new StringBuffer(expr);
             sb.append(" in (");
             for (int i = 0; i < constraints.length; i++) {
-                final Object constraint = constraints[i];
-                Object key;
-                if (constraint instanceof RolapMember) {
-                	key = ((RolapMember)constraint).getSqlKey();
-                } else {
-                	key = constraint;
-                }
+                final ColumnConstraint constraint = constraints[i];
+                Object key = constraint.getValue();
                 if (key == RolapUtil.sqlNullValue) {
                     continue;
                 }
@@ -475,7 +462,7 @@ public class RolapStar {
                     sb.append(", ");
                 }
                 ++notNullCount;
-                sb.append(quoteValue(constraint));
+                sb.append(quoteValue(key));
             }
             sb.append(")");
             if (notNullCount < constraints.length) {
@@ -488,7 +475,7 @@ public class RolapStar {
                 case 1:
                     // Special case -- one not-null value, and null, for
                     // example "(x is null or x = 1)".
-                    return "(" + expr + " = " + quoteValue(constraints[0]) +
+                    return "(" + expr + " = " + quoteValue(constraints[0].getValue()) +
                             " or " + expr + " is null)";
                 default:
                     // Nulls and values, for example,

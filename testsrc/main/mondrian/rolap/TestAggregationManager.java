@@ -15,7 +15,6 @@ import java.lang.reflect.Proxy;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -51,7 +50,7 @@ public class TestAggregationManager extends TestCase {
 		Set pinnedSegments = new HashSet();
 		FastBatchingCellReader fbcr = new FastBatchingCellReader(getCube("Sales"), pinnedSegments);
 		fbcr.recordCellRequest(request);
-		fbcr.loadAggregations(null);
+		fbcr.loadAggregations();
 		value = aggMan.getCellFromCache(request); // after load, cell is found
 		assertTrue(value instanceof Number);
 		assertEquals(131558, ((Number) value).intValue());
@@ -189,7 +188,7 @@ public class TestAggregationManager extends TestCase {
 			FastBatchingCellReader fbcr = new FastBatchingCellReader(getCube("Sales"), pinnedSegments);
 			for (int i = 0; i < requests.length; i++)
 				fbcr.recordCellRequest(requests[i]);
-			fbcr.loadAggregations(null);
+			fbcr.loadAggregations();
 			bomb = null;
 		} catch (Bomb e) {
 			bomb = e;

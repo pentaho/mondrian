@@ -12,11 +12,9 @@
 
 package mondrian.rolap.agg;
 
-import mondrian.olap.Evaluator;
 import mondrian.olap.Member;
 import mondrian.olap.SchemaReader;
 import mondrian.olap.Util;
-import mondrian.rolap.RolapMember;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.cache.CachePool;
 import mondrian.rolap.sql.SqlQuery;
@@ -114,7 +112,7 @@ public class Aggregation {
 	 *   gender = unconstrained
 	 */
 	public synchronized void load(RolapStar.Measure[] measures,
-			Object[][] constraintses, Collection pinnedSegments) {
+			ColumnConstraint[][] constraintses, Collection pinnedSegments) {
 		Segment[] segments = new Segment[measures.length];
 		for (int i = 0; i < measures.length; i++) {
 			RolapStar.Measure measure = measures[i];
@@ -132,11 +130,10 @@ public class Aggregation {
 	 * Drops constraints, where the list of values is close to the values which
 	 * would be returned anyway.
 	 **/
-	public synchronized Object[][] optimizeConstraints(
-            Object[][] constraintses, Evaluator evaluator) {
+	public synchronized ColumnConstraint[][] optimizeConstraints(ColumnConstraint[][] constraintses) {
 		final int MAXLEN_ORACLE = 1000;
 		Util.assertTrue(constraintses.length == columns.length);
-		Object[][] newConstraintses = (Object[][]) constraintses.clone();
+		ColumnConstraint[][] newConstraintses = (ColumnConstraint[][]) constraintses.clone();
 		double[] bloats = new double[columns.length];
 
 		// We want to handle the special case "drilldown" which occurs pretty often.
@@ -145,8 +142,8 @@ public class Aggregation {
 		List potentialParents = new ArrayList();
 		for (int i = 0; i < constraintses.length; i++) {
 			if (constraintses[i] != null && constraintses[i].length == 1
-					&& constraintses[i][0] instanceof RolapMember)
-				potentialParents.add(constraintses[i][0]);
+					&& constraintses[i][0].isMember())
+				potentialParents.add(constraintses[i][0].getMember());
 		}
 
 		for (int i = 0; i < newConstraintses.length; i++) {
@@ -163,13 +160,14 @@ public class Aggregation {
 				// more than one - check for children of same parent
 				Member parent = null;
 				for (int j = 0; j < newConstraintses[i].length; j++) {
-					if (!(newConstraintses[i][j] instanceof Member)) {
+					if (!(newConstraintses[i][j].isMember())) {
 						// should not occur - but
 						//  we compute bloat by #constraints / column cardinality
+						parent = null;
 						bloats[i] =  constraintLength / columns[i].getCardinality();
 						break;
 					} else {
-						Member m = (Member) newConstraintses[i][j];
+						Member m = newConstraintses[i][j].getMember();
 						if (j == 0) {
 							parent = m.getParentMember();
                         } else {
@@ -190,10 +188,8 @@ public class Aggregation {
 						// for the drilldown case, the children will be in the cache
 						// - if not, forget this optimization.
 						int nChildren = -1;
-						if (evaluator != null) {
-							SchemaReader scr = evaluator.getSchemaReader();
-							nChildren = scr.getChildrenCountFromCache(parent);
-						}
+						SchemaReader scr = star.getSchema().getSchemaReader();
+						nChildren = scr.getChildrenCountFromCache(parent);
 
 						if (nChildren == -1) {
 							// nothing gotten from cache
@@ -328,7 +324,7 @@ public class Aggregation {
 	public static class Axis {
 		RolapStar.Column column;
 
-		Object[] constraints; // null if no constraint
+		ColumnConstraint[] constraints; // null if no constraint
 
 		Object[] keys; // actual keys retrieved
 
@@ -339,12 +335,7 @@ public class Aggregation {
 				return true;
 			}
 			for (int i = 0; i < constraints.length; i++) {
-				if (constraints[i] instanceof RolapMember
-						&& ((RolapMember) constraints[i]).getSqlKey().equals(
-								key)) {
-					return true;
-				}
-				if (constraints[i].equals(key)) {
+				if (constraints[i].getValue().equals(key)) {
 					return true;
 				}
 			}

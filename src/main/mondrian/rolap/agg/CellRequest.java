@@ -12,11 +12,9 @@
 
 package mondrian.rolap.agg;
 
-import mondrian.olap.Util;
-import mondrian.rolap.RolapMember;
-import mondrian.rolap.RolapStar;
-
 import java.util.ArrayList;
+
+import mondrian.rolap.RolapStar;
 
 /**
  * A <code>CellRequest</code> contains the context necessary to get a cell
@@ -41,13 +39,10 @@ public class CellRequest {
 		this.columnList.add(measure.table.star);
 	}
 
-	public void addConstrainedColumn(RolapStar.Column column, Object[] values) {
-		columnList.add(column);
-		valueList.add(values);
-	}
-
 	public void addConstrainedColumn(RolapStar.Column column, Object value) {
 		columnList.add(column);
+		if ( value != null )
+			value = new ColumnConstraint(value);
 		valueList.add(value);
 	}
 
@@ -82,14 +77,8 @@ public class CellRequest {
 	public Object[] getSingleValues() {
 		Object[] a = new Object[valueList.size()];
 		for (int i = 0, n = valueList.size(); i < n; i++) {
-			Object value = valueList.get(i);
-			if (value instanceof Object[]) {
-				throw Util.newInternal("multi value in cell request");
-			}
-			if (value instanceof RolapMember)
-				a[i] = ((RolapMember)value).getSqlKey();
-			else
-				a[i] = value;
+			ColumnConstraint constr = (ColumnConstraint) valueList.get(i);
+			a[i] = constr.getValue();
 		}
 		return a;
 	}

@@ -100,7 +100,7 @@ public class Segment
 	 *    to fetch or null, indicating that the column is unconstrained
 	 **/
 	Segment(Aggregation aggregation, RolapStar.Measure measure,
-			Object[][] constraintses) {
+			ColumnConstraint[][] constraintses) {
 		this.id = nextId++;
 		this.aggregation = aggregation;
 		this.measure = measure;

@@ -11,16 +11,18 @@
 */
 
 package mondrian.rolap.agg;
-import mondrian.olap.Evaluator;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import mondrian.olap.MondrianDef;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapAggregationManager;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.sql.SqlQuery;
-
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.util.*;
 
 /**
  * <code>RolapAggregationManager</code> manages all {@link Aggregation}s
@@ -49,14 +51,14 @@ public class AggregationManager extends RolapAggregationManager {
 
     public void loadAggregation(
 		RolapStar.Measure[] measures, RolapStar.Column[] columns,
-		Object[][] constraintses, Collection pinnedSegments, Evaluator evaluator)
+		ColumnConstraint[][] constraintses, Collection pinnedSegments)
 	{
 		RolapStar star = measures[0].table.star;
 		Aggregation aggregation = star.lookupOrCreateAggregation(columns);
 
 		// try to eliminate unneccessary constraints
         // for Oracle: prevent an IN-clause with more than 1000 elements
-		constraintses = aggregation.optimizeConstraints(constraintses, evaluator);
+		constraintses = aggregation.optimizeConstraints(constraintses);
 
 		aggregation.load(measures, constraintses, pinnedSegments);
 	}
@@ -166,7 +168,7 @@ public class AggregationManager extends RolapAggregationManager {
                 }
                 table.addToFrom(innerSqlQuery, false, true);
                 String expr = column.getExpression(innerSqlQuery);
-                Object[] constraints = spec.getConstraints(i);
+                ColumnConstraint[] constraints = spec.getConstraints(i);
                 if (constraints != null) {
                     innerSqlQuery.addWhere(
                             column.createInExpr(expr, constraints));
@@ -201,7 +203,7 @@ public class AggregationManager extends RolapAggregationManager {
                 }
                 table.addToFrom(sqlQuery, false, true);
                 String expr = column.getExpression(sqlQuery);
-                Object[] constraints = spec.getConstraints(i);
+                ColumnConstraint[] constraints = spec.getConstraints(i);
                 if (constraints != null) {
                     sqlQuery.addWhere(
                             column.createInExpr(expr, constraints));
@@ -244,7 +246,7 @@ public class AggregationManager extends RolapAggregationManager {
 		RolapStar getStar();
 		RolapStar.Column[] getColumns();
         String getColumnAlias(int i);
-		Object[] getConstraints(int i);
+		ColumnConstraint[] getConstraints(int i);
     }
 
 	/**
@@ -295,7 +297,7 @@ public class AggregationManager extends RolapAggregationManager {
             return "c" + i;
         }
 
-		public Object[] getConstraints(int i) {
+		public ColumnConstraint[] getConstraints(int i) {
 			return segments[0].axes[i].constraints;
 		}
 	}
@@ -370,12 +372,12 @@ public class AggregationManager extends RolapAggregationManager {
             return columnNames[i];
         }
 
-        public Object[] getConstraints(int i) {
-            final Object value = request.getValueList().get(i);
-            if (value == null) {
+        public ColumnConstraint[] getConstraints(int i) {
+            final ColumnConstraint constr = (ColumnConstraint) request.getValueList().get(i);
+            if (constr == null) {
                 return null;
             } else {
-                return new Object[] {value};
+                return new ColumnConstraint[] {constr};
             }
         }
     }

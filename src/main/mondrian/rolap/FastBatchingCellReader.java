@@ -4,6 +4,7 @@ import mondrian.olap.Evaluator;
 import mondrian.olap.Util;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
+import mondrian.rolap.agg.ColumnConstraint;
 
 import java.util.*;
 
@@ -69,14 +70,14 @@ public class FastBatchingCellReader implements CellReader {
 		batch.add(request);
 	}
 
-	boolean loadAggregations(Evaluator evaluator) {
+	boolean loadAggregations() {
 		//System.out.println("requestCount = " + requestCount);
 		long t1 = System.currentTimeMillis();
 		requestCount = 0;
 		if (batches.isEmpty())
 			return false;
 		for (Iterator it = batches.values().iterator(); it.hasNext();)
-			 ((Batch) it.next()).loadAggregation(evaluator);
+			 ((Batch) it.next()).loadAggregation();
 		batches.clear();
 		long t2 = System.currentTimeMillis();
 		if (false) {
@@ -114,17 +115,17 @@ public class FastBatchingCellReader implements CellReader {
 			}
 		}
 
-		void loadAggregation(Evaluator evaluator) {
+		void loadAggregation() {
 			long t1 = System.currentTimeMillis();
 			AggregationManager aggmgr = (AggregationManager) AggregationManager.instance();
-			Object[][] constraintses = new Object[columns.length][];
+			ColumnConstraint[][] constraintses = new ColumnConstraint[columns.length][];
 			for (int j = 0; j < columns.length; j++) {
-				Object[] constraints;
+				ColumnConstraint[] constraints;
 				Set valueSet = valueSets[j];
 				if (valueSet == null) {
 					constraints = null;
 				} else {
-					constraints = valueSet.toArray();
+					constraints = (ColumnConstraint[]) valueSet.toArray(new ColumnConstraint[0]);
 				}
 				constraintses[j] = constraints;
 			}
@@ -154,13 +155,13 @@ public class FastBatchingCellReader implements CellReader {
 				}
 				RolapStar.Measure[] measures =
 					(RolapStar.Measure[]) distinctMeasuresList.toArray(new RolapStar.Measure[0]);
-				aggmgr.loadAggregation(measures, columns, constraintses, pinnedSegments, evaluator);
+				aggmgr.loadAggregation(measures, columns, constraintses, pinnedSegments);
 			}
 			final int measureCount = measuresList.size();
 			if (measureCount > 0) {
 				RolapStar.Measure[] measures =
 					(RolapStar.Measure[]) measuresList.toArray(new RolapStar.Measure[measureCount]);
-				aggmgr.loadAggregation(measures, columns, constraintses, pinnedSegments, evaluator);
+				aggmgr.loadAggregation(measures, columns, constraintses, pinnedSegments);
 			}
 			long t2 = System.currentTimeMillis();
 			if (false) {

@@ -72,7 +72,7 @@ class RolapResult extends ResultBase
                     evaluator.cellReader = batchingReader;
                     axisResult = executeAxis(evaluator.push(), axis);
                     evaluator.clearExpResultCache();
-                    if (!batchingReader.loadAggregations(evaluator)) {
+                    if (!batchingReader.loadAggregations()) {
                         break;
                     }
                     if (attempt++ > MAX_AGGREGATION_PASS_COUNT) {
@@ -195,7 +195,7 @@ class RolapResult extends ResultBase
 			// Retrieve the aggregations collected.
 			//
 			//
-            if (!batchingReader.loadAggregations(evaluator)) {
+            if (!batchingReader.loadAggregations()) {
                 // We got all of the cells we needed, so the result must be
                 // correct.
                 return;

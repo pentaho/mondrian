@@ -36,24 +36,26 @@ class CrossJoinFunDef extends FunDefBase {
         
         // optimize nonempty(crossjoin(a,b)) ==
         //  nonempty(crossjoin(nonempty(a),nonempty(b))
+
         long size = (long)set0.size() * (long)set1.size();
-
-        // throw an exeption, if the crossjoin gets too large
-        int limit = MondrianProperties.instance().getResultLimit();
-        if ( limit > 0 && limit < size ) {
-			// result limit exceeded, throw an exception
-        	String msg = "Crossjoin result limit(" +limit +") exceeded; size=" + size;
-			throw new ResultLimitExceeded(msg);
-		}
-
         if (size > 1000 && evaluator.isNonEmpty()) {
             set0 = nonEmptyList(evaluator, set0);
             set1 = nonEmptyList(evaluator, set1);
+            size = (long)set0.size() * (long)set1.size();
         }
 
         if (set0.isEmpty() || set1.isEmpty()) {
             return Collections.EMPTY_LIST;
         }
+
+        // throw an exeption, if the crossjoin gets too large
+        int limit = MondrianProperties.instance().getResultLimit();
+        if ( limit > 0 && limit < size ) {
+			// result limit exceeded, throw an exception
+        	String msg = MondrianResource.instance().
+				getLimitExceededDuringCrossjoin(new Long(size), new Long(limit));
+        	throw new ResultLimitExceeded(msg);
+		}
 
         boolean neitherSideIsTuple = true;
         int arity0 = 1,
