@@ -922,14 +922,14 @@ public class FunUtil extends Util {
 			return 0;
 		}
 		while (true) {
-			int levelDepth1 = m1.getLevel().getDepth(),
-					levelDepth2 = m2.getLevel().getDepth();
-			if (levelDepth1 < levelDepth2) {
+			int depth1 = m1.getDepth(),
+					depth2 = m2.getDepth();
+			if (depth1 < depth2) {
 				m2 = m2.getParentMember();
 				if (equals(m1, m2)) {
 					return post ? 1 : -1;
 				}
-			} else if (levelDepth1 > levelDepth2) {
+			} else if (depth1 > depth2) {
 				m1 = m1.getParentMember();
 				if (equals(m1, m2)) {
 					return post ? -1 : 1;
@@ -1146,14 +1146,14 @@ class HierarchicalArrayComparator extends ArrayExpComparator {
 			return 0;
 		}
 		while (true) {
-			int levelDepth1 = m1.getLevel().getDepth(),
-					levelDepth2 = m2.getLevel().getDepth();
-			if (levelDepth1 < levelDepth2) {
+			int depth1 = m1.getDepth(),
+					depth2 = m2.getDepth();
+			if (depth1 < depth2) {
 				m2 = m2.getParentMember();
 				if (FunUtil.equals(m1, m2)) {
 					return -1;
 				}
-			} else if (levelDepth1 > levelDepth2) {
+			} else if (depth1 > depth2) {
 				m1 = m1.getParentMember();
 				if (FunUtil.equals(m1, m2)) {
 					return 1;
