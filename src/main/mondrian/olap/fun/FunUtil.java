@@ -1077,19 +1077,22 @@ class HierarchicalArrayComparator extends ArrayExpComparator {
 		this.desc = desc;
 	}
 	protected int compare(Member[] a1, Member[] a2) {
+		int c = 0;
+		evaluator = evaluator.push();
 		for (int i = 0; i < arity; i++) {
 			Member m1 = a1[i],
 					m2 = a2[i];
-			int c = compareHierarchicallyButSiblingsByValue(m1, m2);
+			c = compareHierarchicallyButSiblingsByValue(m1, m2);
 			if (c != 0) {
-				return c;
+				break;
 			}
 			// compareHierarchicallyButSiblingsByValue imposes a total order
 			//Util.assertTrue(m1 == m2);
       Util.assertTrue(m1.equals(m2));
 			evaluator.setContext(m1);
 		}
-		return 0;
+		evaluator = evaluator.pop();
+		return c;
 	}
 	protected int compareHierarchicallyButSiblingsByValue(Member m1, Member m2) {
 		if (FunUtil.equals(m1, m2)) {

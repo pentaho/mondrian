@@ -16,6 +16,7 @@ import mondrian.olap.MondrianProperties;
 
 import java.io.*;
 import java.lang.reflect.Array;
+import java.net.URI;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,7 +35,7 @@ import java.util.List;
  **/
 public class RolapUtil {
 	static final RolapMember[] emptyMemberArray = new RolapMember[0];
-	public static PrintWriter debugOut;
+	public static PrintWriter debugOut = null;
 	private static Semaphore querySemaphore;
 	/** Special cell value indicates that the value is not in cache yet. **/
 	static RuntimeException valueNotReadyException = new RuntimeException(
@@ -150,10 +151,32 @@ public class RolapUtil {
 	 * Enables tracing if "mondrian.trace.level" &gt; 0.
 	 */
 	public static void checkTracing() {
-		int trace = MondrianProperties.instance().getTraceLevel();
-		if (trace > 0) {
-			debugOut = new PrintWriter(System.out, true);
+		if ( debugOut == null ) { 
+			int trace = MondrianProperties.instance().getTraceLevel();
+			if (trace > 0) {
+				String debugOutFile = 
+				  MondrianProperties.instance().getProperty(MondrianProperties.DebugOutFile);
+				if ( debugOutFile != null ) {
+					File f;
+          try {
+						f = new File(debugOutFile);
+						debugOut = new PrintWriter(new FileOutputStream(f), true);
+          } catch (Exception e) {
+            // don't care, use System.out
+          }
+				}
+				if ( debugOut == null )
+  				debugOut = new PrintWriter(System.out, true);
+			}
 		}
+	}
+
+	/**
+	 * redirect debug output to another PrintWriter
+	 * @param pw
+	 */
+	static public void setDebugOut( PrintWriter pw) {
+		debugOut = pw;
 	}
 
 	/**

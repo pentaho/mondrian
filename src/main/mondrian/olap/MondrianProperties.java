@@ -116,6 +116,9 @@ public class MondrianProperties extends PropertiesPlus {
 	/** Property {@value}. */
 	public static final String TraceLevel = "mondrian.trace.level";
 
+	/** Property {@value}. */
+	public static final String DebugOutFile = "mondrian.debug.out.file";
+
 	/** Retrieves the value of the {@link #JdbcDrivers} property,
 	 * default value {@link #JdbcDrivers_Default}. */
 	public String getJdbcDrivers() {
