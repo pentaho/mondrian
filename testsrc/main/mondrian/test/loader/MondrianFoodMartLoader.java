@@ -16,6 +16,7 @@ import mondrian.rolap.sql.SqlQuery;
 
 import java.io.*;
 import java.math.BigDecimal;
+//import java.math.BigDecimal;
 import java.sql.*;
 import java.text.DecimalFormat;
 import java.util.Date;
@@ -543,7 +544,7 @@ public class MondrianFoodMartLoader {
           new Column("store_id", "INTEGER", "NOT NULL"),
           new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
           new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
-          new Column("unit_sales", "BIGINT", "NOT NULL"),
+          new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
         });
         createTable("sales_fact_1998", new Column[] {
           new Column("product_id", "INTEGER", "NOT NULL"),
@@ -553,7 +554,7 @@ public class MondrianFoodMartLoader {
           new Column("store_id", "INTEGER", "NOT NULL"),
           new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
           new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
-          new Column("unit_sales", "BIGINT", "NOT NULL"),
+          new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
         });
         createTable("sales_fact_dec_1998", new Column[] {
           new Column("product_id", "INTEGER", "NOT NULL"),
@@ -563,7 +564,7 @@ public class MondrianFoodMartLoader {
           new Column("store_id", "INTEGER", "NOT NULL"),
           new Column("store_sales", "DECIMAL(10,4)", "NOT NULL"),
           new Column("store_cost", "DECIMAL(10,4)", "NOT NULL"),
-          new Column("unit_sales", "BIGINT", "NOT NULL"),
+          new Column("unit_sales", "DECIMAL(10,4)", "NOT NULL"),
         });
         createTable("inventory_fact_1997", new Column[] {
           new Column("product_id", "INTEGER", "NOT NULL"),
@@ -717,7 +718,7 @@ public class MondrianFoodMartLoader {
           new Column("promotion_district_id", "INTEGER", ""),
           new Column("promotion_name", "VARCHAR(30)", ""),
           new Column("media_type", "VARCHAR(30)", ""),
-          new Column("cost", "BIGINT", ""),
+          new Column("cost", "DECIMAL(10,4)", ""),
           new Column("start_date", "TIMESTAMP", ""),
           new Column("end_date", "TIMESTAMP", ""),
         });
@@ -755,15 +756,15 @@ public class MondrianFoodMartLoader {
           new Column("currency_id", "INTEGER", "NOT NULL"),
           new Column("salary_paid", "DECIMAL(10,4)", "NOT NULL"),
           new Column("overtime_paid", "DECIMAL(10,4)", "NOT NULL"),
-          new Column("vacation_accrued", "INTEGER", "NOT NULL"),
-          new Column("vacation_used", "INTEGER", "NOT NULL"),
+          new Column("vacation_accrued", "REAL", "NOT NULL"),
+          new Column("vacation_used", "REAL", "NOT NULL"),
         });
         createTable("store", new Column[] {
           new Column("store_id", "INTEGER", "NOT NULL"),
           new Column("store_type", "VARCHAR(30)", ""),
           new Column("region_id", "INTEGER", ""),
           new Column("store_name", "VARCHAR(30)", ""),
-          new Column("store_number", "BIGINT", ""),
+          new Column("store_number", "INTEGER", ""),
           new Column("store_street_address", "VARCHAR(30)", ""),
           new Column("store_city", "VARCHAR(30)", ""),
           new Column("store_state", "VARCHAR(30)", ""),
@@ -774,10 +775,10 @@ public class MondrianFoodMartLoader {
           new Column("store_fax", "VARCHAR(30)", ""),
           new Column("first_opened_date", "TIMESTAMP", ""),
           new Column("last_remodel_date", "TIMESTAMP", ""),
-          new Column("store_sqft", "BIGINT", ""),
-          new Column("grocery_sqft", "BIGINT", ""),
-          new Column("frozen_sqft", "BIGINT", ""),
-          new Column("meat_sqft", "BIGINT", ""),
+          new Column("store_sqft", "INTEGER", ""),
+          new Column("grocery_sqft", "INTEGER", ""),
+          new Column("frozen_sqft", "INTEGER", ""),
+          new Column("meat_sqft", "INTEGER", ""),
           new Column("coffee_bar", booleanColumnType, ""),
           new Column("video_store", booleanColumnType, ""),
           new Column("salad_bar", booleanColumnType, ""),
@@ -789,7 +790,7 @@ public class MondrianFoodMartLoader {
           new Column("store_type", "VARCHAR(30)", ""),
           new Column("region_id", "INTEGER", ""),
           new Column("store_name", "VARCHAR(30)", ""),
-          new Column("store_number", "BIGINT", ""),
+          new Column("store_number", "INTEGER", ""),
           new Column("store_street_address", "VARCHAR(30)", ""),
           new Column("store_city", "VARCHAR(30)", ""),
           new Column("store_state", "VARCHAR(30)", ""),
@@ -800,10 +801,10 @@ public class MondrianFoodMartLoader {
           new Column("store_fax", "VARCHAR(30)", ""),
           new Column("first_opened_date", "TIMESTAMP", ""),
           new Column("last_remodel_date", "TIMESTAMP", ""),
-          new Column("store_sqft", "BIGINT", ""),
-          new Column("grocery_sqft", "BIGINT", ""),
-          new Column("frozen_sqft", "BIGINT", ""),
-          new Column("meat_sqft", "BIGINT", ""),
+          new Column("store_sqft", "INTEGER", ""),
+          new Column("grocery_sqft", "INTEGER", ""),
+          new Column("frozen_sqft", "INTEGER", ""),
+          new Column("meat_sqft", "INTEGER", ""),
           new Column("coffee_bar", booleanColumnType, ""),
           new Column("video_store", booleanColumnType, ""),
           new Column("salad_bar", booleanColumnType, ""),
@@ -909,18 +910,64 @@ public class MondrianFoodMartLoader {
     private String columnValue(ResultSet rs, Column column) throws Exception {
         String columnType = column.type;
         final Pattern regex = Pattern.compile("DECIMAL\\((.*),(.*)\\)");
+        final DecimalFormat integerFormatter = new DecimalFormat(decimalFormat(15, 0));
 
         if (columnType.startsWith("INTEGER")) {
-            int result = rs.getInt(column.name);
-            return Integer.toString(result);
+        	Object obj = rs.getObject(column.name);
+            if (obj == null) {
+                return "NULL";
+            } else {
+	            if (obj.getClass() == Double.class) {
+	            	try {
+		            	Double result = (Double) obj;
+			            return integerFormatter.format(result.doubleValue());
+	            	} catch (ClassCastException cce) {
+	            		System.out.println("CCE: "  + column.name + " to Long from: " + obj.getClass().getName() + " - " + obj.toString());
+	            		throw cce;
+	            	}
+	            } else {
+	            	try {
+	            		Integer result = (Integer) obj;
+	            		return result.toString();
+		        	} catch (ClassCastException cce) {
+		        		System.out.println("CCE: "  + column.name + " to Integer from: " + obj.getClass().getName() + " - " + obj.toString());
+		        		throw cce;
+		        	}
+	            }
+            }
         }
         if (columnType.startsWith("SMALLINT")) {
-            short result = rs.getShort(column.name);
-            return Integer.toString(result);
+        	Object obj = rs.getObject(column.name);
+            if (obj == null) {
+                return "NULL";
+            } else {
+            	Integer result = (Integer) obj;
+                return result.toString();
+            }
         }
         if (columnType.startsWith("BIGINT")) {
-            long result = rs.getLong(column.name);
-            return Long.toString(result);
+        	Object obj = rs.getObject(column.name);
+            if (obj == null) {
+                return "NULL";
+            } else {
+	            if (obj.getClass() == Double.class) {
+	            	try {
+		            	Double result = (Double) obj;
+			            return integerFormatter.format(result.doubleValue());
+	            	} catch (ClassCastException cce) {
+	            		System.out.println("CCE: "  + column.name + " to Long from: " + obj.getClass().getName() + " - " + obj.toString());
+	            		throw cce;
+	            	}
+	            } else {
+	            	try {
+		            	Long result = (Long) obj;
+		                return result.toString();
+	            	} catch (ClassCastException cce) {
+	            		System.out.println("CCE: "  + column.name + " to Long from: " + obj.getClass().getName() + " - " + obj.toString());
+	            		throw cce;
+	            	}
+	            }
+            }
         }
         if (columnType.startsWith("VARCHAR")) {
             return embedQuotes(rs.getString(column.name));
@@ -942,26 +989,52 @@ public class MondrianFoodMartLoader {
             }
         }
         if (columnType.startsWith("REAL")) {
-            return Float.toString(rs.getFloat(column.name));
+        	Object obj = rs.getObject(column.name);
+            if (obj == null) {
+                return "NULL";
+            } else {
+            	Float result = (Float) obj;
+                return result.toString();
+            }
         }
         if (columnType.startsWith("DECIMAL")) {
-            final Matcher matcher = regex.matcher(columnType);
-            if (!matcher.matches()) {
-                throw new Exception("Bad DECIMAL column type for " + columnType);
+        	Object obj = rs.getObject(column.name);
+            if (obj == null) {
+                return "NULL";
+            } else {
+	            final Matcher matcher = regex.matcher(columnType);
+	            if (!matcher.matches()) {
+	                throw new Exception("Bad DECIMAL column type for " + columnType);
+	            }
+	            DecimalFormat formatter = new DecimalFormat(decimalFormat(matcher.group(1), matcher.group(2)));
+	            if (obj.getClass() == Double.class) {
+		            try {
+		            	Double result = (Double) obj;
+			            return formatter.format(result.doubleValue());
+		        	} catch (ClassCastException cce) {
+		        		System.out.println("CCE: "  + column.name + " to Double from: " + obj.getClass().getName() + " - " + obj.toString());
+		        		throw cce;
+		        	}
+	            } else {
+	            	// should be (obj.getClass() == BigDecimal.class)
+		            try {
+		            	BigDecimal result = (BigDecimal) obj;
+			            return formatter.format(result);
+		        	} catch (ClassCastException cce) {
+		        		System.out.println("CCE: "  + column.name + " to BigDecimal from: " + obj.getClass().getName() + " - " + obj.toString());
+		        		throw cce;
+		        	}
+	            }
             }
-            DecimalFormat formatter = new DecimalFormat(decimalFormat(matcher.group(1), matcher.group(2)));
-            return formatter.format(rs.getDouble(column.name));
-/*
-            int places = Integer.parseInt(matcher.group(2));
-            BigDecimal dec = rs.getBigDecimal(column.name);
-            dec = dec.setScale(places, BigDecimal.ROUND_HALF_UP);
-            return dec.toString();
-*/        }
-        if (columnType.startsWith("BIT")) {
-            return Byte.toString(rs.getByte(column.name));
         }
-        if (columnType.startsWith("BOOLEAN")) {
-            return Boolean.toString(rs.getBoolean(column.name));
+        if (columnType.startsWith("BOOLEAN") || columnType.startsWith("BIT")) {
+        	Object obj = rs.getObject(column.name);
+            if (obj == null) {
+                return "NULL";
+            } else {
+            	Boolean result = (Boolean) obj;
+                return result.toString();
+            }
         }
         throw new Exception("Unknown column type: " + columnType + " for column: " + column.name);
     }
@@ -985,10 +1058,14 @@ public class MondrianFoodMartLoader {
     }
 
     private String decimalFormat(String lengthStr, String placesStr) {
-        StringBuffer sb = new StringBuffer();
 
         int length = Integer.parseInt(lengthStr);
         int places = Integer.parseInt(placesStr);
+        return decimalFormat(length, places);
+    }
+
+    private String decimalFormat(int length, int places) {
+        StringBuffer sb = new StringBuffer();
         for (int i = 0; i < length; i++) {
             if ((length - i) == places) {
                 sb.append('.');
