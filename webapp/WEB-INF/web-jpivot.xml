@@ -26,10 +26,12 @@ You must accept the terms of that agreement to use this software.
   </context-param>
   -->
 
+  <!-- optional
   <context-param>
-    <param-name>connectString</param-name>
-    <param-value>@mondrian.test.connectString@</param-value>
+    <param-name>chartServlet</param-name>
+    <param-value>/path/to/chartServlet</param-value>
   </context-param>
+  -->
 
   <filter>
     <filter-name>JPivotController</filter-name>
@@ -45,6 +47,12 @@ You must accept the terms of that agreement to use this software.
     <listener-class>mondrian.web.taglib.Listener</listener-class>
   </listener>
 
+<!-- jfreechart provided servlet -->
+  <servlet>
+    <servlet-name>DisplayChart</servlet-name>
+    <servlet-class>org.jfree.chart.servlet.DisplayChart</servlet-class>
+  </servlet>
+
   <servlet>
     <servlet-name>MDXQueryServlet</servlet-name>
     <servlet-class>mondrian.web.servlet.MDXQueryServlet</servlet-class>
@@ -58,6 +66,12 @@ You must accept the terms of that agreement to use this software.
     <servlet-name>MondrianXmlaServlet</servlet-name>
     <servlet-class>mondrian.xmla.XmlaServlet</servlet-class>
   </servlet>
+
+<!-- jfreechart provided servlet -->
+  <servlet-mapping>
+    <servlet-name>DisplayChart</servlet-name>
+    <url-pattern>/DisplayChart</url-pattern>
+  </servlet-mapping>
 
   <servlet-mapping>
     <servlet-name>MDXQueryServlet</servlet-name>
@@ -75,20 +89,12 @@ You must accept the terms of that agreement to use this software.
 
   <taglib>
     <taglib-uri>http://www.tonbeller.com/wcf</taglib-uri>
-    <taglib-location>/WEB-INF/wcf/wcf.tld</taglib-location>
+    <taglib-location>/WEB-INF/wcf/wcf-tags.tld</taglib-location>
   </taglib>
 
   <taglib>
-    <taglib-uri>http://www.tonbeller.com/jpivot/core</taglib-uri>
-    <taglib-location>/WEB-INF/jpivot/jpivot.tld</taglib-location>
-  </taglib>
-  <taglib>
-    <taglib-uri>http://www.tonbeller.com/jpivot/mondrian</taglib-uri>
-    <taglib-location>/WEB-INF/jpivot/mondrian.tld</taglib-location>
-  </taglib>
-  <taglib>
-    <taglib-uri>http://www.tonbeller.com/jpivot/test</taglib-uri>
-    <taglib-location>/WEB-INF/jpivot/testtags.tld</taglib-location>
+    <taglib-uri>http://www.tonbeller.com/jpivot</taglib-uri>
+    <taglib-location>/WEB-INF/jpivot/jpivot-tags.tld</taglib-location>
   </taglib>
 
 </web-app>
