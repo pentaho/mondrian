@@ -86,12 +86,6 @@
 		"from Sales\r\n",
 
 		// #10
-		"select {[Has bought dairy].members} on columns," + nl +
-		" {[Customers].[USA]} on rows" + nl +
-		"from Sales" + nl +
-		"where ([Measures].[Unit Sales])",
-
-		// #11
 		"WITH" + nl +
 		"   MEMBER [Measures].[StoreType] AS " + nl +
 		"   '[Store].CurrentMember.Properties(\"Store Type\")'," + nl +
@@ -105,7 +99,7 @@
 		"   [Measures].[ProfitPct] } ON ROWS" + nl +
 		"FROM Sales",
 
-		// #12
+		// #11
 		"WITH" + nl +
 		"   MEMBER [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[BigSeller] AS" + nl +
 		"  'IIf([Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine] > 100, \"Yes\",\"No\")'" + nl +
@@ -114,7 +108,7 @@
 		"   {Store.[Store Name].Members} ON ROWS" + nl +
 		"FROM Sales",
 
-		// #13
+		// #12
 		"WITH" + nl +
 		"   MEMBER [Measures].[ProfitPct] AS " + nl +
 		"   'Val((Measures.[Store Sales] - Measures.[Store Cost]) / Measures.[Store Sales])'," + nl +
@@ -128,7 +122,7 @@
 		"   [Measures].[ProfitPct] } ON ROWS" + nl +
 		"FROM Sales",
 
-		// #14: cyclical calculated members
+		// #13: cyclical calculated members
 		"WITH" + nl +
 		"   MEMBER [Product].[X] AS '[Product].[Y]'" + nl +
 		"   MEMBER [Product].[Y] AS '[Product].[X]'" + nl +
@@ -137,7 +131,7 @@
 		"   {Store.[Store Name].Members} ON ROWS" + nl +
 		"FROM Sales",
 
-		// #15
+		// #14
 		"WITH MEMBER MEASURES.ProfitPercent AS" + nl +
 		"     '([Measures].[Store Sales]-[Measures].[Store Cost])/([Measures].[Store Cost])'," + nl +
 		" FORMAT_STRING = '#.00%', SOLVE_ORDER = 1" + nl +
@@ -150,31 +144,21 @@
 		" FROM [Sales]" + nl +
 		" WHERE ([Measures].[ProfitPercent])",
 
-		// #16 (= mdx sample #7, but uses virtual cube)
+		// #15 (= mdx sample #7, but uses virtual cube)
 		"with member [Measures].[Accumulated Sales] as 'Sum(YTD(),[Measures].[Store Sales])'" + nl +
 		"select" + nl +
 		"	 {[Measures].[Store Sales],[Measures].[Accumulated Sales]} on columns," + nl +
 		"	 {Descendants([Time].[1997],[Time].[Month])} on rows" + nl +
 		"from [Warehouse and Sales]",
 
-		// #17 Virtual cube. Note that Unit Sales is independent of Warehouse.
+		// #16 Virtual cube. Note that Unit Sales is independent of Warehouse.
 		"select CrossJoin(\r\n"+
 		"  {[Warehouse].DefaultMember, [Warehouse].[USA].children}," + nl +
 		"  {[Measures].[Unit Sales], [Measures].[Units Shipped]}) on columns," + nl +
 		" [Time].children on rows" + nl +
 		"from [Warehouse and Sales]",
 
-		// #18 bug: should allow dimension to be used as shorthand for member
-		"select {[Measures].[Unit Sales]} on columns," + nl +
-		" {[Store], [Store].children} on rows" + nl +
-		"from [Sales]",
-
-		// #19 bug: should allow 'members(n)' (and do it efficiently)
-		"select {[Measures].[Unit Sales]} on columns," + nl +
-		" {[Customers].members} on rows" + nl +
-		"from [Sales]",
-
-		// #20 crossjoins on rows and columns, and a slicer
+		// #17 crossjoins on rows and columns, and a slicer
 		"select" + nl +
 		"  CrossJoin(" + nl +
 		"    {[Measures].[Unit Sales], [Measures].[Store Sales]}," + nl +

@@ -173,12 +173,6 @@ CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)
 		</Hierarchy>
 	</Dimension>
 
-	<Dimension name="Has bought dairy">
-		<Hierarchy hasAll="true" memberReaderClass="mondrian.rolap.HasBoughtDairySource">
-			<Level name="Has bought dairy" uniqueMembers="true"/>
-			<Param name="expression" value="not used"/>
-		</Hierarchy>
-	</Dimension>
 	<Measure name="Unit Sales" column="unit_sales" aggregator="sum" formatString="Standard"/>
 	<Measure name="Store Cost" column="store_cost" aggregator="sum" formatString="#,###.00"/>
 	<Measure name="Store Sales" column="store_sales" aggregator="sum" formatString="#,###.00"/>
@@ -257,14 +251,14 @@ CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)
 			<Level name="Store State" table="store" column="store_state" uniqueMembers="true"/>
 			<Level name="Store City" table="store" column="store_city" uniqueMembers="false"/>
 			<Level name="Store Name" table="store" column="store_name" uniqueMembers="true">
-				<Property name="Store Type" table="store" column="store_type"/>
-				<Property name="Store Manager" table="store" column="store_manager"/>
-				<Property name="Store Sqft" table="store" column="store_sqft" type="Numeric"/>
-				<Property name="Grocery Sqft" table="store" column="grocery_sqft" type="Numeric"/>
-				<Property name="Frozen Sqft" table="store" column="frozen_sqft" type="Numeric"/>
-				<Property name="Meat Sqft" table="store" column="meat_sqft" type="Numeric"/>
-				<Property name="Has coffee bar" table="store" column="coffee_bar" type="Boolean"/>
-				<Property name="Street address" table="store" column="store_street_address" type="String"/>
+				<Property name="Store Type" column="store_type"/>
+				<Property name="Store Manager" column="store_manager"/>
+				<Property name="Store Sqft" column="store_sqft" type="Numeric"/>
+				<Property name="Grocery Sqft" column="grocery_sqft" type="Numeric"/>
+				<Property name="Frozen Sqft" column="frozen_sqft" type="Numeric"/>
+				<Property name="Meat Sqft" column="meat_sqft" type="Numeric"/>
+				<Property name="Has coffee bar" column="coffee_bar" type="Boolean"/>
+				<Property name="Street address" column="store_street_address" type="String"/>
 			</Level>
 		</Hierarchy>
 	</Dimension>

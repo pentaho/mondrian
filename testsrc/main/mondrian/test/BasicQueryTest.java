@@ -661,14 +661,6 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"from Sales\r\n", null);
 	}
 
-	public void testHasBoughtDairy() {
-		Util.discard(runQuery(
-				"select {[Has bought dairy].members} on columns," + nl +
-				" {[Customers].[USA]} on rows" + nl +
-				"from Sales" + nl +
-				"where ([Measures].[Unit Sales])"));
-	}
-
 	public void testSolveOrder() {
 		runQueryCheckResult(
 				"WITH" + nl +
