@@ -11,6 +11,8 @@
 */
 
 package mondrian.xom;
+import mondrian.olap.Member;
+
 import java.util.Vector;
 import java.util.List;
 import java.util.ArrayList;
@@ -74,6 +76,16 @@ public abstract class XOMUtil extends XMLUtil {
 		addAll(v, array);
 		return v;
 	}
+
+    /**
+     * Converts an array into a list.
+     */
+    public static Object toList(Object[] array) {
+        final ArrayList result = new ArrayList(array.length);
+        addAll(result, array);
+        return result;
+    }
+
 
 	/**
 	 * Adds every element of an array to a vector.

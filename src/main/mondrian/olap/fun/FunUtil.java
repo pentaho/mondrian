@@ -107,7 +107,9 @@ public class FunUtil extends Util {
 		Object o = getScalarArg(evaluator, args, index);
 		if (o instanceof Number) {
 			return ((Number) o).intValue();
-		} else {
+		} else if (o instanceof RuntimeException) {
+            return 0;
+        } else {
 			// we need to handle String("5.0")
 			String s = o.toString();
 			double d = Double.valueOf(s).doubleValue();

@@ -753,9 +753,6 @@ public class BuiltinFunTable extends FunTable {
 		define(new FunDefBase("IsEmpty", "IsEmpty(<Value Expression>)", "Determines if an expression evaluates to the empty cell value.", "fbn"));
 		//
 		// MEMBER FUNCTIONS
-		//	if (false) define(new FunDefBase("Ancestor", "Ancestor(<Member>, <Level>)", "Returns the ancestor of a member at a specified level.", "fm*");
-
-
 		define(new FunDefBase("Ancestor", "Ancestor(<Member>, <Level>)", "Returns the ancestor of a member at a specified level.", "fmml") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				Member member = getMemberArg(evaluator, args, 0, false);
@@ -1864,6 +1861,41 @@ public class BuiltinFunTable extends FunTable {
 		//
 		// SET FUNCTIONS
 		if (false) define(new FunDefBase("AddCalculatedMembers", "AddCalculatedMembers(<Set>)", "Adds calculated members to a set.", "fx*"));
+
+        define(new FunDefBase("Ascendants", "Ascendants(<Member>)", "Returns the set of the ascendants of a specified member.", "fxm") {
+            public Object evaluate(Evaluator evaluator, Exp[] args) {
+                Member member = getMemberArg(evaluator, args, 0, false);
+                if (member.isNull()) {
+                    return new ArrayList();
+                }
+                Member[] members = member.getAncestorMembers();
+                final ArrayList result = new ArrayList(members.length + 1);
+                result.add(member);
+                addAll(result, members);
+                return result;
+            }
+
+            public void testAscendants(FoodMartTestCase test) {
+                test.assertAxisReturns(
+                        "Ascendants([Store].[USA].[CA])",
+                        "[Store].[All Stores].[USA].[CA]" + nl +
+                        "[Store].[All Stores].[USA]" + nl +
+                        "[Store].[All Stores]");
+            }
+
+            public void testAscendantsAll(FoodMartTestCase test) {
+                test.assertAxisReturns(
+                        "Ascendants([Store].DefaultMember)",
+                        "[Store].[All Stores]");
+            }
+
+            public void testAscendantsNull(FoodMartTestCase test) {
+                test.assertAxisReturns(
+                        "Ascendants([Gender].[F].PrevMember)",
+                        "");
+            }
+        });
+
 		define(new FunkResolver(
 			"BottomCount",
 			"BottomCount(<Set>, <Count>[, <Numeric Expression>])",
@@ -2528,8 +2560,122 @@ public class BuiltinFunTable extends FunTable {
 			}
 		});
 
-		if (false) define(new FunDefBase("Generate", "Generate(<Set1>, <Set2>[, ALL])", "Applies a set to each member of another set and joins the resulting sets by union.", "fx*"));
-		if (false) define(new FunDefBase("Head", "Head(<Set>[, < Numeric Expression >])", "Returns the first specified number of elements in a set.", "fx*"));
+		define(new MultiResolver(
+                "Generate", "Generate(<Set1>, <Set2>[, ALL])", "Applies a set to each member of another set and joins the resulting sets by union.",
+                new String[] {"fxxx", "fxxxy"}) {
+            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+                final boolean all = getLiteralArg(args, 2, "", new String[] {"ALL"}, dummyFunDef).equalsIgnoreCase("ALL");
+                return new FunDefBase(dummyFunDef) {
+                    public Object evaluate(Evaluator evaluator, Exp[] args) {
+                        List members = (List) getArg(evaluator, args, 0);
+                        List result = new ArrayList();
+                        HashSet emitted = all ? null : new HashSet();
+                        for (int i = 0; i < members.size(); i++) {
+                            Object o = members.get(i);
+                            if (o instanceof Member) {
+                                evaluator.setContext((Member) o);
+                            } else {
+                                evaluator.setContext((Member[]) o);
+                            }
+                            final List result2 = (List) args[1].evaluate(evaluator);
+                            if (all) {
+                                result.addAll(result2);
+                            } else {
+                                for (int j = 0; j < result2.size(); j++) {
+                                    Object row = result2.get(j);
+                                    if (emitted.add(row)) {
+                                        result.add(row);
+                                    }
+                                }
+                            }
+                        }
+                        return result;
+                    }
+                };
+            }
+            public void testGenerate(FoodMartTestCase test) {
+                test.assertAxisReturns(
+                        "Generate({[Store].[USA], [Store].[USA].[CA]}, {[Store].CurrentMember.Children})",
+                        "");
+            }
+            public void testGenerateAll(FoodMartTestCase test) {
+                test.assertAxisReturns(
+                        "Generate({[Store].[USA].[CA], [Store].[USA].[OR].[Portland]}," +
+                        " Ascendants([Store].CurrentMember)," +
+                        " ALL)",
+                        "[Store].[All Stores].[USA].[CA]" + nl +
+                        "[Store].[All Stores].[USA]" + nl +
+                        "[Store].[All Stores]" + nl +
+                        "[Store].[All Stores].[USA].[OR].[Portland]" + nl +
+                        "[Store].[All Stores].[USA].[OR]" + nl +
+                        "[Store].[All Stores].[USA]" + nl +
+                        "[Store].[All Stores]");
+            }
+            public void testGenerateUnique(FoodMartTestCase test) {
+                test.assertAxisReturns(
+                        "Generate({[Store].[USA].[CA], [Store].[USA].[OR].[Portland]}," +
+                        " Ascendants([Store].CurrentMember))",
+                        "[Store].[All Stores].[USA].[CA]" + nl +
+                        "[Store].[All Stores].[USA]" + nl +
+                        "[Store].[All Stores]" + nl +
+                        "[Store].[All Stores].[USA].[OR].[Portland]" + nl +
+                        "[Store].[All Stores].[USA].[OR]");
+            }
+            public void testGenerateCrossJoin(FoodMartTestCase test) {
+                // Note that the different regions have different Top 2.
+                test.assertAxisReturns(
+                        "Generate({[Store].[USA].[CA], [Store].[USA].[CA].[San Francisco]}," + nl +
+                        "  CrossJoin({[Store].CurrentMember}," + nl +
+                        "    TopCount([Product].[Brand Name].members, " + nl +
+                        "    2," + nl +
+                        "    [Measures].[Unit Sales])))",
+                        "{[Store].[All Stores].[USA].[CA], [Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Hermanos]}" + nl +
+                        "{[Store].[All Stores].[USA].[CA], [Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Tell Tale]}" + nl +
+                        "{[Store].[All Stores].[USA].[CA].[San Francisco], [Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Ebony]}" + nl +
+                        "{[Store].[All Stores].[USA].[CA].[San Francisco], [Product].[All Products].[Food].[Produce].[Vegetables].[Fresh Vegetables].[High Top]}");
+            }
+        });
+
+        define(new FunkResolver(
+                "Head", "Head(<Set>[, < Numeric Expression >])", "Returns the first specified number of elements in a set.",
+                new String[] {"fxx", "fxxn"},
+                new FunkBase() {
+                    public Object evaluate(Evaluator evaluator, Exp[] args) {
+                        List members = (List) getArg(evaluator, args, 0);
+                        final int count = args.length < 2 ? 1 :
+                                getIntArg(evaluator, args, 1);
+                        if (count >= members.size()) {
+                            return members;
+                        }
+                        if (count <= 0) {
+                            return new ArrayList();
+                        }
+                        return members.subList(0, count);
+                    }
+                    public void testHead(FoodMartTestCase test) {
+                        test.assertAxisReturns("Head([Store].Children, 2)",
+                                "[Store].[All Stores].[Canada]" + nl +
+                                "[Store].[All Stores].[Mexico]");
+                    }
+                    public void testHeadNegative(FoodMartTestCase test) {
+                        test.assertAxisReturns("Head([Store].Children, 2 - 3)",
+                                "");
+                    }
+                    public void testHeadDefault(FoodMartTestCase test) {
+                        test.assertAxisReturns("Head([Store].Children)",
+                                "[Store].[All Stores].[Canada]");
+                    }
+                    public void testHeadOvershoot(FoodMartTestCase test) {
+                        test.assertAxisReturns("Head([Store].Children, 2 + 2)",
+                                "[Store].[All Stores].[Canada]" + nl +
+                                "[Store].[All Stores].[Mexico]" + nl +
+                                "[Store].[All Stores].[USA]");
+                    }
+                    public void testHeadEmpty(FoodMartTestCase test) {
+                        test.assertAxisReturns("Head([Gender].[F].Children, 2)",
+                                "");
+                    }
+                }));
 
 		defineReserved(new String[] {"PRE","POST"});
 		define(new MultiResolver(
@@ -3123,8 +3269,98 @@ public class BuiltinFunTable extends FunTable {
 						null;
 			}
 		});
-		if (false) define(new FunDefBase("Subset", "Subset(<Set>, <Start>[, <Count>])", "Returns a subset of elements from a set.", "fx*"));
-		if (false) define(new FunDefBase("Tail", "Tail(<Set>[, <Count>])", "Returns a subset from the end of a set.", "fx*"));
+
+        define(new FunkResolver(
+                "Subset", "Subset(<Set>, <Start>[, <Count>])", "Returns a subset of elements from a set.",
+                new String[] {"fxxn", "fxxnn"},
+                new FunkBase() {
+                    public Object evaluate(Evaluator evaluator, Exp[] args) {
+                        List members = (List) getArg(evaluator, args, 0);
+                        final int start = getIntArg(evaluator, args, 1);
+                        final int end;
+                        if (args.length < 3) {
+                            end = members.size();
+                        } else {
+                            final int count = getIntArg(evaluator, args, 2);
+                            end = start + count;
+                        }
+                        if (start >= end || start < 0) {
+                            return new ArrayList();
+                        }
+                        if (start == 0 && end >= members.size()) {
+                            return members;
+                        }
+                        return members.subList(start, end);
+                    }
+                    public void testSubset(FoodMartTestCase test) {
+                        test.assertAxisReturns("Subset([Promotion Media].Children, 7, 2)",
+                                "[Promotion Media].[All Media].[Product Attachment]" + nl +
+                                "[Promotion Media].[All Media].[Radio]");
+                    }
+                    public void testSubsetNegativeCount(FoodMartTestCase test) {
+                        test.assertAxisReturns("Subset([Promotion Media].Children, 3, -1)",
+                                "");
+                    }
+                    public void testSubsetNegativeStart(FoodMartTestCase test) {
+                        test.assertAxisReturns("Subset([Promotion Media].Children, -2, 4)",
+                                "");
+                    }
+                    public void testSubsetDefault(FoodMartTestCase test) {
+                        test.assertAxisReturns("Subset([Promotion Media].Children, 11)",
+                                "[Promotion Media].[All Media].[Sunday Paper, Radio]" + nl +
+                                "[Promotion Media].[All Media].[Sunday Paper, Radio, TV]" + nl +
+                                "[Promotion Media].[All Media].[TV]");
+                    }
+                    public void testSubsetOvershoot(FoodMartTestCase test) {
+                        test.assertAxisReturns("Subset([Promotion Media].Children, 15)",
+                                "");
+                    }
+                    public void testSubsetEmpty(FoodMartTestCase test) {
+                        test.assertAxisReturns("Subset([Gender].[F].Children, 1)",
+                                "");
+                    }
+                }));
+
+        define(new FunkResolver(
+                "Tail", "Tail(<Set>[, <Count>])", "Returns a subset from the end of a set.",
+                new String[] {"fxx", "fxxn"},
+                new FunkBase() {
+                    public Object evaluate(Evaluator evaluator, Exp[] args) {
+                        List members = (List) getArg(evaluator, args, 0);
+                        final int count = args.length < 2 ? 1 :
+                                getIntArg(evaluator, args, 1);
+                        if (count >= members.size()) {
+                            return members;
+                        }
+                        if (count <= 0) {
+                            return new ArrayList();
+                        }
+                        return members.subList(members.size() - count, members.size());
+                    }
+                    public void testTail(FoodMartTestCase test) {
+                        test.assertAxisReturns("Tail([Store].Children, 2)",
+                                "[Store].[All Stores].[Mexico]" + nl +
+                                "[Store].[All Stores].[USA]");
+                    }
+                    public void testTailNegative(FoodMartTestCase test) {
+                        test.assertAxisReturns("Tail([Store].Children, 2 - 3)",
+                                "");
+                    }
+                    public void testTailDefault(FoodMartTestCase test) {
+                        test.assertAxisReturns("Tail([Store].Children)",
+                                "[Store].[All Stores].[USA]");
+                    }
+                    public void testTailOvershoot(FoodMartTestCase test) {
+                        test.assertAxisReturns("Tail([Store].Children, 2 + 2)",
+                                "[Store].[All Stores].[Canada]" + nl +
+                                "[Store].[All Stores].[Mexico]" + nl +
+                                "[Store].[All Stores].[USA]");
+                    }
+                    public void testTailEmpty(FoodMartTestCase test) {
+                        test.assertAxisReturns("Tail([Gender].[F].Children, 2)",
+                                "");
+                    }
+                }));
 
 		defineReserved("RECURSIVE");
 		define(new FunkResolver(
@@ -4451,7 +4687,7 @@ public class BuiltinFunTable extends FunTable {
 		});
 	}
 
-	private static boolean isConstantHierarchy(Exp typeArg) {
+    private static boolean isConstantHierarchy(Exp typeArg) {
 		if (typeArg instanceof Hierarchy) {
 			// e.g. "[Time].[By Week]"
 			return true;
