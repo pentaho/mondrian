@@ -44,13 +44,22 @@ public class RolapStar {
 	DataSource dataSource;
 	Measure[] measures;
 	public Table factTable;
-	/** Maps {@link RolapCube} to a {@link HashMap} which maps
+	/**
+     * Maps {@link RolapCube} to a {@link HashMap} which maps
 	 * {@link RolapLevel} to {@link Column}. The double indirection is
 	 * necessary because in different cubes, a shared hierarchy might be joined
-	 * onto the fact table at different levels. */
+	 * onto the fact table at different levels.
+     */
 	final HashMap mapCubeToMapLevelToColumn = new HashMap();
-    /** Maps {@link Column} to {@link String} for each column which is a key
-     * to a level. */
+    /**
+     * As {@link #mapCubeToMapLevelToColumn}, but holds name columns.
+     */
+    final HashMap mapCubeToMapLevelNameToColumn = new HashMap();
+
+    /**
+     * Maps {@link Column} to {@link String} for each column which is a key
+     * to a level.
+     */
     final HashMap mapColumnToName = new HashMap();
 
     /** holds all aggregations of this star */

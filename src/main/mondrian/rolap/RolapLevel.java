@@ -41,6 +41,11 @@ class RolapLevel extends LevelBase
 	RolapProperty[] properties;
 	RolapProperty[] inheritedProperties;
 
+    /**
+     * Ths expression which gives the name of members of this level. If null,
+     * members are named using the key expression.
+     */
+    final MondrianDef.Expression nameExp;
 	/** The expression which joins to the parent member in a parent-child
 	 * hierarchy, or null if this is a regular hierarchy. */
 	final MondrianDef.Expression parentExp;
@@ -62,13 +67,19 @@ class RolapLevel extends LevelBase
      * @pre levelType != null
      * @pre hideMemberCondition != null
 	 */
-	RolapLevel(RolapHierarchy hierarchy, int depth, String name,
+	RolapLevel(RolapHierarchy hierarchy,
+        int depth,
+        String name,
         MondrianDef.Expression keyExp,
+        MondrianDef.Expression nameExp,
         MondrianDef.Expression ordinalExp,
-        MondrianDef.Expression parentExp, String nullParentValue,
-        MondrianDef.Closure xmlClosure, RolapProperty[] properties,
+        MondrianDef.Expression parentExp,
+        String nullParentValue,
+        MondrianDef.Closure xmlClosure,
+        RolapProperty[] properties,
         int flags,
-        HideMemberCondition hideMemberCondition,
+        HideMemberCondition
+        hideMemberCondition,
         LevelType levelType)
     {
         Util.assertPrecondition(properties != null, "properties != null");
@@ -86,6 +97,12 @@ class RolapLevel extends LevelBase
 		this.unique = (flags & UNIQUE) == UNIQUE;
 		this.depth = depth;
 		this.keyExp = keyExp;
+        if (nameExp != null) {
+            if (nameExp instanceof MondrianDef.Column) {
+                checkColumn((MondrianDef.Column) nameExp);
+            }
+        }
+        this.nameExp = nameExp;
 		if (ordinalExp != null) {
 			if (ordinalExp instanceof MondrianDef.Column) {
 				checkColumn((MondrianDef.Column) ordinalExp);
@@ -167,7 +184,7 @@ class RolapLevel extends LevelBase
 	{
 		this(
             hierarchy, depth, xmlLevel.name, xmlLevel.getKeyExp(),
-            xmlLevel.getOrdinalExp(),
+            xmlLevel.getNameExp(), xmlLevel.getOrdinalExp(),
             xmlLevel.getParentExp(), xmlLevel.nullParentValue,
             xmlLevel.closure, createProperties(xmlLevel),
             (xmlLevel.type.equals("Numeric") ? NUMERIC : 0) |

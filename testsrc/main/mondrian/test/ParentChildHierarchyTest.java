@@ -384,6 +384,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         checkDrillThroughSql(
             result,
             0,
+            extendedContext,
             "[Employees].[All Employees]",
             "$39,431.67",
             "select" +
@@ -392,7 +393,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "from `time_by_day` as `time_by_day`," +
             " `salary` as `salary` " +
             "where `salary`.`pay_date` = `time_by_day`.`the_date`" +
-            " and `time_by_day`.`the_year` = 1997", extendedContext);
+            " and `time_by_day`.`the_year` = 1997");
 
         // Drill-through for row #1, [Employees].[All].[Sheri Nowmer]
         // Note that the SQL does not contain the employee_closure table.
@@ -401,10 +402,11 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         checkDrillThroughSql(
             result,
             1,
+            extendedContext,
             "[Employees].[All Employees].[Sheri Nowmer]",
             "$39,431.67",
             "select `time_by_day`.`the_year` as `Year`," +
-            " `employee`.`employee_id` as `Employee Id`," +
+            " `employee`.`employee_id` as `Employee Id (Key)`," +
             " `salary`.`salary_paid` as `Org Salary` " +
             "from `time_by_day` as `time_by_day`," +
             " `salary` as `salary`," +
@@ -412,17 +414,18 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "where `salary`.`pay_date` = `time_by_day`.`the_date`" +
             " and `time_by_day`.`the_year` = 1997" +
             " and `salary`.`employee_id` = `employee`.`employee_id`" +
-            " and `employee`.`employee_id` = 1", extendedContext);
+            " and `employee`.`employee_id` = 1");
 
         // Drill-through for row #2, [Employees].[All].[Sheri Nowmer].
         // Note that the SQL does not contain the employee_closure table.
         checkDrillThroughSql(
             result,
             2,
+            extendedContext,
             "[Employees].[All Employees].[Derrick Whelply]",
             "$36,494.07",
             "select `time_by_day`.`the_year` as `Year`," +
-            " `employee`.`employee_id` as `Employee Id`," +
+            " `employee`.`employee_id` as `Employee Id (Key)`," +
             " `salary`.`salary_paid` as `Org Salary` " +
             "from `time_by_day` as `time_by_day`," +
             " `salary` as `salary`," +
@@ -430,7 +433,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "where `salary`.`pay_date` = `time_by_day`.`the_date`" +
             " and `time_by_day`.`the_year` = 1997" +
             " and `salary`.`employee_id` = `employee`.`employee_id`" +
-            " and `employee`.`employee_id` = 2", extendedContext);
+            " and `employee`.`employee_id` = 2");
     }
 
     public void testParentChildDrillThroughWithContext() {
@@ -444,6 +447,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         checkDrillThroughSql(
             result,
             2,
+            extendedContext,
             "[Employees].[All Employees].[Derrick Whelply]",
             "$36,494.07",
             "select" +
@@ -459,7 +463,8 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             " `employee`.`position_title` as `Position Title`," +
             " `employee`.`management_role` as `Management Role`," +
             " `department`.`department_id` as `Department Description`," +
-            " `employee`.`employee_id` as `Employee Id`," +
+            " `employee`.`employee_id` as `Employee Id (Key)`," +
+            " `employee`.`full_name` as `Employee Id`," +
             " `salary`.`salary_paid` as `Org Salary` " +
             "from" +
             " `time_by_day` as `time_by_day`," +
@@ -488,17 +493,15 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             " and `salary`.`employee_id` = `employee`.`employee_id`" +
             " and `salary`.`department_id` = `department`.`department_id`" +
             " and `salary`.`employee_id` = `employee`.`employee_id`" +
-            " and `employee`.`employee_id` = 2",
-            extendedContext);
+            " and `employee`.`employee_id` = 2" +
+            " and `salary`.`employee_id` = `employee`.`employee_id`");
     }
 
-    private void checkDrillThroughSql(
-        Result result,
+    private void checkDrillThroughSql(Result result,
         int row,
-        String expectedMember,
+        boolean extendedContext, String expectedMember,
         String expectedCell,
-        String expectedSql,
-        boolean extendedContext)
+        String expectedSql)
     {
         final Member empMember = result.getAxes()[1].positions[row].members[0];
         assertEquals(expectedMember, empMember.getUniqueName());

@@ -372,11 +372,18 @@ class RolapCube extends CubeBase
 				this.fact);
 		RolapHierarchy[] hierarchies = (RolapHierarchy[])
 				dimension.getHierarchies();
-		HashMap mapLevelToColumn = (HashMap) star.mapCubeToMapLevelToColumn.get(this);
+		HashMap mapLevelToColumn = (HashMap)
+            star.mapCubeToMapLevelToColumn.get(this);
 		if (mapLevelToColumn == null) {
 			mapLevelToColumn = new HashMap();
 			star.mapCubeToMapLevelToColumn.put(this, mapLevelToColumn);
 		}
+        HashMap mapLevelNameToColumn = (HashMap)
+            star.mapCubeToMapLevelNameToColumn.get(this);
+        if (mapLevelNameToColumn == null) {
+            mapLevelNameToColumn = new HashMap();
+            star.mapCubeToMapLevelNameToColumn.put(this, mapLevelNameToColumn);
+        }
 		for (int k = 0; k < hierarchies.length; k++) {
 			RolapHierarchy hierarchy = hierarchies[k];
 			HierarchyUsage hierarchyUsage = schema.getUsage(hierarchy,this);
@@ -410,31 +417,50 @@ class RolapCube extends CubeBase
 				if (level.keyExp == null) {
 					continue;
 				} else {
-					RolapStar.Column column = new RolapStar.Column();
-					if (level.keyExp instanceof MondrianDef.Column) {
-						String tableName = ((MondrianDef.Column) level.keyExp).table;
-						column.table = table.findAncestor(tableName);
-						if (column.table == null) {
-							throw Util.newError(
-									"Level '" + level.getUniqueName() +
-									"' of cube '" + this +
-									"' is invalid: table '" + tableName +
-									"' is not found in current scope");
-						}
-					} else {
-						column.table = table;
-					}
-					column.expression = level.keyExp;
-					column.isNumeric = (level.flags & RolapLevel.NUMERIC) != 0;
+                    RolapStar.Column column = makeColumnForLevelExpr(level,
+                        table, level.keyExp);
+                    column.isNumeric = (level.flags & RolapLevel.NUMERIC) != 0;
 					table.columns.add(column);
 					mapLevelToColumn.put(level, column);
-                    star.mapColumnToName.put(column, level.getName());
+                    if (level.nameExp != null) {
+                        final RolapStar.Column nameColumn =
+                            makeColumnForLevelExpr(level, table, level.nameExp);
+                        table.columns.add(nameColumn);
+                        mapLevelNameToColumn.put(level, nameColumn);
+                        star.mapColumnToName.put(nameColumn, level.getName());
+                        star.mapColumnToName.put(column, level.getName() + " (Key)");
+                    } else {
+                        star.mapColumnToName.put(column, level.getName());
+                    }
 				}
 			}
 		}
 	}
 
-	public Member[] getMembersForQuery(String query, List calcMembers) {
+    private RolapStar.Column makeColumnForLevelExpr(
+        RolapLevel level,
+        RolapStar.Table table,
+        MondrianDef.Expression exp)
+    {
+        RolapStar.Column column = new RolapStar.Column();
+        if (exp instanceof MondrianDef.Column) {
+            String tableName = ((MondrianDef.Column) exp).table;
+            column.table = table.findAncestor(tableName);
+            if (column.table == null) {
+                throw Util.newError(
+                        "Level '" + level.getUniqueName() +
+                        "' of cube '" + this +
+                        "' is invalid: table '" + tableName +
+                        "' is not found in current scope");
+            }
+        } else {
+            column.table = table;
+        }
+        column.expression = exp;
+        return column;
+    }
+
+    public Member[] getMembersForQuery(String query, List calcMembers) {
         throw new UnsupportedOperationException();
     }
 

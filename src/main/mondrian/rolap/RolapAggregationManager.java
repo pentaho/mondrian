@@ -45,7 +45,11 @@ public abstract class RolapAggregationManager implements CellReader {
      *   query for levels below each current member. This additional context
      *   makes the drill-through queries easier for humans to understand.
 	 **/
-	static CellRequest makeRequest(RolapMember[] members, boolean extendedContext) {
+	static CellRequest makeRequest(
+        RolapMember[] members,
+        boolean extendedContext)
+    {
+        boolean showNames = extendedContext;
 		if (!(members[0] instanceof RolapStoredMeasure)) {
 			return null;
 		}
@@ -56,14 +60,16 @@ public abstract class RolapAggregationManager implements CellReader {
 		RolapStar star = starMeasure.table.star;
 		CellRequest request = new CellRequest(starMeasure);
 		HashMap mapLevelToColumn = (HashMap)
-                star.mapCubeToMapLevelToColumn.get(measure.cube);
+            star.mapCubeToMapLevelToColumn.get(measure.cube);
+        HashMap mapLevelNameToColumn = (HashMap)
+            star.mapCubeToMapLevelNameToColumn.get(measure.cube);
 		for (int i = 1; i < members.length; i++) {
 			RolapMember member = members[i];
 			RolapLevel previousLevel = null;
             if (extendedContext) {
-                // Add the key columns as non-constraining columns. For example,
-                // if they asked for [Gender].[M], [Store].[USA].[CA] then
-                // the following levels are in play:
+                // Add the key columns as non-constraining columns. For
+                // example, if they asked for [Gender].[M], [Store].[USA].[CA]
+                // then the following levels are in play:
                 //   Gender = 'M'
                 //   Marital Status not constraining
                 //   Nation = 'USA'
@@ -79,13 +85,21 @@ public abstract class RolapAggregationManager implements CellReader {
                 //   and [Nation] = 'USA'
                 //   and [State] = 'CA'
                 //
-                RolapLevel[] levels = (RolapLevel[]) member.getHierarchy().getLevels();
+                RolapLevel[] levels = (RolapLevel[])
+                    member.getHierarchy().getLevels();
                 for (int j = levels.length - 1,
                         depth = member.getLevel().getDepth(); j > depth; j--) {
                     final RolapLevel level = levels[j];
-                    RolapStar.Column column = (RolapStar.Column) mapLevelToColumn.get(level);
+                    RolapStar.Column column = (RolapStar.Column)
+                        mapLevelToColumn.get(level);
                     if (column != null) {
                         request.addConstrainedColumn(column, null);
+                        if (showNames && level.nameExp != null) {
+                            RolapStar.Column nameColumn = (RolapStar.Column)
+                                mapLevelNameToColumn.get(level);
+                            Util.assertTrue(nameColumn != null);
+                            request.addConstrainedColumn(nameColumn, null);
+                        }
                     }
                 }
             }
@@ -136,9 +150,14 @@ public abstract class RolapAggregationManager implements CellReader {
                     // (this happens in virtual cubes). The starMeasure only has
                     // a value for the 'all' member of the hierarchy.
 					return null;
-				} else {
-					request.addConstrainedColumn(column, m.key);
 				}
+                request.addConstrainedColumn(column, m.key);
+                if (showNames && level.nameExp != null) {
+                    RolapStar.Column nameColumn = (RolapStar.Column)
+                        mapLevelNameToColumn.get(level);
+                    Util.assertTrue(nameColumn != null);
+                    request.addConstrainedColumn(nameColumn, null);
+                }
 			}
 		}
 		return request;
