@@ -120,7 +120,7 @@ public class RolapSchema implements Schema
 	 * A pool is a collection of schemas. Call <code>Pool.instance.{@link #get
 	 * get(catalogName,jdbcConnectString)</code>.
 	 */
-	public static class Pool {
+	static class Pool {
 		private static Pool pool = new Pool();
 
 		private HashMap mapUrlToSchema = new HashMap();
@@ -147,9 +147,13 @@ public class RolapSchema implements Schema
 			}
 			return schema;
 		}
-		public synchronized void remove(String catalogName, String jdbcConnectString) {
+		synchronized void remove(String catalogName, String jdbcConnectString) {
 			mapUrlToSchema.remove(catalogName + ":" + jdbcConnectString);
 		}
+	}
+
+	public static void flushSchema(String catalogName, String jdbcConnectString) {
+		Pool.instance().remove(catalogName, jdbcConnectString);
 	}
 
 	public Cube lookupCube(String cube,boolean failIfNotFound)
