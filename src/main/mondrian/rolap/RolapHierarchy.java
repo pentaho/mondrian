@@ -56,6 +56,7 @@ class RolapHierarchy extends HierarchyBase
 		this.hasAll = hasAll;
 		this.levels = new RolapLevel[0];
 		this.name = dimension.getName();
+		setCaption(dimension.getCaption());
 		this.uniqueName = dimension.getUniqueName();
 		if (this.subName != null) {
 			this.name += "." + subName; // e.g. "Time.Weekly"
@@ -128,13 +129,6 @@ class RolapHierarchy extends HierarchyBase
 		this.foreignKey = xmlCubeDimension.foreignKey;
 		if (xmlHierarchy.caption != null && xmlHierarchy.caption.length() > 0)
 			setCaption(xmlHierarchy.caption);
-		else {
-			// inherit caption from dimension, if there is a special assignment
-			String dimCaption = dimension.getCaption();
-			if (!dimension.getName().equals(dimCaption))
-				setCaption(dimCaption);
-		}
-
 	}
 
     public boolean equals(Object o) {

@@ -559,14 +559,19 @@ So any transformation can be applied to a Mondrian schema at runtime. A "dynamic
 </p><p>
 To keep the MDX expressions free from language dependent names, it is a good idea to use the "caption" attribute,
 which is supported for any Olap element.<br/>
+Additonally:
+<ul><li>A hierarchy can have an <code>allMemberCaption</code> attribute as display value of the "All" member.
+</li><li>For the schema we can set a display value of the "measures" dimension by the <code>measuresCaption</code> attribute.
+</li></ul>
 </p><p>
 <b><u>Examples</u></b><br/>
 If your DynamicSchemaProcessor would support JSTL-like resolving of variables,<br>
-you might use <code>caption</code> or <code>allMemberCaption</code> attributes as follows.
+you might use <code>caption</code>, <code>allMemberCaption</code>, <code>measuresCaption</code> attributes as follows.
 
 <blockquote>
+  <pre dir="ltr">&lt;<a href="#XML_Schema">Schema</a> measuresCaption=&quot;${MEASURESCAPTION}&quot;&gt;</pre>
   <pre dir="ltr">&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Gender&quot; foreignKey=&quot;customer_id&quot; caption=&quot;${GENDER}&quot;&gt;</pre>
-  <pre dir="ltr">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All Genders&quot; primaryKey=&quot;customer_id&quot; allMemberCaption=&quot;${GENDER}&quot;&gt;</pre>
+  <pre dir="ltr">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All Genders&quot; primaryKey=&quot;customer_id&quot; allMemberCaption=&quot;${ALLGENDER}&quot;&gt;</pre>
   <pre dir="ltr">&lt;<a href="#XML_Level">Level</a> name=&quot;Gender&quot; column=&quot;gender&quot; uniqueMembers=&quot;true&quot; caption=&quot;${GENDER}&quot;&gt;</pre>
   <pre dir="ltr">&lt;<a href="#XML_Measure">Measure</a> name=&quot;Unit Sales&quot; column=&quot;unit_sales&quot; caption=&quot;${UNITSALES}&quot;&gt;</pre>
 </blockquote>

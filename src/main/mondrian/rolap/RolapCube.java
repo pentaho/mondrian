@@ -61,6 +61,10 @@ class RolapCube extends CubeBase
 		RolapDimension measuresDimension = new RolapDimension(schema, Dimension.MEASURES_NAME, 0, DimensionType.StandardDimension);
 		this.dimensions[0] = measuresDimension;
 		this.measuresHierarchy = measuresDimension.newHierarchy(null, false);
+		if (xmlSchema.measuresCaption != null && xmlSchema.measuresCaption.length() > 0 ) {
+			measuresDimension.setCaption(xmlSchema.measuresCaption);
+			this.measuresHierarchy.setCaption(xmlSchema.measuresCaption);
+		}
 		RolapLevel measuresLevel = this.measuresHierarchy.newLevel("MeasuresLevel", 0);
 		for (int i = 0; i < xmlCube.dimensions.length; i++) {
 			MondrianDef.CubeDimension xmlCubeDimension = xmlCube.dimensions[i];
@@ -125,6 +129,10 @@ class RolapCube extends CubeBase
 			schema, Dimension.MEASURES_NAME, 0, DimensionType.StandardDimension);
 		this.dimensions[0] = measuresDimension;
 		this.measuresHierarchy = measuresDimension.newHierarchy(null, false);
+		if (xmlSchema.measuresCaption != null && xmlSchema.measuresCaption.length() > 0 ) {
+			measuresDimension.setCaption(xmlSchema.measuresCaption);
+			this.measuresHierarchy.setCaption(xmlSchema.measuresCaption);
+		}
 		this.measuresHierarchy.newLevel("MeasuresLevel", 0);
 		for (int i = 0; i < xmlVirtualCube.dimensions.length; i++) {
 			MondrianDef.VirtualCubeDimension xmlCubeDimension =

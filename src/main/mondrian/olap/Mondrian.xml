@@ -32,6 +32,9 @@ Revision is $Id$
 		<Attribute name="name" required="true">
 			<Doc>Name of this schema</Doc>
 		</Attribute>
+		<Attribute name="measuresCaption" required="false">
+			<Doc>Label for the measures dimension</Doc>
+		</Attribute>
 		<Attribute name="defaultRole" required="false">
 			<Doc>The name of the default schema for connections to this schema</Doc>
 		</Attribute>
