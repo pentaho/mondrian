@@ -52,7 +52,7 @@ public class TransformTag extends TagSupport {
 	public int doEndTag() throws javax.servlet.jsp.JspException {
 		try {
 			ApplResources ar = ApplResources.getInstance(pageContext.getServletContext());
-			ResultCache rc = ResultCache.getInstance(pageContext.getSession(), query);
+			ResultCache rc = ResultCache.getInstance(pageContext.getSession(), pageContext.getServletContext(), query);
 			Document doc = rc.getDOM();
 			// DOMBuilder.debug(doc);
 			Transformer transformer = ar.getTransformer(xsltURI, xsltCache);

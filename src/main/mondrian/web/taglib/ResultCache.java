@@ -11,14 +11,13 @@
 */
 package mondrian.web.taglib;
 
-import javax.servlet.http.HttpSession;
-
+import mondrian.olap.Connection;
 import mondrian.olap.Query;
 import mondrian.olap.Result;
-import mondrian.olap.Parser;
-import javax.servlet.ServletContext;
-import mondrian.olap.Connection;
 import org.w3c.dom.Document;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpSession;
 import javax.xml.parsers.ParserConfigurationException;
 
 /**
@@ -27,8 +26,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 public class ResultCache {
 	private final static String ATTR_NAME = "mondrian.web.taglib.ResultCache.";
-	private mondrian.olap.Query query = null;
-	private mondrian.olap.Result result = null;
+	private Query query = null;
+	private Result result = null;
 	private Document document = null;
 	private ServletContext servletContext;
 
@@ -36,14 +35,19 @@ public class ResultCache {
 		this.servletContext = context;
 	}
 
-	public static ResultCache getInstance(HttpSession session, String name) {
+	/**
+	 * Retrieves a cached query. It is identified by its name and the
+	 * current session. The servletContext parameter is necessary because
+	 * HttpSession.getServletContext was not added until J2EE 1.3.
+	 */
+	public static ResultCache getInstance(HttpSession session, ServletContext servletContext, String name) {
 		String fqname = ATTR_NAME + name;
-		ResultCache query = (ResultCache)session.getAttribute(fqname);
-		if (query == null) {
-			query = new ResultCache(session.getServletContext());
-			session.setAttribute(fqname, query);
+		ResultCache resultCache = (ResultCache)session.getAttribute(fqname);
+		if (resultCache == null) {
+			resultCache = new ResultCache(servletContext);
+			session.setAttribute(fqname, resultCache);
 		}
-		return query;
+		return resultCache;
 	}
 
 

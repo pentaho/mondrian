@@ -141,7 +141,7 @@ public class MDXQueryServlet extends HttpServlet {
     private void processTransform(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		String queryName = request.getParameter("query");
-		ResultCache rc = ResultCache.getInstance(request.getSession(), queryName);
+		ResultCache rc = ResultCache.getInstance(request.getSession(), getServletContext(), queryName);
 		Query query = rc.getQuery();
 		query = query.safeClone();
 		rc.setDirty();

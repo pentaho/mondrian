@@ -263,7 +263,8 @@
 </head>
 
 <%
-	ResultCache rc = ResultCache.getInstance(pageContext.getSession(), queryName);
+	ResultCache rc = ResultCache.getInstance(
+			pageContext.getSession(), pageContext.getServletContext(), queryName);
 	Query query = rc.getQuery();
 	QueryAxis[] axes = query.axes;
 	Result result = rc.getResult();
