@@ -204,7 +204,7 @@ todo:
 	<Element type="Hierarchy">
 		<Doc>
 			Defines a hierarchy.
-			
+
 			<p/>You must specify at most one <code>&lt;Relation&gt;</code>
 			or <code>memberReaderClass</code>. If you specify none, the
 			hierarchy is assumed to come from the same fact table of the
@@ -356,6 +356,9 @@ todo:
 			<Doc>todo:</Doc>
 			<Value>sum</Value>
 			<Value>count</Value>
+			<Value>min</Value>
+			<Value>max</Value>
+			<Value>avg</Value>
 		</Attribute>
 	</Element>
 

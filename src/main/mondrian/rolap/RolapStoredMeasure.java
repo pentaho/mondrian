@@ -36,7 +36,7 @@ class RolapStoredMeasure extends RolapMeasure
 		super(parentMember, level, name, formatString);
 		this.cube = cube;
 		this.expression = expression;
-		Util.assertTrue(aggregator.equals("sum") || aggregator.equals("count"));
+		//Util.assertTrue(aggregator.equals("sum") || aggregator.equals("count"));
 		this.aggregator = aggregator;
 	}
 
