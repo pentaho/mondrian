@@ -41,6 +41,7 @@
   <property name="dist.jar.file" value="${dist.dir}/${name}.jar"/>
   <property name="boot.jar.file" value="${lib.dir}/boot.jar"/>
   <property name="war.file" value="${dist.dir}/mondrian.war"/>
+  <property name="jdk.home" value="${myenv.JAVA_HOME}"/>
   <property name="tomcat.home" value="${myenv.TOMCAT_HOME}"/>
   <property name="xalan.home" value="${myenv.XALAN_HOME}"/>
   <property name="junit.home" value="${myenv.JUNIT_HOME}"/>
@@ -309,8 +310,7 @@
   <!-- targets to start and stop tomcat -->
 
   <path id="tomcat.classpath">
-    <pathelement location="${java.home}/lib/tools.jar"/>
-    <pathelement location="${tomcat.home}/localhost/work/classes"/>
+    <pathelement location="${jdk.home}/lib/tools.jar"/>
     <pathelement location="${tomcat.home}/bin/bootstrap.jar"/>
   </path>
 
