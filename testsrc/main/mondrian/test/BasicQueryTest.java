@@ -790,6 +790,57 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "Row #0: 1" + nl);
     }
 
+    /**
+     * Test what happens when the solve orders are the same. According to
+     * http://msdn.microsoft.com/library/default.asp?url=/library/en-us/olapdmad/agmdxadvanced_6jn7.asp
+     * and http://dev.hyperion.com/download_files/resource_library/white_papers/mdx.pdf,
+     * if solve orders are the same then the dimension specified first when defining the cube wins.
+     * 
+     * In the first test, the answer should be 1 because Promotions comes before
+     * Customers in the FoodMart.xml schema.
+     */
+    public void testSolveOrderAmbiguous1() {
+        runQueryCheckResult(
+                "WITH" + nl +
+                "   MEMBER [Promotions].[Calc] AS '1'" + nl +
+                "   MEMBER [Customers].[Calc] AS '2'" + nl +
+                "SELECT" + nl +
+                "   { [Promotions].[Calc] } ON COLUMNS," + nl +
+                "   {  Customers].[Calc] } ON ROWS" + nl +
+                "FROM Sales",
+
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Promotions].[Calc]}" + nl +
+                "Axis #2:" + nl +
+                "{[Customers].[Calc]}" + nl +
+                "Row #0: 1" + nl);
+    }
+
+    /**
+     * In the second test, the answer should be 2 because Product comes before
+     * Promotions in the FoodMart.xml schema.
+     */
+    public void testSolveOrderAmbiguous2() {
+        runQueryCheckResult(
+                "WITH" + nl +
+                "   MEMBER [Promotions].[Calc] AS '1'" + nl +
+                "   MEMBER [Product].[Calc] AS '2'" + nl +
+                "SELECT" + nl +
+                "   { [Promotions].[Calc] } ON COLUMNS," + nl +
+                "   { [Product].[Calc] } ON ROWS" + nl +
+                "FROM Sales",
+
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Promotions].[Calc]}" + nl +
+                "Axis #2:" + nl +
+                "{[Product].[Calc]}" + nl +
+                "Row #0: 2" + nl);
+    }
+
     public void testCalculatedMemberWhichIsNotAMeasure() {
         String query = "WITH MEMBER [Product].[BigSeller] AS" + nl +
                 "  'IIf([Product].[Drink].[Alcoholic Beverages].[Beer and Wine] > 100, \"Yes\",\"No\")'" + nl +
