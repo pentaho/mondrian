@@ -947,7 +947,7 @@ public class BuiltinFunTable extends FunTable {
 				}
 				int ordinal = Util.getMemberOrdinalInParent(schemaReader, member1);
 				Member[] cousins = schemaReader.getMemberChildren(uncle);
-				if (cousins.length < ordinal) {
+				if (cousins.length <= ordinal) {
 					return null;
 				}
 				return cousins[ordinal];
