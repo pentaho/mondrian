@@ -194,6 +194,11 @@ class RolapMember extends MemberBase
 		if (this.key == null && other.key == null)
 			return this.getUniqueName().compareTo(other.getUniqueName());
 
+		// compare by unique name, if one ore both members are null
+		if (this.key == RolapUtil.sqlNullValue ||
+		    other.key == RolapUtil.sqlNullValue)
+			return this.getUniqueName().compareTo(other.getUniqueName());
+
 		// as both keys are not null, compare by key
 		//  String, Double, Integer should be possible
 		//  any key object should be "Comparable"
