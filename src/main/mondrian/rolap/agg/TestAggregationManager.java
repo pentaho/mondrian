@@ -182,30 +182,4 @@ public class TestAggregationManager extends TestCase {
 
 }
 
-
-class FakeConnection extends DelegatingConnection {
-	FakeConnection(java.sql.Connection connection, String expectedSql) {
-		super(connection);
-	}
-
-	public Statement createStatement() throws SQLException {
-		return new DelegatingStatement(super.createStatement(), this);
-	}
-}
-
-
-
-class AccessDatabaseMetaData extends DelegatingDatabaseMetaData {
-	public AccessDatabaseMetaData(DatabaseMetaData meta) {
-		super(meta);
-	}
-
-	public String getIdentifierQuoteString() throws SQLException {
-		return "`";
-	}
-	public String getDatabaseProductName() throws SQLException {
-		return "ACCESS";
-	}
-}
-
 // End TestAggregationManager.java
