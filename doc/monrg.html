@@ -17,6 +17,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
 <title>MonRG specification</title>
 <link rel="stylesheet" href="stylesheet.css" type="text/css" />
+<base target="_top">
 </head>
 
 <body>
@@ -102,15 +103,17 @@ Total time: 3 seconds</pre>
 <p><code>source/happy/BirthdayResource.java</code>:</p>
 <blockquote>
   <pre>package happy;
+
 import java.io.IOException;
 import java.util.Locale;
-import <a href="api/mondrian/resource/package-summary.html">mondrian.resource.*</a>;
-class BirthdayResource extends <a href="api/mondrian/resource/ShadowResourceBundle.html">ShadowResourceBundle</a> {
+import <a href="http://mondrian.sourceforge.net/api/mondrian/resource/package-summary.html">mondrian.resource.*</a>;
+
+class BirthdayResource extends <a href="http://mondrian.sourceforge.net/api/mondrian/resource/ShadowResourceBundle.html">ShadowResourceBundle</a> {
     public BirthdayResource() throws IOException {
     }
     private static String baseName = &quot;happy.BirthdayResource&quot;;
     /**
-      * Retrieves the singleton instance of {@link MondrianResource}. If
+      * Retrieves the singleton instance of {@link BirthdayResource}. If
       * the application has called {@link #setThreadLocale}, returns the
       * resource for the thread's locale.
       */
@@ -120,19 +123,28 @@ class BirthdayResource extends <a href="api/mondrian/resource/ShadowResourceBund
     /**
       * Retrieves the instance of {@link BirthdayResource} for the given locale.
       */
-    public static synchronized MondrianResource instance(Locale locale) {
+    public static synchronized BirthdayResource instance(Locale locale) {
         return (BirthdayResource) instance(baseName, locale);
     }
-    /** e: Internal error: {0} */
-    public static final <a href="api/mondrian/resource/ResourceDefinition.html">ResourceDefinition</a> HappyBirthday = new <a href="api/mondrian/resource/ResourceDefinition.html">ResourceDefinition</a>(&quot;HappyBirthday&quot;, &quot;Happy Birthday, {0}! You don't look {1,number} at all.&quot;);
-    public String getInternal(String p0) {
-        return Internal.instantiate(this, new Object[] {p0}).toString();
+    /** HappyBirthay is 'Happy Birthday, {0}! You don't look {1,number} at all.' */
+    public static final <a href="http://mondrian.sourceforge.net/api/mondrian/resource/ResourceDefinition.html">ResourceDefinition</a> HappyBirthday = new <a href="http://mondrian.sourceforge.net/api/mondrian/resource/ResourceDefinition.html">ResourceDefinition</a>(&quot;HappyBirthday&quot;, &quot;Happy Birthday, {0}! You don't look {1,number} at all.&quot;);
+    public static String getHappyBirthday(String p0, Number p1) {
+        return HappyBirthday.instantiate(
+            getInstance(), new Object[] {p0, p1}).toString();
     }
-    public <a href="api/mondrian/resource/ChainableRuntimeException.html">ChainableRuntimeException</a> newInternal(String p0) {
-        return new <a href="api/mondrian/resource/ChainableRuntimeException.html">ChainableRuntimeException</a>(Internal.instantiate(this, new Object[] {p0}), null);
+    /** TooYoung is '{0} has not been born yet.' */
+    public static final <a href="http://mondrian.sourceforge.net/api/mondrian/resource/ResourceDefinition.html">ResourceDefinition</a> TooYoung = new <a href="http://mondrian.sourceforge.net/api/mondrian/resource/ResourceDefinition.html">ResourceDefinition</a>(&quot;TooYoung&quot;, &quot;{0} has not been born yet.&quot;);
+    public static String getTooYoung(String p0) {
+        return HappyBirthday.instantiate(
+            getInstance(), new Object[] {p0}).toString();
     }
-    public <a href="api/mondrian/resource/ChainableRuntimeException.html">ChainableRuntimeException</a> newInternal(String p0, Throwable err) {
-        return new <a href="api/mondrian/resource/ChainableRuntimeException.html">ChainableRuntimeException</a>(Internal.instantiate(this, new Object[] {p0}), err);
+     public static <a href="http://mondrian.sourceforge.net/api/mondrian/resource/ChainableRuntimeException.html">ChainableRuntimeException</a> newTooYoung(String p0) {
+        return new <a href="http://mondrian.sourceforge.net/api/mondrian/resource/ChainableRuntimeException.html">ChainableRuntimeException</a>(TooYoung.instantiate(
+            getInstance(), new Object[] {p0}), null);
+    }
+    public static <a href="http://mondrian.sourceforge.net/api/mondrian/resource/ChainableRuntimeException.html">ChainableRuntimeException</a> newTooYoung(String p0, Throwable err) {
+        return new <a href="http://mondrian.sourceforge.net/api/mondrian/resource/ChainableRuntimeException.html">ChainableRuntimeException</a>(TooYoung.instantiate(
+            getInstance(), new Object[] {p0}), err);
     }
 }</pre>
 </blockquote>
@@ -150,8 +162,10 @@ public class BirthdayResource_en_US extends BirthdayResource {
   <pre>HappyBirthday=Happy Birthday, {0}! You don't look {1,number}.
 TooYoung={0} has not been born yet.</pre>
 </blockquote>
-<p>There are 3 methods generated for each resource; one to retrieve a string, 
-and two to create an exception based upon that string.</p>
+<p>For each resource, a <code>get</code><code><i>Xxx</i>()</code> method is 
+generated to retrieve that resource in the current locale, substituting 
+parameters appropriately. For exception resources, an additional two <code>new<i>Xxx</i>()</code> 
+methods are generated to create (but not throw) an exception.</p>
 <p>Tokens such as <code>{0}</code> and <code>{1,number}</code> in the message 
 are automatically converted to method parameters of the right type. This means 
 that if you ever change the parameters in your error message, or accidentally 
@@ -193,7 +207,7 @@ will return the right answer.</p>
 but this call will affect other applications running in the same Java Virtual 
 Machine, and is not allowed in some application server environments.</p>
 <p>MonRG provides a method
-<a href="api/mondrian/resource/ShadowResourceBundle.html#setThreadLocale(java.util.Locale)">
+<a href="http://mondrian.sourceforge.net/api/mondrian/resource/ShadowResourceBundle.html#setThreadLocale(java.util.Locale)">
 <code>ShadowResourceBundle.setThreadLocale(Locale)</code></a> to allow threads 
 to have different locales. Threads which are working in a different locale 
 should call this method at their entry point. For example:</p>
@@ -391,7 +405,7 @@ messages, it should also have a mode which reminds us to add new messages.)</p>
 <h2>resgen ANT task</h2>
 
 <p>The <code>&lt;resgen&gt;</code> task is defined
-<a href="api/mondrian/resource/ResourceGenTask.html">here</a>.</p>
+<a href="http://mondrian.sourceforge.net/api/mondrian/resource/ResourceGenTask.html">here</a>.</p>
 
 <h2>Conclusion</h2>
 <p>MonRG helps you build and maintain an internationalized application. Code 
