@@ -19,6 +19,8 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.regex.Pattern;
 
+import junit.framework.Assert;
+
 /**
  * <code>BasicQueryTest</code> is a test case which tests simple queries against
  * the FoodMart database.
@@ -4184,6 +4186,29 @@ public class BasicQueryTest extends FoodMartTestCase {
         visible = member.getPropertyValue(Property.PROPERTY_VISIBLE);
         assertEquals(Boolean.FALSE, visible);
     }
+    
+    public void testAllMemberCaption() {
+        RolapConnection conn = (RolapConnection) getConnection();
+        Schema schema = getConnection().getSchema();
+        final Cube salesCube = schema.lookupCube("Sales", true);
+        schema.createDimension(
+                salesCube,
+                "<Dimension name=\"Gender2\" foreignKey=\"customer_id\">" + nl +
+                "  <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\"" + nl + 
+                " allMemberCaption=\"Frauen und Maenner\" primaryKey=\"customer_id\">" + nl +
+                "  <Table name=\"customer\"/>" + nl +
+                "    <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>" +nl +
+                "  </Hierarchy>" + nl +
+                "</Dimension>");
+        String mdx = "select {[Gender2].[All Gender]} on columns from Sales";
+        Result result = TestContext.instance().executeFoodMart(mdx);
+        Axis axis0 = result.getAxes()[0];
+        Position pos0 = axis0.positions[0];
+        Member allGender = pos0.members[0];
+        String caption = allGender.getCaption();
+        Assert.assertEquals(caption, "Frauen und Maenner");
+    }
+
 }
 
 // End BasicQueryTest.java

@@ -490,6 +490,12 @@ class SqlMemberSource implements MemberReader
                         Member.ALL_MEMBER_TYPE);
                 root.ordinal = lastOrdinal++;
                 cache.putMember(key, root);
+                if (hierarchy.xmlHierarchy != null &&
+                    hierarchy.xmlHierarchy.allMemberCaption != null &&
+                    hierarchy.xmlHierarchy.allMemberCaption.length() > 0) {
+                    root.setCaption(hierarchy.xmlHierarchy.allMemberCaption );
+                }
+
             }
             ArrayList list = new ArrayList(1);
             list.add(root);
