@@ -1124,6 +1124,19 @@ public class Query extends QueryPart implements NameResolver {
 			return true;
 		return false;
 	}
+  
+  /**
+   * swap the x- and y- axis
+   * do nothing, if the number of axes is != 2
+   */
+  public void swapAxes() {
+    if ( axes.length == 2 ) {
+      Exp e0 = axes[0].set;
+      Exp e1 = axes[1].set;
+      axes[1].set = e0;
+      axes[0].set = e1;
+    }
+  }
 
 	/** Returns filtered sQuery based on user's grant privileges. {@link
 	 * CubeAccess} contains a list of forbidden hiearchies, and limited
