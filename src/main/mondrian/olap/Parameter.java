@@ -148,6 +148,25 @@ public class Parameter extends ExpBase {
 	public Object getValue() {
 		switch (category) {
 		case Category.Numeric:
+		  // exp can be a unary minus FunCall
+		  if (exp instanceof FunCall) {
+				FunCall f = (FunCall)exp;
+				if (f.getFunName().equals("-")) {
+					Literal lit = (Literal)f.args[0];
+					Object o = lit.getValue();
+					if (o instanceof Double)
+					  return new Double(-((Double)o).doubleValue());
+					else if (o instanceof Integer)
+					  return new Integer(-((Integer)o).intValue()); // probably impossible
+					else if (o instanceof Integer)
+   				  return o; // probably impossible
+
+			  } else {
+					//unexpected funcall in parameter definition
+					throw Util.newInternal("bad FunCall " + f);
+			  }
+		  }
+			return ((Literal)exp).getValue();
 		case Category.String:
 			return ((Literal)exp).getValue();
 		default:
