@@ -301,8 +301,9 @@ public class SqlQuery
 
 	/**
 	 * @pre alias != null
+	 * @return true if query *was* added
 	 */
-	public void addFromQuery(
+	public boolean addFromQuery(
 			String query, String alias, boolean failIfExists) {
 		Util.assertPrecondition(alias != null);
 		if (fromAliases.contains(alias)) {
@@ -310,7 +311,7 @@ public class SqlQuery
 				throw Util.newInternal(
 						"query already contains alias '" + alias + "'");
 			} else {
-				return;
+				return false;
 			}
 		}
 		if (fromCount++ == 0) {
@@ -331,6 +332,7 @@ public class SqlQuery
 			from.append(quoteIdentifier(alias));
 			fromAliases.add(alias);
 		}
+		return true;
 	}
 
 	/**
@@ -341,15 +343,16 @@ public class SqlQuery
 	 * @param alias table alias, may not be null
 	 *
 	 * @pre alias != null
+	 * @return true if table *was* added
 	 */
-	private void addFromTable(
+	private boolean addFromTable(
 			String schema, String table, String alias, boolean failIfExists) {
 		if (fromAliases.contains(alias)) {
 			if (failIfExists) {
 				throw Util.newInternal(
 						"query already contains alias '" + alias + "'");
 			} else {
-				return;
+				return false;
 			}
 		}
 		if (fromCount++ == 0) {
@@ -368,6 +371,7 @@ public class SqlQuery
 			from.append(quoteIdentifier(alias));
 			fromAliases.add(alias);
 		}
+		return true;
 	}
 
 	public void addFrom(SqlQuery sqlQuery, String alias, boolean failIfExists)
@@ -375,26 +379,33 @@ public class SqlQuery
 		addFromQuery(sqlQuery.toString(), alias, failIfExists);
 	}
 
-	public void addFrom(MondrianDef.Relation relation, boolean failIfExists) {
+	/**
+	 * @return true, if relation *was* added to query
+	 */
+	public boolean addFrom(MondrianDef.Relation relation, boolean failIfExists) {
 		if (relation instanceof MondrianDef.View) {
 			MondrianDef.View view = (MondrianDef.View) relation;
 			String sqlString = chooseQuery(view.selects);
 			String alias = view.alias;
 			if (!fromAliases.contains(alias)) {
-				addFromQuery(sqlString, alias, failIfExists);
+				return addFromQuery(sqlString, alias, failIfExists);
 			}
+			return false;
 		} else if (relation instanceof MondrianDef.Table) {
 			MondrianDef.Table table = (MondrianDef.Table) relation;
-			addFromTable(
+			return addFromTable(
 					table.schema, table.name, table.getAlias(), failIfExists);
 		} else if (relation instanceof MondrianDef.Join) {
 			MondrianDef.Join join = (MondrianDef.Join) relation;
-			addFrom(join.left, failIfExists);
-			addFrom(join.right, failIfExists);
-			addWhere(
+			boolean added = false;
+			added = added || addFrom(join.left, failIfExists);
+			added = added || addFrom(join.right, failIfExists);
+			if (added)
+				addWhere(
 					quoteIdentifier(join.getLeftAlias(), join.leftKey) +
 					" = " +
 					quoteIdentifier(join.getRightAlias(), join.rightKey));
+			return added;
 		} else {
 			throw Util.newInternal("bad relation type " + relation);
 		}
