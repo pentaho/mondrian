@@ -70,8 +70,11 @@ outer:
 					continue outer;
 				}
 			}
-			int returnType = BuiltinFunTable.decodeReturnType(signatures[j]);
-			return new FunkFunDef(this,funk,syntacticType,returnType,parameterTypes);
+			final String signature = signatures[j];
+			int returnType = BuiltinFunTable.decodeReturnType(signature);
+			final FunkFunDef funDef = new FunkFunDef(this,funk,syntacticType,returnType,parameterTypes);
+			funk.onResolve(args, funDef);
+			return funDef;
 		}
 		return null;
 	}

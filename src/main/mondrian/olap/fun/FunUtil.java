@@ -22,6 +22,7 @@ import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
+import java.util.Set;
 
 /**
  * <code>FunUtil</code> contains a set of methods useful within the
@@ -56,6 +57,38 @@ public class FunUtil extends Util {
 			Evaluator evaluator, Exp[] args, int index, String defaultValue) {
 		return (String) getArg(evaluator, args, index, defaultValue);
 	}
+
+	/** Returns an argument whose value is a literal. Unlike the other
+	 * <code>get<i>Xxx</i>Arg</code> methods, an evalutor is not required,
+	 * and hence this can be called at resolve-time. */
+	static String getLiteralArg(Exp[] args, int i, String defaultValue, String[] allowedValues, FunDef funDef) {
+		if (i >= args.length) {
+			if (defaultValue == null) {
+				throw newEvalException(funDef, "Required argument is missing");
+			} else {
+				return defaultValue;
+			}
+		}
+		Exp arg = args[i];
+		if (!(arg instanceof Literal) ||
+				arg.getType() != Exp.CatSymbol) {
+			throw newEvalException(funDef, "Expected a symbol, found '" + arg + "'");
+		}
+		String s = (String) ((Literal) arg).getValue();
+		StringBuffer sb = new StringBuffer();
+		for (int j = 0; j < allowedValues.length; j++) {
+			String allowedValue = allowedValues[j];
+			if (allowedValue.equalsIgnoreCase(s)) {
+				return allowedValue;
+			}
+			if (j > 0) {
+				sb.append(", ");
+			}
+			sb.append(allowedValue);
+		}
+		throw newEvalException(funDef, "Allowed values are: {" + sb + "}");
+	}
+
 
 	static boolean getBooleanArg(Evaluator evaluator, Exp[] args, int index) {
 		Object o = getArg(evaluator, args, index);
@@ -206,6 +239,21 @@ public class FunUtil extends Util {
 		}
 	}
 
+	/**
+	 * Throws an error if the expressions don't have the same hierarchy.
+	 * @param left
+	 * @param right
+	 * @throws MondrianEvaluationException if expressions don't have the same
+	 *     hierarchy
+	 */
+	static void checkCompatible(Exp left, Exp right, FunDef funDef) {
+		final Hierarchy hierarchy = left.getHierarchy();
+		final Hierarchy hierarchy2 = right.getHierarchy();
+		if (hierarchy != hierarchy2 && hierarchy != null && hierarchy2 != null) {
+			throw newEvalException(funDef, "Expressions must have the same hierarchy");
+		}
+	}
+
 	static Vector toVector(Object[] array) {
 		Vector vector = new Vector();
 		return addArray(vector, array);
@@ -216,6 +264,39 @@ public class FunUtil extends Util {
 			vector.addElement(array[i]);
 		}
 		return vector;
+	}
+
+	/** Adds every element of <code>right</code> to <code>left</code>. **/
+	static void add(Vector left, Vector right) {
+		if (right == null) {
+			return;
+		}
+		for (int i = 0, n = right.size(); i < n; i++) {
+			final Object o = right.elementAt(i);
+			left.addElement(o);
+		}
+	}
+
+	/** Adds every element of <code>right</code> which is not in <code>set</code>
+	 * to both <code>set</code> and <code>left</code>. **/
+	static void addUnique(Vector left, Vector right, Set set) {
+		if (right == null) {
+			return;
+		}
+		for (int i = 0, n = right.size(); i < n; i++) {
+			Object o = right.elementAt(i),
+					p = o;
+			if (o instanceof Object[]) {
+				p = new ArrayHolder((Object[]) o);
+			}
+			if (set.add(p)) {
+				left.addElement(o);
+			}
+		}
+	}
+
+	static Boolean toBoolean(boolean b) {
+		return b ? Boolean.TRUE : Boolean.FALSE;
 	}
 
 	static HashSet toHashSet(Vector vector) {
@@ -1105,6 +1186,43 @@ class ReverseComparator implements Comparator {
 	public int compare(Object o1, Object o2) {
 		int c = comparator.compare(o1, o2);
 		return -c;
+	}
+}
+
+/**
+ * Holds an array, so that {@link #equals} and {@link #hashCode} work.
+ */
+class ArrayHolder {
+	private Object[] a;
+
+	ArrayHolder(Object[] a) {
+		this.a = a;
+	}
+
+	public int hashCode() {
+		int h = 0;
+		for (int i = 0; i < a.length; i++) {
+			Object o = a[i];
+			h = (h << 4) ^ o.hashCode();
+		}
+		return h;
+	}
+
+	public boolean equals(Object o) {
+		return o instanceof ArrayHolder &&
+				equals(a, ((ArrayHolder) o).a);
+	}
+
+	private static boolean equals(Object[] a1, Object[] a2) {
+		if (a1.length != a2.length) {
+			return false;
+		}
+		for (int i = 0; i < a1.length; i++) {
+			if (!a1[i].equals(a2[i])) {
+				return false;
+			}
+		}
+		return true;
 	}
 }
 

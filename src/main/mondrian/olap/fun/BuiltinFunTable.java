@@ -477,8 +477,7 @@ public class BuiltinFunTable extends FunTable {
 			}
 
 			public void testLevelDimension(FoodMartTestCase test) {
-				String s = test.executeExpr(
-						"[Time].[Year].Dimension");
+				String s = test.executeExpr("[Time].[Year].Dimension");
 				test.assertEquals("[Time]", s);
 			}
 		});
@@ -509,8 +508,7 @@ public class BuiltinFunTable extends FunTable {
 			}
 
 			public void testDimensionsNumeric(FoodMartTestCase test) {
-				String s = test.executeExpr(
-						"Dimensions(2).Name");
+				String s = test.executeExpr("Dimensions(2).Name");
 				test.assertEquals("Store", s);
 			}
 		});
@@ -1069,9 +1067,8 @@ public class BuiltinFunTable extends FunTable {
 					}
 
 					public void testLagRootTooFar(FoodMartTestCase test) {
-						Member member = test.executeAxis(
-								"[Time].[1998].Lag(2)");
-						test.assertNull(null);
+						Member member = test.executeAxis("[Time].[1998].Lag(2)");
+						test.assertNull(member);
 					}
 				}));
 
@@ -1771,10 +1768,15 @@ public class BuiltinFunTable extends FunTable {
 				"Descendants", "Descendants(<Member>, <Level>[, <Desc_flag>])", "Returns the set of descendants of a member at a specified level, optionally including or excluding descendants in other levels.",
 				new String[]{"fxml", "fxmls"},
 				new FunkBase() {
+					public void onResolve(Exp[] args, FunDef funDef) {
+						String descFlag = getLiteralArg(args, 2, "", new String[] {""}, funDef);
+						Util.assertTrue(descFlag.equals(""), "Desc_flag is not implemented yet");
+						super.onResolve(args, funDef);
+					}
+
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Member member = getMemberArg(evaluator, args, 0, true);
 						Level level = getLevelArg(evaluator, args, 1, true);
-//					String descFlag = getStringArg(evaluator, args, 2, ??);
 						if (member.getLevel().getDepth() > level.getDepth()) {
 							return new Member[0];
 						}
@@ -1922,17 +1924,14 @@ public class BuiltinFunTable extends FunTable {
 				"Hierarchize", "Hierarchize(<Set>[, POST])", "Orders the members of a set in a hierarchy.",
 				new String[] {"fxx", "fxxy"},
 				new FunkBase() {
+					boolean post;
+					public void onResolve(Exp[] args, FunDef funDef) {
+						String order = getLiteralArg(args, 1, "PRE", new String[] {"PRE", "POST"}, funDef);
+						post = order.equals("POST");
+						super.onResolve(args, funDef);
+					}
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Vector members = (Vector) getArg(evaluator, args, 0);
-						String order = getStringArg(evaluator, args, 1, "PRE");
-						boolean post;
-						if (order.equals("PRE")) {
-							post = false;
-						} else if (order.equals("POST")) {
-							post = true;
-						} else {
-							throw newEvalException(null, "'" + order + "' is not a valid ordering: valid values are 'PRE', 'POST'' ");
-						}
 						hierarchize(members, post);
 						return members;
 					}
@@ -2054,12 +2053,19 @@ public class BuiltinFunTable extends FunTable {
 				"Order", "Order(<Set>, <Value Expression>[, ASC | DESC | BASC | BDESC])", "Arranges members of a set, optionally preserving or breaking the hierarchy.",
 				new String[]{"fxxvy", "fxxv"},
 				new FunkBase() {
+					boolean desc;
+					boolean brk;
+
+					public void onResolve(Exp[] args, FunDef funDef) {
+						String order = getLiteralArg(args, 2, "ASC", new String[] {"ASC","DESC","BASC","BDESC"}, funDef);
+						this.desc = order.equals("DESC") || order.equals("BDESC");
+						this.brk = order.equals("BASC") || order.equals("BDESC");
+						super.onResolve(args, funDef);
+					}
+
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Vector members = (Vector) getArg(evaluator, args, 0);
 						ExpBase exp = (ExpBase) getArgNoEval(args, 1);
-						String order = (String) getArg(evaluator, args, 2, "ASC");
-						boolean desc = order.equals("DESC") || order.equals("BDESC");
-						boolean brk = order.equals("BASC") || order.equals("BDESC");
 						sort(evaluator, members, exp, desc, brk);
 						return members;
 					}
@@ -2557,7 +2563,92 @@ public class BuiltinFunTable extends FunTable {
 				}
 			}));
 
-		if (false) define(new FunDefBase("Union", "Union(<Set1>, <Set2>[, ALL])", "Returns the union of two sets, optionally retaining duplicates.", "fx*"));
+		define(new MultiResolver(
+				"Union", "Union(<Set1>, <Set2>[, ALL])", "Returns the union of two sets, optionally retaining duplicates.",
+				new String[] {"fxxx", "fxxxy"},
+				new FunkBase() {
+					private boolean all;
+					public void onResolve(Exp[] args, FunDef funDef) {
+						String allString = getLiteralArg(args, 2, "DISTINCT", new String[] {"ALL", "DISTINCT"}, null);
+						this.all = allString.equalsIgnoreCase("ALL");
+						checkCompatible(args[0], args[1], funDef);
+						super.onResolve(args, funDef);
+					}
+
+					public Object evaluate(Evaluator evaluator, Exp[] args) {
+						Vector left = (Vector) getArg(evaluator, args, 0),
+								right = (Vector) getArg(evaluator, args, 1);
+						if (all) {
+							if (left == null || left.isEmpty()) {
+								return right;
+							}
+							add(left, right);
+							return left;
+						} else {
+							HashSet added = new HashSet();
+							Vector result = new Vector();
+							addUnique(result, left, added);
+							addUnique(result, right, added);
+							return result;
+						}
+					}
+
+					public void testUnionAll(FoodMartTestCase test) {
+						final Axis axis = test.executeAxis2("Union({[Gender].[M]}, {[Gender].[F]}, ALL)");
+						String expected = "[Gender].[All Gender].[M]" + nl +
+								"[Gender].[All Gender].[F]"; // order is preserved
+						test.assertEquals(expected, test.toString(axis.positions));
+					}
+					public void testUnion(FoodMartTestCase test) {
+						final Axis axis = test.executeAxis2("Union({[Store].[USA], [Store].[USA], [Store].[USA].[OR]}, {[Store].[USA].[CA], [Store].[USA]})");
+						String expected = "[Store].[All Stores].[USA]" + nl +
+								"[Store].[All Stores].[USA].[OR]" + nl +
+								"[Store].[All Stores].[USA].[CA]";
+						test.assertEquals(expected, test.toString(axis.positions));
+					}
+					public void testUnionEmptyBoth(FoodMartTestCase test) {
+						final Axis axis = test.executeAxis2("Union({}, {})");
+						String expected = "";
+						test.assertEquals(expected, test.toString(axis.positions));
+					}
+					public void testUnionEmptyRight(FoodMartTestCase test) {
+						final Axis axis = test.executeAxis2("Union({[Gender].[M]}, {})");
+						String expected = "[Gender].[All Gender].[M]";
+						test.assertEquals(expected, test.toString(axis.positions));
+					}
+					public void testUnionTuple(FoodMartTestCase test) {
+						final Axis axis = test.executeAxis2(
+								"Union({" +
+								" ([Gender].[M], [Marital Status].[S])," +
+								" ([Gender].[F], [Marital Status].[S])" +
+								"}, {" +
+								" ([Gender].[M], [Marital Status].[M])," +
+								" ([Gender].[M], [Marital Status].[S])" +
+								"})");
+						String expected = "{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S]}" + nl +
+								"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S]}" + nl +
+								"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M]}";
+						test.assertEquals(expected, test.toString(axis.positions));
+					}
+					public void testUnionQuery(FoodMartTestCase test) {
+						Result result = test.runQuery(
+								"select {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} on columns," + nl +
+								" Hierarchize( " + nl +
+								"   Union(" + nl +
+								"     Crossjoin(" + nl +
+								"       Crossjoin([Gender].[All Gender].children," + nl +
+								"                 [Marital Status].[All Marital Status].children )," + nl +
+								"       Crossjoin([Customers].[All Customers].children," + nl +
+								"                 [Product].[All Products].children ) ) ," + nl +
+								"     Crossjoin( {([Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M] )}," + nl +
+								"       Crossjoin(" + nl +
+								"         [Customers].[All Customers].[USA].children," + nl +
+								"         [Product].[All Products].children ) ) )) on rows" +nl +
+								"from Sales where ([Time].[1997])");
+						final Axis rowsAxis = result.getAxes()[1];
+						test.assertEquals(45, rowsAxis.positions.length);
+					}
+				}));
 		if (false) define(new FunDefBase("VisualTotals", "VisualTotals(<Set>, <Pattern>)", "Dynamically totals child members specified in a set using a pattern for the total label in the result set.", "fx*"));
 		define(new MultiResolver(
 				"Wtd", "Wtd([<Member>])", "A shortcut function for the PeriodsToDate function that specifies the level to be Week.",
@@ -3387,10 +3478,6 @@ public class BuiltinFunTable extends FunTable {
 				test.assertEquals("false", s);
 			}
 		});
-	}
-
-	private Boolean toBoolean(boolean b) {
-		return b ? Boolean.TRUE : Boolean.FALSE;
 	}
 
 	TestSuite createSuite() {

@@ -14,10 +14,11 @@ package mondrian.olap.fun;
 
 import mondrian.olap.Evaluator;
 import mondrian.olap.Exp;
+import mondrian.olap.FunDef;
 import mondrian.test.Testable;
 
 /**
- * A <code>Funk</code> is like a {@link FunDef}, but not so self-aware.
+ * A <code>Funk</code> is like a {@link mondrian.olap.FunDef}, but not so self-aware.
  *
  * @author jhyde
  * @since 28 February, 2002
@@ -32,6 +33,10 @@ interface Funk extends Testable {
 	 * the third.
 	 **/
 	Object evaluate(Evaluator evaluator, Exp[] args);
+	/**
+	 * Called when this <code>Funk</code> is resolved.
+	 */
+	void onResolve(Exp[] args, FunDef funDef);
 }
 
 // End Funk.java
