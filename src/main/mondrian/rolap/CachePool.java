@@ -249,9 +249,7 @@ public class CachePool {
 	 * <code>finalize</code> method.
 	 */
 	public void deregister(Cacheable cacheable, boolean fromFinalizer) {
-		synchronized (this) {
-			deregisterInternal(cacheable);
-		}
+		deregisterInternal(cacheable);
 		// Remove it from the queue. (If this method is called from the
 		// cacheable's finalize method, the soft reference to it will
 		// already have been nullifed.)
@@ -271,20 +269,26 @@ public class CachePool {
 	 */
 	private void deregisterInternal(Cacheable cacheable) {
 		String id = cacheableId(cacheable);
-		Double registeredCost = (Double) this.mapCacheableIdToCost.remove(id);
-		if (registeredCost == null) {
-			// We've already deregistered it.
-			return;
+		final double cost;
+		synchronized (this) {
+			Double registeredCost = (Double) this.mapCacheableIdToCost.remove(id);
+			if (registeredCost == null) {
+				// We've already deregistered it.
+				return;
+			}
+			cost = cacheable.getCost();
+			if (cost != registeredCost.doubleValue()) {
+				throw Util.newInternal(
+						id + " had cost " + cost +
+						" when registered, now has cost " + registeredCost);
+			}
+			unpinnedCost -= cost;
 		}
-		double cost = cacheable.getCost();
-		if (cost != registeredCost.doubleValue()) {
-			throw Util.newInternal(
-					id + " had cost " + cost +
-					" when registered, now has cost " + registeredCost);
-		}
-		unpinnedCost -= cost;
 //		System.out.println("unpinnedCost b now " + unpinnedCost + ", pinnedCost=" + pinnedCost);
 		Util.assertTrue(cacheable.getPinCount() == 0);
+		// Cache object removes itself OUTSIDE the synchronized block, because
+		// cache clients such as SmartMemberReader should lock themselves
+		// before locking CachePool.
 		cacheable.removeFromCache();
 		if (RolapUtil.debugOut != null) {
 			RolapUtil.debugOut.println(
