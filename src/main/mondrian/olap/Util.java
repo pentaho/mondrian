@@ -13,6 +13,8 @@
 package mondrian.olap;
 
 import org.apache.log4j.Logger;
+import org.eigenbase.xom.XOMUtil;
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -27,7 +29,7 @@ import java.util.*;
  * @since 6 August, 2001
  * @version $Id$
  **/
-public class Util extends mondrian.xom.XOMUtil {
+public class Util extends XOMUtil {
 
     private static final Logger LOGGER = Logger.getLogger(Util.class);
     // properties

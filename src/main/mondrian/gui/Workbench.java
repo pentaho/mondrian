@@ -28,6 +28,8 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
+import org.eigenbase.xom.XMLOutput;
+
 /**
  *
  * @author  sean
@@ -68,8 +70,6 @@ public class Workbench extends javax.swing.JFrame
 
     /**
      * load properties
-     *
-     * @return
      */
     private void loadWorkbenchProperties()
     {
@@ -86,8 +86,6 @@ public class Workbench extends javax.swing.JFrame
 
     /**
      * save properties
-     * @param propertyName
-     * @return
      */
     private void storeWorkbenchProperties()
     {
@@ -454,7 +452,7 @@ public class Workbench extends javax.swing.JFrame
                 try
                 {
                     schemaFile = jfc.getSelectedFile();
-                    mondrian.xom.XMLOutput out = new mondrian.xom.XMLOutput(new java.io.FileWriter(jfc.getSelectedFile()));
+                    XMLOutput out = new XMLOutput(new java.io.FileWriter(jfc.getSelectedFile()));
                     schema.displayXML(out);
                     se.setSchemaFile(schemaFile);
                     jf.setTitle("Schema - " + schemaFile.getName());
@@ -478,7 +476,7 @@ public class Workbench extends javax.swing.JFrame
             MondrianProperties.instance();
             try
             {
-                mondrian.xom.XMLOutput out = new mondrian.xom.XMLOutput(new java.io.FileWriter(schemaFile));
+                XMLOutput out = new XMLOutput(new FileWriter(schemaFile));
                 schema.displayXML(out);
             }
             catch (Exception ex)

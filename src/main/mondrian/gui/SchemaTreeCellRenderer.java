@@ -12,6 +12,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ResourceBundle;
 
+import org.eigenbase.xom.ElementDef;
+
 /**
  * Render an entry for the tree
  * @author  sean
@@ -124,9 +126,9 @@ public class SchemaTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRend
             setText(((MondrianDef.VirtualCubeMeasure) value).name);
             super.setIcon(new ImageIcon(myClassLoader.getResource(resources.getString("virtualCubeMeasure"))));
         }
-        else if (value instanceof mondrian.xom.ElementDef)
+        else if (value instanceof ElementDef)
         {
-            setText(((mondrian.xom.ElementDef) value).getName());
+            setText(((ElementDef) value).getName());
         }
         else
         {

@@ -6,17 +6,17 @@
 // (C) Copyright 2004-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
 */
 
 package mondrian.olap;
 
 /**
- * Instances of this class are thrown for all exceptions that Mondrian generates
- * through as a result of known error conditions. It is used in the resource classes
- * generated from mondrian.olap.MondrianResource.xml.
+ * Instances of this class are thrown for all exceptions that Mondrian
+ * generates through as a result of known error conditions. It is used in the
+ * resource classes generated from mondrian.olap.MondrianResource.xml.
+ * 
  * @author Galt Johnson (gjabx)
- * @see mondrian.xom
+ * @see org.eigenbase.xom
  */
 public class MondrianException extends RuntimeException {
     public MondrianException() {

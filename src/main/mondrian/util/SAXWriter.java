@@ -9,17 +9,11 @@
 */
 package mondrian.util;
 
-import mondrian.xom.XMLUtil;
-import mondrian.xom.XOMUtil;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
+import org.eigenbase.xom.XMLUtil;
+import org.eigenbase.xom.XOMUtil;
+import org.xml.sax.*;
 
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Writer;
+import java.io.*;
 
 /**
  * <code>SAXWriter</code> is a SAX {@link org.xml.sax.ContentHandler}

@@ -13,18 +13,12 @@
 package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.rolap.agg.AggregationManager;
-import mondrian.xom.DOMWrapper;
-import mondrian.xom.XOMException;
-import mondrian.xom.XOMUtil;
-
 import org.apache.log4j.Logger;
+import org.eigenbase.xom.*;
+import org.eigenbase.xom.Parser;
+
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * <code>RolapCube</code> implements {@link Cube} for a ROLAP database.
@@ -59,16 +53,16 @@ class RolapCube extends CubeBase {
     private final List hierarchyUsages;
 
 
-    /** 
-     * private constructor used by both normal cubes and virtual cubes. 
-     * 
-     * @param schema 
-     * @param name 
-     * @param fact 
+    /**
+     * private constructor used by both normal cubes and virtual cubes.
+     *
+     * @param schema
+     * @param name
+     * @param fact
      */
-    private RolapCube(RolapSchema schema, 
+    private RolapCube(RolapSchema schema,
                       MondrianDef.Schema xmlSchema,
-                      String name, 
+                      String name,
                       MondrianDef.Relation fact,
                       MondrianDef.CubeDimension[] dimensions) {
         super(name, new RolapDimension[dimensions.length + 1]);
@@ -90,9 +84,9 @@ class RolapCube extends CubeBase {
         }
 
         RolapDimension measuresDimension = new RolapDimension(
-                schema, 
-                Dimension.MEASURES_NAME, 
-                0, 
+                schema,
+                Dimension.MEASURES_NAME,
+                0,
                 DimensionType.StandardDimension);
 
         this.dimensions[0] = measuresDimension;
@@ -137,7 +131,7 @@ class RolapCube extends CubeBase {
     /**
      * Creates a <code>RolapCube</code> from a regular cube.
      **/
-    RolapCube(RolapSchema schema, 
+    RolapCube(RolapSchema schema,
               MondrianDef.Schema xmlSchema,
               MondrianDef.Cube xmlCube) {
         this(schema, xmlSchema, xmlCube.name, xmlCube.fact, xmlCube.dimensions);
@@ -152,7 +146,7 @@ class RolapCube extends CubeBase {
         // since MondrianDef.Measure and MondrianDef.VirtualCubeMeasure
         // can not be treated as the same, measure creation can not be
         // done in a common constructor.
-        RolapLevel measuresLevel = 
+        RolapLevel measuresLevel =
             this.measuresHierarchy.newLevel("MeasuresLevel", 0);
 
         RolapStoredMeasure measures[] = new RolapStoredMeasure[
@@ -171,7 +165,7 @@ class RolapCube extends CubeBase {
                 try {
                     Class clazz = Class.forName(xmlMeasure.formatter);
                     Constructor ctor = clazz.getConstructor(new Class[0]);
-                    CellFormatter cellFormatter = 
+                    CellFormatter cellFormatter =
                         (CellFormatter) ctor.newInstance(new Object[0]);
                     measure.setFormatter(cellFormatter);
                 } catch (Exception e) {
@@ -212,7 +206,7 @@ class RolapCube extends CubeBase {
     /**
      * Creates a <code>RolapCube</code> from a virtual cube.
      **/
-    RolapCube(RolapSchema schema, 
+    RolapCube(RolapSchema schema,
               MondrianDef.Schema xmlSchema,
               MondrianDef.VirtualCube xmlVirtualCube) {
         this(schema, xmlSchema, xmlVirtualCube.name, null, xmlVirtualCube.dimensions);
@@ -285,8 +279,8 @@ class RolapCube extends CubeBase {
     }
 
     private Formula parseFormula(String formulaString,
-                                 String memberUniqueName, 
-                                 List propNames, 
+                                 String memberUniqueName,
+                                 List propNames,
                                  List propExprs) {
         assert memberUniqueName.startsWith("[");
 
@@ -382,8 +376,8 @@ class RolapCube extends CubeBase {
             visible = Boolean.TRUE;
         }
         member.setProperty(Property.PROPERTY_VISIBLE, visible);
-        
-        if ((xmlCalcMember.caption != null) && 
+
+        if ((xmlCalcMember.caption != null) &&
             xmlCalcMember.caption.length() > 0) {
 
             member.setProperty(Property.PROPERTY_CAPTION, xmlCalcMember.caption);
@@ -583,24 +577,24 @@ assert is not true.
         }
         return null;
     }
-    /** 
-     * A Hierarchy may have one or more HierarchyUsages. This method returns 
+    /**
+     * A Hierarchy may have one or more HierarchyUsages. This method returns
      * an array holding the one or more usages associated with a Hierarchy.
      * The HierarchyUsages hierarchyName attribute always equals the name
      * attribute of the Hierarchy.
-     *      
-     * @param hierarchy 
+     *
+     * @param hierarchy
      * @return an HierarchyUsages array with 0 or more members.
-     */     
+     */
     synchronized HierarchyUsage[] getUsages(Hierarchy hierarchy) {
         String name = hierarchy.getName();
         if (getLogger().isDebugEnabled()) {
             getLogger().debug("RolapCube.getUsages: name="+name);
         }
-        
+
         HierarchyUsage hierUsage = null;
         List list = null;
-                
+
         Iterator it = this.hierarchyUsages.iterator();
         while (it.hasNext()) {
             HierarchyUsage hu = (HierarchyUsage) it.next();
@@ -640,11 +634,11 @@ assert is not true.
             return new HierarchyUsage[0];
         }
     }
-    /** 
+    /**
      * Lookup all of the HierarchyUsages with the same "source" returning
-     * an array of HierarchyUsage of length 0 or more. 
-     * 
-     * @param source 
+     * an array of HierarchyUsage of length 0 or more.
+     *
+     * @param source
      * @return array of HierarchyUsage (HierarchyUsage[]) - never null.
      */
     synchronized HierarchyUsage[] getUsagesBySource(String source) {
@@ -749,7 +743,7 @@ assert is not true.
                                         getName());
                     }
                     RolapStar.Condition joinCondition = new RolapStar.Condition(
-                            new MondrianDef.Column(table.getAlias(), 
+                            new MondrianDef.Column(table.getAlias(),
                             hierarchyUsage.getForeignKey()),
                             hierarchyUsage.joinExp);
                     table = table.addJoin(relation, joinCondition);
@@ -762,7 +756,7 @@ assert is not true.
                     } else {
                         RolapStar.Column column = makeColumnForLevelExpr(
                             level,
-                            table, 
+                            table,
                             level.getKeyExp(),
                             (level.getFlags() & RolapLevel.NUMERIC) != 0
                             );
@@ -772,7 +766,7 @@ assert is not true.
                         if (level.getNameExp() != null) {
                             final RolapStar.Column nameColumn =
                                 makeColumnForLevelExpr(
-                                            level, 
+                                            level,
                                             table,
                                             level.getNameExp(),
                                             false);
@@ -799,17 +793,17 @@ assert is not true.
             table = table.findAncestor(tableName);
             if (table == null) {
                 throw Util.newError(
-                        "Level '" + level.getUniqueName() 
-                        + "' of cube '" 
-                        + this 
-                        + "' is invalid: table '" + tableName 
+                        "Level '" + level.getUniqueName()
+                        + "' of cube '"
+                        + this
+                        + "' is invalid: table '" + tableName
                         + "' is not found in current scope");
             }
             RolapStar.AliasReplacer aliasReplacer =
                     new RolapStar.AliasReplacer(tableName, table.getAlias());
             xmlExpr = aliasReplacer.visit(xmlExpr);
         }
-        RolapStar.Column column = 
+        RolapStar.Column column =
             new RolapStar.Column(table, xmlExpr, isNumeric);
         return column;
     }
@@ -914,7 +908,7 @@ assert is not true.
             // (Are those the only cases??)
             //
             // On the other hand, if the HierarchyUsage is shared, then
-            // use the source name. 
+            // use the source name.
             //
             // Lastly if the HierarchyUsage is not shared, then there is
             // no aliasing so just use the value.
@@ -947,8 +941,8 @@ assert is not true.
                             getLogger().error(buf.toString());
                             throw new MondrianException(buf.toString());
                         } else {
-                            // ERROR: this is not allowed 
-                            buf.append("\" rather than one of the alias names "); 
+                            // ERROR: this is not allowed
+                            buf.append("\" rather than one of the alias names ");
                             for (int i = 0; i < usages.length; i++) {
                                 buf.append("\"");
                                 buf.append(usages[i].getName());
@@ -1010,7 +1004,7 @@ System.out.println("RolapCube.lookupChild OlapElement: DOES THIS EVER GET CALLED
     public Member createCalculatedMember(String xml) {
         MondrianDef.CalculatedMember xmlCalcMember;
         try {
-            final mondrian.xom.Parser xmlParser = XOMUtil.createDefaultParser();
+            final Parser xmlParser = XOMUtil.createDefaultParser();
             final DOMWrapper def = xmlParser.parse(xml);
             final String tagName = def.getTagName();
             if (tagName.equals("CalculatedMember")) {
@@ -1076,9 +1070,9 @@ System.out.println("RolapCube.lookupChild OlapElement: DOES THIS EVER GET CALLED
 
         public Member getMemberByUniqueName(String[] uniqueNameParts,
                                             boolean failIfNotFound) {
-            return (Member) lookupCompound(RolapCube.this, 
+            return (Member) lookupCompound(RolapCube.this,
                                            uniqueNameParts,
-                                           failIfNotFound, 
+                                           failIfNotFound,
                                            Category.Member);
         }
 

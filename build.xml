@@ -45,8 +45,8 @@
   <property name="dist.doc.file" value="${dist.dir}/doc.tar.gz"/>
   <property name="jar.file" value="${lib.dir}/${name}.jar"/>
   <property name="workbench.jar.file" value="workbench.jar"/>
-  <property name="resource.jar.file" value="${lib.dir}/mondrian-resource.jar"/>
-  <property name="xom.jar.file" value="${lib.dir}/mondrian-xom.jar"/>
+  <property name="resource.jar.file" value="${lib.dir}/eigenbase-resgen.jar"/>
+  <property name="xom.jar.file" value="${lib.dir}/eigenbase-xom.jar"/>
   <property name="war.file" value="${lib.dir}/${name}.war"/>
   <property name="jdk.home" value="${env.JAVA_HOME}"/>
   <property name="catalina.home" value="${env.CATALINA_HOME}"/>
@@ -55,9 +55,7 @@
   <property name="generated.java.files" value="
 ${java.dir}/mondrian/olap/Parser.java,
 ${java.dir}/mondrian/olap/ParserSym.java,
-${java.dir}/mondrian/resource/ResourceDef.java,
 ${java.dir}/mondrian/olap/MondrianDef.java,
-${java.dir}/mondrian/xom/MetaDef.java,
 ${java.dir}/mondrian/olap/MondrianResource*.java,
 ${java.dir}/mondrian/olap/MondrianResource*.properties,
 ${demo.dir}/monrg/source/happy/BirthdayResource*.java,
@@ -89,6 +87,8 @@ demo/FoodMartCreateData.sql"/>
     <pathelement location="${lib.dir}/commons-dbcp.jar"/>
     <pathelement location="${lib.dir}/commons-collections.jar"/>
     <pathelement location="${lib.dir}/commons-pool.jar"/>
+    <pathelement location="${lib.dir}/eigenbase-resgen.jar"/>
+    <pathelement location="${lib.dir}/eigenbase-xom.jar"/>
     <pathelement location="${lib.dir}/javacup.jar"/>
     <pathelement location="${lib.dir}/log4j-1.2.9.jar"/>
     <pathelement location="${lib.dir}/mof.jar"/>
@@ -111,17 +111,12 @@ demo/FoodMartCreateData.sql"/>
     <pathelement location="${driver.classpath}"/>
   </path>
 
-  <path id="project.boot.classpath">
-    <path refid="project.classpath"/>
-    <pathelement location="${resource.jar.file}"/>
-    <pathelement location="${xom.jar.file}"/>
-  </path>
-
   <taskdef name="javacup" classname="java_cup.JavaCUPTask">
-    <classpath refid="project.boot.classpath"/>
+    <classpath refid="project.classpath"/>
   </taskdef>
-  <taskdef name="xomgen" classname="mondrian.xom.XOMGenTask">
-    <classpath refid="project.boot.classpath"/>
+
+  <taskdef name="xomgen" classname="org.eigenbase.xom.XOMGenTask">
+    <classpath refid="project.classpath"/>
   </taskdef>
 
   <!--
@@ -193,42 +188,14 @@ demo/FoodMartCreateData.sql"/>
   <target name="compile" depends="
 prepare,
 parser,
-compile.xom,
 generate.resources,
 def,
 compile.java,
 copy.properties,
 unzip-FoodMartCreateData"/>
 
-  <target name="compile.xom">
-    <javac
-        srcdir="${java.dir}"
-        destdir="${classes.dir}"
-        debug="${project.build.debug}"
-        classpathref="project.boot.classpath"
-        source="1.4">
-      <include name="mondrian/xom/**/*.java" />
-    </javac>
-  </target>
-
-  <target name="compile.resgen">
-    <xomgen
-        model="${java.dir}/mondrian/resource/Resource.xml"
-        destdir="${java.dir}"
-        classname="mondrian.resource.ResourceDef"
-        dtdname="Resource.dtd"/>
-    <javac
-        srcdir="${java.dir}"
-        destdir="${classes.dir}"
-        debug="${project.build.debug}"
-        classpathref="project.classpath"
-        source="1.4">
-      <include name="mondrian/resource/*.java" />
-    </javac>
-  </target>
-
-  <target name="generate.resources" depends="compile.resgen">
-    <taskdef name="resgen" classname="mondrian.resource.ResourceGenTask">
+  <target name="generate.resources">
+    <taskdef name="resgen" classname="org.eigenbase.resgen.ResourceGenTask">
       <classpath refid="project.classpath"/>
     </taskdef>
 
@@ -288,11 +255,6 @@ unzip-FoodMartCreateData"/>
   </target>
 
   <target name="def">
-    <xomgen
-        model="${java.dir}/mondrian/xom/Meta.xml"
-        destdir="${java.dir}"
-        classname="mondrian.xom.MetaDef"
-        dtdname="meta.dtd"/>
     <xomgen
         model="${java.dir}/mondrian/olap/Mondrian.xml"
         destdir="${java.dir}"
@@ -420,18 +382,17 @@ in {mondrian.foodmart.jdbcURL}.">
           includes="
 ${java.dir}/**/*.properties,
 ${java.dir}/mondrian/olap/MondrianResource.xml,
-${java.dir}/mondrian/resource/Resource.xml,
 ${java.dir}/mondrian/olap/Mondrian.xml,
-${java.dir}/mondrian/xom/Meta.xml,
 ${java.dir}/javax/jmi/model/resources/mof.xml,
 ${java.dir}/**/*.java,
 ${java.dir}/**/*.cup,
 ${java.dir}/**/*.gif,
 ${java.dir}/**/*.html,
-${java.dir}/mondrian/resource/Resource.xsl,
 ${lib.dir}/commons-collections.jar,
 ${lib.dir}/commons-dbcp.jar,
 ${lib.dir}/commons-pool.jar,
+${lib.dir}/eigenbase-xom.jar,
+${lib.dir}/eigenbase-resgen.jar,
 ${lib.dir}/javacup.jar,
 ${lib.dir}/jmi.jar,
 ${lib.dir}/log4j-1.2.9.jar,
@@ -578,25 +539,6 @@ VERSION.txt"/>
     </zip>
   </target>
 
-  <target name="bootjar"
-      description="Builds a jar file of the classes we need in order to run ant; when the new versions have built, we can replace them. Run this target when the bootstrap files have changed so much that you can't bootstrap, and you need o generate a new mondrian-xom.jar or mondrian-resource.jar to check in to source control.">
-    <mkdir dir="${lib.dir}" />
-
-    <delete file="${xom.jar.file}"/>
-    <jar jarfile="${xom.jar.file}">
-      <fileset
-          dir="${classes.dir}"
-          includes="mondrian/xom/**/*.class,mondrian/olap/MondrianException.class"/>
-    </jar>
-
-    <delete file="${resource.jar.file}"/>
-    <jar jarfile="${resource.jar.file}">
-      <fileset
-          dir="${classes.dir}"
-          includes="mondrian/resource/**/*.class"/>
-    </jar>
-  </target>
-
   <target name="javadoc">
     <mkdir dir="${javadoc.dir}" />
     <delete quiet="true" file="${javadoc.dir}/index.html"/>
@@ -623,10 +565,6 @@ VERSION.txt"/>
       <link href="http://www.junit.org/junit/javadoc/3.8/"/>
       <link href="http://java.sun.com/products/servlet/2.2/javadoc/"/>
     </javadoc>
-    <copy file="${java.dir}/mondrian/xom/Meta.xml"
-        todir="${javadoc.dir}/mondrian/xom"/>
-    <copy file="${java.dir}/mondrian/resource/Resource.xml"
-        todir="${javadoc.dir}/mondrian/resource"/>
     <copy file="${java.dir}/mondrian/olap/Mondrian.xml"
         todir="${javadoc.dir}/mondrian/olap"/>
   </target>

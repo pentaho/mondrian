@@ -34,6 +34,10 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ResourceBundle;
 
+import org.eigenbase.xom.XOMUtil;
+import org.eigenbase.xom.Parser;
+import org.eigenbase.xom.NodeDef;
+
 /**
  *
  * @author  sean
@@ -59,7 +63,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         this();
         try
         {
-            mondrian.xom.Parser xmlParser = mondrian.xom.XOMUtil.createDefaultParser();
+            Parser xmlParser = XOMUtil.createDefaultParser();
             this.schemaFile = f;
 
             schema = new MondrianDef.Schema(xmlParser.parse(schemaFile.toURL()));
@@ -262,8 +266,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         cube.fact = new MondrianDef.Table();
 
         //add cube to schema
-        mondrian.xom.NodeDef[] temp = null;
-        temp = schema.cubes;
+        NodeDef[] temp = schema.cubes;
         schema.cubes = new MondrianDef.Cube[temp.length + 1];
         for (int _i = 0; _i < temp.length; _i++)
         {
@@ -295,9 +298,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         MondrianDef.Measure measure = new MondrianDef.Measure();
         measure.name = "New Measure " + cube.measures.length;
         //add cube to schema
-        mondrian.xom.NodeDef[] temp;
-
-        temp = cube.measures;
+        NodeDef[] temp = cube.measures;
         cube.measures = new MondrianDef.Measure[temp.length + 1];
         for (int i = 0; i < temp.length; i++)
             cube.measures[i] = (MondrianDef.Measure) temp[i];
@@ -328,8 +329,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         dimension.hierarchies[0].relation = new MondrianDef.Join();
 
         //add cube to schema
-        mondrian.xom.NodeDef[] temp = null;
-        temp = cube.dimensions;
+        NodeDef[] temp = cube.dimensions;
         cube.dimensions = new MondrianDef.CubeDimension[temp.length + 1];
         for (int i = 0; i < temp.length; i++)
             cube.dimensions[i] = (MondrianDef.CubeDimension) temp[i];
@@ -363,8 +363,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         //dimension.hierarchies[0].memberReaderParameters[0] = new MondrianDef.Parameter();
 
         //add cube to schema
-        mondrian.xom.NodeDef[] temp = null;
-        temp = hierarchy.levels;
+        NodeDef[] temp = hierarchy.levels;
         hierarchy.levels = new MondrianDef.Level[temp.length + 1];
         for (int i = 0; i < temp.length; i++)
             hierarchy.levels[i] = (MondrianDef.Level) temp[i];
@@ -389,8 +388,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
         property.name = "New Property " + level.properties.length;
 
         //add cube to schema
-        mondrian.xom.NodeDef[] temp = null;
-        temp = level.properties;
+        NodeDef[] temp = level.properties;
         level.properties = new MondrianDef.Property[temp.length + 1];
         for (int i = 0; i < temp.length; i++)
             level.properties[i] = (MondrianDef.Property) temp[i];
@@ -415,7 +413,7 @@ public class SchemaExplorer extends javax.swing.JPanel implements TreeSelectionL
 
     /**
      * sets the schema file
-     * @param File
+     * @param f
      */
     public void setSchemaFile(File f)
     {
