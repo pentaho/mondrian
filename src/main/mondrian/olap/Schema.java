@@ -45,6 +45,11 @@ public interface Schema {
 	 **/
 	Dimension createDimension(Cube cube, String xml);
 
+    /**
+     * Creates a cube by parsing an XML string. Returns the cube created.
+     */
+    Cube createCube(String xml);
+
 	/**
 	 * Creates a {@link SchemaReader} without any access control.
 	 */

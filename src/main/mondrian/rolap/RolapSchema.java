@@ -127,8 +127,8 @@ public class RolapSchema implements Schema
         }
 		for (int i = 0; i < xmlSchema.cubes.length; i++) {
 			MondrianDef.Cube xmlCube = xmlSchema.cubes[i];
-			RolapCube cube = new RolapCube(this, xmlSchema, xmlCube);
-			mapNameToCube.put(xmlCube.name, cube);
+            RolapCube cube = createCube(xmlSchema, xmlCube);
+            Util.discard(cube);
 		}
 		for (int i = 0; i < xmlSchema.virtualCubes.length; i++) {
 			MondrianDef.VirtualCube xmlVirtualCube = xmlSchema.virtualCubes[i];
@@ -149,7 +149,23 @@ public class RolapSchema implements Schema
 		}
 	}
 
-	private Role createRole(MondrianDef.Role xmlRole) {
+    /**
+     * Creates an registers a cube.
+     *
+     * @param xmlSchema XML schema definition in which to look up dimensions,
+     *   necessary because dimensions may be defined after cubes.
+     * @param xmlCube XML cube definition
+     * @return A cube
+     */
+    private RolapCube createCube(MondrianDef.Schema xmlSchema,
+            MondrianDef.Cube xmlCube) {
+        Util.assertPrecondition(xmlSchema != null, "xmlSchema != null");
+        RolapCube cube = new RolapCube(this, xmlSchema, xmlCube);
+        mapNameToCube.put(xmlCube.name, cube);
+        return cube;
+    }
+
+    private Role createRole(MondrianDef.Role xmlRole) {
 		Role role = new Role();
 		for (int i = 0; i < xmlRole.schemaGrants.length; i++) {
 			MondrianDef.SchemaGrant schemaGrant = xmlRole.schemaGrants[i];
@@ -236,6 +252,28 @@ public class RolapSchema implements Schema
 		}
 		return ((RolapCube) cube).createDimension(xmlDimension);
 	}
+
+    public Cube createCube(String xml) {
+        MondrianDef.Cube xmlDimension;
+        try {
+            final Parser xmlParser = XOMUtil.createDefaultParser();
+            final DOMWrapper def = xmlParser.parse(xml);
+            final String tagName = def.getTagName();
+            if (tagName.equals("Cube")) {
+                xmlDimension = new MondrianDef.Cube(def);
+            } else {
+                throw new XOMException("Got <" + tagName +
+                    "> when expecting <Cube>");
+            }
+        } catch (XOMException e) {
+            throw Util.newError(e, "Error while creating cube from XML [" +
+                xml + "]");
+        }
+        // Create empty XML schema, to keep the method happy. This is okay,
+        // because there are no forward-references to resolve.
+        final MondrianDef.Schema xmlSchema = new MondrianDef.Schema();
+        return createCube(xmlSchema, xmlDimension);
+    }
 
 	/**
 	 * A collection of schemas, identified by their connection properties

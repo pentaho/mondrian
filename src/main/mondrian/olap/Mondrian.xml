@@ -5,7 +5,7 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == Copyright (C) 2001-2003 Kana Software, Inc. and others.
+  == Copyright (C) 2001-2004 Kana Software, Inc. and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   ==
@@ -75,8 +75,20 @@ Revision is $Id$
 				public Dimension.
 			</Doc>
 		</Attribute>
-		<Code>
-			public abstract Dimension getDimension(Schema schema);
+		<Code><![CDATA[
+			/**
+			 * Looks up the base dimension of this dimension. If this is a usage
+			 * of a shared dimension, returns the referenced dimension;
+			 * otherwise returns the dimension itself. 
+			 *
+			 * <p>Never returns null; if the dimension cannot be
+			 * found, throws an error.
+			 *
+			 * @param schema Schema, never null
+			 * @pre schema != null
+			 * @post return != null
+			 */
+			public abstract Dimension getDimension(Schema schema);]]>
 		</Code>
 	</Class>
 
@@ -136,6 +148,7 @@ todo:
 		<Code><![CDATA[
 			// implement CubeDimension
 			public Dimension getDimension(Schema schema) {
+				Util.assertPrecondition(schema != null, "schema != null");
 				if (cubeName == null) {
 					return schema.getPublicDimension(name);
 				} else {
@@ -182,6 +195,7 @@ todo:
 		<Code><![CDATA[
 			// implement CubeDimension
 			public Dimension getDimension(Schema schema) {
+				Util.assertPrecondition(schema != null, "schema != null");
 				for (int i = 0; i < schema.dimensions.length; i++) {
 					if (schema.dimensions[i].name.equals(source)) {
 						return schema.dimensions[i];
@@ -221,6 +235,7 @@ todo:
 		<Code>
 			// implement CubeDimension
 			public Dimension getDimension(Schema schema) {
+				Util.assertPrecondition(schema != null, "schema != null");
 				return this;
 			}
 

@@ -42,8 +42,9 @@ class RolapEvaluator implements Evaluator
 	int depth;
 	
 	Map expResultCache;
+    private Member expandingMember;
 
-	RolapEvaluator(RolapCube cube, RolapConnection connection)
+    RolapEvaluator(RolapCube cube, RolapConnection connection)
 	{
 		this.cube = cube;
 		this.connection = connection;
@@ -72,12 +73,6 @@ class RolapEvaluator implements Evaluator
 		this.parent = parent;
 		this.depth = parent.getDepth() + 1;
 		this.cellReader = parent.cellReader;
-		int memberCount = currentMembers.length;
-		if (depth > memberCount) {
-			if (depth % memberCount == 0) {
-				checkRecursion();
-			}
-		}
 		this.expResultCache = parent.expResultCache;
 	}
 
@@ -160,11 +155,12 @@ class RolapEvaluator implements Evaluator
 		int minSolve = Integer.MAX_VALUE;
 		RolapMember minSolveMember = null;
 		for (int i = 0, count = currentMembers.length; i < count; i++) {
-			if (currentMembers[i].isCalculated()) {
-				int solve = currentMembers[i].getSolveOrder();
+            final RolapMember currentMember = currentMembers[i];
+            if (currentMember.isCalculated()) {
+				int solve = currentMember.getSolveOrder();
 				if (solve < minSolve) {
 					minSolve = solve;
-					minSolveMember = currentMembers[i];
+					minSolveMember = currentMember;
 				}
 			}
 		}
@@ -176,43 +172,94 @@ class RolapEvaluator implements Evaluator
 			Util.assertTrue(
 					defaultMember != minSolveMember,
 					"default member must not be calculated");
-			Evaluator evaluator = push(defaultMember);
-//			((RolapEvaluator) evaluator).cellReader = new CachingCellReader(cellReader);
+			RolapEvaluator evaluator = (RolapEvaluator) push(defaultMember);
+            evaluator.setExpanding(minSolveMember);
+            //((RolapEvaluator) evaluator).cellReader = new CachingCellReader(cellReader);
 			return minSolveMember.getExpression().evaluateScalar(evaluator);
 		}
 		return cellReader.get(this);
 	}
-	/**
+
+    private void setExpanding(Member member)
+    {
+        expandingMember = member;
+        int memberCount = currentMembers.length;
+        if (depth > memberCount) {
+            if (depth % memberCount == 0) {
+                checkRecursion((RolapEvaluator) parent);
+            }
+        }
+    }
+
+    /**
 	 * Makes sure that there is no evaluator with identical context on the
 	 * stack.
 	 *
 	 * @throws mondrian.olap.fun.MondrianEvaluationException if there is a loop
 	 */
-	void checkRecursion() {
+	private static void checkRecursion(RolapEvaluator eval) {
+        // Find the nearest ancestor which is expanding a calculated member.
+        // (The starting evaluator has just been pushed, so may not have the
+        // state it will have when recursion happens.)
+        while (true) {
+            if (eval == null) {
+                return;
+            }
+            if (eval.expandingMember != null) {
+                break;
+            }
+            eval = (RolapEvaluator) eval.getParent();
+        }
+
 		outer:
-		for (Evaluator eval = getParent(); eval != null; eval = eval.getParent()) {
-			for (int i = 0; i < currentMembers.length; i++) {
-				RolapMember member = currentMembers[i];
+		for (RolapEvaluator eval2 = (RolapEvaluator) eval.getParent();
+                 eval2 != null;
+                 eval2 = (RolapEvaluator) eval2.getParent()) {
+            if (eval2.expandingMember != eval.expandingMember) {
+                continue;
+            }
+			for (int i = 0; i < eval.currentMembers.length; i++) {
+				RolapMember member = eval2.currentMembers[i];
 				Member parentMember = eval.getContext(member.getDimension());
 				if (member != parentMember) {
 					continue outer;
 				}
-				throw FunUtil.newEvalException(
-						null, "infinite loop: context is " + getContextString());
 			}
+            throw FunUtil.newEvalException(null,
+                "Infinite loop while evaluating calculated member '" +
+                eval.expandingMember + "'; context stack is " +
+                eval.getContextString());
 		}
 	}
 
 	private String getContextString() {
-		StringBuffer sb = new StringBuffer("(");
-		for (int j = 0; j < currentMembers.length; j++) {
-			RolapMember m = currentMembers[j];
-			if (j > 0) {
-				sb.append(", ");
-			}
-			sb.append(m.getUniqueName());
-		}
-		sb.append(")");
+        boolean skipDefaultMembers = true;
+		StringBuffer sb = new StringBuffer("{");
+        int frameCount = 0;
+        for (RolapEvaluator eval = this; eval != null;
+                 eval = (RolapEvaluator) eval.getParent()) {
+            if (eval.expandingMember == null) {
+                continue;
+            }
+            if (frameCount++ > 0) {
+                sb.append(", ");
+            }
+            sb.append("(");
+            int memberCount = 0;
+            for (int j = 0; j < eval.currentMembers.length; j++) {
+                RolapMember m = eval.currentMembers[j];
+                if (skipDefaultMembers &&
+                        m == m.getHierarchy().getDefaultMember()) {
+                    continue;
+                }
+                if (memberCount++ > 0) {
+                    sb.append(", ");
+                }
+                sb.append(m.getUniqueName());
+            }
+            sb.append(")");
+        }
+		sb.append("}");
 		return sb.toString();
 	}
 
@@ -275,38 +322,6 @@ class RolapEvaluator implements Evaluator
 		} else {
 			Format format = getFormat();
 			return format.format(o);
-		}
-	}
-
-	/**
-	 * <code>CachingCellReader</code> stores the results of cell-requests in a
-	 * cache.
-	 *
-	 * <p>The caching strategy is naive. It caches in a <em>static object</em>, and
-	 * never flushes its cache. We should cache sets of members -- say, those with
-	 * the same dimensionality -- in the aggregation manager.
-	 *
-	 * <p>We also ought to be able to control on a per-measure basis whether to do
-	 * caching.
-	 */
-	private static class CachingCellReader implements CellReader {
-		private final CellReader cellReader;
-		private static final HashMap cellCache = new HashMap();
-
-		CachingCellReader(CellReader cellReader) {
-			this.cellReader = cellReader;
-		}
-		public Object get(Evaluator evaluator) {
-			final RolapMember[] currentMembers = ((RolapEvaluator) evaluator).currentMembers;
-			final List key = Arrays.asList(currentMembers);
-			Object value = cellCache.get(key);
-			if (value == null) {
-				value = cellReader.get(evaluator);
-				if (value != RolapUtil.valueNotReadyException) {
-					cellCache.put(key, value);
-				}
-			}
-			return value;
 		}
 	}
 

@@ -64,6 +64,17 @@ class RolapCube extends CubeBase
 		RolapLevel measuresLevel = this.measuresHierarchy.newLevel("MeasuresLevel", 0);
 		for (int i = 0; i < xmlCube.dimensions.length; i++) {
 			MondrianDef.CubeDimension xmlCubeDimension = xmlCube.dimensions[i];
+            // Look up usages of shared dimensions in the schema before
+            // consulting the XML schema (which may be null).
+            if (xmlCubeDimension instanceof MondrianDef.DimensionUsage) {
+                final RolapHierarchy sharedHierarchy =
+                    schema.getSharedHierarchy(xmlCubeDimension.name);
+                if (sharedHierarchy != null) {
+                    dimensions[i + 1] =
+                        (DimensionBase) sharedHierarchy.getDimension();
+                    continue;
+                }
+            }
 			MondrianDef.Dimension xmlDimension = xmlCubeDimension.getDimension(xmlSchema);
 			dimensions[i + 1] = new RolapDimension(schema, this, xmlDimension, xmlCubeDimension);
 		}
