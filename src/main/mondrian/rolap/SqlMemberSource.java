@@ -11,16 +11,15 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.*;
+import mondrian.olap.Member;
+import mondrian.olap.MondrianDef;
+import mondrian.olap.Util;
 import mondrian.rolap.sql.SqlQuery;
 
-import java.sql.Statement;
-import java.sql.SQLException;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Properties;
-import java.io.*;
 
 /**
  * A <code>SqlMemberSource</code> reads members from a SQL database. Good idea
@@ -148,7 +147,7 @@ class SqlMemberSource implements MemberReader
 		if (levelDepth == levels.length) {
 			// "select count(*) from schema.customer"
 			sqlQuery.addSelect("count(*)");
-			hierarchy.addToFrom(sqlQuery, level, null);
+			hierarchy.addToFrom(sqlQuery, level.nameExp, null);
 			return sqlQuery.toString();
 		}
 		if (!sqlQuery.allowsFromQuery()) {
@@ -171,7 +170,7 @@ class SqlMemberSource implements MemberReader
 					}
 					columnList += ", ";
 				}
-				hierarchy.addToFrom(sqlQuery, level2, null);
+				hierarchy.addToFrom(sqlQuery, level2.nameExp, null);
 				columnList += level2.nameExp.getExpression(sqlQuery);
 				if (level2.unique) {
 					break; // no further qualification needed
@@ -186,7 +185,7 @@ class SqlMemberSource implements MemberReader
 				if (level2.isAll()) {
 					continue;
 				}
-				hierarchy.addToFrom(sqlQuery, level2, null);
+				hierarchy.addToFrom(sqlQuery, level2.nameExp, null);
 				sqlQuery.addSelect(level2.nameExp.getExpression(sqlQuery));
 				if (level2.unique) {
 					break; // no further qualification needed
@@ -281,30 +280,20 @@ class SqlMemberSource implements MemberReader
 			if (level.isAll()) {
 				continue;
 			}
-			hierarchy.addToFrom(sqlQuery, level, null);
-			sqlQuery.addSelect(level.nameExp.getExpression(sqlQuery));
-			sqlQuery.addOrderBy(level.ordinalExp.getExpression(sqlQuery));
+			MondrianDef.Expression exp = level.nameExp;
+			hierarchy.addToFrom(sqlQuery, exp, null);
+			sqlQuery.addSelect(exp.getExpression(sqlQuery));
+			exp = level.ordinalExp;
+			hierarchy.addToFrom(sqlQuery, exp, null);
+			sqlQuery.addOrderBy(exp.getExpression(sqlQuery));
 			for (int j = 0; j < level.properties.length; j++) {
 				RolapProperty property = level.properties[j];
-				String q = property.exp.getExpression(sqlQuery);
-				sqlQuery.addSelect(q);
+				exp = property.exp;
+				hierarchy.addToFrom(sqlQuery, exp, null);
+				sqlQuery.addSelect(exp.getExpression(sqlQuery));
 			}
 		}
 		return sqlQuery.toString();
-	}
-
-	/**
-	 * Returns the ordinal of the nearest level above <code>level</code>
-	 * whose members are unique without being qualified by their parent member.
-	 */
-	static private int uniqueLevel(Level level) {
-		RolapLevel[] levels = (RolapLevel[]) level.getHierarchy().getLevels();
-		for (int i = level.getDepth(); i >= 0; i--) {
-			if (levels[i].unique) {
-				return i;
-			}
-		}
-		return 0;
 	}
 
 	/**
@@ -322,12 +311,14 @@ class SqlMemberSource implements MemberReader
 	 *
 	 * <li><code>"foo", "bar"</code> are member properties.</li>
 	 * </ul>
+	 *
+	 * @pre !level.isAll()
 	 **/
 	String makeLevelSql(RolapLevel level)
 	{
+		Util.assertPrecondition(!level.isAll());
 		SqlQuery sqlQuery = newQuery(
 			"while generating query to retrieve members of level " + level);
-		hierarchy.addToFrom(sqlQuery, level, null);
   		RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
 		RolapLevel lastLevel = levels[levels.length - 1];
 		int levelDepth = level.getDepth();
@@ -336,11 +327,13 @@ class SqlMemberSource implements MemberReader
   			if (level2.isAll()) {
   				continue;
   			}
+			hierarchy.addToFrom(sqlQuery, level2.nameExp, null);
 			String q = level2.nameExp.getExpression(sqlQuery);
 			sqlQuery.addSelect(q);
 			if (level != lastLevel) {
 				sqlQuery.addGroupBy(q);
 			}
+			hierarchy.addToFrom(sqlQuery, level2.ordinalExp, null);
 			sqlQuery.addOrderBy(level2.ordinalExp.getExpression(sqlQuery));
 		}
 		for (int i = 0; i < level.properties.length; i++) {
@@ -355,9 +348,11 @@ class SqlMemberSource implements MemberReader
 	public RolapMember[] getMembersInLevel(
 		RolapLevel level, int startOrdinal, int endOrdinal)
 	{
+		if (level.isAll()) {
+			return (RolapMember[]) hierarchy.getRootMembers();
+		}
 		ResultSet resultSet = null;
 		final RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
-		final RolapLevel lastLevel = levels[levels.length - 1];
 		String sql = makeLevelSql(level);
 		try {
 			resultSet = RolapUtil.executeQuery(
@@ -439,9 +434,10 @@ class SqlMemberSource implements MemberReader
 				}
 			}
 			return RolapUtil.toArray(list);
-		} catch (SQLException e) {
+		} catch (Throwable e) {
 			throw Util.getRes().newInternal(
-					"while building member cache; sql=[" + sql + "]", e);
+					"while populating member cache with members for level '" +
+					level.getUniqueName() + "'; sql=[" + sql + "]", e);
 		} finally {
 			try {
 				if (resultSet != null) {
@@ -498,10 +494,11 @@ class SqlMemberSource implements MemberReader
 
 		RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
 		RolapLevel level = levels[member.getLevel().getDepth() + 1];
-		hierarchy.addToFrom(sqlQuery, level, null);
+		hierarchy.addToFrom(sqlQuery, level.nameExp, null);
 		String q = level.nameExp.getExpression(sqlQuery);
 		sqlQuery.addSelect(q);
 		sqlQuery.addGroupBy(q);
+		hierarchy.addToFrom(sqlQuery, level.ordinalExp, null);
 		String orderBy = level.ordinalExp.getExpression(sqlQuery);
 		sqlQuery.addOrderBy(orderBy);
 		if (!orderBy.equals(q)) {

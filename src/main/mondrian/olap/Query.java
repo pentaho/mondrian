@@ -103,6 +103,17 @@ public class Query extends QueryPart implements NameResolver {
 		return connection;
 	}
 
+	/**
+	 * Returns the MDX query string. If the query was created by parsing an
+	 * MDX string, the string returned by this method may not be identical, but
+	 * it will have the same meaning. If the query's parse tree has been
+	 * manipulated (for instance, the rows and columns axes have been
+	 * interchanged) the returned string represents the current parse tree.
+	 */
+	public String getQueryString() {
+		return toWebUIMdx();
+	}
+
 	public static final String[] axisNames = {
 		"COLUMNS", "ROWS", "PAGES", "CHAPTERS", "SECTIONS"
 	};
@@ -144,7 +155,7 @@ public class Query extends QueryPart implements NameResolver {
 				axes[i] = (QueryAxis) axes[i].resolve(q);
 
 		if (slicer != null) {
-			setSlicer((Exp) slicer.resolve(q));
+			setSlicer(slicer.resolve(q));
 		}
 
 		// Now that out Parameters have been created (from FunCall's to
@@ -281,7 +292,7 @@ public class Query extends QueryPart implements NameResolver {
 	 * getLogicalAxis(0) = 1, meaning that axis 0 of the Plato cellset matches
 	 * the rows (1) axis of their query; likewise, getLogicalAxis(1) = 2.
 	 *
-	 * @param ordinal of axis in cellset
+	 * @param iPhysicalAxis ordinal of axis in cellset
 	 * @return axis label in original query (0 = columns, 1 = rows, etc.)
 	 */
 	public int getLogicalAxis(int iPhysicalAxis)
@@ -1158,7 +1169,7 @@ public class Query extends QueryPart implements NameResolver {
 		return query.toPlatoMdx();
 	}
 
-	/** Apply {@link CubeAcess} permissions to the query by filtering
+	/** Apply {@link CubeAccess} permissions to the query by filtering
 	 * hierarchies, putting limits on the slicer, etc.  If some of the
 	 * permissions can not be applied (user used expression like currentYear,
 	 * which can not be computed prior to running query) the function returns
@@ -1575,7 +1586,7 @@ public class Query extends QueryPart implements NameResolver {
 		ArrayList definedMembers = new ArrayList();
 		for (int i = 0; i < formulas.length; i++) {
 			if (formulas[i].isMember && formulas[i].getElement() != null) {
-				definedMembers.add((Member)formulas[i].getElement());
+				definedMembers.add(formulas[i].getElement());
             }
 		}
 		return definedMembers;

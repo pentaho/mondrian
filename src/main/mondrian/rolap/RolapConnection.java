@@ -96,14 +96,19 @@ public class RolapConnection extends ConnectionBase {
 	}
 	public Result execute(Query query)
 	{
-		Result result = new RolapResult(query);
-		for (int i = 0; i < query.axes.length; i++) {
-			QueryAxis axis = query.axes[i];
-			if (axis.nonEmpty) {
-				result = new NonEmptyResult(result, query, i);
+		try {
+			Result result = new RolapResult(query);
+			for (int i = 0; i < query.axes.length; i++) {
+				QueryAxis axis = query.axes[i];
+				if (axis.nonEmpty) {
+					result = new NonEmptyResult(result, query, i);
+				}
 			}
+			return result;
+		} catch (Throwable e) {
+			throw Util.newError(e, "Error while executing query [" +
+					query.getQueryString() + "]");
 		}
-		return result;
 	}
 }
 

@@ -11,8 +11,7 @@
 */
 
 package mondrian.olap;
-import java.util.*;
-import java.io.*;
+import java.io.PrintWriter;
 
 /**
  * Component of an MDX query (derived classes include Query, Axis, Exp, Level).
@@ -37,15 +36,6 @@ public abstract class QueryPart implements Walkable
 			toString = callback.findHiddenName(toString);
 		}
 		pw.print(toString);
-	}
-
-	protected String toStringHelper()
-	{
-		StringWriter sw = new StringWriter();
-		PrintWriter pw = new PrintWriter(sw);
-		ElementCallback callback = null;
-		unparse(pw, callback);
-		return sw.toString();
 	}
 
 	/** Replace the <code>ordinal</code>th child (as it appeared in the array

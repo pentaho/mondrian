@@ -724,15 +724,42 @@ public class FoodMartTestCase extends TestCase {
 				"FROM Sales");
 	}
 
-	public void testIIf() {
-		Result result = runQuery(
-				"WITH" + nl +
-				"   MEMBER [Product].[BigSeller] AS" + nl +
+	public void testCalculatedMemberWhichIsNotAMeasure() {
+		String query = "WITH" + nl +
+				"MEMBER [Product].[BigSeller] AS" + nl +
 				"  'IIf([Product].[Drink].[Alcoholic Beverages].[Beer and Wine] > 100, \"Yes\",\"No\")'" + nl +
-				"SELECT" + nl +
-				"   {[Product].[BigSeller]} ON COLUMNS," + nl +
-				"   {Store.[Store Name].Members} ON ROWS" + nl +
-				"FROM Sales");
+				"SELECT {[Product].[BigSeller],[Product].children} ON COLUMNS," + nl +
+				"   {[Store].[All Stores].[USA].[CA].children} ON ROWS" + nl +
+				"FROM Sales";
+		String desiredResult = "Axis #0:" + nl +
+				"{}" + nl +
+				"Axis #1:" + nl +
+				"{[Product].[BigSeller]}" + nl +
+				"{[Product].[All Products].[Drink]}" + nl +
+				"{[Product].[All Products].[Food]}" + nl +
+				"{[Product].[All Products].[Non-Consumable]}" + nl +
+				"Axis #2:" + nl +
+				"{[Store].[All Stores].[USA].[CA].[Beverly Hills]}" + nl +
+				"{[Store].[All Stores].[USA].[CA].[Los Angeles]}" + nl +
+				"{[Store].[All Stores].[USA].[CA].[San Diego]}" + nl +
+				"{[Store].[All Stores].[USA].[CA].[San Francisco]}" + nl +
+				"Row #0: Yes" + nl +
+				"Row #0: 1,945" + nl +
+				"Row #0: 15,438" + nl +
+				"Row #0: 3,950" + nl +
+				"Row #1: Yes" + nl +
+				"Row #1: 2,422" + nl +
+				"Row #1: 18,294" + nl +
+				"Row #1: 4,947" + nl +
+				"Row #2: Yes" + nl +
+				"Row #2: 2,560" + nl +
+				"Row #2: 18,369" + nl +
+				"Row #2: 4,706" + nl +
+				"Row #3: No" + nl +
+				"Row #3: 175" + nl +
+				"Row #3: 1,555" + nl +
+				"Row #3: 387" + nl;
+		runQueryCheckResult(query, desiredResult);
 	}
 
 	public void _testVal() {
@@ -852,6 +879,11 @@ public class FoodMartTestCase extends TestCase {
 				"from [Sales]");
 	}
 
+	public void _testProduct2() {
+		final Axis axis = executeAxis2("{[Product2].members}");
+		System.out.println(toString(axis.positions));
+	}
+	
 	public static final QueryAndResult[] taglibQueries = {
 		// 0
 		new QueryAndResult(
@@ -1698,6 +1730,39 @@ public class FoodMartTestCase extends TestCase {
 				"Row #4: 15,321" + nl +
 				"Row #5: 23,598" + nl +
 				"Row #5: 14,210" + nl);
+	}
+
+	public void testSchemaLevelTableIsBad() {
+		// todo: <Level table="nonexistentTable">
+	}
+
+	public void testSchemaLevelTableInAnotherHierarchy() {
+		// todo:
+		// <Cube>
+		// <Hierarchy name="h1"><Table name="t1"/></Hierarchy>
+		// <Hierarchy name="h2"><Table name="t2"/><Level tableName="t1"/></Hierarchy>
+		// </Cube>
+	}
+
+	public void testSchemaLevelWithViewSpecifiesTable() {
+		// todo:
+		// <Hierarchy>
+		//  <View><SQL dialect="generic">select * from emp</SQL></View>
+		//  <Level tableName="emp"/>
+		// </hierarchy>
+		// Should get error that tablename is not allowed
+	}
+
+	public void testSchemaLevelOrdinalInOtherTable() {
+		// todo:
+		// Hierarchy is based upon a join.
+		// Level's name expression is in a different table than its ordinal.
+	}
+
+	public void testSchemaTopLevelNotUnique() {
+		// todo:
+		// Should get error if the top level of a hierarchy does not have
+		// uniqueNames="true"
 	}
 
 	/**

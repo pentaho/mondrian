@@ -14,10 +14,6 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.rolap.sql.SqlQuery;
 
-import java.util.Properties;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-
 /**
  * <code>RolapHierarchy</code> implements {@link Hierarchy} for a ROLAP database.
  *
@@ -365,21 +361,21 @@ class RolapHierarchy extends HierarchyBase
 	}
 	/**
 	 * Adds to the FROM clause of the query the tables necessary to access the
-	 * members of this hierarchy. If <code>level</code> is not null, adds only
-	 * the tables necessary to access that level (which may be fewer tables).
+	 * members of this hierarchy. If <code>expression</code> is not null, adds
+	 * the tables necessary to compute that expression.
 	 *
-	 * <p> This method is idempotent: if you call it more than once, it onle
+	 * <p> This method is idempotent: if you call it more than once, it only
 	 * adds the table(s) to the FROM clause once.
 	 *
 	 * @param query Query to add the hierarchy to
-	 * @param level Level to qualify up to; if null, qualifies up to the
-	 *    topmost ('all') level, which may require more columns and more joins
+	 * @param expression Level to qualify up to; if null, qualifies up to the
+	 *    topmost ('all') expression, which may require more columns and more joins
 	 * @param cube If not null, include the cube's fact table in the query and
 	 *    join to it. Member readers generally do not want to join the cube,
 	 *    but measure readers do.
 	 */
-	void addToFrom(SqlQuery query, RolapLevel level, RolapCube cube)
-	{
+	void addToFrom(
+			SqlQuery query, MondrianDef.Expression expression, RolapCube cube) {
 		if (xmlHierarchy == null) {
 			throw Util.newError(
 					"cannot add hierarchy " + getUniqueName() +
@@ -399,18 +395,16 @@ class RolapHierarchy extends HierarchyBase
 		}
 		MondrianDef.Relation relation = xmlHierarchy.relation;
 		if (relation instanceof MondrianDef.Join) {
-			MondrianDef.Join join = (MondrianDef.Join) relation;
-			if (level != null) {
+			if (expression != null) {
 				// Suppose relation is
 				//   (((A join B) join C) join D)
 				// and the fact table is
 				//   F
-				// and our level uses C. We want to make the expression
+				// and our expression uses C. We want to make the expression
 				//   F left join ((A join B) join C).
 				// Search for the smallest subset of the relation which
 				// uses C.
-				relation = relationSubset(
-						relation, level.nameExp.getTableAlias());
+				relation = relationSubset(relation, expression.getTableAlias());
 			}
 		}
 		query.addFrom(relation, failIfExists);
@@ -456,7 +450,7 @@ class RolapHierarchy extends HierarchyBase
  * A <code>RolapNullMember</code> is the null member of its hierarchy.
  * Every hierarchy has precisely one. They are yielded by operations such as
  * <code>[Gender].[All].ParentMember</code>. Null members are usually omitted
- * from sets (see {@link mondrian.olap.fun.SetFunDef}).
+ * from sets (in particular, by the "{" ... "}" operator).
  */
 class RolapNullMember extends RolapMember {
 	RolapNullMember(RolapHierarchy hierarchy) {

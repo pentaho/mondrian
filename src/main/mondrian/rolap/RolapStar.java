@@ -14,14 +14,13 @@ package mondrian.rolap;
 import mondrian.olap.Member;
 import mondrian.olap.MondrianDef;
 import mondrian.olap.Util;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.agg.CellRequest;
+import mondrian.rolap.sql.SqlQuery;
 
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -377,6 +376,18 @@ public class RolapStar {
 				Table found = child.findDescendant(seekAlias);
 				if (found != null) {
 					return found;
+				}
+			}
+			return null;
+		}
+
+		/**
+		 * Returns an ancestor with a given alias, or null if not found.
+		 */
+		public Table findAncestor(String tableName) {
+			for (Table t = this; t != null; t = t.parent) {
+				if (t.getAlias().equals(tableName)) {
+					return t;
 				}
 			}
 			return null;

@@ -295,8 +295,15 @@ class RolapCube extends CubeBase
 						} else {
 							RolapStar.Column column = new RolapStar.Column();
 							if (level.nameExp instanceof MondrianDef.Column) {
-								column.table = table.findDescendant(
-										((MondrianDef.Column) level.nameExp).table);
+								String tableName = ((MondrianDef.Column) level.nameExp).table;
+								column.table = table.findAncestor(tableName);
+								if (column.table == null) {
+									throw Util.newError(
+											"Level '" + level.getUniqueName() +
+											"' of cube '" + this +
+											"' is invalid: table '" + tableName +
+											"' is not found in current scope");
+								}
 							} else {
 								column.table = table;
 							}
