@@ -76,7 +76,13 @@
     <td><em>Xalan, JUnit and Oracle.<br>
     Moved product info to an appendix.</em></td>
   </tr>
-  </table>
+  <tr>
+    <td><I>July 26<SUP>th</SUP>, 2002</I></td>
+    <td><em>4</em></td>
+    <td><i>Julian Hyde</i></td>
+    <td><em>Upgrade to Ant 1.5, Tomcat 4.0.4.</em></td>
+  </tr>
+</table>
 
 <h2><a name="3_Setup_build_environment">3. Setup build environment</a></h2>
 
@@ -89,9 +95,7 @@
   <li>Install <a href="#Xalan">Xalan</a>.</li>
   <li>Install <a href="#JUnit">JUnit</a>.</li>
   <li>Go to <i></i><code><i>${xalan.home}</i>/bin</code>, and copy <code>
-  xalan.jar</code> and <code>xml-apis.jar</code> to <i></i><code><i>${tomcat.home}</i>/common/lib</code>. 
-  (This shouldn't be necessary, because these JARs are in <code>mondrian.war</code>, 
-  but I think there's a bug in Tomcat/4.0.3.)</li>
+  xalan.jar</code> and <code>xml-apis.jar</code> to <i></i><code><i>${tomcat.home}</i>/common/lib</code>.</li>
   <li>Modify <code>build.bat</code>, setting <code>JAVA_HOME</code>, <code>ANT_HOME</code>, 
   <code>TOMCAT_HOME</code>, <code>XALAN_HOME</code>, <code>JUNIT_HOME</code>.</li>
 </ol>
@@ -159,9 +163,8 @@ build test</pre>
   is correct for your environment. In particular, check the paths in the init 
   parameters to <code>MDXQueryServlet</code>.</li>
   <li><code>build deploy-webapp</code>.</li>
-  <li>Start up tomcat.</li>
-  <li>Hit <a href="http://localhost:8080/mondrian">
-  http://localhost:8080/mondrian</a>.</li>
+  <li>Start up tomcat. (<code>build start.tomcat</code> is an easy way to do this.)</li>
+  <li>Hit <a href="http://localhost:8080/mondrian" target="_new">http://localhost:8080/mondrian</a>.</li>
 </ol>
 <h2><a name="7_Debug_tomcat_using_IntelliJ">7. Debug tomcat using IntelliJ</a></h2>
 <ol>
@@ -240,19 +243,19 @@ sufficient to edit the corresponding line in <code><i>${project.location}</i>/bu
   <tr>
     <td><a name="Ant">Ant</a></td>
     <td>Yes</td>
-    <td>1.4.1 or later&nbsp;</td>
+    <td>1.5 or later&nbsp;</td>
     <td>I downloaded
-<a href="http://jakarta.apache.org/builds/jakarta-ant/release/v1.4.1/bin/jakarta-ant-1.4.1-bin.zip">
-jakarta-ant-1.4.1-bin.zip</a>,  extracted to <code>E:/jakarta-ant-1.4.1</code>, 
+<a href="http://jakarta.apache.org/builds/jakarta-ant/release/v1.5/bin/jakarta-ant-1.5-bin.zip">
+jakarta-ant-1.5-bin.zip</a>,  extracted to <code>E:/jakarta-ant-1.5</code>, 
     and set <code>ANT_HOME</code> to the same.</td>
   </tr>
   <tr>
     <td><a name="Tomcat">Tomcat</a></td>
     <td>Yes</td>
-    <td>4.0 or later (I use version 4.0.3)</td>
+    <td>4.0 or later (I use version 4.0.4)</td>
     <td>Available from <a href="http://jakarta.apache.org/tomcat" target="_blank">
     http://jakarta.apache.org/tomcat</a>. I downloaded <code>
-    jakarta-tomcat-4.0.3.zip</code>,  extracted to <code>E:/jakarta-tomcat-4.0.3</code>, 
+    jakarta-tomcat-4.0.4.zip</code>,  extracted to <code>E:/jakarta-tomcat-4.0.4</code>, 
     and set <font face="Verdana"><code>TOMCAT_HOME</code></font> to the same.</td>
   </tr>
   <tr>

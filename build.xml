@@ -57,13 +57,12 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
 
   <path id="project.classpath">
     <pathelement location="${classes.dir}"/>
-    <pathelement location="${tomcat.home}/common/lib/xerces.jar"/>
     <pathelement location="${tomcat.home}/common/lib/servlet.jar"/>
     <pathelement location="${lib.dir}/javacup.jar"/>
-    <pathelement location="${xalan.home}/bin/xml-apis.jar"/>
     <pathelement location="${xalan.home}/bin/xalan.jar"/>
     <pathelement location="${junit.home}/junit.jar"/>
     <pathelement location="${weblogic.home}/lib/weblogic.jar"/>
+    <!-- CLASSPATH must contain xml-apis.jar, xercesImpl.jar, javacup.jar -->
     <pathelement path="${myenv.CLASSPATH}"/>
   </path>
 
@@ -326,8 +325,7 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
         webxml="${dist.dir}/web.xml">
       <fileset dir="${webapp.dir}" excludes="${webapp.dir}/WEB-INF/web.xml"/>
       <lib dir="${lib.dir}" includes="javacup.jar"/>
-      <lib dir="${xalan.home}/bin" includes="xml-apis.jar,xalan.jar"/>
-	  <lib dir="${tomcat.home}/common/lib" includes="xerces.jar"/>
+      <lib dir="${xalan.home}/bin" includes="xalan.jar,xml-apis.jar,xercesImpl.jar"/>
 	  <lib dir="${junit.home}" includes="junit.jar"/>
       <classes dir="${classes.dir}"/>
     </war>
