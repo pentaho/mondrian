@@ -82,7 +82,6 @@ ${lib.dir}/jsp-api.jar,
 ${lib.dir}/commons-collections.jar,
 ${lib.dir}/commons-dbcp.jar,
 ${lib.dir}/commons-pool.jar,
-${lib.dir}/log4j-1.2.9.jar,
 ${testlib.dir}/junit.jar
 demo/mysql/FoodMartDropTables.sql,
 demo/mysql/FoodMartData.sql"/>
