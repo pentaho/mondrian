@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2004 Julian Hyde
+// (C) Copyright 2003-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -16,6 +16,7 @@ import mondrian.olap.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Collections;
 
 /**
  * A <code>RolapSchemaReader</code> allows you to read schema objects while
@@ -230,11 +231,13 @@ public abstract class RolapSchemaReader implements SchemaReader {
         Util.assertPrecondition(hierarchy != null, "hierarchy != null");
         // if we have no access to this hierarchy at all, we return
         // the unrestricted default member (e.g. All member)
-        if (role.getAccess(hierarchy) == Access.NONE)
+        if (role.getAccess(hierarchy) == Access.NONE) {
         	return hierarchy.getDefaultMember();
+        }
 		Member[] rootMembers = this.getHierarchyRootMembers(hierarchy);
-		if (rootMembers.length > 0)
+		if (rootMembers.length > 0) {
 			return rootMembers[0];
+        }
 		return null;
 	}
 
@@ -275,6 +278,10 @@ public abstract class RolapSchemaReader implements SchemaReader {
         visibleCubes.toArray(result);
 
         return result;
+    }
+
+    public List getCalculatedMembers(Hierarchy hierarchy) {
+        return Collections.EMPTY_LIST;
     }
 }
 

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2004 Julian Hyde
+// (C) Copyright 2003-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -30,31 +30,44 @@ public interface SchemaReader {
 	 * is implementing.
 	 */
 	Role getRole();
+
 	/**
 	 * Returns an array of the root members of <code>hierarchy</code>. If the
 	 * hierarchy is access-controlled, returns the most senior visible members.
+     *
+     * @see #getCalculatedMembers(Hierarchy)
 	 **/
 	Member[] getHierarchyRootMembers(Hierarchy hierarchy);
 
 	/**
-	 * Returns number of children parent of a member, 
+	 * Returns number of children parent of a member,
 	 *  if the information can be retrieved from cache.
 	 * Otherwise  -1 is returned
 	 */
 	int getChildrenCountFromCache(Member member);
-	
+
 	/**
 	 * Returns direct children of <code>member</code>.
 	 * @pre member != null
 	 * @post return != null
 	 **/
 	Member[] getMemberChildren(Member member);
+
 	/**
 	 * Returns direct children of each element of <code>members</code>.
 	 * @pre members != null
 	 * @post return != null
 	 **/
 	Member[] getMemberChildren(Member[] members);
+
+    /**
+     * Returns the parent of <code>member</code>.
+     * @param member
+     * @pre member != null
+     * @return null if member is a root member
+     */
+	Member getMemberParent(Member member);
+
     /**
      * Returns the direct and indirect children of a member.
      *
@@ -66,14 +79,6 @@ public interface SchemaReader {
      * @param self Whether to output members at <code>level</code>
      * @param after Whether to output members below <code>level</code>
      */
-
-	Member getMemberParent(Member member);
-	/**
-	 * Returns direct children of <code>member</code>.
-	 * @pre member != null
-	 * @post return != null
-	 **/
-	
     void getMemberDescendants(Member member, List result, Level level,
             boolean before, boolean self, boolean after);
 	/**
@@ -176,6 +181,7 @@ public interface SchemaReader {
 	 * Returns the members of <code>level</code>.
 	 */
 	Member[] getLevelMembers(Level level);
+
 	/**
 	 * Returns the accessible levels of a hierarchy.
 	 *
@@ -183,23 +189,32 @@ public interface SchemaReader {
 	 * @post return.length >= 1
 	 */
 	Level[] getHierarchyLevels(Hierarchy hierarchy);
+
 	/**
 	 * Returns the default member of a hierarchy. If the default member is in
 	 * an inaccessible level, returns the nearest ascendant/descendant member.
 	 */
 	Member getHierarchyDefaultMember(Hierarchy hierarchy);
+
     /**
      * Returns whether a member has visible children.
      */
     boolean isDrillable(Member member);
+
     /**
      * Returns whether a member is visible.
      */
     boolean isVisible(Member member);
+
     /**
      * Returns the list of accessible cubes.
      */
     Cube[] getCubes();
+
+    /**
+     * Returns a list of calculated members in a given hierarchy.
+     */
+    List getCalculatedMembers(Hierarchy hierarchy);
 }
 
 // End SchemaReader.java

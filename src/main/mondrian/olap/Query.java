@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 1998-2003 Kana Software, Inc. and others.
+// (C) Copyright 1998-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -1647,6 +1647,18 @@ public class Query extends QueryPart {
         public Member getCalculatedMember(String[] nameParts) {
             final String uniqueName = Util.implode(nameParts);
             return lookupMemberFromCache(uniqueName);
+        }
+
+        public List getCalculatedMembers(Hierarchy hierarchy) {
+            ArrayList definedMembers = getDefinedMembers();
+            ArrayList result = new ArrayList();
+            for (int i = 0; i < definedMembers.size(); i++) {
+                Member member = (Member) definedMembers.get(i);
+                if (member.getHierarchy().equals(hierarchy)) {
+                    result.add(member);
+                }
+            }
+            return result;
         }
 
         public OlapElement getElementChild(OlapElement parent, String s) {

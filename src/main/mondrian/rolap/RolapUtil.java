@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2004 Kana Software, Inc. and others.
+// (C) Copyright 2001-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -107,7 +107,8 @@ public class RolapUtil {
 
 	static final RolapMember[] toArray(List v)
 	{
-		return (RolapMember[]) v.toArray(emptyMemberArray);
+		return v.isEmpty() ? emptyMemberArray :
+                (RolapMember[]) v.toArray(new RolapMember[v.size()]);
 	}
 
 	static RolapMember lookupMember(

@@ -627,6 +627,18 @@ class RolapCube extends CubeBase
             assert role != null : "precondition: role != null";
         }
 
+        public Member[] getLevelMembers(Level level) {
+            Member[] members = super.getLevelMembers(level);
+            List calcMembers = getCalculatedMembers(level.getHierarchy());
+            for (int i = 0; i < calcMembers.size(); i++) {
+                Member member = (Member) calcMembers.get(i);
+                if (member.getLevel().equals(level)) {
+                    members = (Member[]) RolapUtil.addElement(members, member);
+                }
+            }
+            return members;
+        }
+
         public Member getCalculatedMember(String[] nameParts) {
             final String uniqueName = Util.implode(nameParts);
             for (int i = 0; i < calculatedMembers.length; i++) {
@@ -638,6 +650,17 @@ class RolapCube extends CubeBase
                 }
             }
             return null;
+        }
+
+        public List getCalculatedMembers(Hierarchy hierarchy) {
+            ArrayList list = new ArrayList();
+            for (int i = 0; i < calculatedMembers.length; i++) {
+                Formula formula = calculatedMembers[i];
+                if (formula.getMdxMember().getHierarchy().equals(hierarchy)) {
+                    list.add(formula.getMdxMember());
+                }
+            }
+            return list;
         }
 
         public Member getMemberByUniqueName(

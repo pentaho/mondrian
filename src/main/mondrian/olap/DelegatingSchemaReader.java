@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2003-2004 Julian Hyde
+// (C) Copyright 2003-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -68,7 +68,7 @@ public class DelegatingSchemaReader implements SchemaReader {
             failIfNotFound);
 	}
 
-    public OlapElement lookupCompound(OlapElement parent, String[] names, 
+    public OlapElement lookupCompound(OlapElement parent, String[] names,
         boolean failIfNotFound, int category)
     {
         return schemaReader.lookupCompound(parent, names, failIfNotFound,
@@ -119,7 +119,11 @@ public class DelegatingSchemaReader implements SchemaReader {
         return schemaReader.getCubes();
     }
 
-	public int getChildrenCountFromCache(Member member) {
+    public List getCalculatedMembers(Hierarchy hierarchy) {
+        return schemaReader.getCalculatedMembers(hierarchy);
+    }
+
+    public int getChildrenCountFromCache(Member member) {
 		return schemaReader.getChildrenCountFromCache(member);
 	}
 }
