@@ -27,7 +27,8 @@ import java.util.*;
 /**
  * A <code>RolapConnection</code> is a connection to a Mondrian OLAP Server.
  *
- * <p>Typically, you create a connection via {@link DriverManager#getConnection}.
+ * <p>Typically, you create a connection via
+ * {@link DriverManager#getConnection(java.lang.String, javax.servlet.ServletContext, boolean)}.
  * {@link RolapConnectionProperties} describes allowable keywords.</p>
  *
  * @see RolapSchema

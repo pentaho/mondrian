@@ -41,7 +41,8 @@ interface MemberReader extends MemberSource
 	 * Returns all of the members in <code>level</code> whose ordinal lies
 	 * between <code>startOrdinal</code> and <code>endOrdinal</code>.
 	 *
-	 * <p>If this object {@link #setCache supports cache-writeaback}, also
+	 * <p>If this object
+     * {@link MemberSource#setCache supports cache-writeback}, also
 	 * writes these members to the cache.
 	 *
 	 * @return {@link List} of {@link RolapMember}
