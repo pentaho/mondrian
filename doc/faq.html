@@ -29,15 +29,21 @@
 <ul>
   <li><a href="#Applications">How do I use Mondrian in my application?</a></li>
   <li><a href="#API">Why doesn't Mondrian use a standard API?</a></li>
-  <li><a href="#MDX_dialect">How does Mondrian's dialect of MDX differ from 
-  MSOLAP's?</a></li>
+  <li><a href="#MDX_dialect">How does Mondrian's dialect of MDX differ from MSOLAP's?</a></li>
   <li><a href="#Extensiblity">How can Mondrian be extended?</a></li>
   <li><a href="#Scalability">Can Mondrian handle large datasets?</a></li>
   <li><a href="#Tracing">How do I enable tracing?</a></li>
-  <li>What is the syntax of a Mondrian connect string?</li>
+  <li><a href="#connect_string">What is the syntax of a Mondrian connect string?</a></li>
   <li><a href="#Roadmap">Where is Mondrian going in the future?</a></li>
   <li><a href="#Further_reading">Where can I find out more? (Further reading)</a></li>
   <li><a href="#Feedback">Mondrian is wonderful! How can I possibly thank you?</a></li>
+  <li><a href="#Modeling">Modeling</a><ul>
+    <li><a href="#measures_not_stored_in_the_fact_table">Measures not in the fact table</a></li>
+  </ul></li>
+  <li><a href="#Performance">Performance</a><ul>
+    <li><a href="#cache_refresh">When I change the data in the RDBMS, the result 
+    doesn't change even if i refresh the browser. Why is this?</a></li>
+  </ul></li>
 </ul>
 <h2><a name="Applications">How do I use Mondrian in my application?</a></h2>
 <p>There are several ways. If you have a fixed set of queries which you'd like 
@@ -97,7 +103,8 @@ statement, like this:</p>
   when you re-start Tomcat. The output goes to the console from which you 
   started Tomcat.</li>
 </ul>
-<h2><a name="Connect_string">What is the syntax of a Mondrian connect string?</a></h2>
+
+<h2><a name="connect_string">What is the syntax of a Mondrian connect string?</a></h2>
 <p>The syntax of the connect string is described in the Javadoc for the method
 <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/RolapConnection.html#RolapConnection(mondrian.olap.Util.PropertyList,boolean)">
 mondrian.olap.DriverManager.getConnection(String connectString, boolean fresh)</a>.</p>
@@ -138,6 +145,40 @@ list of MDX functions</a>.</p>
 it. If you can think of ways that Mondrian can be improved, roll up your sleeves 
 and help make it better. If you use Mondrian in your application, consider 
 sharing your work so that everyone can use it.</p>
+
+<hr/>
+
+<h2><a name="Modeling">Modeling</a></h2>
+
+<h3><a name="measures_not_stored_in_the_fact_table">Measures not stored in the fact table</a></h3>
+
+<p><i>I am trying to build a cube with measures from 2 different tables. I have tried a virtual cube, but it does not seem to work - it only relates measures and dimensions from the same table. Is there a way to specify that a measure is not coming from the fact table? Say using SQL select?</i></p>
+
+<p>Virtual cubes sound like the right approach. The way to do it is to first create a dummy cube on your lookup table, with dimensions for as many columns as are applicable. (A classic example of this kind of cube is an 'ExchangeRate' cube, whose only dimensions are time and currency.)</p>
+
+<p>Then create a virtual cube of the dummy cube and the real cube (onto your fact table).</p>
+
+<p>Note that you will need to use shared dimensions for the cubes to join implicitly.</p>
+
+<hr>
+
+<h2><a name="Performance">Performance</a></h2>
+<h3><a name="cache_refresh">When I change the data in the RDBMS, the result 
+doesn't change even if i refresh the browser. Why is this?</a></h3>
+<p>Mondrian uses a cache to improve performance. The first time you run a query, 
+Mondrian will execute various SQL statements to load the data (you can see these 
+statements by turning on tracing). The next time, it will use the information in 
+the cache.</p>
+<p>Cache control is primitive right now. If the data in the RDBMS is modified, 
+Mondrian has no way to know, and does not refresh its cache. If you are using 
+the JPivot web ui and refresh the browser, that will simply regenerate the web 
+page, not flush the cache. The only way to refresh the cache is to call the 
+following piece of code, which flushes the entire contents:</p>
+<blockquote>
+  <p><code>mondrian.rolap.CachePool.instance().flush();</code></p>
+</blockquote>
+<p>See <a href="components.html#caching">caching design</a> for more 
+information.</p>
 
 <hr>
 

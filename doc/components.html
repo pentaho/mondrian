@@ -4,7 +4,7 @@
   == This software is subject to the terms of the Common Public License
   == Agreement, available at the following URL:
   == http://www.opensource.org/licenses/cpl.html.
-  == (C) Copyright 2001-2002 Kana Software, Inc. and others.
+  == (C) Copyright 2001-2003 Kana Software, Inc. and others.
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   == jhyde, 24 September, 2002
@@ -25,7 +25,7 @@
 <h2>Components</h2>
 <i>to be written...</i>
 
-<h2>Caching strategy</h2>
+<h2><a name="caching">Caching</a></h2>
 <p>The various subsystems of mondrian have different memory requirements. Some 
 of them require a fixed amount of memory to do their work, whereas others can 
 exploit extra memory to increase their performance. This is an overview of how 
@@ -72,7 +72,7 @@ the garbage collector can overrule its wisdom.</p>
   <li>They must be despensable: if they disappear, their subsystem will continue 
   to work correctly, albeit slower. A subsystem can declare an object to be 
   temporarily indispensable by calling
-  <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/CachePool.html#pin(Cacheable,Collection)">CachePool.pin(Cacheable,Collection)</a> and then unpin it a short time later.</li>
+  <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/CachePool.html#pin(Cacheable,Collection)">CachePool.pin(Cacheable, Collection)</a> and then unpin it a short time later.</li>
   <li dir="ltr">
   <p dir="ltr">Their cache must reference them via soft references, so that they 
   are available for garbage collection. </li>
