@@ -23,7 +23,7 @@ import java.util.*;
  * @since 10 August, 2001
  * @version $Id$
  */
-class RolapMember extends MemberBase
+public class RolapMember extends MemberBase
 {
 	/** Ordinal of the member within the hierarchy. Some member readers do not
 	 * use this property; in which case, they should leave it as its default,
@@ -245,6 +245,9 @@ class RolapMember extends MemberBase
 	 */
 	public int getDepth() {
 		return level.getDepth();
+	}
+	public Object getSqlKey() {
+		return key;
 	}
 }
 
