@@ -387,13 +387,13 @@
 <!-- ====================================================================== -->
 <!-- Runtime limit overflow -->
 
-<message id="600010" name="LimitExceededDuringCrossjoin">
+<exception id="600010" name="LimitExceededDuringCrossjoin">
    <text>Size of CrossJoin result ({0,number}) exceeded limit ({1,number})</text>
-</message>
+</exception>
 
-<message id="600020" name="MemberFetchLimitExceeded">
-   <text>Number of Members to be read exceeded limit ({0,number})</text>
-</message>
+<exception id="600020" name="MemberFetchLimitExceeded" className="mondrian.olap.ResultLimitExceeded">
+   <text>Number of members to be read exceeded limit ({0,number})</text>
+</exception>
 
 <!-- End of last error section ============================================ -->
 

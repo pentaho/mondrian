@@ -1,3 +1,12 @@
+/*
+// $Id$
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// Copyright (C) 2004-2005 Julian Hyde and others
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
 package mondrian.rolap;
 
 import mondrian.olap.Evaluator;
@@ -19,7 +28,7 @@ import java.util.*;
  * object.  The calling code must be able to deal with that.</p>
  *
  * <p>This class tries to minimize the amount of storage needed to record the
- * fact that a cell was requested</p>
+ * fact that a cell was requested.</p>
  */
 public class FastBatchingCellReader implements CellReader {
 
@@ -36,7 +45,8 @@ public class FastBatchingCellReader implements CellReader {
 	public Object get(Evaluator evaluator) {
         final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator;
         RolapMember[] currentMembers = rolapEvaluator.currentMembers;
-		CellRequest request = RolapAggregationManager.makeRequest(currentMembers, false);
+		CellRequest request =
+                RolapAggregationManager.makeRequest(currentMembers, false);
 		if (request == null) {
 			return Util.nullValue; // request out of bounds
         }
@@ -74,10 +84,13 @@ public class FastBatchingCellReader implements CellReader {
 		//System.out.println("requestCount = " + requestCount);
 		long t1 = System.currentTimeMillis();
 		requestCount = 0;
-		if (batches.isEmpty())
+		if (batches.isEmpty()) {
 			return false;
-		for (Iterator it = batches.values().iterator(); it.hasNext();)
+        }
+        Iterator it = batches.values().iterator();
+		while (it.hasNext()) {
 			 ((Batch) it.next()).loadAggregation();
+        }
 		batches.clear();
 		long t2 = System.currentTimeMillis();
 		if (false) {
@@ -107,25 +120,27 @@ public class FastBatchingCellReader implements CellReader {
 			}
 			RolapStar.Measure measure = request.getMeasure();
 			if (!measuresList.contains(measure)) {
-				if (measuresList.size() > 0) {
-					Util.assertTrue(
-						measure.table.star == ((RolapStar.Measure) measuresList.get(0)).table.star);
-				}
+                assert measuresList.size() == 0 ||
+                        measure.table.star ==
+                        ((RolapStar.Measure) measuresList.get(0)).table.star :
+                        "Measure must belong to same star as other measures";
 				measuresList.add(measure);
 			}
 		}
 
 		void loadAggregation() {
 			long t1 = System.currentTimeMillis();
-			AggregationManager aggmgr = (AggregationManager) AggregationManager.instance();
-			ColumnConstraint[][] constraintses = new ColumnConstraint[columns.length][];
+			AggregationManager aggmgr = AggregationManager.instance();
+			ColumnConstraint[][] constraintses =
+                    new ColumnConstraint[columns.length][];
 			for (int j = 0; j < columns.length; j++) {
 				ColumnConstraint[] constraints;
 				Set valueSet = valueSets[j];
 				if (valueSet == null) {
 					constraints = null;
 				} else {
-					constraints = (ColumnConstraint[]) valueSet.toArray(new ColumnConstraint[0]);
+					constraints = (ColumnConstraint[]) valueSet.
+                            toArray(new ColumnConstraint[valueSet.size()]);
 				}
 				constraintses[j] = constraints;
 			}
@@ -137,7 +152,8 @@ public class FastBatchingCellReader implements CellReader {
 			// distinct aggregations out.
 			while (true) {
 				// Scan for a measure based upon a distinct aggregation.
-				RolapStar.Measure distinctMeasure =	getFirstDistinctMeasure(measuresList);
+				RolapStar.Measure distinctMeasure =
+                        getFirstDistinctMeasure(measuresList);
 				if (distinctMeasure == null) {
 					break;
 				}
@@ -145,22 +161,23 @@ public class FastBatchingCellReader implements CellReader {
 				final ArrayList distinctMeasuresList = new ArrayList();
 				for (int i = 0; i < measuresList.size();) {
 					RolapStar.Measure measure = (RolapStar.Measure) measuresList.get(i);
-					if (measure.aggregator.distinct
-						&& measure.expression.getGenericExpression().equals(expr)) {
+					if (measure.aggregator.distinct &&
+                            measure.expression.getGenericExpression().equals(expr)) {
 						measuresList.remove(i);
 						distinctMeasuresList.add(distinctMeasure);
 					} else {
 						i++;
 					}
 				}
-				RolapStar.Measure[] measures =
-					(RolapStar.Measure[]) distinctMeasuresList.toArray(new RolapStar.Measure[0]);
-				aggmgr.loadAggregation(measures, columns, constraintses, pinnedSegments);
+				RolapStar.Measure[] measures = (RolapStar.Measure[])
+                        distinctMeasuresList.toArray(
+                                new RolapStar.Measure[distinctMeasuresList.size()]);
+                aggmgr.loadAggregation(measures, columns, constraintses, pinnedSegments);
 			}
 			final int measureCount = measuresList.size();
 			if (measureCount > 0) {
-				RolapStar.Measure[] measures =
-					(RolapStar.Measure[]) measuresList.toArray(new RolapStar.Measure[measureCount]);
+				RolapStar.Measure[] measures = (RolapStar.Measure[])
+                        measuresList.toArray(new RolapStar.Measure[measureCount]);
 				aggmgr.loadAggregation(measures, columns, constraintses, pinnedSegments);
 			}
 			long t2 = System.currentTimeMillis();
@@ -188,3 +205,5 @@ public class FastBatchingCellReader implements CellReader {
 	}
 
 }
+
+// End FastBatchingCellReader.java

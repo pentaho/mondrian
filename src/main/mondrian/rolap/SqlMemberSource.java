@@ -324,12 +324,11 @@ class SqlMemberSource implements MemberReader
 
             while (resultSet.next()) {
 
-            	if ( limit > 0 && limit < ++nFetch ) {
-					// result limit exceeded, throw an exception
-                   	String msg = MondrianResource.instance().
-						getMemberFetchLimitExceeded(new Long(limit));
-                   	throw new ResultLimitExceeded(msg);
-				}
+                if (limit > 0 && limit < ++nFetch) {
+                    // result limit exceeded, throw an exception
+                    throw MondrianResource.instance().
+                            newMemberFetchLimitExceeded(new Long(limit));
+                }
 
                 int column = 0;
                 RolapMember member = root;
@@ -538,11 +537,10 @@ class SqlMemberSource implements MemberReader
 
             while (resultSet.next()) {
 
-            	if ( limit > 0 && limit < ++nFetch ) {
-					// result limit exceeded, throw an exception
-                   	String msg = MondrianResource.instance().
-						getMemberFetchLimitExceeded(new Long(limit));
-                   	throw new ResultLimitExceeded(msg);
+                if (limit > 0 && limit < ++nFetch) {
+                    // result limit exceeded, throw an exception
+                   	throw MondrianResource.instance().
+                               newMemberFetchLimitExceeded(new Long(limit));
 				}
 
                 int column = 0;
@@ -742,11 +740,10 @@ class SqlMemberSource implements MemberReader
 
             while (resultSet.next()) {
 
-            	if ( limit > 0 && limit < ++nFetch ) {
+            	if (limit > 0 && limit < ++nFetch) {
 					// result limit exceeded, throw an exception
-                   	String msg = MondrianResource.instance().
-						getMemberFetchLimitExceeded(new Long(limit));
-                   	throw new ResultLimitExceeded(msg);
+                    throw MondrianResource.instance().
+                            newMemberFetchLimitExceeded(new Long(limit));
 				}
 
                 Object value = resultSet.getObject(1);

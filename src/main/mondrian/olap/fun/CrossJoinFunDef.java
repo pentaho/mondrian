@@ -33,7 +33,7 @@ class CrossJoinFunDef extends FunDefBase {
     public Object evaluate(Evaluator evaluator, Exp[] args) {
         List set0 = getArgAsList(evaluator, args, 0);
         List set1 = getArgAsList(evaluator, args, 1);
-        
+
         // optimize nonempty(crossjoin(a,b)) ==
         //  nonempty(crossjoin(nonempty(a),nonempty(b))
 
@@ -50,12 +50,12 @@ class CrossJoinFunDef extends FunDefBase {
 
         // throw an exeption, if the crossjoin gets too large
         int limit = MondrianProperties.instance().getResultLimit();
-        if ( limit > 0 && limit < size ) {
-			// result limit exceeded, throw an exception
-        	String msg = MondrianResource.instance().
-				getLimitExceededDuringCrossjoin(new Long(size), new Long(limit));
-        	throw new ResultLimitExceeded(msg);
-		}
+        if (limit > 0 && limit < size) {
+            // result limit exceeded, throw an exception
+            throw MondrianResource.instance().
+                    newLimitExceededDuringCrossjoin(
+                            new Long(size), new Long(limit));
+        }
 
         boolean neitherSideIsTuple = true;
         int arity0 = 1,
@@ -113,7 +113,7 @@ class CrossJoinFunDef extends FunDefBase {
         return result;
     }
 
-    private static List getArgAsList(Evaluator evaluator, Exp[] args, 
+    private static List getArgAsList(Evaluator evaluator, Exp[] args,
             int index) {
         final Object arg = getArg(evaluator, args, index);
         if (arg instanceof List) {
