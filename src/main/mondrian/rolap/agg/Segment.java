@@ -11,15 +11,6 @@
 */
 package mondrian.rolap.agg;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-
 import mondrian.olap.EnumeratedValues;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
@@ -28,6 +19,15 @@ import mondrian.rolap.RolapStar;
 import mondrian.rolap.RolapUtil;
 import mondrian.rolap.cache.CachePool;
 import mondrian.rolap.cache.Cacheable;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * A <code>Segment</code> is a collection of cell values parameterized by
@@ -57,7 +57,7 @@ import mondrian.rolap.cache.Cacheable;
  * are available. Finally, it releases the pins.</p>
  *
  * <p><b>Note to developers</b>: this class must obey the contract for
- * objects which implement {@link CachePool.Cacheable}.
+ * objects which implement {@link Cacheable}.
  *
  * @author jhyde
  * @since 21 March, 2002
@@ -482,11 +482,21 @@ public class Segment implements Cacheable
 		}
 		boolean sparse =
 			(possibleCount - countThreshold) * densityThreshold > actualCount;
-		if (possibleCount < countThreshold) {
-			Util.assertTrue(!sparse);
+        if (possibleCount < countThreshold) {
+            assert !sparse :
+                    "Should never use sparse if count is less " +
+                    "than threshold, possibleCount=" + possibleCount +
+                    ", actualCount=" + actualCount +
+                    ", countThreshold=" + countThreshold +
+                    ", densityThreshold=" + densityThreshold;
 		}
 		if (possibleCount == actualCount) {
-			Util.assertTrue(!sparse);
+            assert !sparse :
+                    "Should never use sparse if result is 100% dense: " +
+                    "possibleCount=" + possibleCount +
+                    ", actualCount=" + actualCount +
+                    ", countThreshold=" + countThreshold +
+                    ", densityThreshold=" + densityThreshold;
 		}
 		return sparse;
 	}

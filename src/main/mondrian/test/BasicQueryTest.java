@@ -3687,16 +3687,15 @@ public class BasicQueryTest extends FoodMartTestCase {
 
 
 	/**
-	 * make sure that the expression 
+	 * Makes sure that the expression <code>
 	 * 
 	 * [Measures].[Unit Sales] / ([Measures].[Unit Sales], [Product].[All Products])
 	 * 
-	 * depends on the current member of the Product dimension, although [Product].[All Products]
-	 * is referenced from the expression.
+	 * </code> depends on the current member of the Product dimension, although
+     * [Product].[All Products] is referenced from the expression.
 	 */
 	public void testDependsOn() {
-		System.out.println("runinnn");
-		runQueryCheckResult( 
+		runQueryCheckResult(
 		"with member [Customers].[my] as " + nl +
 		"  'Aggregate(Filter([Customers].[City].Members, (([Measures].[Unit Sales] / ([Measures].[Unit Sales], [Product].[All Products])) > 0.1)))' " + nl +
 		"select  " + nl +

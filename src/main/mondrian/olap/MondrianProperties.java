@@ -244,8 +244,8 @@ public class MondrianProperties extends PropertiesPlus {
 	 * The <code>density</code> is <code>actual / possible</code>.
 	 * We use a sparse representation if
 	 *   <code>possible -
-	 *   {@link #getSparseSegmentCountThreshold countThreshold} &gt;
-	 *   actual *
+	 *   {@link #getSparseSegmentCountThreshold countThreshold} *
+     *   actual &gt;
 	 *   {@link #getSparseSegmentDensityThreshold densityThreshold}</code>
 	 *
 	 * <p>The default values are
