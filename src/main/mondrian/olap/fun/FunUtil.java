@@ -583,6 +583,41 @@ public class FunUtil extends Util {
 		return new Double(asArray[median]);
 	}
 
+    /**
+     * Returns the member which lies upon a particular quartile according to a
+     * given expression.
+     *
+     * @param evaluator Evaluator
+     * @param members List of members
+     * @param exp Expression to rank members
+     * @param range Quartile (1, 2 or 3)
+     *
+     * @pre range >= 1 && range <= 3
+     */
+    static Object quartile(Evaluator evaluator, List members, ExpBase exp, int range) {
+        Util.assertPrecondition(range >= 1 && range <= 3, "range >= 1 && range <= 3");
+        SetWrapper sw = evaluateSet(evaluator, members, exp);
+        if (sw.errorCount > 0) {
+            return new Double(Double.NaN);
+        } else if (sw.v.size() == 0) {
+            return Util.nullValue;
+        }
+        double[] asArray = new double[sw.v.size()];
+        for (int i = 0; i < asArray.length; i++) {
+            asArray[i] = ((Double) sw.v.get(i)).doubleValue();
+        }
+        Arrays.sort(asArray);
+        // get a quartile, median is a second q
+        double dm = (asArray.length * range) / 4;
+        int median = (int) Math.floor(dm);
+        if (dm == median && median < asArray.length - 1) {
+            //have more elements
+            return new Double((asArray[median] + asArray[median+1])/2);
+        } else {
+            return new Double(asArray[median]);
+        }
+    }
+
 	public static Object min(Evaluator evaluator, List members, Exp exp) {
 		SetWrapper sw = evaluateSet(evaluator, members, (ExpBase) exp);
 		if (sw.errorCount > 0) {

@@ -4820,6 +4820,32 @@ public class BuiltinFunTable extends FunTable {
 				Assert.assertEquals("false", s);
 			}
 		});
+
+		// NON-STANDARD FUNCTIONS
+
+        define(new FunkResolver(
+                "FirstQ", "FirstQ(<Set>[, <Numeric Expression>])", "Returns the 1st quartile value of a numeric expression evaluated over a set.",
+                new String[]{"fnx", "fnxn"},
+                new FunkBase() {
+                    public Object evaluate(Evaluator evaluator, Exp[] args) {
+                        List members = (List) getArg(evaluator, args, 0);
+                        ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
+                        //todo: ignore nulls, do we need to ignore the List?
+                        return quartile(evaluator.push(), members, exp, 1);
+                    }
+                }));
+
+        define(new FunkResolver(
+                "ThirdQ", "ThirdQ(<Set>[, <Numeric Expression>])", "Returns the 3rd quartile value of a numeric expression evaluated over a set.",
+                new String[]{"fnx", "fnxn"},
+                new FunkBase() {
+                    public Object evaluate(Evaluator evaluator, Exp[] args) {
+                        List members = (List) getArg(evaluator, args, 0);
+                        ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
+                        //todo: ignore nulls, do we need to ignore the List?
+                        return quartile(evaluator.push(), members, exp, 3);
+                    }
+                }));
 	}
 
     private static boolean isConstantHierarchy(Exp typeArg) {
