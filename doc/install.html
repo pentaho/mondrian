@@ -335,25 +335,33 @@ JServer Release 8.1.7.3.0 - Production
 Export file created by EXPORT:V08.01.07 via conventional path
 import done in WE8ISO8859P1 character set and WE8ISO8859P1 NCHAR character set
 . importing FOODMART's objects into FOODMART
+. . importing table                      "account"         11 rows imported
+. . importing table                     "category"          4 rows imported
+. . importing table                     "currency"         72 rows imported
 . . importing table                     "customer"      10281 rows imported
 . . importing table                         "days"          7 rows imported
+. . importing table                   "department"         12 rows imported
+. . importing table                     "employee"       1155 rows imported
+. . importing table                 "expense_fact"       2400 rows imported
 . . importing table          "inventory_fact_1997"       4070 rows imported
 . . importing table          "inventory_fact_1998"       7282 rows imported
 . . importing table                      "product"       1560 rows imported
 . . importing table                "product_class"        110 rows imported
 . . importing table                    "promotion"       1864 rows imported
 . . importing table                       "region"        110 rows imported
+. . importing table             "reserve_employee"        143 rows imported
+. . importing table                       "salary"      21252 rows imported
 . . importing table              "sales_fact_1997"      86837 rows imported
 . . importing table              "sales_fact_1998"     164558 rows imported
 . . importing table          "sales_fact_dec_1998"      18325 rows imported
-. . importing table                        "store"         24 rows imported
+. . importing table                        "store"         25 rows imported
 . . importing table                  "time_by_day"        730 rows imported
 . . importing table                    "warehouse"         24 rows imported
 . . importing table              "warehouse_class"          6 rows imported
 Import terminated successfully without warnings.</pre>
 </blockquote></p>
 
-<p>Note: the schema in <code>FoodMart.dmp</code> was created by running <code>demo/oracle/FoodMartTables.sql</code>, <code>demo/FoodMartData.sql</code>, then <code>demo/oracle/FoodMartIndexes.sql</code> in SQLPlus. To avoid straining my rollback segment, I used the SQLPlus command <code>set autocommit 100</code>.</p>
+<p>Note: the schema in <code>FoodMart.dmp</code> was created by running <code>demo/oracle/FoodMartTables.sql</code>, <code>demo/FoodMartData.sql</code>, then <code>demo/oracle/FoodMartIndexes.sql</code> in SQLPlus. I used the SQLPlus command <code>set autocommit 100</code> to avoid straining my rollback segment, and <code>set scan off</code> so that &&amp;ampersands were treated with appropriate disdain.</p>
 
 <p>Setup your environment as follows:</p>
 <ol>

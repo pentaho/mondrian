@@ -13,6 +13,8 @@ package mondrian.test;
 
 import mondrian.olap.*;
 
+import java.util.regex.Pattern;
+
 /**
  * <code>BasicQueryTest</code> is a test case which tests simple queries against
  * the FoodMart database.
@@ -379,29 +381,29 @@ public class BasicQueryTest extends FoodMartTestCase {
 			"{[Time].[1997].[Q4].[11]}" + nl +
 			"{[Time].[1997].[Q4].[12]}" + nl +
 			"Row #0: 45,539.69" + nl +
-			"Row #0: 45539.69" + nl +
+			"Row #0: 45,539.69" + nl +
 			"Row #1: 44,058.79" + nl +
-			"Row #1: 89598.48000000001" + nl +
+			"Row #1: 89,598.48" + nl +
 			"Row #2: 50,029.87" + nl +
-			"Row #2: 139628.35" + nl +
+			"Row #2: 139,628.35" + nl +
 			"Row #3: 42,878.25" + nl +
-			"Row #3: 182506.6" + nl +
+			"Row #3: 182,506.60" + nl +
 			"Row #4: 44,456.29" + nl +
-			"Row #4: 226962.89" + nl +
+			"Row #4: 226,962.89" + nl +
 			"Row #5: 45,331.73" + nl +
-			"Row #5: 272294.62" + nl +
+			"Row #5: 272,294.62" + nl +
 			"Row #6: 50,246.88" + nl +
-			"Row #6: 322541.5" + nl +
+			"Row #6: 322,541.50" + nl +
 			"Row #7: 46,199.04" + nl +
-			"Row #7: 368740.54" + nl +
+			"Row #7: 368,740.54" + nl +
 			"Row #8: 43,825.97" + nl +
-			"Row #8: 412566.51" + nl +
+			"Row #8: 412,566.51" + nl +
 			"Row #9: 42,342.27" + nl +
-			"Row #9: 454908.78" + nl +
+			"Row #9: 454,908.78" + nl +
 			"Row #10: 53,363.71" + nl +
-			"Row #10: 508272.49000000005" + nl +
+			"Row #10: 508,272.49" + nl +
 			"Row #11: 56,965.64" + nl +
-			"Row #11: 565238.13" + nl),
+			"Row #11: 565,238.13" + nl),
 	};
 
 	public void testSample0() {
@@ -556,9 +558,11 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"   { [Measures].[Store Sales], [Measures].[Store Cost], [Measures].[StoreType]," + nl +
 				"   [Measures].[ProfitPct] } ON ROWS" + nl +
 				"FROM Sales",
+
 				"Axis #0:" + nl +
 				"{}" + nl +
 				"Axis #1:" + nl +
+				"{[Store].[All Stores].[USA].[CA].[Alameda].[HQ]}" + nl +
 				"{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6]}" + nl +
 				"{[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]}" + nl +
 				"{[Store].[All Stores].[USA].[CA].[San Diego].[Store 24]}" + nl +
@@ -577,6 +581,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"{[Measures].[Store Cost]}" + nl +
 				"{[Measures].[StoreType]}" + nl +
 				"{[Measures].[ProfitPct]}" + nl +
+				"Row #0: (null)" + nl +
 				"Row #0: 45,750.24" + nl +
 				"Row #0: 54,545.28" + nl +
 				"Row #0: 54,431.14" + nl +
@@ -590,6 +595,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"Row #0: 74,843.96" + nl +
 				"Row #0: 4,705.97" + nl +
 				"Row #0: 24,329.23" + nl +
+				"Row #1: (null)" + nl +
 				"Row #1: 18,266.44" + nl +
 				"Row #1: 21,771.54" + nl +
 				"Row #1: 21,713.53" + nl +
@@ -603,6 +609,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"Row #1: 29,959.28" + nl +
 				"Row #1: 1,880.34" + nl +
 				"Row #1: 9,713.81" + nl +
+				"Row #2: HeadQuarters" + nl +
 				"Row #2: Gourmet Supermarket" + nl +
 				"Row #2: Supermarket" + nl +
 				"Row #2: Supermarket" + nl +
@@ -616,6 +623,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"Row #2: Deluxe Supermarket" + nl +
 				"Row #2: Small Grocery" + nl +
 				"Row #2: Mid-Size Grocery" + nl +
+				"Row #3: NaN%" + nl +
 				"Row #3: 60.07%" + nl +
 				"Row #3: 60.09%" + nl +
 				"Row #3: 60.11%" + nl +
@@ -645,26 +653,31 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"{[Product].[All Products].[Food]}" + nl +
 				"{[Product].[All Products].[Non-Consumable]}" + nl +
 				"Axis #2:" + nl +
+				"{[Store].[All Stores].[USA].[CA].[Alameda]}" + nl +
 				"{[Store].[All Stores].[USA].[CA].[Beverly Hills]}" + nl +
 				"{[Store].[All Stores].[USA].[CA].[Los Angeles]}" + nl +
 				"{[Store].[All Stores].[USA].[CA].[San Diego]}" + nl +
 				"{[Store].[All Stores].[USA].[CA].[San Francisco]}" + nl +
-				"Row #0: Yes" + nl +
-				"Row #0: 1,945" + nl +
-				"Row #0: 15,438" + nl +
-				"Row #0: 3,950" + nl +
+				"Row #0: No" + nl +
+				"Row #0: (null)" + nl +
+				"Row #0: (null)" + nl +
+				"Row #0: (null)" + nl +
 				"Row #1: Yes" + nl +
-				"Row #1: 2,422" + nl +
-				"Row #1: 18,294" + nl +
-				"Row #1: 4,947" + nl +
+				"Row #1: 1,945" + nl +
+				"Row #1: 15,438" + nl +
+				"Row #1: 3,950" + nl +
 				"Row #2: Yes" + nl +
-				"Row #2: 2,560" + nl +
-				"Row #2: 18,369" + nl +
-				"Row #2: 4,706" + nl +
-				"Row #3: No" + nl +
-				"Row #3: 175" + nl +
-				"Row #3: 1,555" + nl +
-				"Row #3: 387" + nl;
+				"Row #2: 2,422" + nl +
+				"Row #2: 18,294" + nl +
+				"Row #2: 4,947" + nl +
+				"Row #3: Yes" + nl +
+				"Row #3: 2,560" + nl +
+				"Row #3: 18,369" + nl +
+				"Row #3: 4,706" + nl +
+				"Row #4: No" + nl +
+				"Row #4: 175" + nl +
+				"Row #4: 1,555" + nl +
+				"Row #4: 387" + nl;
 		runQueryCheckResult(query, desiredResult);
 	}
 
@@ -674,8 +687,8 @@ public class BasicQueryTest extends FoodMartTestCase {
 	}
 
 	public void testConstantNumber() {
-		String s = executeExpr(" 12 ");
-		assertEquals("12.0", s);
+		String s = executeExpr(" 1234 ");
+		assertEquals("1,234", s);
 	}
 
 	public void testCyclicalCalculatedMembers() {
@@ -700,7 +713,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 			assertExprThrows("[Time].[1997].[Q4]", "infinite loop");
 		} else {
 			String s = executeExpr("[Time].[1997].[Q4]");
-			assertEquals("72024.0", s);
+			assertEquals("72,024", s);
 		}
 	}
 
@@ -1605,15 +1618,17 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"{[Store Type].[All Store Types]}" + nl +
 				"{[Store Type].[All Store Types].[Deluxe Supermarket]}" + nl +
 				"{[Store Type].[All Store Types].[Gourmet Supermarket]}" + nl +
+				"{[Store Type].[All Store Types].[HeadQuarters]}" + nl +
 				"{[Store Type].[All Store Types].[Mid-Size Grocery]}" + nl +
 				"{[Store Type].[All Store Types].[Small Grocery]}" + nl +
 				"{[Store Type].[All Store Types].[Supermarket]}" + nl +
 				"Row #0: <b>266773.00</b>" + nl +
 				"Row #1: <b>76837.00</b>" + nl +
 				"Row #2: <i>21333.00</i>" + nl +
-				"Row #3: <i>11491.00</i>" + nl +
-				"Row #4: <i>6557.00</i>" + nl +
-				"Row #5: <b>150555.00</b>" + nl);
+				"Row #3: (null)" + nl +
+				"Row #4: <i>11491.00</i>" + nl +
+				"Row #5: <i>6557.00</i>" + nl +
+				"Row #6: <b>150555.00</b>" + nl);
 	}
 	/**
 	 * If a measure (in this case, <code>[Measures].[Sales Count]</code>)
@@ -1701,6 +1716,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"{[Store Type].[All Store Types]}" + nl +
 				"{[Store Type].[All Store Types].[Deluxe Supermarket]}" + nl +
 				"{[Store Type].[All Store Types].[Gourmet Supermarket]}" + nl +
+				"{[Store Type].[All Store Types].[HeadQuarters]}" + nl +
 				"{[Store Type].[All Store Types].[Mid-Size Grocery]}" + nl +
 				"{[Store Type].[All Store Types].[Small Grocery]}" + nl +
 				"{[Store Type].[All Store Types].[Supermarket]}" + nl +
@@ -1712,10 +1728,12 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"Row #2: 15,337" + nl +
 				"Row #3: (null)" + nl +
 				"Row #3: (null)" + nl +
-				"Row #4: 22,478" + nl +
-				"Row #4: 15,321" + nl +
-				"Row #5: 23,598" + nl +
-				"Row #5: 14,210" + nl);
+				"Row #4: (null)" + nl +
+				"Row #4: (null)" + nl +
+				"Row #5: 22,478" + nl +
+				"Row #5: 15,321" + nl +
+				"Row #6: 23,598" + nl +
+				"Row #6: 14,210" + nl);
 	}
 
 	public void testSchemaLevelTableIsBad() {
@@ -1904,60 +1922,62 @@ public class BasicQueryTest extends FoodMartTestCase {
 	}
 
 	public void testMemberWithNullKey() {
-		runQueryCheckResult(
+		Result result = runQuery(
 				"select {[Measures].[Unit Sales]} on columns," + nl +
 				"{[Store Size in SQFT].members} on rows" + nl +
-				"from Sales",
-
-				"Axis #0:" + nl +
-				"{}" + nl +
-				"Axis #1:" + nl +
-				"{[Measures].[Unit Sales]}" + nl +
-				"Axis #2:" + nl +
-				"{[Store Size in SQFT].[All Store Size in SQFTs]}" + nl +
-				"{[Store Size in SQFT].[All Store Size in SQFTs].[null]}" + nl +
-				"{[Store Size in SQFT].[All Store Size in SQFTs].[20319.0]}" + nl +
-				"{[Store Size in SQFT].[All Store Size in SQFTs].[21215.0]}" + nl +
-				"{[Store Size in SQFT].[All Store Size in SQFTs].[22478.0]}" + nl +
-				"{[Store Size in SQFT].[All Store Size in SQFTs].[23112.0]}" + nl +
-				"{[Store Size in SQFT].[All Store Size in SQFTs].[23593.0]}" + nl +
-				"{[Store Size in SQFT].[All Store Size in SQFTs].[23598.0]}" + nl +
-				"{[Store Size in SQFT].[All Store Size in SQFTs].[23688.0]}" + nl +
-				"{[Store Size in SQFT].[All Store Size in SQFTs].[23759.0]}" + nl +
-				"{[Store Size in SQFT].[All Store Size in SQFTs].[24597.0]}" + nl +
-				"{[Store Size in SQFT].[All Store Size in SQFTs].[27694.0]}" + nl +
-				"{[Store Size in SQFT].[All Store Size in SQFTs].[28206.0]}" + nl +
-				"{[Store Size in SQFT].[All Store Size in SQFTs].[30268.0]}" + nl +
-				"{[Store Size in SQFT].[All Store Size in SQFTs].[30584.0]}" + nl +
-				"{[Store Size in SQFT].[All Store Size in SQFTs].[30797.0]}" + nl +
-				"{[Store Size in SQFT].[All Store Size in SQFTs].[33858.0]}" + nl +
-				"{[Store Size in SQFT].[All Store Size in SQFTs].[34452.0]}" + nl +
-				"{[Store Size in SQFT].[All Store Size in SQFTs].[34791.0]}" + nl +
-				"{[Store Size in SQFT].[All Store Size in SQFTs].[36509.0]}" + nl +
-				"{[Store Size in SQFT].[All Store Size in SQFTs].[38382.0]}" + nl +
-				"{[Store Size in SQFT].[All Store Size in SQFTs].[39696.0]}" + nl +
-				"Row #0: 266,773" + nl +
-				"Row #1: (null)" + nl +
-				"Row #2: 26,079" + nl +
-				"Row #3: 25,011" + nl +
-				"Row #4: 2,117" + nl +
-				"Row #5: (null)" + nl +
-				"Row #6: (null)" + nl +
-				"Row #7: 25,663" + nl +
-				"Row #8: 21,333" + nl +
-				"Row #9: (null)" + nl +
-				"Row #10: (null)" + nl +
-				"Row #11: 41,580" + nl +
-				"Row #12: 2,237" + nl +
-				"Row #13: 23,591" + nl +
-				"Row #14: (null)" + nl +
-				"Row #15: (null)" + nl +
-				"Row #16: 35,257" + nl +
-				"Row #17: (null)" + nl +
-				"Row #18: (null)" + nl +
-				"Row #19: (null)" + nl +
-				"Row #20: (null)" + nl +
-				"Row #21: 24,576" + nl);
+				"from Sales");
+		String resultString = toString(result);
+		resultString = Pattern.compile("\\.0\\]").matcher(resultString).replaceAll("]");
+		final String expected = "Axis #0:" + nl +
+						"{}" + nl +
+						"Axis #1:" + nl +
+						"{[Measures].[Unit Sales]}" + nl +
+						"Axis #2:" + nl +
+						"{[Store Size in SQFT].[All Store Size in SQFTs]}" + nl +
+						"{[Store Size in SQFT].[All Store Size in SQFTs].[null]}" + nl +
+						"{[Store Size in SQFT].[All Store Size in SQFTs].[20319]}" + nl +
+						"{[Store Size in SQFT].[All Store Size in SQFTs].[21215]}" + nl +
+						"{[Store Size in SQFT].[All Store Size in SQFTs].[22478]}" + nl +
+						"{[Store Size in SQFT].[All Store Size in SQFTs].[23112]}" + nl +
+						"{[Store Size in SQFT].[All Store Size in SQFTs].[23593]}" + nl +
+						"{[Store Size in SQFT].[All Store Size in SQFTs].[23598]}" + nl +
+						"{[Store Size in SQFT].[All Store Size in SQFTs].[23688]}" + nl +
+						"{[Store Size in SQFT].[All Store Size in SQFTs].[23759]}" + nl +
+						"{[Store Size in SQFT].[All Store Size in SQFTs].[24597]}" + nl +
+						"{[Store Size in SQFT].[All Store Size in SQFTs].[27694]}" + nl +
+						"{[Store Size in SQFT].[All Store Size in SQFTs].[28206]}" + nl +
+						"{[Store Size in SQFT].[All Store Size in SQFTs].[30268]}" + nl +
+						"{[Store Size in SQFT].[All Store Size in SQFTs].[30584]}" + nl +
+						"{[Store Size in SQFT].[All Store Size in SQFTs].[30797]}" + nl +
+						"{[Store Size in SQFT].[All Store Size in SQFTs].[33858]}" + nl +
+						"{[Store Size in SQFT].[All Store Size in SQFTs].[34452]}" + nl +
+						"{[Store Size in SQFT].[All Store Size in SQFTs].[34791]}" + nl +
+						"{[Store Size in SQFT].[All Store Size in SQFTs].[36509]}" + nl +
+						"{[Store Size in SQFT].[All Store Size in SQFTs].[38382]}" + nl +
+						"{[Store Size in SQFT].[All Store Size in SQFTs].[39696]}" + nl +
+						"Row #0: 266,773" + nl +
+						"Row #1: (null)" + nl +
+						"Row #2: 26,079" + nl +
+						"Row #3: 25,011" + nl +
+						"Row #4: 2,117" + nl +
+						"Row #5: (null)" + nl +
+						"Row #6: (null)" + nl +
+						"Row #7: 25,663" + nl +
+						"Row #8: 21,333" + nl +
+						"Row #9: (null)" + nl +
+						"Row #10: (null)" + nl +
+						"Row #11: 41,580" + nl +
+						"Row #12: 2,237" + nl +
+						"Row #13: 23,591" + nl +
+						"Row #14: (null)" + nl +
+						"Row #15: (null)" + nl +
+						"Row #16: 35,257" + nl +
+						"Row #17: (null)" + nl +
+						"Row #18: (null)" + nl +
+						"Row #19: (null)" + nl +
+						"Row #20: (null)" + nl +
+						"Row #21: 24,576" + nl;
+		assertEquals(expected, resultString);
 	}
 
 	public void testMembersOfLargeDimensionTheHardWay() {

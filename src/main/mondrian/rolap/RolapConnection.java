@@ -186,8 +186,14 @@ public class RolapConnection extends ConnectionBase {
 			}
 			return result;
 		} catch (Throwable e) {
+			String queryString;
+			try {
+				queryString = query.getQueryString();
+			} catch (Exception e1) {
+				queryString = "?";
+			}
 			throw Util.newError(e, "Error while executing query [" +
-					query.getQueryString() + "]");
+					queryString + "]");
 		}
 	}
 

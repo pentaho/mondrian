@@ -242,7 +242,11 @@ class SqlMemberSource implements MemberReader
 					member = (RolapMember) map.get(key);
 					if (member == null) {
 						member = new RolapMember(parent, level, value);
-						list.add(member);
+						if (value == sqlNullValue) {
+							addAsOldestSibling(list, member);
+						} else {
+							list.add(member);
+						}
 						map.put(key, member);
 					}
 					column++;
@@ -269,6 +273,21 @@ class SqlMemberSource implements MemberReader
 				// ignore
 			}
 		}
+	}
+
+	/**
+	 * Adds <code>member</code> just before the first element in
+	 * <code>list</code> which has the same parent.
+	 */
+	private void addAsOldestSibling(List list, RolapMember member) {
+		int i = list.size();
+		while (--i >= 0) {
+			RolapMember sibling = (RolapMember) list.get(i);
+			if (sibling.getParentMember() != member.getParentMember()) {
+				break;
+			}
+		}
+		list.add(i + 1, member);
 	}
 
 	private String makeKeysSql()
@@ -432,7 +451,11 @@ class SqlMemberSource implements MemberReader
 						// If we're building a list of siblings at this level,
 						// we haven't seen this one before, so add it.
 						if (siblings[i] != null) {
-							siblings[i].add(member);
+							if (value == sqlNullValue) {
+								addAsOldestSibling(siblings[i], member);
+							} else {
+								siblings[i].add(member);
+							}
 						}
 					}
 				}
@@ -546,7 +569,11 @@ class SqlMemberSource implements MemberReader
 					member = new RolapMember(parentMember, childLevel, value);
 					cache.putMember(key, member);
 				}
-				children.add(member);
+				if (value == sqlNullValue) {
+					addAsOldestSibling(children, member);
+				} else {
+					children.add(member);
+				}
 			}
 		} catch (SQLException e) {
 			throw Util.getRes().newInternal(

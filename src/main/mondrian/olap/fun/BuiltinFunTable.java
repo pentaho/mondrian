@@ -1286,8 +1286,8 @@ public class BuiltinFunTable extends FunTable {
 								"Row #0: 36,175.20" + nl +
 								"Row #1: 19,287" + nl +
 								"Row #1: 40,170.29" + nl +
-								"Row #2: 36177.0" + nl +
-								"Row #2: 76345.48999999999" + nl);
+								"Row #2: 36,177" + nl +
+								"Row #2: 76,345.49" + nl);
 					}
 					public void testAggregate2(FoodMartTestCase test) {
 						test.runQueryCheckResult(
@@ -1324,9 +1324,9 @@ public class BuiltinFunTable extends FunTable {
 								"Row #0: (null)" + nl +
 								"Row #0: (null)" + nl +
 								"Row #0: (null)" + nl +
-								"Row #0: 74571.95" + nl +
-								"Row #0: 71943.17" + nl +
-								"Row #0: 125779.5" + nl +
+								"Row #0: 74,571.95" + nl +
+								"Row #0: 71,943.17" + nl +
+								"Row #0: 125,779.50" + nl +
 								"Row #1: (null)" + nl +
 								"Row #1: (null)" + nl +
 								"Row #1: (null)" + nl +
@@ -1334,19 +1334,19 @@ public class BuiltinFunTable extends FunTable {
 								"Row #1: (null)" + nl +
 								"Row #1: (null)" + nl +
 								"Row #1: (null)" + nl +
-								"Row #1: 84595.89" + nl +
-								"Row #1: 70333.9" + nl +
-								"Row #1: 138013.72" + nl +
-								"Row #2: 0.0" + nl +
-								"Row #2: 0.0" + nl +
-								"Row #2: 0.0" + nl +
-								"Row #2: 0.0" + nl +
-								"Row #2: 0.0" + nl +
-								"Row #2: 0.0" + nl +
-								"Row #2: 0.0" + nl +
-								"Row #2: 10023.940000000002" + nl +
-								"Row #2: -1609.270000000004" + nl +
-								"Row #2: 12234.220000000001" + nl);
+								"Row #1: 84,595.89" + nl +
+								"Row #1: 70,333.90" + nl +
+								"Row #1: 138,013.72" + nl +
+								"Row #2: .00" + nl +
+								"Row #2: .00" + nl +
+								"Row #2: .00" + nl +
+								"Row #2: .00" + nl +
+								"Row #2: .00" + nl +
+								"Row #2: .00" + nl +
+								"Row #2: .00" + nl +
+								"Row #2: 10,023.94" + nl +
+								"Row #2: -1,609.27" + nl +
+								"Row #2: 12,234.22" + nl);
 					}
 					public void testAggregateToSimulateCompoundSlicer(FoodMartTestCase test) {
 						test.runQueryCheckResult(
@@ -1365,12 +1365,12 @@ public class BuiltinFunTable extends FunTable {
 								"{[Product].[All Products].[Drink]}" + nl +
 								"{[Product].[All Products].[Food]}" + nl +
 								"{[Product].[All Products].[Non-Consumable]}" + nl +
-								"Row #0: 2233.0" + nl +
-								"Row #0: 4508.93" + nl +
-								"Row #1: 18154.0" + nl +
-								"Row #1: 38608.69" + nl +
-								"Row #2: 4941.0" + nl +
-								"Row #2: 10662.2" + nl);
+								"Row #0: 1,797" + nl +
+								"Row #0: 3,620.49" + nl +
+								"Row #1: 15,002" + nl +
+								"Row #1: 31,931.88" + nl +
+								"Row #2: 3,845" + nl +
+								"Row #2: 8,173.22" + nl);
 					}
 				}));
 		define(new FunkResolver(
@@ -1385,7 +1385,7 @@ public class BuiltinFunTable extends FunTable {
 				public void testAvg(FoodMartTestCase test) {
 					String result = test.executeExpr(
 							"AVG({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
-					test.assertEquals("188412.71", result);
+					test.assertEquals("188,412.71", result);
 				}
 				//todo: testAvgWithNulls
 			}));
@@ -1400,8 +1400,8 @@ public class BuiltinFunTable extends FunTable {
 					return correlation(evaluator.push(), members, exp1, exp2);
 				}
 				public void testCorrelation(FoodMartTestCase test) {
-					String result = test.executeExpr("Correlation({[Store].[All Stores].[USA].children}, [Measures].[Unit Sales], [Measures].[Store Sales])");
-					test.assertEquals("0.9999063938016924", result);
+					String result = test.executeExpr("Correlation({[Store].[All Stores].[USA].children}, [Measures].[Unit Sales], [Measures].[Store Sales]) * 1000000");
+					test.assertEquals("999,906", result);
 				}
 			}));
 		define(new FunkResolver(
@@ -1417,7 +1417,7 @@ public class BuiltinFunTable extends FunTable {
 				public void testCount(FoodMartTestCase test) {
 					String result = test.executeExpr(
 							"count({[Promotion Media].[Media Type].members})");
-					test.assertEquals("14.0", result);
+					test.assertEquals("14", result);
 				}
 				//todo: testCountNull, testCountNoExp
 			}));
@@ -1433,7 +1433,7 @@ public class BuiltinFunTable extends FunTable {
 				}
 				public void testCovariance(FoodMartTestCase test) {
 					String result = test.executeExpr("Covariance({[Store].[All Stores].[USA].children}, [Measures].[Unit Sales], [Measures].[Store Sales])");
-					test.assertEquals("1.3557618990466664E9", result);
+					test.assertEquals("1,355,761,899", result);
 				}
 			}));
 		define(new FunkResolver(
@@ -1448,7 +1448,7 @@ public class BuiltinFunTable extends FunTable {
 				}
 				public void testCovarianceN(FoodMartTestCase test) {
 					String result = test.executeExpr("CovarianceN({[Store].[All Stores].[USA].children}, [Measures].[Unit Sales], [Measures].[Store Sales])");
-					test.assertEquals("2.0336428485699995E9", result);
+					test.assertEquals("2,033,642,849", result);
 				}
 			}));
 		define(new FunDefBase("IIf", "IIf(<Logical Expression>, <Numeric Expression1>, <Numeric Expression2>)", "Returns one of two numeric values determined by a logical test.", "fnbnn"));
@@ -1469,7 +1469,7 @@ public class BuiltinFunTable extends FunTable {
 				public void testMax(FoodMartTestCase test) {
 					String result = test.executeExpr(
 							"MAX({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
-					test.assertEquals("263793.22", result);
+					test.assertEquals("263,793.22", result);
 				}
 			}));
 		define(new FunkResolver(
@@ -1486,7 +1486,7 @@ public class BuiltinFunTable extends FunTable {
 				public void testMedian(FoodMartTestCase test) {
 					String result = test.executeExpr(
 							"MEDIAN({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
-					test.assertEquals("159167.84", result);
+					test.assertEquals("159,167.84", result);
 				}
 				public void testMedian2(FoodMartTestCase test) {
 					test.runQueryCheckResult(
@@ -1520,45 +1520,45 @@ public class BuiltinFunTable extends FunTable {
 							"{[Time].[1st Half Sales]}" + nl +
 							"{[Time].[2nd Half Sales]}" + nl +
 							"{[Time].[Median]}" + nl +
-							"Row #0: 20801.04" + nl +
-							"Row #0: 25421.41" + nl +
-							"Row #0: 26275.11" + nl +
-							"Row #0: 2074.3900000000003" + nl +
-							"Row #0: 28519.18" + nl +
-							"Row #0: 43423.990000000005" + nl +
-							"Row #0: 2140.99" + nl +
-							"Row #0: 25502.08" + nl +
-							"Row #0: 25293.5" + nl +
-							"Row #0: 23265.53" + nl +
-							"Row #0: 34926.91" + nl +
-							"Row #0: 2159.6" + nl +
-							"Row #0: 12490.89" + nl +
-							"Row #1: 24949.199999999997" + nl +
-							"Row #1: 29123.87" + nl +
-							"Row #1: 28156.03" + nl +
-							"Row #1: 2366.79" + nl +
-							"Row #1: 26539.61" + nl +
-							"Row #1: 43794.28999999999" + nl +
-							"Row #1: 2598.24" + nl +
-							"Row #1: 27394.22" + nl +
-							"Row #1: 27350.57" + nl +
-							"Row #1: 26368.93" + nl +
-							"Row #1: 39917.05" + nl +
-							"Row #1: 2546.37" + nl +
-							"Row #1: 11838.34" + nl +
-							"Row #2: 4577.35" + nl +
-							"Row #2: 5211.38" + nl +
-							"Row #2: 4722.87" + nl +
+							"Row #0: 20,801.04" + nl +
+							"Row #0: 25,421.41" + nl +
+							"Row #0: 26,275.11" + nl +
+							"Row #0: 2,074.39" + nl +
+							"Row #0: 28,519.18" + nl +
+							"Row #0: 43,423.99" + nl +
+							"Row #0: 2,140.99" + nl +
+							"Row #0: 25,502.08" + nl +
+							"Row #0: 25,293.50" + nl +
+							"Row #0: 23,265.53" + nl +
+							"Row #0: 34,926.91" + nl +
+							"Row #0: 2,159.60" + nl +
+							"Row #0: 12,490.89" + nl +
+							"Row #1: 24,949.20" + nl +
+							"Row #1: 29,123.87" + nl +
+							"Row #1: 28,156.03" + nl +
+							"Row #1: 2,366.79" + nl +
+							"Row #1: 26,539.61" + nl +
+							"Row #1: 43,794.29" + nl +
+							"Row #1: 2,598.24" + nl +
+							"Row #1: 27,394.22" + nl +
+							"Row #1: 27,350.57" + nl +
+							"Row #1: 26,368.93" + nl +
+							"Row #1: 39,917.05" + nl +
+							"Row #1: 2,546.37" + nl +
+							"Row #1: 11,838.34" + nl +
+							"Row #2: 4,577.35" + nl +
+							"Row #2: 5,211.38" + nl +
+							"Row #2: 4,722.87" + nl +
 							"Row #2: 398.24" + nl +
-							"Row #2: 5039.5" + nl +
-							"Row #2: 7374.59" + nl +
+							"Row #2: 5,039.50" + nl +
+							"Row #2: 7,374.59" + nl +
 							"Row #2: 410.22" + nl +
-							"Row #2: 4924.04" + nl +
-							"Row #2: 4569.13" + nl +
-							"Row #2: 4511.68" + nl +
-							"Row #2: 6630.91" + nl +
+							"Row #2: 4,924.04" + nl +
+							"Row #2: 4,569.13" + nl +
+							"Row #2: 4,511.68" + nl +
+							"Row #2: 6,630.91" + nl +
 							"Row #2: 419.51" + nl +
-							"Row #2: 2169.48" + nl);
+							"Row #2: 2,169.48" + nl);
 				}
 			}));
 
@@ -1574,7 +1574,7 @@ public class BuiltinFunTable extends FunTable {
 				public void testMin(FoodMartTestCase test) {
 					String result = test.executeExpr(
 							"MIN({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
-					test.assertEquals("142277.07", result);
+					test.assertEquals("142,277.07", result);
 				}
 			}));
 		define(new FunDefBase("Ordinal", "<Level>.Ordinal", "Returns the zero-based ordinal value associated with a level.", "pnl"));
@@ -1601,7 +1601,7 @@ public class BuiltinFunTable extends FunTable {
 					public void testStdev(FoodMartTestCase test) {
 						String result = test.executeExpr(
 								"STDEV({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
-						test.assertEquals("65825.4547549297", result);
+						test.assertEquals("65,825.45", result);
 					}
 				}));
 		define(new FunkResolver(
@@ -1626,7 +1626,7 @@ public class BuiltinFunTable extends FunTable {
 					public void testStdevP(FoodMartTestCase test) {
 						String result = test.executeExpr(
 								"STDEVP({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
-						test.assertEquals("53746.25874541283", result);
+						test.assertEquals("53,746.26", result);
 					}
 				}));
 		define(new FunkResolver(
@@ -1641,7 +1641,7 @@ public class BuiltinFunTable extends FunTable {
 					public void testSumNoExp(FoodMartTestCase test) {
 						String result = test.executeExpr(
 								"SUM({[Promotion Media].[Media Type].members})");
-						test.assertEquals("266773.0", result);
+						test.assertEquals("266,773", result);
 					}
 				}));
 		define(new FunDefBase("Value", "<Measure>.Value", "Returns the value of a measure.", "pnm") {
@@ -1696,7 +1696,7 @@ public class BuiltinFunTable extends FunTable {
 					public void testVar(FoodMartTestCase test) {
 						String result = test.executeExpr(
 								"VAR({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
-						test.assertEquals("4.332990493693297E9", result);
+						test.assertEquals("4,332,990,493.69", result);
 					}
 				}));
 		define(new FunkResolver(
@@ -1731,7 +1731,7 @@ public class BuiltinFunTable extends FunTable {
 					public void testVarP(FoodMartTestCase test) {
 						String result = test.executeExpr(
 								"VARP({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
-						test.assertEquals("2.888660329128865E9", result);
+						test.assertEquals("2,888,660,329.13", result);
 					}
 				}));
 
@@ -2294,14 +2294,14 @@ public class BuiltinFunTable extends FunTable {
 						"Axis #1:" + nl +
 						"{[Measures].[Unit Sales]}" + nl +
 						"Axis #2:" + nl +
-						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M]}" + nl +
 						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[S]}" + nl +
+						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[M]}" + nl +
 						"{[Gender].[All Gender].[M], [Marital Status].[All Marital Status].[M]}" + nl +
 						"{[Gender].[All Gender].[F], [Marital Status].[All Marital Status].[S]}" + nl +
-						"Row #0: 17,097" + nl +
-						"Row #1: 16,845" + nl +
-						"Row #2: 16,536" + nl +
-						"Row #3: 15,813" + nl);
+						"Row #0: 17,070" + nl +
+						"Row #1: 16,790" + nl +
+						"Row #2: 16,311" + nl +
+						"Row #3: 16,120" + nl);
 			}
 			public void testOrderCrossJoin(FoodMartTestCase test) {
 				// Note:
@@ -2635,6 +2635,7 @@ public class BuiltinFunTable extends FunTable {
 								"  [Product].[All Products].[Drink])}," + nl +
 								"{[Store].[All stores].[USA].[CA]})",
 								"{[Store].[All Stores].[USA].[CA], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
+								"{[Store].[All Stores].[USA].[CA].[Alameda], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
 								"{[Store].[All Stores].[USA].[CA].[Beverly Hills], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
 								"{[Store].[All Stores].[USA].[CA].[Los Angeles], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
 								"{[Store].[All Stores].[USA].[CA].[San Diego], [Product].[All Products].[Drink].[Alcoholic Beverages]}" + nl +
@@ -3356,12 +3357,12 @@ public class BuiltinFunTable extends FunTable {
 					"FROM Sales");
 				Member member;
 				Cell cell;
-				member = result.getAxes()[1].positions[17].members[0];
+				member = result.getAxes()[1].positions[18].members[0];
 				test.assertEquals("[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]", member.getUniqueName());
-				cell = result.getCell(new int[] {0,17});
+				cell = result.getCell(new int[] {0,18});
 				test.assertEquals("2,237", cell.getFormattedValue());
-				cell = result.getCell(new int[] {1,17});
-				test.assertEquals("0.16802205204566403", cell.getFormattedValue());
+				cell = result.getCell(new int[] {1,18});
+				test.assertEquals(".17", cell.getFormattedValue());
 				member = result.getAxes()[1].positions[3].members[0];
 				test.assertEquals("[Store].[All Stores].[Mexico].[DF].[San Andres].[Store 21]", member.getUniqueName());
 				cell = result.getCell(new int[] {0,3});
@@ -3464,7 +3465,7 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testPlus(FoodMartTestCase test) {
 				String s = test.executeExpr("1+2");
-				test.assertEquals("3.0", s);
+				test.assertEquals("3", s);
 			}
 		});
 		define(new FunDefBase("-", "<Numeric Expression> - <Numeric Expression>", "Subtracts two numbers.", "innn") {
@@ -3475,12 +3476,12 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testMinus(FoodMartTestCase test) {
 				String s = test.executeExpr("1-3");
-				test.assertEquals("-2.0", s);
+				test.assertEquals("-2", s);
 			}
 			public void testMinusAssociativity(FoodMartTestCase test) {
 				String s = test.executeExpr("11-7-5");
 				// right-associative would give 11-(7-5) = 9, which is wrong
-				test.assertEquals("-1.0", s);
+				test.assertEquals("-1", s);
 			}
 		});
 		define(new FunDefBase("*", "<Numeric Expression> * <Numeric Expression>", "Multiplies two numbers.", "innn") {
@@ -3491,11 +3492,11 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testMultiply(FoodMartTestCase test) {
 				String s = test.executeExpr("4*7");
-				test.assertEquals("28.0", s);
+				test.assertEquals("28", s);
 			}
 			public void testMultiplyPrecedence(FoodMartTestCase test) {
 				String s = test.executeExpr("3 + 4 * 5 + 6");
-				test.assertEquals("29.0", s);
+				test.assertEquals("29", s);
 			}
 		});
 		define(new FunDefBase("/", "<Numeric Expression> / <Numeric Expression>", "Divides two numbers.", "innn") {
@@ -3511,7 +3512,7 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testDivide(FoodMartTestCase test) {
 				String s = test.executeExpr("10 / 5");
-				test.assertEquals("2.0", s);
+				test.assertEquals("2", s);
 			}
 			public void testDivideByZero(FoodMartTestCase test) {
 				String s = test.executeExpr("-3 / (2 - 2)");
@@ -3519,7 +3520,7 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testDividePrecedence(FoodMartTestCase test) {
 				String s = test.executeExpr("24 / 4 / 2 * 10 - -1");
-				test.assertEquals("31.0", s);
+				test.assertEquals("31", s);
 			}
 		});
 		define(new FunDefBase("-", "- <Numeric Expression>", "Returns the negative of a number.", "Pnn") {
@@ -3529,15 +3530,15 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testUnaryMinus(FoodMartTestCase test) {
 				String s = test.executeExpr("-3");
-				test.assertEquals("-3.0", s);
+				test.assertEquals("-3", s);
 			}
 			public void testUnaryMinusMember(FoodMartTestCase test) {
 				String s = test.executeExpr("- ([Measures].[Unit Sales],[Gender].[F])");
-				test.assertEquals("-131558.0", s);
+				test.assertEquals("-131,558", s);
 			}
 			public void testUnaryMinusPrecedence(FoodMartTestCase test) {
 				String s = test.executeExpr("1 - -10.5 * 2 -3");
-				test.assertEquals("19.0", s);
+				test.assertEquals("19", s);
 			}
 		});
 		define(new FunDefBase("||", "<String Expression> || <String Expression>", "Concatenates two strings.", "iSSS") {

@@ -44,7 +44,7 @@ public class ParameterTest extends FoodMartTestCase {
 	}
 	public void testNumericParameter() {
 		String s = executeExpr("Parameter(\"N\",NUMERIC,2+3,\"A numeric parameter\")");
-		assertEquals("5.0",s);
+		assertEquals("5",s);
 	}
 	public void testStringParameter() {
 		String s = executeExpr("Parameter(\"S\",STRING,\"x\" || \"y\",\"A string parameter\")");
@@ -78,8 +78,8 @@ public class ParameterTest extends FoodMartTestCase {
 				"{[Marital Status].[All Marital Status].[S]}" + nl +
 				"Axis #2:" + nl +
 				"{[Measures].[Unit Sales]}" + nl +
-				"Row #0: 67,090" + nl +
-				"Row #0: 68,125" + nl);
+				"Row #0: 66,460" + nl +
+				"Row #0: 68,755" + nl);
 	}
 	/**
 	 * Parameter in slicer and expression on columns axis are both of [Gender]
