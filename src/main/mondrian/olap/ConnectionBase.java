@@ -21,6 +21,8 @@ package mondrian.olap;
  **/
 public abstract class ConnectionBase implements Connection
 {
+	protected Role role;
+
 	public String getFullConnectString()
 	{
 		String s = getConnectString(),
@@ -48,6 +50,10 @@ public abstract class ConnectionBase implements Connection
 		boolean symbol = false;
 		String s2 = s.substring(1, s.length() - 1);
 		return Literal.createString(s2);
+	}
+
+	public void setRole(Role role) {
+		this.role = role;
 	}
 }
 

@@ -23,6 +23,10 @@ package mondrian.test;
  * @version $Id$
  */
 public class TestCalculatedMembers extends FoodMartTestCase {
+	public TestCalculatedMembers(String name) {
+		super(name);
+	}
+
 	public void testWhole() {
 		execute(
 				"with" + nl +
