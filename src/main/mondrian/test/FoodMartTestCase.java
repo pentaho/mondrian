@@ -228,7 +228,16 @@ public class FoodMartTestCase extends TestCase {
 				"	 { [Measures].[Units Shipped], [Measures].[Units Ordered] } on columns," + nl +
 				"	 NON EMPTY [Store].[Store Name].members on rows" + nl +
 				"from Warehouse");
-	}
+    // make sure, that the result is not empty (problem with shared hierarchies)
+    Axis[] axes = result.getAxes();
+    int nCells = 1;
+    for ( int i = 0; i < axes.length; i++ ) {
+       Position[] positions = axes[i].positions;
+       nCells = nCells * positions.length;
+    }
+    // expecting 2 cols and 13 rows
+    assertTrue( nCells == 26 );
+ 	}
 
 	public void testSample3() {
 		Result result = runQuery(
