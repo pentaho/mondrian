@@ -73,7 +73,7 @@ public class Segment implements CachePool.Cacheable
 
 	Aggregation.Axis[] axes;
 	private SegmentDataset data;
-	private int[] pos; // workspace
+	private CellKey cellKey; // workspace
 	private double recency; // when was this segment last used?
 	private int pinCount;
 	private double cost;
@@ -101,7 +101,7 @@ public class Segment implements CachePool.Cacheable
 			axis.constraints = constraintses[i];
 			axis.mapKeyToOffset = new HashMap();
 		}
-		this.pos = new int[axisCount];
+		this.cellKey = new CellKey(new int[axisCount]);
 		this.desc = makeDescription();
 	}
 
@@ -235,7 +235,7 @@ public class Segment implements CachePool.Cacheable
 	 * (because one or more of the keys do not pass the axis criteria).
 	 *
 	 * <p>Note: Must be called from a synchronized context, because uses the
-	 * <code>pos[]</code> as workspace.</p>
+	 * <code>cellKey[]</code> as workspace.</p>
 	 **/
 	Object get(Object[] keys)
 	{
@@ -255,14 +255,14 @@ public class Segment implements CachePool.Cacheable
 					return null;
 				}
 			}
-			pos[i] = integer.intValue();
+			cellKey.ordinals[i] = integer.intValue();
 		}
 		if (missed > 0) {
 			// the value should be in this segment, but isn't, because one
 			// or more of its keys does have any values
 			return Util.nullValue;
 		} else {
-			Object o = data.get(new CellKey(pos));
+			Object o = data.get(cellKey);
 			if (o == null) {
 				o = Util.nullValue;
 			}
@@ -400,7 +400,7 @@ public class Segment implements CachePool.Cacheable
 			boolean sparse = useSparse((double) n, (double) rows.size());
 			for (int i = 0; i < segments.length; i++) {
 				datas[i] = sparse ?
-						new SparseSegmentDataset(segments[i]) :
+						(SegmentDataset) new SparseSegmentDataset(segments[i]) :
 						new DenseSegmentDataset(segments[i], new Object[n]);
 			}
 			// now convert the rows into a sparse array
