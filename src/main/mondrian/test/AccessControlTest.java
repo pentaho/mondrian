@@ -34,7 +34,7 @@ public class AccessControlTest extends FoodMartTestCase {
 		// todo: add Schema.lookupDimension
 		Dimension genderDimension = (Dimension) Util.lookupCompound(
 				salesCube.getSchemaReader(role), salesCube,
-				new String[] {"Gender"}, true);
+				new String[] {"Gender"}, true, Category.Dimension);
 		role.grant(genderDimension, Access.NONE);
 		role.makeImmutable();
 		connection.setRole(role);

@@ -119,7 +119,7 @@ WHERE "product"."product_class_id" = "product_class"."product_class_id"
 			<Level name="Country" column="country" uniqueMembers="true"/>
 			<Level name="State Province" column="state_province" uniqueMembers="true"/>
 			<Level name="City" column="city" uniqueMembers="false"/>
-			<Level name="Name" ordinalColumn="ordinal" uniqueMembers="true">
+			<Level name="Name" uniqueMembers="true">
 				<ExpressionView>
 					<SQL dialect="oracle">
 "fname" || ' ' || "lname"
@@ -235,5 +235,23 @@ CONCAT(`customer`.`fname`, " ", `customer`.`lname`)
 	<VirtualCubeMeasure cubeName="Sales" name="[Measures].[Unit Sales]"/>
 	<VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Units Shipped]"/>
 </VirtualCube>
+
+<!-- A California manager can only see customers and stores in California.
+ They cannot drill down on Gender. -->
+<Role name="California manager">
+	<SchemaGrant access="none">
+		<CubeGrant cube="Sales" access="all">
+			<HierarchyGrant hierarchy="[Store]" access="custom" topLevel="[Store].[Store Country]">
+				<MemberGrant member="[Store].[USA].[CA]" access="all"/>
+				<MemberGrant member="[Store].[USA].[CA].[Los Angeles]" access="none"/>
+			</HierarchyGrant>
+			<HierarchyGrant hierarchy="[Customers]" access="custom" topLevel="[Customers].[State Province]" bottomLevel="[Customers].[City]">
+				<MemberGrant member="[Customers].[USA].[CA]" access="all"/>
+				<MemberGrant member="[Customers].[USA].[CA].[Los Angeles]" access="none"/>
+			</HierarchyGrant>
+			<HierarchyGrant hierarchy="[Gender]" access="none"/>
+		</CubeGrant>
+	</SchemaGrant>
+</Role>
 
 </Schema>

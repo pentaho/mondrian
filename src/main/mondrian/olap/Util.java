@@ -193,13 +193,15 @@ public class Util extends mondrian.xom.XOMUtil
 	 *   "Product Department", "Produce"}
 	 * @param failIfNotFound If the element is not found, determines whether
 	 *   to return null or throw an error
+	 * @param category Type of returned element, a {@link Category} value;
+	 *   {@link Category#Unknown} if it doesn't matter.
 	 * @pre parent != null
 	 * @post !(failIfNotFound && return == null)
 	 * @see #explode
 	 */
 	public static OlapElement lookupCompound(
-		SchemaReader schemaReader, OlapElement parent, String[] names, boolean failIfNotFound)
-	{
+			SchemaReader schemaReader, OlapElement parent, String[] names,
+			boolean failIfNotFound, int category) {
 		Util.assertPrecondition(parent != null, "parent != null");
 		for (int i = 0; i < names.length; i++) {
 			String name = names[i];
@@ -214,7 +216,49 @@ public class Util extends mondrian.xom.XOMUtil
 			}
 			parent = child;
 		}
-		return parent;
+		switch (category) {
+		case Category.Dimension:
+			if (parent instanceof Dimension) {
+				return parent;
+			} else if (parent instanceof Hierarchy) {
+				return parent.getDimension();
+			} else if (failIfNotFound) {
+				throw Util.newError("Can not find dimension '" + implode(names) + "'");
+			} else {
+				return null;
+			}
+		case Category.Hierarchy:
+			if (parent instanceof Hierarchy) {
+				return parent;
+			} else if (parent instanceof Dimension) {
+				return parent.getHierarchy();
+			} else if (failIfNotFound) {
+				throw Util.newError("Can not find hierarchy '" + implode(names) + "'");
+			} else {
+				return null;
+			}
+		case Category.Level:
+			if (parent instanceof Level) {
+				return parent;
+			} else if (failIfNotFound) {
+				throw Util.newError("Can not find level '" + implode(names) + "'");
+			} else {
+				return null;
+			}
+		case Category.Member:
+			if (parent instanceof Member) {
+				return parent;
+			} else if (failIfNotFound) {
+				throw getRes().newMdxCantFindMember(implode(names));
+			} else {
+				return null;
+			}
+		case Category.Unknown:
+			assertPostcondition(parent != null, "return != null");
+			return parent;
+		default:
+			throw newInternal("Bad switch " + category);
+		}
 	}
 
 	/**
@@ -229,17 +273,8 @@ public class Util extends mondrian.xom.XOMUtil
 	 * @post !(failIfNotFound && return == null)
 	 */
 	public static Member lookupMemberCompound(
-		SchemaReader st, Cube cube, String[] names, boolean failIfNotFound)
-	{
-		OlapElement mdxElem = lookupCompound(st, cube, names, false);
-		if (mdxElem instanceof Member) {
-			return (Member) mdxElem;
-		}
-		if (failIfNotFound) {
-			String s = implode(names);
-			throw getRes().newMdxCantFindMember(s);
-		}
-		return null;
+			SchemaReader st, Cube cube, String[] names, boolean failIfNotFound) {
+		return (Member) lookupCompound(st, cube, names, failIfNotFound, Category.Member);
 	}
 
 	public static OlapElement lookup(Query q, String[] namesArray) {
@@ -251,7 +286,7 @@ public class Util extends mondrian.xom.XOMUtil
 			// dimension) in the cube. Use a schema reader without restrictions.
 //			final SchemaReader schemaReader = q.getSchemaReader();
 			final SchemaReader schemaReader = q.getCube().getSchemaReader(null);
-			olapElement = lookupCompound(schemaReader, q.getCube(), namesArray, false);
+			olapElement = lookupCompound(schemaReader, q.getCube(), namesArray, false, Category.Unknown);
 		}
 		if (olapElement != null) {
 			Role role = q.getConnection().getRole();

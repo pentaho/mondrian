@@ -519,17 +519,14 @@ public class BuiltinFunTable extends FunTable {
 				if (s.indexOf("[") == -1) {
 					s = Util.quoteMdxIdentifier(s);
 				}
-				boolean fail = false;
 				OlapElement o = lookupCompound(evaluator.getSchemaReader(),
-						evaluator.getCube(), explode(s), fail);
-				if (o == null) {
-					throw newEvalException(
-							this, "Dimensions '" + s + "' not found");
-				} else if (o instanceof Dimension) {
+						evaluator.getCube(), explode(s), false, Category.Dimension);
+				if (o instanceof Dimension) {
 					return (Dimension) o;
+				} else if (o == null) {
+					throw newEvalException(this, "Dimension '" + s + "' not found");
 				} else {
-					throw newEvalException(
-							this, "Dimensions(" + s + ") found " + o);
+					throw newEvalException(this, "Dimensions(" + s + ") found " + o);
 				}
 			}
 
@@ -635,22 +632,18 @@ public class BuiltinFunTable extends FunTable {
 				Cube cube = evaluator.getCube();
 				OlapElement o = null;
 				if (s.startsWith("[")) {
-					final boolean fail = false;
-					o = lookupCompound(evaluator.getSchemaReader(), cube, explode(s), fail);
+					o = lookupCompound(evaluator.getSchemaReader(), cube, explode(s), false, Category.Level);
 				} else {
 					// lookupCompound barfs if "s" doesn't have matching
 					// brackets, so don't even try
 					o = null;
 				}
-				if (o == null) {
-					throw newEvalException(
-							this, "could not find level '" + s + "'");
-				} else if (o instanceof Level) {
+				if (o instanceof Level) {
 					return (Level) o;
+				} else if (o == null) {
+					throw newEvalException(this, "Level '" + s + "' not found");
 				} else {
-					throw newEvalException(
-							this,
-							"found '" + o.getDescription() + "', not a level");
+					throw newEvalException(this, "Levels('" + s + "') found " + o);
 				}
 			}
 
@@ -663,7 +656,7 @@ public class BuiltinFunTable extends FunTable {
 			public void testLevelsStringFail(FoodMartTestCase test) {
 				test.assertExprThrows(
 						"Levels(\"nonexistent\").UniqueName",
-						"could not find level 'nonexistent'");
+						"Level 'nonexistent' not found");
 			}
 		});
 

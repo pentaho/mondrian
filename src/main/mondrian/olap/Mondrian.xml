@@ -32,6 +32,7 @@ Revision is $Id$
 		<Array name="dimensions" type="Dimension"/>
 		<Array name="cubes" type="Cube"/>
 		<Array name="virtualCubes" type="VirtualCube"/>
+		<Array name="roles" type="Role"/>
 		<Code><![CDATA[
 			Cube getCube(String cubeName) {
 				for (int i = 0; i < cubes.length; i++) {
@@ -612,6 +613,107 @@ todo:
 				return null;
 			}]]>
 		</Code>
+	</Element>
+
+	<!-- Access control =================================================== -->
+	<Element type="Role">
+		<Doc>
+			A role defines an access-control profile. It has a series of grants
+			(or denials) for schema elements.
+		</Doc>
+		<Attribute name="name" required="true"/>
+		<Array name="schemaGrants" type="SchemaGrant"/>
+	</Element>
+
+	<Class class="Grant">
+		<Attribute name="access" required="true">
+			<Doc>Values correspond to <link class="Access"/></Doc>
+			<Value>all</Value>
+			<Value>custom</Value>
+			<Value>none</Value>
+			<Value>all_dimensions</Value>
+		</Attribute>
+	</Class>
+
+	<Element class="Grant" type="SchemaGrant">
+		<Doc>
+			<![CDATA[Grants (or denies) this role access to this schema.
+			<code>access</code> may be "all", "all_dimensions", or "none".
+			If <code>access</code> is "all_dimensions", the role has access
+			to all dimensions but still needs explicit access to cubes.
+ 			See {@link mondrian.olap.Role#grant(mondrian.olap.Schema,int)}.]]>
+		</Doc>
+		<Array name="cubeGrants" type="CubeGrant"/>
+	</Element>
+
+	<Element class="Grant" type="CubeGrant">
+		<Doc>
+			<![CDATA[Grants (or denies) this role access to a cube.
+			<code>access</code> may be "all" or "none".
+ 			See {@link mondrian.olap.Role#grant(mondrian.olap.Cube,int)}.]]>
+		</Doc>
+		<Attribute name="cube" required="true">
+			<Doc>The unique name of the cube</Doc>
+		</Attribute>
+		<Array name="dimensionGrants" type="DimensionGrant"/>
+		<Array name="hierarchyGrants" type="HierarchyGrant"/>
+	</Element>
+
+	<Element class="Grant" type="DimensionGrant">
+		<Doc>
+			<![CDATA[Grants (or denies) this role access to a dimension.
+			<code>access</code> may be "all" or "none".
+			Note that a role is implicitly given access to a dimension when it
+			is given acess to a cube.
+			See also the "all_dimensions" option of the "SchemaGrant" element.
+ 			See {@link mondrian.olap.Role#grant(mondrian.olap.Dimension,int)}.]]>
+		</Doc>
+		<Attribute name="dimension" required="true">
+			<Doc>The unique name of the dimension</Doc>
+		</Attribute>
+	</Element>
+
+	<Element class="Grant" type="HierarchyGrant">
+		<Doc>
+			<![CDATA[Grants (or denies) this role access to a hierarchy.
+			<code>access</code> may be "all", "custom" or "none".
+			If <code>access</code> is "custom", you may also specify the
+			attributes <code>topLevel</code>, <code>bottomLevel</code>, and
+			the member grants.
+ 			See {@link mondrian.olap.Role#grant(mondrian.olap.Hierarchy,int,mondrian.olap.Level,mondrian.olap.Level)}.]]>
+		</Doc>
+		<Attribute name="hierarchy" required="true">
+			<Doc>The unique name of the hierarchy</Doc>
+		</Attribute>
+		<Attribute name="topLevel" required="false">
+			<Doc>Unique name of the highest level of the hierarchy from which
+			this role is allowed to see members. May only be specified if
+			the <code>HierarchyGrant.access</code> is "custom". If not
+			specified, role can see members up to the top level.</Doc>
+		</Attribute>
+		<Attribute name="bottomLevel" required="false">
+			<Doc>Unique name of the lowest level of the hierarchy from which
+			this role is allowed to see members. May only be specified if
+			the <code>HierarchyGrant.access</code> is "custom". If not
+			specified, role can see members down to the leaf level.</Doc>
+		</Attribute>
+		<Array name="memberGrants" type="MemberGrant"/>
+	</Element>
+
+	<Element type="MemberGrant">
+		<Doc>
+			<![CDATA[Grants (or denies) this role access to a member.
+ 			The children of this member inherit that access.
+ 			You can implicitly see a member if you can see any of its children.
+ 			See {@link mondrian.olap.Role#grant(Member,int)}.]]>
+		</Doc>
+		<Attribute name="member" required="true">
+			<Doc>The unique name of the member</Doc>
+		</Attribute>
+		<Attribute name="access" required="true">
+			<Value>all</Value>
+			<Value>none</Value>
+		</Attribute>
 	</Element>
 
 </Model>

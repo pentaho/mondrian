@@ -37,6 +37,9 @@ import java.util.*;
  *   the JDBC URL.)</td></tr>
  * <tr><td>JdbcDrivers</td><td>A comma-separated list of JDBC driver classes,
  *   for example, <code>sun.jdbc.odbc.JdbcOdbcDriver,oracle.jdbc.OracleDriver</code>.</td></tr>
+ * <tr><td>Role</td><td>The name of the {@link Role role} to adopt. If not
+ *   specified, the connection uses a role which has access to every object
+ *   in the schema.</td></tr>
  * </table>
  *
  * @see RolapSchema
@@ -103,14 +106,27 @@ public class RolapConnection extends ConnectionBase {
 			throw Util.getRes().newInternal(
 					"while creating RolapSchema (" + connectInfo.toString() + ")", e);
 		}
-		if (schema == null && catalogName != null) {
-			// If RolapSchema.Pool.get were to call this with schema == null,
-			// we would loop.
-			schema = RolapSchema.Pool.instance().get(
-					catalogName, jdbcConnectString, jdbcUser, connectInfo);
+		Role role = null;
+		if (schema == null) {
+			if (catalogName != null) {
+				// If RolapSchema.Pool.get were to call this with schema == null,
+				// we would loop.
+				schema = RolapSchema.Pool.instance().get(
+						catalogName, jdbcConnectString, jdbcUser, connectInfo);
+				String roleName = connectInfo.get("Role");
+				if (roleName != null) {
+					role = schema.lookupRole(roleName);
+					if (role == null) {
+						throw Util.newError("Role '" + roleName + "' not found");
+					}
+				}
+			}
+		}
+		if (role == null) {
+			role = schema.defaultRole;
 		}
 		this.schema = schema;
-		this.role = schema.defaultRole;
+		this.role = role;
 		this.schemaReader = schema.getSchemaReader();
 	}
 

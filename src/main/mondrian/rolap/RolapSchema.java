@@ -40,7 +40,7 @@ public class RolapSchema implements Schema
 	/**
 	 * Holds cubes in this schema.
 	 */
-	final HashMap mapNameToCube = new HashMap();
+	private final HashMap mapNameToCube = new HashMap();
 	/**
 	 * Maps {@link String shared hierarchy name} to {@link MemberReader}.
 	 * Shared between all statements which use this connection.
@@ -56,11 +56,20 @@ public class RolapSchema implements Schema
 	 * Maps {@link String names of shared hierarchies} to {@link
 	 * RolapHierarchy the canonical instance of those hierarchies}.
 	 */
-	final HashMap mapSharedHierarchyNameToHierarchy = new HashMap();
+	private final HashMap mapSharedHierarchyNameToHierarchy = new HashMap();
 	/**
 	 * The default role for connections to this schema.
 	 */
 	Role defaultRole = createDefaultRole();
+	/**
+	 * Maps {@link String names of roles} to {@link Role roles with those names}.
+	 */
+	private final HashMap mapNameToRole = new HashMap();
+	private static final int[] schemaAllowed = new int[] {Access.NONE, Access.ALL, Access.ALL_DIMENSIONS};
+	private static final int[] cubeAllowed = new int[] {Access.NONE, Access.ALL};
+	private static final int[] dimensionAllowed = new int[] {Access.NONE, Access.ALL};
+	private static final int[] hierarchyAllowed = new int[] {Access.NONE, Access.ALL, Access.CUSTOM};
+	private static final int[] memberAllowed = new int[] {Access.NONE, Access.ALL};
 
 	/**
 	 * Creates a {@link RolapSchema}. Use
@@ -97,6 +106,77 @@ public class RolapSchema implements Schema
 			RolapCube cube = new RolapCube(this, xmlSchema, xmlVirtualCube);
 			mapNameToCube.put(xmlVirtualCube.name, cube);
 		}
+		for (int i = 0; i < xmlSchema.roles.length; i++) {
+			MondrianDef.Role xmlRole = xmlSchema.roles[i];
+			Role role = createRole(xmlRole);
+			mapNameToRole.put(xmlRole.name, role);
+		}
+	}
+
+	private Role createRole(MondrianDef.Role xmlRole) {
+		Role role = new Role();
+		for (int i = 0; i < xmlRole.schemaGrants.length; i++) {
+			MondrianDef.SchemaGrant schemaGrant = xmlRole.schemaGrants[i];
+			role.grant(this, getAccess(schemaGrant.access, schemaAllowed));
+			for (int j = 0; j < schemaGrant.cubeGrants.length; j++) {
+				MondrianDef.CubeGrant cubeGrant = schemaGrant.cubeGrants[j];
+				Cube cube = (Cube) mapNameToCube.get(cubeGrant.cube);
+				if (cube == null) {
+					throw Util.newError("Unknown cube '" + cube + "'");
+				}
+				role.grant(cube, getAccess(cubeGrant.access, cubeAllowed));
+				final SchemaReader schemaReader = cube.getSchemaReader(null);
+				for (int k = 0; k < cubeGrant.dimensionGrants.length; k++) {
+					MondrianDef.DimensionGrant dimensionGrant = cubeGrant.dimensionGrants[k];
+					Dimension dimension = (Dimension) Util.lookupCompound(
+							schemaReader, cube, Util.explode(dimensionGrant.dimension), true, Category.Dimension);
+					role.grant(dimension, getAccess(dimensionGrant.access, dimensionAllowed));
+				}
+				for (int k = 0; k < cubeGrant.hierarchyGrants.length; k++) {
+					MondrianDef.HierarchyGrant hierarchyGrant = cubeGrant.hierarchyGrants[k];
+					Hierarchy hierarchy = (Hierarchy) Util.lookupCompound(
+							schemaReader, cube, Util.explode(hierarchyGrant.hierarchy), true, Category.Hierarchy);
+					final int hierarchyAccess = getAccess(hierarchyGrant.access, hierarchyAllowed);
+					Level topLevel = null;
+					if (hierarchyGrant.topLevel != null) {
+						if (hierarchyAccess != Access.CUSTOM) {
+							throw Util.newError("You may only specify 'topLevel' if access='custom'");
+						}
+						topLevel = (Level) Util.lookupCompound(schemaReader, cube, Util.explode(hierarchyGrant.topLevel), true, Category.Level);
+					}
+					Level bottomLevel = null;
+					if (hierarchyGrant.bottomLevel != null) {
+						if (hierarchyAccess != Access.CUSTOM) {
+							throw Util.newError("You may only specify 'bottomLevel' if access='custom'");
+						}
+						bottomLevel = (Level) Util.lookupCompound(schemaReader, cube, Util.explode(hierarchyGrant.bottomLevel), true, Category.Level);
+					}
+					role.grant(hierarchy, hierarchyAccess, topLevel, bottomLevel);
+					for (int m = 0; m < hierarchyGrant.memberGrants.length; m++) {
+						if (hierarchyAccess != Access.CUSTOM) {
+							throw Util.newError("You may only specify <MemberGrant> if <Hierarchy> has access='custom'");
+						}
+						MondrianDef.MemberGrant memberGrant = hierarchyGrant.memberGrants[m];
+						Member member = schemaReader.getMemberByUniqueName(Util.explode(memberGrant.member),true);
+						if (member.getHierarchy() != hierarchy) {
+							throw Util.newError("Member '" + member + "' is not in hierarchy '" + hierarchy + "'");
+						}
+						role.grant(member, getAccess(memberGrant.access, memberAllowed));
+					}
+				}
+			}
+		}
+		return role;
+	}
+
+	private int getAccess(String accessString, int[] allowed) {
+		final int access = Access.instance().getOrdinal(accessString);
+		for (int i = 0; i < allowed.length; i++) {
+			if (access == allowed[i]) {
+				return access; // value is ok
+			}
+		}
+		throw Util.newError("Bad value access='" + accessString + "'");
 	}
 
 	public Dimension createDimension(Cube cube, String xml) {
@@ -202,6 +282,14 @@ public class RolapSchema implements Schema
 
 	RolapHierarchy getSharedHierarchy(String name) {
 		return (RolapHierarchy) mapSharedHierarchyNameToHierarchy.get(name);
+	}
+
+	/**
+	 * Finds a role called 'role' in the current catalog, or return null if no
+	 * role exists.
+	 */
+	protected Role lookupRole(String role) {
+		return (Role) mapNameToRole.get(role);
 	}
 
 	/**

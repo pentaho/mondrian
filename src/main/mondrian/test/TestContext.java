@@ -76,7 +76,7 @@ public class TestContext {
 	private static String getConnectString() {
 		String connectString = MondrianProperties.instance().getTestConnectString();
 		final Util.PropertyList connectProperties;
-		if (connectString == null) {
+		if (connectString == null || connectString.equals("")) {
 			connectProperties = new Util.PropertyList();
 			connectProperties.put("Provider","mondrian");
 		} else {
