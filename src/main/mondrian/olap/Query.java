@@ -1083,9 +1083,8 @@ public class Query extends QueryPart {
 	/**
 	 * Validates each parameter, calculates their usage, and removes unused
 	 * parameters.
-	 * @return the array of parameter usage counts
 	 */
-	private int[] resolveParameters() {
+	private void resolveParameters() {
 		//validate definitions
 		for (int i = 0; i < parameters.length; i++) {
 			parameters[i].validate(this);
@@ -1108,7 +1107,6 @@ public class Query extends QueryPart {
 				}
 			}
 		}
-		return usageCount;
 	}
 
 	/**
@@ -1116,20 +1114,8 @@ public class Query extends QueryPart {
 	 **/
 	public Parameter[] getParameters()
 	{
-		int[] usageCount = resolveParameters();
-		// count the parameters which are currently used
-		int nUsed = 0;
-		for ( int i = 0; i < usageCount.length; i++ ) {
-			if ( usageCount[i] > 0 )
-			  nUsed++;
-	  }
-	  Parameter[] usedParameters = new Parameter[nUsed];
-	  nUsed = 0;
-		for ( int i = 0; i < parameters.length; i++ ) {
-			if ( usageCount[i] > 0 )
-			  usedParameters[nUsed++] = parameters[i];
-	  }
-		return usedParameters;
+		resolveParameters();
+		return parameters;
 	}
 
 	void resetParametersPrintProperty()
