@@ -9,6 +9,6 @@ public interface RefClass extends RefFeatured {
     public Collection refAllOfClass();
     public RefStruct refCreateStruct(RefObject struct, List params);
     public RefStruct refCreateStruct(String structName, List params);
-    public RefEnum refGetEnum(RefObject enum, String name);
+    public RefEnum refGetEnum(RefObject enum_, String name);
     public RefEnum refGetEnum(String enumName, String name);
 }
