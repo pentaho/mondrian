@@ -33,7 +33,7 @@ public class FoodMartTestCase extends TestCase {
 		super(name);
 	}
 
-	Result runQuery(String queryString) {
+	public Result runQuery(String queryString) {
 		Connection connection = getConnection();
 		Query query = connection.parseQuery(queryString);
 		return connection.execute(query);

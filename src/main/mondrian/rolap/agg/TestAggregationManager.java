@@ -18,14 +18,16 @@ import mondrian.olap.Member;
 import mondrian.rolap.RolapAggregationManager;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.RolapUtil;
-import mondrian.rolap.sql.DelegatingConnection;
-import mondrian.rolap.sql.DelegatingStatement;
 import mondrian.test.TestContext;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Map;
-import java.io.*;
-import java.sql.*;
 
 /**
  * Unit test for {@link AggregationManager}.
@@ -54,11 +56,6 @@ public class TestAggregationManager extends TestCase {
 	/**
 	 * Tests that a request for ([Measures].[Unit Sales], [Gender].[F])
 	 * generates the correct SQL.
-	 *
-	 * <p> Currently only works if the current database is Access. todo: Rather
-	 * than intercepting RolapUtil.debugOut, create a fake JDBC connection
-	 * which pretends to be Access, and fails if it is not given a particular
-	 * SQL statement.
 	 */
 	public void testFemaleUnitSalesSql() {
 		CellRequest request = createFemaleUnitSalesCellRequest();
@@ -125,33 +122,37 @@ public class TestAggregationManager extends TestCase {
 		final RolapAggregationManager aggMan = AggregationManager.instance();
 		ArrayList pinnedSegments = new ArrayList();
 		RolapStar star = request.getMeasure().table.star;
-		final java.sql.Connection originalConnection = star.getJdbcConnection();
+		final java.sql.Connection connection = star.getJdbcConnection();
 		String database = null;
 		try {
-			database = originalConnection.getMetaData().getDatabaseProductName();
+			database = connection.getMetaData().getDatabaseProductName();
 		} catch (SQLException e) {
 		}
 		if (!database.equals("ACCESS")) {
 			return;
 		}
 		star.setJdbcConnection(
-				new DelegatingConnection(originalConnection) {
-					public Statement createStatement() throws SQLException {
-						Statement statement = connection.createStatement();
-						return new DelegatingStatement(statement, this) {
-							public ResultSet executeQuery(String sql) throws SQLException {
-								if (trigger == null || sql.startsWith(trigger)) {
-									throw new Bomb(sql);
-								} else {
-									return super.executeQuery(sql);
-								}
+				(java.sql.Connection) Proxy.newProxyInstance(
+						null,
+						new Class[]{java.sql.Connection.class},
+						new DelegatingInvocationHandler(connection) {
+							public Statement createStatement() throws SQLException {
+								final Statement statement = connection.createStatement();
+								return (Statement) Proxy.newProxyInstance(
+										null,
+										new Class[]{java.sql.Statement.class},
+										new DelegatingInvocationHandler(statement) {
+											public ResultSet executeQuery(String sql) throws SQLException {
+												if (trigger == null || sql.startsWith(trigger)) {
+													throw new Bomb(sql);
+												} else {
+													return statement.executeQuery(sql);
+												}
+											}
+										});
 							}
-							public boolean execute(String sql) throws SQLException {
-								throw new Bomb(sql);
-							}
-						};
-					}
-				});
+						}
+				));
 		Bomb bomb;
 		try {
 			aggMan.loadAggregations(createSingletonBatch(request), pinnedSegments);
@@ -159,7 +160,7 @@ public class TestAggregationManager extends TestCase {
 		} catch (Bomb e) {
 			bomb = e;
 		} finally {
-			star.setJdbcConnection(originalConnection);
+			star.setJdbcConnection(connection);
 		}
 		assertTrue(bomb != null);
 		assertEquals(pattern, bomb.sql);
@@ -179,7 +180,46 @@ public class TestAggregationManager extends TestCase {
 		request.addConstrainedColumn(storeTypeColumn, value);
 		return request;
 	}
+}
 
+/**
+ * A class derived from <code>DelegatingInvocationHandler</code> handles a
+ * method call by looking for a method in itself with identical parameters. If
+ * no such method is found, it forwards the call to a fallback object, which
+ * must implement all of the interfaces which this proxy implements.
+ *
+ * <p> It is useful in creating a wrapper class around an interface which may
+ * change over time.
+ */
+abstract class DelegatingInvocationHandler implements InvocationHandler {
+	Object fallback;
+	DelegatingInvocationHandler(Object fallback) {
+		this.fallback = fallback;
+	}
+	public Object invoke(Object proxy, Method method, Object[] args)
+			throws Throwable {
+		Class clazz = getClass();
+		Method matchingMethod;
+		try {
+			matchingMethod = clazz.getMethod(
+					method.getName(), method.getParameterTypes());
+		} catch (NoSuchMethodException e) {
+			matchingMethod = null;
+		} catch (SecurityException e) {
+			matchingMethod = null;
+		}
+		try {
+			if (matchingMethod != null) {
+				// Invoke the method in the derived class.
+				return matchingMethod.invoke(this, args);
+			} else {
+				// Invoke the method on the proxy.
+				return method.invoke(fallback, args);
+			}
+		} catch (InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
 }
 
 // End TestAggregationManager.java

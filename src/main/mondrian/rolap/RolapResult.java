@@ -105,6 +105,10 @@ class RolapResult extends ResultBase
 	}
 	public Cell getCell(int[] pos)
 	{
+		if (pos.length != point.ordinals.length) {
+			throw Util.newError(
+					"coordinates should have dimension " + point.ordinals.length);
+		}
 		Object value = cellValues.get(new CellKey(pos));
 		if (value == null) {
 			value = Util.nullValue;
@@ -176,6 +180,9 @@ class RolapResult extends ResultBase
 		// For each group, extend the aggregation definition a bit, if it will
 		// help us roll up later.
 		//
+		if (batchingReader.keys.isEmpty()) {
+			return;
+		}
 		batchingReader.loadAggregations();
 		batchingReader.clear();
 

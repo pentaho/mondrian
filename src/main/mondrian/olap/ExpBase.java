@@ -228,10 +228,12 @@ public abstract class ExpBase
 		case CatMember:
 			return "<Member>";
 		case CatNumeric:
+		case CatNumeric | CatExpression:
 			return "<Numeric Expression>";
 		case CatSet:
 			return "<Set>";
 		case CatString:
+		case CatString | CatExpression:
 			return "<String Expression>";
 		case CatTuple:
 			return "<Tuple>";
