@@ -11,12 +11,11 @@
 */
 package mondrian.jolap;
 
-import javax.olap.query.dimensionfilters.ExceptionMemberFilter;
-import javax.olap.query.dimensionfilters.DataBasedMemberFilterInput;
-import javax.olap.query.enumerations.OperatorType;
-import javax.olap.query.enumerations.DataBasedMemberFilterInputType;
-import javax.olap.query.enumerations.DataBasedMemberFilterInputTypeEnum;
+import mondrian.olap.Exp;
+
 import javax.olap.OLAPException;
+import javax.olap.query.dimensionfilters.ExceptionMemberFilter;
+import javax.olap.query.enumerations.OperatorType;
 
 /**
  * A <code>MondrianExceptionMemberFilter</code> is ...
@@ -32,6 +31,17 @@ class MondrianExceptionMemberFilter extends MondrianDataBasedMemberFilter implem
 	public MondrianExceptionMemberFilter(MondrianDimensionStepManager manager) {
 		super(manager);
 	}
+
+	Exp convert(Exp exp) throws OLAPException {
+		Exp newExp = _convert();
+		return combine(exp, newExp);
+	}
+
+	private Exp _convert() throws OLAPException {
+		throw new UnsupportedOperationException(); // todo:
+	}
+
+	// object model methods
 
 	public OperatorType getOp() throws OLAPException {
 		return op;

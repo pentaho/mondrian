@@ -11,15 +11,15 @@
 */
 package mondrian.jolap;
 
-import javax.olap.cursor.EdgeCursor;
-import javax.olap.cursor.DimensionCursor;
-import javax.olap.cursor.CubeCursor;
-import javax.olap.query.EdgeView;
-import javax.olap.query.querycoremodel.Segment;
+import mondrian.olap.Axis;
+
 import javax.olap.OLAPException;
+import javax.olap.cursor.CubeCursor;
+import javax.olap.cursor.DimensionCursor;
+import javax.olap.cursor.EdgeCursor;
+import javax.olap.query.querycoremodel.Segment;
 import java.util.Collection;
 import java.util.List;
-import java.util.Iterator;
 
 /**
  * A <code>MondrianEdgeCursor</code> is ...
@@ -37,16 +37,19 @@ class MondrianEdgeCursor extends CursorSupport implements EdgeCursor {
 		static Relationship dimensionCursor = new Relationship(MondrianEdgeCursor.class, "dimensionCursor", DimensionCursor.class);
 	}
 
-	public MondrianEdgeCursor(MondrianCubeCursor cubeCursor, boolean isPage, MondrianEdgeView edgeView) throws OLAPException {
-		super();
+	public MondrianEdgeCursor(MondrianCubeCursor cubeCursor, boolean isPage, MondrianEdgeView edgeView, Axis axis) throws OLAPException {
+		super(new ArrayNavigator(axis.positions), new Accessor() {
+			public Object getObject(int i) throws OLAPException {
+				throw new UnsupportedOperationException();
+			}
+		});
 		if (isPage) {
 			this.pageOwner = cubeCursor;
 		} else {
 			this.ordinateOwner = cubeCursor;
 		}
-		for (Iterator dimensionViews = edgeView.getDimensionView().iterator(); dimensionViews.hasNext();) {
-			MondrianDimensionView dimensionView = (MondrianDimensionView) dimensionViews.next();
-			dimensionCursor.add(new MondrianDimensionCursor(dimensionView));
+		for (int i = 0; i < edgeView.getDimensionView().size(); i++) {
+			dimensionCursor.add(new MondrianDimensionCursor(this, axis, i));
 		}
 	}
 

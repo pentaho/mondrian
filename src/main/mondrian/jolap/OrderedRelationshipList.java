@@ -26,16 +26,18 @@ class OrderedRelationshipList extends RelationshipList {
 		super(relationship);
 	}
 
-	public void addBefore(Object before, Object o) {
+	public Object addBefore(Object before, Object o) {
 		Util.assertTrue(relationship.toClass.isInstance(o));
 		int i = indexOf(before);
 		add(i, o);
+		return o;
 	}
 
-	public void addAfter(Object after, Object o) {
+	public Object addAfter(Object after, Object o) {
 		Util.assertTrue(relationship.toClass.isInstance(o));
 		int i = indexOf(after);
 		add(i + 1, o);
+		return o;
 	}
 
 	public void moveBefore(Object before, Object o) {

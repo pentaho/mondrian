@@ -381,6 +381,7 @@ public class Segment implements CachePool.Cacheable
 			}
 			// figure out size of dense array, and allocate it (todo: use
 			// sparse array sometimes)
+			boolean sparse = false;
 			int n = 1;
 			for (int i = 0; i < arity; i++) {
 				Aggregation.Axis axis = segment0.axes[i];
@@ -394,10 +395,16 @@ public class Segment implements CachePool.Cacheable
 					Util.assertTrue(axis.keys[offset] == null);
 					axis.keys[offset] = key;
 				}
+				int previous = n;
 				n *= size;
+				if (n < previous || n < size) {
+					// Overflow has occurred.
+					n = Integer.MAX_VALUE;
+					sparse = true;
+				}
 			}
 			SegmentDataset[] datas = new SegmentDataset[segments.length];
-			boolean sparse = useSparse((double) n, (double) rows.size());
+			sparse = sparse || useSparse((double) n, (double) rows.size());
 			for (int i = 0; i < segments.length; i++) {
 				datas[i] = sparse ?
 						(SegmentDataset) new SparseSegmentDataset(segments[i]) :

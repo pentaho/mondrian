@@ -11,15 +11,13 @@
 */
 package mondrian.jolap;
 
-import javax.olap.query.querycoremodel.*;
-import javax.olap.query.enumerations.EdgeFilterType;
-import javax.olap.query.edgefilters.CurrentEdgeMember;
-import javax.olap.query.querytransaction.TransactionalObject;
 import javax.olap.OLAPException;
 import javax.olap.cursor.EdgeCursor;
+import javax.olap.query.edgefilters.CurrentEdgeMember;
+import javax.olap.query.enumerations.EdgeFilterType;
+import javax.olap.query.querycoremodel.*;
 import java.util.Collection;
 import java.util.List;
-import java.util.ArrayList;
 
 /**
  * A <code>MondrianEdgeView</code> is ...
@@ -29,14 +27,18 @@ import java.util.ArrayList;
  * @version $Id$
  **/
 class MondrianEdgeView extends OrdinateSupport implements EdgeView {
-	private RelationshipList edgeCursors = new RelationshipList(Meta.edgeCursor);
-	private OrderedRelationshipList dimensionViews = new OrderedRelationshipList(Meta.dimensionView);
+	private RelationshipList edgeCursor = new RelationshipList(Meta.edgeCursor);
+	private OrderedRelationshipList dimensionView = new OrderedRelationshipList(Meta.dimensionView);
+	private OrderedRelationshipList segment = new OrderedRelationshipList(Meta.segment);
+	private OrderedRelationshipList edgeFilter = new OrderedRelationshipList(Meta.edgeFilter);
 	private MondrianCubeView ordinateOwner;
 	private MondrianCubeView pageOwner;
 
 	static abstract class Meta {
 		static final Relationship dimensionView = new Relationship(MondrianEdgeView.class, "dimensionView", DimensionView.class);
 		static final Relationship edgeCursor = new Relationship(MondrianEdgeView.class, "edgeCursor", EdgeCursor.class);
+		static final Relationship segment = new Relationship(MondrianEdgeView.class, "segment", Segment.class);
+		static final Relationship edgeFilter = new Relationship(MondrianEdgeView.class, "edgeFilter", EdgeFilter.class);
 	}
 
 	public MondrianEdgeView(MondrianCubeView owner, boolean isPage) {
@@ -56,79 +58,79 @@ class MondrianEdgeView extends OrdinateSupport implements EdgeView {
 	}
 
 	public void setDimensionView(Collection input) throws OLAPException {
-		dimensionViews.set(input);
+		dimensionView.set(input);
 	}
 
 	public List getDimensionView() throws OLAPException {
-		return dimensionViews.get();
+		return dimensionView.get();
 	}
 
 	public void addDimensionView(DimensionView input) throws OLAPException {
-		dimensionViews.add(input);
+		dimensionView.add(input);
 	}
 
 	public void removeDimensionView(DimensionView input) throws OLAPException {
-		dimensionViews.remove(input);
+		dimensionView.remove(input);
 	}
 
 	public void addDimensionViewBefore(DimensionView before, DimensionView input) throws OLAPException {
-		dimensionViews.addBefore(before, input);
+		dimensionView.addBefore(before, input);
 	}
 
 	public void addDimensionViewAfter(DimensionView before, DimensionView input) throws OLAPException {
-		dimensionViews.addAfter(before, input);
+		dimensionView.addAfter(before, input);
 	}
 
 	public void moveDimensionViewBefore(DimensionView before, DimensionView input) throws OLAPException {
-		dimensionViews.moveBefore(before, input);
+		dimensionView.moveBefore(before, input);
 	}
 
 	public void moveDimensionViewAfter(DimensionView before, DimensionView input) throws OLAPException {
-		dimensionViews.moveAfter(before, input);
+		dimensionView.moveAfter(before, input);
 	}
 
 	public void setEdgeCursor(Collection input) throws OLAPException {
-		edgeCursors.set(input);
+		edgeCursor.set(input);
 	}
 
 	public Collection getEdgeCursor() throws OLAPException {
-		return edgeCursors.get();
+		return edgeCursor.get();
 	}
 
 	public void removeEdgeCursor(EdgeCursor input) throws OLAPException {
-		edgeCursors.remove(input);
+		edgeCursor.remove(input);
 	}
 
 	public void setSegment(Collection input) throws OLAPException {
-		throw new UnsupportedOperationException();
+		segment.set(input);
 	}
 
 	public Collection getSegment() throws OLAPException {
-		throw new UnsupportedOperationException();
+		return segment.get();
 	}
 
 	public void removeSegment(Segment input) throws OLAPException {
-		throw new UnsupportedOperationException();
+		segment.remove(input);
 	}
 
 	public void setEdgeFilter(Collection input) throws OLAPException {
-		throw new UnsupportedOperationException();
+		edgeFilter.set(input);
 	}
 
 	public List getEdgeFilter() throws OLAPException {
-		throw new UnsupportedOperationException();
+		return edgeFilter.get();
 	}
 
 	public void removeEdgeFilter(EdgeFilter input) throws OLAPException {
-		throw new UnsupportedOperationException();
+		edgeFilter.remove(input);
 	}
 
 	public void moveEdgeFilterBefore(EdgeFilter before, EdgeFilter input) throws OLAPException {
-		throw new UnsupportedOperationException();
+		edgeFilter.moveBefore(before, input);
 	}
 
 	public void moveEdgeFilterAfter(EdgeFilter before, EdgeFilter input) throws OLAPException {
-		throw new UnsupportedOperationException();
+		edgeFilter.moveAfter(before, input);
 	}
 
 	public void setTuple(Collection input) throws OLAPException {
@@ -148,27 +150,27 @@ class MondrianEdgeView extends OrdinateSupport implements EdgeView {
 	}
 
 	public Segment createSegment() throws OLAPException {
-		return new MondrianSegment();
+		return (Segment) segment.addNew(new MondrianSegment());
 	}
 
 	public Segment createSegmentBefore(Segment member) throws OLAPException {
-		throw new UnsupportedOperationException();
+		return (Segment) segment.addBefore(member, new MondrianSegment());
 	}
 
 	public Segment createSegmentAfter(Segment member) throws OLAPException {
-		throw new UnsupportedOperationException();
+		return (Segment) segment.addAfter(member, new MondrianSegment());
 	}
 
 	public EdgeFilter createEdgeFilter(EdgeFilterType type) throws OLAPException {
-		throw new UnsupportedOperationException();
+		return (EdgeFilter) edgeFilter.addNew(MondrianEdgeFilter.create(type));
 	}
 
 	public EdgeFilter createEdgeFilterBefore(EdgeFilterType type, EdgeFilter member) throws OLAPException {
-		throw new UnsupportedOperationException();
+		return (EdgeFilter) edgeFilter.addBefore(member, MondrianEdgeFilter.create(type));
 	}
 
 	public EdgeFilter createEdgeFilterAfter(EdgeFilterType type, EdgeFilter member) throws OLAPException {
-		throw new UnsupportedOperationException();
+		return (EdgeFilter) edgeFilter.addAfter(member, MondrianEdgeFilter.create(type));
 	}
 
 	public Tuple createTuple() throws OLAPException {

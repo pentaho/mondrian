@@ -29,12 +29,20 @@ import java.util.List;
  * @version $Id$
  **/
 class MondrianDimensionStepManager extends QueryObjectSupport implements DimensionStepManager {
-	public MondrianDimensionStepManager() {
+	OrderedRelationshipList dimensionStep = new OrderedRelationshipList(Meta.dimensionStep);
+	MondrianDimensionView dimensionView;
+
+	static abstract class Meta {
+		static Relationship dimensionStep = new Relationship(MondrianDimensionStepManager.class, "dimensionStep", MondrianDimensionStep.class);
+	}
+
+	public MondrianDimensionStepManager(MondrianDimensionView dimensionView) {
 		super(false);
+		this.dimensionView = dimensionView;
 	}
 
 	public DimensionView getDimensionView() throws OLAPException {
-		throw new UnsupportedOperationException();
+		return dimensionView;
 	}
 
 	public void setSegment(Collection input) throws OLAPException {
@@ -54,49 +62,35 @@ class MondrianDimensionStepManager extends QueryObjectSupport implements Dimensi
 	}
 
 	public void setDimensionStep(Collection input) throws OLAPException {
-		throw new UnsupportedOperationException();
+		dimensionStep.set(input);
 	}
 
 	public List getDimensionStep() throws OLAPException {
-		throw new UnsupportedOperationException();
+		return dimensionStep.get();
 	}
 
 	public void removeDimensionStep(DimensionStep input) throws OLAPException {
-		throw new UnsupportedOperationException();
+		dimensionStep.remove(input);
 	}
 
 	public void moveDimensionStepBefore(DimensionStep before, DimensionStep input) throws OLAPException {
-		throw new UnsupportedOperationException();
+		dimensionStep.moveBefore(before, input);
 	}
 
 	public void moveDimensionStepAfter(DimensionStep before, DimensionStep input) throws OLAPException {
-		throw new UnsupportedOperationException();
+		dimensionStep.moveAfter(before, input);
 	}
 
 	public DimensionStep createDimensionStep(DimensionStepType stepType) throws OLAPException {
-		if (stepType == DimensionStepTypeEnum.ATTRIBUTEFILTER) {
-			return new MondrianAttributeFilter(this);
-		} else if (stepType == DimensionStepTypeEnum.LEVELFILTER) {
-			return new MondrianLevelFilter(this);
-		} else if (stepType == DimensionStepTypeEnum.HIERARCHYFILTER) {
-			return new MondrianHierarchyFilter(this);
-		} else if (stepType == DimensionStepTypeEnum.DRILLFILTER) {
-			return new MondrianDrillFilter(this);
-		} else if (stepType == DimensionStepTypeEnum.EXCEPTIONMEMBERFILTER) {
-			return new MondrianExceptionMemberFilter(this);
-		} else if (stepType == DimensionStepTypeEnum.RANKINGMEMBERFILTER) {
-			return new MondrianRankingMemberFilter(this);
-		} else {
-			throw new UnsupportedOperationException();
-		}
+		return (DimensionStep) dimensionStep.addNew(MondrianDimensionStep.create(this, stepType));
 	}
 
 	public DimensionStep createDimensionStepBefore(DimensionStepType stepType, DimensionStep member) throws OLAPException {
-		throw new UnsupportedOperationException();
+		return (DimensionStep) dimensionStep.addBefore(member, MondrianDimensionStep.create(this, stepType));
 	}
 
 	public DimensionStep createDimensionStepAfter(DimensionStepType stepType, DimensionStep member) throws OLAPException {
-		throw new UnsupportedOperationException();
+		return (DimensionStep) dimensionStep.addAfter(member, MondrianDimensionStep.create(this, stepType));
 	}
 }
 

@@ -11,9 +11,13 @@
 */
 package mondrian.jolap;
 
+import mondrian.olap.Exp;
+import mondrian.olap.Util;
+
 import javax.olap.query.querycoremodel.DimensionStep;
 import javax.olap.query.dimensionfilters.Drill;
 import javax.olap.query.enumerations.DrillType;
+import javax.olap.query.enumerations.DrillTypeEnum;
 import javax.olap.OLAPException;
 import javax.olap.metadata.Hierarchy;
 import javax.olap.metadata.Level;
@@ -35,6 +39,35 @@ class MondrianDrillFilter extends MondrianDimensionFilter implements Drill {
 	public MondrianDrillFilter(MondrianDimensionStepManager manager) {
 		super(manager);
 	}
+
+	Exp convert(Exp exp) throws OLAPException {
+		Exp newExp = _convert();
+		return combine(exp, newExp);
+	}
+
+	private Exp _convert() throws OLAPException {
+		if (drillType == DrillTypeEnum.ANCESTORS) {
+			throw new UnsupportedOperationException();
+		} else if (drillType == DrillTypeEnum.CHILDREN) {
+			throw new UnsupportedOperationException();
+		} else if (drillType == DrillTypeEnum.DESCENDANTS) {
+			throw new UnsupportedOperationException();
+		} else if (drillType == DrillTypeEnum.LEAVES) {
+			throw new UnsupportedOperationException();
+		} else if (drillType == DrillTypeEnum.PARENT) {
+			throw new UnsupportedOperationException();
+		} else if (drillType == DrillTypeEnum.ROOTS) {
+			throw new UnsupportedOperationException();
+		} else if (drillType == DrillTypeEnum.SIBLINGS) {
+			throw new UnsupportedOperationException();
+		} else if (drillType == DrillTypeEnum.TOLEVEL) {
+			throw new UnsupportedOperationException();
+		} else {
+			throw Util.newInternal("Unknown drill type " + drillType);
+		}
+	}
+	
+	// object model methods
 
 	public DrillType getDrillType() throws OLAPException {
 		return drillType;

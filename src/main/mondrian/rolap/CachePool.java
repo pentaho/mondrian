@@ -58,7 +58,9 @@ public class CachePool {
 	/** Total cost of all objects in {@link #pinned}. **/
 	private double pinnedCost;
 	/** Priority queue of unpinned objects, sorted so that those with the a
-	 * high cost/low benefit are at the head. Soft references are used. **/
+	 * high cost/low benefit are at the head. Soft references are used.
+	 * @synchronization Lock the cache pool, not the queue.
+	 **/
 	private Queue queue;
 	/** Set of objects whose pin count is greater than zero. Hard references
 	 * are used, to keep the garbage collector at bay. **/
@@ -88,12 +90,12 @@ public class CachePool {
 	 * {@link ArrayList}; a heap-based implementation would be better.
 	 */
 	private static class Queue {
-		Comparator comparator;
-		ArrayList list = new ArrayList();
+		private Comparator comparator;
+		private ArrayList list = new ArrayList();
 		Queue(Comparator comparator) {
 			this.comparator = comparator;
 		}
-		int size(){
+		int size() {
 			return list.size();
 		}
 		void add(Object o) {
@@ -156,8 +158,7 @@ public class CachePool {
 	/**
 	 * Returns the number of objects in the <code>CachePool</code>.
 	 **/
-	int size()
-	{
+	synchronized int size() {
 		return queue.size() + pinned.size();
 	}
 

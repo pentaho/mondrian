@@ -11,6 +11,8 @@
 */
 package mondrian.jolap;
 
+import mondrian.olap.Util;
+
 import javax.olap.query.querycoremodel.*;
 import javax.olap.query.derivedattribute.DerivedAttribute;
 import javax.olap.query.enumerations.SelectedObjectType;
@@ -20,6 +22,7 @@ import javax.olap.cursor.DimensionCursor;
 import javax.olap.metadata.Dimension;
 import java.util.Collection;
 import java.util.List;
+import java.util.Iterator;
 
 /**
  * A <code>MondrianDimensionView</code> is ...
@@ -30,11 +33,13 @@ import java.util.List;
  **/
 class MondrianDimensionView extends OrdinateSupport
 		implements DimensionView, MeasureView {
-	private Dimension dimension;
+	MondrianJolapDimension dimension;
 	private OrderedRelationshipList selectedObject = new OrderedRelationshipList(Meta.selectedObject);
+	private RelationshipList dimensionStepManager = new RelationshipList(Meta.dimensionStepManager);
 
 	static class Meta {
-		static Relationship selectedObject = new Relationship(MondrianDimensionView.class, "selectedObject", SelectedObject.class);
+		static final Relationship selectedObject = new Relationship(MondrianDimensionView.class, "selectedObject", SelectedObject.class);
+		static final Relationship dimensionStepManager = new Relationship(MondrianDimensionView.class, "dimensionStepManager", MondrianDimensionStepManager.class);
 	}
 
 	public MondrianDimensionView() {
@@ -57,23 +62,23 @@ class MondrianDimensionView extends OrdinateSupport
 	}
 
 	public void setDimension(Dimension dimension) throws OLAPException {
-		this.dimension = dimension;
+		this.dimension = (MondrianJolapDimension) dimension;
 	}
 
 	public Dimension getDimension() throws OLAPException {
-		throw new UnsupportedOperationException();
+		return dimension;
 	}
 
 	public void setDimensionStepManager(Collection input) throws OLAPException {
-		throw new UnsupportedOperationException();
+		dimensionStepManager.set(input);
 	}
 
 	public Collection getDimensionStepManager() throws OLAPException {
-		throw new UnsupportedOperationException();
+		return dimensionStepManager.get();
 	}
 
 	public void removeDimensionStepManager(DimensionStepManager input) throws OLAPException {
-		throw new UnsupportedOperationException();
+		dimensionStepManager.remove(input);
 	}
 
 	public void setDimensionCursor(Collection input) throws OLAPException {
@@ -124,34 +129,24 @@ class MondrianDimensionView extends OrdinateSupport
 		throw new UnsupportedOperationException();
 	}
 
-	private SelectedObject createSelectedObject_(SelectedObjectType type) {
-		if (type == SelectedObjectTypeEnum.ATTRIBUTEREFERENCE) {
-			return new MondrianAttributeReference(this);
-		} else {
-			throw new UnsupportedOperationException();
-		}
-	}
-
 	public SelectedObject createSelectedObject(SelectedObjectType type) throws OLAPException {
-		final SelectedObject o = createSelectedObject_(type);
-		selectedObject.add(o);
-		return o;
+		return (SelectedObject) selectedObject.addNew(
+				QueryObjectSupport.createSelectedObject(this, type));
 	}
 
 	public SelectedObject createSelectedObjectBefore(SelectedObjectType type, SelectedObject member) throws OLAPException {
-		final SelectedObject o = createSelectedObject_(type);
-		selectedObject.addBefore(member, o);
-		return o;
+		return (SelectedObject) selectedObject.addBefore(member,
+				QueryObjectSupport.createSelectedObject(this, type));
 	}
 
 	public SelectedObject createSelectedObjectAfter(SelectedObjectType type, SelectedObject member) throws OLAPException {
-		final SelectedObject o = createSelectedObject_(type);
-		selectedObject.addAfter(member, o);
-		return o;
+		return (SelectedObject) selectedObject.addAfter(member,
+				QueryObjectSupport.createSelectedObject(this, type));
 	}
 
 	public DimensionStepManager createDimensionStepManager() throws OLAPException {
-		return new MondrianDimensionStepManager();
+		return (DimensionStepManager) dimensionStepManager.addNew(
+				new MondrianDimensionStepManager(this));
 	}
 
 	public DerivedAttribute createDerivedAttribute() throws OLAPException {

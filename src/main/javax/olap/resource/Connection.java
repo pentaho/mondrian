@@ -3,6 +3,7 @@ import javax.jmi.reflect.RefObject;
 import javax.jmi.reflect.RefPackage;
 import javax.olap.OLAPException;
 import javax.olap.metadata.Schema;
+import javax.olap.metadata.Cube;
 import javax.olap.query.querycoremodel.CubeView;
 import javax.olap.query.querycoremodel.DimensionView;
 import javax.olap.query.querycoremodel.EdgeView;
@@ -21,6 +22,12 @@ public interface Connection extends RefObject {
 	public void setCurrentSchema( Schema schema) throws OLAPException;
 	public List getDimensions() throws OLAPException;
 	public List getCubes() throws OLAPException;
+
+	// jhyde: added method with 'cube' parameter
+	// todo: spec: how to determine which cube this view is over?
+	public CubeView createCubeView(Cube cube) throws OLAPException;
+
+	/** @deprecated **/
 	public CubeView createCubeView() throws OLAPException;
 	public DimensionView createDimensionView() throws OLAPException;
 	public EdgeView createEdgeView() throws OLAPException;

@@ -33,7 +33,7 @@ public class Literal extends ExpBase
 		this.type = isSymbol ? CatSymbol : CatString;
 	}
 
-	static Literal createString(String s) {
+	public static Literal createString(String s) {
 		if (s.equals("")) {
 			return emptyString;
 		} else {
@@ -61,7 +61,7 @@ public class Literal extends ExpBase
 		this.type = CatNumeric;
 	}
 
-	static Literal create(Integer i) {
+	public static Literal create(Integer i) {
 		if (i.intValue() == 0) {
 			return zero;
 		} else if (i.intValue() == 1) {
@@ -71,13 +71,11 @@ public class Literal extends ExpBase
 		}
 	}
 
-	public Object clone()
-	{
+	public Object clone() {
 		return this;
 	}
 
-	public void unparse(PrintWriter pw, ElementCallback callback)
-	{
+	public void unparse(PrintWriter pw, ElementCallback callback) {
 		switch (type) {
 		case CatSymbol:
 		case CatNumeric:

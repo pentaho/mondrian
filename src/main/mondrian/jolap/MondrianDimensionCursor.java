@@ -11,6 +11,9 @@
 */
 package mondrian.jolap;
 
+import mondrian.olap.Axis;
+import mondrian.olap.Position;
+
 import javax.olap.cursor.DimensionCursor;
 import javax.olap.cursor.EdgeCursor;
 import javax.olap.OLAPException;
@@ -24,8 +27,18 @@ import javax.olap.query.querycoremodel.DimensionStepManager;
  * @version $Id$
  **/
 class MondrianDimensionCursor extends CursorSupport implements DimensionCursor {
-	public MondrianDimensionCursor(MondrianDimensionView dimensionView) {
-		super();
+	private MondrianEdgeCursor edgeCursor;
+
+	public MondrianDimensionCursor(final MondrianEdgeCursor edgeCursor, final Axis axis, final int axisOffset) {
+		super(edgeCursor.navigator,
+				new Accessor() {
+					public Object getObject(int i) throws OLAPException {
+						int positionIndex = (int) edgeCursor.navigator.getPosition();
+						final Position position = axis.positions[positionIndex];
+						return position.members[axisOffset];
+					}
+				});
+		this.edgeCursor = edgeCursor;
 	}
 
 	public long getEdgeStart() throws OLAPException {
@@ -45,11 +58,11 @@ class MondrianDimensionCursor extends CursorSupport implements DimensionCursor {
 	}
 
 	public void setEdgeCursor(EdgeCursor input) throws OLAPException {
-		throw new UnsupportedOperationException();
+		this.edgeCursor = (MondrianEdgeCursor) input;
 	}
 
 	public EdgeCursor getEdgeCursor() throws OLAPException {
-		throw new UnsupportedOperationException();
+		return edgeCursor;
 	}
 
 	public void setCurrentDimensionStepManager(DimensionStepManager input) throws OLAPException {

@@ -12,7 +12,10 @@
 package mondrian.jolap;
 
 import javax.olap.query.querycoremodel.QueryObject;
+import javax.olap.query.querycoremodel.SelectedObject;
 import javax.olap.query.querytransaction.QueryTransaction;
+import javax.olap.query.enumerations.SelectedObjectType;
+import javax.olap.query.enumerations.SelectedObjectTypeEnum;
 import javax.olap.OLAPException;
 
 /**
@@ -28,6 +31,27 @@ abstract class QueryObjectSupport extends RefObjectSupport implements QueryObjec
 	QueryObjectSupport(boolean supportsTransactions) {
 		this.supportsTransactions = supportsTransactions;
 	}
+
+	/**
+	 * Factory method for creating {@link SelectedObject}s:<ul>
+	 * <li>{@link SelectedObjectTypeEnum#ATTRIBUTEREFERENCE} yields
+	 *     {@link MondrianAttributeReference}</li>
+	 * </ul>
+ 	 *
+	 * @param dimensionView Dimension view that the object belongs to
+	 * @param type Type of object
+	 * @return Object of the requested type
+	 * @throws UnsupportedOperationException if type is not known
+	 */
+	static SelectedObject createSelectedObject(
+			MondrianDimensionView dimensionView, SelectedObjectType type) {
+		if (type == SelectedObjectTypeEnum.ATTRIBUTEREFERENCE) {
+			return new MondrianAttributeReference(dimensionView);
+		} else {
+			throw new UnsupportedOperationException("Unknown type " + type);
+		}
+	}
+
 
 	public void setActiveIn(QueryTransaction input) throws OLAPException {
 		if (!supportsTransactions) {

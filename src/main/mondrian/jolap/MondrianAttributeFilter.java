@@ -16,6 +16,9 @@ import org.omg.cwm.objectmodel.core.Attribute;
 import javax.olap.OLAPException;
 import javax.olap.query.dimensionfilters.AttributeFilter;
 import javax.olap.query.enumerations.OperatorType;
+import javax.olap.query.enumerations.OperatorTypeEnum;
+
+import mondrian.olap.*;
 
 /**
  * A <code>MondrianAttributeFilter</code> is ...
@@ -32,6 +35,56 @@ class MondrianAttributeFilter extends MondrianDimensionFilter
 
 	public MondrianAttributeFilter(MondrianDimensionStepManager manager) {
 		super(manager);
+	}
+
+	Exp convert(Exp exp) throws OLAPException {
+		return combine(
+				exp,
+				new FunCall("Filter", new Exp[] {exp, getCondition()}));
+	}
+
+	Exp getCondition() throws OLAPException {
+		MondrianJolapDimension dimension = (MondrianJolapDimension)
+				getDimensionStepManager().getDimensionView().getDimension();
+		return new FunCall(
+				getFunName(getOp()),
+				new Exp[] {
+					new FunCall("CurrentMember",
+							new Exp[] {dimension.dimension},
+							FunDef.TypeProperty),
+					getExp(rhs)},
+				getFunSyntacticType(getOp()));
+	}
+
+	private Exp getExp(Object rhs) {
+		if (rhs instanceof String) {
+			return Literal.createString((String) rhs);
+		} else {
+			throw Util.newInternal("Cannot _convert '" + rhs + "' (" +
+					rhs.getClass() + ") to an Exp");
+		}
+	}
+
+	private String getFunName(OperatorType op) {
+		if (op == OperatorTypeEnum.EQ) {
+			return "=";
+		} else if (op == OperatorTypeEnum.GE) {
+			return ">=";
+		} else if (op == OperatorTypeEnum.GT) {
+			return ">";
+		} else if (op == OperatorTypeEnum.LE) {
+			return "<=";
+		} else if (op == OperatorTypeEnum.LT) {
+			return "<";
+		} else if (op == OperatorTypeEnum.NE) {
+			return "!=";
+		} else {
+			throw Util.newInternal("Unknown operator type " + op);
+		}
+	}
+
+	private int getFunSyntacticType(OperatorType op) {
+		return FunDef.TypeInfix;
 	}
 
 	public OperatorType getOp() throws OLAPException {

@@ -29,13 +29,21 @@ import java.util.Map;
 abstract class CursorSupport extends QueryObjectSupport
 		implements RowDataNavigation, RowDataAccessor, Cursor {
 	private int fetchSize;
+	ArrayNavigator navigator;
+	private Accessor accessor;
 
-	CursorSupport() {
+	interface Accessor {
+		Object getObject(int i) throws OLAPException;
+	}
+
+	CursorSupport(ArrayNavigator navigator, Accessor accessor) {
 		super(false);
+		this.navigator = navigator;
+		this.accessor = accessor;
 	}
 
 	public boolean next() throws OLAPException {
-		throw new UnsupportedOperationException();
+		return navigator.next();
 	}
 
 	public void close() throws OLAPException {
@@ -43,15 +51,15 @@ abstract class CursorSupport extends QueryObjectSupport
 	}
 
 	public void beforeFirst() throws OLAPException {
-		throw new UnsupportedOperationException();
+		navigator.beforeFirst();
 	}
 
 	public void afterLast() throws OLAPException {
-		throw new UnsupportedOperationException();
+		navigator.afterLast();
 	}
 
 	public boolean first() throws OLAPException {
-		throw new UnsupportedOperationException();
+		return navigator.first();
 	}
 
 	public int getType() throws OLAPException {
@@ -59,31 +67,31 @@ abstract class CursorSupport extends QueryObjectSupport
 	}
 
 	public boolean isAfterLast() throws OLAPException {
-		throw new UnsupportedOperationException();
+		return navigator.isAfterLast();
 	}
 
 	public boolean isBeforeFirst() throws OLAPException {
-		throw new UnsupportedOperationException();
+		return navigator.isBeforeFirst();
 	}
 
 	public boolean isFirst() throws OLAPException {
-		throw new UnsupportedOperationException();
+		return navigator.isFirst();
 	}
 
 	public boolean isLast() throws OLAPException {
-		throw new UnsupportedOperationException();
+		return navigator.isLast();
 	}
 
 	public boolean last() throws OLAPException {
-		throw new UnsupportedOperationException();
+		return navigator.last();
 	}
 
 	public boolean previous() throws OLAPException {
-		throw new UnsupportedOperationException();
+		return navigator.previous();
 	}
 
 	public boolean relative(int arg0) throws OLAPException {
-		throw new UnsupportedOperationException();
+		return navigator.relative(arg0);
 	}
 
 	public void setFetchDirection(int arg0) throws OLAPException {
@@ -115,11 +123,11 @@ abstract class CursorSupport extends QueryObjectSupport
 	}
 
 	public void setPosition(long position) throws OLAPException {
-		throw new UnsupportedOperationException();
+		navigator.setPosition(position);
 	}
 
 	public long getPosition() throws OLAPException {
-		throw new UnsupportedOperationException();
+		return navigator.getPosition();
 	}
 
 	public Object clone() {
@@ -257,7 +265,7 @@ abstract class CursorSupport extends QueryObjectSupport
 	}
 
 	public Object getObject(int arg0) throws OLAPException {
-		throw new UnsupportedOperationException();
+		return accessor.getObject(arg0);
 	}
 
 	public Object getObject(String arg0) throws OLAPException {

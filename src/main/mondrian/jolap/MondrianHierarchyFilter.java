@@ -11,6 +11,8 @@
 */
 package mondrian.jolap;
 
+import mondrian.olap.Exp;
+
 import javax.olap.query.dimensionfilters.HierarchyFilter;
 import javax.olap.query.enumerations.HierarchyFilterType;
 import javax.olap.OLAPException;
@@ -31,6 +33,17 @@ class MondrianHierarchyFilter extends MondrianDimensionFilter
 	public MondrianHierarchyFilter(MondrianDimensionStepManager manager) {
 		super(manager);
 	}
+
+	Exp convert(Exp exp) throws OLAPException {
+		Exp newExp = _convert();
+		return combine(exp, newExp);
+	}
+
+	private Exp _convert() throws OLAPException {
+		throw new UnsupportedOperationException();
+	}
+	
+	// object model methods
 
 	public HierarchyFilterType getHierarchyFilterType() throws OLAPException {
 		return hierarchyFilterType;

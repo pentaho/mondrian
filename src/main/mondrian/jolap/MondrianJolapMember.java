@@ -26,6 +26,8 @@ import java.util.Collection;
  * @version $Id$
  **/
 class MondrianJolapMember extends ClassifierSupport implements Member {
+	mondrian.olap.Member member;
+	
 	public MondrianJolapMember(Dimension dimension) {
 	}
 
@@ -44,7 +46,7 @@ class MondrianJolapMember extends ClassifierSupport implements Member {
 	}
 
 	// Instance methods
-	
+
 	public void setClassifier(Classifier input) {
 		throw new UnsupportedOperationException();
 	}

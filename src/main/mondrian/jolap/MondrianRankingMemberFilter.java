@@ -11,9 +11,15 @@
 */
 package mondrian.jolap;
 
+import mondrian.olap.Exp;
+import mondrian.olap.FunCall;
+import mondrian.olap.Util;
+import mondrian.olap.Literal;
+
 import javax.olap.OLAPException;
 import javax.olap.query.dimensionfilters.RankingMemberFilter;
 import javax.olap.query.enumerations.RankingType;
+import javax.olap.query.enumerations.RankingTypeEnum;
 
 /**
  * A <code>MondrianRankingMemberFilter</code> is ...
@@ -32,6 +38,32 @@ class MondrianRankingMemberFilter extends MondrianDataBasedMemberFilter
 
 	public MondrianRankingMemberFilter(MondrianDimensionStepManager manager) {
 		super(manager);
+	}
+
+	Exp convert(Exp exp) throws OLAPException {
+		Exp newExp = _convert(exp);
+		return combine(exp, newExp);
+	}
+
+	Exp _convert(Exp exp) throws OLAPException {
+		if (type == RankingTypeEnum.BOTTOM) {
+			if (bottomPercent.booleanValue()) {
+				return new FunCall("BottomPercent", new Exp[] {exp, Literal.create(bottom)});
+			} else {
+				return new FunCall("Bottom", new Exp[] {exp, Literal.create(bottom)});
+			}
+		} else if (type == RankingTypeEnum.TOP) {
+			if (topPercent.booleanValue()) {
+				return new FunCall("TopPercent", new Exp[] {exp, Literal.create(top)});
+			} else {
+				return new FunCall("Top", new Exp[] {exp, Literal.create(top)});
+			}
+		} else if (type == RankingTypeEnum.TOPBOTTOM) {
+			throw new UnsupportedOperationException();
+			// todo: Implement new functions TopCountBottomPercent etc.
+		} else {
+			throw Util.newInternal("Unknown ranking type " + type);
+		}
 	}
 
 	public Integer getTop() throws OLAPException {

@@ -11,6 +11,8 @@
 */
 package mondrian.jolap;
 
+import mondrian.olap.Exp;
+
 import javax.olap.OLAPException;
 import javax.olap.metadata.Level;
 import javax.olap.query.dimensionfilters.LevelFilter;
@@ -29,6 +31,17 @@ class MondrianLevelFilter extends MondrianDimensionFilter
 	public MondrianLevelFilter(MondrianDimensionStepManager manager) {
 		super(manager);
 	}
+
+	Exp convert(Exp exp) throws OLAPException {
+		Exp newExp = _convert();
+		return combine(exp, newExp);
+	}
+
+	private Exp _convert() throws OLAPException {
+		throw new UnsupportedOperationException();
+	}
+	
+	// object model methods
 
 	public void setLevel(Level input) throws OLAPException {
 		this.level = input;

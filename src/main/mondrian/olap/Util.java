@@ -341,7 +341,7 @@ public class Util extends mondrian.xom.XOMUtil
 			String sMsg = getErrorMessage(e);
 			v.addElement(sMsg);
 			if (e instanceof ChainableThrowable) {
-				e = ((ChainableThrowable) e).getCause();
+				e = e.getCause();
 			} else {
 				e = null;
 			}

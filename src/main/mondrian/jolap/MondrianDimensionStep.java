@@ -11,9 +11,14 @@
 */
 package mondrian.jolap;
 
+import mondrian.olap.Exp;
+import mondrian.olap.Util;
+
 import javax.olap.query.querycoremodel.DimensionStep;
 import javax.olap.query.querycoremodel.DimensionStepManager;
 import javax.olap.query.querycoremodel.CompoundDimensionStep;
+import javax.olap.query.enumerations.DimensionStepType;
+import javax.olap.query.enumerations.DimensionStepTypeEnum;
 import javax.olap.OLAPException;
 
 /**
@@ -23,12 +28,48 @@ import javax.olap.OLAPException;
  * @since Dec 24, 2002
  * @version $Id$
  **/
-class MondrianDimensionStep extends QueryObjectSupport implements DimensionStep {
+abstract class MondrianDimensionStep extends QueryObjectSupport implements DimensionStep {
 	private MondrianDimensionStepManager manager;
 
 	MondrianDimensionStep(MondrianDimensionStepManager manager) {
 		super(true);
 		this.manager = manager;
+	}
+
+	/** Converts this step into a Mondrian expression, taking <code>exp</code>
+	 * as its input. **/
+	abstract Exp convert(Exp exp) throws OLAPException;
+
+	/** Factory method. **/
+	static DimensionStep create(
+			MondrianDimensionStepManager stepManager, DimensionStepType stepType) {
+		if (stepType == DimensionStepTypeEnum.ATTRIBUTEFILTER) {
+			return new MondrianAttributeFilter(stepManager);
+		} else if (stepType == DimensionStepTypeEnum.ATTRIBUTESORT) {
+			throw new UnsupportedOperationException();
+		} else if (stepType == DimensionStepTypeEnum.DATABASEDMEMBERFILTER) {
+			throw new UnsupportedOperationException();
+		} else if (stepType == DimensionStepTypeEnum.DATABASEDSORT) {
+			throw new UnsupportedOperationException();
+		} else if (stepType == DimensionStepTypeEnum.DRILLFILTER) {
+			return new MondrianDrillFilter(stepManager);
+		} else if (stepType == DimensionStepTypeEnum.EXCEPTIONMEMBERFILTER) {
+			return new MondrianExceptionMemberFilter(stepManager);
+		} else if (stepType == DimensionStepTypeEnum.HIERARCHYFILTER) {
+			return new MondrianHierarchyFilter(stepManager);
+		} else if (stepType == DimensionStepTypeEnum.HIERARCHICALSORT) {
+			return new MondrianHierarchyFilter(stepManager);
+		} else if (stepType == DimensionStepTypeEnum.LEVELFILTER) {
+			return new MondrianLevelFilter(stepManager);
+		} else if (stepType == DimensionStepTypeEnum.MEMBERLISTFILTER) {
+			throw new UnsupportedOperationException();
+		} else if (stepType == DimensionStepTypeEnum.RANKINGMEMBERFILTER) {
+			return new MondrianRankingMemberFilter(stepManager);
+		} else if (stepType == DimensionStepTypeEnum.SINGLEMEMBERFILTER) {
+			throw new UnsupportedOperationException();
+		} else {
+			throw Util.newInternal("Unknown DimensionStepType " + stepType);
+		}
 	}
 
 	public DimensionStepManager getDimensionStepManager() throws OLAPException {

@@ -11,6 +11,8 @@
 */
 package mondrian.jolap;
 
+import mondrian.olap.*;
+
 import javax.olap.OLAPException;
 import javax.olap.cursor.CubeCursor;
 import javax.olap.cursor.EdgeCursor;
@@ -36,14 +38,22 @@ class MondrianCubeCursor extends CursorSupport implements CubeCursor {
 	}
 
 	MondrianCubeCursor(MondrianCubeView cubeView) throws OLAPException {
+		super(null, null);
 		this.cubeView = cubeView;
+		Query query = new Converter().createQuery(cubeView);
+		Result result = query.getConnection().execute(query);
+		Axis slicerAxis = result.getSlicerAxis();
+		Util.assertTrue(cubeView.getPageEdge().size() == 1);
 		for (Iterator pageEdges = cubeView.getPageEdge().iterator(); pageEdges.hasNext();) {
 			MondrianEdgeView edgeView = (MondrianEdgeView) pageEdges.next();
-			addPageEdge(new MondrianEdgeCursor(this, true, edgeView));
+			addPageEdge(new MondrianEdgeCursor(this, true, edgeView, slicerAxis));
 		}
+		Axis[] axes = result.getAxes();
+		int axisOffset = 0;
+		Util.assertTrue(cubeView.getOrdinateEdge().size() == axes.length);
 		for (Iterator ordinateEdges = cubeView.getOrdinateEdge().iterator(); ordinateEdges.hasNext();) {
 			MondrianEdgeView edgeView = (MondrianEdgeView) ordinateEdges.next();
-			addOrdinateEdge(new MondrianEdgeCursor(this, false, edgeView));
+			addOrdinateEdge(new MondrianEdgeCursor(this, false, edgeView, axes[axisOffset++]));
 		}
 	}
 

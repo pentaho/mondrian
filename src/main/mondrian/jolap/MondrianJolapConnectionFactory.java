@@ -14,6 +14,7 @@ package mondrian.jolap;
 import mondrian.olap.DriverManager;
 import mondrian.olap.Hierarchy;
 import mondrian.olap.Util;
+import mondrian.olap.Dimension;
 import mondrian.util.BarfingInvocationHandler;
 
 import javax.jmi.reflect.RefPackage;
@@ -22,6 +23,7 @@ import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
 import javax.olap.OLAPException;
 import javax.olap.metadata.Schema;
+import javax.olap.metadata.Cube;
 import javax.olap.query.querycoremodel.CubeView;
 import javax.olap.query.querycoremodel.DimensionView;
 import javax.olap.query.querycoremodel.EdgeView;
@@ -60,8 +62,9 @@ public class MondrianJolapConnectionFactory extends RefObjectSupport
 		propertyList.put("Jdbc", "jdbc:odbc:MondrianFoodMart");
 		propertyList.put("Catalog", "file:///e:/mondrian/demo/FoodMart.xml");
 		propertyList.put("JdbcDrivers", "sun.jdbc.odbc.JdbcOdbcDriver,oracle.jdbc.OracleDriver,com.mysql.jdbc.Driver");
+		final boolean fresh = false;
 		mondrian.olap.Connection mondrianConnection =
-				DriverManager.getConnection(propertyList, true);
+				DriverManager.getConnection(propertyList, fresh);
 		return new MondrianJolapConnection(mondrianConnection);
 	}
 
@@ -138,7 +141,7 @@ class MondrianJolapConnectionSpec implements ConnectionSpec {
 }
 
 class MondrianJolapConnection extends RefObjectSupport implements Connection {
-	private mondrian.olap.Connection connection;
+	mondrian.olap.Connection connection;
 
 	MondrianJolapConnection(mondrian.olap.Connection connection) {
 		this.connection = connection;
@@ -168,20 +171,33 @@ class MondrianJolapConnection extends RefObjectSupport implements Connection {
 	}
 
 	public List getDimensions() throws OLAPException {
-		final Hierarchy[] sharedHierarchies = connection.getSchema().getSharedHierarchies();
+		final mondrian.olap.Schema schema = connection.getSchema();
+		final Hierarchy[] sharedHierarchies = schema.getSharedHierarchies();
 		final ArrayList list = new ArrayList();
 		for (int i = 0; i < sharedHierarchies.length; i++) {
-			list.add(new MondrianJolapDimension(getCurrentSchema(), sharedHierarchies[i].getDimension()));
+			list.add(new MondrianJolapDimension(
+					getCurrentSchema(), sharedHierarchies[i].getDimension()));
 		}
 		return list;
 	}
 
 	public List getCubes() throws OLAPException {
-		throw new UnsupportedOperationException();
+		final mondrian.olap.Schema schema = connection.getSchema();
+		final mondrian.olap.Cube[] cubes = schema.getCubes();
+		final ArrayList list = new ArrayList();
+		for (int i = 0; i < cubes.length; i++) {
+			mondrian.olap.Cube cube = cubes[i];
+			list.add(new MondrianJolapCube(getCurrentSchema(), cube));
+		}
+		return list;
 	}
 
 	public CubeView createCubeView() throws OLAPException {
-		return new MondrianCubeView();
+		return createCubeView(null);
+	}
+
+	public CubeView createCubeView(Cube cube) throws OLAPException {
+		return new MondrianCubeView(this, cube);
 	}
 
 	public DimensionView createDimensionView() throws OLAPException {

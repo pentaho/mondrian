@@ -30,7 +30,7 @@ import java.util.Collection;
  * @version $Id$
  **/
 class MondrianJolapDimension extends ClassifierSupport implements javax.olap.metadata.Dimension {
-	private Dimension dimension;
+	Dimension dimension;
 	private RelationshipList hierarchy = new RelationshipList(Meta.hierarchy);
 	private RelationshipList memberSelection = new RelationshipList(Meta.memberSelection);
 	private RelationshipList cubeDimensionAssociation = new RelationshipList(Meta.cubeDimensionAssociation);

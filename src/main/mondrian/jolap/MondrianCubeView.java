@@ -11,14 +11,14 @@
 */
 package mondrian.jolap;
 
-import javax.olap.query.querycoremodel.CubeView;
-import javax.olap.query.querycoremodel.EdgeView;
-import javax.olap.query.querycoremodel.Ordinate;
-import javax.olap.query.querycoremodel.DimensionView;
-import javax.olap.query.calculatedmembers.CalculationRelationship;
 import javax.olap.OLAPException;
 import javax.olap.cursor.CubeCursor;
-import javax.olap.cursor.EdgeCursor;
+import javax.olap.metadata.Cube;
+import javax.olap.query.calculatedmembers.CalculationRelationship;
+import javax.olap.query.querycoremodel.CubeView;
+import javax.olap.query.querycoremodel.DimensionView;
+import javax.olap.query.querycoremodel.EdgeView;
+import javax.olap.query.querycoremodel.Ordinate;
 import java.util.Collection;
 import java.util.List;
 
@@ -34,6 +34,8 @@ class MondrianCubeView extends QueryObjectSupport implements CubeView {
 	private OrderedRelationshipList ordinateEdge = new OrderedRelationshipList(Meta.ordinateEdge);
 	private OrderedRelationshipList defaultOrdinatePrecedence = new OrderedRelationshipList(Meta.defaultOrdinatePrecedence);
 	private RelationshipList cubeCursor = new RelationshipList(Meta.cubeCursor);
+	MondrianJolapConnection connection;
+	Cube cube;
 
 	static abstract class Meta {
 		static final Relationship pageEdge = new Relationship(MondrianCubeCursor.class, "pageEdge", EdgeView.class, "pageOwner");
@@ -42,8 +44,10 @@ class MondrianCubeView extends QueryObjectSupport implements CubeView {
 		public static Relationship cubeCursor = new Relationship(MondrianCubeView.class, "cubeCursor", CubeCursor.class);
 	}
 
-	public MondrianCubeView() {
+	public MondrianCubeView(MondrianJolapConnection connection, Cube cube) {
 		super(true);
+		this.connection = connection;
+		this.cube = cube;
 	}
 
 	public void setOrdinateEdge(Collection input) throws OLAPException {
@@ -135,15 +139,11 @@ class MondrianCubeView extends QueryObjectSupport implements CubeView {
 	}
 
 	public EdgeView createPageEdgeBefore(EdgeView member) throws OLAPException {
-		final MondrianEdgeView edgeView = new MondrianEdgeView(this, true);
-		pageEdge.addBefore(member, edgeView);
-		return edgeView;
+		return (EdgeView) pageEdge.addBefore(member, new MondrianEdgeView(this, true));
 	}
 
 	public EdgeView createPageEdgeAfter(EdgeView member) throws OLAPException {
-		final MondrianEdgeView edgeView = new MondrianEdgeView(this, true);
-		pageEdge.addAfter(member, edgeView);
-		return edgeView;
+		return (EdgeView) pageEdge.addAfter(member, new MondrianEdgeView(this, true));
 	}
 
 	public CalculationRelationship createCalculationRelationship() throws OLAPException {
