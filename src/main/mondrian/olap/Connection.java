@@ -52,6 +52,11 @@ public interface Connection {
 	 * Parses a query.
 	 **/
 	Query parseQuery(String s);
+
+	/**
+	 * Sets the privileges for the this connection.
+	 */
+	void setRole(Role role);
 }
 
 
