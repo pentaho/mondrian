@@ -85,8 +85,10 @@ demo/mysql/FoodMartData.sql"/>
     <pathelement location="${lib.dir}/javacup.jar"/>
     <pathelement location="${lib.dir}/mof.jar"/>
     <pathelement location="${lib.dir}/jmi.jar"/>
-    <pathelement location="${xalan.home}/bin/xalan.jar"/>
-    <pathelement location="${junit.home}/junit.jar"/>
+    <pathelement location="${lib.dir}/xalan.jar"/>
+    <pathelement location="${lib.dir}/junit.jar"/>
+    <pathelement location="${lib.dir}/xml-apis.jar"/>
+    <pathelement location="${lib.dir}/xercesImpl.jar"/>
     <!-- CLASSPATH must contain xml-apis.jar, xercesImpl.jar, javacup.jar -->
     <pathelement path="${env.CLASSPATH}"/>
     <!-- Weblogic must be after xml-apis.jar and xercesImpl.jar, because it
@@ -600,6 +602,13 @@ build mondrian.war as in the runtime environment.">
       <fileset dir="${catalina.home}/common/lib" includes="commons-dbcp.jar,commons-pool.jar,commons-collections.jar"/>
     </copy>
     
+  <extension id="junit.ext" extensionName="junit"/>
+  <jarlib-resolve property="junit.library" failOnError="false" checkExtension="false">
+    <extension refid="junit.ext"/>
+    <location location="${lib.dir}/junit.jar"/>
+    <url url="http://gump.covalent.net/jars/latest/junit/junit.jar" destfile="${lib.dir}/junit.jar"/>
+  </jarlib-resolve>
+  
   <extension id="commons-dbcp.ext" extensionName="org.apache.commons.dbcp"/>
   <jarlib-resolve property="commons-dbcp.library" failOnError="false" checkExtension="false">
     <extension refid="commons-dbcp.ext"/>
@@ -621,6 +630,26 @@ build mondrian.war as in the runtime environment.">
     <url url="http://gump.covalent.net/jars/latest/jakarta-commons/commons-collections.jar" destfile="${lib.dir}/commons-collections.jar"/>
   </jarlib-resolve>
 
+  <extension id="xalan.ext" extensionName="org.apache.xalan"/>
+  <jarlib-resolve property="xalan.library" failOnError="false" checkExtension="false">
+    <extension refid="xalan.ext"/>
+    <location location="${lib.dir}/xalan.jar"/>
+    <url url="http://gump.covalent.net/jars/latest/xml-xalan/xalan.jar" destfile="${lib.dir}/xalan.jar"/>
+  </jarlib-resolve>
+
+  <extension id="xml.ext" extensionName="org.xml"/>
+  <jarlib-resolve property="xml.library" failOnError="false" checkExtension="false">
+    <extension refid="xml.ext"/>
+    <location location="${lib.dir}/xml-apis.jar"/>
+    <url url="http://gump.covalent.net/jars/latest/xml-commons/xml-apis.jar" destfile="${lib.dir}/xml-apis.jar"/>
+  </jarlib-resolve>
+
+  <extension id="xerces.ext" extensionName="org.apache.xerces"/>
+  <jarlib-resolve property="xerces.library" failOnError="false" checkExtension="false">
+    <extension refid="xerces.ext"/>
+    <location location="${lib.dir}/xercesImpl.jar"/>
+    <url url="http://gump.covalent.net/jars/latest/xml-xerces2/xercesImpl.jar" destfile="${lib.dir}/xercesImpl.jar"/>
+  </jarlib-resolve>
 
   </target>
 
