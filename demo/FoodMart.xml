@@ -315,12 +315,31 @@ CONCAT(`customer`.`fname`, " ", `customer`.`lname`)
 </Cube>
 
 <VirtualCube name="Warehouse and Sales">
-	<VirtualCubeDimension name="Time"/>
+	<VirtualCubeDimension cubeName="Sales" name="Customers"/>
+	<VirtualCubeDimension cubeName="Sales" name="Education Level"/>
+	<VirtualCubeDimension cubeName="Sales" name="Gender"/>
+	<VirtualCubeDimension cubeName="Sales" name="Marital Status"/>
+	<VirtualCubeDimension name="Product"/>
+	<VirtualCubeDimension cubeName="Sales" name="Promotion Media"/>
+	<VirtualCubeDimension cubeName="Sales" name="Promotions"/>
 	<VirtualCubeDimension name="Store"/>
+	<VirtualCubeDimension name="Time"/>
+	<VirtualCubeDimension cubeName="Sales" name="Yearly Income"/>
 	<VirtualCubeDimension cubeName="Warehouse" name="Warehouse"/>
+	<VirtualCubeMeasure cubeName="Sales" name="[Measures].[Sales Count]"/>
+	<VirtualCubeMeasure cubeName="Sales" name="[Measures].[Store Cost]"/>
 	<VirtualCubeMeasure cubeName="Sales" name="[Measures].[Store Sales]"/>
 	<VirtualCubeMeasure cubeName="Sales" name="[Measures].[Unit Sales]"/>
+	<VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Store Invoice]"/>
+	<VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Supply Time]"/>
+	<VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Units Ordered]"/>
 	<VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Units Shipped]"/>
+	<VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Warehouse Cost]"/>
+	<VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Warehouse Profit]"/>
+	<VirtualCubeMeasure cubeName="Warehouse" name="[Measures].[Warehouse Sales]"/>
+<!--
+	<VirtualCubeMeasure cubeName="Sales" name="[Measures].[Store Sales Net]"/>
+  -->
 </VirtualCube>
 
 

@@ -855,14 +855,82 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"from [Warehouse and Sales]"));
 	}
 
-	public void _testVirtualCube() {
-		Util.discard(runQuery(
+	public void testVirtualCube() {
+		runQueryCheckResult(
 				// Note that Unit Sales is independent of Warehouse.
 				"select CrossJoin(" + nl +
 				"  {[Warehouse].DefaultMember, [Warehouse].[USA].children}," + nl +
-				"  {[Measures].[Unit Sales], [Measures].[Units Shipped]}) on columns," + nl +
+				"  {[Measures].[Unit Sales], [Measures].[Store Sales], [Measures].[Units Shipped]}) on columns," + nl +
 				" [Time].children on rows" + nl +
-				"from [Warehouse and Sales]"));
+				"from [Warehouse and Sales]",
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Warehouse].[All Warehouses], [Measures].[Unit Sales]}" + nl +
+                "{[Warehouse].[All Warehouses], [Measures].[Store Sales]}" + nl +
+                "{[Warehouse].[All Warehouses], [Measures].[Units Shipped]}" + nl +
+                "{[Warehouse].[All Warehouses].[USA].[CA], [Measures].[Unit Sales]}" + nl +
+                "{[Warehouse].[All Warehouses].[USA].[CA], [Measures].[Store Sales]}" + nl +
+                "{[Warehouse].[All Warehouses].[USA].[CA], [Measures].[Units Shipped]}" + nl +
+                "{[Warehouse].[All Warehouses].[USA].[OR], [Measures].[Unit Sales]}" + nl +
+                "{[Warehouse].[All Warehouses].[USA].[OR], [Measures].[Store Sales]}" + nl +
+                "{[Warehouse].[All Warehouses].[USA].[OR], [Measures].[Units Shipped]}" + nl +
+                "{[Warehouse].[All Warehouses].[USA].[WA], [Measures].[Unit Sales]}" + nl +
+                "{[Warehouse].[All Warehouses].[USA].[WA], [Measures].[Store Sales]}" + nl +
+                "{[Warehouse].[All Warehouses].[USA].[WA], [Measures].[Units Shipped]}" + nl +
+                "Axis #2:" + nl +
+                "{[Time].[1997].[Q1]}" + nl +
+                "{[Time].[1997].[Q2]}" + nl +
+                "{[Time].[1997].[Q3]}" + nl +
+                "{[Time].[1997].[Q4]}" + nl +
+                "Row #0: 66,291" + nl +
+                "Row #0: 139,628.35" + nl +
+                "Row #0: 50951.0" + nl +
+                "Row #0: (null)" + nl +
+                "Row #0: (null)" + nl +
+                "Row #0: 8539.0" + nl +
+                "Row #0: (null)" + nl +
+                "Row #0: (null)" + nl +
+                "Row #0: 7994.0" + nl +
+                "Row #0: (null)" + nl +
+                "Row #0: (null)" + nl +
+                "Row #0: 34418.0" + nl +
+                "Row #1: 62,610" + nl +
+                "Row #1: 132,666.27" + nl +
+                "Row #1: 49187.0" + nl +
+                "Row #1: (null)" + nl +
+                "Row #1: (null)" + nl +
+                "Row #1: 15726.0" + nl +
+                "Row #1: (null)" + nl +
+                "Row #1: (null)" + nl +
+                "Row #1: 7575.0" + nl +
+                "Row #1: (null)" + nl +
+                "Row #1: (null)" + nl +
+                "Row #1: 25886.0" + nl +
+                "Row #2: 65,848" + nl +
+                "Row #2: 140,271.89" + nl +
+                "Row #2: 57789.0" + nl +
+                "Row #2: (null)" + nl +
+                "Row #2: (null)" + nl +
+                "Row #2: 20821.0" + nl +
+                "Row #2: (null)" + nl +
+                "Row #2: (null)" + nl +
+                "Row #2: 8673.0" + nl +
+                "Row #2: (null)" + nl +
+                "Row #2: (null)" + nl +
+                "Row #2: 28295.0" + nl +
+                "Row #3: 72,024" + nl +
+                "Row #3: 152,671.62" + nl +
+                "Row #3: 49799.0" + nl +
+                "Row #3: (null)" + nl +
+                "Row #3: (null)" + nl +
+                "Row #3: 15791.0" + nl +
+                "Row #3: (null)" + nl +
+                "Row #3: (null)" + nl +
+                "Row #3: 16666.0" + nl +
+                "Row #3: (null)" + nl +
+                "Row #3: (null)" + nl +
+                "Row #3: 17342.0" + nl);
 	}
 
 	public void testUseDimensionAsShorthandForMember() {
