@@ -303,13 +303,48 @@ public class XmlaMediator {
                         "CellOrdinal", Integer.toString(cellOrdinal[0]++)});
                     final Cell cell = result.getCell(pos);
                     for (int j = 0; j < cellProps.length; j++) {
-                        final Object value = cell.getPropertyValue(cellPropLongs[j]);
+                        String cellPropLong = cellPropLongs[j];
+                        final Object value = 
+                            cell.getPropertyValue(cellPropLong);
                         if (value != null) {
                             saxHandler.startElement(cellProps[j]);
-                            saxHandler.characters(value.toString());
+                            String valueString = value.toString();
+
+                            // This is here because different JDBC drivers
+                            // use different Number classes to return
+                            // numeric values (Double vs BigDecimal) and
+                            // these have different toString() behavior.
+                            // If it contains a decimal point, then
+                            // strip off trailing '0's. After stripping off
+                            // the '0's, if there is nothing right of the
+                            // decimal point, then strip off decimal point.
+                            if (cellPropLong == Property.PROPERTY_VALUE &&
+                                   value instanceof Number) {
+                                int index = valueString.indexOf('.');
+                                if (index > 0) {
+                                    boolean found = false;
+                                    int p = valueString.length();
+                                    char c = valueString.charAt(p-1);
+                                    while (c == '0') {
+                                        found = true;
+                                        p--;
+                                        c = valueString.charAt(p-1);
+                                    }
+                                    if (c == '.') {
+                                        p--;
+                                    }
+                                    if (found) {
+                                        valueString = 
+                                            valueString.substring(0, p);
+                                    }
+                                }
+                            }
+
+                            saxHandler.characters(valueString);
                             saxHandler.endElement();
                         }
                     }
+
                     saxHandler.endElement(); // Cell
                 } else {
                     recurse(saxHandler, pos, axis - 1, cellOrdinal);

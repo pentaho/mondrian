@@ -59,9 +59,15 @@ public class XmlaTest extends TestCase {
             final URL url = Util.toURL(file);
             catalogName = url.toString();
         }
+
+        String driver = MondrianProperties.instance().getJdbcDrivers();
+        String url = MondrianProperties.instance().getFoodmartJdbcURL();
+
         dataSource =
-                "Provider=Mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;Catalog=" +
-                catalogName + ";JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver;";
+           "Provider=Mondrian;"
+           + "Jdbc=" + url + ";"
+           + "Catalog=" + catalogName + ";"
+           + "JdbcDrivers=" + driver +";";
     }
 
     /**
@@ -1180,7 +1186,7 @@ public class XmlaTest extends TestCase {
                 "    </Axes>" + nl +
                 "    <CellData>" + nl +
                 "      <Cell CellOrdinal=\"0\">" + nl +
-                "        <Value>266773.0</Value>" + nl +
+                "        <Value>266773</Value>" + nl +
                 "        <FmtValue>266,773</FmtValue>" + nl +
                 "        <FormatString>Standard</FormatString>" + nl +
                 "      </Cell>" + nl +
@@ -1190,7 +1196,7 @@ public class XmlaTest extends TestCase {
                 "        <FormatString>#,###.00</FormatString>" + nl +
                 "      </Cell>" + nl +
                 "      <Cell CellOrdinal=\"2\">" + nl +
-                "        <Value>565238.1300</Value>" + nl +
+                "        <Value>565238.13</Value>" + nl +
                 "        <FmtValue>565,238.13</FmtValue>" + nl +
                 "        <FormatString>#,###.00</FormatString>" + nl +
                 "      </Cell>" + nl +
@@ -1501,7 +1507,7 @@ public class XmlaTest extends TestCase {
                 "        <FormatString>#,#</FormatString>" + nl +
                 "      </Cell>" + nl +
                 "      <Cell CellOrdinal=\"4\">" + nl +
-                "        <Value>11600.2800</Value>" + nl +
+                "        <Value>11600.28</Value>" + nl +
                 "        <FmtValue>$11,600.28</FmtValue>" + nl +
                 "        <FormatString>Currency</FormatString>" + nl +
                 "      </Cell>" + nl +
@@ -1531,7 +1537,7 @@ public class XmlaTest extends TestCase {
                 "        <FormatString>#,#</FormatString>" + nl +
                 "      </Cell>" + nl +
                 "      <Cell CellOrdinal=\"10\">" + nl +
-                "        <Value>5185.0800</Value>" + nl +
+                "        <Value>5185.08</Value>" + nl +
                 "        <FmtValue>$5,185.08</FmtValue>" + nl +
                 "        <FormatString>Currency</FormatString>" + nl +
                 "      </Cell>" + nl +
@@ -1561,7 +1567,7 @@ public class XmlaTest extends TestCase {
                 "        <FormatString>#,#</FormatString>" + nl +
                 "      </Cell>" + nl +
                 "      <Cell CellOrdinal=\"16\">" + nl +
-                "        <Value>11239.5600</Value>" + nl +
+                "        <Value>11239.56</Value>" + nl +
                 "        <FmtValue>$11,239.56</FmtValue>" + nl +
                 "        <FormatString>Currency</FormatString>" + nl +
                 "      </Cell>" + nl +
