@@ -218,6 +218,32 @@ class Enumeration extends EnumeratedValues {
                     new Literal("DBLITERAL_USER_NAME", DBLITERAL_USER_NAME, null, 0, null, null, null),
                 });
     }
+
+    public static class TreeOp extends EnumeratedValues.BasicValue {
+        TreeOp(String name, int ordinal, String description) {
+            super(name, ordinal, description);
+        }
+
+        public static final TreeOp Children = new TreeOp("MDTREEOP_CHILDREN", 1, "Returns only the immediate children");
+        public static final TreeOp Siblings = new TreeOp("MDTREEOP_SIBLINGS", 2, "Returns members on the same level");
+        public static final TreeOp Parent = new TreeOp("MDTREEOP_PARENT", 4, "Returns only the immediate parent");
+        public static final TreeOp Self = new TreeOp("MDTREEOP_SELF", 8, "Returns the immediate member in the list of returned rows");
+        public static final TreeOp Descendants = new TreeOp("MDTREEOP_DESCENDANTS", 16, "Returns all descendants");
+        public static final TreeOp Ancestors = new TreeOp("MDTREEOP_ANCESTORS", 32, "Returns all ancestors");
+        static final Enumeration enumeration = new Enumeration(
+                "TREE_OP",
+                "Bitmap which controls which relatives of a member are returned",
+                RowsetDefinition.Type.Integer,
+                new TreeOp[] {
+                    Children,
+                    Siblings,
+                    Parent,
+                    Self,
+                    Descendants,
+                    Ancestors,
+                }
+        );
+    }
 }
 
 // End Enumeration.java

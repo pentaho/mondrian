@@ -39,11 +39,11 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
     public static final int MDSCHEMA_DIMENSIONS = 13;
     public static final int MDSCHEMA_FUNCTIONS = 14;
     public static final int MDSCHEMA_HIERARCHIES = 15;
-    public static final int MDSCHEMA_MEASURES = 16;
-    public static final int MDSCHEMA_MEMBERS = 17;
-    public static final int MDSCHEMA_PROPERTIES = 18;
-    public static final int MDSCHEMA_SETS = 19;
-    public static final int MDSCHEMA_LEVELS = 20;
+    public static final int MDSCHEMA_LEVELS = 16;
+    public static final int MDSCHEMA_MEASURES = 17;
+    public static final int MDSCHEMA_MEMBERS = 18;
+    public static final int MDSCHEMA_PROPERTIES = 19;
+    public static final int MDSCHEMA_SETS = 20;
     public static final int OTHER = 21;
     public static final EnumeratedValues enumeration = new EnumeratedValues(
             new RowsetDefinition[] {
@@ -139,7 +139,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
     static class Column {
         final String name;
         final Type type;
-        final Enumeration enumeratedType;
+        final Enumeration enumeration;
         final String description;
         final boolean restriction;
         final boolean nullable;
@@ -162,7 +162,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             Util.assertPrecondition((type == Type.Enumeration || type == Type.EnumerationArray || type == Type.EnumString) == (enumeratedType != null), "(type == Type.Enumeration || type == Type.EnumerationArray || type == Type.EnumString) == (enumeratedType != null)");
             this.name = name;
             this.type = type;
-            this.enumeratedType = enumeratedType;
+            this.enumeration = enumeratedType;
             this.description = description;
             this.restriction = restriction;
             this.nullable = nullable;
@@ -185,6 +185,13 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             } catch (IllegalAccessException e) {
                 throw Util.newInternal(e, "Error while accessing rowset column " + name);
             }
+        }
+
+        public String getColumnType() {
+            if (type.isEnum()) {
+                return enumeration.type.columnType;
+            }
+            return type.columnType;
         }
     }
 
@@ -291,7 +298,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 if (column.restriction) {
                     restrictionList.add(
                             new Rowset.XmlElement(column.name, new String[] {
-                                "type", column.type.columnType}));
+                                "type", column.getColumnType()}));
                 }
             }
             final Rowset.XmlElement[] restrictions = (Rowset.XmlElement[])
@@ -421,8 +428,8 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                         RowsetDefinition.enumeration.getValue(rowsetName);
                 for (int j = 0; j < rowsetDefinition.columnDefinitions.length; j++) {
                     Column column = rowsetDefinition.columnDefinitions[j];
-                    if (column.enumeratedType != null) {
-                        enumeratorSet.add(column.enumeratedType);
+                    if (column.enumeration != null) {
+                        enumeratorSet.add(column.enumeration);
                     }
                 }
             }
@@ -814,7 +821,22 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         };
 
         public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
+            final Connection connection = XmlaMediator.getConnection(properties);
+            final Cube[] cubes = connection.getSchema().getCubes();
+            for (int i = 0; i < cubes.length; i++) {
+                Cube cube = cubes[i];
+                final Dimension[] dimensions = cube.getDimensions();
+                for (int j = 0; j < dimensions.length; j++) {
+                    Dimension dimension = dimensions[j];
+                    Row row = new Row();
+                    row.set(CatalogName.name, connection.getCatalogName());
+                    row.set(SchemaName.name, cube.getSchema().getName());
+                    row.set(CubeName.name, cube.getName());
+                    row.set(DimensionName.name, dimension.getName());
+                    row.set(DimensionUniqueName.name, dimension.getUniqueName());
+                    emit(row, saxHandler);
+                }
+            }
         }
     }
 
@@ -869,7 +891,27 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         };
 
         public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
+            final Connection connection = XmlaMediator.getConnection(properties);
+            final Cube[] cubes = connection.getSchema().getCubes();
+            for (int i = 0; i < cubes.length; i++) {
+                Cube cube = cubes[i];
+                final Dimension[] dimensions = cube.getDimensions();
+                for (int j = 0; j < dimensions.length; j++) {
+                    Dimension dimension = dimensions[j];
+                    final Hierarchy[] hierarchies = dimension.getHierarchies();
+                    for (int k = 0; k < hierarchies.length; k++) {
+                        Hierarchy hierarchy = hierarchies[k];
+                        Row row = new Row();
+                        row.set(CatalogName.name, connection.getCatalogName());
+                        row.set(SchemaName.name, cube.getSchema().getName());
+                        row.set(CubeName.name, cube.getName());
+                        row.set(DimensionUniqueName.name, dimension.getUniqueName());
+                        row.set(HierarchyName.name, hierarchy.getName());
+                        row.set(HierarchyUniqueName.name, hierarchy.getUniqueName());
+                        emit(row, saxHandler);
+                    }
+                }
+            }
         }
     }
 
@@ -896,12 +938,37 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     LevelUniqueName,
                 }) {
             public Rowset getRowset(HashMap restrictions, Properties properties) {
-                return new MdschemaHierarchiesRowset(restrictions, properties);
+                return new MdschemaLevelsRowset(restrictions, properties);
             }
         };
 
         public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
+            final Connection connection = XmlaMediator.getConnection(properties);
+            final Cube[] cubes = connection.getSchema().getCubes();
+            for (int i = 0; i < cubes.length; i++) {
+                Cube cube = cubes[i];
+                final Dimension[] dimensions = cube.getDimensions();
+                for (int j = 0; j < dimensions.length; j++) {
+                    Dimension dimension = dimensions[j];
+                    final Hierarchy[] hierarchies = dimension.getHierarchies();
+                    for (int k = 0; k < hierarchies.length; k++) {
+                        Hierarchy hierarchy = hierarchies[k];
+                        final Level[] levels = hierarchy.getLevels();
+                        for (int m = 0; m < levels.length; m++) {
+                            Level level = levels[m];
+                            Row row = new Row();
+                            row.set(CatalogName.name, connection.getCatalogName());
+                            row.set(SchemaName.name, cube.getSchema().getName());
+                            row.set(CubeName.name, cube.getName());
+                            row.set(DimensionUniqueName.name, dimension.getUniqueName());
+                            row.set(HierarchyUniqueName.name, hierarchy.getUniqueName());
+                            row.set(LevelName.name, level.getName());
+                            row.set(LevelUniqueName.name, level.getUniqueName());
+                            emit(row, saxHandler);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -949,7 +1016,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private static final Column MemberUniqueName = new Column("MEMBER_UNIQUE_NAME", Type.String, null, true, false, null);
         private static final Column MemberCaption = new Column("MEMBER_CAPTION", Type.String, null, true, false, null);
         private static final Column MemberType = new Column("MEMBER_TYPE", Type.Integer, null, true, false, null);
-        private static final Column TreeOp = new Column("TREE_OP", Type.Integer, null, true, false, null);
+        private static final Column TreeOp = new Column("TREE_OP", Type.Enumeration, Enumeration.TreeOp.enumeration, true, true, null);
         public static final RowsetDefinition definition = new RowsetDefinition(
                 "MDSCHEMA_MEMBERS", MDSCHEMA_MEMBERS, null, new Column[] {
                     CatalogName,
@@ -971,7 +1038,174 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         };
 
         public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
+            final Connection connection = XmlaMediator.getConnection(properties);
+            final Cube[] cubes = connection.getSchema().getCubes();
+            for (int i = 0; i < cubes.length; i++) {
+                Cube cube = cubes[i];
+                if (!passesRestriction(CubeName, cube.getName())) {
+                    continue;
+                }
+                if (isRestricted(MemberUniqueName)) {
+                    final String memberUniqueName = (String)
+                            restrictions.get(MemberUniqueName.name);
+                    final String[] nameParts = Util.explode(memberUniqueName);
+                    Member member = cube.getSchemaReader(null).
+                            getMemberByUniqueName(nameParts, false);
+                    if (member != null) {
+                        String treeOp0 = (String) restrictions.get(TreeOp.name);
+                        int treeOp = Enumeration.TreeOp.Self.ordinal_;
+                        if (treeOp0 != null) {
+                            try {
+                                treeOp = Integer.parseInt(treeOp0);
+                            } catch (NumberFormatException e) {
+                                // stay with default value
+                            }
+                        }
+                        unparseMember(connection, cube, member, saxHandler, treeOp);
+                    }
+                    continue;
+                }
+                final Dimension[] dimensions = cube.getDimensions();
+                for (int j = 0; j < dimensions.length; j++) {
+                    Dimension dimension = dimensions[j];
+                    if (!passesRestriction(DimensionUniqueName,
+                            dimension.getUniqueName())) {
+                        continue;
+                    }
+                    final Hierarchy[] hierarchies = dimension.getHierarchies();
+                    for (int k = 0; k < hierarchies.length; k++) {
+                        Hierarchy hierarchy = hierarchies[k];
+                        if (!passesRestriction(HierarchyUniqueName,
+                                hierarchy.getUniqueName())) {
+                            continue;
+                        }
+                        final Member[] rootMembers =
+                                connection.getSchemaReader().
+                                getHierarchyRootMembers(hierarchy);
+                        for (int m = 0; m < rootMembers.length; m++) {
+                            Member member = rootMembers[m];
+                            // Note that we ignore treeOp, because
+                            // MemberUniqueName was not restricted, and
+                            // therefore we have nothing to work relative to.
+                            // We supply our own treeOp expression here, for
+                            // our own devious purposes.
+                            unparseMember(connection, cube, member, saxHandler,
+                                    Enumeration.TreeOp.Self.ordinal_ |
+                                    Enumeration.TreeOp.Descendants.ordinal_);
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * Returns whether a value contains all of the bits in a mask.
+         */
+        private static boolean mask(int value, int mask) {
+            return (value & mask) == mask;
+        }
+
+        /**
+         * Outputs a member and, depending upon the <code>treeOp</code>
+         * parameter, other relatives of the member. This method recursively
+         * invokes itself to walk up, down, or across the hierarchy.
+         */
+        private void unparseMember(final Connection connection, Cube cube,
+                Member member, SAXHandler saxHandler,
+                int treeOp) throws SAXException {
+            // Visit node itself.
+            if (mask(treeOp, Enumeration.TreeOp.Self.ordinal_)) {
+                emitMember(member, connection, cube, saxHandler);
+            }
+            // Visit node's siblings (not including itself).
+            if (mask(treeOp, Enumeration.TreeOp.Siblings.ordinal_)) {
+                final Member parent =
+                        connection.getSchemaReader().getMemberParent(member);
+                final Member[] siblings;
+                if (parent == null) {
+                    siblings = connection.getSchemaReader().
+                            getHierarchyRootMembers(member.getHierarchy());
+                } else {
+                    siblings = connection.getSchemaReader().
+                            getMemberChildren(parent);
+                }
+                for (int i = 0; i < siblings.length; i++) {
+                    Member sibling = siblings[i];
+                    if (sibling == member) {
+                        continue;
+                    }
+                    unparseMember(connection, cube, sibling, saxHandler,
+                            Enumeration.TreeOp.Self.ordinal_);
+                }
+            }
+            // Visit node's descendants or its immediate children, but not both.
+            if (mask(treeOp, Enumeration.TreeOp.Descendants.ordinal_)) {
+                final Member[] children =
+                        connection.getSchemaReader().getMemberChildren(member);
+                for (int i = 0; i < children.length; i++) {
+                    Member child = children[i];
+                    unparseMember(connection, cube, child, saxHandler,
+                            Enumeration.TreeOp.Self.ordinal_ |
+                            Enumeration.TreeOp.Descendants.ordinal_);
+                }
+            } else if (mask(treeOp, Enumeration.TreeOp.Children.ordinal_)) {
+                final Member[] children =
+                        connection.getSchemaReader().getMemberChildren(member);
+                for (int i = 0; i < children.length; i++) {
+                    Member child = children[i];
+                    unparseMember(connection, cube, child, saxHandler,
+                            Enumeration.TreeOp.Self.ordinal_);
+                }
+            }
+            // Visit node's ancestors or its immediate parent, but not both.
+            if (mask(treeOp, Enumeration.TreeOp.Ancestors.ordinal_)) {
+                final Member parent =
+                        connection.getSchemaReader().getMemberParent(member);
+                if (parent != null) {
+                    unparseMember(connection, cube, parent, saxHandler,
+                            Enumeration.TreeOp.Self.ordinal_ |
+                            Enumeration.TreeOp.Ancestors.ordinal_);
+                }
+            } else if (mask(treeOp, Enumeration.TreeOp.Parent.ordinal_)) {
+                final Member parent =
+                        connection.getSchemaReader().getMemberParent(member);
+                if (parent != null) {
+                    unparseMember(connection, cube, parent, saxHandler,
+                            Enumeration.TreeOp.Self.ordinal_);
+                }
+            }
+        }
+
+        protected ArrayList pruneRestrictions(ArrayList list) {
+            // If they've restricted TreeOp, we don't want to literally filter
+            // the result on TreeOp (because it's not an output column) or
+            // on MemberUniqueName (because TreeOp will have caused us to
+            // generate other members than the one asked for).
+            if (list.contains(TreeOp)) {
+                list.remove(TreeOp);
+                list.remove(MemberUniqueName);
+            }
+            return list;
+        }
+
+        private void emitMember(Member member, final Connection connection,
+                Cube cube, SAXHandler saxHandler) throws SAXException {
+            final Level level = member.getLevel();
+            final Hierarchy hierarchy = level.getHierarchy();
+            final Dimension dimension = hierarchy.getDimension();
+            Rowset.Row row = new Rowset.Row();
+            row.set(CatalogName.name, connection.getCatalogName());
+            row.set(SchemaName.name, cube.getSchema().getName());
+            row.set(CubeName.name, cube.getName());
+            row.set(DimensionUniqueName.name, dimension.getUniqueName());
+            row.set(HierarchyUniqueName.name, hierarchy.getUniqueName());
+            row.set(LevelUniqueName.name, level.getName());
+            row.set(LevelNumber.name, level.getDepth());
+            row.set(MemberName.name, member.getName());
+            row.set(MemberUniqueName.name, member.getUniqueName());
+            row.set(MemberCaption.name, member.getCaption());
+            row.set(MemberType.name, member.getType());
+            emit(row, saxHandler);
         }
     }
 

@@ -75,6 +75,7 @@ abstract class Rowset {
             }
             list.add(column);
         }
+        list = pruneRestrictions(list);
         this.restrictedColumns = (RowsetDefinition.Column[]) list.toArray(
                 new RowsetDefinition.Column[0]);
         for (Iterator propertiesIter = properties.keySet().iterator();
@@ -88,6 +89,10 @@ abstract class Rowset {
             final String propertyValue = properties.getProperty(propertyName);
             setProperty(propertyDef, propertyValue);
         }
+    }
+
+    protected ArrayList pruneRestrictions(ArrayList list) {
+        return list;
     }
 
     /**
@@ -258,6 +263,24 @@ abstract class Rowset {
             emit(value, saxHandler);
         }
     }
+
+    /**
+     * Returns whether a column value matches any restrictions placed on it.
+     * If there are no restrictions, always returns true.
+     */
+    protected boolean passesRestriction(RowsetDefinition.Column column,
+            String value) {
+        final Object requiredValue = restrictions.get(column.name);
+        if (requiredValue == null) {
+            return true;
+        }
+        return requiredValue.equals(value);
+    }
+
+    protected boolean isRestricted(RowsetDefinition.Column column) {
+        return restrictions.get(column.name) != null;
+    }
+
 
     /**
      * A set of name/value pairs, which can be output using {@link #emit}.

@@ -361,6 +361,318 @@ public class XmlaTest extends TestCase {
                 "(?s).*Rowset 'MDSCHEMA_CUBES' does not contain column 'NON_EXISTENT_COLUMN'.*");
     }
 
+    public void testDiscoverDimensions() {
+        assertRequestMatches(wrap(
+                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "    <RequestType>MDSCHEMA_DIMENSIONS</RequestType>" + nl +
+                "    <Restrictions>" + nl +
+                "        <RestrictionList>" + nl +
+                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
+                "        </RestrictionList>" + nl +
+                "    </Restrictions>" + nl +
+                "    <Properties>" + nl +
+                "        <PropertyList>" + nl +
+                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "            <Catalog>FoodMart</Catalog>" + nl +
+                "            <Format>Tabular</Format>" + nl +
+                "        </PropertyList>" + nl +
+                "    </Properties>" + nl +
+                "</Discover>"),
+
+                "(?s).*<DIMENSION_NAME>Store</DIMENSION_NAME>.*");
+    }
+
+    public void testDiscoverHierarchies() {
+        assertRequestMatches(wrap(
+                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "    <RequestType>MDSCHEMA_HIERARCHIES</RequestType>" + nl +
+                "    <Restrictions>" + nl +
+                "        <RestrictionList>" + nl +
+                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
+                "        </RestrictionList>" + nl +
+                "    </Restrictions>" + nl +
+                "    <Properties>" + nl +
+                "        <PropertyList>" + nl +
+                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "            <Catalog>FoodMart</Catalog>" + nl +
+                "            <Format>Tabular</Format>" + nl +
+                "        </PropertyList>" + nl +
+                "    </Properties>" + nl +
+                "</Discover>"),
+
+                "(?s).*<HIERARCHY_NAME>Store</HIERARCHY_NAME>.*");
+    }
+
+    public void testDiscoverLevels() {
+        assertRequestMatches(wrap(
+                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "    <RequestType>MDSCHEMA_LEVELS</RequestType>" + nl +
+                "    <Restrictions>" + nl +
+                "        <RestrictionList>" + nl +
+                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
+                "        </RestrictionList>" + nl +
+                "    </Restrictions>" + nl +
+                "    <Properties>" + nl +
+                "        <PropertyList>" + nl +
+                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "            <Catalog>FoodMart</Catalog>" + nl +
+                "            <Format>Tabular</Format>" + nl +
+                "        </PropertyList>" + nl +
+                "    </Properties>" + nl +
+                "</Discover>"),
+
+                "(?s).*<LEVEL_NAME>City</LEVEL_NAME>.*");
+    }
+
+    public void testDiscoverMembersRestrictedByHierarchy() {
+        assertRequestYields(wrap(
+                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "    <RequestType>MDSCHEMA_MEMBERS</RequestType>" + nl +
+                "    <Restrictions>" + nl +
+                "        <RestrictionList>" + nl +
+                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
+                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
+                "            <HIERARCHY_UNIQUE_NAME>[Gender]</HIERARCHY_UNIQUE_NAME>" + nl +
+                "        </RestrictionList>" + nl +
+                "    </Restrictions>" + nl +
+                "    <Properties>" + nl +
+                "        <PropertyList>" + nl +
+                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "            <Catalog>FoodMart</Catalog>" + nl +
+                "            <Format>Tabular</Format>" + nl +
+                "        </PropertyList>" + nl +
+                "    </Properties>" + nl +
+                "</Discover>"),
+
+                "<?xml version=\"1.0\"?>" + nl +
+                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "  <SOAP-ENV:Body>" + nl +
+                "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
+                "      <return>" + nl +
+                "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
+                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
+                "          <row>" + nl +
+                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
+                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
+                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
+                "            <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>" + nl +
+                "            <HIERARCHY_UNIQUE_NAME>[Gender]</HIERARCHY_UNIQUE_NAME>" + nl +
+                "            <LEVEL_UNIQUE_NAME>(All)</LEVEL_UNIQUE_NAME>" + nl +
+                "            <LEVEL_NUMBER>0</LEVEL_NUMBER>" + nl +
+                "            <MEMBER_NAME>All Gender</MEMBER_NAME>" + nl +
+                "            <MEMBER_UNIQUE_NAME>[Gender].[All Gender]</MEMBER_UNIQUE_NAME>" + nl +
+                "            <MEMBER_CAPTION>All Gender</MEMBER_CAPTION>" + nl +
+                "            <MEMBER_TYPE>6</MEMBER_TYPE>" + nl +
+                "            <TREE_OP/>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
+                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
+                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
+                "            <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>" + nl +
+                "            <HIERARCHY_UNIQUE_NAME>[Gender]</HIERARCHY_UNIQUE_NAME>" + nl +
+                "            <LEVEL_UNIQUE_NAME>Gender</LEVEL_UNIQUE_NAME>" + nl +
+                "            <LEVEL_NUMBER>1</LEVEL_NUMBER>" + nl +
+                "            <MEMBER_NAME>F</MEMBER_NAME>" + nl +
+                "            <MEMBER_UNIQUE_NAME>[Gender].[All Gender].[F]</MEMBER_UNIQUE_NAME>" + nl +
+                "            <MEMBER_CAPTION>F</MEMBER_CAPTION>" + nl +
+                "            <MEMBER_TYPE>6</MEMBER_TYPE>" + nl +
+                "            <TREE_OP/>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
+                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
+                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
+                "            <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>" + nl +
+                "            <HIERARCHY_UNIQUE_NAME>[Gender]</HIERARCHY_UNIQUE_NAME>" + nl +
+                "            <LEVEL_UNIQUE_NAME>Gender</LEVEL_UNIQUE_NAME>" + nl +
+                "            <LEVEL_NUMBER>1</LEVEL_NUMBER>" + nl +
+                "            <MEMBER_NAME>M</MEMBER_NAME>" + nl +
+                "            <MEMBER_UNIQUE_NAME>[Gender].[All Gender].[M]</MEMBER_UNIQUE_NAME>" + nl +
+                "            <MEMBER_CAPTION>M</MEMBER_CAPTION>" + nl +
+                "            <MEMBER_TYPE>6</MEMBER_TYPE>" + nl +
+                "            <TREE_OP/>" + nl +
+                "          </row>" + nl +
+                "        </root>" + nl +
+                "      </return>" + nl +
+                "    </DiscoverResponse>" + nl +
+                "  </SOAP-ENV:Body>" + nl +
+                "</SOAP-ENV:Envelope>");
+    }
+
+    public void testDiscoverMembersRestrictedByMemberAndTreeop() {
+        final int treeOp = (Enumeration.TreeOp.Siblings.ordinal_ |
+                        Enumeration.TreeOp.Ancestors.ordinal_ |
+                        Enumeration.TreeOp.Children.ordinal_);
+        assertRequestYields(wrap(
+                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "    <RequestType>MDSCHEMA_MEMBERS</RequestType>" + nl +
+                "    <Restrictions>" + nl +
+                "        <RestrictionList>" + nl +
+                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
+                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
+                "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q3]</MEMBER_UNIQUE_NAME>" + nl +
+                "            <TREE_OP>" + treeOp + "</TREE_OP>" + nl +
+                "        </RestrictionList>" + nl +
+                "    </Restrictions>" + nl +
+                "    <Properties>" + nl +
+                "        <PropertyList>" + nl +
+                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "            <Catalog>FoodMart</Catalog>" + nl +
+                "            <Format>Tabular</Format>" + nl +
+                "        </PropertyList>" + nl +
+                "    </Properties>" + nl +
+                "</Discover>"),
+
+                "<?xml version=\"1.0\"?>" + nl +
+                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "  <SOAP-ENV:Body>" + nl +
+                "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
+                "      <return>" + nl +
+                "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
+                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
+                "          <row>" + nl +
+                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
+                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
+                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
+                "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
+                "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>" + nl +
+                "            <LEVEL_UNIQUE_NAME>Quarter</LEVEL_UNIQUE_NAME>" + nl +
+                "            <LEVEL_NUMBER>1</LEVEL_NUMBER>" + nl +
+                "            <MEMBER_NAME>Q1</MEMBER_NAME>" + nl +
+                "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q1]</MEMBER_UNIQUE_NAME>" + nl +
+                "            <MEMBER_CAPTION>Q1</MEMBER_CAPTION>" + nl +
+                "            <MEMBER_TYPE>6</MEMBER_TYPE>" + nl +
+                "            <TREE_OP/>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
+                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
+                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
+                "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
+                "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>" + nl +
+                "            <LEVEL_UNIQUE_NAME>Quarter</LEVEL_UNIQUE_NAME>" + nl +
+                "            <LEVEL_NUMBER>1</LEVEL_NUMBER>" + nl +
+                "            <MEMBER_NAME>Q2</MEMBER_NAME>" + nl +
+                "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q2]</MEMBER_UNIQUE_NAME>" + nl +
+                "            <MEMBER_CAPTION>Q2</MEMBER_CAPTION>" + nl +
+                "            <MEMBER_TYPE>6</MEMBER_TYPE>" + nl +
+                "            <TREE_OP/>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
+                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
+                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
+                "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
+                "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>" + nl +
+                "            <LEVEL_UNIQUE_NAME>Quarter</LEVEL_UNIQUE_NAME>" + nl +
+                "            <LEVEL_NUMBER>1</LEVEL_NUMBER>" + nl +
+                "            <MEMBER_NAME>Q4</MEMBER_NAME>" + nl +
+                "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q4]</MEMBER_UNIQUE_NAME>" + nl +
+                "            <MEMBER_CAPTION>Q4</MEMBER_CAPTION>" + nl +
+                "            <MEMBER_TYPE>6</MEMBER_TYPE>" + nl +
+                "            <TREE_OP/>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
+                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
+                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
+                "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
+                "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>" + nl +
+                "            <LEVEL_UNIQUE_NAME>Month</LEVEL_UNIQUE_NAME>" + nl +
+                "            <LEVEL_NUMBER>2</LEVEL_NUMBER>" + nl +
+                "            <MEMBER_NAME>7</MEMBER_NAME>" + nl +
+                "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q3].[7]</MEMBER_UNIQUE_NAME>" + nl +
+                "            <MEMBER_CAPTION>7</MEMBER_CAPTION>" + nl +
+                "            <MEMBER_TYPE>6</MEMBER_TYPE>" + nl +
+                "            <TREE_OP/>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
+                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
+                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
+                "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
+                "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>" + nl +
+                "            <LEVEL_UNIQUE_NAME>Month</LEVEL_UNIQUE_NAME>" + nl +
+                "            <LEVEL_NUMBER>2</LEVEL_NUMBER>" + nl +
+                "            <MEMBER_NAME>8</MEMBER_NAME>" + nl +
+                "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q3].[8]</MEMBER_UNIQUE_NAME>" + nl +
+                "            <MEMBER_CAPTION>8</MEMBER_CAPTION>" + nl +
+                "            <MEMBER_TYPE>6</MEMBER_TYPE>" + nl +
+                "            <TREE_OP/>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
+                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
+                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
+                "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
+                "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>" + nl +
+                "            <LEVEL_UNIQUE_NAME>Month</LEVEL_UNIQUE_NAME>" + nl +
+                "            <LEVEL_NUMBER>2</LEVEL_NUMBER>" + nl +
+                "            <MEMBER_NAME>9</MEMBER_NAME>" + nl +
+                "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q3].[9]</MEMBER_UNIQUE_NAME>" + nl +
+                "            <MEMBER_CAPTION>9</MEMBER_CAPTION>" + nl +
+                "            <MEMBER_TYPE>6</MEMBER_TYPE>" + nl +
+                "            <TREE_OP/>" + nl +
+                "          </row>" + nl +
+                "          <row>" + nl +
+                "            <CATALOG_NAME>file:/E:/mondrian/demo/FoodMart.xml</CATALOG_NAME>" + nl +
+                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
+                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
+                "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
+                "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>" + nl +
+                "            <LEVEL_UNIQUE_NAME>Year</LEVEL_UNIQUE_NAME>" + nl +
+                "            <LEVEL_NUMBER>0</LEVEL_NUMBER>" + nl +
+                "            <MEMBER_NAME>1997</MEMBER_NAME>" + nl +
+                "            <MEMBER_UNIQUE_NAME>[Time].[1997]</MEMBER_UNIQUE_NAME>" + nl +
+                "            <MEMBER_CAPTION>1997</MEMBER_CAPTION>" + nl +
+                "            <MEMBER_TYPE>6</MEMBER_TYPE>" + nl +
+                "            <TREE_OP/>" + nl +
+                "          </row>" + nl +
+                "        </root>" + nl +
+                "      </return>" + nl +
+                "    </DiscoverResponse>" + nl +
+                "  </SOAP-ENV:Body>" + nl +
+                "</SOAP-ENV:Envelope>");
+    }
+
+    public void _testDiscoverMeasures() {
+        assertRequestYields(wrap(
+                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "    <RequestType>MDSCHEMA_MEASURES</RequestType>" + nl +
+                "    <Restrictions>" + nl +
+                "        <RestrictionList>" + nl +
+                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
+                "        </RestrictionList>" + nl +
+                "    </Restrictions>" + nl +
+                "    <Properties>" + nl +
+                "        <PropertyList>" + nl +
+                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "            <Catalog>FoodMart</Catalog>" + nl +
+                "            <Format>Tabular</Format>" + nl +
+                "        </PropertyList>" + nl +
+                "    </Properties>" + nl +
+                "</Discover>"),
+
+                "<?xml version=\"1.0\"?>" + nl +
+                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "  <SOAP-ENV:Body>" + nl +
+                "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
+                "      <return>" + nl +
+                "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
+                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>x" + nl +
+                "x        </root>" + nl +
+                "      </return>" + nl +
+                "    </DiscoverResponse>" + nl +
+                "  </SOAP-ENV:Body>" + nl +
+                "</SOAP-ENV:Envelope>");
+    }
     /**
      * Tests the {@link RowsetDefinition#DISCOVER_ENUMERATORS} rowset.
      */
