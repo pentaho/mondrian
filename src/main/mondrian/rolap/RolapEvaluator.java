@@ -11,13 +11,28 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import mondrian.olap.Cube;
+import mondrian.olap.Dimension;
+import mondrian.olap.Evaluator;
+import mondrian.olap.Exp;
+import mondrian.olap.FunCall;
+import mondrian.olap.FunDef;
+import mondrian.olap.Id;
+import mondrian.olap.Literal;
+import mondrian.olap.Member;
+import mondrian.olap.OlapElement;
+import mondrian.olap.Parameter;
+import mondrian.olap.Property;
+import mondrian.olap.SchemaReader;
+import mondrian.olap.Util;
 import mondrian.olap.fun.FunUtil;
 import mondrian.util.Format;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.HashMap;
 
 /**
  * <code>RolapEvaluator</code> evaluates expressions in a dimensional
@@ -42,6 +57,8 @@ class RolapEvaluator implements Evaluator
 	Evaluator parent;
 	CellReader cellReader;
 	int depth;
+	
+	Map expResultCache;
 
 	RolapEvaluator(RolapCube cube, RolapConnection connection)
 	{
@@ -58,6 +75,7 @@ class RolapEvaluator implements Evaluator
 		this.parent = null;
 		this.depth = 0;
 		this.cellReader = null; // we expect client to set it
+		this.expResultCache = new HashMap();
 	}
 
 	private RolapEvaluator(
@@ -76,6 +94,7 @@ class RolapEvaluator implements Evaluator
 				checkRecursion();
 			}
 		}
+		this.expResultCache = parent.expResultCache;
 	}
 
 	public Cube getCube() {
@@ -305,6 +324,31 @@ class RolapEvaluator implements Evaluator
 			}
 			return value;
 		}
+	}
+
+	private Object getExpResultCacheKey(Exp exp) {
+		List key = new ArrayList();
+		key.add(exp);
+		for (int i = 0; i < currentMembers.length; i++) {
+			Dimension dim = currentMembers[i].getDimension();
+			if (exp.dependsOn(dim))
+				key.add(currentMembers[i]);
+		}
+		return key;
+	}
+
+	public Object getExpResult(Exp exp) {
+		Object key = getExpResultCacheKey(exp);
+		return expResultCache.get(key);
+	}
+
+	public void setExpResult(Exp exp, Object result) {
+		Object key = getExpResultCacheKey(exp);
+		expResultCache.put(key, result);
+	}
+
+	public void clearExpResultCache() {
+		expResultCache.clear();
 	}
 }
 

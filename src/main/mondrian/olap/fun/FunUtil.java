@@ -542,7 +542,7 @@ public class FunUtil extends Util {
 	}
 
 	static class SetWrapper {
-		Vector v = new Vector();
+		ArrayList v = new ArrayList();
 		public int errorCount = 0, nullCount = 0;
 
 		//private double avg = Double.NaN;
@@ -571,7 +571,7 @@ public class FunUtil extends Util {
 		}
 		double[] asArray = new double[sw.v.size()];
 		for (int i = 0; i < asArray.length; i++) {
-			asArray[i] = ((Double) sw.v.elementAt(i)).doubleValue();
+			asArray[i] = ((Double) sw.v.get(i)).doubleValue();
 		}
 		Arrays.sort(asArray);
 		int median = (int) Math.floor(asArray.length / 2);
@@ -588,7 +588,7 @@ public class FunUtil extends Util {
 		else {
 			double min = Double.MAX_VALUE;
 			for (int i = 0; i < sw.v.size(); i++) {
-				double iValue = ((Double) sw.v.elementAt(i)).doubleValue();
+				double iValue = ((Double) sw.v.get(i)).doubleValue();
 				if (iValue < min) { min = iValue; }
 			}
 			return new Double(min);
@@ -605,7 +605,7 @@ public class FunUtil extends Util {
 		else {
 			double max = Double.MIN_VALUE;
 			for (int i = 0; i < sw.v.size(); i++) {
-				double iValue = ((Double) sw.v.elementAt(i)).doubleValue();
+				double iValue = ((Double) sw.v.get(i)).doubleValue();
 				if (iValue > max) { max = iValue; }
 			}
 			return new Double(max);
@@ -627,7 +627,7 @@ public class FunUtil extends Util {
 			double stdev = 0.0;
 			double avg = _avg(sw);
 			for (int i = 0; i < sw.v.size(); i++) {
-				stdev += Math.pow((((Double) sw.v.elementAt(i)).doubleValue() - avg),2);
+				stdev += Math.pow((((Double) sw.v.get(i)).doubleValue() - avg),2);
 			}
 			int n = sw.v.size();
 			if (!biased) { n--; }
@@ -668,8 +668,8 @@ public class FunUtil extends Util {
 		double covar = 0.0;
 		for (int i = 0; i < sw1.v.size(); i++) {
 			//all of this casting seems inefficient - can we make SetWrapper contain an array of double instead?
-			double diff1 = (((Double) sw1.v.elementAt(i)).doubleValue() - avg1);
-			double diff2 = (((Double) sw2.v.elementAt(i)).doubleValue() - avg2);
+			double diff1 = (((Double) sw1.v.get(i)).doubleValue() - avg1);
+			double diff2 = (((Double) sw2.v.get(i)).doubleValue() - avg2);
 			covar += (diff1 * diff2);
 		}
 		int n = sw1.v.size();
@@ -703,7 +703,7 @@ public class FunUtil extends Util {
 	private static double _avg(SetWrapper sw) {
 		double sum = 0.0;
 		for (int i = 0; i < sw.v.size(); i++) {
-			sum += ((Double) sw.v.elementAt(i)).doubleValue();
+			sum += ((Double) sw.v.get(i)).doubleValue();
 		}
 		//todo: should look at context and optionally include nulls
 		return sum / sw.v.size();
@@ -723,7 +723,7 @@ public class FunUtil extends Util {
 		else {
 			double sum = 0.0;
 			for (int i = 0; i < sw.v.size(); i++) {
-				sum += ((Double) sw.v.elementAt(i)).doubleValue();
+				sum += ((Double) sw.v.get(i)).doubleValue();
 			}
 			return new Double(sum);
 		}

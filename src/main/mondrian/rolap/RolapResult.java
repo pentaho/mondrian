@@ -72,6 +72,7 @@ class RolapResult extends ResultBase
                 while (true) {
                     evaluator.cellReader = batchingReader;
                     axisResult = executeAxis(evaluator.push(), axis);
+                    evaluator.clearExpResultCache();
                     if (!batchingReader.loadAggregations()) {
                         break;
                     }
@@ -84,6 +85,7 @@ class RolapResult extends ResultBase
 
 				evaluator.cellReader = aggregatingReader;
 				axisResult = executeAxis(evaluator.push(), axis);
+				evaluator.clearExpResultCache();
 
 				if (i == -1) {
 					this.slicerAxis = axisResult;
@@ -119,6 +121,7 @@ class RolapResult extends ResultBase
             }
 			executeBody(query);
 		} finally {
+			evaluator.clearExpResultCache();
 			CachePool.instance().unpin(pinnedSegments);
 			if (alwaysFlush) {
 				CachePool.instance().flush();
@@ -191,8 +194,9 @@ class RolapResult extends ResultBase
         while (true) {
 			cellValues = new HashMap();
 			//
-			this.evaluator.cellReader = this.batchingReader;
+			evaluator.cellReader = this.batchingReader;
 			executeStripe(query.axes.length - 1, (RolapEvaluator) evaluator.push());
+			evaluator.clearExpResultCache();
 
 			// Retrieve the aggregations collected.
 			//

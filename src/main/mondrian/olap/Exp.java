@@ -60,6 +60,18 @@ public interface Exp {
 	void unparse(PrintWriter pw);
 	Exp resolve(Resolver resolver);
 	boolean usesDimension(Dimension dimension);
+    
+    /**
+     * true means that the result of this expression will be different
+     * for different members of <code>dimension</code>. For example,
+     * the expression 
+     * <code>[Measures].[Unit Sales]</code> depends on all dimensions except Measures.
+     * The boolean expression 
+     * <code>([Measures].[Unit Sales], [Time].[1997]) &gt; 1000</code>
+     * depends on all dimensions except Measures and Time.
+     */
+    boolean dependsOn(Dimension dimension);
+    
 	/**
 	 * Adds 'exp' as the right child of the CrossJoin whose left child has
 	 * 'iPosition' hierarchies (hence 'iPosition' - 1 CrossJoins) under it.  If

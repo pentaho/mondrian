@@ -179,6 +179,14 @@ public abstract class ExpBase
 		}
 		return types;
 	}
+	/**
+	 * A simple and incomplete default implementation for dependsOn().
+	 * It assumes that a dimension, that is used somewhere in the expression
+	 * makes the whole expression independent of that dimension.
+	 */
+	public boolean dependsOn(Dimension dimension) {
+		return !usesDimension(dimension);
+	}
 }
 
 

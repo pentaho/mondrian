@@ -68,6 +68,19 @@ public interface Evaluator {
 	 * context.
 	 */
 	SchemaReader getSchemaReader();
+	
+	/**
+	 * Simple caching of the result of an <code>Exp</code>. The
+	 * key for the cache consists of all members of the current
+	 * context that <code>exp</code> depends on. Members of 
+	 * independent dimensions are not part of the key.
+	 * @see Exp#dependsOn
+	 */
+	Object getExpResult(Exp key);
+	/**
+	 * @see #getExpResult
+	 */
+	void setExpResult(Exp key, Object value);
 }
 
 // End Evaluator.java
