@@ -594,8 +594,8 @@ todo:
 				}
 			}
 			public Relation find(String seekAlias) {
-				if (seekAlias.equals(getAlias())) {
-					return this;
+				if (seekAlias.equals(name)) {
+				  return this;
 				} else {
 					return null;
 				}

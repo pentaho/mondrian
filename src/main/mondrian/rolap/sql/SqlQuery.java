@@ -125,9 +125,25 @@ public class SqlQuery
 				return val; // quoting is not supported
 			}
 		}
-
-		String val2 = Util.replace(val, q, q + q);
-		return q + val2 + q;
+		// if the value is already quoted, do nothing
+		//  if not, then check for a dot qualified expression
+		//  like "owner.table".
+		//  In that case, prefix the single parts separately.
+		if ( val.startsWith(q) && val.endsWith(q) ) {
+			// already quoted - nothing to do
+			return val;
+	  }
+	  int k = val.indexOf('.');
+	  if ( k > 0 ) {
+			// qualified
+			String val1 = Util.replace(val.substring(0,k), q, q + q);
+			String val2 = Util.replace(val.substring(k+1), q, q + q);
+			return q + val1 + q + "." +  q + val2 + q ;
+	  } else {
+			// not Qualified
+			String val2 = Util.replace(val, q, q + q);
+			return q + val2 + q;
+	  }
 	}
 
 	/**
@@ -148,6 +164,7 @@ public class SqlQuery
 			Util.assertTrue(
 				!qual.equals(""),
 				"qual should probably be null, not empty");
+
 			return quoteIdentifier(qual) +
 				"." +
 				quoteIdentifier(name);
