@@ -130,6 +130,10 @@ public class Literal extends ExpBase
 			throw Util.newInternal("cannot convert " + o + " to int");
 		}
 	}
+
+	public boolean dependsOn(Dimension dimension) {
+		return false;
+	}
 }
 
 // End Literal.java

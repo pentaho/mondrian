@@ -11,6 +11,7 @@
 */
 package mondrian.olap.fun;
 import mondrian.olap.*;
+
 import java.io.PrintWriter;
 
 /**
@@ -60,6 +61,9 @@ class TupleFunDef extends FunDefBase
 			members[i] = getMemberArg(evaluator, args, i, true);
 		}
 		return members;
+	}
+	public boolean dependsOn(Exp[] args, Dimension dimension) {
+		return dependsOnIntersection(args, dimension);
 	}
 }
 

@@ -238,6 +238,14 @@ public class FunCall extends ExpBase
 	public Object evaluate(Evaluator evaluator) {
 		return evaluator.xx(this);
 	}
+
+	/**
+	 * delegates to funDef
+	 */
+	public boolean dependsOn(Dimension dimension) {
+		return funDef.dependsOn(args, dimension);
+	}
+
 }
 
 // End FunCall.java

@@ -155,6 +155,9 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 			dimensions[i].accept(visitor);
 		}
 	}
+	public boolean dependsOn(Dimension dimension) {
+		throw new UnsupportedOperationException();
+	}
 }
 
 

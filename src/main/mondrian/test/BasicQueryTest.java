@@ -3626,13 +3626,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      */
     public void testParallelMutliple() {
       for (int i = 0; i < 5; i++) {
-        System.out.println("running #1,1,false");
         runParallelQueries(1, 1, false);
-        System.out.println("running #3,2,false");
         runParallelQueries(3, 2, false);
-        System.out.println("running #4,6,true");
         runParallelQueries(4, 6, true);
-        System.out.println("running #6,10,false");
         runParallelQueries(6, 10, false);
       }
     }
@@ -3686,6 +3682,38 @@ public class BasicQueryTest extends FoodMartTestCase {
 				});
 		threaded.run();
 		assertEquals("number of executions", threadCount * iterationCount, executeCount[0]);
+	}
+
+
+
+	/**
+	 * make sure that the expression 
+	 * 
+	 * [Measures].[Unit Sales] / ([Measures].[Unit Sales], [Product].[All Products])
+	 * 
+	 * depends on the current member of the Product dimension, although [Product].[All Products]
+	 * is referenced from the expression.
+	 */
+	public void testDependsOn() {
+		System.out.println("runinnn");
+		runQueryCheckResult( 
+		"with member [Customers].[my] as " + nl +
+		"  'Aggregate(Filter([Customers].[City].Members, (([Measures].[Unit Sales] / ([Measures].[Unit Sales], [Product].[All Products])) > 0.1)))' " + nl +
+		"select  " + nl +
+		"  {[Measures].[Unit Sales]} ON columns, " + nl +
+		"  {[Product].[All Products].[Food].[Deli], [Product].[All Products].[Food].[Frozen Foods]} ON rows " + nl +
+		"from [Sales] " + nl +
+		"where ([Customers].[my], [Time].[1997])" + nl, 
+		
+		"Axis #0:" + nl +
+		"{[Customers].[my], [Time].[1997]}" + nl +
+		"Axis #1:" + nl +
+		"{[Measures].[Unit Sales]}" + nl +
+		"Axis #2:" + nl +
+		"{[Product].[All Products].[Food].[Deli]}" + nl +
+		"{[Product].[All Products].[Food].[Frozen Foods]}" + nl +
+		"Row #0: 13" + nl +
+		"Row #1: 15,111" + nl);
 	}
 
 }

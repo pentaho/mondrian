@@ -119,6 +119,11 @@ public class Id
 	{
 		return evaluator.xx(this);
 	}
+
+	public boolean dependsOn(Dimension dimension) {
+		throw new UnsupportedOperationException();
+	}
+
 }
 
 // End Id.java

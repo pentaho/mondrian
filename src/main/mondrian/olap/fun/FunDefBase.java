@@ -115,6 +115,31 @@ class FunDefBase extends FunUtil implements FunDef {
         getSyntax().unparse(getName(), args, pw);
 	}
 
+	/**
+	 * Default implementation returns true if at least one
+	 * of the arguments depends on <code>dimension</code>
+	 */
+	public boolean dependsOn(Exp[] args, Dimension dimension) {
+		for (int i = 0; i < args.length; i++)
+			if (args[i] != null && args[i].dependsOn(dimension))
+				return true;
+		return false;
+	}
+	
+	/**
+	 * computes the dependsOn() for functions like Tupel and Filter.
+	 * The result of these functions depend on <code>dimension</dimension>
+	 * if all of their arguments depend on it. 
+	 * <p>
+	 * Derived classes may overload dependsOn() and call this method
+	 * instead of the default implementation.
+	 */
+	protected boolean dependsOnIntersection(Exp[] args, Dimension dimension) {
+		for (int i = 0; i < args.length; i++)
+			if (args[i] != null && !args[i].dependsOn(dimension))
+				return false;
+		return true;
+	}
 }
 
 // End FunDefBase.java

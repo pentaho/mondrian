@@ -63,10 +63,12 @@ public interface Exp {
     
     /**
      * true means that the result of this expression will be different
-     * for different members of <code>dimension</code>. For example,
-     * the expression 
-     * <code>[Measures].[Unit Sales]</code> depends on all dimensions except Measures.
-     * The boolean expression 
+     * for different members of <code>dimension</code> in the evaluation
+     * context. 
+     * <p>
+     * For example, the expression 
+     * <code>[Measures].[Unit Sales]</code> depends on all dimensions 
+     * except Measures. The boolean expression 
      * <code>([Measures].[Unit Sales], [Time].[1997]) &gt; 1000</code>
      * depends on all dimensions except Measures and Time.
      */

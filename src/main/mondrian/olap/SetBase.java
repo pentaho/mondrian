@@ -55,6 +55,9 @@ class SetBase extends OlapElementBase implements Set {
 	}
 	public void childrenAccept(Visitor visitor) {
 	}
+	public boolean dependsOn(Dimension dimension) {
+		throw new UnsupportedOperationException();
+	}
 }
 
 // End SetBase.java

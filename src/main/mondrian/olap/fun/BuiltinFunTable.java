@@ -2600,6 +2600,10 @@ public class BuiltinFunTable extends FunTable {
 				return result;
 			}
 
+			public boolean dependsOn(Exp[] args, Dimension dimension) {
+				return dependsOnIntersection(args, dimension);
+			}
+
 			/**
 			 * Make sure that slicer is in force when expression is applied
 			 * on axis, E.g. select filter([Customers].members, [Unit Sales] > 100)

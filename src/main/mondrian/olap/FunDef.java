@@ -75,6 +75,19 @@ public interface FunDef extends Testable {
 	 * by an evaluator, and returns the result.
 	 **/
 	Object evaluate(Evaluator evaluator, Exp[] args);
+
+	/**
+	 * Computes how the result of the function depends on members
+	 * of the dimension. For example, the add operation "+" has two 
+	 * arguments. If one argument depends on Customers and the other
+	 * depends on Products, the result will depend on both (union of
+	 * dependencies).
+	 * <p> 
+	 * For tupel, filter and some others this is not true. They must
+	 * compute the intersection. TopCount has to omit its Count 
+	 * argument etc. 
+	 */
+	boolean dependsOn(Exp[] args, Dimension dimension);
 }
 
 // End FunDef.java
