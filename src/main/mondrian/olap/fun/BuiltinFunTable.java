@@ -11,6 +11,7 @@
 */
 package mondrian.olap.fun;
 
+import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import mondrian.olap.*;
@@ -33,22 +34,21 @@ public class BuiltinFunTable extends FunTable {
 
 	private static final Resolver[] emptyResolvers = new Resolver[0];
 	private static final FunCall valueFunCall = new FunCall("_Value", new Exp[0], FunDef.TypeFunction);
-	private static final String nl = FunUtil.nl;
-	private static final String months = "[Time].[1997].[Q1].[1]" + nl +
-							"[Time].[1997].[Q1].[2]" + nl +
-							"[Time].[1997].[Q1].[3]" + nl +
-							"[Time].[1997].[Q2].[4]" + nl +
-							"[Time].[1997].[Q2].[5]" + nl +
-							"[Time].[1997].[Q2].[6]" + nl +
-							"[Time].[1997].[Q3].[7]" + nl +
-							"[Time].[1997].[Q3].[8]" + nl +
-							"[Time].[1997].[Q3].[9]" + nl +
-							"[Time].[1997].[Q4].[10]" + nl +
-							"[Time].[1997].[Q4].[11]" + nl +
+	private static final String months = "[Time].[1997].[Q1].[1]" + FunUtil.nl +
+							"[Time].[1997].[Q1].[2]" + FunUtil.nl +
+							"[Time].[1997].[Q1].[3]" + FunUtil.nl +
+							"[Time].[1997].[Q2].[4]" + FunUtil.nl +
+							"[Time].[1997].[Q2].[5]" + FunUtil.nl +
+							"[Time].[1997].[Q2].[6]" + FunUtil.nl +
+							"[Time].[1997].[Q3].[7]" + FunUtil.nl +
+							"[Time].[1997].[Q3].[8]" + FunUtil.nl +
+							"[Time].[1997].[Q3].[9]" + FunUtil.nl +
+							"[Time].[1997].[Q4].[10]" + FunUtil.nl +
+							"[Time].[1997].[Q4].[11]" + FunUtil.nl +
 							"[Time].[1997].[Q4].[12]";
-	private static final String quarters = "[Time].[1997].[Q1]" + nl +
-							"[Time].[1997].[Q2]" + nl +
-							"[Time].[1997].[Q3]" + nl +
+	private static final String quarters = "[Time].[1997].[Q1]" + FunUtil.nl +
+							"[Time].[1997].[Q2]" + FunUtil.nl +
+							"[Time].[1997].[Q3]" + FunUtil.nl +
 							"[Time].[1997].[Q4]";
 	private static final String year1997 = "[Time].[1997]";
 	private final HashSet reservedWords = new HashSet();
@@ -514,7 +514,7 @@ public class BuiltinFunTable extends FunTable {
 
 			public void testDimensionHierarchy(FoodMartTestCase test) {
 				String s = test.executeExpr("[Time].Dimension.Name");
-				test.assertEquals("Time", s);
+				Assert.assertEquals("Time", s);
 			}
 		});
 
@@ -526,7 +526,7 @@ public class BuiltinFunTable extends FunTable {
 
 			public void testLevelDimension(FoodMartTestCase test) {
 				String s = test.executeExpr("[Time].[Year].Dimension");
-				test.assertEquals("[Time]", s);
+        Assert.assertEquals("[Time]", s);
 			}
 		});
 
@@ -539,7 +539,7 @@ public class BuiltinFunTable extends FunTable {
 			public void testMemberDimension(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"[Time].[1997].[Q2].Dimension");
-				test.assertEquals("[Time]", s);
+        Assert.assertEquals("[Time]", s);
 			}
 		});
 
@@ -557,7 +557,7 @@ public class BuiltinFunTable extends FunTable {
 
 			public void testDimensionsNumeric(FoodMartTestCase test) {
 				String s = test.executeExpr("Dimensions(2).Name");
-				test.assertEquals("Store", s);
+        Assert.assertEquals("Store", s);
 			}
 		});
 		define(new FunDefBase("Dimensions", "Dimensions(<String Expression>)", "Returns the dimension whose name is specified by a string.", "fdS") {
@@ -581,7 +581,7 @@ public class BuiltinFunTable extends FunTable {
 			public void testDimensionsString(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"Dimensions(\"Store\").UniqueName");
-				test.assertEquals("[Store]", s);
+        Assert.assertEquals("[Store]", s);
 			}
 		});
 
@@ -602,31 +602,31 @@ public class BuiltinFunTable extends FunTable {
 			public void testTime(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"[Time].[1997].[Q1].[1].Hierarchy");
-				test.assertEquals("[Time]", s);
+        Assert.assertEquals("[Time]", s);
 			}
 
 			public void testBasic9(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"[Gender].[All Gender].[F].Hierarchy");
-				test.assertEquals("[Gender]", s);
+        Assert.assertEquals("[Gender]", s);
 			}
 
 			public void testFirstInLevel9(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"[Education Level].[All Education Levels].[Bachelors Degree].Hierarchy");
-				test.assertEquals("[Education Level]", s);
+        Assert.assertEquals("[Education Level]", s);
 			}
 
 			public void testHierarchyAll(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"[Gender].[All Gender].Hierarchy");
-				test.assertEquals("[Gender]", s);
+        Assert.assertEquals("[Gender]", s);
 			}
 
 			public void testHierarchyNull(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"[Gender].[All Gender].Parent.Hierarchy");
-				test.assertEquals("[Gender]", s); // MSOLAP gives "#ERR"
+        Assert.assertEquals("[Gender]", s); // MSOLAP gives "#ERR"
 			}
 		});
 
@@ -641,7 +641,7 @@ public class BuiltinFunTable extends FunTable {
 			public void testMemberLevel(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"[Time].[1997].[Q1].[1].Level.UniqueName");
-				test.assertEquals("[Time].[Month]", s);
+        Assert.assertEquals("[Time].[Month]", s);
 			}
 		});
 
@@ -660,7 +660,7 @@ public class BuiltinFunTable extends FunTable {
 
 			public void testLevelsNumeric(FoodMartTestCase test) {
 				String s = test.executeExpr("[Time].Levels(2).Name");
-				test.assertEquals("Quarter", s);
+        Assert.assertEquals("Quarter", s);
 			}
 			public void testLevelsTooSmall(FoodMartTestCase test) {
 				test.assertExprThrows(
@@ -698,7 +698,7 @@ public class BuiltinFunTable extends FunTable {
 			public void testLevelsString(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"Levels(\"[Time].[Year]\").UniqueName");
-				test.assertEquals("[Time].[Year]", s);
+        Assert.assertEquals("[Time].[Year]", s);
 			}
 
 			public void testLevelsStringFail(FoodMartTestCase test) {
@@ -780,19 +780,19 @@ public class BuiltinFunTable extends FunTable {
 			public void testAncestor(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"Ancestor([Store].[USA].[CA].[Los Angeles],[Store Country])");
-				test.assertEquals("USA", member.getName());
+        Assert.assertEquals("USA", member.getName());
 			}
 
 			public void testAncestorHigher(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"Ancestor([Store].[USA],[Store].[Store City])");
-				test.assertNull(member); // MSOLAP returns null
+        Assert.assertNull(member); // MSOLAP returns null
 			}
 
 			public void testAncestorSameLevel(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"Ancestor([Store].[Canada],[Store].[Store Country])");
-				test.assertEquals("Canada", member.getName());
+        Assert.assertEquals("Canada", member.getName());
 			}
 
 			public void testAncestorWrongHierarchy(FoodMartTestCase test) {
@@ -806,7 +806,7 @@ public class BuiltinFunTable extends FunTable {
 			public void testAncestorAllLevel(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"Ancestor([Store].[USA].[CA],[Store].Levels(1))");
-				test.assertTrue(member.isAll());
+        Assert.assertTrue(member.isAll());
 			}
 		});
 
@@ -822,7 +822,7 @@ public class BuiltinFunTable extends FunTable {
 				// MSOLAP returns [1997].[Q4], because [Time].CurrentMember =
 				// [1997].
 				Member member = test.executeAxis("ClosingPeriod()");
-				test.assertEquals("[Time].[1997].[Q4]", member.getUniqueName());
+        Assert.assertEquals("[Time].[1997].[Q4]", member.getUniqueName());
 			}
 		});
 		define(new FunDefBase("ClosingPeriod", "ClosingPeriod([<Level>[, <Member>]])", "Returns the last sibling among the descendants of a member at a level.", "fml") {
@@ -836,7 +836,7 @@ public class BuiltinFunTable extends FunTable {
 			public void testClosingPeriodLevel(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"ClosingPeriod([Month])");
-				test.assertEquals("[Time].[1997].[Q4].[12]", member.getUniqueName());
+        Assert.assertEquals("[Time].[1997].[Q4].[12]", member.getUniqueName());
 			}
 			public void testClosingPeriodLevelNotInTimeFails(FoodMartTestCase test) {
 				test.assertAxisThrows(
@@ -853,7 +853,7 @@ public class BuiltinFunTable extends FunTable {
 			public void testClosingPeriodMember(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"ClosingPeriod([USA])");
-				test.assertEquals("WA", member.getName());
+        Assert.assertEquals("WA", member.getName());
 			}
 		});
 		define(new FunDefBase("ClosingPeriod", "ClosingPeriod([<Level>[, <Member>]])", "Returns the last sibling among the descendants of a member at a level.", "fmlm") {
@@ -865,12 +865,12 @@ public class BuiltinFunTable extends FunTable {
 			public void testClosingPeriod(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"ClosingPeriod([Month],[1997])");
-				test.assertEquals("[Time].[1997].[Q4].[12]", member.getUniqueName());
+        Assert.assertEquals("[Time].[1997].[Q4].[12]", member.getUniqueName());
 			}
 			public void testClosingPeriodBelow(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"ClosingPeriod([Quarter],[1997].[Q3].[8])");
-				test.assertNull(member);
+        Assert.assertNull(member);
 			}
 		});
 
@@ -915,20 +915,20 @@ public class BuiltinFunTable extends FunTable {
 			public void testCousin1(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"Cousin([1997].[Q4],[1998])");
-				test.assertEquals("[Time].[1998].[Q4]", member.getUniqueName());
+        Assert.assertEquals("[Time].[1998].[Q4]", member.getUniqueName());
 			}
 
 			public void testCousin2(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"Cousin([1997].[Q4].[12],[1998].[Q1])");
-				test.assertEquals("[Time].[1998].[Q1].[3]", member.getUniqueName());
+        Assert.assertEquals("[Time].[1998].[Q1].[3]", member.getUniqueName());
 			}
 
 			public void testCousinOverrun(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"Cousin([Customers].[USA].[CA].[San Jose], [Customers].[USA].[OR])");
 				// CA has more cities than OR
-				test.assertNull(member);
+        Assert.assertNull(member);
 			}
 
 			public void testCousinThreeDown(FoodMartTestCase test) {
@@ -938,19 +938,19 @@ public class BuiltinFunTable extends FunTable {
 				// of the 4th child (Berkeley)
 				// of the 1st child (CA)
 				// of USA
-				test.assertEquals("[Customers].[All Customers].[Mexico].[DF].[Tixapan].[Albert Clouse]", member.getUniqueName());
+        Assert.assertEquals("[Customers].[All Customers].[Mexico].[DF].[Tixapan].[Albert Clouse]", member.getUniqueName());
 			}
 
 			public void testCousinSameLevel(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"Cousin([Gender].[M], [Gender].[F])");
-				test.assertEquals("F", member.getName());
+        Assert.assertEquals("F", member.getName());
 			}
 
 			public void testCousinHigherLevel(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"Cousin([Time].[1997], [Time].[1998].[Q1])");
-				test.assertNull(member);
+        Assert.assertNull(member);
 			}
 
 			public void testCousinWrongHierarchy(FoodMartTestCase test) {
@@ -969,14 +969,14 @@ public class BuiltinFunTable extends FunTable {
 						"with member [Measures].[Foo] as '[Gender].CurrentMember.Name'" + nl +
 						"select {[Measures].[Foo]} on columns" + nl +
 						"from Sales where ([Gender].[F])");
-				test.assertEquals("F", result.getCell(new int[] {0}).getValue());
+            Assert.assertEquals("F", result.getCell(new int[] {0}).getValue());
 			}
 			public void testCurrentMemberFromDefaultMember(FoodMartTestCase test) {
 				Result result = test.runQuery(
 						"with member [Measures].[Foo] as '[Time].CurrentMember.Name'" + nl +
 						"select {[Measures].[Foo]} on columns" + nl +
 						"from Sales");
-				test.assertEquals("1997", result.getCell(new int[] {0}).getValue());
+        Assert.assertEquals("1997", result.getCell(new int[] {0}).getValue());
 			}
 			public void testCurrentMemberFromAxis(FoodMartTestCase test) {
 				Result result = test.runQuery(
@@ -984,7 +984,7 @@ public class BuiltinFunTable extends FunTable {
 						"select {[Measures].[Foo]} on columns," + nl +
 						" CrossJoin({[Gender].children}, {[Marital Status].children}) on rows" + nl +
 						"from Sales");
-				test.assertEquals("FM", result.getCell(new int[] {0,0}).getValue());
+        Assert.assertEquals("FM", result.getCell(new int[] {0,0}).getValue());
 			}
 			/**
 			 * When evaluating a calculated member, MSOLAP regards that
@@ -997,7 +997,7 @@ public class BuiltinFunTable extends FunTable {
 						"with member [Measures].[Foo] as '[Measures].CurrentMember.Name'" + nl +
 						"select {[Measures].[Foo]} on columns" + nl +
 						"from Sales");
-				test.assertEquals("Unit Sales", result.getCell(new int[] {0}).getValue());
+        Assert.assertEquals("Unit Sales", result.getCell(new int[] {0}).getValue());
 			}
 		});
 		define(new FunDefBase("DefaultMember", "<Dimension>.DefaultMember", "Returns the default member of a dimension.", "pmd") {
@@ -1009,7 +1009,7 @@ public class BuiltinFunTable extends FunTable {
 
 			public void testDimensionDefaultMember(FoodMartTestCase test) {
 				Member member = test.executeAxis("[Measures].DefaultMember");
-				test.assertEquals("Unit Sales", member.getName());
+        Assert.assertEquals("Unit Sales", member.getName());
 			}
 		});
 
@@ -1027,19 +1027,19 @@ public class BuiltinFunTable extends FunTable {
 			public void testFirstChildFirstInLevel(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"[Time].[1997].[Q4].FirstChild");
-				test.assertEquals("10", member.getName());
+        Assert.assertEquals("10", member.getName());
 			}
 
 			public void testFirstChildAll(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"[Gender].[All Gender].FirstChild");
-				test.assertEquals("F", member.getName());
+        Assert.assertEquals("F", member.getName());
 			}
 
 			public void testFirstChildOfChildless(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"[Gender].[All Gender].[F].FirstChild");
-				test.assertNull(member);
+				Assert.assertNull(member);
 			}
 		});
 
@@ -1062,19 +1062,19 @@ public class BuiltinFunTable extends FunTable {
 			public void testFirstSiblingFirstInLevel(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"[Gender].[F].FirstSibling");
-				test.assertEquals("F", member.getName());
+        Assert.assertEquals("F", member.getName());
 			}
 
 			public void testFirstSiblingLastInLevel(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"[Time].[1997].[Q4].FirstSibling");
-				test.assertEquals("Q1", member.getName());
+        Assert.assertEquals("Q1", member.getName());
 			}
 
 			public void testFirstSiblingAll(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"[Gender].[All Gender].FirstSibling");
-				test.assertTrue(member.isAll());
+        Assert.assertTrue(member.isAll());
 			}
 
 			public void testFirstSiblingRoot(FoodMartTestCase test) {
@@ -1082,13 +1082,13 @@ public class BuiltinFunTable extends FunTable {
 				// [Unit Sales] does not have a parent.
 				Member member = test.executeAxis(
 						"[Measures].[Store Sales].FirstSibling");
-				test.assertEquals("Unit Sales", member.getName());
+        Assert.assertEquals("Unit Sales", member.getName());
 			}
 
 			public void testFirstSiblingNull(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"[Gender].[F].FirstChild.FirstSibling");
-				test.assertNull(member);
+        Assert.assertNull(member);
 			}
 		});
 
@@ -1107,30 +1107,30 @@ public class BuiltinFunTable extends FunTable {
 					public void testLag(FoodMartTestCase test) {
 						Member member = test.executeAxis(
 								"[Time].[1997].[Q4].[12].Lag(4)");
-						test.assertEquals("8", member.getName());
+            Assert.assertEquals("8", member.getName());
 					}
 
 					public void testLagFirstInLevel(FoodMartTestCase test) {
 						Member member = test.executeAxis(
 								"[Gender].[F].Lag(1)");
-						test.assertNull(member);
+						Assert.assertNull(member);
 					}
 
 					public void testLagAll(FoodMartTestCase test) {
 						Member member = test.executeAxis(
 								"[Gender].DefaultMember.Lag(2)");
-						test.assertNull(member);
+						Assert.assertNull(member);
 					}
 
 					public void testLagRoot(FoodMartTestCase test) {
 						Member member = test.executeAxis(
 								"[Time].[1998].Lag(1)");
-						test.assertEquals("1997", member.getName());
+						Assert.assertEquals("1997", member.getName());
 					}
 
 					public void testLagRootTooFar(FoodMartTestCase test) {
 						Member member = test.executeAxis("[Time].[1998].Lag(2)");
-						test.assertNull(member);
+						Assert.assertNull(member);
 					}
 				}));
 
@@ -1148,25 +1148,25 @@ public class BuiltinFunTable extends FunTable {
 			public void testLastChild(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"[Gender].LastChild");
-				test.assertEquals("M", member.getName());
+				Assert.assertEquals("M", member.getName());
 			}
 
 			public void testLastChildLastInLevel(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"[Time].[1997].[Q4].LastChild");
-				test.assertEquals("12", member.getName());
+				Assert.assertEquals("12", member.getName());
 			}
 
 			public void testLastChildAll(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"[Gender].[All Gender].LastChild");
-				test.assertEquals("M", member.getName());
+				Assert.assertEquals("M", member.getName());
 			}
 
 			public void testLastChildOfChildless(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"[Gender].[M].LastChild");
-				test.assertNull(member);
+				Assert.assertNull(member);
 			}
 		});
 
@@ -1189,19 +1189,19 @@ public class BuiltinFunTable extends FunTable {
 			public void testLastSibling(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"[Gender].[F].LastSibling");
-				test.assertEquals("M", member.getName());
+				Assert.assertEquals("M", member.getName());
 			}
 
 			public void testLastSiblingFirstInLevel(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"[Time].[1997].[Q1].LastSibling");
-				test.assertEquals("Q4", member.getName());
+				Assert.assertEquals("Q4", member.getName());
 			}
 
 			public void testLastSiblingAll(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"[Gender].[All Gender].LastSibling");
-				test.assertTrue(member.isAll());
+        Assert.assertTrue(member.isAll());
 			}
 
 			public void testLastSiblingRoot(FoodMartTestCase test) {
@@ -1209,13 +1209,13 @@ public class BuiltinFunTable extends FunTable {
 				// [1997], [1998] do not have parents.
 				Member member = test.executeAxis(
 						"[Time].[1998].LastSibling");
-				test.assertEquals("1998", member.getName());
+				Assert.assertEquals("1998", member.getName());
 			}
 
 			public void testLastSiblingNull(FoodMartTestCase test) {
 				Member member = test.executeAxis(
 						"[Gender].[F].FirstChild.LastSibling");
-				test.assertNull(member);
+				Assert.assertNull(member);
 			}
 		});
 
@@ -1232,19 +1232,19 @@ public class BuiltinFunTable extends FunTable {
 					public void testLead(FoodMartTestCase test) {
 						Member member = test.executeAxis(
 								"[Time].[1997].[Q2].[4].Lead(4)");
-						test.assertEquals("8", member.getName());
+						Assert.assertEquals("8", member.getName());
 					}
 
 					public void testLeadNegative(FoodMartTestCase test) {
 						Member member = test.executeAxis(
 								"[Gender].[M].Lead(-1)");
-						test.assertEquals("F", member.getName());
+						Assert.assertEquals("F", member.getName());
 					}
 
 					public void testLeadLastInLevel(FoodMartTestCase test) {
 						Member member = test.executeAxis(
 								"[Gender].[M].Lead(3)");
-						test.assertNull(member);
+						Assert.assertNull(member);
 					}
 				}));
 
@@ -1260,20 +1260,20 @@ public class BuiltinFunTable extends FunTable {
 			public void testBasic2(FoodMartTestCase test) {
 				Result result = test.runQuery(
 						"select {[Gender].[F].NextMember} ON COLUMNS from Sales");
-				test.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("M"));
+        Assert.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("M"));
 			}
 
 			public void testFirstInLevel2(FoodMartTestCase test) {
 				Result result = test.runQuery(
 						"select {[Gender].[M].NextMember} ON COLUMNS from Sales");
-				test.assertTrue(result.getAxes()[0].positions.length == 0);
+        Assert.assertTrue(result.getAxes()[0].positions.length == 0);
 			}
 
 			public void testAll2(FoodMartTestCase test) {
 				Result result = test.runQuery(
 						"select {[Gender].PrevMember} ON COLUMNS from Sales");
 				// previous to [Gender].[All] is null, so no members are returned
-				test.assertTrue(result.getAxes()[0].positions.length == 0);
+        Assert.assertTrue(result.getAxes()[0].positions.length == 0);
 			}
 		});
 
@@ -1294,20 +1294,20 @@ public class BuiltinFunTable extends FunTable {
 			public void testBasic5(FoodMartTestCase test) {
 				Result result = test.runQuery(
 						"select{ [Product].[All Products].[Drink].Parent} on columns from Sales");
-				test.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("All Products"));
+        Assert.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("All Products"));
 			}
 
 			public void testFirstInLevel5(FoodMartTestCase test) {
 				Result result = test.runQuery(
 						"select {[Time].[1997].[Q2].[4].Parent} on columns,{[Gender].[M]} on rows from Sales");
-				test.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("Q2"));
+        Assert.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("Q2"));
 			}
 
 			public void testAll5(FoodMartTestCase test) {
 				Result result = test.runQuery(
 						"select {[Time].[1997].[Q2].Parent} on columns,{[Gender].[M]} on rows from Sales");
 				// previous to [Gender].[All] is null, so no members are returned
-				test.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("1997"));
+        Assert.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("1997"));
 			}
 		});
 
@@ -1320,20 +1320,20 @@ public class BuiltinFunTable extends FunTable {
 			public void testBasic(FoodMartTestCase test) {
 				Result result = test.runQuery(
 						"select {[Gender].[M].PrevMember} ON COLUMNS from Sales");
-				test.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("F"));
+        Assert.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("F"));
 			}
 
 			public void testFirstInLevel(FoodMartTestCase test) {
 				Result result = test.runQuery(
 						"select {[Gender].[F].PrevMember} ON COLUMNS from Sales");
-				test.assertTrue(result.getAxes()[0].positions.length == 0);
+        Assert.assertTrue(result.getAxes()[0].positions.length == 0);
 			}
 
 			public void testAll(FoodMartTestCase test) {
 				Result result = test.runQuery(
 						"select {[Gender].PrevMember} ON COLUMNS from Sales");
 				// previous to [Gender].[All] is null, so no members are returned
-				test.assertTrue(result.getAxes()[0].positions.length == 0);
+        Assert.assertTrue(result.getAxes()[0].positions.length == 0);
 			}
 		});
 		if (false) define(new FunDefBase("ValidMeasure", "ValidMeasure(<Tuple>)", "Returns a valid measure in a virtual cube by forcing inapplicable dimensions to their top level.", "fm*"));
@@ -1486,7 +1486,7 @@ public class BuiltinFunTable extends FunTable {
 				public void testAvg(FoodMartTestCase test) {
 					String result = test.executeExpr(
 							"AVG({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
-					test.assertEquals("188,412.71", result);
+					Assert.assertEquals("188,412.71", result);
 				}
 				//todo: testAvgWithNulls
 			}));
@@ -1502,7 +1502,7 @@ public class BuiltinFunTable extends FunTable {
 				}
 				public void testCorrelation(FoodMartTestCase test) {
 					String result = test.executeExpr("Correlation({[Store].[All Stores].[USA].children}, [Measures].[Unit Sales], [Measures].[Store Sales]) * 1000000");
-					test.assertEquals("999,906", result);
+					Assert.assertEquals("999,906", result);
 				}
 			}));
 
@@ -1520,7 +1520,7 @@ public class BuiltinFunTable extends FunTable {
 				public void testCount(FoodMartTestCase test) {
 					String result = test.executeExpr(
 							"count({[Promotion Media].[Media Type].members})");
-					test.assertEquals("14", result);
+					Assert.assertEquals("14", result);
 				}
 				//todo: testCountNull, testCountNoExp
 			}));
@@ -1536,7 +1536,7 @@ public class BuiltinFunTable extends FunTable {
 				}
 				public void testCovariance(FoodMartTestCase test) {
 					String result = test.executeExpr("Covariance({[Store].[All Stores].[USA].children}, [Measures].[Unit Sales], [Measures].[Store Sales])");
-					test.assertEquals("1,355,761,899", result);
+					Assert.assertEquals("1,355,761,899", result);
 				}
 			}));
 		define(new FunkResolver(
@@ -1551,7 +1551,7 @@ public class BuiltinFunTable extends FunTable {
 				}
 				public void testCovarianceN(FoodMartTestCase test) {
 					String result = test.executeExpr("CovarianceN({[Store].[All Stores].[USA].children}, [Measures].[Unit Sales], [Measures].[Store Sales])");
-					test.assertEquals("2,033,642,849", result);
+					Assert.assertEquals("2,033,642,849", result);
 				}
 			}));
 		define(new FunDefBase("IIf", "IIf(<Logical Expression>, <Numeric Expression1>, <Numeric Expression2>)", "Returns one of two numeric values determined by a logical test.", "fnbnn") {
@@ -1563,7 +1563,7 @@ public class BuiltinFunTable extends FunTable {
 			public void testIIfNumeric(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"IIf(([Measures].[Unit Sales],[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]) > 100, 45, 32)");
-				test.assertEquals("45", s);
+				Assert.assertEquals("45", s);
 			}
 		});
 		if (false) define(new FunDefBase("LinRegIntercept", "LinRegIntercept(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Calculates the linear regression of a set and returns the value of b in the regression line y = ax + b.", "fn*"));
@@ -1583,7 +1583,7 @@ public class BuiltinFunTable extends FunTable {
 				public void testMax(FoodMartTestCase test) {
 					String result = test.executeExpr(
 							"MAX({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
-					test.assertEquals("263,793.22", result);
+					Assert.assertEquals("263,793.22", result);
 				}
 			}));
 		define(new FunkResolver(
@@ -1600,7 +1600,7 @@ public class BuiltinFunTable extends FunTable {
 				public void testMedian(FoodMartTestCase test) {
 					String result = test.executeExpr(
 							"MEDIAN({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
-					test.assertEquals("159,167.84", result);
+					Assert.assertEquals("159,167.84", result);
 				}
 				public void testMedian2(FoodMartTestCase test) {
 					test.runQueryCheckResult(
@@ -1688,7 +1688,7 @@ public class BuiltinFunTable extends FunTable {
 				public void testMin(FoodMartTestCase test) {
 					String result = test.executeExpr(
 							"MIN({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
-					test.assertEquals("142,277.07", result);
+					Assert.assertEquals("142,277.07", result);
 				}
 			}));
 		define(new FunDefBase("Ordinal", "<Level>.Ordinal", "Returns the zero-based ordinal value associated with a level.", "pnl"));
@@ -1715,7 +1715,7 @@ public class BuiltinFunTable extends FunTable {
 					public void testStdev(FoodMartTestCase test) {
 						String result = test.executeExpr(
 								"STDEV({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
-						test.assertEquals("65,825.45", result);
+						Assert.assertEquals("65,825.45", result);
 					}
 				}));
 		define(new FunkResolver(
@@ -1740,7 +1740,7 @@ public class BuiltinFunTable extends FunTable {
 					public void testStdevP(FoodMartTestCase test) {
 						String result = test.executeExpr(
 								"STDEVP({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
-						test.assertEquals("53,746.26", result);
+						Assert.assertEquals("53,746.26", result);
 					}
 				}));
 		define(new FunkResolver(
@@ -1755,7 +1755,7 @@ public class BuiltinFunTable extends FunTable {
 					public void testSumNoExp(FoodMartTestCase test) {
 						String result = test.executeExpr(
 								"SUM({[Promotion Media].[Media Type].members})");
-						test.assertEquals("266,773", result);
+						Assert.assertEquals("266,773", result);
 					}
 				}));
 		define(new FunDefBase("Value", "<Measure>.Value", "Returns the value of a measure.", "pnm") {
@@ -1810,7 +1810,7 @@ public class BuiltinFunTable extends FunTable {
 					public void testVar(FoodMartTestCase test) {
 						String result = test.executeExpr(
 								"VAR({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
-						test.assertEquals("4,332,990,493.69", result);
+						Assert.assertEquals("4,332,990,493.69", result);
 					}
 				}));
 		define(new FunkResolver(
@@ -1845,7 +1845,7 @@ public class BuiltinFunTable extends FunTable {
 					public void testVarP(FoodMartTestCase test) {
 						String result = test.executeExpr(
 								"VARP({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
-						test.assertEquals("2,888,660,329.13", result);
+						Assert.assertEquals("2,888,660,329.13", result);
 					}
 				}));
 
@@ -2303,9 +2303,9 @@ public class BuiltinFunTable extends FunTable {
 						"where ([Time].[1997].[Q1])");
 				Axis rows = result.getAxes()[1];
 				// if slicer were ignored, there would be 3 rows
-				test.assertEquals(1, rows.positions.length);
+				Assert.assertEquals(1, rows.positions.length);
 				Cell cell = result.getCell(new int[] {0,0});
-				test.assertEquals("30,114", cell.getFormattedValue());
+				Assert.assertEquals("30,114", cell.getFormattedValue());
 			}
 			public void testFilterCompound(FoodMartTestCase test) {
 				Result result = test.execute(
@@ -2318,13 +2318,13 @@ public class BuiltinFunTable extends FunTable {
 						"from Sales" + nl +
 						"where ([Time].[1997].[Q1])");
 				Position[] rows = result.getAxes()[1].positions;
-				test.assertTrue(rows.length == 3);
-				test.assertEquals("F", rows[0].members[0].getName());
-				test.assertEquals("WA", rows[0].members[1].getName());
-				test.assertEquals("M", rows[1].members[0].getName());
-				test.assertEquals("OR", rows[1].members[1].getName());
-				test.assertEquals("M", rows[2].members[0].getName());
-				test.assertEquals("WA", rows[2].members[1].getName());
+        Assert.assertTrue(rows.length == 3);
+				Assert.assertEquals("F", rows[0].members[0].getName());
+				Assert.assertEquals("WA", rows[0].members[1].getName());
+				Assert.assertEquals("M", rows[1].members[0].getName());
+				Assert.assertEquals("OR", rows[1].members[1].getName());
+				Assert.assertEquals("M", rows[2].members[0].getName());
+				Assert.assertEquals("WA", rows[2].members[1].getName());
 			}
 		});
 
@@ -3142,7 +3142,7 @@ public class BuiltinFunTable extends FunTable {
 						"         [Product].[All Products].children ) ) )) on rows" +nl +
 						"from Sales where ([Time].[1997])");
 				final Axis rowsAxis = result.getAxes()[1];
-				test.assertEquals(45, rowsAxis.positions.length);
+				Assert.assertEquals(45, rowsAxis.positions.length);
 			}
 		});
 
@@ -3350,7 +3350,7 @@ public class BuiltinFunTable extends FunTable {
 			public void testIIf(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"IIf(([Measures].[Unit Sales],[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]) > 100, \"Yes\",\"No\")");
-				test.assertEquals("Yes", s);
+				Assert.assertEquals("Yes", s);
 			}
 		});
 		define(new FunDefBase("Name", "<Dimension>.Name", "Returns the name of a dimension.", "pSd") {
@@ -3361,7 +3361,7 @@ public class BuiltinFunTable extends FunTable {
 
 			public void testDimensionName(FoodMartTestCase test) {
 				String s = test.executeExpr("[Time].[1997].Dimension.Name");
-				test.assertEquals("Time", s);
+				Assert.assertEquals("Time", s);
 			}
 		});
 		define(new FunDefBase("Name", "<Hierarchy>.Name", "Returns the name of a hierarchy.", "pSh") {
@@ -3373,7 +3373,7 @@ public class BuiltinFunTable extends FunTable {
 			public void testHierarchyName(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"[Time].[1997].Hierarchy.Name");
-				test.assertEquals("Time", s);
+				Assert.assertEquals("Time", s);
 			}
 		});
 		define(new FunDefBase("Name", "<Level>.Name", "Returns the name of a level.", "pSl") {
@@ -3384,7 +3384,7 @@ public class BuiltinFunTable extends FunTable {
 
 			public void testLevelName(FoodMartTestCase test) {
 				String s = test.executeExpr("[Time].[1997].Level.Name");
-				test.assertEquals("Year", s);
+				Assert.assertEquals("Year", s);
 			}
 		});
 		define(new FunDefBase("Name", "<Member>.Name", "Returns the name of a member.", "pSm") {
@@ -3395,7 +3395,7 @@ public class BuiltinFunTable extends FunTable {
 
 			public void testMemberName(FoodMartTestCase test) {
 				String s = test.executeExpr("[Time].[1997].Name");
-				test.assertEquals("1997", s);
+				Assert.assertEquals("1997", s);
 			}
 		});
 		define(new FunDefBase("SetToStr", "SetToStr(<Set>)", "Constructs a string from a set.", "fSx"));
@@ -3409,7 +3409,7 @@ public class BuiltinFunTable extends FunTable {
 			public void testDimensionUniqueName(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"[Gender].DefaultMember.Dimension.UniqueName");
-				test.assertEquals("[Gender]", s);
+				Assert.assertEquals("[Gender]", s);
 			}
 		});
 		define(new FunDefBase("UniqueName", "<Hierarchy>.UniqueName", "Returns the unique name of a hierarchy.", "pSh") {
@@ -3421,7 +3421,7 @@ public class BuiltinFunTable extends FunTable {
 			public void testHierarchyUniqueName(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"[Gender].DefaultMember.Hierarchy.UniqueName");
-				test.assertEquals("[Gender]", s);
+				Assert.assertEquals("[Gender]", s);
 			}
 		});
 		define(new FunDefBase("UniqueName", "<Level>.UniqueName", "Returns the unique name of a level.", "pSl") {
@@ -3433,7 +3433,7 @@ public class BuiltinFunTable extends FunTable {
 			public void testLevelUniqueName(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"[Gender].DefaultMember.Level.UniqueName");
-				test.assertEquals("[Gender].[(All)]", s);
+				Assert.assertEquals("[Gender].[(All)]", s);
 			}
 		});
 		define(new FunDefBase("UniqueName", "<Member>.UniqueName", "Returns the unique name of a member.", "pSm") {
@@ -3445,13 +3445,13 @@ public class BuiltinFunTable extends FunTable {
 			public void testMemberUniqueName(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"[Gender].DefaultMember.UniqueName");
-				test.assertEquals("[Gender].[All Gender]", s);
+				Assert.assertEquals("[Gender].[All Gender]", s);
 			}
 
 			public void testMemberUniqueNameOfNull(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"[Measures].[Unit Sales].FirstChild.UniqueName");
-				test.assertEquals("[Measures].[#Null]", s); // MSOLAP gives "" here
+				Assert.assertEquals("[Measures].[#Null]", s); // MSOLAP gives "" here
 			}
 		});
 
@@ -3589,17 +3589,17 @@ public class BuiltinFunTable extends FunTable {
 			public void testCaseTestMatch(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"CASE WHEN 1=0 THEN \"first\" WHEN 1=1 THEN \"second\" WHEN 1=2 THEN \"third\" ELSE \"fourth\" END");
-				test.assertEquals("second", s);
+				Assert.assertEquals("second", s);
 			}
 			public void testCaseTestMatchElse(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"CASE WHEN 1=0 THEN \"first\" ELSE \"fourth\" END");
-				test.assertEquals("fourth", s);
+				Assert.assertEquals("fourth", s);
 			}
 			public void testCaseTestMatchNoElse(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"CASE WHEN 1=0 THEN \"first\" END");
-				test.assertEquals("(null)", s);
+				Assert.assertEquals("(null)", s);
 			}
 		});
 
@@ -3668,17 +3668,17 @@ public class BuiltinFunTable extends FunTable {
 			public void testCaseMatch(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"CASE 2 WHEN 1 THEN \"first\" WHEN 2 THEN \"second\" WHEN 3 THEN \"third\" ELSE \"fourth\" END");
-				test.assertEquals("second", s);
+				Assert.assertEquals("second", s);
 			}
 			public void testCaseMatchElse(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"CASE 7 WHEN 1 THEN \"first\" ELSE \"fourth\" END");
-				test.assertEquals("fourth", s);
+				Assert.assertEquals("fourth", s);
 			}
 			public void testCaseMatchNoElse(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"CASE 8 WHEN 0 THEN \"first\" END");
-				test.assertEquals("(null)", s);
+				Assert.assertEquals("(null)", s);
 			}
 		});
 
@@ -3727,7 +3727,7 @@ public class BuiltinFunTable extends FunTable {
 			public void testPropertiesExpr(FoodMartTestCase test) {
 				String s = test.executeExpr(
 						"[Store].[USA].[CA].[Beverly Hills].[Store 6].Properties(\"Store Type\")");
-				test.assertEquals("Gourmet Supermarket", s);
+				Assert.assertEquals("Gourmet Supermarket", s);
 			}
 
 			/** Tests that non-existent property throws an error. **/
@@ -3744,7 +3744,7 @@ public class BuiltinFunTable extends FunTable {
 						"                   [Store].CurrentMember.Properties(\"Store Type\") = \"Supermarket\" )," + nl +
 						"           10, [Store Sales]) ON ROWS" + nl +
 						"FROM [Sales]");
-				test.assertEquals(8, result.getAxes()[1].positions.length);
+				Assert.assertEquals(8, result.getAxes()[1].positions.length);
 			}
 
 			public void testPropertyInCalculatedMember(FoodMartTestCase test) {
@@ -3759,17 +3759,17 @@ public class BuiltinFunTable extends FunTable {
 				Member member;
 				Cell cell;
 				member = result.getAxes()[1].positions[18].members[0];
-				test.assertEquals("[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]", member.getUniqueName());
+				Assert.assertEquals("[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]", member.getUniqueName());
 				cell = result.getCell(new int[] {0,18});
-				test.assertEquals("2,237", cell.getFormattedValue());
+				Assert.assertEquals("2,237", cell.getFormattedValue());
 				cell = result.getCell(new int[] {1,18});
-				test.assertEquals(".17", cell.getFormattedValue());
+				Assert.assertEquals(".17", cell.getFormattedValue());
 				member = result.getAxes()[1].positions[3].members[0];
-				test.assertEquals("[Store].[All Stores].[Mexico].[DF].[San Andres].[Store 21]", member.getUniqueName());
+				Assert.assertEquals("[Store].[All Stores].[Mexico].[DF].[San Andres].[Store 21]", member.getUniqueName());
 				cell = result.getCell(new int[] {0,3});
-				test.assertEquals("(null)", cell.getFormattedValue());
+				Assert.assertEquals("(null)", cell.getFormattedValue());
 				cell = result.getCell(new int[] {1,3});
-				test.assertEquals("NaN", cell.getFormattedValue());
+				Assert.assertEquals("NaN", cell.getFormattedValue());
 			}
 		});
 
@@ -3867,7 +3867,7 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testPlus(FoodMartTestCase test) {
 				String s = test.executeExpr("1+2");
-				test.assertEquals("3", s);
+				Assert.assertEquals("3", s);
 			}
 		});
 		define(new FunDefBase("-", "<Numeric Expression> - <Numeric Expression>", "Subtracts two numbers.", "innn") {
@@ -3878,12 +3878,12 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testMinus(FoodMartTestCase test) {
 				String s = test.executeExpr("1-3");
-				test.assertEquals("-2", s);
+				Assert.assertEquals("-2", s);
 			}
 			public void testMinusAssociativity(FoodMartTestCase test) {
 				String s = test.executeExpr("11-7-5");
 				// right-associative would give 11-(7-5) = 9, which is wrong
-				test.assertEquals("-1", s);
+				Assert.assertEquals("-1", s);
 			}
 		});
 		define(new FunDefBase("*", "<Numeric Expression> * <Numeric Expression>", "Multiplies two numbers.", "innn") {
@@ -3894,11 +3894,11 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testMultiply(FoodMartTestCase test) {
 				String s = test.executeExpr("4*7");
-				test.assertEquals("28", s);
+				Assert.assertEquals("28", s);
 			}
 			public void testMultiplyPrecedence(FoodMartTestCase test) {
 				String s = test.executeExpr("3 + 4 * 5 + 6");
-				test.assertEquals("29", s);
+				Assert.assertEquals("29", s);
 			}
 		});
 		define(new FunDefBase("/", "<Numeric Expression> / <Numeric Expression>", "Divides two numbers.", "innn") {
@@ -3914,15 +3914,15 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testDivide(FoodMartTestCase test) {
 				String s = test.executeExpr("10 / 5");
-				test.assertEquals("2", s);
+				Assert.assertEquals("2", s);
 			}
 			public void testDivideByZero(FoodMartTestCase test) {
 				String s = test.executeExpr("-3 / (2 - 2)");
-				test.assertEquals("-Infinity", s);
+				Assert.assertEquals("-Infinity", s);
 			}
 			public void testDividePrecedence(FoodMartTestCase test) {
 				String s = test.executeExpr("24 / 4 / 2 * 10 - -1");
-				test.assertEquals("31", s);
+				Assert.assertEquals("31", s);
 			}
 		});
 		define(new FunDefBase("-", "- <Numeric Expression>", "Returns the negative of a number.", "Pnn") {
@@ -3932,15 +3932,15 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testUnaryMinus(FoodMartTestCase test) {
 				String s = test.executeExpr("-3");
-				test.assertEquals("-3", s);
+				Assert.assertEquals("-3", s);
 			}
 			public void testUnaryMinusMember(FoodMartTestCase test) {
 				String s = test.executeExpr("- ([Measures].[Unit Sales],[Gender].[F])");
-				test.assertEquals("-131,558", s);
+				Assert.assertEquals("-131,558", s);
 			}
 			public void testUnaryMinusPrecedence(FoodMartTestCase test) {
 				String s = test.executeExpr("1 - -10.5 * 2 -3");
-				test.assertEquals("19", s);
+				Assert.assertEquals("19", s);
 			}
 		});
 		define(new FunDefBase("||", "<String Expression> || <String Expression>", "Concatenates two strings.", "iSSS") {
@@ -3951,11 +3951,11 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testStringConcat(FoodMartTestCase test) {
 				String s = test.executeExpr(" \"foo\" || \"bar\"  ");
-				test.assertEquals("foobar", s);
+				Assert.assertEquals("foobar", s);
 			}
 			public void testStringConcat2(FoodMartTestCase test) {
 				String s = test.executeExpr(" \"foo\" || [Gender].[M].Name || \"\" ");
-				test.assertEquals("fooM", s);
+				Assert.assertEquals("fooM", s);
 			}
 		});
 		define(new FunDefBase("AND", "<Logical Expression> AND <Logical Expression>", "Returns the conjunction of two conditions.", "ibbb") {
@@ -3966,11 +3966,11 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testAnd(FoodMartTestCase test) {
 				String s = test.executeBooleanExpr(" 1=1 AND 2=2 ");
-				test.assertEquals("true", s);
+				Assert.assertEquals("true", s);
 			}
 			public void testAnd2(FoodMartTestCase test) {
 				String s = test.executeBooleanExpr(" 1=1 AND 2=0 ");
-				test.assertEquals("false", s);
+				Assert.assertEquals("false", s);
 			}
 		});
 		define(new FunDefBase("OR", "<Logical Expression> OR <Logical Expression>", "Returns the disjunction of two conditions.", "ibbb") {
@@ -3982,25 +3982,25 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testOr(FoodMartTestCase test) {
 				String s = test.executeBooleanExpr(" 1=0 OR 2=0 ");
-				test.assertEquals("false", s);
+				Assert.assertEquals("false", s);
 			}
 			public void testOr2(FoodMartTestCase test) {
 				String s = test.executeBooleanExpr(" 1=0 OR 0=0 ");
-				test.assertEquals("true", s);
+				Assert.assertEquals("true", s);
 			}
 			public void testOrAssociativity1(FoodMartTestCase test) {
 				String s = test.executeBooleanExpr(" 1=1 AND 1=0 OR 1=1 ");
 				// Would give 'false' if OR were stronger than AND (wrong!)
-				test.assertEquals("true", s);
+				Assert.assertEquals("true", s);
 			}
 			public void testOrAssociativity2(FoodMartTestCase test) {
 				String s = test.executeBooleanExpr(" 1=1 OR 1=0 AND 1=1 ");
 				// Would give 'false' if OR were stronger than AND (wrong!)
-				test.assertEquals("true", s);
+				Assert.assertEquals("true", s);
 			}
 			public void testOrAssociativity3(FoodMartTestCase test) {
 				String s = test.executeBooleanExpr(" (1=0 OR 1=1) AND 1=1 ");
-				test.assertEquals("true", s);
+				Assert.assertEquals("true", s);
 			}
 		});
 		define(new FunDefBase("XOR", "<Logical Expression> XOR <Logical Expression>", "Returns whether two conditions are mutually exclusive.", "ibbb") {
@@ -4011,12 +4011,12 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testXor(FoodMartTestCase test) {
 				String s = test.executeBooleanExpr(" 1=1 XOR 2=2 ");
-				test.assertEquals("false", s);
+				Assert.assertEquals("false", s);
 			}
 			public void testXorAssociativity(FoodMartTestCase test) {
 				// Would give 'false' if XOR were stronger than AND (wrong!)
 				String s = test.executeBooleanExpr(" 1 = 1 AND 1 = 1 XOR 1 = 0 ");
-				test.assertEquals("true", s);
+				Assert.assertEquals("true", s);
 			}
 		});
 		define(new FunDefBase("NOT", "NOT <Logical Expression>", "Returns the negation of a condition.", "Pbb") {
@@ -4025,15 +4025,15 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testNot(FoodMartTestCase test) {
 				String s = test.executeBooleanExpr(" NOT 1=1 ");
-				test.assertEquals("false", s);
+				Assert.assertEquals("false", s);
 			}
 			public void testNotNot(FoodMartTestCase test) {
 				String s = test.executeBooleanExpr(" NOT NOT 1=1 ");
-				test.assertEquals("true", s);
+				Assert.assertEquals("true", s);
 			}
 			public void testNotAssociativity(FoodMartTestCase test) {
 				String s = test.executeBooleanExpr(" 1=1 AND NOT 1=1 OR NOT 1=1 AND 1=1 ");
-				test.assertEquals("false", s);
+				Assert.assertEquals("false", s);
 			}
 		});
 		define(new FunDefBase("=", "<String Expression> = <String Expression>", "Returns whether two expressions are equal.", "ibSS") {
@@ -4044,15 +4044,15 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testStringEquals(FoodMartTestCase test) {
 				String s = test.executeBooleanExpr(" \"foo\" = \"bar\" ");
-				test.assertEquals("false", s);
+				Assert.assertEquals("false", s);
 			}
 			public void testStringEqualsAssociativity(FoodMartTestCase test) {
 				String s = test.executeBooleanExpr(" \"foo\" = \"fo\" || \"o\" ");
-				test.assertEquals("true", s);
+				Assert.assertEquals("true", s);
 			}
 			public void testStringEqualsEmpty(FoodMartTestCase test) {
 				String s = test.executeBooleanExpr(" \"\" = \"\" ");
-				test.assertEquals("true", s);
+				Assert.assertEquals("true", s);
 			}
 		});
 		define(new FunDefBase("=", "<Numeric Expression> = <Numeric Expression>", "Returns whether two expressions are equal.", "ibnn") {
@@ -4063,7 +4063,7 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testEq(FoodMartTestCase test) {
 				String s = test.executeBooleanExpr(" 1.0 = 1 ");
-				test.assertEquals("true", s);
+				Assert.assertEquals("true", s);
 			}
 		});
 		define(new FunDefBase("<>", "<String Expression> <> <String Expression>", "Returns whether two expressions are not equal.", "ibSS") {
@@ -4074,7 +4074,7 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testStringNe(FoodMartTestCase test) {
 				String s = test.executeBooleanExpr(" \"foo\" <> \"bar\" ");
-				test.assertEquals("true", s);
+				Assert.assertEquals("true", s);
 			}
 		});
 		define(new FunDefBase("<>", "<Numeric Expression> <> <Numeric Expression>", "Returns whether two expressions are not equal.", "ibnn") {
@@ -4085,12 +4085,12 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testNe(FoodMartTestCase test) {
 				String s = test.executeBooleanExpr(" 2 <> 1.0 + 1.0 ");
-				test.assertEquals("false", s);
+				Assert.assertEquals("false", s);
 			}
 			public void testNeInfinity(FoodMartTestCase test) {
 				String s = test.executeBooleanExpr("(1 / 0) <> (1 / 0)");
 				// Infinity does not equal itself
-				test.assertEquals("false", s);
+				Assert.assertEquals("false", s);
 			}
 		});
 		define(new FunDefBase("<", "<Numeric Expression> < <Numeric Expression>", "Returns whether an expression is less than another.", "ibnn") {
@@ -4101,7 +4101,7 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testLt(FoodMartTestCase test) {
 				String s = test.executeBooleanExpr(" 2 < 1.0 + 1.0 ");
-				test.assertEquals("false", s);
+				Assert.assertEquals("false", s);
 			}
 		});
 		define(new FunDefBase("<=", "<Numeric Expression> <= <Numeric Expression>", "Returns whether an expression is less than or equal to another.", "ibnn") {
@@ -4112,7 +4112,7 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testLe(FoodMartTestCase test) {
 				String s = test.executeBooleanExpr(" 2 <= 1.0 + 1.0 ");
-				test.assertEquals("true", s);
+				Assert.assertEquals("true", s);
 			}
 		});
 		define(new FunDefBase(">", "<Numeric Expression> > <Numeric Expression>", "Returns whether an expression is greater than another.", "ibnn") {
@@ -4123,7 +4123,7 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testGt(FoodMartTestCase test) {
 				String s = test.executeBooleanExpr(" 2 > 1.0 + 1.0 ");
-				test.assertEquals("false", s);
+				Assert.assertEquals("false", s);
 			}
 		});
 		define(new FunDefBase(">=", "<Numeric Expression> >= <Numeric Expression>", "Returns whether an expression is greater than or equal to another.", "ibnn") {
@@ -4134,7 +4134,7 @@ public class BuiltinFunTable extends FunTable {
 			}
 			public void testGe(FoodMartTestCase test) {
 				String s = test.executeBooleanExpr(" 2 > 1.0 + 1.0 ");
-				test.assertEquals("false", s);
+				Assert.assertEquals("false", s);
 			}
 		});
 	}

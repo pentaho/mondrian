@@ -753,14 +753,14 @@ class SqlMemberSource implements MemberReader
 			return true;
 		}
 		Exp getExpression() {
-			return ((RolapHierarchy) getHierarchy()).getAggregateChildrenExpression();
+			return ((RolapHierarchy) super.getHierarchy()).getAggregateChildrenExpression();
 		}
 
 		public Object getPropertyValue(String name) {
 			if (name.equals(Property.PROPERTY_CONTRIBUTING_CHILDREN)) {
 				List list = new ArrayList();
 				list.add(dataMember);
-				((RolapHierarchy) getHierarchy()).memberReader.getMemberChildren(this, list);
+				((RolapHierarchy) super.getHierarchy()).memberReader.getMemberChildren(this, list);
 				return list;
 			} else {
 				return super.getPropertyValue(name);
