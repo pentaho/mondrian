@@ -284,7 +284,7 @@ copy.properties"/>
     </javac>
   </target>
 
-  <target name="compile.tests" depends="compile.java">
+  <target name="compile.tests" depends="info,compile.java">
     <javac
         srcdir="${javatest.dir}"
         destdir="${testclasses.dir}"
@@ -710,6 +710,9 @@ You should set scp.user, scp.password and scp.path in build.properties">
         <fileset dir="${catalina.home}/common/lib" includes="commons-*.jar" excludes="commons-el*.jar"/>
         <mapper type="regexp" from="(^.+)-([.0-9]+\.jar$)" to="\1.jar" /> <!-- strip version -->
       </copy>
+      <copy todir="${testlib.dir}">
+        <fileset dir="${junit.home}" includes="junit.jar"/>
+       </copy>
     </target>
 
   <target name="war" depends="jar,copy-jars" description="
