@@ -21,8 +21,9 @@
 
 <body>
 <h1>Architecture</h1>
+<h2><a name="Layers_of_a_Mondrian_system">Layers of a Mondrian system</a></h2>
 <p>A Mondrian OLAP System consists of four layers; working from the eyes of the 
-end-user to the bowels of the data center, these are the presentation layer, the 
+end-user to the bowels of the data center, these are as follows: the presentation layer, the 
 calculation layer, the aggregation layer, and the storage layer.</p>
 <p>The <dfn>presentation layer</dfn> determines what 
 the end-user sees on his or her monitor, and how he or she can interact to ask 
@@ -54,7 +55,8 @@ responsible for providing aggregated cell data, and members from dimension
 tables. I describe <a href="#Storage_and_aggregation_strategies">below</a> why I 
 decided to use the features of the RDBMS rather than developing a storage system 
 optimized for multidimensional data.</p>
-<p>All four of these components can exist on the same machine. Layers 2 and 3, 
+<p>These components can all exist on the same machine, or can be distributed 
+between machines. Layers 2 and 3, 
 which comprise the Mondrian server, must be on the same machine. The storage 
 layer could be on another machine, accessed via remote JDBC connection. In a 
 multi-user system, the presentation layer would exist on each end-user's machine 
@@ -123,12 +125,141 @@ own, it can be installed by adding a JAR file to the class path and be up and
 running immediately. Because there are no redundant data sets to manage, the 
 data-loading process is easier, and Mondrian is ideally suited to do OLAP on 
 data sets which change in real time.</p>
-<p><i>Note to self</i>: The cache manager ought to distinguish between data which is being 
-pulled into the cache to be rolled up immediately into some other aggregation, 
-and an aggregation which is explicitly needed.</p>
 
-<h2>MDX query language</h2>
-<i>to be written...</i>
+<h2><a name="API">API</a></h2>
+
+<p>Mondrian provides an API for client applications to execute queries.</p>
+
+<p>Since there is no widely universally accepted API for executing OLAP queries, 
+Mondrian's primary API proprietary; however, anyone who has used JDBC should 
+find it familiar. The main difference is the query language: Mondrian uses a 
+language called MDX ('<b>M</b>ulti<b>-D</b>imensional e<b>X</b>pressions') to 
+specify queries, where JDBC would use SQL. MDX is described in more detail
+<a href="#MDX">below</a>.</p>
+
+<p>The following Java fragment connects to Mondrian, executes a query, and 
+prints the results:</p>
+<blockquote>
+  <pre><font color="#000080">import</font> mondrian.olap.*;
+<font color="#000080">import</font> java.io.PrintWriter;
+
+<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Connection.html">Connection</a> connection = <a href="http://mondrian.sourceforge.net/api/mondrian/olap/DriverManager.html">DriverManager</a>.<a href="http://mondrian.sourceforge.net/api/mondrian/olap/DriverManager.html#getConnection(java.lang.String, java.lang.String, boolean)">getConnection</a>(
+    <font color="#800080">&quot;Provider=mondrian;&quot;</font> +
+    <font color="#800080">&quot;Jdbc=jdbc:odbc:MondrianFoodMart;&quot;</font> +
+    <font color="#800080">&quot;Catalog=/WEB-INF/FoodMart.xml;&quot;</font>,
+    <font color="#000080">null</font>,
+    <font color="#000080">false</font>);
+<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Query.html">Query</a> query = connection.<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Connection.html#parseQuery(java.lang.String)">parseQuery</a>(
+    <font color="#800080">&quot;SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} on columns,&quot;</font> +
+    <font color="#800080">&quot;  {[Product].children} on rows &quot;</font> +
+    <font color="#800080">&quot;FROM [Sales] &quot;</font> +
+    <font color="#800080">&quot;WHERE ([Time].[1997].[Q1], [Store].[CA].[San Francisco])&quot;</font>);
+<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Result.html">Result</a> result = connection.<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Connection.html#execute(mondrian.olap.Query)">execute</a>(query);
+result.<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Result.html#print(java.io.PrintWriter)">print</a>(new <a href="http://java.sun.com/j2se/1.4/docs/api/java/io/PrintWriter.html">PrintWriter</a>(<a href="http://java.sun.com/j2se/1.4/docs/api/java/lang/System.html#out">System.out</a>));</pre>
+</blockquote>
+
+<p>A <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Connection.html">
+Connection</a> is created via a
+<a href="http://mondrian.sourceforge.net/api/mondrian/olap/DriverManager.html">
+DriverManager</a>, in a similar way to JDBC. A
+<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Query.html">Query</a> 
+is analogous to a JDBC
+<a href="http://java.sun.com/j2se/1.4/docs/api/java/sql/Statement.html">
+Statement</a>, and is created by parsing an MDX string. A
+<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Result.html">Result</a> 
+is analogous to a JDBC
+<a href="http://java.sun.com/j2se/1.4/docs/api/java/sql/ResultSet.html">
+ResultSet</a>; since we are dealing with multi-dimensional data, it consists of 
+axes and cells, rather than rows and columns. Since OLAP is intended for data 
+exploration, you can modify the parse tree contained in a query by operations 
+such as
+<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Query.html#drillDown(mondrian.olap.Level)">
+drillDown</a> and
+<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Query.html#sort(int, int, mondrian.olap.Member[])">
+sort</a>, then re-execute the query.</p>
+
+<p>The API also presents the database schema as a set of objects:
+<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Schema.html">Schema</a>,
+<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Cube.html">Cube</a>,
+<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Dimension.html">
+Dimension</a>,
+<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Hierarchy.html">
+Hierarchy</a>,
+<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Level.html">Level</a>,
+<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Member.html">Member</a><i><b>.
+</b></i>For more information about the Mondrian API, see
+<a href="http://mondrian.sourceforge.net/api/overview-summary.html">the javadoc</a>.</p>
+
+<p>To comply with emerging standards, we are adding two APIs to Mondrian:</p>
+<ul>
+  <li>
+  <a href="http://java.sun.com/aboutJava/communityprocess/jsr/jsr_069_jolap.html">
+  JOLAP</a> is a standard emerging from the JSR process, and it will become part 
+  of J2EE sometime in 2003. We have a few simple JOLAP queries running in
+  <a href="http://mondrian.sourceforge.net/api/mondrian/test/JolapTest.html">
+  class mondrian.test.JolapTest</a>.</li>
+  <li><a href="http://xmla.org/default.asp">XML for Analysis</a> is a standard 
+  for accessing OLAP servers via SOAP (Simple Object Access Protocol). This will 
+  allow non-Java components like Microsoft Excel to run queries against Mondrian.</li>
+</ul>
+<h2><a name="MDX">MDX</a></h2>
+<p>MDX is a language for querying multidimensional databases, in the same way 
+that SQL is used to query relational databases. It was originally defined as 
+part of the OLE DB for OLAP specification, and a similar language, mdXML, is 
+part of the XML for Analysis specification.</p>
+<p>Since you can read
+<a href="http://msdn.microsoft.com/library/en-us/olapdmad/agmdxbasics_04qg.asp">
+the specification online</a> and there are <a href="faq.html#Further_reading">
+some great books on MDX available</a>, I won't describe the full MDX language. 
+Mondrian's extensions to MDX are parameters and modified builtin functions.</p>
+<h3>Parameters</h3>
+<p>A parameter is a named variable embedded in an MDX query. Every parameter has 
+a default value, but you can supply a different value when you run the query.</p>
+<p>Parameters are declared and used by using a special function <code>Parameter</code>:</p>
+<blockquote>
+  <pre>Parameter(<i>&lt;name&gt;</i>, <i>&lt;type&gt;</i>, <i>&lt;defaultValue&gt;</i>[, <i>&lt;description&gt;</i>])</pre>
+</blockquote>
+<p>The arguments of <code>Parameter</code> are as follows:</p>
+<ul>
+  <li><code>name</code> is a string constant. It must be unique within the 
+  query.</li>
+  <li><code>type</code> is either NUMERIC, STRING, or the name of a hierarchy.</li>
+  <li><code>defaultValue</code> is an expression. The expression's type must be 
+  consistent with the <code>type</code> parameter; if <code>type</code> was a 
+  hierarchy, the expression must be a member of that hierarchy.</li>
+  <li><code>description</code> is an optional string constant.</li>
+</ul>
+<p>If you want to use a parameter more than once in a query, use the <code>
+ParamRef</code> function:</p>
+<blockquote>
+  <pre>ParamRef(<i>&lt;name&gt;</i>)</pre>
+</blockquote>
+<p>The <code>name</code> argument must be the name of a parameter declared 
+elsewhere in the query by calling the <code>Parameter</code> function.</p>
+<p>The following query shows the top 10 brands in California, but you could 
+change the <code>Count</code> parameter to show the top 5, or the <code>Region</code> 
+parameter to show sales in Seattle:</p>
+<blockquote>
+  <pre>SELECT {[Measures].[Unit Sales]} on columns,
+       TopCount([Product].[Brand].members,
+                Parameter(&quot;Count&quot;, NUMERIC, 10, &quot;Number of products to show&quot;),
+                (Parameter(&quot;Region&quot;, [Store], [Store].[USA].[CA]),
+                 [Measures].[Unit Sales])) on rows
+FROM Sales</pre>
+</blockquote>
+<p>You can list a query's parameters by calling
+<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Query.html#getParameters()">
+Query.getParameters()</a>, and change a parameter's value by calling
+<a href="http://mondrian.sourceforge.net/api/mondrian/olap/Query.html#setParameter(java.lang.String, java.lang.String)">
+Query.setParameter(String name, String value)</a>.</p>
+<h3>Builtin functions</h3>
+<p>The <code>StrToSet()</code> and <code>StrToTuple()</code> functions take an 
+optional parameter not present in the standard MDX versions of these functions, 
+describing the hierarchy the result will belong to:</p>
+<blockquote>
+  <pre>StrToSet(&lt;String Expression&gt;[, &lt;Hierarchy&gt;])
+StrToTuple(&lt;String Expression&gt;[, &lt;Hierarchy&gt;])</pre>
+</blockquote>
 
 <hr>
 
@@ -137,8 +268,9 @@ and an aggregation which is explicitly needed.</p>
     <td class="content">
       <a target="_top" href="index.html">Home</a> |
       <a target="_top" href="noframes.html">No frames</a> | This file is<i>
-      <a href="http://apoptosis.dyndns.org:8080/open/mondrian/doc/components.html">$Id$
-      </a></i> (<a href="http://apoptosis.dyndns.org:8080/open/mondrian/doc/components.html?ac=22">log</a>)</td>
+      <a href="http://apoptosis.dyndns.org:8080/open/mondrian/doc/architecture.html">
+        $Id$
+      </a></i> (<a href="http://apoptosis.dyndns.org:8080/open/mondrian/doc/architecture.html?ac=22">log</a>)</td>
     <td align="right">
       <a href="http://sourceforge.net">
         <img src="http://sourceforge.net/sflogo.php?group_id=35302&type=1" width="88" height="31" border="0" alt="SourceForge.net Logo">

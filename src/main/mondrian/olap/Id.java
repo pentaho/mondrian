@@ -92,23 +92,25 @@ public class Id
 		if (names.size() == 1) {
 			String upper = ((String) names.elementAt(0)).toUpperCase();
 			if (upper.equals("ASC") ||
-				upper.equals("DESC") ||
-				upper.equals("BASC") ||
-				upper.equals("BDESC") ||
-				upper.equals("ALL") ||
-				upper.equals("RECURSIVE") ||
-				upper.equals("SELF") ||
-				upper.equals("AFTER") ||
-				upper.equals("BEFORE") ||
-				upper.equals("BEFORE_AND_AFTER") ||
-				upper.equals("SELF_AND_AFTER") ||
-				upper.equals("SELF_AND_BEFORE") ||
-				upper.equals("SELF_BEFORE_AFTER") ||
-				upper.equals("EXCLUDEEMPTY") ||
-				upper.equals("INCLUDEEMPTY") ||
+					upper.equals("DESC") ||
+					upper.equals("BASC") ||
+					upper.equals("BDESC") ||
+					upper.equals("ALL") ||
+					upper.equals("RECURSIVE") ||
+					upper.equals("SELF") ||
+					upper.equals("AFTER") ||
+					upper.equals("BEFORE") ||
+					upper.equals("BEFORE_AND_AFTER") ||
+					upper.equals("SELF_AND_AFTER") ||
+					upper.equals("SELF_AND_BEFORE") ||
+					upper.equals("SELF_BEFORE_AFTER") ||
+					upper.equals("EXCLUDEEMPTY") ||
+					upper.equals("INCLUDEEMPTY") ||
 					upper.equals("PRE") ||
 					upper.equals("POST") ||
-				upper.equals("NULL") ){
+					upper.equals("NULL") ||
+					upper.equals("NUMERIC") ||
+					upper.equals("STRING")) {
 				return Literal.createSymbol(upper);
 			}
 		}

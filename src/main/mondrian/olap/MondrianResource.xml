@@ -167,6 +167,10 @@
     <text>Parameter ''{0}'' is defined ''{1,number}'' times</text>
 </exception>
 
+<exception id="350245" name="MdxParamNeverDef">
+	<text>Parameter ''{0}'' is referenced but never defined</text>
+</exception>
+
 <exception id="350250" name="MdxParamValueNotFound">
     <text>Parameter''s ''{0}'' value not found</text>
 </exception>

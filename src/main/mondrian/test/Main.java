@@ -106,12 +106,13 @@ public class Main {
 			return (Test) o;
 		}
 		TestSuite suite = new TestSuite();
-		suite.addTestSuite(FoodMartTestCase.class);
+		suite.addTestSuite(BasicQueryTest.class);
 		suite.addTest(BuiltinFunTable.suite());
 		suite.addTestSuite(Schedule.ScheduleTestCase.class);
 		suite.addTest(Util.suite());
 		suite.addTest(CachePool.suite());
 		suite.addTestSuite(TestAggregationManager.class);
+		suite.addTestSuite(ParameterTest.class);
 		return suite;
 	}
 

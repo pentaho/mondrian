@@ -11,62 +11,41 @@
 */
 
 package mondrian.olap;
-import java.util.*;
-import java.io.*;
+import mondrian.olap.fun.ParameterFunDef;
+
+import java.io.PrintWriter;
 
 public class Parameter extends ExpBase {
 	String name;
 	int category; // CatString, CatNumeric, or CatMember
 	Hierarchy hierarchy;
-	String hierarchyUniqueName; // if type == hierarchy
-	String defaultValue;
-	String currentValue; // if null, use default
-	/** the Member underlying currentValue. Is null if parameter is not a
-	 * hierarchy, or if the member does not exist (which is valid, since the
-	 * cube may not have been loaded yet). */
-	Member mdxMember;
+	Exp exp;
 	String description;
-	int nDefines;
-	/** how many times is object used in the query **/
-	int  nUses;
-	/** unparse() needs that flag to decide if it needs to print definition **/
-	boolean bDefPrinted;
-	/** this is flag to delete the unused parameter **/
-	boolean toBeDeleted;
+	int defineCount;
+	/** How many times this parameter has been printed; first time we output
+	 * a "Parameter" function, subsequent times, a "ParamRef". **/
+	int printCount;
 
-	Parameter( FunCall fParam )
-	{
-		nUses = 0;
-		nDefines = 0;
-		bDefPrinted = false;
-		toBeDeleted = false;
-		update( fParam );
+	Parameter(FunCall funCall) {
+		defineCount = 0;
+		printCount = 0;
+		update(funCall);
 	}
 
 	Parameter(
-		String name, int category, Hierarchy hierarchy, String defaultValue,
-		String currentValue, boolean toBeDeleted, Member mdxMember,
+		String name, int category, Hierarchy hierarchy, Exp exp,
 		String description)
 	{
 		this.name = name;
 		this.category = category;
 		this.hierarchy = hierarchy;
-		if (hierarchy != null) {
-			this.hierarchyUniqueName = hierarchy.getUniqueName();
-		}
-		this.defaultValue = defaultValue;
-		this.currentValue = currentValue;
-		this.nUses = 0;
-		this.bDefPrinted = false;
-		this.nDefines = 1;
-		this.toBeDeleted = toBeDeleted;
-		this.mdxMember = mdxMember;
+		this.exp = exp;
+		this.printCount = 0;
+		this.defineCount = 1;
 		this.description = description;
 	}
 
-	static Parameter[] cloneArray(Parameter[] a)
-		throws CloneNotSupportedException
-	{
+	static Parameter[] cloneArray(Parameter[] a) {
 		if (a == null)
 			return null;
 		Parameter[] a2 = new Parameter[a.length];
@@ -79,65 +58,37 @@ public class Parameter extends ExpBase {
 		return category;
 	}
 
-	// this function updates certain properties of Parameter object
-	void update( FunCall fParam )
+	public Exp getExp() {
+		return exp;
+	}
+
+	/**
+	 * Sets or updates properties of this <code>Parameter</code> based upon a
+	 * "Parameter" or "ParamRef" function call.
+	 */
+	void update(FunCall funCall)
 	{
-		for( int i = 0; i < fParam.args.length; i++ ){
-			if( i != 1 ){
-				if (!(fParam.args[i] instanceof Literal)) {
-					throw Util.getRes().newMdxParamArgInvalid(
-						fParam.args[i].toString(), fParam.args[0].toString());
-				}
-			} else {
-				if (!(fParam.args[i] instanceof Literal ||
-					  fParam.args[i] instanceof Dimension)) {
-					throw Util.getRes().newMdxParamTypeInvalid(
-						fParam.args[i].toString(), fParam.args[0].toString());
-				}
-			}
-		}
+		ParameterFunDef parameterFunDef = (ParameterFunDef) funCall.getFunDef();
 
 		// If this is not the first time we've seen this parameter, check that
 		// the name is the same.
-		String name = (String) ((Literal)(fParam.args[0])).getValue();
 		if (this.name != null) {
-			Util.assertTrue(
-				name.equals(this.name), "parameter renamed");
-		} else {
-			this.name = name;
+			if (!this.name.equals(parameterFunDef.parameterName)) {
+				throw Util.newInternal("parameter renamed from " + this.name +
+						" to " + parameterFunDef.parameterName);
+			}
 		}
+		this.name = parameterFunDef.parameterName;
 
-		if( fParam.getFunName().equalsIgnoreCase( "Parameter" )) {
-			//parameter definition
-			++nDefines;
-
-			// Get the type
-			if( fParam.args[1] instanceof Literal ){
-				String val = (String) ((Literal)(fParam.args[1])).getValue();
-				if (val.equalsIgnoreCase("string")) {
-					category = CatString;
-				} else if (val.equalsIgnoreCase("number")) {
-					category = CatNumeric;
-				} else {
-					category = CatMember;
-					hierarchyUniqueName = val;
-				}
-			} else {
-				category = CatMember;
-				hierarchyUniqueName = ((Dimension)(fParam.args[1])).getUniqueName();
-			}
-			defaultValue = (String) ((Literal)(fParam.args[2])).getValue();
-			if( fParam.args.length > 3){
-				description = (String) ((Literal)(fParam.args[3])).getValue();
-			}
-		} else if( fParam.getFunName().equalsIgnoreCase( "ParamRef") ){
-			//parameter reference
-			if( fParam.args.length > 1 ){
-				currentValue = (String) ((Literal)(fParam.args[1])).getValue();
-			}
+		if (parameterFunDef.isDefinition()) {
+			// parameter definition
+			++defineCount;
+			exp = parameterFunDef.exp;
+			description = parameterFunDef.parameterDescription;
+			category = funCall.getType();
+			hierarchy = funCall.getHierarchy();
 		} else {
-			throw Util.getRes().newInternal(
-				"Parser error: Unknown symbol " + fParam.args[0].toString());
+			// parameter reference
 		}
 	}
 
@@ -162,51 +113,36 @@ public class Parameter extends ExpBase {
 		if (p != this) {
 			return p;			// will resolve it later
 		}
-
-		hierarchy = null;
-		if (hierarchyUniqueName != null) {
-			hierarchy = query.getCube().lookupHierarchy(
-				hierarchyUniqueName, true);
-			setMember(query);
-		}
-
 		return this;
 	}
 
-	public String getName()
-	{return name;}
+	public String getName() {
+		return name;
+	}
 
-	public String getValue()
+	/**
+	 * todo: Remove this method, and require the client to call
+	 * {@link Connection#parseExpression}
+	 */
+	public void setValue(String value, NameResolver st)
 	{
-		if( currentValue != null ){
-			return currentValue;
+		switch (category) {
+		case CatNumeric:
+			exp = Literal.create(new Double(value));
+			break;
+		case CatString:
+			exp = Literal.createString(value);
+			break;
+		case CatMember:
+			exp = Util.lookupMember(st, value, false);
 		}
-		return defaultValue;
 	}
 
-	public String getDefaultValue()
-	{
-		return defaultValue;
-	}
-
-	public void setValue( String value, NameResolver st )
-	{
-		currentValue = value;
-		setMember( st );
-	}
-
+	/**
+	 * Returns "STRING", "NUMERIC" or "MEMBER"
+	 */
 	public String getParameterType() {
-		return category == CatString ? "string" :
-			category == CatNumeric  ? "number" :
-			"member";
-	}
-
-	public String getHierarchyName() {
-		return hierarchyUniqueName;
-	}
-
-	public String getMemberCaption() {
-		return mdxMember == null ? null : mdxMember.getCaption();
+		return Exp.catEnum.getName(category).toUpperCase();
 	}
 
 	public String getDescription() {
@@ -214,10 +150,15 @@ public class Parameter extends ExpBase {
 	}
 
 	public void validate(Query q) {
-		if (nDefines != 1) {
-			throw MondrianResource.instance().newMdxParamMultipleDef(name, new Integer(nDefines));
+		switch (defineCount) {
+		case 0:
+			throw MondrianResource.instance().newMdxParamNeverDef(name);
+		case 1:
+			break;
+		default:
+			throw MondrianResource.instance().newMdxParamMultipleDef(name, new Integer(defineCount));
 		}
-		if (!(defaultValue != null || currentValue != null)) {
+		if (exp == null) {
 			throw Util.getRes().newMdxParamValueNotFound(name);
 		}
 	}
@@ -226,79 +167,37 @@ public class Parameter extends ExpBase {
 		return hierarchy;
 	}
 
-	public Member getMember()
-	{
-		return mdxMember;
-	}
-
-	public Member getMember(NameResolver st)
-	{
-		if (hierarchyUniqueName != null) {
-			String sMember = getValue();
-			return Util.lookupMember(st, sMember, true);
-		}
-		return null;
-	}
-
-	public Object clone()
-	{
-		return new Parameter(
-			name, category, hierarchy, defaultValue,
-			currentValue, toBeDeleted, mdxMember, description);
+	public Object clone() {
+		return new Parameter(name, category, hierarchy, exp, description);
 	}
 
 	public void unparse(PrintWriter pw, ElementCallback callback)
 	{
-		String value = getValue();
-		if (!callback.isPlatoMdx()) {
-			// reconstructing query for the webUI
-			String parameter = null;
-			String commaSpace = ", ";
-			if (!bDefPrinted) {
-				if (hierarchyUniqueName != null &&
-					!hierarchyUniqueName.equals("")) {
-					Dimension mdxDim = getHierarchy().getDimension();
-					Util.assertTrue(
-						mdxDim != null,
-						"No dimension associated with member parameter " +
-						name);
-					String hierStr = callback.registerItself(mdxDim);
-					if (hierStr == null) {
-						hierStr = hierarchyUniqueName;
-					}
-					String quotedValue = null;
-					if (mdxMember != null) {
-						quotedValue = callback.registerItself(mdxMember);
-					}
-					if (quotedValue != null) {
-						// do not escape if it's from BAFL!!
-						quotedValue = "\"" + quotedValue + "\"";
-					} else {
-						quotedValue = Util.quoteForMdx(value);
-					}
-					parameter = "Parameter(" + Util.quoteForMdx(name) +
-						commaSpace + hierStr + commaSpace + quotedValue;
-				} else {
-					parameter = "Parameter(" +
-						Util.quoteForMdx(name) + commaSpace +
-						Util.quoteForMdx(getParameterType()) + commaSpace +
-						Util.quoteForMdx(value);
-				}
-				if (description != null) {
-					parameter += commaSpace + Util.quoteForMdx(description);
-				}
-				parameter += ")";
-				bDefPrinted = true;
-			} else {
-				parameter = "ParamRef(" + Util.quoteForMdx(name) + ")";
-			}
-			pw.print(parameter);
+		if (callback.isPlatoMdx()) {
+			exp.unparse(pw, callback);
 		} else {
-			// constructing query for plato
-			if (category != CatString) {
-				pw.print(value);
+			// reconstructing query for the webUI
+			if (printCount++ > 0) {
+				pw.print("ParamRef(" + Util.quoteForMdx(name) + ")");
 			} else {
-				pw.print(Util.quoteForMdx(value));
+				pw.print("Parameter(" + Util.quoteForMdx(name) + ", ");
+				switch (category) {
+				case CatString:
+				case CatNumeric:
+					pw.print(getParameterType());
+					break;
+				case CatMember:
+					hierarchy.unparse(pw, callback);
+					break;
+				default:
+					throw Util.newInternal("bad case " + category);
+				}
+				pw.print(", ");
+				exp.unparse(pw, callback);
+				if (description != null) {
+					pw.print(", " + Util.quoteForMdx(description));
+				}
+				pw.print(")");
 			}
 		}
 	}
@@ -310,46 +209,23 @@ public class Parameter extends ExpBase {
 		return null;
 	}
 
-	public boolean isUsed()
-	{
-		if( this.nUses > 0 ){
-			return true;
-		} else {
-			this.toBeDeleted = true;
+	/** Returns whether this parameter is equal to another, based upon name,
+	 * type and value */
+	public boolean equals(Object other) {
+		if (!(other instanceof Parameter)) {
 			return false;
 		}
+		Parameter that = (Parameter) other;
+		return that.getName().equals(this.getName()) &&
+			that.getType() == this.getType() &&
+			that.exp.equals(this.exp);
 	}
 
-	public boolean isToBeDeleted()
-	{ return toBeDeleted;}
-
-	void setMember(NameResolver st)
-	{
-		if (category == CatMember) {
-			mdxMember = Util.lookupMember(st, getValue(), false);
-		}
+	public void resetPrintProperty() {
+		this.printCount = 0;
 	}
 
-	/** Returns whether <code>this</code> is equal to <code>other</code>
-	 * Parameter based on name, type and value */
-	public boolean equals( Object other )
-	{
-		if( !( other instanceof Parameter )){
-			return false;
-		}
-		Parameter otherParameter = ( Parameter ) other;
-		return otherParameter.getName().equals(this.getName()) &&
-			otherParameter.getType() == this.getType() &&
-			otherParameter.getValue().equals(this.getValue());
-	}
-
-	public void resetPrintProperty()
-	{ this.bDefPrinted = false;}
-
-
-	// implement Exp
-	public Object evaluate(Evaluator evaluator)
-	{
+	public Object evaluate(Evaluator evaluator) {
 		return evaluator.xx(this);
 	}
 }

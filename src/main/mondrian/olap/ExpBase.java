@@ -11,8 +11,7 @@
 */
 
 package mondrian.olap;
-import java.util.*;
-import java.io.*;
+import java.io.PrintWriter;
 
 /**
  * Skeleton implementation of {@link Exp} interface.
@@ -169,7 +168,6 @@ public abstract class ExpBase
 
 	public static String getSignature(
 			String name, int syntacticType, int returnType, int[] argTypes) {
-		String prefix = "";
 		switch (syntacticType) {
 		case FunDef.TypeInfix:
 			// e.g. "<Numeric Expression> / <Numeric Expression>"
@@ -211,7 +209,7 @@ public abstract class ExpBase
 	}
 
 	private static String getTypeDescription(int type) {
-		switch (type) {
+		switch (type & CatMask) {
 		case CatUnknown:
 			return "<Unknown>";
 		case CatArray:
@@ -227,12 +225,10 @@ public abstract class ExpBase
 		case CatMember:
 			return "<Member>";
 		case CatNumeric:
-		case CatNumeric | CatExpression:
 			return "<Numeric Expression>";
 		case CatSet:
 			return "<Set>";
 		case CatString:
-		case CatString | CatExpression:
 			return "<String Expression>";
 		case CatTuple:
 			return "<Tuple>";

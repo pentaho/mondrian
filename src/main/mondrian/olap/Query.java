@@ -123,14 +123,12 @@ public class Query extends QueryPart implements NameResolver {
 		for (int i = 0; i < axes.length; i++) {
 			String correctName = axisNames[i];
 			if (!axes[i].axisName.equalsIgnoreCase(correctName)) {
-				boolean found = false;
 				for (int j = i + 1; j < axes.length; j++) {
 					if (axes[j].axisName.equalsIgnoreCase(correctName)) {
 						// swap axes
 						QueryAxis temp = axes[i];
 						axes[i] = axes[j];
 						axes[j] = temp;
-						found = true;
 						break;
 					}
 				}
@@ -187,7 +185,7 @@ public class Query extends QueryPart implements NameResolver {
 				axes[i].axisOrdinal = i;
 				axes[i].unparse(pw, callback);
 				if (i < axes.length - 1) {
-					pw.println(", ");
+					pw.println(",");
 					pw.print("  ");
 				} else {
 					pw.println();
@@ -466,19 +464,6 @@ public class Query extends QueryPart implements NameResolver {
 			slicer = new FunCall(
 				"()", new Exp[] {slicer}, FunDef.TypeParentheses);
 		}
-	}
-
-	private boolean usesDimension(Dimension dimension)
-	{
-		for (int iAxis = 0; iAxis < axes.length; iAxis++) {
-			if (axes[iAxis].set.usesDimension(dimension)) {
-				return true;
-			}
-		}
-		if (slicer != null && slicer.usesDimension(dimension)) {
-			return true;
-		}
-		return false;
 	}
 
 	/** Returns an enumeration, each item of which is an Ob containing a
@@ -993,7 +978,7 @@ public class Query extends QueryPart implements NameResolver {
 		} else {
 			throw Util.newInternal(
 				"findHierarchy returned a " +
-				Exp.catEnum.getName(e.getType()));
+				Exp.catEnum.getName(e.getType()).toUpperCase());
 		}
 	}
 
@@ -1314,18 +1299,21 @@ public class Query extends QueryPart implements NameResolver {
 		}
 	}
 
-	//
-	public Parameter createOrLookupParam(FunCall fParam)
+	/**
+	 * Creates or retrieves the parameter corresponding to a "Parameter" or
+	 * "ParamRef" function call.
+	 */
+	Parameter createOrLookupParam(FunCall funCall)
 	{
 		//this is a definition of parameter
 		Util.assertTrue(
-			fParam.args[0] instanceof Literal,
+			funCall.args[0] instanceof Literal,
 			"The name of parameter has to be a quoted string");
-		String name = (String) ((Literal)fParam.args[0]).getValue();
+		String name = (String) ((Literal)funCall.args[0]).getValue();
 		Parameter param = lookupParam(name);
-		if( param == null ){
+		if (param == null) {
 			// Create a new parameter.
-			param = new Parameter( fParam );
+			param = new Parameter(funCall);
 
 			// Append it to the array of known parameters.
 			Parameter[] oldParameters = parameters;
@@ -1337,52 +1325,50 @@ public class Query extends QueryPart implements NameResolver {
 
 		} else {
 			// the parameter is already defined, update it
-			param.update( fParam );
+			param.update(funCall);
 		}
 		return param;
 	}
 
-	public Parameter lookupParam( String pName )
+	/**
+	 * Returns a parameter with a given name, or <code>null</code> if there is
+	 * no such parameter.
+	 */
+	public Parameter lookupParam(String parameterName)
 	{
-		for( int i = 0; i < parameters.length; i++ ){
-			if( parameters[i].getName().equals(pName )){
+		for (int i = 0; i < parameters.length; i++) {
+			if (parameters[i].getName().equals(parameterName)) {
 				return parameters[i];
 			}
 		}
 		return null;
 	}
 
-	//validate each parameter, calculated their usage and  clean unused ones
-	void resolveParameters()
-	{
+	/**
+	 * Validates each parameter, calculates their usage, and removes unused
+	 * parameters.
+	 */
+	private void resolveParameters() {
 		//validate definitions
-		ArrayList validParameters = new ArrayList();
 		for (int i = 0; i < parameters.length; i++) {
-			if (!parameters[i].isToBeDeleted()) {
-				parameters[i].validate(this);
-				validParameters.add(parameters[i]);
-			}
+			parameters[i].validate(this);
 		}
-		parameters = (Parameter[]) validParameters.toArray(new Parameter[0]);
-
-		//calculate usage
-		for (int i = 0; i < parameters.length; i++) {
-			parameters[i].nUses = 0;
-		}
+		int[] usageCount = new int[parameters.length];
 		Walker queryElements = new Walker(this);
 		while (queryElements.hasMoreElements()) {
 			Object queryElement = queryElements.nextElement();
 			if (queryElement instanceof Parameter) {
 				boolean found = false;
 				for (int i = 0; i < parameters.length; i++) {
-					if (parameters[i].equals( queryElement )){
-						parameters[i].nUses++;
+					if (parameters[i].equals(queryElement)) {
+						usageCount[i]++;
 						found = true;
 						break;
 					}
 				}
-				if (!found) throw Util.getRes().newMdxParamNotFound(
-						((Parameter) queryElement).name);
+				if (!found) {
+					throw Util.getRes().newMdxParamNotFound(((Parameter) queryElement).name);
+				}
 			}
 		}
 	}

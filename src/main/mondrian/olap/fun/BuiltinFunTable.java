@@ -1,10 +1,9 @@
 /*
 // $Id$
-// (C) Copyright 2002 Kana Software, Inc.
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2002 Kana Software, Inc. and others.
+// (C) Copyright 2002-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -98,7 +97,11 @@ public class BuiltinFunTable extends FunTable {
 	}
 
 	static int decodeReturnType(String flags) {
-		return decodeType(flags, 1);
+		final int returnType = decodeType(flags, 1);
+		if ((returnType & Exp.CatMask) != returnType) {
+			throw Util.newInternal("bad return code flag in flags '" + flags + "'");
+		}
+		return returnType;
 	}
 
 	static int decodeType(String flags, int offset) {
@@ -116,18 +119,16 @@ public class BuiltinFunTable extends FunTable {
 			return Exp.CatLogical;
 		case 'm':
 			return Exp.CatMember;
+		case 'N':
+			return Exp.CatNumeric | Exp.CatConstant;
 		case 'n':
 			return Exp.CatNumeric;
-		case 'N':
-			return Exp.CatNumeric | Exp.CatExpression;
 		case 'x':
 			return Exp.CatSet;
-		case 's':
-			throw new Error("aaagh");
 		case '#':
-			return Exp.CatString;
+			return Exp.CatString | Exp.CatConstant;
 		case 'S':
-			return Exp.CatString | Exp.CatExpression;
+			return Exp.CatString;
 		case 't':
 			return Exp.CatTuple;
 		case 'v':
@@ -221,13 +222,21 @@ public class BuiltinFunTable extends FunTable {
 			case Exp.CatLevel:
 				// "<Member>.Level"
 				return new FunCall("Level", new Exp[]{fromExp}, FunDef.TypeProperty);
-			case Exp.CatNumeric:
-			case Exp.CatString: //todo: assert is a string member
+			case Exp.CatNumeric | Exp.CatConstant:
+			case Exp.CatString | Exp.CatConstant: //todo: assert is a string member
 				// "<Member>.Value"
 				return new FunCall("Value", new Exp[]{fromExp}, FunDef.TypeProperty);
 			case Exp.CatValue:
-			case Exp.CatNumeric | Exp.CatExpression:
-			case Exp.CatString | Exp.CatExpression:
+			case Exp.CatNumeric:
+			case Exp.CatString:
+				return fromExp;
+			default:
+				return null;
+			}
+		case Exp.CatNumeric | Exp.CatConstant:
+			switch (to) {
+			case Exp.CatValue:
+			case Exp.CatNumeric:
 				return fromExp;
 			default:
 				return null;
@@ -235,35 +244,27 @@ public class BuiltinFunTable extends FunTable {
 		case Exp.CatNumeric:
 			switch (to) {
 			case Exp.CatValue:
-			case Exp.CatNumeric | Exp.CatExpression:
 				return fromExp;
-			default:
-				return null;
-			}
-		case Exp.CatNumeric | Exp.CatExpression:
-			switch (to) {
-			case Exp.CatValue:
-				return fromExp;
-			case Exp.CatNumeric:
+			case Exp.CatNumeric | Exp.CatConstant:
 				return new FunCall("_Value", new Exp[] {fromExp}, FunDef.TypeFunction);
 			default:
 				return null;
 			}
 		case Exp.CatSet:
 			return null;
-		case Exp.CatString:
+		case Exp.CatString | Exp.CatConstant:
 			switch (to) {
 			case Exp.CatValue:
-			case Exp.CatString | Exp.CatExpression:
+			case Exp.CatString:
 				return fromExp;
 			default:
 				return null;
 			}
-		case Exp.CatString | Exp.CatExpression:
+		case Exp.CatString:
 			switch (to) {
 			case Exp.CatValue:
 				return fromExp;
-			case Exp.CatString:
+			case Exp.CatString | Exp.CatConstant:
 				return new FunCall("_Value", new Exp[] {fromExp}, FunDef.TypeFunction);
 			default:
 				return null;
@@ -273,6 +274,7 @@ public class BuiltinFunTable extends FunTable {
 			case Exp.CatValue:
 				return fromExp;
 			case Exp.CatNumeric:
+			case Exp.CatString:
 				return new FunCall("_Value", new Exp[] {fromExp}, FunDef.TypeFunction);
 			default:
 				return null;
@@ -348,20 +350,20 @@ public class BuiltinFunTable extends FunTable {
 			} else {
 				return false;
 			}
-		case Exp.CatNumeric:
-			return to == Exp.CatValue ||
-				to == (Exp.CatNumeric | Exp.CatExpression);
-		case Exp.CatNumeric | Exp.CatExpression:
+		case Exp.CatNumeric | Exp.CatConstant:
 			return to == Exp.CatValue ||
 				to == Exp.CatNumeric;
+		case Exp.CatNumeric:
+			return to == Exp.CatValue ||
+				to == (Exp.CatNumeric | Exp.CatConstant);
 		case Exp.CatSet:
 			return false;
+		case Exp.CatString | Exp.CatConstant:
+			return to == Exp.CatValue ||
+				to == Exp.CatString;
 		case Exp.CatString:
 			return to == Exp.CatValue ||
-				to == (Exp.CatString | Exp.CatExpression);
-		case Exp.CatString | Exp.CatExpression:
-			return to == Exp.CatValue ||
-				to == Exp.CatExpression;
+				to == (Exp.CatString | Exp.CatConstant);
 		case Exp.CatTuple:
 			return to == Exp.CatValue ||
 				to == Exp.CatNumeric;
@@ -1277,7 +1279,7 @@ public class BuiltinFunTable extends FunTable {
 		if (false) define(new FunDefBase("Aggregate", "Aggregate(<Set>[, <Numeric Expression>])", "Returns a calculated value using the appropriate aggregate function, based on the context of the query.", "fn*"));
 		define(new FunkResolver(
 			"Avg", "Avg(<Set>[, <Numeric Expression>])", "Returns the average value of a numeric expression evaluated over a set.",
-			new String[]{"fnx", "fnxN"},
+			new String[]{"fnx", "fnxn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					Vector members = (Vector) getArg(evaluator, args, 0);
@@ -1293,7 +1295,7 @@ public class BuiltinFunTable extends FunTable {
 			}));
 		define(new FunkResolver(
 			"Correlation", "Correlation(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Returns the correlation of two series evaluated over a set.",
-			new String[]{"fnxN","fnxNN"},
+			new String[]{"fnxn","fnxnn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					Vector members = (Vector) getArg(evaluator, args, 0);
@@ -1335,7 +1337,7 @@ public class BuiltinFunTable extends FunTable {
 			}));
 		define(new FunkResolver(
 			"Covariance", "Covariance(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Returns the covariance of two series evaluated over a set (biased).",
-			new String[]{"fnxN","fnxNN"},
+			new String[]{"fnxn","fnxnn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					Vector members = (Vector) getArg(evaluator, args, 0);
@@ -1350,7 +1352,7 @@ public class BuiltinFunTable extends FunTable {
 			}));
 		define(new FunkResolver(
 			"CovarianceN", "CovarianceN(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Returns the covariance of two series evaluated over a set (unbiased).",
-			new String[]{"fnxN","fnxNN"},
+			new String[]{"fnxn","fnxnn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					Vector members = (Vector) getArg(evaluator, args, 0);
@@ -1371,7 +1373,7 @@ public class BuiltinFunTable extends FunTable {
 		if (false) define(new FunDefBase("LinRegVariance", "LinRegVariance(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Calculates the linear regression of a set and returns the variance associated with the regression line y = ax + b.", "fn*"));
 		define(new FunkResolver(
 			"Max", "Max(<Set>[, <Numeric Expression>])", "Returns the maximum value of a numeric expression evaluated over a set.",
-			new String[]{"fnx", "fnxN"},
+			new String[]{"fnx", "fnxn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					Vector members = (Vector) getArg(evaluator, args, 0);
@@ -1386,7 +1388,7 @@ public class BuiltinFunTable extends FunTable {
 			}));
 		define(new FunkResolver(
 			"Median", "Median(<Set>[, <Numeric Expression>])", "Returns the median value of a numeric expression evaluated over a set.",
-			new String[]{"fnx", "fnxN"},
+			new String[]{"fnx", "fnxn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					Vector members = (Vector) getArg(evaluator, args, 0);
@@ -1404,7 +1406,7 @@ public class BuiltinFunTable extends FunTable {
 
 		define(new FunkResolver(
 			"Min", "Min(<Set>[, <Numeric Expression>])", "Returns the minimum value of a numeric expression evaluated over a set.",
-			new String[]{"fnx", "fnxN"},
+			new String[]{"fnx", "fnxn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					Vector members = (Vector) getArg(evaluator, args, 0);
@@ -1421,7 +1423,7 @@ public class BuiltinFunTable extends FunTable {
 		if (false) define(new FunDefBase("Rank", "Rank(<Tuple>, <Set>)", "Returns the one-based rank of a tuple in a set.", "fn*"));
 		define(new FunkResolver(
 				"Stddev", "Stddev(<Set>[, <Numeric Expression>])", "Alias for Stdev.",
-				new String[]{"fnx", "fnxN"},
+				new String[]{"fnx", "fnxn"},
 				new FunkBase() {
 						public Object evaluate(Evaluator evaluator, Exp[] args) {
 							Vector members = (Vector) getArg(evaluator, args, 0);
@@ -1431,7 +1433,7 @@ public class BuiltinFunTable extends FunTable {
 				}));
 		define(new FunkResolver(
 				"Stdev", "Stdev(<Set>[, <Numeric Expression>])", "Returns the standard deviation of a numeric expression evaluated over a set (unbiased).",
-				new String[]{"fnx", "fnxN"},
+				new String[]{"fnx", "fnxn"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Vector members = (Vector) getArg(evaluator, args, 0);
@@ -1446,7 +1448,7 @@ public class BuiltinFunTable extends FunTable {
 				}));
 		define(new FunkResolver(
 				"StddevP", "StddevP(<Set>[, <Numeric Expression>])", "Alias for StdevP.",
-				new String[]{"fnx", "fnxN"},
+				new String[]{"fnx", "fnxn"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Vector members = (Vector) getArg(evaluator, args, 0);
@@ -1456,7 +1458,7 @@ public class BuiltinFunTable extends FunTable {
 				}));
 		define(new FunkResolver(
 				"StdevP", "StdevP(<Set>[, <Numeric Expression>])", "Returns the standard deviation of a numeric expression evaluated over a set (biased).",
-				new String[]{"fnx", "fnxN"},
+				new String[]{"fnx", "fnxn"},
 				new FunkBase() {
 						public Object evaluate(Evaluator evaluator, Exp[] args) {
 							Vector members = (Vector) getArg(evaluator, args, 0);
@@ -1471,7 +1473,7 @@ public class BuiltinFunTable extends FunTable {
 				}));
 		define(new FunkResolver(
 				"Sum", "Sum(<Set>[, <Numeric Expression>])", "Returns the sum of a numeric expression evaluated over a set.",
-				new String[]{"fnx", "fnxN"},
+				new String[]{"fnx", "fnxn"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Vector members = (Vector) getArg(evaluator, args, 0);
@@ -1521,7 +1523,7 @@ public class BuiltinFunTable extends FunTable {
 		});
 		define(new FunkResolver(
 				"Var", "Var(<Set>[, <Numeric Expression>])", "Returns the variance of a numeric expression evaluated over a set (unbiased).",
-				new String[]{"fnx", "fnxN"},
+				new String[]{"fnx", "fnxn"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Vector members = (Vector) getArg(evaluator, args, 0);
@@ -1536,7 +1538,7 @@ public class BuiltinFunTable extends FunTable {
 				}));
 		define(new FunkResolver(
 				"Variance", "Variance(<Set>[, <Numeric Expression>])", "Alias for Var.",
-				new String[]{"fnx", "fnxN"},
+				new String[]{"fnx", "fnxn"},
 				new FunkBase() {
 						public Object evaluate(Evaluator evaluator, Exp[] args) {
 							Vector members = (Vector) getArg(evaluator, args, 0);
@@ -1546,7 +1548,7 @@ public class BuiltinFunTable extends FunTable {
 				}));
 		define(new FunkResolver(
 				"VarianceP", "VarianceP(<Set>[, <Numeric Expression>])", "Alias for VarP.",
-				new String[]{"fnx", "fnxN"},
+				new String[]{"fnx", "fnxn"},
 				new FunkBase() {
 						public Object evaluate(Evaluator evaluator, Exp[] args) {
 							Vector members = (Vector) getArg(evaluator, args, 0);
@@ -1556,7 +1558,7 @@ public class BuiltinFunTable extends FunTable {
 				}));
 		define(new FunkResolver(
 				"VarP", "VarP(<Set>[, <Numeric Expression>])", "Returns the variance of a numeric expression evaluated over a set (biased).",
-				new String[]{"fnx", "fnxN"},
+				new String[]{"fnx", "fnxn"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Vector members = (Vector) getArg(evaluator, args, 0);
@@ -1577,7 +1579,7 @@ public class BuiltinFunTable extends FunTable {
 			"BottomCount",
 			"BottomCount(<Set>, <Count>[, <Numeric Expression>])",
 			"Returns a specified number of items from the bottom of a set, optionally ordering the set first.",
-			new String[]{"fxxnN", "fxxn"},
+			new String[]{"fxxnn", "fxxn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					Vector set = (Vector) getArg(evaluator, args, 0);
@@ -1604,7 +1606,7 @@ public class BuiltinFunTable extends FunTable {
 			}));
 		define(new FunkResolver(
 			"BottomPercent", "BottomPercent(<Set>, <Percentage>, <Numeric Expression>)", "Sorts a set and returns the bottom N elements whose cumulative total is at least a specified percentage.",
-			new String[]{"fxxnN"},
+			new String[]{"fxxnn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					Vector members = (Vector) getArg(evaluator, args, 0);
@@ -1625,7 +1627,7 @@ public class BuiltinFunTable extends FunTable {
 
 		define(new FunkResolver(
 			"BottomSum", "BottomSum(<Set>, <Value>, <Numeric Expression>)", "Sorts a set and returns the bottom N elements whose cumulative total is at least a specified value.",
-			new String[]{"fxxnN"},
+			new String[]{"fxxnn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					Vector members = (Vector) getArg(evaluator, args, 0);
@@ -2494,7 +2496,7 @@ public class BuiltinFunTable extends FunTable {
 				"TopCount",
 				"TopCount(<Set>, <Count>[, <Numeric Expression>])",
 				"Returns a specified number of items from the top of a set, optionally ordering the set first.",
-				new String[]{"fxxnN", "fxxn"},
+				new String[]{"fxxnn", "fxxn"},
 				new FunkBase() {
 					public Object evaluate(Evaluator evaluator, Exp[] args) {
 						Vector set = (Vector) getArg(evaluator, args, 0);
@@ -2520,7 +2522,7 @@ public class BuiltinFunTable extends FunTable {
 
 		define(new FunkResolver(
 			"TopPercent", "TopPercent(<Set>, <Percentage>, <Numeric Expression>)", "Sorts a set and returns the top N elements whose cumulative total is at least a specified percentage.",
-			new String[]{"fxxnN"},
+			new String[]{"fxxnn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					Vector members = (Vector) getArg(evaluator, args, 0);
@@ -2540,7 +2542,7 @@ public class BuiltinFunTable extends FunTable {
 
 		define(new FunkResolver(
 			"TopSum", "TopSum(<Set>, <Value>, <Numeric Expression>)", "Sorts a set and returns the top N elements whose cumulative total is at least a specified value.",
-			new String[]{"fxxnN"},
+			new String[]{"fxxnn"},
 			new FunkBase() {
 				public Object evaluate(Evaluator evaluator, Exp[] args) {
 					Vector members = (Vector) getArg(evaluator, args, 0);
@@ -2688,6 +2690,14 @@ public class BuiltinFunTable extends FunTable {
 						"[Time].[1997].[Q2].[5]"; // not parents
 				test.assertEquals(expected, test.toString(axis.positions));
 			}
+			public void _testRangeLarge(FoodMartTestCase test) {
+				final Axis axis = test.executeAxis2("[Customers].[USA].[CA].[San Francisco] : [Customers].[USA].[WA].[Seattle]");
+				String expected = "[Time].[1997].[Q1].[2]" + nl +
+						"[Time].[1997].[Q1].[3]" + nl +
+						"[Time].[1997].[Q2].[4]" + nl +
+						"[Time].[1997].[Q2].[5]"; // not parents
+				test.assertEquals(expected, test.toString(axis.positions));
+			}
 			public void testRangeStartEqualsEnd(FoodMartTestCase test) {
 				final Axis axis = test.executeAxis2("[Time].[1997].[Q3].[7] : [Time].[1997].[Q3].[7]");
 				String expected = "[Time].[1997].[Q3].[7]";
@@ -2754,7 +2764,7 @@ public class BuiltinFunTable extends FunTable {
 
 		//
 		// STRING FUNCTIONS
-		define(new FunDefBase("IIf", "IIf(<Logical Expression>, <String Expression1>, <String Expression2>)", "Returns one of two string values determined by a logical test.", "f#b##") {
+		define(new FunDefBase("IIf", "IIf(<Logical Expression>, <String Expression1>, <String Expression2>)", "Returns one of two string values determined by a logical test.", "fSbSS") {
 			public Object evaluate(Evaluator evaluator, Exp[] args) {
 				boolean logical = getBooleanArg(evaluator, args, 0);
 				return getStringArg(evaluator, args, logical ? 1 : 2, null);
@@ -3101,7 +3111,7 @@ public class BuiltinFunTable extends FunTable {
 					   "Returns the value of a member property.",
 					   FunDef.TypeMethod) {
 			public FunDef resolve(Exp[] args, int[] conversionCount) {
-				final int[] argTypes = new int[]{Exp.CatMember, Exp.CatString | Exp.CatExpression};
+				final int[] argTypes = new int[]{Exp.CatMember, Exp.CatString};
 				if (args.length != 2 ||
 						args[0].getType() != Exp.CatMember ||
 						args[1].getType() != Exp.CatString) {
@@ -3188,8 +3198,86 @@ public class BuiltinFunTable extends FunTable {
 
 		//
 		// PARAMETER FUNCTIONS
-		if (false) define(new FunDefBase("Parameter", "Parameter(<Name>, <Type>, <DefaultValue>, <Description>)", "Returns default value of parameter.", "f*"));
-		if (false) define(new FunDefBase("ParamRef", "ParamRef(<Name>)", "Returns current value of parameter. If it's null, returns default.", "f*"));
+		define(new MultiResolver("Parameter", "Parameter(<Name>, <Type>, <DefaultValue>, <Description>)", "Returns default value of parameter.",
+				new String[] {
+					"fS#yS#", "fs#yS", // Parameter(string const, symbol, string[, string const]): string
+					"fn#yn#", "fn#yn", // Parameter(string const, symbol, numeric[, string const]): numeric
+				    "fm#hm#", "fm#hm",  // Parameter(string const, hierarchy constant, member[, string const]): member
+				}) {
+			protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+				String parameterName;
+				if (args[0] instanceof Literal &&
+						args[0].getType() == Exp.CatString) {
+					parameterName = (String) ((Literal) args[0]).getValue();
+				} else {
+					throw newEvalException(dummyFunDef, "Parameter name must be a string constant");
+				}
+				Exp typeArg = args[1];
+				Hierarchy hierarchy;
+				int type;
+				switch (typeArg.getType()) {
+				case Exp.CatHierarchy:
+				case Exp.CatDimension:
+					hierarchy = typeArg.getHierarchy();
+					if (hierarchy == null || !isConstantHierarchy(typeArg)) {
+						throw newEvalException(dummyFunDef, "Invalid hierarchy for parameter '" + parameterName + "'");
+					}
+					type = Exp.CatMember;
+					break;
+				case Exp.CatSymbol:
+					hierarchy = null;
+					String s = (String) ((Literal) typeArg).getValue();
+					if (s.equalsIgnoreCase("NUMERIC")) {
+						type = Exp.CatNumeric;
+						break;
+					} else if (s.equalsIgnoreCase("STRING")) {
+						type = Exp.CatString;
+						break;
+					}
+					// fall through and throw error
+				default:
+					// Error is internal because the function call has already been
+					// type-checked.
+					throw newEvalException(dummyFunDef,
+							"Invalid type for parameter '" + parameterName + "'; expecting NUMERIC, STRING or a hierarchy");
+				}
+				Exp exp = args[2];
+				if (exp.getType() != type) {
+					String typeName = Exp.catEnum.getName(type).toUpperCase();
+					throw newEvalException(dummyFunDef, "Default value of parameter '" + parameterName + "' is inconsistent with its type, " + typeName);
+				}
+				if (type == Exp.CatMember) {
+					Hierarchy expHierarchy = exp.getHierarchy();
+					if (expHierarchy != hierarchy) {
+						throw newEvalException(dummyFunDef, "Default value of parameter '" + parameterName + "' must belong to the hierarchy " + hierarchy);
+					}
+				}
+				String parameterDescription = null;
+				if (args.length > 3) {
+					if (args[3] instanceof Literal &&
+							args[3].getType() == Exp.CatString) {
+						parameterDescription = (String) ((Literal) args[3]).getValue();
+					} else {
+						throw newEvalException(dummyFunDef, "Description of parameter '" + parameterName + "' must be a string constant");
+					}
+				}
+
+				return new ParameterFunDef(dummyFunDef, parameterName, hierarchy, type, exp, parameterDescription);
+			}
+		});
+		define(new MultiResolver("ParamRef", "ParamRef(<Name>)", "Returns current value of parameter. If it's null, returns default.",
+				new String[] {"fv#"}) {
+			protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+				String parameterName;
+				if (args[0] instanceof Literal &&
+						args[0].getType() == Exp.CatString) {
+					parameterName = (String) ((Literal) args[0]).getValue();
+				} else {
+					throw newEvalException(dummyFunDef, "Parameter name must be a string constant");
+				}
+				return new ParameterFunDef(dummyFunDef, parameterName, null, Exp.CatUnknown, null, null);
+			}
+		});
 
 		//
 		// OPERATORS
@@ -3473,6 +3561,33 @@ public class BuiltinFunTable extends FunTable {
 		});
 	}
 
+	private static boolean isConstantHierarchy(Exp typeArg) {
+		if (typeArg instanceof Hierarchy) {
+			// e.g. "[Time].[By Week]"
+			return true;
+		}
+		if (typeArg instanceof Dimension) {
+			// e.g. "[Time]"
+			return true;
+		}
+		if (typeArg instanceof FunCall) {
+			// e.g. "[Time].CurrentMember.Hierarchy". They probably wrote
+			// "[Time]", and the automatic type conversion did the rest.
+			FunCall hierarchyCall = (FunCall) typeArg;
+			if (hierarchyCall.getFunName().equals("Hierarchy") &&
+					hierarchyCall.args.length > 0 &&
+					hierarchyCall.args[0] instanceof FunCall) {
+				FunCall currentMemberCall = (FunCall) hierarchyCall.args[0];
+				if (currentMemberCall.getFunName().equals("CurrentMember") &&
+						currentMemberCall.args.length > 0 &&
+						currentMemberCall.args[0] instanceof Dimension) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	TestSuite createSuite() {
 		TestSuite suite = new TestSuite("builtin functions");
 		for (Iterator resolverses = upperName2Resolvers.values().iterator();
@@ -3489,39 +3604,6 @@ public class BuiltinFunTable extends FunTable {
 	/** Standard method recognised by JUnit. **/
 	public static Test suite() {
 		return ((BuiltinFunTable) instance()).createSuite();
-	}
-
-	void test() {
-		String[] stmts = new String[]{
-			"select CoalesceEmpty(1,2) from Sales",
-			"select CoalesceEmpty(\"a\",\"b\") from Sales",
-			"select <a dimension>.Dimension from Sales",
-			"select <a hierarchy>.Dimension from Sales",
-			"select <a level>.Dimension from Sales",
-			"select <a member>.Dimension from Sales",
-			"select Dimensions(1) from Sales",
-			"select Dimensions(\"a\") from Sales",
-			"select <a level>.Hierarchy from Sales",
-			"select <a member>.Hierarchy from Sales",
-			"select IIf(<b>, <n>, <n>) from Sales",
-			"select IIf(<b>, <s>, <s>) from Sales",
-			"select <tuple>.Item(<n>) from Sales",
-			"select <set>.Item(\"a\", \"b\") from Sales",
-			"select <set>.Item(<n>) from Sales",
-			"select <a dimension>.Levels(1) from Sales",
-			"select Levels(\"a\") from Sales",
-			"select <a dimension>.Members from Sales",
-			"select <a hierarchy>.Members from Sales",
-			"select <a level>.Members from Sales",
-			"select <a dimension>.Name from Sales",
-			"select <a hierarchy>.Name from Sales",
-			"select <a level>.Name from Sales",
-			"select <a member>.Name from Sales",
-			"select <a dimension>.UniqueName from Sales",
-			"select <a hierarchy>.UniqueName from Sales",
-			"select <a level>.UniqueName from Sales",
-			"select <a member>.UniqueName from Sales",
-		};
 	}
 
 	private boolean isValidProperty(

@@ -45,7 +45,11 @@ public interface Exp {
 	/** Any expression yielding a string or numeric value. **/
 	final int CatValue     = 14;
 	/** Expression which is to be evaluated later. **/
-	final int CatExpression = 32;
+	final int CatExpression = 0;
+	/** Flag which indicates that expression must be constant. **/
+	final int CatConstant = 64;
+	/** Mask to remove flags. **/
+	final int CatMask = 31;
 	final EnumeratedValues catEnum = new EnumeratedValues(new String[] {
 		"unknown", "array", "dimension", "hierarchy", "level", "logical",
 		"member", "numeric", "set", "string", "tuple", "symbol", "parameter",

@@ -39,14 +39,14 @@ class RolapEvaluator implements Evaluator
 		RolapDimension[] dimensions = (RolapDimension[]) cube.getDimensions();
 		currentMembers = new RolapMember[dimensions.length];
 		for (int i = 0; i < dimensions.length; i++) {
-			final RolapDimension dimension = (RolapDimension) dimensions[i];
+			final RolapDimension dimension = dimensions[i];
 			final int ordinal = dimension.getOrdinal(cube);
 			currentMembers[ordinal] = (RolapMember)
 					dimension.getHierarchy().getDefaultMember();
 		}
 		this.parent = null;
 		this.depth = 0;
-		this.cellReader = cellReader;
+		this.cellReader = null; // we expect client to set it
 	}
 
 	private RolapEvaluator(
@@ -109,7 +109,7 @@ class RolapEvaluator implements Evaluator
 		return literal.getValue();
 	}
 	public Object xx(Parameter parameter) {
-		return parameter.getValue();
+		return parameter.getExp().evaluate(this);
 	}
 	public Object xx(FunCall funCall) {
 		FunDef funDef = funCall.getFunDef();
@@ -169,7 +169,7 @@ class RolapEvaluator implements Evaluator
 	 * Makes sure that there is no evaluator with identical context on the
 	 * stack.
 	 *
-	 * @throws an evaluation exception if there is a loop
+	 * @throws mondrian.olap.fun.MondrianEvaluationException if there is a loop
 	 */
 	void checkRecursion() {
 		outer:
