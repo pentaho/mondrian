@@ -88,9 +88,10 @@ public class RolapConnection extends ConnectionBase {
 	/**
 	 * Creates a RolapConnection.
 	 *
-	 * <p>Only {@link mondrian.rolap.RolapSchema.Pool#get} calls this with schema != null (to
-	 * create a schema's internal connection). Other uses retrieve a schema
-	 * from the cache based upon the <code>Catalog</code> property.
+	 * <p>Only {@link mondrian.rolap.RolapSchema.Pool#get} calls this with
+	 * schema != null (to create a schema's internal connection). 
+	 * Other uses retrieve a schema from the cache based upon
+	 *  the <code>Catalog</code> property.
 	 *
 	 * @param connectInfo Connection properties; keywords are described in
 	 *   {@link RolapConnectionProperties}.
@@ -100,15 +101,17 @@ public class RolapConnection extends ConnectionBase {
 	 *        by Mondrian
 	 * @pre connectInfo != null
 	 */
-	RolapConnection(Util.PropertyList connectInfo, RolapSchema schema, DataSource dataSource) {
+	RolapConnection(Util.PropertyList connectInfo, RolapSchema schema,
+	                DataSource dataSource) {
         String provider = connectInfo.get(RolapConnectionProperties.Provider);
         Util.assertTrue(provider.equalsIgnoreCase("mondrian"));
         this.connectInfo = connectInfo;
         this.catalogName = connectInfo.get(RolapConnectionProperties.Catalog);
-        if (dataSource != null)
+        if (dataSource != null) {
         	this.dataSource = dataSource;
-        else
-        this.dataSource = createDataSource(connectInfo);
+        } else {
+            this.dataSource = createDataSource(connectInfo);
+        }
         Role role = null;
         if (schema == null) {
             // If RolapSchema.Pool.get were to call this with schema == null,
@@ -116,12 +119,16 @@ public class RolapConnection extends ConnectionBase {
 		    // even if an external data source is passed in,
 		    //  we expect the following properties to be set,
 			//  as  they are used to generate the schema cache key
-            final String jdbcConnectString = connectInfo.get(RolapConnectionProperties.Jdbc);
-            final String jdbcUser = connectInfo.get(RolapConnectionProperties.JdbcUser);
-            final String strDataSource = connectInfo.get(RolapConnectionProperties.DataSource);
+            final String jdbcConnectString = 
+                connectInfo.get(RolapConnectionProperties.Jdbc);
+            final String jdbcUser = 
+                connectInfo.get(RolapConnectionProperties.JdbcUser);
+            final String strDataSource = 
+                connectInfo.get(RolapConnectionProperties.DataSource);
 
-            schema = RolapSchema.Pool.instance().get(
-					catalogName, jdbcConnectString + getJDBCProperties(connectInfo).toString(), jdbcUser, strDataSource, connectInfo);
+            schema = RolapSchema.Pool.instance().get(catalogName, jdbcConnectString +
+					   getJDBCProperties(connectInfo).toString(), jdbcUser, 
+					                     strDataSource, connectInfo);
             String roleName = connectInfo.get(RolapConnectionProperties.Role);
             if (roleName != null) {
                 role = schema.lookupRole(roleName);
