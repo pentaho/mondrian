@@ -64,7 +64,9 @@ class RolapDimension extends DimensionBase
 		this.name = name;
 		this.uniqueName = Util.makeFqName(name);
 		this.description = null;
-		this.dimensionType = name.equals("Time") ? TIME : STANDARD;
+		// recognition of a time dimension should be improved
+		this.dimensionType = (name.equals("Time") || name.equals("Zeit")) ?
+								TIME : STANDARD;
 		this.hierarchies = new RolapHierarchy[0];
 	}
 
