@@ -9,7 +9,7 @@
   == jhyde, 31 October, 2001
   -->
 <project name="mondrian" default="compile">
-  <property environment="myenv"/>
+  <property environment="env"/>
   <property name="project.location" location="."/>
   <property name="lib.location" location="${project.location}/lib"/>
   <property file="${project.location}/build.properties"/>
@@ -40,16 +40,16 @@
   <property name="dist.src.file" value="${dist.dir}/${dist.name}-src.zip"/>
   <property name="dist.data.file" value="${dist.dir}/${name}-data.zip"/>
   <property name="dist.data.mysql.file" value="${dist.dir}/${name}-data-mysql.zip"/>
-  <property name="dist.bin.file" value="${dist.dir}/${dist.name}-bin.zip"/>
+  <property name="dist.bin.file" value="${dist.dir}/${dist.name}.zip"/>
   <property name="jar.file" value="${lib.dir}/${name}.jar"/>
   <property name="workbench.jar.file" value="workbench.jar"/>
   <property name="boot.jar.file" value="${lib.dir}/boot.jar"/>
   <property name="war.file" value="${lib.dir}/${name}.war"/>
-  <property name="jdk.home" value="${myenv.JAVA_HOME}"/>
-  <property name="catalina.home" value="${myenv.CATALINA_HOME}"/>
-  <property name="xalan.home" value="${myenv.XALAN_HOME}"/>
-  <property name="junit.home" value="${myenv.JUNIT_HOME}"/>
-  <property name="weblogic.home" value="${myenv.WEBLOGIC_HOME}"/>
+  <property name="jdk.home" value="${env.JAVA_HOME}"/>
+  <property name="catalina.home" value="${env.CATALINA_HOME}"/>
+  <property name="xalan.home" value="${env.XALAN_HOME}"/>
+  <property name="junit.home" value="${env.JUNIT_HOME}"/>
+  <property name="weblogic.home" value="${env.WEBLOGIC_HOME}"/>
   <property name="generated.java.files" value="
 ${java.dir}/mondrian/olap/Parser.java,
 ${java.dir}/mondrian/olap/ParserSym.java,
@@ -83,7 +83,7 @@ demo/mysql/FoodMartData.sql"/>
     <pathelement location="${xalan.home}/bin/xalan.jar"/>
     <pathelement location="${junit.home}/junit.jar"/>
     <!-- CLASSPATH must contain xml-apis.jar, xercesImpl.jar, javacup.jar -->
-    <pathelement path="${myenv.CLASSPATH}"/>
+    <pathelement path="${env.CLASSPATH}"/>
     <!-- Weblogic must be after xml-apis.jar and xercesImpl.jar, because it
          contains an incompatible version of xerces. -->
     <pathelement location="${weblogic.home}/lib/weblogic.jar"/>
@@ -476,19 +476,16 @@ demo/mysql/INSTALL.txt"/>
   </target>
 
   <target name="export.foodmart.oracle">
-    <exec dir="${demo.dir}/oracle" executable="${myenv.ORACLE_HOME}/bin/exp">
+    <exec dir="${demo.dir}/oracle" executable="${env.ORACLE_HOME}/bin/exp">
       <arg line="userid=foodmart/foodmart@realm1"/>
       <arg line="file=FoodMart.dmp"/>
       <arg line="owner=FOODMART"/>
     </exec>
   </target>
 
-  <target name="release" depends="binzip,srczip,war">
-    <delete file="${dist.dir}/${dist.name}.war"/>
-    <copy file="${war.file}" tofile="${dist.dir}/${dist.name}.war"/>
-  </target>
+  <target name="release" depends="binzip"/>
 
-  <target name="binzip" depends="javadoc,jar,copy-jars,version">
+  <target name="binzip" depends="version,war,javadoc,srczip">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.bin.file}"/>
     <zip zipfile="${dist.bin.file}">
@@ -497,32 +494,19 @@ demo/mysql/INSTALL.txt"/>
           prefix="${dist.name}"
           includes="
 ${doc.dir}/**/*,
-${webapp.dir}/**,
-${demo.dir}/FoodMart.xml,
 bin/mondrian.properties,
 bin/runtime.xml,
 bin/mondrian.bat,
+bin/mondrian.sh,
+${dist.src.file},
+${war.file},
 LICENSE.html,
 README.txt,
 VERSION.txt"
           excludes="
 **/*~,
+**/_vti*/*,
 **/*.psp"/>
-      <!-- Files needed to run mondrian, ant, junit in runtime environment. -->
-      <zipfileset
-          dir="${lib.dir}"
-          prefix="${dist.name}/lib"
-          includes="
-${name}.jar,
-ant.jar,
-javacup.jar,
-jmi.jar,
-junit.jar,
-mof.jar,
-optional.jar,
-xalan.jar,
-xercesImpl.jar,
-xml-apis.jar"/>
     </zip>
   </target>
 
@@ -567,7 +551,7 @@ mondrian/resource/**/*.class"/>
         overview="${java.dir}/overview.html"
         footer="&lt;a href=&quot;http://sourceforge.net/projects/mondrian&quot;&gt;&lt;img src=&quot;http://sourceforge.net/sflogo.php?group_id=35302&#38;type=1&quot; width=&quot;88&quot; height=&quot;31&quot; border=&quot;0&quot; alt=&quot;SourceForge.net_Logo&quot;&gt;&lt;/a&gt;"
         author="true">
-        <link href="http://javadoc.dyndns.org/"/>
+        <link href="http://javadoc.dyndns.org/joogle/api"/>
 <!--
         <link href="http://java.sun.com/j2se/1.4/docs/api/"/>
         <link href="http://www.junit.org/junit/javadoc/3.7/"/>
@@ -593,9 +577,6 @@ You should set pscp.user, pscp.password and pscp.path in build.properties">
     </exec>
   </target>
 
-  <target name="webapp" depends="jar,copy-jars,war"
-    description="Creates mondrian.war in a build environment."/>
-
   <target name="copy-jars" description="
 Copy .jar files into lib, so that the same files are available to
 build mondrian.war as in the runtime environment.">
@@ -606,7 +587,7 @@ build mondrian.war as in the runtime environment.">
     </copy>
   </target>
 
-  <target name="war" description="
+  <target name="war" depends="jar,copy-jars" description="
 Creates mondrian.war based upon jpivot.war.
 Assumes that mondrian.jar exists (use 'jar' target)">
     <filter filtersfile="mondrian.properties"/>
@@ -624,7 +605,19 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <webinf dir="${demo.dir}" prefix="WEB-INF/queries" includes="FoodMart.xml"/>
       <fileset dir="${webapp.dir}" excludes="WEB-INF/**/*"/>
 	  <!-- should already contain javacup.jar, xalan.jar, junit.jar -->
-      <lib dir="${lib.dir}" includes="${name}.jar"/>
+      <lib dir="${lib.dir}" includes="
+${name}.jar,
+ant.jar,
+jmi.jar,
+mof.jar,
+optional.jar,
+" excludes="
+javacup.jar,
+junit.jar,
+xalan.jar,
+xercesImpl.jar,
+xml-apis.jar,
+"/>
     </war>
   </target>
 
@@ -653,7 +646,7 @@ xalan.jar"/>
     </war>
   </target>
 
-  <target name="deploy-webapp" depends="webapp">
+  <target name="deploy-war" depends="war">
     <delete dir="${catalina.home}/webapps/mondrian"/>
     <copy file="${war.file}"
         todir="${catalina.home}/webapps"/>

@@ -4,7 +4,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// (C) Copyright 2001-2003 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -25,7 +25,9 @@
 
 <p>Other links:</p>
 <ul>
+<li><a href="http://apoptosis.dyndns.org:8080/open/mondrian/doc/index.html">Mondrian home page</a></li>
 <li><a href="http://sourceforge.net/projects/mondrian">Mondrian project page</a></li>
+<li><a href="http://jpivot.sourceforge.net/">JPivot home page</a></li>
 <li><a href="http://sourceforge.net/projects/jpivot">JPivot project page</a></li>
 </ul>
 

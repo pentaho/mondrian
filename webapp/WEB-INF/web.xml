@@ -5,7 +5,7 @@ $Id$
 This software is subject to the terms of the Common Public License
 Agreement, available at the following URL:
 http://www.opensource.org/licenses/cpl.html.
-(C) Copyright 2002 Kana Software, Inc. and others.
+(C) Copyright 2002-2003 Kana Software, Inc. and others.
 All Rights Reserved.
 You must accept the terms of that agreement to use this software.
 -->
@@ -17,36 +17,37 @@ You must accept the terms of that agreement to use this software.
 
 <web-app>
 
-    <context-param>
-      <param-name>connectString</param-name>
-      <param-value>@mondrian.test.connectString@</param-value>
-    </context-param>
+  <display-name>JPivot</display-name>
+  <description/>
 
-    <listener>
-      <listener-class>mondrian.web.taglib.Listener</listener-class>
-    </listener>
+  <context-param>
+    <param-name>connectString</param-name>
+    <param-value>@mondrian.test.connectString@</param-value>
+  </context-param>
 
-    <servlet>
-      <servlet-name>MDXQueryServlet</servlet-name>
-      <servlet-class>mondrian.web.servlet.MDXQueryServlet</servlet-class>
-      <init-param>
-        <param-name>connectString</param-name>
-        <param-value>@mondrian.test.connectString@</param-value>
-      </init-param>
-    </servlet>
+  <listener>
+    <listener-class>mondrian.web.taglib.Listener</listener-class>
+  </listener>
 
-    <servlet-mapping>
-      <servlet-name>MDXQueryServlet</servlet-name>
-      <url-pattern>/mdxquery</url-pattern>
-    </servlet-mapping>
+  <servlet>
+    <servlet-name>MDXQueryServlet</servlet-name>
+    <servlet-class>mondrian.web.servlet.MDXQueryServlet</servlet-class>
+    <init-param>
+    <param-name>connectString</param-name>
+    <param-value>@mondrian.test.connectString@</param-value>
+    </init-param>
+  </servlet>
 
-    <session-config>
-        <session-timeout>30</session-timeout>
-    </session-config>
+  <servlet-mapping>
+    <servlet-name>MDXQueryServlet</servlet-name>
+    <url-pattern>/mdxquery</url-pattern>
+  </servlet-mapping>
 
-    <welcome-file-list>
-        <welcome-file>index.jsp</welcome-file>
-        <welcome-file>index.html</welcome-file>
-        <welcome-file>index.htm</welcome-file>
-    </welcome-file-list>
+  <session-config>
+    <session-timeout>30</session-timeout>
+  </session-config>
+
+  <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
 </web-app>

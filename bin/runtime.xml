@@ -14,63 +14,35 @@
 <project name="mondrian" default="test">
   <!-- Properties specified in mondrian.properties override those set in
        the environment. -->
-  <property environment="myenv"/>
+  <property environment="env"/>
   <property file="mondrian.properties"/>
   <property name="name" value="mondrian"/>
   <property name="project.location" location=".."/>
   <property name="lib.location" location="${project.location}/lib"/>
-  <property name="war.file" value="${lib.location}/${name}.war"/>
-  <property name="webapp.location" location="${project.location}/webapp"/>
-  <property name="demo.location" location="${project.location}/demo"/>
-  <property name="weblogic.home" value="${myenv.WEBLOGIC_HOME}"/>
-  <property name="tomcat.home" value="${myenv.TOMCAT_HOME}"/>
+  <property name="weblogic.home" value="${env.WEBLOGIC_HOME}"/>
+  <property name="catalina.home" value="${env.CATALINA_HOME}"/>
+  <property name="mondrian.foodmart.catalogURL" value="jar:file:/${lib.location}/mondrian.war!/WEB-INF/queries/FoodMart.xml"/>
 
   <path id="project.classpath">
     <pathelement location="${lib.location}/${name}.jar"/>
-    <pathelement location="${tomcat.home}/common/lib/servlet.jar"/>
+    <pathelement location="${catalina.home}/common/lib/servlet.jar"/>
     <pathelement location="${lib.location}/javacup.jar"/>
     <pathelement location="${lib.location}/xalan.jar"/>
     <pathelement location="${lib.location}/junit.jar"/>
     <!-- CLASSPATH must contain xml-apis.jar, xercesImpl.jar, javacup.jar -->
-    <pathelement path="${myenv.CLASSPATH}"/>
+    <pathelement path="${env.CLASSPATH}"/>
     <!-- Weblogic must be after xml-apis.jar and xercesImpl.jar, because it
          contains an incompatible version of xerces. -->
     <pathelement location="${weblogic.home}/lib/weblogic.jar"/>
   </path>
 
-  <target name="war" description="
-Creates mondrian.war.
-Assumes that lib contains mondrian.jar, ant.jar, junit.jar etc.">
-    <filter filtersfile="mondrian.properties"/>
-    <mkdir dir="${lib.location}" />
-    <delete file="${war.file}"/>
-    <delete file="${lib.location}/web.xml"/>
-    <copy file="${webapp.location}/WEB-INF/web.xml"
-        filtering="true" todir="${lib.location}"/>
-    <war warfile="${war.file}"
-        webxml="${lib.location}/web.xml">
-      <webinf dir="${webapp.location}/WEB-INF" excludes="web.xml"/>
-      <webinf dir="${demo.location}" includes="FoodMart.xml"/>
-      <fileset dir="${webapp.location}" excludes="WEB-INF/**/*"/>
-      <lib dir="${lib.location}" includes="
-${name}.jar,
-javacup.jar,
-xalan.jar,
-xml-apis.jar,
-xercesImpl.jar
-junit.jar"/>
-    </war>
-  </target>
-
-  <target name="deploy-to-tomcat" depends="war" description="
-Builds mondrian.war and deploys it to Tomcat (${tomcat.home})">
-    <delete dir="${tomcat.home}/webapps/mondrian"/>
-    <copy file="${war.file}"
-        todir="${tomcat.home}/webapps"/>
-  </target>
-
-  <target name="junit" description="Runs unit tests.">
+  <target name="test" description="Runs unit tests.">
     <mkdir dir="junit-results"/>
+    <echo>Running mondrian tests
+Catalog is ${mondrian.foodmart.catalogURL}
+JDBC is ${mondrian.foodmart.jdbcURL}
+JDBC drivers are ${mondrian.jdbcDrivers}</echo>
+
     <junit printsummary="yes" fork="yes" haltonfailure="no" >
         <classpath>
             <path refid="project.classpath"/>
@@ -91,7 +63,5 @@ Builds mondrian.war and deploys it to Tomcat (${tomcat.home})">
 
     <echo>See results at junit-results/html/index.html.</echo>
   </target>
-
-  <target name="test" description="Runs unit tests." depends="junit"/>
 
 </project>

@@ -19,17 +19,17 @@ You must accept the terms of that agreement to use this software.
   <display-name>Mondrian</display-name>
   <description/>
 
-  <!-- optional 
+  <!-- optional
   <context-param>
     <param-name>contextFactory</param-name>
     <param-value>com.tonbeller.wcf.controller.RequestContextFactoryImpl</param-value>
   </context-param>
   -->
 
-    <context-param>
-      <param-name>connectString</param-name>
-      <param-value>@mondrian.test.connectString@</param-value>
-    </context-param>
+  <context-param>
+    <param-name>connectString</param-name>
+    <param-value>@mondrian.test.connectString@</param-value>
+  </context-param>
 
   <filter>
     <filter-name>JPivotController</filter-name>
@@ -42,26 +42,22 @@ You must accept the terms of that agreement to use this software.
   </filter-mapping>
 
   <listener>
-    <listener-class>com.tonbeller.wcf.depend.SessionAttributeListener</listener-class>
+    <listener-class>mondrian.web.taglib.Listener</listener-class>
   </listener>
 
-    <listener>
-      <listener-class>mondrian.web.taglib.Listener</listener-class>
-    </listener>
+  <servlet>
+    <servlet-name>MDXQueryServlet</servlet-name>
+    <servlet-class>mondrian.web.servlet.MDXQueryServlet</servlet-class>
+    <init-param>
+      <param-name>connectString</param-name>
+      <param-value>@mondrian.test.connectString@</param-value>
+    </init-param>
+  </servlet>
 
-    <servlet>
-      <servlet-name>MDXQueryServlet</servlet-name>
-      <servlet-class>mondrian.web.servlet.MDXQueryServlet</servlet-class>
-      <init-param>
-        <param-name>connectString</param-name>
-        <param-value>@mondrian.test.connectString@</param-value>
-      </init-param>
-    </servlet>
-
-    <servlet-mapping>
-      <servlet-name>MDXQueryServlet</servlet-name>
-      <url-pattern>/mdxquery</url-pattern>
-    </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>MDXQueryServlet</servlet-name>
+    <url-pattern>/mdxquery</url-pattern>
+  </servlet-mapping>
 
   <welcome-file-list>
     <welcome-file>index.jsp</welcome-file>
