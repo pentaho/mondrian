@@ -15,6 +15,7 @@ import mondrian.olap.*;
 import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.rolap.agg.AggregationManager;
 
+import org.apache.log4j.Logger;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,6 +30,9 @@ import java.util.List;
  */
 class RolapResult extends ResultBase
 {
+
+    private static final Logger LOGGER = Logger.getLogger(RolapEvaluator.class);
+
     private static final int MAX_AGGREGATION_PASS_COUNT = 5;
 
     private final RolapEvaluator evaluator;
@@ -144,6 +148,10 @@ class RolapResult extends ResultBase
             evaluator.clearExpResultCache();
         }
         query.getCube().getDimensions();
+    }
+
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
     // implement Result

@@ -13,8 +13,12 @@ package mondrian.tui;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunInfo;
 
+import org.apache.log4j.Logger;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Level;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -811,13 +815,16 @@ public class CmdRunner {
 
     protected static void appendLog(StringBuffer buf) {
         appendIndent(buf, 1);
-        buf.append("log [ value ] <cr>");
+        buf.append("log [ classname [ level ] ] <cr>");
         buf.append('\n');
         appendIndent(buf, 2);
-        buf.append("With no args, prints the current log level.");
+        buf.append("With no args, prints the current log level of all classes.");
         buf.append('\n');
         appendIndent(buf, 2);
-        buf.append("With \"value\" sets the Log to new value.");
+        buf.append("With one arg, prints the current log level of the class.");
+        buf.append('\n');
+        appendIndent(buf, 2);
+        buf.append("With \"value\" sets the log level to new value.");
         buf.append('\n');
     }
 
@@ -827,19 +834,47 @@ public class CmdRunner {
         String[] tokens = mdxCmd.split("\\s");
 
         if (tokens.length == 1) {
-            String levelStr = Log.lookupLevelName(Log.getLevel());
-            buf.append(levelStr);
-            buf.append('\n');
+            Enumeration e = LogManager.getCurrentLoggers();
+            while (e.hasMoreElements()) {
+                Logger logger = (Logger) e.nextElement();
+                buf.append(logger.getName());
+                buf.append(':');
+                buf.append(logger.getLevel());
+                buf.append('\n');
+            }
 
         } else if (tokens.length == 2) {
-            String arg = tokens[1];
-            int level = Log.lookupLevel(arg);
-            if (level == Log.BAD_LEVEL) {
-                buf.append("Bad Log level name:");
-                buf.append(arg);
+            String classname = tokens[1];
+            Logger logger = LogManager.exists(classname);
+            if (logger == null) {
+                buf.append("Bad log name: ");
+                buf.append(classname);
                 buf.append('\n');
             } else {
-                Log.setLevel(level);
+                buf.append(logger.getName());
+                buf.append(':');
+                buf.append(logger.getLevel());
+                buf.append('\n');
+            }
+
+        } else if (tokens.length == 3) {
+            String classname = tokens[1];
+            Logger logger = LogManager.exists(classname);
+
+            if (logger == null) {
+                buf.append("Bad log name: ");
+                buf.append(classname);
+                buf.append('\n');
+            } else {
+                String levelStr = tokens[2];
+                Level level = Level.toLevel(levelStr, null);
+                if (level == null) {
+                    buf.append("Bad log level: ");
+                    buf.append(levelStr);
+                    buf.append('\n');
+                } else {
+                    logger.setLevel(level);
+                }
             }
 
         } else {

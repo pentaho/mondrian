@@ -11,6 +11,8 @@
 */
 
 package mondrian.olap;
+
+import org.apache.log4j.Logger;
 import java.io.PrintWriter;
 
 /**
@@ -29,6 +31,8 @@ public abstract class ResultBase implements Result {
         this.query = query;
         this.axes = axes;
     }
+
+    protected abstract Logger getLogger();
 
     public Query getQuery() {
         return query;

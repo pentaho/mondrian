@@ -26,6 +26,7 @@ public abstract class DimensionBase
     extends OlapElementBase
     implements Dimension
 {
+
     protected final String name;
     protected final String uniqueName;
     protected final String description;
@@ -79,7 +80,7 @@ public abstract class DimensionBase
             oe = getHierarchy().lookupChild(schemaReader, s);
         }
 
-        if (Log.isTrace()) { 
+        if (getLogger().isDebugEnabled()) { 
             StringBuffer buf = new StringBuffer(64);
             buf.append("DimensionBase.lookupChild: ");
             buf.append("name=");
@@ -91,7 +92,7 @@ public abstract class DimensionBase
             } else {
                 buf.append(" returning elementname="+oe.getName());
             }
-            Log.trace(buf.toString());
+            getLogger().debug(buf.toString());
         }
 
 

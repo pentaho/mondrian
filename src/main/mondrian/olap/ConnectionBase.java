@@ -12,6 +12,8 @@
 
 package mondrian.olap;
 
+import org.apache.log4j.Logger;
+
 /**
  * <code>ConnectionBase</code> implements some of the methods in
  * {@link Connection}.
@@ -25,6 +27,8 @@ public abstract class ConnectionBase implements Connection
 
     protected ConnectionBase() {
     }
+
+    protected abstract Logger getLogger();
 
     public String getFullConnectString()
     {

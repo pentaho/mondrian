@@ -12,6 +12,7 @@
 
 package mondrian.olap;
 
+import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -28,6 +29,7 @@ import java.util.*;
  **/
 public class Util extends mondrian.xom.XOMUtil
 {
+    private static final Logger LOGGER = Logger.getLogger(Util.class);
     // properties
 
     public static final Object nullValue = new NullCellValue();
@@ -239,7 +241,7 @@ public class Util extends mondrian.xom.XOMUtil
     {
         Util.assertPrecondition(parent != null, "parent != null");
 
-        if (Log.isTrace()) {
+        if (LOGGER.isDebugEnabled()) {
             StringBuffer buf = new StringBuffer(64);
             buf.append("Util.lookupCompound: ");
             buf.append("parent.name=");
@@ -255,7 +257,7 @@ public class Util extends mondrian.xom.XOMUtil
                     buf.append('.');
                 }
             }
-            Log.trace(buf.toString());
+            LOGGER.debug(buf.toString());
         }
 
         // First look up a member from the cache of calculated members
@@ -273,14 +275,14 @@ public class Util extends mondrian.xom.XOMUtil
             String name = names[i];
             final OlapElement child = schemaReader.getElementChild(parent, name);
             if (child == null) {
-                if (Log.isTrace()) {
+                if (LOGGER.isDebugEnabled()) {
                     StringBuffer buf = new StringBuffer(64);
                     buf.append("Util.lookupCompound: ");
                     buf.append("parent.name=");
                     buf.append(parent.getName());
                     buf.append(" has no child with name=");
                     buf.append(name);
-                    Log.trace(buf.toString());
+                    LOGGER.debug(buf.toString());
                 }
 
                 if (failIfNotFound) {
@@ -292,14 +294,14 @@ public class Util extends mondrian.xom.XOMUtil
             }
             parent = child;
         }
-        if (Log.isTrace()) {
+        if (LOGGER.isDebugEnabled()) {
             StringBuffer buf = new StringBuffer(64);
             buf.append("Util.lookupCompound: ");
             buf.append("found child.name=");
             buf.append(parent.getName());
             buf.append(", child.class=");
             buf.append(parent.getClass().getName());
-            Log.trace(buf.toString());
+            LOGGER.debug(buf.toString());
         }
 
         switch (category) {

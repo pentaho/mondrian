@@ -12,6 +12,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import org.apache.log4j.Logger;
 
 /**
  * A <code>HierarchyUsage</code> is the usage of a hierarchy in the context
@@ -34,6 +35,9 @@ import mondrian.olap.*;
  **/
 class HierarchyUsage
 {
+    private static final Logger LOGGER = Logger.getLogger(HierarchyUsage.class);
+
+
     static final int UNKNOWN_KIND  = 0;
     static final int SHARED_KIND   = 1;
     static final int VIRTUAL_KIND  = 2;
@@ -220,7 +224,7 @@ class HierarchyUsage
             init(cube, hierarchy, null);
 
         } else {
-            Log.warn("HierarchyUsage<init>: Unknown cubeDim=" 
+            getLogger().warn("HierarchyUsage<init>: Unknown cubeDim=" 
                 +cubeDim.getClass().getName());
 
             this.kind = HierarchyUsage.UNKNOWN_KIND;
@@ -233,11 +237,18 @@ class HierarchyUsage
 
             init(cube, hierarchy, null);
         }
-        if (Log.isTrace()) {
-            Log.trace(toString() + ", cubeDim="  +cubeDim.getClass().getName());
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug(toString() 
+                + ", cubeDim="  
+                + cubeDim.getClass().getName());
         }
 
     }
+
+    protected Logger getLogger() {
+        return LOGGER;
+    }
+
     public String getHierarchyName() {
         return this.hierarchyName;
     }

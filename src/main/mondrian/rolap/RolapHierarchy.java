@@ -11,9 +11,11 @@
 */
 
 package mondrian.rolap;
+
 import mondrian.olap.*;
 import mondrian.rolap.sql.SqlQuery;
 
+import org.apache.log4j.Logger;
 import java.util.List;
 
 /**
@@ -25,6 +27,9 @@ import java.util.List;
  */
 class RolapHierarchy extends HierarchyBase
 {
+
+    private static final Logger LOGGER = Logger.getLogger(RolapHierarchy.class);
+
     /**
      * The raw member reader. For a member reader which incorporates access
      * control and deals with hidden members (if the hierarchy is ragged), use
@@ -139,6 +144,10 @@ class RolapHierarchy extends HierarchyBase
         if (!Util.isEmpty(xmlHierarchy.caption)) {
             setCaption(xmlHierarchy.caption);
         }
+    }
+
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
     public boolean equals(Object o) {

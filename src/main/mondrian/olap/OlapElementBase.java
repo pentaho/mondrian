@@ -12,6 +12,8 @@
 
 package mondrian.olap;
 
+import org.apache.log4j.Logger;
+
 /**
  * <code>OlapElementBase</code> is an abstract base class for implementations of
  * {@link OlapElement}.
@@ -34,6 +36,8 @@ public abstract class OlapElementBase
 
     protected OlapElementBase() {
     }           
+
+    protected abstract Logger getLogger();
         
     public boolean equals(Object o)
     {

@@ -12,6 +12,7 @@
 
 package mondrian.rolap;
 
+import org.apache.log4j.Logger;
 import mondrian.olap.*;
 
 /**
@@ -58,6 +59,9 @@ import mondrian.olap.*;
  * @version $Id$
  */
 class RolapDimension extends DimensionBase {
+
+    private static final Logger LOGGER = Logger.getLogger(RolapDimension.class);
+
     /** Generator for {@link #globalOrdinal}. * */
     private static int nextOrdinal = 1; // 0 is reserved for [Measures]
     static int getNextOrdinal() {
@@ -151,6 +155,10 @@ class RolapDimension extends DimensionBase {
                 }
             }
         }
+    }
+
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
     /**

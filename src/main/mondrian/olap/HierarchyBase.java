@@ -92,7 +92,7 @@ public abstract class HierarchyBase
         if (oe == null) {
             oe = Util.lookupHierarchyRootMember(schemaReader, this, s);
         }
-        if (Log.isTrace()) {
+        if (getLogger().isDebugEnabled()) {
             StringBuffer buf = new StringBuffer(64);
             buf.append("HierarchyBase.lookupChild: ");
             buf.append("name=");
@@ -104,7 +104,7 @@ public abstract class HierarchyBase
             } else {
                 buf.append(" returning elementname="+oe.getName());
             }
-            Log.trace(buf.toString());
+            getLogger().debug(buf.toString());
         }
         return oe;
     }

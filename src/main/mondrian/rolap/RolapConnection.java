@@ -16,6 +16,7 @@ import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DataSourceConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 
+import org.apache.log4j.Logger;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -38,6 +39,8 @@ import java.util.*;
  * @version $Id$
  */
 public class RolapConnection extends ConnectionBase {
+    private static final Logger LOGGER = Logger.getLogger(RolapConnection.class);
+
     private final Util.PropertyList connectInfo;
     /** Factory for JDBC connections to talk to the RDBMS. This factory will
      * usually use a connection pool. */
@@ -159,6 +162,11 @@ public class RolapConnection extends ConnectionBase {
         this.schema = schema;
         setRole(role);
     }
+
+    protected Logger getLogger() {
+        return LOGGER;
+    }
+
 
     // This is package-level in order for the RolapConnectionTest class to have
     // access.
@@ -417,6 +425,9 @@ public class RolapConnection extends ConnectionBase {
  * on a particular axis.
  */
 class NonEmptyResult extends ResultBase {
+
+    private static final Logger LOGGER = Logger.getLogger(NonEmptyResult.class);
+
     Result underlying;
     int axis;
     HashMap map;
@@ -447,6 +458,9 @@ class NonEmptyResult extends ResultBase {
         }
         this.axes[axis] = new RolapAxis(
                 (Position[]) positionsList.toArray(new Position[0]));
+    }
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
     /**

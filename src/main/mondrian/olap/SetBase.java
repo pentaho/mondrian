@@ -12,6 +12,8 @@
 
 package mondrian.olap;
 
+import org.apache.log4j.Logger;
+
 /**
  * Skeleton implementation of {@link Set} interface.
  *
@@ -20,12 +22,19 @@ package mondrian.olap;
  * @version $Id$
  **/
 class SetBase extends OlapElementBase implements Set {
+
+    private static final Logger LOGGER = Logger.getLogger(SetBase.class);
+
     String name;
     Exp exp;
 
     SetBase(String name, Exp exp) {
         this.name = name;
         this.exp = exp;
+    }
+
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
     // from Element

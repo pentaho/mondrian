@@ -13,6 +13,7 @@
 package mondrian.rolap;
 import mondrian.olap.*;
 
+import org.apache.log4j.Logger;
 import java.util.*;
 
 /**
@@ -25,6 +26,8 @@ import java.util.*;
  */
 public class RolapMember extends MemberBase
 {
+    private static final Logger LOGGER = Logger.getLogger(RolapMember.class);
+
     /** Ordinal of the member within the hierarchy. Some member readers do not
      * use this property; in which case, they should leave it as its default,
      * -1. */
@@ -68,6 +71,10 @@ public class RolapMember extends MemberBase
         }
     }
 
+    protected Logger getLogger() {
+        return LOGGER;
+    }
+
     RolapLevel getRolapLevel() {
         return (RolapLevel) level;
     }
@@ -81,8 +88,8 @@ public class RolapMember extends MemberBase
                 String name = keyToString(key);
                 n = Util.quoteMdxIdentifier(n);
                 this.uniqueName = Util.makeFqName(n, name);
-                if (Log.isTrace()) {
-                    Log.trace("RolapMember.makeUniqueName: uniqueName="
+                if (getLogger().isDebugEnabled()) {
+                    getLogger().debug("RolapMember.makeUniqueName: uniqueName="
                             +uniqueName);
                 }
             }

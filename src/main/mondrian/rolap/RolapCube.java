@@ -17,6 +17,7 @@ import mondrian.xom.DOMWrapper;
 import mondrian.xom.XOMException;
 import mondrian.xom.XOMUtil;
 
+import org.apache.log4j.Logger;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +35,8 @@ import java.util.List;
  */
 class RolapCube extends CubeBase
 {
+    private static final Logger LOGGER = Logger.getLogger(RolapCube.class);
+
     private final RolapSchema schema;
     private RolapHierarchy measuresHierarchy;
     /** For SQL generator. Fact table. */
@@ -79,8 +82,8 @@ class RolapCube extends CubeBase
     {
         this(schema, xmlCube.name, xmlCube.fact);
 
-        if (Log.isTrace()) {
-            Log.trace("RolapCube<init>: cube=" +this.name);
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug("RolapCube<init>: cube=" +this.name);
         }
 
         schema.addCube(this);
@@ -107,8 +110,8 @@ class RolapCube extends CubeBase
             // consulting the XML schema (which may be null).
             RolapDimension dimension =
                 getOrCreateDimension(xmlCubeDimension, schema, xmlSchema);
-            if (Log.isTrace()) {
-                Log.trace("RolapCube<init>: dimension="+dimension.getName());
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug("RolapCube<init>: dimension="+dimension.getName());
             }
             this.dimensions[i + 1] = dimension;
 
@@ -116,8 +119,8 @@ class RolapCube extends CubeBase
                 (RolapHierarchy[]) dimension.getHierarchies();
             for (int j = 0; j < hierarchies.length; j++) {
                 RolapHierarchy hierarchy = hierarchies[j];
-                if (Log.isTrace()) {
-                    Log.trace("RolapCube<init>: hierarchy="+hierarchy.getName());
+                if (getLogger().isDebugEnabled()) {
+                    getLogger().debug("RolapCube<init>: hierarchy="+hierarchy.getName());
                 }
                 createUsage(hierarchy, xmlCubeDimension);
             }
@@ -187,8 +190,8 @@ class RolapCube extends CubeBase
     {
         this(schema, xmlVirtualCube.name, null);
 
-        if (Log.isTrace()) {
-            Log.trace("RolapCube<init>: virtual cube=" +this.name);
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug("RolapCube<init>: virtual cube=" +this.name);
         }
 
         this.dimensions =
@@ -238,6 +241,10 @@ class RolapCube extends CubeBase
         this.measuresHierarchy.memberReader = new CacheMemberReader(
             new MeasureMemberSource(measuresHierarchy, measures));
         init(xmlVirtualCube.dimensions);
+    }
+
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
     /**
@@ -539,12 +546,12 @@ assert is not true.
         while (it.hasNext()) {
             HierarchyUsage hierUsage = (HierarchyUsage) it.next();
             if (hierUsage.equals(usage)) {
-                Log.warn("RolapCube.createUsage: duplicate " +hierUsage);
+                getLogger().warn("RolapCube.createUsage: duplicate " +hierUsage);
                 return;
             }
         }
-        if (Log.isTrace()) {
-            Log.trace("RolapCube.createUsage: register " +usage);
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug("RolapCube.createUsage: register " +usage);
         }
         this.hierarchyUsages.add(usage);
     }
@@ -569,8 +576,8 @@ assert is not true.
      */     
     synchronized HierarchyUsage[] getUsages(Hierarchy hierarchy) {
         String name = hierarchy.getName();
-        if (Log.isTrace()) {
-            Log.trace("RolapCube.getUsages: name="+name);
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug("RolapCube.getUsages: name="+name);
         }
         
         HierarchyUsage hierUsage = null;
@@ -581,17 +588,17 @@ assert is not true.
             HierarchyUsage hu = (HierarchyUsage) it.next();
             if (hu.getHierarchyName().equals(name)) {
                 if (list != null) {
-                    if (Log.isTrace()) {
-                        Log.trace("RolapCube.getUsages: add list HierarchyUsage.name="+hu.getName());
+                    if (getLogger().isDebugEnabled()) {
+                        getLogger().debug("RolapCube.getUsages: add list HierarchyUsage.name="+hu.getName());
                     }
                     list.add(hu);
                 } else if (hierUsage == null) {
                     hierUsage = hu;
                 } else {
                     list = new ArrayList();
-                    if (Log.isTrace()) {
-                        Log.trace("RolapCube.getUsages: add list HierarchyUsage.name="+hierUsage.getName());
-                        Log.trace("RolapCube.getUsages: add list HierarchyUsage.name="+hu.getName());
+                    if (getLogger().isDebugEnabled()) {
+                        getLogger().debug("RolapCube.getUsages: add list HierarchyUsage.name="+hierUsage.getName());
+                        getLogger().debug("RolapCube.getUsages: add list HierarchyUsage.name="+hu.getName());
                     }
                     list.add(hierUsage);
                     list.add(hu);
@@ -602,8 +609,8 @@ assert is not true.
         if (hierUsage != null) {
             return new HierarchyUsage[] { hierUsage };
         } else if (list != null) {
-            if (Log.isTrace()) {
-                Log.trace("RolapCube.getUsages: return list");
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug("RolapCube.getUsages: return list");
             }
             return (HierarchyUsage[])
                 list.toArray(new HierarchyUsage[list.size()]);
@@ -619,8 +626,8 @@ assert is not true.
      * @return array of HierarchyUsage (HierarchyUsage[]) - never null.
      */
     synchronized HierarchyUsage[] getUsagesBySource(String source) {
-        if (Log.isTrace()) {
-            Log.trace("RolapCube.getUsagesBySource: source="+source);
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug("RolapCube.getUsagesBySource: source="+source);
         }
 
         HierarchyUsage hierUsage = null;
@@ -632,17 +639,17 @@ assert is not true.
             String s = hu.getSource();
             if ((s != null) && s.equals(source)) {
                 if (list != null) {
-                    if (Log.isTrace()) {
-                        Log.trace("RolapCube.getUsagesBySource: add list HierarchyUsage.name="+hu.getName());
+                    if (getLogger().isDebugEnabled()) {
+                        getLogger().debug("RolapCube.getUsagesBySource: add list HierarchyUsage.name="+hu.getName());
                     }
                     list.add(hu);
                 } else if (hierUsage == null) {
                     hierUsage = hu;
                 } else {
                     list = new ArrayList();
-                    if (Log.isTrace()) {
-                        Log.trace("RolapCube.getUsagesBySource: add list HierarchyUsage.name="+hierUsage.getName());
-                        Log.trace("RolapCube.getUsagesBySource: add list HierarchyUsage.name="+hu.getName());
+                    if (getLogger().isDebugEnabled()) {
+                        getLogger().debug("RolapCube.getUsagesBySource: add list HierarchyUsage.name="+hierUsage.getName());
+                        getLogger().debug("RolapCube.getUsagesBySource: add list HierarchyUsage.name="+hu.getName());
                     }
                     list.add(hierUsage);
                     list.add(hu);
@@ -653,8 +660,8 @@ assert is not true.
         if (hierUsage != null) {
             return new HierarchyUsage[] { hierUsage };
         } else if (list != null) {
-            if (Log.isTrace()) {
-                Log.trace("RolapCube.getUsagesBySource: return list");
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug("RolapCube.getUsagesBySource: return list");
             }
             return (HierarchyUsage[])
                 list.toArray(new HierarchyUsage[list.size()]);
@@ -681,7 +688,7 @@ assert is not true.
 
             HierarchyUsage[] hierarchyUsages = getUsages(hierarchy);
             if (hierarchyUsages.length == 0) {
-                if (Log.isTrace()) {
+                if (getLogger().isDebugEnabled()) {
                     StringBuffer buf = new StringBuffer(64);
                     buf.append("RolapCube.registerDimension: ");
                     buf.append("hierarchyUsages == null for cube=\"");
@@ -689,7 +696,7 @@ assert is not true.
                     buf.append("\", hierarchy=\"");
                     buf.append(hierarchy.getName());
                     buf.append("\"");
-                    Log.trace(buf.toString());
+                    getLogger().debug(buf.toString());
                 }
                 continue;
             }
@@ -906,7 +913,7 @@ assert is not true.
                             buf.append("\"");
                             buf.append(usages[0].getName());
                             buf.append("\" ");
-                            Log.error(buf.toString());
+                            getLogger().error(buf.toString());
                             throw new MondrianException(buf.toString());
                         } else {
                             // ERROR: this is not allowed 
@@ -916,7 +923,7 @@ assert is not true.
                                 buf.append(usages[i].getName());
                                 buf.append("\" ");
                             }
-                            Log.error(buf.toString());
+                            getLogger().error(buf.toString());
                             throw new MondrianException(buf.toString());
                         }
                     }
@@ -933,7 +940,7 @@ assert is not true.
                 oe = super.lookupChild(schemaReader, s);
             }
         }
-        if (Log.isTrace()) {
+        if (getLogger().isDebugEnabled()) {
             StringBuffer buf = new StringBuffer(64);
             buf.append("RolapCube.lookupChild: ");
             buf.append("name=");
@@ -949,7 +956,7 @@ assert is not true.
             } else {
                 buf.append(" returning elementname="+oe.getName());
             }
-            Log.trace(buf.toString());
+            getLogger().debug(buf.toString());
         }
 
         return oe;

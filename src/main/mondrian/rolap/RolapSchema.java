@@ -18,6 +18,7 @@ import mondrian.xom.Parser;
 import mondrian.xom.XOMException;
 import mondrian.xom.XOMUtil;
 
+import org.apache.log4j.Logger;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -51,6 +52,8 @@ import javax.sql.DataSource;
  **/
 public class RolapSchema implements Schema
 {
+    private static final Logger LOGGER = Logger.getLogger(RolapSchema.class);
+
     private String name;
     /**
      * Internal use only.
@@ -168,6 +171,9 @@ public class RolapSchema implements Schema
         load(catalogName, null);
     }
 
+    protected Logger getLogger() {
+        return LOGGER;
+    }
 
     /** 
      * Method called by all constructors to load the catalog into DOM and build
@@ -194,7 +200,7 @@ public class RolapSchema implements Schema
 
             final MondrianDef.Schema xmlSchema = new MondrianDef.Schema(def);
 
-            if (Log.isTrace()) {
+            if (getLogger().isDebugEnabled()) {
                 StringWriter sw = new StringWriter(4096);
                 sw.write("RolapSchema.load: dump xmlschema\n");
 
@@ -202,7 +208,7 @@ public class RolapSchema implements Schema
                 xmlSchema.display(pw, 4);
                 pw.flush();
 
-                Log.trace(sw.toString());
+                getLogger().debug(sw.toString());
             }
 
             load(xmlSchema);

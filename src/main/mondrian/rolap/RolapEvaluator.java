@@ -15,6 +15,7 @@ import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.util.Format;
 
+import org.apache.log4j.Logger;
 import java.util.*;
 
 /**
@@ -34,6 +35,8 @@ import java.util.*;
  */
 class RolapEvaluator implements Evaluator
 {
+    private static final Logger LOGGER = Logger.getLogger(RolapEvaluator.class);
+
     private RolapCube cube;
     private RolapConnection connection;
     private Member[] currentMembers;
@@ -88,6 +91,10 @@ class RolapEvaluator implements Evaluator
         this.depth = parent.getDepth() + 1;
         this.cellReader = parent.cellReader;
         this.expResultCache = parent.expResultCache;
+    }
+
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
     Member[] getCurrentMembers() {
@@ -171,8 +178,8 @@ class RolapEvaluator implements Evaluator
 
             // more than one usage
             if (member == null) {
-                if (Log.isTrace()) {
-                    Log.trace(
+                if (getLogger().isDebugEnabled()) {
+                    getLogger().debug(
                         "RolapEvaluator.setContext: member == null "
                          + " , count=" + i);
                 }
@@ -218,8 +225,8 @@ class RolapEvaluator implements Evaluator
 
             // more than one usage
             if (currentMember == null) {
-                if (Log.isTrace()) {
-                    Log.trace(
+                if (getLogger().isDebugEnabled()) {
+                    getLogger().debug(
                         "RolapEvaluator.getMinSolveMember: member == null "
                          + " , count=" + i);
                 }
@@ -280,8 +287,8 @@ class RolapEvaluator implements Evaluator
 
                 // more than one usage
                 if (member == null) {
-                    if (Log.isTrace()) {
-                        Log.trace(
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug(
                             "RolapEvaluator.checkRecursion: member == null "
                              + " , count=" + i);
                     }
@@ -341,8 +348,8 @@ class RolapEvaluator implements Evaluator
 
             // more than one usage
             if (member == null) {
-                if (Log.isTrace()) {
-                    Log.trace(
+                if (getLogger().isDebugEnabled()) {
+                    getLogger().debug(
                         "RolapEvaluator.getProperty: member == null "
                          + " , count=" + i);
                 }
@@ -413,8 +420,8 @@ class RolapEvaluator implements Evaluator
 
             // more than one usage
             if (member == null) {
-                if (Log.isTrace()) {
-                    Log.trace(
+                if (getLogger().isDebugEnabled()) {
+                    getLogger().debug(
                         "RolapEvaluator.getExpResultCacheKey: member == null "
                          + " , count=" + i);
                 }

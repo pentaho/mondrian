@@ -13,6 +13,7 @@
 package mondrian.rolap;
 import mondrian.olap.*;
 
+import org.apache.log4j.Logger;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -26,6 +27,9 @@ import java.util.Iterator;
  */
 class RolapLevel extends LevelBase
 {
+
+    private static final Logger LOGGER = Logger.getLogger(RolapEvaluator.class);
+
     static final int NUMERIC = 1;
     static final int ALL = 2;
     static final int UNIQUE = 4;
@@ -166,6 +170,10 @@ class RolapLevel extends LevelBase
         }
         this.hideMemberCondition = hideMemberCondition;
         this.closedPeer = null;
+    }
+
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
     private Property lookupProperty(ArrayList list, String propertyName) {
