@@ -11,7 +11,6 @@ public interface MetadataState {
 	// -----   Interface Operations               -----
 	// ------------------------------------------------
 
-  public java.lang.Object clone()
-    throws javax.olap.OLAPException;
+  public java.lang.Object clone();
 
 }
