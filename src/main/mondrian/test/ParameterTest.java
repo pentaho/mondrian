@@ -102,7 +102,7 @@ public class ParameterTest extends FoodMartTestCase {
 		assertEquals("xyY.xyY",s);
 	}
 	public void testParamRefWithoutParamFails() {
-		assertExprThrows("ParamRef(\"Y\")", "Parameter ''Y'' is referenced but never defined");
+		assertExprThrows("ParamRef(\"Y\")", "Parameter 'Y' is referenced but never defined");
 	}
 	public void testParamDefinedTwiceFails() {
 		assertThrows(
@@ -110,7 +110,7 @@ public class ParameterTest extends FoodMartTestCase {
 				" {Parameter(\"P\",[Gender],[Gender].[M],\"Which gender?\")," + nl +
 				"  Parameter(\"P\",[Gender],[Gender].[F],\"Which gender?\")} on columns" + nl +
 				"from Sales",
-				"Parameter ''P'' is defined ''2'' times");
+				"Parameter 'P' is defined '2' times");
 	}
 	public void testParameterMetadata() {
 		Connection connection = getConnection();

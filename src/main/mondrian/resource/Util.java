@@ -234,7 +234,7 @@ abstract class Util {
 		String s0;
 		s0 = replace(val, "\\", "\\\\");
 //		s0 = replace(val, "\"", "\\\"");
-		s0 = replace(s0, "'", "''");
+//		s0 = replace(s0, "'", "''");
 		s0 = replace(s0, "\n\r", "\\n");
 		s0 = replace(s0, "\n", "\\n");
 		s0 = replace(s0, "\r", "\\r");
