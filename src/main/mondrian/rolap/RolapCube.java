@@ -369,7 +369,7 @@ class RolapCube extends CubeBase
         member.setProperty(Property.PROPERTY_VISIBLE, visible);
         
         if (xmlCalcMember.caption != null && xmlCalcMember.caption.length() > 0)
-            member.setProperty(Property.PROPERTY_MEMBER_CAPTION, xmlCalcMember.caption);
+            member.setProperty(Property.PROPERTY_CAPTION, xmlCalcMember.caption);
 
         return formula.getMdxMember();
     }
