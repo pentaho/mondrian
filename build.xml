@@ -75,6 +75,9 @@ ${lib.dir}/optional.jar,
 ${lib.dir}/xalan.jar,
 ${lib.dir}/xercesImpl.jar,
 ${lib.dir}/xml-apis.jar,
+${lib.dir}/servlet.jar,
+${lib.dir}/jsp-api.jar,
+${lib.dir}/commons-collections.jar,
 ${lib.dir}/commons-dbcp.jar,
 ${lib.dir}/commons-pool.jar,
 ${testlib.dir}/junit.jar
@@ -411,7 +414,7 @@ in {mondrian.foodmart.jdbcURL}.">
     </java>
   </target>
 
-<target name="junit-main" depends="compile,compile.tests">
+  <target name="junit-main" depends="compile,compile.tests">
     <mkdir dir="junit-results"/>
     <junit printsummary="yes" fork="yes" haltonfailure="no" >
         <classpath>
@@ -693,14 +696,20 @@ You should set scp.user, scp.password and scp.path in build.properties">
     </exec>
   </target>
 
-    <target name="copy-jars" description="
-Copy .jar files into lib, so that the same files are available to
-build mondrian.war as in the runtime environment.">
-        <copy todir="${lib.dir}">
-          <fileset dir="${ant.home}/lib" includes="ant.jar,optional.jar"/>
-          <fileset dir="${xalan.home}/bin" includes="xalan.jar,xml-apis.jar,xercesImpl.jar"/>
-          <fileset dir="${catalina.home}/common/lib" includes="commons-dbcp.jar,commons-pool.jar,commons-collections.jar"/>
-        </copy>
+    <target name="copy-jars">
+      <copy todir="${lib.dir}">
+        <fileset dir="${ant.home}/lib" includes="ant.jar,optional.jar"/>
+        <fileset dir="${xalan.home}/bin" includes="xalan.jar,xml-apis.jar,xercesImpl.jar"/>
+        <fileset dir="${catalina.home}/common/lib" includes="jsp-api.jar"/>
+      </copy>
+      <copy todir="${lib.dir}">
+        <fileset dir="${catalina.home}/common/lib" includes="servlet*.jar"/>
+        <mapper type="merge" to="servlet.jar"/>
+      </copy>
+      <copy todir="${lib.dir}">
+        <fileset dir="${catalina.home}/common/lib" includes="commons-*.jar" excludes="commons-el*.jar"/>
+        <mapper type="regexp" from="(^.+)-([.0-9]+\.jar$)" to="\1.jar" /> <!-- strip version -->
+      </copy>
     </target>
 
   <target name="war" depends="jar,copy-jars" description="
