@@ -518,14 +518,35 @@ public class FunUtil extends Util {
         Collections.sort(members, comparator);
     }
 
+    static int sign(double d) {
+        return d == 0 ? 0 :
+                d < 0 ? -1 :
+                1;
+    }
+
+    static int compareValues(double d1, double d2) {
+        return d1 == d2 ? 0 :
+                d1 < d2 ? -1 :
+                1;
+    }
+
+    static int compareValues(int i, int j) {
+        return i == j ? 0 :
+                i < j ? -1 :
+                1;
+    }
+
     static int compareValues(Object value0, Object value1) {
-        if (value0 == value1)
+        if (value0 == value1) {
             return 0;
+        }
         // null is less than anything else
-        if (value0 == null)
+        if (value0 == null) {
             return -1;
-        if (value1 == null)
+        }
+        if (value1 == null) {
             return 1;
+        }
         if (value0 instanceof RuntimeException ||
             value1 instanceof RuntimeException) {
             // one of the values is not in cache; continue as best as we can
@@ -537,7 +558,9 @@ public class FunUtil extends Util {
         } else if (value0 instanceof String) {
             return ((String) value0).compareTo((String) value1);
         } else if (value0 instanceof Number) {
-            return FunUtil.sign(((Number) value0).doubleValue(), ((Number) value1).doubleValue());
+            return FunUtil.compareValues(
+                    ((Number) value0).doubleValue(),
+                    ((Number) value1).doubleValue());
         } else {
             throw Util.newInternal("cannot compare " + value0);
         }
@@ -548,7 +571,7 @@ public class FunUtil extends Util {
      * use by the general topOrBottom function. This might also be a useful
      * function in itself.
      */
-    static void toPercent (List members, HashMap mapMemberToValue) {
+    static void toPercent(List members, HashMap mapMemberToValue) {
         double total = 0;
         int numMembers = members.size();
         for (int i = 0; i < numMembers; i++) {
@@ -1068,18 +1091,6 @@ public class FunUtil extends Util {
         return retval;
     }
 
-    static int sign(double d) {
-        return d == 0 ? 0 :
-                d < 0 ? -1 :
-                1;
-    }
-
-    static int sign(double d1, double d2) {
-        return d1 == d2 ? 0 :
-                d1 < d2 ? -1 :
-                1;
-    }
-
     static List periodsToDate(
             Evaluator evaluator, Level level, Member member) {
         if (member == null) {
@@ -1255,13 +1266,25 @@ public class FunUtil extends Util {
         return result;
     }
 
-    static boolean equals(Member m1, Member m2) {
-        return m1 == null ?
-                m2 == null :
-                m1.equals(m2);
-    }
-
-    static int compareHierarchically(Member m1, Member m2, boolean post) {
+    /**
+     * Compares a pair of members according to their positions in a
+     * prefix-order (or postfix-order, if <code>post</code> is true) walk
+     * over a hierarchy.
+     *
+     * @param m1 First member
+     * @param m2 Second member
+     * @param post Whether to sort in postfix order. If true, a parent will
+     *   sort immediately after its last child. If false, a parent will sort
+     *   immediately before its first child.
+     * @return -1 if m1 collates before m2,
+     *   0 if m1 equals m2,
+     *   1 if m1 collates after m2
+     */
+    public static int compareHierarchically(
+            Member m1,
+            Member m2,
+            boolean post)
+    {
         if (equals(m1, m2)) {
             return 0;
         }
@@ -1283,10 +1306,41 @@ public class FunUtil extends Util {
                 m1 = m1.getParentMember();
                 m2 = m2.getParentMember();
                 if (equals(m1, m2)) {
-                    return prev1.compareTo(prev2);
+                    return compareSiblingMembers(prev1, prev2);
                 }
             }
         }
+    }
+
+    /**
+     * Compares two members which are known to have the same parent.
+     *
+     * First, compare by ordinal.
+     * This is only valid now we know they're siblings, because
+     * ordinals are only unique within a parent.
+     * If the dimension does not use ordinals, both ordinals
+     * will be -1.
+     *
+     * <p>If the ordinals do not differ, compare using regular member
+     * comparison.
+     *
+     * @param m1 First member
+     * @param m2 Second member
+     * @return -1 if m1 collates less than m2,
+     *   1 if m1 collates after m2,
+     *   0 if m1 == m2.
+     */
+    static int compareSiblingMembers(Member m1, Member m2) {
+        final int ordinal1 = m1.getOrdinal();
+        final int ordinal2 = m2.getOrdinal();
+        if (ordinal1 == ordinal2) {
+            ;
+        } else if (ordinal1 < ordinal2) {
+            return -1;
+        } else if (ordinal1 > ordinal2) {
+            return 1;
+        }
+        return m1.compareTo(m2);
     }
 
     /**
@@ -1468,29 +1522,30 @@ abstract class MemberComparator implements Comparator {
                 depth2 = m2.getDepth();
             if (depth1 < depth2) {
                 m2 = m2.getParentMember();
-                if (FunUtil.equals(m1, m2)) {
+                if (Util.equals(m1, m2)) {
                     return -1;
                 }
             } else if (depth1 > depth2) {
                 m1 = m1.getParentMember();
-                if (FunUtil.equals(m1, m2)) {
+                if (Util.equals(m1, m2)) {
                     return 1;
                 }
             } else {
                 Member prev1 = m1, prev2 = m2;
                 m1 = m1.getParentMember();
                 m2 = m2.getParentMember();
-                if (FunUtil.equals(m1, m2)) {
+                if (Util.equals(m1, m2)) {
                     // including case where both parents are null
                     int c = compareByValue(prev1, prev2);
-                    if (c != 0)
+                    if (c != 0) {
                         return c;
+                    }
                     // prev1 and prev2 are siblings.
                     // Order according to hierarchy, if the values do not differ.
                     // Needed to have a consistent sort if members with equal (null!)
                     //  values are compared.
-                    c = prev1.compareTo(prev2);
-                    return c; // desc ? -c : c;
+                    c = FunUtil.compareSiblingMembers(prev1, prev2);
+                    return c;
                 }
             }
         }
@@ -1620,7 +1675,7 @@ class HierarchicalArrayComparator extends ArrayExpComparator {
                     // including case where both parents are null
                     int c = compareByValue(prev1, prev2);
                     if (c == 0) {
-                        c = prev1.compareTo(prev2);
+                        c = FunUtil.compareSiblingMembers(prev1, prev2);
                     }
                     return desc ? -c : c;
                 }
@@ -1677,7 +1732,7 @@ class HierarchizeArrayComparator extends ArrayComparator {
             }
             // compareHierarchically imposes a total order
             //Util.assertTrue(m1 == m2);
-      Util.assertTrue(m1.equals(m2));
+            Util.assertTrue(m1.equals(m2));
         }
         return 0;
     }

@@ -19,34 +19,35 @@ import java.util.ArrayList;
  */
 class DescendantsFunDef extends FunDefBase
 {
-    private final int flagFinal;
-    private final boolean depthSpecifiedFinal;
-    private final int depthLimitFinal;
+    private final boolean self;
+    private final boolean before;
+    private final boolean after;
+    private final boolean depthSpecified;
+    private final int depthLimit;
 
-    public DescendantsFunDef(FunDef dummyFunDef, int flagFinal,
-        boolean depthSpecifiedFinal, int depthLimitFinal) {
+    public DescendantsFunDef(
+            FunDef dummyFunDef,
+            int flag,
+            boolean depthSpecified,
+            int depthLimit)
+    {
         super(dummyFunDef);
-        this.flagFinal = flagFinal;
-        this.depthSpecifiedFinal = depthSpecifiedFinal;
-        this.depthLimitFinal = depthLimitFinal;
+        self = FunUtil.checkFlag(flag, Flags.SELF, true);
+        after = FunUtil.checkFlag(flag, Flags.AFTER, true);
+        before = FunUtil.checkFlag(flag, Flags.BEFORE, true);
+//      leaves = FunUtil.checkFlag(flag, Flags.LEAVES, true);
+        this.depthSpecified = depthSpecified;
+        this.depthLimit = depthLimit;
     }
 
     public Object evaluate(Evaluator evaluator, Exp[] args) {
         Member member = getMemberArg(evaluator, args, 0, true);
-        final boolean self = FunUtil.checkFlag(flagFinal,
-                Flags.SELF, true);
-        final boolean after = FunUtil.checkFlag(flagFinal,
-                Flags.AFTER, true);
-        final boolean before = FunUtil.checkFlag(flagFinal,
-                Flags.BEFORE, true);
-//                        final boolean leaves = FunUtil.checkFlag(flagFinal,
-//                                Flags.LEAVES, true);
         List result = new ArrayList();
         final SchemaReader schemaReader =
                 evaluator.getSchemaReader();
-        if (depthSpecifiedFinal) {
+        if (depthSpecified) {
             descendantsByDepth(member, result, schemaReader,
-                    depthLimitFinal, before, self, after);
+                    depthLimit, before, self, after);
         } else {
             final Level level = args.length > 1 ?
                 getLevelArg(evaluator, args, 1, true) :

@@ -346,7 +346,9 @@ class SqlMemberSource implements MemberReader
                     member = (RolapMember) map.get(key);
                     if (member == null) {
                         member = new RolapMember(parent, level, value);
-                        member.ordinal = lastOrdinal++;
+                        if (level.ordinalExp != level.keyExp) {
+                            member.ordinal = lastOrdinal++;
+                        }
                         if (value == RolapUtil.sqlNullValue) {
                             addAsOldestSibling(list, member);
                         } else {
@@ -458,16 +460,18 @@ class SqlMemberSource implements MemberReader
                 continue;
             }
             hierarchy.addToFrom(sqlQuery, level2.keyExp, null);
-            String q = level2.keyExp.getExpression(sqlQuery);
-            sqlQuery.addSelect(q);
-            sqlQuery.addGroupBy(q);
+            String keySql = level2.keyExp.getExpression(sqlQuery);
+            sqlQuery.addSelect(keySql);
+            sqlQuery.addGroupBy(keySql);
             hierarchy.addToFrom(sqlQuery, level2.ordinalExp, null);
-            sqlQuery.addOrderBy(level2.ordinalExp.getExpression(sqlQuery));
+            String ordinalSql = level2.ordinalExp.getExpression(sqlQuery);
+            sqlQuery.addGroupBy(ordinalSql);
+            sqlQuery.addOrderBy(ordinalSql);
             for (int j = 0; j < level2.properties.length; j++) {
                 RolapProperty property = level2.properties[j];
-                String q2 = property.exp.getExpression(sqlQuery);
-                sqlQuery.addSelect(q2);
-                sqlQuery.addGroupBy(q2);
+                String propSql = property.exp.getExpression(sqlQuery);
+                sqlQuery.addSelect(propSql);
+                sqlQuery.addGroupBy(propSql);
             }
         }
         return sqlQuery.toString();
@@ -786,7 +790,9 @@ class SqlMemberSource implements MemberReader
         int columnOffset) throws SQLException
     {
         RolapMember member = new RolapMember(parentMember, childLevel, value);
-        member.ordinal = lastOrdinal++;
+        if (childLevel.ordinalExp != childLevel.keyExp) {
+            member.ordinal = lastOrdinal++;
+        }
         if (parentChild) {
             // Create a 'public' and a 'data' member. The public member is
             // calculated, and its value is the aggregation of the data member and all

@@ -12,6 +12,7 @@ package mondrian.olap.fun;
 import junit.framework.Assert;
 import mondrian.olap.*;
 import mondrian.test.FoodMartTestCase;
+import mondrian.test.TestContext;
 
 /**
  * <code>FunctionTest</code> tests the functions defined in
@@ -2686,6 +2687,98 @@ public class FunctionTest extends FoodMartTestCase {
                 "{[Product].[All Products], [Gender].[All Gender].[F]}" + nl +
                 "{[Product].[All Products], [Gender].[All Gender].[M]}" + nl +
                 "{[Product].[All Products], [Gender].[All Gender]}");
+    }
+
+    /**
+     * Tests that the Hierarchize function works correctly when applied to
+     * a level whose ordering is determined by an 'ordinal' property.
+     */
+    public void testHierarchizeOrdinal() {
+        final Connection connection =
+                TestContext.instance().getFoodMartConnection(false);
+        final Cube cube = connection.getSchema().createCube(
+                "<Cube name=\"Sales_Hierarchize\">" + nl +
+                "  <Table name=\"sales_fact_1997\"/>" + nl +
+                "  <Dimension name=\"Time_Alphabetical\" type=\"TimeDimension\" foreignKey=\"time_id\">" + nl +
+                "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">" + nl +
+                "      <Table name=\"time_by_day\"/>" + nl +
+                "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"" + nl +
+                "          levelType=\"TimeYears\"/>" + nl +
+                "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"" + nl +
+                "          levelType=\"TimeQuarters\"/>" + nl +
+                "      <Level name=\"Month\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\"" + nl +
+                "          ordinalColumn=\"the_month\"" + nl +
+                "          levelType=\"TimeMonths\"/>" + nl +
+                "    </Hierarchy>" + nl +
+                "  </Dimension>" + nl +
+                "" + nl +
+                "  <Dimension name=\"Month_Alphabetical\" type=\"TimeDimension\" foreignKey=\"time_id\">" + nl +
+                "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">" + nl +
+                "      <Table name=\"time_by_day\"/>" + nl +
+                "      <Level name=\"Month\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\"" + nl +
+                "          ordinalColumn=\"the_month\"" + nl +
+                "          levelType=\"TimeMonths\"/>" + nl +
+                "    </Hierarchy>" + nl +
+                "  </Dimension>" + nl +
+                "" + nl +
+                "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"" + nl +
+                "      formatString=\"Standard\"/>" + nl +
+                "</Cube>");
+
+        // The [Time_Alphabetical] is ordered alphabetically by month
+        assertAxisReturns("[Sales_Hierarchize]",
+                "Hierarchize([Time_Alphabetical].members)",
+                "[Time_Alphabetical].[1997]" + nl +
+                "[Time_Alphabetical].[1997].[Q1]" + nl +
+                "[Time_Alphabetical].[1997].[Q1].[2]" + nl +
+                "[Time_Alphabetical].[1997].[Q1].[1]" + nl +
+                "[Time_Alphabetical].[1997].[Q1].[3]" + nl +
+                "[Time_Alphabetical].[1997].[Q2]" + nl +
+                "[Time_Alphabetical].[1997].[Q2].[4]" + nl +
+                "[Time_Alphabetical].[1997].[Q2].[6]" + nl +
+                "[Time_Alphabetical].[1997].[Q2].[5]" + nl +
+                "[Time_Alphabetical].[1997].[Q3]" + nl +
+                "[Time_Alphabetical].[1997].[Q3].[8]" + nl +
+                "[Time_Alphabetical].[1997].[Q3].[7]" + nl +
+                "[Time_Alphabetical].[1997].[Q3].[9]" + nl +
+                "[Time_Alphabetical].[1997].[Q4]" + nl +
+                "[Time_Alphabetical].[1997].[Q4].[12]" + nl +
+                "[Time_Alphabetical].[1997].[Q4].[11]" + nl +
+                "[Time_Alphabetical].[1997].[Q4].[10]" + nl +
+                "[Time_Alphabetical].[1998]" + nl +
+                "[Time_Alphabetical].[1998].[Q1]" + nl +
+                "[Time_Alphabetical].[1998].[Q1].[2]" + nl +
+                "[Time_Alphabetical].[1998].[Q1].[1]" + nl +
+                "[Time_Alphabetical].[1998].[Q1].[3]" + nl +
+                "[Time_Alphabetical].[1998].[Q2]" + nl +
+                "[Time_Alphabetical].[1998].[Q2].[4]" + nl +
+                "[Time_Alphabetical].[1998].[Q2].[6]" + nl +
+                "[Time_Alphabetical].[1998].[Q2].[5]" + nl +
+                "[Time_Alphabetical].[1998].[Q3]" + nl +
+                "[Time_Alphabetical].[1998].[Q3].[8]" + nl +
+                "[Time_Alphabetical].[1998].[Q3].[7]" + nl +
+                "[Time_Alphabetical].[1998].[Q3].[9]" + nl +
+                "[Time_Alphabetical].[1998].[Q4]" + nl +
+                "[Time_Alphabetical].[1998].[Q4].[12]" + nl +
+                "[Time_Alphabetical].[1998].[Q4].[11]" + nl +
+                "[Time_Alphabetical].[1998].[Q4].[10]");
+
+        // The [Month_Alphabetical] is a single-level hierarchy ordered
+        // alphabetically by month.
+        assertAxisReturns("[Sales_Hierarchize]",
+                "Hierarchize([Month_Alphabetical].members)",
+                "[Month_Alphabetical].[4]" + nl +
+                "[Month_Alphabetical].[8]" + nl +
+                "[Month_Alphabetical].[12]" + nl +
+                "[Month_Alphabetical].[2]" + nl +
+                "[Month_Alphabetical].[1]" + nl +
+                "[Month_Alphabetical].[7]" + nl +
+                "[Month_Alphabetical].[6]" + nl +
+                "[Month_Alphabetical].[3]" + nl +
+                "[Month_Alphabetical].[5]" + nl +
+                "[Month_Alphabetical].[11]" + nl +
+                "[Month_Alphabetical].[10]" + nl +
+                "[Month_Alphabetical].[9]");
     }
 
     public void testIntersect() {

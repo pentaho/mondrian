@@ -55,17 +55,17 @@ public class RolapConnection extends ConnectionBase {
      *   {@link RolapConnectionProperties}.
      */
     public RolapConnection(Util.PropertyList connectInfo) {
-		this(connectInfo, null, null);
-	}
+        this(connectInfo, null, null);
+    }
 
     /**
-	 * Creates a connection.
-	 *
-	 * @param connectInfo Connection properties; keywords are described in
-	 *   {@link RolapConnectionProperties}.
-	 */
-	public RolapConnection(Util.PropertyList connectInfo, DataSource datasource) {
-		this(connectInfo, null, datasource);
+     * Creates a connection.
+     *
+     * @param connectInfo Connection properties; keywords are described in
+     *   {@link RolapConnectionProperties}.
+     */
+    public RolapConnection(Util.PropertyList connectInfo, DataSource datasource) {
+        this(connectInfo, null, datasource);
     }
 
     /**
@@ -82,33 +82,35 @@ public class RolapConnection extends ConnectionBase {
      * @pre connectInfo != null
      */
     RolapConnection(Util.PropertyList connectInfo, RolapSchema schema) {
-		this(connectInfo, schema, null);
-	}
+        this(connectInfo, schema, null);
+    }
 
-	/**
-	 * Creates a RolapConnection.
-	 *
-	 * <p>Only {@link mondrian.rolap.RolapSchema.Pool#get} calls this with
-	 * schema != null (to create a schema's internal connection). 
-	 * Other uses retrieve a schema from the cache based upon
-	 *  the <code>Catalog</code> property.
-	 *
-	 * @param connectInfo Connection properties; keywords are described in
-	 *   {@link RolapConnectionProperties}.
-	 * @param schema Schema for the connection. Must be null unless this is to
-	 *   be an internal connection.
-	 * @param dataSource - if not null an external DataSource to be used
-	 *        by Mondrian
-	 * @pre connectInfo != null
-	 */
-	RolapConnection(Util.PropertyList connectInfo, RolapSchema schema,
-	                DataSource dataSource) {
+    /**
+     * Creates a RolapConnection.
+     *
+     * <p>Only {@link mondrian.rolap.RolapSchema.Pool#get} calls this with
+     * schema != null (to create a schema's internal connection).
+     * Other uses retrieve a schema from the cache based upon
+     * the <code>Catalog</code> property.
+     *
+     * @param connectInfo Connection properties; keywords are described in
+     *   {@link RolapConnectionProperties}.
+     * @param schema Schema for the connection. Must be null unless this is to
+     *   be an internal connection.
+     * @param dataSource If not null an external DataSource to be used
+     *        by Mondrian
+     * @pre connectInfo != null
+     */
+    RolapConnection(
+            Util.PropertyList connectInfo,
+            RolapSchema schema,
+            DataSource dataSource) {
         String provider = connectInfo.get(RolapConnectionProperties.Provider);
         Util.assertTrue(provider.equalsIgnoreCase("mondrian"));
         this.connectInfo = connectInfo;
         this.catalogName = connectInfo.get(RolapConnectionProperties.Catalog);
         if (dataSource != null) {
-        	this.dataSource = dataSource;
+            this.dataSource = dataSource;
         } else {
             this.dataSource = createDataSource(connectInfo);
         }
@@ -116,19 +118,20 @@ public class RolapConnection extends ConnectionBase {
         if (schema == null) {
             // If RolapSchema.Pool.get were to call this with schema == null,
             // we would loop.
-		    // even if an external data source is passed in,
-		    //  we expect the following properties to be set,
-			//  as  they are used to generate the schema cache key
-            final String jdbcConnectString = 
-                connectInfo.get(RolapConnectionProperties.Jdbc);
-            final String jdbcUser = 
-                connectInfo.get(RolapConnectionProperties.JdbcUser);
-            final String strDataSource = 
-                connectInfo.get(RolapConnectionProperties.DataSource);
+            // Even if an external data source is passed in,
+            // we expect the following properties to be set,
+            // as they are used to generate the schema cache key.
+            final String jdbcConnectString =
+                    connectInfo.get(RolapConnectionProperties.Jdbc);
+            final String jdbcUser =
+                    connectInfo.get(RolapConnectionProperties.JdbcUser);
+            final String strDataSource =
+                    connectInfo.get(RolapConnectionProperties.DataSource);
 
-            schema = RolapSchema.Pool.instance().get(catalogName, jdbcConnectString +
-					   getJDBCProperties(connectInfo).toString(), jdbcUser, 
-					                     strDataSource, connectInfo);
+            final String key = jdbcConnectString +
+                    getJDBCProperties(connectInfo).toString();
+            schema = RolapSchema.Pool.instance().get(
+                    catalogName, key, jdbcUser, strDataSource, connectInfo);
             String roleName = connectInfo.get(RolapConnectionProperties.Role);
             if (roleName != null) {
                 role = schema.lookupRole(roleName);
@@ -144,12 +147,13 @@ public class RolapConnection extends ConnectionBase {
         setRole(role);
     }
 
-    //
-    // This is package-level in order for the RolapConnectionTest class to have access.
-    //
+    // This is package-level in order for the RolapConnectionTest class to have
+    // access.
     static DataSource createDataSource(Util.PropertyList connectInfo) {
-        final String jdbcConnectString = connectInfo.get(RolapConnectionProperties.Jdbc);
-        final String poolNeededString = connectInfo.get(RolapConnectionProperties.PoolNeeded);
+        final String jdbcConnectString =
+                connectInfo.get(RolapConnectionProperties.Jdbc);
+        final String poolNeededString =
+                connectInfo.get(RolapConnectionProperties.PoolNeeded);
         final boolean poolNeeded;
 
         Properties jdbcProperties = getJDBCProperties(connectInfo);
@@ -157,11 +161,14 @@ public class RolapConnection extends ConnectionBase {
 
         if (jdbcConnectString != null) {
             // Get connection through own pooling datasource
-            String jdbcDrivers = connectInfo.get(RolapConnectionProperties.JdbcDrivers);
+            String jdbcDrivers =
+                    connectInfo.get(RolapConnectionProperties.JdbcDrivers);
             if (jdbcDrivers != null) {
                 RolapUtil.loadDrivers(jdbcDrivers);
             }
-            RolapUtil.loadDrivers(MondrianProperties.instance().getJdbcDrivers());
+            final String jdbcDriversProp =
+                    MondrianProperties.instance().getJdbcDrivers();
+            RolapUtil.loadDrivers(jdbcDriversProp);
             if (poolNeededString == null) {
                 // JDBC connections are dumb beasts, so we assume they're not
                 // pooled.
@@ -169,8 +176,10 @@ public class RolapConnection extends ConnectionBase {
             } else {
                 poolNeeded = poolNeededString.equalsIgnoreCase("true");
             }
-            final String jdbcUser = connectInfo.get(RolapConnectionProperties.JdbcUser);
-            final String jdbcPassword = connectInfo.get(RolapConnectionProperties.JdbcPassword);
+            final String jdbcUser =
+                    connectInfo.get(RolapConnectionProperties.JdbcUser);
+            final String jdbcPassword =
+                    connectInfo.get(RolapConnectionProperties.JdbcPassword);
 
             if (jdbcUser != null) {
                 jdbcProperties.put("user", jdbcUser);
@@ -181,7 +190,8 @@ public class RolapConnection extends ConnectionBase {
 
             if (!poolNeeded) {
                 // Connection is already pooled; don't pool it again.
-                return new DriverManagerDataSource(jdbcConnectString, jdbcProperties);
+                return new DriverManagerDataSource(jdbcConnectString,
+                        jdbcProperties);
             }
 
             if (jdbcConnectString.toLowerCase().indexOf("mysql") > -1) {
@@ -241,8 +251,10 @@ public class RolapConnection extends ConnectionBase {
     }
 
     /**
-     * Create a {@link Properties} object containing all of the JDBC connection properties
-     * present in the {@link Util.PropertyList connectInfo}.
+     * Creates a {@link Properties} object containing all of the JDBC
+     * connection properties present in the
+     * {@link Util.PropertyList connectInfo}.
+     *
      * @param connectInfo
      * @return The JDBC connection properties.
      */
@@ -278,10 +290,10 @@ public class RolapConnection extends ConnectionBase {
         return catalogName;
     }
 
-  public Locale getLocale()
-  {
-    return locale;
-  }
+    public Locale getLocale()
+    {
+        return locale;
+    }
 
     public void setLocale(Locale locale)
     {
@@ -419,7 +431,7 @@ class NonEmptyResult extends ResultBase {
             }
         }
         this.axes[axis] = new RolapAxis(
-            (Position[]) positionsList.toArray(new Position[0]));
+                (Position[]) positionsList.toArray(new Position[0]));
     }
 
     /**

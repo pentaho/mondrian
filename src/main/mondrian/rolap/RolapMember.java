@@ -198,39 +198,52 @@ public class RolapMember extends MemberBase
         return ordinal;
     }
 
+    // implement the Comparable interface
+    public final int compareTo(Object o) {
+        return compareTo((RolapMember) o);
+    }
+
     /**
-     * implement the Comparable interface
+     * Compares this member to another {@link RolapMember}.
+     *
+     * <p>The method first compares on keys; null keys always collate last.
+     * If the keys are equal, it compares using unique name.
+     *
+     * <p>This method does not consider {@link #ordinal} field, because
+     * ordinal is only unique within a parent. If you want to compare
+     * members which may be at any position in the hierarchy, use
+     * {@link mondrian.olap.fun.FunUtil#compareHierarchically}.
+     *
+     * @return -1 if this is less, 0 if this is the same, 1 if this is greater
      */
-    public int compareTo(Object o) {
-        RolapMember other = (RolapMember)o;
-
-        if (this.key != null && other.key == null)
+    public int compareTo(RolapMember that) {
+        if (this.key != null && that.key == null) {
             return 1; // not null is greater than null
-
-        if (this.key == null && other.key != null)
+        }
+        if (this.key == null && that.key != null) {
             return -1; // null is less than not null
-
+        }
         // compare by unique name, if both keys are null
-        if (this.key == null && other.key == null)
-            return this.getUniqueName().compareTo(other.getUniqueName());
-
+        if (this.key == null && that.key == null) {
+            return this.getUniqueName().compareTo(that.getUniqueName());
+        }
         // compare by unique name, if one ore both members are null
         if (this.key == RolapUtil.sqlNullValue ||
-            other.key == RolapUtil.sqlNullValue)
-            return this.getUniqueName().compareTo(other.getUniqueName());
-
+            that.key == RolapUtil.sqlNullValue) {
+            return this.getUniqueName().compareTo(that.getUniqueName());
+        }
         // as both keys are not null, compare by key
         //  String, Double, Integer should be possible
         //  any key object should be "Comparable"
         // anyway - keys should be of the same class
-        if (this.key.getClass().equals(other.key.getClass()))
-            return ((Comparable)this.key).compareTo(other.key);
-
+        if (this.key.getClass().equals(that.key.getClass())) {
+            return ((Comparable)this.key).compareTo(that.key);
+        }
         // Compare by unique name in case of different key classes.
         // This is possible, if a new calculated member is created
         //  in a dimension with an Integer key. The calculated member
         //  has a key of type String.
-        return this.getUniqueName().compareTo(other.getUniqueName());
+        return this.getUniqueName().compareTo(that.getUniqueName());
     }
 
     public boolean isHidden() {
