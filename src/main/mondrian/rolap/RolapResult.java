@@ -326,7 +326,8 @@ class RolapResult extends ResultBase
 					// Compute the formatted value, to ensure that any needed
 					// values are in the cache.
 					try {
-						Util.discard(getCell(point.ordinals));
+                        Cell cell = getCell(point.ordinals);
+                        Util.discard(cell.getFormattedValue());
 					} catch (MondrianEvaluationException e) {
 						// ignore
 					} catch (Throwable e) {

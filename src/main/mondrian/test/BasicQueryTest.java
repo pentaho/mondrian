@@ -1734,6 +1734,28 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"Row #11: 50.26" + nl +
 				"Row #11: 128.32" + nl);
 	}
+    /** This bug causes all of the format strings to be the same, because the
+     * required expression [Measures].[Unit Sales] is not in the cache. */
+    public void testBug761196() {
+        runQueryCheckResult(
+                "with member [Measures].[xxx] as '[Measures].[Store Sales]'," + nl +
+                " format_string = IIf([Measures].[Unit Sales] > 100000, \"AAA######.00\",\"BBB###.00\")" + nl +
+                "select {[Measures].[xxx]} ON columns," + nl +
+                " {[Product].[All Products].children} ON rows" + nl +
+                "from [Sales] where [Time].[1997]",
+                
+                "Axis #0:" + nl +
+                "{[Time].[1997]}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[xxx]}" + nl +
+                "Axis #2:" + nl +
+                "{[Product].[All Products].[Drink]}" + nl +
+                "{[Product].[All Products].[Food]}" + nl +
+                "{[Product].[All Products].[Non-Consumable]}" + nl +
+                "Row #0: BBB48836.21" + nl +
+                "Row #1: AAA409035.59" + nl +
+                "Row #2: BBB107366.33" + nl);
+    }
 	/** Make sure that the "Store" cube is working. **/
 	public void testStoreCube() {
 		runQueryCheckResult(
