@@ -269,7 +269,11 @@ public class RolapMember extends MemberBase
 			return pf.formatProperty(this, propertyName, getPropertyValue(propertyName)); 
 		}
 		
-		return getPropertyValue(propertyName).toString();
+		Object val = getPropertyValue(propertyName);
+		if (val == null)
+			return "";
+		else
+			return val.toString();
 	}
  
 }
