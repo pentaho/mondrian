@@ -527,7 +527,17 @@ public class FoodMartTestCase extends TestCase {
 
 	public void testTaglib5() {
 		Result result = runQuery(taglibQueries[5]);
+	}
 
+	public void testCellValue() {
+		Result result = runQuery(
+				"select {[Measures].[Unit Sales]} on columns," + nl +
+				" {[Gender].[M]} on rows" + nl +
+				"from Sales");
+		Cell cell = result.getCell(new int[] {0,0});
+		Object value = cell.getValue();
+		assertTrue(value instanceof Number);
+		assertEquals(135215, ((Number) value).intValue());
 	}
 }
 

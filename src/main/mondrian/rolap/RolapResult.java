@@ -363,6 +363,11 @@ class RolapCell implements Cell
 			return evaluator.format(value);
 		}
 	}
+
+	public Object getValue() {
+		return value;
+	}
+
 	// implement Cell
 	public String getFormattedValue()
 	{
