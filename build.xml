@@ -60,6 +60,8 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
     <pathelement location="${classes.dir}"/>
     <pathelement location="${tomcat.home}/common/lib/servlet.jar"/>
     <pathelement location="${lib.dir}/javacup.jar"/>
+    <pathelement location="${lib.dir}/mof.jar"/>
+    <pathelement location="${lib.dir}/jmi.jar"/>
     <pathelement location="${xalan.home}/bin/xalan.jar"/>
     <pathelement location="${junit.home}/junit.jar"/>
     <pathelement location="${weblogic.home}/lib/weblogic.jar"/>
