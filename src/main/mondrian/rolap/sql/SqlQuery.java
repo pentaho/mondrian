@@ -197,6 +197,9 @@ public class SqlQuery
 	}
 
 
+	public boolean isAccess() {
+		return getProduct().equals("ACCESS");
+	}
 	public boolean isDB2() {
 		// DB2 on NT returns "DB2/NT"
 		return getProduct().startsWith("DB2");
@@ -227,40 +230,39 @@ public class SqlQuery
 	}
 
 
-	public boolean isOracle() {
-		return getProduct().equals("Oracle");
+	public boolean isInformix() {
+		return getProduct().startsWith("Informix");
 	}
 	public boolean isMSSql() {
 		return getProduct().equalsIgnoreCase("Microsoft SQL Server");
 	}
-	public boolean isAccess() {
-		return getProduct().equals("ACCESS");
+    public boolean isMSSQL() {
+        return getProduct().toUpperCase().indexOf("SQL SERVER") >= 0;
+    }
+	public boolean isOracle() {
+		return getProduct().equals("Oracle");
 	}
 	public boolean isPostgres() {
 		return getProduct().toUpperCase().indexOf("POSTGRE") >= 0;
 	}
-    public boolean isMSSQL() {
-        return getProduct().toUpperCase().indexOf("SQL SERVER") >= 0;
-    }
 	public boolean isMySQL() {
 		return getProduct().toUpperCase().equals("MYSQL");
 	}
-	public boolean isInformix() {
-		return getProduct().startsWith("Informix");
+	public boolean isSybase() {
+		return getProduct().toUpperCase().indexOf("SYBASE") >= 0;
 	}
-
 
 	// -- behaviors --
 	protected boolean requiresAliasForFromItems() {
 		return isPostgres();
 	}
 	protected boolean allowsAs() {
-		return !isOracle();
+		return !isOracle() && !isSybase();
 	}
 	/** Whether "select * from (select * from t)" is OK. **/
 	public boolean allowsFromQuery() {
 		// older versions of AS400 do not allow FROM subqueries
-		return !(isMySQL() || isOldAS400() || isInformix());
+		return !isMySQL() && !isOldAS400() && !isInformix() && !isSybase();
 	}
 	/** Whether "select count(distinct x, y) from t" is OK. **/
 	public boolean allowsCompoundCountDistinct() {

@@ -189,36 +189,58 @@ class SqlMemberSource implements MemberReader
 			return sqlQuery.toString();
 		}
 		if (!sqlQuery.allowsFromQuery()) {
-			// "select count(distinct c1, c2) from table"
 			String columnList = "";
+			int columnCount = 0;
 			for (int i = levelDepth; i >= 0; i--) {
 				RolapLevel level2 = levels[i];
 				if (level2.isAll()) {
 					 continue;
 				}
-				if (columnList.length() > 0) {
-					// for databases where both SELECT-in-FROM and COUNT DISTINCT do not work,
-					//  we do not generate any count and do the count distinct "manually".
-					if (!sqlQuery.allowsCompoundCountDistinct())
+				if (columnCount > 0) {
+					if (sqlQuery.allowsCompoundCountDistinct()) {
+						columnList += ", ";
+					} else if (true) {
+						// for databases where both SELECT-in-FROM and
+						// COUNT DISTINCT do not work, we do not
+						// generate any count and do the count
+						// distinct "manually".
 						mustCount[0] = true;
-					/*
-					if (!sqlQuery.allowsCompoundCountDistinct()) {
-						// I don't know know of a database where this would
-						// happen. MySQL does not allow SELECT-in-FROM, but it
-						// does allow compound COUNT DISTINCT.
+					} else if (sqlQuery.isSybase()) {
+						// "select count(distinct convert(varchar, c1) +
+						// convert(varchar, c2)) from table"
+						if (columnCount == 1) {
+							// Conversion to varchar is expensive, so we only
+							// do it when we know we are dealing with a
+							// compound key.
+							columnList = "convert(varchar, " + columnList + ")";
+						}
+						columnList += " + ";
+					} else {
+						// Apparently this database allows neither
+						// SELECT-in-FROM nor compound COUNT DISTINCT. I don't
+						// know any database where this happens. If you receive
+						// this error, try a workaround similar to the Sybase
+						// workaround above.
 						throw Util.newInternal(
 							"Cannot generate query to count members of level '" +
 							level.getUniqueName() +
 							"': database supports neither SELECT-in-FROM nor compound COUNT DISTINCT");
 					}
-					*/
-					columnList += ", ";
 				}
 				hierarchy.addToFrom(sqlQuery, level2.keyExp, null);
-				columnList += level2.keyExp.getExpression(sqlQuery);
+
+				String keyExp = level2.keyExp.getExpression(sqlQuery);
+				if (columnCount > 0 &&
+					!sqlQuery.allowsCompoundCountDistinct() &&
+					sqlQuery.isSybase()) {
+					keyExp = "convert(varchar, " + columnList + ")";
+				}
+				columnList += keyExp;
+
 				if (level2.unique) {
 					break; // no further qualification needed
 				}
+					++columnCount;
 			}
 			if (mustCount[0]) {
 				sqlQuery.addSelect(columnList);
@@ -660,7 +682,8 @@ class SqlMemberSource implements MemberReader
         }
     }
 
-    private void getMemberChildren(RolapMember parentMember, List children, Connection jdbcConnection) {
+    private void getMemberChildren(RolapMember parentMember, List children,
+            Connection jdbcConnection) {
         String sql;
         boolean parentChild;
         final RolapLevel parentLevel = (RolapLevel) parentMember.getLevel();
