@@ -51,7 +51,7 @@ import org.apache.tools.ant.BuildException;
 public class ResourceGen
 {
     private static final String JAVA_STRING = "String";
-    private static final String CPP_STRING = "const string &";
+    private static final String CPP_STRING = "const std::string &";
 
     private static final String JAVA_NUMBER = "Number";
     private static final String CPP_NUMBER = "int";

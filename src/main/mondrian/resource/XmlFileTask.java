@@ -558,89 +558,62 @@ class XmlFileTask extends ResourceGen.FileTask {
             pw.println();
         }
 
-        pw.println("using namespace std;");
         pw.println();
     
         String baseClass = (cppBaseClassName != null
                             ? cppBaseClassName
                             : "ResourceBundle");
 
-        for(int i = 0; i < resourceList.resources.length; i++) {
-            ResourceDef.Resource resource = resourceList.resources[i];
-
-			String text = resource.text.cdata;
-			String comment = ResourceGen.getComment(resource);
-
-            // e.g. "Internal"
-			final String resourceInitCap = 
-                ResourceGen.getResourceInitcap(resource);
-
-			String parameterList = ResourceGen.getParameterList(text, false);
-
-            generateCommentBlock(pw, resource.name, text, comment);
-
-            pw.println("class "
-                       + resourceInitCap + " : public ResourceDefinition");
-            pw.println("{");
-            pw.println("  public:");
-            pw.println("  " + resourceInitCap + "("
-                       + baseClass + " *bundle, const string &key);");
-            pw.println();
-            pw.println("  string operator()(" + parameterList + ") const;");
-            pw.println("};");
-            pw.println();
-            pw.println();
-        }
-
         String className = getClassNameSansPackage(null);
         String bundleCacheClassName = className + "BundleCache";
 
         pw.println("class " + className + ";");
-        pw.println("typedef map<Locale, " + className + "*, localeLess> " 
+        pw.println("typedef map<Locale, " + className + "*> " 
                    + bundleCacheClassName + ";");
         pw.println();
         pw.println("class " + className + " : " + baseClass);
         pw.println("{");
-        pw.println("  protected:");
-        pw.println("  " + className + "(Locale locale);");
+        pw.println("    protected:");
+        pw.println("    explicit " + className + "(Locale locale);");
         pw.println();
-        pw.println("  public:");
-        pw.println("  virtual ~" + className + "() { }");
+        pw.println("    public:");
+        pw.println("    virtual ~" + className + "() { }");
         pw.println();
-        pw.println("  static const " + className + " &instance();");
-        pw.println("  static const "
+        pw.println("    static const " + className + " &instance();");
+        pw.println("    static const "
                    + className
                    + " &instance(const Locale &locale);");
         pw.println();
 
-        pw.println("  static void setResourceFileLocation(const string &location);");
+        pw.println("    static void setResourceFileLocation(const std::string &location);");
         pw.println();
 
         for(int i = 0; i < resourceList.resources.length; i++) {
             ResourceDef.Resource resource = resourceList.resources[i];
       
+			String text = resource.text.cdata;
+			String comment = ResourceGen.getComment(resource);
+            String parameterList = ResourceGen.getParameterList(text, false);
+
             // e.g. "Internal"
 			final String resourceInitCap =
                 ResourceGen.getResourceInitcap(resource);
 
-            pw.println("  " + resourceInitCap + " " + resource.name + ";");
+            generateCommentBlock(pw, resource.name, text, comment);
+
+            pw.println("    std::string " + resource.name + "("
+                       + parameterList + ") const;");
       
             if (resource instanceof ResourceDef.Exception) {
                 ResourceDef.Exception exception = 
                     (ResourceDef.Exception)resource;
-
-                String text = resource.text.cdata;
-                String comment = ResourceGen.getComment(resource);
-
-                String parameterList = ResourceGen.getParameterList(text,
-                                                                    false);
 
                 String exceptionClass = exception.cppClassName;
                 if (exceptionClass == null) {
                     exceptionClass = resourceList.cppExceptionClassName;
                 }
 
-                pw.println("  " + exceptionClass
+                pw.println("    " + exceptionClass
                            + "* new" + resourceInitCap + "("
                            + parameterList + ") const;");
 
@@ -650,7 +623,7 @@ class XmlFileTask extends ResourceGen.FileTask {
 
                 if (chainExceptions) {
                     if (parameterList.length() > 0) {
-                        pw.println("  "
+                        pw.println("    "
                                    + exceptionClass
                                    + "* new"
                                    + resourceInitCap
@@ -673,8 +646,17 @@ class XmlFileTask extends ResourceGen.FileTask {
 
             pw.println();
         }
-        pw.println("  template<class _GRB, class _BC, class _BC_ITER>");
-        pw.println("    friend _GRB *makeInstance(_BC &bundleCache, const Locale &locale);");
+
+        pw.println("    private:");
+        for(int i = 0; i < resourceList.resources.length; i++) {
+            ResourceDef.Resource resource = resourceList.resources[i];
+
+            pw.println("    ResourceDefinition _" + resource.name + ";");
+        }
+        pw.println();
+
+        pw.println("    template<class _GRB, class _BC, class _BC_ITER>");
+        pw.println("        friend _GRB *makeInstance(_BC &bundleCache, const Locale &locale);");
 
         pw.println("};");
 
@@ -731,13 +713,13 @@ class XmlFileTask extends ResourceGen.FileTask {
 
         pw.println("const " + className + " &" + className + "::instance()");
         pw.println("{");
-        pw.println("  return " + className + "::instance(Locale::getDefault());");
+        pw.println("    return " + className + "::instance(Locale::getDefault());");
         pw.println("}");
         pw.println();
         pw.println("const " + className
                    + " &" + className + "::instance(const Locale &locale)");
         pw.println("{");
-        pw.println("  return *makeInstance<" 
+        pw.println("    return *makeInstance<" 
                    + className + ", "
                    + bundleCacheClassName + ", "
                    + bundleCacheClassName 
@@ -748,18 +730,18 @@ class XmlFileTask extends ResourceGen.FileTask {
                    + className
                    + "::setResourceFileLocation(const string &location)");
         pw.println("{");
-        pw.println("  bundleLocation = location;");
+        pw.println("    bundleLocation = location;");
         pw.println("}");
         pw.println();
 
         pw.println("" + className + "::" + className + "(Locale locale)");
-        pw.println("  : " + baseClass 
+        pw.println("    : " + baseClass 
                    + "(BASENAME, locale, bundleLocation),");
 
         for(int i = 0; i < resourceList.resources.length; i++) {
             ResourceDef.Resource resource = resourceList.resources[i];
 
-            pw.print("    "
+            pw.print("      _"
                      + resource.name
                      + "(this, \""
                      + resource.name
@@ -787,6 +769,17 @@ class XmlFileTask extends ResourceGen.FileTask {
 			String parameterList = ResourceGen.getParameterList(text, false);
 			String argumentList = ResourceGen.getArgumentList(text, false);
 
+            pw.println("string " + className + "::" + resource.name + "("
+                       + parameterList + ") const");
+            pw.println("{");
+            pw.println("    return _" 
+                       + resource.name
+                       + ".format("
+                       + argumentList
+                       + ");");
+            pw.println("}");
+
+
             if (resource instanceof ResourceDef.Exception) {
                 ResourceDef.Exception exception =
                     (ResourceDef.Exception)resource;
@@ -800,11 +793,11 @@ class XmlFileTask extends ResourceGen.FileTask {
                            + className + "::new" + resourceInitCap + "("
                            + parameterList + ") const");
                 pw.println("{");
-                pw.println("  return new "
+                pw.println("    return new "
                            + exceptionClass
                            + "("
                            + resource.name
-                           + ".operator()("
+                           + "("
                            + argumentList
                            + "));");
                 pw.println("}");
@@ -838,46 +831,17 @@ class XmlFileTask extends ResourceGen.FileTask {
                     }
                     pw.println("{");
 
-                    pw.println("  return new "
+                    pw.println("    return new "
                                + exceptionClass
                                + "("
                                + resource.name
-                               + ".operator()("
+                               + "("
                                + argumentList
                                + "), prev);");
                     pw.println("}");
                     pw.println();
                 }
             }
-        }
-
-        for(int i = 0; i < resourceList.resources.length; i++) {
-            ResourceDef.Resource resource = resourceList.resources[i];
-
-			String text = resource.text.cdata;
-			String comment = ResourceGen.getComment(resource);
-
-            // e.g. "Internal"
-			final String resourceInitCap =
-                ResourceGen.getResourceInitcap(resource);
-
-			String parameterList = ResourceGen.getParameterList(text, false);
-			String argumentList = ResourceGen.getArgumentList(text, false);
-
-            pw.println(resourceInitCap + "::" + resourceInitCap +
-                       "(" + baseClass + " *bundle, const string &key)");
-            pw.println("  : ResourceDefinition(bundle, key)");
-            pw.println("{ }");
-            pw.println();
-            pw.println("string " 
-                       + resourceInitCap
-                       + "::operator()("
-                       + parameterList
-                       + ") const");
-            pw.println("{");
-            pw.println("  return format(" + argumentList + ");");
-            pw.println("}");
-            pw.println();
         }
 
         if (resourceList.cppNamespace != null) {
