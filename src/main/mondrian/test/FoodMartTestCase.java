@@ -151,6 +151,34 @@ public class FoodMartTestCase extends TestCase {
 		assertTrue(value, value.indexOf(pattern) >= 0);
 	}
 
+	/**
+	 * Converts a set of positions into a string. Useful if you want to check
+	 * that an axis has the results you expected.
+	 */
+	public String toString(Position[] positions) {
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < positions.length; i++) {
+			Position position = positions[i];
+			if (i > 0) {
+				sb.append(", ");
+			}
+			if (position.members.length != 1) {
+				sb.append("{");
+			}
+			for (int j = 0; j < position.members.length; j++) {
+				Member member = position.members[j];
+				if (j > 0) {
+					sb.append(", ");
+				}
+				sb.append(member.getUniqueName());
+			}
+			if (position.members.length != 1) {
+				sb.append("}");
+			}
+		}
+		return sb.toString();
+	}
+
 	// --------------------------------------------------------------
 	// tests follow
 

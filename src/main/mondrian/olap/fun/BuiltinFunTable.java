@@ -1657,35 +1657,41 @@ public class BuiltinFunTable extends FunTable {
 					public void testToggleDrillState(FoodMartTestCase test) {
 						Axis axis = test.executeAxis2(
 								"ToggleDrillState({[Customers].[USA],[Customers].[Canada]},{[Customers].[USA],[Customers].[USA].[CA]})");
-						test.assertEquals("[Customers].[All Customers].[USA], [Customers].[All Customers].[USA].[CA], [Customers].[All Customers].[USA].[OR], [Customers].[All Customers].[USA].[WA], [Customers].[All Customers].[Canada]", toString(axis.positions));
+						String expected = "[Customers].[All Customers].[USA], " +
+								"[Customers].[All Customers].[USA].[CA], " +
+								"[Customers].[All Customers].[USA].[OR], " +
+								"[Customers].[All Customers].[USA].[WA], " +
+								"[Customers].[All Customers].[Canada]";
+						test.assertEquals(expected, test.toString(axis.positions));
 					}
 					public void testToggleDrillState2(FoodMartTestCase test) {
 						Axis axis = test.executeAxis2(
 								"ToggleDrillState([Product].[Product Department].members, {[Product].[All Products].[Food].[Snack Foods]})");
-						test.assertEquals("foo",toString(axis.positions));
-					}
-					private String toString(Position[] positions) {
-						StringBuffer sb = new StringBuffer();
-						for (int i = 0; i < positions.length; i++) {
-							Position position = positions[i];
-							if (i > 0) {
-								sb.append(", ");
-							}
-							if (position.members.length != 1) {
-								sb.append("{");
-							}
-							for (int j = 0; j < position.members.length; j++) {
-								Member member = position.members[j];
-								if (j > 0) {
-									sb.append(", ");
-								}
-								sb.append(member.getUniqueName());
-							}
-							if (position.members.length != 1) {
-								sb.append("}");
-							}
-						}
-						return sb.toString();
+						String expected = "[Product].[All Products].[Drink].[Alcoholic Beverages], " +
+								"[Product].[All Products].[Drink].[Beverages], " +
+								"[Product].[All Products].[Drink].[Dairy], " +
+								"[Product].[All Products].[Food].[Baked Goods], " +
+								"[Product].[All Products].[Food].[Baking Goods], " +
+								"[Product].[All Products].[Food].[Breakfast Foods], " +
+								"[Product].[All Products].[Food].[Canned Foods], " +
+								"[Product].[All Products].[Food].[Canned Products], " +
+								"[Product].[All Products].[Food].[Dairy], " +
+								"[Product].[All Products].[Food].[Deli], " +
+								"[Product].[All Products].[Food].[Eggs], " +
+								"[Product].[All Products].[Food].[Frozen Foods], " +
+								"[Product].[All Products].[Food].[Meat], " +
+								"[Product].[All Products].[Food].[Produce], " +
+								"[Product].[All Products].[Food].[Seafood], " +
+								"[Product].[All Products].[Food].[Snack Foods], " +
+								"[Product].[All Products].[Food].[Snack Foods].[Snack Foods], " +
+								"[Product].[All Products].[Food].[Snacks], " +
+								"[Product].[All Products].[Food].[Starchy Foods], " +
+								"[Product].[All Products].[Non-Consumable].[Carousel], " +
+								"[Product].[All Products].[Non-Consumable].[Checkout], " +
+								"[Product].[All Products].[Non-Consumable].[Health and Hygiene], " +
+								"[Product].[All Products].[Non-Consumable].[Household], " +
+								"[Product].[All Products].[Non-Consumable].[Periodicals]";
+						test.assertEquals(expected, test.toString(axis.positions));
 					}
 				}));
 		define(new MultiResolver(
