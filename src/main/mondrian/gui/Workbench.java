@@ -26,21 +26,10 @@ import javax.swing.tree.*;
  * @author  sean
  */
 public class Workbench extends javax.swing.JFrame {
-    MondrianDef.Schema schema;
-    DefaultTreeModel cubeTreeModel;
-    DefaultTreeModel dimensionTreeModel;
-    DefaultTreeModel measureTreeModel;
-    SchemaTreeModel schemaTreeModel;
     
     /** Creates new form Workbench */
     public Workbench() {
         initComponents();
-        DefaultMutableTreeNode tn;
-        
-        tn = new DefaultMutableTreeNode("");
-        schemaTree.setModel(new DefaultTreeModel(tn));
-        SchemaTreeCellRenderer stcr = new SchemaTreeCellRenderer();
-        schemaTree.setCellRenderer(stcr);
         ImageIcon icon = new javax.swing.ImageIcon("images/cube16.gif");
         
         this.setIconImage(icon.getImage());
@@ -53,9 +42,6 @@ public class Workbench extends javax.swing.JFrame {
      */
     private void initComponents() {//GEN-BEGIN:initComponents
         desktopPane = new javax.swing.JDesktopPane();
-        schemaFrame = new javax.swing.JInternalFrame();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        schemaTree = new javax.swing.JTree();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         openMenuItem = new javax.swing.JMenuItem();
@@ -79,19 +65,6 @@ public class Workbench extends javax.swing.JFrame {
                 exitForm(evt);
             }
         });
-
-        schemaFrame.setClosable(true);
-        schemaFrame.setIconifiable(true);
-        schemaFrame.setMaximizable(true);
-        schemaFrame.setResizable(true);
-        schemaFrame.setTitle("Schema");
-        schemaFrame.setVisible(true);
-        jScrollPane3.setViewportView(schemaTree);
-
-        schemaFrame.getContentPane().add(jScrollPane3, java.awt.BorderLayout.CENTER);
-
-        schemaFrame.setBounds(0, 0, 500, 480);
-        desktopPane.add(schemaFrame, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
         getContentPane().add(desktopPane, java.awt.BorderLayout.CENTER);
 
@@ -169,12 +142,23 @@ public class Workbench extends javax.swing.JFrame {
             try {
                 mondrian.xom.Parser xmlParser =
                         mondrian.xom.XOMUtil.createDefaultParser();
-                schema = new MondrianDef.Schema(
+                MondrianDef.Schema schema = new MondrianDef.Schema(
                         xmlParser.parse(jfc.getSelectedFile().toURL()));
 
-                schemaTreeModel = new SchemaTreeModel(schema);
-                schemaTree.setModel(schemaTreeModel);
+                JInternalFrame schemaFrame = new JInternalFrame();
                 schemaFrame.setTitle("Schema - " + jfc.getSelectedFile().getName());
+
+                schemaFrame.getContentPane().add(new SchemaExplorer(schema));
+
+                schemaFrame.setBounds(0, 0, 500, 480);
+                schemaFrame.setClosable(true);
+                schemaFrame.setIconifiable(true);
+                schemaFrame.setMaximizable(true);
+                schemaFrame.setResizable(true);
+                schemaFrame.setVisible(true);
+
+                desktopPane.add(schemaFrame, javax.swing.JLayeredPane.DEFAULT_LAYER);
+                schemaFrame.show();
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -207,7 +191,6 @@ public class Workbench extends javax.swing.JFrame {
     private javax.swing.JMenuItem openMenuItem;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JMenuItem cutMenuItem;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem saveMenuItem;
@@ -215,10 +198,8 @@ public class Workbench extends javax.swing.JFrame {
     private javax.swing.JMenuItem copyMenuItem;
     private javax.swing.JDesktopPane desktopPane;
     private javax.swing.JMenu viewMenu;
-    private javax.swing.JTree schemaTree;
     private javax.swing.JMenuItem deleteMenuItem;
     private javax.swing.JMenuItem exitMenuItem;
-    private javax.swing.JInternalFrame schemaFrame;
     private javax.swing.JCheckBoxMenuItem viewMeasuresMenuItem;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem pasteMenuItem;
