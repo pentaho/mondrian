@@ -699,6 +699,19 @@ public class MondrianFoodMartLoader {
         createIndex(false, "sales_fact_1998", "i_sales_1998_time_id", new String[] {"time_id"});
         createIndex(true, "store", "i_store_id", new String[] {"store_id"});
         createIndex(false, "store", "i_store_region_id", new String[] {"region_id"});
+        createIndex(true, "store_ragged", "i_store_ragged_id", new String[] {"store_id"});
+        createIndex(false, "store_ragged", "i_store_ragged_region_id", new String[] {"region_id"});
+        createIndex(true, "time_by_day", "i_time_id", new String[] {"time_id"});
+        createIndex(true, "time_by_day", "i_time_day", new String[] {"the_date"});
+        createIndex(false, "time_by_day", "i_time_year", new String[] {"the_year"});
+        createIndex(false, "time_by_day", "i_time_quarter", new String[] {"quarter"});
+        createIndex(false, "time_by_day", "i_time_month", new String[] {"month_of_year"});
+
+        createIndex(false, "salary", "i_salary_pay_date", new String[] {"pay_date"});
+        createIndex(false, "salary", "i_salary_employee", new String[] {"employee_id"});
+        createIndex(true, "employee", "i_employee_id", new String[] {"employee_id"});
+        createIndex(false, "employee", "i_employee_store", new String[] {"store_id"});
+        createIndex(false, "employee", "i_employee_supvsr", new String[] {"supervisor_id"});
         if (outputDirectory != null) {
             fileOutput.close();
         }
@@ -725,6 +738,20 @@ public class MondrianFoodMartLoader {
     {
         try {
             StringBuffer buf = new StringBuffer();
+            if (jdbcOutput) {
+	            try {
+					buf.append("DROP INDEX ")
+						.append(quoteId(indexName))
+						.append(" ON ")
+						.append(quoteId(tableName));
+					final String deleteDDL = buf.toString();
+					executeDDL(deleteDDL);
+				} catch (Exception e1) {
+					System.out.println("Drop failed: but continue");
+				}
+            }
+
+            buf = new StringBuffer();
             buf.append(isUnique ? "CREATE UNIQUE INDEX " : "CREATE INDEX ")
                 .append(quoteId(indexName)).append(" ON ")
                 .append(quoteId(tableName)).append(" (");
@@ -736,17 +763,8 @@ public class MondrianFoodMartLoader {
                 buf.append(quoteId(columnName));
             }
             buf.append(")");
-            final String ddl = buf.toString();
-            if (verbose) {
-                System.out.println(ddl);
-            }
-            if (jdbcOutput) {
-                final Statement statement = connection.createStatement();
-                statement.execute(ddl);
-            } else {
-                fileOutput.write(ddl);
-                fileOutput.write(";\n");
-            }
+            final String createDDL = buf.toString();
+            executeDDL(createDDL);
         } catch (Exception e) {
             throw MondrianResource.instance().newCreateIndexFailed(indexName,
                 tableName, e);
@@ -1115,12 +1133,8 @@ public class MondrianFoodMartLoader {
                 if (data && jdbcOutput) {
                     // We're going to load the data without [re]creating
                     // the table, so let's remove the data.
-                    final Statement statement = connection.createStatement();
                     try {
-                        if (verbose) {
-                            System.out.println("DELETE FROM " + quoteId(name));
-                        }
-                        statement.execute("DELETE FROM " + quoteId(name));
+                    	executeDDL("DELETE FROM " + quoteId(name));
                     } catch (SQLException e) {
                         throw MondrianResource.instance().newCreateTableFailed(name, e);
                     }
@@ -1143,31 +1157,25 @@ public class MondrianFoodMartLoader {
             }
             buf.append(")");
             final String ddl = buf.toString();
-            if (jdbcOutput) {
-                final Statement statement = connection.createStatement();
-                try {
-                    if (verbose) {
-                        System.out.println("DROP TABLE " + quoteId(name));
-                    }
-                    statement.execute("DROP TABLE " + quoteId(name));
-                } catch (SQLException e) {
-                    // ignore 'table does not exist' error
-                    if (verbose) {
-                        System.out.println("DROP TABLE exception: " + e.getMessage());
-                    }
-                }
-
-                if (verbose) {
-                    System.out.println(ddl);
-                }
-                statement.execute(ddl);
-            } else {
-                fileOutput.write(ddl);
-                fileOutput.write(";\n");
-            }
+            executeDDL("DROP TABLE " + quoteId(name));
+        	executeDDL(ddl);
         } catch (Exception e) {
             throw MondrianResource.instance().newCreateTableFailed(name, e);
         }
+    }
+    
+    private void executeDDL(String ddl) throws Exception {
+        if (verbose) {
+            System.out.println(ddl);
+        }
+        if (jdbcOutput) {
+            final Statement statement = connection.createStatement();
+            statement.execute(ddl);
+        } else {
+            fileOutput.write(ddl);
+            fileOutput.write(";\n");
+        }
+
     }
 
     /**
@@ -1376,6 +1384,12 @@ public class MondrianFoodMartLoader {
                     return "true";
                 } else if (columnValue.trim().equals("0")) {
                     return "false";
+                }
+            } else {
+                if (columnValue.trim().equals("true")) {
+                    return "1";
+                } else if (columnValue.trim().equals("false")) {
+                    return "0";
                 }
             }
         }
