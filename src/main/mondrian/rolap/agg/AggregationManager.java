@@ -31,11 +31,9 @@ import java.util.*;
  **/
 public class AggregationManager extends RolapAggregationManager {
 	private static AggregationManager instance;
-	ArrayList aggregations;
 
 	AggregationManager()
 	{
-		this.aggregations = new ArrayList();
 	}
 
  	/** Returns or creates the singleton. **/
@@ -148,53 +146,17 @@ public class AggregationManager extends RolapAggregationManager {
 		Object[][] constraintses, Collection pinnedSegments)
 	{
 		RolapStar star = measures[0].table.star;
-		Aggregation aggregation = lookupAggregation(star, columns);
-		if (aggregation == null) {
-			aggregation = new Aggregation(star, columns);
-			this.aggregations.add(aggregation);
-		}
+		Aggregation aggregation = star.lookupOrCreateAggregation(columns);
 		constraintses = aggregation.optimizeConstraints(constraintses);
 		aggregation.load(measures, constraintses, pinnedSegments);
 	}
 
-	/**
-	 * Looks for an existing aggregation over a given set of columns, or
-	 * returns <code>null</code> if there is none.
-	 *
-	 * <p>Must be called from synchronized context.
-	 **/
-	private Aggregation lookupAggregation(
-			RolapStar star, RolapStar.Column[] columns)
-	{
-		for (int i = 0, count = aggregations.size(); i < count; i++) {
-			Aggregation aggregation = (Aggregation) aggregations.get(i);
-			if (aggregation.star == star &&
-					equals(aggregation.columns, columns)) {
-				return aggregation;
-			}
-		}
-		return null;
-	}
 
-	/** Return whether two arrays of columns are identical. **/
-	private static boolean equals(
-			RolapStar.Column[] columns1, RolapStar.Column[] columns2) {
-		int count = columns1.length;
-		if (count != columns2.length) {
-			return false;
-		}
-		for (int j = 0; j < count; j++) {
-			if (columns1[j] != columns2[j]) {
-				return false;
-			}
-		}
-		return true;
-	}
 
 	public Object getCellFromCache(CellRequest request) {
 		RolapStar.Measure measure = request.getMeasure();
-		Aggregation aggregation = lookupAggregation(
-				measure.table.star, request.getColumns());
+		Aggregation aggregation = measure.table.star.lookupAggregation(
+			request.getColumns());
 		if (aggregation == null) {
 			return null; // cell is not in any aggregation
 		}
@@ -209,8 +171,8 @@ public class AggregationManager extends RolapAggregationManager {
 	public Object getCellFromCache(CellRequest request, Set pinSet) {
 		Util.assertPrecondition(pinSet != null);
 		RolapStar.Measure measure = request.getMeasure();
-		Aggregation aggregation = lookupAggregation(
-				measure.table.star, request.getColumns());
+		Aggregation aggregation = measure.table.star.lookupAggregation(
+			request.getColumns());
 		if (aggregation == null) {
 			return null; // cell is not in any aggregation
 		}

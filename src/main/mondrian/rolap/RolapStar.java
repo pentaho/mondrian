@@ -11,20 +11,22 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.Member;
-import mondrian.olap.MondrianDef;
-import mondrian.olap.Util;
-import mondrian.rolap.agg.CellRequest;
-import mondrian.rolap.sql.SqlQuery;
-
-import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
+
+import javax.sql.DataSource;
+
+import mondrian.olap.Member;
+import mondrian.olap.MondrianDef;
+import mondrian.olap.Util;
+import mondrian.rolap.RolapSchema.Pool;
+import mondrian.rolap.agg.Aggregation;
+import mondrian.rolap.agg.CellRequest;
+import mondrian.rolap.sql.SqlQuery;
 
 /**
  * A <code>RolapStar</code> is a star schema. It is the means to read cell
@@ -50,6 +52,9 @@ public class RolapStar {
     /** Maps {@link Column} to {@link String} for each column which is a key
      * to a level. */
     final HashMap mapColumnToName = new HashMap();
+    
+    /** holds all aggregations of this star */
+	ArrayList aggregations = new ArrayList();
 
     /**
 	 * Please use {@link Pool#getOrCreateStar} to create a {@link
@@ -58,6 +63,60 @@ public class RolapStar {
 	RolapStar(RolapSchema schema, DataSource dataSource) {
 		this.schema = schema;
 		this.dataSource = dataSource;
+	}
+	
+	void addAggregation(Aggregation agg) {
+		synchronized(aggregations) {
+			aggregations.add(agg);
+		}
+	}
+	/**
+	 * lookups an aggregation or creates one if it does not exist in an
+	 * atomic (synchronized) operation
+	 */
+	public Aggregation lookupOrCreateAggregation(RolapStar.Column[] columns) {
+		synchronized(aggregations) {
+			Aggregation aggregation = lookupAggregation(columns);
+			if (aggregation == null) {
+				aggregation = new Aggregation(this, columns);
+				this.aggregations.add(aggregation);
+			}
+			return aggregation;
+		}
+	}
+	
+	/**
+	 * Looks for an existing aggregation over a given set of columns, or
+	 * returns <code>null</code> if there is none.
+	 *
+	 * <p>Must be called from synchronized context.
+	 **/
+	public Aggregation lookupAggregation(RolapStar.Column[] columns)
+	{
+		synchronized(aggregations) {
+			for (int i = 0, count = aggregations.size(); i < count; i++) {
+				Aggregation aggregation = (Aggregation) aggregations.get(i);
+				Util.assertTrue(aggregation.getStar() == this);
+				if (equals(aggregation.getColumns(), columns)) {
+					return aggregation;
+				}
+			}
+			return null;
+		}
+	}
+	/** Return whether two arrays of columns are identical. **/
+	private static boolean equals(
+			RolapStar.Column[] columns1, RolapStar.Column[] columns2) {
+		int count = columns1.length;
+		if (count != columns2.length) {
+			return false;
+		}
+		for (int j = 0; j < count; j++) {
+			if (columns1[j] != columns2[j]) {
+				return false;
+			}
+		}
+		return true;
 	}
 
     /**

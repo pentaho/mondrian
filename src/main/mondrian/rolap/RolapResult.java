@@ -11,14 +11,32 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.List;
+
+import mondrian.olap.Axis;
+import mondrian.olap.Cell;
+import mondrian.olap.Dimension;
+import mondrian.olap.Evaluator;
+import mondrian.olap.Exp;
+import mondrian.olap.FunCall;
+import mondrian.olap.Member;
+import mondrian.olap.Position;
+import mondrian.olap.Property;
+import mondrian.olap.Query;
+import mondrian.olap.QueryAxis;
+import mondrian.olap.ResultBase;
+import mondrian.olap.Syntax;
+import mondrian.olap.Util;
 import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.cache.CachePool;
-
-import java.io.PrintWriter;
-import java.util.*;
 
 /**
  * A <code>RolapResult</code> is the result of running a query.
@@ -45,8 +63,6 @@ class RolapResult extends ResultBase
 				(RolapCube) query.getCube(),
 				(RolapConnection) query.getConnection());
 		this.aggregatingReader = new AggregatingCellReader();
-		final boolean alwaysFlush = MondrianProperties.instance().getFlushAfterQuery();
-		final boolean printCacheables = MondrianProperties.instance().getPrintCacheablesAfterQuery();
 		HashSet pinnedSegments = new HashSet();
 		this.batchingReader = new FastBatchingCellReader(
 			(RolapCube) query.getCube(), pinnedSegments);
@@ -123,14 +139,6 @@ class RolapResult extends ResultBase
 			executeBody(query);
 		} finally {
 			evaluator.clearExpResultCache();
-			CachePool.instance().unpin(pinnedSegments);
-			if (alwaysFlush) {
-				CachePool.instance().flush();
-			}
-			if (printCacheables) {
-				CachePool.instance().validate();
-				CachePool.instance().printCacheables(new PrintWriter(System.out));
-			}
 		}
 	}
 

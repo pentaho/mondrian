@@ -11,14 +11,15 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.Level;
-import mondrian.olap.Util;
-import mondrian.rolap.cache.CachePool;
-import mondrian.rolap.cache.Cacheable;
-import mondrian.rolap.cache.SoftCacheableReference;
-
 import java.lang.ref.SoftReference;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import mondrian.olap.Util;
 
 /**
  * <code>SmartMemberReader</code> implements {@link MemberReader} by keeping a
@@ -47,8 +48,10 @@ public class SmartMemberReader implements MemberReader, MemberCache
 	 * object representing a given member.
 	 * The soft reference allows members to be forgotten.
 	 * Locking strategy is to lock the parent SmartMemberReader. **/
-	private HashMap mapKeyToMember = new HashMap();
+	private Map mapKeyToMember = Collections.synchronizedMap(new HashMap());
 	private List rootMembers;
+	
+	private Map mapLevelToMembers = Collections.synchronizedMap(new HashMap());
 
 	SmartMemberReader(MemberReader source)
 	{
@@ -125,54 +128,20 @@ public class SmartMemberReader implements MemberReader, MemberCache
 	}
 
 
-	Map mapLevelToMembers = new HashMap();
-    class MembersInLevel implements Cacheable {
-    	int pinCount = 0;
-    	List members;
-		MembersInLevel(List members) {
-			this.members = members;
+	/** @synchronized modifies mapLevelToMembers */
+	public synchronized List getMembersInLevel(
+		RolapLevel level, int startOrdinal, int endOrdinal) {
+		SoftReference ref = (SoftReference) mapLevelToMembers.get(level);
+		if (ref != null) {
+			List members = (List) ref.get();
+			if (members != null)
+				return members;
+			mapLevelToMembers.remove(level);
 		}
-		public List getMembers() {
-			return members;
-		}
-		public void removeFromCache() {
-			mapLevelToMembers.remove(this);
-		}
-		public void markAccessed(double recency) {
-		}
-		public double getScore() {
-			return 5;
-		}
-		public double getCost() {
-			return 100;
-		}
-		public void setPinCount(int pinCount) {
-			this.pinCount = pinCount;
-		}
-		public int getPinCount() {
-			return pinCount;
-		}
-    }
-
-	public List getMembersInLevel(
-			RolapLevel level, int startOrdinal, int endOrdinal) {
-		if (true) synchronized (CachePool.instance()) {
-			SoftCacheableReference ref = (SoftCacheableReference) mapLevelToMembers.get(level);
-			if (ref != null) {
-				MembersInLevel c = (MembersInLevel) ref.getCacheable();
-				if (c != null)
-					return c.getMembers();
-				mapLevelToMembers.remove(level);
-			}
-			List members = source.getMembersInLevel(level, startOrdinal, endOrdinal);
-			Cacheable c = new MembersInLevel(members);
-			ref = new SoftCacheableReference(c);
-			mapLevelToMembers.put(level, ref);
-			CachePool.instance().register(c);
-			return members;
-		}
-		else 
-			return source.getMembersInLevel(level, startOrdinal, endOrdinal);
+		List members = source.getMembersInLevel(level, startOrdinal, endOrdinal);
+		ref = new SoftReference(members);
+		mapLevelToMembers.put(level, ref);
+		return members;
 	}
 
 	private void getMembersInLevel(
@@ -191,18 +160,17 @@ public class SmartMemberReader implements MemberReader, MemberCache
 	// synchronization: Does not need to be synchronized. It doesn't matter if
 	// 'missed' contains too many members.
 	public void getMemberChildren(List parentMembers, List children) {
-		synchronized(CachePool.instance()) {
 		ArrayList missed = new ArrayList();
 		for (Iterator it = parentMembers.iterator(); it.hasNext();) {
 			RolapMember parent = (RolapMember) it.next();
-			SoftCacheableReference ref = (SoftCacheableReference)
+			SoftReference ref = (SoftReference)
 					mapMemberToChildren.get(parent);
 			if (ref == null) {
 				missed.add(parent);
 			} else {
-				ChildrenList v = (ChildrenList) ref.getCacheable();
+				ChildrenList v = (ChildrenList) ref.get();
 				if (v == null) {
-					it.remove();  // garbage collected
+					mapMemberToChildren.remove(parent);
 					missed.add(parent);
 				} else {
 					children.addAll(v.list);
@@ -211,7 +179,6 @@ public class SmartMemberReader implements MemberReader, MemberCache
 		}
 		if (missed.size() > 0) {
 			readMemberChildren(missed, children);
-		}
 		}
 	}
 
@@ -227,12 +194,10 @@ public class SmartMemberReader implements MemberReader, MemberCache
 	 * <p><b>Note to developers</b>: this class must obey the contract for
 	 * objects which implement {@link Cacheable}.
 	 **/
-	private static class ChildrenList implements Cacheable
+	private static class ChildrenList
 	{
 		private SmartMemberReader reader;
 		private RolapMember member;
-		private double recency;
-		private int pinCount;
 		private ArrayList list;
 
 		ChildrenList(
@@ -246,48 +211,6 @@ public class SmartMemberReader implements MemberReader, MemberCache
 			return super.toString() + " {member=" + member + ", childCount=" + list.size() + "}";
 		}
 
-		protected void finalize() {
-			CachePool.instance().deregister(this, true); // per Cacheable contract
-		}
-
-		// implement CachePool.Cacheable
-		public double getCost()
-		{
-			// assume 4 bytes for slot, 4 bytes for value
-			return 8;
-		}
-		// implement CachePool.Cacheable
-		public double getScore()
-		{
-			double benefit = getBenefit(),
-				cost = getCost();
-			return benefit / cost * recency;
-		}
-		// implement CachePool.Cacheable
-		public void removeFromCache()
-		{
-			reader.remove(this);
-		}
-		// implement CachePool.Cacheable
-		public void markAccessed(double recency)
-		{
-			this.recency = recency;
-		}
-		// implement CachePool.Cacheable
-		public void setPinCount(int pinCount)
-		{
-			System.out.println("SmartMemberReader: pinCount=" + pinCount + " (was " + this.pinCount + ")");
-			this.pinCount = pinCount;
-		}
-		// implement CachePool.Cacheable
-		public int getPinCount()
-		{
-			return pinCount;
-		}
-		private double getBenefit()
-		{
-			return 2;
-		}
 	};
 
 	/**
@@ -370,27 +293,9 @@ public class SmartMemberReader implements MemberReader, MemberCache
 
     public synchronized void putChildren(RolapMember member, ArrayList children) {
         ChildrenList childrenList = new ChildrenList(this, member, children);
-        SoftCacheableReference ref = new SoftCacheableReference(childrenList);
-        final CachePool cachePool = CachePool.instance();
-        synchronized (cachePool) {
-            SoftCacheableReference oldRef =
-                    (SoftCacheableReference) mapMemberToChildren.put(member, ref);
-            if (oldRef != null) {
-                ChildrenList old = (ChildrenList) oldRef.getCacheable();
-                if (RolapUtil.debugOut != null) {
-                    RolapUtil.debugOut.println("putChildren: remove " + oldRef + ", " + old);
-                }
-                if (old != null)
-                	cachePool.deregister(old, false);
-            }
-            cachePool.register(childrenList);
-        }
+        SoftReference ref = new SoftReference(childrenList);
+        mapMemberToChildren.put(member, ref);
     }
-
-	// must <em>not</em> be synchronized
-	private void remove(ChildrenList childrenList) {
-		mapMemberToChildren.remove(childrenList.member);
-	}
 
 	// synchronization: Must synchronize, because uses mapMemberToChildren
 	public synchronized RolapMember getLeadMember(RolapMember member, int n)

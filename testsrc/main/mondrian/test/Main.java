@@ -20,7 +20,6 @@ import mondrian.olap.UtilTestCase;
 import mondrian.olap.fun.FunctionTest;
 import mondrian.rolap.RolapUtil;
 import mondrian.rolap.agg.TestAggregationManager;
-import mondrian.rolap.cache.CachePoolTestCase;
 import mondrian.util.ScheduleTest;
 import mondrian.xmla.XmlaTest;
 
@@ -105,7 +104,6 @@ public class Main extends TestSuite {
 			suite.addTestSuite(FunctionTest.class);
 			suite.addTestSuite(ScheduleTest.class);
 			suite.addTestSuite(UtilTestCase.class);
-			suite.addTestSuite(CachePoolTestCase.class);
 			suite.addTestSuite(TestAggregationManager.class);
 			suite.addTestSuite(ParameterTest.class);
 			suite.addTestSuite(AccessControlTest.class);

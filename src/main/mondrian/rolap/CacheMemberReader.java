@@ -25,10 +25,9 @@ import java.util.List;
  * @author jhyde
  * @since 21 December, 2001
  * @version $Id$
- * 
- * @deprecated dont use this because of bugs. If you make RolapSchema.createMemberReader()
- * return instances of CacheMemberReader, then the HR tests fail (parent child hierarchies
- * dont work).
+ *
+ * note: CacheMemberReader can not handle ragged hierarchies (HR Tests fail if SmartMemberReader
+ * is replaced with CacheMemberReader).
  */
 class CacheMemberReader implements MemberReader, MemberCache
 {

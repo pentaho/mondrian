@@ -11,15 +11,6 @@
 */
 package mondrian.rolap.agg;
 
-import mondrian.olap.EnumeratedValues;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Util;
-import mondrian.rolap.CellKey;
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.RolapUtil;
-import mondrian.rolap.cache.CachePool;
-import mondrian.rolap.cache.Cacheable;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.ResultSet;
@@ -28,6 +19,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+
+import mondrian.olap.EnumeratedValues;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util;
+import mondrian.rolap.CellKey;
+import mondrian.rolap.RolapStar;
+import mondrian.rolap.RolapUtil;
 
 /**
  * A <code>Segment</code> is a collection of cell values parameterized by
@@ -63,7 +61,7 @@ import java.util.Iterator;
  * @since 21 March, 2002
  * @version $Id$
  **/
-public class Segment implements Cacheable
+public class Segment 
 {
 	private int id; // for debug
 	private static int nextId = 0; // generator for "id"
@@ -74,9 +72,6 @@ public class Segment implements Cacheable
 	Aggregation.Axis[] axes;
 	private SegmentDataset data;
 	private CellKey cellKey; // workspace
-	private double recency; // when was this segment last used?
-	private int pinCount;
-	private double cost;
 	/** State of the segment, values are described by {@link State}. */
 	private int state;
 
@@ -123,10 +118,6 @@ public class Segment implements Cacheable
 		this.state = State.Loading;
 	}
 
-	protected void finalize() {
-		CachePool.instance().deregister(this, true); // per Cacheable contract
-	}
-
 	/**
 	 * Sets the data, and notifies any threads which are blocked in
 	 * {@link #waitUntilLoaded}.
@@ -139,7 +130,6 @@ public class Segment implements Cacheable
 		this.axes = axes;
 		this.data = data;
 		this.state = State.Ready;
-		adjustCost();
 		notifyAll();
 	}
 
@@ -152,7 +142,6 @@ public class Segment implements Cacheable
 		case State.Loading:
 			Util.assertTrue(this.data == null);
 			this.state = State.Failed;
-			adjustCost();
 			notifyAll();
 			break;
 		case State.Ready:
@@ -161,27 +150,6 @@ public class Segment implements Cacheable
 		default:
 			throw State.instance.badValue(state);
 		}
-	}
-
-	/**
-	 * Must be called from synchronized context.
-	 */
-	private synchronized void adjustCost() {
-		double newCost = 0;
-		if (axes != null) {
-			for (int i = 0; i < axes.length; i++) {
-				newCost += axes[i].getBytes();
-			}
-		}
-		if (data != null) {
-			newCost += data.getBytes();
-		}
-		if (state == State.Failed) {
-			newCost += 1000000; // large value, will cause it to fall out of cache
-		}
-		double previousCost = cost;
-		cost = newCost;
-		CachePool.instance().notify(this, previousCost);
 	}
 
 	public boolean isReady() {
@@ -223,47 +191,10 @@ public class Segment implements Cacheable
 		return desc;
 	}
 
-    public void removeFromCache() {
-        aggregation.removeSegment(this);
-    }
-
     // implement CachePool.Cacheable
 	public Object getKey()
 	{
 		return this;
-	}
-	// implement CachePool.Cacheable
-	public void markAccessed(double recency)
-	{
-		this.recency = recency;
-	}
-	// implement CachePool.Cacheable
-	public void setPinCount(int pinCount)
-	{
-//		System.out.println("Segment: pinCount=" + pinCount + " (was " + this.pinCount + ")");
-		this.pinCount = pinCount;
-	}
-	// implement CachePool.Cacheable
-	public int getPinCount()
-	{
-		return pinCount;
-	}
-	// implement CachePool.Cacheable
-	public double getScore()
-	{
-		double benefit = getBenefit(),
-			cost = getCost();
-		return benefit / cost * recency;
-	}
-	// implement CachePool.Cacheable
-	public double getCost()
-	{
-		return cost;
-	}
-	private double getBenefit()
-	{
-//			throw new UnsupportedOperationException();
-		return 16;
 	}
 
 	/**

@@ -11,16 +11,23 @@
 */
 
 package mondrian.rolap.agg;
-import mondrian.olap.Util;
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.cache.CachePool;
-import mondrian.rolap.cache.SoftCacheableReference;
-import mondrian.rolap.sql.SqlQuery;
-
+import java.lang.ref.SoftReference;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+
+import mondrian.olap.Util;
+import mondrian.rolap.RolapStar;
+import mondrian.rolap.cache.CachePool;
+import mondrian.rolap.sql.SqlQuery;
 
 /**
  * A <code>Aggregation</code> is a pre-computed aggregation over a set of
@@ -71,7 +78,7 @@ public class Aggregation
 	List segmentRefs;
 	boolean oracle = false;
 
-	Aggregation(RolapStar star, RolapStar.Column[] columns) {
+	public Aggregation(RolapStar star, RolapStar.Column[] columns) {
 		this.star = star;
 		this.columns = columns;
 		this.segmentRefs = Collections.synchronizedList(new ArrayList());
@@ -110,16 +117,13 @@ public class Aggregation
 			RolapStar.Measure[] measures, Object[][] constraintses,
 			Collection pinnedSegments) {
 		Segment[] segments = new Segment[measures.length];
-		final CachePool cachePool = CachePool.instance();
 		for (int i = 0; i < measures.length; i++) {
 			RolapStar.Measure measure = measures[i];
 			Segment segment = new Segment(this, measure, constraintses);
 			segments[i] = segment;
-			SoftCacheableReference ref =
-					new SoftCacheableReference(segment);
-			this.segmentRefs.add(ref);
-			final int pinCount = 1;
-			cachePool.register(segment, pinCount, pinnedSegments);
+			SoftReference ref =	new SoftReference(segment);
+			segmentRefs.add(ref);
+			pinnedSegments.add(segment);
 		}
 		Segment.load(segments, pinnedSegments);
 	}
@@ -235,49 +239,44 @@ public class Aggregation
 	 * Returns <code>null</code> if no segment contains the cell.
 	 **/
 	public synchronized Object get(
-			RolapStar.Measure measure, Object[] keys, Collection pinSet) {
-		
-		// if we dont synchronize here, the CachePool.flushIfNecessary may
-		// remove elements from segmentRefs while we are iterating. This
-		// would cause a ConcurrentModificationException.
-
-		synchronized (CachePool.instance()) {
-			for (Iterator it = segmentRefs.iterator(); it.hasNext();) {
-				SoftCacheableReference ref = (SoftCacheableReference)it.next();
-				Segment segment = (Segment) ref.getCacheable();
-				if (segment == null) {
-					it.remove();
-					continue; // it's being garbage-collected
-				}
-				if (segment.measure != measure) {
-					continue;
-				}
-				if (segment.isReady()) {
-					Object o = segment.get(keys);
-					if (o != null) {
-						if (pinSet != null) {
-							CachePool.instance().pin(segment, pinSet);
-						}
-						return o;
+		RolapStar.Measure measure, Object[] keys, Collection pinSet) {
+	
+		for (Iterator it = segmentRefs.iterator(); it.hasNext();) {
+			SoftReference ref = (SoftReference)it.next();
+			Segment segment = (Segment) ref.get();
+			if (segment == null) {
+				it.remove();
+				continue; // it's being garbage-collected
+			}
+			if (segment.measure != measure) {
+				continue;
+			}
+			if (segment.isReady()) {
+				Object o = segment.get(keys);
+				if (o != null) {
+					if (pinSet != null) {
+						pinSet.add(segment);
 					}
-				} else {
-					if (segment.wouldContain(keys)) {
-						if (pinSet != null) {
-							CachePool.instance().pin(segment, pinSet);
-						}
-						return null;
+					return o;
+				}
+			} else {
+				if (segment.wouldContain(keys)) {
+					if (pinSet != null) {
+						pinSet.add(segment);
 					}
+					return null;
 				}
 			}
 		}
 		return null;
 	}
 
-
-	/** must <em>not</em> be synchronized */
-    void removeSegment(Segment segment) {
-        segmentRefs.remove(new SoftCacheableReference(segment));
-    }
+	public RolapStar.Column[] getColumns() {
+		return columns;
+	}
+	public RolapStar getStar() {
+		return star;
+	}
 
     // -- classes -------------------------------------------------------------
 
