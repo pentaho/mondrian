@@ -135,7 +135,7 @@ public class ResultComparatorTest extends TestCase {
 
         final Pattern pattern = filePattern == null ? null : Pattern.compile(filePattern);
 
-        File[] files = new File("testsrc\\queryFiles").listFiles(new FilenameFilter() {
+        File[] files = new File("testsrc" + File.separatorChar + "queryFiles").listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 if (name.startsWith("query") && name.endsWith(".xml")) {
                     if (pattern == null) {
