@@ -3804,6 +3804,26 @@ public class BasicQueryTest extends FoodMartTestCase {
         Axis a = result.getAxes()[1];
         assertEquals(10, a.positions.length);
     }
+    
+ 
+	/**
+	 * Bug #1005995 - many totals of various dimensions
+	 */
+	public void testOverlappingCalculatedMembers() {
+		String query = "WITH MEMBER [Store].[Total] AS 'SUM([Store].[Store Country].MEMBERS)' "
+				+ "MEMBER [Store Type].[Total] AS 'SUM([Store Type].[Store Type].MEMBERS)' "
+				+ "MEMBER [Gender].[Total] AS 'SUM([Gender].[Gender].MEMBERS)' "
+				+ "MEMBER [Measures].[x] AS '[Measures].[Store Sales]' "
+				+ "SELECT {[Measures].[x]} ON COLUMNS , "
+				+ "{ ([Store].[Total], [Store Type].[Total], [Gender].[Total]) } ON ROWS "
+				+ "FROM Sales";
+		String desiredResult = "Axis #0:" + nl + "{}" + nl + "Axis #1:" + nl + "{[Measures].[x]}"
+				+ nl + "Axis #2:" + nl
+				+ "{[Store].[Total], [Store Type].[Total], [Gender].[Total]}" + nl
+				+ "Row #0: 565,238.13" + nl;
+		runQueryCheckResult(query, desiredResult);
+	}
+ 
 }
 
 // End BasicQueryTest.java
