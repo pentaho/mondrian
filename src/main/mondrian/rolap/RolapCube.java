@@ -1076,8 +1076,10 @@ System.out.println("RolapCube.lookupChild OlapElement: DOES THIS EVER GET CALLED
 
         public Member getMemberByUniqueName(String[] uniqueNameParts,
                                             boolean failIfNotFound) {
-            return (Member) lookupCompound(RolapCube.this, uniqueNameParts,
-                failIfNotFound, Category.Member);
+            return (Member) lookupCompound(RolapCube.this, 
+                                           uniqueNameParts,
+                                           failIfNotFound, 
+                                           Category.Member);
         }
 
         public Cube getCube() {
