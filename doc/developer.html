@@ -1,0 +1,385 @@
+<html>
+<!--
+  == $Id$
+  == This software is subject to the terms of the Common Public License
+  == Agreement, available at the following URL:
+  == http://www.opensource.org/licenses/cpl.html.
+  == (C) Copyright 2005-2005 Julian Hyde
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  -->
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 6.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Mondrian FAQs</title>
+<link rel="stylesheet" href="stylesheet.css" type="text/css" />
+<style>
+<!--
+.small { font-family: verdana,arial,helvetica,sans-serif; font-size: x-small; }
+-->
+</style>
+</head>
+
+<body>
+<h1>Guide for Mondrian developers</h1>
+
+<p>There are several ways to get Mondrian running. The easiest is to download a 
+binary release, as described in the <a href="install.html">installation guide</a>. 
+But you can also build Mondrian from its source code.</p>
+
+<h2>Getting the source code</h2>
+
+<p>First, you need to get a copy of the source code. You can get the source code 
+from SourceForge or from the project's Perforce source server.</p>
+
+<h3><a name="3_3_Download_the_latest_source_release">Download the latest
+source release</a></h3>
+<p>Download the latest <code>mondrian-<i>version</i>-src.zip</code> from <a href="http://sourceforge.net/projects/mondrian">
+SourceForge</a>, and unzip. The place you unzipped to &mdash; <code>C:\mondrian</code>
+or <code>/usr/mondrian-<i>version</i></code> &mdash; your <dfn>project location</dfn> (denoted by <code><i>${project.location}</i></code>).</p>
+
+<h3><a name="3_4_Connect_to_the_Perforce_source_code_server">Connect to the
+Perforce source-code server</a></h3>
+
+<p>If you are a mondrian developer, and need to access the latest source code 
+and check in changes, you should connect to the Perforce source-code server. If 
+you are not a developer, but are interested in getting the latest code, you can 
+connect as the 'guest' user.</p>
+<ol>
+  <li>Download the perforce client from
+  <a href="http://www.perforce.com/perforce/loadprog.html">
+  http://www.perforce.com/perforce/loadprog.html</a></li>
+  <li>If you have Windows, start the perforce UI (P4Win). (If you are not
+  running windows, you will have to use the command-line interface to do the
+  following; 'p4 help' should get you started.)</li>
+  <li>Choose <code>Settings</code> &gt; <code>Switch Port Client User...</code>;
+  the following dialog appears.<blockquote>
+    <p><img border="0" src="perforce_setup.gif" width="424" height="258"> </p>
+  </blockquote>
+  </li>
+  <li>Set <code>Server</code> to <code>perforce.eigenbase.org</code>;
+    <code>Port</code> to <code>1666</code>; set <code>User</code> to
+your SourceForge username (for example, <code>jhyde</code>); set <code>
+Client</code> to your username plus the name of your machine (for
+example, <code>jhyde.notebook</code>). <b>Note</b>: The number of
+perforce user licenses is limited, so if you don't intend to check
+anything in, please use the <code>guest</code> user.</li>
+  <li>Choose <code>ClientSpec</code> &gt; <code>New...</code> and
+create a client with the same name. Set its root to something like
+'C:\' or 'D:\work', and view specification of
+    <blockquote>
+      <pre>//open/mondrian/... //&lt;&lt;clientname&gt;&gt;/mondrian/...</pre>
+    </blockquote>
+  </li>
+  <li>Sync to head revision.</li>
+</ol>
+
+<p>If you are a regular contributor to the Mondrian project, we will give you 
+commiting privileges to the source code server. You will be able to add, edit, 
+and delete files in the source system, and commit changelists. Usually we ask 
+you to prove your worth with a few tasks before welcoming you to the team; contact Julian Hyde for 
+more information on how to join the team.</p>
+
+<h2>Building the code</h2>
+
+<p>Next, install a build environment. Install the <a href="#JDK">JDK</a>, <a href="#Ant">Ant</a>, <a href="#Tomcat">Tomcat</a>, <a href="#Xalan">Xalan</a>,
+and <a href="#JUnit">JUnit</a>, and set <code>JAVA_HOME</code>, <code>ANT_HOME</code>,
+  <code>TOMCAT_HOME</code>, <code>XALAN_HOME</code>, <code>JUNIT_HOME</code> in 
+your environment.</p>
+
+<p>Download the latest <code>jpivot-<i>version</i>.war</code> from
+the <a href="http://sourceforge.net/projects/jpivot">JPivot project at SourceForge</a> and
+save it as <code><i>${project.location}</i>/lib/jpivot.war</code>.</p>
+
+<p>Now build the code, as follows:</p>
+
+<blockquote>
+<pre>C:\mondrian&gt; <b>ant</b>
+Buildfile: build.xml
+
+sniff:
+
+prepare:
+
+parser:
+[javacup] Opening files...
+[javacup] Parsing specification from C:\mondrian\src\main\mondrian\olap\Parser.cup...
+[javacup] Checking specification...
+[javacup] Warning: Terminal &quot;UNKNOWN&quot; was declared but never used
+[javacup] Warning: Non terminal &quot;unsigned_integer&quot; was declared but never used
+[javacup] Building parse tables...
+[javacup] Computing non-terminal nullability...
+[javacup] Computing first sets...
+[javacup] Building state machine...
+[javacup] Filling in tables...
+[javacup] Checking for non-reduced productions...
+[javacup] Writing parser...
+[javacup] Closing files...
+[javacup] ------- CUP v0.10k Parser Generation Summary -------
+[javacup] 0 errors and 2 warnings
+[javacup] 47 terminals, 49 non-terminals, and 100 productions declared,
+[javacup] producing 153 unique parse states.
+[javacup] 2 terminals declared but not used.
+[javacup] 0 non-terminals declared but not used.
+[javacup] 0 productions never reduced.
+[javacup] 0 conflicts detected (0 expected).
+[javacup] Code written to &quot;Parser.java&quot;, and &quot;ParserSym.java&quot;.
+[javacup] ---------------------------------------------------- (v0.10k)
+
+compile.xom:
+[javac] Compiling 27 source files to D:\open\mondrian\classes
+[javac] Note: D:\open\mondrian\src\main\mondrian\xom\XOMGenTask.java uses or overrides a deprecated API.
+[javac] Note: Recompile with -deprecation for details.
+
+compile.resgen:
+[xomgen] Writing src\main\mondrian\resource\Resource.dtd
+[xomgen] Writing src\main\mondrian\resource\ResourceDef.java
+[xomgen] Done
+[javac] Compiling 10 source files to D:\open\mondrian\classes
+
+generate.resources:
+[javac] Compiling 2 source files to D:\open\mondrian\classes
+[resgen] Generating D:\open\mondrian\src\main\mondrian\olap\MondrianResource.java
+[resgen] Generating D:\open\mondrian\src\main\mondrian\olap\MondrianResource.properties
+[resgen] Generating D:\open\mondrian\src\main\mondrian\olap\MondrianResource_en_US.java
+[resgen] Generating D:\open\mondrian\src\main\mondrian\olap\MondrianResource_en_US.properties
+[resgen] Generating D:\open\mondrian\src\main\mondrian\olap\MondrianResource_de_DE.java
+[resgen] Generating D:\open\mondrian\src\main\mondrian\olap\MondrianResource_de_DE.properties
+
+def:
+[xomgen] Writing src\main\mondrian\xom\meta.dtd
+[xomgen] Writing src\main\mondrian\xom\MetaDef.java
+[xomgen] Done
+[xomgen] Writing src\main\mondrian\olap\mondrian.dtd
+[xomgen] Writing src\main\mondrian\olap\MondrianDef.java
+[xomgen] Done
+[copy] Copying 1 file to D:\open\mondrian\lib
+
+compile.java:
+[javac] Compiling 791 source files to D:\open\mondrian\classes
+[javac] Note: Some input files use or override a deprecated API.
+[javac] Note: Recompile with -deprecation for details.
+
+compile.jsp.maybe:
+
+copy.properties:
+[copy] Copying 4 files to D:\open\mondrian\classes
+
+compile:
+
+BUILD SUCCESSFUL
+Total time: 46 seconds</pre>
+</blockquote>
+
+<h2>Installing the database</h2>
+
+<p>Before you run the regression test suite or the web application, you must 
+install the standard FoodMart dataset. This is described in the
+<a href="install.html#4_Load_the_database">installation guide</a>.</p>
+<h2><a name="6_Run_the_test_suite">6. Running the test suite</a></h2>
+<p>At the command line:</p>
+<blockquote>
+  <pre>cd <i>${project.location}</i><br>ant test</pre>
+</blockquote>
+
+<p>Running the test via the Mondrian Ant build in Eclipse works, too.</p>
+<p>Example output:</p>
+<blockquote>
+  <pre>Buildfile: C:\Documents and Settings\swood\My Documents\perforce\open\mondrian\build.xml
+test-postgres:
+sniff:
+prepare:
+parser:
+  [javacup] Files are up to date.
+compile.xom:
+compile.resgen:
+generate.resources:
+   [resgen] C:\...\src\main\mondrian\olap\MondrianResource.java is up to date
+   [resgen] C:\...\src\main\mondrian\olap\MondrianResource.properties is up to date
+   [resgen] C:\...\main\mondrian\olap\MondrianResource_en_US.java is up to date
+   [resgen] C:\...\src\main\mondrian\olap\MondrianResource_en_US.properties is up to date
+   [resgen] C:\...\src\main\mondrian\olap\MondrianResource_de_DE.java is up to date
+   [resgen] C:\...\src\main\mondrian\olap\MondrianResource_de_DE.properties is up to date
+def:
+compile.java:
+compile.jsp.maybe:
+copy.properties:
+compile:
+info:
+     [echo] ==============================================================
+     [echo] | Mondrian configuration info                                |
+     [echo] ==============================================================
+     [echo] project.location      = C:\...
+     [echo] jdk.home              = C:\j2sdk1.4.2_06
+     [echo] catalina.home         = ${env.CATALINA_HOME}
+     [echo] xalan.home            = ${env.XALAN_HOME}
+     [echo] junit.home            = ${env.JUNIT_HOME}
+     [echo] weblogic.home         = ${env.WEBLOGIC_HOME}
+     [echo] mondrian.foodmart.catalogURL = file:///C:\.../demo/FoodMart.xml
+     [echo] ==============================================================
+compile.tests:
+    [javac] Compiling 28 source files to C:\...\testclasses
+    [javac] Note: C:\...\testsrc\main\mondrian\test\ParameterTest.java uses or overrides a deprecated API.
+    [javac] Note: Recompile with -deprecation for details.
+test-dbms:
+     [echo] Connecting to jdbc:postgresql://localhost/FM3
+     [java] Mondrian: properties loaded from 'file:/C:/.../mondrian.properties'
+     [java] Mondrian: properties loaded from 'file:/C:/../build.properties'
+     [java] Mondrian: loaded 4 system properties
+     [java] testName: null
+     [java] testClass: null
+     [java] All 1 thread(s) started.
+     [java] [0] .Mondrian: JDBC driver org.postgresql.Driver loaded successfully
+     [java] Mondrian: JDBC driver sun.jdbc.odbc.JdbcOdbcDriver loaded successfully
+     [java] Mondrian: JDBC driver com.mysql.jdbc.Driver loaded successfully
+     [java] Mondrian: JDBC driver oracle.jdbc.OracleDriver loaded successfully
+     [java] .......................................
+     [java] [40] ........................................
+     [java] [80] ........................................
+     [java] [120] ........................................
+     [java] [160] ........................................
+     [java] [200] ........................................
+     [java] [240] ........................................
+     [java] [280] ........................................
+     [java] [320] ........................................
+     [java] [360] ........................................
+     [java] [400] ........................................
+     [java] [440] ........................................
+     [java] [480] ........................................
+     [java] [520] ........................................
+     [java] [560] ........................................
+     [java] [600] ..................
+     [java] OK (618 tests)
+     [java] Time: 711.63
+     [java] Normal termination.
+BUILD SUCCESSFUL
+Total time: 12 minutes 13 seconds
+</pre>
+</blockquote>
+<p>
+</p>
+
+<h2>Create, deploy and start the web application</h2>
+
+<p>At the command prompt, type</p>
+
+<blockquote>
+
+	<p><code>ant war</code></p>
+</blockquote>
+
+<p>This will create <code>lib/mondrian.war</code>. Copy <code>mondrian.war</code> 
+to the <i></i><code><i>TOMCAT_HOME</i>/webapps</code> directory.</p>
+
+<p>Now, start Tomcat and hit <a href="http://localhost:8080/mondrian">http://localhost:8080/mondrian</a>.</p>
+
+<h2><a name="Appendix_A_Product_installation_instructions">Appendix A. Product
+installation instructions</a></h2>
+
+<p>These are the products I used to build mondrian. Install all of the products 
+marked 'required'.</p>
+
+<p>In the following, the symbol <code><i>${project.location}</i></code> means the root of your
+source tree.</p>
+
+<table style="border-collapse: collapse;" border="1"
+ bordercolor="#111111" cellpadding="2" cellspacing="0" id="table1">
+  <tbody>
+    <tr>
+      <th>Product</th>
+      <th>Required?</th>
+      <th>Version</th>
+      <th>Comment</th>
+    </tr>
+    <tr>
+      <td><a name="JDK">JDK</a></td>
+      <td>Yes</td>
+      <td>1.4 or later (I use version 1.4.2.)</td>
+      <td>Available from <a href="http://developer.java.sun.com/"
+ target="_blank">http://developer.java.sun.com/</a>. I downloaded <code>j2sdk-1_4_2_06-windows-i586-p.exe</code>,
+and extracted to <code>E:/j2sdk1.4.2_06</code>. Set <code>JAVA_HOME</code>
+to same.</td>
+    </tr>
+    <tr>
+      <td><a name="Ant">Ant</a></td>
+      <td>Yes</td>
+      <td>1.5 or later&nbsp;</td>
+      <td>Available from <a
+ href="http://ant.apache.org/bindownload.cgi">http://ant.apache.org/bindownload.cgi</a>.
+I downloaded <code>apache-ant-1.6.2-bin.zip</code>, extracted to <code>E:/jakarta-ant-1.6.2</code>,
+and set <code>ANT_HOME</code> to the same.</td>
+    </tr>
+    <tr>
+      <td><a name="Tomcat">Tomcat</a></td>
+      <td>Yes</td>
+      <td>5.0.25 or later</td>
+      <td>Available from <a href="http://jakarta.apache.org/tomcat"
+ target="_blank"> http://jakarta.apache.org/tomcat</a>. I downloaded <code>
+jakarta-tomcat-5.0.25.zip</code>, extracted to <code>E:/jakarta-tomcat-5.0.25</code>,
+and set <code>TOMCAT_HOME</code> to the same.</td>
+    </tr>
+    <tr>
+      <td><a name="Xerces">Xerces</a></td>
+      <td>&nbsp;</td>
+      <td>Use the version included with Tomcat</td>
+      <td>Xerces is included with Tomcat. If you use a different
+version, compatibility issues may arise.</td>
+    </tr>
+    <tr>
+      <td><a name="Xalan">Xalan</a></td>
+      <td>Yes</td>
+      <td>2.6.0 or later</td>
+      <td>Available from <a href="http://xml.apache.org/xalan-j/"
+ target="_blank"> http://xml.apache.org/xalan-j/</a>. I downloaded <code>xalan-j_2_6_0-bin.zip</code>,
+extracted to <code>E:/xalan-j_2_6_0</code>, and set <code>XALAN_HOME</code>
+to the same.
+      <p><b>Important</b>: copy <i><code>XALAN_HOME</code></i><code>/bin/xalan.jar</code>
+to <code><i>TOMCAT_HOME</i>/common/endorsed/</code>.</p>
+      </td>
+    </tr>
+    <tr>
+      <td><a name="JUnit">JUnit</a></td>
+      <td>Yes</td>
+      <td>3.8.1 or later</td>
+      <td>Available from <a href="http://www.junit.org/">http://www.junit.org/</a>.
+I downloaded <code> junit3.8.1.zip</code>, extracted to <code>E:/junit3.8.1</code>,
+and set <code>JUNIT_HOME</code> to the same.</td>
+    </tr>
+    <tr>
+      <td>JavaCUP (parser generator)</td>
+      <td>Included with source distribution, as <code>lib/javacup.jar</code>.&nbsp;</td>
+      <td>v0.10g (with modifications)</td>
+      <td>Available from <a
+ href="http://www.cs.princeton.edu/%7Eappel/modern/java/CUP/"
+ target="_blank">http://www.cs.princeton.edu/~appel/modern/java/CUP/</a>.
+I modified version v.0.10g to add an Ant task, and to output error
+messages in a format which Emacs can parse.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>&nbsp;</p>
+
+<hr noshade color="#000000" size="1">
+
+
+<table border="0" class="clsStd" width="100%" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0">
+  <tr>
+    <td class="content">
+      <a target="_top" href="index.html">Home</a> |
+      <a target="_top" href="#">No frames</a> | This file is<i>
+      <a href="http://mondrian.sourceforge.net/developer.html">$Id$</a></i>
+      (<a href="http://perforce.eigenbase.org:8080/open/mondrian/doc/developer.html?ac=22">log</a>)</td>
+    <td align="right">
+      <a href="http://sourceforge.net">
+        <img src="http://sourceforge.net/sflogo.php?group_id=35302&type=1" width="88" height="31" border="0" alt="SourceForge.net Logo">
+      </a>
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>

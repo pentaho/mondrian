@@ -13,7 +13,7 @@
 
 <head>
 <meta http-equiv="Content-Language" content="en-us">
-<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="GENERATOR" content="Microsoft FrontPage 6.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
 <title>How to download, build and install Mondrian</title>
@@ -32,36 +32,27 @@
     <li><a href="#3_1_Download_mondrian_war">Download mondrian.war</a></li>
     <li><a href="#3_2_Download_the_latest_binary_release">Download the latest binary release</a></li>
     <li><a href="#3_3_Download_the_latest_source_release">Download the latest source release</a></li>
-    <li><a href="#3_4_Connect_to_the_Perforce_source_code_server">Connect to the Perforce source code server</a></li>
   </ol>
   </li>
-  <li><a href="#4_Load_the_database">Load the database</a></li>
+  <li><a href="#4_Set_up_test_data">Load the database</a></li>
   <ol>
     <li><a href="#4_1_Microsoft_Access">Microsoft Access</a></li>
-    <li><a href="#4_2_Oracle">Oracle</a></li>
-    <li><a href="#4_3_hsqldb">hsqldb</a></li>
-    <li><a href="#4_4_MySQL">MySQL</a></li>
-    <li><a href="#4_5_PostgreSQL">PostgreSQL</a></li>
-    <li><a href="#4_6_IBM_DB2">IBM DB2</a></li>
-    <li><a href="#4_7_Microsoft_SQL_Server">Microsoft SQL Server</a></li>
+	<li><a href="#4_2_Non_Access_setup">Other database</a></li>
   </ol>
-  <li><a href="#5_Load_the_test_data">Load the test dataset</a></li>
-  <li><a href="#6_Run_the_test_suite">Run the test suite</a></li>
-  <li><a href="#7_Run_the_web_app">Run the web app</a></li>
-  <li><a href="#8_Miscellaneous">Miscellaneous</a></li>
+  <li><a href="#5_Configure_exec_environment">Configure execution environment</a></li>
+  <li><a href="#6_Run_the_web_app">Run the web app</a></li>
+  <li><a href="#7_Miscellaneous">Miscellaneous</a></li>
   <ol>
-    <li><a href="#8_1_Cache_setup">Cache setup</a></li>
+    <li><a href="#7_1_Cache_setup">Cache setup</a></li>
     <li><a href="#8_2_Coding_guidelines">Coding guidelines</a></li>
   </ol>
-  <li><a href="#Appendix_A_Product_installation_instructions">Appendix A: Product installation instructions</a></li>
-  <li><a href="#Appendix_B_How_to_debug_Tomcat_using_IntelliJ">Appendix B: How to debug Tomcat using IntelliJ</a></li>
-  <li><a href="#Appendix_C_Compatibility_issues">Appendix C. Compatibility issues</a></li>
+  <li><a href="#Appendix_A_Compatibility_issues">Appendix A. Compatibility issues</a></li>
   <ol>
-    <li><a href="#Appendix_C_1_Weblogic_6_1_and_Xerces">Weblogic 6.1 and Xerces</a></li>
-    <li><a href="#Appendix_C_2_Xalan_and_Tomcat">Xalan and Tomcat</a></li>
+    <li><a href="#Appendix_A_1_Weblogic_6_1_and_Xerces">Weblogic 6.1 and Xerces</a></li>
+    <li><a href="#Appendix_A_2_Xalan_and_Tomcat">Xalan and Tomcat</a></li>
   </ol>
-  <li><a href="#Appendix_D_Patrick_Tallmans_installation_instructions">Appendix
-D. Patrick Tallman's instructions for installing on Windows</a></li>
+  <li><a href="#Appendix_B_Patrick_Tallmans_installation_instructions">Appendix
+	B. Patrick Tallman's instructions for installing on Windows</a></li>
 </ol>
 
 <h2><a name="2_Modification_history">2. Modification history</a></h2>
@@ -155,232 +146,56 @@ installation to section 5. </td>
 release<br>
       </td>
     </tr>
+    <tr>
+      <td style="vertical-align: top;">Mar 9th, 2005</td>
+      <td style="vertical-align: top;">13</td>
+      <td style="vertical-align: top;">Julian Hyde</td>
+      <td style="vertical-align: top;">Moved parts of the installation guide 
+		into the developer's guide</td>
+    </tr>
   </tbody>
 </table>
 
 <h2><a name="3_Getting_Mondrian">3. Download the code</a></h2>
 
-<p>There are 4 ways to get Mondrian running. Ranging from fastest to most
-flexible, these are: <a href="#3_1_Download_mondrian_war">download mondrian.war</a>;
-<a href="#3_2_Download_the_latest_binary_release">download a binary release</a>;
-<a href="#3_3_Download_the_latest_source_release">download and build a source
-release</a>; and <a href="#3_4_Connect_to_the_Perforce_source_code_server">
-download and build the source code from the Perforce source server</a>.</p>
-
-<h3><a name="3_1_Download_mondrian_war">3.1. Download mondrian.war</a></h3>
-
-<p>This is the easiest way to get Mondrian running, but doesn't give you any
-flexibility to modify source code or change the configuration of the web
-application. However, it only works for Windows.</p>
-
+<p>The easiest way to get Mondrian running is as a binary release. Here is how:</p>
 <ol>
-  <li>Install the <a href="#JDK">JDK</a> and <a href="#Tomcat">Tomcat</a>.</li>
-  <li>Download <code>mondrian-<i>version</i>.war</code> from <a
- href="http://sourceforge.net/projects/mondrian">
-SourceForge</a>, and save it as <code><i>TOMCAT_HOME</i>/webapps/mondrian.war</code>.</li>
-  <li>Get the Access test data set, as descibed <a
- href="#4_1_Get_test_dataset">here</a>.<br>
-  </li>
-  <li>Set up an ODBC data source to the Access database, as described <a
- href="#4_1_ODBC_setup">here</a>.<br>
-  </li>
-  <li>Start Tomcat and hit <a href="http://localhost:8080/mondrian">http://localhost:8080/mondrian</a>.</li>
+	<li>Download the latest binary
+release <code>mondrian-<i>version</i>-bin.zip</code> from 
+	<a href="http://sourceforge.net/projects/mondrian">SourceForge</a>, and 
+	unzip it.</li>
+	<li>From the unzipped binary release, copy <code>mondrian.war</code> to
+	<code><i>TOMCAT_HOME</i>/webapps/mondrian.war</code>.</li>
+	<li>Install the <a href="#JDK">JDK</a> and <a href="#Tomcat">Tomcat</a>.</li>
+	<li>Set up the FoodMart dataset, as described <a href="#4_Set_up_test_data">
+	below</a>.</li>
+	<li>Set up an ODBC data source to the Access database, as described 
+	<a
+ href="#4_1_Access_setup">here</a>.<br></li>
+	<li>Start Tomcat and visit <a href="http://localhost:8080/mondrian">http://localhost:8080/mondrian</a> 
+	in your web browser.</li>
 </ol>
 
-<h3><a name="3_2_Download_the_latest_binary_release">3.2. Download the latest binary release</a></h3>
+<h2><a name="4_Set_up_test_data">4.Set up test data</a></h2>
 
-<p>Download the latest binary
-release <code> mondrian-<i>version</i>-bin.zip</code> from <a href="http://sourceforge.net/projects/mondrian">
-SourceForge</a>, and unzip it. The place you unzipped to &mdash; say <code>C:\mondrian</code>
-or <code>/usr/mondrian-<i>version</i></code> &mdash; is your <dfn>project
-location</dfn> (denoted by <code> <i>${project.location}</i></code>). </p>
-
-<p>Next, install a build environment. Install the <a href="#JDK">JDK</a>, <a href="#Ant">Ant</a>, <a href="#Tomcat">Tomcat</a>, <a href="#Xalan">Xalan</a>,
-and <a href="#JUnit">JUnit</a>; and modify <code>build.bat</code>, setting <code>JAVA_HOME</code>, <code>ANT_HOME</code>,
-  <code>TOMCAT_HOME</code>, <code>XALAN_HOME</code>, <code>JUNIT_HOME</code>.
-Download the latest <code>jpivot-<i>version</i>.war</code> from
-<a href="http://sourceforge.net/projects/jpivot">SourceForge</a> and
-save it as <code><i>${project.location}</i>/lib/jpivot.war</code>.</p>
-
-<p>Now
-do the following steps:</p>
-
-<blockquote>
-  <ol>
-    <li>Load the database, as described <a href="#4_Load_the_database">here</a>.</li>
-    <li>Change variables in <code><i>${project.location}</i>/bin/mondrian.bat</code>
-and <code><i>${project.location}</i>/bin/mondrian.properties</code> to
-suit your environment.</li>
-    <li><code>cd <i>${project.location}</i>/bin</code></li>
-    <li>Type <code>mondrian.bat test</code> to run the JUnit test
-suite. All of the
-tests should succeed.</li>
-    <li>To run the webapp in Tomcat, type <code>mondrian.bat
-deploy-to-tomcat</code>.
-This will create <i><code>TOMCAT_HOME</code></i>/webapps/mondrian.war.</li>
-    <li>Start Tomcat and hit <a href="http://localhost:8080/mondrian">http://localhost:8080/mondrian</a>.</li>
-  </ol>
-</blockquote>
-
-<h3><a name="3_3_Download_the_latest_source_release">3.3. Download the latest
-source release</a></h3>
-<p>Download the latest <code>mondrian-<i>version</i>-src.zip</code> from <a href="http://sourceforge.net/projects/mondrian">
-SourceForge</a>, and unzip. The place you unzipped to &mdash; <code>C:\mondrian</code>
-or <code>/usr/mondrian-<i>version</i></code> &mdash; your <dfn>project location</dfn> (denoted by <code><i>${project.location}</i></code>).</p>
-
-<p>Set up a build environment as described
-<a href="#3_2_Download_the_latest_binary_release">above</a>.</p>
-
-<p>Now build the code, as follows:</p>
-
-<blockquote>
-<pre>C:\mondrian&gt; <b>build</b>
-Buildfile: build.xml
-
-sniff:
-
-prepare:
-
-parser:
-[javacup] Opening files...
-[javacup] Parsing specification from C:\mondrian\src\main\mondrian\olap\Parser.cup...
-[javacup] Checking specification...
-[javacup] Warning: Terminal &quot;UNKNOWN&quot; was declared but never used
-[javacup] Warning: Non terminal &quot;unsigned_integer&quot; was declared but never used
-[javacup] Building parse tables...
-[javacup] Computing non-terminal nullability...
-[javacup] Computing first sets...
-[javacup] Building state machine...
-[javacup] Filling in tables...
-[javacup] Checking for non-reduced productions...
-[javacup] Writing parser...
-[javacup] Closing files...
-[javacup] ------- CUP v0.10k Parser Generation Summary -------
-[javacup] 0 errors and 2 warnings
-[javacup] 47 terminals, 49 non-terminals, and 100 productions declared,
-[javacup] producing 153 unique parse states.
-[javacup] 2 terminals declared but not used.
-[javacup] 0 non-terminals declared but not used.
-[javacup] 0 productions never reduced.
-[javacup] 0 conflicts detected (0 expected).
-[javacup] Code written to &quot;Parser.java&quot;, and &quot;ParserSym.java&quot;.
-[javacup] ---------------------------------------------------- (v0.10k)
-
-def:
-[xomgen] Writing src\main\mondrian\xom\meta.dtd
-[xomgen] Writing src\main\mondrian\xom\MetaDef.java
-[xomgen] Done
-[xomgen] Writing src\main\mondrian\olap\mondrian.dtd
-[xomgen] Writing src\main\mondrian\olap\MondrianDef.java
-[xomgen] Done
-[xomgen] Writing src\main\mondrian\resource\Resource.dtd
-[xomgen] Writing src\main\mondrian\resource\ResourceDef.java
-[xomgen] Done
-
-compile.java:
-[javac] Compiling 164 source files to C:\mondrian\classes
-
-compile.jsp.maybe:
-
-compile:
-
-BUILD SUCCESSFUL
-Total time: 35 seconds</pre>
-</blockquote>
-
-<h3><a name="3_4_Connect_to_the_Perforce_source_code_server">3.4. Connect to the
-Perforce source-code server</a></h3>
-
-<p>If you are a mondrian developer, and need to access the latest source code
-and check in changes, you should connect to the Perforce source-code server:</p>
-<ol>
-  <li>First, set up a build environment, as described
-  <a href="#3_2_Download_the_latest_binary_release">above</a>.</li>
-  <li>Download the perforce client from
-  <a href="http://www.perforce.com/perforce/loadprog.html">
-  http://www.perforce.com/perforce/loadprog.html</a></li>
-  <li>If you have Windows, start the perforce UI (P4Win). (If you are not
-  running windows, you will have to use the command-line interface to do the
-  following; 'p4 help' should get you started.)</li>
-  <li>Choose <code>Settings</code> &gt; <code>Switch Port Client User...</code>;
-  the following dialog appears.<blockquote>
-    <p><img border="0" src="perforce_setup.gif" width="424" height="258"> </p>
-  </blockquote>
-  </li>
-  <li>Set <code>Server</code> to <code>perforce.eigenbase.org</code>;
-    <code>Port</code> to <code>1666</code>; set <code>User</code> to
-your SourceForge username (for example, <code>jhyde</code>); set <code>
-Client</code> to your username plus the name of your machine (for
-example, <code>jhyde.notebook</code>). <b>Note</b>: The number of
-perforce user licenses is limited, so if you don't intend to check
-anything in, please use the <code>guest</code> user.</li>
-  <li>Choose <code>ClientSpec</code> &gt; <code>New...</code> and
-create a client with the same name. Set its root to something like
-'C:\' or 'D:\work', and view specification of
-    <blockquote>
-      <pre>//open/mondrian/... //&lt;&lt;clientname&gt;&gt;/mondrian/...</pre>
-    </blockquote>
-  </li>
-  <li>Sync to head revision.</li>
-  <li>Build the code, as described <a
- href="#3_3_Download_the_latest_source_release">above</a>.</li>
-  <li>If you intend to check-in changes to the perforce server,
-  please contact Julian Hyde for commiting privileges.</li>
-</ol>
-<h2><a name="4_Load_the_database">4.Set up test data<br>
-</a></h2>
-<p>The test suite allows you to see examples of MDX and how Mondrian
-runs in your environment. To do this, you will need to:<br>
-</p>
-<ul>
-  <li>Get the source from a <a
- href="#3_3_Download_the_latest_source_release">distribution</a> or
-from <a href="#3_4_Connect_to_the_Perforce_source_code_server">Perforce</a>.<br>
-  </li>
-  <li>Get the test dataset</li>
-  <li>For testing non-Access databases :</li>
-  <ul>
-    <li>Create the test database</li>
-  </ul>
-  <ul>
-    <li>Load the test dataset<br>
-    </li>
-  </ul>
-  <li>Configure your environment with the appropriate JDBC driver jars,
-and classpath and parameter settings</li>
-  <li>Run the tests</li>
-</ul>
-<p><i>(Did these instructions work for you? Have you managed to get
-mondrian
-working on other databases/versions? Please
-<a href="mailto:jhyde@users.sourceforge.net">let me know</a>.)</i></p>
-
-<h3><a name="4_1_Get_test_dataset">4.1. Get the test
-dataset</a></h3>
-<p>The test dataset is contained in a Microsoft Access database and in
+<p>The test dataset is contained in two formats: a Microsoft Access database and in
 a SQL script of insert statements. Under Windows, using the Access
 database is easier to set up, because all you need to do is download
 the data and define an ODBC data source. If you want to test using a
 non Access database, or if you are not using Windows, you will need to
-create your own empty database and load it with the
-MondrianFoodMartLoader class.<br>
+create your own empty database and load it with the MondrianFoodMartLoader class.<br>
 </p>
 
-<p>If you
-installed from a binary or source distribution, you will need to
-download the dataset: get <code>mondrian-Access-data.zip</code> or <code>mondrian-SQL-data.zip</code>
+<p>First, download the dataset: get <code>mondrian-data.zip</code>
 from <a href="http://sourceforge.net/projects/mondrian">
 SourceForge</a>, and unzip it to <code> <i>${project.location}</i></code>.
 The files will
 be
 <code><i>${project.location}</i>/</code><code>demo/access/MondrianFoodMart.mdb</code>
-and <code><i>${project.location}</i>/</code><code>demo/FoodMartCreateData.zip</code>.
-If you got your files from the Perforce
-server, you should already have the latest dataset files. </p>
-<h3><a name="4_1_ODBC_setup">4.1. If using Access, set up the
+and <code><i>${project.location}</i>/</code><code>demo/FoodMartCreateData.zip</code>. </p>
+<h3><a name="4_1_Access_setup">4.1. If using Access, set up the
 ODBC datasource for
-the test dataset<br>
-</a></h3>
+the test dataset</a></h3>
 
 <p>The test dataset needs to be accessed by the unit tests if you are
 testing with just this database, or loading into another database.</p>
@@ -390,15 +205,14 @@ pointing to
 The JDBC connect string will be <code>jdbc:odbc:MondrianFoodMart</code>.<br>
 </p>
 
-<h3>4.X If not using Access, create and load the test database</h3>
+<h3><a name="4_2_Non_Access_setup">4.2. If not using Access, create and load the test database</a></h3>
 
 <p>If you do not want to use the Access test dataset, you will
 need to create a database and load the test dataset from either the
 Access database or the SQL script using the
 MondrianFoodMartLoader class. </p>
 <blockquote>
-  <pre><p>MondrianFoodMartLoader [-verbose] [-tables] [-data] [-indexes]<br>	-jdbcDrivers=&lt;jdbcDrivers&gt;<br>	-outputJdbcURL=&lt;jdbcURL&gt; <br>        [ <br>		[[-outputJdbcUser=user] [-outputJdbcPassword=password] [-outputJdbcBatchSize=&lt;batch size&gt;]] |<br>	&nbsp;	-outputDirectory=&lt;directory name&gt;<br>	]<br>	[ [-inputJdbcURL=&lt;jdbcURL&gt; [-inputJdbcUser=user] [-inputJdbcPassword=password]] | [-inputfile=&lt;file name&gt;]]<br></p></pre>
-</blockquote>
+  <pre>MondrianFoodMartLoader [-verbose] [-tables] [-data] [-indexes]<br>	-jdbcDrivers=&lt;jdbcDrivers&gt;<br>	-outputJdbcURL=&lt;jdbcURL&gt; <br>        [ <br>		[[-outputJdbcUser=user] [-outputJdbcPassword=password] [-outputJdbcBatchSize=&lt;batch size&gt;]] |<br>	&nbsp;	-outputDirectory=&lt;directory name&gt;<br>	]<br>	[ [-inputJdbcURL=&lt;jdbcURL&gt; [-inputJdbcUser=user] [-inputJdbcPassword=password]] | [-inputfile=&lt;file name&gt;]]</blockquote>
 <table style="text-align: left; width: 1010px; height: 274px;"
  border="1" cellpadding="2" cellspacing="0">
   <tbody>
@@ -506,374 +320,29 @@ database</p>
   <pre>$ java -cp 'mondrian.jar' mondrian.test.loader.MondrianFoodMartLoader<br>     -verbose -tables -data -indexes -jdbcDrivers=org.postgresql.Driver,sun.jdbc.odbc.JdbcOdbcDriver<br>     -inputJdbcURL=jdbc:odbc:MondrianFoodMart <br>     -outputJdbcURL=jdbc:postgresql://localhost/foodmart -outputJdbcUser=postgres -outputJdbcPassword=password</pre>
 </blockquote>
 
-<h2><a name="4_2_Oracle"></a>5. Configure the execution environment for
-testing
+<h2><a name="5_Configure_exec_environment">5. Configure the execution environment for testing</a>
 </h2>
 <p>The Mondrian Ant script uses the <code><i>${project.location}</i>/mondrian.properties</code>
 file for configuration. See below for an example.<br>
 </p>
 <blockquote>
-  <pre>###############################################################################<br># Used by the test suite<br># Uncomment the following lines to run subsets of the test suite.<br># "mondrian.test.Class" is the name of the main test class: it must either<br># implement "junit.framework.Test" or have a "public [static] Test suite()"<br># method. "mondrian.test.Name" is a pattern for the test methods to call.<br>#<br># If these parameters are not set, then the whole test suite is run.<br>#<br>#mondrian.test.Class=mondrian.test.BasicQueryTest<br>#mondrian.test.Name=testMemberWithNullKey<br><br>###############################################################################<br># Environment<br>#<br># Used by the webapp at build time<br>#<br>mondrian.test.connectString=\<br>Provider=mondrian;\<br>Jdbc=jdbc:postgresql://localhost/foodmart;\<br>JdbcUser=postgres;\<br>JdbcPassword=pgAdmin;\<br>Catalog=/WEB-INF/FoodMart.xml;\<br>JdbcDrivers=org.postgresql.Driver;\<br>RoleXX='California manager';<br><br>#<br>#  This is the JDBC connection that will be used if you run "build test"<br>#<br>mondrian.foodmart.jdbcURL=jdbc:odbc:MondrianFoodMart<br><br>#<br>#  These are the JDBC connections that will be used if you run "build test-XXX",<br>#  ie. build test-postgres or build test-access<br>#<br><br>mondrian.foodmart.jdbcURL.oracle=jdbc:oracle:oci8:foodmart/foodmart@realm1<br>mondrian.foodmart.jdbcURL.access=jdbc:odbc:MondrianFoodMart<br>mondrian.foodmart.jdbcURL.hsqldb=jdbc:hsqldb:demo/hsql/FoodMart<br>mondrian.foodmart.jdbcURL.mysql=jdbc:mysql://localhost/foodmart?user=root&amp;password=myAdmin<br>mondrian.foodmart.jdbcURL.postgres=jdbc:postgresql://localhost/foodmart<br><br>#<br># Include all JDBC driver classes to be used by Mondrian<br>#<br>mondrian.jdbcDrivers=org.postgresql.Driver,sun.jdbc.odbc.JdbcOdbcDriver,com.mysql.jdbc.Driver<br><br>#<br># Set the following parameters if you cannot set the username/password via the JDBC URL.<br># Postgres and Oracle need this<br>#<br>mondrian.foodmart.jdbcUser=postgres<br>mondrian.foodmart.jdbcPassword=pgAdmin<br></pre>
+  <pre>###############################################################################<br># Used by the test suite<br># Uncomment the following lines to run subsets of the test suite.<br># "mondrian.test.Class" is the name of the main test class: it must either<br># implement "junit.framework.Test" or have a "public [static] Test suite()"<br># method. "mondrian.test.Name" is a pattern for the test methods to call.<br>#<br># If these parameters are not set, then the whole test suite is run.<br>#<br>#mondrian.test.Class=mondrian.test.BasicQueryTest<br>#mondrian.test.Name=testMemberWithNullKey<br><br>###############################################################################<br># Environment<br>#<br># Used by the webapp at build time<br>#<br>mondrian.test.connectString=\<br>Provider=mondrian;\<br>Jdbc=jdbc:postgresql://localhost/foodmart;\<br>JdbcUser=postgres;\<br>JdbcPassword=pgAdmin;\<br>Catalog=/WEB-INF/FoodMart.xml;\<br>JdbcDrivers=org.postgresql.Driver;\<br>RoleXX='California manager';<br><br>#<br>#&nbsp; This is the JDBC connection that will be used if you run "build test"<br>#<br>mondrian.foodmart.jdbcURL=jdbc:odbc:MondrianFoodMart<br><br>#<br>#&nbsp; These are the JDBC connections that will be used if you run "build test-XXX",<br>#&nbsp; ie. build test-postgres or build test-access<br>#<br><br>mondrian.foodmart.jdbcURL.oracle=jdbc:oracle:oci8:foodmart/foodmart@realm1<br>mondrian.foodmart.jdbcURL.access=jdbc:odbc:MondrianFoodMart<br>mondrian.foodmart.jdbcURL.hsqldb=jdbc:hsqldb:demo/hsql/FoodMart<br>mondrian.foodmart.jdbcURL.mysql=jdbc:mysql://localhost/foodmart?user=root&amp;password=myAdmin<br>mondrian.foodmart.jdbcURL.postgres=jdbc:postgresql://localhost/foodmart<br><br>#<br># Include all JDBC driver classes to be used by Mondrian<br>#<br>mondrian.jdbcDrivers=org.postgresql.Driver,sun.jdbc.odbc.JdbcOdbcDriver,com.mysql.jdbc.Driver<br><br>#<br># Set the following parameters if you cannot set the username/password via the JDBC URL.<br># Postgres and Oracle need this<br>#<br>mondrian.foodmart.jdbcUser=postgres<br>mondrian.foodmart.jdbcPassword=pgAdmin<br></pre>
 </blockquote>
 <p>Your JDBC driver(s) must be on the classpath. You will need to set
 your JDBC URL appropriately for your database.<br>
 </p>
-<h2><a name="6_Run_the_test_suite">6. Running the test suite</a></h2>
-<p>In a build environment,</p>
-<blockquote>
-  <pre>cd <i>${project.location}</i><br>build test</pre>
-</blockquote>
-<p>In a runtime environment,</p>
-<blockquote>
-  <pre>cd <i>${project.location}</i>/bin<br>mondrian test</pre>
-</blockquote>
-<p>You can test a specific database type by running mondrian test-<span
- style="font-style: italic;">&lt;database type&gt;</span>, ie. mondrian
-test-mysql.</p>
-<p>Running the test via the Mondrian Ant build in Eclipse works, too.</p>
-<p>Example output:</p>
-<blockquote>
-  <pre>Buildfile: C:\Documents and Settings\swood\My Documents\perforce\open\mondrian\build.xml<br/>
-test-postgres:<br/>
-sniff:<br/>
-prepare:<br/>
-parser:<br/>
-  [javacup] Files are up to date.<br/>
-compile.xom:<br/>
-compile.resgen:<br/>
-generate.resources:<br/>
-   [resgen] C:\...\src\main\mondrian\olap\MondrianResource.java is up to date<br/>
-   [resgen] C:\...\src\main\mondrian\olap\MondrianResource.properties is up to date<br/>
-   [resgen] C:\...\main\mondrian\olap\MondrianResource_en_US.java is up to date<br/>
-   [resgen] C:\...\src\main\mondrian\olap\MondrianResource_en_US.properties is up to date<br/>
-   [resgen] C:\...\src\main\mondrian\olap\MondrianResource_de_DE.java is up to date<br/>
-   [resgen] C:\...\src\main\mondrian\olap\MondrianResource_de_DE.properties is up to date<br/>
-def:<br/>
-compile.java:<br/>
-compile.jsp.maybe:<br/>
-copy.properties:<br/>
-compile:<br/>
-info:<br/>
-     [echo] ==============================================================<br/>
-     [echo] | Mondrian configuration info                                |<br/>
-     [echo] ==============================================================<br/>
-     [echo] project.location      = C:\...<br/>
-     [echo] jdk.home              = C:\j2sdk1.4.2_06<br/>
-     [echo] catalina.home         = ${env.CATALINA_HOME}<br/>
-     [echo] xalan.home            = ${env.XALAN_HOME}<br/>
-     [echo] junit.home            = ${env.JUNIT_HOME}<br/>
-     [echo] weblogic.home         = ${env.WEBLOGIC_HOME}<br/>
-     [echo] mondrian.foodmart.catalogURL = file:///C:\.../demo/FoodMart.xml<br/>
-     [echo] ==============================================================<br/>
-compile.tests:<br/>
-    [javac] Compiling 28 source files to C:\...\testclasses<br/>
-    [javac] Note: C:\...\testsrc\main\mondrian\test\ParameterTest.java uses or overrides a deprecated API.<br/>
-    [javac] Note: Recompile with -deprecation for details.<br/>
-test-dbms:<br/>
-     [echo] Connecting to jdbc:postgresql://localhost/FM3<br/>
-     [java] Mondrian: properties loaded from 'file:/C:/.../mondrian.properties'<br/>
-     [java] Mondrian: properties loaded from 'file:/C:/.../build.properties'<br/>
-     [java] Mondrian: loaded 4 system properties<br/>
-     [java] testName: null<br/>
-     [java] testClass: null<br/>
-     [java] All 1 thread(s) started.<br/>
-     [java] [0] .Mondrian: JDBC driver org.postgresql.Driver loaded successfully<br/>
-     [java] Mondrian: JDBC driver sun.jdbc.odbc.JdbcOdbcDriver loaded successfully<br/>
-     [java] Mondrian: JDBC driver com.mysql.jdbc.Driver loaded successfully<br/>
-     [java] Mondrian: JDBC driver oracle.jdbc.OracleDriver loaded successfully<br/>
-     [java] .......................................<br/>
-     [java] [40] ........................................<br/>
-     [java] [80] ........................................<br/>
-     [java] [120] ........................................<br/>
-     [java] [160] ........................................<br/>
-     [java] [200] ........................................<br/>
-     [java] [240] ........................................<br/>
-     [java] [280] ........................................<br/>
-     [java] [320] ........................................<br/>
-     [java] [360] ........................................<br/>
-     [java] [400] ........................................<br/>
-     [java] [440] ........................................<br/>
-     [java] [480] ........................................<br/>
-     [java] [520] ........................................<br/>
-     [java] [560] ........................................<br/>
-     [java] [600] ..................<br/>
-     [java] OK (618 tests)<br/>
-     [java] Time: 711.63<br/>
-     [java] Normal termination.<br/>
-BUILD SUCCESSFUL<br/>
-Total time: 12 minutes 13 seconds<br/>
-</pre>
-</blockquote>
-<p>
-</p>
-
-<h2><a name="7_Run_the_web_app">7. Deploy and run the web app</a></h2>
-<ol>
-  <li>First <a href="#Tomcat">install Tomcat</a>.</li>
-  <li>Make sure the values in <code>mondrian.properties</code> are correct for your environment. In particular:<ul>
-    <li>Make sure your database's JDBC driver appears in the <code>JdbcDrivers</code> property of your connect string</li>
-    <li>Check the catalog URL in <code>mondrian.test.connectString</code> and
-    <code>mondrian.foodmart.catalogURL</code></li>
-    <li>Check the JDBC connect URL in <code>mondrian.foodmart.jdbcURL</code></li>
-    <li>Check the connect string in <code>mondrian.test.connectString</code></li>
-    <li>Note that any ampersands must be url-quoted,  since this string is copied into <code>mondrian.war(war.xml)</code></li>
-  </ul>
-  </li>
-  <li>Run <code>build deploy-war</code> (or <code>mondrian deploy-to-tomcat</code>,
-  if this is a a runtime environment).</li>
-  <li>Start up tomcat. (If this is a build environment, <code>build start.tomcat</code> is an easy way to do this.)</li>
-  <li>Hit <a href="http://localhost:8080/mondrian" target="_new">http://localhost:8080/mondrian</a>.</li>
-</ol>
-<h2><a name="8_Miscellaneous">8. Miscellaneous</a></h2>
-<h3><a name="8_1_Cache_setup">8.1. Cache setup</a></h3>
-<p>You will need to specify the amount of memory available to the cache
+<h2><a name="6_Run_the_web_app">6. Deploy and run the web app</a></h2><ol>
+  <li>First <a href="#Tomcat">install Tomcat</a>.</li><li>Make sure the values in <code>mondrian.properties</code> are correct for your environment. In particular:<ul>
+    <li>Make sure your database's JDBC driver appears in the <code>JdbcDrivers</code> property of your connect string</li><li>Check the catalog URL in <code>mondrian.test.connectString</code> and
+    <code>mondrian.foodmart.catalogURL</code></li><li>Check the JDBC connect URL in <code>mondrian.foodmart.jdbcURL</code></li><li>Check the connect string in <code>mondrian.test.connectString</code></li><li>Note that any ampersands must be url-quoted,  since this string is copied into <code>mondrian.war(war.xml)</code></li></ul></li><li>Run <code>build deploy-war</code> (or <code>mondrian deploy-to-tomcat</code>,
+  if this is a a runtime environment).</li><li>Start up tomcat. (If this is a build environment, <code>build start.tomcat</code> is an easy way to do this.)</li><li>Hit <a href="http://localhost:8080/mondrian" target="_new">http://localhost:8080/mondrian</a>.</li></ol><h2>
+<a name="7_Miscellaneous">7. Miscellaneous</a></h2><h3>
+<a name="7_1_Cache_setup">7.1. Cache setup</a></h3><p>You will need to specify the amount of memory available to the cache
 using the -Xms Java VM option, for example -Xms256m for 256 megs of ram
-for the Java VM.</p>
-<h3><a name="7_2_Coding_guidelines">8.2. Coding guidelines</a></h3>
-<p>If you are contributing code, please follow the same guidelines used
-for the
-rest of the code:</p>
-<ul>
-  <li>Indentation 4.</li>
-  <li>Tab stop 4.</li>
-  <li>Use spaces, not tabs.</li>
-  <li>Open braces on the same line as the preceding 'if', 'else', 'while'
-      statement, or method or 'class' declaration.</li>
-  <li>Use braces even for single-line blocks.</li>
-  <li>Declare variables as near to their first use as possible.</li>
-  <li>Don't initialize variables with 'dummy' values just
-      to shut up the compiler.</li>
-  <li>Try to keep lines shorter than 80 characters.</li>
-  <li>Classes and public methods must have javadoc.</li>
-  <li>Source files must contain copyright and license notices.</li>
-  <li>Write Javadoc comments on
-      methods in the present active ('Collects garbage.'), <em>not</em>
-      the imperative ('Collect garbage.'), passive ('Garbage is collected.'),
-      or future active ('Will collect garbage.').</li>
-  <li>When editing HTML documents, please don't use an editor which reformats
-      the HTML source (such as Microsoft Word).</li>
-  <li>One declaration per line is recommended.</li>
-  <li>Only one top-level class should be defined per java file.</li>
-</ul>
-
-<h2><a name="Appendix_A_Product_installation_instructions">Appendix A. Product
-installation instructions</a></h2>
-
-<p>These are the products I used to build mondrian. Install all of the products
-marked 'required'. (I use <code>/</code>-es in paths because I  run MKS on
-Windows 2000, and it makes things simpler.)</p>
-
-<p>In the following, the symbol <code><i>${project.location}</i></code> means the root of your
-source tree.</p>
-
-<p>Where the instructions suggest setting an environment variable, it is often
-sufficient to edit the corresponding line in <code><i>${project.location}</i>/build.bat</code>.</p>
-<table style="border-collapse: collapse;" border="1"
- bordercolor="#111111" cellpadding="2" cellspacing="0">
-  <tbody>
-    <tr>
-      <th>Product</th>
-      <th>Required?</th>
-      <th>Version</th>
-      <th>Comment</th>
-    </tr>
-    <tr>
-      <td><a name="JDK">JDK</a></td>
-      <td>Yes</td>
-      <td>1.4 or later (I use version 1.4.2.)</td>
-      <td>Available from <a href="http://developer.java.sun.com/"
- target="_blank">http://developer.java.sun.com/</a>. I downloaded <code>j2sdk-1_4_2_06-windows-i586-p.exe</code>,
-and extracted to <code>E:/j2sdk1.4.2_06</code>. Set <code>JAVA_HOME</code>
-to same.</td>
-    </tr>
-    <tr>
-      <td><a name="Ant">Ant</a></td>
-      <td>Yes</td>
-      <td>1.5 or later&nbsp;</td>
-      <td>Available from <a
- href="http://ant.apache.org/bindownload.cgi">http://ant.apache.org/bindownload.cgi</a>.
-I downloaded <code>apache-ant-1.6.2-bin.zip</code>, extracted to <code>E:/jakarta-ant-1.6.2</code>,
-and set <code>ANT_HOME</code> to the same.</td>
-    </tr>
-    <tr>
-      <td><a name="Tomcat">Tomcat</a></td>
-      <td>Yes</td>
-      <td>5.0.25 or later</td>
-      <td>Available from <a href="http://jakarta.apache.org/tomcat"
- target="_blank"> http://jakarta.apache.org/tomcat</a>. I downloaded <code>
-jakarta-tomcat-5.0.25.zip</code>, extracted to <code>E:/jakarta-tomcat-5.0.25</code>,
-and set <code>TOMCAT_HOME</code> to the same.</td>
-    </tr>
-    <tr>
-      <td><a name="Xerces">Xerces</a></td>
-      <td>&nbsp;</td>
-      <td>Use the version included with Tomcat</td>
-      <td>Xerces is included with Tomcat. If you use a different
-version, compatibility issues may arise.</td>
-    </tr>
-    <tr>
-      <td><a name="Xalan">Xalan</a></td>
-      <td>Yes</td>
-      <td>2.6.0 or later</td>
-      <td>Available from <a href="http://xml.apache.org/xalan-j/"
- target="_blank"> http://xml.apache.org/xalan-j/</a>. I downloaded <code>xalan-j_2_6_0-bin.zip</code>,
-extracted to <code>E:/xalan-j_2_6_0</code>, and set <code>XALAN_HOME</code>
-to the same.
-      <p><b>Important</b>: copy <i><code>XALAN_HOME</code></i><code>/bin/xalan.jar</code>
-to <code><i>TOMCAT_HOME</i>/common/endorsed/</code>.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><a name="JUnit">JUnit</a></td>
-      <td>Yes</td>
-      <td>3.8.1 or later</td>
-      <td>Available from <a href="http://www.junit.org/">http://www.junit.org/</a>.
-I downloaded <code> junit3.8.1.zip</code>, extracted to <code>E:/junit3.8.1</code>,
-and set <code>JUNIT_HOME</code> to the same.</td>
-    </tr>
-    <tr>
-      <td>Intellij IDEA (a Java IDE)</td>
-      <td>No</td>
-      <td>3.0 or later</td>
-      <td>You can download a 30-day evaluation copy from <a
- href="http://www.intellij.com/idea/" target="_blank">http://www.intellij.com/idea/</a>.
-      <p>Create a project <code><i>${project.location}</i>/mondrian.ipr</code>.
-      Set the compiler output path to <code><i>${project.location}</i>/classes/</code>.
-      Add the following files to the class path:
-      <blockquote><pre>mondrian/lib/ant.jar
-mondrian/lib/commons-collections.jar
-mondrian/lib/commons-dbcp.jar
-mondrian/lib/commons-pool.jar
-mondrian/lib/javacup.jar
-mondrian/lib/jlfgr-1_0.jar
-mondrian/lib/jmi.jar
-mondrian/lib/jsp-api.jar
-mondrian/lib/mof.jar
-mondrian/lib/mondrian-resource.jar
-mondrian/lib/mondrian-xom.jar
-mondrian/lib/servlet.jar
-mondrian/lib/xalan.jar
-mondrian/lib/xercesImpl.jar
-mondrian/lib/xml-apis.jar
-mondrian/testlib/junit.jar</pre></blockquote>
-
-      <p>To use Ant build, click the '6: Ant Build' tab, click '+', choose <code><i>${project.location}</i>/build.xml</code>, then right-click, choose
-      'Properties', and choose 'Include project classpath'. (<code>javacup.jar</code>
-      is needed in order to build the <code>parser</code> target.)</td>
-  </tr>
-  <tr>
-    <td><a name="hsql">hsql</a> Database Engine</td>
-    <td>No</td>
-    <td>1.61</td>
-    <td>
-<p>Available from <a href="http://hsqldb.sourceforge.net/" target="_blank">http://hsqldb.sourceforge.net/</a>.
-I extracted <code>hsqldb_v.1.61.zip</code> to <code>E:/hsqldb_v.1.61</code>,
-then edited <code>bin/run.bat</code>. You will need to add <code>hsqldb.jar</code>
-to your classpath.</p>
-      </td>
-    </tr>
-    <tr>
-      <td><a name="MySQL">MySQL</a></td>
-      <td>No</td>
-      <td>3.23<br>
-4.X<br>
-      </td>
-      <td>Available from <a href="http://www.mysql.com/downloads/">
-http://www.mysql.com/downloads/</a>. Install MySQL from the zip file.
-Then <a href="http://www.mysql.com/doc/en/NT_start.html">install and
-start the
-service</a>:
-      <blockquote>
-        <pre><code>C:\mysql\bin&gt; mysqld-max-nt --install<br>Service successfully installed.<br>C:\mysql\bin&gt; net start mysql<br>The MySql service is starting.<br>The MySql service was started successfully.</code></pre>
-      </blockquote>
-      <p>Download a <a href="http://www.mysql.com/doc/en/Java.html">JDBC
-driver</a>. I downloaded <a
- href="http://www.mysql.com/downloads/api-jdbc-stable.html">MySQL
-Connector/J 2.0.14</a>; extracted <code>mysql-connector-java-2.0.14-bin.jar</code>
-to <code> <a href="file:///C:/MySQL/lib">C:\MySQL\lib</a></code> and
-appended it to my CLASSPATH (by editing <code>build.bat</code>); and
-appended <code> com.mysql.jdbc.Driver</code> to the <code>JdbcDrivers</code>
-property of my connect string. </p>
-      </td>
-    </tr>
-    <tr>
-      <td>Oracle</td>
-      <td>No</td>
-      <td>6.0 or later</td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td>PostgreSQL</td>
-      <td>No</td>
-      <td>7.3 or later<br>
-      </td>
-      <td>&nbsp;</td>
-    </tr>
-    <tr>
-      <td>JavaCUP (parser generator)</td>
-      <td>Included with source distribution, as <code>lib/javacup.jar</code>.&nbsp;</td>
-      <td>v0.10g (with modifications)</td>
-      <td>Available from <a
- href="http://www.cs.princeton.edu/%7Eappel/modern/java/CUP/"
- target="_blank">http://www.cs.princeton.edu/~appel/modern/java/CUP/</a>.
-I modified version v.0.10g to add an Ant task, and to output error
-messages in a format which Emacs can parse.</td>
-    </tr>
-    <tr>
-      <td><a name="Weblogic">Weblogic</a></td>
-      <td>No</td>
-      <td>6.1</td>
-      <td>
-      <ol>
-        <li>Extract <code>xml-apis.jar</code> and <code>xercesImpl.jar</code>
-from <code>mondrian.war</code> and place them in <code><i>WEBLOGIC_HOME</i>/lib</code>.</li>
-        <li>Edit <code>startWeblogic.cmd</code>, or whichever script
-you use to start Weblogic, and place <code>xml-apis.jar</code> and <code>
-xercesImpl.jar</code> before <code>weblogic.jar</code> on the
-class-path.</li>
-      </ol>
-      <p>See <a href="#Appendix_C_A_note_on_Weblogic_and_Xerces">note
-on Weblogic and Xerces</a>.</p>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<h2><a name="Appendix_B_How_to_debug_Tomcat_using_IntelliJ">Appendix B.
-How to debug
-Tomcat using IntelliJ</a></h2>
-<ol>
-  <li>add <code><i>TOMCAT_HOME</i>/webapps/mondrian.war</code> to intellij's
-  classpath</li>
-  <li>edit <code><i>TOMCAT_HOME</i>/bin/catalina.bat</code> as follows:
-  <blockquote>
-<pre><code>:doJpda
-if not &quot;%SECURITY_POLICY_FILE%&quot; == &quot;&quot; goto doSecurityJpda
-%_EXECJAVA% %JAVA_OPTS% %CATALINA_OPTS% -Xdebug <i><b>-Xnoagent
- </b></i> -Xrunjdwp:transport=<i><b>dt_socket</b></i>,address=%JPDA_ADDRESS%,server=y,suspend=n %DEBUG_OPTS%
-  -Djava.endorsed.dirs=&quot;%JAVA_ENDORSED_DIRS%&quot; -classpath &quot;%CLASSPATH%&quot;
-  -Dcatalina.base=&quot;%CATALINA_BASE%&quot; -Dcatalina.home=&quot;%CATALINA_HOME%&quot;
-  -Djava.io.tmpdir=&quot;%CATALINA_TMPDIR%&quot; %MAINCLASS% %CMD_LINE_ARGS% %ACTION%
-goto end</code></pre>
-  </blockquote>
-  </li>
-  <li>create <code><i>TOMCAT_HOME</i>/bin/setenv.bat</code> as follows:
-  <blockquote>
-<pre><code>set JPDA_ADDRESS=5000</code></pre>
-  </blockquote>
-  </li>
-  <li><code>cd e:\jakarta-tomcat-4.0.3\bin</code></li>
-  <li><code>catalina jpda run</code></li>
-  <li>attach intellij's debugger to port 5000</li>
-</ol>
-
-<h2><a name="Appendix_C_Compatibility_issues">Appendix C. Compatibility
-issues</a></h2>
-<h3><font color="#990000"><a name="Appendix_C_1_Weblogic_6_1_and_Xerces">
-C.1. Weblogic 6.1 and Xerces</a></font></h3>
-
-<p>Weblogic 6.1 ships with an older, incompatible, version of Xerces. The
-symptom is the error</p>
-<blockquote>
+for the Java VM.</p><h2><a name="Appendix_A_Compatibility_issues">Appendix A. Compatibility
+issues</a></h2><h3><a name="Appendix_A_1_Weblogic_6_1_and_Xerces">
+<font color="#990000">A</font></a><font color="#990000"><a name="Appendix_A_1_Weblogic_6_1_and_Xerces">.1. Weblogic 6.1 and Xerces</a></font></h3><p>Weblogic 6.1 ships with an older, incompatible, version of Xerces. The
+symptom is the error</p><blockquote>
   <pre>java.lang.VerifyError: (class: mondrian/xom/wrappers/XercesDOMParser,
  method: parse signature: (Lorg/xml/sax/InputSource;)Lorg/w3c/dom/Document;)
  Incompatible object argument for function call
@@ -881,32 +350,22 @@ at java.lang.Class.forName0(Native Method)
 at java.lang.Class.forName(Class.java:120)
 at mondrian.xom.XOMUtil.createDefaultParser(XOMUtil.java:165)
 at mondrian.resource.Util.load(Util.java:49)
-...</pre>
-</blockquote>
-<p>The solution is to place <code>xml-apis.jar</code> and <code>xercesImpl.jar</code>
-before <code>weblogic.jar</code> on your class-path.</p>
-<p>Generally, Mondrian uses whichever JAXP-compliant XML parser is provided by
+...</pre></blockquote><p>The solution is to place <code>xml-apis.jar</code> and <code>xercesImpl.jar</code>
+before <code>weblogic.jar</code> on your class-path.</p><p>Generally, Mondrian uses whichever JAXP-compliant XML parser is provided by
 the system. Unfortunately Weblogic's parser cannot be set to non-validating
 mode, and Mondrian needs this. Therefore, in a Weblogic environment, Mondrian
 explicitly uses Xerces.&nbsp; Fyi,
 <a href="http://xml.apache.org/soap/faq/faq-for-WL6.1beta.html">this note</a>
-describes how to change Weblogic's default XML parser.</p>
-
-<h3><font color="#990000"><a name="Appendix_C_2_Xalan_and_Tomcat">C.2. JDK, Xalan and Tomcat</a></font></h3>
-
-<p>Mondrian binaries, as shipped, require JDK 1.4.x, Xalan 2.6.0, and Tomcat
-5.0.25 or later. Things work better that way.</p>
-
-<p>If you are running JDK 1.3.<i>x</i>, you will need to add <code>xml-apis.jar</code>
+describes how to change Weblogic's default XML parser.</p><h3>
+<a name="Appendix_C_2_Xalan_and_Tomcat"><font color="#990000">A</font></a><font color="#990000"><a name="Appendix_A_2_Xalan_and_Tomcat">.2. JDK, Xalan and Tomcat</a></font></h3><p>Mondrian binaries, as shipped, require JDK 1.4.x, Xalan 2.6.0, and Tomcat
+5.0.25 or later. Things work better that way.</p><p>If you are running JDK 1.3.<i>x</i>, you will need to add <code>xml-apis.jar</code>
 and <code>xercesImpl.jar</code> to <code>mondrian.war</code> (since JDK 1.3 does
 not include the an XML parser), and copy <code>
   xalan.jar</code> and <code>xml-apis.jar</code> from <code><i>XALAN_HOME</i>/bin</code>
 to <code><i>TOMCAT_HOME</i>/common/lib</code>. (or <code><i>TOMCAT_HOME</i>/common/endorsed</code>,
 if your version of Tomcat has one). </p>
 
-<p>If you get the configuration wrong, a typical error is</p>
-
-<blockquote>
+<p>If you get the configuration wrong, a typical error is</p><blockquote>
   <pre>java.lang.VerifyError: Cannot inherit from final class
 at java.lang.ClassLoader.defineClass0(Native Method)
 at java.lang.ClassLoader.defineClass(ClassLoader.java:502)
@@ -925,104 +384,70 @@ at org.apache.xerces.parsers.DTDConfiguration.&lt;init&gt;(DTDConfiguration.java
 at org.apache.xerces.parsers.StandardParserConfiguration.&lt;init&gt;(StandardParserConfiguration.java:198)
 at org.apache.xerces.parsers.IntegratedParserConfiguration.&lt;init&gt;(Unknown Source)
 at org.apache.xerces.parsers.IntegratedParserConfiguration.&lt;init&gt;(Unknown Source)
-at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)</pre>
-</blockquote>
-<p>This error occurred under JDK 1.3.1, Tomcat 4.1.18, Xalan 2.4.1. The
+at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)</pre></blockquote><p>This error occurred under JDK 1.3.1, Tomcat 4.1.18, Xalan 2.4.1. The
 solutions to the error were (a) move to JDK 1.4 and remove <code>xml-apis.jar</code> and
-<code>xercesImpl.jar</code> from <code>mondrian.war</code>, or (b) revert to Xalan 2.3.1.</p>
-
-<h2><a name="Appendix_D_Patrick_Tallmans_installation_instructions">Appendix D. Patrick Tallman's  instructions
-for installing on Windows</a></h2>
-
-<p>Patrick Tallman posted detailed instructions for building and installing
-Mondrian on a Windows machine. They are reproduced here, pretty much verbatim.</p>
-<blockquote>
+<code>xercesImpl.jar</code> from <code>mondrian.war</code>, or (b) revert to Xalan 2.3.1.</p><h2>
+<a name="Appendix_B_Patrick_Tallmans_installation_instructions">Appendix B. Patrick Tallman's  instructions
+for installing on Windows</a></h2><p>Patrick Tallman posted detailed instructions for building and installing
+Mondrian on a Windows machine. They are reproduced here, pretty much verbatim.</p><blockquote>
   <p>I have been running using exactly the app versions you mention. Here are a
-  couple of notes to get it running on a win box.</p>
-  <h4>MySql</h4>
-  <p>The MySql script is faulty. It attempts to create a table named ‘position’
+  couple of notes to get it running on a win box.</p><h4>MySql</h4><p>The MySql script is faulty. It attempts to create a table named ‘position’
   which causes MySql to report an error. The problem is that ‘position’ is a
   keyword in MySql. To fix the problem you may modify the script to insert a
-  space between ‘position’ and the opening ‘(‘ in the create statement.</p>
-  <p>You will need to create a user and a database. For example,</p>
-  <blockquote>
+  space between ‘position’ and the opening ‘(‘ in the create statement.</p><p>You will need to create a user and a database. For example,</p><blockquote>
     <pre>GRANT ALL PRIVILEGES ON *.* TO foodmart@localhost
-IDENTIFIED BY ‘foodmart’;</pre>
-  </blockquote>
-  <h4>Mondrian setup</h4>
-  <p>The Mondrian install instructions list four methods that may be used to
+IDENTIFIED BY ‘foodmart’;</pre></blockquote><h4>Mondrian setup</h4><p>The Mondrian install instructions list four methods that may be used to
   install the system. This section describes only the setup of the build
   environment. </p>
   <ol>
-    <li>Copy the <code>mondrian-1.0.1.zip</code> to a directory on your hard drive.</li>
-    <li>Extract the <code>mondrian-1.0.1-src.zip</code> from the <code>mondrian-1.0.1.zip</code> file to a
-    directory on your hard drive.</li>
-    <li>Extract all files from the <code>mondrian-1.0.1-src.zip</code> to
+    <li>Copy the <code>mondrian-1.0.1.zip</code> to a directory on your hard drive.</li><li>Extract the <code>mondrian-1.0.1-src.zip</code> from the <code>mondrian-1.0.1.zip</code> file to a
+    directory on your hard drive.</li><li>Extract all files from the <code>mondrian-1.0.1-src.zip</code> to
     <code>%DEV_ENVIRONMENT_LOCATION%</code>. </li>
     <li>Open the mondrian.properties file and make the following modifications:<ol>
       <li>Change the line<br>
 &nbsp;&nbsp; <code>&nbsp;Jdbc=jdbc:odbc:MondrianFoodMart;\</code><br>
       to<br>
 &nbsp;&nbsp;&nbsp; <code>
-      Jdbc=jdbc:mysql://localhost/foodmart?user=foodmart&amp;#38;password=foodmart;\</code></li>
-      <li>Change the line <br>
+      Jdbc=jdbc:mysql://localhost/foodmart?user=foodmart&amp;#38;password=foodmart;\</code></li><li>Change the line <br>
 &nbsp;&nbsp;&nbsp; <code>JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver;\</code><br>
       to<br>
-&nbsp;&nbsp; <code>&nbsp;JdbcDrivers=com.mysql.jdbc.Driver;\</code></li>
-      <li>Change the line <br>
+&nbsp;&nbsp; <code>&nbsp;JdbcDrivers=com.mysql.jdbc.Driver;\</code></li><li>Change the line <br>
 &nbsp;&nbsp; <code>&nbsp;mondrian.foodmart.jdbcURL=jdbc:odbc:MondrianFoodMart</code>
       <br>
       to <br>
 &nbsp;&nbsp;&nbsp; <code>
       mondrian.foodmart.jdbcURL=jdbc:mysql://localhost/foodmart?user=foodmart&amp;#38;password=foodmart
       </code><br>
-      in the test section.</li>
-      <li>Change the line <br>
+      in the test section.</li><li>Change the line <br>
 &nbsp;&nbsp; <code>&nbsp;mondrian.foodmart.jdbcURL.mysql</code> <br>
       to<br>
 &nbsp;&nbsp;&nbsp; <code>
-      mondrian.foodmart.jdbcURL=jdbc:mysql://localhost/foodmart?user=foodmart&amp;#38;password=foodmart</code></li>
-      <li>Uncomment and modify tomcat.home to point to
+      mondrian.foodmart.jdbcURL=jdbc:mysql://localhost/foodmart?user=foodmart&amp;#38;password=foodmart</code></li><li>Uncomment and modify tomcat.home to point to
       tomcat.home=%APPS_LOCATION%\tomcat </li>
     </ol>
     </li>
     <li>Open the build.bat file and make the following modifications:<ol>
       <li>Modify <code>HOME_DRIVE</code> to point to your dirve where your
-      source resides.</li>
-      <li>Modify <code>JAVA_HOME</code> to point to %HOME_DRIVE%:&lt;your jdk path&gt;</li>
-      <li>Modify the line<br>
+      source resides.</li><li>Modify <code>JAVA_HOME</code> to point to %HOME_DRIVE%:&lt;your jdk path&gt;</li><li>Modify the line<br>
 &nbsp;&nbsp;&nbsp; <code>@set PATH=%JAVA_HOME%/bin;%PATH%</code><br>
-      to use a ‘\’</li>
-      <li>Modify <code>ANT_HOME</code> to point to <code>%HOME_DRIVE%:&lt;ant
+      to use a ‘\’</li><li>Modify <code>ANT_HOME</code> to point to <code>%HOME_DRIVE%:&lt;ant
       path&gt;.</code> NOTE: Don't use version 1.6.x. It did not build the war
-      correctly. Use 1.5.x.</li>
-      <li>Modify <code>XALAN_HOME</code> to point to <code>%HOME_DRIVE%:&lt;xalan
-      path&gt;</code></li>
-      <li>Modify <code>JUNIT_HOME</code> to point to <code>%HOME_DRIVE%:&lt;junit
-      path&gt;</code></li>
-      <li>Modify <code>CATALINA_HOME</code> to point to <code>
-      %HOME_DRIVE%:&lt;tomcat path&gt;</code></li>
-      <li>Modify the line<br>
+      correctly. Use 1.5.x.</li><li>Modify <code>XALAN_HOME</code> to point to <code>%HOME_DRIVE%:&lt;xalan
+      path&gt;</code></li><li>Modify <code>JUNIT_HOME</code> to point to <code>%HOME_DRIVE%:&lt;junit
+      path&gt;</code></li><li>Modify <code>CATALINA_HOME</code> to point to <code>
+      %HOME_DRIVE%:&lt;tomcat path&gt;</code></li><li>Modify the line<br>
 &nbsp;&nbsp;&nbsp; <code>@set
       CLASSPATH=%SRCROOT%/classes;%SRCROOT%/lib/javacup.jar;%SRCROOT%/lib/boot.jar</code>
       <br>
-      to use ‘\’</li>
-      <li>Uncomment and modify the MySql variables<ul>
-        <li><code>@set MYSQL_HOME=%HOME_DRIVE%:&lt;mysql path&gt;\lib</code></li>
-        <li><code>@set
-        CLASSPATH=%CLASSPATH%;%MYSQL_HOME%\mysql-connector-java-3.0.10-stable-bin.jar</code></li>
-      </ul>
-      </li>
-    </ol>
-    </li>
-    <li>Open the <code>build.xml</code> file and make the following
+      to use ‘\’</li><li>Uncomment and modify the MySql variables<ul>
+        <li><code>@set MYSQL_HOME=%HOME_DRIVE%:&lt;mysql path&gt;\lib</code></li><li><code>@set
+        CLASSPATH=%CLASSPATH%;%MYSQL_HOME%\mysql-connector-java-3.0.10-stable-bin.jar</code></li></ul></li></ol></li><li>Open the <code>build.xml</code> file and make the following
     modifications:<ol>
       <li>Modify the line <br>
 &nbsp;&nbsp;&nbsp; <code>&lt;pathelement location=&quot;${lib.dir}/servlet.jar&quot;/&gt;</code>
       <br>
       to<br>
-&nbsp;&nbsp;&nbsp; <code>&lt;pathelement location=&quot;${lib.dir}/servlet-api.jar&quot;/&gt;</code></li>
-      <li>Immediately after this, add the line <br>
+&nbsp;&nbsp;&nbsp; <code>&lt;pathelement location=&quot;${lib.dir}/servlet-api.jar&quot;/&gt;</code></li><li>Immediately after this, add the line <br>
 &nbsp;&nbsp;&nbsp; <code>&lt;pathelement location=&quot;${lib.dir}/jsp-api.jar&quot;/&gt;</code>
       </li>
       <li>Modify<br>
@@ -1030,14 +455,12 @@ IDENTIFIED BY ‘foodmart’;</pre>
       value=&quot;sun.jdbc.odbc.JdbcOdbcDriver&quot;/&gt;</code> <br>
       to <br>
 &nbsp;&nbsp;&nbsp; <code>&lt;property name=&quot;mondrian.jdbcDrivers&quot;
-      value=&quot;com.mysql.jdbc.Driver&quot;/&gt;</code></li>
-      <li>Modify <br>
+      value=&quot;com.mysql.jdbc.Driver&quot;/&gt;</code></li><li>Modify <br>
 &nbsp;&nbsp;&nbsp; <code>&lt;property name=&quot;mondrian.foodmart.jdbcURL&quot;
       value=&quot;${mondrian.foodmart.jdbcURL.access}&quot;/&gt; </code><br>
       to<br>
 &nbsp;&nbsp;&nbsp; <code>&lt;property name=&quot;mondrian.foodmart.jdbcURL&quot;
-      value=&quot;${mondrian.foodmart.jdbcURL.mysql}&quot;/&gt;</code></li>
-      <li>Modify the target name ‘jar’ section,<br>
+      value=&quot;${mondrian.foodmart.jdbcURL.mysql}&quot;/&gt;</code></li><li>Modify the target name ‘jar’ section,<br>
       <code>&nbsp;&nbsp;&nbsp; &lt;zipfileset<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dir=&quot;.&quot;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; includes=&quot;<br>
@@ -1060,61 +483,35 @@ LICENSE.html,<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 README.txt,<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-VERSION.txt"/&gt;</code></li>
-      </ol>
-    </li>
-    <li>Modify <code>MondrianProperties.java</code> to add a ‘/’ <br>
+VERSION.txt"/&gt;</code></li></ol></li><li>Modify <code>MondrianProperties.java</code> to add a ‘/’ <br>
     <code>&nbsp;&nbsp;&nbsp; final URL resource =
     servletContext.getResource(mondrianDotProperties);</code><br>
     to <br>
     <code>&nbsp;&nbsp;&nbsp; final URL resource = servletContext.getResource(&quot;/&quot;
-    + mondrianDotProperties);</code></li>
-    <li>Copy the following files:<ol>
+    + mondrianDotProperties);</code></li><li>Copy the following files:<ol>
       <li>Copy <code>&lt;path to tomcat&gt;\common\lib\servlet-api.jar</code> <br>
-      to <code>%DEV_ENVIRONMENT_LOCATION%\mondrian\lib</code></li>
-      <li>Copy <code>&lt;path to tomcat&gt;\common\lib\jsp-api.jar</code> <br>
-      to <code>%DEV_ENVIRONMENT_LOCATION%\mondrian\lib</code></li>
-      <li>Copy <code>&lt;path to mysql&gt;\lib\
+      to <code>%DEV_ENVIRONMENT_LOCATION%\mondrian\lib</code></li><li>Copy <code>&lt;path to tomcat&gt;\common\lib\jsp-api.jar</code> <br>
+      to <code>%DEV_ENVIRONMENT_LOCATION%\mondrian\lib</code></li><li>Copy <code>&lt;path to mysql&gt;\lib\
       mysql-connector-java-3.0.10-stable-bin.jar</code> <br>
-      to <code>&lt;path to tomcat&gt;\common\endorsed</code></li>
-      <li>Copy <code>%DEV_ENVIRONMENT_LOCATION%\mondrian\mondrian.properties</code>
+      to <code>&lt;path to tomcat&gt;\common\endorsed</code></li><li>Copy <code>%DEV_ENVIRONMENT_LOCATION%\mondrian\mondrian.properties</code>
       <br>
-      to <code>&lt;path to tomcat&gt;\bin</code></li>
-      <li>Copy <code>&lt;path to xalan&gt;\bin\xalan.jar</code> <br>
-      to <code>&lt;path to tomcat&gt;\common\endorsed</code></li>
-    </ol>
-    </li>
-    <li>Retrieve the <code>jpivot.war</code> file from jpivot.<ol>
+      to <code>&lt;path to tomcat&gt;\bin</code></li><li>Copy <code>&lt;path to xalan&gt;\bin\xalan.jar</code> <br>
+      to <code>&lt;path to tomcat&gt;\common\endorsed</code></li></ol></li><li>Retrieve the <code>jpivot.war</code> file from jpivot.<ol>
       <li>Download and copy <code>jpivot-1.0.2.zip</code> to a local directory.
       </li>
       <li>Extract <code>jpivot.war</code> to <code>
-      %DEV_ENVIRONMENT_LOCATION%\mondrian\lib</code></li>
-    </ol>
-    </li>
-    <li>Modify <code>
+      %DEV_ENVIRONMENT_LOCATION%\mondrian\lib</code></li></ol></li><li>Modify <code>
     %DEV_ENVIRONMENT_LOCATION%\mondrian\webapp\WEB-INF\web-jpivot.xml</code><ol>
       <li>Insert the following, <br>
       <code>&lt;context-param&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;param-name&gt;connectString&lt;/param-name&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;param-value&gt;@mondrian.test.connectString@&lt;/param-value&gt;<br>
-      &lt;/context-param&gt;</code></li>
-    </ol>
-    </li>
-    <li>Build Mondrian<ol>
-      <li><code>build clean</code></li>
-      <li><code>build</code></li>
-      <li><code>build jar</code></li>
-      <li><code>build war</code></li>
-      <li><code>build deploy-war</code></li>
-    </ol>
-    </li>
-    <li>The following are very important steps that are a hack. (We've modified
+      &lt;/context-param&gt;</code></li></ol></li><li>Build Mondrian<ol>
+      <li><code>build clean</code></li><li><code>build</code></li><li><code>build jar</code></li><li><code>build war</code></li><li><code>build deploy-war</code></li></ol></li><li>The following are very important steps that are a hack. (We've modified
     <code>build.xml</code> to automate but that is beyond scope of this post.)<ol>
       <li>Start Tomcat and let it extract the <code>mondrian.war</code> file.
       </li>
-      <li>Immediately shutdown Tomcat.</li>
-      <li>Navigate to <code>&lt;path to tomcat&gt;\webapps\mondrian\WEB-INF\queries</code></li>
-      <li>For the files <code>fourheir.jsp</code>, <code>mondrian.jsp</code>,
+      <li>Immediately shutdown Tomcat.</li><li>Navigate to <code>&lt;path to tomcat&gt;\webapps\mondrian\WEB-INF\queries</code></li><li>For the files <code>fourheir.jsp</code>, <code>mondrian.jsp</code>,
       and <code>trendarrows.jsp </code>modify the line<br>
 &nbsp;&nbsp;&nbsp; <code>&lt;jp:mondrianQuery id=&quot;query01&quot;
       jdbcDriver=&quot;sun.jdbc.odbc.JdbcOdbcDriver&quot;
@@ -1124,16 +521,10 @@ VERSION.txt"/&gt;</code></li>
 &nbsp;&nbsp;&nbsp; <code>&lt;jp:mondrianQuery id=&quot;query01&quot;
       jdbcDriver=&quot;com.mysql.jdbc.Driver&quot;
       jdbcUrl=&quot;jdbc:mysql://localhost/foodmart?user=foodmart&amp;#38;password=foodmart&quot;;
-      catalogUri=&quot;/WEB-INF/queries/FoodMart.xml&quot;&gt;</code></li>
-      <li>Clear the Mondrian Tomcat cache. That is, delete <code>&lt;path to
-      tomcat&gt;\work\Catalina\localhost\mondrian</code></li>
-    </ol>
-    </li>
-    <li>Start Tomcat and click on the link to test:
+      catalogUri=&quot;/WEB-INF/queries/FoodMart.xml&quot;&gt;</code></li><li>Clear the Mondrian Tomcat cache. That is, delete <code>&lt;path to
+      tomcat&gt;\work\Catalina\localhost\mondrian</code></li></ol></li><li>Start Tomcat and click on the link to test:
     <a href="http://localhost:8080/mondrian" target="_new">
-    http://localhost:8080/mondrian</a>.</li>
-  </ol>
-  <p>Hope this is of some use.<br>
+    http://localhost:8080/mondrian</a>.</li></ol><p>Hope this is of some use.<br>
   <br>
   Pat </p>
 </blockquote>
@@ -1148,8 +539,7 @@ VERSION.txt"/&gt;</code></li>
       <a target="_top" href="index.html">Home</a> |
       <a target="_top" href="#">No frames</a> | This file is<i>
       <a href="http://mondrian.sourceforge.net/install.html">$Id$
-      </a></i> (<a href="http://perforce.eigenbase.org:8080/open/mondrian/doc/install.html?ac=22">log</a>)</td>
-    <td align="right">
+      </a></i> (<a href="http://perforce.eigenbase.org:8080/open/mondrian/doc/install.html?ac=22">log</a>)</td><td align="right">
       <a href="http://sourceforge.net">
         <img src="http://sourceforge.net/sflogo.php?group_id=35302&type=1" width="88" height="31" border="0" alt="SourceForge.net Logo">
       </a>
