@@ -15,6 +15,7 @@ import junit.framework.Assert;
 import mondrian.olap.Result;
 import mondrian.olap.Member;
 import mondrian.olap.Cell;
+import mondrian.rolap.RolapConnection;
 
 /**
  * <code>ParentChildHierarchyTest</code> tests parent-child hierarchies.
@@ -377,6 +378,14 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "  {[Employees].Members} ON rows" + nl +
             "from [HR]");
 
+        String tableQualifier = "as ";
+		RolapConnection conn = (RolapConnection) getConnection();
+		String jdbc_url = conn.getConnectInfo().get("Jdbc");
+        if (jdbc_url.toLowerCase().indexOf("oracle") >= 0) {
+        	// " + tableQualifier + "
+        	tableQualifier = "";
+        }
+
         // Drill-through for row #0, Employees.All.
         // Note that the SQL does not contain the employees or employee_closure
         // tables.
@@ -390,8 +399,8 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "select" +
             " `time_by_day`.`the_year` as `Year`," +
             " `salary`.`salary_paid` as `Org Salary` " +
-            "from `time_by_day` as `time_by_day`," +
-            " `salary` as `salary` " +
+            "from `time_by_day` " + tableQualifier + "`time_by_day`," +
+            " `salary` " + tableQualifier + "`salary` " +
             "where `salary`.`pay_date` = `time_by_day`.`the_date`" +
             " and `time_by_day`.`the_year` = 1997");
 
@@ -408,9 +417,9 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "select `time_by_day`.`the_year` as `Year`," +
             " `employee_1`.`employee_id` as `Employee Id (Key)`," +
             " `salary`.`salary_paid` as `Org Salary` " +
-            "from `time_by_day` as `time_by_day`," +
-            " `salary` as `salary`," +
-            " `employee` as `employee_1` " +
+            "from `time_by_day` " + tableQualifier + "`time_by_day`," +
+            " `salary` " + tableQualifier + "`salary`," +
+            " `employee` " + tableQualifier + "`employee_1` " +
             "where `salary`.`pay_date` = `time_by_day`.`the_date`" +
             " and `time_by_day`.`the_year` = 1997" +
             " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
@@ -427,9 +436,9 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "select `time_by_day`.`the_year` as `Year`," +
             " `employee_1`.`employee_id` as `Employee Id (Key)`," +
             " `salary`.`salary_paid` as `Org Salary` " +
-            "from `time_by_day` as `time_by_day`," +
-            " `salary` as `salary`," +
-            " `employee` as `employee_1` " +
+            "from `time_by_day` " + tableQualifier + "`time_by_day`," +
+            " `salary` " + tableQualifier + "`salary`," +
+            " `employee` " + tableQualifier + "`employee_1` " +
             "where `salary`.`pay_date` = `time_by_day`.`the_date`" +
             " and `time_by_day`.`the_year` = 1997" +
             " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
@@ -441,6 +450,14 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "select {[Measures].Members} ON columns," + nl +
             "  {[Employees].Members} ON rows" + nl +
             "from [HR]");
+
+        String tableQualifier = "as ";
+		RolapConnection conn = (RolapConnection) getConnection();
+		String jdbc_url = conn.getConnectInfo().get("Jdbc");
+        if (jdbc_url.toLowerCase().indexOf("oracle") >= 0) {
+        	// " + tableQualifier + "
+        	tableQualifier = "";
+        }
 
         // Now with full context.
         final boolean extendedContext = true;
@@ -467,12 +484,12 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             " `employee_1`.`full_name` as `Employee Id`," +
             " `salary`.`salary_paid` as `Org Salary` " +
             "from" +
-            " `time_by_day` as `time_by_day`," +
-            " `salary` as `salary`," +
-            " `store` as `store`," +
-            " `employee` as `employee_1`," +
-            " `position` as `position`," +
-            " `department` as `department` " +
+            " `time_by_day` " + tableQualifier + "`time_by_day`," +
+            " `salary` " + tableQualifier + "`salary`," +
+            " `store` " + tableQualifier + "`store`," +
+            " `employee` " + tableQualifier + "`employee_1`," +
+            " `position` " + tableQualifier + "`position`," +
+            " `department` " + tableQualifier + "`department` " +
             "where `salary`.`pay_date` = `time_by_day`.`the_date`" +
             " and `salary`.`pay_date` = `time_by_day`.`the_date`" +
             " and `salary`.`pay_date` = `time_by_day`.`the_date`" +

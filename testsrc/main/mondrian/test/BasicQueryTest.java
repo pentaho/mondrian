@@ -466,13 +466,21 @@ public class BasicQueryTest extends FoodMartTestCase {
         // the following replacement is for databases in ANSI mode
         //  using '"' to quote identifiers
         sql = sql.replace('"', '`');
+        
+        String tableQualifier = "as ";
+		RolapConnection conn = (RolapConnection) getConnection();
+		String jdbc_url = conn.getConnectInfo().get("Jdbc");
+        if (jdbc_url.toLowerCase().indexOf("oracle") >= 0) {
+        	// " + tableQualifier + "
+        	tableQualifier = "";
+        }
 		assertEquals("select `time_by_day`.`the_year` as `Year`," +
                 " `product_class`.`product_family` as `Product Family`," +
                 " `sales_fact_1997`.`unit_sales` as `Unit Sales` " +
-                "from `time_by_day` as `time_by_day`," +
-                " `sales_fact_1997` as `sales_fact_1997`," +
-                " `product_class` as `product_class`," +
-                " `product` as `product` " +
+                "from `time_by_day` " + tableQualifier + "`time_by_day`," +
+                " `sales_fact_1997` " + tableQualifier + "`sales_fact_1997`," +
+                " `product_class` " + tableQualifier + "`product_class`," +
+                " `product` " + tableQualifier + "`product` " +
                 "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`" +
                 " and `time_by_day`.`the_year` = 1997" +
                 " and `sales_fact_1997`.`product_id` = `product`.`product_id`" +
@@ -507,9 +515,15 @@ public class BasicQueryTest extends FoodMartTestCase {
 			  lname
 			            </SQL>
 */		}
-    // the following replacement is for databases in ANSI mode
-    //  using '"' to quote identifiers
-    sql = sql.replace('"', '`');
+	    // the following replacement is for databases in ANSI mode
+	    //  using '"' to quote identifiers
+	    sql = sql.replace('"', '`');
+	    
+	    String tableQualifier = "as ";
+	    if (jdbc_url.toLowerCase().indexOf("oracle") >= 0) {
+	    	// " + tableQualifier + "
+	    	tableQualifier = "";
+	    }
 		assertEquals("select `store`.`store_name` as `Store Name`," +
                 " `store`.`store_city` as `Store City`," +
                 " `store`.`store_state` as `Store State`," +
@@ -536,13 +550,13 @@ public class BasicQueryTest extends FoodMartTestCase {
                 " `customer`.`marital_status` as `Marital Status`," +
                 " `customer`.`yearly_income` as `Yearly Income`," +
                 " `sales_fact_1997`.`unit_sales` as `Unit Sales` " +
-                "from `store` as `store`," +
-                " `sales_fact_1997` as `sales_fact_1997`," +
-                " `time_by_day` as `time_by_day`," +
-                " `product` as `product`," +
-                " `product_class` as `product_class`," +
-                " `promotion` as `promotion`," +
-                " `customer` as `customer` " +
+                "from `store` " + tableQualifier + "`store`," +
+                " `sales_fact_1997` " + tableQualifier + "`sales_fact_1997`," +
+                " `time_by_day` " + tableQualifier + "`time_by_day`," +
+                " `product` " + tableQualifier + "`product`," +
+                " `product_class` " + tableQualifier + "`product_class`," +
+                " `promotion` " + tableQualifier + "`promotion`," +
+                " `customer` " + tableQualifier + "`customer` " +
                 "where `sales_fact_1997`.`store_id` = `store`.`store_id`" +
                 " and `sales_fact_1997`.`store_id` = `store`.`store_id`" +
                 " and `sales_fact_1997`.`store_id` = `store`.`store_id`" +
@@ -4132,14 +4146,22 @@ public class BasicQueryTest extends FoodMartTestCase {
         // the following replacement is for databases in ANSI mode
         //  using '"' to quote identifiers
         sql = sql.replace('"', '`');
+        
+        String tableQualifier = "as ";
+		//RolapConnection conn = (RolapConnection) getConnection();
+		String jdbc_url = conn.getConnectInfo().get("Jdbc");
+        if (jdbc_url.toLowerCase().indexOf("oracle") >= 0) {
+        	// " + tableQualifier + "
+        	tableQualifier = "";
+        }
         assertEquals("select `store`.`store_country` as `Store Country`," +
                 " `time_by_day`.`the_year` as `Year`," +
                 " `store_1`.`store_country` as `x0`," +
                 " `sales_fact_1997`.`unit_sales` as `Unit Sales` " +
-                "from `store` as `store`," +
-                " `sales_fact_1997` as `sales_fact_1997`," +
-                " `time_by_day` as `time_by_day`," +
-                " `store` as `store_1` " +
+                "from `store` " + tableQualifier + "`store`," +
+                " `sales_fact_1997` " + tableQualifier + "`sales_fact_1997`," +
+                " `time_by_day` " + tableQualifier + "`time_by_day`," +
+                " `store` " + tableQualifier + "`store_1` " +
                 "where `sales_fact_1997`.`store_id` = `store`.`store_id`" +
                 " and `store`.`store_country` = 'USA'" +
                 " and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`" +
