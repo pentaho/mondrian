@@ -601,24 +601,31 @@ class XmlFileTask extends ResourceGen.FileTask {
                 pw.println("  " + exceptionClass
                            + " new" + resourceInitCap + "("
                            + parameterList + ") const;");
-                if (parameterList.length() > 0) {
-                    pw.println("  "
-                               + exceptionClass
-                               + " new"
-                               + resourceInitCap
-                               + "("
-                               + parameterList 
-                               + ", const "
-                               + exceptionClass
-                               + " * const prev) const;");
-                } else {
-                    pw.println("  "
-                               + exceptionClass
-                               + " new"
-                               + resourceInitCap + "("
-                               + "const "
-                               + exceptionClass
-                               + " * const prev) const;");
+
+                boolean chainExceptions = 
+                    (exception.cppChainExceptions != null &&
+                     exception.cppChainExceptions.equalsIgnoreCase("true"));
+
+                if (chainExceptions) {
+                    if (parameterList.length() > 0) {
+                        pw.println("  "
+                                   + exceptionClass
+                                   + " new"
+                                   + resourceInitCap
+                                   + "("
+                                   + parameterList 
+                                   + ", const "
+                                   + exceptionClass
+                                   + " * const prev) const;");
+                    } else {
+                        pw.println("  "
+                                   + exceptionClass
+                                   + " new"
+                                   + resourceInitCap + "("
+                                   + "const "
+                                   + exceptionClass
+                                   + " * const prev) const;");
+                    }
                 }
             }
 
@@ -689,6 +696,12 @@ class XmlFileTask extends ResourceGen.FileTask {
         String baseClass = (cppBaseClassName != null
                             ? cppBaseClassName
                             : "ResourceBundle");
+
+        if (resourceList.cppCommonInclude != null) {
+            pw.println("// begin common include specified by " + getFile());
+            pw.println("#include \"" + resourceList.cppCommonInclude + "\"");
+            pw.println("// end common include specified by " + getFile());
+        }
 
         pw.println("#include \"" + headerFilename + "\"");
         pw.println("#include \"ResourceBundle.h\"");
@@ -803,33 +816,42 @@ class XmlFileTask extends ResourceGen.FileTask {
                 pw.println("}");
                 pw.println();
 
-                if (parameterList.length() > 0) {
-                    pw.println(exceptionClass
-                               + " "
-                               + resourceInitCap
-                               + "::new"
-                               + resourceInitCap
-                               + "("
-                               + parameterList 
-                               + ", const "
-                               + exceptionClass
-                               + " * const prev) const");
-                } else {
-                    pw.println(exceptionClass
-                               + " "
-                               + resourceInitCap
-                               + "::new"
-                               + resourceInitCap
-                               + "(const "
-                               + exceptionClass
-                               + " * const prev) const");
-                }
-                pw.println("{");
+                boolean chainExceptions = 
+                    (exception.cppChainExceptions != null &&
+                     exception.cppChainExceptions.equalsIgnoreCase("true"));
 
-                pw.println("  return " + exceptionClass + "(this->operator()("
-                           + argumentList + "), prev);");
-                pw.println("}");
-                pw.println();
+                if (chainExceptions) {
+                    if (parameterList.length() > 0) {
+                        pw.println(exceptionClass
+                                   + " "
+                                   + resourceInitCap
+                                   + "::new"
+                                   + resourceInitCap
+                                   + "("
+                                   + parameterList 
+                                   + ", const "
+                                   + exceptionClass
+                                   + " * const prev) const");
+                    } else {
+                        pw.println(exceptionClass
+                                   + " "
+                                   + resourceInitCap
+                                   + "::new"
+                                   + resourceInitCap
+                                   + "(const "
+                                   + exceptionClass
+                                   + " * const prev) const");
+                    }
+                    pw.println("{");
+
+                    pw.println("  return "
+                               + exceptionClass
+                               + "(this->operator()("
+                               + argumentList
+                               + "), prev);");
+                    pw.println("}");
+                    pw.println();
+                }
             }
         }
 

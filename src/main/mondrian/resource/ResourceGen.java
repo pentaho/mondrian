@@ -80,6 +80,8 @@ public class ResourceGen
 				rootArgs.setSrcdir(new File(args[++i]));
 			} else if (arg.equals("-destdir") && i + 1 < args.length) {
 				rootArgs.setDestdir(new File(args[++i]));
+      } else if (arg.equals("-locales") && i + 1 < args.length) {
+        rootArgs.setLocales(args[++i]);
 			} else {
 				ResourceGenTask.Include resourceArgs =
 						new ResourceGenTask.Include();

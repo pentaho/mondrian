@@ -49,6 +49,12 @@ version="1.0"
 			classes are assumed to be in the same namespace.
 		</Doc>
 	</Attribute>
+	<Attribute name="cppCommonInclude" required="false">
+		<Doc>
+			C++ common include file.  Included at the
+			start of all generated C++ class implementations.
+		</Doc>
+	</Attribute>
 	<Attribute name="cppExceptionClassName" required="false">
 		<Doc>
 			Default class for exceptions in generated C++.
@@ -129,6 +135,14 @@ A message.
 			the resource bundle's default C++ exception location is
 			used.  One of the two must be specfied if the C++
 			exception class is given.
+		</Doc>
+	</Attribute>
+	<Attribute name="cppChainExceptions" required="false">
+		<Doc>
+			Set to true if the C++ exception classes support
+			being chained together.	 The default is false.
+			If true, an extra method will be generated for
+			that takes a const pointer to the C++ exception class.
 		</Doc>
 	</Attribute>
 	<Code>
