@@ -492,7 +492,7 @@ public class Query extends QueryPart {
 	private Hierarchy[] collectHierarchies(QueryPart queryPart)
 	{
 		Walker walker = new Walker(queryPart);
-		HashSet set = new HashSet();
+		ArrayList hierList = new ArrayList();
 		while (walker.hasMoreElements()) {
 			Object o = walker.nextElement();
 			if (o instanceof Exp) {
@@ -517,12 +517,12 @@ public class Query extends QueryPart {
 				if (obExpHierarchy == null)
 					// set must have a dimension (e.g. disallow CrossJoin)
 					continue;
-
-				set.add(obExpHierarchy);
+        if(!hierList.contains(obExpHierarchy))
+				  hierList.add(obExpHierarchy);
 			}
 		}
 
-		return (Hierarchy[]) set.toArray(new Hierarchy[0]);
+		return (Hierarchy[]) hierList.toArray(new Hierarchy[0]);
 	}
 
 	/** Place expression 'exp' at position 'iPositionOnAxis' on axis 'axis'. */
