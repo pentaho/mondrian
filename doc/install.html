@@ -47,7 +47,8 @@
   <li><a href="#6_Run_the_web_app">Run the web app</a></li>
   <li><a href="#7_Miscellaneous">Miscellaneous</a></li>
   <ol>
-    <li><a href="#7_1_Coding_guidelines">Coding guidelines</a></li>
+    <li><a href="#7_1_Cache_setup">Cache setup</a></li>
+    <li><a href="#7_2_Coding_guidelines">Coding guidelines</a></li>
   </ol>
   <li><a href="#Appendix_A_Product_installation_instructions">Appendix A: Product installation instructions</a></li>
   <li><a href="#Appendix_B_How_to_debug_Tomcat_using_IntelliJ">Appendix B: How to debug Tomcat using IntelliJ</a></li>
@@ -92,57 +93,63 @@
     <td>Julian Hyde</td>
     <td>Upgrade to Ant 1.5, Tomcat 4.0.4.</td>
   </tr>
-  
+
   <tr>
     <td>August  1st, 2002</td>
     <td>5</td>
     <td>Julian Hyde</td>
-    <td>Clean up database instructions. Add 'Download the source code' 
+    <td>Clean up database instructions. Add 'Download the source code'
     section.</td>
   </tr>
-  
+
    <tr>
     <td nowrap>August 21st, 2002</td>
     <td>6</td>
     <td nowrap>Paul Dymecki</td>
     <td>Add binary installation instructions in 4.1. Add run installation to section 5. </td>
   </tr>
-  
+
    <tr>
     <td nowrap>August 23rd, 2002</td>
     <td>7</td>
     <td nowrap>Julian Hyde</td>
     <td>Add MySQL instructions.</td>
   </tr>
-  
+
    <tr>
     <td nowrap>September 23rd, 2002</td>
     <td>8</td>
     <td nowrap>Julian Hyde</td>
     <td>Revised installation instructions for binary release.</td>
   </tr>
-  
+
    <tr>
     <td nowrap>Februrary 12th, 2003</td>
     <td>9</td>
     <td nowrap>Julian Hyde</td>
     <td>New versions of Xalan, Tomcat, JDK.</td>
   </tr>
+   <tr>
+    <td nowrap>Februrary 3rd, 2004</td>
+    <td>10</td>
+    <td nowrap>Andreas Voss</td>
+    <td>Cache instructions</td>
+  </tr>
 </table>
 
 <h2><a name="3_Getting_Mondrian">3. Download the code</a></h2>
 
-<p>There are 4 ways to get Mondrian running. Ranging from fastest to most 
+<p>There are 4 ways to get Mondrian running. Ranging from fastest to most
 flexible, these are: <a href="#3_1_Download_mondrian_war">download mondrian.war</a>;
 <a href="#3_2_Download_the_latest_binary_release">download a binary release</a>;
-<a href="#3_3_Download_the_latest_source_release">download and build a source 
+<a href="#3_3_Download_the_latest_source_release">download and build a source
 release</a>; and <a href="#3_4_Connect_to_the_Perforce_source_code_server">
 download and build the source code from the Perforce source server</a>.</p>
 
 <h3><a name="3_1_Download_mondrian_war">3.1. Download mondrian.war</a></h3>
 
-<p>This is the easiest way to get Mondrian running, but doesn't give you any 
-flexibility to modify source code or change the configuration of the web 
+<p>This is the easiest way to get Mondrian running, but doesn't give you any
+flexibility to modify source code or change the configuration of the web
 application.</p>
 
 <ol>
@@ -156,37 +163,37 @@ SourceForge</a>, and save it as <i></i><code><i>TOMCAT_HOME</i>/webapps/mondrian
 
 <p>Download the latest binary
 release <code> mondrian-<i>version</i>-bin.zip</code> from <a href="http://sourceforge.net/projects/mondrian">
-SourceForge</a>, and unzip it. The place you unzipped to &mdash; say <code>C:\mondrian</code> 
-or <code>/usr/mondrian-<i>version</i></code> &mdash; is your <dfn>project 
+SourceForge</a>, and unzip it. The place you unzipped to &mdash; say <code>C:\mondrian</code>
+or <code>/usr/mondrian-<i>version</i></code> &mdash; is your <dfn>project
 location</dfn> (denoted by <code> <i>${project.location}</i></code>). </p>
 
-<p>Next, install a build environment. Install the <a href="#JDK">JDK</a>, <a href="#Ant">Ant</a>, <a href="#Tomcat">Tomcat</a>, <a href="#Xalan">Xalan</a>, 
-and <a href="#JUnit">JUnit</a>; and modify <code>build.bat</code>, setting <code>JAVA_HOME</code>, <code>ANT_HOME</code>, 
-  <code>TOMCAT_HOME</code>, <code>XALAN_HOME</code>, <code>JUNIT_HOME</code>. 
+<p>Next, install a build environment. Install the <a href="#JDK">JDK</a>, <a href="#Ant">Ant</a>, <a href="#Tomcat">Tomcat</a>, <a href="#Xalan">Xalan</a>,
+and <a href="#JUnit">JUnit</a>; and modify <code>build.bat</code>, setting <code>JAVA_HOME</code>, <code>ANT_HOME</code>,
+  <code>TOMCAT_HOME</code>, <code>XALAN_HOME</code>, <code>JUNIT_HOME</code>.
 Download the latest <code>jpivot-<i>version</i>.war</code> from
 <a href="http://sourceforge.net/projects/jpivot">SourceForge</a> and save it as <code><i>${project.location}</i>/lib/jpivot.war</code>.</p>
 
-<p>Now 
+<p>Now
 do the following steps:</p>
 
 <blockquote>
 <ol>
 <li>Load the database, as described <a href="#4_Load_the_database">here</a>.</li>
-<li>Change variables in <code><i>${project.location}</i>/bin/mondrian.bat</code> 
+<li>Change variables in <code><i>${project.location}</i>/bin/mondrian.bat</code>
 and <code><i>${project.location}</i>/bin/mondrian.properties</code> to suit your environment.</li>
-<li><code>cd <i>${project.location}</i>/bin</code></li>   
-<li>Type <code>mondrian.bat test</code> to run the JUnit test suite. All of the 
-tests should succeed.</li>   
-<li>To run the webapp in Tomcat, type <code>mondrian.bat deploy-to-tomcat</code>. 
-This will create <i><code>TOMCAT_HOME</i>/webapps/mondrian.war</code>.</li>   
+<li><code>cd <i>${project.location}</i>/bin</code></li>
+<li>Type <code>mondrian.bat test</code> to run the JUnit test suite. All of the
+tests should succeed.</li>
+<li>To run the webapp in Tomcat, type <code>mondrian.bat deploy-to-tomcat</code>.
+This will create <i><code>TOMCAT_HOME</i>/webapps/mondrian.war</code>.</li>
 <li>Start Tomcat and hit <a href="http://localhost:8080/mondrian">http://localhost:8080/mondrian</a>.</li>
  </ol>
 </blockquote>
 
-<h3><a name="3_3_Download_the_latest_source_release">3.3. Download the latest 
+<h3><a name="3_3_Download_the_latest_source_release">3.3. Download the latest
 source release</a></h3>
 <p>Download the latest <code>mondrian-<i>version</i>-src.zip</code> from <a href="http://sourceforge.net/projects/mondrian">
-SourceForge</a>, and unzip. The place you unzipped to &mdash; <code>C:\mondrian</code> 
+SourceForge</a>, and unzip. The place you unzipped to &mdash; <code>C:\mondrian</code>
 or <code>/usr/mondrian-<i>version</i></code> &mdash; your <dfn>project location</dfn> (denoted by <code><i>${project.location}</i></code>).</p>
 
 <p>Set up a build environment as described
@@ -249,10 +256,10 @@ BUILD SUCCESSFUL
 Total time: 35 seconds</pre>
 </blockquote>
 
-<h3><a name="3_4_Connect_to_the_Perforce_source_code_server">3.4. Connect to the 
+<h3><a name="3_4_Connect_to_the_Perforce_source_code_server">3.4. Connect to the
 Perforce source-code server</a></h3>
 
-<p>If you are a mondrian developer, and need to access the latest source code 
+<p>If you are a mondrian developer, and need to access the latest source code
 and check in changes, you should connect to the Perforce source-code server:</p>
 <ol>
   <li>First, set up a build environment, as described
@@ -260,22 +267,22 @@ and check in changes, you should connect to the Perforce source-code server:</p>
   <li>Download the perforce client from
   <a href="http://www.perforce.com/perforce/loadprog.html">
   http://www.perforce.com/perforce/loadprog.html</a></li>
-  <li>If you have Windows, start the perforce UI (P4Win). (If you are not 
-  running windows, you will have to use the command-line interface to do the 
+  <li>If you have Windows, start the perforce UI (P4Win). (If you are not
+  running windows, you will have to use the command-line interface to do the
   following; 'p4 help' should get you started.)</li>
-  <li>Choose <code>Settings</code> &gt; <code>Switch Port Client User...</code>; 
+  <li>Choose <code>Settings</code> &gt; <code>Switch Port Client User...</code>;
   the following dialog appears.<blockquote>
     <p><img border="0" src="perforce_setup.gif" width="424" height="258"> </p>
   </blockquote>
   </li>
-  <li>Set <code>Port</code> to <code>66.123.172.226:1666</code>; set <code>User</code> 
+  <li>Set <code>Port</code> to <code>66.123.172.226:1666</code>; set <code>User</code>
   to your SourceForge username (for example, <code>jhyde</code>); set <code>
   Client</code> to your username plus the name of your machine (for example,
   <code>jhyde.notebook</code>). <b>Note</b>: The number of perforce user
   licenses is limited, so if you don't intend to check anything in,
   please use the <code>guest</code> user.</li>
-  <li>Choose <code>ClientSpec</code> &gt; <code>New...</code> and create a client 
-  with the same name. Set its root to something like 'C:\' or 'D:\work', and 
+  <li>Choose <code>ClientSpec</code> &gt; <code>New...</code> and create a client
+  with the same name. Set its root to something like 'C:\' or 'D:\work', and
   view specification of<blockquote>
     <pre>//open/mondrian/... //&lt;&lt;clientname&gt;&gt;/mondrian/...</pre>
   </blockquote>
@@ -286,23 +293,23 @@ and check in changes, you should connect to the Perforce source-code server:</p>
   <li>
   If you intend to check-in changes to the perforce server,
   <a href="mailto:jhyde@users.sourceforge.net?subject=Can I please have access to the Perforce server?">
-  email me</a> the name of the perforce user so I can give you write access to 
+  email me</a> the name of the perforce user so I can give you write access to
   the perforce depot.</li>
 </ol>
 
 <h2><a name="4_Load_the_database">4. Load the database</a></h2>
-<p>First, get the dataset. If you installed from a binary or source distribution, you will need to 
+<p>First, get the dataset. If you installed from a binary or source distribution, you will need to
 download a dataset: get <code>mondrian-data.zip</code> from <a href="http://sourceforge.net/projects/mondrian">
-SourceForge</a>, and unzip it to <code> <i>${project.location}</i></code>. If you got your files from the Perforce 
+SourceForge</a>, and unzip it to <code> <i>${project.location}</i></code>. If you got your files from the Perforce
 server, you should already have the latest data files.</p>
-<p>Now create a database. How you create and load the database depends upon 
+<p>Now create a database. How you create and load the database depends upon
 which database you are using.</p>
-<p><i>(Did these instructions work for you? Have you managed to get mondrian 
-working on other databases/versions? Please 
+<p><i>(Did these instructions work for you? Have you managed to get mondrian
+working on other databases/versions? Please
 <a href="mailto:jhyde@users.sourceforge.net">let me know</a>.)</i></p>
 
 <h3><a name="4_1_Microsoft_Access">4.1. Microsoft Access</a></h3>
-<p>Start ODBC Administrator, and create a System ODBC DSN called <code>MondrianFoodMart</code> pointing to 
+<p>Start ODBC Administrator, and create a System ODBC DSN called <code>MondrianFoodMart</code> pointing to
 <code><i>${project.location}</i>/demo/access/MondrianFoodMart.mdb</code>.
     The JDBC connect string will be <code>jdbc:odbc:MondrianFoodMart</code>.</p>
 <h3><a name="4_2_Oracle">4.2. Oracle</a></h3>
@@ -366,13 +373,13 @@ Import terminated successfully without warnings.</pre>
 
 <p>Setup your environment as follows:</p>
 <ol>
-  <li>Set <code>ORACLE_HOME</code> in <code>build.bat</code>, or in your 
+  <li>Set <code>ORACLE_HOME</code> in <code>build.bat</code>, or in your
   environment.</li>
   <li>Append <code>%ORACLE_HOME%/jdbc/lib/classes12.zip</code> to <code>
   CLASSPATH</code> in <code>build.bat</code>, or in your environment.</li>
   <li>In <code>build.xml</code>, set the properties
   <code>mondrian.foodmart.jdbcURL</code> and
-  <code>mondrian.foodmart.jdbcURL.oracle</code>. They should probably include a username and 
+  <code>mondrian.foodmart.jdbcURL.oracle</code>. They should probably include a username and
   password, for example <code>jdbc:oracle:oci8:foodmart/foodmart@myoracle</code>.</li>
   <li>Make sure that the <code>JdbcDrivers</code> property of the connect string includes <code>oracle.jdbc.OracleDriver</code>.</li>
 </ol>
@@ -382,7 +389,7 @@ Import terminated successfully without warnings.</pre>
     <code>FoodMartData.sql</code> and <code>FoodMartIndexes.sql</code> in <code>${project.location}/demo/</code>.</p>
 <h3><a name="4_4_MySQL">4.4. MySQL</a></h3>
 <p>First, <a href="#MySQL">install MySQL</a>. Then
-<a href="http://www.mysql.com/doc/en/Adding_users.html">create a user</a> and a 
+<a href="http://www.mysql.com/doc/en/Adding_users.html">create a user</a> and a
 database:</p>
 <blockquote>
   <pre>C:\mysql\bin&gt; <b>mysql</b>
@@ -402,7 +409,7 @@ Current database: foodmart</pre>
 </blockquote>
 <p>Change the datasets for MySQL syntax:</p>
 <ul>
-  <li>Change all <code>varchar</code> 
+  <li>Change all <code>varchar</code>
         columns in <code>FoodMartTables.sql</code> to
         <code>varchar(30)</code></li>
   <li>Change all
@@ -483,13 +490,13 @@ mysql&gt; <b>exit</b></pre>
 
 <p>In build.xml, set the property <code>
   mondrian.foodmart.jdbcURL</code>. A typical value is <code>
-jdbc:mysql://localhost/foodmart?user=root&amp;password=</code>, but because the 
-value is in an xml file, you will have to escape the '&amp;' as '&amp;#38;', for 
+jdbc:mysql://localhost/foodmart?user=root&amp;password=</code>, but because the
+value is in an xml file, you will have to escape the '&amp;' as '&amp;#38;', for
 example:</p><blockquote>
 
 <pre>&lt;property name=&quot;mondrian.foodmart.jdbcURL&quot;
     value=&quot;jdbc:mysql://localhost/foodmart?user=root&amp;#38;password=&quot;/&gt;</pre>
-    
+
 </blockquote>
 <h3><a name="4_5_PostgreSQL">4.5. PostgreSQL</a></h3>
 <p>As <a href="#4_3_hsqldb">hsqldb</a>, except for the following:</p>
@@ -497,14 +504,14 @@ example:</p><blockquote>
   <li>In <code>
         FoodMartTables.sql</code>, change <code>DOUBLE</code> to <code>DOUBLE
     PRECISION</code>, and <code>BIT</code> to <code>BOOLEAN</code>.</li>
-  <li>Remove comment lines prefixed by '#'. (PostgreSQL doesn't recognize this 
+  <li>Remove comment lines prefixed by '#'. (PostgreSQL doesn't recognize this
   comment syntax.)</li>
 </ul>
 
 <h3><a name="4_6_IBM_DB2">4.6. IBM DB2</a></h3>
 
-<p>There are unconfirmed reports of mondrian running on DB2. If you have 
-succeeded, please 
+<p>There are unconfirmed reports of mondrian running on DB2. If you have
+succeeded, please
 <a href="mailto:jhyde@users.sourceforge.net">let me know</a>.</p>
 
 <h3><a name="4_7_Microsoft_SQL_Server">4.7. Microsoft SQL Server</a></h3>
@@ -529,18 +536,22 @@ mondrian test</pre>
     <li>Make sure your database's JDBC driver appears in the <code>JdbcDrivers</code> property of your connect string</li>
     <li>Check the catalog URL in <code>mondrian.test.connectString</code> and
     <code>mondrian.foodmart.catalogURL</code></li>
-    <li>Check the JDBC connect strings in <code>mondrian.test.connectString</code> 
+    <li>Check the JDBC connect strings in <code>mondrian.test.connectString</code>
     and <code>mondrian.foodmart.jdbcURL</code>.</li>
   </ul>
   </li>
-  <li>Run <code>build deploy-webapp</code> (or <code>mondrian deploy-to-tomcat</code>, 
+  <li>Run <code>build deploy-webapp</code> (or <code>mondrian deploy-to-tomcat</code>,
   if this is a a runtime environment).</li>
   <li>Start up tomcat. (If this is a build environment, <code>build start.tomcat</code> is an easy way to do this.)</li>
   <li>Hit <a href="http://localhost:8080/mondrian" target="_new">http://localhost:8080/mondrian</a>.</li>
 </ol>
 <h2><a name="7_Miscellaneous">7. Miscellaneous</a></h2>
-<h3><a name="7_1_Coding_guidelines">7.1. Coding guidelines</a></h3>
-<p>If you are contributing code, please follow the same guidelines used for the 
+<h3><a name="7_1_Cache_setup">7.1. Cache setup</a></h3>
+<p>You will need to specify the amount of memory available to the cache
+using the -Xms Java VM option, for example -Xms256m for 256 megs of ram
+for the Java VM.</p>
+<h3><a name="7_2_Coding_guidelines">7.2. Coding guidelines</a></h3>
+<p>If you are contributing code, please follow the same guidelines used for the
 rest of the code:</p>
 <ul>
   <li>Indentation 4.</li>
@@ -557,15 +568,15 @@ to shut up the compiler.</li>
   <li>Classes and public methods must have javadoc.</li>
   <li>Source files must contain copyright and license notices.</li>
   <li>Write Javadoc comments on
-methods  in the present active ('Collects garbage.'), <em><font face="Verdana">not</font></em> 
+methods  in the present active ('Collects garbage.'), <em><font face="Verdana">not</font></em>
   the imperative ('Collect
-garbage.'), passive ('Garbage is collected.'), or future active ('Will collect 
+garbage.'), passive ('Garbage is collected.'), or future active ('Will collect
   garbage.').</li>
   <li>When editing HTML documents, please don't use an editor which reformats the
 HTML source (such as Microsoft Word).</li>
 </ul>
 
-<h2><a name="Appendix_A_Product_installation_instructions">Appendix A. Product 
+<h2><a name="Appendix_A_Product_installation_instructions">Appendix A. Product
 installation instructions</a></h2>
 
 <p>These are the products I used to build mondrian. Install all of the products
@@ -575,7 +586,7 @@ Windows 2000, and it makes things simpler.)</p>
 <p>In the following, the symbol <code><i>${project.location}</i></code> means the root of your
 source tree.</p>
 
-<p>Where the instructions suggest setting an environment variable, it is often 
+<p>Where the instructions suggest setting an environment variable, it is often
 sufficient to edit the corresponding line in <code><i>${project.location}</i>/build.bat</code>.</p>
 
 <table border="1" style="border-collapse: collapse" bordercolor="#111111" cellpadding="2" cellspacing="0">
@@ -599,7 +610,7 @@ sufficient to edit the corresponding line in <code><i>${project.location}</i>/bu
     <td>1.5 or later&nbsp;</td>
     <td>I downloaded
 <a href="http://jakarta.apache.org/builds/jakarta-ant/release/v1.5/bin/jakarta-ant-1.5-bin.zip">
-jakarta-ant-1.5-bin.zip</a>,  extracted to <code>E:/jakarta-ant-1.5</code>, 
+jakarta-ant-1.5-bin.zip</a>,  extracted to <code>E:/jakarta-ant-1.5</code>,
     and set <code>ANT_HOME</code> to the same.</td>
   </tr>
   <tr>
@@ -608,7 +619,7 @@ jakarta-ant-1.5-bin.zip</a>,  extracted to <code>E:/jakarta-ant-1.5</code>,
     <td>4.1.18 or later</td>
     <td>Available from <a href="http://jakarta.apache.org/tomcat" target="_blank">
     http://jakarta.apache.org/tomcat</a>. I downloaded <code>
-    jakarta-tomcat-4.1.18.zip</code>,  extracted to <code>E:/jakarta-tomcat-4.1.18</code>, 
+    jakarta-tomcat-4.1.18.zip</code>,  extracted to <code>E:/jakarta-tomcat-4.1.18</code>,
     and set <code>TOMCAT_HOME</code> to the same.</td>
   </tr>
   <tr>
@@ -623,7 +634,7 @@ jakarta-ant-1.5-bin.zip</a>,  extracted to <code>E:/jakarta-ant-1.5</code>,
     <td><a name="Xerces">Xerces</a></td>
     <td>&nbsp;</td>
     <td>Use the version included with Tomcat</td>
-    <td>Xerces is included with Tomcat. If you use a different version, 
+    <td>Xerces is included with Tomcat. If you use a different version,
     compatibility issues may arise.</td>
   </tr>
   <tr>
@@ -631,9 +642,9 @@ jakarta-ant-1.5-bin.zip</a>,  extracted to <code>E:/jakarta-ant-1.5</code>,
     <td>Yes</td>
     <td>2.4.1 or later</td>
     <td>Available from <a href="http://xml.apache.org/xalan-j/" target="_blank">
-    http://xml.apache.org/xalan-j/</a>. I downloaded <code>xalan-j_2_4_1-bin.zip</code>, 
-    extracted to <code>E:/xalan-j_2_4_1</code>, and set <code>XALAN_HOME</code> 
-    to the same.<p><b>Important</b>: copy <i><code>XALAN_HOME</code></i><code>/bin/xalan.jar</code> 
+    http://xml.apache.org/xalan-j/</a>. I downloaded <code>xalan-j_2_4_1-bin.zip</code>,
+    extracted to <code>E:/xalan-j_2_4_1</code>, and set <code>XALAN_HOME</code>
+    to the same.<p><b>Important</b>: copy <i><code>XALAN_HOME</code></i><code>/bin/xalan.jar</code>
     to <i></i><code><i>TOMCAT_HOME</i>/common/endorsed/</code>.</td>
   </tr>
   <tr>
@@ -641,8 +652,8 @@ jakarta-ant-1.5-bin.zip</a>,  extracted to <code>E:/jakarta-ant-1.5</code>,
     <td>Yes</td>
     <td>3.7 or later</td>
     <td>Available from <a href="http://www.junit.org/">http://www.junit.org/</a>. I downloaded <code>
-    junit3.7.zip</code>, 
-    extracted to <code>E:/junit3.7</code>, and set <code>JUNIT_HOME</code> 
+    junit3.7.zip</code>,
+    extracted to <code>E:/junit3.7</code>, and set <code>JUNIT_HOME</code>
     to the same.</td>
   </tr>
   <tr>
@@ -658,7 +669,7 @@ jakarta-ant-1.5-bin.zip</a>,  extracted to <code>E:/jakarta-ant-1.5</code>,
       in <code><i>${project.location}</i>/lib/</code> to the class
       path.</p>
       <p>To use Ant build, click the '6: Ant Build' tab, click '+', choose <code><i>${project.location}</i>/build.xml</code>, then right-click, choose
-      'Properties', and choose 'Include project classpath'. (<code>javacup.jar</code> 
+      'Properties', and choose 'Include project classpath'. (<code>javacup.jar</code>
       is needed in order to build the <code>parser</code> target.)</td>
   </tr>
   <tr>
@@ -668,7 +679,7 @@ jakarta-ant-1.5-bin.zip</a>,  extracted to <code>E:/jakarta-ant-1.5</code>,
     <td>
 <p>Available from <a href="http://hsqldb.sourceforge.net/" target="_blank">http://hsqldb.sourceforge.net/</a>.
 I extracted <code>hsqldb_v.1.61.zip</code> to <code>E:/hsqldb_v.1.61</code>,
-then edited <code>bin/run.bat</code>. You will need to add <code>hsqldb.jar</code> 
+then edited <code>bin/run.bat</code>. You will need to add <code>hsqldb.jar</code>
 to your classpath.</p>
     </td>
   </tr>
@@ -679,7 +690,7 @@ to your classpath.</p>
     <td>
 Available from <a href="http://www.mysql.com/downloads/">
 http://www.mysql.com/downloads/</a>. Install MySQL from the zip file. Then
-<a href="http://www.mysql.com/doc/en/NT_start.html">install and start the 
+<a href="http://www.mysql.com/doc/en/NT_start.html">install and start the
 service</a>:<blockquote>
   <pre><code>C:\mysql\bin&gt; mysqld-max-nt --install
 Service successfully installed.
@@ -687,12 +698,12 @@ C:\mysql\bin&gt; net start mysql
 The MySql service is starting.
 The MySql service was started successfully.</code></pre>
 </blockquote>
-  <p>Download a <a href="http://www.mysql.com/doc/en/Java.html">JDBC driver</a>. 
+  <p>Download a <a href="http://www.mysql.com/doc/en/Java.html">JDBC driver</a>.
   I downloaded
   <a href="http://www.mysql.com/downloads/api-jdbc-stable.html">MySQL
   Connector/J 2.0.14</a>; extracted <code>mysql-connector-java-2.0.14-bin.jar</code> to <code>
   <a href="file:///C:/MySQL/lib">C:\MySQL\lib</a></code> and appended it to my CLASSPATH (by editing <code>build.bat</code>); and appended <code>
-  com.mysql.jdbc.Driver</code> to the <code>JdbcDrivers</code> property of my connect string. 
+  com.mysql.jdbc.Driver</code> to the <code>JdbcDrivers</code> property of my connect string.
     </td>
   </tr>
   <tr>
@@ -725,19 +736,19 @@ The MySql service was started successfully.</code></pre>
     <ol>
       <li>Extract <code>xml-apis.jar</code> and <code>xercesImpl.jar</code> from
       <code>mondrian.war</code> and place them in <code><i>WEBLOGIC_HOME</i>/lib</code>.</li>
-      <li>Edit <code>startWeblogic.cmd</code>, or whichever script you use to 
+      <li>Edit <code>startWeblogic.cmd</code>, or whichever script you use to
       start Weblogic, and place <code>xml-apis.jar</code> and <code>
       xercesImpl.jar</code> before <code>weblogic.jar</code> on the class-path.</li>
     </ol>
-    <p>See <a href="#Appendix_C_A_note_on_Weblogic_and_Xerces">note on Weblogic 
+    <p>See <a href="#Appendix_C_A_note_on_Weblogic_and_Xerces">note on Weblogic
     and Xerces</a>.</td>
   </tr>
   </table>
 
-<h2><a name="Appendix_B_How_to_debug_Tomcat_using_IntelliJ">Appendix B. How to debug 
+<h2><a name="Appendix_B_How_to_debug_Tomcat_using_IntelliJ">Appendix B. How to debug
 Tomcat using IntelliJ</a></h2>
 <ol>
-  <li>add <code><i>TOMCAT_HOME</i>/webapps/mondrian.war</code> to intellij's 
+  <li>add <code><i>TOMCAT_HOME</i>/webapps/mondrian.war</code> to intellij's
   classpath</li>
   <li>edit <code><i>TOMCAT_HOME</i>/bin/catalina.bat</code> as follows:
   <blockquote>
@@ -761,41 +772,41 @@ goto end</code></pre>
   <li>attach intellij's debugger to port 5000</li>
 </ol>
 
-<h2><a name="Appendix_C_Compatibility_issues">Appendix C. Compatibility 
+<h2><a name="Appendix_C_Compatibility_issues">Appendix C. Compatibility
 issues</a></h2>
 <h3><font color="#990000"><a name="Appendix_C_1_Weblogic_6_1_and_Xerces">
 C.1. Weblogic 6.1 and Xerces</a></font></h3>
-<p>Weblogic 6.1 ships with an older, incompatible, version of Xerces. The 
+<p>Weblogic 6.1 ships with an older, incompatible, version of Xerces. The
 symptom is the error</p>
 <blockquote>
   <pre>java.lang.VerifyError: (class: mondrian/xom/wrappers/XercesDOMParser,
  method: parse signature: (Lorg/xml/sax/InputSource;)Lorg/w3c/dom/Document;)
- Incompatible object argument for function call 
-at java.lang.Class.forName0(Native Method) 
-at java.lang.Class.forName(Class.java:120) 
-at mondrian.xom.XOMUtil.createDefaultParser(XOMUtil.java:165) 
-at mondrian.resource.Util.load(Util.java:49) 
+ Incompatible object argument for function call
+at java.lang.Class.forName0(Native Method)
+at java.lang.Class.forName(Class.java:120)
+at mondrian.xom.XOMUtil.createDefaultParser(XOMUtil.java:165)
+at mondrian.resource.Util.load(Util.java:49)
 ...</pre>
 </blockquote>
-<p>The solution is to place <code>xml-apis.jar</code> and <code>xercesImpl.jar</code> 
+<p>The solution is to place <code>xml-apis.jar</code> and <code>xercesImpl.jar</code>
 before <code>weblogic.jar</code> on your class-path.</p>
-<p>Generally, Mondrian uses whichever JAXP-compliant XML parser is provided by 
-the system. Unfortunately Weblogic's parser cannot be set to non-validating 
-mode, and Mondrian needs this. Therefore, in a Weblogic environment, Mondrian 
+<p>Generally, Mondrian uses whichever JAXP-compliant XML parser is provided by
+the system. Unfortunately Weblogic's parser cannot be set to non-validating
+mode, and Mondrian needs this. Therefore, in a Weblogic environment, Mondrian
 explicitly uses Xerces.&nbsp; Fyi,
-<a href="http://xml.apache.org/soap/faq/faq-for-WL6.1beta.html">this note</a> 
+<a href="http://xml.apache.org/soap/faq/faq-for-WL6.1beta.html">this note</a>
 describes how to change Weblogic's default XML parser.</p>
 
 <h3><font color="#990000"><a name="Appendix_C_2_Xalan_and_Tomcat">C.2. JDK, Xalan and Tomcat</a></font></h3>
 
-<p>Mondrian binaries, as shipped, require JDK 1.4, Xalan 2.4.1, and Tomcat 
+<p>Mondrian binaries, as shipped, require JDK 1.4, Xalan 2.4.1, and Tomcat
 4.1.18 or later. Things work better that way.</p>
 
-<p>If you are running JDK 1.3.<i>x</i>, you will need to add <code>xml-apis.jar</code> 
-and <code>xercesImpl.jar</code> to <code>mondrian.war</code> (since JDK 1.3 does 
+<p>If you are running JDK 1.3.<i>x</i>, you will need to add <code>xml-apis.jar</code>
+and <code>xercesImpl.jar</code> to <code>mondrian.war</code> (since JDK 1.3 does
 not include the an XML parser), and copy <code>
-  xalan.jar</code> and <code>xml-apis.jar</code> from <code><i>XALAN_HOME</i>/bin</code> 
-to <code><i>TOMCAT_HOME</i>/common/lib</code>. (or <code><i>TOMCAT_HOME</i>/common/endorsed</code>, 
+  xalan.jar</code> and <code>xml-apis.jar</code> from <code><i>XALAN_HOME</i>/bin</code>
+to <code><i>TOMCAT_HOME</i>/common/lib</code>. (or <code><i>TOMCAT_HOME</i>/common/endorsed</code>,
 if your version of Tomcat has one). </p>
 
 <p>If you get the configuration wrong, a typical error is</p>
@@ -821,8 +832,8 @@ at org.apache.xerces.parsers.IntegratedParserConfiguration.&lt;init&gt;(Unknown 
 at org.apache.xerces.parsers.IntegratedParserConfiguration.&lt;init&gt;(Unknown Source)
 at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)</pre>
 </blockquote>
-<p>This error occurred under JDK 1.3.1, Tomcat 4.1.18, Xalan 2.4.1. The 
-solutions to the error were (a) move to JDK 1.4 and remove <code>xml-apis.jar</code> and 
+<p>This error occurred under JDK 1.3.1, Tomcat 4.1.18, Xalan 2.4.1. The
+solutions to the error were (a) move to JDK 1.4 and remove <code>xml-apis.jar</code> and
 <code>xercesImpl.jar</code> from <code>mondrian.war</code>, or (b) revert to Xalan 2.3.1.</p>
 
 <hr>
@@ -841,7 +852,7 @@ solutions to the error were (a) move to JDK 1.4 and remove <code>xml-apis.jar</c
     </td>
   </tr>
 </table>
-  
+
 </body>
 
 </html>
