@@ -2418,6 +2418,40 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "Row #2: 2,826" + nl);
     }
 
+	/**
+	 * 
+	 * There are cross database order issues in this test.
+	 * 
+	 * MySQL and Access show the rows as:
+	 * 
+	 * [Store Size in SQFT].[All Store Size in SQFTs]
+	 * [Store Size in SQFT].[All Store Size in SQFTs].[null]
+	 * [Store Size in SQFT].[All Store Size in SQFTs].[<each distinct store size>]
+	 * 
+	 * Postgres shows:
+	 * 
+	 * [Store Size in SQFT].[All Store Size in SQFTs]
+	 * [Store Size in SQFT].[All Store Size in SQFTs].[<each distinct store size>]
+	 * [Store Size in SQFT].[All Store Size in SQFTs].[null]
+	 * 
+	 * The test failure is due to some inherent differences in the way Postgres orders NULLs in a result set, 
+	 * compared with MySQL and Access.
+	 * 
+	 * From the MySQL 4.X manual:
+	 * 
+	 * When doing an ORDER BY, NULL values are presented first if you do 
+	 * ORDER BY ... ASC and last if you do ORDER BY ... DESC.
+	 * 
+	 * From the Postgres 8.0 manual:
+	 * 
+	 * The null value sorts higher than any other value. In other words, 
+	 * with ascending sort order, null values sort at the end, and with 
+	 * descending sort order, null values sort at the beginning.
+	 * 
+	 * This test has expected results that vary depending on whether a Postgres or 
+	 * non-Postgres database is being used.
+	 * 
+	 */
 	public void testMemberWithNullKey() {
 		Result result = runQuery(
 				"select {[Measures].[Unit Sales]} on columns," + nl +
@@ -2425,13 +2459,25 @@ public class BasicQueryTest extends FoodMartTestCase {
 				"from Sales");
 		String resultString = toString(result);
 		resultString = Pattern.compile("\\.0\\]").matcher(resultString).replaceAll("]");
+		
+		// Detect Postgres
+		
+		RolapConnection conn = (RolapConnection) getConnection();
+		String jdbc_url = conn.getConnectInfo().get("Jdbc");
+		boolean isPostgres = (jdbc_url.toLowerCase().indexOf("postgresql") >= 0);
+
+		int row = 0;
+		
 		final String expected = "Axis #0:" + nl +
 						"{}" + nl +
 						"Axis #1:" + nl +
 						"{[Measures].[Unit Sales]}" + nl +
 						"Axis #2:" + nl +
 						"{[Store Size in SQFT].[All Store Size in SQFTs]}" + nl +
-						"{[Store Size in SQFT].[All Store Size in SQFTs].[null]}" + nl +
+						
+						// null is at the start in order under non Postgres DBMSs 
+						
+						(!isPostgres ? "{[Store Size in SQFT].[All Store Size in SQFTs].[null]}" + nl : "") +
 						"{[Store Size in SQFT].[All Store Size in SQFTs].[20319]}" + nl +
 						"{[Store Size in SQFT].[All Store Size in SQFTs].[21215]}" + nl +
 						"{[Store Size in SQFT].[All Store Size in SQFTs].[22478]}" + nl +
@@ -2452,28 +2498,33 @@ public class BasicQueryTest extends FoodMartTestCase {
 						"{[Store Size in SQFT].[All Store Size in SQFTs].[36509]}" + nl +
 						"{[Store Size in SQFT].[All Store Size in SQFTs].[38382]}" + nl +
 						"{[Store Size in SQFT].[All Store Size in SQFTs].[39696]}" + nl +
-						"Row #0: 266,773" + nl +
-						"Row #1: 39,329" + nl +
-						"Row #2: 26,079" + nl +
-						"Row #3: 25,011" + nl +
-						"Row #4: 2,117" + nl +
-						"Row #5: (null)" + nl +
-						"Row #6: (null)" + nl +
-						"Row #7: 25,663" + nl +
-						"Row #8: 21,333" + nl +
-						"Row #9: (null)" + nl +
-						"Row #10: (null)" + nl +
-						"Row #11: 41,580" + nl +
-						"Row #12: 2,237" + nl +
-						"Row #13: 23,591" + nl +
-						"Row #14: (null)" + nl +
-						"Row #15: (null)" + nl +
-						"Row #16: 35,257" + nl +
-						"Row #17: (null)" + nl +
-						"Row #18: (null)" + nl +
-						"Row #19: (null)" + nl +
-						"Row #20: (null)" + nl +
-						"Row #21: 24,576" + nl;
+						
+						// null is at the end in order under Postgres 
+						
+						(isPostgres ? "{[Store Size in SQFT].[All Store Size in SQFTs].[null]}" + nl : "") +
+						"Row #" + row++ + ": 266,773" + nl +
+						(!isPostgres ? "Row #" + row++ + ": 39,329" + nl : "" ) +
+						"Row #" + row++ + ": 26,079" + nl +
+						"Row #" + row++ + ": 25,011" + nl +
+						"Row #" + row++ + ": 2,117" + nl +
+						"Row #" + row++ + ": (null)" + nl +
+						"Row #" + row++ + ": (null)" + nl +
+						"Row #" + row++ + ": 25,663" + nl +
+						"Row #" + row++ + ": 21,333" + nl +
+						"Row #" + row++ + ": (null)" + nl +
+						"Row #" + row++ + ": (null)" + nl +
+						"Row #" + row++ + ": 41,580" + nl +
+						"Row #" + row++ + ": 2,237" + nl +
+						"Row #" + row++ + ": 23,591" + nl +
+						"Row #" + row++ + ": (null)" + nl +
+						"Row #" + row++ + ": (null)" + nl +
+						"Row #" + row++ + ": 35,257" + nl +
+						"Row #" + row++ + ": (null)" + nl +
+						"Row #" + row++ + ": (null)" + nl +
+						"Row #" + row++ + ": (null)" + nl +
+						"Row #" + row++ + ": (null)" + nl +
+						"Row #" + row++ + ": 24,576" + nl +
+						(isPostgres ? "Row #" + row++ + ": 39,329" + nl : "" );
         assertEquals(expected, resultString);
 	}
 
