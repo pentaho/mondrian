@@ -38,10 +38,8 @@ public class MemberProperty extends QueryPart {
 		return x2;
 	}
 
-	public QueryPart resolve(Query q)
-	{
+	void resolve(Query q) {
 		exp = exp.resolve(q);
-		return this;
 	}
 
 	public Object[] getChildren()
@@ -49,48 +47,18 @@ public class MemberProperty extends QueryPart {
 		return new Exp[] {exp};
 	}
 
-	public void replaceChild(int ordinal, QueryPart with)
-	{
+	public void replaceChild(int ordinal, QueryPart with) {
 		Util.assertTrue(ordinal == 0);
 		exp = (Exp) with;
 	}
 
-	public void unparse(PrintWriter pw, ElementCallback callback)
-	{
+	public void unparse(PrintWriter pw, ElementCallback callback) {
 		pw.print(name + " = ");
-		if (exp instanceof Literal && ((Literal) exp).type == Category.String)
-			pw.print("'");
-		unparseValue(pw, callback);
-		if (exp instanceof Literal && ((Literal) exp).type == Category.String)
-			pw.print("'");
-	}
-	
-	void unparseValue(PrintWriter pw, ElementCallback callback)
-	{
-		if (exp instanceof Literal &&
-			((Literal) exp).type == Category.String) {
-			exp.unparse(pw, callback);
-		} else if (name.equalsIgnoreCase("SOLVE_ORDER")) {
-			int i = ((Literal) exp).getIntValue();
-			pw.print(i);
-		} else {
-			exp.unparse(pw, callback);
-		}
-	}
-
-	/** Prints itself as xml element */
-	public void printAsXml(PrintWriter pw)
-	{
-		pw.print("<MemberProperty ");
-		Util.printAtt(pw, "name", name);
-		pw.print(" value =\"");
-		unparseValue(pw, new ElementCallback());
-		pw.println("\" />");
+		exp.unparse(pw, callback);
 	}
 
 	/** Retrieves a property by name from an array. **/
-	public static Exp get(MemberProperty[] a, String name)
-	{
+	static Exp get(MemberProperty[] a, String name) {
 		for (int i = 0; i < a.length; i++) {
 			if (a[i].name.equals(name)) {
 				return a[i].exp;

@@ -92,7 +92,7 @@ public class Formula extends QueryPart {
 			}
 		}
 		for (int i = 0; i < memberProperties.length; i++) {
-			memberProperties[i] = (MemberProperty) memberProperties[i].resolve(q);
+			memberProperties[i].resolve(q);
 		}
 		// Get the format expression from the property list, or derive it from
 		// the formula.

@@ -2047,6 +2047,54 @@ public class BasicQueryTest extends FoodMartTestCase {
 		}
 	}
 
+	public void testUnparse() {
+		Connection connection = getConnection();
+		Query query = connection.parseQuery(
+				"with member [Measures].[Rendite] as " + nl +
+				" '([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]'," + nl +
+				" format_string = iif(([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost] * 100 > " + nl +
+				"     Parameter (\"UpperLimit\", NUMERIC, 151, \"Obere Grenze\"), " + nl +
+				"   \"|#.00%|arrow='up'\"," + nl +
+				"   iif(([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost] * 100 < " + nl +
+				"       Parameter(\"LowerLimit\", NUMERIC, 150, \"Untere Grenze\")," + nl +
+				"     \"|#.00%|arrow='down'\"," + nl +
+				"     \"|#.00%|arrow='right'\"))" + nl +
+				"select {[Measures].members} on columns" + nl +
+				"from Sales");
+		final String s = query.toString();
+		// Parentheses are added to reflect operator precedence, but that's ok.
+		assertEquals("with member [Measures].[Rendite] as '((([Measures].[Store Sales] - [Measures].[Store Cost])) / [Measures].[Store Cost])', " +
+				"format_string = IIf(((((([Measures].[Store Sales] - [Measures].[Store Cost])) / [Measures].[Store Cost]) * 100.0) > Parameter(\"UpperLimit\", NUMERIC, 151.0, \"Obere Grenze\")), " +
+				"\"|#.00%|arrow='up'\", " +
+				"IIf(((((([Measures].[Store Sales] - [Measures].[Store Cost])) / [Measures].[Store Cost]) * 100.0) < Parameter(\"LowerLimit\", NUMERIC, 150.0, \"Untere Grenze\")), " +
+				"\"|#.00%|arrow='down'\", \"|#.00%|arrow='right'\"))" + nl +
+				"select {[Measures].Members} ON columns" + nl +
+				"from [Sales]" + nl, s);
+	}
+
+	public void testUnparse2() {
+		Connection connection = getConnection();
+		final String x = "with member [Measures].[Average Unit Sales] as '\"\"\"foo\"\"\"'" + nl +
+						"select {[Measures].[Average Unit Sales]} ON columns" + nl +
+						"from [Sales]";
+		Query query = connection.parseQuery(
+				"with member [Measures].[Foo] as '1', " +
+				"format_string='##0.00', " +
+				"funny=IIf(1=1,\"x\"\"y\",\"foo\") " +
+				"select {[Measures].[Foo]} on columns from Sales");
+		final String s = query.toString();
+		// The "format_string" property, a string literal, is now delimited by
+		// double-quotes. This won't work in MSOLAP, but for Mondrian it's
+		// consistent with the fact that property values are expressions,
+		// not enclosed in single-quotes.
+		assertEquals("with member [Measures].[Foo] as '1.0', " +
+				"format_string = \"##0.00\", " +
+				"funny = IIf((1.0 = 1.0), \"x\"\"y\", \"foo\")" + nl +
+				"select {[Measures].[Foo]} ON columns" + nl +
+				"from [Sales]" + nl,
+				s);
+	}
+
 	public void testParallelNot() {
 		runParallelQueries(1, 1);
 	}
