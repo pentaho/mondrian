@@ -1281,9 +1281,50 @@ public class BuiltinFunTable extends FunTable {
 		//
 		// NUMERIC FUNCTIONS
 		if (false) define(new FunDefBase("Aggregate", "Aggregate(<Set>[, <Numeric Expression>])", "Returns a calculated value using the appropriate aggregate function, based on the context of the query.", "fn*"));
-		if (false) define(new FunDefBase("Avg", "Avg(<Set>[, <Numeric Expression>])", "Returns the average value of a numeric expression evaluated over a set.", "fn*"));
+		define(new MultiResolver(
+			"Avg", "Avg(<Set>[, <Numeric Expression>])", "Returns the average value of a numeric expression evaluated over a set.",
+			new String[]{"fnx", "fnxN"},
+			new FunkBase() {
+				public Object evaluate(Evaluator evaluator, Exp[] args) {
+					Vector members = (Vector) getArg(evaluator, args, 0);
+					ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+					return avg(evaluator.push(), members, exp);
+				}
+				public void testAvg(FoodMartTestCase test) {
+					String result = test.executeExpr(
+							"AVG({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
+					test.assertEquals("189068.33333333334", result);
+				}
+				//todo: testAvgWithNulls
+			}));
 		if (false) define(new FunDefBase("Correlation", "Correlation(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Returns the correlation of two series evaluated over a set.", "fn*"));
-		if (false) define(new FunDefBase("Count", "Count(<Set>[, EXCLUDEEMPTY | INCLUDEEMPTY])", "Returns the number of tuples in a set, empty cells included unless the optional EXCLUDEEMPTY flag is used.", "fn*"));
+		define(new MultiResolver(
+			"Count", "Count(<Set>[, EXCLUDEEMPTY | INCLUDEEMPTY])", "Returns the number of tuples in a set, empty cells included unless the optional EXCLUDEEMPTY flag is used.",
+			new String[]{"fnx", "fnxy"},
+			new FunkBase() {
+				public Object evaluate(Evaluator evaluator, Exp[] args) {
+					Vector members = (Vector) getArg(evaluator, args, 0);
+					String  empties = (String) getArg(evaluator, args, 1, "INCLUDEEMPTY");
+					if (empties.equals("INCLUDEEMPTY")) {
+						return new Double(members.size());
+					}
+					else {
+						int retval = 0;
+						for (int i = 0; i < members.size(); i++) {
+							if ((members.elementAt(i) != Util.nullValue) && (members.elementAt(i) != null)) { 
+								retval++;
+							}
+						}
+						return new Double(retval);
+					}
+				}
+				public void testCount(FoodMartTestCase test) {
+					String result = test.executeExpr(
+							"count({[Promotion Media].[Media Type].members})");
+					test.assertEquals("14.0", result);
+				}
+				//todo: testCountNull, testCountNoExp
+			}));
 		if (false) define(new FunDefBase("Covariance", "Covariance(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Returns the covariance of two series evaluated over a set (biased).", "fn*"));
 		if (false) define(new FunDefBase("CovarianceN", "CovarianceN(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Returns the covariance of two series evaluated over a set (unbiased).", "fn*"));
 		define(new FunDefBase("IIf", "IIf(<Logical Expression>, <Numeric Expression1>, <Numeric Expression2>)", "Returns one of two numeric values determined by a logical test.", "fnbnn"));
@@ -1292,9 +1333,54 @@ public class BuiltinFunTable extends FunTable {
 		if (false) define(new FunDefBase("LinRegR2", "LinRegR2(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Calculates the linear regression of a set and returns R2 (the coefficient of determination).", "fn*"));
 		if (false) define(new FunDefBase("LinRegSlope", "LinRegSlope(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Calculates the linear regression of a set and returns the value of a in the regression line y = ax + b.", "fn*"));
 		if (false) define(new FunDefBase("LinRegVariance", "LinRegVariance(<Set>, <Numeric Expression>[, <Numeric Expression>])", "Calculates the linear regression of a set and returns the variance associated with the regression line y = ax + b.", "fn*"));
-		if (false) define(new FunDefBase("Max", "Max(<Set>[, <Numeric Expression>])", "Returns the maximum value of a numeric expression evaluated over a set.", "fn*"));
-		if (false) define(new FunDefBase("Median", "Median(<Set>[, <Numeric Expression>])", "Returns the median value of a numeric expression evaluated over a set.", "fn*"));
-		if (false) define(new FunDefBase("Min", "Min(<Set>[, <Numeric Expression>])", "Returns the minimum value of a numeric expression evaluated over a set.", "fn*"));
+		define(new MultiResolver(
+			"Max", "Max(<Set>[, <Numeric Expression>])", "Returns the maximum value of a numeric expression evaluated over a set.",
+			new String[]{"fnx", "fnxN"},
+			new FunkBase() {
+				public Object evaluate(Evaluator evaluator, Exp[] args) {
+					Vector members = (Vector) getArg(evaluator, args, 0);
+					ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+					return max(evaluator.push(), members, exp);
+				}
+				public void testMax(FoodMartTestCase test) {
+					String result = test.executeExpr(
+							"MAX({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
+					test.assertEquals("264805.0", result);
+				}
+			}));
+		define(new MultiResolver(
+			"Median", "Median(<Set>[, <Numeric Expression>])", "Returns the median value of a numeric expression evaluated over a set.",
+			new String[]{"fnx", "fnxN"},
+			new FunkBase() {
+				public Object evaluate(Evaluator evaluator, Exp[] args) {
+					Vector members = (Vector) getArg(evaluator, args, 0);
+					ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+					//todo: ignore nulls, do we need to ignore the vector?
+					return median(evaluator.push(), members, exp);
+					
+				}
+				public void testMedian(FoodMartTestCase test) {
+					String result = test.executeExpr(
+							"MEDIAN({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
+					test.assertEquals("159691.0", result);
+				}
+			}));
+
+		define(new MultiResolver(
+			"Min", "Min(<Set>[, <Numeric Expression>])", "Returns the minimum value of a numeric expression evaluated over a set.",
+			new String[]{"fnx", "fnxN"},
+			new FunkBase() {
+				public Object evaluate(Evaluator evaluator, Exp[] args) {
+					Vector members = (Vector) getArg(evaluator, args, 0);
+					ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
+					return min(evaluator.push(), members, exp);
+				}
+				public void testMin(FoodMartTestCase test) {
+					String result = test.executeExpr(
+							"MIN({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
+					test.assertEquals("142709.0", result);
+				}
+			}));
 		define(new FunDefBase("Ordinal", "<Level>.Ordinal", "Returns the zero-based ordinal value associated with a level.", "pnl"));
 		if (false) define(new FunDefBase("Rank", "Rank(<Tuple>, <Set>)", "Returns the one-based rank of a tuple in a set.", "fn*"));
 		if (false) define(new FunDefBase("Stddev", "Stddev(<Set>[, <Numeric Expression>])", "Alias for Stdev.", "fn*"));
@@ -1309,6 +1395,11 @@ public class BuiltinFunTable extends FunTable {
 						Vector members = (Vector) getArg(evaluator, args, 0);
 						ExpBase exp = (ExpBase) getArg(evaluator, args, 1);
 						return sum(evaluator.push(), members, exp);
+					}
+					public void testSumNoExp(FoodMartTestCase test) {
+						String result = test.executeExpr(
+								"SUM({[Promotion Media].[Media Type].members})");
+						test.assertEquals("266773.0", result);
 					}
 				}));
 		define(new FunDefBase("Value", "<Measure>.Value", "Returns the value of a measure.", "pnm") {

@@ -311,39 +311,130 @@ public class FunUtil extends Util {
 		}
 	}
 
+	static class SetWrapper {
+		Vector v = new Vector();
+		public int errorCount = 0, nullCount = 0;
+	}
+
+	static Object median(Evaluator evaluator, Vector members, ExpBase exp) {
+		SetWrapper sw = evaluateSet(evaluator, members, exp);
+		if (sw.errorCount > 0) {
+			return new Double(Double.NaN);
+		} else if (sw.v.size() == 0) {
+			return Util.nullValue;
+		}
+		double[] asArray = new double[sw.v.size()];
+		for (int i = 0; i < asArray.length; i++) {
+			asArray[i] = ((Double) sw.v.elementAt(i)).doubleValue();
+		}
+		Arrays.sort(asArray);
+		int median = (int) Math.floor(asArray.length / 2);
+		return new Double(asArray[median]); 
+	}
+
+	static Object min(Evaluator evaluator, Vector members, ExpBase exp) {
+		SetWrapper sw = evaluateSet(evaluator, members, exp);
+		if (sw.errorCount > 0) {
+			return new Double(Double.NaN);
+		} else if (sw.v.size() == 0) {
+			return Util.nullValue;
+		}
+		else {
+			double min = Double.MAX_VALUE;
+			for (int i = 0; i < sw.v.size(); i++) {
+				double iValue = ((Double) sw.v.elementAt(i)).doubleValue();
+				if (iValue < min) { min = iValue; }
+			}			
+			return new Double(min); 
+		}
+	}
+
+	static Object max(Evaluator evaluator, Vector members, ExpBase exp) {
+		SetWrapper sw = evaluateSet(evaluator, members, exp);
+		if (sw.errorCount > 0) {
+			return new Double(Double.NaN);
+		} else if (sw.v.size() == 0) {
+			return Util.nullValue;
+		}
+		else {
+			double max = 0.0;
+			for (int i = 0; i < sw.v.size(); i++) {
+				double iValue = ((Double) sw.v.elementAt(i)).doubleValue();
+				if (iValue > max) { max = iValue; }
+			}			
+			return new Double(max); 
+		}
+	}
+
+	static Object avg(Evaluator evaluator, Vector members, ExpBase exp) {
+		SetWrapper sw = evaluateSet(evaluator, members, exp);
+		if (sw.errorCount > 0) {
+			return new Double(Double.NaN);
+		} else if (sw.v.size() == 0) {
+			return Util.nullValue;
+		}
+		else {
+			double sum = 0.0;
+			for (int i = 0; i < sw.v.size(); i++) {
+				sum += ((Double) sw.v.elementAt(i)).doubleValue();	
+			}			
+			//todo: should look at context and optionally include nulls
+			return new Double(sum / sw.v.size()); 
+		}
+	}
+	
 	static Object sum(Evaluator evaluator, Vector members, ExpBase exp) {
+		SetWrapper sw = evaluateSet(evaluator, members, exp);
+		if (sw.errorCount > 0) {
+			if (false) {
+				return new MondrianEvaluationException(
+						sw.errorCount + " error(s) while computing sum");
+			}
+			return new Double(Double.NaN);
+		} else if (sw.v.size() == 0) {
+			return Util.nullValue;
+		}
+		else {
+			double sum = 0.0;
+			for (int i = 0; i < sw.v.size(); i++) {
+				sum += ((Double) sw.v.elementAt(i)).doubleValue();	
+			}			
+			return new Double(sum);
+		}
+	}
+
+	/**
+	 * Evluates exp over members to generate a Vector of doubles and meta information
+	 */
+	static SetWrapper evaluateSet(Evaluator evaluator, Vector members, ExpBase exp) {
 		// todo: treat constant exps as evaluateMembers() does
-		double sum = 0;
-		int valueCount = 0, errorCount = 0;
+		SetWrapper retval = new SetWrapper();
 		for (int i = 0, count = members.size(); i < count; i++) {
 			Member member = (Member) members.elementAt(i);
 			evaluator.setContext(member);
-			Object o = exp.evaluateScalar(evaluator);
+			Object o = null;
+			if (exp != null) {
+				o = exp.evaluateScalar(evaluator);
+			}
+			else { //is this right?
+				evaluator.setContext(member);
+				o = evaluator.evaluateCurrent();
+			}
+
 			if (o == null || o == Util.nullValue) {
+				retval.nullCount++;
 			} else if (o instanceof Throwable) {
 				// Carry on summing, so that if we are running in a
 				// BatchingCellReader, we find out all the dependent cells we
 				// need
-				errorCount++;
+				retval.errorCount++;
 			} else if (o instanceof BigDecimal) {
-				valueCount++;
-				sum += ((BigDecimal) o).doubleValue();
+				retval.v.add(new Double(((BigDecimal) o).doubleValue()));
 			} else {
-				valueCount++;
-				sum += ((Double) o).doubleValue();
+				retval.v.add(o);
 			}
 		}
-		if (errorCount > 0) {
-			if (false) {
-				return new MondrianEvaluationException(
-						errorCount + " error(s) while computing sum");
-			}
-			return new Double(Double.NaN);
-		} else if (valueCount == 0) {
-			return Util.nullValue;
-		} else {
-			return new Double(sum);
-		}
+		return retval;
 	}
 
 	static int sign(double d) {
