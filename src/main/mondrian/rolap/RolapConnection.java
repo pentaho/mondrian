@@ -47,11 +47,8 @@ public class RolapConnection extends ConnectionBase {
 	private SchemaReader schemaReader;
 	protected Role role;
 	private Locale locale = Locale.US;
-	/** Names of classes of drivers we've loaded (or have tried to load).
-	 * @synchronization Lock the {@link RolapConnection} class. */
-	private static final HashSet loadedDrivers = new HashSet();
 
-	/**
+    /**
 	 * Creates a connection.
 	 *
 	 * @param connectInfo Connection properties; keywords are described in
@@ -119,9 +116,9 @@ public class RolapConnection extends ConnectionBase {
             // Get connection through own pooling datasource
             String jdbcDrivers = connectInfo.get(RolapConnectionProperties.JdbcDrivers);
             if (jdbcDrivers != null) {
-                loadDrivers(jdbcDrivers);
+                RolapUtil.loadDrivers(jdbcDrivers);
             }
-            loadDrivers(MondrianProperties.instance().getJdbcDrivers());
+            RolapUtil.loadDrivers(MondrianProperties.instance().getJdbcDrivers());
             if (poolNeededString == null) {
                 // JDBC connections are dumb beasts, so we assume they're not
                 // pooled.
@@ -222,22 +219,7 @@ public class RolapConnection extends ConnectionBase {
 		return connectInfo;
 	}
 
-    public static synchronized void loadDrivers(String jdbcDrivers) {
-		StringTokenizer tok = new StringTokenizer(jdbcDrivers, ",");
-		while (tok.hasMoreTokens()) {
-			String jdbcDriver = tok.nextToken();
-			if (loadedDrivers.add(jdbcDriver)) {
-				try {
-					Class.forName(jdbcDriver);
-					System.out.println("Mondrian: JDBC driver " + jdbcDriver + " loaded successfully");
-				} catch (ClassNotFoundException e) {
-					System.out.println("Mondrian: Warning: JDBC driver " + jdbcDriver + " not found");
-				}
-			}
-		}
-	}
-
-	public void close() {
+    public void close() {
 	}
 
 	public Schema getSchema() {

@@ -20,9 +20,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Utility methods for classes in the <code>mondrian.rolap</code> package.
@@ -52,6 +50,9 @@ public class RolapUtil {
 			return "null";
 		}
 	};
+    /** Names of classes of drivers we've loaded (or have tried to load).
+	 * @synchronization Lock the {@link RolapConnection} class. */
+	private static final HashSet loadedDrivers = new HashSet();
 
     /**
 	 * Encloses a value in single-quotes, to make a SQL string value. Examples:
@@ -156,10 +157,10 @@ public class RolapUtil {
 	 * Enables tracing if "mondrian.trace.level" &gt; 0.
 	 */
 	public static void checkTracing() {
-		if ( debugOut == null ) { 
+		if ( debugOut == null ) {
 			int trace = MondrianProperties.instance().getTraceLevel();
 			if (trace > 0) {
-				String debugOutFile = 
+				String debugOutFile =
 				  MondrianProperties.instance().getProperty(MondrianProperties.DebugOutFile);
 				if ( debugOutFile != null ) {
 					File f;
@@ -228,7 +229,29 @@ public class RolapUtil {
 		}
 	}
 
-	/**
+    /**
+     * Loads a set of JDBC drivers.
+     *
+     * @param jdbcDrivers A string consisting of the comma-separated names
+     *  of JDBC driver classes. For example
+     *  <code>"sun.jdbc.odbc.JdbcOdbcDriver,com.mysql.jdbc.Driver"</code>.
+     */
+    public static synchronized void loadDrivers(String jdbcDrivers) {
+		StringTokenizer tok = new StringTokenizer(jdbcDrivers, ",");
+		while (tok.hasMoreTokens()) {
+			String jdbcDriver = tok.nextToken();
+			if (loadedDrivers.add(jdbcDriver)) {
+				try {
+					Class.forName(jdbcDriver);
+					System.out.println("Mondrian: JDBC driver " + jdbcDriver + " loaded successfully");
+				} catch (ClassNotFoundException e) {
+					System.out.println("Mondrian: Warning: JDBC driver " + jdbcDriver + " not found");
+				}
+			}
+		}
+	}
+
+    /**
 	 * Writes to a string and also to an underlying writer.
 	 */
 	public static class TeeWriter extends FilterWriter {

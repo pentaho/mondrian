@@ -337,7 +337,7 @@
 </exception>
 
 <exception id="40120" name="CalcMemberHasBadDimension">
-    <text>Unknown dimension ''{0}}'' for calculated member ''{1}'' in cube ''{2}''</text>
+    <text>Unknown dimension ''{0}'' for calculated member ''{1}'' in cube ''{2}''</text>
 </exception>
 
 <exception id="40130" name="CalcMemberNotUnique">
@@ -377,7 +377,7 @@
 </exception>
 
 <exception id="500030" name="MissingArg">
-    <text>Argument ''{0}}'' must be specified.</text>
+    <text>Argument ''{0}'' must be specified.</text>
 </exception>
 
 <exception id="500040" name="InvalidInsertLine">

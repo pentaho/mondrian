@@ -3,33 +3,47 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2004-2004 Julian Hyde
+// (C) Copyright 2004-2005 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.test.loader;
 
-import mondrian.rolap.RolapConnection;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.olap.MondrianResource;
+import mondrian.olap.Util;
+import mondrian.rolap.RolapUtil;
+import mondrian.rolap.sql.SqlQuery;
 
+import java.io.*;
 import java.sql.*;
 import java.text.DecimalFormat;
-import java.io.*;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Utility to load the FoodMart dataset into an arbitrary JDBC database.
  *
  * <p>It is known to work for the following databases:<ul>
+ *
  * <li>MySQL 3.23 using MySQL-connector/J 3.0.16
- * <li>MySQL 4.15 using MySQL-connector/J 3.0.16
- * <li>Postgres 8.0 beta using postgresql-driver-jdbc3-74-214.jar
+ * <p>On the command line:
+ *
+ * <blockquote><code>
+ * $ mysqladmin create foodmart<br/>
+ * $ java -cp 'classes;testclasses' mondrian.test.loader.MondrianFoodMartLoader
+ *     -verbose -tables -data -indexes -jdbcDrivers=com.mysql.jdbc.Driver
+ *     -outputJdbcURL=jdbc:mysql://localhost/foodmart
+ * </code></blockquote>
+ * </li>
+ *
+ * <li>MySQL 4.15 using MySQL-connector/J 3.0.16</li>
+ *
+ * <li>Postgres 8.0 beta using postgresql-driver-jdbc3-74-214.jar</li>
+ *
  * </ul>
  *
  * @author jhyde
@@ -57,57 +71,57 @@ public class MondrianFoodMartLoader {
     private Connection connection;
     private Connection inputConnection;
     private FileWriter fileOutput = null;
-    
+
     private SqlQuery sqlQuery;
     private final HashMap mapTableNameToColumns = new HashMap();
 
     public MondrianFoodMartLoader(String[] args) {
 
-    	StringBuffer errorMessage = new StringBuffer();
-    	
-		for ( int i=0; i<args.length; i++ )  {
-	        if (args[i].equals("-verbose")) {
-	            verbose = true;
-	        } else if (args[i].equals("-tables")) {
-	            tables = true;
-	        } else if (args[i].equals("-data")) {
-	            data = true;
-	        } else if (args[i].equals("-indexes")) {
-	            indexes = true;
-	        } else if (args[i].startsWith("-jdbcDrivers=")) {
-	        	jdbcDrivers = args[i].substring("-jdbcDrivers=".length());
-	        } else if (args[i].startsWith("-outputJdbcURL=")) {
-	        	jdbcURL = args[i].substring("-outputJdbcURL=".length());
-	        } else if (args[i].startsWith("-outputJdbcUser=")) {
-	        	userName = args[i].substring("-outputJdbcUser=".length());
-	        } else if (args[i].startsWith("-outputJdbcPassword=")) {
-	        	password = args[i].substring("-outputJdbcPassword=".length());
-	        } else if (args[i].startsWith("-inputJdbcURL=")) {
-	        	inputJdbcURL = args[i].substring("-inputJdbcURL=".length());
-	        } else if (args[i].startsWith("-inputJdbcUser=")) {
-	        	inputUserName = args[i].substring("-inputJdbcUser=".length());
-	        } else if (args[i].startsWith("-inputJdbcPassword=")) {
-	        	inputPassword = args[i].substring("-inputJdbcPassword=".length());
-	        } else if (args[i].startsWith("-inputFile=")) {
-	        	inputFile = args[i].substring("-inputFile=".length());
-	        } else if (args[i].startsWith("-outputDirectory=")) {
-	        	outputDirectory = args[i].substring("-outputDirectory=".length());
-	        } else if (args[i].startsWith("-outputJdbcBatchSize=")) {
-	        	inputBatchSize = Integer.parseInt(args[i].substring("-outputJdbcBatchSize=".length()));
-	        } else {
-	        	errorMessage.append("unknown arg: " + args[i] + "\n");
-			}
-		}
-		if (inputJdbcURL != null) {
-			jdbcInput = true;
-			if (inputFile != null) {
-	        	errorMessage.append("Specified both an input JDBC connection and an input file");
-			}
-		}
-		if (jdbcURL != null && outputDirectory == null) {
-			jdbcOutput = true;
-		}
-		if (errorMessage.length() > 0) {
+        StringBuffer errorMessage = new StringBuffer();
+
+        for ( int i=0; i<args.length; i++ )  {
+            if (args[i].equals("-verbose")) {
+                verbose = true;
+            } else if (args[i].equals("-tables")) {
+                tables = true;
+            } else if (args[i].equals("-data")) {
+                data = true;
+            } else if (args[i].equals("-indexes")) {
+                indexes = true;
+            } else if (args[i].startsWith("-jdbcDrivers=")) {
+                jdbcDrivers = args[i].substring("-jdbcDrivers=".length());
+            } else if (args[i].startsWith("-outputJdbcURL=")) {
+                jdbcURL = args[i].substring("-outputJdbcURL=".length());
+            } else if (args[i].startsWith("-outputJdbcUser=")) {
+                userName = args[i].substring("-outputJdbcUser=".length());
+            } else if (args[i].startsWith("-outputJdbcPassword=")) {
+                password = args[i].substring("-outputJdbcPassword=".length());
+            } else if (args[i].startsWith("-inputJdbcURL=")) {
+                inputJdbcURL = args[i].substring("-inputJdbcURL=".length());
+            } else if (args[i].startsWith("-inputJdbcUser=")) {
+                inputUserName = args[i].substring("-inputJdbcUser=".length());
+            } else if (args[i].startsWith("-inputJdbcPassword=")) {
+                inputPassword = args[i].substring("-inputJdbcPassword=".length());
+            } else if (args[i].startsWith("-inputFile=")) {
+                inputFile = args[i].substring("-inputFile=".length());
+            } else if (args[i].startsWith("-outputDirectory=")) {
+                outputDirectory = args[i].substring("-outputDirectory=".length());
+            } else if (args[i].startsWith("-outputJdbcBatchSize=")) {
+                inputBatchSize = Integer.parseInt(args[i].substring("-outputJdbcBatchSize=".length()));
+            } else {
+                errorMessage.append("unknown arg: " + args[i] + "\n");
+            }
+        }
+        if (inputJdbcURL != null) {
+            jdbcInput = true;
+            if (inputFile != null) {
+                errorMessage.append("Specified both an input JDBC connection and an input file");
+            }
+        }
+        if (jdbcURL != null && outputDirectory == null) {
+            jdbcOutput = true;
+        }
+        if (errorMessage.length() > 0) {
             usage();
             throw MondrianResource.instance().newMissingArg(errorMessage.toString());
         }
@@ -116,76 +130,76 @@ public class MondrianFoodMartLoader {
     public void usage() {
         System.out.println("Usage: MondrianFoodMartLoader [-verbose] [-tables] [-data] [-indexes] -jdbcDrivers=<jdbcDriver> [-outputJdbcURL=<jdbcURL> [-outputJdbcUser=user] [-outputJdbcPassword=password] [-outputJdbcBatchSize=<batch size>] | -outputDirectory=<directory name>] [ [-inputJdbcURL=<jdbcURL> [-inputJdbcUser=user] [-inputJdbcPassword=password]] | [-inputfile=<file name>]]");
         System.out.println("");
-        System.out.println("  <jdbcURL>     	JDBC connect string for DB");
-        System.out.println("  [user]     		JDBC user name for DB");
-        System.out.println("  [password]    	JDBC password for user for DB");
-        System.out.println("  					If no source DB parameters are given, assumes data comes from file");
-        System.out.println("  [file name]   	file containing test data - INSERT statements");
-        System.out.println("  					If no input file name or input JDBC parameters are given, assume insert statements come from demo/FoodMartData.sql file");
-        System.out.println("  [outputDirectory]	Where FoodMartCreateTables.sql, FoodMartData.sql and FoodMartCreateIndexes.sql will be created");
-        
-        System.out.println("  <batch size>		size of JDBC batch updates - default to 50 inserts");
-        System.out.println("  <jdbcDrivers>		Comma-separated list of JDBC drivers.");
-        System.out.println("                	They must be on the classpath.");
-        System.out.println("  -verbose      	Verbose mode.");
-        System.out.println("  -tables       	If specified, drop and create the tables.");
-        System.out.println("  -data         	If specified, load the data.");
-        System.out.println("  -indexes      	If specified, drop and create the tables.");
+        System.out.println("  <jdbcURL>         JDBC connect string for DB");
+        System.out.println("  [user]            JDBC user name for DB");
+        System.out.println("  [password]        JDBC password for user for DB");
+        System.out.println("                    If no source DB parameters are given, assumes data comes from file");
+        System.out.println("  [file name]       file containing test data - INSERT statements");
+        System.out.println("                    If no input file name or input JDBC parameters are given, assume insert statements come from demo/FoodMartData.sql file");
+        System.out.println("  [outputDirectory] Where FoodMartCreateTables.sql, FoodMartData.sql and FoodMartCreateIndexes.sql will be created");
+
+        System.out.println("  <batch size>      size of JDBC batch updates - default to 50 inserts");
+        System.out.println("  <jdbcDrivers>     Comma-separated list of JDBC drivers.");
+        System.out.println("                    They must be on the classpath.");
+        System.out.println("  -verbose          Verbose mode.");
+        System.out.println("  -tables           If specified, drop and create the tables.");
+        System.out.println("  -data             If specified, load the data.");
+        System.out.println("  -indexes          If specified, drop and create the tables.");
     }
 
     public static void main(String[] args) {
-    	System.out.println("Starting load at: " + (new Date()));
+        System.out.println("Starting load at: " + (new Date()));
         try {
             new MondrianFoodMartLoader(args).load();
         } catch (Throwable e) {
             e.printStackTrace();
         }
-    	System.out.println("Finished load at: " + (new Date()));
+        System.out.println("Finished load at: " + (new Date()));
     }
 
     private void load() throws Exception {
-        RolapConnection.loadDrivers(jdbcDrivers);
-        
+        RolapUtil.loadDrivers(jdbcDrivers);
+
         if (userName == null) {
-        	connection = DriverManager.getConnection(jdbcURL);
+            connection = DriverManager.getConnection(jdbcURL);
         } else {
-        	connection = DriverManager.getConnection(jdbcURL, userName, password);
+            connection = DriverManager.getConnection(jdbcURL, userName, password);
         }
-        
+
         if (jdbcInput) {
-	        if (inputUserName == null) {
-	        	inputConnection = DriverManager.getConnection(inputJdbcURL);
-	        } else {
-	        	inputConnection = DriverManager.getConnection(inputJdbcURL, inputUserName, inputPassword);
-	        }
+            if (inputUserName == null) {
+                inputConnection = DriverManager.getConnection(inputJdbcURL);
+            } else {
+                inputConnection = DriverManager.getConnection(inputJdbcURL, inputUserName, inputPassword);
+            }
         }
         final DatabaseMetaData metaData = connection.getMetaData();
         sqlQuery = new SqlQuery(metaData);
         try {
             createTables();  // This also initializes mapTableNameToColumns
             if (data) {
-            	if (jdbcInput) {
-            		loadDataFromJdbcInput();
-            	} else {
-            		loadDataFromFile();
-            	}
+                if (jdbcInput) {
+                    loadDataFromJdbcInput();
+                } else {
+                    loadDataFromFile();
+                }
             }
             if (indexes) {
                 createIndexes();
             }
         } finally {
-        	if (connection != null) {
-        		connection.close();
-        		connection = null;
-        	}
-        	if (inputConnection != null) {
-        		inputConnection.close();
-        		inputConnection = null;
-        	}
-        	if (fileOutput != null) {
-        		fileOutput.close();
-        		fileOutput = null;
-        	}
+            if (connection != null) {
+                connection.close();
+                connection = null;
+            }
+            if (inputConnection != null) {
+                inputConnection.close();
+                inputConnection = null;
+            }
+            if (fileOutput != null) {
+                fileOutput.close();
+                fileOutput = null;
+            }
         }
     }
 
@@ -193,17 +207,15 @@ public class MondrianFoodMartLoader {
         final InputStream is = openInputStream();
         final InputStreamReader reader = new InputStreamReader(is);
         final BufferedReader bufferedReader = new BufferedReader(reader);
-//        final Pattern regex = Pattern.compile("INSERT INTO \\([^ ]+\\) VALUES (\\(.*\\));");
         final Pattern regex = Pattern.compile("INSERT INTO ([^ ]+)(.*)VALUES(.*)\\((.*)\\);");
-//        final Pattern regex = Pattern.compile("INSERT INTO ([^ ]+) VALUES(.*);.*");
         String line;
         int lineNumber = 0;
         int tableRowCount = 0;
         String prevTable = "";
-        
+
         String[] batch = new String[inputBatchSize];
         int batchSize = 0;
-        
+
         while ((line = bufferedReader.readLine()) != null) {
             ++lineNumber;
             if (line.startsWith("#")) {
@@ -220,12 +232,23 @@ public class MondrianFoodMartLoader {
                     new Integer(lineNumber), line);
             }
             final String tableName = matcher.group(1); // e.g. "foo"
-            //final String values = matcher.group(2); // e.g. "1, 'bar'"  Not needed now
+            final String values = matcher.group(2); // e.g. "1, 'bar'"
+            Util.discard(values); // Not needed now
 
-            // Generate a statement appropriate for this database. Not very
-            // efficient, but good enough.
+            // If table just changed, flush the previous batch.
+            if (!tableName.equals(prevTable)) {
+                if (!prevTable.equals("")) {
+                    System.out.println("Table " + prevTable +
+                        ": loaded " + tableRowCount + " rows.");
+                }
+                tableRowCount = 0;
+                writeBatch(batch, batchSize);
+                batchSize = 0;
+                prevTable = tableName;
+            }
 
             // remove trailing ';'
+            assert line.endsWith(";");
             line = line.substring(0, line.length() - 1);
 
             // this database represents booleans as integers
@@ -235,61 +258,49 @@ public class MondrianFoodMartLoader {
             }
 
             ++tableRowCount;
-            	
-        	batch[batchSize++] = line;
-        	if (batchSize >= inputBatchSize) {
-        		writeBatch(batch, batchSize);
-        		batchSize = 0;
-        	}
-        	//statement.execute(line);
 
-        	if (!tableName.equals(prevTable)) {
-        		if (prevTable.length() > 0) {
-	                System.out.println("Table " + prevTable +
-	                    ": loaded " + tableRowCount + " rows.");
-        		}
-                tableRowCount = 0;
-        		writeBatch(batch, batchSize);
-        		batchSize = 0;
-                prevTable = tableName;
+            batch[batchSize++] = line;
+            if (batchSize >= inputBatchSize) {
+                writeBatch(batch, batchSize);
+                batchSize = 0;
             }
         }
         // Print summary of the final table.
-        if (!"".equals(prevTable)) {
+        if (!prevTable.equals("")) {
             System.out.println("Table " + prevTable +
                 ": loaded " + tableRowCount + " rows.");
             tableRowCount = 0;
-    		writeBatch(batch, batchSize);
-    		batchSize = 0;
+            writeBatch(batch, batchSize);
+            batchSize = 0;
         }
     }
 
     private void loadDataFromJdbcInput() throws Exception {
-    	if (outputDirectory != null) {
-    		fileOutput = new FileWriter(new File(outputDirectory, "createData.sql"));
-    	}
-    	
-    	/*
-    	 * For each input table,
-    	 * 	read specified columns for all rows in the input connection
-    	 * 
-    	 * For each row, insert a row
-    	 */
-    	
-    	for (Iterator it = mapTableNameToColumns.entrySet().iterator(); it.hasNext(); ) {
-    		Map.Entry tableEntry = (Map.Entry) it.next();
-    		int rowsAdded = loadTable((String) tableEntry.getKey(), (Column[]) tableEntry.getValue());
+        if (outputDirectory != null) {
+            fileOutput = new FileWriter(new File(outputDirectory, "createData.sql"));
+        }
+
+        /*
+         * For each input table,
+         *  read specified columns for all rows in the input connection
+         *
+         * For each row, insert a row
+         */
+
+        for (Iterator it = mapTableNameToColumns.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry tableEntry = (Map.Entry) it.next();
+            int rowsAdded = loadTable((String) tableEntry.getKey(), (Column[]) tableEntry.getValue());
             System.out.println("Table " + (String) tableEntry.getKey() +
                     ": loaded " + rowsAdded + " rows.");
-    	}
-  
-    	if (outputDirectory != null) {
-    		fileOutput.close();
-    	}
+        }
+
+        if (outputDirectory != null) {
+            fileOutput.close();
+        }
     }
 
     private int loadTable(String name, Column[] columns) throws Exception {
-    	int rowsAdded = 0;
+        int rowsAdded = 0;
         StringBuffer buf = new StringBuffer();
 
         buf.append("select ");
@@ -301,42 +312,42 @@ public class MondrianFoodMartLoader {
             buf.append(quoteId(column.name));
         }
         buf.append(" from ")
-			.append(quoteId(name));
+            .append(quoteId(name));
         String ddl = buf.toString();
         Statement statement = inputConnection.createStatement();
         if (verbose) {
-        	System.out.println("Input table SQL: " + ddl);
+            System.out.println("Input table SQL: " + ddl);
         }
         ResultSet rs = statement.executeQuery(ddl);
-        
+
         String[] batch = new String[inputBatchSize];
         int batchSize = 0;
-        
+
         while (rs.next()) {
-        	/*
-        	 * Get a batch of insert statements, then save a batch
-        	 */
-        	
-        	batch[batchSize++] = createInsertStatement(rs, name, columns);
-        	if (batchSize >= inputBatchSize) {
-        		rowsAdded += writeBatch(batch, batchSize);
-        		batchSize = 0;
-        	}
+            /*
+             * Get a batch of insert statements, then save a batch
+             */
+
+            batch[batchSize++] = createInsertStatement(rs, name, columns);
+            if (batchSize >= inputBatchSize) {
+                rowsAdded += writeBatch(batch, batchSize);
+                batchSize = 0;
+            }
         }
-        
+
         if (batchSize > 0) {
-        	rowsAdded += writeBatch(batch, batchSize);
+            rowsAdded += writeBatch(batch, batchSize);
         }
-    	
-    	return rowsAdded;
+
+        return rowsAdded;
     }
-    
+
     private String createInsertStatement(ResultSet rs, String name, Column[] columns) throws Exception {
         StringBuffer buf = new StringBuffer();
 
         buf.append("INSERT INTO ")
-			.append(quoteId(name))
-			.append(" ( ");
+            .append(quoteId(name))
+            .append(" ( ");
         for (int i = 0; i < columns.length; i++) {
             Column column = columns[i];
             if (i > 0) {
@@ -350,39 +361,47 @@ public class MondrianFoodMartLoader {
             if (i > 0) {
                 buf.append(",");
             }
-            buf.append(columnValue(rs, columns[i]));
+            buf.append(columnValue(rs, column));
         }
         buf.append(" )");
-    	return buf.toString();
+        return buf.toString();
     }
-    
+
     private int writeBatch(String[] batch, int batchSize) throws IOException, SQLException {
-    	if (outputDirectory != null) {
-    		for (int i = 0; i < batchSize; i++) {
-            	fileOutput.write(batch[i]);
-            	fileOutput.write(";\n");
-    		}
-    	} else {
-	    	connection.setAutoCommit(false);
-	    	Statement stmt = connection.createStatement();
-    		for (int i = 0; i < batchSize; i++) {
-    	    	stmt.addBatch(batch[i]);
-    		}
-	    	int [] updateCounts = stmt.executeBatch();
-	    	connection.setAutoCommit(true);
-	    	int updates = 0;
-    		for (int i = 0; i < updateCounts.length; updates += updateCounts[i], i++) {
-    			if (updateCounts[i] == 0) {
-    				System.out.println("Error in SQL: " + batch[i]);
-    			}
-    		}
-    		if (updates < batchSize) {
-    			throw new RuntimeException("Failed to execute batch: " + batchSize + " versus " + updates);
-    		}
-    	}
-    	return batchSize;
+        if (outputDirectory != null) {
+            for (int i = 0; i < batchSize; i++) {
+                fileOutput.write(batch[i]);
+                fileOutput.write(";\n");
+            }
+        } else {
+            connection.setAutoCommit(false);
+            Statement stmt = connection.createStatement();
+            if (batchSize == 1) {
+                // Don't use batching if there's only one item. This allows
+                // us to work around bugs in the JDBC driver by setting
+                // outputJdbcBatchSize=1.
+                stmt.execute(batch[0]);
+            } else {
+                for (int i = 0; i < batchSize; i++) {
+                    stmt.addBatch(batch[i]);
+                }
+                int [] updateCounts = stmt.executeBatch();
+                int updates = 0;
+                for (int i = 0; i < updateCounts.length; updates += updateCounts[i], i++) {
+                    if (updateCounts[i] == 0) {
+                        System.out.println("Error in SQL: " + batch[i]);
+                    }
+                }
+                if (updates < batchSize) {
+                    throw new RuntimeException("Failed to execute batch: " + batchSize + " versus " + updates);
+                }
+            }
+            stmt.close();
+            connection.setAutoCommit(true);
+        }
+        return batchSize;
     }
-    
+
     private FileInputStream openInputStream() {
         final File file = (inputFile != null) ? new File(inputFile) : new File("demo", "FoodMartData.sql");
         if (file.exists()) {
@@ -391,16 +410,16 @@ public class MondrianFoodMartLoader {
             } catch (FileNotFoundException e) {
             }
         } else {
-        	System.out.println("No input file: " + file);
+            System.out.println("No input file: " + file);
         }
         return null;
     }
 
     private void createIndexes() throws Exception {
-    	if (outputDirectory != null) {
-    		fileOutput = new FileWriter(new File(outputDirectory, "createIndexes.sql"));
-    	}
-    	
+        if (outputDirectory != null) {
+            fileOutput = new FileWriter(new File(outputDirectory, "createIndexes.sql"));
+        }
+
         createIndex(true, "account", "i_account_id", new String[] {"account_id"});
         createIndex(false, "account", "i_account_parent", new String[] {"account_parent"});
         createIndex(true, "category", "i_category_id", new String[] {"category_id"});
@@ -460,9 +479,9 @@ public class MondrianFoodMartLoader {
         createIndex(false, "sales_fact_1998", "i_sales_1998_time_id", new String[] {"time_id"});
         createIndex(true, "store", "i_store_id", new String[] {"store_id"});
         createIndex(false, "store", "i_store_region_id", new String[] {"region_id"});
-    	if (outputDirectory != null) {
-    		fileOutput.close();
-    	}
+        if (outputDirectory != null) {
+            fileOutput.close();
+        }
     }
 
     private void createIndex(
@@ -489,11 +508,11 @@ public class MondrianFoodMartLoader {
                 System.out.println(ddl);
             }
             if (jdbcOutput) {
-	            final Statement statement = connection.createStatement();
-	            statement.execute(ddl);
+                final Statement statement = connection.createStatement();
+                statement.execute(ddl);
             } else {
-            	fileOutput.write(ddl);
-            	fileOutput.write(";\n");
+                fileOutput.write(ddl);
+                fileOutput.write(";\n");
             }
         } catch (Exception e) {
             throw MondrianResource.instance().newCreateIndexFailed(indexName,
@@ -503,18 +522,18 @@ public class MondrianFoodMartLoader {
 
     /**
      * Also initializes mapTableNameToColumns
-     * 
+     *
      * @throws Exception
      */
     private void createTables() throws Exception  {
-    	if (outputDirectory != null) {
-        	fileOutput = new FileWriter(new File(outputDirectory, "createTables.sql"));
-    	}
-    	
-    	String booleanColumnType = "BIT";
-    	if (sqlQuery.isPostgres()) {
-    		booleanColumnType = "BOOLEAN";
-    	}
+        if (outputDirectory != null) {
+            fileOutput = new FileWriter(new File(outputDirectory, "createTables.sql"));
+        }
+
+        String booleanColumnType = "BIT";
+        if (sqlQuery.isPostgres()) {
+            booleanColumnType = "BOOLEAN";
+        }
         createTable("sales_fact_1997", new Column[] {
           new Column("product_id", "INTEGER", "NOT NULL"),
           new Column("time_id", "INTEGER", "NOT NULL"),
@@ -765,31 +784,31 @@ public class MondrianFoodMartLoader {
           new Column("florist", booleanColumnType, ""),
         });
         createTable("store_ragged", new Column[] {
-	      new Column("store_id", "INTEGER", "NOT NULL"),
-	      new Column("store_type", "VARCHAR(30)", ""),
-	      new Column("region_id", "INTEGER", ""),
-	      new Column("store_name", "VARCHAR(30)", ""),
-	      new Column("store_number", "BIGINT", ""),
-	      new Column("store_street_address", "VARCHAR(30)", ""),
-	      new Column("store_city", "VARCHAR(30)", ""),
-	      new Column("store_state", "VARCHAR(30)", ""),
-	      new Column("store_postal_code", "VARCHAR(30)", ""),
-	      new Column("store_country", "VARCHAR(30)", ""),
-	      new Column("store_manager", "VARCHAR(30)", ""),
-	      new Column("store_phone", "VARCHAR(30)", ""),
-	      new Column("store_fax", "VARCHAR(30)", ""),
-	      new Column("first_opened_date", "TIMESTAMP", ""),
-	      new Column("last_remodel_date", "TIMESTAMP", ""),
-	      new Column("store_sqft", "BIGINT", ""),
-	      new Column("grocery_sqft", "BIGINT", ""),
-	      new Column("frozen_sqft", "BIGINT", ""),
-	      new Column("meat_sqft", "BIGINT", ""),
-	      new Column("coffee_bar", booleanColumnType, ""),
-	      new Column("video_store", booleanColumnType, ""),
-	      new Column("salad_bar", booleanColumnType, ""),
-	      new Column("prepared_food", booleanColumnType, ""),
-	      new Column("florist", booleanColumnType, ""),
-	    });
+          new Column("store_id", "INTEGER", "NOT NULL"),
+          new Column("store_type", "VARCHAR(30)", ""),
+          new Column("region_id", "INTEGER", ""),
+          new Column("store_name", "VARCHAR(30)", ""),
+          new Column("store_number", "BIGINT", ""),
+          new Column("store_street_address", "VARCHAR(30)", ""),
+          new Column("store_city", "VARCHAR(30)", ""),
+          new Column("store_state", "VARCHAR(30)", ""),
+          new Column("store_postal_code", "VARCHAR(30)", ""),
+          new Column("store_country", "VARCHAR(30)", ""),
+          new Column("store_manager", "VARCHAR(30)", ""),
+          new Column("store_phone", "VARCHAR(30)", ""),
+          new Column("store_fax", "VARCHAR(30)", ""),
+          new Column("first_opened_date", "TIMESTAMP", ""),
+          new Column("last_remodel_date", "TIMESTAMP", ""),
+          new Column("store_sqft", "BIGINT", ""),
+          new Column("grocery_sqft", "BIGINT", ""),
+          new Column("frozen_sqft", "BIGINT", ""),
+          new Column("meat_sqft", "BIGINT", ""),
+          new Column("coffee_bar", booleanColumnType, ""),
+          new Column("video_store", booleanColumnType, ""),
+          new Column("salad_bar", booleanColumnType, ""),
+          new Column("prepared_food", booleanColumnType, ""),
+          new Column("florist", booleanColumnType, ""),
+        });
         createTable("time_by_day", new Column[] {
           new Column("time_id", "INTEGER", "NOT NULL"),
           new Column("the_date", "TIMESTAMP", ""),
@@ -823,9 +842,9 @@ public class MondrianFoodMartLoader {
           new Column("warehouse_class_id", "INTEGER", "NOT NULL"),
           new Column("description", "VARCHAR(30)", ""),
         });
-    	if (outputDirectory != null) {
-    		fileOutput.close();
-    	}
+        if (outputDirectory != null) {
+            fileOutput.close();
+        }
     }
 
     private void createTable(String name, Column[] columns) {
@@ -866,16 +885,16 @@ public class MondrianFoodMartLoader {
                 System.out.println(ddl);
             }
             if (jdbcOutput) {
-	            final Statement statement = connection.createStatement();
-	            try {
-	                statement.execute("DROP TABLE " + quoteId(name));
-	            } catch (SQLException e) {
-	                // ignore 'table does not exist' error
-	            }
-	            statement.execute(ddl);
+                final Statement statement = connection.createStatement();
+                try {
+                    statement.execute("DROP TABLE " + quoteId(name));
+                } catch (SQLException e) {
+                    // ignore 'table does not exist' error
+                }
+                statement.execute(ddl);
             } else {
-            	fileOutput.write(ddl);
-            	fileOutput.write(";\n");
+                fileOutput.write(ddl);
+                fileOutput.write(";\n");
             }
         } catch (Exception e) {
             throw MondrianResource.instance().newCreateTableFailed(name, e);
@@ -887,92 +906,92 @@ public class MondrianFoodMartLoader {
     }
 
     private String columnValue(ResultSet rs, Column column) throws Exception {
-    	String columnType = column.type;
+        String columnType = column.type;
         final Pattern regex = Pattern.compile("DECIMAL\\((.*),(.*)\\)");
-   	
-    	if (columnType.startsWith("INTEGER")) {
-    		int result = rs.getInt(column.name);
-    		return Integer.toString(result);
-    	}
-    	if (columnType.startsWith("SMALLINT")) {
-    		short result = rs.getShort(column.name);
-    		return Integer.toString(result);
-    	}
-    	if (columnType.startsWith("BIGINT")) {
-    		long result = rs.getLong(column.name);
-    		return Long.toString(result);
-    	}
-    	if (columnType.startsWith("VARCHAR")) {
-    		return embedQuotes(rs.getString(column.name));
-    	}
-    	if (columnType.startsWith("TIMESTAMP")) {
-    		Timestamp ts = rs.getTimestamp(column.name);
-        	if (ts == null) {
-        		return "NULL";
-        	} else {
-        		return "'" + ts + "'" ;
-        	}
-    	}
-    	if (columnType.startsWith("DATE")) {
-    		java.sql.Date dt = rs.getDate(column.name);
-        	if (dt == null) {
-        		return "NULL";
-        	} else {
-        		return "'" + dt + "'" ;
-        	}
-    	}
-    	if (columnType.startsWith("REAL")) {
-    		return Float.toString(rs.getFloat(column.name));
-    	}
-    	if (columnType.startsWith("DECIMAL")) {
+
+        if (columnType.startsWith("INTEGER")) {
+            int result = rs.getInt(column.name);
+            return Integer.toString(result);
+        }
+        if (columnType.startsWith("SMALLINT")) {
+            short result = rs.getShort(column.name);
+            return Integer.toString(result);
+        }
+        if (columnType.startsWith("BIGINT")) {
+            long result = rs.getLong(column.name);
+            return Long.toString(result);
+        }
+        if (columnType.startsWith("VARCHAR")) {
+            return embedQuotes(rs.getString(column.name));
+        }
+        if (columnType.startsWith("TIMESTAMP")) {
+            Timestamp ts = rs.getTimestamp(column.name);
+            if (ts == null) {
+                return "NULL";
+            } else {
+                return "'" + ts + "'" ;
+            }
+        }
+        if (columnType.startsWith("DATE")) {
+            java.sql.Date dt = rs.getDate(column.name);
+            if (dt == null) {
+                return "NULL";
+            } else {
+                return "'" + dt + "'" ;
+            }
+        }
+        if (columnType.startsWith("REAL")) {
+            return Float.toString(rs.getFloat(column.name));
+        }
+        if (columnType.startsWith("DECIMAL")) {
             final Matcher matcher = regex.matcher(columnType);
             if (!matcher.matches()) {
                 throw new Exception("Bad DECIMAL column type for " + columnType);
             }
             DecimalFormat formatter = new DecimalFormat(decimalFormat(matcher.group(1), matcher.group(2)));
-    		return formatter.format(rs.getDouble(column.name));
-    	}
-    	if (columnType.startsWith("BIT")) {
-    		return Byte.toString(rs.getByte(column.name));
-    	}
-    	if (columnType.startsWith("BOOLEAN")) {
-    		return Boolean.toString(rs.getBoolean(column.name));
-    	}
-    	throw new Exception("Unknown column type: " + columnType + " for column: " + column.name);
+            return formatter.format(rs.getDouble(column.name));
+        }
+        if (columnType.startsWith("BIT")) {
+            return Byte.toString(rs.getByte(column.name));
+        }
+        if (columnType.startsWith("BOOLEAN")) {
+            return Boolean.toString(rs.getBoolean(column.name));
+        }
+        throw new Exception("Unknown column type: " + columnType + " for column: " + column.name);
     }
-    
-    private String embedQuotes(String original) {
-    	if (original == null) {
-    		return "NULL";
-    	}
-    	StringBuffer sb = new StringBuffer();
 
-    	sb.append("'");
-    	for (int i = 0; i < original.length(); i++) {
-    		char ch = original.charAt(i);
-    		sb.append(ch);
-    		if (ch == '\'') {
-    			sb.append('\'');
-    		}
-    	}
-    	sb.append("'");
-    	return sb.toString();
+    private String embedQuotes(String original) {
+        if (original == null) {
+            return "NULL";
+        }
+        StringBuffer sb = new StringBuffer();
+
+        sb.append("'");
+        for (int i = 0; i < original.length(); i++) {
+            char ch = original.charAt(i);
+            sb.append(ch);
+            if (ch == '\'') {
+                sb.append('\'');
+            }
+        }
+        sb.append("'");
+        return sb.toString();
     }
-    
+
     private String decimalFormat(String lengthStr, String placesStr) {
-    	StringBuffer sb = new StringBuffer();
-    	
-    	int length = Integer.parseInt(lengthStr);
-    	int places = Integer.parseInt(placesStr);
-    	for (int i = 0; i < length; i++) {
-    		sb.append("#");
-    		if ((length - i) == places) {
-    			sb.append('.');
-    		}
-    	}
-    	return sb.toString();
+        StringBuffer sb = new StringBuffer();
+
+        int length = Integer.parseInt(lengthStr);
+        int places = Integer.parseInt(placesStr);
+        for (int i = 0; i < length; i++) {
+            sb.append("#");
+            if ((length - i) == places) {
+                sb.append('.');
+            }
+        }
+        return sb.toString();
     }
-    
+
     private static class Column {
         private final String name;
         private final String type;
@@ -985,4 +1004,3 @@ public class MondrianFoodMartLoader {
         }
     }
 }
- 
