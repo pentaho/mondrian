@@ -39,13 +39,14 @@
   <property name="webapp.dir" value="webapp"/>
   <property name="dist.src.file" value="${dist.dir}/${dist.name}-src.zip"/>
   <property name="dist.data.file" value="${dist.dir}/${name}-data.zip"/>
+  <property name="dist.data.mysql.file" value="${dist.dir}/${name}-data-mysql.zip"/>
   <property name="dist.bin.file" value="${dist.dir}/${dist.name}-bin.zip"/>
   <property name="jar.file" value="${lib.dir}/${name}.jar"/>
   <property name="workbench.jar.file" value="workbench.jar"/>
   <property name="boot.jar.file" value="${lib.dir}/boot.jar"/>
   <property name="war.file" value="${lib.dir}/${name}.war"/>
   <property name="jdk.home" value="${myenv.JAVA_HOME}"/>
-  <property name="tomcat.home" value="${myenv.TOMCAT_HOME}"/>
+  <property name="catalina.home" value="${myenv.CATALINA_HOME}"/>
   <property name="xalan.home" value="${myenv.XALAN_HOME}"/>
   <property name="junit.home" value="${myenv.JUNIT_HOME}"/>
   <property name="weblogic.home" value="${myenv.WEBLOGIC_HOME}"/>
@@ -69,11 +70,13 @@ ${lib.dir}/junit.jar,
 ${lib.dir}/optional.jar,
 ${lib.dir}/xalan.jar,
 ${lib.dir}/xercesImpl.jar,
-${lib.dir}/xml-apis.jar"/>
+${lib.dir}/xml-apis.jar,
+demo/mysql/FoodMartDropTables.sql,
+demo/mysql/FoodMartData.sql"/>
 
   <path id="project.classpath">
     <pathelement location="${classes.dir}"/>
-    <pathelement location="${tomcat.home}/common/lib/servlet.jar"/>
+    <pathelement location="${catalina.home}/common/lib/servlet.jar"/>
     <pathelement location="${lib.dir}/javacup.jar"/>
     <pathelement location="${lib.dir}/mof.jar"/>
     <pathelement location="${lib.dir}/jmi.jar"/>
@@ -298,6 +301,7 @@ copy.properties"/>
   <target name="test-oracle" description="Runs all JUnit tests on Oracle.">
     <antcall target="test-dbms">
       <param name="mondrian.foodmart.jdbcURL" value="${mondrian.foodmart.jdbcURL.oracle}"/>
+      <param name="mondrian.jdbcDrivers" value="oracle.jdbc.OracleDriver"/>
     </antcall>
   </target>
 
@@ -311,9 +315,11 @@ copy.properties"/>
       description="
 Runs all JUnit tests, using the given database connection
 in {mondrian.foodmart.jdbcURL}.">
+    <echo>Connecting to ${mondrian.foodmart.jdbcURL}</echo>
     <java classpathref="project.classpath" classname="mondrian.test.Main"
         fork="yes">
       <jvmarg value="-Dmondrian.jdbcDrivers=${mondrian.jdbcDrivers}"/>
+      <jvmarg value="-Dmondrian.foodmart.jdbcURL=${mondrian.foodmart.jdbcURL}"/>
       <jvmarg value="-Dmondrian.test.connectString=Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}'"/>
     </java>
   </target>
@@ -407,7 +413,7 @@ ${generated.java.files}" />
     </zip>
   </target>
 
-  <target name="datazip">
+  <target name="data-zip">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.data.file}"/>
     <zip
@@ -435,6 +441,35 @@ demo/**/*.pl,
 demo/**/*.sh"
           excludes="demo/FoodMart.xml,
 **/*~"/>
+    </zip>
+  </target>
+
+  <target name="data-mysql-zip">
+    <echo>(This may take up to 20 minutes. Please be patient.)</echo>
+    <mkdir dir="${dist.dir}" />
+    <delete file="${dist.data.mysql.file}"/>
+    <copy file="demo/FoodMartDropTables.sql" todir="demo/mysql/FoodMartDropTables.sql"/>
+    <!-- Convert every 'true' and 'false' to '1' and '0'. Couldn't figure out
+         a portable way to do this - sorry! -->
+    <exec dir="." executable="sed.exe" output="${demo.dir}/mysql/FoodMartData.sql">
+      <arg line="-e 's/,true/,1/g;s/,false/,0/g' ${demo.dir}/FoodMartData.sql"/>
+    </exec>
+    <zip
+        zipfile="${dist.data.mysql.file}"
+        update="true">
+      <!-- We do not use 'prefix="${dist.name}"', cuz we don't want to issue a
+           new data file each release. -->
+      <zipfileset
+          dir="."
+          prefix="mondrian-data"
+          includes="LICENSE.html,
+README.txt,
+VERSION.txt,
+demo/mysql/FoodMartTables.sql,
+demo/mysql/FoodMartIndexes.sql,
+demo/mysql/FoodMartDropTables.sql,
+demo/mysql/FoodMartData.sql,
+demo/mysql/INSTALL.txt"/>
     </zip>
   </target>
 
@@ -530,9 +565,12 @@ mondrian/resource/**/*.class"/>
         overview="${java.dir}/overview.html"
         footer="&lt;a href=&quot;http://sourceforge.net/projects/mondrian&quot;&gt;&lt;img src=&quot;http://sourceforge.net/sflogo.php?group_id=35302&#38;type=1&quot; width=&quot;88&quot; height=&quot;31&quot; border=&quot;0&quot; alt=&quot;SourceForge.net_Logo&quot;&gt;&lt;/a&gt;"
         author="true">
+        <link href="http://javadoc.dyndns.org/"/>
+<!-- 
         <link href="http://java.sun.com/j2se/1.4/docs/api/"/>
         <link href="http://www.junit.org/junit/javadoc/3.7/"/>
         <link href="http://java.sun.com/products/servlet/2.2/javadoc/"/>
+ -->
     </javadoc>
     <copy file="${java.dir}/mondrian/xom/meta.xml"
         todir="${javadoc.dir}/mondrian/xom"/>
@@ -581,7 +619,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
         webxml="${lib.dir}/web.xml">
       <webinf dir="${webapp.dir}/WEB-INF" excludes="web.xml"/>
 	  <!-- our FoodMart.xml may be newer than jpivot's -->
-      <webinf dir="${demo.dir}" includes="FoodMart.xml"/>
+      <webinf dir="${demo.dir}" prefix="queries" includes="FoodMart.xml"/>
       <fileset dir="${webapp.dir}" excludes="WEB-INF/**/*"/>
 	  <!-- should already contain javacup.jar, xalan.jar, junit.jar -->
       <lib dir="${lib.dir}" includes="${name}.jar"/>
@@ -614,9 +652,9 @@ xalan.jar"/>
   </target>
 
   <target name="deploy-webapp" depends="webapp">
-    <delete dir="${tomcat.home}/webapps/mondrian"/>
+    <delete dir="${catalina.home}/webapps/mondrian"/>
     <copy file="${war.file}"
-        todir="${tomcat.home}/webapps"/>
+        todir="${catalina.home}/webapps"/>
   </target>
 
   <target name="setup-compile-farm">
@@ -641,7 +679,7 @@ xalan.jar"/>
     <echo>Copy tomcat</echo>
     <exec executable="pscp.exe">
       <arg line="-unsafe -q -v -pw ${cf.password} -r"/>
-      <arg line="${tomcat.home}"/>
+      <arg line="${catalina.home}"/>
       <arg line="${cf.user}:${cf.path}/jakarta-tomcat-4.0.4"/>
     </exec>
   </target>

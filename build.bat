@@ -7,9 +7,9 @@
 @rem You must accept the terms of that agreement to use this software.
 
 @set SRCROOT=%~dp0
-@set HOME_DRIVE=Z
-@rem set JAVA_HOME=%HOME_DRIVE%:/j2sdk1.4.1_01
-@rem set PATH=%JAVA_HOME%/bin;%PATH%
+@set HOME_DRIVE=E
+@set JAVA_HOME=%HOME_DRIVE%:/j2sdk1.4.1_01
+@set PATH=%JAVA_HOME%/bin;%PATH%
 
 @set ANT_HOME=%HOME_DRIVE%:\jakarta-ant-1.5
 @if exist "%ANT_HOME%" goto x010
@@ -29,9 +29,9 @@
 @goto end
 :x040
 
-@set TOMCAT_HOME=%HOME_DRIVE%:\jakarta-tomcat-4.1.18
-@if exist "%TOMCAT_HOME%" goto x050
-@echo TOMCAT_HOME (%TOMCAT_HOME%) does not exist
+@set CATALINA_HOME=%HOME_DRIVE%:\jakarta-tomcat-4.1.18
+@if exist "%CATALINA_HOME%" goto x050
+@echo CATALINA_HOME (%CATALINA_HOME%) does not exist
 @goto end
 :x050
 

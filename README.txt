@@ -1,4 +1,4 @@
-This is a source or binary distribution of Mondrian,
+This is a source, binary or data distribution of Mondrian,
 an OLAP Server written in Java.
 
 This code is released under the terms of the Common Public
