@@ -1,6 +1,6 @@
 package javax.jmi.model;
 
-import javax.jmi.reflect.*;
+import javax.jmi.reflect.RefEnum;
 
 public final class EvaluationKindEnum implements EvaluationKind {
     public static final EvaluationKindEnum IMMEDIATE = new EvaluationKindEnum("immediate");

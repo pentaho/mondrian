@@ -12,9 +12,8 @@
 
 package mondrian.xom;
 
-import java.io.*;
-import java.util.*;
-import java.lang.reflect.*;
+import java.lang.reflect.Array;
+import java.util.Vector;
 
 /**
  * DefWalker is a class designed to help users of plugin elements and elements

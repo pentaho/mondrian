@@ -6,10 +6,10 @@
 
 package mondrian.gui;
 
+import mondrian.olap.MondrianDef;
+
 import javax.swing.*;
-import javax.swing.table.*;
 import java.awt.*;
-import mondrian.olap.*;
 
 /**
  *

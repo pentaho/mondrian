@@ -6,7 +6,7 @@
 
 package mondrian.gui;
 
-import java.sql.*;
+import java.sql.Connection;
 
 /**
  *

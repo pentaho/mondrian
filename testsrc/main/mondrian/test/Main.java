@@ -11,22 +11,11 @@
 */
 
 package mondrian.test;
-import java.io.PrintWriter;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Enumeration;
-import java.util.regex.Pattern;
-
-import junit.framework.AssertionFailedError;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestListener;
-import junit.framework.TestResult;
-import junit.framework.TestSuite;
+import junit.framework.*;
 import junit.textui.TestRunner;
 import mondrian.olap.MondrianProperties;
-import mondrian.olap.Util;
 import mondrian.olap.ParserTest;
+import mondrian.olap.Util;
 import mondrian.olap.UtilTestCase;
 import mondrian.olap.fun.FunctionTest;
 import mondrian.rolap.RolapUtil;
@@ -34,6 +23,12 @@ import mondrian.rolap.agg.TestAggregationManager;
 import mondrian.rolap.cache.CachePoolTestCase;
 import mondrian.util.ScheduleTest;
 import mondrian.xmla.XmlaTest;
+
+import java.io.PrintWriter;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Enumeration;
+import java.util.regex.Pattern;
 
 /**
  * <code>Main</code> is the main test suite for Mondrian.

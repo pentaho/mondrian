@@ -6,13 +6,11 @@
 
 package mondrian.gui;
 
-import java.awt.Component;
-import java.util.ResourceBundle;
-
-import javax.swing.ImageIcon;
-import javax.swing.JTree;
-
 import mondrian.olap.MondrianDef;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.ResourceBundle;
 
 /**
  * Render an entry for the tree

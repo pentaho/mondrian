@@ -14,8 +14,8 @@ package mondrian.rolap;
 import mondrian.olap.DriverManager;
 
 import java.io.PrintWriter;
-import java.util.Vector;
 import java.util.ArrayList;
+import java.util.Vector;
 
 /**
  * todo:

@@ -6,10 +6,10 @@
  */
 package mondrian.rolap.cache;
 
-import java.lang.ref.SoftReference;
-
 import mondrian.olap.Util;
 import mondrian.rolap.RolapUtil;
+
+import java.lang.ref.SoftReference;
 
 
 /**

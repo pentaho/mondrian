@@ -11,9 +11,9 @@
 */
 package mondrian.olap.fun;
 
+import mondrian.olap.Exp;
 import mondrian.olap.FunDef;
 import mondrian.olap.Hierarchy;
-import mondrian.olap.Exp;
 
 /**
  * A <code>ParameterFunDef</code> is a pseudo-function describing calls to

@@ -12,8 +12,8 @@
 
 package mondrian.rolap;
 
-import mondrian.olap.Util;
 import mondrian.olap.Evaluator;
+import mondrian.olap.Util;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.agg.Segment;
 

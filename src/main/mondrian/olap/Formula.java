@@ -11,7 +11,7 @@
 */
 
 package mondrian.olap;
-import java.io.*;
+import java.io.PrintWriter;
 
 /**
  * A <code>Formula</code> is a clause in an MDX query which defines a Set or a

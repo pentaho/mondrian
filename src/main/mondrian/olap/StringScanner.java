@@ -11,7 +11,7 @@
 */
 
 package mondrian.olap;
-import java.util.*;
+
 
 /**
  * Lexical analyzer whose input is a string.

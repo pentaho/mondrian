@@ -9,12 +9,12 @@
 
 package mondrian.util;
 
+import junit.framework.TestCase;
+
 import java.sql.Time;
-import java.util.TimeZone;
 import java.util.Calendar;
 import java.util.Date;
-
-import junit.framework.TestCase;
+import java.util.TimeZone;
 
 public class ScheduleTest extends TestCase {
     public static final Time time0827 = ScheduleUtil.createTime(8, 27, 00);

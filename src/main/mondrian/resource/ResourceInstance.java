@@ -11,7 +11,7 @@
 */
 package mondrian.resource;
 
-import java.util.ResourceBundle;
+
 
 /**
  * A <code>ResourceInstance</code> is an occurrence of a {@link

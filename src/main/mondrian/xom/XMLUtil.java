@@ -11,9 +11,9 @@
 */
 
 package mondrian.xom;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.io.IOException;
 
 /**
  * Utilities for dealing with XML data.  These methods must NOT depend upon any

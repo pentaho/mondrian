@@ -11,23 +11,16 @@
 */
 
 package mondrian.rolap.agg;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-
 import mondrian.olap.Util;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.cache.CachePool;
 import mondrian.rolap.cache.SoftCacheableReference;
 import mondrian.rolap.sql.SqlQuery;
+
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * A <code>Aggregation</code> is a pre-computed aggregation over a set of

@@ -6,19 +6,14 @@
 
 package mondrian.gui;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Font;
-import java.util.ArrayList;
-import java.util.EventObject;
+import mondrian.olap.MondrianDef;
 
-import javax.swing.JCheckBox;
-import javax.swing.JTable;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
-
-import mondrian.olap.MondrianDef;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.EventObject;
 
 /**
  *

@@ -9,7 +9,7 @@
 */
 
 package mondrian.xom;
-import java.util.*;
+import java.util.Vector;
 
 /**
  * <p><code>StringEscaper</code> is a utility for replacing special characters

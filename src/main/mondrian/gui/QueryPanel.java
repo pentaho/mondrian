@@ -6,7 +6,9 @@
 
 package mondrian.gui;
 
-import mondrian.olap.*;
+import mondrian.olap.Connection;
+import mondrian.olap.Query;
+import mondrian.olap.Result;
 
 /**
  *

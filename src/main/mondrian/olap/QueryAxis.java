@@ -11,7 +11,7 @@
 */
 
 package mondrian.olap;
-import java.io.*;
+import java.io.PrintWriter;
 
 public class QueryAxis extends QueryPart {
 	public boolean nonEmpty;

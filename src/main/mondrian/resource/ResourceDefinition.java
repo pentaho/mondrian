@@ -11,8 +11,8 @@
 */
 package mondrian.resource;
 
-import java.util.ResourceBundle;
 import java.text.MessageFormat;
+import java.util.ResourceBundle;
 
 public class ResourceDefinition {
 	//int code;

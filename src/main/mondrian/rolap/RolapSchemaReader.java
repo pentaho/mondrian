@@ -13,9 +13,9 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 
-import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * A <code>RolapSchemaReader</code> allows you to read schema objects while

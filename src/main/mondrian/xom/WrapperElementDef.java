@@ -12,7 +12,6 @@
 
 package mondrian.xom;
 import java.io.PrintWriter;
-import java.util.Enumeration;
 
 /**
  * <code>WrapperElementDef</code> is an {@link ElementDef} which retains the

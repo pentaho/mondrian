@@ -1,6 +1,6 @@
 package javax.jmi.model;
 
-import javax.jmi.reflect.*;
+import javax.jmi.reflect.RefException;
 
 public class NameNotFoundException extends RefException {
     private final String name;

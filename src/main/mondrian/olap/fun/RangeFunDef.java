@@ -10,7 +10,11 @@
 // jhyde, 3 March, 2002
 */
 package mondrian.olap.fun;
-import mondrian.olap.*;
+import mondrian.olap.Category;
+import mondrian.olap.Exp;
+import mondrian.olap.ExpBase;
+import mondrian.olap.Syntax;
+
 import java.io.PrintWriter;
 
 /**

@@ -12,14 +12,15 @@
 
 package mondrian.rolap;
 import mondrian.olap.*;
-import mondrian.xom.XOMUtil;
+import mondrian.xom.DOMWrapper;
 import mondrian.xom.Parser;
 import mondrian.xom.XOMException;
-import mondrian.xom.DOMWrapper;
+import mondrian.xom.XOMUtil;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Properties;
 
 /**
  * A <code>RolapSchema</code> is a collection of {@link RolapCube}s and

@@ -1,6 +1,6 @@
 package javax.jmi.model;
 
-import javax.jmi.reflect.*;
+
 
 public interface TypedElement extends ModelElement {
     public Classifier getType();

@@ -1,6 +1,6 @@
 package javax.jmi.model;
 
-import javax.jmi.reflect.*;
+
 
 public interface Namespace extends ModelElement {
     public ModelElement lookupElement(String name) throws NameNotFoundException;

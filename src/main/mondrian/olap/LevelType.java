@@ -9,7 +9,7 @@
 */
 package mondrian.olap;
 
-import mondrian.olap.EnumeratedValues;
+
 
 /**
  * Enumerates the types of levels.

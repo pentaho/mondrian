@@ -11,10 +11,10 @@
 */
 package mondrian.test;
 
-import mondrian.olap.Connection;
-import mondrian.olap.Query;
-import mondrian.olap.Parameter;
 import junit.framework.Assert;
+import mondrian.olap.Connection;
+import mondrian.olap.Parameter;
+import mondrian.olap.Query;
 
 /**
  * A <code>ParameterTest</code> is a test suite for functionality relating to

@@ -15,9 +15,8 @@ package mondrian.xom;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 
-import java.util.Vector;
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
 
 /**
  * <code>XOMGenTask</code> is an ANT task with which to invoke {@link

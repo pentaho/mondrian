@@ -1,6 +1,6 @@
 package javax.jmi.primitivetypes;
 
-import javax.jmi.reflect.*;
+import javax.jmi.reflect.RefPackage;
 
 public interface PrimitiveTypesPackage extends RefPackage {
 }

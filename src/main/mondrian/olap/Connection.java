@@ -11,7 +11,6 @@
 */
 
 package mondrian.olap;
-import mondrian.olap.MondrianDef;
 import java.util.Locale;
 
 /**

@@ -11,7 +11,7 @@
 */
 
 package mondrian.olap;
-import java.io.*;
+import java.io.PrintWriter;
 
 /**
  * An <code>OlapElement</code> is a catalog object (dimension, hierarchy, level,

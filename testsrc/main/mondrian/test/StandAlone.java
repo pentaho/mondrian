@@ -10,8 +10,11 @@ package mondrian.test;
 
 import mondrian.olap.*;
 
-import java.io.*;
-import java.text.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.text.MessageFormat;
 
 public class StandAlone {
     private static final String[] indents = new String[]{

@@ -6,13 +6,14 @@
 
 package mondrian.gui;
 
-import javax.swing.*;
-import javax.swing.tree.*;
-import javax.swing.event.*;
-
-import java.util.*;
-
-import java.sql.*;
+import javax.swing.event.TreeModelListener;
+import javax.swing.tree.TreePath;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
 
 /**
  *

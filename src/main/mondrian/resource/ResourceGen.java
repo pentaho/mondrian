@@ -12,19 +12,17 @@
 
 package mondrian.resource;
 import mondrian.xom.DOMWrapper;
+import org.apache.tools.ant.BuildException;
 
 import java.io.*;
-import java.net.URL;
-import java.util.*;
-import java.text.MessageFormat;
-import java.text.Format;
-import java.text.NumberFormat;
-import java.text.DateFormat;
-import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Constructor;
-
-import org.apache.tools.ant.BuildException;
+import java.lang.reflect.Method;
+import java.text.DateFormat;
+import java.text.Format;
+import java.text.MessageFormat;
+import java.text.NumberFormat;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * <code>ResourceGen</code> parses an XML file containing error messages, and

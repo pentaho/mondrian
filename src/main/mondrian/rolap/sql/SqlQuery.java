@@ -12,8 +12,8 @@
 
 package mondrian.rolap.sql;
 
-import mondrian.olap.Util;
 import mondrian.olap.MondrianDef;
+import mondrian.olap.Util;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;

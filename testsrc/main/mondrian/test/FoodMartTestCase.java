@@ -11,20 +11,13 @@
 */
 package mondrian.test;
 
+import junit.framework.Assert;
+import junit.framework.TestCase;
+import mondrian.olap.*;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
-
-import junit.framework.TestCase;
-import junit.framework.Assert;
-import mondrian.olap.Axis;
-import mondrian.olap.Cell;
-import mondrian.olap.Connection;
-import mondrian.olap.Member;
-import mondrian.olap.Position;
-import mondrian.olap.Query;
-import mondrian.olap.Result;
-import mondrian.olap.Util;
 
 /**
  * <code>FoodMartTestCase</code> is a unit test which runs against the FoodMart

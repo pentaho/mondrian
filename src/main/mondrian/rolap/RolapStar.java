@@ -17,9 +17,9 @@ import mondrian.olap.Util;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.sql.SqlQuery;
 
+import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.Connection;
-import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;

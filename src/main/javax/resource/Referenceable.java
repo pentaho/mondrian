@@ -1,6 +1,6 @@
 package javax.resource;
 
-import javax.naming.*;
+
 
 public interface Referenceable extends javax.naming.Referenceable {
 

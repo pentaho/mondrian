@@ -9,9 +9,9 @@
 
 package mondrian.rolap.cache;
 
-import java.util.ArrayList;
-
 import junit.framework.TestCase;
+
+import java.util.ArrayList;
 
 public class CachePoolTestCase extends TestCase {
     public CachePoolTestCase(String s) {

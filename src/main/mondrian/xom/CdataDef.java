@@ -11,7 +11,7 @@
 */
 
 package mondrian.xom;
-import java.io.PrintWriter;
+
 
 /**
  * A <code>CdataDef</code> represents a CDATA element.  It allows an

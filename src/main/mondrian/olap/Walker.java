@@ -11,8 +11,9 @@
 */
 
 package mondrian.olap;
-import java.util.*;
 import java.io.PrintWriter;
+import java.util.Enumeration;
+import java.util.Stack;
 
 /**
  * Walks over a tree, returning nodes in prefix order.  Objects which are an

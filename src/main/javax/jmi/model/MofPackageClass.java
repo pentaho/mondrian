@@ -1,6 +1,6 @@
 package javax.jmi.model;
 
-import javax.jmi.reflect.*;
+import javax.jmi.reflect.RefClass;
 
 public interface MofPackageClass extends RefClass {
     public MofPackage createMofPackage();

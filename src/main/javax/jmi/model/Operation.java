@@ -1,6 +1,6 @@
 package javax.jmi.model;
 
-import javax.jmi.reflect.*;
+
 
 public interface Operation extends BehavioralFeature {
     public boolean isQuery();

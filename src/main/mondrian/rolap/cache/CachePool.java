@@ -1,9 +1,9 @@
 package mondrian.rolap.cache;
 
+import mondrian.olap.MondrianProperties;
+
 import java.io.PrintWriter;
 import java.util.Collection;
-
-import mondrian.olap.MondrianProperties;
 
 /**
  * A <code>CachePool</code> manages the objects in a collection of

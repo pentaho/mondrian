@@ -1,6 +1,6 @@
 package javax.jmi.model;
 
-import javax.jmi.reflect.*;
+import javax.jmi.reflect.RefEnum;
 
 public final class ScopeKindEnum implements ScopeKind {
     public static final ScopeKindEnum INSTANCE_LEVEL = new ScopeKindEnum("instance_level");

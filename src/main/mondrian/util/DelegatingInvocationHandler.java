@@ -12,8 +12,8 @@
 package mondrian.util;
 
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * A class derived from <code>DelegatingInvocationHandler</code> handles a

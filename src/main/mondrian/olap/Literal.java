@@ -11,7 +11,7 @@
 */
 
 package mondrian.olap;
-import java.io.*;
+import java.io.PrintWriter;
 
 /**
  * Constant (just strings and symbols for now).

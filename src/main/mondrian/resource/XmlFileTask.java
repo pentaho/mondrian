@@ -12,22 +12,15 @@
 
 package mondrian.resource;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
+import org.apache.tools.ant.BuildException;
 
+import java.io.*;
 import java.lang.reflect.Constructor;
-
 import java.net.URL;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.StringTokenizer;
-
-import org.apache.tools.ant.BuildException;
 
 
 class XmlFileTask extends ResourceGen.FileTask {

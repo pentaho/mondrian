@@ -11,10 +11,10 @@
 */
 package mondrian.olap.fun;
 
+import mondrian.olap.Category;
 import mondrian.olap.Exp;
 import mondrian.olap.FunDef;
 import mondrian.olap.Syntax;
-import mondrian.olap.Category;
 
 /**
  * A <code>SimpleResolver</code> resolves a single, non-overloaded function.

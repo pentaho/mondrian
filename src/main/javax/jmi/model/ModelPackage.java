@@ -1,6 +1,6 @@
 package javax.jmi.model;
 
-import javax.jmi.reflect.*;
+import javax.jmi.reflect.RefPackage;
 
 public interface ModelPackage extends RefPackage {
     public ModelElementClass getModelElement();

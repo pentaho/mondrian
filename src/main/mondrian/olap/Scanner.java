@@ -11,8 +11,11 @@
 */
 
 package mondrian.olap;
-import java_cup.runtime.*;
-import java.util.*;
+import java_cup.runtime.Symbol;
+
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
 
 /**
  * Lexical analyzer for MDX.

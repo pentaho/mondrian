@@ -11,7 +11,10 @@
 */
 package mondrian.web.taglib;
 
-import mondrian.olap.*;
+import mondrian.olap.Connection;
+import mondrian.olap.DriverManager;
+import mondrian.olap.Query;
+import mondrian.olap.Result;
 import org.w3c.dom.Document;
 
 import javax.servlet.ServletContext;

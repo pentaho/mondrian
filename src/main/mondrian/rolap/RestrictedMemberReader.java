@@ -17,8 +17,8 @@ import mondrian.olap.Util;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * A <code>RestrictedMemberReader</code> reads only the members of a hierarchy

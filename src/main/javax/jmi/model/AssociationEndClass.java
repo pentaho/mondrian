@@ -1,6 +1,6 @@
 package javax.jmi.model;
 
-import javax.jmi.reflect.*;
+import javax.jmi.reflect.RefClass;
 
 public interface AssociationEndClass extends RefClass {
     public AssociationEnd createAssociationEnd();

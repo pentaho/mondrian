@@ -11,8 +11,10 @@
 */
 
 package mondrian.xom;
-import java.util.*;
 import java.io.*;
+import java.util.Date;
+import java.util.Hashtable;
+import java.util.Vector;
 
 /**
  * <code>MetaGenerator</code> is a utility class which reads a Mining Meta

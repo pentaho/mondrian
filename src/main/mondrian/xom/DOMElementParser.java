@@ -11,8 +11,11 @@
 */
 
 package mondrian.xom;
-import java.util.*;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Vector;
 
 /**
  * DOMElementParser is a utility wrapper around DOMWrapper.

@@ -11,10 +11,10 @@
 
 package mondrian.olap.fun;
 
-import java.io.PrintWriter;
-
 import junit.framework.TestCase;
 import mondrian.olap.*;
+
+import java.io.PrintWriter;
 
 /**
  * <code>MemberHelperTest</code> tests {@link MemberHelper}.

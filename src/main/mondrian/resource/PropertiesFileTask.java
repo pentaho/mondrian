@@ -15,9 +15,7 @@ package mondrian.resource;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-
 import java.net.URL;
-
 import java.util.Locale;
 
 class PropertiesFileTask extends ResourceGen.FileTask {

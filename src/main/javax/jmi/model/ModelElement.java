@@ -1,6 +1,6 @@
 package javax.jmi.model;
 
-import javax.jmi.reflect.*;
+import javax.jmi.reflect.RefObject;
 
 public interface ModelElement extends RefObject {
     public String CONTAINERDEP = "container";

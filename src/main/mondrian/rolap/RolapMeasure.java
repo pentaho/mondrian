@@ -11,7 +11,8 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.*;
+import mondrian.olap.Literal;
+import mondrian.olap.Property;
 
 /**
  * A <code>RolapMeasure</code> is a member of the "Measures" dimension.

@@ -12,25 +12,17 @@
 
 package mondrian.web.servlet;
 
-import java.io.IOException;
-import java.util.Enumeration;
+import mondrian.olap.*;
+import mondrian.web.taglib.ResultCache;
+import mondrian.xom.StringEscaper;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import mondrian.olap.Cell;
-import mondrian.olap.DriverManager;
-import mondrian.olap.Member;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Position;
-import mondrian.olap.Query;
-import mondrian.olap.Result;
-import mondrian.olap.Util;
-import mondrian.web.taglib.ResultCache;
-import mondrian.xom.StringEscaper;
+import java.io.IOException;
+import java.util.Enumeration;
 
 /**
  * <code>MDXQueryServlet</code> is a servlet which receives MDX queries,

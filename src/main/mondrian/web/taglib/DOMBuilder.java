@@ -11,7 +11,10 @@
 */
 package mondrian.web.taglib;
 
-import java.io.StringReader;
+import mondrian.olap.*;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -21,16 +24,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-
-import mondrian.olap.Axis;
-import mondrian.olap.Cell;
-import mondrian.olap.Member;
-import mondrian.olap.Position;
-import mondrian.olap.Property;
-import mondrian.olap.Result;
-import org.w3c.dom.CDATASection;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import java.io.StringReader;
 
 /**
  * transforms a mondrian result into a DOM

@@ -1,7 +1,7 @@
 package javax.jmi.reflect;
 
-import java.util.List;
 import java.io.Serializable;
+import java.util.List;
 
 public interface RefStruct extends Serializable {
     public List refFieldNames();

@@ -1,14 +1,9 @@
 package mondrian.rolap.cache;
 
-import java.io.PrintWriter;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
 import mondrian.olap.Util;
+
+import java.io.PrintWriter;
+import java.util.*;
 
 /**
  * A CachePool implementation that allows the garbage collector to

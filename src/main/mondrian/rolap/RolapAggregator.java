@@ -9,7 +9,10 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.*;
+import mondrian.olap.Aggregator;
+import mondrian.olap.EnumeratedValues;
+import mondrian.olap.Evaluator;
+import mondrian.olap.Exp;
 import mondrian.olap.fun.FunUtil;
 
 import java.util.List;

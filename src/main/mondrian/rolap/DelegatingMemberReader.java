@@ -11,9 +11,6 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.Member;
-import mondrian.olap.Level;
-
 import java.util.List;
 
 /**

@@ -11,19 +11,11 @@
 */
 package mondrian.test;
 
-import java.util.regex.Pattern;
-
-import mondrian.olap.Axis;
-import mondrian.olap.Cell;
-import mondrian.olap.Connection;
-import mondrian.olap.Cube;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Query;
-import mondrian.olap.Result;
-import mondrian.olap.Schema;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.rolap.RolapConnection;
 import mondrian.rolap.cache.CachePool;
+
+import java.util.regex.Pattern;
 
 /**
  * <code>BasicQueryTest</code> is a test case which tests simple queries against

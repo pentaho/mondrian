@@ -11,7 +11,8 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.*;
+import mondrian.olap.Exp;
+import mondrian.olap.Formula;
 
 /**
  * A <code>RolapCalculatedMember</code> is a member based upon a

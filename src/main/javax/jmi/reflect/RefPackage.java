@@ -1,6 +1,7 @@
 package javax.jmi.reflect;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 
 public interface RefPackage extends RefBaseObject {
     public RefClass refClass(RefObject type);

@@ -22,8 +22,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
 
 /**
  * This private helper class presents a GenericDOMParser using Xerces, with

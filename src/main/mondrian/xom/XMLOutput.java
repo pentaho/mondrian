@@ -12,8 +12,8 @@
 
 package mondrian.xom;
 
-import java.util.Vector;
 import java.io.*;
+import java.util.Vector;
 
 /**
  * XMLOutput is a class which implements streaming XML output.  Use this class

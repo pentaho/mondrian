@@ -12,9 +12,9 @@
 
 package mondrian.resource;
 
-import java.util.*;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 
 /**
  * <code>ShadowResourceBundle</code> is an abstract base class for

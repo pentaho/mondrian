@@ -1,6 +1,6 @@
 package javax.jmi.model;
 
-import javax.jmi.reflect.*;
+import javax.jmi.reflect.RefEnum;
 
 public final class VisibilityKindEnum implements VisibilityKind {
     public static final VisibilityKindEnum PUBLIC_VIS = new VisibilityKindEnum("public_vis");

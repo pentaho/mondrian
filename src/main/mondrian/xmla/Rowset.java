@@ -11,8 +11,8 @@
 */
 package mondrian.xmla;
 
-import mondrian.olap.Util;
 import mondrian.olap.EnumeratedValues;
+import mondrian.olap.Util;
 import mondrian.util.SAXHandler;
 import org.xml.sax.SAXException;
 

@@ -1,16 +1,11 @@
 package mondrian.rolap;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
 import mondrian.olap.Evaluator;
 import mondrian.olap.Util;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
+
+import java.util.*;
 
 /**
  * A <code>FastBatchingCellReader</code> doesn't really read cells: when asked

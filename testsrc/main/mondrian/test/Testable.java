@@ -12,9 +12,9 @@
 */
 package mondrian.test;
 
-import java.util.regex.Pattern;
-
 import junit.framework.TestSuite;
+
+import java.util.regex.Pattern;
 
 /**
  * A <code>Testable</code> is an object which knows how to add test cases for

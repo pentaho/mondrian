@@ -14,26 +14,19 @@
  */
 package mondrian.gui;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import mondrian.olap.Connection;
+import mondrian.olap.DriverManager;
+import mondrian.olap.MondrianDef;
+import mondrian.olap.MondrianProperties;
+
+import javax.swing.*;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
-
-import javax.swing.ImageIcon;
-import javax.swing.JFileChooser;
-import javax.swing.JInternalFrame;
-
-import mondrian.olap.Connection;
-import mondrian.olap.DriverManager;
-import mondrian.olap.MondrianDef;
-import mondrian.olap.MondrianProperties;
 
 /**
  *

@@ -9,9 +9,9 @@
 
 package mondrian.olap;
 
-import java.text.MessageFormat;
-
 import junit.framework.TestCase;
+
+import java.text.MessageFormat;
 
 public class ParserTest extends TestCase {
     public ParserTest(String name) {

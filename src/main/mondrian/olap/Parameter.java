@@ -11,8 +11,6 @@
 */
 
 package mondrian.olap;
-import mondrian.olap.fun.ParameterFunDef;
-
 import java.io.PrintWriter;
 
 public class Parameter extends ExpBase {

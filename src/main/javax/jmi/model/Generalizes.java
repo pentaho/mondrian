@@ -1,6 +1,6 @@
 package javax.jmi.model;
 
-import javax.jmi.reflect.*;
+import javax.jmi.reflect.RefAssociation;
 
 public interface Generalizes extends RefAssociation {
     public boolean exists(GeneralizableElement supertype, GeneralizableElement subtype);

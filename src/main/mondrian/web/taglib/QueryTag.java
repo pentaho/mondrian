@@ -12,8 +12,7 @@
 package mondrian.web.taglib;
 
 import javax.servlet.jsp.JspException;
-import javax.servlet.jsp.tagext.*;
-import mondrian.olap.Result;
+import javax.servlet.jsp.tagext.BodyTagSupport;
 
 /**
  * A <code>QueryTag</code> creates a {@link ResultCache} object and initializes

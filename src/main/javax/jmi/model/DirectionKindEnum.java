@@ -1,6 +1,6 @@
 package javax.jmi.model;
 
-import javax.jmi.reflect.*;
+import javax.jmi.reflect.RefEnum;
 
 public final class DirectionKindEnum implements DirectionKind {
     public static final DirectionKindEnum IN_DIR = new DirectionKindEnum("in_dir");

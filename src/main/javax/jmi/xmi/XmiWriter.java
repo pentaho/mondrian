@@ -1,9 +1,9 @@
 package javax.jmi.xmi;
 
-import java.io.OutputStream;
-import java.io.IOException;
-import java.util.Collection;
 import javax.jmi.reflect.RefPackage;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Collection;
 
 public interface XmiWriter {
     public void write(OutputStream stream, RefPackage extent, String xmiVersion)

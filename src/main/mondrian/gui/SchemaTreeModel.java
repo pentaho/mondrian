@@ -6,12 +6,11 @@
 
 package mondrian.gui;
 
-import java.util.Vector;
+import mondrian.olap.MondrianDef;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-
-import mondrian.olap.MondrianDef;
+import java.util.Vector;
 
 /**
  *

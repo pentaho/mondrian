@@ -12,8 +12,8 @@
 */
 package mondrian.rolap.agg;
 
-import mondrian.rolap.CellKey;
 import mondrian.olap.Util;
+import mondrian.rolap.CellKey;
 
 import java.util.HashMap;
 

@@ -14,6 +14,7 @@ package mondrian.xom.wrappers;
 
 import mondrian.xom.DOMWrapper;
 import mondrian.xom.XOMUtil;
+import org.w3c.dom.CharacterData;
 import org.w3c.dom.*;
 
 /**
