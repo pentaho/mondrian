@@ -130,6 +130,7 @@ public class Main extends TestSuite {
             suite.addTestSuite(XmlaTest.class);
             if (isRunOnce()) suite.addTestSuite(TestCalculatedMembers.class);
             suite.addTestSuite(RaggedHierarchyTest.class);
+            suite.addTestSuite(CompatibilityTest.class);
         }
         if (testName != null) {
             // Filter the suite, so that only tests whose names match
