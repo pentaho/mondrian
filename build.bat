@@ -27,7 +27,7 @@ echo Using JAVA_HOME %JAVA_HOME%
 set PATH=%JAVA_HOME%/bin;%PATH%
 
 if exist "%ANT_HOME%" goto antHomeOk
-set ANT_HOME=%HOME_DRIVE%/apache-ant-1.6.1
+set ANT_HOME=%HOME_DRIVE%:/apache-ant-1.6.1
 if exist "%ANT_HOME%" goto antHomeOk
 echo ANT_HOME (%ANT_HOME%) does not exist
 goto end
@@ -54,7 +54,7 @@ echo CATALINA_HOME (%CATALINA_HOME%) does not exist
 goto end
 :catalinaHomeOk
 
-set CLASSPATH=%SRCROOT%..\classes;%SRCROOT%lib/javacup.jar;%SRCROOT%lib/mondrian-xom.jar;%SRCROOT%lib/mondrian-resource.jar
+set CLASSPATH=%SRCROOT%classes;%SRCROOT%lib/javacup.jar;%SRCROOT%lib/mondrian-xom.jar;%SRCROOT%lib/mondrian-resource.jar
 
 rem To use Oracle, uncomment the next line and modify appropriately
 rem set ORACLE_HOME=%HOME_DRIVE%:/oracle/ora81

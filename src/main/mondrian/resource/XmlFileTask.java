@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// (C) Copyright 2001-2002 Kana Software, Inc. and others.
+// (C) Copyright 2001-2004 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -17,15 +17,20 @@ import org.apache.tools.ant.BuildException;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
-import java.util.StringTokenizer;
+import java.util.*;
 
-
+/**
+ * Ant task which processes an XML file and generates a C++ or Java class from
+ * the resources in it.
+ */
 class XmlFileTask extends ResourceGen.FileTask {
 	String baseClassName;
     String cppBaseClassName;
+    private boolean hasInstCon;
+    private boolean hasInstThrowCon;
+    private boolean hasStringCon;
+    private boolean hasStringThrowCon;
+    private final HashSet warnedClasses = new HashSet();
 
 	XmlFileTask(ResourceGenTask.Include include, String fileName,
               String className, String baseClassName, boolean outputJava,
@@ -166,51 +171,8 @@ class XmlFileTask extends ResourceGen.FileTask {
 			if (resource instanceof ResourceDef.Exception) {
 				ResourceDef.Exception exception = (ResourceDef.Exception) resource;
 				String errorClassName = getErrorClass(resourceList, exception);
-				// Figure out what constructors the exception class has. We'd
-				// prefer to use
-				//   <init>(ResourceDefinition rd)
-				//   <init>(ResourceDefinition rd, Throwable e)
-				// if it has them, but we can use
-				//   <init>(String s)
-				//   <init>(String s, Throwable e)
-				// as a fall-back.
-				boolean hasInstCon = false, hasInstThrowCon = false,
-					hasStringCon = false, hasStringThrowCon = false;
-				try {
-					Class errorClass;
-					try {
-						errorClass = Class.forName(errorClassName);
-					} catch (ClassNotFoundException e) {
-						// Might be in the java.lang package, for which we
-						// allow them to omit the package name.
-						errorClass = Class.forName("java.lang." + errorClassName);
-					}
-					Constructor[] constructors = errorClass.getConstructors();
-					for (int i = 0; i < constructors.length; i++) {
-						Constructor constructor = constructors[i];
-						Class[] types = constructor.getParameterTypes();
-						if (types.length == 1 &&
-								ResourceInstance.class.isAssignableFrom(types[0])) {
-							hasInstCon = true;
-						}
-						if (types.length == 1 &&
-								String.class.isAssignableFrom(types[0])) {
-							hasStringCon = true;
-						}
-						if (types.length == 2 &&
-								ResourceInstance.class.isAssignableFrom(types[0]) &&
-								Throwable.class.isAssignableFrom(types[1])) {
-							hasInstThrowCon = true;
-						}
-						if (types.length == 2 &&
-								String.class.isAssignableFrom(types[0]) &&
-								Throwable.class.isAssignableFrom(types[1])) {
-							hasStringThrowCon = true;
-						}
-					}
-				} catch (ClassNotFoundException e) {
-				}
-				if (hasInstCon) {
+                deduceExceptionConstructors(errorClassName);
+                if (hasInstCon) {
 					pw.println("	public " + errorClassName + " new" + resourceInitcap + "(" + parameterList + ") {");
 					pw.println("		return new " + errorClassName + "(" + resourceInitcap + ".instantiate(" + addLists("this", argumentList) + "));");
 					pw.println("	}");
@@ -242,7 +204,68 @@ class XmlFileTask extends ResourceGen.FileTask {
 		pw.println("}");
 	}
 
-	private static String addLists(String x, String y) {
+    /**
+     * Figures out what constructors the exception class has. We'd
+     * prefer to use
+     * <code>init(ResourceDefinition rd)</code> or
+     * <code>init(ResourceDefinition rd, Throwable e)</code>
+     * if it has them, but we can use
+     * <code>init(String s)</code> and
+     * <code>init(String s, Throwable e)</code>
+     * as a fall-back.
+     *
+     * Prints a warming message if the class cannot be loaded.
+     *
+     * @param errorClassName Name of exception class
+     */
+    private void deduceExceptionConstructors(String errorClassName)
+    {
+        hasInstCon = false;
+        hasInstThrowCon = false;
+        hasStringCon = false;
+        hasStringThrowCon = false;
+        try {
+            Class errorClass;
+            try {
+                errorClass = Class.forName(errorClassName);
+            } catch (ClassNotFoundException e) {
+                // Might be in the java.lang package, for which we
+                // allow them to omit the package name.
+                errorClass = Class.forName("java.lang." + errorClassName);
+            }
+            Constructor[] constructors = errorClass.getConstructors();
+            for (int i = 0; i < constructors.length; i++) {
+                Constructor constructor = constructors[i];
+                Class[] types = constructor.getParameterTypes();
+                if (types.length == 1 &&
+                        ResourceInstance.class.isAssignableFrom(types[0])) {
+                    hasInstCon = true;
+                }
+                if (types.length == 1 &&
+                        String.class.isAssignableFrom(types[0])) {
+                    hasStringCon = true;
+                }
+                if (types.length == 2 &&
+                        ResourceInstance.class.isAssignableFrom(types[0]) &&
+                        Throwable.class.isAssignableFrom(types[1])) {
+                    hasInstThrowCon = true;
+                }
+                if (types.length == 2 &&
+                        String.class.isAssignableFrom(types[0]) &&
+                        Throwable.class.isAssignableFrom(types[1])) {
+                    hasStringThrowCon = true;
+                }
+            }
+        } catch (ClassNotFoundException e) {
+            if (warnedClasses.add(errorClassName)) {
+                System.out.println("Warning: Could not find exception " +
+                "class '" + errorClassName + "' on classpath. " +
+                "Exception factory methods will not be generated.");
+            }
+        }
+    }
+
+    private static String addLists(String x, String y) {
 		if (x == null || x.equals("")) {
 			if (y == null || y.equals("")) {
 				return "";
@@ -318,7 +341,7 @@ class XmlFileTask extends ResourceGen.FileTask {
 			if (locale == null) {
 				generateBaseProperties(resourceList, pw);
 			} else {
-				generateProperties(resourceList, pw, locale);
+				generateProperties(pw, locale);
 			}
 		} finally {
 			pw.close();
@@ -362,9 +385,7 @@ class XmlFileTask extends ResourceGen.FileTask {
 	 *
 	 * @pre locale != null
 	 */
-	private void generateProperties(
-			ResourceDef.ResourceBundle resourceList, PrintWriter pw,
-			Locale locale) {
+	private void generateProperties(PrintWriter pw, Locale locale) {
 		String fullClassName = getClassName(locale);
 		pw.println("# This file contains the resources for");
 		pw.println("# class '" + fullClassName + "' and locale '" + locale + "'.");
@@ -466,7 +487,7 @@ class XmlFileTask extends ResourceGen.FileTask {
     
         PrintWriter pw = new PrintWriter(hOut);
         try {
-            generateCppHeader(generator, resourceList, hFile, pw);
+            generateCppHeader(resourceList, hFile, pw);
         }
         finally {
             pw.close();
@@ -486,15 +507,14 @@ class XmlFileTask extends ResourceGen.FileTask {
     
         pw = new PrintWriter(cppOut);
         try {
-            generateCpp(generator, resourceList, pw, hFilename);
+            generateCpp(resourceList, pw, hFilename);
         }
         finally {
             pw.close();
         }
     }
 
-    private void generateCppHeader(ResourceGen generator,
-                                   ResourceDef.ResourceBundle resourceList,
+    private void generateCppHeader(ResourceDef.ResourceBundle resourceList,
                                    File file,
                                    PrintWriter pw) {
         generateDoNotModifyHeader(pw);
@@ -664,8 +684,7 @@ class XmlFileTask extends ResourceGen.FileTask {
     }
 
 
-    private void generateCpp(ResourceGen generator,
-                             ResourceDef.ResourceBundle resourceList,
+    private void generateCpp(ResourceDef.ResourceBundle resourceList,
                              PrintWriter pw,
                              String headerFilename) {      
         generateDoNotModifyHeader(pw);
@@ -749,97 +768,102 @@ class XmlFileTask extends ResourceGen.FileTask {
         pw.println("{ }");
         pw.println();
 
-        for(int i = 0; i < resourceList.resources.length; i++) {
+        for (int i = 0; i < resourceList.resources.length; i++) {
             ResourceDef.Resource resource = resourceList.resources[i];
+            generateCppResource(resource, pw, className,
+                resourceList.cppExceptionClassName);
+        }
 
-			String text = resource.text.cdata;
-			String comment = ResourceGen.getComment(resource);
+        if (resourceList.cppNamespace != null) {
+            pw.println();
+            pw.println("} // end namespace " + resourceList.cppNamespace);
+        }
+    }
 
-            // e.g. "Internal"
-			final String resourceInitCap =
-                ResourceGen.getResourceInitcap(resource);
+    private void generateCppResource(ResourceDef.Resource resource,
+        PrintWriter pw, String className, String defaultExceptionClassName)
+    {
+        String text = resource.text.cdata;
+        //String comment = ResourceGen.getComment(resource);
 
-			String parameterList = ResourceGen.getParameterList(text, false);
-			String argumentList = ResourceGen.getArgumentList(text, false);
+        // e.g. "Internal"
+        final String resourceInitCap =
+            ResourceGen.getResourceInitcap(resource);
 
-            pw.println("string " + className + "::" + resource.name + "("
+        String parameterList = ResourceGen.getParameterList(text, false);
+        String argumentList = ResourceGen.getArgumentList(text, false);
+
+        pw.println("string " + className + "::" + resource.name + "("
+                   + parameterList + ") const");
+        pw.println("{");
+        pw.println("    return _"
+                   + resource.name
+                   + ".format("
+                   + argumentList
+                   + ");");
+        pw.println("}");
+
+        if (resource instanceof ResourceDef.Exception) {
+            ResourceDef.Exception exception =
+                (ResourceDef.Exception)resource;
+
+            String exceptionClass = exception.cppClassName;
+            if (exceptionClass == null) {
+                exceptionClass = defaultExceptionClassName;
+            }
+
+            pw.println(exceptionClass + "* "
+                       + className + "::new" + resourceInitCap + "("
                        + parameterList + ") const");
             pw.println("{");
-            pw.println("    return _" 
+            pw.println("    return new "
+                       + exceptionClass
+                       + "("
                        + resource.name
-                       + ".format("
+                       + "("
                        + argumentList
-                       + ");");
+                       + "));");
             pw.println("}");
+            pw.println();
 
+            boolean chainExceptions =
+                (exception.cppChainExceptions != null &&
+                 exception.cppChainExceptions.equalsIgnoreCase("true"));
 
-            if (resource instanceof ResourceDef.Exception) {
-                ResourceDef.Exception exception =
-                    (ResourceDef.Exception)resource;
-
-                String exceptionClass = exception.cppClassName;
-                if (exceptionClass == null) {
-                    exceptionClass = resourceList.cppExceptionClassName;
+            if (chainExceptions) {
+                if (parameterList.length() > 0) {
+                    pw.println(exceptionClass
+                               + "* "
+                               + className
+                               + "::new"
+                               + resourceInitCap
+                               + "("
+                               + parameterList
+                               + ", const "
+                               + exceptionClass
+                               + " * const prev) const");
+                } else {
+                    pw.println(exceptionClass
+                               + " "
+                               + className
+                               + "::new"
+                               + resourceInitCap
+                               + "(const "
+                               + exceptionClass
+                               + " * const prev) const");
                 }
-
-                pw.println(exceptionClass + "* "
-                           + className + "::new" + resourceInitCap + "("
-                           + parameterList + ") const");
                 pw.println("{");
+
                 pw.println("    return new "
                            + exceptionClass
                            + "("
                            + resource.name
                            + "("
                            + argumentList
-                           + "));");
+                           + "), prev);");
                 pw.println("}");
                 pw.println();
-
-                boolean chainExceptions = 
-                    (exception.cppChainExceptions != null &&
-                     exception.cppChainExceptions.equalsIgnoreCase("true"));
-
-                if (chainExceptions) {
-                    if (parameterList.length() > 0) {
-                        pw.println(exceptionClass
-                                   + "* "
-                                   + className
-                                   + "::new"
-                                   + resourceInitCap
-                                   + "("
-                                   + parameterList 
-                                   + ", const "
-                                   + exceptionClass
-                                   + " * const prev) const");
-                    } else {
-                        pw.println(exceptionClass
-                                   + " "
-                                   + className
-                                   + "::new"
-                                   + resourceInitCap
-                                   + "(const "
-                                   + exceptionClass
-                                   + " * const prev) const");
-                    }
-                    pw.println("{");
-
-                    pw.println("    return new "
-                               + exceptionClass
-                               + "("
-                               + resource.name
-                               + "("
-                               + argumentList
-                               + "), prev);");
-                    pw.println("}");
-                    pw.println();
-                }
             }
-        }
-
-        if (resourceList.cppNamespace != null) {
-            pw.println();
-            pw.println("} // end namespace " + resourceList.cppNamespace);
         }
     }
 }
