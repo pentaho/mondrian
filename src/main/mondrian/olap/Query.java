@@ -24,9 +24,6 @@ import java.util.*;
  * <p>It is created by calling {@link Connection#parseQuery},
  * and executed by calling {@link Connection#execute},
  * to return a {@link Result}.
- *
- * <p><code>Query</code> contains several methods to manipulate the parse tree
- * of the query; {@link #swapAxes} and {@link #drillDown} are examples.
  **/
 public class Query extends QueryPart {
 
@@ -589,25 +586,7 @@ public class Query extends QueryPart {
 		}
 	}
 
-	/**
-	 * Toggle the drill state of each member of "dimension".
-	 */
-	public void drillDown(Level level)
-	{
-		Walker walker = findHierarchy(level.getHierarchy());
-		Util.assertTrue(
-			walker != null,
-			"could not find expression of dimension " +
-			level.getDimension());
-
-		Exp e = (Exp) walker.currentElement();
-		FunCall funDrillDownLevel = new FunCall("DrillDownLevel", Syntax.Function, new Exp[] {e}
-        );
-		QueryPart parent = (QueryPart) walker.getParent();
-		parent.replaceChild(walker.getOrdinal(), funDrillDownLevel);
-	}
-
-	/**
+    /**
 	 * Restrict the axis which contains "level" to only return members
 	 * between "startMember" and "endMember", inclusive.
 	 */
