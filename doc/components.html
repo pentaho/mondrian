@@ -15,18 +15,9 @@
 <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<title>Mondrian home page</title>
-<link rel="stylesheet" href="style.css" type="text/css" />
-
-
+<title>Mondrian components</title>
+<link rel="stylesheet" href="stylesheet.css" type="text/css" />
 </head>
-
-<!-- 
-
-This sentence is here to fool javadoc (which is looking for a period, and otherwise finds one
-inside one of our header tables).
-
- -->
 
 <body>
 <h1><font size="7">Mondrian</font></h1>
@@ -60,43 +51,7 @@ Design<br>
 <h2>Introduction</h2>
 <p>See <a href="olap.html">architecture</a>.</p>
 <h2>Components</h2>
-<h3>Query transformer</h3>
-<p>See {@link mondrian.olap.Parser}.</p>
-<h3>Metadata</h3>
-<p>It is represented as an XML file. The metadata is loaded into memory the 
-first time you reference a dimensional model. You can modify the model at 
-runtime by creating instances of classes such as <code>{@link 
-mondrian.rolap.RolapHierarchy}</code>.</p>
-<h3>Calculation layer</h3>
-<p><i>todo</i>: See {@link mondrian.olap.Query} and {@link mondrian.olap.Result}.</p>
-<p><i>todo</i>: The <code>package {@link mondrian.rolap}</code>. is the one and 
-only implementation of the API. The DriverManager (<code>class {@link 
-mondrian.olap.DriverManager}</code>) acts as class-factory.</p>
-<p><i>todo</i>: How members are calculated...</p>
-<p><i>todo</i>: How aggregations are batched...</p>
-<p><i>todo</i>: MDX functions. See <a href="#User_defined_functions">user-defined functions</a>.</p>
-<h3>Aggregation manager</h3>
-<p>Aggregations are based upon the relational model: as far as the aggregation 
-manager is concerned, there is no relationship between the columns <code>city</code> 
-and <code>state</code>. This means that all roll-ups are the same: you just drop 
-a column. Consider the 3 roll-ups possible by dropping a column from the 
-aggregation {<code>gender</code>, <code>city</code>, <code>state</code>}: 
-dropping <code>gender</code> is equivalent to removing the <code>[Gender]</code> 
-dimension; dropping <code>city</code> is equivalent to rolling up to a higher 
-level in the <code>[Geography]</code> hierarchy; and dropping <code>state</code> 
-is not even allowed in the dimensional model (no, sorry, you can't ask about 
-products sold in a cities called 'Portland'). This approach will also allow us 
-to implement 'drill anywhere'.</p>
-<p>An aggregation is defined by a search condition, for example, <code>{state in 
-('CA', 'OR', 'WA'), city = <i>any</i>, gender = 'M', measure = 'Unit sales'}</code>. 
-The <i><code>any</code></i> value is important; if we had asked for a specific 
-set of cities, we would not later be able to roll-up by dropping the <code>city</code> 
-column.</p>
-<p>The caching strategy is to throw out the aggregation with the lowest 
-cost/benefit ratio. The 'benefit' of an item is the effort it took to produce 
-(effort which it is saving future queries) multiplied by its 'usefulness' which 
-declines exponentially if it is not used over time. The 'cost' of an item is its 
-size.</p>
+<i>to be written...</i>
 </td>
 </tr>
 </table>

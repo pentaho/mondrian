@@ -16,7 +16,7 @@
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
 <title>Mondrian architecture</title>
-<link rel="stylesheet" href="style.css" type="text/css" />
+<link rel="stylesheet" href="stylesheet.css" type="text/css" />
 
 
 </head>
@@ -34,32 +34,34 @@ inside one of our header tables).
 
 <table cellSpacing="0" cellPadding="0" border="0">
 <tr>
+<!-- Start links -->
 <td valign="top">
 <p dir="ltr">
 <a href="index.html">Home</a><br>
 <a href="install.html">Download</a><br>
 Overview<br>
-<a href="olap.html">&nbsp;&nbsp;&nbsp;What&nbsp;is&nbsp;OLAP?</a><br>
-<a href="architecture.html">&nbsp;&nbsp;&nbsp;Architecture</a><br>
-<a href="architecture.html">&nbsp;&nbsp;&nbsp;</a><a href="faq.html">FAQ</a><br>
+&nbsp;&nbsp;&nbsp;<a href="olap.html">What&nbsp;is&nbsp;OLAP?</a><br>
+&nbsp;&nbsp;&nbsp;<a href="architecture.html">Architecture</a><br>
+&nbsp;&nbsp;&nbsp;<a href="faq.html">FAQ</a><br>
 Design<br>
-<a href="components.html">&nbsp;&nbsp;&nbsp;Components</a><br>
-<a href="components.html">&nbsp;&nbsp;&nbsp;</a><a href="api/index.html">API</a><br>
+&nbsp;&nbsp;&nbsp;<a href="components.html">Components</a><br>
+&nbsp;&nbsp;&nbsp;<a href="api/index.html">API</a><br>
 <a href="links.html">Links</a><br>
-<a href="components.html">&nbsp;&nbsp;&nbsp;</a><a href="piet.html">The artist</a><br>
-<a href="components.html">&nbsp;&nbsp;&nbsp;</a><a href="http://sourceforge.net/projects/mondrian/">Project</a><br>
-&nbsp;&nbsp; <a href="help.html">Help</a><br>
-&nbsp;</td>
-<td width="5"><img height="1" src="http://graphics7.nytimes.com/images/misc/spacer.gif" width="5" border="0"></td>
-<td width="1" bgcolor="#999999"><img height="1" src="http://graphics7.nytimes.com/images/misc/spacer.gif" width="1" border="0"></td>
-<td width="5"><img height="1" src="http://graphics7.nytimes.com/images/misc/spacer.gif" width="5" border="0"></td>
+&nbsp;&nbsp;&nbsp;<a href="people.html">People</a><br>
+&nbsp;&nbsp;&nbsp;<a href="http://sourceforge.net/projects/mondrian/">Project</a><br>
+&nbsp;&nbsp;&nbsp;<a href="help.html">Help</a><br>
+</td>
+<!-- End links -->
+<td width="5"><img height="1" src="spacer.gif" width="5" border="0"></td>
+<td width="1" bgcolor="#999999"><img height="1" src="spacer.gif" width="1" border="0"></td>
+<td width="5"><img height="1" src="spacer.gif" width="5" border="0"></td>
 <td valign="top">
 
 <h1>Architecture</h1>
 <p>A Mondrian OLAP System consists of four layers; working from the eyes of the 
 end-user to the bowels of the data center, these are the presentation layer, the 
 calculation layer, the aggregation layer, and the storage layer.</p>
-<p>The <dfn><font face="Verdana">presentation layer</font></dfn> determines what 
+<p>The <dfn>presentation layer</dfn> determines what 
 the end-user sees on his or her monitor, and how he or she can interact to ask 
 new questions. There are many ways to present multidimensional datasets, 
 including pivot tables (an interactive version of the table shown above), pie, 
@@ -69,23 +71,22 @@ JPEG or GIF format, or transmitted to a remote application via XML. What all of
 these forms of presentation have in common is the multidimensional 'grammar' of 
 dimensions, measures and cells in which the presentation layer asks the question 
 is asked, and OLAP server returns the answer.</p>
-<p>The second layer is the <dfn><font face="Verdana">calculation layer</font></dfn>. 
+<p>The second layer is the <dfn>calculation layer</dfn>. 
 The calculation layer parses, validates and executes MDX queries. A query is 
 evaluted in multiple phases. The axes are computed first, then the values of the 
 cells within the axes. For efficiency, the calculation layer sends cell-requests 
 to the aggregation layer in batches. A <dfn>
-<font face="Verdana">query transformer</font></dfn> allows the application to 
+query transformer</dfn> allows the application to 
 manipulate existing queries, rather than building an MDX statement from scratch 
-for each request. And <dfn>
-<font face="Verdana">metadata</font></dfn> describes the the dimensional model, 
+for each request. And <dfn>metadata</dfn> describes the the dimensional model, 
 and how it maps onto the relational model.</p>
-<p>The third layer is the <dfn><font face="Verdana">aggregation layer</font></dfn>. 
+<p>The third layer is the <dfn>aggregation layer</dfn>. 
 An aggregation is a set of measure values ('cells') in memory, qualified by a 
 set of dimension column values. The calculation layer sends requests for sets of 
 cells. If the requested cells are not in the cache, or derivable by rolling up 
 an aggregation in the cache, the aggregation manager and sends a request to the 
 storage layer.</p>
-<p>The <dfn><font face="Verdana">storage layer</font></dfn> is an RDBMS. It is 
+<p>The <dfn>storage layer</dfn> is an RDBMS. It is 
 responsible for providing aggregated cell data, and members from dimension 
 tables. I describe <a href="#Storage_and_aggregation_strategies">below</a> why I 
 decided to use the features of the RDBMS rather than developing a storage system 
@@ -100,11 +101,11 @@ strategies</a></h2>
 <p>OLAP Servers are generally categorized according to how they store their 
 data:</p>
 <ul>
-  <li>A <font face="Verdana"><dfn>MOLAP (multidimensional OLAP)</dfn></font> 
+  <li>A <dfn>MOLAP (multidimensional OLAP)</dfn> 
   server stores all of its data on disk in structures optimized for 
   multidimensional access. Typically, data is stored in dense arrays, requiring 
   only 4 or 8 bytes per cell value.</li>
-  <li>A <font face="Verdana"><dfn>ROLAP (relational OLAP)</dfn></font> server 
+  <li>A <dfn>ROLAP (relational OLAP)</dfn> server 
   stores its data in a relational database. Each row in a fact table has a 
   column for each dimension and measure.</li>
 </ul>
@@ -112,7 +113,7 @@ data:</p>
 records), aggregates, and dimensions.</p>
 <p>MOLAP databases store fact data in multidimensional format, but if there are 
 more than a few dimensions, this data will be sparse, and the multidimensional 
-format does not perform well. A <font face="Verdana"><dfn>HOLAP (hybrid OLAP)</dfn></font> 
+format does not perform well. A <dfn>HOLAP (hybrid OLAP)</dfn> 
 system solves this problem by leaving the most granular data in the relational 
 database, but stores aggregates in multidimensional format.</p>
 <p>Pre-computed aggregates are necessary for large data sets, otherwise certain 
@@ -128,7 +129,7 @@ pre-computed aggregations in memory so subsequent queries can access cell values
 without going to disk. If the cache holds the required data set at a lower level 
 of aggregation, it can compute the required data set by rolling up.</p>
 <p>The cache is arguably the most important part of the aggregation strategy 
-because it is <em><font face="Verdana">adaptive</font></em>. It is difficult to 
+because it is <em>adaptive</em>. It is difficult to 
 choose a set of aggregations to pre-compute which speed up the system without 
 using huge amounts of disk, particularly those with a high dimensionality or if 
 the users are submitting unpredictable queries. And in a system where data is 
@@ -141,8 +142,8 @@ unpredictable queries, with few or no pre-computed aggregates.</p>
   RDBMS already has one?</li>
   <li>Read aggregate data into the cache by submitting <code>group by</code> 
   queries. Again, why develop an aggregator when the RDBMS has one?</li>
-  <li><em><font face="Verdana">If</font></em> the RDBMS supports materialized 
-  views, <em><font face="Verdana">and </font></em>the database administrator 
+  <li><em>If</em> the RDBMS supports materialized 
+  views, <em>and</em> the database administrator 
   chooses to create materialized views for particular aggregations, then 
   Mondrian will use them implicitly. Ideally, Mondrian's aggregation manager 
   should be aware that these materialized views exist and that those particular 
@@ -162,44 +163,10 @@ data sets which change in real time.</p>
 <p><i>Note to self</i>: The cache manager ought to distinguish between data which is being 
 pulled into the cache to be rolled up immediately into some other aggregation, 
 and an aggregation which is explicitly needed.</p>
-<h2>Components</h2>
-<h3>Query transformer</h3>
-<p>See {@link mondrian.olap.Parser}.</p>
-<h3>Metadata</h3>
-<p>It is represented as an XML file. The metadata is loaded into memory the 
-first time you reference a dimensional model. You can modify the model at 
-runtime by creating instances of classes such as <code>{@link 
-mondrian.rolap.RolapHierarchy}</code>.</p>
-<h3>Calculation layer</h3>
-<p><i>todo</i>: See {@link mondrian.olap.Query} and {@link mondrian.olap.Result}.</p>
-<p><i>todo</i>: The <code>package {@link mondrian.rolap}</code>. is the one and 
-only implementation of the API. The DriverManager (<code>class {@link 
-mondrian.olap.DriverManager}</code>) acts as class-factory.</p>
-<p><i>todo</i>: How members are calculated...</p>
-<p><i>todo</i>: How aggregations are batched...</p>
-<p><i>todo</i>: MDX functions. See <a href="#User_defined_functions">user-defined functions</a>.</p>
-<h3>Aggregation manager</h3>
-<p>Aggregations are based upon the relational model: as far as the aggregation 
-manager is concerned, there is no relationship between the columns <code>city</code> 
-and <code>state</code>. This means that all roll-ups are the same: you just drop 
-a column. Consider the 3 roll-ups possible by dropping a column from the 
-aggregation {<code>gender</code>, <code>city</code>, <code>state</code>}: 
-dropping <code>gender</code> is equivalent to removing the <code>[Gender]</code> 
-dimension; dropping <code>city</code> is equivalent to rolling up to a higher 
-level in the <code>[Geography]</code> hierarchy; and dropping <code>state</code> 
-is not even allowed in the dimensional model (no, sorry, you can't ask about 
-products sold in a cities called 'Portland'). This approach will also allow us 
-to implement 'drill anywhere'.</p>
-<p>An aggregation is defined by a search condition, for example, <code>{state in 
-('CA', 'OR', 'WA'), city = <i>any</i>, gender = 'M', measure = 'Unit sales'}</code>. 
-The <i><code>any</code></i> value is important; if we had asked for a specific 
-set of cities, we would not later be able to roll-up by dropping the <code>city</code> 
-column.</p>
-<p>The caching strategy is to throw out the aggregation with the lowest 
-cost/benefit ratio. The 'benefit' of an item is the effort it took to produce 
-(effort which it is saving future queries) multiplied by its 'usefulness' which 
-declines exponentially if it is not used over time. The 'cost' of an item is its 
-size.</p>
+
+<h2>MDX query language</h2>
+<i>to be written...</i>
+
 </td>
 </tr>
 </table>
