@@ -2654,6 +2654,15 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
+     * Flushes the cache then runs {@link #testBasketAnalysis}, because this
+     * test has been known to fail when run standalone.
+     */
+    public void testBasketAnalysisAfterFlush() {
+        CachePool.instance().flush();
+        testBasketAnalysis();
+    }
+    
+    /**
      * <b>How Can I Perform Complex String Comparisons?</b>
      *
      * <p>MDX can handle basic string comparisons, but does not include complex
