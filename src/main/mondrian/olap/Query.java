@@ -66,6 +66,43 @@ public class Query extends QueryPart {
         resolve();
     }
 
+	/**
+	 * add a new formula specifying a set
+	 *  to an existing query
+	 */
+	public void addFormula(String[] names, Exp exp) {
+		Formula newFormula = new Formula(names, exp);
+		int nFor = 0;
+		if (formulas.length > 0)
+			nFor = formulas.length;
+		Formula[] newFormulas = new Formula[nFor + 1];
+		for (int i = 0; i < nFor; i++ ) {
+			newFormulas[i] = formulas[i];
+		}
+		newFormulas[nFor] = newFormula;
+		formulas = newFormulas;
+        resolve();
+    }
+
+	/**
+	 * add a new formula specifying a member
+	 *  to an existing query
+	 */
+	public void addFormula(String[] names, Exp exp, MemberProperty[] memberProperties) {
+		Formula newFormula = new Formula(names, exp, memberProperties);
+		int nFor = 0;
+		if (formulas.length > 0)
+			nFor = formulas.length;
+		Formula[] newFormulas = new Formula[nFor + 1];
+		for (int i = 0; i < nFor; i++ ) {
+			newFormulas[i] = formulas[i];
+		}
+		newFormulas[nFor] = newFormula;
+		formulas = newFormulas;
+        resolve();
+    }
+
+
     public Exp.Resolver createResolver() {
         return new StackResolver(BuiltinFunTable.instance());
     }
