@@ -62,10 +62,12 @@ public class XmlaTest extends TestCase {
 
         String driver = MondrianProperties.instance().getJdbcDrivers();
         String url = MondrianProperties.instance().getFoodmartJdbcURL();
+        
+        // Deal with embedded & that can be in the JDBC URL
 
         dataSource =
            "Provider=Mondrian;"
-           + "Jdbc=" + url + ";"
+           + "Jdbc=" + url.replaceAll("&", "&amp;") + ";"
            + "Catalog=" + catalogName + ";"
            + "JdbcDrivers=" + driver +";";
     }
