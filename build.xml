@@ -313,6 +313,7 @@ in {mondrian.foodmart.jdbcURL}.">
 **/*.cup,
 **/*.html,
 **/*.css,
+${java.dir}/**/*.properties,
 ${java.dir}/mondrian/resource/Resource.xml,
 ${java.dir}/mondrian/olap/Mondrian.xml,
 ${java.dir}/mondrian/xom/Meta.xml,

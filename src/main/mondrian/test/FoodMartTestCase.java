@@ -15,6 +15,9 @@ package mondrian.test;
 import junit.framework.TestCase;
 import mondrian.olap.*;
 
+import java.io.StringWriter;
+import java.io.PrintWriter;
+
 /**
  * <code>FoodMartTestCase</code> is a unit test which runs against the FoodMart
  * database.
@@ -118,11 +121,19 @@ public class FoodMartTestCase extends TestCase {
 			Result result = TestContext.instance().executeFoodMart(
 					"select {" + expression + "} on columns from Sales");
 		} catch (Throwable e) {
-			String message = e.toString();
-			assertTrue(message, message.indexOf(pattern) >= 0);
+			String stackTrace = getStackTrace(e);
+			assertTrue(stackTrace, stackTrace.indexOf(pattern) >= 0);
 			return;
 		}
 		fail("axis '" + expression + "' did not yield an exception");
+	}
+
+	private static String getStackTrace(Throwable e) {
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		e.printStackTrace(pw);
+		pw.flush();
+		return sw.toString();
 	}
 
 	/** Executes an expression against the FoodMart database to form a single
