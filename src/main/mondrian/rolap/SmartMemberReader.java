@@ -191,6 +191,7 @@ public class SmartMemberReader implements MemberReader, MemberCache
 	// synchronization: Does not need to be synchronized. It doesn't matter if
 	// 'missed' contains too many members.
 	public void getMemberChildren(List parentMembers, List children) {
+		synchronized(CachePool.instance()) {
 		ArrayList missed = new ArrayList();
 		for (Iterator it = parentMembers.iterator(); it.hasNext();) {
 			RolapMember parent = (RolapMember) it.next();
@@ -210,6 +211,7 @@ public class SmartMemberReader implements MemberReader, MemberCache
 		}
 		if (missed.size() > 0) {
 			readMemberChildren(missed, children);
+		}
 		}
 	}
 
