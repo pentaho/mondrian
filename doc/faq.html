@@ -112,6 +112,52 @@ statement, like this:</p>
   started Tomcat.</li>
 </ul>
 
+<h2><a name="Tracing">How do I enable logging?</a></h2>
+<p>
+Mondrian uses the <a href="http://logging.apache.org/log4j/docs/">
+Apache Log4j logger</a>. To build, test, and run Mondrian requires a 
+log4j.jar file. A log4j.jar file is provided as part of the Mondrian
+distribution. 
+</p>
+<p>
+Also provided is a log4j.properties file. Such a file is needed
+when running Mondrian in standalone mode (such as when running the
+Mondrian junit tests or the CmdRunner utility).
+Generally, Mondrian is embedded in an application, such as a webserver, 
+which may have their
+own log4j.properties file or some other mechanism for setting log4j properties.
+In such cases, the user must use those for controlling Mondrian's logging.
+</p>
+<p>
+Mondrian follows Apache's guidance on what type of information is logged
+at what level:
+<ul>
+<li>
+<code>FATAL</code>: A very severe error event that will presumably 
+lead the application to abort.
+</li>
+<li>
+<code>ERROR</code>: An error event that might still 
+allow the application to continue running.
+</li>
+<li>
+<code>WARN</code>: A potentially harmful situation.
+</li>
+<li>
+<code>INFO</code>: An informational message that highlight the 
+progress of the application at a coarse-grained level.
+</li>
+<li>
+<code>DEBUG</code>: A fine-grained informational event that 
+is most useful to debug an application.  
+</li>
+</ul>
+</p>
+<p>
+It is recommended for general use that the Mondrian log level be set to
+<code>WARN</code>; arguably, its good to know when things are going South.
+</p>
+
 <h2><a name="connect_string">What is the syntax of a Mondrian connect string?</a></h2>
 <p>The syntax of the connect string is described in the Javadoc for the method
 <a href="http://mondrian.sourceforge.net/api/mondrian/rolap/RolapConnection.html#RolapConnection(mondrian.olap.Util.PropertyList,boolean)">
