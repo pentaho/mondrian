@@ -64,6 +64,7 @@ ${etc.dir}/mondrian/web/jsp/**/*.java"/>
   <property name="generated.lib.files" value="
 ${lib.dir}/mondrian.jar,
 ${lib.dir}/mondrian.war,
+${lib.dir}/mondrian.xml,
 ${lib.dir}/web.xml,
 ${lib.dir}/ant.jar,
 ${lib.dir}/junit.jar,
@@ -278,6 +279,8 @@ copy.properties"/>
         destdir="${java.dir}"
         classname="mondrian.olap.MondrianDef"
         dtdname="mondrian.dtd"/>
+    <copy file="${java.dir}/mondrian/olap/mondrian.dtd"
+        todir="${lib.dir}"/>
   </target>
 
   <target name="compile.jsp.maybe" depends="compile.java"
@@ -543,6 +546,7 @@ bin/mondrian.sh,
 bin/README.html,
 ${dist.src.file},
 ${war.file},
+lib/mondrian.dtd,
 LICENSE.html,
 README.txt,
 VERSION.txt"
