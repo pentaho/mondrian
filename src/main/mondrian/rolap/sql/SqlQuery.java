@@ -18,7 +18,6 @@ import mondrian.olap.Util;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 
 /**
  * <code>SqlQuery</code> allows us to build a <code>select</code>
@@ -67,21 +66,18 @@ public class SqlQuery
     DatabaseMetaData databaseMetaData;
     // todo: replace {select, selectCount} with a StringList; etc.
     boolean distinct;
-    StringBuffer select = new StringBuffer(),
-        from = new StringBuffer(),
-        where = new StringBuffer(),
-        groupBy = new StringBuffer(),
-        having = new StringBuffer(),
-        orderBy = new StringBuffer();
-    private HashSet groupBySet = new HashSet();
-    int selectCount = 0,
-        fromCount = 0,
-        whereCount = 0,
-        groupByCount = 0,
-        havingCount = 0,
-        orderByCount = 0;
-    public ArrayList fromAliases = new ArrayList();
+    private final ClauseList select = new ClauseList(true),
+        from = new ClauseList(true),
+        where = new ClauseList(false),
+        groupBy = new ClauseList(false),
+        having = new ClauseList(false),
+        orderBy = new ClauseList(false);
+    private final ArrayList fromAliases = new ArrayList();
     private String quoteIdentifierString = null;
+
+    /** Scratch buffer. Clear it before use. */
+    private StringBuffer buf = new StringBuffer();
+
     /**
      * Creates a <code>SqlQuery</code>
      *
@@ -140,21 +136,21 @@ public class SqlQuery
         //  if not, then check for a dot qualified expression
         //  like "owner.table".
         //  In that case, prefix the single parts separately.
-        if ( val.startsWith(q) && val.endsWith(q) ) {
+        if (val.startsWith(q) && val.endsWith(q)) {
             // already quoted - nothing to do
             return val;
-      }
-      int k = val.indexOf('.');
-      if ( k > 0 ) {
+        }
+        int k = val.indexOf('.');
+        if (k > 0) {
             // qualified
             String val1 = Util.replace(val.substring(0,k), q, q + q);
             String val2 = Util.replace(val.substring(k+1), q, q + q);
             return q + val1 + q + "." +  q + val2 + q ;
-      } else {
+        } else {
             // not Qualified
             String val2 = Util.replace(val, q, q + q);
             return q + val2 + q;
-      }
+        }
     }
 
     /**
@@ -185,6 +181,7 @@ public class SqlQuery
     public String getQuoteIdentifierString() {
         return quoteIdentifierString;
     }
+
     // -- detect various databases --
 
     private String getProduct() {
@@ -212,21 +209,23 @@ public class SqlQuery
     public boolean isAccess() {
         return getProduct().equals("ACCESS");
     }
+
     public boolean isDB2() {
         // DB2 on NT returns "DB2/NT"
         return getProduct().startsWith("DB2");
     }
+
     public boolean isAS400() {
         // DB2/AS400 Product String = "DB2 UDB for AS/400"
         return getProduct().startsWith("DB2 UDB for AS/400");
     }
+
     public boolean isOldAS400() {
-        if ( isAS400() ) {
-            // TB "04.03.0000 V4R3m0"
-            //  this version cannot handle subqueries and is considered "old"
-            // DEUKA "05.01.0000 V5R1m0" is ok
-            String version = getProductVersion();
-            String[] version_release = version.split("\\.", 3);
+        if (!isAS400()) {
+            return false;
+        }
+        String version = getProductVersion();
+        String[] version_release = version.split("\\.", 3);
         /*
         if ( version_release.length > 2 &&
             "04".compareTo(version_release[0]) > 0 ||
@@ -235,7 +234,7 @@ public class SqlQuery
             return true;
         */
         // assume, that version <= 04 is "old"
-        if ( "04".compareTo(version_release[0]) >= 0 )
+        if ("04".compareTo(version_release[0]) >= 0) {
             return true;
         }
         return false;
@@ -338,24 +337,21 @@ public class SqlQuery
                 return false;
             }
         }
-        if (fromCount++ == 0) {
-            from.append(" from ");
-        } else {
-            from.append(", ");
-        }
-        from.append("(");
-        from.append(query);
-        from.append(")");
+        buf.setLength(0);
+        buf.append("(");
+        buf.append(query);
+        buf.append(")");
         if (alias != null) {
             Util.assertTrue(!alias.equals(""));
             if (allowsAs()) {
-                from.append(" as ");
+                buf.append(" as ");
             } else {
-                from.append(" ");
+                buf.append(" ");
             }
-            from.append(quoteIdentifier(alias));
+            buf.append(quoteIdentifier(alias));
             fromAliases.add(alias);
         }
+        from.add(buf.toString());
         return true;
     }
 
@@ -379,26 +375,22 @@ public class SqlQuery
                 return false;
             }
         }
-        if (fromCount++ == 0) {
-            from.append(" from ");
-        } else {
-            from.append(", ");
-        }
-        from.append(quoteIdentifier(schema, table));
+        buf.setLength(0);
+        buf.append(quoteIdentifier(schema, table));
         if (alias != null) {
             Util.assertTrue(!alias.equals(""));
             if (allowsAs()) {
-                from.append(" as ");
+                buf.append(" as ");
             } else {
-                from.append(" ");
+                buf.append(" ");
             }
-            from.append(quoteIdentifier(alias));
+            buf.append(quoteIdentifier(alias));
             fromAliases.add(alias);
         }
+        from.add(buf.toString());
         if (filter != null) {
-          // append filter condition to where clause
-          String wclause = "(" + filter + ")";
-          addWhere(wclause);
+            // append filter condition to where clause
+            where.add("(" + filter + ")");
         }
         return true;
     }
@@ -468,21 +460,27 @@ public class SqlQuery
         Util.assertPrecondition(alias != null);
         Util.assertPrecondition(condition != null);
         Util.assertTrue(!fromAliases.contains(alias));
-        Util.assertTrue(fromCount > 0);
-        from.append(
+        Util.assertTrue(from.size() > 0);
+        String last = (String) from.get(from.size() - 1);
+        last = last +
             " " + type + " join " + query + " as " +
-            quoteIdentifier(alias) + " on " + condition);
+            quoteIdentifier(alias) + " on " + condition;
+        from.set(from.size() - 1, last);
         fromAliases.add(alias);
     }
-    /** Adds an expression to the select clause, automatically creating a
-     * column alias. **/
+
+    /**
+     * Adds an expression to the select clause, automatically creating a
+     * column alias.
+     */
     public void addSelect(String expression) {
         // some DB2 versions (AS/400) throw an error, if a column alias is
         //  *not* used in a subsequent order by (Group by)
-        if (isAS400())
+        if (isAS400()) {
             addSelect(expression, null);
-        else
-            addSelect(expression, "c" + selectCount);
+        } else {
+            addSelect(expression, "c" + select.size());
+        }
     }
     /** Adds an expression to the select clause, with a specified column
      * alias. **/
@@ -490,42 +488,69 @@ public class SqlQuery
         if (alias != null) {
             expression += " as " + quoteIdentifier(alias);
         }
-        select.append(
-            (selectCount++ == 0 ?
-             ("select " + (distinct ? "distinct " : "")) :
-             ", ") +
-            expression);
+        select.add(expression);
     }
+
     public void addWhere(String expression)
     {
-        where.append(
-            (whereCount++ == 0 ? " where " : " and ") +
-            expression);
+        where.add(expression);
     }
+
     public void addGroupBy(String expression)
     {
-        // Only add it to the clause once.
-        if (groupBySet.add(expression)) {
-            groupBy.append(
-                (groupByCount++ == 0 ? " group by " : ", ") + expression);
-        }
+        groupBy.add(expression);
     }
+
     public void addHaving(String expression)
     {
-        having.append(
-            (havingCount++ == 0 ? " having " : " and ") +
-            expression);
+        having.add(expression);
     }
+
     public void addOrderBy(String expression)
     {
-        orderBy.append(
-            (orderByCount++ == 0 ? " order by " : ", ") + expression);
+        orderBy.add(expression);
     }
+
     public String toString()
     {
-        return select.toString() + from.toString() +
-            where.toString() + groupBy.toString() + having.toString() +
-            orderBy.toString();
+        buf.setLength(0);
+        select.toBuffer(buf,
+                distinct ? "select distinct " : "select ", ", ");
+        from.toBuffer(buf, " from ", ", ");
+        where.toBuffer(buf, " where ", " and ");
+        groupBy.toBuffer(buf, " group by ", ", ");
+        having.toBuffer(buf, " having ", " and ");
+        orderBy.toBuffer(buf, " order by ", ", ");
+        return buf.toString();
+    }
+
+    private class ClauseList extends ArrayList {
+        private final boolean allowDups;
+
+        ClauseList(boolean allowDups) {
+            this.allowDups = allowDups;
+        }
+
+        public boolean add(String element) {
+            if (!allowDups) {
+                if (contains(element)) {
+                    return false;
+                }
+            }
+            return super.add(element);
+        }
+
+        void toBuffer(StringBuffer buf, String first, String sep) {
+            for (int i = 0; i < this.size(); i++) {
+                String s = (String) this.get(i);
+                if (i == 0) {
+                    buf.append(first);
+                } else {
+                    buf.append(sep);
+                }
+                buf.append(s);
+            }
+        }
     }
 }
 

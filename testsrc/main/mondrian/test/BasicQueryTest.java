@@ -558,35 +558,12 @@ public class BasicQueryTest extends FoodMartTestCase {
                 " `promotion` " + tableQualifier + "`promotion`," +
                 " `customer` " + tableQualifier + "`customer` " +
                 "where `sales_fact_1997`.`store_id` = `store`.`store_id`" +
-                " and `sales_fact_1997`.`store_id` = `store`.`store_id`" +
-                " and `sales_fact_1997`.`store_id` = `store`.`store_id`" +
-                " and `sales_fact_1997`.`store_id` = `store`.`store_id`" +
-                " and `sales_fact_1997`.`store_id` = `store`.`store_id`" +
-                " and `sales_fact_1997`.`store_id` = `store`.`store_id`" +
-                " and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`" +
-                " and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`" +
                 " and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`" +
                 " and `time_by_day`.`the_year` = 1997" +
-                " and `sales_fact_1997`.`product_id` = `product`.`product_id`" +
-                " and `sales_fact_1997`.`product_id` = `product`.`product_id`" +
-                " and `sales_fact_1997`.`product_id` = `product`.`product_id`" +
-                " and `product`.`product_class_id` = `product_class`.`product_class_id`" +
-                " and `sales_fact_1997`.`product_id` = `product`.`product_id`" +
-                " and `product`.`product_class_id` = `product_class`.`product_class_id`" +
-                " and `sales_fact_1997`.`product_id` = `product`.`product_id`" +
-                " and `product`.`product_class_id` = `product_class`.`product_class_id`" +
                 " and `sales_fact_1997`.`product_id` = `product`.`product_id`" +
                 " and `product`.`product_class_id` = `product_class`.`product_class_id`" +
                 " and `product_class`.`product_family` = 'Drink'" +
                 " and `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id`" +
-                " and `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id`" +
-                " and `sales_fact_1997`.`customer_id` = `customer`.`customer_id`" +
-                " and `sales_fact_1997`.`customer_id` = `customer`.`customer_id`" +
-                " and `sales_fact_1997`.`customer_id` = `customer`.`customer_id`" +
-                " and `sales_fact_1997`.`customer_id` = `customer`.`customer_id`" +
-                " and `sales_fact_1997`.`customer_id` = `customer`.`customer_id`" +
-                " and `sales_fact_1997`.`customer_id` = `customer`.`customer_id`" +
-                " and `sales_fact_1997`.`customer_id` = `customer`.`customer_id`" +
                 " and `sales_fact_1997`.`customer_id` = `customer`.`customer_id`",
                 sql);
         sql = result.getCell(new int[] {1, 1}).getDrillThroughSQL(true);

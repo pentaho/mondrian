@@ -491,27 +491,12 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             " `position` " + tableQualifier + "`position`," +
             " `department` " + tableQualifier + "`department` " +
             "where `salary`.`pay_date` = `time_by_day`.`the_date`" +
-            " and `salary`.`pay_date` = `time_by_day`.`the_date`" +
-            " and `salary`.`pay_date` = `time_by_day`.`the_date`" +
             " and `time_by_day`.`the_year` = 1997" +
             " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
             " and `employee_1`.`store_id` = `store`.`store_id`" +
-            " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
-            " and `employee_1`.`store_id` = `store`.`store_id`" +
-            " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
-            " and `employee_1`.`store_id` = `store`.`store_id`" +
-            " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
-            " and `employee_1`.`store_id` = `store`.`store_id`" +
-            " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
             " and `employee_1`.`position_id` = `position`.`position_id`" +
-            " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
-            " and `employee_1`.`store_id` = `store`.`store_id`" +
-            " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
-            " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
             " and `salary`.`department_id` = `department`.`department_id`" +
-            " and `salary`.`employee_id` = `employee_1`.`employee_id`" +
-            " and `employee_1`.`employee_id` = 2" +
-            " and `salary`.`employee_id` = `employee_1`.`employee_id`");
+            " and `employee_1`.`employee_id` = 2");
     }
 
     private void checkDrillThroughSql(Result result,
