@@ -587,54 +587,12 @@ class XmlFileTask extends ResourceGen.FileTask {
                        + baseClass + " *bundle, const string &key);");
             pw.println();
             pw.println("  string operator()(" + parameterList + ") const;");
-            pw.println();
-      
-            if (resource instanceof ResourceDef.Exception) {
-                ResourceDef.Exception exception = 
-                    (ResourceDef.Exception)resource;
-
-                String exceptionClass = exception.cppClassName;
-                if (exceptionClass == null) {
-                    exceptionClass = resourceList.cppExceptionClassName;
-                }
-
-                pw.println("  " + exceptionClass
-                           + " new" + resourceInitCap + "("
-                           + parameterList + ") const;");
-
-                boolean chainExceptions = 
-                    (exception.cppChainExceptions != null &&
-                     exception.cppChainExceptions.equalsIgnoreCase("true"));
-
-                if (chainExceptions) {
-                    if (parameterList.length() > 0) {
-                        pw.println("  "
-                                   + exceptionClass
-                                   + " new"
-                                   + resourceInitCap
-                                   + "("
-                                   + parameterList 
-                                   + ", const "
-                                   + exceptionClass
-                                   + " * const prev) const;");
-                    } else {
-                        pw.println("  "
-                                   + exceptionClass
-                                   + " new"
-                                   + resourceInitCap + "("
-                                   + "const "
-                                   + exceptionClass
-                                   + " * const prev) const;");
-                    }
-                }
-            }
-
             pw.println("};");
             pw.println();
             pw.println();
         }
 
-		String className = getClassNameSansPackage(null);
+        String className = getClassNameSansPackage(null);
         String bundleCacheClassName = className + "BundleCache";
 
         pw.println("class " + className + ";");
@@ -666,8 +624,55 @@ class XmlFileTask extends ResourceGen.FileTask {
                 ResourceGen.getResourceInitcap(resource);
 
             pw.println("  " + resourceInitCap + " " + resource.name + ";");
+      
+            if (resource instanceof ResourceDef.Exception) {
+                ResourceDef.Exception exception = 
+                    (ResourceDef.Exception)resource;
+
+                String text = resource.text.cdata;
+                String comment = ResourceGen.getComment(resource);
+
+                String parameterList = ResourceGen.getParameterList(text,
+                                                                    false);
+
+                String exceptionClass = exception.cppClassName;
+                if (exceptionClass == null) {
+                    exceptionClass = resourceList.cppExceptionClassName;
+                }
+
+                pw.println("  " + exceptionClass
+                           + "* new" + resourceInitCap + "("
+                           + parameterList + ") const;");
+
+                boolean chainExceptions = 
+                    (exception.cppChainExceptions != null &&
+                     exception.cppChainExceptions.equalsIgnoreCase("true"));
+
+                if (chainExceptions) {
+                    if (parameterList.length() > 0) {
+                        pw.println("  "
+                                   + exceptionClass
+                                   + "* new"
+                                   + resourceInitCap
+                                   + "("
+                                   + parameterList 
+                                   + ", const "
+                                   + exceptionClass
+                                   + " * const prev) const;");
+                    } else {
+                        pw.println("  "
+                                   + exceptionClass
+                                   + " new"
+                                   + resourceInitCap + "("
+                                   + "const "
+                                   + exceptionClass
+                                   + " * const prev) const;");
+                    }
+                }
+            }
+
+            pw.println();
         }
-        pw.println();
         pw.println("  template<class _GRB, class _BC, class _BC_ITER>");
         pw.println("    friend _GRB *makeInstance(_BC &bundleCache, const Locale &locale);");
 
@@ -767,8 +772,84 @@ class XmlFileTask extends ResourceGen.FileTask {
             }
         }
         pw.println("{ }");
-
         pw.println();
+
+        for(int i = 0; i < resourceList.resources.length; i++) {
+            ResourceDef.Resource resource = resourceList.resources[i];
+
+			String text = resource.text.cdata;
+			String comment = ResourceGen.getComment(resource);
+
+            // e.g. "Internal"
+			final String resourceInitCap =
+                ResourceGen.getResourceInitcap(resource);
+
+			String parameterList = ResourceGen.getParameterList(text, false);
+			String argumentList = ResourceGen.getArgumentList(text, false);
+
+            if (resource instanceof ResourceDef.Exception) {
+                ResourceDef.Exception exception =
+                    (ResourceDef.Exception)resource;
+
+                String exceptionClass = exception.cppClassName;
+                if (exceptionClass == null) {
+                    exceptionClass = resourceList.cppExceptionClassName;
+                }
+
+                pw.println(exceptionClass + "* "
+                           + className + "::new" + resourceInitCap + "("
+                           + parameterList + ") const");
+                pw.println("{");
+                pw.println("  return new "
+                           + exceptionClass
+                           + "("
+                           + resource.name
+                           + ".operator()("
+                           + argumentList
+                           + "));");
+                pw.println("}");
+                pw.println();
+
+                boolean chainExceptions = 
+                    (exception.cppChainExceptions != null &&
+                     exception.cppChainExceptions.equalsIgnoreCase("true"));
+
+                if (chainExceptions) {
+                    if (parameterList.length() > 0) {
+                        pw.println(exceptionClass
+                                   + "* "
+                                   + className
+                                   + "::new"
+                                   + resourceInitCap
+                                   + "("
+                                   + parameterList 
+                                   + ", const "
+                                   + exceptionClass
+                                   + " * const prev) const");
+                    } else {
+                        pw.println(exceptionClass
+                                   + " "
+                                   + className
+                                   + "::new"
+                                   + resourceInitCap
+                                   + "(const "
+                                   + exceptionClass
+                                   + " * const prev) const");
+                    }
+                    pw.println("{");
+
+                    pw.println("  return new "
+                               + exceptionClass
+                               + "("
+                               + resource.name
+                               + ".operator()("
+                               + argumentList
+                               + "), prev);");
+                    pw.println("}");
+                    pw.println();
+                }
+            }
+        }
 
         for(int i = 0; i < resourceList.resources.length; i++) {
             ResourceDef.Resource resource = resourceList.resources[i];
@@ -797,62 +878,6 @@ class XmlFileTask extends ResourceGen.FileTask {
             pw.println("  return format(" + argumentList + ");");
             pw.println("}");
             pw.println();
-
-            if (resource instanceof ResourceDef.Exception) {
-                ResourceDef.Exception exception =
-                    (ResourceDef.Exception)resource;
-
-                String exceptionClass = exception.cppClassName;
-                if (exceptionClass == null) {
-                    exceptionClass = resourceList.cppExceptionClassName;
-                }
-
-                pw.println(exceptionClass + " "
-                           + resourceInitCap + "::new" + resourceInitCap + "("
-                           + parameterList + ") const");
-                pw.println("{");
-                pw.println("  return " + exceptionClass + "(this->operator()("
-                           + argumentList + "));");
-                pw.println("}");
-                pw.println();
-
-                boolean chainExceptions = 
-                    (exception.cppChainExceptions != null &&
-                     exception.cppChainExceptions.equalsIgnoreCase("true"));
-
-                if (chainExceptions) {
-                    if (parameterList.length() > 0) {
-                        pw.println(exceptionClass
-                                   + " "
-                                   + resourceInitCap
-                                   + "::new"
-                                   + resourceInitCap
-                                   + "("
-                                   + parameterList 
-                                   + ", const "
-                                   + exceptionClass
-                                   + " * const prev) const");
-                    } else {
-                        pw.println(exceptionClass
-                                   + " "
-                                   + resourceInitCap
-                                   + "::new"
-                                   + resourceInitCap
-                                   + "(const "
-                                   + exceptionClass
-                                   + " * const prev) const");
-                    }
-                    pw.println("{");
-
-                    pw.println("  return "
-                               + exceptionClass
-                               + "(this->operator()("
-                               + argumentList
-                               + "), prev);");
-                    pw.println("}");
-                    pw.println();
-                }
-            }
         }
 
         if (resourceList.cppNamespace != null) {
