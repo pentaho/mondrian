@@ -167,7 +167,38 @@ class RolapMember extends MemberBase
 	 */
 	public int getOrdinal() {
 		return ordinal;
-  }
+	}
+
+	/**
+	 * implement the Comparable interface
+	 */
+	public int compareTo(Object o) {
+		RolapMember other = (RolapMember)o;
+
+		if (this.key != null && other.key == null)
+			return 1; // not null is greater than null
+
+		if (this.key == null && other.key != null)
+			return -1; // null is less than not null
+
+		// compare by unique name, if both keys are null
+		if (this.key == null && other.key == null)
+			return this.getUniqueName().compareTo(other.getUniqueName());
+
+		// as both keys are not null, compare by key
+		//  String, Double, Integer should be possible
+		//  any key object should be "Comparable"
+		// anyway - keys should be of the same class
+		if (this.key.getClass().equals(other.key.getClass()))
+			return ((Comparable)this.key).compareTo(other.key);
+
+		// we should never compare objects with different key classes
+		throw new java.lang.ClassCastException(
+			"Comparing " + this.key.getClass().getName() +
+			" against " + other.key.getClass().getName());
+
+	}
+
 }
 
 

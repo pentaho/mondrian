@@ -32,7 +32,7 @@ package mondrian.olap;
  * <p> Members can have member properties. Their {@link Level#getProperties}
  * defines which are allowed.
  **/
-public interface Member extends OlapElement {
+public interface Member extends OlapElement, Comparable {
 
 	/**
 	 * Returns this member's parent, or null (not the 'null member', as
