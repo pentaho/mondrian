@@ -292,13 +292,18 @@ Revision is $Id$
             <Doc>
                 Name of the 'all' member. If this attribute is not specified,
                 the all member is named 'All <i>hierarchyName</i>', for
-                example, 'All Store'. Note that the 'all' level is always
-                called '(All)'.
+                example, 'All Store'.
             </Doc>
         </Attribute>
         <Attribute name="allMemberCaption" required="false">
             <Doc>
                 A string being displayed instead as the all member's name.
+            </Doc>
+        </Attribute>
+        <Attribute name="allLevelName" required="false">
+            <Doc>
+                Name of the 'all' level. If this attribute is not specified,
+                the all member is named '(All)'.
             </Doc>
         </Attribute>
         <Attribute name="primaryKey">

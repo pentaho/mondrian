@@ -44,6 +44,7 @@ public abstract class HierarchyBase
     protected Level[] levels;
     protected final boolean hasAll;
     protected String allMemberName;
+    protected String allLevelName;
 
     protected HierarchyBase(Dimension dimension, 
                             String subName, 

@@ -4299,6 +4299,28 @@ public class BasicQueryTest extends FoodMartTestCase {
         Assert.assertEquals(caption, "Frauen und Maenner");
     }
 
+    public void testAllLevelName() {
+        RolapConnection conn = (RolapConnection) getConnection();
+        Schema schema = getConnection().getSchema();
+        final Cube salesCube = schema.lookupCube("Sales", true);
+        schema.createDimension(
+                salesCube,
+                "<Dimension name=\"Gender4\" foreignKey=\"customer_id\">" + nl +
+                "  <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\"" + nl +
+                " allLevelName=\"GenderLevel\" primaryKey=\"customer_id\">" + nl +
+                "  <Table name=\"customer\"/>" + nl +
+                "    <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>" +nl +
+                "  </Hierarchy>" + nl +
+                "</Dimension>");
+        String mdx = "select {[Gender4].[All Gender]} on columns from Sales";
+        Result result = TestContext.instance().executeFoodMart(mdx);
+        Axis axis0 = result.getAxes()[0];
+        Position pos0 = axis0.positions[0];
+        Member allGender = pos0.members[0];
+        String caption = allGender.getLevel().getName();
+        Assert.assertEquals(caption, "GenderLevel");
+    }
+
     /**
      * It is illegal for a query to have the same dimension on more than
      * one axis.

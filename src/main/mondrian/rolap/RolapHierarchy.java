@@ -72,7 +72,8 @@ class RolapHierarchy extends HierarchyBase {
         setCaption(dimension.getCaption());
 
         if (hasAll) {
-            Util.discard(newLevel("(All)",
+            this.allLevelName = "(All)";
+            Util.discard(newLevel(this.allLevelName,
                     RolapLevel.ALL | RolapLevel.UNIQUE));
             this.allMemberName = "All " + name + "s";
         }
@@ -101,9 +102,12 @@ class RolapHierarchy extends HierarchyBase {
             if (xmlHierarchy.allMemberName != null) {
                 this.allMemberName = xmlHierarchy.allMemberName;
             }
+            if (xmlHierarchy.allLevelName != null) {
+                this.allLevelName = xmlHierarchy.allLevelName;
+            }
             this.levels = new RolapLevel[xmlHierarchy.levels.length + 1];
             this.levels[0] = new RolapLevel(
-                    this, 0, "(All)", null, null, null, null, null,
+                    this, 0, this.allLevelName, null, null, null, null, null,
                     null, RolapProperty.emptyArray,
                     RolapLevel.ALL | RolapLevel.UNIQUE,
                     RolapLevel.HideMemberCondition.Never,
@@ -473,6 +477,7 @@ class RolapHierarchy extends HierarchyBase {
         // Create a peer hierarchy.
         RolapHierarchy peerHier = peerDimension.newHierarchy(subName, true);
         peerHier.allMemberName = allMemberName;
+        peerHier.allLevelName = allLevelName;
         peerHier.sharedHierarchy = sharedHierarchy;
         peerHier.primaryKey = primaryKey;
         MondrianDef.Join join = new MondrianDef.Join();
