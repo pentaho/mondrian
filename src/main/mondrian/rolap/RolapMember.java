@@ -206,11 +206,11 @@ class RolapMember extends MemberBase
 		if (this.key.getClass().equals(other.key.getClass()))
 			return ((Comparable)this.key).compareTo(other.key);
 
-		// we should never compare objects with different key classes
-		throw new java.lang.ClassCastException(
-			"Comparing " + this.key.getClass().getName() +
-			" against " + other.key.getClass().getName());
-
+		// Compare by unique name in case of different key classes.
+		// This is possible, if a new calculated member is created
+		//  in a dimension with an Integer key. The calculated member 
+		//  has a key of type String.
+		return this.getUniqueName().compareTo(other.getUniqueName());
 	}
 
     public boolean isHidden() {
