@@ -39,7 +39,7 @@ public class FunctionTest extends FoodMartTestCase {
             "[Time].[1997].[Q4]";
     private static final String year1997 = "[Time].[1997]";
 
-    final String hierarchized1997 = year1997 + nl +
+    private static final String hierarchized1997 = year1997 + nl +
                     "[Time].[1997].[Q1]" + nl +
                     "[Time].[1997].[Q1].[1]" + nl +
                     "[Time].[1997].[Q1].[2]" + nl +
