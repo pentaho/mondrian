@@ -109,6 +109,7 @@ public class Main extends TestCase {
 		suite.addTestSuite(FoodMartTestCase.class);
 		suite.addTest(BuiltinFunTable.instance().suite());
 		suite.addTestSuite(Schedule.ScheduleTestCase.class);
+		suite.addTest(Util.suite());
 		return suite;
 	}
 

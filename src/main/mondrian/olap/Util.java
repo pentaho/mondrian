@@ -16,8 +16,12 @@ import mondrian.resource.ChainableThrowable;
 import java.io.*;
 import java.util.*;
 
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+import junit.framework.Test;
+
 /**
- * todo:
+ * Utility functions used throughout mondrian. All methods are static.
  *
  * @author jhyde
  * @since 6 August, 2001
@@ -25,6 +29,8 @@ import java.util.*;
  **/
 public class Util extends mondrian.xom.XOMUtil
 {
+	// properties
+
 	public static final Object nullValue = new NullCellValue();
 	private static Hashtable threadRes = new Hashtable();
 
@@ -417,6 +423,9 @@ public class Util extends mondrian.xom.XOMUtil
 					return pair[1];
 				}
 			}
+			if (key.equalsIgnoreCase("Provider")) {
+				return "MSDASQL";
+			}
 			return null;
 		}
 
@@ -426,7 +435,12 @@ public class Util extends mondrian.xom.XOMUtil
 				String[] pair = (String[]) v.elementAt(i);
 				if (pair[0].equalsIgnoreCase(key)) {
 					String old = pair[1];
-					pair[1] = value;
+					if (key.equalsIgnoreCase("Provider")) {
+						// Unlike all other properties, later values of
+						// "Provider" do not supersede
+					} else {
+						pair[1] = value;
+					}
 					return old;
 				}
 			}
@@ -439,7 +453,7 @@ public class Util extends mondrian.xom.XOMUtil
 			StringBuffer sb = new StringBuffer();
 			for (int i = 0, n = v.size(); i < n; i++) {
 				String[] pair = (String[]) v.elementAt(i);
-				if (i++ > 0) {
+				if (i > 0) {
 					sb.append("; ");
 				}
 				sb.append(pair[0]);
@@ -450,10 +464,6 @@ public class Util extends mondrian.xom.XOMUtil
 		}
 	};
 
-
-
-
-
 	/**
 	 * Converts an OLE DB connect string into a {@link PropertyList}.
 	 *
@@ -463,48 +473,160 @@ public class Util extends mondrian.xom.XOMUtil
 	 * <code>Provider='sqloledb';Data Source='MySqlServer';Initial
 	 * Catalog='Pubs';Integrated Security='SSPI';</code>.
 	 *
-	 * <p>Syntax Notes (quotes are not implemented)<ul>
-	 *
-	 * <li> Values may be delimited by single or double quotes, (for example,
-	 * name='value' or name="value"). Either single or double quotes may be
-	 * used within a connection string by using the other delimiter, for
-	 * example, name="value's" or name='value&quot;s',but not name='value's' or
-	 * name=""value"". The value type is irrelevant.
-	 *
-	 * <li> All blank characters, except those placed within a value or within
-	 * quotes, are ignored.
-	 *
-	 * <li> Keyword value pairs must be separated by a semicolon (;). If a
-	 * semicolon is part of a value, it also must be delimited by quotes.
-	 *
-	 * <li> Names are not case sensitive. If a given name occurs more than once
-	 * in the connection string, the value associated with the last occurence
-	 * is used.
-	 *
-	 * <li> No escape sequences are supported. 
-	 * </ul>
+	 * <p> This method implements as much as possible of the
+	 * <a href="http://msdn.microsoft.com/library/en-us/oledb/htm/oledbconnectionstringsyntax.asp">OLE
+	 * DB connect string syntax specification</a>. To find what it
+	 * <em>actually</em> does, take a look at the {@link #UtilTestCase
+	 * JUnit test case}.
 	 **/
-	public static PropertyList parseConnectString(String s)
-	{
-		PropertyList properties = new PropertyList();
-		StringTokenizer st = new StringTokenizer(s, ";");
-		while (st.hasMoreTokens()) {
-			String pair = st.nextToken(); // e.g. "Provider=MSOLAP"
-			String key, value;
-			int eq = pair.indexOf("=");
-			if (eq < 0) {
-				key = pair;
-				value = null;
-			} else {
-				key = pair.substring(0, eq);
-				value = pair.substring(eq + 1);
-			}
-			key = replace(key, " ", ""); // e.g. "Data Source" -> "DataSource"
-			properties.put(key, value);
-		}
-		return properties;
+	public static PropertyList parseConnectString(String s) {
+		return new ConnectStringParser().parse(s);
 	}
 
+	private static class ConnectStringParser {
+		String s;
+		int i;
+		int n;
+		StringBuffer nameBuf = new StringBuffer();
+		StringBuffer valueBuf = new StringBuffer();
+		PropertyList parse(String s) {
+			this.s = s;
+			this.i = 0;
+			this.n = s.length();
+			PropertyList list = new PropertyList();
+			while (i < n) {
+				parsePair(list);
+			}
+			return list;
+		}
+		/**
+		 * Reads "name=value;" or "name=value<EOF>".
+		 */
+		void parsePair(PropertyList list) {
+			String name = parseName();
+			String value;
+			if (i >= n) {
+				value = "";
+			} else if (s.charAt(i) == ';') {
+				i++;
+				value = "";
+			} else {
+				value = parseValue();
+			}
+			list.put(name, value);
+		}
+		/**
+		 * Reads "name=". Name can contain equals sign if equals sign is
+		 * doubled.
+		 */
+		String parseName() {
+			nameBuf.setLength(0);
+			while (true) {
+				char c = s.charAt(i);
+				switch (c) {
+				case '=':
+					i++;
+					if (i < n && (c = s.charAt(i)) == '=') {
+						// doubled equals sign; take one of them, and carry on
+						i++;
+						nameBuf.append(c);
+						break;
+					}
+                    String name = nameBuf.toString();
+					name = name.trim();
+					return name;
+				case ' ':
+					if (nameBuf.length() == 0) {
+						// ignore preceding spaces
+						i++;
+						break;
+					} else {
+						// fall through
+					}
+				default:
+					nameBuf.append(c);
+					i++;
+					if (i >= n) {
+						return nameBuf.toString().trim();
+					}
+				}
+			}
+		}
+		/**
+		 * Reads "value;" or "value<EOF>"
+		 */
+		String parseValue() {
+			char c;
+			// skip over leading white space
+			while ((c = s.charAt(i)) == ' ') {
+				i++;
+				if (i >= n) {
+					return "";
+				}
+			}
+			if (c == '"' || c == '\'') {
+				String value = parseQuoted(c);
+				// skip over trailing white space
+				while (i < n && (c = s.charAt(i)) == ' ') {
+					i++;
+				}
+				if (i >= n) {
+					return value;
+				} else if (s.charAt(i) == ';') {
+					i++;
+					return value;
+				} else {
+					throw new RuntimeException(
+							"quoted value ended too soon, at position " + i +
+							" in '" + s + "'");
+				}
+			} else {
+				String value;
+				int semi = s.indexOf(';', i);
+				if (semi >= 0) {
+					value = s.substring(i, semi);
+					i = semi + 1;
+				} else {
+					value = s.substring(i);
+					i = n;
+				}
+				return value.trim();
+			}
+		}
+		/**
+		 * Reads a string quoted by a given character. Occurrences of the
+		 * quoting character must be doubled. For example,
+		 * <code>parseQuoted('"')</code> reads <code>"a ""new"" string"</code>
+		 * and returns <code>a "new" string</code>.
+		 */
+		String parseQuoted(char q) {
+			char c = s.charAt(i++);
+			Util.assertTrue(c == q);
+			valueBuf.setLength(0);
+			while (i < n) {
+				c = s.charAt(i);
+				if (c == q) {
+					i++;
+					if (i < n) {
+						c = s.charAt(i);
+						if (c == q) {
+							valueBuf.append(c);
+							i++;
+							continue;
+						}
+					}
+					return valueBuf.toString();
+				} else {
+					valueBuf.append(c);
+					i++;
+				}
+			}
+			throw new RuntimeException(
+					"Connect string '" + s +
+					"' contains unterminated quoted value '" +
+					valueBuf.toString() + "'");
+		}
+	}
 
     /**
 	 * <code>PropertiesPlus</code> adds a couple of convenience methods to {@link
@@ -536,6 +658,186 @@ public class Util extends mondrian.xom.XOMUtil
 			return value.equalsIgnoreCase("1") ||
 				value.equalsIgnoreCase("true") ||
 				value.equalsIgnoreCase("yes");
+		}
+	}
+
+	/**
+	 * Creates a JUnit testcase to test this class.
+	 */
+	public static Test suite() throws Exception {
+		TestSuite suite = new TestSuite();
+		suite.addTestSuite(UtilTestCase.class);
+		return suite;
+	}
+
+	public static class UtilTestCase extends TestCase {
+		public UtilTestCase(String s) {
+			super(s);
+		}
+		public void testParseConnectStringSimple() {
+			// Simple connect string
+			PropertyList properties = parseConnectString("foo=x;bar=y;foo=z");
+			assertEquals("y", properties.get("bar"));
+			assertEquals("y", properties.get("BAR")); // get is case-insensitive
+			assertNull(properties.get(" bar")); // get does not ignore spaces
+			assertEquals("z", properties.get("foo")); // later occurrence overrides
+			assertNull(properties.get("kipper"));
+			assertEquals(2, properties.v.size());
+			assertEquals("foo=z; bar=y", properties.toString());
+		}
+		public void testParseConnectStringComplex() {
+			PropertyList properties = parseConnectString(
+					"normalProp=value;" +
+					"emptyValue=;" +
+					" spaceBeforeProp=abc;" +
+					" spaceBeforeAndAfterProp =def;" +
+					" space in prop = foo bar ;" +
+					"equalsInValue=foo=bar;" +
+					"semiInProp;Name=value;" +
+					" singleQuotedValue = 'single quoted value ending in space ' ;" +
+					" doubleQuotedValue = \"=double quoted value preceded by equals\" ;" +
+					" singleQuotedValueWithSemi = 'one; two';" +
+					" singleQuotedValueWithSpecials = 'one; two \"three''four=five'");
+			assertEquals(11, properties.v.size());
+			String value;
+			value = properties.get("normalProp");
+			assertEquals("value", value);
+			value = properties.get("emptyValue");
+			assertEquals("", value); // empty string, not null!
+			value = properties.get("spaceBeforeProp");
+			assertEquals("abc", value);
+			value = properties.get("spaceBeforeAndAfterProp");
+			assertEquals("def", value);
+			value = properties.get("space in prop");
+			assertEquals(value, "foo bar");
+			value = properties.get("equalsInValue");
+			assertEquals("foo=bar", value);
+			value = properties.get("semiInProp;Name");
+			assertEquals("value", value);
+			value = properties.get("singleQuotedValue");
+			assertEquals("single quoted value ending in space ", value);
+			value = properties.get("doubleQuotedValue");
+			assertEquals("=double quoted value preceded by equals", value);
+			value = properties.get("singleQuotedValueWithSemi");
+			assertEquals(value, "one; two");
+			value = properties.get("singleQuotedValueWithSpecials");
+			assertEquals(value, "one; two \"three'four=five");
+		}
+		public void testConnectStringMore() {
+			p("singleQuote=''''", "singleQuote", "'");
+			p("doubleQuote=\"\"\"\"", "doubleQuote", "\"");
+			p("empty= ;foo=bar", "empty", "");
+		}
+		/**
+		 * Checks that <code>connectString</code> contains a property called
+		 * <code>name</code>, whose value is <code>value</code>.
+		 */
+		void p(String connectString, String name, String expectedValue) {
+			PropertyList list = parseConnectString(connectString);
+			String value = list.get(name);
+			assertEquals(expectedValue, value);
+		}
+		public void testOleDbSpec() {
+			p("Provider='MSDASQL'", "Provider", "MSDASQL");
+			p("Provider='MSDASQL.1'", "Provider", "MSDASQL.1");
+			// If no Provider keyword is in the string, the OLE DB Provider for
+			// ODBC (MSDASQL) is the default value. This provides backward
+			// compatibility with ODBC connection strings. The ODBC connection
+			// string in the following example can be passed in, and it will
+			// successfully connect.
+			p("Driver={SQL Server};Server={localhost};Trusted_Connection={yes};db={Northwind};", "Provider", "MSDASQL");
+			// Specifying a Keyword
+			//
+			// To identify a keyword used after the Provider keyword, use the
+			// property description of the OLE DB initialization property that you
+			// want to set. For example, the property description of the standard
+			// OLE DB initialization property DBPROP_INIT_LOCATION is
+			// Location. Therefore, to include this property in a connection
+			// string, use the keyword Location.
+			p("Provider='MSDASQL';Location='3Northwind'", "Location", "3Northwind");
+			// Keywords can contain any printable character except for the equal
+			// sign (=).
+			p("Jet OLE DB:System Database=c:\\system.mda", "Jet OLE DB:System Database", "c:\\system.mda");
+			p("Authentication;Info=Column 5", "Authentication;Info", "Column 5");
+			// If a keyword contains an equal sign (=), it must be preceded by an
+			// additional equal sign to indicate that it is part of the keyword.
+			p("Verification==Security=True", "Verification=Security", "True");
+			// If multiple equal signs appear, each one must be preceded by an
+			// additional equal sign.
+			p("Many====One=Valid", "Many==One", "Valid");
+			p("TooMany===False", "TooMany=", "False");
+			// Setting Values That Use Reserved Characters
+			//
+			// To include values that contain a semicolon, single-quote character,
+			// or double-quote character, the value must be enclosed in double
+			// quotes.
+			p("ExtendedProperties=\"Integrated Security='SSPI';Initial Catalog='Northwind'\"", "ExtendedProperties", "Integrated Security='SSPI';Initial Catalog='Northwind'");
+			// If the value contains both a semicolon and a double-quote character,
+			// the value can be enclosed in single quotes.
+			p("ExtendedProperties='Integrated Security=\"SSPI\";Databse=\"My Northwind DB\"'", "ExtendedProperties", "Integrated Security=\"SSPI\";Databse=\"My Northwind DB\"");
+			// The single quote is also useful if the value begins with a
+			// double-quote character.
+			p("DataSchema='\"MyCustTable\"'", "DataSchema", "\"MyCustTable\"");
+			// Conversely, the double quote can be used if the value begins with a
+			// single quote.
+			p("DataSchema=\"'MyOtherCustTable'\"", "DataSchema", "'MyOtherCustTable'");
+			// If the value contains both single-quote and double-quote characters,
+			// the quote character used to enclose the value must be doubled each
+			// time it occurs within the value.
+			p("NewRecordsCaption='\"Company''s \"new\" customer\"'", "NewRecordsCaption", "\"Company's \"new\" customer\"");
+			p("NewRecordsCaption=\"\"\"Company's \"\"new\"\" customer\"\"\"", "NewRecordsCaption", "\"Company's \"new\" customer\"");
+			// Setting Values That Use Spaces
+			//
+			// Any leading or trailing spaces around a keyword or value are
+			// ignored. However, spaces within a keyword or value are allowed and
+			// recognized.
+			p("MyKeyword=My Value", "MyKeyword", "My Value");
+			p("MyKeyword= My Value ;MyNextValue=Value", "MyKeyword", "My Value");
+			// To include preceding or trailing spaces in the value, the value must
+			// be enclosed in either single quotes or double quotes.
+			p("MyKeyword=' My Value  '", "MyKeyword", " My Value  ");
+			p("MyKeyword=\"  My Value \"", "MyKeyword", "  My Value ");
+			if (false) {
+				// (Not supported.)
+				//
+				// If the keyword does not correspond to a standard OLE DB
+				// initialization property (in which case the keyword value is
+				// placed in the Extended Properties (DBPROP_INIT_PROVIDERSTRING)
+				// property), the spaces around the value will be included in the
+				// value even though quote marks are not used. This is to support
+				// backward compatibility for ODBC connection strings. Trailing
+				// spaces after keywords might also be preserved.
+			}
+			if (false) {
+				// (Not supported)
+				//
+				// Returning Multiple Values
+				//
+				// For standard OLE DB initialization properties that can return
+				// multiple values, such as the Mode property, each value returned
+				// is separated with a pipe (|) character. The pipe character can
+				// have spaces around it or not.
+				//
+				// Example   Mode=Deny Write|Deny Read
+			}
+			// Listing Keywords Multiple Times
+			//
+			// If a specific keyword in a keyword=value pair occurs multiple times
+			// in a connection string, the last occurrence listed is used in the
+			// value set.
+			p("Provider='MSDASQL';Location='Northwind';Cache Authentication='True';Prompt='Complete';Location='Customers'", "Location", "Customers");
+			// One exception to the preceding rule is the Provider keyword. If this
+			// keyword occurs multiple times in the string, the first occurrence is
+			// used.
+			p("Provider='MSDASQL';Location='Northwind'; Provider='SQLOLEDB'", "Provider", "MSDASQL");
+			if (false) {
+				// (Not supported)
+				//
+				// Setting the Window Handle Property
+				//
+				// To set the Window Handle (DBPROP_INIT_HWND) property in a
+				// connection string, a long integer value is typically used.
+			}
 		}
 	}
 }

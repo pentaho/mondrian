@@ -37,7 +37,7 @@
   <property name="demo.dir" value="demo"/>
   <property name="webapp.dir" value="webapp"/>
   <property name="dist.src.file" value="${dist.dir}/${dist.name}-src.zip"/>
-  <property name="dist.data.file" value="${dist.dir}/${dist.name}-data.zip"/>
+  <property name="dist.data.file" value="${dist.dir}/${name}-data.zip"/>
   <property name="dist.bin.file" value="${dist.dir}/${dist.name}-bin.zip"/>
   <property name="dist.jar.file" value="${dist.dir}/${name}.jar"/>
   <property name="boot.jar.file" value="${lib.dir}/boot.jar"/>
