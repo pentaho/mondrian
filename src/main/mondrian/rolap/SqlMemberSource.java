@@ -196,7 +196,7 @@ class SqlMemberSource implements MemberReader
 				if (level2.isAll()) {
 					 continue;
 				}
-				if (columnList != "") {
+				if (columnList.length() > 0) {
 					// for databases where both SELECT-in-FROM and COUNT DISTINCT do not work,
 					//  we do not generate any count and do the count distinct "manually".
 					if (!sqlQuery.allowsCompoundCountDistinct())
