@@ -248,7 +248,9 @@ copy.properties"/>
         debug="${project.build.debug}"
         classpathref="project.classpath"
         source="1.4">
-      <include name="mondrian/**/*.java" />
+      <include name="mondrian/**/*.java"/>
+      <include name="javax/**/*.java"/>
+      <include name="org/**/*.java"/>
     </javac>
   </target>
 
@@ -589,7 +591,7 @@ mondrian/resource/**/*.class"/>
     <javadoc sourcepath="${java.dir}"
         classpathref="project.classpath"
         destdir="${javadoc.dir}"
-        packagenames="mondrian.*,javax.*,org.omg.cwm.*"
+        packagenames="mondrian.*,javax.*,org.omg.*"
         overview="${java.dir}/overview.html"
         footer="&lt;a href=&quot;http://sourceforge.net/projects/mondrian&quot;&gt;&lt;img src=&quot;http://sourceforge.net/sflogo.php?group_id=35302&#38;type=1&quot; width=&quot;88&quot; height=&quot;31&quot; border=&quot;0&quot; alt=&quot;SourceForge.net_Logo&quot;&gt;&lt;/a&gt;"
         author="true"
