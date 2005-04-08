@@ -105,6 +105,13 @@ parser code {:
         String sFatalSyntaxError = Util.getRes().getMdxFatalSyntaxError();
         report_fatal_error(sFatalSyntaxError, cur_token);
     }
+    
+    /**
+     * Tell if the given string can possibly be an operator with property syntax.
+     */
+    protected boolean isFunCall(String s) {
+       return FunTable.instance().isProperty(s);
+    }
 :};
 init with {:
     scanner.init();
@@ -596,7 +603,11 @@ value_expression_primary ::=
             RESULT = new Id(i);
         :}
     |   value_expression_primary:i DOT unquoted_identifier:j {:
-            RESULT = new FunCall(j, Syntax.Property, new Exp[] {i});
+            if (i instanceof Id && !parser.isFunCall(j)) {
+                RESULT = ((Id) i).append(j, false);
+            } else {
+                RESULT = new FunCall(j, Syntax.Property, new Exp[] {i});
+            }
         :}
     |   value_expression_primary:i DOT quoted_identifier:j {:
             if (i instanceof Id) {

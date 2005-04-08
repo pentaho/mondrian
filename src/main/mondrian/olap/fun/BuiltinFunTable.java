@@ -43,6 +43,7 @@ public class BuiltinFunTable extends FunTable {
 
     private Exp valueFunCall;
     private final HashSet reservedWords = new HashSet();
+    private final HashSet propertyWords = new HashSet();
     private static final Resolver[] emptyResolverArray = new Resolver[0];
 
     /**
@@ -93,6 +94,8 @@ public class BuiltinFunTable extends FunTable {
 
     protected void define(Resolver resolver) {
         addFunInfo(resolver);
+        if (resolver.getSyntax() == Syntax.Property)
+            defineProperty(resolver.getName());
 
         resolvers.add(resolver);
         final String[] reservedWords = resolver.getReservedWords();
@@ -473,12 +476,25 @@ public class BuiltinFunTable extends FunTable {
     public boolean isReserved(String s) {
         return reservedWords.contains(s.toUpperCase());
     }
-
+    
     /**
      * Defines a reserved word.
+     * @see #isReserved
      */
-    public void defineReserved(String s) {
+    protected void defineReserved(String s) {
         reservedWords.add(s.toUpperCase());
+    }
+
+    public boolean isProperty(String s) {
+        return propertyWords.contains(s.toUpperCase());
+    }
+
+    /**
+     * Defines a word matching a property function name.
+     * @see #isProperty
+     */
+    protected void defineProperty(String s) {
+        propertyWords.add(s.toUpperCase());
     }
 
     /**

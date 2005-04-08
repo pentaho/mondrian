@@ -74,6 +74,13 @@ public abstract class FunTable {
     public abstract boolean isReserved(String s);
 
     /**
+     * Returns whether a string is a property-style (postfix)
+     * operator. This is used during parsing to disambiguate
+     * functions from unquoted member names.
+     */
+    public abstract boolean isProperty(String s);
+
+    /**
      * Returns whether the <code>k</code>th argument to a function call
      * has to be an expression.
      */
