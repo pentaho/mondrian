@@ -11,6 +11,8 @@
  */
 package mondrian.test;
 
+import junit.framework.Assert;
+
 /**
  * <code>CompatibilityTest</code> is a test case which tests
  * MDX syntax compatibility with Microsoft and SAS servers.
@@ -21,20 +23,137 @@ package mondrian.test;
  * @since March 30, 2005
  */
 public class CompatibilityTest extends FoodMartTestCase {
-	public CompatibilityTest(String name) {
-		super(name);
-	}
+    public CompatibilityTest(String name) {
+        super(name);
+    }
 
-	/**
-	 * Cube names are case in-sensitive, whether or not square brackets are used.
-	 */
-	public void testCubeCase() {
-		String queryFrom = "select {[Measures].[Unit Sales]} on columns from ";
-		String result = "Axis #0:" + nl + "{}" + nl + "Axis #1:" + nl + "{[Measures].[Unit Sales]}"
-				+ nl + "Row #0: 266,773" + nl;
+    /**
+     * Cube names are case insensitive.
+     */
+    public void _testCubeCase() {
+        String queryFrom = "select {[Measures].[Unit Sales]} on columns from ";
+        String result = "Axis #0:" + nl + "{}" + nl + "Axis #1:" + nl + "{[Measures].[Unit Sales]}"
+                + nl + "Row #0: 266,773" + nl;
 
-		runQueryCheckResult(queryFrom + "Sales", result);
-		//more later runQueryCheckResult(queryFrom + "SALES", result);
-	}
+        runQueryCheckResult(queryFrom + "[Sales]", result);
+        runQueryCheckResult(queryFrom + "[SALES]", result);
+        runQueryCheckResult(queryFrom + "[sAlEs]", result);
+        runQueryCheckResult(queryFrom + "[sales]", result);
+    }
+
+    /**
+     * Brackets around cube names are optional.
+     */
+    public void testCubeBrackets() {
+        String queryFrom = "select {[Measures].[Unit Sales]} on columns from ";
+        String result = "Axis #0:" + nl + "{}" + nl + "Axis #1:" + nl + "{[Measures].[Unit Sales]}"
+                + nl + "Row #0: 266,773" + nl;
+
+        runQueryCheckResult(queryFrom + "Sales", result);
+        //case runQueryCheckResult(queryFrom + "SALES", result);
+        //case runQueryCheckResult(queryFrom + "sAlEs", result);
+        //case runQueryCheckResult(queryFrom + "sales", result);
+    }
+
+    /**
+     * See how we are at diagnosing reserved words.
+     */
+    public void testReservedWord() {
+        try {
+            runQueryCheckResult("with member [Measures].ordinal as '1'" + nl
+                    + " select {[Measures].ordinal} on columns from Sales", "x");
+            fail();
+        } catch (Exception e) {
+            // supposed to fail         
+        }
+        runQueryCheckResult("with member [Measures].[ordinal] as '1'" + nl
+                + " select {[Measures].[ordinal]} on columns from Sales", "Axis #0:" + nl + "{}"
+                + nl + "Axis #1:" + nl + "{[Measures].[ordinal]}" + nl + "Row #0: 1" + nl);
+        // case problem: runQueryCheckResult("with member measures.[ordinal] as '1'" + nl + " select {measures.[ordinal]} on columns from Sales", "x");
+    }
+
+    /**
+     * Dimension names are case insensitive.
+     */
+    public void _testDimensionCase() {
+        checkAxis("[Measures].[Unit Sales]", "[Measures].[Unit Sales]");
+        checkAxis("[Measures].[Unit Sales]", "[MEASURES].[Unit Sales]");
+        checkAxis("[Measures].[Unit Sales]", "[mEaSuReS].[Unit Sales]");
+        checkAxis("[Measures].[Unit Sales]", "[measures].[Unit Sales]");
+
+        checkAxis("[Customers].[All Customers]", "[Customers].[All Customers]");
+        checkAxis("[Customers].[All Customers]", "[CUSTOMERS].[All Customers]");
+        checkAxis("[Customers].[All Customers]", "[cUsToMeRs].[All Customers]");
+        checkAxis("[Customers].[All Customers]", "[customers].[All Customers]");
+    }
+
+    /**
+     * Brackets around dimension names are optional.
+     */
+    public void testDimensionBrackets() {
+        checkAxis("[Measures].[Unit Sales]", "Measures.[Unit Sales]");
+        checkAxis("[Measures].[Unit Sales]", "MEASURES.[Unit Sales]");
+        checkAxis("[Measures].[Unit Sales]", "mEaSuReS.[Unit Sales]");
+        checkAxis("[Measures].[Unit Sales]", "measures.[Unit Sales]");
+
+        checkAxis("[Customers].[All Customers]", "Customers.[All Customers]");
+        checkAxis("[Customers].[All Customers]", "CUSTOMERS.[All Customers]");
+        checkAxis("[Customers].[All Customers]", "cUsToMeRs.[All Customers]");
+        checkAxis("[Customers].[All Customers]", "customers.[All Customers]");
+    }
+
+    /**
+     * Member names are case insensitive.
+     */
+    public void _testMemberCase() {
+        checkAxis("[Measures].[Unit Sales]", "[Measures].[UNIT SALES]");
+        checkAxis("[Measures].[Unit Sales]", "[Measures].[uNiT sAlEs]");
+        checkAxis("[Measures].[Unit Sales]", "[Measures].[unit sales]");
+
+        checkAxis("[Measures].[Profit]", "[Measures].[Profit]");
+        checkAxis("[Measures].[Profit]", "[Measures].[pRoFiT]");
+        checkAxis("[Measures].[Profit]", "[Measures].[PROFIT]");
+        checkAxis("[Measures].[Profit]", "[Measures].[profit]");
+
+        checkAxis("[Customers].[All Customers]", "[Customers].[All Customers]");
+        checkAxis("[Customers].[All Customers]", "[Customers].[ALL CUSTOMERS]");
+        checkAxis("[Customers].[All Customers]", "[Customers].[aLl CuStOmErS]");
+        checkAxis("[Customers].[All Customers]", "[Customers].[all customers]");
+
+        checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].[Mexico]");
+        checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].[MEXICO]");
+        checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].[mExIcO]");
+        checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].[mexico]");
+    }
+
+    /**
+     * Brackets around member names are optional.
+     */
+    public void testMemberBrackets() {
+        checkAxis("[Measures].[Profit]", "[Measures].Profit");
+        checkAxis("[Measures].[Profit]", "[Measures].pRoFiT");
+        checkAxis("[Measures].[Profit]", "[Measures].PROFIT");
+        checkAxis("[Measures].[Profit]", "[Measures].profit");
+
+        checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].Mexico");
+        //case checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].MEXICO");
+        //case checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].mExIcO");
+        //case checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].mexico");
+    }
+
+    /**
+     * Hierarchy names of the form [Dim].[Hier], [Dim.Hier], and Dim.Hier are accepted.
+     */
+    public void testHierarchyNames() {
+        checkAxis("[Customers].[All Customers]", "[Customers].[All Customers]");
+        checkAxis("[Customers].[All Customers]", "[Customers].[Customers].[All Customers]");
+        checkAxis("[Customers].[All Customers]", "Customers.[Customers].[All Customers]");
+        checkAxis("[Customers].[All Customers]", "[Customers].Customers.[All Customers]");
+        // don't know if this makes sense: checkAxis("[Customers].[All Customers]", "[Customers.Customers].[All Customers]");
+    }
+
+    private void checkAxis(String result, String expression) {
+        Assert.assertEquals(result, executeAxis(expression).toString());
+    }
 
 }
