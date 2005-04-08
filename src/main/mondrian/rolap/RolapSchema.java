@@ -401,7 +401,7 @@ public class RolapSchema implements Schema {
      * A collection of schemas, identified by their connection properties
      * (catalog name, JDBC URL, and so forth).
      *
-     * <p>To lookup a schema, call <code>Pool.instance().{@link #get}</code>.
+     * <p>To lookup a schema, call <code>Pool.instance().{@link #get(String, DataSource, Util.PropertyList)}</code>.
      */
     static class Pool {
         private static Pool pool = new Pool();
@@ -719,15 +719,24 @@ public class RolapSchema implements Schema {
      * cube exists.
      */
     protected Cube lookupCube(final String cubeName) {
-        return (Cube) mapNameToCube.get(cubeName);
+        return (Cube) mapNameToCube.get(isCaseSensitive() ? cubeName : cubeName.toUpperCase());
+    }
+
+    /**
+     * Adds a cube to the cube name map.
+     * @see #lookupCube(String)
+     */
+    protected void addCube(final Cube cube) {
+        this.mapNameToCube.put(isCaseSensitive() ? cube.getName() : cube.getName().toUpperCase(), cube);
+    }
+
+    private boolean isCaseSensitive() {
+        // TODO: Add case sensitivity option
+        return false;
     }
 
     public Cube[] getCubes() {
         return (Cube[]) mapNameToCube.values().toArray(new RolapCube[0]);
-    }
-
-    void addCube(final Cube cube) {
-        this.mapNameToCube.put(cube.getName(), cube);
     }
 
     public Hierarchy[] getSharedHierarchies() {
@@ -767,12 +776,12 @@ public class RolapSchema implements Schema {
                 if (false) mapSharedHierarchyToReader.put(sharedName, reader);
                 mapSharedHierarchyNameToHierarchy.put(sharedName, hierarchy);
             } else {
-                final RolapHierarchy sharedHierarchy = (RolapHierarchy)
-                        mapSharedHierarchyNameToHierarchy.get(sharedName);
-                final RolapDimension sharedDimension = (RolapDimension)
-                        sharedHierarchy.getDimension();
-                final RolapDimension dimension =
-                    (RolapDimension) hierarchy.getDimension();
+//                final RolapHierarchy sharedHierarchy = (RolapHierarchy)
+//                        mapSharedHierarchyNameToHierarchy.get(sharedName);
+//                final RolapDimension sharedDimension = (RolapDimension)
+//                        sharedHierarchy.getDimension();
+//                final RolapDimension dimension =
+//                    (RolapDimension) hierarchy.getDimension();
 //                Util.assertTrue(
 //                        dimension.getGlobalOrdinal() ==
 //                        sharedDimension.getGlobalOrdinal());

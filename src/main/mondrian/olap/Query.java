@@ -632,7 +632,8 @@ public class Query extends QueryPart {
         Iterator definedMembers = getDefinedMembers().iterator();
         while (definedMembers.hasNext()) {
             Member mdxMember = (Member) definedMembers.next();
-            if (mdxMember.getUniqueName().equals(s)) {
+            // TODO: Add case sensitivity option
+            if (mdxMember.getUniqueName().equalsIgnoreCase(s)) {
                 return mdxMember;
             }
         }
@@ -1072,7 +1073,8 @@ public class Query extends QueryPart {
                 if (formula.isMember()) {
                     continue;       // have already done these
                 }
-                if (formula.getNames()[0].equals(s)) {
+                // TODO: Add case sensitivity option
+                if (formula.getNames()[0].equalsIgnoreCase(s)) {
                     return formula.getMDXSet();
                 }
             }

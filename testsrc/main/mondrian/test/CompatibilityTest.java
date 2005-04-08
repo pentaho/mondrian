@@ -30,7 +30,7 @@ public class CompatibilityTest extends FoodMartTestCase {
     /**
      * Cube names are case insensitive.
      */
-    public void _testCubeCase() {
+    public void testCubeCase() {
         String queryFrom = "select {[Measures].[Unit Sales]} on columns from ";
         String result = "Axis #0:" + nl + "{}" + nl + "Axis #1:" + nl + "{[Measures].[Unit Sales]}"
                 + nl + "Row #0: 266,773" + nl;
@@ -50,32 +50,26 @@ public class CompatibilityTest extends FoodMartTestCase {
                 + nl + "Row #0: 266,773" + nl;
 
         runQueryCheckResult(queryFrom + "Sales", result);
-        //case runQueryCheckResult(queryFrom + "SALES", result);
-        //case runQueryCheckResult(queryFrom + "sAlEs", result);
-        //case runQueryCheckResult(queryFrom + "sales", result);
+        runQueryCheckResult(queryFrom + "SALES", result);
+        runQueryCheckResult(queryFrom + "sAlEs", result);
+        runQueryCheckResult(queryFrom + "sales", result);
     }
 
     /**
      * See how we are at diagnosing reserved words.
      */
     public void testReservedWord() {
-        try {
-            runQueryCheckResult("with member [Measures].ordinal as '1'" + nl
-                    + " select {[Measures].ordinal} on columns from Sales", "x");
-            fail();
-        } catch (Exception e) {
-            // supposed to fail         
-        }
+        assertAxisThrows("with member [Measures].ordinal as '1'" + nl
+                    + " select {[Measures].ordinal} on columns from Sales", "Syntax error");
         runQueryCheckResult("with member [Measures].[ordinal] as '1'" + nl
                 + " select {[Measures].[ordinal]} on columns from Sales", "Axis #0:" + nl + "{}"
                 + nl + "Axis #1:" + nl + "{[Measures].[ordinal]}" + nl + "Row #0: 1" + nl);
-        // case problem: runQueryCheckResult("with member measures.[ordinal] as '1'" + nl + " select {measures.[ordinal]} on columns from Sales", "x");
     }
 
     /**
      * Dimension names are case insensitive.
      */
-    public void _testDimensionCase() {
+    public void testDimensionCase() {
         checkAxis("[Measures].[Unit Sales]", "[Measures].[Unit Sales]");
         checkAxis("[Measures].[Unit Sales]", "[MEASURES].[Unit Sales]");
         checkAxis("[Measures].[Unit Sales]", "[mEaSuReS].[Unit Sales]");
@@ -105,7 +99,7 @@ public class CompatibilityTest extends FoodMartTestCase {
     /**
      * Member names are case insensitive.
      */
-    public void _testMemberCase() {
+    public void testMemberCase() {
         checkAxis("[Measures].[Unit Sales]", "[Measures].[UNIT SALES]");
         checkAxis("[Measures].[Unit Sales]", "[Measures].[uNiT sAlEs]");
         checkAxis("[Measures].[Unit Sales]", "[Measures].[unit sales]");
@@ -127,6 +121,21 @@ public class CompatibilityTest extends FoodMartTestCase {
     }
 
     /**
+     * Calculated member names are case insensitive.
+     */
+    public void testCalculatedMemberCase() {
+        runQueryCheckResult("with member [Measures].[CaLc] as '1'" + nl
+                + " select {[Measures].[CaLc]} on columns from Sales", "Axis #0:" + nl + "{}" + nl
+                + "Axis #1:" + nl + "{[Measures].[CaLc]}" + nl + "Row #0: 1" + nl);
+        runQueryCheckResult("with member [Measures].[CaLc] as '1'" + nl
+                + " select {[Measures].[cAlC]} on columns from Sales", "Axis #0:" + nl + "{}" + nl
+                + "Axis #1:" + nl + "{[Measures].[CaLc]}" + nl + "Row #0: 1" + nl);
+        runQueryCheckResult("with member [mEaSuReS].[CaLc] as '1'" + nl
+                + " select {[MeAsUrEs].[cAlC]} on columns from Sales", "Axis #0:" + nl + "{}" + nl
+                + "Axis #1:" + nl + "{[Measures].[CaLc]}" + nl + "Row #0: 1" + nl);
+    }
+
+    /**
      * Brackets around member names are optional.
      */
     public void testMemberBrackets() {
@@ -136,9 +145,9 @@ public class CompatibilityTest extends FoodMartTestCase {
         checkAxis("[Measures].[Profit]", "[Measures].profit");
 
         checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].Mexico");
-        //case checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].MEXICO");
-        //case checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].mExIcO");
-        //case checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].mexico");
+        checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].MEXICO");
+        checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].mExIcO");
+        checkAxis("[Customers].[All Customers].[Mexico]", "[Customers].[All Customers].mexico");
     }
 
     /**

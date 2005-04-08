@@ -455,7 +455,8 @@ public class Util extends XOMUtil {
         Member[] children = reader.getMemberChildren(member);
         for (int i = 0; i < children.length; i++){
             final Member child = children[i];
-            if (memberName.equals(child.getName())) {
+            // TODO: Add case sensitivity option
+            if (child.getName().equalsIgnoreCase(memberName)) {
                 return child;
             }
         }
@@ -463,8 +464,7 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * @param member
-     * @return
+     * Finds the zero based ordinal of a Member among its siblings.
      */
     public static int getMemberOrdinalInParent(SchemaReader reader,
                                                Member member) {
