@@ -57,9 +57,6 @@ ${java.dir}/mondrian/olap/Parser.java,
 ${java.dir}/mondrian/olap/ParserSym.java,
 ${java.dir}/mondrian/olap/MondrianDef.java,
 ${java.dir}/mondrian/olap/MondrianResource*.java,
-${java.dir}/mondrian/olap/MondrianResource*.properties,
-${demo.dir}/monrg/source/happy/BirthdayResource*.java,
-${demo.dir}/monrg/source/happy/BirthdayResource*.properties,
 ${etc.dir}/mondrian/web/jsp/**/*.java"/>
   <property name="generated.lib.files" value="
 ${lib.dir}/mondrian.jar,
@@ -185,7 +182,6 @@ parser,
 generate.resources,
 def,
 compile.java,
-copy.properties,
 unzip-FoodMartCreateData"/>
 
   <target name="generate.resources">
@@ -205,7 +201,7 @@ unzip-FoodMartCreateData"/>
       <include name="mondrian/olap/ResultLimitExceeded.java" />
     </javac>
 
-    <resgen srcdir="${java.dir}" locales="en_US,de_DE">
+    <resgen srcdir="${java.dir}" resdir="${classes.dir}" locales="en_US,de_DE">
       <include name="mondrian/olap/MondrianResource.xml"/>
     </resgen>
 
@@ -233,12 +229,6 @@ unzip-FoodMartCreateData"/>
         source="1.4">
         <include name="mondrian/**/*.java"/>
     </javac>
-  </target>
-
-  <target name="copy.properties">
-    <copy todir="${classes.dir}">
-      <fileset dir="${java.dir}" includes="**/*.properties"/>
-    </copy>
   </target>
 
   <target name="parser">
