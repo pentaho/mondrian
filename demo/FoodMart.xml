@@ -147,6 +147,9 @@ CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)
           <SQL dialect="mssql">
 fname + ' ' + lname
           </SQL>
+          <SQL dialect="cloudscape">
+"customer"."fname" || ' ' || "customer"."lname"
+          </SQL>
           <SQL dialect="generic">
 lname
           </SQL>
@@ -471,6 +474,9 @@ CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)
           </SQL>
           <SQL dialect="mssql">
 fname + ' ' + lname
+          </SQL>
+          <SQL dialect="cloudscape">
+"customer"."fname" || ' ' || "customer"."lname"
           </SQL>
           <SQL dialect="generic">
 "lname"
