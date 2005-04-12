@@ -318,6 +318,14 @@ public class SqlQuery
         return getProduct().equals("ACCESS");
     }
 
+    public boolean isDerby() {
+        return getProduct().trim().toUpperCase().equals("APACHE DERBY");
+    }
+
+    public boolean isCloudscape() {
+        return getProduct().trim().toUpperCase().equals("DBMS:CLOUDSCAPE");
+    }
+
     public boolean isDB2() {
         // DB2 on NT returns "DB2/NT"
         return getProduct().startsWith("DB2");
@@ -364,6 +372,8 @@ public class SqlQuery
             best = "postgres";
         } else if (isSybase()) {
             best = "sybase";
+        } else if (isCloudscape() || isDerby()) {
+            best = "cloudscape";
         } else {
             best = "generic";
         }
@@ -652,7 +662,11 @@ public class SqlQuery
 
     public void addOrderBy(final String expression)
     {
-        orderBy.add(expression);
+    	if (isDerby() || isCloudscape()) {
+    		orderBy.add(quoteIdentifier("c" + (select.size() - 1)));
+    	} else {
+    		orderBy.add(expression);
+    	}
     }
 
     public String toString()

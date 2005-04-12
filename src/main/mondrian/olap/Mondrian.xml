@@ -710,6 +710,7 @@ Revision is $Id$
             <Value>hsqldb</Value>
             <Value>mssql</Value>
             <Value>sybase</Value>
+            <Value>cloudscape</Value>
         </Attribute>
         <CData/>
     </Element>
