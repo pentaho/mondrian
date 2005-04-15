@@ -550,10 +550,6 @@ assert is not true.
                                   MondrianDef.CubeDimension cubeDim) {
         HierarchyUsage usage = new HierarchyUsage(this, hierarchy, cubeDim);
 
-        // Set the hierarchy caption- this is used to display the alias
-        // name rather than the source name in jpivot
-        hierarchy.setCaption(usage.getName());
-
         Iterator it = this.hierarchyUsages.iterator();
         while (it.hasNext()) {
             HierarchyUsage hierUsage = (HierarchyUsage) it.next();
