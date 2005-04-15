@@ -407,6 +407,14 @@
    <text>Number of members to be read exceeded limit ({0,number})</text>
 </exception>
 
+<!-- ====================================================================== -->
+<!-- MessageRecorder-->
+<message id="7000000" name="TooManyMessageRecorderErrors">
+    <text>
+        Context "{0}": Exceeded number of allowed errors "{1,number}"
+    </text>
+</message>
+
 <!-- End of last error section ============================================ -->
 
 </resourceBundle>
