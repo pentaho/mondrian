@@ -260,7 +260,7 @@ public class MondrianFoodMartLoader {
      * Parse a file of INSERT statements and output to the configured JDBC
      * connection or another file in the dialect of the target data source.
      *
-     * The assumption is that the input INSERT statements are out of MySQL, generated
+     * The assumption is that the input INSERT statements are generated
      * by this loader by something like:
      *
      * MondrianFoodLoader
@@ -282,7 +282,8 @@ public class MondrianFoodMartLoader {
         try {
             final InputStreamReader reader = new InputStreamReader(is);
             final BufferedReader bufferedReader = new BufferedReader(reader);
-            final Pattern regex = Pattern.compile("INSERT INTO `([^ ]+)` \\((.*)\\) VALUES\\((.*)\\);");
+            final Pattern mySQLRegex = Pattern.compile("INSERT INTO `([^ ]+)` \\((.*)\\) VALUES\\((.*)\\);");
+            final Pattern doubleQuoteRegex = Pattern.compile("INSERT INTO \"([^ ]+)\" \\((.*)\\) VALUES\\((.*)\\);");
             String line;
             int lineNumber = 0;
             int tableRowCount = 0;
@@ -294,10 +295,23 @@ public class MondrianFoodMartLoader {
             String[] batch = new String[inputBatchSize];
             int batchSize = 0;
 
+            Pattern regex = null;
+            String quoteChar = null;
+            
             while ((line = bufferedReader.readLine()) != null) {
                 ++lineNumber;
                 if (line.startsWith("#")) {
                     continue;
+                }
+                if (regex == null) {
+                	Matcher m1 = mySQLRegex.matcher(line);
+                	if (m1.matches()) {
+                		regex = mySQLRegex;
+                		quoteChar = "`";
+                	} else {
+                		regex = doubleQuoteRegex;
+                		quoteChar = "\"";
+                	}
                 }
                 // Split the up the line. For example,
                 //   INSERT INTO `foo` ( `column1`,`column2` ) VALUES (1, 'bar');
@@ -325,10 +339,10 @@ public class MondrianFoodMartLoader {
                     batchSize = 0;
                     prevTable = tableName;
                     quotedTableName = quoteId(tableName);
-                    quotedColumnNames = columnNames
-                        .replaceAll("`", sqlQuery.getQuoteIdentifierString());
-                    String[] splitColumnNames = columnNames.replaceAll("`", "")
-                        .replaceAll(" ", "").split(",");
+                    quotedColumnNames = columnNames.replaceAll(quoteChar, 
+                    									sqlQuery.getQuoteIdentifierString());
+                    String[] splitColumnNames = columnNames.replaceAll(quoteChar, "")
+                    						.replaceAll(" ", "").split(",");
                     Column[] columns = (Column[]) mapTableNameToColumns.get(tableName);
 
                     orderedColumns = new Column[columns.length];
@@ -909,6 +923,7 @@ public class MondrianFoodMartLoader {
           new Column("occupation", "VARCHAR(30)", ""),
           new Column("houseowner", "VARCHAR(30)", ""),
           new Column("num_cars_owned", "INTEGER", ""),
+          new Column("fullname", "VARCHAR(60)", "NOT NULL"),
         });
         createTable("days", new Column[] {
           new Column("day", "INTEGER", "NOT NULL"),
