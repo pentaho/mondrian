@@ -23,3 +23,5 @@ Examples
 # load from named file containing insert statements to output JDBC connection (Postgres)
 
 -verbose -data -jdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver,org.postgresql.Driver -inputFile=C:\Temp\wip\createData.sql -outputJdbcURL=jdbc:postgresql://localhost/FM3 -outputJdbcUser=postgres -outputJdbcPassword=pgAdmin
+
+-verbose -data -indexes -jdbcDrivers=com.mysql.jdbc.Driver -inputFile=C:\Temp\wip\Loader-Output\createData.sql -outputJdbcURL=jdbc:mysql://localhost/textload?user=root&password=myAdmin
