@@ -509,12 +509,15 @@ public class BasicQueryTest extends FoodMartTestCase {
         } else if (jdbc_url.toLowerCase().indexOf("postgresql") >= 0  ||
                 jdbc_url.toLowerCase().indexOf("oracle") >= 0) {
             fname_plus_lname = " `fname` || ' ' || `lname` as `Name`,";
+        } else if (jdbc_url.toLowerCase().indexOf("derby") >= 0  ||
+                jdbc_url.toLowerCase().indexOf("cloudscape") >= 0) {
+            fname_plus_lname = " `customer`.`fullname` as `Name`,";
         } else {
             fname_plus_lname = " fname + ' ' + lname as `Name`,";
 /*
  * What about generic?
                         <SQL dialect="generic">
-              lname
+              fullname
                         </SQL>
 */      }
         // the following replacement is for databases in ANSI mode
