@@ -373,7 +373,7 @@ public class SqlQuery
         } else if (isSybase()) {
             best = "sybase";
         } else if (isCloudscape() || isDerby()) {
-            best = "cloudscape";
+            best = "derby";
         } else {
             best = "generic";
         }
