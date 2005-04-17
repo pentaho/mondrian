@@ -2422,6 +2422,9 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "      <SQL dialect=\"oracle\">" + nl +
                 "        <![CDATA[SELECT * FROM \"customer\"]]>" + nl +
                 "      </SQL>" + nl +
+                "      <SQL dialect=\"derby\">" + nl +
+                "        <![CDATA[SELECT * FROM \"customer\"]]>" + nl +
+                "      </SQL>" + nl +
                 "    </View>" + nl +
                 "    <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>" + nl +
                 "  </Hierarchy>" + nl +
