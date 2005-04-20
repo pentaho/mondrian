@@ -13,6 +13,7 @@
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.rolap.RolapConnectionProperties;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -147,6 +148,16 @@ public class TestContext {
                     foodMartConnectString, null, fresh);
         }
         return foodMartConnection;
+    }
+
+    /** Returns a connection to the FoodMart database
+     * with a dynamic schema processor.
+     **/
+    public synchronized Connection getFoodMartConnection(String dynProc) {
+        Util.PropertyList properties = Util.parseConnectString(foodMartConnectString);
+        properties.put(RolapConnectionProperties.DynamicSchemaProcessor, dynProc);
+        Connection newConnection = mondrian.olap.DriverManager.getConnection(properties, null, null, false);
+        return newConnection;
     }
 
     /** Executes a query against the FoodMart database. **/

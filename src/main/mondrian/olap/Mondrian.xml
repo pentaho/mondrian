@@ -711,6 +711,7 @@ Revision is $Id$
             <Value>mssql</Value>
             <Value>sybase</Value>
             <Value>derby</Value>
+            <Value>db2</Value>
         </Attribute>
         <CData/>
     </Element>

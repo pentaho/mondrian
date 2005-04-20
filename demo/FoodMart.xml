@@ -150,6 +150,9 @@ fname + ' ' + lname
           <SQL dialect="derby">
 "customer"."fullname"
           </SQL>
+          <SQL dialect="db2">
+CONCAT(CONCAT("fname", ' '), "lname")
+          </SQL>
           <SQL dialect="generic">
 fullname
           </SQL>
@@ -477,6 +480,9 @@ fname + ' ' + lname
           </SQL>
           <SQL dialect="derby">
 "customer"."fullname"
+          </SQL>
+          <SQL dialect="db2">
+CONCAT(CONCAT("fname", ' '), "lname")
           </SQL>
           <SQL dialect="generic">
 fullname

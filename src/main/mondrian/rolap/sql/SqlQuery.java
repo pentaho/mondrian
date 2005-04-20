@@ -374,6 +374,8 @@ public class SqlQuery
             best = "sybase";
         } else if (isCloudscape() || isDerby()) {
             best = "derby";
+        } else if (isDB2()) {
+            best = "db2";
         } else {
             best = "generic";
         }

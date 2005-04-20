@@ -131,6 +131,7 @@ public class Main extends TestSuite {
             if (isRunOnce()) suite.addTestSuite(TestCalculatedMembers.class);
             suite.addTestSuite(RaggedHierarchyTest.class);
             suite.addTestSuite(CompatibilityTest.class);
+            suite.addTestSuite(CaptionTest.class);
         }
         if (testName != null) {
             // Filter the suite, so that only tests whose names match
