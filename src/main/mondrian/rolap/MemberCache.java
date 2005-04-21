@@ -43,6 +43,13 @@ interface MemberCache {
      * <code>member</code>. 
      */
     boolean hasChildren(RolapMember member);
+    
+    /** 
+     * Returns whether this cache currently knows the members of
+     * <code>level</code>. 
+     */
+    boolean hasLevelMembers(RolapLevel level);
+    
     /** 
      * Registers that the children of <code>member</code> are
      * <code>children</code> (a list of {@link RolapMember}s). 

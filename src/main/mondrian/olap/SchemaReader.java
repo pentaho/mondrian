@@ -47,6 +47,13 @@ public interface SchemaReader {
     int getChildrenCountFromCache(Member member);
 
     /**
+     * Returns number of members in a level,
+     *  if the information can be retrieved from cache.
+     * Otherwise  -1 is returned
+     */
+    int getLevelCardinalityFromCache(Level level);
+
+    /**
      * Returns direct children of <code>member</code>.
      * @pre member != null
      * @post return != null

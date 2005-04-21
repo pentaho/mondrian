@@ -285,6 +285,10 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         return mapMemberToChildren.get(member) != null;
     }
 
+    public synchronized boolean hasLevelMembers(RolapLevel level) {
+        return mapLevelToMembers.get(level) != null;
+    }
+
     public synchronized void putChildren(RolapMember member, List children) {
         ChildrenList childrenList = new ChildrenList(member, children);
         SoftReference ref = new SoftReference(childrenList);

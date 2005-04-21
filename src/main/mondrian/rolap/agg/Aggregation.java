@@ -12,6 +12,7 @@
 
 package mondrian.rolap.agg;
 
+import mondrian.olap.Level;
 import mondrian.olap.Member;
 import mondrian.olap.SchemaReader;
 import mondrian.olap.Util;
@@ -177,26 +178,34 @@ public class Aggregation {
                 }
                 // more than one - check for children of same parent
                 Member parent = null;
+                Level level = null;
                 for (int j = 0; j < newConstraintses[i].length; j++) {
                     if (!(newConstraintses[i][j].isMember())) {
                         // should not occur - but
                         //  we compute bloat by #constraints / column cardinality
                         parent = null;
+                        level = null;
                         bloats[i] =  constraintLength / columns[i].getCardinality();
                         break;
                     } else {
                         Member m = newConstraintses[i][j].getMember();
                         if (j == 0) {
                             parent = m.getParentMember();
+                            level = m.getLevel();
                         } else {
                             if (parent != null
                                     && !parent.equals(m.getParentMember())) {
                                 parent = null; // no common parent
-                                break;
+                            }
+                            if (level != null
+                                    && !level.equals(m.getLevel())) {
+                                // should never occur, constraintses are of same level
+                                level = null; 
                             }
                         }
                     }
                 }
+                boolean done = false;
                 if (parent != null) {
                     // common parent exists
                     if (parent.isAll() || potentialParents.contains(parent) ) {
@@ -212,29 +221,36 @@ public class Aggregation {
 
                         if (nChildren == -1) {
                             // nothing gotten from cache
-                            if (parent.isAll()) {
-                                bloats[i] = 
-                                constraintLength / columns[i].getCardinality();
-
-                            } else {
+                            if (!parent.isAll()) {
+                                // parent is in constraints
                                 // no information about children cardinality
-                                //  constraints will not be optimized away
+                                //  constraints must not be optimized away
                                 bloats[i] = 0.0;
+                                done = true;
                             }
                         } else {
                             bloats[i] = constraintLength / nChildren;
+                            done = true;
                         }
-                    } else {
-                        // the parent is not in the constraints
-                        bloats[i] = constraintLength / columns[i].getCardinality();
+                    } 
+                }
+                
+                if (!done && level != null) {
+                    // if the level members are cached, we do not need "count *"
+                    int nMembers = -1;
+                    SchemaReader scr = star.getSchema().getSchemaReader();
+                    nMembers = scr.getLevelCardinalityFromCache(level);
+                    if ( nMembers > 0 ) {
+                        bloats[i] = constraintLength / nMembers;
+                        done = true;
                     }
-                } else {
-                    // no common parent
+                }
+                
+                if (!done) {
                     bloats[i] = constraintLength / columns[i].getCardinality();
                 }
-
             }
-        }
+        } // for  i < newConstraintses.length
 
         // build a list of constraints sorted by 'bloat factor'
         ConstraintComparator comparator = new ConstraintComparator(bloats);

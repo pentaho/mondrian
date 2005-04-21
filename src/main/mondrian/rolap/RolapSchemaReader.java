@@ -130,7 +130,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
 
     /**
      * check, whether members children are cached, and
-     * if yes - return children counnt
+     * if yes - return children count
      * if no  - return -1
      */
     public int getChildrenCountFromCache(Member member) {
@@ -145,6 +145,24 @@ public abstract class RolapSchemaReader implements SchemaReader {
         List children = new ArrayList();
         memberReader.getMemberChildren((RolapMember) member, children);
         return children.size();
+    }
+
+    /**
+     * check, whether member reader is caching
+     * if yes - return level member count
+     * if no  - return -1
+     */
+    public int getLevelCardinalityFromCache(Level level) {
+        final Hierarchy hierarchy = level.getHierarchy();
+        final MemberReader memberReader = getMemberReader(hierarchy);
+        if( !(memberReader instanceof MemberCache)) {
+            return -1;
+        }
+        if (!((MemberCache)memberReader).hasLevelMembers((RolapLevel)level)) {
+            return -1;
+        }
+        List mlist = memberReader.getMembersInLevel((RolapLevel)level, 0, Integer.MAX_VALUE);
+        return mlist.size();
     }
 
     public Member[] getMemberChildren(Member[] members) {

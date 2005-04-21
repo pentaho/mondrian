@@ -127,6 +127,10 @@ public class DelegatingSchemaReader implements SchemaReader {
     public int getChildrenCountFromCache(Member member) {
         return schemaReader.getChildrenCountFromCache(member);
     }
+    
+    public int getLevelCardinalityFromCache(Level level) {
+        return schemaReader.getLevelCardinalityFromCache(level);
+    }
 }
 
 // End DelegatingSchemaReader.java

@@ -92,6 +92,12 @@ class CacheMemberReader implements MemberReader, MemberCache {
         return false;
     }
 
+    // don't need to implement this MemberCache method because we're never
+    // used in a context where it is needed
+    public boolean hasLevelMembers(RolapLevel level) {
+        return false;
+    }
+
     public RolapMember lookupMember(String[] uniqueNameParts, 
                                     boolean failIfNotFound) {
         return RolapUtil.lookupMember(this, uniqueNameParts, failIfNotFound);
