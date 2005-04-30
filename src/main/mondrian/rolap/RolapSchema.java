@@ -12,6 +12,9 @@
 
 package mondrian.rolap;
 import mondrian.olap.*;
+import mondrian.olap.fun.*;
+import mondrian.olap.type.Type;
+import mondrian.spi.UserDefinedFunction;
 import org.apache.log4j.Logger;
 import org.eigenbase.xom.*;
 import org.eigenbase.xom.Parser;
@@ -75,6 +78,11 @@ public class RolapSchema implements Schema {
      * Maps {@link String names of roles} to {@link Role roles with those names}.
      */
     private final Map mapNameToRole;
+    /**
+     * Table containing all standard MDX functions, plus user-defined functions
+     * for this schema.
+     */
+    private FunTable funTable;
 
     private RolapSchema(final byte[] md5Bytes,
                         final Util.PropertyList connectInfo,
@@ -231,6 +239,19 @@ public class RolapSchema implements Schema {
         if (name == null || name.equals("")) {
             throw Util.newError("<Schema> name must be set");
         }
+        // Validate user-defined functions. Must be done before we validate
+        // calculated members, because calculated members will need to use the
+        // function table.
+        final Map mapNameToUdf = new HashMap();
+        for (int i = 0; i < xmlSchema.userDefinedFunctions.length; i++) {
+            MondrianDef.UserDefinedFunction udf = xmlSchema.userDefinedFunctions[i];
+            defineFunction(mapNameToUdf, udf.name, udf.className);
+        }
+        final RolapSchemaFunctionTable funTable =
+                new RolapSchemaFunctionTable(mapNameToUdf.values());
+        funTable.init();
+        this.funTable = funTable;
+
         // Validate public dimensions.
         for (int i = 0; i < xmlSchema.dimensions.length; i++) {
             MondrianDef.Dimension xmlDimension = xmlSchema.dimensions[i];
@@ -753,12 +774,80 @@ public class RolapSchema implements Schema {
         return (Role) mapNameToRole.get(role);
     }
 
+    public FunTable getFunTable() {
+        return funTable;
+    }
+
+    /**
+     * Defines a user-defined function in this table.
+     *
+     * <p>If the function is not valid, throws an error.
+     *
+     * @param name Name of the function.
+     * @param className Name of the class which implements the function.
+     *   The class must implement {@link mondrian.spi.UserDefinedFunction}
+     *   (otherwise it is a user-error).
+     */
+    private void defineFunction(
+            Map mapNameToUdf,
+            String name,
+            String className) {
+        // Lookup class.
+        final Class klass;
+        try {
+            klass = Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            throw MondrianResource.instance().newUdfClassNotFound(name,
+                    className);
+        }
+        // Instantiate class.
+        final UserDefinedFunction udf;
+        try {
+            udf = (UserDefinedFunction) klass.newInstance();
+        } catch (InstantiationException e) {
+            throw MondrianResource.instance().newUdfClassWrongIface(name,
+                    className, UserDefinedFunction.class.getName());
+        } catch (IllegalAccessException e) {
+            throw MondrianResource.instance().newUdfClassWrongIface(name,
+                    className, UserDefinedFunction.class.getName());
+        } catch (ClassCastException e) {
+            throw MondrianResource.instance().newUdfClassWrongIface(name,
+                    className, UserDefinedFunction.class.getName());
+        }
+        // Validate function.
+        validateFunction(udf);
+        // Check for duplicate.
+        UserDefinedFunction existingUdf =
+                (UserDefinedFunction) mapNameToUdf.get(name);
+        if (existingUdf != null) {
+            throw MondrianResource.instance().newUdfDuplicateName(name);
+        }
+        mapNameToUdf.put(name, udf);
+    }
+
+    /**
+     * Throws an error if a user-defined function does not adhere to the
+     * API.
+     */
+    private void validateFunction(final UserDefinedFunction udf) {
+        final String udfName = udf.getName();
+        final String description = udf.getDescription();
+        final Type[] parameterTypes = udf.getParameterTypes();
+        final String[] reservedWords = udf.getReservedWords();
+        final Type returnType = udf.getReturnType();
+        final Syntax syntax = udf.getSyntax();
+        Util.discard(udfName);
+        Util.discard(description);
+        Util.discard(parameterTypes);
+        Util.discard(reservedWords);
+        Util.discard(returnType);
+        Util.discard(syntax);
+    }
+
     /**
      * Gets a {@link MemberReader} with which to read a hierarchy. If the
-     * hi This is only called by RolapHierarchyerarchy is shared (<code>sharedName</code> is not null), looks up
+     * hierarchy is shared (<code>sharedName</code> is not null), looks up
      * a reader from a cache, or creates one if necessary.
-     *
-     * This is only called by RolapHierarchy
      *
      * @synchronization thread safe
      */
@@ -930,9 +1019,46 @@ public class RolapSchema implements Schema {
             return star;
         }
     }
+
     private RolapStarRegistry rolapStarRegistry = new RolapStarRegistry();
+
     public RolapStarRegistry getRolapStarRegistry() {
-      return rolapStarRegistry;
+        return rolapStarRegistry;
+    }
+
+    /**
+     * Function table which contains all of the user-defined functions in this
+     * schema, plus all of the standard functions.
+     */
+    class RolapSchemaFunctionTable extends FunTableImpl {
+        private final List udfList;
+
+        RolapSchemaFunctionTable(Collection udfs) {
+            udfList = new ArrayList(udfs);
+        }
+
+        protected void defineFunctions() {
+            final FunTable builtinFunTable = BuiltinFunTable.instance();
+            final List reservedWords = builtinFunTable.getReservedWords();
+            for (int i = 0; i < reservedWords.size(); i++) {
+                String reservedWord = (String) reservedWords.get(i);
+                defineReserved(reservedWord);
+            }
+            final List resolvers = builtinFunTable.getResolvers();
+            for (int i = 0; i < resolvers.size(); i++) {
+                Resolver resolver = (Resolver) resolvers.get(i);
+                define(resolver);
+            }
+            for (int i = 0; i < udfList.size(); i++) {
+                UserDefinedFunction udf = (UserDefinedFunction) udfList.get(i);
+                define(new UdfResolver(udf));
+            }
+        }
+
+
+        public List getFunInfoList() {
+            return Collections.unmodifiableList(this.funInfoList);
+        }
     }
 
 }
