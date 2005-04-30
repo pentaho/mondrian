@@ -11,13 +11,13 @@
 */
 package mondrian.test;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import junit.framework.*;
 import mondrian.olap.*;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 /**
  * <code>FoodMartTestCase</code> is a unit test which runs against the FoodMart
@@ -29,6 +29,9 @@ import java.util.ArrayList;
  **/
 public class FoodMartTestCase extends TestCase {
     protected static final String nl = System.getProperty("line.separator");
+    private static final Pattern LineBreakPattern =
+        Pattern.compile("\r\n|\r|\n");
+    private static final Pattern TabPattern = Pattern.compile("\t");
 
     public FoodMartTestCase(String name) {
         super(name);
@@ -44,7 +47,15 @@ public class FoodMartTestCase extends TestCase {
     }
 
     protected Connection getConnection(boolean fresh) {
-        return TestContext.instance().getFoodMartConnection(fresh);
+        return getTestContext().getFoodMartConnection(fresh);
+    }
+
+    /**
+     * Returns the test context. Override this method if you wish to use a
+     * different source for your FoodMart connection.
+     */
+    protected TestContext getTestContext() {
+        return TestContext.instance();
     }
 
     protected Connection getConnection() {
@@ -68,7 +79,7 @@ public class FoodMartTestCase extends TestCase {
      * the given pattern.
      */
     public void assertThrows(String queryString, String pattern) {
-        Throwable throwable = TestContext.instance().executeFoodMartCatch(
+        Throwable throwable = getTestContext().executeFoodMartCatch(
                 queryString);
         checkThrowable(throwable, pattern);
     }
@@ -96,7 +107,7 @@ public class FoodMartTestCase extends TestCase {
      */
     public Axis executeAxis2(String cube, String expression) {
         Result result = execute(
-                TestContext.instance().getFoodMartConnection(false),
+                getTestContext().getFoodMartConnection(false),
                 "select {" + expression + "} on columns from " + cube);
         return result.getAxes()[0];
     }
@@ -118,7 +129,7 @@ public class FoodMartTestCase extends TestCase {
     }
 
     public Member executeAxis(String cubeName, String expression) {
-        Result result = TestContext.instance().executeFoodMart(
+        Result result = getTestContext().executeFoodMart(
                 "select {" + expression + "} on columns from " + cubeName);
         Axis axis = result.getAxes()[0];
         switch (axis.positions.length) {
@@ -155,15 +166,49 @@ public class FoodMartTestCase extends TestCase {
         Result result = runQuery(query);
         String resultString = toString(result);
         if (desiredResult != null) {
-            Assert.assertEquals(desiredResult, resultString);
+            assertEqualsVerbose(desiredResult, resultString);
         }
+    }
+
+    public static void assertEqualsVerbose(
+        String expected,
+        String actual)
+    {
+        if ((expected == null) && (actual == null)) {
+            return;
+        }
+        if ((expected != null) && expected.equals(actual)) {
+            return;
+        }
+        String s = actual;
+
+        // Convert [string with "quotes" split
+        // across lines]
+        // into ["string with \"quotes\" split" + NL +
+        // "across lines
+        //
+        //
+        s = Util.replace(s, "\"", "\\\"");
+        final String lineBreak = "\" + NL + " + nl + "\"";
+        s = LineBreakPattern.matcher(s).replaceAll(lineBreak);
+        s = TabPattern.matcher(s).replaceAll("\\\\t");
+        s = "\"" + s + "\"";
+        final String spurious = " + " + nl + "\"\"";
+        if (s.endsWith(spurious)) {
+            s = s.substring(0, s.length() - spurious.length());
+        }
+        String message =
+            "Expected:" + nl + expected + nl
+            + "Actual: " + nl + actual + nl
+            + "Actual java: " + nl + s + nl;
+        throw new ComparisonFailure(message, expected, actual);
     }
 
     /**
      * Runs a query.
      */
     public Result execute(String queryString) {
-        return TestContext.instance().executeFoodMart(queryString);
+        return getTestContext().executeFoodMart(queryString);
     }
 
     /**
@@ -172,7 +217,7 @@ public class FoodMartTestCase extends TestCase {
      * is evaulated against the Sales cube.
      */
     public void assertAxisThrows(String expression, String pattern) {
-        assertAxisThrows(TestContext.instance().getFoodMartConnection(false),
+        assertAxisThrows(getTestContext().getFoodMartConnection(false),
                 expression, pattern);
     }
 
@@ -182,7 +227,7 @@ public class FoodMartTestCase extends TestCase {
      * is evaulated against the named cube.
      */
     public void assertAxisThrows(String cubeName, String expression, String pattern) {
-        assertAxisThrows(TestContext.instance().getFoodMartConnection(false),
+        assertAxisThrows(getTestContext().getFoodMartConnection(false),
                 cubeName, expression, pattern);
     }
 
@@ -269,7 +314,7 @@ public class FoodMartTestCase extends TestCase {
         final String queryString = "with member [Measures].[Foo] as '" +
             expression +
             "' select {[Measures].[Foo]} on columns from " + cubeName;
-        Result result = TestContext.instance().executeFoodMart(queryString);
+        Result result = getTestContext().executeFoodMart(queryString);
 
         return result.getCell(new int[]{0});
     }
@@ -287,7 +332,7 @@ public class FoodMartTestCase extends TestCase {
     public void assertExprThrows(String expression, String pattern) {
         Throwable throwable = null;
         try {
-            Result result = TestContext.instance().executeFoodMart(
+            Result result = getTestContext().executeFoodMart(
                     "with member [Measures].[Foo] as '" +
                     expression +
                     "' select {[Measures].[Foo]} on columns from Sales");

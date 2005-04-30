@@ -86,8 +86,9 @@ public class CmdRunner {
 
 	private String formatError(Throwable mex) {
 		String message = mex.getMessage();
-		if (mex.getCause() != null && mex.getCause() != mex)
+		if (mex.getCause() != null && mex.getCause() != mex) {
 			message = message + "\n" + formatError(mex.getCause());
+        }
 		return message;
 	}
 
@@ -1006,14 +1007,16 @@ public class CmdRunner {
         appendIndent(buf, 3);
         buf.append("name, description, and syntax");
     }
+
     protected String executeFunc(String mdxCmd) {
         StringBuffer buf = new StringBuffer(200);
 
         String[] tokens = mdxCmd.split("\\s");
 
+        final FunTable funTable = getConnection().getSchema().getFunTable();
         if (tokens.length == 1) {
             // prints names only once
-            List funInfoList = FunTable.instance().getFunInfoList();
+            List funInfoList = funTable.getFunInfoList();
             Iterator it = funInfoList.iterator();
             String prevName = null;
             while (it.hasNext()) {
@@ -1028,7 +1031,7 @@ public class CmdRunner {
 
         } else if (tokens.length == 2) {
             String funcname = tokens[1];
-            List funInfoList = FunTable.instance().getFunInfoList();
+            List funInfoList = funTable.getFunInfoList();
             List matches = new ArrayList();
 
             Iterator it = funInfoList.iterator();

@@ -143,7 +143,7 @@ public class Query extends QueryPart {
 
 
     public Validator createValidator() {
-        return new StackValidator(BuiltinFunTable.instance());
+        return new StackValidator(connection.getSchema().getFunTable());
     }
 
     public Object clone() throws CloneNotSupportedException {
@@ -810,7 +810,13 @@ public class Query extends QueryPart {
         private boolean haveCollectedParameters;
         private java.util.Set resolvedNodes = new HashSet();
 
+        /**
+         * Creates a StackValidator.
+         *
+         * @pre funTable != null
+         */ 
         public StackValidator(FunTable funTable) {
+            Util.assertPrecondition(funTable != null, "funTable != null");
             this.funTable = funTable;
         }
 

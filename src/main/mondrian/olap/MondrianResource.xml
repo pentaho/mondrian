@@ -376,6 +376,17 @@
     <text>Foreign key ''{0}'' of hierarchy ''{1}'' in cube ''{2}'' is not a column in the fact table.</text>
 </exception>
 
+<exception id="40190" name="UdfClassNotFound">
+    <text>Failed to load user-defined function ''{0}'': class ''{1}'' not found</text>
+</exception>
+
+<exception id="40200" name="UdfClassWrongIface">
+    <text>Failed to load user-defined function ''{0}'': class ''{1}'' does not implement the required interface ''{2}''</text>
+</exception>
+
+<exception id="40210" name="UdfDuplicateName">
+    <text>Duplicate user-defined function ''{0}''</text>
+</exception>
 
 <!-- ====================================================================== -->
 <!-- Loader -->

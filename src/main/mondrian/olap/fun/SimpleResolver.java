@@ -38,7 +38,7 @@ class SimpleResolver implements Resolver {
 
     public String getDescription() {
         return funDef.getDescription();
-    }       
+    }
 
     public Syntax getSyntax() {
         return funDef.getSyntax();
@@ -54,7 +54,7 @@ class SimpleResolver implements Resolver {
             return null;
         }
         for (int i = 0; i < args.length; i++) {
-            if (!BuiltinFunTable.canConvert(args[i], parameterTypes[i], conversionCount)) {
+            if (!FunTableImpl.canConvert(args[i], parameterTypes[i], conversionCount)) {
                 return null;
             }
         }
@@ -63,7 +63,7 @@ class SimpleResolver implements Resolver {
 
     public boolean requiresExpression(int k) {
         int[] parameterTypes = funDef.getParameterTypes();
-        return ((k >= parameterTypes.length) || 
+        return ((k >= parameterTypes.length) ||
                (parameterTypes[k] != Category.Set));
     }
 

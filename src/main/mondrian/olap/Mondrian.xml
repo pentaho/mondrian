@@ -42,6 +42,7 @@ Revision is $Id$
         <Array name="cubes" type="Cube"/>
         <Array name="virtualCubes" type="VirtualCube"/>
         <Array name="roles" type="Role"/>
+        <Array name="userDefinedFunctions" type="UserDefinedFunction"/>
         <Code><![CDATA[
             Cube getCube(String cubeName) {
                 for (int i = 0; i < cubes.length; i++) {
@@ -1028,6 +1029,27 @@ Revision is $Id$
             <Value>none</Value>
         </Attribute>
     </Element>
+
+    <!-- UserDefinedFunction ====================================================== -->
+    <Element type="UserDefinedFunction">
+        <Doc>
+            A <code>UserDefinedFunction</code> is a function which
+            extends the MDX language. It must be implemented by a Java
+            class which implements the interface
+            <a href="http://mondrian.sourceforge.net/api/mondrian/spi/UserDefinedFunction.html">mondrian.spi.UserDefinedFunction</a>.
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>Name with which the user-defined function will be referenced in MDX expressions.</Doc>
+        </Attribute>
+        <Attribute name="className" required="true">
+            <Doc>
+                Name of the class which implemenets this user-defined function.
+                Must implement the <code>mondrian.spi.UserDefinedFunction</code>
+                interface.
+            </Doc>
+        </Attribute>
+    </Element>
+
 
 </Model>
 

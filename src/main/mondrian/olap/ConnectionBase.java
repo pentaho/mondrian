@@ -51,7 +51,8 @@ public abstract class ConnectionBase implements Connection {
         try {
             boolean debug = false;
             Parser parser = new Parser();
-            Query q = parser.parseInternal(this, s, debug);
+            final FunTable funTable = getSchema().getFunTable();
+            Query q = parser.parseInternal(this, s, debug, funTable);
             return q;
         } catch (Throwable e) {
             throw MondrianResource.instance().newFailedToParseQuery(s, e);

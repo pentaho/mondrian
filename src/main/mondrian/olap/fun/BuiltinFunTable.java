@@ -12,10 +12,9 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
-import mondrian.olap.type.MemberType;
-import mondrian.olap.type.SetType;
-import mondrian.olap.type.TupleType;
-import mondrian.olap.type.Type;
+import mondrian.olap.DimensionType;
+import mondrian.olap.LevelType;
+import mondrian.olap.type.*;
 import mondrian.util.Format;
 
 import java.util.*;
@@ -31,475 +30,19 @@ import java.util.*;
  * @since 26 February, 2002
  * @version $Id$
  **/
-public class BuiltinFunTable extends FunTable {
+public class BuiltinFunTable extends FunTableImpl {
+
+    /** the singleton **/
+    private static BuiltinFunTable instance;
+
     /**
-     * Maps the upper-case name of a function plus its {@link Syntax} to an
-     * array of {@link Validator} objects for that name.
+     * Creates a function table containing all of the builtin MDX functions.
+     * This method should only be called from {@link BuiltinFunTable#instance}.
      */
-    private HashMap mapNameToResolvers;
-
-    private static final Resolver[] emptyResolvers = new Resolver[0];
-    private final Validator dummyResolver = Util.createSimpleResolver(this);
-
-    private Exp valueFunCall;
-    private final HashSet reservedWords = new HashSet();
-    private final HashSet propertyWords = new HashSet();
-    private static final Resolver[] emptyResolverArray = new Resolver[0];
-
-    /**
-     * Creates a <code>BuiltinFunTable</code>. This method should only be
-     * called from {@link FunTable#instance}.
-     **/
-    public BuiltinFunTable() {
-        init();
-        valueFunCall = new FunCall("_Value", Syntax.Function, new Exp[0])
-            .accept(dummyResolver);
-        LinReg.valueFunCall = valueFunCall;
+    private BuiltinFunTable() {
+        super();
     }
 
-    private static String makeResolverKey(String name, Syntax syntax) {
-        return name.toUpperCase() + "$" + syntax;
-    }
-
-    /**
-     * Calls {@link #defineFunctions} to load function definitions into a
-     * List, then indexes that collection.
-     **/
-    private void init() {
-        defineFunctions();
-        Collections.sort(this.funInfoList);
-        // Map upper-case function names to resolvers.
-        mapNameToResolvers = new HashMap();
-        for (int i = 0, n = resolvers.size(); i < n; i++) {
-            Resolver resolver = (Resolver) resolvers.get(i);
-            String key = makeResolverKey(resolver.getName(), resolver.getSyntax());
-            List v2 = (List) mapNameToResolvers.get(key);
-            if (v2 == null) {
-                v2 = new ArrayList();
-                mapNameToResolvers.put(key, v2);
-            }
-            v2.add(resolver);
-        }
-        // Convert the Lists into arrays.
-        for (Iterator keys = mapNameToResolvers.keySet().iterator(); keys.hasNext();) {
-            String key = (String) keys.next();
-            List v2 = (List) mapNameToResolvers.get(key);
-            mapNameToResolvers.put(key, v2.toArray(emptyResolverArray));
-        }
-    }
-
-    protected void define(FunDef funDef) {
-        define(new SimpleResolver(funDef));
-    }
-
-    protected void define(Resolver resolver) {
-        addFunInfo(resolver);
-        if (resolver.getSyntax() == Syntax.Property)
-            defineProperty(resolver.getName());
-
-        resolvers.add(resolver);
-        final String[] reservedWords = resolver.getReservedWords();
-        for (int i = 0; i < reservedWords.length; i++) {
-            String reservedWord = reservedWords[i];
-            defineReserved(reservedWord);
-        }
-    }
-
-    protected void addFunInfo(Resolver resolver) {
-        this.funInfoList.add(FunInfo.make(resolver));
-    }
-
-    /**
-     * Converts an argument to a parameter type.
-     */
-    public Exp convert(Exp fromExp, int to, Validator resolver) {
-        Exp exp = convert_(fromExp, to);
-        if (exp == null) {
-            throw Util.newInternal("cannot convert " + fromExp + " to " + to);
-        }
-        return resolver.validate(exp);
-    }
-
-    private static Exp convert_(Exp fromExp, int to) {
-        int from = fromExp.getCategory();
-        if (from == to) {
-            return fromExp;
-        }
-        switch (from) {
-        case Category.Array:
-            return null;
-        case Category.Dimension:
-            // Seems funny that you can 'downcast' from a dimension, doesn't
-            // it? But we add an implicit 'CurrentMember', for example,
-            // '[Time].PrevMember' actually means
-            // '[Time].CurrentMember.PrevMember'.
-            switch (to) {
-            case Category.Hierarchy:
-                // "<Dimension>.CurrentMember.Hierarchy"
-                return new FunCall(
-                        "Hierarchy", Syntax.Property, new Exp[]{
-                        new FunCall(
-                                "CurrentMember",
-                                Syntax.Property, new Exp[]{fromExp}
-                        )}
-                );
-            case Category.Level:
-                // "<Dimension>.CurrentMember.Level"
-                return new FunCall(
-                        "Level", Syntax.Property, new Exp[]{
-                        new FunCall(
-                                "CurrentMember",
-                                Syntax.Property, new Exp[]{fromExp}
-                        )}
-                );
-            case Category.Member:
-            case Category.Tuple:
-                // "<Dimension>.CurrentMember"
-                return new FunCall(
-                        "CurrentMember",
-                        Syntax.Property,
-                        new Exp[]{fromExp});
-            default:
-                return null;
-            }
-        case Category.Hierarchy:
-            switch (to) {
-            case Category.Dimension:
-                // "<Hierarchy>.Dimension"
-                return new FunCall(
-                        "Dimension",
-                        Syntax.Property,
-                        new Exp[]{fromExp});
-            default:
-                return null;
-            }
-        case Category.Level:
-            switch (to) {
-            case Category.Dimension:
-                // "<Level>.Dimension"
-                return new FunCall(
-                        "Dimension",
-                        Syntax.Property,
-                        new Exp[] {fromExp});
-            case Category.Hierarchy:
-                // "<Level>.Hierarchy"
-                return new FunCall(
-                        "Hierarchy",
-                        Syntax.Property,
-                        new Exp[] {fromExp});
-            default:
-                return null;
-            }
-        case Category.Logical:
-            return null;
-        case Category.Member:
-            switch (to) {
-            case Category.Dimension:
-                // "<Member>.Dimension"
-                return new FunCall(
-                        "Dimension",
-                        Syntax.Property,
-                        new Exp[] {fromExp});
-            case Category.Hierarchy:
-                // "<Member>.Hierarchy"
-                return new FunCall(
-                        "Hierarchy",
-                        Syntax.Property,
-                        new Exp[]{fromExp});
-            case Category.Level:
-                // "<Member>.Level"
-                return new FunCall(
-                        "Level",
-                        Syntax.Property,
-                        new Exp[]{fromExp});
-            case Category.Tuple:
-                // Conversion to tuple is trivial: a member is a
-                // one-dimensional tuple already.
-                return fromExp;
-            case Category.Numeric | Category.Constant:
-            case Category.String | Category.Constant: //todo: assert is a string member
-                // "<Member>.Value"
-                return new FunCall(
-                        "Value",
-                        Syntax.Property,
-                        new Exp[]{fromExp});
-            case Category.Value:
-            case Category.Numeric:
-            case Category.String:
-                return fromExp;
-            default:
-                return null;
-            }
-        case Category.Numeric | Category.Constant:
-            switch (to) {
-            case Category.Value:
-            case Category.Numeric:
-                return fromExp;
-            default:
-                return null;
-            }
-        case Category.Numeric:
-            switch (to) {
-            case Category.Value:
-                return fromExp;
-            case Category.Numeric | Category.Constant:
-                return new FunCall(
-                        "_Value",
-                        Syntax.Function,
-                        new Exp[] {fromExp});
-            default:
-                return null;
-            }
-        case Category.Set:
-            return null;
-        case Category.String | Category.Constant:
-            switch (to) {
-            case Category.Value:
-            case Category.String:
-                return fromExp;
-            default:
-                return null;
-            }
-        case Category.String:
-            switch (to) {
-            case Category.Value:
-                return fromExp;
-            case Category.String | Category.Constant:
-                return new FunCall(
-                        "_Value",
-                        Syntax.Function,
-                        new Exp[] {fromExp});
-            default:
-                return null;
-            }
-        case Category.Tuple:
-            switch (to) {
-            case Category.Value:
-                return fromExp;
-            case Category.Numeric:
-            case Category.String:
-                return new FunCall(
-                        "_Value",
-                        Syntax.Function,
-                        new Exp[] {fromExp});
-            default:
-                return null;
-            }
-        case Category.Value:
-            return null;
-        case Category.Symbol:
-            return null;
-        default:
-            throw Util.newInternal("unknown category " + from);
-        }
-    }
-
-    /**
-     * Returns whether we can convert an argument to a parameter tyoe.
-     * @param fromExp argument type
-     * @param to   parameter type
-     * @param conversionCount in/out count of number of conversions performed;
-     *             is incremented if the conversion is non-trivial (for
-     *             example, converting a member to a level).
-     *
-     * @see FunTable#convert
-     */
-    static boolean canConvert(Exp fromExp, int to, int[] conversionCount) {
-        int from = fromExp.getCategory();
-        if (from == to) {
-            return true;
-        }
-        switch (from) {
-        case Category.Array:
-            return false;
-        case Category.Dimension:
-            // Seems funny that you can 'downcast' from a dimension, doesn't
-            // it? But we add an implicit 'CurrentMember', for example,
-            // '[Time].PrevMember' actually means
-            // '[Time].CurrentMember.PrevMember'.
-            if (to == Category.Hierarchy ||
-                    to == Category.Level ||
-                    to == Category.Member ||
-                    to == Category.Tuple) {
-                conversionCount[0]++;
-                return true;
-            } else {
-                return false;
-            }
-        case Category.Hierarchy:
-            if (to == Category.Dimension) {
-                conversionCount[0]++;
-                return true;
-            } else {
-                return false;
-            }
-        case Category.Level:
-            if (to == Category.Dimension ||
-                    to == Category.Hierarchy) {
-                conversionCount[0]++;
-                return true;
-            } else {
-                return false;
-            }
-        case Category.Logical:
-            return false;
-        case Category.Member:
-            if (to == Category.Dimension ||
-                    to == Category.Hierarchy ||
-                    to == Category.Level ||
-                    to == Category.Tuple) {
-                conversionCount[0]++;
-                return true;
-            } else if (to == (Category.Numeric | Category.Expression)) {
-                // We assume that members are numeric, so a cast to a numeric
-                // expression is less expensive than a conversion to a string
-                // expression.
-                conversionCount[0]++;
-                return true;
-            } else if (to == Category.Value ||
-                    to == (Category.String | Category.Expression)) {
-                conversionCount[0] += 2;
-                return true;
-            } else {
-                return false;
-            }
-        case Category.Numeric | Category.Constant:
-            return to == Category.Value ||
-                to == Category.Numeric;
-        case Category.Numeric:
-            return to == Category.Value ||
-                to == (Category.Numeric | Category.Constant);
-        case Category.Set:
-            return false;
-        case Category.String | Category.Constant:
-            return to == Category.Value ||
-                to == Category.String;
-        case Category.String:
-            return to == Category.Value ||
-                to == (Category.String | Category.Constant);
-        case Category.Tuple:
-            return to == Category.Value ||
-                to == Category.Numeric;
-        case Category.Value:
-            return false;
-        case Category.Symbol:
-            return false;
-        default:
-            throw Util.newInternal("unknown category " + from);
-        }
-    }
-
-    public FunDef getDef(FunCall call, Validator resolver) {
-        String key = makeResolverKey(call.getFunName(), call.getSyntax());
-
-        // Resolve function by its upper-case name first.  If there is only one
-        // function with that name, stop immediately.  If there is more than
-        // function, use some custom method, which generally involves looking
-        // at the type of one of its arguments.
-        String signature = call.getSyntax().getSignature(call.getFunName(),
-                Category.Unknown, ExpBase.getTypes(call.getArgs()));
-        Resolver[] resolvers = (Resolver[]) mapNameToResolvers.get(key);
-        if (resolvers == null) {
-            resolvers = emptyResolvers;
-        }
-
-        int[] conversionCount = new int[1];
-        int minConversions = Integer.MAX_VALUE;
-        int matchCount = 0;
-        FunDef matchDef = null;
-        for (int i = 0; i < resolvers.length; i++) {
-            conversionCount[0] = 0;
-            FunDef def = resolvers[i].resolve(call.getArgs(), conversionCount);
-            if (def != null) {
-                if (def.getReturnCategory() == Category.Set &&
-                        resolver.requiresExpression()) {
-                    continue;
-                }
-                int conversions = conversionCount[0];
-                if (conversions < minConversions) {
-                    minConversions = conversions;
-                    matchCount = 1;
-                    matchDef = def;
-                } else if (conversions == minConversions) {
-                    matchCount++;
-                } else {
-                    // ignore this match -- it required more coercions than
-                    // other overloadings we've seen
-                }
-            }
-        }
-        switch (matchCount) {
-        case 0:
-            throw MondrianResource.instance().newNoFunctionMatchesSignature(
-                    signature);
-        case 1:
-            final String matchKey = makeResolverKey(matchDef.getName(),
-                    matchDef.getSyntax());
-            Util.assertTrue(matchKey.equals(key), matchKey);
-            return matchDef;
-        default:
-            throw MondrianResource.instance()
-                    .newMoreThanOneFunctionMatchesSignature(signature);
-        }
-    }
-
-    public boolean requiresExpression(FunCall call, int k,
-            Validator resolver) {
-        final FunDef funDef = call.getFunDef();
-        if (funDef != null) {
-            final int[] parameterTypes = funDef.getParameterTypes();
-            return parameterTypes[k] != Category.Set;
-        }
-        // The function call has not been resolved yet. In fact, this method
-        // may have been invoked while resolving the child. Consider this:
-        //   CrossJoin([Measures].[Unit Sales] * [Measures].[Store Sales])
-        //
-        // In order to know whether to resolve '*' to the multiplication
-        // operator (which returns a scalar) or the crossjoin operator (which
-        // returns a set) we have to know what kind of expression is expected.
-        String key = makeResolverKey(call.getFunName(), call.getSyntax());
-        Resolver[] resolvers = (Resolver[]) mapNameToResolvers.get(key);
-        if (resolvers == null) {
-            resolvers = emptyResolvers;
-        }
-        for (int i = 0; i < resolvers.length; i++) {
-            Resolver resolver2 = resolvers[i];
-            if (!resolver2.requiresExpression(k)) {
-                // This resolver accepts a set in this argument position,
-                // therefore we don't REQUIRE a scalar expression.
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public boolean isReserved(String s) {
-        return reservedWords.contains(s.toUpperCase());
-    }
-    
-    /**
-     * Defines a reserved word.
-     * @see #isReserved
-     */
-    protected void defineReserved(String s) {
-        reservedWords.add(s.toUpperCase());
-    }
-
-    public boolean isProperty(String s) {
-        return propertyWords.contains(s.toUpperCase());
-    }
-
-    /**
-     * Defines a word matching a property function name.
-     * @see #isProperty
-     */
-    protected void defineProperty(String s) {
-        propertyWords.add(s.toUpperCase());
-    }
-
-    /**
-     * Derived class can override this method to add more functions.
-     **/
     protected void defineFunctions() {
         defineReserved("NULL");
 
@@ -1117,6 +660,7 @@ public class BuiltinFunTable extends FunTable {
                 new String[] {"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 return new FunDefBase(dummyFunDef) {
+                    final Exp valueFunCall = createValueFunCall();
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         // compute members only if the context has changed
                         List members = (List) evaluator.getCachedResult(args[0]);
@@ -1147,6 +691,7 @@ public class BuiltinFunTable extends FunTable {
                 new String[] {"Inh"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 return new FunDefBase(dummyFunDef) {
+                    final Exp valueFunCall = createValueFunCall();
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         Hierarchy hierarchy = getHierarchyArg(evaluator, args, 0, true);
                         Member member = evaluator.getParent().getContext(hierarchy.getDimension());
@@ -1172,6 +717,7 @@ public class BuiltinFunTable extends FunTable {
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 return new FunDefBase(dummyFunDef) {
+                    final Exp valueFunCall = createValueFunCall();
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -1188,6 +734,7 @@ public class BuiltinFunTable extends FunTable {
                 new String[]{"fnxn","fnxnn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 return new FunDefBase(dummyFunDef) {
+                    final Exp valueFunCall = createValueFunCall();
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp1 = (ExpBase) getArgNoEval(args, 1);
@@ -1254,6 +801,7 @@ public class BuiltinFunTable extends FunTable {
                 new String[]{"fnxn","fnxnn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 return new FunDefBase(dummyFunDef) {
+                    final Exp valueFunCall = createValueFunCall();
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp1 = (ExpBase) getArgNoEval(args, 1);
@@ -1330,6 +878,7 @@ public class BuiltinFunTable extends FunTable {
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 return new FunDefBase(dummyFunDef) {
+                    final Exp valueFunCall = createValueFunCall();
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -1346,6 +895,7 @@ public class BuiltinFunTable extends FunTable {
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 return new FunDefBase(dummyFunDef) {
+                    final Exp valueFunCall = createValueFunCall();
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -1363,6 +913,7 @@ public class BuiltinFunTable extends FunTable {
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 return new FunDefBase(dummyFunDef) {
+                    final Exp valueFunCall = createValueFunCall();
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -1398,6 +949,7 @@ public class BuiltinFunTable extends FunTable {
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 return new FunDefBase(dummyFunDef) {
+                    final Exp valueFunCall = createValueFunCall();
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -1414,6 +966,7 @@ public class BuiltinFunTable extends FunTable {
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 return new FunDefBase(dummyFunDef) {
+                    final Exp valueFunCall = createValueFunCall();
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -1430,6 +983,7 @@ public class BuiltinFunTable extends FunTable {
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 return new FunDefBase(dummyFunDef) {
+                    final Exp valueFunCall = createValueFunCall();
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -1446,6 +1000,7 @@ public class BuiltinFunTable extends FunTable {
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 return new FunDefBase(dummyFunDef) {
+                    final Exp valueFunCall = createValueFunCall();
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -1460,6 +1015,7 @@ public class BuiltinFunTable extends FunTable {
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 return new FunDefBase(dummyFunDef) {
+                    final Exp valueFunCall = createValueFunCall();
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -1491,7 +1047,7 @@ public class BuiltinFunTable extends FunTable {
                 return evaluator2.evaluateCurrent();
             }
         });
-
+        
         define(new FunDefBase(
                 "_Value",
                 "_Value()",
@@ -1535,6 +1091,7 @@ public class BuiltinFunTable extends FunTable {
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 return new FunDefBase(dummyFunDef) {
+                    final Exp valueFunCall = createValueFunCall();
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -1550,6 +1107,7 @@ public class BuiltinFunTable extends FunTable {
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 return new FunDefBase(dummyFunDef) {
+                    final Exp valueFunCall = createValueFunCall();
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -1566,6 +1124,7 @@ public class BuiltinFunTable extends FunTable {
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 return new FunDefBase(dummyFunDef) {
+                    final Exp valueFunCall = createValueFunCall();
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -1582,6 +1141,7 @@ public class BuiltinFunTable extends FunTable {
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 return new FunDefBase(dummyFunDef) {
+                    final Exp valueFunCall = createValueFunCall();
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -3371,6 +2931,7 @@ public class BuiltinFunTable extends FunTable {
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 return new FunDefBase(dummyFunDef) {
+                    final Exp valueFunCall = createValueFunCall();
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
@@ -3388,6 +2949,7 @@ public class BuiltinFunTable extends FunTable {
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 return new FunDefBase(dummyFunDef) {
+                    final Exp valueFunCall = createValueFunCall();
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
@@ -3397,6 +2959,35 @@ public class BuiltinFunTable extends FunTable {
                 };
             }
         });
+    }
+
+    /**
+     * Creates an expression which will yield the current value of the current
+     * member.
+     */
+    Exp createValueFunCall() {
+        return new ExpBase() {
+            public Object clone() {
+                return this;
+            }
+
+            public int getCategory() {
+                return Category.Numeric;
+            }
+
+            public Type getTypeX() {
+                return new NumericType();
+            }
+
+            public Exp accept(Validator validator) {
+                return this;
+            }
+
+            public Object evaluate(Evaluator evaluator) {
+                return evaluator.evaluateCurrent();
+            }
+        };
+        //return new ValueCall(valueFunDef).accept(dummyValidator);
     }
 
     private static void appendMemberOrTuple(
@@ -3425,6 +3016,21 @@ public class BuiltinFunTable extends FunTable {
      */
     protected static Map getNameToResolversMap() {
         return Collections.unmodifiableMap(((BuiltinFunTable)instance()).mapNameToResolvers);
+    }
+
+    /** Returns (creating if necessary) the singleton. **/
+    public static BuiltinFunTable instance() {
+        if (instance == null) {
+            instance = new BuiltinFunTable();
+            instance.init();
+        }
+        return instance;
+    }
+
+    private static class ValueCall extends FunCall {
+        public ValueCall(FunDef funDef) {
+            super("_Value", Syntax.Function, new Exp[0]);
+        }
     }
 }
 

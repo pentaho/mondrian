@@ -3939,7 +3939,7 @@ public class FunctionTest extends FoodMartTestCase {
      * specification</a>.
      */
     public void testDumpFunctions() throws IOException {
-        final List funInfoList = FunTable.instance().getFunInfoList();
+        final List funInfoList = BuiltinFunTable.instance().getFunInfoList();
         final File file = new File("functions.html");
         final FileOutputStream os = new FileOutputStream(file);
         final PrintWriter pw = new PrintWriter(os);

@@ -82,7 +82,7 @@ public class Id
     public Exp accept(Validator validator) {
         if (names.length == 1) {
             final String s = names[0];
-            if (FunTable.instance().isReserved(s)) {
+            if (validator.getFunTable().isReserved(s)) {
                 return Literal.createSymbol(s.toUpperCase());
             }
         }

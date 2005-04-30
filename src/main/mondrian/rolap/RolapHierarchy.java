@@ -13,6 +13,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.olap.fun.BuiltinFunTable;
 import mondrian.olap.type.Type;
 import mondrian.olap.type.MemberType;
 import mondrian.rolap.sql.SqlQuery;
@@ -392,7 +393,7 @@ class RolapHierarchy extends HierarchyBase {
                 Syntax.Internal,
                 new Exp[] {this});
             Validator resolver =
-                    Util.createSimpleResolver(FunTable.instance());
+                    Util.createSimpleValidator(BuiltinFunTable.instance());
             aggregateChildrenExpression = fc.accept(resolver);
         }
         return aggregateChildrenExpression;

@@ -21,19 +21,25 @@ import java.util.ArrayList;
 parser code {:
     // Generated from $Id$
     private Scanner scanner;
-    private String sQuery;
+    private String queryString;
     private Connection mdxConnection;
+    private FunTable funTable;
 
-    /** Called only by {@link ConnectionBase#parseQuery} and
+    /**
+      * Called only by {@link ConnectionBase#parseQuery} and
       * {@link ConnectionBase#parseExpression}.
-      **/
+      */
     Query parseInternal(
-        Connection mdxConnection, String sQuery, boolean debug)
+        Connection mdxConnection,
+        String queryString,
+        boolean debug,
+        FunTable funTable)
     {
         Symbol parse_tree = null;
-        this.scanner = new StringScanner(sQuery, debug);
+        this.scanner = new StringScanner(queryString, debug);
         this.mdxConnection = mdxConnection;
-        this.sQuery = sQuery;
+        this.queryString = queryString;
+        this.funTable = funTable;
         try {
             if (debug) {
                 parse_tree = debug_parse();
@@ -43,11 +49,12 @@ parser code {:
             return (Query) parse_tree.value;
         } catch (Exception e) {
             // "Error while parsing MDX statement '%1'"
-            throw Util.getRes().newWhileParsingMdx(sQuery, e);
+            throw Util.getRes().newWhileParsingMdx(queryString, e);
         } finally {
             this.scanner = null;
             this.mdxConnection = null;
-            this.sQuery = null;
+            this.queryString = null;
+            this.funTable = null;
         }
     }
     /** override this function to make your kind of query */
@@ -107,10 +114,14 @@ parser code {:
     }
     
     /**
-     * Tell if the given string can possibly be an operator with property syntax.
+     * Returns whether the given identifier can possibly the name of an operator
+     * with property syntax.
+     *
+     * <p>For example, <code>isFunCall("ORDINAL")</code>
+     * returns true because there is a "&lt;Level&gt;.Ordinal" property.</p>
      */
     protected boolean isFunCall(String s) {
-       return FunTable.instance().isProperty(s);
+       return funTable.isProperty(s);
     }
 :};
 init with {:

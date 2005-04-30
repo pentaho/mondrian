@@ -28,8 +28,8 @@ abstract class MultiResolver extends FunUtil implements Resolver {
     private final String[] signatures;
     private final Syntax syntax;
 
-    MultiResolver(String name, 
-                  String signature, 
+    MultiResolver(String name,
+                  String signature,
                   String description,
                   String[] signatures) {
         this.name = name;
@@ -69,7 +69,7 @@ outer:
                 continue;
             }
             for (int i = 0; i < args.length; i++) {
-                if (!BuiltinFunTable.canConvert(
+                if (!FunTableImpl.canConvert(
                         args[i], parameterTypes[i], conversionCount)) {
                     continue outer;
                 }

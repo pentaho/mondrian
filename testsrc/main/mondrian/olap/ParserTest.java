@@ -13,6 +13,8 @@ import junit.framework.TestCase;
 
 import java.text.MessageFormat;
 
+import mondrian.olap.fun.BuiltinFunTable;
+
 /**
  * Tests the MDX parser.
  *
@@ -23,6 +25,7 @@ public class ParserTest extends TestCase {
         super(name);
     }
 
+    static BuiltinFunTable funTable = BuiltinFunTable.instance();
 
     public void testAxisParsing() throws Exception {
         final String queryString = "select [member] on axis({0}) from [cube]";
@@ -33,7 +36,7 @@ public class ParserTest extends TestCase {
         for (int idx = 0; idx < AxisOrdinal.instance.getMax() + 1; idx++) {
             String q = MessageFormat.format(queryString, new Object[] {new Integer(idx)});
 
-            assertNull("Test parser should return null query", p.parseInternal(null, q, false));
+            assertNull("Test parser should return null query", p.parseInternal(null, q, false, funTable));
 
             QueryAxis[] axes = data.getAxes();
 
@@ -48,7 +51,7 @@ public class ParserTest extends TestCase {
         Parser p = new TestParser(data);
 
         try {
-            p.parseInternal(null, "select [member] on axis(1.7) from sales", false);
+            p.parseInternal(null, "select [member] on axis(1.7) from sales", false, funTable);
 
             fail("Must return an error");
         }
@@ -59,7 +62,7 @@ public class ParserTest extends TestCase {
         }
 
         try {
-            p.parseInternal(null, "select [member] on axis(-1) from sales", false);
+            p.parseInternal(null, "select [member] on axis(-1) from sales", false, funTable);
 
             fail("Must return an error");
         }
@@ -72,7 +75,7 @@ public class ParserTest extends TestCase {
         }
 
         try {
-            p.parseInternal(null, "select [member] on axis(" + (AxisOrdinal.instance.getMax()  + 1) + ") from sales", false);
+            p.parseInternal(null, "select [member] on axis(" + (AxisOrdinal.instance.getMax()  + 1) + ") from sales", false, funTable);
 
             fail("Must return an error");
         }
@@ -85,7 +88,7 @@ public class ParserTest extends TestCase {
         }
 
         try {
-            p.parseInternal(null, "select [member] on axes(0) from sales", false);
+            p.parseInternal(null, "select [member] on axes(0) from sales", false, funTable);
 
             fail("Must return an error");
         }
@@ -103,7 +106,7 @@ public class ParserTest extends TestCase {
         String query = "select {[axis0mbr]} on axis(0), "
                 + "{[axis1mbr]} on axis(1) from cube";
 
-        assertNull("Test parser should return null query", p.parseInternal(null, query, false));
+        assertNull("Test parser should return null query", p.parseInternal(null, query, false, funTable));
 
         QueryAxis[] axes = data.getAxes();
 

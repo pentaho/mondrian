@@ -968,7 +968,7 @@ public class Util extends XOMUtil {
      * Creates a very simple implementation of {@link Validator}. (Only
      * useful for resolving trivial expressions.)
      */
-    public static Validator createSimpleResolver(final FunTable funTable) {
+    public static Validator createSimpleValidator(final FunTable funTable) {
         return new Validator() {
             public Query getQuery() {
                 throw new UnsupportedOperationException();

@@ -60,6 +60,11 @@ public interface Schema {
      * <code>null</code> if no such role exists.
      */
     Role lookupRole(String role);
+
+    /**
+     * Returns this schema's function table.
+     */
+    FunTable getFunTable();
 }
 
 // End Schema.java

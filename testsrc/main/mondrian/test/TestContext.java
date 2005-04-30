@@ -54,8 +54,10 @@ public class TestContext {
         return instance;
     }
 
-    /** Creates a TestContext. Called only from {@link #instance()}. **/
-    private TestContext() {
+    /**
+     * Creates a TestContext.
+     */
+    protected TestContext() {
         this.pw = new PrintWriter(System.out, true);
         foodMartConnectString = getConnectString();
     }

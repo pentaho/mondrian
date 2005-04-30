@@ -23,15 +23,15 @@ import mondrian.olap.Syntax;
  * @since 3 March, 2002
  * @version $Id$
  **/
-interface Resolver {
+public interface Resolver {
     /**
      * Returns the name of the function or operator.
      */
     String getName();
 
-    /**         
+    /**
      * Returns the description of the function or operator.
-     */             
+     */
     String getDescription();
 
     /**
@@ -54,7 +54,8 @@ interface Resolver {
      *   with a single element; in effect, it is an in/out parameter. It
      *   The method increments the count every time it performs a conversion.
      *
-     * @return
+     * @return The function definition which matches these arguments, or null
+     *   if no function definition that this resolver knows about matches.
      */
     FunDef resolve(Exp[] args, int[] conversionCount);
 

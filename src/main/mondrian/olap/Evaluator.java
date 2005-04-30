@@ -115,6 +115,13 @@ public interface Evaluator {
      * allows expressions to modify non empty flag to evaluate their children.
      */
     void setNonEmpty(boolean nonEmpty);
+
+    /**
+     * Creates an exception which indicates that an error has occurred during
+     * the runtime evaluation of a function. The caller should then throw that
+     * exception.
+     */
+    RuntimeException newEvalException(Object context, String s);
 }
 
 // End Evaluator.java

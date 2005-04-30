@@ -17,50 +17,95 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * FROM: http://www.graphpad.com/articles/interpret/corl_n_linear_reg/correlation.htm
- * Correlation coefficient
+ * Abstract base class for definitions of linear regression functions.
  *
- * The correlation coefficient, r, ranges from -1 to +1. The nonparametric
- * Spearman correlation coefficient, abbreviated rs, has the same range.
+ * @see Intercept
+ * @see Point
+ * @see R2
+ * @see Slope
+ * @see Variance
  *
- * Value of r (or rs)      Interpretation
- * r= 0            The two variables do not vary together at all.
- * 0 > r > 1       The two variables tend to increase or decrease together.
- * r = 1.0         Perfect correlation.
- * -1 > r > 0      One variable increases as the other decreases.
- * r = -1.0        Perfect negative or inverse correlation.
+ * <h2>Correlation coefficient</h2>
+ * <p><i>Correlation coefficient</i></p>
  *
- * If r or rs is far from zero, there are four possible explanations:
+ * <p>The correlation coefficient, r, ranges from -1 to +1. The
+ * nonparametric Spearman correlation coefficient, abbreviated rs, has
+ * the same range.</p>
  *
- * The X variable helps determine the value of the Y variable.
+ * <table border="1" cellpadding="6" cellspacing="0">
+ *   <tr>
+ *     <td>Value of r (or rs)</td>
+ *     <td>Interpretation</td>
+ *   </tr>
+ *   <tr>
+ *     <td valign="top">r= 0</td>
  *
- *   The Y variable helps determine the value of the X variable.
- *   Another variable influences both X and Y.
- *   X and Y don't really correlate at all, and you just happened to observe
- *   such a strong correlation by chance. The P value determines how often this
- *   could occur. 
+ *     <td>The two variables do not vary together at all.</td>
+ *   </tr>
+ *   <tr>
+ *     <td valign="top">0 &gt; r &gt; 1</td>
+ *     <td>
+ *       <p>The two variables tend to increase or decrease together.</p>
+ *     </td>
+ *   </tr>
+ *   <tr>
+ *     <td valign="top">r = 1.0</td>
+ *     <td>
+ *       <p>Perfect correlation.</p>
+ *     </td>
+ *   </tr>
  *
- * r2
+ *   <tr>
+ *     <td valign="top">-1 &gt; r &gt; 0</td>
+ *     <td>
+ *       <p>One variable increases as the other decreases.</p>
+ *     </td>
+ *   </tr>
  *
- * Perhaps the best way to interpret the value of r is to square it to calculate
- * r2. Statisticians call this quantity the coefficient of determination, but
- * scientists call it r squared. It is has a value that ranges from zero to one,
- * and is the fraction of the variance in the two variables that is shared. For
- * example, if r2=0.59, then 59% of the variance in X can be explained by
- * variation in Y.  Likewise, 59% of the variance in Y can be explained by (or
- * goes along with) variation in X. More simply, 59% of the variance is shared
- * between X and Y.
+ *   <tr>
+ *     <td valign="top">r = -1.0</td>
+ *     <td>
+ *       <p></p>
+ *       <p>Perfect negative or inverse correlation.</p>
+ *     </td>
+ *   </tr>
+ * </table>
  *
+ * <p>If r or rs is far from zero, there are four possible explanations:</p>
+ * <p>The X variable helps determine the value of the Y variable.</p>
+ * <ul>
+ *   <li>The Y variable helps determine the value of the X variable.
+ *   <li>Another variable influences both X and Y.
+ *   <li>X and Y don't really correlate at all, and you just
+ *       happened to observe such a strong correlation by chance. The P value
+ *       determines how often this could occur.
+ * </ul>
+ * <p><i>r2 </i></p>
  *
- * Also see: http://mathworld.wolfram.com/LeastSquaresFitting.html
+ * <p>Perhaps the best way to interpret the value of r is to square it to
+ * calculate r2. Statisticians call this quantity the coefficient of
+ * determination, but scientists call it r squared. It is has a value
+ * that ranges from zero to one, and is the fraction of the variance in
+ * the two variables that is shared. For example, if r2=0.59, then 59% of
+ * the variance in X can be explained by variation in Y. &nbsp;Likewise,
+ * 59% of the variance in Y can be explained by (or goes along with)
+ * variation in X. More simply, 59% of the variance is shared between X
+ * and Y.</p>
+ *
+ * <p>(<a href="http://www.graphpad.com/articles/interpret/corl_n_linear_reg/correlation.htm">Source</a>).
+ *
+ * <p>Also see: <a href="http://mathworld.wolfram.com/LeastSquaresFitting.html">least squares fitting</a>.
  */
 
 
 public abstract class LinReg extends FunkBase {
+    /** Expression which yields the current member. */
+    final Exp valueFunCall;
+
     /////////////////////////////////////////////////////////////////////////
-    // 
+    //
     // Helper
-    // 
+    //
     /////////////////////////////////////////////////////////////////////////
     static class Value {
         private List xs;
@@ -89,20 +134,20 @@ public abstract class LinReg extends FunkBase {
             this.xs = xs;
             this.ys = ys;
         }
-        public double getIntercept() {       
+        public double getIntercept() {
             return this.intercept;
         }
-        public double getSlope() {       
+        public double getSlope() {
             return this.slope;
         }
         public double getRSquared() {
             return this.rSquared;
         }
-        
-        /** 
+
+        /**
          * strength of the correlation
-         * 
-         * @param rSquared 
+         *
+         * @param rSquared
          */
         public void setRSquared(double rSquared) {
             this.rSquared = rSquared;
@@ -115,22 +160,22 @@ public abstract class LinReg extends FunkBase {
             this.variance = variance;
         }
         public String toString() {
-            return "LinReg.Value: slope of " 
-                + slope 
-                + " and an intercept of " + intercept 
-                + ". That is, y=" 
-                + intercept 
-                + (slope>0.0 ? " +" : " ") 
-                + slope 
+            return "LinReg.Value: slope of "
+                + slope
+                + " and an intercept of " + intercept
+                + ". That is, y="
+                + intercept
+                + (slope>0.0 ? " +" : " ")
+                + slope
                 + " * x.";
-        } 
+        }
     }
 
 
     /////////////////////////////////////////////////////////////////////////
-    // 
-    // Implementations of LinRegXXX 
-    // 
+    //
+    // Implementations of LinRegXXX
+    //
     /////////////////////////////////////////////////////////////////////////
     public static class Intercept extends LinReg {
         public Intercept() {
@@ -150,7 +195,7 @@ debug("LinReg.Intercept.evaluator","TOP");
         public Point() {
             super();
         }
-        // <Numeric Expression>, 
+        // <Numeric Expression>,
         // <Set>, <Numeric Expression>[, <Numeric  Expression>]
         public Object evaluate(Evaluator evaluator, Exp[] args) {
 debug("LinReg.Point.evaluator","TOP");
@@ -222,9 +267,6 @@ debug("LinReg.Variance.evaluator","TOP");
         }
     }
 
-    // HACK ALERT: got this from BuiltinFunTable instance
-    static Exp valueFunCall;
-
     protected static void debug(String type, String msg) {
         // comment out for no output
         //System.out.println(type + ": " +msg);
@@ -233,6 +275,7 @@ debug("LinReg.Variance.evaluator","TOP");
 
     protected LinReg() {
         super();
+        valueFunCall = BuiltinFunTable.instance().createValueFunCall();
     }
 
     public abstract Object evaluate(Evaluator evaluator, Exp[] args);
@@ -250,14 +293,14 @@ debug("LinReg.Variance.evaluator","TOP");
 
     // <Set>, <Numeric Expression>[, <Numeric  Expression>]
     protected LinReg.Value process(Evaluator evaluator, Exp[] args) {
-        List members = (List) getArg(evaluator, args, 0);               
+        List members = (List) getArg(evaluator, args, 0);
 debug("LinReg.process","members.size=" +members.size());
         ExpBase expY = (ExpBase) getArgNoEval(args, 1);
         ExpBase expX = (ExpBase) getArgNoEval(args, 2, valueFunCall);
 
         evaluator = evaluator.push();
 
-        SetWrapper[] sws = evaluateSet(evaluator, members, 
+        SetWrapper[] sws = evaluateSet(evaluator, members,
                 new ExpBase[] {expY, expX});
         SetWrapper swY = sws[0];
         SetWrapper swX = sws[1];
@@ -268,7 +311,7 @@ debug("LinReg.process","ERROR error(s) count =" +swY.errorCount);
             return null;
         } else if (swY.v.size() == 0) {
             return null;
-        } 
+        }
 
         return linearReg(swX.v, swY.v);
     }
@@ -276,17 +319,17 @@ debug("LinReg.process","ERROR error(s) count =" +swY.errorCount);
 
     public static LinReg.Value accuracy(LinReg.Value value) {
         // for variance
-        double sumErrSquared = 0.0;                                     
+        double sumErrSquared = 0.0;
 
-        double sumErr = 0.0;                                     
+        double sumErr = 0.0;
 
         // for r2
         // data
-        double sumSquaredY = 0.0;                                     
-        double sumY = 0.0;                                     
+        double sumSquaredY = 0.0;
+        double sumY = 0.0;
         // predicted
-        double sumSquaredYF = 0.0;                                     
-        double sumYF = 0.0;                                     
+        double sumSquaredYF = 0.0;
+        double sumYF = 0.0;
 
         // Obtain the forecast values for this model
         List yfs = forecast(value);
@@ -299,7 +342,7 @@ debug("LinReg.process","ERROR error(s) count =" +swY.errorCount);
             double y = ((Double) ity.next()).doubleValue();
             double yf = ((Double) ityf.next()).doubleValue();
 
-            // Calculate error in forecast, and update sums appropriately   
+            // Calculate error in forecast, and update sums appropriately
 
             // the y residual or error
             double error = yf - y;
@@ -322,7 +365,7 @@ debug("LinReg.process","ERROR error(s) count =" +swY.errorCount);
         // The estimate the value of the error variance is a measure of
         // variability of the y values about the estimated line.
         // http://home.ubalt.edu/ntsbarsh/Business-stat/opre504.htm
-        // s2 = SSE/(n-2) = sum (y - yf)2 /(n-2) 
+        // s2 = SSE/(n-2) = sum (y - yf)2 /(n-2)
         if (n > 2) {
             double variance = sumErrSquared / (n-2);
 
@@ -367,7 +410,7 @@ debug("LinReg.process","ERROR error(s) count =" +swY.errorCount);
         double sumX = 0.0;
         double sumY = 0.0;
         double sumXX = 0.0;                                                             double sumXY = 0.0;
-        
+
 debug("LinReg.linearReg","ylist.size()=" +ylist.size());
 debug("LinReg.linearReg","xlist.size()=" +xlist.size());
         int n = 0;
@@ -387,7 +430,7 @@ debug("LinReg.linearReg"," " +i+ " (" +x+ "," +y+ ")");
             sumXX += x*x;
             sumXY += x*y;
         }
-                  
+
         double xMean = sumX / n;
         double yMean = sumY / n;
 
