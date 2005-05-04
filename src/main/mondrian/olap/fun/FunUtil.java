@@ -828,6 +828,10 @@ public class FunUtil extends Util {
             return Category.Numeric | Category.Constant;
         case 'n':
             return Category.Numeric;
+        case 'I':
+            return Category.Numeric | Category.Integer | Category.Constant;
+        case 'i':
+            return Category.Numeric | Category.Integer;
         case 'x':
             return Category.Set;
         case '#':

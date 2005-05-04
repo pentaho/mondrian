@@ -31,7 +31,6 @@ import java.net.URL;
  **/
 public class UdfTest extends FoodMartTestCase {
 
-    public static final String NL = FoodMartTestCase.nl;
     /**
      * Test context which uses the local FoodMart schema.
      */
@@ -49,39 +48,39 @@ public class UdfTest extends FoodMartTestCase {
         // sanity check, make sure the schema is loading correctly
         runQueryCheckResult(
                 "SELECT {[Measures].[Store Sqft]} ON COLUMNS, {[Store Type]} ON ROWS FROM [Store]",
-                "Axis #0:" + NL +
-                "{}" + NL +
-                "Axis #1:" + NL +
-                "{[Measures].[Store Sqft]}" + NL +
-                "Axis #2:" + NL +
-                "{[Store Type].[All Store Types]}" + NL +
-                "Row #0: 571,596" + NL);
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Store Sqft]}" + nl +
+                "Axis #2:" + nl +
+                "{[Store Type].[All Store Types]}" + nl +
+                "Row #0: 571,596" + nl);
     }
 
     public void testFun() {
         runQueryCheckResult(
-                "WITH MEMBER [Measures].[Sqft Plus One] AS 'PlusOne([Measures].[Store Sqft])'" + NL +
-                "SELECT {[Measures].[Sqft Plus One]} ON COLUMNS, " + NL +
-                "  {[Store Type].children} ON ROWS " + NL +
+                "WITH MEMBER [Measures].[Sqft Plus One] AS 'PlusOne([Measures].[Store Sqft])'" + nl +
+                "SELECT {[Measures].[Sqft Plus One]} ON COLUMNS, " + nl +
+                "  {[Store Type].children} ON ROWS " + nl +
                 "FROM [Store]",
 
-                "Axis #0:" + NL +
-                "{}" + NL +
-                "Axis #1:" + NL +
-                "{[Measures].[Sqft Plus One]}" + NL +
-                "Axis #2:" + NL +
-                "{[Store Type].[All Store Types].[Deluxe Supermarket]}" + NL +
-                "{[Store Type].[All Store Types].[Gourmet Supermarket]}" + NL +
-                "{[Store Type].[All Store Types].[HeadQuarters]}" + NL +
-                "{[Store Type].[All Store Types].[Mid-Size Grocery]}" + NL +
-                "{[Store Type].[All Store Types].[Small Grocery]}" + NL +
-                "{[Store Type].[All Store Types].[Supermarket]}" + NL +
-                "Row #0: 146,046" + NL +
-                "Row #1: 47,448" + NL +
-                "Row #2: (null)" + NL +
-                "Row #3: 109,344" + NL +
-                "Row #4: 75,282" + NL +
-                "Row #5: 193,481" + NL);
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Sqft Plus One]}" + nl +
+                "Axis #2:" + nl +
+                "{[Store Type].[All Store Types].[Deluxe Supermarket]}" + nl +
+                "{[Store Type].[All Store Types].[Gourmet Supermarket]}" + nl +
+                "{[Store Type].[All Store Types].[HeadQuarters]}" + nl +
+                "{[Store Type].[All Store Types].[Mid-Size Grocery]}" + nl +
+                "{[Store Type].[All Store Types].[Small Grocery]}" + nl +
+                "{[Store Type].[All Store Types].[Supermarket]}" + nl +
+                "Row #0: 146,046" + nl +
+                "Row #1: 47,448" + nl +
+                "Row #2: (null)" + nl +
+                "Row #3: 109,344" + nl +
+                "Row #4: 75,282" + nl +
+                "Row #5: 193,481" + nl);
     }
 
     /**
@@ -90,21 +89,21 @@ public class UdfTest extends FoodMartTestCase {
      */
     public static class FoodmartWithUdf implements DynamicSchemaProcessor {
         private static final String schema =
-                "<?xml version=\"1.0\"?>" + NL +
-                "<Schema name=\"FoodMartWithUdfs\">" + NL +
-                "<Cube name=\"Store\">" + NL +
-                "  <Table name=\"store\"/>" + NL +
-                "  <Dimension name=\"Store Type\">" + NL +
-                "    <Hierarchy hasAll=\"true\">" + NL +
-                "      <Level name=\"Store Type\" column=\"store_type\" uniqueMembers=\"true\"/>" + NL +
-                "    </Hierarchy>" + NL +
-                "  </Dimension>" + NL +
-                "  <Measure name=\"Store Sqft\" column=\"store_sqft\" aggregator=\"sum\"" + NL +
-                "      formatString=\"#,###\"/>" + NL +
-                "  <Measure name=\"Grocery Sqft\" column=\"grocery_sqft\" aggregator=\"sum\"" + NL +
-                "      formatString=\"#,###\"/>" + NL +
-                "</Cube>" + NL +
-                "<UserDefinedFunction name=\"PlusOne\" className=\"" + PlusOneFunDef.class.getName() + "\"/>" + NL +
+                "<?xml version=\"1.0\"?>" + nl +
+                "<Schema name=\"FoodMartWithUdfs\">" + nl +
+                "<Cube name=\"Store\">" + nl +
+                "  <Table name=\"store\"/>" + nl +
+                "  <Dimension name=\"Store Type\">" + nl +
+                "    <Hierarchy hasAll=\"true\">" + nl +
+                "      <Level name=\"Store Type\" column=\"store_type\" uniqueMembers=\"true\"/>" + nl +
+                "    </Hierarchy>" + nl +
+                "  </Dimension>" + nl +
+                "  <Measure name=\"Store Sqft\" column=\"store_sqft\" aggregator=\"sum\"" + nl +
+                "      formatString=\"#,###\"/>" + nl +
+                "  <Measure name=\"Grocery Sqft\" column=\"grocery_sqft\" aggregator=\"sum\"" + nl +
+                "      formatString=\"#,###\"/>" + nl +
+                "</Cube>" + nl +
+                "<UserDefinedFunction name=\"PlusOne\" className=\"" + PlusOneFunDef.class.getName() + "\"/>" + nl +
                 "</Schema>";
 
         public String processSchema(URL schemaUrl) throws Exception {

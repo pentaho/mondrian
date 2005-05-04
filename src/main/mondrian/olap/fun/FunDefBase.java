@@ -225,6 +225,8 @@ public class FunDefBase extends FunUtil implements FunDef {
             return new BooleanType();
         case Category.Numeric:
             return new NumericType();
+        case Category.Numeric | Category.Integer:
+            return new DecimalType(Integer.MAX_VALUE, 0);
         case Category.String:
             return new StringType();
         case Category.Symbol:

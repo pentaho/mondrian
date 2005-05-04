@@ -11,6 +11,8 @@
 */
 
 package mondrian.olap;
+import mondrian.olap.type.*;
+
 import java.io.PrintWriter;
 
 /**
@@ -92,9 +94,11 @@ public class Formula extends QueryPart {
         }
         // Get the format expression from the property list, or derive it from
         // the formula.
-        Exp formatExp = getFormatExp();
-        if (formatExp != null) {
-            mdxMember.setProperty(Property.PROPERTY_FORMAT_EXP, formatExp);
+        if (isMember) {
+            Exp formatExp = getFormatExp();
+            if (formatExp != null) {
+                mdxMember.setProperty(Property.PROPERTY_FORMAT_EXP, formatExp);
+            }
         }
     }
 
@@ -233,12 +237,6 @@ public class Formula extends QueryPart {
             : (OlapElement) mdxSet;
     }
 
-    /** Returns whether this formula represents hidden member (unique name
-     * contains {@link Query#hidden} string). */
-    public boolean isHidden() {
-        return getElement().getUniqueName().indexOf(Query.HIDDEN) >= 0;
-    }
-
     public Exp getExpression() {
         return exp;
     }
@@ -265,9 +263,13 @@ public class Formula extends QueryPart {
      */
     public int getSolveOrder() {
         Exp exp = getMemberProperty(Property.PROPERTY_SOLVE_ORDER);
-        return ((exp != null) && (exp.getCategory() == Category.Numeric)) ?
-            ((Literal) exp).getIntValue() :
-            0;
+        if (exp != null) {
+            final Type type = exp.getTypeX();
+            if (type instanceof NumericType) {
+                return ((Literal) exp).getIntValue();
+            }
+        }
+        return 0;
     }
 
     /**
@@ -277,12 +279,31 @@ public class Formula extends QueryPart {
      * first member it finds.
      */
     private Exp getFormatExp() {
+        // If they have specified a format string (which they can do under
+        // several names) reutrn that.
         for (int i = 0; i < Property.FORMAT_PROPERTIES.length; i++) {
             Exp formatExp = getMemberProperty(Property.FORMAT_PROPERTIES[i]);
             if (formatExp != null) {
                 return formatExp;
             }
         }
+        // Choose a format appropriate to the expression.
+        // For now, only do it for integers.
+        final Type type = exp.getTypeX();
+        if (type instanceof DecimalType) {
+            int scale = ((DecimalType) type).getScale();
+            String formatString = "#,##0";
+            if (scale > 0) {
+                formatString = formatString + ".";
+                while (scale-- > 0) {
+                    formatString = formatString + "0";
+                }
+            }
+            return Literal.createString(formatString);
+        }
+        // Burrow into the expression. If we find a member, use its format
+        // string.
+        // TODO: Obsolete this code.
         Walker walker = new Walker(exp);
         while (walker.hasMoreElements()) {
             final Object o = walker.nextElement();

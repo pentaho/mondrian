@@ -939,7 +939,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Rank",
                 "Rank(<Tuple>, <Set> [, <Calc Expression>])",
                 "Returns the one-based rank of a tuple in a set.",
-                new String[]{"fntx","fntxn", "fnmx", "fnmxn"},
+                new String[]{"fitx","fitxn", "fimx", "fimxn"},
                 new RankFunDef()));
 
         define(new MultiResolver(
@@ -1047,7 +1047,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 return evaluator2.evaluateCurrent();
             }
         });
-        
+
         define(new FunDefBase(
                 "_Value",
                 "_Value()",

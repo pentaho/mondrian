@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
  **/
 public class FoodMartTestCase extends TestCase {
     protected static final String nl = System.getProperty("line.separator");
+    private static final String lineBreak = "\" + nl + " + nl + "\"";
     private static final Pattern LineBreakPattern =
         Pattern.compile("\r\n|\r|\n");
     private static final Pattern TabPattern = Pattern.compile("\t");
@@ -184,12 +185,10 @@ public class FoodMartTestCase extends TestCase {
 
         // Convert [string with "quotes" split
         // across lines]
-        // into ["string with \"quotes\" split" + NL +
+        // into ["string with \"quotes\" split" + nl +
         // "across lines
         //
-        //
         s = Util.replace(s, "\"", "\\\"");
-        final String lineBreak = "\" + NL + " + nl + "\"";
         s = LineBreakPattern.matcher(s).replaceAll(lineBreak);
         s = TabPattern.matcher(s).replaceAll("\\\\t");
         s = "\"" + s + "\"";
@@ -198,9 +197,9 @@ public class FoodMartTestCase extends TestCase {
             s = s.substring(0, s.length() - spurious.length());
         }
         String message =
-            "Expected:" + nl + expected + nl
-            + "Actual: " + nl + actual + nl
-            + "Actual java: " + nl + s + nl;
+                "Expected:" + nl + expected + nl +
+                "Actual: " + nl + actual + nl +
+                "Actual java: " + nl + s + nl;
         throw new ComparisonFailure(message, expected, actual);
     }
 

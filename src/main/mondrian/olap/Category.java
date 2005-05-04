@@ -29,17 +29,17 @@ public class Category extends EnumeratedValues {
                 new String[] {
                     "unknown", "array", "dimension", "hierarchy", "level",
                     "logical", "member", "numeric", "set",
-                    "string", "tuple", "symbol", "cube", "value",
+                    "string", "tuple", "symbol", "cube", "value", "integer",
                 },
                 new int[] {
                     Unknown, Array, Dimension, Hierarchy, Level,
                     Logical, Member, Numeric, Set,
-                    String, Tuple, Symbol, Cube, Value,
+                    String, Tuple, Symbol, Cube, Value, Integer,
                 },
                 new String[] {
                     "Unknown", "Array", "Dimension", "Hierarchy", "Level",
                     "Logical Expression", "Member", "Numeric Expression", "Set",
-                    "String", "Tuple", "Symbol", "Cube", "Value",
+                    "String", "Tuple", "Symbol", "Cube", "Value", "Integer",
                 }
         );
     }
@@ -83,6 +83,9 @@ public class Category extends EnumeratedValues {
     public static final int Cube      = 12;
     /** <code>Value</code> is any expression yielding a string or numeric value. **/
     public static final int Value     = 13;
+    /** <code>Integer</code> is an integer expression. This is a subtype of
+     * {@link #Numeric}. */
+    public static final int Integer = 15;
     /** <code>Expression</code> is a flag which, when bitwise-OR-ed with a
      * category value, indicates an expression (as opposed to a constant). **/
     public static final int Expression = 0;

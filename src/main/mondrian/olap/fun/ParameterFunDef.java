@@ -12,10 +12,7 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
-import mondrian.olap.type.Type;
-import mondrian.olap.type.StringType;
-import mondrian.olap.type.NumericType;
-import mondrian.olap.type.MemberType;
+import mondrian.olap.type.*;
 
 /**
  * A <code>ParameterFunDef</code> is a pseudo-function describing calls to
@@ -64,6 +61,8 @@ public class ParameterFunDef extends FunDefBase {
             return new StringType();
         case Category.Numeric:
             return new NumericType();
+        case Category.Numeric | Category.Integer:
+            return new DecimalType(Integer.MAX_VALUE, 0);
         case Category.Member:
             return new MemberType(hierarchy, null, null);
         default:
