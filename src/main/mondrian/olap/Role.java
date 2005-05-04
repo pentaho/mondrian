@@ -29,7 +29,7 @@ import java.util.Map;
  * application's responsibility to create a role appropriate for the user who
  * is establishing the connection.
  *
- * @see mondrian.test.AccessControlTest
+ * @testcase {@link mondrian.test.AccessControlTest}
  *
  * @author jhyde
  * @since Oct 5, 2002
@@ -43,9 +43,9 @@ public class Role {
      * {@link Hierarchy} to {@link HierarchyAccess}. */
     private Map grants = new HashMap();
     private static Integer integers[] = {
-        new Integer(0), 
-        new Integer(1), 
-        new Integer(2), 
+        new Integer(0),
+        new Integer(1),
+        new Integer(2),
         new Integer(3),
         new Integer(4),
     };
@@ -174,8 +174,8 @@ public class Role {
          *
          * @pre Access.instance().isValid(access)
          */
-        HierarchyAccess(Hierarchy hierarchy, 
-                        int access, 
+        HierarchyAccess(Hierarchy hierarchy,
+                        int access,
                         Level topLevel,
                         Level bottomLevel) {
             this.hierarchy = hierarchy;
@@ -328,8 +328,8 @@ public class Role {
      * @pre bottomLevel == null || bottomLevel.getHierarchy() == hierarchy
      * @pre isMutable()
      */
-    public void grant(Hierarchy hierarchy, 
-                      int access, 
+    public void grant(Hierarchy hierarchy,
+                      int access,
                       Level topLevel,
                       Level bottomLevel) {
         Util.assertPrecondition(hierarchy != null, "hierarchy != null");
@@ -435,6 +435,18 @@ public class Role {
     }
 
     /**
+     * Returns the access this role has to a given named set.
+     *
+     * @pre set != null
+     * @pre isMutable()
+     * @post return == Access.NONE || return == Access.ALL
+     */
+    public int getAccess(Set set) {
+        Util.assertPrecondition(set != null, "set != null");
+        return Access.ALL;
+    }
+
+    /**
      * Returns whether this role is allowed to see a given element.
      * @pre olapElement != null
      */
@@ -450,6 +462,8 @@ public class Role {
             return getAccess((Level) olapElement) != Access.NONE;
         } else if (olapElement instanceof Member) {
             return getAccess((Member) olapElement) != Access.NONE;
+        } else if (olapElement instanceof Set) {
+            return getAccess((Set) olapElement) != Access.NONE;
         } else {
             return false;
         }

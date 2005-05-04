@@ -11,13 +11,10 @@
 */
 
 package mondrian.olap;
-import mondrian.olap.fun.BuiltinFunTable;
 import mondrian.olap.fun.ParameterFunDef;
 import mondrian.olap.type.*;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -28,9 +25,6 @@ import java.util.*;
  * to return a {@link Result}.
  **/
 public class Query extends QueryPart {
-
-    //hidden string
-    public static final String HIDDEN = "hidden_";
 
     /**
      * public-private: This must be public because it is still accessed in rolap.RolapCube
@@ -355,26 +349,6 @@ public class Query extends QueryPart {
         return AxisOrdinal.NONE;
     }
 
-    /** Constructs hidden unique name based on given uName. It is used for
-     * formatting existing measures. */
-    public static String getHiddenMemberUniqueName(String uName) {
-        int i = uName.lastIndexOf("].[");
-        return uName.substring(0, i + 3) + HIDDEN + uName.substring(i+3);
-    }
-
-    /** checks for hidden string in name and strips it out. It looks only for
-     * first occurence */
-    public static String stripHiddenName(String name) {
-        final int i = name.indexOf(HIDDEN);
-        return (i >= 0)
-            ? name.substring(0, i) + name.substring(i + HIDDEN.length())
-            : name;
-    }
-
-    public static String getHiddenMemberFormulaDefinition(String uName) {
-        return uName;
-    }
-
     /** Returns the MDX query string. */
     public String toString() {
         resolve();
@@ -640,17 +614,40 @@ public class Query extends QueryPart {
         return null;
     }
 
-    /** Return an array of the formulas used in this query. */
+    /**
+     * Looks up a named set.
+     */
+    private Set lookupNamedSet(String name) {
+        for (int i = 0; i < formulas.length; i++) {
+            Formula formula = formulas[i];
+            if (!formula.isMember() &&
+                    formula.getElement() != null &&
+                    formula.getName().equals(name)) {
+                return (Set) formula.getElement();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns an array of the formulas used in this query.
+     */
     public Formula[] getFormulas() {
         return formulas;
     }
+
+    /**
+     * Returns an array of this query's axes.
+     */
     public QueryAxis[] getAxes() {
         return axes;
     }
 
-    /** Remove a formula from the query. If <code>failIfUsedInQuery</code> is
+    /**
+     * Remove a formula from the query. If <code>failIfUsedInQuery</code> is
      * true, checks and throws an error if formula is used somewhere in the
-     * query; otherwise, what??? */
+     * query.
+     */
     public void removeFormula(String uniqueName, boolean failIfUsedInQuery) {
         Formula formula = findFormula(uniqueName);
         if (failIfUsedInQuery && formula != null) {
@@ -703,7 +700,7 @@ public class Query extends QueryPart {
             }
         }
 
-        //remove formula from query
+        // remove formula from query
         List formulaList = new ArrayList();
         for (int i = 0; i < formulas.length; i++) {
             if (!formulas[i].getUniqueName().equalsIgnoreCase(uniqueName)) {
@@ -814,7 +811,7 @@ public class Query extends QueryPart {
          * Creates a StackValidator.
          *
          * @pre funTable != null
-         */ 
+         */
         public StackValidator(FunTable funTable) {
             Util.assertPrecondition(funTable != null, "funTable != null");
             this.funTable = funTable;
@@ -898,7 +895,7 @@ public class Query extends QueryPart {
             }
             final Object parent = stack.get(n - 1);
             if (parent instanceof Formula) {
-                return true;
+                return ((Formula) parent).isMember();
             } else if (parent instanceof FunCall) {
                 final FunCall funCall = (FunCall) parent;
                 if (funCall.isCallToTuple()) {
@@ -946,6 +943,9 @@ public class Query extends QueryPart {
                     break;
                 case Category.Numeric:
                     type = new NumericType();
+                    break;
+                case Category.Integer:
+                    type = new DecimalType(Integer.MAX_VALUE, 0);
                     break;
                 default:
                     throw Category.instance.badValue(category);
@@ -1032,12 +1032,14 @@ public class Query extends QueryPart {
      * returns the calculated members defined in this query.
      */
     private class QuerySchemaReader extends DelegatingSchemaReader {
+
         public QuerySchemaReader(SchemaReader cubeSchemaReader) {
             super(cubeSchemaReader);
         }
 
-        public Member getMemberByUniqueName(String[] uniqueNameParts,
-                                            boolean failIfNotFound) {
+        public Member getMemberByUniqueName(
+                String[] uniqueNameParts,
+                boolean failIfNotFound) {
             final String uniqueName = Util.implode(uniqueNameParts);
             Member member = lookupMemberFromCache(uniqueName);
             if (member == null) {
@@ -1088,10 +1090,11 @@ public class Query extends QueryPart {
             return mdxElement;
         }
 
-        public OlapElement lookupCompound(OlapElement parent,
-                                          String[] names,
-                                          boolean failIfNotFound,
-                                          int category) {
+        public OlapElement lookupCompound(
+                OlapElement parent,
+                String[] names,
+                boolean failIfNotFound,
+                int category) {
             // First look to ourselves.
             switch (category) {
             case Category.Unknown:
@@ -1100,6 +1103,16 @@ public class Query extends QueryPart {
                     final Member calculatedMember = getCalculatedMember(names);
                     if (calculatedMember != null) {
                         return calculatedMember;
+                    }
+                }
+            }
+            switch (category) {
+            case Category.Unknown:
+            case Category.Set:
+                if (parent == cube) {
+                    final Set namedSet = getNamedSet(names);
+                    if (namedSet != null) {
+                        return namedSet;
                     }
                 }
             }
@@ -1123,6 +1136,16 @@ public class Query extends QueryPart {
                 }
             }
             return olapElement;
+        }
+
+        /**
+         * Retrieves a named set defined in this query.
+         */
+        private Set getNamedSet(String[] names) {
+            if (names.length == 1) {
+                return lookupNamedSet(names[0]);
+            }
+            return null;
         }
     }
 

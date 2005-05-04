@@ -41,20 +41,20 @@ class SetBase extends OlapElementBase implements Set {
     }
 
     // from Element
-    public Object getObject() { 
-        return null; 
+    public Object getObject() {
+        return null;
     }
-    public String getUniqueName() { 
-        return "[" + name + "]"; 
+    public String getUniqueName() {
+        return "[" + name + "]";
     }
-    public String getName() { 
-        return name; 
+    public String getName() {
+        return name;
     }
-    public String getQualifiedName() { 
-        return null; 
+    public String getQualifiedName() {
+        return null;
     }
-    public String getDescription() { 
-        return null; 
+    public String getDescription() {
+        return null;
     }
 
     public int getCategory() {
@@ -89,7 +89,11 @@ class SetBase extends OlapElementBase implements Set {
     }
 
     public boolean dependsOn(Dimension dimension) {
-        throw new UnsupportedOperationException();
+        return exp.dependsOn(dimension);
+    }
+
+    public Object evaluate(Evaluator evaluator) {
+        return exp.evaluate(evaluator);
     }
 }
 

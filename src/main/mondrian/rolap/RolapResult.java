@@ -185,11 +185,11 @@ class RolapResult extends ResultBase {
                 value = Collections.EMPTY_LIST;
             }
             Util.assertTrue(value instanceof List);
-            List vector = (List) value;
-            positions = new Position[vector.size()];
-            for (int i = 0; i < vector.size(); i++) {
+            List list = (List) value;
+            positions = new Position[list.size()];
+            for (int i = 0; i < list.size(); i++) {
                 Member[] members = null;
-                Object o = vector.get(i);
+                Object o = list.get(i);
                 if (o instanceof Object[]) {
                     Object[] a = (Object[]) o;
                     members = new Member[a.length];
