@@ -192,18 +192,36 @@ public abstract class FunTableImpl implements FunTable {
                 return null;
             }
         case Category.Numeric | Category.Constant:
+        case Category.Integer | Category.Constant:
+            switch (to) {
+            case Category.Value:
+            case Category.Integer:
+            case Category.Numeric:
+                return fromExp;
+            default:
+                return null;
+            }
+        case Category.Integer:
             switch (to) {
             case Category.Value:
             case Category.Numeric:
                 return fromExp;
+            case Category.Numeric | Category.Constant:
+            case Category.Integer | Category.Constant:
+                return new FunCall(
+                        "_Value",
+                        Syntax.Function,
+                        new Exp[] {fromExp});
             default:
                 return null;
             }
         case Category.Numeric:
             switch (to) {
             case Category.Value:
+            case Category.Integer:
                 return fromExp;
             case Category.Numeric | Category.Constant:
+            case Category.Integer | Category.Constant:
                 return new FunCall(
                         "_Value",
                         Syntax.Function,
@@ -329,6 +347,13 @@ public abstract class FunTableImpl implements FunTable {
                 to == Category.Numeric;
         case Category.Numeric:
             return to == Category.Value ||
+                to == Category.Integer ||
+                to == (Category.Integer | Category.Constant) ||
+                to == (Category.Numeric | Category.Constant);
+        case Category.Integer:
+            return to == Category.Value ||
+                to == (Category.Integer | Category.Constant) ||
+                to == Category.Numeric ||
                 to == (Category.Numeric | Category.Constant);
         case Category.Set:
             return false;
@@ -364,7 +389,7 @@ public abstract class FunTableImpl implements FunTable {
             resolvers = emptyResolverArray;
         }
 
-        int[] conversionCount = new int[1];
+        int[] conversionCount = new int[] {0};
         int minConversions = Integer.MAX_VALUE;
         int matchCount = 0;
         FunDef matchDef = null;
