@@ -76,8 +76,8 @@ public class RolapStar {
      * {@link RolapSchema.RolapStarRegistry#getOrCreateStar} to create a
      * {@link RolapStar}.
      */
-    RolapStar(RolapSchema schema, 
-              DataSource dataSource, 
+    RolapStar(RolapSchema schema,
+              DataSource dataSource,
               MondrianDef.Relation fact) {
         this.schema = schema;
         this.dataSource = dataSource;
@@ -155,7 +155,7 @@ public class RolapStar {
     /**
      * Returns whether two arrays of columns are identical.
      **/
-    private static boolean equals(RolapStar.Column[] columns1, 
+    private static boolean equals(RolapStar.Column[] columns1,
                                   RolapStar.Column[] columns2) {
         int count = columns1.length;
         if (count != columns2.length) {
@@ -211,7 +211,7 @@ public class RolapStar {
             for (int i = 0; i < table.columns.size(); i++) {
                 Column column = (Column) table.columns.get(i);
                 if (column.getExpression() instanceof MondrianDef.Column) {
-                    MondrianDef.Column columnExpr = 
+                    MondrianDef.Column columnExpr =
                         (MondrianDef.Column) column.getExpression();
                     if (columnExpr.name.equals(columnName)) {
                         return column;
@@ -332,7 +332,7 @@ public class RolapStar {
 
     void addColumnToName(Column column, String name) {
         this.mapColumnToName.put(column, name);
-    }   
+    }
 
     private boolean containsColumn(String tableName, String columnName) {
         final Connection jdbcConnection = getJdbcConnection();
@@ -368,8 +368,8 @@ public class RolapStar {
         private final boolean isNumeric;
         private int cardinality = -1;
 
-        Column(Table table, 
-               MondrianDef.Expression expression, 
+        Column(Table table,
+               MondrianDef.Expression expression,
                boolean isNumeric) {
             this.table = table;
             this.expression = expression;
@@ -426,7 +426,7 @@ public class RolapStar {
             }
             if (sqlQuery.allowsCountDistinct()) {
                 // e.g. "select count(distinct product_id) from product"
-                sqlQuery.addSelect("count(distinct " 
+                sqlQuery.addSelect("count(distinct "
                     + getExpression(sqlQuery) + ")");
 
                 // no need to join fact table here
@@ -458,10 +458,10 @@ public class RolapStar {
                 return resultSet.getInt(1);
             } catch (SQLException e) {
                 throw Util.getRes().newInternal(
-                        "while counting distinct values of column '" 
-                        + expression.getGenericExpression() 
-                        + "'; sql=[" 
-                        + sql 
+                        "while counting distinct values of column '"
+                        + expression.getGenericExpression()
+                        + "'; sql=["
+                        + sql
                         + "]",
                         e);
             } finally {
@@ -495,7 +495,7 @@ public class RolapStar {
          *
          * <li>String values: <code>foo.bar in ('a', 'b', 'c')</code></li></ul>
          */
-        public String createInExpr(String expr, 
+        public String createInExpr(String expr,
                                    ColumnConstraint[] constraints) {
             if (constraints.length == 1) {
                 final ColumnConstraint constraint = constraints[0];
@@ -526,35 +526,34 @@ public class RolapStar {
             sb.append(')');
             if (notNullCount < constraints.length) {
                 // There was at least one null.
+                StringBuffer buf;
                 switch (notNullCount) {
                 case 0:
                     // Special case -- there were no values besides null.
                     // Return, for example, "x is null".
                     return expr + " is null";
-                case 1: {
+                case 1:
                     // Special case -- one not-null value, and null, for
                     // example "(x is null or x = 1)".
-                    StringBuffer buf = new StringBuffer(64);
+                    buf = new StringBuffer(64);
                     buf.append('(');
                     buf.append(expr);
                     buf.append(" = ");
                     quoteValue(constraints[0].getValue(), buf);
                     buf.append(" or ");
                     buf.append(expr);
-                    buf.append(" is null");
+                    buf.append(" is null)");
                     return buf.toString();
-                }
-                default: {
+                default:
                     // Nulls and values, for example,
                     // "(x in (1, 2) or x IS NULL)".
-                    StringBuffer buf = new StringBuffer(64);
+                    buf = new StringBuffer(64);
                     buf.append('(');
                     buf.append(sb.toString());
                     buf.append(" or ");
                     buf.append(expr);
-                    buf.append(" is null");
+                    buf.append(" is null)");
                     return buf.toString();
-                }
                 }
             } else {
                 // No nulls. Return, for example, "x in (1, 2, 3)".
@@ -573,7 +572,7 @@ public class RolapStar {
         private final RolapAggregator aggregator;
 
         Measure(RolapAggregator aggregator,
-                Table table, 
+                Table table,
                 MondrianDef.Expression expression,
                 boolean isNumeric) {
             super(table, expression, isNumeric);
@@ -605,9 +604,9 @@ public class RolapStar {
         private final Condition joinCondition;
         private final String alias;
 
-        Table(RolapStar star, 
+        Table(RolapStar star,
               MondrianDef.Relation relation,
-              Table parent, 
+              Table parent,
               Condition joinCondition) {
             this.star = star;
             this.relation = relation;
@@ -829,7 +828,7 @@ public class RolapStar {
         private final MondrianDef.Expression left;
         private final MondrianDef.Expression right;
 
-        Condition(MondrianDef.Expression left, 
+        Condition(MondrianDef.Expression left,
                   MondrianDef.Expression right) {
             Util.assertPrecondition(left != null);
             Util.assertPrecondition(right != null);
@@ -907,8 +906,8 @@ RME - this can not be what was wanted
         }
 
         private String visit(String table) {
-            return table.equals(oldAlias) 
-                ? newAlias 
+            return table.equals(oldAlias)
+                ? newAlias
                 : table;
         }
     }
