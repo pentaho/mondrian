@@ -303,6 +303,10 @@
     <text>Argument to function ''{0}'' must belong to Time hierarchy.</text>
 </exception>
 
+<exception id="350540" name="InvalidAxis">
+    <text>Invalid axis specification. The axis number must be an integer between 0 and {0,number}, but it was {1,number}.</text>
+</exception>
+
 <!-- ====================================================================== -->
 <!-- Catalog errors -->
 

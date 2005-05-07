@@ -134,8 +134,8 @@ public class ParameterTest extends FoodMartTestCase {
         parameters[2].setValue("[Gender].[M]", query);
         Assert.assertEquals("with member [Measures].[A string] as 'Parameter(\"S\", STRING, (\"x\" || \"y\"), \"A string parameter\")'" + nl +
                 "  member [Measures].[A number] as 'Parameter(\"N\", NUMERIC, (2.0 + 3.0), \"A numeric parameter\")'" + nl +
-                "select {Parameter(\"P\", [Gender], [Gender].[All Gender].[M], \"Which gender?\"), Parameter(\"Q\", [Gender], [Gender].DefaultMember, \"Another gender?\")} ON columns," + nl +
-                "  {[Measures].[Unit Sales]} ON rows" + nl +
+                "select {Parameter(\"P\", [Gender], [Gender].[All Gender].[M], \"Which gender?\"), Parameter(\"Q\", [Gender], [Gender].DefaultMember, \"Another gender?\")} ON COLUMNS," + nl +
+                "  {[Measures].[Unit Sales]} ON ROWS" + nl +
                 "from [Sales]" + nl,
                 query.toString());
     }

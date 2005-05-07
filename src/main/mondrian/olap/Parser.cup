@@ -264,6 +264,9 @@ non terminal ArrayList
 non terminal Exp[]
     when_clause;
 
+non terminal Double
+    axis_number;
+
 // Start symbol
 start with select_statement;
 
@@ -1194,26 +1197,27 @@ set_name ::= compound_id ;
 // <axis_specification> ::= [NON EMPTY] <set> [<dim_props>] ON <axis_name>
 axis_specification ::=
         non_empty_opt:b expression:s dim_props_opt ON axis_name:a {:
-            RESULT = new QueryAxis(b.booleanValue(), s, a, QueryAxis.SubtotalVisibility.Undefined);
+            AxisOrdinal axis = AxisOrdinal.get(a.toUpperCase());
+            RESULT = new QueryAxis(b.booleanValue(), s, axis,
+                    QueryAxis.SubtotalVisibility.Undefined);
         :}
-    |   non_empty_opt:b expression:s dim_props_opt ON AXIS LPAREN NUMBER:n RPAREN :a {:
+    |   non_empty_opt:b expression:s dim_props_opt ON axis_number:n {:
             double d = n.doubleValue();
             int index = (int)d;
 
             // AxisOrdinal values go from -2 to 4. The negative values represent
             // special cases, so are ignored.
-            if (index < 0 || index != d || index > AxisOrdinal.instance.getMax()) {
-                this.parser.report_error("Invalid AXIS specification. The axis number must be a non-negative integer between "
-                    + "0 and "
-                    + AxisOrdinal.instance.getMax() + ", but it was " + d + ".",
-                    null);
+            if (index < 0 || index != d || index > AxisOrdinal.MaxOrdinal) {
+                throw MondrianResource.instance().newInvalidAxis(
+                        new Integer(AxisOrdinal.MaxOrdinal), new Double(d));
             }
 
-            String axisName = AxisOrdinal.instance.getName(index);
-            RESULT = new QueryAxis(b.booleanValue(), s, axisName, QueryAxis.SubtotalVisibility.Undefined);
+            AxisOrdinal axis = AxisOrdinal.get(index);
+            RESULT = new QueryAxis(b.booleanValue(), s, axis, 
+                    QueryAxis.SubtotalVisibility.Undefined);
         :}
-
     ;
+
 non_empty_opt ::=
         /* empty */ {: RESULT = new Boolean(false); :}
     |   NON EMPTY {: RESULT = new Boolean(true); :}
@@ -1230,6 +1234,10 @@ dim_props_opt ::=
 //               | SECTIONS
 //               | AXIS(<index>)
 axis_name ::= identifier;
+axis_number ::=
+        NUMBER
+    |   AXIS LPAREN NUMBER:n RPAREN {: RESULT = n; :}
+    ;
 //
 // <dim_props> ::= [DIMENSION] PROPERTIES <property> [, <property>...]
 dim_props ::=

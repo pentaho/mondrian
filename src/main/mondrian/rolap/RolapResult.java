@@ -62,7 +62,7 @@ class RolapResult extends ResultBase {
                             new FunCall(
                                 "{}", Syntax.Braces, new Exp[] {query.slicer}
                             ).accept(query.createValidator()),
-                            "slicer",
+                            AxisOrdinal.Slicer,
                             QueryAxis.SubtotalVisibility.Undefined);
                     } else {
                         axis = null;
@@ -75,6 +75,7 @@ class RolapResult extends ResultBase {
                 while (true) {
                     evaluator.setCellReader(batchingReader);
                     RolapAxis axisResult = executeAxis(evaluator.push(), axis);
+                    Util.discard(axisResult);
                     evaluator.clearExpResultCache();
                     if (!batchingReader.loadAggregations()) {
                         break;

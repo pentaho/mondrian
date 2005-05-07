@@ -10,9 +10,6 @@
 package mondrian.olap;
 
 import junit.framework.TestCase;
-
-import java.text.MessageFormat;
-
 import mondrian.olap.fun.BuiltinFunTable;
 
 /**
@@ -28,75 +25,55 @@ public class ParserTest extends TestCase {
     static BuiltinFunTable funTable = BuiltinFunTable.instance();
 
     public void testAxisParsing() throws Exception {
-        final String queryString = "select [member] on axis({0}) from [cube]";
+        checkAxisAllWays(0, "COLUMNS");
+        checkAxisAllWays(1, "ROWS");
+        checkAxisAllWays(2, "PAGES");
+        checkAxisAllWays(3, "CHAPTERS");
+        checkAxisAllWays(4, "SECTIONS");
+    }
 
+    private void checkAxisAllWays(int axisOrdinal, String axisName) {
+        checkAxis(axisOrdinal + "", axisName);
+        checkAxis("AXIS(" + axisOrdinal + ")", axisName);
+        checkAxis(axisName, axisName);
+    }
+
+    private void checkAxis(
+            String s,
+            String expectedName) {
         ParserData data = new ParserData();
         Parser p = new TestParser(data);
+        String q = "select [member] on " + s + " from [cube]";
+        Query query = p.parseInternal(null, q, false, funTable);
+        assertNull("Test parser should return null query", query);
 
-        for (int idx = 0; idx < AxisOrdinal.instance.getMax() + 1; idx++) {
-            String q = MessageFormat.format(queryString, new Object[] {new Integer(idx)});
+        QueryAxis[] axes = data.getAxes();
 
-            assertNull("Test parser should return null query", p.parseInternal(null, q, false, funTable));
-
-            QueryAxis[] axes = data.getAxes();
-
-            assertEquals("Number of axes must be 1", 1, axes.length);
-            assertEquals("Axis index name must be correct",
-                AxisOrdinal.instance.getName(idx), axes[0].getAxisName());
-        }
+        assertEquals("Number of axes must be 1", 1, axes.length);
+        assertEquals("Axis index name must be correct",
+                expectedName, axes[0].getAxisName());
     }
 
     public void testNegativeCases() throws Exception {
         ParserData data = new ParserData();
         Parser p = new TestParser(data);
 
+        checkFails(p, "select [member] on axis(1.7) from sales", "The axis number must be an integer");
+        checkFails(p, "select [member] on axis(-1) from sales", "Syntax error at line");
+        checkFails(p, "select [member] on axis(5) from sales", "The axis number must be an integer");
+        checkFails(p, "select [member] on axes(0) from sales", "Syntax error at line");
+        checkFails(p, "select [member] on 0.5 from sales", "The axis number must be an integer");
+        checkFails(p, "select [member] on 555 from sales", "The axis number must be an integer");
+    }
+
+    private void checkFails(Parser p, String query, String expected) {
         try {
-            p.parseInternal(null, "select [member] on axis(1.7) from sales", false, funTable);
+            p.parseInternal(null, query, false, funTable);
 
             fail("Must return an error");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Exception nested = (Exception) e.getCause();
-
-            assertTrue("Check valid error message", nested.getMessage().indexOf("The axis number must be a non-negative") >= 0);
-        }
-
-        try {
-            p.parseInternal(null, "select [member] on axis(-1) from sales", false, funTable);
-
-            fail("Must return an error");
-        }
-        catch (Exception e) {
-            Throwable t = e.getCause();
-
-            assertNotNull("Expect nested exception", t);
-            assertTrue("Check valid error message", t.getMessage().indexOf("Syntax error at line")
-                    >= 0);
-        }
-
-        try {
-            p.parseInternal(null, "select [member] on axis(" + (AxisOrdinal.instance.getMax()  + 1) + ") from sales", false, funTable);
-
-            fail("Must return an error");
-        }
-        catch (Exception e) {
-            Exception nested = (Exception) e.getCause();
-
-            assertTrue("Check valid error message", nested.getMessage()
-                    .indexOf("The axis number must be a non-negative")
-                    >= 0);
-        }
-
-        try {
-            p.parseInternal(null, "select [member] on axes(0) from sales", false, funTable);
-
-            fail("Must return an error");
-        }
-        catch (Exception e) {
-            Throwable t = e.getCause();
-
-            assertNotNull("Expect nested exception", t);
-            assertTrue("Check valid error message", t.getMessage().indexOf("Syntax error at line") >= 0);
+            assertTrue("Check valid error message", nested.getMessage().indexOf(expected) >= 0);
         }
     }
 
@@ -112,18 +89,18 @@ public class ParserTest extends TestCase {
 
         assertEquals("Number of axes", 2, axes.length);
         assertEquals("Axis index name must be correct",
-            AxisOrdinal.instance.getName(0), axes[0].getAxisName());
+            AxisOrdinal.enumeration.getName(0), axes[0].getAxisName());
         assertEquals("Axis index name must be correct",
-            AxisOrdinal.instance.getName(1), axes[1].getAxisName());
+            AxisOrdinal.enumeration.getName(1), axes[1].getAxisName());
 
         query = "select {[axis1mbr]} on aXiS(1), "
                 + "{[axis0mbr]} on AxIs(0) from cube";
 
         assertEquals("Number of axes", 2, axes.length);
         assertEquals("Axis index name must be correct",
-            AxisOrdinal.instance.getName(0), axes[0].getAxisName());
+            AxisOrdinal.enumeration.getName(0), axes[0].getAxisName());
         assertEquals("Axis index name must be correct",
-            AxisOrdinal.instance.getName(1), axes[1].getAxisName());
+            AxisOrdinal.enumeration.getName(1), axes[1].getAxisName());
 
         Object[] tuples = axes[0].getChildren();
         assertEquals("Column tuples", 1, tuples.length);
@@ -141,69 +118,71 @@ public class ParserTest extends TestCase {
     }
 
     public static class TestParser extends Parser {
-        ParserData mParserData;
+        ParserData parserData;
 
         public TestParser(ParserData pd) {
             super();
-            mParserData = pd;
+            parserData = pd;
         }
 
         protected Query makeQuery(Formula[] formulae, QueryAxis[] axes, String cube, Exp slicer, QueryPart[] cellProps) {
-            mParserData.setFormulae(formulae);
-            mParserData.setAxes(axes);
-            mParserData.setCube(cube);
-            mParserData.setSlicer(slicer);
-            mParserData.setCellProps(cellProps);
+            parserData.setFormulae(formulae);
+            parserData.setAxes(axes);
+            parserData.setCube(cube);
+            parserData.setSlicer(slicer);
+            parserData.setCellProps(cellProps);
 
             return null;
         }
     }
 
     public static class ParserData {
-        private Formula[] mFormulae;
-        private QueryAxis[] mAxes;
-        private String mCube;
-        private Exp mSlicer;
-        private QueryPart[] mCellProps;
+        private Formula[] formulae;
+        private QueryAxis[] axes;
+        private String cube;
+        private Exp slicer;
+        private QueryPart[] cellProps;
 
         public QueryAxis[] getAxes() {
-            return mAxes;
+            return axes;
         }
 
         public void setAxes(QueryAxis[] axes) {
-            mAxes = axes;
+            this.axes = axes;
         }
 
         public QueryPart[] getCellProps() {
-            return mCellProps;
+            return cellProps;
         }
 
         public void setCellProps(QueryPart[] cellProps) {
-            mCellProps = cellProps;
+            this.cellProps = cellProps;
         }
 
         public String getCube() {
-            return mCube;
+            return cube;
         }
 
         public void setCube(String cube) {
-            mCube = cube;
+            this.cube = cube;
         }
 
         public Formula[] getFormulae() {
-            return mFormulae;
+            return formulae;
         }
 
         public void setFormulae(Formula[] formulae) {
-            mFormulae = formulae;
+            this.formulae = formulae;
         }
 
         public Exp getSlicer() {
-            return mSlicer;
+            return slicer;
         }
 
         public void setSlicer(Exp slicer) {
-            mSlicer = slicer;
+            this.slicer = slicer;
         }
     }
 }
+
+// End ParserTest.java

@@ -2712,7 +2712,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "\"|#.00%|arrow='up'\", " +
                 "IIf((((([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]) * 100.0) < Parameter(\"LowerLimit\", NUMERIC, 150.0, \"Untere Grenze\")), " +
                 "\"|#.00%|arrow='down'\", \"|#.00%|arrow='right'\"))" + nl +
-                "select {[Measures].Members} ON columns" + nl +
+                "select {[Measures].Members} ON COLUMNS" + nl +
                 "from [Sales]" + nl, s);
     }
 
@@ -2731,7 +2731,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         assertEquals("with member [Measures].[Foo] as '1.0', " +
                 "format_string = \"##0.00\", " +
                 "funny = IIf((1.0 = 1.0), \"x\"\"y\", \"foo\")" + nl +
-                "select {[Measures].[Foo]} ON columns" + nl +
+                "select {[Measures].[Foo]} ON COLUMNS" + nl +
                 "from [Sales]" + nl,
                 s);
     }

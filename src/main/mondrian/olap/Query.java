@@ -175,10 +175,10 @@ public class Query extends QueryPart {
 
     private void normalizeAxes() {
         for (int i = 0; i < axes.length; i++) {
-            String correctName = AxisOrdinal.instance.getName(i);
-            if (!axes[i].getAxisName().equalsIgnoreCase(correctName)) {
+            AxisOrdinal correctOrdinal = AxisOrdinal.get(i);
+            if (axes[i].getAxisOrdinal() != correctOrdinal) {
                 for (int j = i + 1; j < axes.length; j++) {
-                    if (axes[j].getAxisName().equalsIgnoreCase(correctName)) {
+                    if (axes[j].getAxisOrdinal() == correctOrdinal) {
                         // swap axes
                         QueryAxis temp = axes[i];
                         axes[i] = axes[j];
@@ -305,50 +305,6 @@ public class Query extends QueryPart {
         return sw.toString();
     }
 
-    /**
-     * Returns the axis which the result axis is based on, taking into account
-     * any axis re-ordering.
-     *
-     * <p>Suppose that they've written
-     * <pre>select {} on rows, {} on pages from Sales</pre>
-     *
-     * <p>Then we will execute
-     * <pre>select {} on columns, {} on rows from Sales</pre>
-     *
-     * getLogicalAxis(0) = 1, meaning that axis 0 of the Plato cellset matches
-     * the rows (1) axis of their query; likewise, getLogicalAxis(1) = 2.
-     *
-     * @param iPhysicalAxis ordinal of axis in cellset
-     * @return axis label in original query (0 = columns, 1 = rows, etc.)
-     */
-    public int getLogicalAxis(int iPhysicalAxis) {
-        if ((iPhysicalAxis == AxisOrdinal.SLICER) ||
-                (iPhysicalAxis == axes.length)) {
-            return AxisOrdinal.SLICER; // slicer is never permuted
-        }
-        String axisName = axes[iPhysicalAxis].getAxisName();
-        final EnumeratedValues.Value value =
-            AxisOrdinal.instance.getValue(axisName);
-
-        return (value != null)
-            ? value.getOrdinal()
-            : AxisOrdinal.NONE;
-    }
-
-    /** The inverse of {@link #getLogicalAxis}. */
-    public int getPhysicalAxis(int iLogicalAxis) {
-        if (iLogicalAxis < 0) {
-            return iLogicalAxis;
-        }
-        String axisName = AxisOrdinal.instance.getName(iLogicalAxis);
-        for (int i = 0; i < axes.length; i++) {
-            if (axes[i].getAxisName().equalsIgnoreCase(axisName)) {
-                return i;
-            }
-        }
-        return AxisOrdinal.NONE;
-    }
-
     /** Returns the MDX query string. */
     public String toString() {
         resolve();
@@ -456,11 +412,12 @@ public class Query extends QueryPart {
     /**
      * Adds a level to an axis expression.
      *
-     * @pre AxisOrdinal.instance().isValid(axis)
+     * @pre AxisOrdinal.enumeration.isValid(axis)
      * @pre axis &lt; axes.length
      */
     public void addLevelToAxis(int axis, Level level) {
-        Util.assertPrecondition(AxisOrdinal.instance.isValid(axis), "AxisOrdinal.instance.isValid(axis)");
+        Util.assertPrecondition(AxisOrdinal.enumeration.isValid(axis), 
+                "AxisOrdinal.enumeration.isValid(axis)");
         Util.assertPrecondition(axis < axes.length, "axis < axes.length");
         axes[axis].addLevel(level);
     }
@@ -780,10 +737,11 @@ public class Query extends QueryPart {
      */
     public Hierarchy[] getMdxHierarchiesOnAxis(int axis) {
         if (axis >= axes.length) {
-            throw Util.getRes().newMdxAxisShowSubtotalsNotSupported(new Integer(axis));
+            throw Util.getRes().newMdxAxisShowSubtotalsNotSupported(
+                    new Integer(axis));
         }
         return collectHierarchies(
-                (axis == AxisOrdinal.SLICER) ?
+                (axis == AxisOrdinal.SlicerOrdinal) ?
                 slicer :
                 axes[axis].set);
     }

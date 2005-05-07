@@ -56,28 +56,36 @@ public class QueryAxis extends QueryPart {
      */
     public Exp set;
 
-    private final String axisName;
+    private final AxisOrdinal axisOrdinal;
 
     /** <code>showSubtotals</code> indicates if "(show\hide)Subtotals"
      * operation has been applied to axis*/
     private int  showSubtotals;
 
-    public QueryAxis(boolean nonEmpty,
+    public QueryAxis(
+            boolean nonEmpty,
             Exp set,
-            String axisName,
+            AxisOrdinal axisDef,
             int showSubtotals) {
         this.nonEmpty = nonEmpty;
         this.set = set;
-        this.axisName = axisName;
+        this.axisOrdinal = axisDef;
         this.showSubtotals = showSubtotals;
     }
 
     public Object clone() {
-        return new QueryAxis(nonEmpty, (Exp) set.clone(), axisName, showSubtotals);
+        return new QueryAxis(nonEmpty, (Exp) set.clone(), axisOrdinal, showSubtotals);
     }
 
     public String getAxisName() {
-        return axisName;
+        return axisOrdinal.getName();
+    }
+
+    /**
+     * Returns the ordinal of this axis, for example {@link AxisOrdinal#Rows}.
+     */
+    public AxisOrdinal getAxisOrdinal() {
+        return axisOrdinal;
     }
 
     /**
@@ -113,7 +121,7 @@ public class QueryAxis extends QueryPart {
     public void resolve(Validator resolver) {
         set = resolver.validate(set);
         if (!set.isSet()) {
-            throw Util.getRes().newMdxAxisIsNotSet( axisName );
+            throw Util.getRes().newMdxAxisIsNotSet(axisOrdinal.getName());
         }
     }
 
@@ -133,7 +141,7 @@ public class QueryAxis extends QueryPart {
         if (set != null) {
             set.unparse(pw);
         }
-        pw.print(" ON " + axisName);
+        pw.print(" ON " + axisOrdinal);
     }
 
     public void addLevel(Level level) {

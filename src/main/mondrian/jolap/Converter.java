@@ -82,7 +82,8 @@ class Converter {
                 }
             }
         }
-        return new QueryAxis(false, exp, AxisOrdinal.instance.getName(axisIndex), QueryAxis.SubtotalVisibility.Undefined);
+        return new QueryAxis(false, exp, AxisOrdinal.get(axisIndex),
+                QueryAxis.SubtotalVisibility.Undefined);
     }
 
     private Exp convert(MondrianSegment segment) throws OLAPException {
