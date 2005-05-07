@@ -232,7 +232,7 @@ scripts:</p>
 
 <blockquote>
   <p><code><i><b>$</b></i> mysqladmin create foodmart<b><i><br>
-	$</i></b> java -cp &quot;/mondrian/lib/mondrian.jar:/mondrian/lib/log4j-1.2.9.jar:/mondrian/lib/eigenbase-xom.jar:/usr/local/mysql/mysql-connector-java-3.0.16-ga-bin.jar&quot;<br>
+	$</i></b> java -cp &quot;/mondrian/lib/mondrian.jar:/mondrian/lib/log4j-1.2.9.jar:/mondrian/lib/eigenbase-xom.jar:/mondrian/lib/eigenbase-resgen.jar:/usr/local/mysql/mysql-connector-java-3.0.16-ga-bin.jar&quot;<br>
 &nbsp;&nbsp;&nbsp;&nbsp; mondrian.test.loader.MondrianFoodMartLoader<br>&nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -jdbcDrivers=com.mysql.jdbc.Driver<br>&nbsp;&nbsp;&nbsp;&nbsp; -inputFile=/mondrian/demo/FoodMartCreateData.sql <br>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL=&quot;jdbc:mysql://localhost/foodmart?user=root&amp;password=myAdmin&quot;</code><br>
 	</p>
@@ -242,7 +242,7 @@ scripts:</p>
 the Access database:</p>
 
 <blockquote>
-  <p><code><i><b>C:\mondrian&gt;</b></i> java -cp &quot;C:\mondrian\lib\mondrian.jar;C:\mondrian\lib\log4j-1.2.9.jar;C:\mondrian\lib\eigenbase-xom.jar;C:\mondrian\lib\postgres-jdbc.jar&quot;<br>
+  <p><code><i><b>C:\mondrian&gt;</b></i> java -cp &quot;C:\mondrian\lib\mondrian.jar;C:\mondrian\lib\log4j-1.2.9.jar;C:\mondrian\lib\eigenbase-xom.jar;C:\mondrian\lib\eigenbase-resgen.jar;C:\mondrian\lib\postgres-jdbc.jar&quot;<br>
 &nbsp;&nbsp;&nbsp;&nbsp; mondrian.test.loader.MondrianFoodMartLoader<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -jdbcDrivers=&quot;org.postgresql.Driver,sun.jdbc.odbc.JdbcOdbcDriver&quot;<br>
@@ -335,14 +335,12 @@ explicitly uses Xerces.&nbsp; Fyi,
 <a href="http://xml.apache.org/soap/faq/faq-for-WL6.1beta.html">this note</a>
 describes how to change Weblogic's default XML parser.</p><h3>
 <a name="Appendix_C_2_Xalan_and_Tomcat"><font color="#990000">A</font></a><font color="#990000"><a name="Appendix_A_2_Xalan_and_Tomcat">.2. JDK, Xalan and Tomcat</a></font></h3><p>Mondrian binaries, as shipped, require JDK 1.4.x, Xalan 2.6.0, and Tomcat
-5.0.25 or later. Things work better that way.</p><p>If you are running JDK 1.3.<i>x</i>, you will need to add <code>xml-apis.jar</code>
-and <code>xercesImpl.jar</code> to <code>mondrian.war</code> (since JDK 1.3 does
-not include the an XML parser), and copy <code>
-  xalan.jar</code> and <code>xml-apis.jar</code> from <code><i>XALAN_HOME</i>/bin</code>
+5.0.25 or later. Things work better that way.</p><p>If you are running JDK 1.3.<i>x</i>, 
+you will need some extra JAR files, because JDK 1.3 does
+not include the an XML parser. Copy <code>
+  xalan.jar</code> and <code>xml-apis.jar</code> 
 to <code><i>TOMCAT_HOME</i>/common/lib</code>. (or <code><i>TOMCAT_HOME</i>/common/endorsed</code>,
-if your version of Tomcat has one). </p>
-
-<p>If you get the configuration wrong, a typical error is</p><blockquote>
+if your version of Tomcat has one). If you get the configuration wrong, a typical error is</p><blockquote>
   <p><code>java.lang.VerifyError: Cannot inherit from final class<br>
 &nbsp; at java.lang.ClassLoader.defineClass0(Native Method)<br>
 &nbsp; at java.lang.ClassLoader.defineClass(ClassLoader.java:502)<br>
@@ -409,8 +407,7 @@ IDENTIFIED BY ‘foodmart’;</pre></blockquote><h4>Mondrian setup</h4><p>The Mondri
 &nbsp;&nbsp;&nbsp; <code>@set PATH=%JAVA_HOME%/bin;%PATH%</code><br>
       to use a ‘\’</li><li>Modify <code>ANT_HOME</code> to point to <code>%HOME_DRIVE%:&lt;ant
       path&gt;.</code> NOTE: Don't use version 1.6.x. It did not build the war
-      correctly. Use 1.5.x.</li><li>Modify <code>XALAN_HOME</code> to point to <code>%HOME_DRIVE%:&lt;xalan
-      path&gt;</code></li><li>Modify <code>JUNIT_HOME</code> to point to <code>%HOME_DRIVE%:&lt;junit
+      correctly. Use 1.5.x.</li><li>Modify <code>JUNIT_HOME</code> to point to <code>%HOME_DRIVE%:&lt;junit
       path&gt;</code></li><li>Modify <code>CATALINA_HOME</code> to point to <code>
       %HOME_DRIVE%:&lt;tomcat path&gt;</code></li><li>Modify the line<br>
 &nbsp;&nbsp;&nbsp; <code>@set
@@ -472,7 +469,7 @@ VERSION.txt"/&gt;</code></li></ol></li><li>Modify <code>MondrianProperties.java<
       mysql-connector-java-3.0.10-stable-bin.jar</code> <br>
       to <code>&lt;path to tomcat&gt;\common\endorsed</code></li><li>Copy <code>%DEV_ENVIRONMENT_LOCATION%\mondrian\mondrian.properties</code>
       <br>
-      to <code>&lt;path to tomcat&gt;\bin</code></li><li>Copy <code>&lt;path to xalan&gt;\bin\xalan.jar</code> <br>
+      to <code>&lt;path to tomcat&gt;\bin</code></li><li>Copy <code>%DEV_ENVIRONMENT_LOCATION%\mondrian\lib\xalan.jar</code> <br>
       to <code>&lt;path to tomcat&gt;\common\endorsed</code></li></ol></li><li>Retrieve the <code>jpivot.war</code> file from jpivot.<ol>
       <li>Download and copy <code>jpivot-1.0.2.zip</code> to a local directory.
       </li>

@@ -5,7 +5,7 @@ rem $Id$
 rem This software is subject to the terms of the Common Public License
 rem Agreement, available at the following URL:
 rem http://www.opensource.org/licenses/cpl.html.
-rem (C) Copyright 2001-2004 Kana Software, Inc. and others.
+rem (C) Copyright 2001-2005 Kana Software, Inc. and others.
 rem All Rights Reserved.
 rem You must accept the terms of that agreement to use this software.
 
@@ -32,13 +32,6 @@ if exist "%ANT_HOME%" goto antHomeOk
 echo ANT_HOME (%ANT_HOME%) does not exist
 goto end
 :antHomeOk
-
-if exist "%XALAN_HOME%" goto xalanHomeOk
-set XALAN_HOME=%HOME_DRIVE%:/xalan-j_2_6_0
-if exist "%XALAN_HOME%" goto xalanHomeOk
-echo XALAN_HOME (%XALAN_HOME%) does not exist
-goto end
-:xalanHomeOk
 
 if exist "%JUNIT_HOME%" goto junitHomeOk
 set JUNIT_HOME=%HOME_DRIVE%:/junit3.8.1

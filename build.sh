@@ -3,7 +3,7 @@
 # This software is subject to the terms of the Common Public License
 # Agreement, available at the following URL:
 # http://www.opensource.org/licenses/cpl.html.
-# Copyright (C) 2003 Julian Hyde
+# Copyright (C) 2003-2005 Julian Hyde
 # All Rights Reserved.
 # You must accept the terms of that agreement to use this software.
 
@@ -24,12 +24,6 @@ if [ ! -d "${ANT_HOME}" ]; then
   exit 1
 fi
 
-export XALAN_HOME="${PREFIX}/xalan-j_2_4_1"
-if [ ! -d "${XALAN_HOME}" ]; then
-  echo "XALAN_HOME (${XALAN_HOME}) does not exist"
-  exit 1
-fi
-
 export JUNIT_HOME="${PREFIX}/junit3.7"
 if [ ! -d "${JUNIT_HOME}" ]; then
   echo "JUNIT_HOME (${JUNIT_HOME}) does not exist"
@@ -42,7 +36,7 @@ if [ ! -d "${CATALINA_HOME}" ]; then
   exit 1
 fi
 
-export CLASSPATH="${SRCROOT}/classes${PS}${SRCROOT}/lib/javacup.jar${PS}${SRCROOT}/lib/eigenbase-xom.jar${PS}${SRCROOT}/lib/eigenbase-resgen.jar${PS}${XALAN_HOME}/bin/xml-apis.jar${PS}${XALAN_HOME}/bin/xercesImpl.jar${PS}${JUNIT_HOME}/junit.jar"
+export CLASSPATH="${SRCROOT}/classes${PS}${SRCROOT}/lib/javacup.jar${PS}${SRCROOT}/lib/eigenbase-xom.jar${PS}${SRCROOT}/lib/eigenbase-resgen.jar${PS}${JUNIT_HOME}/junit.jar"
 
 # To use Oracle, uncomment the next line and modify appropriately
 # set ORACLE_HOME="${PREFIX}/oracle/ora81"

@@ -16,7 +16,7 @@
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
-  <property name="version" value="1.1.2"/>
+  <property name="version" value="1.1.5"/>
 
   <!--
     ===================================================================
@@ -50,7 +50,6 @@
   <property name="war.file" value="${lib.dir}/${name}.war"/>
   <property name="jdk.home" value="${env.JAVA_HOME}"/>
   <property name="catalina.home" value="${env.CATALINA_HOME}"/>
-  <property name="xalan.home" value="${env.XALAN_HOME}"/>
   <property name="junit.home" value="${env.JUNIT_HOME}"/>
   <property name="generated.java.files" value="
 ${java.dir}/mondrian/olap/Parser.java,
@@ -64,11 +63,6 @@ ${lib.dir}/mondrian.war,
 ${lib.dir}/mondrian.xml,
 ${lib.dir}/web.xml,
 ${lib.dir}/index.jsp,
-${lib.dir}/ant.jar,
-${lib.dir}/optional.jar,
-${lib.dir}/xalan.jar,
-${lib.dir}/xercesImpl.jar,
-${lib.dir}/xml-apis.jar,
 demo/FoodMartCreateData.sql"/>
 
   <path id="project.classpath">
@@ -154,7 +148,6 @@ demo/FoodMartCreateData.sql"/>
   <echo>project.location      = ${project.location}</echo>
   <echo>jdk.home              = ${env.JAVA_HOME}</echo>
   <echo>catalina.home         = ${env.CATALINA_HOME}</echo>
-  <echo>xalan.home            = ${env.XALAN_HOME}</echo>
   <echo>junit.home            = ${env.JUNIT_HOME}</echo>
   <echo>mondrian.foodmart.catalogURL = ${mondrian.foodmart.catalogURL}</echo>
   <echo>==============================================================</echo>
@@ -569,7 +562,6 @@ You should set scp.user, scp.password and scp.path in build.properties">
     <target name="copy-jars">
       <copy todir="${lib.dir}">
         <fileset dir="${ant.home}/lib" includes="ant.jar,optional.jar"/>
-        <fileset dir="${xalan.home}/bin" includes="xalan.jar,xml-apis.jar,xercesImpl.jar"/>
         <fileset dir="${catalina.home}/common/lib" includes="jsp-api.jar"/>
       </copy>
       <copy todir="${lib.dir}">

@@ -773,7 +773,8 @@ public class MondrianFoodMartLoader {
     {
         try {
             StringBuffer buf = new StringBuffer();
-            if (jdbcOutput) {
+            // If we're [re]creating tables, no need to drop indexes.
+            if (jdbcOutput && !tables) {
                 try {
                     buf.append("DROP INDEX ")
                         .append(quoteId(indexName));
