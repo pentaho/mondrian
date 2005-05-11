@@ -243,9 +243,13 @@ class RolapHierarchy extends HierarchyBase {
         if (defaultMember == null) {
             List rootMembers = memberReader.getRootMembers();
             if (rootMembers.size() == 0) {
+                throw MondrianResource.instance().
+                newInvalidHierarchyCondition(this.getUniqueName());
+/*
                 throw Util.newError(
                     "cannot get default member: hierarchy " + getUniqueName() +
                     " has no root members");
+*/                    
             }
             defaultMember = (RolapMember) rootMembers.get(0);
         }

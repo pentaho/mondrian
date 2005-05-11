@@ -422,6 +422,13 @@
    <text>Number of members to be read exceeded limit ({0,number})</text>
 </exception>
 
+<!-- empty ,invalid Dimension -->
+
+<exception id="601010" name="InvalidHierarchyCondition" className="mondrian.olap.InvalidHierarchy">
+   <text>Hierarchy ''{0}'' is invalid (has no members)</text>
+</exception>
+
+
 <!-- ====================================================================== -->
 <!-- MessageRecorder-->
 <message id="7000000" name="TooManyMessageRecorderErrors">

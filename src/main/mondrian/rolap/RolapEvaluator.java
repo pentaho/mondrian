@@ -76,6 +76,13 @@ class RolapEvaluator implements Evaluator {
 
             Member member = scr.getHierarchyDefaultMember(hier);
 
+            // if there is no member, we cannot go on 
+            //  no way to produce a valid result
+            if (member == null)
+                throw MondrianResource.instance().
+                newInvalidHierarchyCondition(hier.getUniqueName());
+
+
             HierarchyUsage[] hierarchyUsages = cube.getUsages(hier);
             if (hierarchyUsages.length != 0) {
                 ((RolapMember) member).makeUniqueName(hierarchyUsages[0]);

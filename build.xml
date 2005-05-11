@@ -192,6 +192,7 @@ unzip-FoodMartCreateData"/>
         source="1.4">
       <include name="mondrian/olap/MondrianException.java" />
       <include name="mondrian/olap/ResultLimitExceeded.java" />
+      <include name="mondrian/olap/InvalidHierarchy.java" />
     </javac>
 
     <resgen srcdir="${java.dir}" resdir="${classes.dir}" locales="en_US,de_DE">
