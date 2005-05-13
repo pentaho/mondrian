@@ -4115,6 +4115,24 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
+     * the following query raised a classcast exception because
+     * an empty property evaluated as "NullMember"
+     * note: Store "HQ" does not have a "Store Manager" 
+     */
+    public void testEmptyProperty() {
+        String query = 	"select     {[Measures].[Unit Sales]} on columns, " +
+        "filter([Store].[Store Name].members," +
+        "[Store].currentmember.properties(\"Store Manager\")=\"Smith\") on rows" +
+        " from Sales";
+
+        String desiredResult = "Axis #0:" + nl + "{}" + nl + "Axis #1:" + nl + "{[Measures].[Unit Sales]}"
+                + nl + "Axis #2:" + nl
+                + "{[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]}" + nl
+                + "Row #0: 2,237" + nl;
+        runQueryCheckResult(query, desiredResult);
+    }
+
+    /**
      * This test modifies the Sales cube to contain both the regular usage
      * of the [Store] shared dimension, and another usage called [Other Store]
      * which is connected to the [Unit Sales] column

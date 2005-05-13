@@ -30,9 +30,7 @@ class PropertiesFunDef extends FunDefBase {
         String s = getStringArg(evaluator, args, 1, null);
         Object o = member.getPropertyValue(s);
         if (o == null) {
-            if (isValidProperty(member, s)) {
-                o = member.getHierarchy().getNullMember();
-            } else {
+            if (!isValidProperty(member, s)) {
                 throw new MondrianEvaluationException(
                         "Property '" + s +
                         "' is not valid for member '" + member + "'");
