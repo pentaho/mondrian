@@ -47,9 +47,9 @@
     </MeasureMap>
 
     <AggRule tag="default" >
-        <TableMatchRef refId="ta"/>
         <FactCountMatchRef refId="fca"/>
         <ForeignKeyMatch id="fka"/>
+        <TableMatchRef refId="ta"/>
         <LevelMapRef refId="lxx"/>
         <MeasureMapRef refId="mxx" />
     </AggRule>
