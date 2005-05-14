@@ -12,105 +12,122 @@
 
 package mondrian.rolap;
 
-/** 
- * If you have a collection of immutable objects, each of which has a unique
+/**
+ * Represents a set of bits.
+ *
+ * <p>Unlike {@link java.util.BitSet}, the number of bits cannot be changed
+ * after the BitKey is created. This allows us to optimize.
+ *
+ * <p>If you have a collection of immutable objects, each of which has a unique
  * positive number and you wish to do comparisons between subsets of those
  * objects testing for equality, then encoding the subsets as BitKeys is very
- * efficient. 
+ * efficient.
  *
- * There are two implements that target groups of objects with maximum number
- * less than 64 and less than 128; and there is one implements that is
+ * <p>There are two implementations that target groups of objects with maximum
+ * number less than 64 and less than 128; and there is one implements that is
  * general for any positive number.
  *
- * One caution: if the maximum number assigned to one of the
+ * <p>One caution: if the maximum number assigned to one of the
  * objects is large, then this representation might be sparse and therefore
  * not efficient.
- * 
+ *
  * @author <a>Richard M. Emberson</a>
- * @version 
+ * @version
  */
 public interface BitKey {
-    public abstract class Factory implements BitKey {
-        // this is 64
-        private final static int ADDRESS_BITS_PER_UNIT = 6;
-        private final static int BITS_PER_UNIT = 1 << ADDRESS_BITS_PER_UNIT;
-        private final static int BIT_INDEX_MASK = BITS_PER_UNIT - 1;
+    void setByPos(int pos, boolean value);
+    void setByPos(int pos);
+    boolean isSetByPos(int pos);
+    void clearByPos(int pos);
+    void clear();
 
+    /**
+     * Is every bit set in the parameter <code>bitKey</code> also set in
+     * <code>this</code>.
+     * If one switches <code>this</code> with the parameter <code>bitKey</code>
+     * one gets the equivalent of isSubSetOf.
+     *
+     * @param bitKey
+     */
+    boolean isSuperSetOf(BitKey bitKey);
+
+    public BitKey copy();
+
+    public abstract class Factory {
+
+        /**
+         * Creates a {@link BitKey} with a capacity for a given number of bits.
+         * @param size Number of bits in key
+         */
         public static BitKey makeBitKey(int size) {
             if (size < 0) {
                 String msg = "Negative size \"" + size + "\" not allowed";
                 throw new IllegalArgumentException(msg);
             }
-            switch (unitIndex(size)) {
-            case 0 :
+            switch (AbstractBitKey.chunkCount(size)) {
+            case 0:
+            case 1:
                 return new BitKey.Small();
-            case 1 :
+            case 2:
                 return new BitKey.Mid128();
-            default :
+            default:
                 return new BitKey.Big(size);
             }
         }
-        
-        /** 
-         * Translate a number into an bit position, i.e., 
-         *      0 becomes 0x000001
-         *      1 becomes 0x000010
-         *      2 becomes 0x000100 
-         *      3 becomes 0x001000 
-         * etc.
-         * 
-         * @param pos 
-         * @return 
+    }
+
+    /**
+     * Abstract implementation of {@link BitKey}.
+     */
+    abstract class AbstractBitKey implements BitKey {
+        protected AbstractBitKey() {
+        }
+
+        // chunk is a long, which has 64 bits
+        protected static final int ChunkBitCount = 6;
+        protected static final int Mask = 63;
+
+        /**
+         * Creates a chunk containing a single bit.
          */
         protected static long bit(int pos) {
-            return (1L << (pos & BIT_INDEX_MASK));
+            return (1L << (pos & Mask));
         }
-        
-        /** 
-         * Convert size into which 64 bit segment it is in, i.e.,
-         *      0-63    becomes 0
-         *      64-127  becomes 1
-         *      128-191 becomes 2
-         * etc.
-         * 
-         * @param size 
-         * @return 
+
+        /**
+         * Returns which chunk a given bit falls into.
+         * Bits 0 to 63 fall in chunk 0, bits 64 to 127 fall into chunk 1.
          */
-        protected static int unitIndex(int size) {
-            return (size >> ADDRESS_BITS_PER_UNIT);
+        protected static int chunkPos(int size) {
+            return (size >> ChunkBitCount);
         }
 
-        protected Factory() {}
-        protected Factory(Factory factory) {}
+        /**
+         * Returns the number of chunks required for a given number of bits.
+         * 0 bits requires 0 chunks; 1 - 64 bits requires 1 chunk; etc.
+         */
+        protected static int chunkCount(int size) {
+            return (size + 63) >> ChunkBitCount;
+        }
 
-        public void setByPos(int pos, boolean value) {
+        public final void setByPos(int pos, boolean value) {
             if (value) {
                 setByPos(pos);
             } else {
                 clearByPos(pos);
             }
         }
-        public abstract void setByPos(int pos);
-        public abstract boolean isSetByPos(int pos);
-        public abstract void clearByPos(int pos);
-        public abstract void clear();
-        public abstract boolean isSuperSetOf(BitKey bitKey);
-
-        public abstract BitKey copy();
     }
-    
-    /** 
-     * Good for sizes less than 64.  
-     * 
+
+    /**
+     * Implementation of {@link BitKey} for bit counts less than 64.
      */
-    public class Small extends Factory {
+    public class Small extends AbstractBitKey {
         private long bits;
 
         private Small() {
-            super();
         }
         private Small(Small small) {
-            super(small);
             this.bits = small.bits;
         }
         public void setByPos(int pos) {
@@ -189,19 +206,17 @@ public interface BitKey {
             return new Small(this);
         }
     }
-    /** 
-     * Good for sizes less than 128.  
-     * 
+
+    /**
+     * Implementation of {@link BitKey} good for sizes less than 128.
      */
-    public class Mid128 extends Factory {
+    public class Mid128 extends AbstractBitKey {
         private long bits0;
         private long bits1;
 
         private Mid128() {
-            super();
         }
         private Mid128(Mid128 mid) {
-            super(mid);
             this.bits0 = mid.bits0;
             this.bits1 = mid.bits1;
         }
@@ -236,7 +251,7 @@ public interface BitKey {
                 return ((this.bits0 | other.bits) == this.bits0);
             } else if (bitKey instanceof BitKey.Mid128) {
                 BitKey.Mid128 other = (BitKey.Mid128) bitKey;
-                return ((this.bits0 | other.bits0) == this.bits0) && 
+                return ((this.bits0 | other.bits0) == this.bits0) &&
                     ((this.bits1 | other.bits1) == this.bits1);
             } else if (bitKey instanceof BitKey.Big) {
                 BitKey.Big other = (BitKey.Big) bitKey;
@@ -264,7 +279,7 @@ public interface BitKey {
                 return (this.bits0 == other.bits) && (this.bits1 == 0);
             } else if (o instanceof BitKey.Mid128) {
                 BitKey.Mid128 other = (BitKey.Mid128) o;
-                return (this.bits0 == other.bits0) && 
+                return (this.bits0 == other.bits0) &&
                     (this.bits1 == other.bits1);
             } else if (o instanceof BitKey.Big) {
                 BitKey.Big other = (BitKey.Big) o;
@@ -301,39 +316,33 @@ public interface BitKey {
             return new Mid128(this);
         }
     }
-    
-    /** 
-     * Bits of this (so to speak) are taken from java.util.BitSet. Since we
-     * know the maximum size right from the start, we do not need the dynamics
-     * resizing found in BitSet.
+
+    /**
+     * Implementation of {@link BitKey} with more than 64 bits. Similar to
+     * {@link java.util.BitSet}, but does not require dynamic resizing.
      */
-    public class Big extends Factory {
+    public class Big extends AbstractBitKey {
         private long[] bits;
 
         private Big(int size) {
-            super();
-            this.bits = new long[(unitIndex(size-1) + 1)];
+            bits = new long[chunkCount(size)];
         }
         private Big(Big big) {
-            super(big);
-            this.bits = new long[big.bits.length];
-            System.arraycopy(big.bits, 0, this.bits, 0, big.bits.length);
+            bits = (long[]) big.bits.clone();
         }
         public void setByPos(int pos) {
-            int unitIndex = unitIndex(pos);
-            bits[unitIndex] |= bit(pos);
+            bits[chunkPos(pos)] |= bit(pos);
         }
+
         public boolean isSetByPos(int pos) {
-            int unitIndex = unitIndex(pos);
-            return ((bits[unitIndex] & bit(pos)) != 0);
+            return (bits[chunkPos(pos)] & bit(pos)) != 0;
         }
         public void clearByPos(int pos) {
-            int unitIndex = unitIndex(pos);
-            bits[unitIndex] &= ~bit(pos);
+            bits[chunkPos(pos)] &= ~bit(pos);
         }
         public void clear() {
-            for (int i = 0; i < this.bits.length; i++) {
-                this.bits[i] = 0;
+            for (int i = 0; i < bits.length; i++) {
+                bits[i] = 0;
             }
         }
         public boolean isSuperSetOf(BitKey bitKey) {
@@ -342,7 +351,7 @@ public interface BitKey {
                 return ((this.bits[0] | other.bits) == this.bits[0]);
             } else if (bitKey instanceof BitKey.Mid128) {
                 BitKey.Mid128 other = (BitKey.Mid128) bitKey;
-                return ((this.bits[0] | other.bits0) == this.bits[0]) && 
+                return ((this.bits[0] | other.bits0) == this.bits[0]) &&
                     ((this.bits[1] | other.bits1) == this.bits[1]);
             } else if (bitKey instanceof BitKey.Big) {
                 BitKey.Big other = (BitKey.Big) bitKey;
@@ -440,21 +449,6 @@ public interface BitKey {
             return new Big(this);
         }
     }
-    void setByPos(int pos, boolean value);
-    void setByPos(int pos);
-    boolean isSetByPos(int pos);
-    void clearByPos(int pos);
-    void clear();
-    
-    /** 
-     * Is every bit set in the parameter <code>bitKey</code> also set in 
-     * <code>this</code>. 
-     * If one switches <code>this</code> with the parameter <code>bitKey</code>
-     * one gets the equivalent of isSubSetOf.
-     * 
-     * @param bitKey 
-     */
-    boolean isSuperSetOf(BitKey bitKey);
-
-    public BitKey copy();
 }
+
+// End BitKey.java

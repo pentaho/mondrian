@@ -81,8 +81,8 @@ Revision is $Id$
         </Attribute>
         <Code><![CDATA[
             /**
-             * Looks up the base dimension of this dimension. If this is a usage
-             * of a shared dimension, returns the referenced dimension;
+             * Looks up the base dimension of this dimension. If this is a
+             * usage of a shared dimension, returns the referenced dimension;
              * otherwise returns the dimension itself.
              *
              * <p>Never returns null; if the dimension cannot be
@@ -116,8 +116,8 @@ Revision is $Id$
         <Attribute name="enabled" type="Boolean"  
                     required="false" default="true">
             <Doc>
-                Is this element enabled - if true, then the Cube is 
-                realized otherwise it ignored.
+                Whether element is enabled - if true, then the Cube is 
+                realized otherwise it is ignored.
             </Doc>
         </Attribute>
         <Object name="fact" type="Relation" required="true">
@@ -160,8 +160,8 @@ Revision is $Id$
         <Attribute name="enabled" type="Boolean"  
                     required="false" default="true">
             <Doc>
-                Is this element enabled - if true, then the Virtual Cube is 
-                realized otherwise it ignored.
+                Whether this element is enabled - if true, then the Virtual
+                Cube is realized otherwise it is ignored.
             </Doc>
         </Attribute>
         <Attribute name="name"><Doc></Doc></Attribute>
@@ -571,8 +571,10 @@ Revision is $Id$
         </Attribute>
         <Attribute name="formatter" required="false">
             <Doc>
-                Name of a formatter class for the appropriate property value being displayed.
-                The class must implement the mondrian.olap.PropertyFormatter interface.
+                Name of a formatter class for the appropriate property value
+                being displayed.
+                The class must implement the mondrian.olap.PropertyFormatter
+                interface.
             </Doc>
         </Attribute>
         <Attribute name="caption" required="false">
@@ -860,9 +862,9 @@ Revision is $Id$
                 return (alias != null) ? alias : name;
             }
             public String toString() {
-                return (schema == null)
-                    ? name
-                    : schema + "." + name;
+                return (schema == null) ?
+                    name :
+                    schema + "." + name;
             }
             public Relation find(String seekAlias) {
                 return (seekAlias.equals(name)) ? this : null;

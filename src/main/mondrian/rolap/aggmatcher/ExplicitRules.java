@@ -12,52 +12,37 @@
 
 package mondrian.rolap.aggmatcher;
 
-import mondrian.rolap.MessageRecorder;
-import mondrian.rolap.RolapCube;
-import mondrian.rolap.RolapLevel;
-import mondrian.rolap.RolapStar;
-import mondrian.olap.Category;
-import mondrian.olap.Member;
-import mondrian.olap.Hierarchy;
-import mondrian.olap.MondrianDef;
-import mondrian.olap.MondrianResource;
-import mondrian.olap.Util;
-import mondrian.olap.SchemaReader;
-import mondrian.rolap.sql.SqlQuery;
-
+import mondrian.olap.*;
+import mondrian.rolap.*;
 import org.apache.log4j.Logger;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.regex.Pattern;
 
-/** 
+/**
  * A class containing a RolapCube's Aggregate tables exclude/include
  * criteria.
- * 
+ *
  * @author <a>Richard M. Emberson</a>
- * @version 
+ * @version
  */
 public class ExplicitRules {
     private static final Logger LOGGER = Logger.getLogger(ExplicitRules.class);
 
     private static final MondrianResource mres = MondrianResource.instance();
-    
-    /** 
+
+    /**
      * Is the given tableName explicitly excluded from consideration as a
      * candidate aggregate table? return true if it is to be excluded and false
      * otherwise.
-     * 
-     * @param tableName 
-     * @param aggGroups 
-     * @return 
+     *
+     * @param tableName
+     * @param aggGroups
+     * @return
      */
-    public static boolean excludeTable(final String tableName, 
+    public static boolean excludeTable(final String tableName,
                                        final List aggGroups) {
         for (Iterator it = aggGroups.iterator(); it.hasNext(); ) {
             ExplicitRules.Group group = (ExplicitRules.Group) it.next();
@@ -67,18 +52,18 @@ public class ExplicitRules {
         }
         return false;
     }
-    
-    /** 
+
+    /**
      * Return the ExplicitRules.TableDef for a tableName that is a candidate
      * aggregate table. If null is returned, then the default rules are used
      * otherwise if not null, then the ExplicitRules.TableDef is used.
-     * 
-     * @param tableName 
-     * @param aggGroups 
-     * @return 
+     *
+     * @param tableName
+     * @param aggGroups
+     * @return
      */
     public static ExplicitRules.TableDef getIncludeByTableDef(
-                                                    final String tableName, 
+                                                    final String tableName,
                                                     final List aggGroups) {
         for (Iterator it = aggGroups.iterator(); it.hasNext(); ) {
             ExplicitRules.Group group = (ExplicitRules.Group) it.next();
@@ -90,42 +75,42 @@ public class ExplicitRules {
         return null;
     }
 
-    /** 
+    /**
      * This class forms a collection of aggregate table explicit rules for a
-     * given cube.  
-     * 
+     * given cube.
+     *
      */
     public static class Group {
 
-        /** 
+        /**
          * Make an ExplicitRules.Group for a given RolapCube given the
-         * MondrianDef.Cube associated with that cube. 
-         * 
-         * @param cube 
-         * @param xmlCube 
-         * @return 
+         * MondrianDef.Cube associated with that cube.
+         *
+         * @param cube
+         * @param xmlCube
+         * @return
          */
-        public static ExplicitRules.Group make(final RolapCube cube, 
+        public static ExplicitRules.Group make(final RolapCube cube,
                                              final MondrianDef.Cube xmlCube) {
             Group group = new Group(cube);
 
             MondrianDef.Relation relation = xmlCube.fact;
 
             if (relation instanceof MondrianDef.Table) {
-                MondrianDef.AggExclude[] aggExcludes = 
+                MondrianDef.AggExclude[] aggExcludes =
                     ((MondrianDef.Table) relation).getAggExcludes();
                 if (aggExcludes != null) {
                     for (int i = 0; i < aggExcludes.length; i++) {
-                        ExplicitRules.Exclude exclude = 
+                        ExplicitRules.Exclude exclude =
                             ExplicitRules.make(aggExcludes[i]);
                         group.addExclude(exclude);
                     }
                 }
-                MondrianDef.AggTable[] aggTables = 
+                MondrianDef.AggTable[] aggTables =
                     ((MondrianDef.Table) relation).getAggTables();
                 if (aggTables != null) {
                     for (int i = 0; i < aggTables.length; i++) {
-                        ExplicitRules.TableDef tableDef = 
+                        ExplicitRules.TableDef tableDef =
                             ExplicitRules.TableDef.make(aggTables[i], group);
                         group.addTableDef(tableDef);
                     }
@@ -133,7 +118,7 @@ public class ExplicitRules {
             } else {
                 String msg = mres.getCubeRelationNotTable(
                         cube.getName(),
-                        relation.getClass().getName()   
+                        relation.getClass().getName()
                     );
                 LOGGER.warn(msg);
             }
@@ -147,54 +132,53 @@ public class ExplicitRules {
         private final RolapCube cube;
         private List tableDefs;
         private List excludes;
-        private boolean loaded;
 
         public Group(final RolapCube cube) {
             this.cube = cube;
             this.excludes = Collections.EMPTY_LIST;
             this.tableDefs = Collections.EMPTY_LIST;
         }
-        
-        /** 
-         * Get the RolapCube associated with this Group. 
-         * 
-         * @return 
+
+        /**
+         * Get the RolapCube associated with this Group.
+         *
+         * @return
          */
         public RolapCube getCube() {
             return cube;
         }
-        /** 
-         * Get the RolapStar associated with this Group's RolapCube. 
-         * 
-         * @return 
+        /**
+         * Get the RolapStar associated with this Group's RolapCube.
+         *
+         * @return
          */
         public RolapStar getStar() {
             return getCube().getStar();
         }
-        
-        /** 
-         * Get the name of this Group (its the name of its RolapCube). 
-         * 
-         * @return 
+
+        /**
+         * Get the name of this Group (its the name of its RolapCube).
+         *
+         * @return
          */
         public String getName() {
             return getCube().getName();
         }
-        
-        /** 
-         * Are there any rules associated with this Group. 
-         * 
-         * @return 
+
+        /**
+         * Are there any rules associated with this Group.
+         *
+         * @return
          */
         public boolean hasRules() {
             return (excludes != Collections.EMPTY_LIST) ||
                 (tableDefs != Collections.EMPTY_LIST);
         }
-        
-        /** 
-         * Add an exclude rule. 
-         * 
-         * @param exclude 
+
+        /**
+         * Add an exclude rule.
+         *
+         * @param exclude
          */
         public void addExclude(final ExplicitRules.Exclude exclude) {
             if (excludes == Collections.EMPTY_LIST) {
@@ -202,11 +186,11 @@ public class ExplicitRules {
             }
             excludes.add(exclude);
         }
-        
-        /** 
-         * Add a name or pattern (table) rule. 
-         * 
-         * @param tableDef 
+
+        /**
+         * Add a name or pattern (table) rule.
+         *
+         * @param tableDef
          */
         public void addTableDef(final ExplicitRules.TableDef tableDef) {
             if (tableDefs == Collections.EMPTY_LIST) {
@@ -214,12 +198,12 @@ public class ExplicitRules {
             }
             tableDefs.add(tableDef);
         }
-        
-        /** 
-         * Is the given tableName excluded. 
-         * 
-         * @param tableName 
-         * @return 
+
+        /**
+         * Is the given tableName excluded.
+         *
+         * @param tableName
+         * @return
          */
         public boolean excludeTable(final String tableName) {
             // See if the table is explicitly, by name, excluded
@@ -231,12 +215,12 @@ public class ExplicitRules {
             }
             return false;
         }
-        
-        /** 
-         * Is the given tableName included either by exact name or by pattern. 
-         * 
-         * @param tableName 
-         * @return 
+
+        /**
+         * Is the given tableName included either by exact name or by pattern.
+         *
+         * @param tableName
+         * @return
          */
         public ExplicitRules.TableDef getIncludeByTableDef(final String tableName) {
             // An exact match on a NameTableDef takes precedences over a
@@ -261,11 +245,11 @@ public class ExplicitRules {
             return null;
         }
 
-        /** 
+        /**
          * Get the database table name associated with this Group's RolapStar's
          * fact table.
-         * 
-         * @return 
+         *
+         * @return
          */
         public String getTableName() {
             RolapStar.Table table = getStar().getFactTable();
@@ -273,11 +257,11 @@ public class ExplicitRules {
             return relation.getAlias();
         }
 
-        /** 
+        /**
          * Get the database schema name associated with this Group's RolapStar's
          * fact table.
-         * 
-         * @return 
+         *
+         * @return
          */
         public String getSchemaName() {
             String schema = null;
@@ -291,27 +275,27 @@ public class ExplicitRules {
             }
             return schema;
         }
-        /** 
-         * Get the database catalog name associated with this Group's 
-         * RolapStar's fact table. 
+        /**
+         * Get the database catalog name associated with this Group's
+         * RolapStar's fact table.
          * Note: this currently this always returns null.
-         * 
-         * @return 
+         *
+         * @return
          */
         public String getCatalogName() {
             return null;
         }
 
-        /** 
-         * Validate the content and structure of this Group. 
-         * 
-         * @param msgRecorder 
+        /**
+         * Validate the content and structure of this Group.
+         *
+         * @param msgRecorder
          */
         public void validate(final MessageRecorder msgRecorder) {
             msgRecorder.pushContextName(getName());
             try {
                 for (Iterator it = this.tableDefs.iterator(); it.hasNext(); ) {
-                    ExplicitRules.TableDef tableDef = 
+                    ExplicitRules.TableDef tableDef =
                         (ExplicitRules.TableDef) it.next();
                     tableDef.validate(msgRecorder);
                 }
@@ -342,7 +326,7 @@ public class ExplicitRules {
             pw.println("TableDefs: [");
             Iterator it = this.tableDefs.iterator();
             while (it.hasNext()) {
-                ExplicitRules.TableDef tableDef = 
+                ExplicitRules.TableDef tableDef =
                     (ExplicitRules.TableDef) it.next();
                 tableDef.print(pw, subsubprefix);
             }
@@ -352,29 +336,28 @@ public class ExplicitRules {
         }
 
         public class Table {
-            private boolean loaded;
             private final String tableName;
             private final ExplicitRules.TableDef tableDef;
 
-            private Table(final String tableName, 
+            private Table(final String tableName,
                           final ExplicitRules.TableDef tableDef) {
                 this.tableName = tableName;
                 this.tableDef = tableDef;
             }
-            
-            /** 
-             * Get the database name of the table. 
-             * 
-             * @return 
+
+            /**
+             * Get the database name of the table.
+             *
+             * @return
              */
             public String getTableName() {
                 return this.tableName;
             }
-            
-            /** 
-             * Get the TableDef instance. 
-             * 
-             * @return 
+
+            /**
+             * Get the TableDef instance.
+             *
+             * @return
              */
             public ExplicitRules.TableDef getTableDef() {
                 return this.tableDef;
@@ -412,23 +395,23 @@ public class ExplicitRules {
     }
     private static Exclude make(final MondrianDef.AggExclude aggExclude) {
         return (aggExclude.getNameAttribute() != null)
-                ? new ExcludeName(aggExclude.getNameAttribute(), 
+                ? new ExcludeName(aggExclude.getNameAttribute(),
                                   aggExclude.isIgnoreCase())
-                : (Exclude) new ExcludePattern(aggExclude.getPattern(), 
+                : (Exclude) new ExcludePattern(aggExclude.getPattern(),
                                                aggExclude.isIgnoreCase());
     }
 
-    /** 
+    /**
      * Interface of an Exclude type. There are two implementations, one that
      * excludes by exact name match (as an option, ignore case) and the second
-     * that matches a regular expression.  
+     * that matches a regular expression.
      */
     private interface Exclude {
-        /** 
-         * Return true if the tableName is exculed. 
-         * 
-         * @param tableName 
-         * @return 
+        /**
+         * Return true if the tableName is exculed.
+         *
+         * @param tableName
+         * @return
          */
         boolean isExcluded(final String tableName);
 
@@ -437,52 +420,52 @@ public class ExplicitRules {
         void print(final PrintWriter pw, final String prefix);
     }
 
-    /** 
+    /**
      * This class is an exact name matching Exclude implementation.
      */
     private static class ExcludeName implements Exclude {
         private final String name;
         private final boolean ignoreCase;
 
-        private ExcludeName(final String name, final boolean ignoreCase) { 
+        private ExcludeName(final String name, final boolean ignoreCase) {
             this.name = name;
             this.ignoreCase = ignoreCase;
         }
-        
-        /** 
-         * Get the name that is to be matched. 
-         * 
-         * @return 
+
+        /**
+         * Get the name that is to be matched.
+         *
+         * @return
          */
         public String getName() {
             return name;
         }
-        
-        /** 
-         * Returns true if the matching can ignore case. 
-         * 
-         * @return 
+
+        /**
+         * Returns true if the matching can ignore case.
+         *
+         * @return
          */
         public boolean isIgnoreCase() {
             return ignoreCase;
         }
-        
-        /** 
-         * Return true if the tableName is exculed. 
-         * 
-         * @param tableName 
-         * @return 
+
+        /**
+         * Return true if the tableName is exculed.
+         *
+         * @param tableName
+         * @return
          */
         public boolean isExcluded(final String tableName) {
-            return (this.ignoreCase) 
+            return (this.ignoreCase)
                 ? this.name.equals(tableName)
                 : this.name.equalsIgnoreCase(tableName);
         }
-        
-        /** 
+
+        /**
          * Validate that the exclude name matches the table pattern.
-         * 
-         * @param msgRecorder 
+         *
+         * @param msgRecorder
          */
         public void validate(final MessageRecorder msgRecorder) {
             msgRecorder.pushContextName("ExcludeName");
@@ -492,20 +475,20 @@ public class ExplicitRules {
 
 /*
 RME TODO
-                // If name does not match the PatternTableDef pattern, 
+                // If name does not match the PatternTableDef pattern,
                 // then issue warning.
                 // Why, because no table with the exclude's name will
                 // ever match the pattern, so the exclude is superfluous.
                 // This is best effort.
                 Pattern pattern = ExplicitRules.PatternTableDef.this.getPattern();
-                boolean patternIgnoreCase = 
+                boolean patternIgnoreCase =
                             ExplicitRules.PatternTableDef.this.isIgnoreCase();
                 boolean ignoreCase = isIgnoreCase();
 
                 // If pattern is ignoreCase and name is any case or pattern
                 // is not ignoreCase and name is not ignoreCase, then simply
                 // see if name matches.
-                // Else pattern in not ignoreCase and name is ignoreCase, 
+                // Else pattern in not ignoreCase and name is ignoreCase,
                 // then pattern could be "AB.*" and name "abc".
                 // Here "abc" would name, but not pattern - but who cares
                 if (patternIgnoreCase || ! ignoreCase) {
@@ -513,7 +496,7 @@ RME TODO
                         msgRecorder.reportWarning(
                             mres.getSuperfluousExludeName(
                                         msgRecorder.getContext(),
-                                        name, 
+                                        name,
                                         pattern.pattern()));
                     }
                 }
@@ -538,39 +521,39 @@ RME TODO
         }
     }
 
-    /** 
-     * This class is a regular expression base name matching Exclude 
+    /**
+     * This class is a regular expression base name matching Exclude
      * implementation.
      */
     private static class ExcludePattern implements Exclude {
         private final Pattern pattern;
 
-        private ExcludePattern(final String pattern, 
-                               final boolean ignoreCase) { 
-            this.pattern = (ignoreCase) 
+        private ExcludePattern(final String pattern,
+                               final boolean ignoreCase) {
+            this.pattern = (ignoreCase)
                 ? Pattern.compile(pattern, Pattern.CASE_INSENSITIVE)
                 : Pattern.compile(pattern);
         }
 
-        /** 
-         * Return true if the tableName is exculed. 
-         * 
-         * @param tableName 
-         * @return 
+        /**
+         * Return true if the tableName is exculed.
+         *
+         * @param tableName
+         * @return
          */
         public boolean isExcluded(final String tableName) {
             return pattern.matcher(tableName).matches();
         }
-        
-        /** 
-         * Validate that the exclude pattern overlaps with table pattern. 
-         * 
-         * @param msgRecorder 
+
+        /**
+         * Validate that the exclude pattern overlaps with table pattern.
+         *
+         * @param msgRecorder
          */
         public void validate(final MessageRecorder msgRecorder) {
             msgRecorder.pushContextName("ExcludePattern");
             try {
-                checkAttributeString(msgRecorder, 
+                checkAttributeString(msgRecorder,
                                      pattern.pattern(),
                                      "pattern");
                 //String context = msgRecorder.getContext();
@@ -596,7 +579,7 @@ RME TODO
         }
     }
 
-    /** 
+    /**
      * This is the base class for the exact name based and name pattern based
      * aggregate table mapping definitions. It contains the mappings for the
      * fact count column, optional ignore columns, foreign key mappings,
@@ -604,40 +587,40 @@ RME TODO
      */
     public static abstract class TableDef {
 
-        /** 
+        /**
          * Given a MondrianDef.AggTable instance create a TableDef instance
-         * which is either a NameTableDef or PatternTableDef. 
-         * 
-         * @param aggTable 
-         * @param group 
-         * @return 
+         * which is either a NameTableDef or PatternTableDef.
+         *
+         * @param aggTable
+         * @param group
+         * @return
          */
-        static ExplicitRules.TableDef make(final MondrianDef.AggTable aggTable, 
+        static ExplicitRules.TableDef make(final MondrianDef.AggTable aggTable,
                                          final ExplicitRules.Group group) {
                 return (aggTable instanceof MondrianDef.AggName)
                     ? ExplicitRules.NameTableDef.make(
                             (MondrianDef.AggName) aggTable, group)
-                    : (ExplicitRules.TableDef) 
+                    : (ExplicitRules.TableDef)
                         ExplicitRules.PatternTableDef.make(
                             (MondrianDef.AggPattern) aggTable, group);
         }
-        
-        /** 
+
+        /**
          * This method extracts information from the MondrianDef.AggTable and
          * places it in the ExplicitRules.TableDef. This code is used for both
          * the NameTableDef and PatternTableDef subclasses of TableDef (it
-         * extracts information common to both). 
-         * 
-         * @param tableDef 
-         * @param aggTable 
+         * extracts information common to both).
+         *
+         * @param tableDef
+         * @param aggTable
          */
-        private static void add(final ExplicitRules.TableDef tableDef, 
+        private static void add(final ExplicitRules.TableDef tableDef,
                                 final MondrianDef.AggTable aggTable) {
 
 
             tableDef.setFactCountName(aggTable.getAggFactCount().getColumnName());
 
-            MondrianDef.AggIgnoreColumn[] ignores = 
+            MondrianDef.AggIgnoreColumn[] ignores =
                         aggTable.getAggIgnoreColumns();
 
             if (ignores != null) {
@@ -666,36 +649,36 @@ RME TODO
                 }
             }
         }
-        private static void addTo(final ExplicitRules.TableDef tableDef, 
+        private static void addTo(final ExplicitRules.TableDef tableDef,
                                   final MondrianDef.AggLevel aggLevel) {
-            addLevelTo(tableDef, 
-                       aggLevel.getNameAttribute(), 
+            addLevelTo(tableDef,
+                       aggLevel.getNameAttribute(),
                        aggLevel.getColumnName());
         }
-        private static void addTo(final ExplicitRules.TableDef tableDef, 
+        private static void addTo(final ExplicitRules.TableDef tableDef,
                                   final MondrianDef.AggMeasure aggMeasure) {
-            addMeasureTo(tableDef, 
-                         aggMeasure.getNameAttribute(), 
+            addMeasureTo(tableDef,
+                         aggMeasure.getNameAttribute(),
                          aggMeasure.getColumn());
         }
 
 
-        public static void addLevelTo(final ExplicitRules.TableDef tableDef, 
-                                      final String name, 
+        public static void addLevelTo(final ExplicitRules.TableDef tableDef,
+                                      final String name,
                                       final String columnName) {
             Level level = tableDef.new Level(name, columnName);
             tableDef.add(level);
         }
-        public static void addMeasureTo(final ExplicitRules.TableDef tableDef, 
-                                        final String name, 
+        public static void addMeasureTo(final ExplicitRules.TableDef tableDef,
+                                        final String name,
                                         final String column) {
             Measure measure = tableDef.new Measure(name, column);
             tableDef.add(measure);
         }
 
-        /** 
+        /**
          * This class is used to map from a Level's symbolic name,
-         * [Time].[Year] to the aggregate table's column name, TIME_YEAR.  
+         * [Time].[Year] to the aggregate table's column name, TIME_YEAR.
          */
         class Level {
             private final String name;
@@ -706,41 +689,41 @@ RME TODO
                 this.name = name;
                 this.columnName = columnName;
             }
-            
-            /** 
-             * Get the symbolic name, the level name. 
-             * 
-             * @return 
+
+            /**
+             * Get the symbolic name, the level name.
+             *
+             * @return
              */
             public String getName() {
                 return name;
             }
-            
-            /** 
-             * Get the foreign key column name of the aggregate table. 
-             * 
-             * @return 
+
+            /**
+             * Get the foreign key column name of the aggregate table.
+             *
+             * @return
              */
             public String getColumnName() {
                 return columnName;
             }
-            
-            /** 
-             * Get the RolapLevel associated with level name. 
-             * 
-             * @return 
+
+            /**
+             * Get the RolapLevel associated with level name.
+             *
+             * @return
              */
             public RolapLevel getRolapLevel() {
                 return rlevel;
             }
 
-            /** 
-             * Validates a level's name  
+            /**
+             * Validates a level's name
              *    AggLevel name is a [hierarchy usage name].[level name]
              * Check that is of length 2, starts with a hierarchy and
              * the "level name" exists.
-             * 
-             * @param msgRecorder 
+             *
+             * @param msgRecorder
              */
             public void validate(final MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName("Level");
@@ -761,22 +744,22 @@ RME TODO
 
                         RolapCube cube = ExplicitRules.TableDef.this.getCube();
                         SchemaReader schemaReader = cube.getSchemaReader();
-                        RolapLevel level = 
+                        RolapLevel level =
                             (RolapLevel) schemaReader.lookupCompound(
-                                    cube, 
+                                    cube,
                                     names,
                                     false,
                                     Category.Level);
                         if (level == null) {
-                            Hierarchy hierarchy = (Hierarchy) 
+                            Hierarchy hierarchy = (Hierarchy)
                                 schemaReader.lookupCompound(
-                                    cube, 
+                                    cube,
                                     new String[] { names[0] },
                                     false,
                                     Category.Hierarchy);
                             if (hierarchy == null) {
                                 msgRecorder.reportError(
-                                    mres.getUnknownHierarcyName(
+                                    mres.getUnknownHierarchyName(
                                         msgRecorder.getContext(),
                                         names[0]));
                             } else {
@@ -814,65 +797,65 @@ RME TODO
                 pw.println(this.columnName);
             }
         }
-        /** 
+        /**
          * This class is used to map from a measure's symbolic name,
-         * [Measures].[Unit Sales] to the aggregate table's column 
-         * name, UNIT_SALES_SUM.  
+         * [Measures].[Unit Sales] to the aggregate table's column
+         * name, UNIT_SALES_SUM.
          */
         class Measure {
             private final String name;
             private String symbolicName;
             private final String columnName;
-            private RolapStar.Measure rolapMeasure; 
+            private RolapStar.Measure rolapMeasure;
 
             Measure(final String name, final String columnName) {
                 this.name = name;
                 this.columnName = columnName;
             }
 
-            /** 
-             * Get the symbolic name, the measure name, i.e., 
-             * [Measures].[Unit Sales]. 
-             * 
-             * @return 
+            /**
+             * Get the symbolic name, the measure name, i.e.,
+             * [Measures].[Unit Sales].
+             *
+             * @return
              */
             public String getName() {
                 return name;
             }
-            /** 
-             * Get the symbolic name, the measure name, i.e., [Unit Sales]. 
-             * 
-             * @return 
+            /**
+             * Get the symbolic name, the measure name, i.e., [Unit Sales].
+             *
+             * @return
              */
             public String getSymbolicName() {
                 return symbolicName;
             }
-            
-            /** 
-             * Get the aggregate table column name. 
-             * 
-             * @return 
+
+            /**
+             * Get the aggregate table column name.
+             *
+             * @return
              */
             public String getColumnName() {
                 return columnName;
             }
-            
-            /** 
-             * Get the RolapStar.Measure associated with this symbolic name. 
-             * 
-             * @return 
+
+            /**
+             * Get the RolapStar.Measure associated with this symbolic name.
+             *
+             * @return
              */
             public RolapStar.Measure getRolapStarMeasure() {
                 return rolapMeasure;
             }
-            
-            /** 
-             * Validates a measure's name  
+
+            /**
+             * Validates a measure's name
              *    AggMeasure name is a [Measures].[measure name]
              * Check that is of length 2, starts with "Measures" and
              * the "measure name" exists.
-             * 
-             * @param msgRecorder 
+             *
+             * @param msgRecorder
              */
             public void validate(final MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName("Measure");
@@ -892,7 +875,7 @@ RME TODO
                         RolapCube cube = ExplicitRules.TableDef.this.getCube();
                         SchemaReader schemaReader = cube.getSchemaReader();
                         Member member = (Member) schemaReader.lookupCompound(
-                                    cube, 
+                                    cube,
                                     names,
                                     false,
                                     Category.Member);
@@ -910,7 +893,7 @@ RME TODO
                             }
                         }
                         RolapStar star = cube.getStar();
-                        rolapMeasure = 
+                        rolapMeasure =
                             star.getFactTable().lookupMeasureByName(names[1]);
                         if (rolapMeasure == null) {
                             msgRecorder.reportError(
@@ -961,7 +944,7 @@ RME TODO
         private List levels;
         private List measures;
 
-        protected TableDef(final boolean ignoreCase, 
+        protected TableDef(final boolean ignoreCase,
                            final ExplicitRules.Group aggGroup) {
             this.id = nextId();
             this.ignoreCase = ignoreCase;
@@ -971,94 +954,94 @@ RME TODO
             this.measures = Collections.EMPTY_LIST;
             this.ignoreColumnNames = Collections.EMPTY_LIST;
         }
-        
-        /** 
-         * TODO: This does not seemed to be used anywhere??? 
-         * 
-         * @return 
+
+        /**
+         * TODO: This does not seemed to be used anywhere???
+         *
+         * @return
          */
         public int getId() {
             return this.id;
         }
-        
-        /** 
-         * Return true if this name/pattern matching ignores case. 
-         * 
-         * @return 
+
+        /**
+         * Return true if this name/pattern matching ignores case.
+         *
+         * @return
          */
         public boolean isIgnoreCase() {
             return this.ignoreCase;
         }
-        
-        /** 
-         * Get the RolapStar associated with this cube. 
-         * 
-         * @return 
+
+        /**
+         * Get the RolapStar associated with this cube.
+         *
+         * @return
          */
         public RolapStar getStar() {
             return getAggGroup().getStar();
         }
-        
-        /** 
-         * Get the Group with which is a part. 
-         * 
-         * @return 
+
+        /**
+         * Get the Group with which is a part.
+         *
+         * @return
          */
         public ExplicitRules.Group getAggGroup() {
             return this.aggGroup;
         }
-        
-        /** 
-         * Get the name of the fact count column. 
-         * 
-         * @return 
+
+        /**
+         * Get the name of the fact count column.
+         *
+         * @return
          */
         protected String getFactCountName() {
             return factCountName;
         }
-        /** 
-         * Set the name of the fact count column. 
-         * 
-         * @param factCountName  
+        /**
+         * Set the name of the fact count column.
+         *
+         * @param factCountName
          */
         protected void setFactCountName(final String factCountName) {
             this.factCountName = factCountName;
         }
-        
-        /** 
-         * Get an Iterator over all ignore column name entries. 
-         * 
-         * @return 
+
+        /**
+         * Get an Iterator over all ignore column name entries.
+         *
+         * @return
          */
         protected Iterator getIgnoreColumnNames() {
             return ignoreColumnNames.iterator();
         }
-        /** 
+        /**
          * Get an Iterator over all level mappings.
-         * 
-         * @return 
+         *
+         * @return
          */
         public Iterator getLevels() {
             return this.levels.iterator();
         }
-        /** 
+        /**
          * Get an Iterator over all level mappings.
-         * 
-         * @return 
+         *
+         * @return
          */
         public Iterator getMeasures() {
             return this.measures.iterator();
         }
 
-        /** 
-         * Get Matcher for ignore columns. 
-         * 
-         * @return 
+        /**
+         * Get Matcher for ignore columns.
+         *
+         * @return
          */
         protected Recognizer.Matcher getIgnoreMatcher() {
             return new Recognizer.Matcher() {
                 public boolean matches(final String name) {
-                    for (Iterator it = 
+                    for (Iterator it =
                             ExplicitRules.TableDef.this.getIgnoreColumnNames();
                             it.hasNext();) {
                         String ignoreName = (String) it.next();
@@ -1071,10 +1054,10 @@ RME TODO
             };
         }
 
-        /** 
-         * Get Matcher for the fact count column. 
-         * 
-         * @return 
+        /**
+         * Get Matcher for the fact count column.
+         *
+         * @return
          */
         protected Recognizer.Matcher getFactCountMatcher() {
             return new Recognizer.Matcher() {
@@ -1084,28 +1067,28 @@ RME TODO
             };
         }
 
-        /** 
+        /**
          * Get the RolapCube associated with this mapping.
-         * 
-         * @return 
+         *
+         * @return
          */
         RolapCube getCube() {
             return aggGroup.getCube();
         }
-        /** 
+        /**
          * Check that ALL of the columns in the dbTable have a mapping in in the
-         * tableDef. 
+         * tableDef.
          * <p>
          * It is an error if there is a column that does not have a mapping.
-         * 
-         * @param star 
-         * @param dbFactTable 
-         * @param dbTable 
-         * @param msgRecorder 
-         * @return 
+         *
+         * @param star
+         * @param dbFactTable
+         * @param dbTable
+         * @param msgRecorder
+         * @return
          */
         public boolean columnsOK(final RolapStar star,
-                                 final JdbcSchema.Table dbFactTable, 
+                                 final JdbcSchema.Table dbFactTable,
                                  final JdbcSchema.Table dbTable,
                                  final MessageRecorder msgRecorder) {
 
@@ -1117,10 +1100,10 @@ RME TODO
             return cb.check();
         }
 
-        /** 
-         * Add the name of an aggregate table column that is to be ignored. 
-         * 
-         * @param ignoreName 
+        /**
+         * Add the name of an aggregate table column that is to be ignored.
+         *
+         * @param ignoreName
          */
         protected void addIgnoreColumnName(final String ignoreName) {
             if (this.ignoreColumnNames == Collections.EMPTY_LIST) {
@@ -1129,11 +1112,11 @@ RME TODO
             this.ignoreColumnNames.add(ignoreName);
         }
 
-        /** 
+        /**
          * Add foreign key mapping entry (maps from fact table foreign key
          * column name to aggregate table foreign key column name).
-         * 
-         * @param fk 
+         *
+         * @param fk
          */
         protected void addFK(final MondrianDef.AggForeignKey fk) {
             if (this.foreignKeyMap == Collections.EMPTY_MAP) {
@@ -1142,30 +1125,30 @@ RME TODO
             this.foreignKeyMap.put(fk.getFactFKColumnName(),
                                    fk.getAggregateFKColumnName());
         }
-        
-        /** 
+
+        /**
          * Get the name of the aggregate table's foreign key column that matches
          * the base fact table's foreign key column or return null.
-         * 
-         * @param baseFK 
-         * @return 
+         *
+         * @param baseFK
+         * @return
          */
         protected String getAggregateFK(final String baseFK) {
             return (String) this.foreignKeyMap.get(baseFK);
         }
-        
-        /** 
-         * Get an Iterator over the foreign key matchers. 
-         * 
-         * @return 
+
+        /**
+         * Get an Iterator over the foreign key matchers.
+         *
+         * @return
          */
         protected Iterator getFKEntries() {
             return this.foreignKeyMap.entrySet().iterator();
         }
-        /** 
-         * Add a Level. 
-         * 
-         * @param level 
+        /**
+         * Add a Level.
+         *
+         * @param level
          */
         protected void add(final Level level) {
             if (this.levels == Collections.EMPTY_LIST) {
@@ -1173,11 +1156,11 @@ RME TODO
             }
             this.levels.add(level);
         }
-        
-        /** 
-         * Add a Measure. 
-         * 
-         * @param measure 
+
+        /**
+         * Add a Measure.
+         *
+         * @param measure
          */
         protected void add(final Measure measure) {
             if (this.measures == Collections.EMPTY_LIST) {
@@ -1186,19 +1169,19 @@ RME TODO
             this.measures.add(measure);
         }
 
-        /** 
-         * Does the TableDef match a table with name tableName. 
-         * 
-         * @param tableName 
-         * @return 
+        /**
+         * Does the TableDef match a table with name tableName.
+         *
+         * @param tableName
+         * @return
          */
         public abstract boolean matches(final String tableName);
 
-        /** 
+        /**
          * Validate the Levels and Measures, also make sure each definition
-         * is different, both name and column. 
-         * 
-         * @param msgRecorder 
+         * is different, both name and column.
+         *
+         * @param msgRecorder
          */
         public void validate(final MessageRecorder msgRecorder) {
             msgRecorder.pushContextName("TableDef");
@@ -1298,7 +1281,7 @@ RME TODO
                         msgRecorder.reportError(
                                     mres.getDuplicateFactForeignKey(
                                        msgRecorder.getContext(),
-                                       baseFKName, 
+                                       baseFKName,
                                        aggFKName));
                     } else {
                         namesToObjects.put(baseFKName, aggFKName);
@@ -1307,19 +1290,19 @@ RME TODO
                         msgRecorder.reportError(
                                     mres.getDuplicateFactForeignKey(
                                        msgRecorder.getContext(),
-                                       baseFKName, 
+                                       baseFKName,
                                        aggFKName));
                     } else {
                         columnsToObjects.put(aggFKName, baseFKName);
                     }
 
-                    MondrianDef.Column c = 
+                    MondrianDef.Column c =
                             new MondrianDef.Column(tableName, baseFKName);
                     if (factTable.findTableWithLeftCondition(c) == null) {
                         msgRecorder.reportError(
                                     mres.getUnknownLeftJoinCondition(
                                        msgRecorder.getContext(),
-                                       tableName, 
+                                       tableName,
                                        baseFKName));
                     }
                 }
@@ -1369,17 +1352,17 @@ RME TODO
         }
     }
     static class NameTableDef extends ExplicitRules.TableDef {
-        /** 
+        /**
          * Make a NameTableDef from the calalog schema.
-         * 
-         * @param aggName 
-         * @param group 
-         * @return 
+         *
+         * @param aggName
+         * @param group
+         * @return
          */
         static ExplicitRules.NameTableDef make(final MondrianDef.AggName aggName,
                                              final ExplicitRules.Group group) {
-            ExplicitRules.NameTableDef name = 
-                new ExplicitRules.NameTableDef(aggName.getNameAttribute(), 
+            ExplicitRules.NameTableDef name =
+                new ExplicitRules.NameTableDef(aggName.getNameAttribute(),
                                      aggName.isIgnoreCase(),
                                      group);
 
@@ -1389,30 +1372,30 @@ RME TODO
         }
 
         private final String name;
-        public NameTableDef(final String name, 
-                            final boolean ignoreCase, 
+        public NameTableDef(final String name,
+                            final boolean ignoreCase,
                             final ExplicitRules.Group group) {
             super(ignoreCase, group);
             this.name = name;
         }
-        
-        /** 
+
+        /**
          * Does the given tableName match this NameTableDef (either exact match
-         * or, if set, a case insensitive match). 
-         * 
-         * @param tableName 
-         * @return 
+         * or, if set, a case insensitive match).
+         *
+         * @param tableName
+         * @return
          */
         public boolean matches(final String tableName) {
-            return (this.ignoreCase) 
+            return (this.ignoreCase)
                 ? this.name.equals(tableName)
                 : this.name.equalsIgnoreCase(tableName);
         }
 
-        /** 
-         * Validate name and base class. 
-         * 
-         * @param msgRecorder 
+        /**
+         * Validate name and base class.
+         *
+         * @param msgRecorder
          */
         public void validate(final MessageRecorder msgRecorder) {
             msgRecorder.pushContextName("NameTableDef");
@@ -1438,25 +1421,25 @@ RME TODO
 
         }
     }
-    
-    /** 
+
+    /**
      * This class matches candidate aggregate table name with a pattern.
      */
     public static class PatternTableDef extends ExplicitRules.TableDef {
 
-        /** 
+        /**
          * Make a PatternTableDef from the calalog schema.
-         * 
-         * @param aggPattern 
-         * @param group 
-         * @return 
+         *
+         * @param aggPattern
+         * @param group
+         * @return
          */
         static ExplicitRules.PatternTableDef make(
                                     final MondrianDef.AggPattern aggPattern,
                                     final ExplicitRules.Group group) {
 
-            ExplicitRules.PatternTableDef pattern = 
-                new ExplicitRules.PatternTableDef(aggPattern.getPattern(), 
+            ExplicitRules.PatternTableDef pattern =
+                new ExplicitRules.PatternTableDef(aggPattern.getPattern(),
                                         aggPattern.isIgnoreCase(),
                                         group);
 
@@ -1476,38 +1459,38 @@ RME TODO
         private final Pattern pattern;
         private List excludes;
 
-        public PatternTableDef(final String pattern, 
-                               final boolean ignoreCase, 
+        public PatternTableDef(final String pattern,
+                               final boolean ignoreCase,
                                final ExplicitRules.Group group) {
             super(ignoreCase, group);
-            this.pattern = (this.ignoreCase) 
+            this.pattern = (this.ignoreCase)
                 ? Pattern.compile(pattern, Pattern.CASE_INSENSITIVE)
                 : Pattern.compile(pattern);
             this.excludes = Collections.EMPTY_LIST;
         }
-        
-        /** 
-         * Get the Pattern. 
-         * 
-         * @return 
+
+        /**
+         * Get the Pattern.
+         *
+         * @return
          */
         public Pattern getPattern() {
             return pattern;
         }
-        
-        /** 
-         * Get an Iterator over the list of Excludes.  
-         * 
-         * @return 
+
+        /**
+         * Get an Iterator over the list of Excludes.
+         *
+         * @return
          */
         public Iterator getExcludes() {
             return excludes.iterator();
         }
-        
-        /** 
-         * Add an Exclude. 
-         * 
-         * @param exclude 
+
+        /**
+         * Add an Exclude.
+         *
+         * @param exclude
          */
         private void add(final Exclude exclude) {
             if (this.excludes == Collections.EMPTY_LIST) {
@@ -1515,13 +1498,13 @@ RME TODO
             }
             this.excludes.add(exclude);
         }
-        
-        /** 
+
+        /**
          * Return true if the tableName 1) matches the pattern and 2) is not
-         * matched by any of the Excludes. 
-         * 
-         * @param tableName 
-         * @return 
+         * matched by any of the Excludes.
+         *
+         * @param tableName
+         * @return
          */
         public boolean matches(final String tableName) {
             if (! pattern.matcher(tableName).matches()) {
@@ -1536,11 +1519,11 @@ RME TODO
                 return true;
             }
         }
-        
-        /** 
-         * Validate excludes and base class. 
-         * 
-         * @param msgRecorder 
+
+        /**
+         * Validate excludes and base class.
+         *
+         * @param msgRecorder
          */
         public void validate(final MessageRecorder msgRecorder) {
             msgRecorder.pushContextName("PatternTableDef");
@@ -1583,13 +1566,13 @@ RME TODO
         }
     }
 
-    /** 
+    /**
      * Helper method used to determine if an attribute with name attrName has a
      * non-empty value.
-     * 
-     * @param msgRecorder 
-     * @param attrValue 
-     * @param attrName 
+     *
+     * @param msgRecorder
+     * @param attrValue
+     * @param attrName
      */
     private static void checkAttributeString(final MessageRecorder msgRecorder,
                                              final String attrValue,

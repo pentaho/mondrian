@@ -36,17 +36,22 @@ import java.util.List;
  * <code>MondrianProperties</code> contains the properties which determine the
  * behavior of a mondrian instance.
  *
- * There is a method for property valid in a <code>mondrian.properties</code>
- * file. Although it is possible to retrieve properties using the inherited
- * {@link Properties#getProperty(String)} method, we recommend that you use
- * methods in this class.
+ * <p>There is a method for property valid in a
+ * <code>mondrian.properties</code> file. Although it is possible to retrieve
+ * properties using the inherited {@link Properties#getProperty(String)}
+ * method, we recommend that you use methods in this class.
+ *
+ * <p>If you wish to be notified of changes to properties, use
+ * {@link #addTrigger(mondrian.olap.MondrianProperties.Trigger, String)}
+ * method to register a callback.
  *
  * @author jhyde
  * @since 22 December, 2002
  * @version $Id$
  **/
 public class MondrianProperties extends PropertiesPlus {
-    private static final Logger LOGGER = Logger.getLogger(MondrianProperties.class);
+    private static final Logger LOGGER =
+            Logger.getLogger(MondrianProperties.class);
 
     /**
      * Properties, drawn from {@link System#getProperties}, plus the contents
@@ -65,29 +70,29 @@ public class MondrianProperties extends PropertiesPlus {
         return instance;
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    //
-    // associating triggers with changing property values
-    //
-    /** 
-     * If the user wishes to be able to remove a Trigger at some time after
+    /**
+     * A Trigger is a callback which allows a subscriber to be notified
+     * when a property value changes.
+     *
+     * <p>If the user wishes to be able to remove a Trigger at some time after
      * it has been added, then either 1) the user has to keep the instance of
      * the Trigger that was added and use it when calling the remove method or
      * 2) the Trigger must implement the equals method and the Trigger used
      * during the call to the remove method must be equal to the original
      * Trigger added.
      * <p>
-     * Each non persistent Trigger is wrapped in a WeakReference. What this
-     * means is that the user better keep a reference to the Trigger, otherwise
+     * Each non-persistent Trigger is wrapped in a {@link WeakReference}, so
+     * that is can be garbage-collected. But this means that
+     * the user had better keep a reference to the Trigger, otherwise
      * it will be removed (garbage collected) without the user knowing.
      * <p>
-     * Persistent Triggers, those that refer to objects in their executeTrigger
-     * method that will never be garbage collected, are not wrapped in
-     * a WeakReference.
+     * Persistent Triggers (those that refer to objects in their
+     * {@link #executeTrigger} method that will never be garbage-collected) are
+     * not wrapped in a WeakReference.
      * <p>
      * What does all this mean, well, objects that might be garbage collected
      * that create a Trigger must keep a reference to the Trigger (otherwise the
-     * Trigger will be garbage collected out from under the object). A common
+     * Trigger will be garbage-collected out from under the object). A common
      * usage pattern is to implement the Trigger interface using an anonymous
      * class - anonymous classes are non-static classes when created in an
      * instance object. But, remember, the anonymous class instance holds a
@@ -102,9 +107,11 @@ public class MondrianProperties extends PropertiesPlus {
      * order independent Triggers (they all have the same phase) or by
      * assigning phases to the Triggers where primaries execute before
      * secondary which execute before tertiary.
+     * <p>
      * If a finer level of execution order granularity is needed, then the
-     * implementation should be changed so that the phase() method returns
-     * just some integer and its up to the users to coordinate their values.
+     * implementation should be changed so that the {@link #phase} method
+     * returns just some integer and it's up to the users to coordinate their
+     * values.
      */
     public interface Trigger {
         int PRIMARY_PHASE     = 1;
@@ -120,7 +127,7 @@ public class MondrianProperties extends PropertiesPlus {
             }
         }
 
-        /** 
+        /**
          * An Entry is associated with a property key. Each Entry can have one
          * or more Triggers. Each Trigger is stored in a WeakReference so that
          * when the the Trigger is only reachable via weak referencs the Trigger
@@ -133,11 +140,11 @@ public class MondrianProperties extends PropertiesPlus {
             Entry() {
                 triggerList = new ArrayList();
             }
-            
-            /** 
-             * Add a Trigger wrapping it in a WeakReference. 
-             * 
-             * @param trigger 
+
+            /**
+             * Add a Trigger wrapping it in a WeakReference.
+             *
+             * @param trigger
              */
             void add(final Trigger trigger) {
                 // this is the object to add to list
@@ -145,7 +152,7 @@ public class MondrianProperties extends PropertiesPlus {
                             ? trigger : (Object) new WeakReference(trigger);
 
                 // Add a Trigger in the correct group of phases in the list
-                for (ListIterator it = triggerList.listIterator(); 
+                for (ListIterator it = triggerList.listIterator();
                                 it.hasNext(); ) {
                     Trigger t = convert(it.next());
 
@@ -164,12 +171,12 @@ public class MondrianProperties extends PropertiesPlus {
                 }
                 triggerList.add(o);
             }
-            
-            /** 
-             * Remove the given Trigger. 
+
+            /**
+             * Remove the given Trigger.
              * In addition, any WeakReference that is empty are removed.
-             * 
-             * @param trigger 
+             *
+             * @param trigger
              */
             void remove(final Trigger trigger) {
                 for (Iterator it = triggerList.iterator(); it.hasNext(); ) {
@@ -182,24 +189,24 @@ public class MondrianProperties extends PropertiesPlus {
                     }
                 }
             }
-            
-            /** 
-             * Returns true if there are no Trigger in this Entry. 
-             * 
+
+            /**
+             * Returns true if there are no Trigger in this Entry.
+             *
              * @return true it there are no Triggers.
              */
             boolean isEmpty() {
                 return triggerList.isEmpty();
             }
 
-            /** 
+            /**
              * Execute all Triggers in this Entry passing in the property
-             * key whose change was the casue. 
+             * key whose change was the casue.
              * In addition, any WeakReference that is empty are removed.
-             * 
-             * @param key 
+             *
+             * @param key
              */
-            void execute(final String key, 
+            void execute(final String key,
                          final String value) throws VetoRT {
                 // Make a copy so that if during the execution of a trigger a
                 // Trigger is added or removed, we do not get a concurrent
@@ -207,13 +214,6 @@ public class MondrianProperties extends PropertiesPlus {
                 // a clone) so that we can remove any WeakReference whose
                 // content has become null.
                 List l = new ArrayList();
-/*
-System.out.println("MondrianProperties.Trigger.Entry.execute: key=" 
-+key
-+ ", size=" + triggerList.size()
-);
-*/
-
                 for (Iterator it = triggerList.iterator(); it.hasNext(); ) {
                     Trigger t = convert(it.next());
 
@@ -238,30 +238,30 @@ System.out.println("MondrianProperties.Trigger.Entry.execute: key="
             }
         }
 
-        /** 
+        /**
          * If a Trigger is associated with a class or singleton, then it should
          * return true because its associated object is not subject to garbage
          * collection. On the other hand, if a Trigger is associated with an
          * object which will be garbage collected, then this method must return
          * false so that the Trigger will be wrapped in a WeakReference and
          * thus can itself be garbage collected.
-         * 
-         * @return 
+         *
+         * @return
          */
         boolean isPersistent();
-        
-        /** 
-         * Which phase does this Trigger belong to. 
-         * 
-         * @return 
+
+        /**
+         * Which phase does this Trigger belong to.
+         *
+         * @return
          */
         int phase();
 
-        /** 
+        /**
          * Execute the Trigger passing in the key of the property whose change
          * triggered the execution.
-         * 
-         * @param key 
+         *
+         * @param key
          */
         void executeTrigger(final String key, final String value) throws VetoRT;
     }
@@ -273,17 +273,16 @@ System.out.println("MondrianProperties.Trigger.Entry.execute: key="
         triggers = Collections.EMPTY_MAP;
     }
 
-    /** 
-     * Add a Trigger associating it with the parameter property key 
-     * 
-     * @param trigger 
-     * @param key 
+    /**
+     * Add a {@link Trigger} associating it with the parameter property key.
+     *
+     * @param trigger
+     * @param key
      */
     public void addTrigger(Trigger trigger, String key) {
-//System.out.println("MondrianProperties.addTrigger: key=" +key);
         if (triggers == Collections.EMPTY_MAP) {
             triggers = new HashMap();
-        } 
+        }
 
         Trigger.Entry e = (Trigger.Entry) triggers.get(key);
         if (e == null) {
@@ -292,12 +291,13 @@ System.out.println("MondrianProperties.Trigger.Entry.execute: key="
         }
         e.add(trigger);
     }
-    
-    /** 
-     * Remove the Trigger that is associated with property key.
-     * 
-     * @param trigger 
-     * @param key 
+
+    /**
+     * Removes the {@link Trigger}, if any, that is associated with property
+     * key.
+     *
+     * @param trigger
+     * @param key
      */
     public void removeTrigger(Trigger trigger, String key) {
         Trigger.Entry e = (Trigger.Entry) triggers.get(key);
@@ -308,33 +308,26 @@ System.out.println("MondrianProperties.Trigger.Entry.execute: key="
             }
         }
     }
-    
-    /** 
-     * This does not only the normal setting of a property to a new value, but
-     * also, if the previous value does not equals the new value, then if there
-     * are any Trigger associated with the property, they are executed.
-     * 
-     * If any Triggers are associated with the key parameter, then execute
-     * them.
-     * 
-     * @param key 
-     * @param value 
+
+    /**
+     * Sets the value of a property.
+     *
+     * <p>If the previous value does not equal the new value, executes any
+     * {@link Trigger}s associated with the property, in order of their
+     * {@link mondrian.olap.MondrianProperties.Trigger#phase() phase}.
+     *
+     * @param key
+     * @param value
      * @return the old value
      */
-    public synchronized Object setProperty(final String key, final String value) {
+    public synchronized Object setProperty(
+            final String key, final String value) {
         String oldValue = getPropertyValueReflect(key);
 
         Object object = super.setProperty(key, value);
         if (oldValue == null) {
             oldValue = (object == null) ? null : object.toString();
         }
-/*
-System.out.println("MondrianProperties.setProperty: key="
-+key
-+ ", value=" +value
-+ ", oldValue=" +oldValue
-);
-*/
 
         // If we have changed the value of a property, then call all of the
         // property's associated Triggers (if any).
@@ -361,29 +354,27 @@ System.out.println("MondrianProperties.setProperty: key="
         return oldValue;
     }
 
-    /** 
-     * This is ONLY called by the Trigger execute method during a Veto
-     * operation. It calls the super class setProperty.
-     * 
-     * @param key 
-     * @param oldValue 
+    /**
+     * This is ONLY called during a veto
+     * operation. It calls the super class {@link #setProperty}.
+     *
+     * @param key
+     * @param oldValue
      */
     private void superSetProperty(String key, String oldValue) {
         if (oldValue != null) {
             super.setProperty(key, oldValue);
         }
     }
-    //
-    //////////////////////////////////////////////////////////////////////////
 
-    /** 
-     * Get property value for given propertyName parameter by using reflection
-     * on the MondrianProperties class returning null if there are any
-     * exceptions or the field name prepended with "get" does not match the 
+    /**
+     * Gets property value for given propertyName parameter by using reflection
+     * on the {@link MondrianProperties} class. Returns null if there are any
+     * exceptions or the field name prepended with "get" does not match the
      * method name.
-     * 
-     * @param propertyName 
-     * @return 
+     *
+     * @param propertyName
+     * @return
      */
     public String getPropertyValueReflect(String propertyName) {
         try {
@@ -407,7 +398,7 @@ System.out.println("MondrianProperties.setProperty: key="
                 Method m = MondrianProperties.class.getMethod(methodName, null);
 
                 if (m != null) {
-                    Object o = 
+                    Object o =
                         m.invoke(MondrianProperties.instance(), new Object[0]);
                     if (o != null) {
                         return o.toString();
@@ -498,8 +489,10 @@ System.out.println("MondrianProperties.setProperty: key="
         }
     }
 
-    /** Tries to load properties from a URL. Does not fail, just prints success
-     * or failure to {@link System#out}. */
+    /**
+     * Tries to load properties from a URL. Does not fail, just prints success
+     * or failure to {@link System#out}.
+     */
     private void load(final URL url) {
         try {
             load(url.openStream());
@@ -518,8 +511,10 @@ System.out.println("MondrianProperties.setProperty: key="
         }
     }
 
-    /** Retrieves the value of the {@link #QueryLimit} property,
-     * default value {@link #QueryLimit_Default}. */
+    /**
+     * Retrieves the value of the {@link #QueryLimit} property,
+     * default value {@link #QueryLimit_Default}.
+     */
     public int getQueryLimit() {
         return getIntProperty(QueryLimit, QueryLimit_Default);
     }
@@ -617,7 +612,7 @@ System.out.println("MondrianProperties.setProperty: key="
     /** Property {@value}. */
     public static final String TestClass = "mondrian.test.Class";
 
-    /** Retreives the value of the {@link #TestConnectString} property. */
+    /** Retrieves the value of the {@link #TestConnectString} property. */
     public String getTestConnectString() {
         return getProperty(TestConnectString);
     }
@@ -737,7 +732,8 @@ System.out.println("MondrianProperties.setProperty: key="
     }
 
     /**
-     * Retrieves the URL of the catalog to be used by CmdRunner and XML/A Test.
+     * Retrieves the URL of the catalog to be used by
+     * {@link mondrian.tui.CmdRunner} and XML/A Test.
      */
     public String getCatalogURL() {
         return getProperty("mondrian.catalogURL");
@@ -755,17 +751,17 @@ System.out.println("MondrianProperties.setProperty: key="
     //
     // properties relating to aggregates
     //
-    /** 
-     * Name of boolean property that controls whether or not aggregates 
+    /**
+     * Name of boolean property that controls whether or not aggregates
      * should be used.  If true, then aggregates are used. This property is
      * queried prior to each aggregate query so that changing the value of this
      * property dynamically (not just at startup) is meaningful.
      */
     public static final String UseAggregates = "mondrian.rolap.aggregates.Use";
 
-    /** 
+    /**
      * Should aggregates be used.
-     * 
+     *
      * @return true if aggregates are to be used.
      */
     public boolean getUseAggregates() {
@@ -773,64 +769,64 @@ System.out.println("MondrianProperties.setProperty: key="
     }
 
 
-    /** 
+    /**
      * Name of boolean property that controls whether or not aggregate tables
      * are ordered by their volume or row count.
      */
-    public static final String ChooseAggregateByVolume 
+    public static final String ChooseAggregateByVolume
                     = "mondrian.rolap.aggregates.ChooseByVolume";
 
-    /** 
-     * Should aggregate tables be ordered by volume. 
-     * 
+    /**
+     * Should aggregate tables be ordered by volume.
+     *
      * @return true if aggregate tables are to be ordered by volume.
      */
     public boolean getChooseAggregateByVolume() {
         return getBooleanProperty(ChooseAggregateByVolume);
     }
 
-    /** 
+    /**
      * This is a String property which can be either a resource in the
      * Mondrian jar or a URL.
      */
-    public static final String AggregateRules 
+    public static final String AggregateRules
                         = "mondrian.rolap.aggregates.rules";
 
-    /** 
-     * The default value of the AggRules property, a resource in Mondrian jar. 
+    /**
+     * The default value of the AggRules property, a resource in Mondrian jar.
      */
     public static final String AggregateRules_Default = "/DefaultRules.xml";
 
-    /** 
+    /**
      * Get the value of the AggregateRules property which returns the
      * default value, AggregateRules_Default, if not set.
      * <p>
      * Normally, this property is not set by a user.
-     * 
-     * @return 
+     *
+     * @return
      */
     public String getAggregateRules() {
         return getProperty(AggregateRules, AggregateRules_Default);
     }
 
-    /** 
+    /**
      * This is a String property which is the AggRule element's tag value.
      */
-    public static final String AggregateRuleTag 
+    public static final String AggregateRuleTag
                         = "mondrian.rolap.aggregates.rule.tag";
 
-    /** 
+    /**
      * The default value of the AggRule element tag value.
      */
     public static final String AggregateRuleTag_Default = "default";
 
-    /** 
+    /**
      * Get the value of the AggRule element tag property which returns the
      * default value, AggregateRuleTag_Default, if not set.
      * <p>
      * Normally, this property is not set by a user.
-     * 
-     * @return 
+     *
+     * @return
      */
     public String getAggregateRuleTag() {
         return getProperty(AggregateRuleTag, AggregateRuleTag_Default);
@@ -838,33 +834,33 @@ System.out.println("MondrianProperties.setProperty: key="
     //
     //////////////////////////////////////////////////////////////////////////
 
-    /** 
+    /**
      * This is the boolean property that controls whether or not triggers are
      * executed when a MondrianProperty changes.
      */
     public static final String EnableTriggers = "mondrian.olap.triggers.enable";
 
-    /** 
+    /**
      * Returns true means that MondrianProperties Triggers are enabled.
-     * 
-     * @return 
+     *
+     * @return
      */
     public boolean getEnableTriggers() {
         return getBooleanProperty(EnableTriggers);
     }
 
-    /** 
+    /**
      * This is a boolean property if set to true, the all SqlQuery sql string
      * will be generated in pretty-print mode, formatted for ease of reading.
      */
-    public static final String GenerateFormattedSql = 
+    public static final String GenerateFormattedSql =
             "mondrian.rolap.generate.formatted.sql";
 
-    /** 
+    /**
      * Returns true mean that all sql string created by the SqlQuery class will
      * be formatted.
-     * 
-     * @return 
+     *
+     * @return
      */
     public boolean getGenerateFormattedSql() {
         return getBooleanProperty(GenerateFormattedSql);
