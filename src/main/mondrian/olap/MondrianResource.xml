@@ -437,6 +437,242 @@
     </text>
 </message>
 
+<message id="7000001" name="ForceMessageRecorderError">
+    <text>
+        Context "{0}": Client forcing return with errors "{1,number}"
+    </text>
+</message>
+
+
+<!-- Aggregate tables: start -->
+<message id="7000100" name="SuperfluousExludeName">
+    <text>
+        Context "{0}": The Exclude Name "{1}" does not match the Pattern "{2}" so the name element is superfluous.
+    </text>
+</message>
+
+<message id="7000101" name="UnknownLevelName">
+    <text>
+        Context "{0}": The Hierarchy Level "{1}" does not have a Level named "{2}"
+    </text>
+</message>
+
+<message id="7000101" name="DuplicateLevelNames">
+    <text>
+        Context "{0}": Two levels share the same name "{1}"
+    </text>
+</message>
+
+<message id="7000101" name="DuplicateLevelColumnNames">
+    <text>
+        Context "{0}": Two levels, "{1}" and "{2}",  share the same foreign column name "{3}"
+    </text>
+</message>
+
+<message id="7000101" name="DuplicateMeasureColumnNames">
+    <text>
+        Context "{0}": Two measures, "{1}" and "{2}",  share the same column name "{3}"
+    </text>
+</message>
+
+<message id="7000101" name="DuplicateLevelMeasureColumnNames">
+    <text>
+        Context "{0}": The level "{1}" and the measuer "{2}",  share the same column name "{3}"
+    </text>
+</message>
+
+<message id="7000101" name="DuplicateMeasureNames">
+    <text>
+        Context "{0}": Two measures share the same name "{1}"
+    </text>
+</message>
+
+<message id="7000102" name="DuplicateFactForeignKey">
+    <text>
+        Context "{0}": Duplicate fact foreign keys "{1}" for key "{2}".
+    </text>
+</message>
+
+<message id="7000103" name="DuplicateAggregateForeignKey">
+    <text>
+        Context "{0}": Duplicate aggregate foreign keys "{1}" for key "{2}".
+    </text>
+</message>
+
+<message id="7000104" name="UnknownLeftJoinCondition">
+    <text>
+        Context "{0}": Failed to find left join condition in fact table "{1}" for foreign key "{2}".
+    </text>
+</message>
+
+
+<message id="7000105" name="UnknownHierarcyName">
+    <text>
+        Context "{0}": The Hierarchy "{1}" does not exist"
+    </text>
+</message>
+<message id="7000006" name="BadLevelNameFormat">
+    <text>
+        Context "{0}": The Level name "{1}" should be [usage hierarchy name].[level name].
+    </text>
+</message>
+
+<message id="7000107" name="BadMeasureNameFormat">
+    <text>
+        Context "{0}": The Measures name "{1}" should be [Measures].[measure name].
+    </text>
+</message>
+<message id="7000108" name="BadMeasures">
+    <text>
+        Context "{0}": This name "{1}" must be the string "Measures".
+    </text>
+</message>
+
+<message id="7000109" name="UnknownMeasureName">
+    <text>
+        Context "{0}": Measures does not have a measure named "{1}"
+    </text>
+</message>
+
+<message id="7000200" name="NullAttributeString">
+    <text>
+        Context "{0}": The value for the attribute "{1}" is null.
+    </text>
+</message>
+
+<message id="7000201" name="EmptyAttributeString">
+    <text>
+        Context "{0}": The value for the attribute "{1}" is empty (length is zero).
+    </text>
+</message>
+
+<!-- Default Aggregate tables -->
+<exception id="700300" name="MissingDefaultAggRule">
+    <text>There is no default aggregate recognition rule with tag "{0}".</text>
+</exception>
+
+<exception id="700301" name="AggRuleParse">
+    <text>Error while parsing default aggregate recognition "{0}".</text>
+</exception>
+
+<message id="7000400" name="BadMeasureName">
+    <text>
+        Context "{0}": Failed to find Measure name "{1}" for cube "{2}".
+    </text>
+</message>
+
+<message id="7000401" name="BadRolapStarLeftJoinCondition">
+    <text>
+        Context "{0}": Bad RolapStar left join condition type: "{1}" "{2}".
+    </text>
+</message>
+
+<message id="7000402" name="SqlQueryFailed">
+    <text>
+        Context "{0}": Sql query failed to run "{1}".
+    </text>
+</message>
+
+<exception id="700403" name="AggLoadingError">
+    <text>Error while loading/reloading aggregates.</text>
+</exception>
+
+<exception id="700404" name="AggLoadingExceededErrorCount">
+    <text>Too many errors, "{0,number}", while loading/reloadin aggregates.</text>
+</exception>
+
+<message id="7000405" name="NonNumericMeasure">
+    <text>
+        Context "{0}": For Fact table "{1}", the measure column "{2}" of type "{3}" is not numeric".
+    </text>
+</message>
+
+<message id="7000406" name="UnknownFactTableColumn">
+    <text>
+        Context "{0}": For Fact table "{1}", the column "{2}" is neither a measure or foreign key".
+    </text>
+</message>
+
+<message id="7000407" name="AggMultipleMatchingMeasure">
+    <text>
+        Context "{0}": Candidate aggregate table "{1}" for fact table "{2}" has "{3,number}" columns matching measure "{4}", "{5}", "{6}"".
+    </text>
+</message>
+
+<message id="7000408" name="CouldNotLoadDefaultAggregateRules">
+    <text>
+        Could not load default aggregate rules "{0}".
+    </text>
+</message>
+
+<message id="7000409" name="FailedCreateNewDefaultAggregateRules">
+    <text>
+        Failed to create new default aggregate rules using property "{0}" with value "{1}".
+    </text>
+</message>
+
+<message id="7000410" name="CubeRelationNotTable">
+    <text>
+        The Cube "{0}" relation is not a MondrianDef.Table but rather "{1}".
+    </text>
+</message>
+
+<exception id="700411" name="AttemptToChangeTableType">
+    <text>
+        JdbcSchema.Table "{0}" already set to type "{1}" and can not be reset to type "{2}".
+    </text>
+</exception>
+
+<message id="7000412" name="NonNumericFactCountColumn">
+    <text>
+        Candidate aggregate table "{0}" for fact table "{1}" has candidate fact count column "{2}" has type "{3}" that is not numeric.
+    </text>
+</message>
+
+<message id="7000413" name="TooManyFactCountColumns">
+    <text>
+        Candidate aggregate table "{0}" for fact table "{1}" has "{2,number}" fact count columns.
+    </text>
+</message>
+
+<message id="7000414" name="NoFactCountColumns">
+    <text>
+        Candidate aggregate table "{0}" for fact table "{1}" has no fact count columns.
+    </text>
+</message>
+
+<message id="7000415" name="TooManyMatchingForeignKeyColumns">
+    <text>
+        Candidate aggregate table "{0}" for fact table "{1}" had "{2,number}" columns matching foreign key "{3}"
+    </text>
+</message>
+
+<message id="7000416" name="DoubleMatchForLevel">
+    <text>
+        Double Macth for candidate aggregate table "{0}" for fact table "{1}" and column "{2}" matched two hierarchies: 1) table="{3}", column="{4}" and 2) table="{5}", column="{6}"
+    </text>
+</message>
+
+<message id="7000417" name="AggUnknownColumn">
+    <text>
+        Candidate aggregate table "{0}" for fact table "{1}" has a column "{2}" with unknown usage.
+    </text>
+</message>
+
+<message id="7000418" name="NoAggregatorFound">
+    <text>
+        No aggregator found while converting fact table aggregator: for usage
+        "{0}", fact aggregator "{1}" and sibling aggregator "{2}"
+    </text>
+</message>
+
+<message id="7000419" name="NoColumnNameFromExpression">
+    <text>
+        Could not get a column name from a level key expression: "{0}".
+    </text>
+</message>
+<!-- Aggregate tables: end -->
+
 <!-- End of last error section ============================================ -->
 
 </resourceBundle>

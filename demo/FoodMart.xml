@@ -105,7 +105,38 @@ WHERE "product"."product_class_id" = "product_class"."product_class_id"
 
 <!-- Sales -->
 <Cube name="Sales">
-  <Table name="sales_fact_1997"/>
+  <Table name="sales_fact_1997">
+<!-- 
+    <AggExclude name="agg_l_03_sales_fact_1997" />
+    <AggExclude name="agg_ll_01_sales_fact_1997" />
+    <AggExclude name="agg_pl_01_sales_fact_1997" />
+    <AggExclude name="agg_l_05_sales_fact_1997" />
+-->
+    <AggExclude name="agg_c_special_sales_fact_1997" />
+    <AggExclude name="agg_c_14_sales_fact_1997" />
+    <AggExclude name="agg_lc_100_sales_fact_1997" />
+    <AggExclude name="agg_lc_10_sales_fact_1997" />
+    <AggExclude name="agg_pc_10_sales_fact_1997" />
+    <AggName name="agg_c_special_sales_fact_1997">
+        <AggFactCount column="FACT_COUNT"/>
+        <AggIgnoreColumn column="foo"/>
+        <AggIgnoreColumn column="bar"/>
+        <AggForeignKey factColumn="product_id" aggColumn="PRODUCT_ID" />
+        <AggForeignKey factColumn="customer_id" aggColumn="CUSTOMER_ID" />
+        <AggForeignKey factColumn="promotion_id" aggColumn="PROMOTION_ID" />
+        <AggForeignKey factColumn="store_id" aggColumn="STORE_ID" />
+<!-- 
+        <AggMeasure name="[Measures].[Avg Unit Sales]" column="UNIT_SALES_AVG"/>
+-->     
+        <AggMeasure name="[Measures].[Unit Sales]" column="UNIT_SALES_SUM" />
+        <AggMeasure name="[Measures].[Store Cost]" column="STORE_COST_SUM" />
+        <AggMeasure name="[Measures].[Store Sales]" column="STORE_SALES_SUM" />
+        <AggLevel name="[Time].[Year]" column="TIME_YEAR" />
+        <AggLevel name="[Time].[Quarter]" column="TIME_QUARTER" />
+        <AggLevel name="[Time].[Month]" column="TIME_MONTH" />
+    </AggName>
+
+  </Table>
   <DimensionUsage name="Store" source="Store" foreignKey="store_id"/>
   <DimensionUsage name="Store Size in SQFT" source="Store Size in SQFT"
       foreignKey="store_id"/>
@@ -414,7 +445,10 @@ fullname
 <!-- Cube with one ragged hierarchy (otherwise the same as the "Sales"
    cube). -->
 <Cube name="Sales Ragged">
-  <Table name="sales_fact_1997"/>
+  <Table name="sales_fact_1997">
+    <AggExclude name="agg_pc_10_sales_fact_1997"/>
+    <AggExclude name="agg_lc_10_sales_fact_1997"/>
+  </Table>
   <Dimension name="Store" foreignKey="store_id">
     <Hierarchy hasAll="true" primaryKey="store_id">
       <Table name="store_ragged"/>

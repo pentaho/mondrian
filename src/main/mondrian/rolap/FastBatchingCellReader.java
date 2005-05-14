@@ -83,6 +83,15 @@ public class FastBatchingCellReader implements CellReader {
         Batch batch = (Batch) batches.get(key);
         if (batch == null) {
             batch = new Batch(request);
+/*
+System.out.println("FastBatchingCellReader: bitkey=" +request.getBatchKey());
+RolapStar star = cube.getStar();
+RolapStar.Column[] columns = star.lookupColumns((BitKey) request.getBatchKey());
+for (int i = 0; i < columns.length; i++) {
+    System.out.println("  " +columns[i]);
+}
+*/
+
             batches.put(key, batch);
         }
         batch.add(request);
@@ -112,11 +121,13 @@ public class FastBatchingCellReader implements CellReader {
     class Batch {
 
         final RolapStar.Column[] columns;
+        final BitKey bitKey;
         final List measuresList = new ArrayList();
         final Set[] valueSets;
 
         public Batch(CellRequest request) {
             columns = request.getColumns();
+            bitKey = request.getBatchKey();
             valueSets = new HashSet[columns.length];
             for (int i = 0; i < valueSets.length; i++) {
                 valueSets[i] = new HashSet();
@@ -183,13 +194,15 @@ public class FastBatchingCellReader implements CellReader {
                 RolapStar.Measure[] measures = (RolapStar.Measure[])
                         distinctMeasuresList.toArray(
                             new RolapStar.Measure[distinctMeasuresList.size()]);
-                aggmgr.loadAggregation(measures, columns, constraintses, pinnedSegments);
+                aggmgr.loadAggregation(measures, columns, bitKey,
+                            constraintses, pinnedSegments);
             }
             final int measureCount = measuresList.size();
             if (measureCount > 0) {
                 RolapStar.Measure[] measures = (RolapStar.Measure[])
                         measuresList.toArray(new RolapStar.Measure[measureCount]);
-                aggmgr.loadAggregation(measures, columns, constraintses, pinnedSegments);
+                aggmgr.loadAggregation(measures, columns, bitKey,
+                    constraintses, pinnedSegments);
             }
             if (LOGGER.isInfoEnabled()) {
                 long t2 = System.currentTimeMillis();

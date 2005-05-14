@@ -13,8 +13,11 @@
 package mondrian.rolap.sql;
 
 import mondrian.olap.MondrianDef;
+import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -69,6 +72,30 @@ import java.util.ArrayList;
  */
 public class SqlQuery
 {
+    /** This static variable controls the formatting of the sql string. */
+    private static boolean generateFormattedSql =
+             MondrianProperties.instance().getGenerateFormattedSql();
+
+    static {
+        // Trigger is used to lookup and change the value of the
+        // variable that controls formatting.
+        // Using a trigger means we don't have to look up the property eveytime.
+        new MondrianProperties.Trigger() {
+            public boolean isPersistent() {
+                return true;
+            }
+            public int phase() {
+                return MondrianProperties.Trigger.PRIMARY_PHASE;
+            }
+            public void executeTrigger(final String key,
+                                       final String value)
+                         throws MondrianProperties.Trigger.VetoRT {
+                generateFormattedSql = 
+                    MondrianProperties.instance().getGenerateFormattedSql();
+            }
+        };
+    }
+
     private boolean distinct;
     private final DatabaseMetaData databaseMetaData;
 
@@ -673,16 +700,40 @@ public class SqlQuery
 
     public String toString()
     {
-        buf.setLength(0);
+        if (generateFormattedSql) {
+            StringWriter sw = new StringWriter(256);
+            PrintWriter pw = new PrintWriter(sw);
+            print(pw, "");
+            pw.flush();
+            return sw.toString();
 
-        select.toBuffer(buf, distinct ? "select distinct " : "select ", ", ");
-        from.toBuffer(buf, " from ", ", ");
-        where.toBuffer(buf, " where ", " and ");
-        groupBy.toBuffer(buf, " group by ", ", ");
-        having.toBuffer(buf, " having ", " and ");
-        orderBy.toBuffer(buf, " order by ", ", ");
+        } else {
+            buf.setLength(0);
 
-        return buf.toString();
+            select.toBuffer(buf, 
+                distinct ? "select distinct " : "select ", ", ");
+            from.toBuffer(buf, " from ", ", ");
+            where.toBuffer(buf, " where ", " and ");
+            groupBy.toBuffer(buf, " group by ", ", ");
+            having.toBuffer(buf, " having ", " and ");
+            orderBy.toBuffer(buf, " order by ", ", ");
+
+            return buf.toString();
+        }
+    }
+    public void print(PrintWriter pw, String prefix) {
+        // This <CR> is added to the front because the part of the code
+        // that prints out the sql (if the trace level is non-zero),
+        // RolapUtil, does not print the sql at the start of a new line.
+        pw.println();
+
+        select.print(pw, prefix, 
+            distinct ? "select distinct " : "select ", ", ");
+        from.print(pw, prefix, "from ", ", ");
+        where.print(pw, prefix, "where ", " and ");
+        groupBy.print(pw, prefix, "group by ", ", ");
+        having.print(pw, prefix, "having ", " and ");
+        orderBy.print(pw, prefix, "order by ", ", ");
     }
 
     private class ClauseList extends ArrayList {
@@ -721,6 +772,30 @@ public class SqlQuery
                 }
 
                 buf.append(s);
+            }
+        }
+        void print(final PrintWriter pw, 
+                   final String prefix, 
+                   final String first,
+                   final String sep) {
+            String subprefix = prefix + "    ";
+            boolean firstTime = true;
+            for (Iterator it = iterator(); it.hasNext(); ) {
+                String s = (String) it.next();
+
+                if (firstTime) {
+                    pw.print(prefix);
+                    pw.print(first);
+                    firstTime = false;
+                } else {
+                    pw.print(sep);
+                }
+                pw.println();
+                pw.print(subprefix);
+                pw.print(s);
+            }
+            if (! firstTime) {
+                pw.println();
             }
         }
     }

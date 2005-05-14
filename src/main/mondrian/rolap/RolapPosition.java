@@ -9,11 +9,9 @@
 */
 
 package mondrian.rolap;
+
 import mondrian.olap.*;
 import mondrian.olap.fun.MondrianEvaluationException;
-import mondrian.rolap.agg.AggregationManager;
-import mondrian.rolap.agg.CellRequest;
-
 import java.util.*;
 
 class RolapPosition extends Position {

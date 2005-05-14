@@ -12,16 +12,21 @@ package mondrian.tui;
 
 import mondrian.olap.*;
 import mondrian.olap.fun.FunInfo;
+import mondrian.rolap.RolapCube;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Level;
 
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -49,7 +54,15 @@ public class CmdRunner {
         MondrianProperties.LargeDimensionThreshold,
         MondrianProperties.SparseSegmentCountThreshold,
         MondrianProperties.SparseSegmentDensityThreshold,
+        MondrianProperties.UseAggregates,
+        MondrianProperties.ChooseAggregateByVolume,
+        MondrianProperties.AggregateRules,
+        MondrianProperties.AggregateRuleTag,
+        MondrianProperties.GenerateFormattedSql,
+        MondrianProperties.EnableTriggers,
     };
+    private static final Map paraNameValues = new HashMap();
+
 
     private String filename;
     private String mdxCmd;
@@ -71,7 +84,6 @@ public class CmdRunner {
 
     void setError(Throwable t) {
         this.error = formatError(t);
-//System.out.println("CmdRunner.setError: error=" +error);
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         t.printStackTrace(pw);
@@ -84,13 +96,16 @@ public class CmdRunner {
         this.stack = null;
     }
 
-	private String formatError(Throwable mex) {
-		String message = mex.getMessage();
-		if (mex.getCause() != null && mex.getCause() != mex) {
-			message = message + "\n" + formatError(mex.getCause());
-        }
-		return message;
-	}
+    private String formatError(Throwable mex) {
+            String message = mex.getMessage();
+            if (message == null) {
+                message = mex.toString();
+            }
+            if (mex.getCause() != null && mex.getCause() != mex) {
+                    message = message + "\n" + formatError(mex.getCause());
+            }
+            return message;
+    }
 
     public static void listPropertyNames(StringBuffer buf) {
         for (int i = 0; i < CmdRunner.propertyNames.length; i++) {
@@ -111,10 +126,28 @@ public class CmdRunner {
         }
     }
 
+    /** 
+     * Just calling MondrianProperties' generic getPropery method does not
+     * do it!!! Why, because most of these properties have 1) default values and
+     * 2) their own getter methods that return the default values if they have
+     * not been explicitly set previously.
+     * So, what to do? By luck or good planning, most of the MondrianProperties
+     * instance variable whose values are the property names themselves
+     * have field names which when "get" is prepended to them are the special
+     * method names for those properties. So with a little reflection, so to
+     * speak, one can invoke a property's associate method and get its
+     * default value.
+     * 
+     * @param propertyName 
+     * @return 
+     */
     private static String getPropertyValue(String propertyName) {
-        return MondrianProperties.instance().getProperty(propertyName);
+        String v = MondrianProperties.instance().getPropertyValueReflect(propertyName);
+        return (v != null)
+            ? v
+            : MondrianProperties.instance().getProperty(propertyName);
     }
-
+    
     public static void listProperty(String propertyName, StringBuffer buf) {
         buf.append(getPropertyValue(propertyName));
     }
@@ -138,6 +171,274 @@ public class CmdRunner {
         }
     }
 
+    public void loadParameters(Query query) {
+        Parameter[] params = query.getParameters();
+        for (int i = 0; i < params.length; i++) {
+            Parameter param = params[i];
+            loadParameter(query, param);
+        }
+
+    }
+    private static class Expr {
+        static final int STRING_TYPE    = 1;
+        static final int NUMERIC_TYPE   = 2;
+        static final int MEMBER_TYPE    = 3;
+        static String typeName(int type) {
+            switch (type) {
+            case STRING_TYPE:
+                return "STRING_TYPE";
+            case NUMERIC_TYPE:
+                return "NUMERIC_TYPE";
+            case MEMBER_TYPE:
+                return "MEMBER_TYPE";
+            default:
+                return "UNKNOWN_TYPE";
+            }
+        }
+        Object value;
+        int type;
+        Expr(Object value, int type) {
+            this.value = value;
+            this.type = type;
+        }
+    }
+    public void loadParameter(Query query, Parameter param) {
+            int pType = param.getType();
+            String name = param.getName();
+            String value = (String) CmdRunner.paraNameValues.get(name);
+            CmdRunner.debug("loadParameter: name=" +name+ ", value=" + value);
+            if (value == null) {
+                return;
+            }
+            Expr expr = parseParameter(value);
+            if  (expr == null) {
+                return;
+            }
+            int type = expr.type;
+            // found the parameter with the given name in the query
+            switch (pType) {
+            case Category.Numeric :
+                if (type != Expr.NUMERIC_TYPE) {
+                    String msg = "For parameter named \""
+                        + name
+                        + "\" of Catetory.Numeric, "
+                        + "the value was type \"" 
+                        + Expr.typeName(type)
+                        + "\"";
+                    throw new IllegalArgumentException(msg);
+                }
+                if (expr.value instanceof Double) {
+                    param.setValue(expr.value);
+                } else {
+                    Number n = (Number) expr.value;
+                    param.setValue(new Double(n.doubleValue()));
+                }
+                break;
+            case Category.String :
+                if (type != Expr.STRING_TYPE) {
+                    String msg = "For parameter named \""
+                        + name
+                        + "\" of Catetory.String, "
+                        + "the value was type \"" 
+                        + Expr.typeName(type)
+                        + "\"";
+                    throw new IllegalArgumentException(msg);
+                }
+                param.setValue(value);
+                break;
+
+            case Category.Member :
+                if (type != Expr.MEMBER_TYPE) {
+                    String msg = "For parameter named \""
+                        + name
+                        + "\" of Catetory.Member, "
+                        + "the value was type \"" 
+                        + Expr.typeName(type)
+                        + "\"";
+                    throw new IllegalArgumentException(msg);
+                }
+                param.setValue(expr.value);
+                break;
+            }
+    }
+
+    static NumberFormat nf = NumberFormat.getInstance();
+
+    // this is taken from JPivot
+    public Expr parseParameter(String value) {
+        // is it a String (enclose in double or single quotes ?
+        String trimmed = value.trim();
+        int len = trimmed.length();
+        if (trimmed.charAt(0) == '"' && trimmed.charAt(len - 1) == '"') {
+            CmdRunner.debug("parseParameter. STRING_TYPE: " +trimmed);
+            return new Expr(trimmed.substring(1, trimmed.length() - 1),
+                            Expr.STRING_TYPE);
+        }
+        if (trimmed.charAt(0) == '\'' && trimmed.charAt(len - 1) == '\'') {
+            CmdRunner.debug("parseParameter. STRING_TYPE: " +trimmed);
+            return new Expr(trimmed.substring(1, trimmed.length() - 1),
+                            Expr.STRING_TYPE);
+        }
+
+        // is it a Number ?   
+        Number number = null;
+        try {
+            number = nf.parse(trimmed);
+        } catch (ParseException pex) {
+            // nothing to do, should be member 
+        }
+        if (number != null) {
+            CmdRunner.debug("parseParameter. NUMERIC_TYPE: " +number);
+            return new Expr(number, Expr.NUMERIC_TYPE);
+        }
+
+        CmdRunner.debug("parseParameter. MEMBER_TYPE: " +trimmed);
+        Query query = this.connection.parseQuery(this.mdxCmd);
+        // dont have to execute
+        //this.connection.execute(query);
+
+        // assume member,dimension,hierarchy,level
+        Exp exp = Util.lookup(query, Util.explode(trimmed));
+
+        CmdRunner.debug("parseParameter. exp="
+            +((exp == null) ? "null" : exp.getClass().getName()));
+
+        if (exp instanceof Member) {
+            Member member = (Member) exp;
+            return new Expr(member, Expr.MEMBER_TYPE);
+        } else if (exp instanceof mondrian.olap.Level) {
+            mondrian.olap.Level level = (mondrian.olap.Level) exp;
+            return new Expr(level, Expr.MEMBER_TYPE);
+        } else if (exp instanceof Hierarchy) {
+            Hierarchy hier = (Hierarchy) exp;
+            return new Expr(hier, Expr.MEMBER_TYPE);
+        } else if (exp instanceof Dimension) {
+            Dimension dim = (Dimension) exp;
+            return new Expr(dim, Expr.MEMBER_TYPE);
+        }
+        return null;
+    }
+
+    public static void listParameterNameValues(StringBuffer buf) {
+        Iterator it = CmdRunner.paraNameValues.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry e = (Map.Entry) it.next();
+            buf.append(e.getKey());
+            buf.append('=');
+            buf.append(e.getValue());
+            buf.append('\n');
+        }
+    }
+    public static void listParam(String name, StringBuffer buf) {
+        String v = (String) CmdRunner.paraNameValues.get(name);
+        buf.append(v);
+    }
+    public static boolean isParam(String name) {
+        String v = (String) CmdRunner.paraNameValues.get(name);
+        return (v != null);
+    }
+    public static void setParameter(String name, String value) {
+        if (name == null) {
+            CmdRunner.paraNameValues.clear();
+        } else {
+            if (value == null) {
+                CmdRunner.paraNameValues.remove(name);
+            } else {
+                CmdRunner.paraNameValues.put(name, value);
+            }
+        }
+    }
+
+    /////////////////////////////////////////////////////////////////////////
+    //
+    // cubes
+    //
+    public Cube[] getCubes() {
+        Connection conn = getConnection();
+        Cube[] cubes = conn.getSchemaReader().getCubes();
+        return cubes;
+    }
+    public Cube getCube(String name) {
+        Cube[] cubes = getCubes();
+        for (int i = 0; i < cubes.length; i++) {
+            Cube cube = cubes[i];
+            if (cube.getName().equals(name)) {
+                return cube;
+            }
+        }
+        return null;
+    }
+    public void listCubeName(StringBuffer buf) {
+        Connection conn = getConnection();
+        Cube[] cubes = getCubes();
+        for (int i = 0; i < cubes.length; i++) {
+            Cube cube = cubes[i];
+            buf.append(cube.getName());
+            buf.append('\n');
+        }
+    }
+    public void listCubeAttribues(String name, StringBuffer buf) {
+        Cube cube = getCube(name);
+        if (cube == null) {
+            buf.append("No cube found with name \"");
+            buf.append(name);
+            buf.append("\"");
+        } else {
+            RolapCube rcube = (RolapCube) cube;
+            buf.append("facttable=");
+            buf.append(rcube.getStar().getFactTable().getAlias());
+            buf.append('\n');
+            buf.append("caching=");
+            buf.append(rcube.isCache());
+            buf.append('\n');
+        }
+    }
+    public void executeCubeCommane(String cubename, 
+                                   String command, 
+                                   StringBuffer buf) {
+        Cube cube = getCube(cubename);
+        if (cube == null) {
+            buf.append("No cube found with name \"");
+            buf.append(cubename);
+            buf.append("\"");
+        } else {
+            if (command.equals("clearCache")) {
+                RolapCube rcube = (RolapCube) cube;
+                rcube.clearCache();
+            } else {
+                buf.append("For cube \"");
+                buf.append(cubename);
+                buf.append("\" there is no command \"");
+                buf.append(command);
+                buf.append("\"");
+            }
+        }
+    }
+    public void setCubeAttribute(String cubename, 
+                                 String name, 
+                                 String value, 
+                                 StringBuffer buf) {
+        Cube cube = getCube(cubename);
+        if (cube == null) {
+            buf.append("No cube found with name \"");
+            buf.append(cubename);
+            buf.append("\"");
+        } else {
+            if (name.equals("caching")) {
+                RolapCube rcube = (RolapCube) cube;
+                rcube.setCache(Boolean.valueOf(value).booleanValue());
+            } else {
+                buf.append("For cube \"");
+                buf.append(cubename);
+                buf.append("\" there is no attribute \"");
+                buf.append(name);
+                buf.append("\"");
+            }
+        }
+    }
+    //
+    /////////////////////////////////////////////////////////////////////////
+
     /**
      * Executes a query and returns the result as a string.
      *
@@ -145,7 +446,7 @@ public class CmdRunner {
      * @return result String
      */
     public String execute(String queryString) {
-        Result result = runQuery(queryString);
+        Result result = runQuery(queryString, true);
         String resultString = toString(result);
         return resultString;
     }
@@ -156,14 +457,17 @@ public class CmdRunner {
      * @param queryString MDX query text
      * @return a {@link Result} object
      */
-    public Result runQuery(String queryString) {
+    public Result runQuery(String queryString, boolean loadParams) {
         CmdRunner.debug("CmdRunner.runQuery: TOP");
         try {
-            Connection connection = getConnection();
+            this.connection = getConnection();
             CmdRunner.debug("CmdRunner.runQuery: AFTER getConnection");
-            Query query = connection.parseQuery(queryString);
+            Query query = this.connection.parseQuery(queryString);
             CmdRunner.debug("CmdRunner.runQuery: AFTER parseQuery");
-            return connection.execute(query);
+            if (loadParams) {
+                loadParameters(query);
+            }
+            return this.connection.execute(query);
         } finally {
             CmdRunner.debug("CmdRunner.runQuery: BOTTOM");
         }
@@ -254,11 +558,11 @@ public class CmdRunner {
         }
         if (fresh) {
             return DriverManager.getConnection(this.connectString, null, fresh);
-        } else if (connection == null) {
-            connection =
+        } else if (this.connection == null) {
+            this.connection =
                 DriverManager.getConnection(this.connectString, null, fresh);
         }
-        return connection;
+        return this.connection;
     }
 
     /////////////////////////////////////////////////////////////////////////
@@ -340,7 +644,7 @@ public class CmdRunner {
         StringBuffer buf = new StringBuffer(2048);
         BufferedReader br = new BufferedReader(new InputStreamReader(in));
         boolean inMDXCmd = false;
-    	String resultString = null;
+        String resultString = null;
 
         for(;;) {
             if (resultString != null) {
@@ -348,14 +652,14 @@ public class CmdRunner {
                 resultString = null;
             }
             if (interactive) {
-            	if (inMDXCmd)
+                if (inMDXCmd)
                     System.out.print(COMMAND_PROMPT_MID);
-            	else
-            		System.out.print(COMMAND_PROMPT_START);
+                else
+                    System.out.print(COMMAND_PROMPT_START);
             }
             if (!inMDXCmd) {
                 buf.setLength(0);
-            	//buf = new StringBuffer(2048);
+                //buf = new StringBuffer(2048);
             }
             String line = readLine(br);
             if (line != null) {
@@ -387,8 +691,14 @@ public class CmdRunner {
                     resultString = executeList(cmd);
                 } else if (cmd.startsWith("func")) {
                     resultString = executeFunc(cmd);
+                } else if (cmd.startsWith("param")) {
+                    resultString = executeParam(cmd);
+                } else if (cmd.startsWith("cube")) {
+                    resultString = executeCube(cmd);
                 } else if (cmd.startsWith("error")) {
                     resultString = executeError(cmd);
+                } else if (cmd.equals("=")) {
+                    resultString = reexecuteMDXCmd();
                 } else if (cmd.startsWith("exit")) {
                     break;
                 }
@@ -425,9 +735,9 @@ public class CmdRunner {
                     resultString = executeMDXCmd(mdxCmd);
                     inMDXCmd = false;
                 } else {
-	                // add carriage return so that query keeps formatting
-	                buf.append('\n');
-	            }
+                    // add carriage return so that query keeps formatting
+                    buf.append('\n');
+                }
             }
         }
     }
@@ -569,8 +879,11 @@ public class CmdRunner {
     private static final int LIST_CMD           = 0x010;
     private static final int MDX_CMD            = 0x020;
     private static final int FUNC_CMD           = 0x040;
-    private static final int ERROR_CMD          = 0x080;
-    private static final int EXIT_CMD           = 0x100;
+    private static final int PARAM_CMD          = 0x080;
+    private static final int CUBE_CMD           = 0x100;
+    private static final int ERROR_CMD          = 0x200;
+    private static final int EXIT_CMD           = 0x400;
+
     private static final int ALL_CMD  = HELP_CMD |
                                         SET_CMD |
                                         LOG_CMD |
@@ -578,6 +891,8 @@ public class CmdRunner {
                                         LIST_CMD |
                                         MDX_CMD |
                                         FUNC_CMD |
+                                        PARAM_CMD |
+                                        CUBE_CMD |
                                         ERROR_CMD |
                                         EXIT_CMD;
 
@@ -588,10 +903,13 @@ public class CmdRunner {
     private static final char STRING_CHAR_1       = '"';
     private static final char STRING_CHAR_2       = '\'';
 
+    //////////////////////////////////////////////////////////////////////////
+    // help
+    //////////////////////////////////////////////////////////////////////////
     protected static String executeHelp(String mdxCmd) {
         StringBuffer buf = new StringBuffer(200);
 
-        String[] tokens = mdxCmd.split("\\s");
+        String[] tokens = mdxCmd.split("\\s+");
 
         int cmd = UNKNOWN_CMD;
 
@@ -612,6 +930,12 @@ public class CmdRunner {
                 cmd = FILE_CMD;
             } else if (cmdName.equals("list")) {
                 cmd = LIST_CMD;
+            } else if (cmdName.equals("func")) {
+                cmd = FUNC_CMD;
+            } else if (cmdName.equals("param")) {
+                cmd = PARAM_CMD;
+            } else if (cmdName.equals("cube")) {
+                cmd = CUBE_CMD;
             } else if (cmdName.equals("error")) {
                 cmd = ERROR_CMD;
             } else if (cmdName.equals("exit")) {
@@ -711,7 +1035,7 @@ public class CmdRunner {
             buf.append("the command interpreter.");
             buf.append('\n');
             appendIndent(buf, 2);
-            buf.append("Queries can also be ended by using a semicolon (;)");
+            buf.append("Queries can also be ended by using a semicolon ';'");
             buf.append('\n');
             appendIndent(buf, 3);
             buf.append("at the end of a line.");
@@ -721,10 +1045,30 @@ public class CmdRunner {
             appendFunc(buf);
         }
 
+        if ((cmd & PARAM_CMD) != 0) {
+            buf.append('\n');
+            appendParam(buf);
+        }
+
+        if ((cmd & CUBE_CMD) != 0) {
+            buf.append('\n');
+            appendCube(buf);
+        }
+
         if ((cmd & ERROR_CMD) != 0) {
             // list
             buf.append('\n');
             appendError(buf);
+        }
+
+        if (cmd == ALL_CMD) {
+            // reexecute
+            buf.append('\n');
+            appendIndent(buf, 1);
+            buf.append("= <cr>");
+            buf.append('\n');
+            appendIndent(buf, 2);
+            buf.append("Re-Execute mdx query.");
         }
 
         if ((cmd & EXIT_CMD) != 0) {
@@ -743,6 +1087,9 @@ public class CmdRunner {
         }
     }
 
+    //////////////////////////////////////////////////////////////////////////
+    // set
+    //////////////////////////////////////////////////////////////////////////
     protected static void appendSet(StringBuffer buf) {
         appendIndent(buf, 1);
         buf.append("set [ property[=value ] ] <cr>");
@@ -754,41 +1101,118 @@ public class CmdRunner {
         buf.append("With \"property\" prints property's value.");
         buf.append('\n');
         appendIndent(buf, 2);
-        buf.append("With \"all\" prints all properties' values.");
-        buf.append('\n');
-        appendIndent(buf, 2);
         buf.append("With \"property=value\" set property to that value.");
     }
 
     protected String executeSet(String mdxCmd) {
-        StringBuffer buf = new StringBuffer(200);
+        StringBuffer buf = new StringBuffer(400);
 
-        String[] tokens = mdxCmd.split("\\s");
+        String[] tokens = mdxCmd.split("\\s+");
 
         if (tokens.length == 1) {
             // list all properties
-            listPropertyNames(buf);
+            listPropertiesAll(buf);
 
         } else if (tokens.length == 2) {
             String arg = tokens[1];
-            if (arg.equals("all")) {
-                listPropertiesAll(buf);
+            int index = arg.indexOf('=');
+            if (index == -1) {
+                listProperty(arg, buf);
             } else {
-                int index = arg.indexOf('=');
-                if (index == -1) {
-                    listProperty(arg, buf);
-                } else {
-                    String[] nv = arg.split("=");
-                    String name = nv[0];
-                    String value = nv[1];
-                    if (isProperty(name)) {
+                String[] nv = arg.split("=");
+                String name = nv[0];
+                String value = nv[1];
+                if (isProperty(name)) {
+                    try {
                         if (setProperty(name, value)) {
                             this.connectString = null;
                         }
-                    } else {
-                        buf.append("Bad property name:");
-                        buf.append(name);
+                    } catch (Exception ex) {
+                        setError(ex);
+                    }
+                } else {
+                    buf.append("Bad property name:");
+                    buf.append(name);
+                    buf.append('\n');
+                }
+            }
+
+        } else {
+            buf.append("Bad command usage: \"");
+            buf.append(mdxCmd);
+            buf.append("\"\n");
+            appendSet(buf);
+        }
+
+        return buf.toString();
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // log
+    //////////////////////////////////////////////////////////////////////////
+    protected static void appendLog(StringBuffer buf) {
+        appendIndent(buf, 1);
+        buf.append("log [ classname[=level ] ] <cr>");
+        buf.append('\n');
+        appendIndent(buf, 2);
+        buf.append("With no args, prints the current log level of all classes.");
+        buf.append('\n');
+        appendIndent(buf, 2);
+        buf.append("With \"classname\" prints the current log level of the class.");
+        buf.append('\n');
+        appendIndent(buf, 2);
+        buf.append("With \"classname=level\" set log level to new value.");
+    }
+
+    protected String executeLog(String mdxCmd) {
+        StringBuffer buf = new StringBuffer(200);
+
+        String[] tokens = mdxCmd.split("\\s+");
+
+        if (tokens.length == 1) {
+            Enumeration e = LogManager.getCurrentLoggers();
+            while (e.hasMoreElements()) {
+                Logger logger = (Logger) e.nextElement();
+                buf.append(logger.getName());
+                buf.append(':');
+                buf.append(logger.getLevel());
+                buf.append('\n');
+            }
+
+        } else if (tokens.length == 2) {
+            String arg = tokens[1];
+            int index = arg.indexOf('=');
+            if (index == -1) {
+                Logger logger = LogManager.exists(arg);
+                if (logger == null) {
+                    buf.append("Bad log name: ");
+                    buf.append(arg);
+                    buf.append('\n');
+                } else {
+                    buf.append(logger.getName());
+                    buf.append(':');
+                    buf.append(logger.getLevel());
+                    buf.append('\n');
+                }
+            } else {
+                String[] nv = arg.split("=");
+                String classname = nv[0];
+                String levelStr = nv[1];
+
+                Logger logger = LogManager.getLogger(classname);
+
+                if (logger == null) {
+                    buf.append("Bad log name: ");
+                    buf.append(classname);
+                    buf.append('\n');
+                } else {
+                    Level level = Level.toLevel(levelStr, null);
+                    if (level == null) {
+                        buf.append("Bad log level: ");
+                        buf.append(levelStr);
                         buf.append('\n');
+                    } else {
+                        logger.setLevel(level);
                     }
                 }
             }
@@ -803,80 +1227,9 @@ public class CmdRunner {
         return buf.toString();
     }
 
-    protected static void appendLog(StringBuffer buf) {
-        appendIndent(buf, 1);
-        buf.append("log [ classname [ level ] ] <cr>");
-        buf.append('\n');
-        appendIndent(buf, 2);
-        buf.append("With no args, prints the current log level of all classes.");
-        buf.append('\n');
-        appendIndent(buf, 2);
-        buf.append("With one arg, prints the current log level of the class.");
-        buf.append('\n');
-        appendIndent(buf, 2);
-        buf.append("With \"value\" sets the log level to new value.");
-        buf.append('\n');
-    }
-
-    protected String executeLog(String mdxCmd) {
-        StringBuffer buf = new StringBuffer(200);
-
-        String[] tokens = mdxCmd.split("\\s");
-
-        if (tokens.length == 1) {
-            Enumeration e = LogManager.getCurrentLoggers();
-            while (e.hasMoreElements()) {
-                Logger logger = (Logger) e.nextElement();
-                buf.append(logger.getName());
-                buf.append(':');
-                buf.append(logger.getLevel());
-                buf.append('\n');
-            }
-
-        } else if (tokens.length == 2) {
-            String classname = tokens[1];
-            Logger logger = LogManager.exists(classname);
-            if (logger == null) {
-                buf.append("Bad log name: ");
-                buf.append(classname);
-                buf.append('\n');
-            } else {
-                buf.append(logger.getName());
-                buf.append(':');
-                buf.append(logger.getLevel());
-                buf.append('\n');
-            }
-
-        } else if (tokens.length == 3) {
-            String classname = tokens[1];
-            Logger logger = LogManager.exists(classname);
-
-            if (logger == null) {
-                buf.append("Bad log name: ");
-                buf.append(classname);
-                buf.append('\n');
-            } else {
-                String levelStr = tokens[2];
-                Level level = Level.toLevel(levelStr, null);
-                if (level == null) {
-                    buf.append("Bad log level: ");
-                    buf.append(levelStr);
-                    buf.append('\n');
-                } else {
-                    logger.setLevel(level);
-                }
-            }
-
-        } else {
-            buf.append("Bad command usage: \"");
-            buf.append(mdxCmd);
-            buf.append("\"\n");
-            appendSet(buf);
-        }
-
-        return buf.toString();
-    }
-
+    //////////////////////////////////////////////////////////////////////////
+    // file
+    //////////////////////////////////////////////////////////////////////////
     protected static void appendFile(StringBuffer buf) {
         appendIndent(buf, 1);
         buf.append("file [ filename | '=' ] <cr>");
@@ -893,7 +1246,7 @@ public class CmdRunner {
 
     protected String executeFile(String mdxCmd) {
         StringBuffer buf = new StringBuffer(512);
-        String[] tokens = mdxCmd.split("\\s");
+        String[] tokens = mdxCmd.split("\\s+");
 
         if (tokens.length == 1) {
             if (this.filename != null) {
@@ -939,6 +1292,9 @@ public class CmdRunner {
         return buf.toString();
     }
 
+    //////////////////////////////////////////////////////////////////////////
+    // list
+    //////////////////////////////////////////////////////////////////////////
     protected static void appendList(StringBuffer buf) {
         appendIndent(buf, 1);
         buf.append("list [ cmd | result ] <cr>");
@@ -956,7 +1312,7 @@ public class CmdRunner {
     protected String executeList(String mdxCmd) {
         StringBuffer buf = new StringBuffer(200);
 
-        String[] tokens = mdxCmd.split("\\s");
+        String[] tokens = mdxCmd.split("\\s+");
 
         if (tokens.length == 1) {
             if (this.mdxCmd != null) {
@@ -994,6 +1350,10 @@ public class CmdRunner {
 
         return buf.toString();
     }
+
+    //////////////////////////////////////////////////////////////////////////
+    // func
+    //////////////////////////////////////////////////////////////////////////
     protected static void appendFunc(StringBuffer buf) {
         appendIndent(buf, 1);
         buf.append("func [ name ] <cr>");
@@ -1002,16 +1362,15 @@ public class CmdRunner {
         buf.append("With no arguments, list all defined function names");
         buf.append('\n');
         appendIndent(buf, 2);
-        buf.append("With \"name\" argument, diplay the functions:");
+        buf.append("With \"name\" argument, display the functions:");
         buf.append('\n');
         appendIndent(buf, 3);
         buf.append("name, description, and syntax");
     }
-
     protected String executeFunc(String mdxCmd) {
         StringBuffer buf = new StringBuffer(200);
 
-        String[] tokens = mdxCmd.split("\\s");
+        String[] tokens = mdxCmd.split("\\s+");
 
         final FunTable funTable = getConnection().getSchema().getFunTable();
         if (tokens.length == 1) {
@@ -1119,13 +1478,142 @@ public class CmdRunner {
 
         return buf.toString();
     }
+    //////////////////////////////////////////////////////////////////////////
+    // param
+    //////////////////////////////////////////////////////////////////////////
+    protected static void appendParam(StringBuffer buf) {
+        appendIndent(buf, 1);
+        buf.append("param [ name[=value ] ] <cr>");
+        buf.append('\n');
+        appendIndent(buf, 2);
+        buf.append("With no argumnts, all param name/value pairs are printed.");
+        buf.append('\n');
+        appendIndent(buf, 2);
+        buf.append("With \"name\" argument, the value of the param is printed.");
+        buf.append('\n');
+        appendIndent(buf, 2);
+        buf.append("With \"name=value\" sets the parameter with name to value.");
+        buf.append('\n');
+        appendIndent(buf, 3);
+        buf.append(" If name is null, then unsets all parameters");
+        buf.append('\n');
+        appendIndent(buf, 3);
+        buf.append(" If value is null, then unsets the parameter associated with value");
+    }
+    protected String executeParam(String mdxCmd) {
+        StringBuffer buf = new StringBuffer(200);
 
+        String[] tokens = mdxCmd.split("\\s+");
+
+        if (tokens.length == 1) {
+            // list all properties
+            listParameterNameValues(buf);
+
+        } else if (tokens.length == 2) {
+            String arg = tokens[1];
+            int index = arg.indexOf('=');
+            if (index == -1) {
+                String name = arg;
+                if (isParam(name)) {
+                    listParam(name, buf);
+                } else {
+                    buf.append("Bad parameter name:");
+                    buf.append(name);
+                    buf.append('\n');
+                }
+            } else {
+                String[] nv = arg.split("=");
+                String name = (nv.length == 0) ? null : nv[0];
+                String value = (nv.length == 2) ? nv[1] : null;
+                setParameter(name, value);
+            }
+
+        } else {
+            buf.append("Bad command usage: \"");
+            buf.append(mdxCmd);
+            buf.append("\"\n");
+            appendSet(buf);
+        }
+
+        return buf.toString();
+    }
+    //////////////////////////////////////////////////////////////////////////
+    // cube
+    //////////////////////////////////////////////////////////////////////////
+    protected static void appendCube(StringBuffer buf) {
+        appendIndent(buf, 1);
+        buf.append("cube [ cubename [ name [=value | command] ] ] <cr>");
+        buf.append('\n');
+        appendIndent(buf, 2);
+        buf.append("With no argumnts, all cubes are listed by name.");
+        buf.append('\n');
+        appendIndent(buf, 2);
+        buf.append("With \"cubename\" argument, cube attribute name/values for:");
+        buf.append('\n');
+        appendIndent(buf, 3);
+        buf.append("fact table (readonly)");
+        buf.append('\n');
+        appendIndent(buf, 3);
+        buf.append("aggregate caching (readwrite)");
+        buf.append('\n');
+        appendIndent(buf, 2);
+        buf.append("are printed");
+        buf.append('\n');
+        appendIndent(buf, 2);
+        buf.append("With \"cubename name=value\" sets the readwrite attribute with name to value.");
+        buf.append('\n');
+        appendIndent(buf, 2);
+        buf.append("With \"cubename command\" executes the commands:");
+        buf.append('\n');
+        appendIndent(buf, 3);
+        buf.append("clearCache");
+    }
+
+    protected String executeCube(String mdxCmd) {
+        StringBuffer buf = new StringBuffer(200);
+
+        String[] tokens = mdxCmd.split("\\s+");
+
+        if (tokens.length == 1) {
+            // list all properties
+            listCubeName(buf);
+        } else if (tokens.length == 2) {
+            String cubename = tokens[1];
+            listCubeAttribues(cubename, buf);
+
+        } else if (tokens.length == 3) {
+            String cubename = tokens[1];
+            String arg = tokens[2];
+            int index = arg.indexOf('=');
+            if (index == -1) {
+                // its a commnd
+                String command = arg;
+                executeCubeCommane(cubename, command, buf);
+            } else {
+                String[] nv = arg.split("=");
+                String name = (nv.length == 0) ? null : nv[0];
+                String value = (nv.length == 2) ? nv[1] : null;
+                setCubeAttribute(cubename, name, value, buf);
+            }
+
+        } else {
+            buf.append("Bad command usage: \"");
+            buf.append(mdxCmd);
+            buf.append("\"\n");
+            appendSet(buf);
+        }
+
+        return buf.toString();
+    }
+    //////////////////////////////////////////////////////////////////////////
+    // error
+    //////////////////////////////////////////////////////////////////////////
     protected static void appendError(StringBuffer buf) {
         appendIndent(buf, 1);
         buf.append("error [ msg | stack ] <cr>");
         buf.append('\n');
         appendIndent(buf, 2);
-        buf.append("With no arguemnts, both message and stack are printed.");
+        buf.append("With no argumnts, both message and stack are printed.");
         buf.append('\n');
         appendIndent(buf, 2);
         buf.append("With \"msg\" argument, the Error message is printed.");
@@ -1137,7 +1625,7 @@ public class CmdRunner {
     protected String executeError(String mdxCmd) {
         StringBuffer buf = new StringBuffer(200);
 
-        String[] tokens = mdxCmd.split("\\s");
+        String[] tokens = mdxCmd.split("\\s+");
 
         if (tokens.length == 1) {
             if (error != null) {
@@ -1175,6 +1663,9 @@ public class CmdRunner {
 
         return buf.toString();
     }
+    //////////////////////////////////////////////////////////////////////////
+    // exit
+    //////////////////////////////////////////////////////////////////////////
     protected static void appendExit(StringBuffer buf) {
         appendIndent(buf, 1);
         buf.append("exit <cr>");
@@ -1184,6 +1675,13 @@ public class CmdRunner {
     }
 
 
+    protected String reexecuteMDXCmd() {
+        if (this.mdxCmd == null) {
+            return "No command to execute";
+        } else {
+            return executeMDXCmd(this.mdxCmd);
+        }
+    }
     protected String executeMDXCmd(String mdxCmd) {
 
         this.mdxCmd = mdxCmd;
@@ -1195,22 +1693,10 @@ public class CmdRunner {
             return resultString;
 
         } catch (Exception ex) {
-//System.out.println("GOT ERROR=" +ex);
             setError(ex);
             return error;
         }
     }
-
-	/////////////////////////////////////////////////////////////////////////
-    // context
-    /////////////////////////////////////////////////////////////////////////
-/** Currently there is only one global Context
-    private static class Context {
-        CmdRunner cmdRunner;
-    }
-
-    private static final Context context = new Context();
-*/
 
     /////////////////////////////////////////////////////////////////////////
     // helpers
@@ -1231,7 +1717,7 @@ public class CmdRunner {
             buf.append(msg);
             buf.append('\n');
         }
-        buf.append("Usage: mondrian.CmdRunner args");
+        buf.append("Usage: mondrian.tui.CmdRunner args");
         buf.append('\n');
         buf.append("  args:");
         buf.append('\n');
@@ -1242,6 +1728,7 @@ public class CmdRunner {
         buf.append("  -rc              : do NOT reload connections each query");
         buf.append('\n');
         buf.append("                     (default is to reload connections)");
+        buf.append('\n');
         buf.append("  -p propertyfile  : load mondrian properties");
         buf.append('\n');
         buf.append("  -f filename      : execute mdx in filename");
@@ -1313,4 +1800,3 @@ public class CmdRunner {
     }
 }
 
-// End CmdRunner.java

@@ -15,12 +15,22 @@ import mondrian.util.PropertiesPlus;
 
 import org.apache.log4j.Logger;
 import javax.servlet.ServletContext;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.ref.WeakReference;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.Collections;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Properties;
+import java.util.ArrayList;
+import java.util.ListIterator;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * <code>MondrianProperties</code> contains the properties which determine the
@@ -46,7 +56,6 @@ public class MondrianProperties extends PropertiesPlus {
     private static final String mondrianDotProperties = "mondrian.properties";
     private static final String buildDotProperties = "build.properties";
 
-    private int populateCount;
 
     public static synchronized MondrianProperties instance() {
         if (instance == null) {
@@ -54,6 +63,362 @@ public class MondrianProperties extends PropertiesPlus {
             instance.populate(null);
         }
         return instance;
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    //
+    // associating triggers with changing property values
+    //
+    /** 
+     * If the user wishes to be able to remove a Trigger at some time after
+     * it has been added, then either 1) the user has to keep the instance of
+     * the Trigger that was added and use it when calling the remove method or
+     * 2) the Trigger must implement the equals method and the Trigger used
+     * during the call to the remove method must be equal to the original
+     * Trigger added.
+     * <p>
+     * Each non persistent Trigger is wrapped in a WeakReference. What this
+     * means is that the user better keep a reference to the Trigger, otherwise
+     * it will be removed (garbage collected) without the user knowing.
+     * <p>
+     * Persistent Triggers, those that refer to objects in their executeTrigger
+     * method that will never be garbage collected, are not wrapped in
+     * a WeakReference.
+     * <p>
+     * What does all this mean, well, objects that might be garbage collected
+     * that create a Trigger must keep a reference to the Trigger (otherwise the
+     * Trigger will be garbage collected out from under the object). A common
+     * usage pattern is to implement the Trigger interface using an anonymous
+     * class - anonymous classes are non-static classes when created in an
+     * instance object. But, remember, the anonymous class instance holds a
+     * reference to the outer instance object but not the other way around; the
+     * instance object does not have an implicit reference to the anonymous
+     * class instance - the reference must be explicit. And, if the anonymous
+     * Trigger is created with the isPersistent method returning true, then,
+     * surprise, the outer instance object will never be garbage collected!!!
+     * <p>
+     * Note that it is up to the creator of MondrianProperties Triggers to make
+     * sure that they are ordered correctly. This is done by either having
+     * order independent Triggers (they all have the same phase) or by
+     * assigning phases to the Triggers where primaries execute before
+     * secondary which execute before tertiary.
+     * If a finer level of execution order granularity is needed, then the
+     * implementation should be changed so that the phase() method returns
+     * just some integer and its up to the users to coordinate their values.
+     */
+    public interface Trigger {
+        int PRIMARY_PHASE     = 1;
+        int SECONDARY_PHASE   = 2;
+        int TERTIARY_PHASE    = 3;
+
+        public static class VetoRT extends RuntimeException {
+            public VetoRT(String msg) {
+                super(msg);
+            }
+            public VetoRT(Exception ex) {
+                super(ex);
+            }
+        }
+
+        /** 
+         * An Entry is associated with a property key. Each Entry can have one
+         * or more Triggers. Each Trigger is stored in a WeakReference so that
+         * when the the Trigger is only reachable via weak referencs the Trigger
+         * will be be collected and the contents of the WeakReference
+         * will be set to null.
+         */
+        public static class Entry {
+            private ArrayList triggerList;
+
+            Entry() {
+                triggerList = new ArrayList();
+            }
+            
+            /** 
+             * Add a Trigger wrapping it in a WeakReference. 
+             * 
+             * @param trigger 
+             */
+            void add(final Trigger trigger) {
+                // this is the object to add to list
+                Object o = (trigger.isPersistent())
+                            ? trigger : (Object) new WeakReference(trigger);
+
+                // Add a Trigger in the correct group of phases in the list
+                for (ListIterator it = triggerList.listIterator(); 
+                                it.hasNext(); ) {
+                    Trigger t = convert(it.next());
+
+                    if (t == null) {
+                        it.remove();
+                    } else if (trigger.phase() < t.phase()) {
+                        // add it before
+                        it.hasPrevious();
+                        it.add(o);
+                        return;
+                    } else if (trigger.phase() == t.phase()) {
+                        // add it after
+                        it.add(o);
+                        return;
+                    }
+                }
+                triggerList.add(o);
+            }
+            
+            /** 
+             * Remove the given Trigger. 
+             * In addition, any WeakReference that is empty are removed.
+             * 
+             * @param trigger 
+             */
+            void remove(final Trigger trigger) {
+                for (Iterator it = triggerList.iterator(); it.hasNext(); ) {
+                    Trigger t = convert(it.next());
+
+                    if (t == null) {
+                        it.remove();
+                    } else if (t.equals(trigger)) {
+                        it.remove();
+                    }
+                }
+            }
+            
+            /** 
+             * Returns true if there are no Trigger in this Entry. 
+             * 
+             * @return true it there are no Triggers.
+             */
+            boolean isEmpty() {
+                return triggerList.isEmpty();
+            }
+
+            /** 
+             * Execute all Triggers in this Entry passing in the property
+             * key whose change was the casue. 
+             * In addition, any WeakReference that is empty are removed.
+             * 
+             * @param key 
+             */
+            void execute(final String key, 
+                         final String value) throws VetoRT {
+                // Make a copy so that if during the execution of a trigger a
+                // Trigger is added or removed, we do not get a concurrent
+                // modification exception. We do an explicit copy (rather than
+                // a clone) so that we can remove any WeakReference whose
+                // content has become null.
+                List l = new ArrayList();
+/*
+System.out.println("MondrianProperties.Trigger.Entry.execute: key=" 
++key
++ ", size=" + triggerList.size()
+);
+*/
+
+                for (Iterator it = triggerList.iterator(); it.hasNext(); ) {
+                    Trigger t = convert(it.next());
+
+                    if (t == null) {
+                        it.remove();
+                    } else {
+                        l.add(t);
+                    }
+                }
+
+                for (Iterator it = l.iterator(); it.hasNext(); ) {
+                    Trigger t = (Trigger) it.next();
+                    t.executeTrigger(key, value);
+                }
+
+            }
+            private Trigger convert(Object o) {
+                if (o instanceof WeakReference) {
+                    o = ((WeakReference) o).get();
+                }
+                return (Trigger) o;
+            }
+        }
+
+        /** 
+         * If a Trigger is associated with a class or singleton, then it should
+         * return true because its associated object is not subject to garbage
+         * collection. On the other hand, if a Trigger is associated with an
+         * object which will be garbage collected, then this method must return
+         * false so that the Trigger will be wrapped in a WeakReference and
+         * thus can itself be garbage collected.
+         * 
+         * @return 
+         */
+        boolean isPersistent();
+        
+        /** 
+         * Which phase does this Trigger belong to. 
+         * 
+         * @return 
+         */
+        int phase();
+
+        /** 
+         * Execute the Trigger passing in the key of the property whose change
+         * triggered the execution.
+         * 
+         * @param key 
+         */
+        void executeTrigger(final String key, final String value) throws VetoRT;
+    }
+
+    private int populateCount;
+    private Map triggers;
+
+    public MondrianProperties() {
+        triggers = Collections.EMPTY_MAP;
+    }
+
+    /** 
+     * Add a Trigger associating it with the parameter property key 
+     * 
+     * @param trigger 
+     * @param key 
+     */
+    public void addTrigger(Trigger trigger, String key) {
+//System.out.println("MondrianProperties.addTrigger: key=" +key);
+        if (triggers == Collections.EMPTY_MAP) {
+            triggers = new HashMap();
+        } 
+
+        Trigger.Entry e = (Trigger.Entry) triggers.get(key);
+        if (e == null) {
+            e = new Trigger.Entry();
+            triggers.put(key, e);
+        }
+        e.add(trigger);
+    }
+    
+    /** 
+     * Remove the Trigger that is associated with property key.
+     * 
+     * @param trigger 
+     * @param key 
+     */
+    public void removeTrigger(Trigger trigger, String key) {
+        Trigger.Entry e = (Trigger.Entry) triggers.get(key);
+        if (e != null) {
+            e.remove(trigger);
+            if (e.isEmpty()) {
+                triggers.remove(key);
+            }
+        }
+    }
+    
+    /** 
+     * This does not only the normal setting of a property to a new value, but
+     * also, if the previous value does not equals the new value, then if there
+     * are any Trigger associated with the property, they are executed.
+     * 
+     * If any Triggers are associated with the key parameter, then execute
+     * them.
+     * 
+     * @param key 
+     * @param value 
+     * @return the old value
+     */
+    public synchronized Object setProperty(final String key, final String value) {
+        String oldValue = getPropertyValueReflect(key);
+
+        Object object = super.setProperty(key, value);
+        if (oldValue == null) {
+            oldValue = (object == null) ? null : object.toString();
+        }
+/*
+System.out.println("MondrianProperties.setProperty: key="
++key
++ ", value=" +value
++ ", oldValue=" +oldValue
+);
+*/
+
+        // If we have changed the value of a property, then call all of the
+        // property's associated Triggers (if any).
+        if (! Util.equals(oldValue, value) && getEnableTriggers()) {
+            Trigger.Entry e = (Trigger.Entry) triggers.get(key);
+            if (e != null) {
+                try {
+                    e.execute(key, value);
+                } catch (Trigger.VetoRT vex) {
+                    // Reset to the old value, do not call setProperty
+                    // unless you want to run out of stack space
+                    superSetProperty(key, oldValue);
+                    try {
+                        e.execute(key, oldValue);
+                    } catch (Trigger.VetoRT ex) {
+                        // ignore during reset
+                    }
+
+                    throw vex;
+                }
+            }
+        }
+
+        return oldValue;
+    }
+
+    /** 
+     * This is ONLY called by the Trigger execute method during a Veto
+     * operation. It calls the super class setProperty.
+     * 
+     * @param key 
+     * @param oldValue 
+     */
+    private void superSetProperty(String key, String oldValue) {
+        if (oldValue != null) {
+            super.setProperty(key, oldValue);
+        }
+    }
+    //
+    //////////////////////////////////////////////////////////////////////////
+
+    /** 
+     * Get property value for given propertyName parameter by using reflection
+     * on the MondrianProperties class returning null if there are any
+     * exceptions or the field name prepended with "get" does not match the 
+     * method name.
+     * 
+     * @param propertyName 
+     * @return 
+     */
+    public String getPropertyValueReflect(String propertyName) {
+        try {
+            String fieldName = null;
+
+            Field[] fields = MondrianProperties.class.getFields();
+            for (int i = 0; i < fields.length; i++) {
+                Field field = fields[i];
+                if (field.getType() != String.class) {
+                    continue;
+                }
+                String v = (String) field.get(MondrianProperties.class);
+                if (Util.equals(v, propertyName)) {
+                    fieldName = field.getName();
+                    break;
+                }
+            }
+
+            if (fieldName != null) {
+                String methodName = "get" + fieldName;
+                Method m = MondrianProperties.class.getMethod(methodName, null);
+
+                if (m != null) {
+                    Object o = 
+                        m.invoke(MondrianProperties.instance(), new Object[0]);
+                    if (o != null) {
+                        return o.toString();
+                    }
+                }
+            }
+
+        } catch (Exception ex) {
+            // ignore
+        }
+        return null;
     }
 
     /**
@@ -120,7 +485,9 @@ public class MondrianProperties extends PropertiesPlus {
             String key = (String) keys.nextElement();
             String value = System.getProperty(key);
             if (key.startsWith("mondrian.")) {
-                setProperty(key, value);
+                // NOTE: the super allows us to bybase calling triggers
+                // Is this the correct behavior?
+                super.setProperty(key, value);
                 count++;
             }
         }
@@ -383,6 +750,126 @@ public class MondrianProperties extends PropertiesPlus {
     }
     /** Property {@value}. */
     public static final String CatalogUrl = "mondrian.catalogURL";
+
+    //////////////////////////////////////////////////////////////////////////
+    //
+    // properties relating to aggregates
+    //
+    /** 
+     * Name of boolean property that controls whether or not aggregates 
+     * should be used.  If true, then aggregates are used. This property is
+     * queried prior to each aggregate query so that changing the value of this
+     * property dynamically (not just at startup) is meaningful.
+     */
+    public static final String UseAggregates = "mondrian.rolap.aggregates.Use";
+
+    /** 
+     * Should aggregates be used.
+     * 
+     * @return true if aggregates are to be used.
+     */
+    public boolean getUseAggregates() {
+        return getBooleanProperty(UseAggregates);
+    }
+
+
+    /** 
+     * Name of boolean property that controls whether or not aggregate tables
+     * are ordered by their volume or row count.
+     */
+    public static final String ChooseAggregateByVolume 
+                    = "mondrian.rolap.aggregates.ChooseByVolume";
+
+    /** 
+     * Should aggregate tables be ordered by volume. 
+     * 
+     * @return true if aggregate tables are to be ordered by volume.
+     */
+    public boolean getChooseAggregateByVolume() {
+        return getBooleanProperty(ChooseAggregateByVolume);
+    }
+
+    /** 
+     * This is a String property which can be either a resource in the
+     * Mondrian jar or a URL.
+     */
+    public static final String AggregateRules 
+                        = "mondrian.rolap.aggregates.rules";
+
+    /** 
+     * The default value of the AggRules property, a resource in Mondrian jar. 
+     */
+    public static final String AggregateRules_Default = "/DefaultRules.xml";
+
+    /** 
+     * Get the value of the AggregateRules property which returns the
+     * default value, AggregateRules_Default, if not set.
+     * <p>
+     * Normally, this property is not set by a user.
+     * 
+     * @return 
+     */
+    public String getAggregateRules() {
+        return getProperty(AggregateRules, AggregateRules_Default);
+    }
+
+    /** 
+     * This is a String property which is the AggRule element's tag value.
+     */
+    public static final String AggregateRuleTag 
+                        = "mondrian.rolap.aggregates.rule.tag";
+
+    /** 
+     * The default value of the AggRule element tag value.
+     */
+    public static final String AggregateRuleTag_Default = "default";
+
+    /** 
+     * Get the value of the AggRule element tag property which returns the
+     * default value, AggregateRuleTag_Default, if not set.
+     * <p>
+     * Normally, this property is not set by a user.
+     * 
+     * @return 
+     */
+    public String getAggregateRuleTag() {
+        return getProperty(AggregateRuleTag, AggregateRuleTag_Default);
+    }
+    //
+    //////////////////////////////////////////////////////////////////////////
+
+    /** 
+     * This is the boolean property that controls whether or not triggers are
+     * executed when a MondrianProperty changes.
+     */
+    public static final String EnableTriggers = "mondrian.olap.triggers.enable";
+
+    /** 
+     * Returns true means that MondrianProperties Triggers are enabled.
+     * 
+     * @return 
+     */
+    public boolean getEnableTriggers() {
+        return getBooleanProperty(EnableTriggers);
+    }
+
+    /** 
+     * This is a boolean property if set to true, the all SqlQuery sql string
+     * will be generated in pretty-print mode, formatted for ease of reading.
+     */
+    public static final String GenerateFormattedSql = 
+            "mondrian.rolap.generate.formatted.sql";
+
+    /** 
+     * Returns true mean that all sql string created by the SqlQuery class will
+     * be formatted.
+     * 
+     * @return 
+     */
+    public boolean getGenerateFormattedSql() {
+        return getBooleanProperty(GenerateFormattedSql);
+    }
+
 }
 
 // End MondrianProperties.java

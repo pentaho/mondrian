@@ -17,8 +17,7 @@ import mondrian.olap.Member;
 import mondrian.olap.SchemaReader;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapStar;
-// CachePool IS NO LONGER USED ANYWHERE
-//import mondrian.rolap.cache.CachePool;
+import mondrian.rolap.BitKey;
 import mondrian.rolap.sql.SqlQuery;
 
 import java.lang.ref.SoftReference;
@@ -75,6 +74,8 @@ public class Aggregation {
 
     private final RolapStar.Column[] columns;
 
+    private final BitKey bitKey;
+
     /** 
      * List of soft references to segments. 
      * Access must be inside of synchronized methods.
@@ -82,9 +83,12 @@ public class Aggregation {
     private final List segmentRefs;
     private final boolean oracle;
 
-    public Aggregation(RolapStar star, RolapStar.Column[] columns) {
+    public Aggregation(RolapStar star, 
+                       RolapStar.Column[] columns,
+                       BitKey bitKey) {
         this.star = star;
         this.columns = columns;
+        this.bitKey = bitKey;
         this.segmentRefs = new ArrayList();
 
         // find out if this is an oracle DB
@@ -120,6 +124,7 @@ public class Aggregation {
     public synchronized void load(RolapStar.Measure[] measures,
                                   ColumnConstraint[][] constraintses, 
                                   Collection pinnedSegments) {
+        BitKey bitKey = this.bitKey.copy();
         int axisCount = columns.length;
         Util.assertTrue(constraintses.length == axisCount);
 
@@ -130,16 +135,23 @@ public class Aggregation {
             axes[i] = new Aggregation.Axis(columns[i], constraintses[i]);
         }
 
+        boolean isDistinct = false;
         Segment[] segments = new Segment[measures.length];
         for (int i = 0; i < measures.length; i++) {
             RolapStar.Measure measure = measures[i];
+
+            if (measure.getAggregator().isDistinct()) {
+                isDistinct = true;
+            }
+
+            bitKey.setByPos(measure.getBitPosition());
             Segment segment = new Segment(this, measure, constraintses, axes);
             segments[i] = segment;
             SoftReference ref = new SoftReference(segment);
             segmentRefs.add(ref);
             pinnedSegments.add(segment);
         }
-        Segment.load(segments, pinnedSegments, axes);
+        Segment.load(segments, bitKey, isDistinct, pinnedSegments, axes);
     }
 
 

@@ -28,6 +28,7 @@ import mondrian.rolap.CellKey;
 import mondrian.rolap.RolapMember;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.RolapUtil;
+import mondrian.rolap.BitKey;
 
 /**
  * A <code>Segment</code> is a collection of cell values parameterized by
@@ -63,7 +64,7 @@ import mondrian.rolap.RolapUtil;
  * @since 21 March, 2002
  * @version $Id$
  **/
-public class Segment {
+class Segment {
 
     /**
      * <code>State</code> enumerates the allowable values of a segment's
@@ -254,10 +255,14 @@ public class Segment {
      *
      * @pre segments[i].aggregation == aggregation
      **/
-    static void load(Segment[] segments, 
-                     Collection pinnedSegments, 
-                     Aggregation.Axis[] axes) {
-        String sql = AggregationManager.generateSQL(segments);
+    static void load(final Segment[] segments, 
+                     final BitKey bitKey,
+                     final boolean isDistinct,
+                     final Collection pinnedSegments, 
+                     final Aggregation.Axis[] axes) {
+        String sql = AggregationManager.instance().generateSQL(segments, 
+                                                               bitKey, 
+                                                               isDistinct);
         Segment segment0 = segments[0];
         RolapStar star = segment0.aggregation.getStar();
         RolapStar.Column[] columns = segment0.aggregation.getColumns();

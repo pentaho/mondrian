@@ -33,7 +33,7 @@ import org.apache.log4j.Logger;
  * @since 21 March, 2002
  * @version $Id$
  **/
-class HierarchyUsage {
+public class HierarchyUsage {
     private static final Logger LOGGER = Logger.getLogger(HierarchyUsage.class);
 
 
@@ -262,6 +262,13 @@ class HierarchyUsage {
     }
     public String getSource() {
         return this.source;
+    }
+
+    public MondrianDef.Relation getJoinTable() {
+        return this.joinTable;
+    }
+    public MondrianDef.Expression getJoinExp() {
+        return this.joinExp;
     }
 
     public int getKind() {

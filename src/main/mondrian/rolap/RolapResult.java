@@ -43,13 +43,13 @@ class RolapResult extends ResultBase {
     RolapResult(Query query) {
         super(query, new RolapAxis[query.axes.length]);
 
+
         this.point = new CellKey(new int[query.axes.length]);
-        this.evaluator = new RolapEvaluator(
-                            (RolapCube) query.getCube(),
+        this.evaluator = new RolapEvaluator( (RolapCube) query.getCube(),
                             (RolapConnection) query.getConnection());
         AggregatingCellReader aggregatingReader = new AggregatingCellReader();
-        this.batchingReader = new FastBatchingCellReader(
-                                    (RolapCube) query.getCube());
+        RolapCube rcube = (RolapCube) query.getCube();
+        this.batchingReader = new FastBatchingCellReader(rcube);
         this.cellValues = new HashMap();
 
         try {
@@ -208,28 +208,35 @@ class RolapResult extends ResultBase {
     }
 
     private void executeBody(Query query) {
-        // Compute the cells several times. The first time, use a dummy
-        // evaluator which collects requests.
-        int count = 0;
-        while (true) {
-            //cellValues = new HashMap();
-            cellValues.clear();
+        try {
+            // Compute the cells several times. The first time, use a dummy
+            // evaluator which collects requests.
+            int count = 0;
+            while (true) {
+                //cellValues = new HashMap();
+                cellValues.clear();
 
-            evaluator.setCellReader(this.batchingReader);
-            executeStripe(query.axes.length - 1, (RolapEvaluator) evaluator.push());
-            evaluator.clearExpResultCache();
+                evaluator.setCellReader(this.batchingReader);
+                executeStripe(query.axes.length - 1, 
+                    (RolapEvaluator) evaluator.push());
+                evaluator.clearExpResultCache();
 
-            // Retrieve the aggregations collected.
-            //
-            //
-            if (!batchingReader.loadAggregations()) {
-                // We got all of the cells we needed, so the result must be
-                // correct.
-                return;
+                // Retrieve the aggregations collected.
+                //
+                //
+                if (!batchingReader.loadAggregations()) {
+                    // We got all of the cells we needed, so the result must be
+                    // correct.
+                    return;
+                }
+                if (count++ > MAX_AGGREGATION_PASS_COUNT) {
+                    throw Util.newInternal("Query required more than " 
+                        + count + " iterations");
+                }
             }
-            if (count++ > MAX_AGGREGATION_PASS_COUNT) {
-                throw Util.newInternal("Query required more than " + count + " iterations");
-            }
+        } finally {
+            RolapCube cube = (RolapCube) query.getCube();
+            cube.clearCache();
         }
     }
 
@@ -238,7 +245,7 @@ class RolapResult extends ResultBase {
      * {@link RolapAggregationManager}.
      **/
     private static class AggregatingCellReader implements CellReader {
-        private final RolapAggregationManager aggregationManager =
+        private final RolapAggregationManager aggMan =
             AggregationManager.instance();
         /**
          * Overrides {@link CellReader#get}. Returns <code>null</code> if no
@@ -247,8 +254,7 @@ class RolapResult extends ResultBase {
         // implement CellReader
         public Object get(Evaluator evaluator) {
             final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator;
-            return aggregationManager.getCellFromCache(
-                rolapEvaluator.getCurrentMembers());
+            return aggMan.getCellFromCache(rolapEvaluator.getCurrentMembers());
         }
     };
 

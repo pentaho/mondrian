@@ -13,6 +13,7 @@
 package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.rolap.agg.AggregationManager;
+import mondrian.rolap.aggmatcher.ExplicitRules;
 import org.apache.log4j.Logger;
 import org.eigenbase.xom.*;
 import org.eigenbase.xom.Parser;
@@ -27,7 +28,7 @@ import java.util.*;
  * @since 10 August, 2001
  * @version $Id$
  */
-class RolapCube extends CubeBase {
+public class RolapCube extends CubeBase {
 
     private static final Logger LOGGER = Logger.getLogger(RolapCube.class);
 
@@ -52,6 +53,8 @@ class RolapCube extends CubeBase {
     /** Contains {@link HierarchyUsage}s for this cube */
     private final List hierarchyUsages;
 
+    private RolapStar star;
+    private ExplicitRules.Group aggGroup;
 
     /**
      * private constructor used by both normal cubes and virtual cubes.
@@ -63,6 +66,7 @@ class RolapCube extends CubeBase {
     private RolapCube(RolapSchema schema,
                       MondrianDef.Schema xmlSchema,
                       String name,
+                      boolean cache,
                       MondrianDef.Relation fact,
                       MondrianDef.CubeDimension[] dimensions) {
         super(name, new RolapDimension[dimensions.length + 1]);
@@ -74,6 +78,15 @@ class RolapCube extends CubeBase {
         this.calculatedMembers = new Formula[0];
 
         final boolean isVirtual = (fact == null);
+        if (! isVirtual) {
+            this.star = schema.getRolapStarRegistry().getOrCreateStar(fact);
+            // only set if different from default (so that if two cubes share
+            // the same fact table, either can turn off caching and both are
+            // effected).
+            if (! cache) {
+                star.setCacheAggregations(cache);
+            }
+        }
 
         if (getLogger().isDebugEnabled()) {
             if (isVirtual) {
@@ -134,7 +147,8 @@ class RolapCube extends CubeBase {
     RolapCube(RolapSchema schema,
               MondrianDef.Schema xmlSchema,
               MondrianDef.Cube xmlCube) {
-        this(schema, xmlSchema, xmlCube.name, xmlCube.fact, xmlCube.dimensions);
+        this(schema, xmlSchema, xmlCube.name, xmlCube.cache.booleanValue(), 
+            xmlCube.fact, xmlCube.dimensions);
 
         if (fact.getAlias() == null) {
             throw Util.newError(
@@ -201,6 +215,8 @@ class RolapCube extends CubeBase {
                 new MeasureMemberSource(this.measuresHierarchy, measures));
         init(xmlCube.dimensions);
         init(xmlCube);
+
+        loadAggGroup(xmlCube);
     }
 
     /**
@@ -209,7 +225,8 @@ class RolapCube extends CubeBase {
     RolapCube(RolapSchema schema,
               MondrianDef.Schema xmlSchema,
               MondrianDef.VirtualCube xmlVirtualCube) {
-        this(schema, xmlSchema, xmlVirtualCube.name, null, xmlVirtualCube.dimensions);
+        this(schema, xmlSchema, xmlVirtualCube.name, true,
+            null, xmlVirtualCube.dimensions);
 
 
         // since MondrianDef.Measure and MondrianDef.VirtualCubeMeasure
@@ -242,10 +259,22 @@ class RolapCube extends CubeBase {
         this.measuresHierarchy.memberReader = new CacheMemberReader(
             new MeasureMemberSource(this.measuresHierarchy, measures));
         init(xmlVirtualCube.dimensions);
+
+        // Note: virtual cubes do not get aggregate 
     }
 
     protected Logger getLogger() {
         return LOGGER;
+    }
+
+    public boolean hasAggGroup() {
+        return (aggGroup != null);
+    }
+    public ExplicitRules.Group getAggGroup() {
+        return aggGroup;
+    }
+    void loadAggGroup(MondrianDef.Cube xmlCube) {
+        aggGroup = ExplicitRules.Group.make(this, xmlCube);
     }
 
     /**
@@ -444,7 +473,7 @@ class RolapCube extends CubeBase {
      * @post return != null
      * @see #getSchemaReader(Role)
      */
-    synchronized SchemaReader getSchemaReader() {
+    public synchronized SchemaReader getSchemaReader() {
         if (schemaReader == null) {
             schemaReader = getSchemaReader(null);
         }
@@ -508,20 +537,14 @@ assert is not true.
         }
         RolapStoredMeasure[] storedMeasures = (RolapStoredMeasure[])
                 list.toArray(new RolapStoredMeasure[list.size()]);
+
         RolapStar star = getStar();
+        RolapStar.Table table = star.getFactTable();
 
         // create measures (and stars for them, if necessary)
         for (int i = 0; i < storedMeasures.length; i++) {
             RolapStoredMeasure storedMeasure = storedMeasures[i];
-            RolapStar.Measure measure = new RolapStar.Measure(
-                storedMeasure.getAggregator(),
-                star.getFactTable(),
-                storedMeasure.getMondrianDefExpression(),
-                true);
-
-            storedMeasure.setStarMeasure(measure); // reverse mapping
-            star.getFactTable().addColumn(measure);
-            star.addColumnToName(measure, storedMeasure.getName());
+            table.makeMeasure(storedMeasure);
         }
 
         // create dimension tables
@@ -539,19 +562,33 @@ assert is not true.
         return this.cellReader;
     }
 
+    public boolean isCache() {
+        return star.isCacheAggregations();
+    }
+    public void setCache(boolean cache) {
+        star.setCacheAggregations(cache);
+        star.clearCache();
+    }
+
+
     /**
      * Returns this cube's underlying star schema.
      */
-    RolapStar getStar() {
-        return schema.getRolapStarRegistry().getOrCreateStar(fact);
+    public RolapStar getStar() {
+        return star;
+    }
+
+    public void clearCache() {
+        if (star != null) {
+            star.clearCache();
+        }
     }
 
     synchronized void createUsage(RolapHierarchy hierarchy,
                                   MondrianDef.CubeDimension cubeDim) {
         HierarchyUsage usage = new HierarchyUsage(this, hierarchy, cubeDim);
 
-        Iterator it = this.hierarchyUsages.iterator();
-        while (it.hasNext()) {
+        for (Iterator it = hierarchyUsages.iterator(); it.hasNext(); ) {
             HierarchyUsage hierUsage = (HierarchyUsage) it.next();
             if (hierUsage.equals(usage)) {
                 getLogger().warn("RolapCube.createUsage: duplicate " +hierUsage);
@@ -564,8 +601,7 @@ assert is not true.
         this.hierarchyUsages.add(usage);
     }
     private synchronized HierarchyUsage getUsageByName(String name) {
-        Iterator it = this.hierarchyUsages.iterator();
-        while (it.hasNext()) {
+        for (Iterator it = hierarchyUsages.iterator(); it.hasNext(); ) {
             HierarchyUsage hierUsage = (HierarchyUsage) it.next();
             if (hierUsage.getFullName().equals(name)) {
                 return hierUsage;
@@ -582,7 +618,7 @@ assert is not true.
      * @param hierarchy
      * @return an HierarchyUsages array with 0 or more members.
      */
-    synchronized HierarchyUsage[] getUsages(Hierarchy hierarchy) {
+    public synchronized HierarchyUsage[] getUsages(Hierarchy hierarchy) {
         String name = hierarchy.getName();
         if (getLogger().isDebugEnabled()) {
             getLogger().debug("RolapCube.getUsages: name="+name);
@@ -591,8 +627,7 @@ assert is not true.
         HierarchyUsage hierUsage = null;
         List list = null;
 
-        Iterator it = this.hierarchyUsages.iterator();
-        while (it.hasNext()) {
+        for (Iterator it = hierarchyUsages.iterator(); it.hasNext(); ) {
             HierarchyUsage hu = (HierarchyUsage) it.next();
             if (hu.getHierarchyName().equals(name)) {
                 if (list != null) {
@@ -645,8 +680,7 @@ assert is not true.
         HierarchyUsage hierUsage = null;
         List list = null;
 
-        Iterator it = this.hierarchyUsages.iterator();
-        while (it.hasNext()) {
+        for (Iterator it = hierarchyUsages.iterator(); it.hasNext(); ) {
             HierarchyUsage hu = (HierarchyUsage) it.next();
             String s = hu.getSource();
             if ((s != null) && s.equals(source)) {
@@ -690,8 +724,6 @@ assert is not true.
 
     void registerDimension(Dimension dimension) {
         RolapStar star = getStar();
-        Map mapLevelToColumn = star.getMapLevelToColumn(this);
-        Map mapLevelToNameColumn = star.getMapLevelToNameColumn(this);
 
         Hierarchy[] hierarchies = dimension.getHierarchies();
 
@@ -720,8 +752,9 @@ assert is not true.
 
             for (int j = 0; j < hierarchyUsages.length; j++) {
                 HierarchyUsage hierarchyUsage = hierarchyUsages[j];
-
                 RolapStar.Table table = star.getFactTable();
+
+                // cube and dimension usage are in different tables
                 if (!relation.equals(table.getRelation())) {
                     // HierarchyUsage should have checked this.
                     if (hierarchyUsage.getForeignKey() == null) {
@@ -738,70 +771,31 @@ assert is not true.
                                         hierarchy.getName(),
                                         getName());
                     }
-                    RolapStar.Condition joinCondition = new RolapStar.Condition(
-                            new MondrianDef.Column(table.getAlias(),
-                            hierarchyUsage.getForeignKey()),
-                            hierarchyUsage.joinExp);
+                    // parameters: 
+                    //   fact table, 
+                    //   fact table foreign key, 
+                    MondrianDef.Column column = 
+                        new MondrianDef.Column(table.getAlias(),
+                                               hierarchyUsage.getForeignKey());
+                    // parameters: 
+                    //   left column
+                    //   right column
+                    RolapStar.Condition joinCondition = 
+                        new RolapStar.Condition(column,
+                                                hierarchyUsage.joinExp);
+
                     table = table.addJoin(relation, joinCondition);
                 }
+
                 RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
                 for (int l = 0; l < levels.length; l++) {
                     RolapLevel level = levels[l];
-                    if (level.getKeyExp() == null) {
-                        continue;
-                    } else {
-                        RolapStar.Column column = makeColumnForLevelExpr(
-                            level,
-                            table,
-                            level.getKeyExp(),
-                            (level.getFlags() & RolapLevel.NUMERIC) != 0
-                            );
-
-                        table.addColumn(column);
-                        mapLevelToColumn.put(level, column);
-                        if (level.getNameExp() != null) {
-                            final RolapStar.Column nameColumn =
-                                makeColumnForLevelExpr(
-                                            level,
-                                            table,
-                                            level.getNameExp(),
-                                            false);
-                            table.addColumn(nameColumn);
-                            mapLevelToNameColumn.put(level, nameColumn);
-                            star.addColumnToName(nameColumn, level.getName());
-                            star.addColumnToName(column, level.getName() + " (Key)");
-                        } else {
-                            star.addColumnToName(column, level.getName());
-                        }
+                    if (level.getKeyExp() != null) {
+                        table.makeColumns(this, level);
                     }
                 }
             }
         }
-    }
-
-    private RolapStar.Column makeColumnForLevelExpr(RolapLevel level,
-                                               RolapStar.Table table,
-                                               MondrianDef.Expression xmlExpr,
-                                               boolean isNumeric) {
-        if (xmlExpr instanceof MondrianDef.Column) {
-            final MondrianDef.Column xmlColumn = (MondrianDef.Column) xmlExpr;
-            String tableName = xmlColumn.table;
-            table = table.findAncestor(tableName);
-            if (table == null) {
-                throw Util.newError(
-                        "Level '" + level.getUniqueName()
-                        + "' of cube '"
-                        + this
-                        + "' is invalid: table '" + tableName
-                        + "' is not found in current scope");
-            }
-            RolapStar.AliasReplacer aliasReplacer =
-                    new RolapStar.AliasReplacer(tableName, table.getAlias());
-            xmlExpr = aliasReplacer.visit(xmlExpr);
-        }
-        RolapStar.Column column =
-            new RolapStar.Column(table, xmlExpr, isNumeric);
-        return column;
     }
 
     public Member[] getMembersForQuery(String query, List calcMembers) {
@@ -825,7 +819,7 @@ assert is not true.
      * Returns whether this cube is virtual. We use the fact that virtual cubes
      * do not have fact tables.
      **/
-    boolean isVirtual() {
+    public boolean isVirtual() {
         return (fact == null);
     }
 

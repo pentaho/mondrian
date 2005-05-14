@@ -26,7 +26,7 @@ import java.util.Iterator;
  * @since 10 August, 2001
  * @version $Id$
  */
-class RolapLevel extends LevelBase {
+public class RolapLevel extends LevelBase {
 
     private static final Logger LOGGER = Logger.getLogger(RolapEvaluator.class);
 
@@ -176,7 +176,7 @@ class RolapLevel extends LevelBase {
         return LOGGER;
     }
 
-    MondrianDef.Expression getKeyExp() {
+    public MondrianDef.Expression getKeyExp() {
         return keyExp;
     }
     MondrianDef.Expression getOrdinalExp() {

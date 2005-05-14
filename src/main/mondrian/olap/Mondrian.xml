@@ -106,6 +106,20 @@ Revision is $Id$
                 Name of this cube.
             </Doc>
         </Attribute>
+        <Attribute name="cache" type="Boolean" default="true">
+            <Doc>
+                Should the Fact table data for this Cube be cached
+                by Mondrian or not. The default action is to cache
+                the data.
+            </Doc>
+        </Attribute>
+        <Attribute name="enabled" type="Boolean"  
+                    required="false" default="true">
+            <Doc>
+                Is this element enabled - if true, then the Cube is 
+                realized otherwise it ignored.
+            </Doc>
+        </Attribute>
         <Object name="fact" type="Relation" required="true">
             <Doc>
                 The fact table is the source of all measures in this cube. If
@@ -121,6 +135,9 @@ Revision is $Id$
             </Doc>
         </Array>
         <Code><![CDATA[
+            public boolean isEnabled() {
+                return enabled.booleanValue();
+            }
             Dimension getDimension(Schema xmlSchema, String dimensionName) {
                 for (int i = 0; i < dimensions.length; i++) {
                     if (dimensions[i].name.equals(dimensionName)) {
@@ -140,9 +157,21 @@ Revision is $Id$
             A <code>VirtualCube</code> is a set of dimensions and
             measures gleaned from other cubes.
         </Doc>
+        <Attribute name="enabled" type="Boolean"  
+                    required="false" default="true">
+            <Doc>
+                Is this element enabled - if true, then the Virtual Cube is 
+                realized otherwise it ignored.
+            </Doc>
+        </Attribute>
         <Attribute name="name"><Doc></Doc></Attribute>
         <Array name="dimensions" type="VirtualCubeDimension"><Doc></Doc></Array>
         <Array name="measures" type="VirtualCubeMeasure"><Doc></Doc></Array>
+        <Code><![CDATA[
+            public boolean isEnabled() {
+                return enabled.booleanValue();
+            }]]>
+        </Code>
     </Element>
 
     <!-- VirtualCubeDimension ============================================= -->
@@ -715,6 +744,19 @@ Revision is $Id$
             <Value>db2</Value>
         </Attribute>
         <CData/>
+        <Code><![CDATA[
+            public int hashCode() {
+                return dialect.hashCode();
+            }
+            public boolean equals(Object obj) {
+                if (!(obj instanceof SQL)) {
+                    return false;
+                }
+                SQL that = (SQL) obj;
+                return this.dialect.equals(that.dialect) &&
+                        Util.equals(this.cdata, that.cdata);
+            }]]>
+        </Code>
     </Element>
 
     <Element type="Join" class="Relation">
@@ -802,6 +844,8 @@ Revision is $Id$
           The SQL WHERE clause expression to be appended to any select statement
         </Doc>
         </Object>
+        <Array name="aggExcludes" type="AggExclude" required="false"/>
+        <Array name="aggTables" type="AggTable" required="false"/>
 
         <Code><![CDATA[
             /** Convenience contructor. **/
@@ -813,24 +857,15 @@ Revision is $Id$
             }
             /** Returns the alias or, if it is null, the table name. **/
             public String getAlias() {
-                if (alias != null) {
-                    return alias;
-                }
-                return name;
+                return (alias != null) ? alias : name;
             }
             public String toString() {
-                if (schema == null) {
-                    return name;
-                } else {
-                    return schema + "." + name;
-                }
+                return (schema == null)
+                    ? name
+                    : schema + "." + name;
             }
             public Relation find(String seekAlias) {
-                if (seekAlias.equals(name)) {
-                  return this;
-                } else {
-                    return null;
-                }
+                return (seekAlias.equals(name)) ? this : null;
             }
             public boolean equals(Object o) {
                 if (o instanceof Table) {
@@ -845,14 +880,206 @@ Revision is $Id$
                 return toString().hashCode();
             }
             public String getFilter() {
-                if (filter == null)
-                  return null;
-                else
-                  return filter.cdata;
+                return (filter == null) ? null : filter.cdata;
             }
-      ]]>
+            public AggExclude[] getAggExcludes() {
+                return aggExcludes;
+            }
+            public AggTable[] getAggTables() {
+                return aggTables;
+            }
+            ]]>
         </Code>
     </Element>
+
+    <!-- AggTable ======================================================= -->
+    <Class class="AggTable">
+        <Doc>
+            A definition of an aggregate table for a base fact table.
+            This aggregate table must be in the same schema as the
+            base fact table.
+        </Doc>
+        <Attribute name="ignorecase" type="Boolean" required="false" 
+                default="true" >
+            <Doc>
+                Whether or not the match should ignore case.
+            </Doc>
+        </Attribute>
+        <Object name="factcount" type="AggFactCount" required="true">
+            <Doc>
+                What does the fact_count column look like.
+            </Doc>
+        </Object>
+        <Array name="ignoreColumns" type="AggIgnoreColumn"/>
+        <Array name="foreignKeys" type="AggForeignKey"/>
+        <Array name="measures" type="AggMeasure"/>
+        <Array name="levels" type="AggLevel"/>
+        <Code>
+            public boolean isIgnoreCase() {
+                return ignorecase.booleanValue();
+            }
+            public AggFactCount getAggFactCount() {
+                return factcount;
+            }
+            public AggIgnoreColumn[] getAggIgnoreColumns() {
+                return ignoreColumns;
+            }
+            public AggForeignKey[] getAggForeignKeys() {
+                return foreignKeys;
+            }
+            public AggMeasure[] getAggMeasures() {
+                return measures;
+            }
+            public AggLevel[] getAggLevels() {
+                return levels;
+            }
+        </Code>
+    </Class>
+    <Element type="AggName" class="AggTable">
+        <Attribute name="name" required="true">
+            <Doc>
+                The Table name of a Specific aggregate table.
+            </Doc>
+        </Attribute>
+        <Code>
+            public String getNameAttribute() {
+                return name;
+            }
+        </Code>
+    </Element>
+    <Element type="AggPattern" class="AggTable">
+        <Attribute name="pattern" required="true">
+            <Doc>
+                A Table pattern used to define a set of aggregate tables.
+            </Doc>
+        </Attribute>
+        <Array name="excludes" type="AggExclude"/>
+        <Code>
+            public String getPattern() {
+                return pattern;
+            }
+            public AggExclude[] getAggExcludes() {
+                return excludes;
+            }
+        </Code>
+    </Element>
+
+    <Element type="AggExclude">
+        <Attribute name="pattern" required="false">
+            <Doc>
+                A Table pattern not to be matched.
+            </Doc>
+        </Attribute>
+        <Attribute name="name" required="false">
+            <Doc>
+                The Table name not to be matched.
+            </Doc>
+        </Attribute>
+        <Attribute name="ignorecase" type="Boolean" required="false" 
+                default="true" >
+            <Doc>
+                Whether or not the match should ignore case.
+            </Doc>
+        </Attribute>
+        <Code>
+            public String getNameAttribute() {
+                return name;
+            }
+            public String getPattern() {
+                return pattern;
+            }
+            public boolean isIgnoreCase() {
+                return ignorecase.booleanValue();
+            }
+        </Code>
+    </Element>
+
+    <Class class="AggColumnName">
+        <Attribute name="column" required="true">
+            <Doc>
+                The name of the fact count column.
+            </Doc>
+        </Attribute>
+        <Code>
+            public String getColumnName() {
+                return column;
+            }
+        </Code>
+    </Class>
+
+    <Element type="AggFactCount" class= "AggColumnName"/>
+
+    <Element type="AggIgnoreColumn" class= "AggColumnName"/>
+
+    <Element type="AggForeignKey">
+        <Doc>
+            The name of the column mapping from base fact table foreign key
+            to aggregate table foreign key.
+        </Doc>
+        <Attribute name="factColumn" required="true">
+            <Doc>
+                The name of the base fact table foreign key.
+            </Doc>
+        </Attribute>
+        <Attribute name="aggColumn" required="true">
+            <Doc>
+                The name of the aggregate table foreign key.
+            </Doc>
+        </Attribute>
+        <Code>
+            public String getFactFKColumnName() {
+                return factColumn;
+            }
+            public String getAggregateFKColumnName() {
+                return aggColumn;
+            }
+        </Code>
+    </Element>
+    <Element type="AggLevel">
+        <Attribute name="column" required="true">
+            <Doc>
+                The name of the column mapping to the level name.
+            </Doc>
+        </Attribute>
+        <Attribute name="name" required="true">
+            <Doc>
+                The name of the Dimension Hierarchy level.
+            </Doc>
+        </Attribute>
+        <Code>
+            public String getNameAttribute() {
+                return name;
+            }
+            public String getColumnName() {
+                return column;
+            }
+        </Code>
+    </Element>
+
+    <Element type="AggMeasure">
+        <Attribute name="column" required="true">
+            <Doc>
+                The name of the column mapping to the measure name.
+            </Doc>
+        </Attribute>
+        <Attribute name="name" required="true">
+            <Doc>
+                The name of the Cube measure.
+            </Doc>
+        </Attribute>
+        <Code>
+            public String getNameAttribute() {
+                return name;
+            }
+            public String getColumn() {
+                return column;
+            }
+        </Code>
+    </Element>
+
+
+
+
 
     <Class class="Expression">
         <Code>
@@ -874,7 +1101,7 @@ Revision is $Id$
                 Name of the column.
             </Doc>
         </Attribute>
-        <Code>
+        <Code><![CDATA[
             /** Convenience contructor. **/
             public Column(String table, String name) {
                 this();
@@ -892,9 +1119,24 @@ Revision is $Id$
                     return table + "." + name;
                 }
             }
+            public String getColumnName() {
+                return name;
+            }
             public String getTableAlias() {
                 return table;
             }
+            public int hashCode() {
+                return name.hashCode() ^ (table==null ? 0 : table.hashCode());
+            }
+
+            public boolean equals(Object obj) {
+                if (!(obj instanceof Column)) {
+                    return false;
+                }
+                Column that = (Column) obj;
+                return this.name.equals(that.name) &&
+                        Util.equals(this.table, that.table);
+            }]]>
         </Code>
     </Element>
 
@@ -920,6 +1162,29 @@ Revision is $Id$
             }
             public String getTableAlias() {
                 return null;
+            }
+            public int hashCode() {
+                int h = 17;
+                for (int i = 0; i < expressions.length; i++) {
+                    h = 37 * h + expressions[i].hashCode();
+                }
+                return h;
+            }
+
+            public boolean equals(Object obj) {
+                if (!(obj instanceof ExpressionView)) {
+                    return false;
+                }
+                ExpressionView that = (ExpressionView) obj;
+                if (this.expressions.length != that.expressions.length) {
+                    return false;
+                }
+                for (int i = 0; i < expressions.length; i++) {
+                    if (! this.expressions[i].equals(that.expressions[i])) {
+                        return false;
+                    }
+                }
+                return true;
             }]]>
         </Code>
     </Class>

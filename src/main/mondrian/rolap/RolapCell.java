@@ -62,8 +62,8 @@ class RolapCell implements Cell {
      * the levels (coulmns) of non-constraining members.
      */
     public String getDrillThroughSQL(boolean extendedContext) {
-        RolapAggregationManager aggregationManager =
-            AggregationManager.instance();
+        RolapAggregationManager aggMan = AggregationManager.instance();
+
         final RolapEvaluator evaluator = getEvaluator();
         final Member[] currentMembers = evaluator.getCurrentMembers();
         for (int i = 0; i < currentMembers.length; i++) {
@@ -77,7 +77,7 @@ class RolapCell implements Cell {
                 currentMembers, extendedContext);
         return (cellRequest == null)
             ? null
-            : aggregationManager.getDrillThroughSQL(cellRequest);
+            : aggMan.getDrillThroughSQL(cellRequest);
     }
 
     /**

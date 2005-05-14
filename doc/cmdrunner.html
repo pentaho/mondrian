@@ -1,0 +1,482 @@
+<html>
+<!--
+  == $Id$
+  == This software is subject to the terms of the Common Public License
+  == Agreement, available at the following URL:
+  == http://www.opensource.org/licenses/cpl.html.
+  == (C) Copyright 2001-2005 Kana Software, Inc. and others.
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  == jhyde, 24 September, 2002
+  -->
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Mondrian CmdRunner</title>
+<link rel="stylesheet" href="stylesheet.css" type="text/css" />
+<style>
+<!--
+.small { font-family: verdana,arial,helvetica,sans-serif; font-size: x-small; }
+-->
+</style>
+</head>
+
+<body>
+<h1>Mondrian CmdRunner</h1>
+
+<hr noshade color="#000000" size="1">
+
+<h2>What is the CmdRunner?</h2>
+
+<p>
+The CmdRunner is a command line interpreter for Mondrian.
+From within the command interpreter or in a command file:
+properties can be set and values displayed, logging
+levels changed, built-in function usages displayed,
+parameter values displayed and set,
+per-cube attributes displayed and set,
+results and errors from the previous MDX command
+displayed
+and, of course, MDX queries evaluated.
+</p>
+<p>
+For Mondrian developers new features can be quickly
+tested with the CmdRunner. As an example, to test a new user-defined
+function all one need to is add it to the schema, add the location
+of the function's java class to the class path, point the
+CmdRunner at the schema 
+and execute a MDX query that uses the new function.
+</p>
+<p>
+For MDX developers, the CmdRunner lets one test a new MDX query or
+Mondrian schema without having to run Mondrian in a Webserver
+using JPivot. Rather, one can have the new MDX query
+in a file and point the CmdRunner at it. Granted, the output
+is a list, possibly long, of row and column entries; but sometimes
+all one needs from the CmdRunner is to know that the query runs
+and other times one can always post process the output into
+excel or gnuplot, etc.
+</p>
+
+<h2>Building</h2>
+<p>
+There are two ways to run the command interpreter. The first is to
+have a script create a class path with all of the needed mondrian
+and support jars in it and then have java execute the CmdRunner 
+main method. The second is to build a jar that contains all of the
+needed classes and simply have java reference the jar using the 
+<cod>-jar</cod> argument.
+</p>
+<p>
+To build the CmdRunner combined jar from the shell command line execute
+the following build command:
+</p>
+<blockquote>
+<code>
+    mondrian&gt; ./build.sh cmdrunner
+</code>
+</blockquote>
+<p>
+This will create the jar 
+<code>cmdrunner.jar</code> 
+in the 
+<code><i>MONDRIAN_HOME</i>/lib</code> directory.
+For this build to create a jar that can actually be used it is
+important that the <i>JDBC</i> jar for your database be placed in the 
+<code><i>MONDRIAN_HOME</i>/testlib</code> directory prior to 
+executing the build command.
+</p>
+<p>
+What is useful about the
+<code>cmdrunner.jar</code> 
+is that it can be executed without having to have the 
+<code><i>MONDRIAN_HOME</i></code> directory 
+around since it bundles up everything that is needed
+(other than the properties and schema files).
+</p>
+
+<h2>Usage</h2>
+<p>
+There are two ways to invoke the CmdRunner: using the 
+<code>cmdrunner.jar</code> 
+or using a script that builds a class path of the required jars
+and then executes java with that class path. The former is an easy
+"canned" solution but requires building the 
+<code>cmdrunner.jar</code> 
+while the
+later is quicker if you are in a code, compile and test cycle.
+</p>
+<p>
+To run CmdRunner using the 
+<code>cmdrunner.jar</code> 
+from the shell prompt execute:
+</p>
+<blockquote>
+<code>
+    somedir&gt; java -jar cmdrunner.jar -p foodmart.properties
+</code>
+</blockquote>
+<p>
+In the 
+<code><i>MONDRIAN_HOME</i>/bin</code> directory 
+there are the shell scripts
+<code>cmdrunner.sh</code>
+and
+<code>cmdrunner.cmd</code>
+that can be used duplicating the above command:
+</p>
+<blockquote>
+<code>
+    mondrian&gt; ./bin/cmdrunner.sh -p foodmart.properties
+</code>
+</blockquote>
+<p>
+To run CmdRunner without first building the
+<code>cmdrunner.jar</code> 
+there is the
+<code>run.sh</code>
+in the
+<code><i>MONDRIAN_HOME</i>/bin</code> directory.
+This script creates a class path and includes all jars
+in the 
+<code><i>MONDRIAN_HOME</i>/testlib</code> directory
+where the jdbc jars are located.
+<blockquote>
+<code>
+    mondrian&gt; ./bin/run.sh -p foodmart.properties
+</code>
+</blockquote>
+</p>
+
+<h2>Command line arguments</h2>
+<p>
+The CmdRunner has the following command line options:
+</p>
+<table style="text-align: left; "
+ border="1" cellpadding="2" cellspacing="0">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top; text-align: center;">
+		<span
+ style="font-weight: bold;">Option</span><br>
+      </td>
+      <td style="vertical-align: top; text-align: center;"><span
+ style="font-weight: bold;">Description</span><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><code>-h</code></td>
+      <td style="vertical-align: top;">print help, the list of command line
+options.</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><code>-d</code></td>
+      <td style="vertical-align: top;">Enable CmdRunner debugging. 
+        This does not change this log level.</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><code>-rc</code></td>
+      <td style="vertical-align: top;">Do not reload the connection
+        after each query (the default is to reload the connection.
+        Its safe to just ignore this.
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><code>-p property-file</code></td>
+      <td style="vertical-align: top;">Specify the Mondrian property
+        file. This argument is basically required for any but the most 
+        trivial command interpreter commands. To execute a MDX query or
+        request information about a function, the property file must be 
+        supplied. On the other hand, to have the CmdRunner print out
+        its internal help, then the property file is not needed.
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><code>-f filename</code></td>
+      <td style="vertical-align: top;">Specify the name of a file
+        that contains CmdRunner commands. If this argument is not
+        supplied, then the interpreter starting in the command entry
+        mode.
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><code>mdx_command</code></td>
+      <td style="vertical-align: top;">A string representing 
+        one or more CmdRunner commands.
+        mode.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>CmdRunner Commands</h2>
+<p>
+The command interpreter has a fixed set of built in commands.
+When a line is read, if the first word of the line matches one
+of the commands, then the rest of the line is assumed to be arguments
+to that command. On the other hand, if the first word does not match
+a built in command, then all text until a ';' is seen or until
+a '=' is entered by itself on a command continuation line is seen
+will be passed to the Mondrian query engine.
+</p>
+<h3>help</h3>
+<blockquote>
+<code>
+  &gt; help &lt;cr&gt;
+</code>
+<p>
+Prints help for all commands.
+</p>
+</blockquote>
+
+<h3>set</h3>
+<blockquote>
+<code>
+  &gt; set [ property[=value ] ] &lt;cr&gt;
+</code>
+<p>
+With no args, prints all mondrian properties and values.
+</p>
+<p>
+With "property" prints property's value.
+</p>
+<p>
+With "property=value" set property to that value.
+</p>
+</blockquote>
+
+<h3>log</h3>
+<blockquote>
+<code>
+  &gt; log [ classname[=level ] ] &lt;cr&gt;
+</code>
+<p>
+With no args, prints the current log level of all classes.
+</p>
+<p>
+With "classname" prints the current log level of the class.
+</p>
+<p>
+With "classname=level" set log level to new value.
+</p>
+</blockquote>
+
+<h3>file</h3>
+<blockquote>
+<code>
+  &gt; file [ filename | '=' ] &lt;cr&gt;
+</code>
+<p>
+With no args, prints the last filename executed.
+</p>
+<p>
+With "filename", read and execute filename .
+</p>
+<p>
+With "=" character, re-read and re-execute previous filename .
+</p>
+</blockquote>
+
+<h3>list</h3>
+<blockquote>
+<code>
+  &gt; list [ cmd | result ] &lt;cr&gt;
+</code>
+<p>
+With no arguments, list previous cmd and result
+</p>
+<p>
+With "cmd" argument, list the last mdx query cmd.
+</p>
+<p>
+With "result" argument, list the last mdx query result.
+</p>
+</blockquote>
+
+<h3>func</h3>
+<blockquote>
+<code>
+  &gt; func [ name ] &lt;cr&gt;
+</code>
+<p>
+With no arguments, list all defined function names
+</p>
+<p>
+With "name" argument, display the functions:
+      name, description, and syntax
+</p>
+</blockquote>
+
+<h3>param</h3>
+<blockquote>
+<code>
+  &gt; param [ name[=value ] ] &lt;cr&gt;
+</code>
+<p>
+With no argumnts, all param name/value pairs are printed.
+</p>
+<p>
+With "name" argument, the value of the param is printed.
+</p>
+<p>
+With "name=value" sets the parameter with name to value.
+    If name is null, then unsets all parameters
+    If value is null, then unsets the parameter associated with value
+</p>
+</blockquote>
+
+<h3>cube</h3>
+<blockquote>
+<code>
+  &gt; cube [ cubename [ name [=value | command] ] ] &lt;cr&gt;
+</code>
+<p>
+    With no argumnts, all cubes are listed by name.
+</p>
+<p>
+    With "cubename" argument, cube attribute name/values for:
+      fact table (readonly)
+      aggregate caching (readwrite)
+    are printed
+</p>
+<p>
+    With "cubename name=value" sets the readwrite attribute with name to value.
+</p>
+<p>
+    With "cubename command" executes the commands:
+      clearCache
+</p>
+</blockquote>
+
+<h3>error</h3>
+<blockquote>
+<code>
+  &gt; error [ msg | stack ] &lt;cr&gt;
+</code>
+<p>
+With no argumnts, both message and stack are printed.
+</p>
+<p>
+With "msg" argument, the Error message is printed.
+</p>
+<p>
+With "stack" argument, the Error stack trace is printed.
+</p>
+</blockquote>
+
+<h3>=</h3>
+<blockquote>
+<code>
+  &gt; = &lt;cr&gt;
+</code>
+<p>
+Re-Execute previous mdx query.
+</p>
+</blockquote>
+
+<h3>~</h3>
+<blockquote>
+<code>
+  &gt; ~ &lt;cr&gt;
+</code>
+<p>
+Clear any text entered so far for the current command.
+</p>
+</blockquote>
+
+<h3>exit</h3>
+<blockquote>
+<code>
+  &gt; exit &lt;cr&gt;
+</code>
+<p>
+Exit mdx command interpreter.
+</p>
+</blockquote>
+
+<h3>run an MDX query</h3>
+<blockquote>
+<code>
+  &gt; &lt;mdx query&gt; ( [ ';' ] &lt;cr&gt; | &lt;cr&gt; ( '=' | '~' ) &lt;cr&gt;
+)
+</code>
+<p>
+Execute or cancel mdx query.
+</p>
+<p>
+An mdx query may span one or more lines. The continuation prompt is a '?'.
+</p>
+<p>
+After the last line of the query has been entered,
+      on the next line a single execute character, '=', may be entered
+      followed by a carriage return.
+      The lone '=' informs the interpreter that the query has
+      has been entered and is ready to execute.
+</p>
+<p>
+At anytime during the entry of a query the cancel
+      character, '~', may be entered alone on a line.
+      This removes all of the query text from the
+      the command interpreter.
+</p>
+<p>
+Queries can also be ended by using a semicolon ';' at the end of a line.
+</p>
+</blockquote>
+
+<p>
+During general operation, Mondrian Property triggers are disabled.
+If you enable Mondrian Property triggers for a CmdRunner session,
+either in the property file read on starup or by explicitly using the 
+<code>set</code> property command
+</p>
+<blockquote>
+<code>
+  &gt; set mondrian.olap.triggers.enable=true &lt;cr&gt;
+</code,
+</blockquote>
+<p>
+then one can force a re-scanning of the database for aggregate tables
+by disabling and then re-enabling the use of aggregates:
+</p>
+<blockquote>
+<code>
+  &gt; set mondrian.olap.aggregates.Use=false &lt;cr&gt;<br>
+  &gt; set mondrian.olap.aggregates.Use=true &lt;cr&gt;
+</code,
+</blockquote>
+<p>
+In fact, as long as one does not use the 
+<code>-rc</code> command line argument so that a new connection
+is gotten every time a query is executed, one can edit the
+Mondrian schema file between MDX query execute. This allows one
+to not only change what aggregates tables are in seen by Mondrian
+but also the definitions of the cubes within a given CmdRunner
+session.
+</p>
+<p>
+Similarly, one can change between aggregate table partial ordering
+algorithm by changing the value of the associated property, 
+<code>
+mondrian.olap.aggregates.ChooseByVolume
+</code>
+thus
+triggering internal code to reorder the aggregate table lookup order.
+</p>
+<p>
+Within the command interpreter there is no ability to edit a previously
+entered MDX query. If you wish to iteratively edit and run a MDX query,
+put the query in a file, tell the CmdRunner to execute the file using
+the 
+<code>file</code> command,
+re-execute the file using the
+<code>=</code> command,
+and in separate window edit/save MDX in the file.
+</p>
+<p>
+There is also no support for a command history (other than the '='
+command).
+</p>
+</body>
+</html>

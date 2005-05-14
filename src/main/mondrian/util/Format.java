@@ -802,8 +802,8 @@ public class Format {
 
         void format(double n, PrintWriter pw)
         {
-            mondrian.util.FloatingDecimal fd
-                = new mondrian.util.FloatingDecimal(n);
+            mondrian.util.Format.FloatingDecimal fd
+                = new mondrian.util.Format.FloatingDecimal(n);
             fd.shift(decimalShift);
             String s = fd.toJavaFormatString(
                 zeroesLeftOfPoint,
@@ -824,8 +824,8 @@ public class Format {
 
         void format(long n, PrintWriter pw)
         {
-            mondrian.util.FloatingDecimal fd
-                = new mondrian.util.FloatingDecimal(n);
+            mondrian.util.Format.FloatingDecimal fd
+                = new mondrian.util.Format.FloatingDecimal(n);
             fd.shift(decimalShift);
             String s = fd.toJavaFormatString(
                 zeroesLeftOfPoint,
@@ -844,7 +844,7 @@ public class Format {
      * DateFormat is an element of a {@link CompoundFormat} which has a value
      * when applied to a {@link Calendar} object.  (Values of type {@link Date}
      * are automatically converted into {@link Calendar}s when you call {@link
-     * BasicFormat#format(Date, PrintWriter); calls to format other kinds of
+     * BasicFormat#format(Date, PrintWriter)} calls to format other kinds of
      * values give a runtime error.)
      *
      * In a typical use of this class, a format string such as "m/d/yy" is
@@ -2086,12 +2086,11 @@ loop:
     {
         return formatString;
     }
-}
 
 /**
  * Copied from <code>java.lang.FloatingDecimal</code>.
  */
-class FloatingDecimal {
+static class FloatingDecimal {
     boolean     isExceptional;
     boolean     isNegative;
     int         decExponent;
@@ -3259,7 +3258,7 @@ class FloatingDecimal {
  * A really, really simple bigint package
  * tailored to the needs of floating base conversion.
  */
-class FDBigInt {
+static class FDBigInt {
     int nWords; // number of words used
     int data[]; // value: data[0] is least significant
 
@@ -3677,6 +3676,7 @@ class FDBigInt {
         r.append( ']' );
         return new String( r );
     }
+}
 }
 
 // End Format.java

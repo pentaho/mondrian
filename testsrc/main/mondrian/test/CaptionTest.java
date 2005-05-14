@@ -172,7 +172,9 @@ public class CaptionTest extends TestCase {
 	"  </Dimension>" +
 	"<!-- Sales -->" +
 	"<Cube name=\"Sales\">" +
-	"  <Table name=\"sales_fact_1997\"/>" +
+	"  <Table name=\"sales_fact_1997\">" +
+        "  <AggExclude pattern=\".*\" /> " +
+	"  </Table>" +
 	"  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>" +
 	"  <DimensionUsage name=\"Store Size in SQFT\" source=\"Store Size in SQFT\"" +
 	"      foreignKey=\"store_id\"/>" +

@@ -13,6 +13,7 @@
 package mondrian.rolap.agg;
 
 import mondrian.rolap.RolapStar;
+import mondrian.rolap.BitKey;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,25 +39,28 @@ public class CellRequest {
      * FastBatchingCellReader.Batch), so we use an implementation of ArrayList
      * which computes hashCode and equals more efficiently.
      */
-    private final List columnList = new FastHashingArrayList();
+    //private final List columnList = new FastHashingArrayList();
+    private final List columnList = new ArrayList();
     private final List valueList = new ArrayList();
+    private RolapStar.Column[] columns = null;
+    private BitKey bitKey;
 
     /** Creates a {@link CellRequest}. **/
     public CellRequest(RolapStar.Measure measure) {
         this.measure = measure;
         this.columnList.add(measure.getStar());
+        this.bitKey =
+            BitKey.Factory.makeBitKey(measure.getStar().getColumnCount());
     }
 
     public void addConstrainedColumn(RolapStar.Column column, Object value) {
+        // for every column there MUST be a value (even if it is null)
         columnList.add(column);
+        this.bitKey.setByPos(column.getBitPosition());
         if (value != null) {
             value = new ColumnConstraint(value);
         }
         valueList.add(value);
-    }
-
-    void addColumn(RolapStar.Column column) {
-        addConstrainedColumn(column, null);
     }
 
     public RolapStar.Measure getMeasure() {
@@ -64,19 +68,29 @@ public class CellRequest {
     }
 
     public RolapStar.Column[] getColumns() {
-        // ignore the star, the 0th element of columnList
-        RolapStar.Column[] a = new RolapStar.Column[columnList.size() - 1];
-        for (int i = 0; i < a.length; i++) {
-            a[i] = (RolapStar.Column) columnList.get(i + 1);
+        if (this.columns == null) {
+            // This is called more than once so caching the value makes
+            // sense.
+            makeColumns();
         }
-        return a;
+        return this.columns;
+    }
+    private void makeColumns() {
+        // ignore the star, the 0th element of columnList
+        this.columns = new RolapStar.Column[columnList.size() - 1];
+        for (int i = 0; i < this.columns.length; i++) {
+            columns[i] = (RolapStar.Column) columnList.get(i + 1);
+        }
     }
 
-    /** Returns a list which identifies which batch this request will
+    /** RME: NO, this is false, rewrite
+     *
+     * Returns a list which identifies which batch this request will
      * belong to. The list contains the star as well as the
-     * columns. **/
-    public List getBatchKey() {
-        return columnList;
+     * columns. 
+     **/
+    public BitKey getBatchKey() {
+        return bitKey;
     }
 
     public List getValueList() {
@@ -84,6 +98,8 @@ public class CellRequest {
     }
 
     public Object[] getSingleValues() {
+        // Currently, this is called only once per CellRequest instance
+        // so there is no need to cache the value.
         Object[] a = new Object[valueList.size()];
         for (int i = 0, n = valueList.size(); i < n; i++) {
             ColumnConstraint constr = (ColumnConstraint) valueList.get(i);
@@ -96,6 +112,7 @@ public class CellRequest {
      * Extension to {@link ArrayList} with fast {@link #equals(Object)} and
      * {@link #hashCode()} methods.
      */
+/*
     private static class FastHashingArrayList extends ArrayList {
         public boolean equals(Object o) {
             if (!(o instanceof FastHashingArrayList)) {
@@ -125,6 +142,7 @@ public class CellRequest {
             return hashCode;
         }
     }
+*/
 }
 
 // End CellRequest.java

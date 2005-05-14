@@ -18,18 +18,24 @@ import mondrian.olap.MondrianResource;
 import mondrian.rolap.agg.Aggregation;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.agg.ColumnConstraint;
+import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.HashMap;
+import java.util.Collections;
 
 /**
  * A <code>RolapStar</code> is a star schema. It is the means to read cell
@@ -57,48 +63,204 @@ public class RolapStar {
      * onto the fact table at different levels.
      */
     private final Map mapCubeToMapLevelToColumn;
-    /**
-     * As {@link #mapCubeToMapLevelToColumn}, but holds name columns.
-     */
-    private final Map mapCubeToMapLevelToNameColumn;
-
-    /**
-     * Maps {@link Column} to {@link String} for each column which is a key
-     * to a level.
-     */
-    private final Map mapColumnToName;
 
     /** holds all aggregations of this star */
-    private List aggregations;
+    private Map aggregations;
+
+    /** how many columns (column and columnName) there are */
+    private int columnCount;
+
+    private final SqlQuery sqlQuery;
+
+    /** 
+     * If true, then database aggregation information is cached, otherwise
+     * it is flushed after each query.
+     */
+    private boolean cacheAggregations;
+
+    /** 
+     * Partially ordered list of AggStars associated with this RolapStar's fact
+     * table
+     */
+    private List aggStars;
 
     /**
      * Creates a RolapStar. Please use
      * {@link RolapSchema.RolapStarRegistry#getOrCreateStar} to create a
      * {@link RolapStar}.
      */
-    RolapStar(RolapSchema schema,
-              DataSource dataSource,
-              MondrianDef.Relation fact) {
+    RolapStar(final RolapSchema schema, 
+              final DataSource dataSource, 
+              final MondrianDef.Relation fact) {
+        this.cacheAggregations = true;
         this.schema = schema;
         this.dataSource = dataSource;
-        this.factTable = new Table(this, fact, null, null);
+        this.factTable = new RolapStar.Table(this, fact, null, null);
 
         this.mapCubeToMapLevelToColumn = new HashMap();
-        this.mapCubeToMapLevelToNameColumn = new HashMap();
-        this.mapColumnToName = new HashMap();
-        this.aggregations = new ArrayList();
+        this.aggregations = new HashMap();
+
+        clearAggStarList();
+
+        sqlQuery = makeSqlQuery();
+    }
+    
+    /** 
+     * The the RolapStar's column count. After a star has been created with all
+     * of its columns, this is the number of columns in the star.
+     * 
+     * @return 
+     */
+    public int getColumnCount() {
+        return columnCount;
+    }
+    
+    /** 
+     * This is used by the Column constructor to get a unique id (per
+     * its parent RolapStar).
+     * 
+     * @return 
+     */
+    private int nextColumnCount() {
+        return columnCount++;
+    }
+    
+    /** 
+     * This is used to decrement the column counter and is used if a newly
+     * created column is found to already exist. 
+     * 
+     * @return 
+     */
+    private int decrementColumnCount() {
+        return columnCount--;
     }
 
-    public Table getFactTable() {
-        return factTable;
+    /** 
+     * This is a place holder in case in the future we wish to be able to
+     * reload aggregates. In that case, if aggregates had already been loaded,
+     * i.e., this star has some aggstars, then those aggstars are cleared. 
+     */
+    public void prepareToLoadAggregates() {
+        aggStars = Collections.EMPTY_LIST;
     }
 
-    void addAggregation(Aggregation agg) {
-        synchronized(aggregations) {
-            aggregations.add(agg);
+    /** 
+     * Internally the AggStars are added in sort order, smallest row count
+     * to biggest where ties do not matter.
+     * 
+     * @param aggStar 
+     */
+    public void addAggStar(AggStar aggStar) {
+        if (aggStars == Collections.EMPTY_LIST) {
+            // if this is NOT a LinkedList, then the insertion time is longer.
+            aggStars = new LinkedList();
+            aggStars.add(aggStar);
+
+        } else {
+            // size 
+            int size = aggStar.getSize();
+            ListIterator lit = aggStars.listIterator(); 
+            while (lit.hasNext()) {
+                AggStar as = (AggStar) lit.next();
+                if (as.getSize() >= size) {
+                    break;
+                }
+            }
+            lit.previous();
+            lit.add(aggStar);
+        }
+    }
+    
+    /** 
+     * Set the agg star list to empty. 
+     */
+    void clearAggStarList() {
+        aggStars = Collections.EMPTY_LIST;
+    }
+    
+    /** 
+     * Reorder the list of aggregate stars. This should be called if the
+     * algorithm used to order the AggStars has been changed.
+     */
+    public void reOrderAggStarList() {
+        // the order of these two lines is important
+        List l = aggStars;
+        clearAggStarList();
+
+        for (Iterator it = l.iterator(); it.hasNext(); ) {
+            AggStar aggStar = (AggStar) it.next();
+            addAggStar(aggStar);
         }
     }
 
+    /** 
+     * Get the AggStar with the lowest row count or volume whose bitKey
+     * is a super set of the bitKey parameter.
+     * 
+     * @param bitKey 
+     * @return 
+     */
+    public AggStar select(BitKey bitKey) {
+        for (Iterator it = getAggStars(); it.hasNext(); ){
+            AggStar aggStar = (AggStar) it.next();
+            if (aggStar.matches(bitKey)) {
+                return aggStar;
+            }
+        }
+        return null;
+    }
+    
+    /** 
+     * Get Iterator of this RolapStar's aggregate table AggStars. 
+     * 
+     * @return 
+     */
+    public Iterator getAggStars() {
+        return aggStars.iterator();
+    }
+    public Table getFactTable() {
+        return factTable;
+    }
+    
+    /** 
+     * Clone an existing SqlQuery to create a new one (this cloning creates one
+     * with an empty sql query).
+     * 
+     * @return 
+     */
+    public SqlQuery getSqlQuery() {
+        return sqlQuery.cloneEmpty();
+    }
+    
+    /** 
+     * Make an SqlQuery from a jdbc connection. 
+     * 
+     * @return 
+     */
+    private SqlQuery makeSqlQuery() {
+        Connection conn = getJdbcConnection();
+        try {
+            return new SqlQuery(conn.getMetaData());
+        } catch (SQLException e) {
+            throw Util.newInternal(
+                e, "Error while creating SqlQuery from connection");
+        } finally {
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                //ignore
+            }
+        }
+    }
+
+    /** 
+     * This maps a cube to a Map of level to colunms. Now the only reason
+     * the star needs to map via a cube is that more than one cube can
+     * share the same star.
+     * 
+     * @param cube 
+     * @return 
+     */
     Map getMapLevelToColumn(RolapCube cube) {
         Map mapLevelToColumn = (Map) this.mapCubeToMapLevelToColumn.get(cube);
         if (mapLevelToColumn == null) {
@@ -107,27 +269,55 @@ public class RolapStar {
         }
         return mapLevelToColumn;
     }
-    Map getMapLevelToNameColumn(RolapCube cube) {
-        Map mapLevelToNameColumn = (HashMap)
-            this.mapCubeToMapLevelToNameColumn.get(cube);
-        if (mapLevelToNameColumn == null) {
-            mapLevelToNameColumn = new HashMap();
-            this.mapCubeToMapLevelToNameColumn.put(cube, mapLevelToNameColumn);
-        }
-        return mapLevelToNameColumn;
-    }
+    
 
+    /** 
+     * This is called only by the RolapCube and is only called if caching is to
+     * be turned off. Note that the same RolapStar can be associated with more
+     * than on RolapCube. If any one of those cubes has caching turned off, then
+     * caching is turned off for all of them.
+     * 
+     * @param b 
+     */
+    void setCacheAggregations(boolean b) {
+        // this can only change from true to false
+        this.cacheAggregations = b;
+    }
+    
+    /** 
+     * Does the RolapStar cache aggregates. 
+     * 
+     * @return 
+     */
+    boolean isCacheAggregations() {
+        return this.cacheAggregations;
+    }
+    
+    /** 
+     * Clear the aggregate cache. This only does something if this star has
+     * caching set to off. 
+     */
+    void clearCache() {
+        if (! this.cacheAggregations) {
+            aggregations.clear();
+        }
+    }
 
     /**
      * Looks up an aggregation or creates one if it does not exist in an
      * atomic (synchronized) operation
+     *
+     * @param columns  
+     * @param bitKey 
+     * @return 
      */
-    public Aggregation lookupOrCreateAggregation(RolapStar.Column[] columns) {
+    public Aggregation lookupOrCreateAggregation(final RolapStar.Column[] columns,
+                                                 final BitKey bitKey) {
         synchronized(aggregations) {
-            Aggregation aggregation = lookupAggregation(columns);
+            Aggregation aggregation = lookupAggregation(bitKey);
             if (aggregation == null) {
-                aggregation = new Aggregation(this, columns);
-                this.aggregations.add(aggregation);
+                aggregation = new Aggregation(this, columns, bitKey);
+                this.aggregations.put(bitKey, aggregation);
             }
             return aggregation;
         }
@@ -136,37 +326,15 @@ public class RolapStar {
     /**
      * Looks for an existing aggregation over a given set of columns, or
      * returns <code>null</code> if there is none.
-     *
      * <p>Must be called from synchronized context.
-     **/
-    public Aggregation lookupAggregation(RolapStar.Column[] columns) {
+     *
+     * @param bitKey  
+     * @return 
+     */
+    public Aggregation lookupAggregation(BitKey bitKey) {
         synchronized(aggregations) {
-            for (int i = 0, count = aggregations.size(); i < count; i++) {
-                Aggregation aggregation = (Aggregation) aggregations.get(i);
-                Util.assertTrue(aggregation.getStar() == this);
-                if (equals(aggregation.getColumns(), columns)) {
-                    return aggregation;
-                }
-            }
-            return null;
+            return (Aggregation) aggregations.get(bitKey);
         }
-    }
-
-    /**
-     * Returns whether two arrays of columns are identical.
-     **/
-    private static boolean equals(RolapStar.Column[] columns1,
-                                  RolapStar.Column[] columns2) {
-        int count = columns1.length;
-        if (count != columns2.length) {
-            return false;
-        }
-        for (int j = 0; j < count; j++) {
-            if (columns1[j] != columns2[j]) {
-                return false;
-            }
-        }
-        return true;
     }
 
     /**
@@ -205,23 +373,29 @@ public class RolapStar {
     /**
      * Retrieves a named column, returns null if not found.
      */
-    public Column lookupColumn(String tableAlias, String columnName) {
+    public Column[] lookupColumns(String tableAlias, String columnName) {
         final Table table = factTable.findDescendant(tableAlias);
-        if (table != null) {
-            for (int i = 0; i < table.columns.size(); i++) {
-                Column column = (Column) table.columns.get(i);
-                if (column.getExpression() instanceof MondrianDef.Column) {
-                    MondrianDef.Column columnExpr =
-                        (MondrianDef.Column) column.getExpression();
-                    if (columnExpr.name.equals(columnName)) {
-                        return column;
-                    }
-                }
-            }
-        }
-        return null;
+        return (table == null) ? null : table.lookupColumns(columnName);
     }
 
+    public Column[] lookupColumns(BitKey bitKey) {
+        List list = new ArrayList();
+        factTable.loadColumns(bitKey, list);
+        return (Column[]) list.toArray(new Column[0]);
+    }
+    
+    /** 
+     * This is used by TestAggregationManager only 
+     * 
+     * @param tableAlias 
+     * @param columnName 
+     * @return 
+     */
+    public Column lookupColumn(String tableAlias, String columnName) {
+        final Table table = factTable.findDescendant(tableAlias);
+        return (table == null) ? null : table.lookupColumn(columnName);
+    }
+    
     /**
      * Returns a list of all aliases used in this star.
      */
@@ -268,12 +442,7 @@ public class RolapStar {
         Column[] columns = request.getColumns();
         Object[] values = request.getSingleValues();
         Util.assertTrue(columns.length == values.length);
-        SqlQuery sqlQuery;
-        try {
-            sqlQuery = new SqlQuery(jdbcConnection.getMetaData());
-        } catch (SQLException e) {
-            throw Util.getRes().newInternal("while computing single cell", e);
-        }
+        SqlQuery sqlQuery = getSqlQuery();
         // add measure
         Util.assertTrue(measure.getTable() == factTable);
         factTable.addToFrom(sqlQuery, true, true);
@@ -321,19 +490,6 @@ public class RolapStar {
         }
     }
 
-    /**
-     * Returns a printable name for a column, generally the name of the level
-     * mapped into it; or null if no such mapping exists. The mapping is
-     * approximate.
-     */
-    public String getColumnName(Column column) {
-        return (String) mapColumnToName.get(column);
-    }
-
-    void addColumnToName(Column column, String name) {
-        this.mapColumnToName.put(column, name);
-    }
-
     private boolean containsColumn(String tableName, String columnName) {
         final Connection jdbcConnection = getJdbcConnection();
         try {
@@ -359,6 +515,26 @@ public class RolapStar {
         return schema;
     }
 
+    public String toString() {
+        StringWriter sw = new StringWriter(256);
+        PrintWriter pw = new PrintWriter(sw);
+        print(pw, "");
+        pw.flush();
+        return sw.toString();
+    }
+
+    public void print(PrintWriter pw, String prefix) {
+        pw.print(prefix);
+        pw.println("RolapStar:");
+        String subprefix = prefix + "  ";
+        factTable.print(pw, subprefix);
+
+        for (Iterator it = getAggStars(); it.hasNext(); ) {
+            AggStar aggStar = (AggStar) it.next();
+            aggStar.print(pw, subprefix);
+        }
+    }
+
     /**
      * A column in a star schema.
      */
@@ -366,31 +542,85 @@ public class RolapStar {
         private final Table table;
         private final MondrianDef.Expression expression;
         private final boolean isNumeric;
+        private final String name;
+        /**
+         * This is only used in RolapAggregationManager and adds
+         * non-constraining columns making the drill-through queries easier for
+         * humans to understand.
+         */
+        private final Column nameColumn;
+
+        /** this has a unique value per star */
+        private final int bitPosition;
+
         private int cardinality = -1;
 
-        Column(Table table,
-               MondrianDef.Expression expression,
-               boolean isNumeric) {
+        private Column(String name,
+                       Table table, 
+                       MondrianDef.Expression expression, 
+                       boolean isNumeric) {
+            this(name, table, expression, isNumeric, null);
+        }
+        private Column(String name,
+                       Table table, 
+                       MondrianDef.Expression expression, 
+                       boolean isNumeric,
+                       Column nameColumn) {
+            this.name = name;
             this.table = table;
             this.expression = expression;
             this.isNumeric = isNumeric;
+            this.bitPosition = table.star.nextColumnCount();
+            this.nameColumn = nameColumn;
         }
-        public RolapStar.Table getTable() {
-            return table;
+
+        public boolean equals(Object obj) {
+            if (! (obj instanceof RolapStar.Column)) {
+                return false;
+            }
+            RolapStar.Column other = (RolapStar.Column) obj;
+            // Note: both columns have to be from the same table
+            return (other.table == this.table) &&
+                   other.expression.equals(this.expression) &&
+                   (other.isNumeric == this.isNumeric) &&
+                   other.name.equals(this.name);
         }
-        public MondrianDef.Expression getExpression() {
-            return expression;
+
+        public String getName() {
+            return name;
+        }
+        public boolean isNumeric() {
+            return isNumeric;
+        }
+        public int getBitPosition() {
+            return bitPosition;
         }
 
         public RolapStar getStar() {
             return table.star;
         }
 
+        public RolapStar.Table getTable() {
+            return table;
+        }
+        public SqlQuery getSqlQuery() {
+            return getTable().getStar().getSqlQuery();
+        }
+        public RolapStar.Column getNameColumn() {
+            return nameColumn;
+        }
+
+        public MondrianDef.Expression getExpression() {
+            return expression;
+        }
+
         public String getExpression(SqlQuery query) {
             return expression.getExpression(query);
         }
 
-        private void quoteValue(Object o, StringBuffer buf) {
+        private static void quoteValue(Object o, 
+                                       StringBuffer buf, 
+                                       boolean isNumeric) {
             String s = o.toString();
             if (isNumeric) {
                 buf.append(s);
@@ -416,14 +646,7 @@ public class RolapStar {
         }
 
         private int getCardinality(Connection jdbcConnection) {
-            SqlQuery sqlQuery;
-            try {
-                sqlQuery = new SqlQuery(jdbcConnection.getMetaData());
-            } catch (SQLException e) {
-                throw Util.getRes().newInternal(
-                        "while counting distinct values of column '" +
-                        expression.getGenericExpression() + "'", e);
-            }
+            SqlQuery sqlQuery = getSqlQuery();
             if (sqlQuery.allowsCountDistinct()) {
                 // e.g. "select count(distinct product_id) from product"
                 sqlQuery.addSelect("count(distinct "
@@ -495,8 +718,9 @@ public class RolapStar {
          *
          * <li>String values: <code>foo.bar in ('a', 'b', 'c')</code></li></ul>
          */
-        public String createInExpr(String expr,
-                                   ColumnConstraint[] constraints) {
+        public static String createInExpr(String expr, 
+                                   ColumnConstraint[] constraints,
+                                   boolean isNumeric) {
             if (constraints.length == 1) {
                 final ColumnConstraint constraint = constraints[0];
                 Object key = constraint.getValue();
@@ -504,7 +728,7 @@ public class RolapStar {
                     StringBuffer buf = new StringBuffer(64);
                     buf.append(expr);
                     buf.append(" = ");
-                    quoteValue(key, buf);
+                    quoteValue(key, buf, isNumeric);
                     return buf.toString();
                 }
             }
@@ -521,7 +745,7 @@ public class RolapStar {
                     sb.append(", ");
                 }
                 ++notNullCount;
-                quoteValue(key, sb);
+                quoteValue(key, sb, isNumeric);
             }
             sb.append(')');
             if (notNullCount < constraints.length) {
@@ -539,7 +763,7 @@ public class RolapStar {
                     buf.append('(');
                     buf.append(expr);
                     buf.append(" = ");
-                    quoteValue(constraints[0].getValue(), buf);
+                    quoteValue(constraints[0].getValue(), buf, isNumeric);
                     buf.append(" or ");
                     buf.append(expr);
                     buf.append(" is null)");
@@ -560,6 +784,27 @@ public class RolapStar {
                 return sb.toString();
             }
         }
+
+        public String toString() {
+            StringWriter sw = new StringWriter(256);
+            PrintWriter pw = new PrintWriter(sw);
+            print(pw, "");
+            pw.flush();
+            return sw.toString();
+        }
+
+        /**
+         * Prints this table and its children.
+         */
+        public void print(PrintWriter pw, String prefix) {
+            SqlQuery sqlQuery = getSqlQuery();
+            pw.print(prefix);
+            pw.print(getName());
+            pw.print(" (");
+            pw.print(getBitPosition());
+            pw.print("): ");
+            pw.print(getExpression(sqlQuery));
+        }
     }
 
     /**
@@ -571,17 +816,43 @@ public class RolapStar {
     public static class Measure extends Column {
         private final RolapAggregator aggregator;
 
-        Measure(RolapAggregator aggregator,
-                Table table,
-                MondrianDef.Expression expression,
-                boolean isNumeric) {
-            super(table, expression, isNumeric);
+        private Measure(String name,
+                        RolapAggregator aggregator,
+                        Table table, 
+                        MondrianDef.Expression expression,
+                        boolean isNumeric) {
+            super(name, table, expression, isNumeric);
             this.aggregator = aggregator;
         }
         public RolapAggregator getAggregator() {
             return aggregator;
         }
-    };
+
+        public boolean equals(Object obj) {
+            if (! super.equals(obj)) {
+                return false;
+            }
+            if (! (obj instanceof RolapStar.Measure)) {
+                return false;
+            }
+            RolapStar.Measure other = (RolapStar.Measure) obj;
+            // Note: both measure have to have the same aggregator
+            return (other.aggregator == this.aggregator);
+        }
+
+        /**
+         * Prints this table and its children.
+         */
+        public void print(PrintWriter pw, String prefix) {
+            SqlQuery sqlQuery = getSqlQuery();
+            pw.print(prefix);
+            pw.print(getName());
+            pw.print(" (");
+            pw.print(getBitPosition());
+            pw.print("): ");
+            pw.print(aggregator.getExpression(getExpression(sqlQuery)));
+        }
+    }
 
     /**
      * Definition of a table in a star schema.
@@ -597,17 +868,17 @@ public class RolapStar {
     public static class Table {
         private final RolapStar star;
         private final MondrianDef.Relation relation;
-        private final List columns;
+        private final List columnList;
         private final Table parent;
-        private final List children;
+        private List children;
         /** Condition with which it is connected to its parent. **/
         private final Condition joinCondition;
         private final String alias;
 
-        Table(RolapStar star,
-              MondrianDef.Relation relation,
-              Table parent,
-              Condition joinCondition) {
+        private Table(RolapStar star, 
+                      MondrianDef.Relation relation,
+                      Table parent, 
+                      Condition joinCondition) {
             this.star = star;
             this.relation = relation;
             Util.assertTrue(
@@ -620,20 +891,116 @@ public class RolapStar {
             final AliasReplacer aliasReplacer =
                     new AliasReplacer(relation.getAlias(), this.alias);
             this.joinCondition = aliasReplacer.visit(joinCondition);
-            this.columns = new ArrayList();
-            this.children = new ArrayList();
+            if (this.joinCondition != null) {
+                this.joinCondition.table = this;
+            }
+            this.columnList = new ArrayList();
+            this.children = Collections.EMPTY_LIST;
             Util.assertTrue((parent == null) == (joinCondition == null));
         }
-        public Table getParent() {
-            return parent;
+        public Condition getCondition() {
+            return joinCondition;
         }
-        public void addColumn(Column column) {
-            this.columns.add(column);
+
+        private void addColumn(Column column) {
+            columnList.add(column);
         }
+
+        public void loadColumns(BitKey bitKey, List list) {
+            for (Iterator it = getColumns(); it.hasNext(); ) {
+                Column column = (Column) it.next();
+                if (bitKey.isSetByPos(column.getBitPosition())) {
+                    list.add(column);
+                }
+            }
+            for (Iterator it = getChildren(); it.hasNext(); ) {
+                Table child = (Table) it.next();
+                child.loadColumns(bitKey, list);
+            }
+
+        }
+
+        public Column[] lookupColumns(String columnName) {
+            List l = new ArrayList();
+            for (Iterator it = getColumns(); it.hasNext(); ) {
+                Column column = (Column) it.next();
+                if (column.getExpression() instanceof MondrianDef.Column) {
+                    MondrianDef.Column columnExpr = 
+                        (MondrianDef.Column) column.getExpression();
+                    if (columnExpr.name.equals(columnName)) {
+                        l.add(column);
+                    }
+                }
+            }
+            return (Column[]) l.toArray(new Column[0]);
+        }
+        public Column lookupColumn(String columnName) {
+            for (Iterator it = getColumns(); it.hasNext(); ) {
+                Column column = (Column) it.next();
+                if (column.getExpression() instanceof MondrianDef.Column) {
+                    MondrianDef.Column columnExpr = 
+                        (MondrianDef.Column) column.getExpression();
+                    if (columnExpr.name.equals(columnName)) {
+                        return column;
+                    }
+                }
+            }
+            return null;
+        }
+
+        /** 
+         * Given a MondrianDef.Expression return a column with that expression
+         * or null.
+         * 
+         * @param xmlExpr 
+         * @return 
+         */
+        public Column lookupColumnByExpression(MondrianDef.Expression xmlExpr) {
+            for (Iterator it = getColumns(); it.hasNext(); ) {
+                Column column = (Column) it.next();
+                if (column.getExpression().equals(xmlExpr)) {
+                    return column;
+                }
+            }
+            return null;
+        }
+        public boolean containsColumn(Column column) {
+            for (Iterator it = getColumns(); it.hasNext(); ) {
+                Column other = (Column) it.next();
+                if (column.equals(other)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /** 
+         * Look up a RolapStar.Measure by its name returning null if none are
+         * found.
+         * 
+         * @param name 
+         * @return 
+         */
+        public Measure lookupMeasureByName(String name) {
+            for (Iterator it = getColumns(); it.hasNext(); ) {
+                Column column = (Column) it.next();
+                if (column instanceof Measure) {
+                    Measure measure = (Measure) column;
+                    if (measure.getName().equals(name)) {
+                        return measure;
+                    }
+                }
+            }
+            return null;
+        }
+
         RolapStar getStar() {
             return star;
         }
-        MondrianDef.Relation getRelation() {
+        private SqlQuery getSqlQuery() {
+            return getStar().getSqlQuery();
+        }
+        public MondrianDef.Relation getRelation() {
             return relation;
         }
 
@@ -654,6 +1021,118 @@ public class RolapStar {
         public String getAlias() {
             return alias;
         }
+        synchronized void makeMeasure(RolapStoredMeasure storedMeasure) {
+            RolapStar.Measure measure = new RolapStar.Measure(
+                storedMeasure.getName(),
+                storedMeasure.getAggregator(),
+                this,
+                storedMeasure.getMondrianDefExpression(),
+                true);
+                
+            storedMeasure.setStarMeasure(measure); // reverse mapping
+
+            if (containsColumn(measure)) {
+                star.decrementColumnCount();
+            } else {
+                addColumn(measure);
+            }
+        }
+        
+        /** 
+         * This is only called by RolapCube. If the RolapLevel has a non-null
+         * name expression then two columns will be made, otherwise only one.
+         * 
+         * @param cube 
+         * @param level 
+         */
+        synchronized void makeColumns(RolapCube cube,
+                                     RolapLevel level) {
+
+            Column nameColumn = null;
+            if (level.getNameExp() != null) {
+                // make a column for the name expression
+                nameColumn = makeColumnForLevelExpr(
+                    cube,
+                    level,
+                    level.getName(),
+                    level.getNameExp(),
+                    false,
+                    null
+                );
+
+            }
+            // select the column's name depending upon whether or not a 
+            // "named" column, above, has been created.
+            String name = (level.getNameExp() == null)
+                ? level.getName()
+                : level.getName() + " (Key)";
+
+            // If the nameColumn is not null, then it is associated with this
+            // column.
+            Column column = makeColumnForLevelExpr(
+                cube,
+                level,
+                name,
+                level.getKeyExp(),
+                (level.getFlags() & RolapLevel.NUMERIC) != 0,
+                nameColumn
+            );
+
+            if (column != null) {
+                Map map = star.getMapLevelToColumn(cube);
+                map.put(level, column);
+            }
+
+        }
+        private Column makeColumnForLevelExpr(RolapCube cube,
+                                              RolapLevel level,
+                                              String name,
+                                              MondrianDef.Expression xmlExpr,
+                                              boolean isNumeric,
+                                              Column nameColumn) {
+            Table table = this;
+            if (xmlExpr instanceof MondrianDef.Column) {
+                final MondrianDef.Column xmlColumn = 
+                    (MondrianDef.Column) xmlExpr;
+
+                String tableName = xmlColumn.table;
+                table = findAncestor(tableName);
+                if (table == null) {
+                    throw Util.newError(
+                            "Level '" + level.getUniqueName()
+                            + "' of cube '"
+                            + this
+                            + "' is invalid: table '" + tableName
+                            + "' is not found in current scope");
+                }
+                RolapStar.AliasReplacer aliasReplacer =
+                        new RolapStar.AliasReplacer(tableName, table.getAlias());
+                xmlExpr = aliasReplacer.visit(xmlExpr);
+            }
+            // does the column already exist??
+            Column c = lookupColumnByExpression(xmlExpr);
+
+            RolapStar.Column column = null;
+            if (c != null) {
+                // Yes, well just reuse it
+                // You might wonder why the column need be returned if it
+                // already exists. Well, it might have been created for one
+                // cube, but for another cube using the same fact table, it
+                // still needs to be put into the cube level to column map.
+                // Trust me, return null and a junit test fails.
+                column = c;
+            } else {
+                // Make a new column and add it
+                column = new RolapStar.Column(name, 
+                                              table, 
+                                              xmlExpr, 
+                                              isNumeric, 
+                                              nameColumn);
+                addColumn(column);
+            }
+            return column;
+        }
+
 
         /**
          * Extends this 'leg' of the star by adding <code>relation</code>
@@ -668,6 +1147,9 @@ public class RolapStar {
                 if (starTable == null) {
                     starTable = new RolapStar.Table(star, relation, this,
                         joinCondition);
+                    if (this.children == Collections.EMPTY_LIST) {
+                        this.children = new ArrayList();
+                    }
                     this.children.add(starTable);
                 }
                 return starTable;
@@ -713,8 +1195,8 @@ public class RolapStar {
          */
         public Table findChild(MondrianDef.Relation relation,
                                Condition joinCondition) {
-            for (int i = 0; i < children.size(); i++) {
-                Table child = (Table) children.get(i);
+            for (Iterator it = getChildren(); it.hasNext(); ) {
+                Table child = (Table) it.next();
                 if (child.relation.equals(relation)) {
                     Condition condition = joinCondition;
                     if (!Util.equals(relation.getAlias(), child.alias)) {
@@ -740,8 +1222,8 @@ public class RolapStar {
             if (getAlias().equals(seekAlias)) {
                 return this;
             }
-            for (int i = 0, n = children.size(); i < n; i++) {
-                Table child = (Table) children.get(i);
+            for (Iterator it = getChildren(); it.hasNext(); ) {
+                Table child = (Table) it.next();
                 Table found = child.findDescendant(seekAlias);
                 if (found != null) {
                     return found;
@@ -786,33 +1268,136 @@ public class RolapStar {
             }
         }
 
+        /** 
+         * Return an Iterator over all child tables. 
+         * 
+         * @return 
+         */
+        public Iterator getChildren() {
+            return children.iterator();
+        }
+        /** 
+         * Return an Iterator over all of the table's columns. 
+         * 
+         * @return 
+         */
+        public Iterator getColumns() {
+            return columnList.iterator();
+        }
+
+        /** 
+         * Find the child table of the fact table with the given columnname
+         * used in its left join condition. This is used by the
+         * AggTableManager while characterizing the fact table columns.
+         * 
+         * @param columnName 
+         * @return 
+         */
+        public RolapStar.Table findTableWithLeftJoinCondition(
+                final String columnName) {
+            for (Iterator it = getChildren(); it.hasNext(); ) {
+                Table child = (Table) it.next();
+                Condition condition = child.joinCondition;
+                if (condition != null) {
+                    if (condition.left instanceof MondrianDef.Column) {
+                        MondrianDef.Column mcolumn = 
+                            (MondrianDef.Column) condition.left;
+                        if (mcolumn.name.equals(columnName)) {
+                            return child;
+                        }
+                    }
+                }
+
+            }
+            return null;
+        }
+        
+        /** 
+         * This is used during aggregate table validation to make sure that the
+         * mapping from for the aggregate join condition is valid. It returns
+         * the child table with the matching left join condition.
+         * 
+         * @param left 
+         * @return 
+         */
+        public RolapStar.Table findTableWithLeftCondition(
+                final MondrianDef.Expression left) {
+            for (Iterator it = getChildren(); it.hasNext(); ) {
+                Table child = (Table) it.next();
+                Condition condition = child.joinCondition;
+                if (condition != null) {
+                    if (condition.left instanceof MondrianDef.Column) {
+                        MondrianDef.Column mcolumn = 
+                            (MondrianDef.Column) condition.left;
+                        if (mcolumn.equals(left)) {
+                            return child;
+                        }
+                    }
+                }
+
+            }
+            return null;
+        }
+
+        /** 
+         * Note: I do not think that this is ever true. 
+         * 
+         * @return 
+         */
         public boolean isFunky() {
             return (relation == null);
         }
+        public String toString() {
+            StringWriter sw = new StringWriter(256);
+            PrintWriter pw = new PrintWriter(sw);
+            print(pw, "");
+            pw.flush();
+            return sw.toString();
+        }
+
         /**
          * Prints this table and its children.
          */
-        void print(PrintWriter pw, String prefix) {
+        public void print(PrintWriter pw, String prefix) {
             pw.print(prefix);
-            pw.print("Table: alias=[" + this.getAlias());
+            pw.println("Table:");
+            String subprefix = prefix + "  ";
+
+            pw.print(subprefix);
+            pw.print("alias=");
+            pw.println(getAlias());
+
             if (this.relation != null) {
-                pw.print("] relation=[" + relation);
+                pw.print(subprefix);
+                pw.print("relation=");
+                pw.println(relation);
             }
-            pw.print("] columns=[");
-            for (int i = 0, n = columns.size(); i < n; i++) {
-                Column column = (Column) columns.get(i);
-                if (i > 0) {
-                    pw.print(',');
-                }
-                pw.print(column.getExpression().getGenericExpression());
+
+            pw.print(subprefix);
+            pw.println("Columns:");
+            String subsubprefix = subprefix + "  ";
+
+            for (Iterator it = getColumns(); it.hasNext(); ) {
+                Column column = (Column) it.next();
+                column.print(pw, subsubprefix);
+                pw.println();
             }
-            pw.println(']');
-            for (int i = 0; i < children.size(); i++) {
-                Table child = (Table) children.get(i);
-                child.print(pw, prefix + "  ");
+
+            if (this.joinCondition != null) {
+                this.joinCondition.print(pw, subprefix);
+            }
+            for (Iterator it = getChildren(); it.hasNext(); ) {
+                Table child = (Table) it.next();
+                child.print(pw, subprefix);
             }
         }
 
+        /** 
+         * Does this table have a column with the given name.
+         * 
+         * @param columnName 
+         * @return 
+         */
         public boolean containsColumn(String columnName) {
             if (relation instanceof MondrianDef.Table) {
                 return star.containsColumn(((MondrianDef.Table) relation).name,
@@ -827,31 +1412,34 @@ public class RolapStar {
     public static class Condition {
         private final MondrianDef.Expression left;
         private final MondrianDef.Expression right;
+        // set in Table constructor
+        Table table;
 
         Condition(MondrianDef.Expression left,
                   MondrianDef.Expression right) {
             Util.assertPrecondition(left != null);
             Util.assertPrecondition(right != null);
 
+            if (!(left instanceof MondrianDef.Column)) {
+                // TODO: Will this ever print?? if not then left should be
+                // of type MondrianDef.Column.
+                System.out.println("Condition.left NOT Column: " 
+                    +left.getClass().getName());
+            }
             this.left = left;
             this.right = right;
         }
-        String toString(SqlQuery query) {
+        public MondrianDef.Expression getLeft() {
+            return left;
+        }
+        public MondrianDef.Expression getRight() {
+            return right;
+        }
+        public String toString(SqlQuery query) {
             return left.getExpression(query) + " = " + right.getExpression(query);
         }
-
-/*
-RME - this can not be what was wanted
         public int hashCode() {
-            int h = Util.hash(0, left.toString());
-            h = Util.hash(h, right.toString());
-            return h;
-        }
-*/
-        public int hashCode() {
-            int h = Util.hash(0, left.hashCode());
-            h = Util.hash(h, right.hashCode());
-            return h;
+            return left.hashCode() ^ right.hashCode();
         }
 
         public boolean equals(Object obj) {
@@ -859,8 +1447,34 @@ RME - this can not be what was wanted
                 return false;
             }
             Condition that = (Condition) obj;
-            return Util.equals(this.left.toString(), that.left.toString()) &&
-                Util.equals(this.right.toString(), that.right.toString());
+            return (this.left.equals(that.left) &&
+                    this.right.equals(that.right));
+        }
+
+        public String toString() {
+            StringWriter sw = new StringWriter(256);
+            PrintWriter pw = new PrintWriter(sw);
+            print(pw, "");
+            pw.flush();
+            return sw.toString();
+        }
+
+        /**
+         * Prints this table and its children.
+         */
+        public void print(PrintWriter pw, String prefix) {
+            SqlQuery sqlQueuy = table.getSqlQuery();
+            pw.print(prefix);
+            pw.println("Condition:");
+            String subprefix = prefix + "  ";
+
+            pw.print(subprefix);
+            pw.print("left=");
+            pw.println(left.getExpression(sqlQueuy));
+
+            pw.print(subprefix);
+            pw.print("right=");
+            pw.println(right.getExpression(sqlQueuy));
         }
     }
 
@@ -898,8 +1512,7 @@ RME - this can not be what was wanted
             }
             if (expression instanceof MondrianDef.Column) {
                 MondrianDef.Column column = (MondrianDef.Column) expression;
-                return new MondrianDef.Column(visit(column.table),
-                        column.name);
+                return new MondrianDef.Column(visit(column.table), column.name);
             } else {
                 throw Util.newInternal("need to implement " + expression);
             }

@@ -63,8 +63,7 @@ public abstract class RolapAggregationManager implements CellReader {
         RolapStar star = starMeasure.getStar();
         CellRequest request = new CellRequest(starMeasure);
         Map mapLevelToColumn = star.getMapLevelToColumn(measure.getCube());
-        Map mapLevelNameToColumn =
-            star.getMapLevelToNameColumn(measure.getCube());
+
         for (int i = 1; i < members.length; i++) {
             Member member = members[i];
             RolapLevel previousLevel = null;
@@ -95,11 +94,11 @@ public abstract class RolapAggregationManager implements CellReader {
                     final RolapLevel level = (RolapLevel) levels[j];
                     RolapStar.Column column = (RolapStar.Column)
                         mapLevelToColumn.get(level);
+
                     if (column != null) {
                         request.addConstrainedColumn(column, null);
                         if (showNames && level.getNameExp() != null) {
-                            RolapStar.Column nameColumn = (RolapStar.Column)
-                                mapLevelNameToColumn.get(level);
+                            RolapStar.Column nameColumn = column.getNameColumn();
                             Util.assertTrue(nameColumn != null);
                             request.addConstrainedColumn(nameColumn, null);
                         }
@@ -147,6 +146,7 @@ public abstract class RolapAggregationManager implements CellReader {
                 }
                 RolapStar.Column column =
                     (RolapStar.Column) mapLevelToColumn.get(level);
+
                 if (column == null) {
                     // This hierarchy is not one which qualifies the starMeasure
                     // (this happens in virtual cubes). The starMeasure only has
@@ -157,8 +157,8 @@ public abstract class RolapAggregationManager implements CellReader {
                 //  optimization potential
                 request.addConstrainedColumn(column, m);
                 if (showNames && level.getNameExp() != null) {
-                    RolapStar.Column nameColumn = (RolapStar.Column)
-                        mapLevelNameToColumn.get(level);
+                    RolapStar.Column nameColumn = column.getNameColumn();
+
                     Util.assertTrue(nameColumn != null);
                     request.addConstrainedColumn(nameColumn, null);
                 }
