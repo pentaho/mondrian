@@ -3,76 +3,76 @@
 // This software is subject to the terms of the Common Public License
 // Agreement, available at the following URL:
 // http://www.opensource.org/licenses/cpl.html.
-// Copyright (C) 2001-2005 Kana Software, Inc. and others.
+// Copyright (C) 2005-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, 12 August, 2001
 */
 
 package mondrian.rolap.aggmatcher;
 
-import mondrian.rolap.MessageRecorder;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.MondrianDef;
-import mondrian.olap.MondrianResource;
-import mondrian.olap.MondrianException;
-import mondrian.olap.Util;
-import mondrian.rolap.Recorder;
-import mondrian.rolap.RolapSchema;
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.RolapCube;
+import mondrian.olap.*;
+import mondrian.rolap.*;
+import mondrian.recorder.*;
 import org.apache.log4j.Logger;
-import javax.sql.DataSource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Collections;
-import java.util.Iterator;
 
-/** 
- * Create s RolapSchema's AggStars: the aggregate tables for the schema's
- * RolapStars.
- * 
+import javax.sql.DataSource;
+import java.util.*;
+import java.sql.SQLException;
+
+/**
+ * Manages aggregate tables.
+ *
+ * <p>It is used as follows:<ul>
+ * <li>A {@link mondrian.rolap.RolapSchema} creates an {@link AggTableManager},
+ *     and stores it in a member variable to ensure that it is not
+ *     garbage-collected.
+ * <li>The {@link AggTableManager} creates and registers
+ *     {@link MondrianProperties.Trigger} objects, so that it is notified
+ *     when properties pertinent to aggregate tables change.
+ * <li>The {@link mondrian.rolap.RolapSchema} calls {@link #initialize()},
+ *     which scans the JDBC catalog and identifies aggregate tables.
+ * <li>For each aggregate table, it creates an {@link AggStar} and calls
+ *     {@link RolapStar#addAggStar(AggStar)}.
+ *
  * @author <a>Richard M. Emberson</a>
- * @version 
+ * @version
  */
 public class AggTableManager {
-    private static final Logger LOGGER = 
+    private static final Logger LOGGER =
             Logger.getLogger(AggTableManager.class);
 
     private final RolapSchema schema;
 
-    
     private static final MondrianResource mres = MondrianResource.instance();
 
-    /**             
-     * This is set to true if the aggregate tables have been loaded. 
-     */                 
+    /**
+     * This is set to true if the aggregate tables have been loaded.
+     */
     private boolean aggregatesLoaded;
 
-    /**                 
+    /**
      * This is used to create forward references to triggers (so they do not
      * get reaped until the RolapSchema is reaped).
-     */                 
+     */
     private MondrianProperties.Trigger[] triggers;
 
     public AggTableManager(final RolapSchema schema) {
         this.schema = schema;
     }
 
-    /** 
-     * Get the Logger. 
-     * 
-     * @return 
+    /**
+     * Get the Logger.
+     *
+     * @return
      */
     public Logger getLogger() {
         return LOGGER;
     }
-    
-    /** 
-     * Initialize this object, loading all aggregate tables and associating them
-     * with RolapStars.
-     * This method should only be called once. 
+
+    /**
+     * Initializes this object, loading all aggregate tables and associating
+     * them with {@link RolapStar}s.
+     * This method should only be called once.
      */
     public void initialize() {
         reLoadRolapStarAggregates();
@@ -87,20 +87,20 @@ public class AggTableManager {
                 // and their BitKeys can be generated.
                 loadRolapStarAggregates();
 
-            } catch (java.sql.SQLException ex) {
-               throw mres.newAggLoadingError(ex);
+            } catch (SQLException ex) {
+                throw mres.newAggLoadingError(ex);
             }
             aggregatesLoaded = true;
         }
     }
-    
-    /** 
-     * This method loads and/or reloads the aggregate tables. 
-     * 
-     * @throws java.sql.SQLException 
+
+    /**
+     * This method loads and/or reloads the aggregate tables.
+     *
+     * @throws SQLException
      */
-    private void loadRolapStarAggregates() throws java.sql.SQLException {
-        Recorder.Lists msgRecorder = new Recorder.Lists();
+    private void loadRolapStarAggregates() throws SQLException {
+        ListRecorder msgRecorder = new ListRecorder();
         try {
 
         DefaultRules rules = DefaultRules.getInstance();
@@ -121,11 +121,11 @@ public class AggTableManager {
             for (Iterator git = aggGroups.iterator(); git.hasNext(); ) {
                 ExplicitRules.Group group = (ExplicitRules.Group) git.next();
                 group.validate(msgRecorder);
-            }   
+            }
 
 
             String factTableName = star.getFactTable().getAlias();
-                
+
             JdbcSchema.Table dbFactTable = db.getTable(factTableName);
             if (dbFactTable == null) {
                 msgRecorder.reportWarning("No Table found for fact name="
@@ -159,10 +159,10 @@ public class AggTableManager {
                 // there is a Default match. If so and if all the columns
                 // match up, then also make an AggStar.
                 //
-                ExplicitRules.TableDef tableDef = 
+                ExplicitRules.TableDef tableDef =
                     ExplicitRules.getIncludeByTableDef(name, aggGroups);
 
-                boolean makeAggStar = 
+                boolean makeAggStar =
                     ((tableDef != null) &&
                     tableDef.columnsOK(star, dbFactTable, dbTable, msgRecorder))
                     ||
@@ -172,25 +172,25 @@ public class AggTableManager {
                 if (makeAggStar) {
                     dbTable.setTableType(JdbcSchema.AGG_TABLE_TYPE);
                     String alias = null;
-                    dbTable.table = new MondrianDef.Table(schema, 
-                                                          name, 
+                    dbTable.table = new MondrianDef.Table(schema,
+                                                          name,
                                                           alias);
-                    AggStar aggStar = AggStar.makeAggStar(star,  
-                                                          dbTable, 
+                    AggStar aggStar = AggStar.makeAggStar(star,
+                                                          dbTable,
                                                           msgRecorder);
                     star.addAggStar(aggStar);
                 }
                 // Note: if the dbTable name matches but the columnsOK does
-                // not, then this is an error and the aggregate tables 
+                // not, then this is an error and the aggregate tables
                 // can not be loaded.
                 // We do not "reset" the column usages in the dbTable allowing
                 // it maybe to match another rule.
             }
         }
 
-        } catch (MessageRecorder.RTException ex) {
+        } catch (RecorderException ex) {
             throw new MondrianException(ex);
-                
+
         } finally {
             msgRecorder.logWarningMessage(getLogger());
             msgRecorder.logErrorMessage(getLogger());
@@ -200,15 +200,15 @@ public class AggTableManager {
             }
         }
     }
-    
-    /** 
-     * This registers MondrianProperties.Triggers for the following properties:
-     * <pre>
-     *      MondrianProperties.ChooseAggregateByVolume
-     *      MondrianProperties.AggregateRules
-     *      MondrianProperties.AggregateRuleTag
-     *      MondrianProperties.UseAggregates
-     * </pre>
+
+    /**
+     * Registers triggers for the following properties:
+     * <ul>
+     *      <li>{@link MondrianProperties#ChooseAggregateByVolume}
+     *      <li>{@link MondrianProperties#AggregateRules}
+     *      <li>{@link MondrianProperties#AggregateRuleTag}
+     *      <li>{@link MondrianProperties#UseAggregates}
+     * </ul>
      */
     private void registerTriggers() {
         triggers = new MondrianProperties.Trigger[3];
@@ -249,7 +249,7 @@ public class AggTableManager {
                     return MondrianProperties.Trigger.SECONDARY_PHASE;
                 }
                 public void executeTrigger(final String key,
-                                           final String value) 
+                                           final String value)
                              throws MondrianProperties.Trigger.VetoRT {
                     reLoadRolapStarAggregates();
                 }
@@ -294,6 +294,11 @@ public class AggTableManager {
         }
     }
 
+    /**
+     * Returns a list containing every
+     * {@link mondrian.rolap.aggmatcher.ExplicitRules.Group} in every
+     * cubes in a given {@link RolapStar}.
+     */
     protected List getAggGroups(RolapStar star) {
         List list = schema.getCubesWithStar(star);
 
@@ -303,23 +308,23 @@ public class AggTableManager {
             if (cube.hasAggGroup() && cube.getAggGroup().hasRules()) {
                 if (aggGroups == Collections.EMPTY_LIST) {
                     aggGroups = new ArrayList();
-                } 
+                }
                 aggGroups.add(cube.getAggGroup());
             }
         }
         return aggGroups;
     }
-    
-    /** 
+
+    /**
      * This method mines the RolapStar and annotes the JdbcSchema.Table
      * dbFactTable by creating JdbcSchema.Table.Column.Usage instances. For
      * example, a measure in the RolapStar becomes a measure usage for the
      * column with the same name and a RolapStar foreign key column becomes a
      * foreign key usage for the column with the same name.
-     * 
-     * @param dbFactTable 
-     * @param star 
-     * @param msgRecorder 
+     *
+     * @param dbFactTable
+     * @param star
+     * @param msgRecorder
      */
     void bindToStar(final JdbcSchema.Table dbFactTable,
                     final RolapStar star,
@@ -336,10 +341,10 @@ public class AggTableManager {
         dbFactTable.table = new MondrianDef.Table(schema, tableName, alias);
 
         for (Iterator it = dbFactTable.getColumns(); it.hasNext(); ) {
-            JdbcSchema.Table.Column factColumn = 
+            JdbcSchema.Table.Column factColumn =
                 (JdbcSchema.Table.Column) it.next();
             String cname = factColumn.getName();
-            RolapStar.Column[] rcs = 
+            RolapStar.Column[] rcs =
                 star.getFactTable().lookupColumns(cname);
 
             for (int i = 0; i < rcs.length; i++) {
@@ -347,7 +352,7 @@ public class AggTableManager {
                 // its a measure
                 if (rc instanceof RolapStar.Measure) {
                     RolapStar.Measure rm = (RolapStar.Measure) rc;
-                    JdbcSchema.Table.Column.Usage usage = 
+                    JdbcSchema.Table.Column.Usage usage =
                             factColumn.newUsage(JdbcSchema.MEASURE_COLUMN_TYPE);
                     usage.setSymbolicName(rm.getName());
 
@@ -370,7 +375,7 @@ public class AggTableManager {
             RolapStar.Table rTable =
                 star.getFactTable().findTableWithLeftJoinCondition(cname);
             if (rTable != null) {
-                JdbcSchema.Table.Column.Usage usage = 
+                JdbcSchema.Table.Column.Usage usage =
                     factColumn.newUsage(JdbcSchema.FOREIGN_KEY_COLUMN_TYPE);
                 usage.setSymbolicName("FOREIGN_KEY");
                 usage.rTable = rTable;

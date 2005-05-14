@@ -14,6 +14,7 @@ package mondrian.rolap.aggmatcher;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.MondrianResource;
 import mondrian.rolap.*;
+import mondrian.recorder.*;
 import org.apache.log4j.Logger;
 import org.eigenbase.xom.*;
 
@@ -54,10 +55,10 @@ public class DefaultRules {
             DefaultDef.AggRules defs = makeAggRules(inStream);
 
             // validate the DefaultDef.AggRules object
-            Recorder.Lists reclists = new Recorder.Lists();
+            ListRecorder reclists = new ListRecorder();
             try {
                 defs.validate(reclists);
-            } catch (MessageRecorder.RTException e) {
+            } catch (RecorderException e) {
                 // ignore
             }
 

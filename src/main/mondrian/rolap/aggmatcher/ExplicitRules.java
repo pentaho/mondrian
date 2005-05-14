@@ -14,6 +14,7 @@ package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
 import mondrian.rolap.*;
+import mondrian.recorder.MessageRecorder;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;

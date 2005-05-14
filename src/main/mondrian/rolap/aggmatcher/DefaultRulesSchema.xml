@@ -83,7 +83,7 @@ Revision is $Id$
                 return null;
             }
 
-            public void validate(final mondrian.rolap.MessageRecorder msgRecorder) {
+            public void validate(final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
                     validate(factCountMatches, msgRecorder);
@@ -96,7 +96,7 @@ Revision is $Id$
                 }
             }
             private void validate(final Base[] bases, 
-                                  final mondrian.rolap.MessageRecorder msgRecorder) {
+                                  final mondrian.recorder.MessageRecorder msgRecorder) {
                 for (int i = 0; i < bases.length; i++) {
                     Base base = bases[i];
                     if (base.isEnabled()) {
@@ -198,7 +198,7 @@ Revision is $Id$
             }
             protected abstract String getTag();
             public abstract void validate(final AggRules rules, 
-                                          final mondrian.rolap.MessageRecorder msgRecorder);
+                                          final mondrian.recorder.MessageRecorder msgRecorder);
         </Code>
     </Class>
 
@@ -231,7 +231,7 @@ Revision is $Id$
         </Attribute>
         <Code>
             public void validate(final AggRules rules, 
-                                 final mondrian.rolap.MessageRecorder msgRecorder) {
+                                 final mondrian.recorder.MessageRecorder msgRecorder) {
                 // empty
             }
             protected String getTag() {
@@ -270,7 +270,7 @@ Revision is $Id$
         </Attribute>
         <Code><![CDATA[
             public void validate(final AggRules rules, 
-                                 final mondrian.rolap.MessageRecorder msgRecorder) {
+                                 final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
                     super.validate(rules, msgRecorder);
@@ -392,7 +392,7 @@ Revision is $Id$
         </Attribute>
         <Code><![CDATA[
             public void validate(final AggRules rules, 
-                                 final mondrian.rolap.MessageRecorder msgRecorder) {
+                                 final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
                     super.validate(rules, msgRecorder);
@@ -417,7 +417,7 @@ Revision is $Id$
         </Doc>
         <Code><![CDATA[
             public void validate(final AggRules rules, 
-                                 final mondrian.rolap.MessageRecorder msgRecorder) {
+                                 final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
                     super.validate(rules, msgRecorder);
@@ -447,7 +447,7 @@ Revision is $Id$
         </Doc>
         <Code><![CDATA[
             public void validate(final AggRules rules, 
-                                 final mondrian.rolap.MessageRecorder msgRecorder) {
+                                 final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
                     if ((pretemplate == null) && (posttemplate == null)) {
@@ -516,7 +516,7 @@ Revision is $Id$
             private static final int MAX_SIZE = 50;
 
             public void validate(final AggRules rules, 
-                                 final mondrian.rolap.MessageRecorder msgRecorder) {
+                                 final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
                     super.validate(rules, msgRecorder);
@@ -588,7 +588,7 @@ Revision is $Id$
             protected abstract String[] getTemplateNames();
 
             private int convertNameToID(final String name, 
-                                        final mondrian.rolap.MessageRecorder msgRecorder) {
+                                        final mondrian.recorder.MessageRecorder msgRecorder) {
 
                 if (name == null) {
                     String msg = "Template name is null";
@@ -808,7 +808,7 @@ Revision is $Id$
 
             public void validate(final AggRules rules, 
                                  final String[] templateNames,
-                                 final mondrian.rolap.MessageRecorder msgRecorder) {
+                                 final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
                     super.validate(rules, msgRecorder);
@@ -879,7 +879,7 @@ Revision is $Id$
             }
             private int convertNameToID(final String name, 
                                         final String[] templateNames,
-                                        final mondrian.rolap.MessageRecorder msgRecorder) {
+                                        final mondrian.recorder.MessageRecorder msgRecorder) {
 
                 if (name == null) {
                     String msg = "Template name is null";
@@ -1029,7 +1029,7 @@ Revision is $Id$
             }
 
             public void validate(final AggRules rules, 
-                                 final mondrian.rolap.MessageRecorder msgRecorder) {
+                                 final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
 
@@ -1125,7 +1125,7 @@ Revision is $Id$
     <Element type="LevelMapRef" class="Ref" >
         <Code>
             public void validate(final AggRules rules, 
-                                 final mondrian.rolap.MessageRecorder msgRecorder) {
+                                 final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
                     if (! rules.hasLevelMap(getRefId())) {
@@ -1145,7 +1145,7 @@ Revision is $Id$
     <Element type="MeasureMapRef" class="Ref" >
         <Code>
             public void validate(final AggRules rules, 
-                                 final mondrian.rolap.MessageRecorder msgRecorder) {
+                                 final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
                     if (! rules.hasMeasureMap(getRefId())) {
@@ -1165,7 +1165,7 @@ Revision is $Id$
     <Element type="FactCountMatchRef" class="Ref" >
         <Code>
             public void validate(final AggRules rules, 
-                                 final mondrian.rolap.MessageRecorder msgRecorder) {
+                                 final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
                     if (! rules.hasFactCountMatch(getRefId())) {
@@ -1185,7 +1185,7 @@ Revision is $Id$
     <Element type="ForeignKeyMatchRef" class="Ref" >
         <Code>
             public void validate(final AggRules rules, 
-                                 final mondrian.rolap.MessageRecorder msgRecorder) {
+                                 final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
                     if (! rules.hasForeignKeyMatch(getRefId())) {
@@ -1205,7 +1205,7 @@ Revision is $Id$
     <Element type="TableMatchRef" class="Ref" >
         <Code>
             public void validate(final AggRules rules, 
-                                 final mondrian.rolap.MessageRecorder msgRecorder) {
+                                 final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
                     if (! rules.hasTableMatch(getRefId())) {
@@ -1358,7 +1358,7 @@ Revision is $Id$
                 return ((base != null) && base.isEnabled());
             }
             private boolean isRef(final AggRules rules, 
-                                  final mondrian.rolap.MessageRecorder msgRecorder,
+                                  final mondrian.recorder.MessageRecorder msgRecorder,
                                   final Base base, 
                                   final Base baseRef,
                                   final String baseName) {
@@ -1390,7 +1390,7 @@ Revision is $Id$
             }
             // called after a constructor is called
             public void validate(final AggRules rules, 
-                                 final mondrian.rolap.MessageRecorder msgRecorder) {
+                                 final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
                     if (isRef(rules, msgRecorder, factCountMatch,
