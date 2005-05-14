@@ -226,7 +226,8 @@ parser,
 generate.resources,
 def,
 compile.java,
-unzip-FoodMartCreateData"/>
+unzip-FoodMartCreateData,
+unzip-FoodMartAccessDB"/>
 
   <target name="generate.resources">
     <taskdef name="resgen" classname="org.eigenbase.resgen.ResourceGenTask">
@@ -346,7 +347,7 @@ in {mondrian.foodmart.jdbcURL}.">
       <sysproperty key="mondrian.test.foodmart.catalogURL"
           value="${mondrian.foodmart.catalogURL}"/>
       <sysproperty key="mondrian.test.connectString"
-          value="Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}'"/>
+          value="Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';JdbcUser='${mondrian.foodmart.jdbcUser}';JdbcPassword='${mondrian.foodmart.jdbcPassword}';Catalog='${mondrian.foodmart.catalogURL}'"/>
       <!-- tests require en_US locale -->
       <sysproperty key="user.language" value="en"/>
       <sysproperty key="user.region" value="US"/>
@@ -497,10 +498,32 @@ doc/deployDoc.sh" />
     <touch file="demo/FoodMartCreateData.sql"/>
   </target>
 
+  <target name="check-FoodMartAccessDB-uptodate">
+    <condition property="FoodMartAccessDB.uptodate">
+      <or>
+        <not>
+          <available file="demo/access/MondrianFoodMart-Access.zip"/>
+        </not>
+        <uptodate
+            srcfile="demo/access/MondrianFoodMart-Access.zip"
+            targetfile="demo/access/MondrianFoodMart.mdb"/>
+      </or>
+    </condition>
+  </target>
+
+  <target name="unzip-FoodMartAccessDB"
+      depends="check-FoodMartAccessDB-uptodate"
+      unless="FoodMartAccessDB.uptodate">
+    <unzip src="demo/access/MondrianFoodMart-Access.zip" dest="demo/access">
+      <patternset includes="MondrianFoodMart.mdb"/>
+    </unzip>
+    <touch file="demo/access/MondrianFoodMart.mdb"/>
+  </target>
+
   <target name="release" depends="binzip"/>
 
   <target name="binzip"
-      depends="version,war,javadoc,srczip,unzip-FoodMartCreateData">
+      depends="version,war,javadoc,srczip,unzip-FoodMartCreateData,unzip-FoodMartAccessDB">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.bin.file}"/>
     <zip zipfile="${dist.bin.file}">
