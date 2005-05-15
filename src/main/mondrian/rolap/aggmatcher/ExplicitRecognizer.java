@@ -105,7 +105,8 @@ class ExplicitRecognizer extends Recognizer {
                 ExplicitRules.TableDef.Measure measure =
                     (ExplicitRules.TableDef.Measure) mit.next();
 
-                if (measure.getColumnName().equals(aggColumnName)) {
+            	// Column name match is case insensitive 
+                if (measure.getColumnName().equalsIgnoreCase(aggColumnName)) {
                     // Ok, got a match, so now make a measue
                     makeMeasure(measure, aggColumn);
                     nosOfMeasureColumns++;
@@ -131,8 +132,19 @@ class ExplicitRecognizer extends Recognizer {
                 if (aggFK != null) {
                     JdbcSchema.Table.Column aggColumn =
                         aggTable.getColumn(aggFK);
-                    makeMeasure(factUsage, aggColumn);
-                    nosOfMeasureColumns++;
+                    
+                	// Column name match is case insensitive 
+                    if (aggColumn == null) {
+                    	aggColumn = aggTable.getColumn(aggFK.toLowerCase());
+                    }
+                    if (aggColumn == null) {
+                    	aggColumn = aggTable.getColumn(aggFK.toUpperCase());
+                    }
+                    
+                    if (aggColumn != null) {
+                    	makeMeasure(factUsage, aggColumn);
+                        nosOfMeasureColumns++;
+                    }
                 }
             }
         }

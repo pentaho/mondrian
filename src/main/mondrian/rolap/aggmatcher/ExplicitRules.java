@@ -124,8 +124,8 @@ public class ExplicitRules {
                 LOGGER.warn(msg);
             }
 
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("\n"+group);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("\n"+group);
             }
             return group;
         }
@@ -1063,7 +1063,8 @@ RME TODO
         protected Recognizer.Matcher getFactCountMatcher() {
             return new Recognizer.Matcher() {
                 public boolean matches(String name) {
-                    return ExplicitRules.TableDef.this.factCountName.equals(name);
+                	// Match is case insensitive 
+                    return ExplicitRules.TableDef.this.factCountName.equalsIgnoreCase(name);
                 }
             };
         }
