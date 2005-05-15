@@ -240,6 +240,9 @@ public class RolapUtil {
             if (RolapUtil.debugOut != null) {
                 RolapUtil.debugOut.println(status);
             }
+            if (LOGGER.isDebugEnabled()) {
+            	LOGGER.debug(component + ": executing sql [" + sql + "]" + status);
+            }
             getQuerySemaphore().leave();
         }
     }
