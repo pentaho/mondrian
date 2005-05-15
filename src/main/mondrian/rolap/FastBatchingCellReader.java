@@ -110,9 +110,9 @@ for (int i = 0; i < columns.length; i++) {
         }
         batches.clear();
 
-        if (LOGGER.isInfoEnabled()) {
+        if (LOGGER.isDebugEnabled()) {
             long t2 = System.currentTimeMillis();
-            LOGGER.info("loadAggregation " + (t2 - t1));
+            LOGGER.debug("loadAggregation (millis): " + (t2 - t1));
         }
 
         return true;
@@ -204,9 +204,9 @@ for (int i = 0; i < columns.length; i++) {
                 aggmgr.loadAggregation(measures, columns, bitKey,
                     constraintses, pinnedSegments);
             }
-            if (LOGGER.isInfoEnabled()) {
+            if (LOGGER.isDebugEnabled()) {
                 long t2 = System.currentTimeMillis();
-                LOGGER.info("Batch.loadAggregation " + (t2 - t1));
+                LOGGER.debug("Batch.loadAggregation (millis) " + (t2 - t1));
             }
         }
 
