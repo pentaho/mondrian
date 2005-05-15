@@ -717,11 +717,16 @@ abstract class Recognizer {
                     aggColumn.getName()
                 );
                 // This is a fatal error for explicit recognizer
-                if (this instanceof ExplicitRecognizer) {
+/*
+                 if (this instanceof ExplicitRecognizer) {
                     msgRecorder.reportError(msg);
                 } else {
                     msgRecorder.reportWarning(msg);
                 }
+                
+                Make this just a warning
+*/
+                msgRecorder.reportWarning(msg);
             }
         }
         msgRecorder.popContextName();
