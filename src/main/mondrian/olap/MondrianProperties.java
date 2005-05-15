@@ -794,8 +794,10 @@ public class MondrianProperties extends PropertiesPlus {
 
     /**
      * The default value of the AggRules property, a resource in Mondrian jar.
+     * DefaultRules.xml is in mondrian.rolap.aggmatcher
+     * 
      */
-    public static final String AggregateRules_Default = "/DefaultRules.xml";
+    public static final String AggregateRules_Default = "DefaultRules.xml";
 
     /**
      * Get the value of the AggregateRules property which returns the
