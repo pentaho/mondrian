@@ -307,8 +307,35 @@ unzip-FoodMartAccessDB"/>
        "mondrian.foodmart.catalogURL" properties. The easiest way to
        do this is to edit the file "build.properties". -->
 
+  <target name="set.connectString">
+    <!-- Ensure that the JdbcUser parameter is only added to the connect string
+         if the mondrian.foodmart.jdbcUser property is set. Likewise
+         JdbcPassword. -->
+    <condition property="jdbcUser"
+        value=";JdbcUser='${mondrian.foodmart.jdbcUser}'">
+      <isset property="mondrian.foodmart.jdbcUser"/>
+    </condition>
+    <condition property="jdbcUser" value="">
+      <not>
+        <isset property="mondrian.foodmart.jdbcUser"/>
+      </not>
+    </condition>
+    <condition property="jdbcPassword"
+        value=";JdbcPassword='${mondrian.foodmart.jdbcPassword}'">
+      <isset property="mondrian.foodmart.jdbcPassword"/>
+    </condition>
+    <condition property="jdbcPassword" value="">
+      <not>
+        <isset property="mondrian.foodmart.jdbcPassword"/>
+      </not>
+    </condition>
+    <property name="mondrian.test.connectString"
+        value="Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}'${jdbcUser}${jdbcPassword};Catalog='${mondrian.foodmart.catalogURL}'"/>
+  </target>
+
   <target name="FoodMartTest"
-      description="Runs a few queries using the FoodMart schema.">
+      description="Runs a few queries using the FoodMart schema."
+      depends="set.connectString">
     <java classpathref="project.classpath" classname="mondrian.test.Main"
         fork="yes">
 
@@ -320,7 +347,7 @@ unzip-FoodMartAccessDB"/>
       <!-- mondrian.test.connectString is the mondrian connect-string.
            Provider must be 'mondrian'. -->
       <sysproperty key="mondrian.test.connectString"
-          value="Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}';JdbcUser='${mondrian.foodmart.jdbcUser}';JdbcPassword='${mondrian.foodmart.jdbcPassword}'"/>
+          value="${mondrian.test.connectString}"/>
 
     </java>
   </target>
@@ -330,7 +357,7 @@ unzip-FoodMartAccessDB"/>
     <antcall target="test-dbms"/>
   </target>
 
-  <target name="test-dbms" depends="compile,compile.tests"
+  <target name="test-dbms" depends="compile,compile.tests,set.connectString"
       description="
 Runs all JUnit tests, using the given database connection
 in {mondrian.foodmart.jdbcURL}.">
@@ -347,7 +374,7 @@ in {mondrian.foodmart.jdbcURL}.">
       <sysproperty key="mondrian.test.foodmart.catalogURL"
           value="${mondrian.foodmart.catalogURL}"/>
       <sysproperty key="mondrian.test.connectString"
-          value="Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';JdbcUser='${mondrian.foodmart.jdbcUser}';JdbcPassword='${mondrian.foodmart.jdbcPassword}';Catalog='${mondrian.foodmart.catalogURL}'"/>
+          value="${mondrian.test.connectString}"/>
       <!-- tests require en_US locale -->
       <sysproperty key="user.language" value="en"/>
       <sysproperty key="user.region" value="US"/>
@@ -355,7 +382,7 @@ in {mondrian.foodmart.jdbcURL}.">
     </java>
   </target>
 
-  <target name="junit-main" depends="compile,compile.tests">
+  <target name="junit-main" depends="compile,compile.tests,set.connectString">
     <mkdir dir="junit-results"/>
     <junit printsummary="yes" fork="yes" haltonfailure="yes" haltonerror="yes">
         <classpath>
@@ -367,7 +394,7 @@ in {mondrian.foodmart.jdbcURL}.">
         <sysproperty key="mondrian.jdbcDrivers"
             value="${mondrian.jdbcDrivers}"/>
         <sysproperty key="mondrian.test.connectString"
-            value="Provider=mondrian;Jdbc='${mondrian.foodmart.jdbcURL}';Catalog='${mondrian.foodmart.catalogURL}'"/>
+            value="${mondrian.test.connectString}"/>
         <sysproperty key="mondrian.test.foodmart.catalogURL"
             value="${mondrian.foodmart.catalogURL}"/>
 
