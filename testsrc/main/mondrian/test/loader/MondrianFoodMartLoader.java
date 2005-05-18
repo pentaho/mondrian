@@ -29,6 +29,8 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import org.apache.log4j.Logger;
+
 /**
  * Utility to load the FoodMart dataset into an arbitrary JDBC database.
  *
@@ -62,6 +64,8 @@ import java.util.zip.ZipFile;
  * @version $Id$
  */
 public class MondrianFoodMartLoader {
+    private static final Logger LOGGER = Logger.getLogger(MondrianFoodMartLoader.class);
+
     final Pattern decimalDataTypeRegex = Pattern.compile("DECIMAL\\((.*),(.*)\\)");
     final DecimalFormat integerFormatter = new DecimalFormat(decimalFormat(15, 0));
     final String dateFormatString = "yyyy-MM-dd";
@@ -80,7 +84,6 @@ public class MondrianFoodMartLoader {
     private boolean indexes = false;
     private boolean data = false;
     private static final String nl = System.getProperty("line.separator");
-    private boolean verbose = false;
     private boolean jdbcInput = false;
     private boolean jdbcOutput = false;
     private boolean populationQueries = false;
@@ -99,15 +102,13 @@ public class MondrianFoodMartLoader {
     public MondrianFoodMartLoader(String[] args) {
 
         StringBuffer errorMessage = new StringBuffer();
+        StringBuffer parametersMessage = new StringBuffer(); 
 
         for ( int i=0; i<args.length; i++ )  {
-            if (args[i].equals("-verbose")) {
-                verbose = true;
-            } else if (args[i].equals("-tables")) {
+            if (args[i].equals("-tables")) {
                 tables = true;
             } else if (args[i].equals("-data")) {
                 data = true;
-                populationQueries = true;
             } else if (args[i].equals("-indexes")) {
                 indexes = true;
             } else if (args[i].equals("-populationQueries")) {
@@ -133,7 +134,11 @@ public class MondrianFoodMartLoader {
             } else if (args[i].startsWith("-outputJdbcBatchSize=")) {
                 inputBatchSize = Integer.parseInt(args[i].substring("-outputJdbcBatchSize=".length()));
             } else {
-                errorMessage.append("unknown arg: " + args[i] + "\n");
+                errorMessage.append("unknown arg: " + args[i] + nl);
+            }
+            
+            if (LOGGER.isInfoEnabled()) {
+            	parametersMessage.append("\t" + args[i] + nl);
             }
         }
         if (inputJdbcURL != null) {
@@ -149,10 +154,14 @@ public class MondrianFoodMartLoader {
             usage();
             throw MondrianResource.instance().newMissingArg(errorMessage.toString());
         }
+        
+        if (LOGGER.isInfoEnabled()) {
+        	LOGGER.info("Parameters: " + nl + parametersMessage.toString());
+        }
     }
 
     public void usage() {
-        System.out.println("Usage: MondrianFoodMartLoader [-verbose] [-tables] [-data] [-indexes] [-populationQueries]" +
+        System.out.println("Usage: MondrianFoodMartLoader [-tables] [-data] [-indexes] [-populationQueries]" +
                 "-jdbcDrivers=<jdbcDriver> " +
                 "-outputJdbcURL=<jdbcURL> [-outputJdbcUser=user] [-outputJdbcPassword=password]" +
                 "[-outputJdbcBatchSize=<batch size>] " +
@@ -183,13 +192,13 @@ public class MondrianFoodMartLoader {
     }
 
     public static void main(String[] args) {
-        System.out.println("Starting load at: " + (new Date()));
+        LOGGER.warn("Starting load at: " + (new Date()));
         try {
             new MondrianFoodMartLoader(args).load();
         } catch (Throwable e) {
-            e.printStackTrace();
+            LOGGER.error("Main error", e);
         }
-        System.out.println("Finished load at: " + (new Date()));
+        LOGGER.warn("Finished load at: " + (new Date()));
     }
 
     /**
@@ -219,14 +228,14 @@ public class MondrianFoodMartLoader {
         String productName = metaData.getDatabaseProductName();
         String version = metaData.getDatabaseProductVersion();
 
-        System.out.println("Output connection is " + productName + ", " + version);
+        LOGGER.info("Output connection is " + productName + ", " + version);
 
         sqlQuery = new SqlQuery(metaData);
         booleanColumnType = "SMALLINT";
         if (sqlQuery.isPostgres()) {
             booleanColumnType = "BOOLEAN";
         } else if (sqlQuery.isMySQL()) {
-            booleanColumnType = "BIT";
+            booleanColumnType = "TINYINT(1)";
         }
 
         bigIntColumnType = "BIGINT";
@@ -236,15 +245,14 @@ public class MondrianFoodMartLoader {
 
         try {
             createTables();  // This also initializes tableMetadataToLoad
-            if (data && !populationQueries) {
-                if (jdbcInput) {
-                    loadDataFromJdbcInput();
-                } else {
-                    loadDataFromFile();
-                }
-            }
-            
-            if (data || populationQueries) {
+            if (data) {
+            	if (!populationQueries) {
+	                if (jdbcInput) {
+	                    loadDataFromJdbcInput();
+	                } else {
+	                    loadDataFromFile();
+	                }
+            	}
                 loadFromSQLInserts();
             }
 
@@ -342,7 +350,7 @@ public class MondrianFoodMartLoader {
                 // If table just changed, flush the previous batch.
                 if (!tableName.equals(prevTable)) {
                     if (!prevTable.equals("")) {
-                        System.out.println("Table " + prevTable +
+                    	LOGGER.info("Table " + prevTable +
                             ": loaded " + tableRowCount + " rows.");
                     }
                     tableRowCount = 0;
@@ -398,7 +406,7 @@ public class MondrianFoodMartLoader {
             }
             // Print summary of the final table.
             if (!prevTable.equals("")) {
-                System.out.println("Table " + prevTable +
+            	LOGGER.info("Table " + prevTable +
                     ": loaded " + tableRowCount + " rows.");
                 tableRowCount = 0;
                 writeBatch(batch, batchSize);
@@ -498,7 +506,7 @@ public class MondrianFoodMartLoader {
         for (Iterator it = tableMetadataToLoad.entrySet().iterator(); it.hasNext(); ) {
             Map.Entry tableEntry = (Map.Entry) it.next();
             int rowsAdded = loadTable((String) tableEntry.getKey(), (Column[]) tableEntry.getValue());
-            System.out.println("Table " + (String) tableEntry.getKey() +
+            LOGGER.info("Table " + (String) tableEntry.getKey() +
                     ": loaded " + rowsAdded + " rows.");
         }
 
@@ -601,9 +609,8 @@ public class MondrianFoodMartLoader {
             .append(quoteId(name));
         String ddl = buf.toString();
         Statement statement = inputConnection.createStatement();
-        if (verbose) {
-            System.out.println("Input table SQL: " + ddl);
-        }
+        LOGGER.debug("Input table SQL: " + ddl);
+
         ResultSet rs = statement.executeQuery(ddl);
 
         String[] batch = new String[inputBatchSize];
@@ -616,8 +623,8 @@ public class MondrianFoodMartLoader {
              */
 
             String insertStatement = createInsertStatement(rs, name, columns);
-            if (!displayedInsert && verbose) {
-                System.out.println("Example Insert statement: " + insertStatement);
+            if (!displayedInsert && LOGGER.isDebugEnabled()) {
+            	LOGGER.debug("Example Insert statement: " + insertStatement);
                 displayedInsert = true;
             }
             batch[batchSize++] = insertStatement;
@@ -685,7 +692,7 @@ public class MondrianFoodMartLoader {
         if (outputDirectory != null) {
             for (int i = 0; i < batchSize; i++) {
                 fileOutput.write(batch[i]);
-                fileOutput.write(";\n");
+                fileOutput.write(";" + nl);
             }
         } else {
             connection.setAutoCommit(false);
@@ -705,14 +712,14 @@ public class MondrianFoodMartLoader {
                     updateCounts = stmt.executeBatch();
                 } catch (SQLException e) {
                     for (int i = 0; i < batchSize; i++) {
-                        System.out.println("Error in SQL batch: " + batch[i]);
+                        LOGGER.error("Error in SQL batch: " + batch[i]);
                     }
                     throw e;
                 }
                 int updates = 0;
                 for (int i = 0; i < updateCounts.length; updates += updateCounts[i], i++) {
                     if (updateCounts[i] == 0) {
-                        System.out.println("Error in SQL: " + batch[i]);
+                    	LOGGER.error("Error in SQL: " + batch[i]);
                     }
                 }
                 if (updates < batchSize) {
@@ -736,7 +743,7 @@ public class MondrianFoodMartLoader {
         final String defaultDataFileName = "FoodMartCreateData.sql";
         final File file = (inputFile != null) ? new File(inputFile) : new File("demo", defaultZipFileName);
         if (!file.exists()) {
-            System.out.println("No input file: " + file);
+            LOGGER.error("No input file: " + file);
             return null;
         }
         if (file.getName().toLowerCase().endsWith(".zip")) {
@@ -878,7 +885,14 @@ public class MondrianFoodMartLoader {
         String[] columnNames)
     {
         try {
+
+            // Only do aggregate tables
+            if (populationQueries && !aggregateTableMetadataToLoad.containsKey(tableName)) {
+            	return;
+            }
+
             StringBuffer buf = new StringBuffer();
+
             // If we're [re]creating tables, no need to drop indexes.
             if (jdbcOutput && !tables) {
                 try {
@@ -891,13 +905,8 @@ public class MondrianFoodMartLoader {
                     final String deleteDDL = buf.toString();
                     executeDDL(deleteDDL);
                 } catch (Exception e1) {
-                    System.out.println("Drop failed: but continue");
+                	LOGGER.info("Index Drop failed for " + tableName + ", " + indexName + " : but continue");
                 }
-            }
-
-            // Only do aggregate tables
-            if (populationQueries && !aggregateTableMetadataToLoad.containsKey(tableName)) {
-            	return;
             }
             
             buf = new StringBuffer();
@@ -1359,7 +1368,10 @@ public class MondrianFoodMartLoader {
         	}
         	
             if (!tables) {
-                if ((data || (populationQueries && aggregate)) && jdbcOutput) {
+                if (data && jdbcOutput) {
+                	if (populationQueries && !aggregate) {
+                		return;
+                	}
                     // We're going to load the data without [re]creating
                     // the table, so let's remove the data.
                     try {
@@ -1379,9 +1391,7 @@ public class MondrianFoodMartLoader {
             try {
             	executeDDL("DROP TABLE " + quoteId(name));
             } catch (Exception e) {
-            	if (verbose) {
-            		System.out.println("Drop of " + name + " failed. Ignored");
-            	}
+            	LOGGER.debug("Drop of " + name + " failed. Ignored");
             }
 
             // Define the table.
@@ -1409,15 +1419,14 @@ public class MondrianFoodMartLoader {
     }
     
     private void executeDDL(String ddl) throws Exception {
-        if (verbose) {
-            System.out.println(ddl);
-        }
+        LOGGER.info(ddl);
+
         if (jdbcOutput) {
             final Statement statement = connection.createStatement();
             statement.execute(ddl);
         } else {
             fileOutput.write(ddl);
-            fileOutput.write(";\n");
+            fileOutput.write(";" + nl);
         }
 
     }
@@ -1465,7 +1474,7 @@ public class MondrianFoodMartLoader {
                     Double result = (Double) obj;
                     return integerFormatter.format(result.doubleValue());
                 } catch (ClassCastException cce) {
-                    System.out.println("CCE: "  + column.name + " to Long from: " + obj.getClass().getName() + " - " + obj.toString());
+                    LOGGER.error("CCE: "  + column.name + " to Long from: " + obj.getClass().getName() + " - " + obj.toString());
                     throw cce;
                 }
             } else {
@@ -1473,7 +1482,7 @@ public class MondrianFoodMartLoader {
                     Integer result = (Integer) obj;
                     return result.toString();
                 } catch (ClassCastException cce) {
-                    System.out.println("CCE: "  + column.name + " to Integer from: " + obj.getClass().getName() + " - " + obj.toString());
+                	LOGGER.error("CCE: "  + column.name + " to Integer from: " + obj.getClass().getName() + " - " + obj.toString());
                     throw cce;
                 }
             }
@@ -1495,7 +1504,7 @@ public class MondrianFoodMartLoader {
                     Integer result = (Integer) obj;
                     return result.toString();
                 } catch (ClassCastException cce) {
-                    System.out.println("CCE: "  + column.name + " to Integer from: " + obj.getClass().getName() + " - " + obj.toString());
+                	LOGGER.error("CCE: "  + column.name + " to Integer from: " + obj.getClass().getName() + " - " + obj.toString());
                     throw cce;
                 }
             }
@@ -1509,7 +1518,7 @@ public class MondrianFoodMartLoader {
                     Double result = (Double) obj;
                     return integerFormatter.format(result.doubleValue());
                 } catch (ClassCastException cce) {
-                    System.out.println("CCE: "  + column.name + " to Double from: " + obj.getClass().getName() + " - " + obj.toString());
+                	LOGGER.error("CCE: "  + column.name + " to Double from: " + obj.getClass().getName() + " - " + obj.toString());
                     throw cce;
                 }
             } else {
@@ -1517,7 +1526,7 @@ public class MondrianFoodMartLoader {
                     Long result = (Long) obj;
                     return result.toString();
                 } catch (ClassCastException cce) {
-                    System.out.println("CCE: "  + column.name + " to Long from: " + obj.getClass().getName() + " - " + obj.toString());
+                	LOGGER.error("CCE: "  + column.name + " to Long from: " + obj.getClass().getName() + " - " + obj.toString());
                     throw cce;
                 }
             }
@@ -1572,7 +1581,7 @@ public class MondrianFoodMartLoader {
                     Double result = (Double) obj;
                     return formatter.format(result.doubleValue());
                 } catch (ClassCastException cce) {
-                    System.out.println("CCE: "  + column.name + " to Double from: " + obj.getClass().getName() + " - " + obj.toString());
+                	LOGGER.error("CCE: "  + column.name + " to Double from: " + obj.getClass().getName() + " - " + obj.toString());
                     throw cce;
                 }
             } else {
@@ -1581,7 +1590,7 @@ public class MondrianFoodMartLoader {
                     BigDecimal result = (BigDecimal) obj;
                     return formatter.format(result);
                 } catch (ClassCastException cce) {
-                    System.out.println("CCE: "  + column.name + " to BigDecimal from: " + obj.getClass().getName() + " - " + obj.toString());
+                	LOGGER.error("CCE: "  + column.name + " to BigDecimal from: " + obj.getClass().getName() + " - " + obj.toString());
                     throw cce;
                 }
             }
