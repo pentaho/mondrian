@@ -50,7 +50,469 @@ MONDRIAN_HOME/src/main/rolap.aggmatcher/DefaultRules.xml.
 </code>
 </p>
 <p>
-MORE TO COME
+There are five different default rules that are used to match and map 
+a candidate
+aggregate table: table name, fact count column, foreign key column,
+level column and measure column. All of these rules are defined
+by creating an instance of the DefaultRulesSchema.xml grammar.
+This grammar has base/supporting classes that are common to the above
+rules. In 
+<code>
+XOM
+</code>
+terms, these are classes and super classes of the rule elements.
+</p>
+<p>
+The first 
+<code>
+XOM
+</code>
+class dealing with matching is the 
+<code>
+CaseMatcher
+</code>
+class.
+This has an attribute "charcase" that takes the legal values of
+</p>
+<blockquote>
+    "ignore" (default)<br>
+    "exact"<br>
+    "upper"<br>
+    "lower"<br>
+</blockquote>
+<p>
+When the value of the attribute is "ignore", then the regular 
+expression formed by an element extending the 
+<code>
+CaseMatcher
+</code>
+class will be case independent for both any parameters used
+to instantiate the regular expression template as well as for
+the text in the post-instantiated regular expression.
+On the other hand, when the "charcase" attribute take any of
+the other three values, it is only the parameter values themselves
+that are "exact", unchanged, "lower", converted to lower case, or
+"upper", converted to upper case.
+</p>
+<p>
+The class 
+<code>
+NameMatcher
+</code>
+extends the 
+<code>
+CaseMatcher
+</code>
+class. This class
+has pre-template and post-template attributes whose default values
+is the empty string. These attributes are prepended/appended 
+to a parameter to generate a regular expression.
+As an example, the 
+<code>
+TableMatcher 
+</code>
+element extends 
+<code>
+NameMatcher
+</code>
+class.
+The parameter in this case is the fact table name and the regular
+expression would be:  
+</p>
+<blockquote>
+    pre-template-attribute${fact_table_name}post-template-attribute
+</blockquote>
+<p>
+For Mondrian, the builtin rule has the pre template value 
+"agg_.+_" and the post template attribute value is the default
+so the regular expression becomes:
+</p>
+<blockquote>
+    agg_.+_${fact_table_name}
+</blockquote>
+<p>
+Both the
+<code>
+FactCountMatch
+</code>
+and
+<code>
+ForeignKeyMatch
+</code>
+elements also extend the
+<code>
+NameMatcher
+</code>
+class. In these cases, the builtin Mondrian rule has no
+pre or post template attribute values, no regular expression,
+The
+<code>
+FactCountMatch
+</code>
+takes no other parameter from the fact table (the fact table does not
+have a fact count column) rather it takes a fact count attribute
+with default value "fact_count", and this is used to
+create the regular expression.
+For the 
+<code>
+ForeignKeyMatch
+</code>
+matcher, its the fact table's foreign key that is used 
+as the regular expression.
+</p>
+<p>
+Both the level and measure column matching elements have one or more
+<code>
+Regex
+</code>
+child elements. These allow for specifying multiple possible matches
+(if any match, then its a match).
+The
+<code>
+LevelMap
+</code>
+and 
+<code>
+MeasureMap
+</code>
+elements extend the 
+<code>
+RegexMapper
+</code>
+which holds an array of
+<code>
+Regex
+</code>
+elements.
+The
+<code>
+Regex
+</code>
+element extends 
+<code>
+CaseMatcher
+</code>
+It has two attributes, 
+<code>
+space
+</code>
+with default value '_' which says how space characters should be mapped,
+and
+<code>
+dot
+</code>
+with default value '_' which says how '.' characters should be mapped.
+If a name were the string "Unit Sales.Case" then (with the default
+values for the
+<code>
+space
+</code>
+and
+<code>
+dot
+</code>
+attributes and with
+<code>
+CaseMatcher
+</code>
+mapping to lower case
+) this would become "unit_sales_case".
+</p>
+<p>
+The 
+<code>
+LevelMap
+</code>
+element has the three template parameter names (hardcoded):
+</p>
+<blockquote>
+    hierarchy_name<br>
+    level_name<br>
+    level_column_name<br>
+</blockquote>
+<p>
+These are names that can be used in creating template regular 
+expressions.
+The builtin Mondrian default rules for level matching defines
+three
+<code>
+Regex
+</code>
+child elements for the 
+<code>
+LevelMap
+</code>
+element.
+These define the template regular expressions:
+</p>
+<blockquote>
+    ${hierarchy_name}_${level_name}<br>
+    ${hierarchy_name}_${level_column_name}<br>
+    ${level_column_name}<br>
+</blockquote>
+<p>
+Mondrian while attempting to match a candidate aggregate table
+against a particular fact table, iterates through the fact table's cube's
+hierarchy name, level name and level colum names looking for
+matches.
+</p>
+<p>
+The
+<code>
+MeasureMap
+</code>
+element has the three template parameter names (hardcoded):
+</p>
+<blockquote>
+    measure_name<br>
+    measure_column_name<br>
+    aggregate_name<br>
+</blockquote>
+<p>
+which can appear in template regular expressions.
+The builtin Mondrian default rules for measure matching defines
+three
+<code>
+Regex
+</code>
+child elements for the 
+<code>
+MeasureMap
+</code>
+element.
+These are
+</p>
+<blockquote>
+    ${measure_name}<br>
+    ${measure_column_name}<br>
+    ${measure_column_name}_${aggregate_name}<br>
+</blockquote>
+<p>
+and Mondrian attempts to match a candidate aggregate table's
+column names against these as it iterators over a fact table's measures.
+</p>
+<p>
+A grouping of 
+<code>
+FactCountMatch
+</code>,
+<code>
+ForeignKeyMatch
+</code>,
+<code>
+TableMatcher
+</code>,
+<code>
+LevelMap
+</code>,
+and
+<code>
+MeasureMap
+</code>
+make up a
+<code>
+AggRule
+</code>
+element, a rule set.
+Each
+<code>
+AggRule
+</code>
+has a 
+<code>
+tag
+</code>
+attribute which is a unique identifier for the rule.
+There can be multiple
+<code>
+AggRule
+</code>
+elements in the outer
+<code>
+AggRules
+</code>
+element.
+Each 
+<code>
+AggRule
+</code>
+having its own
+<code>
+tag
+</code>
+attribute.
+When Mondrian runs, it selects (via the 
+<code>
+mondrian.rolap.aggregates.rule.tag
+</code>
+property) which rule set to use.
+</p>
+<p>
+One last wrinkle, within a 
+<code>
+AggRule
+</code>
+the
+<code>
+FactCountMatch
+</code>,
+<code>
+ForeignKeyMatch
+</code>,
+<code>
+TableMatcher
+</code>,
+<code>
+LevelMap
+</code>,
+and
+<code>
+MeasureMap
+</code>
+child elements can be either defined explicitly within the 
+<code>
+AggRule
+</code>
+element or by reference
+<code>
+FactCountMatchRef
+</code>,
+<code>
+ForeignKeyMatchRef
+</code>,
+<code>
+TableMatcherRef
+</code>,
+<code>
+LevelMapRef
+</code>,
+and
+<code>
+MeasureMapRef
+</code>
+The references are defined as child elements of the top level
+<code>
+AggRules
+</code>
+element. With references the same rule element
+can be used by more than one
+<code>
+AggRule
+</code>
+(code reuse).
+</p>
+<p>
+Below is an example of a default rule set with rather different matching
+rules.
+</p>
+<blockquote>
+<pre>
+<?xml version="1.0"?>
+&lt;AggRules tag="your_mamas_dot_com"&gt;
+  &lt;AggRule tag="default" &gt;
+    &lt;FactCountMatch id="fca" factCountName="FACT_TABLE_COUNT"
+      charcase="exact" /&gt;
+    &lt;ForeignKeyMatch id="fka" pretemplate="agg_" /&gt;
+    &lt;TableMatch id="ta" pretemplate="agg_" posttemplate="_.+"/&gt;
+    &lt;LevelMap id="lxx" &gt;
+      &lt;Regex id="logical" charcase="ignore" space="_" dot="_"&gt;
+          ${hierarchy_name}_${level_name}
+      &lt;/Regex&gt;
+      &lt;Regex id="mixed" charcase="ignore" &gt;
+          ${hierarchy_name}_${level_name}_${level_column_name}
+      &lt;/Regex&gt;
+      &lt;Regex id="mixed" charcase="ignore" &gt;
+          ${hierarchy_name}_${level_column_name}
+      &lt;/Regex&gt;
+      &lt;Regex id="physical" charcase="exact" &gt;
+          ${level_column_name}_.+
+      &lt;/Regex&gt;
+    &lt;/LevelMap&gt;
+    &lt;MeasureMap id="mxx" &gt;
+      &lt;Regex id="one" charcase="lower" &gt;
+          ${measure_name}(_${measure_column_name}(_${aggregate_name})?)?
+      &lt;/Regex&gt;
+      &lt;Regex id="two" charcase="exact" &gt;
+        ${measure_column_name}(_${aggregate_name})?
+      &lt;/Regex&gt;
+    &lt;/MeasureMap&gt;
+  &lt;/AggRule&gt;
+&lt;/AggRules&gt;
+</pre>
+</blockquote>
+<p>
+First, all fact count columns must be called
+<code>
+FACT_TABLE_COUNT
+</code>
+exactly, no ignoring case.
+Next, foreign key columns match the regular expression
+</p>
+<blockquote>
+    agg_${foreign_key_name}
+</blockquote>
+<p>
+that is, the fact table foreign key column name with "agg_" prepened such
+as 
+<code>
+agg_time_id
+</code>.
+The aggregate table names match the regular expression
+</p>
+<blockquote>
+    agg_${fact_table_name}_.+
+</blockquote>
+<p>
+For the FoodMart 
+<code>
+sales_fact_1997
+</code>
+fact table, an aggregate could be named,
+</p>
+<blockquote>
+    agg_sales_fact_1997_01<br>
+    agg_sales_fact_1997_lost_time_id<br>
+    agg_sales_fact_1997_top<br>
+</blockquote>
+<p>
+If the hierarchy, level and level column names were:
+</p>
+<blockquote>
+    hierarchy_name="Sales Location"<br>
+    level_name="State"<br>
+    level_column_name="state_location"<br>
+</blockquote>
+<p>
+then the following aggregate table column names would be 
+recognizing as level column names:
+</p>
+<blockquote>
+    SALES_LOCATION_STATE<br>
+    Sales_Location_State_state_location<br>
+    state_location_level.<br>
+</blockquote>
+<p>
+In the case of matching measure columns, if the measure template parameters
+have the following values:
+</p>
+<blockquote>
+    measure_name="Unit Sales"<br>
+    measure_column_name="m1"<br>
+    aggregate_name="Avg"<br>
+</blockquote>
+<p>
+then possible aggregate columns that could match are:
+</p>
+<blockquote>
+    unit_sales_m1<br>
+    unit_sales_m1_avg<br>
+    m1<br>
+    m1_avg<br>
+</blockquote>
+<p>
+The intent of the above example default rule set is not 
+that they are necessarily
+realistic or usable, rather, it just shows what is possible.
 </p>
 </body>
 </html>
