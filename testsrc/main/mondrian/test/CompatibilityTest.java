@@ -136,6 +136,34 @@ public class CompatibilityTest extends FoodMartTestCase {
     }
 
     /**
+     * Solve order is case insensitive.
+     */
+    public void testSolveOrderCase() {
+        checkSolveOrder("SOLVE_ORDER");
+        checkSolveOrder("SoLvE_OrDeR");
+        checkSolveOrder("solve_order");
+    }
+
+    private void checkSolveOrder(String keyword) {
+        runQueryCheckResult(
+                "WITH" + nl +
+                "   MEMBER [Store].[StoreCalc] as '0', " + keyword + "=0" + nl +
+                "   MEMBER [Product].[ProdCalc] as '1', " + keyword + "=1" + nl +
+                "SELECT" + nl +
+                "   { [Product].[ProdCalc] } ON columns," + nl +
+                "   { [Store].[StoreCalc] } ON rows" + nl +
+                "FROM Sales",
+
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Product].[ProdCalc]}" + nl +
+                "Axis #2:" + nl +
+                "{[Store].[StoreCalc]}" + nl +
+                "Row #0: 1" + nl);
+    }
+    
+    /**
      * Brackets around member names are optional.
      */
     public void testMemberBrackets() {
