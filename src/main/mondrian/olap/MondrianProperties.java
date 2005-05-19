@@ -868,6 +868,21 @@ public class MondrianProperties extends PropertiesPlus {
         return getBooleanProperty(GenerateFormattedSql);
     }
 
+    /**
+     * This is a boolean property if set to true, MDX parsing will be
+     * case sensitive.
+     */
+    public static final String CaseSensitive =
+            "mondrian.olap.case.sensitive";
+
+    /**
+     * Test if the MDX parser is case sensitive.
+     *
+     * @return true if MDX should be case sensitive, false otherwise.
+     */
+    public boolean getCaseSensitive() {
+        return getBooleanProperty(CaseSensitive);
+    }
 }
 
 // End MondrianProperties.java

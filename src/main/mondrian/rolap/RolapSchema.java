@@ -787,8 +787,8 @@ public class RolapSchema implements Schema {
      * cube exists.
      */
     protected Cube lookupCube(final String cubeName) {
-        return (Cube) mapNameToCube.get(
-            isCaseSensitive() ? cubeName : cubeName.toUpperCase());
+        return (Cube) mapNameToCube.get(MondrianProperties.instance().getCaseSensitive() ? cubeName
+                : cubeName.toUpperCase());
     }
 
     public List getCubesWithStar(RolapStar star) {
@@ -808,13 +808,9 @@ public class RolapSchema implements Schema {
      */
     protected void addCube(final Cube cube) {
         this.mapNameToCube.put(
-            isCaseSensitive() ? cube.getName() : cube.getName().toUpperCase(), 
+            MondrianProperties.instance().getCaseSensitive() ?
+                    cube.getName() : cube.getName().toUpperCase(), 
             cube);
-    }
-
-    private boolean isCaseSensitive() {
-        // TODO: Add case sensitivity option
-        return false;
     }
 
     public Cube[] getCubes() {

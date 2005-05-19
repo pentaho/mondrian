@@ -105,7 +105,15 @@ public class Util extends XOMUtil {
     public static boolean equals(Object s, Object t) {
         return (s == null) ? (t == null) : s.equals(t);
     }
-
+    
+    /**
+     * Returns true if two strings are equal, or are both null.
+     * Takes into account the case sensitive option.
+     */
+    public static boolean equals(String s, String t) {
+        boolean caseSensitive = MondrianProperties.instance().getCaseSensitive();
+        return (s == null) ? (t == null) : (caseSensitive ? s.equals(t) : s.equalsIgnoreCase(t));
+    }
     /**
      * Returns a string with every occurrence of a seek string replaced with
      * another.
@@ -453,10 +461,10 @@ public class Util extends XOMUtil {
     public static Member lookupMemberChildByName(
             SchemaReader reader, Member member, String memberName) {
         Member[] children = reader.getMemberChildren(member);
+        // TODO: Linear search may be a performance problem.
         for (int i = 0; i < children.length; i++){
             final Member child = children[i];
-            // TODO: Add case sensitivity option
-            if (child.getName().equalsIgnoreCase(memberName)) {
+            if (Util.equals(child.getName(), memberName)) {
                 return child;
             }
         }

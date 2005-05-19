@@ -58,12 +58,11 @@ public class MemberProperty extends QueryPart {
 
     /**
      * Retrieves a property by name from an array.
-     * @todo Uses a linear search, might be a performance problem if there are many properties.
      **/
     static Exp get(MemberProperty[] a, String name) {
+        // TODO: Linear search may be a performance problem.
         for (int i = 0; i < a.length; i++) {
-            // TODO: add case sensitivity option
-            if (a[i].name.equalsIgnoreCase(name)) {
+            if (Util.equals(a[i].name, name)) {
                 return a[i].exp;
             }
         }
