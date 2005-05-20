@@ -95,7 +95,19 @@ public class Main extends TestSuite {
         TestSuite suite = new TestSuite();
         if (testClass != null) {
             Class clazz = Class.forName(testClass);
+            
+            // use addTestSuite only if the class has test methods
+            // Allows you to run individual queries with ResultComparatorTest
+            
+            boolean matchTestMethods = false;
             if (Test.class.isAssignableFrom(clazz)) {
+            	Method[] methods = clazz.getMethods();
+            	for (int i = 0; i < methods.length && !matchTestMethods; i++) {
+            		matchTestMethods = methods[i].getName().startsWith("test");
+            	}
+            }
+            
+            if (matchTestMethods) {
                 // e.g. testClass = "mondrian.test.FoodMartTestCase",
                 // the name of a class which extends TestCase. We will invoke
                 // every method which starts with 'test'. (If "testName" is set,

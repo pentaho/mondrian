@@ -93,6 +93,13 @@ public class ResultComparatorTest extends TestCase {
 
     private File file;
 
+    public ResultComparatorTest(String name) {
+        super(name);
+    }
+
+    public ResultComparatorTest() {
+    }
+
     public ResultComparatorTest(File file) {
         super(file.getName());
         this.file = file;
