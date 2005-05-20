@@ -37,6 +37,7 @@ public class RolapUtil {
 
     static final RolapMember[] emptyMemberArray = new RolapMember[0];
     public static PrintWriter debugOut = null;
+    public static Boolean produceDebugOut = null;
     private static Semaphore querySemaphore;
     /** Special cell value indicates that the value is not in cache yet. **/
     static RuntimeException valueNotReadyException = new RuntimeException(
@@ -167,10 +168,11 @@ public class RolapUtil {
     }
 
     /**
-     * Enables tracing if "mondrian.trace.level" &gt; 0.
+     * Enables tracing if "mondrian.trace.level" &gt; 0 and a debug output file is 
+     * configured.
      */
     public static void checkTracing() {
-        if ( debugOut == null ) {
+        if ( produceDebugOut == null ) {
             int trace = MondrianProperties.instance().getTraceLevel();
             if (trace > 0) {
                 String debugOutFile =
@@ -179,14 +181,19 @@ public class RolapUtil {
                     File f;
                     try {
                         f = new File(debugOutFile);
-                        debugOut = new PrintWriter(new FileOutputStream(f), true);
+                        setDebugOut(new PrintWriter(new FileOutputStream(f), true));
                     } catch (Exception e) {
                         // don't care, use System.out
                     }
+                    produceDebugOut = Boolean.TRUE;
+                } else {
+                	produceDebugOut = Boolean.FALSE;
                 }
-                if ( debugOut == null ) {
-                    debugOut = new PrintWriter(System.out, true);
+/*                if ( debugOut == null ) {
+                    setDebugOut(new PrintWriter(System.out, true));
                 }
+*/            } else {
+            	produceDebugOut = Boolean.FALSE;
             }
         }
     }
@@ -214,7 +221,7 @@ public class RolapUtil {
         Statement statement = null;
         ResultSet resultSet = null;
         String status = "failed";
-        if (RolapUtil.debugOut != null) {
+        if (produceDebugOut == Boolean.TRUE) {
             RolapUtil.debugOut.print(
                 component + ": executing sql [" + sql + "]");
             RolapUtil.debugOut.flush();
@@ -237,7 +244,7 @@ public class RolapUtil {
             }
             throw (SQLException) e.fillInStackTrace();
         } finally {
-            if (RolapUtil.debugOut != null) {
+            if (produceDebugOut == Boolean.TRUE) {
                 RolapUtil.debugOut.println(status);
             }
             if (LOGGER.isDebugEnabled()) {

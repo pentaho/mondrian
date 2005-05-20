@@ -21,6 +21,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
@@ -323,12 +324,20 @@ public class RolapConnection extends ConnectionBase {
 
     public Result execute(Query query) {
         try {
+        	LOGGER.debug(query.getQueryString());
             Result result = new RolapResult(query);
             for (int i = 0; i < query.axes.length; i++) {
                 QueryAxis axis = query.axes[i];
                 if (axis.nonEmpty) {
                     result = new NonEmptyResult(result, query, i);
                 }
+            }
+            if (LOGGER.isDebugEnabled()) {
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                result.print(pw);
+                pw.flush();
+                LOGGER.debug(sw.toString());
             }
             return result;
 
