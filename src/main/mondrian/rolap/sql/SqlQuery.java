@@ -65,9 +65,9 @@ import java.util.ArrayList;
  * <dd> In Oracle, BIT is CHAR(1), TIMESTAMP is DATE.
  *      In PostgreSQL, DOUBLE is DOUBLE PRECISION, BIT is BOOL. </dd>
  * </ul>
- * 
+ *
  * <p>
- * NOTE: Instances of this class are NOT thread safe so the user must make 
+ * NOTE: Instances of this class are NOT thread safe so the user must make
  * sure this is accessed by only one thread at a time.
  */
 public class SqlQuery
@@ -90,7 +90,7 @@ public class SqlQuery
             public void executeTrigger(final String key,
                                        final String value)
                          throws MondrianProperties.Trigger.VetoRT {
-                generateFormattedSql = 
+                generateFormattedSql =
                     MondrianProperties.instance().getGenerateFormattedSql();
             }
         };
@@ -106,7 +106,7 @@ public class SqlQuery
     private final ClauseList having;
     private final ClauseList orderBy;
 
-    /** 
+    /**
      * This list is used to keep track of what aliases have been  used in the
      * FROM clause. One might think that a java.util.Set would be a more
      * appropriate Collection type, but if you only have a couple of "from
@@ -114,17 +114,17 @@ public class SqlQuery
      * (as is used in java.util.HashSet).
      */
     private final List fromAliases;
-    
+
     private final String quoteIdentifierString;
 
     /** Scratch buffer. Clear it before use. */
     private final StringBuffer buf;
 
-    /** 
+    /**
      * Base constructor used by all other constructors to create an empty
      * instance.
-     * 
-     * @param databaseMetaData 
+     *
+     * @param databaseMetaData
      */
     private SqlQuery(final DatabaseMetaData databaseMetaData,
                      final String quoteIdentifierString) {
@@ -190,10 +190,10 @@ public class SqlQuery
         return s;
     }
 
-    /**         
+    /**
      * The size required to add quotes around a string - this ought to be
      * large enough to prevent a reallocation.
-     */ 
+     */
     private static final int SINGLE_QUOTE_SIZE = 10;
     /**
      * Two strings are quoted and the character '.' is placed between them.
@@ -214,15 +214,15 @@ public class SqlQuery
         quoteIdentifier(val, buf);
 
         return buf.toString();
-    }   
-    
-    /** 
+    }
+
+    /**
      * This is the implementation of the quoteIdentifier method which quotes the
      * the val parameter (identifier) placing the result in the StringBuffer
      * parameter.
-     * 
+     *
      * @param val identifier to quote (must not be null).
-     * @param buf 
+     * @param buf
      */
     public void quoteIdentifier(final String val, final StringBuffer buf) {
         String q = getQuoteIdentifierString();
@@ -278,7 +278,7 @@ public class SqlQuery
         // We know if the qalifier is null, then only the name is going
         // to be quoted.
         int size = name.length()
-            + ((qual == null) 
+            + ((qual == null)
                 ? SINGLE_QUOTE_SIZE
                 : (qual.length() + DOUBLE_QUOTE_SIZE));
         StringBuffer buf = new StringBuffer(size);
@@ -286,18 +286,18 @@ public class SqlQuery
         quoteIdentifier(qual, name, buf);
 
         return buf.toString();
-    } 
+    }
 
-    /**     
-     * This implements the quoting of a qualifier and name allowing one to 
+    /**
+     * This implements the quoting of a qualifier and name allowing one to
      * pass in a StringBuffer thus saving the allocation and copying.
-     *      
+     *
      * @param qual optional qualifier to be quoted.
      * @param name name to be quoted (must not be null).
-     * @param buf 
-     */     
-    public void quoteIdentifier(final String qual, 
-                                final String name, 
+     * @param buf
+     */
+    public void quoteIdentifier(final String qual,
+                                final String name,
                                 final StringBuffer buf) {
         if (qual == null) {
             quoteIdentifier(name, buf);
@@ -389,7 +389,7 @@ public class SqlQuery
         String best;
         if (isOracle()) {
             best = "oracle";
-        } else if (isMSSql() || isMSSQL()) {
+        } else if (isMSSQL()) {
             best = "mssql";
         } else if (isMySQL()) {
             best = "mysql";
@@ -403,30 +403,55 @@ public class SqlQuery
             best = "derby";
         } else if (isDB2()) {
             best = "db2";
+        } else if (isFirebird()) {
+            best = "firebird";
         } else {
             best = "generic";
         }
         return best;
     }
 
+    /**
+     * Returns whether the underlying database is Firebird.
+     */
+    public boolean isFirebird() {
+        return getProduct().toUpperCase().indexOf("FIREBIRD") >= 0;
+    }
+
+    /**
+     * Returns whether the underlying database is Informix.
+     */
     public boolean isInformix() {
         return getProduct().startsWith("Informix");
     }
-    public boolean isMSSql() {
-        return getProduct().equalsIgnoreCase("Microsoft SQL Server");
-    }
+
+    /**
+     * Returns whether the underlying database is Microsoft SQL Server.
+     */
     public boolean isMSSQL() {
         return getProduct().toUpperCase().indexOf("SQL SERVER") >= 0;
     }
+    /**
+     * Returns whether the underlying database is Oracle.
+     */
     public boolean isOracle() {
         return getProduct().equals("Oracle");
     }
+    /**
+     * Returns whether the underlying database is Postgres.
+     */
     public boolean isPostgres() {
         return getProduct().toUpperCase().indexOf("POSTGRE") >= 0;
     }
+    /**
+     * Returns whether the underlying database is MySQL.
+     */
     public boolean isMySQL() {
         return getProduct().toUpperCase().equals("MYSQL");
     }
+    /**
+     * Returns whether the underlying database is Sybase.
+     */
     public boolean isSybase() {
         return getProduct().toUpperCase().indexOf("SYBASE") >= 0;
     }
@@ -435,19 +460,33 @@ public class SqlQuery
     protected boolean requiresAliasForFromItems() {
         return isPostgres();
     }
+
+    /**
+     * Returns whether the SQL dialect allows "AS" in the FROM clause.
+     * If so, "SELECT * FROM t AS alias" is a valid query.
+     */
     protected boolean allowsAs() {
-        return !isOracle() && !isSybase();
+        return !isOracle() && !isSybase() && !isFirebird();
     }
-    /** Whether "select * from (select * from t)" is OK. **/
+
+    /**
+     * Whether "select * from (select * from t)" is OK.
+     */
     public boolean allowsFromQuery() {
         // older versions of AS400 do not allow FROM subqueries
         return !isMySQL() && !isOldAS400() && !isInformix() && !isSybase();
     }
-    /** Whether "select count(distinct x, y) from t" is OK. **/
+
+    /**
+     * Whether "select count(distinct x, y) from t" is OK.
+     */
     public boolean allowsCompoundCountDistinct() {
         return isMySQL();
     }
-    /** Whether "select count(distinct x) from t" is OK. **/
+
+    /**
+     * Whether "select count(distinct x) from t" is OK.
+     */
     public boolean allowsCountDistinct() {
         return !isAccess();
     }
@@ -479,15 +518,15 @@ public class SqlQuery
     /**
      *
      *
-     * @param query  
+     * @param query
      * @param alias (if not null, must not be zero length).
      * @param failIfExists if true, throws exception if alias already exists
      * @return true if query *was* added
      *
      * @pre alias != null
      */
-    public boolean addFromQuery(final String query,   
-                                final String alias, 
+    public boolean addFromQuery(final String query,
+                                final String alias,
                                 final boolean failIfExists) {
         Util.assertPrecondition(alias != null);
 
@@ -526,17 +565,17 @@ public class SqlQuery
      *
      * @param schema schema name; may be null
      * @param table table name
-     * @param alias table alias, may not be null 
+     * @param alias table alias, may not be null
      *              (if not null, must not be zero length).
-     * @param failIfExists 
+     * @param failIfExists
      *
      * @pre alias != null
      * @return true if table *was* added
      */
-    private boolean addFromTable(final String schema, 
-                                 final String table, 
-                                 final String alias, 
-                                 final String filter, 
+    private boolean addFromTable(final String schema,
+                                 final String table,
+                                 final String alias,
+                                 final String filter,
                                  final boolean failIfExists) {
         if (fromAliases.contains(alias)) {
             if (failIfExists) {
@@ -570,8 +609,8 @@ public class SqlQuery
         return true;
     }
 
-    public void addFrom(final SqlQuery sqlQuery, 
-                        final String alias, 
+    public void addFrom(final SqlQuery sqlQuery,
+                        final String alias,
                         final boolean failIfExists)
     {
         addFromQuery(sqlQuery.toString(), alias, failIfExists);
@@ -588,7 +627,7 @@ public class SqlQuery
      * @param failIfExists Whether to fail if relation is already present
      * @return true, if relation *was* added to query
      */
-    public boolean addFrom(final MondrianDef.Relation relation, 
+    public boolean addFrom(final MondrianDef.Relation relation,
                            final String alias,
                            final boolean failIfExists)
     {
@@ -661,8 +700,8 @@ public class SqlQuery
         select.add(buf.toString());
     }
 
-    public void addWhere(final String exprLeft, 
-                         final String exprMid, 
+    public void addWhere(final String exprLeft,
+                         final String exprMid,
                          final String exprRight)
     {
         int len = exprLeft.length() + exprMid.length() + exprRight.length();
@@ -710,7 +749,7 @@ public class SqlQuery
         } else {
             buf.setLength(0);
 
-            select.toBuffer(buf, 
+            select.toBuffer(buf,
                 distinct ? "select distinct " : "select ", ", ");
             from.toBuffer(buf, " from ", ", ");
             where.toBuffer(buf, " where ", " and ");
@@ -727,7 +766,7 @@ public class SqlQuery
         // RolapUtil, does not print the sql at the start of a new line.
         pw.println();
 
-        select.print(pw, prefix, 
+        select.print(pw, prefix,
             distinct ? "select distinct " : "select ", ", ");
         from.print(pw, prefix, "from ", ", ");
         where.print(pw, prefix, "where ", " and ");
@@ -743,12 +782,12 @@ public class SqlQuery
             this.allowDups = allowDups;
         }
 
-        
-        /** 
+
+        /**
          * Parameter element is added if either duplicates are allowed or if
          * it has not already been added.
-         * 
-         * @param element 
+         *
+         * @param element
          */
         void add(final String element) {
             if (allowDups || !contains(element)) {
@@ -756,8 +795,8 @@ public class SqlQuery
             }
         }
 
-        void toBuffer(final StringBuffer buf, 
-                      final String first, 
+        void toBuffer(final StringBuffer buf,
+                      final String first,
                       final String sep) {
             Iterator it = iterator();
             boolean firstTime = true;
@@ -774,8 +813,8 @@ public class SqlQuery
                 buf.append(s);
             }
         }
-        void print(final PrintWriter pw, 
-                   final String prefix, 
+        void print(final PrintWriter pw,
+                   final String prefix,
                    final String first,
                    final String sep) {
             String subprefix = prefix + "    ";

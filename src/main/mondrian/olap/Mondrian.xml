@@ -735,15 +735,16 @@ Revision is $Id$
                 Dialect of SQL the view is intended for.
             </Doc>
             <Value>generic</Value>
-            <Value>oracle</Value>
-            <Value>mysql</Value>
             <Value>access</Value>
-            <Value>postgres</Value>
+            <Value>db2</Value>
+            <Value>derby</Value>
+            <Value>firebird</Value>
             <Value>hsqldb</Value>
             <Value>mssql</Value>
+            <Value>mysql</Value>
+            <Value>oracle</Value>
+            <Value>postgres</Value>
             <Value>sybase</Value>
-            <Value>derby</Value>
-            <Value>db2</Value>
         </Attribute>
         <CData/>
         <Code><![CDATA[
