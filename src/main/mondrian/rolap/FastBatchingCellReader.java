@@ -122,8 +122,7 @@ public class FastBatchingCellReader implements CellReader {
         long t1 = System.currentTimeMillis();
 
         requestCount = 0;
-        dirty = false;
-        if (batches.isEmpty()) {
+        if (batches.isEmpty() && !dirty) {
             return false;
         }
         Iterator it = batches.values().iterator();
@@ -137,6 +136,7 @@ public class FastBatchingCellReader implements CellReader {
             LOGGER.debug("loadAggregation (millis): " + (t2 - t1));
         }
 
+        dirty = false;
         return true;
     }
 
