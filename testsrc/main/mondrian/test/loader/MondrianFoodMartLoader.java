@@ -10,6 +10,7 @@
 package mondrian.test.loader;
 
 import mondrian.olap.MondrianResource;
+import mondrian.olap.Util;
 import mondrian.rolap.RolapUtil;
 import mondrian.rolap.sql.SqlQuery;
 
@@ -45,18 +46,40 @@ import org.apache.log4j.Logger;
  *
  * <li>Oracle 10g using ojdbc14.jar</li>
  *
+ * <li>FirebirdSQL 1.0.2 and JayBird 1.5 (JDBC)</li>
+ *
  * </ul>
  *
- * <p>Output can be to a set of files with create table, insert and create index
- * statements, or directly to a JDBC connection with JDBC batches (lots faster!)</p>
+ * <p>Output can be to a set of files with create table, insert and create
+ * index statements, or directly to a JDBC connection with JDBC batches
+ * (lots faster!)</p>
  *
- * <p>On the command line:</p>
+ * <h3>Command line examples for specific databases</h3>
  *
- * <blockquote>MySQL example<code>
+ * <h4>MySQL</h4>
+ *
+ * <blockquote><code>
  * $ mysqladmin create foodmart<br/>
  * $ java -cp 'classes;testclasses' mondrian.test.loader.MondrianFoodMartLoader
  *     -verbose -tables -data -indexes -jdbcDrivers=com.mysql.jdbc.Driver
  *     -inputJdbcURL=jdbc:odbc:MondrianFoodMart -outputJdbcURL=jdbc:mysql://localhost/foodmart
+ * </code></blockquote>
+ *
+ * <h4>FirebirdSQL</h4>
+ *
+ * <blockquote><code>
+ * $ /firebird/bin/isql -u SYSDBA -p masterkey<br/>
+ * Use CONNECT or CREATE DATABASE to specify a database<br/>
+ * SQL&gt; CREATE DATABASE '/mondrian/foodmart.gdb';<br/>
+ * SQL&gt; QUIT;<br/>
+ * $ java -cp "/mondrian/lib/mondrian.jar:/mondrian/lib/log4j-1.2.9.jar:/mondrian/lib/eigenbase-xom.jar:/mondrian/lib/eigenbase-resgen.jar:/jdbc/fb/firebirdsql-full.jar"
+ *    mondrian.test.loader.MondrianFoodMartLoader
+ *    -verbose -tables -data -indexes
+ *    -jdbcDrivers="org.firebirdsql.jdbc.FBDriver"
+ *    -inputFile="/mondrian/demo/FoodMartCreateData.sql"
+ *    -outputJdbcURL="jdbc:firebirdsql:localhost/3050:/mondrian/foodmart.gdb"
+ *    -inputJdbcUser=SYSDBA
+ *    -inputJdbcPassword=masterkey
  * </code></blockquote>
  *
  * @author jhyde
@@ -102,7 +125,7 @@ public class MondrianFoodMartLoader {
     public MondrianFoodMartLoader(String[] args) {
 
         StringBuffer errorMessage = new StringBuffer();
-        StringBuffer parametersMessage = new StringBuffer(); 
+        StringBuffer parametersMessage = new StringBuffer();
 
         for ( int i=0; i<args.length; i++ )  {
             if (args[i].equals("-tables")) {
@@ -136,7 +159,7 @@ public class MondrianFoodMartLoader {
             } else {
                 errorMessage.append("unknown arg: " + args[i] + nl);
             }
-            
+
             if (LOGGER.isInfoEnabled()) {
             	parametersMessage.append("\t" + args[i] + nl);
             }
@@ -154,7 +177,7 @@ public class MondrianFoodMartLoader {
             usage();
             throw MondrianResource.instance().newMissingArg(errorMessage.toString());
         }
-        
+
         if (LOGGER.isInfoEnabled()) {
         	LOGGER.info("Parameters: " + nl + parametersMessage.toString());
         }
@@ -239,7 +262,7 @@ public class MondrianFoodMartLoader {
         }
 
         bigIntColumnType = "BIGINT";
-        if (sqlQuery.isOracle()) {
+        if (sqlQuery.isOracle() || sqlQuery.isFirebird()) {
             bigIntColumnType = "DECIMAL(15,0)";
         }
 
@@ -316,7 +339,7 @@ public class MondrianFoodMartLoader {
 
             Pattern regex = null;
             String quoteChar = null;
-            
+
             while ((line = bufferedReader.readLine()) != null) {
                 ++lineNumber;
                 if (line.startsWith("#")) {
@@ -358,7 +381,7 @@ public class MondrianFoodMartLoader {
                     batchSize = 0;
                     prevTable = tableName;
                     quotedTableName = quoteId(tableName);
-                    quotedColumnNames = columnNames.replaceAll(quoteChar, 
+                    quotedColumnNames = columnNames.replaceAll(quoteChar,
                     									sqlQuery.getQuoteIdentifierString());
                     String[] splitColumnNames = columnNames.replaceAll(quoteChar, "")
                     						.replaceAll(" ", "").split(",");
@@ -420,9 +443,10 @@ public class MondrianFoodMartLoader {
     }
 
     /**
-     * @param splitColumnNames      the individual column names in the same order as the values
      * @param columns               column metadata for the table
-     * @param values                the contents of the INSERT VALUES clause ie. "34,67.89,'GHt''ab'". These are in MySQL form.
+     * @param values                the contents of the INSERT VALUES clause,
+     *                              for example "34,67.89,'GHt''ab'".
+     *                              These are in MySQL form.
      * @return String               values for the destination dialect
      * @throws Exception
      */
@@ -514,10 +538,10 @@ public class MondrianFoodMartLoader {
             fileOutput.close();
         }
     }
-    
+
     /**
      * After data has been loaded from a file or via JDBC, create any derived data
-     * 
+     *
      */
     private void loadFromSQLInserts() throws Exception {
     	InputStream is = getClass().getResourceAsStream("insert.sql");
@@ -527,9 +551,9 @@ public class MondrianFoodMartLoader {
 
             String line;
             int lineNumber = 0;
+            Util.discard(lineNumber);
 
             StringBuffer statement = new StringBuffer();
-            int batchSize = 0;
 
             String fromQuoteChar = null;
             String toQuoteChar = null;
@@ -538,7 +562,7 @@ public class MondrianFoodMartLoader {
         	} else {
         		toQuoteChar = "\"";
         	}
-            
+
             while ((line = bufferedReader.readLine()) != null) {
                 ++lineNumber;
 
@@ -546,7 +570,7 @@ public class MondrianFoodMartLoader {
                 if (line.startsWith("#") || line.length() == 0) {
                     continue;
                 }
-                
+
                 if (fromQuoteChar == null) {
                 	if (line.indexOf('`') >=0) {
                 		fromQuoteChar = "`";
@@ -554,34 +578,34 @@ public class MondrianFoodMartLoader {
                 		fromQuoteChar = "\"";
                 	}
                 }
-                
+
                 if (fromQuoteChar != null && fromQuoteChar != toQuoteChar) {
                 	line = line.replaceAll(fromQuoteChar, toQuoteChar);
                 }
-                
+
                 // End of statement
                 if (line.charAt(line.length() - 1) == ';') {
                     statement.append(" ")
 						.append(line.substring(0, line.length() - 1));
                     executeDDL(statement.toString());
                     statement = new StringBuffer();
-                	
+
                 } else {
                     statement.append(" ")
 					.append(line.substring(0, line.length()));
                 }
             }
-            
+
             if (statement.length() > 0) {
                 executeDDL(statement.toString());
             }
-        	
+
         } finally {
             if (is != null) {
                 is.close();
             }
         }
-    	
+
     }
 
     /**
@@ -908,7 +932,7 @@ public class MondrianFoodMartLoader {
                 	LOGGER.info("Index Drop failed for " + tableName + ", " + indexName + " : but continue");
                 }
             }
-            
+
             buf = new StringBuffer();
             buf.append(isUnique ? "CREATE UNIQUE INDEX " : "CREATE INDEX ")
                 .append(quoteId(indexName)).append(" ON ")
@@ -995,9 +1019,9 @@ public class MondrianFoodMartLoader {
           new Column("supply_time", "SMALLINT", ""),
           new Column("store_invoice", "DECIMAL(10,4)", ""),
         });
-        
+
         //  Aggregate tables
-        
+
         createTable("agg_pl_01_sales_fact_1997", new Column[] {
 	        new Column("product_id", "INTEGER", "NOT NULL"),
 	        new Column("time_id", "INTEGER", "NOT NULL"),
@@ -1070,7 +1094,7 @@ public class MondrianFoodMartLoader {
     	        new Column("unit_sales_sum", "DECIMAL(10,4)", "NOT NULL"),
     	        new Column("fact_count", "INTEGER", "NOT NULL"),
             }, false, true);
-                          
+
         createTable("currency", new Column[] {
           new Column("currency_id", "INTEGER", "NOT NULL"),
           new Column("date", "DATE", "NOT NULL"),
@@ -1352,21 +1376,21 @@ public class MondrianFoodMartLoader {
     private void createTable(String name, Column[] columns) {
     	createTable(name, columns,  true, false);
     }
-    
+
     private void createTable(String name, Column[] columns,  boolean loadData, boolean aggregate) {
         try {
-        	
+
         	// Store this metadata if we are going to load the table
         	// from JDBC or a file
-        	
+
         	if (loadData) {
         		tableMetadataToLoad.put(name, columns);
         	}
-        	
+
         	if (aggregate) {
         		aggregateTableMetadataToLoad.put(name, columns);
         	}
-        	
+
             if (!tables) {
                 if (data && jdbcOutput) {
                 	if (populationQueries && !aggregate) {
@@ -1381,7 +1405,7 @@ public class MondrianFoodMartLoader {
                     }
                 }
                 return;
-                
+
             } else if (populationQueries && !aggregate) {
                 // only create the aggregate tables if we are running
             	// -tables -populationQueries
@@ -1397,7 +1421,7 @@ public class MondrianFoodMartLoader {
             // Define the table.
             StringBuffer buf = new StringBuffer();
             buf.append("CREATE TABLE ").append(quoteId(name)).append("(");
-            
+
             for (int i = 0; i < columns.length; i++) {
                 Column column = columns[i];
                 if (i > 0) {
@@ -1417,7 +1441,7 @@ public class MondrianFoodMartLoader {
             throw MondrianResource.instance().newCreateTableFailed(name, e);
         }
     }
-    
+
     private void executeDDL(String ddl) throws Exception {
         LOGGER.info(ddl);
 
@@ -1638,7 +1662,8 @@ public class MondrianFoodMartLoader {
         } else if (columnType.equals(booleanColumnType)) {
             String trimmedValue = columnValue.trim();
             if (!sqlQuery.isMySQL() &&
-                    !sqlQuery.isOracle()) {
+                    !sqlQuery.isOracle() &&
+                    !sqlQuery.isFirebird()) {
                 if (trimmedValue.equals("1")) {
                     return "true";
                 } else if (trimmedValue.equals("0")) {
