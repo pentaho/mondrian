@@ -16,10 +16,8 @@ import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.rolap.agg.AggregationManager;
 
 import org.apache.log4j.Logger;
-import java.util.Collections;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
+
+import java.util.*;
 
 /**
  * A <code>RolapResult</code> is the result of running a query.
@@ -35,19 +33,26 @@ class RolapResult extends ResultBase {
     private static final int MAX_AGGREGATION_PASS_COUNT = 5;
 
     private final RolapEvaluator evaluator;
+    /**
+     * Evaluator containing context resulting from evaluating the slicer.
+     */
+    private RolapEvaluator slicerEvaluator;
     private final CellKey point;
     private final Map cellValues;
     private final FastBatchingCellReader batchingReader;
+    AggregatingCellReader aggregatingReader = new AggregatingCellReader();
     private final int[] modulos;
+    /**
+     * Maps the names of sets to their values. Populated on demand.
+     */
+    private final Map namedSetValues = new HashMap();
 
     RolapResult(Query query) {
         super(query, new RolapAxis[query.axes.length]);
 
 
         this.point = new CellKey(new int[query.axes.length]);
-        this.evaluator = new RolapEvaluator( (RolapCube) query.getCube(),
-                            (RolapConnection) query.getConnection());
-        AggregatingCellReader aggregatingReader = new AggregatingCellReader();
+        this.evaluator = new RolapEvaluator(this);
         RolapCube rcube = (RolapCube) query.getCube();
         this.batchingReader = new FastBatchingCellReader(rcube);
         this.cellValues = new HashMap();
@@ -102,14 +107,13 @@ class RolapResult extends ResultBase {
                     for (int j = 0; j < position.members.length; j++) {
                         evaluator.setContext(position.members[j]);
                     }
+                    slicerEvaluator = (RolapEvaluator) evaluator.push();
                 } else {
                     this.axes[i] = axisResult;
                 }
             }
-            // now, that the axes are evaluated,
-            //  make sure, that the total number of positions does
-            //  not exceed the result limit
-            // throw an exeption, if the total numer of positions gets too large
+            // Now that the axes are evaluated, make sure that the number of
+            // cells does not exceed the result limit.
             int limit = MondrianProperties.instance().getResultLimit();
             if (limit > 0) {
                 // result limit exceeded, throw an exception
@@ -213,11 +217,10 @@ class RolapResult extends ResultBase {
             // evaluator which collects requests.
             int count = 0;
             while (true) {
-                //cellValues = new HashMap();
                 cellValues.clear();
 
                 evaluator.setCellReader(this.batchingReader);
-                executeStripe(query.axes.length - 1, 
+                executeStripe(query.axes.length - 1,
                     (RolapEvaluator) evaluator.push());
                 evaluator.clearExpResultCache();
 
@@ -230,7 +233,7 @@ class RolapResult extends ResultBase {
                     return;
                 }
                 if (count++ > MAX_AGGREGATION_PASS_COUNT) {
-                    throw Util.newInternal("Query required more than " 
+                    throw Util.newInternal("Query required more than "
                         + count + " iterations");
                 }
             }
@@ -238,6 +241,56 @@ class RolapResult extends ResultBase {
             RolapCube cube = (RolapCube) query.getCube();
             cube.clearCache();
         }
+    }
+
+    /**
+     * Evaluates a named set.
+     *
+     * <p>A given set is only evaluated once each time a query is executed; the
+     * result is added to the {@link #namedSetValues} cache on first execution
+     * and re-used.
+     *
+     * <p>Named sets are always evaluated in the context of the slicer.
+     */
+    Object evaluateNamedSet(String name, Exp exp) {
+        Object value = namedSetValues.get(name);
+        if (value == null) {
+            value = evaluateExp(exp, (RolapEvaluator) slicerEvaluator.push());
+
+            namedSetValues.put(name, value);
+        }
+        return value;
+    }
+
+    private Object evaluateExp(Exp exp, RolapEvaluator evaluator) {
+        int attempt = 0;
+        boolean dirty = batchingReader.isDirty();
+        while (true) {
+            RolapEvaluator ev = (RolapEvaluator) evaluator.push();
+
+            ev.setCellReader(batchingReader);
+            Object preliminaryValue = exp.evaluate(ev);
+            Util.discard(preliminaryValue);
+            if (!batchingReader.loadAggregations()) {
+                break;
+            }
+            if (attempt++ > MAX_AGGREGATION_PASS_COUNT) {
+                throw Util.newInternal("Failed to load all aggregations after " +
+                        MAX_AGGREGATION_PASS_COUNT +
+                        "passes; there's probably a cycle");
+            }
+        }
+
+        // If there were pending reads when we entered, some of the other
+        // expressions may have been evaluated incorrectly. Set the reaader's
+        // 'dirty' flag so that the caller knows that it must re-evaluate them.
+        if (dirty) {
+            batchingReader.setDirty(true);
+        }
+        RolapEvaluator ev = (RolapEvaluator) evaluator.push();
+        ev.setCellReader(aggregatingReader);
+        Object value = exp.evaluate(ev);
+        return value;
     }
 
     /**

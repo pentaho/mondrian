@@ -93,7 +93,7 @@ class SetBase extends OlapElementBase implements Set {
     }
 
     public Object evaluate(Evaluator evaluator) {
-        return exp.evaluate(evaluator);
+        return evaluator.evaluateNamedSet(name, exp);
     }
 }
 

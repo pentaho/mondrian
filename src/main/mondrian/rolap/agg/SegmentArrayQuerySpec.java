@@ -1,6 +1,6 @@
 
 package mondrian.rolap.agg;
-        
+
 import mondrian.olap.Util;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.sql.SqlQuery;
@@ -8,9 +8,9 @@ import mondrian.rolap.sql.SqlQuery;
 /**
  * Provides the information necessary to generate a SQL statement to
  * retrieve a list of segments.
- *  
+ *
  * @author jhyde <a>Richard M. Emberson</a>
- * @version 
+ * @version
  */
 class SegmentArrayQuerySpec extends AbstractQuerySpec {
     private final Segment[] segments;
@@ -32,7 +32,7 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
                 // We only require that the two arrays have the same
                 // contents, we but happen to know they are the same array,
                 // because we constructed them at the same time.
-                Util.assertTrue(segment.axes[j].getConstraints() == 
+                Util.assertTrue(segment.axes[j].getConstraints() ==
                     segments[0].axes[j].getConstraints());
             }
         }
@@ -65,7 +65,7 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
     public String generateSqlQuery() {
         SqlQuery sqlQuery = newSqlQuery();
 
-        if ((! sqlQuery.allowsCountDistinct()) && hasDistinct()) {
+        if ((! sqlQuery.getDialect().allowsCountDistinct()) && hasDistinct()) {
             distinctGenerateSQL(sqlQuery);
         } else {
             nonDistinctGenerateSQL(sqlQuery);
@@ -119,7 +119,7 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
             String expr = column.getExpression(innerSqlQuery);
             ColumnConstraint[] constraints = getConstraints(i);
             if (constraints != null) {
-                innerSqlQuery.addWhere(RolapStar.Column.createInExpr(expr, 
+                innerSqlQuery.addWhere(RolapStar.Column.createInExpr(expr,
                                                     constraints,
                                                     column.isNumeric()));
             }

@@ -273,13 +273,11 @@ public class NamedSetTest extends FoodMartTestCase {
         runQueryCheckResult(
                 "WITH" + nl +
                 "  SET [TopMedia] AS 'TopCount([Promotion Media].children, 5, [Measures].[Store Sales])' " + nl +
-                "  MEMBER [Measures].[California sales for Top Media] AS 'Aggregate([TopMedia], ([Store].[USA].[CA], [Measures].[Store Sales]))'" + nl +
+                "  MEMBER [Measures].[California sales for Top Media] AS 'Sum([TopMedia], ([Store].[USA].[CA], [Measures].[Store Sales]))'" + nl +
                 "SELECT {[Time].[1997].[Q1], [Time].[1997].[Q2]} ON COLUMNS," + nl +
                 " {[Product].children} ON ROWS" + nl +
                 "FROM [Sales]" + nl +
                 "WHERE [Measures].[California sales for Top Media]",
-                // MSAS fails here, with "cannot apply Aggregate to calc
-                // member", but Mondrian doesn't have that limitation.
                 "Axis #0:" + nl +
                 "{[Measures].[California sales for Top Media]}" + nl +
                 "Axis #1:" + nl +
@@ -289,12 +287,12 @@ public class NamedSetTest extends FoodMartTestCase {
                 "{[Product].[All Products].[Drink]}" + nl +
                 "{[Product].[All Products].[Food]}" + nl +
                 "{[Product].[All Products].[Non-Consumable]}" + nl +
-                "Row #0: 2,727.19" + nl +
-                "Row #0: 2,746.17" + nl +
-                "Row #1: 21,872.44" + nl +
-                "Row #1: 23,040.07" + nl +
-                "Row #2: 5,816.88" + nl +
-                "Row #2: 6,083.20" + nl);
+                "Row #0: 2,725.85" + nl +
+                "Row #0: 2,715.56" + nl +
+                "Row #1: 21,200.84" + nl +
+                "Row #1: 23,263.72" + nl +
+                "Row #2: 5,598.71" + nl +
+                "Row #2: 6,111.74" + nl);
     }
 
     public void testContextSensitiveNamedSet() {
@@ -343,7 +341,6 @@ public class NamedSetTest extends FoodMartTestCase {
                 "FROM [Sales]" + nl +
                 "WHERE [Time].[1997].[Q2]",
 
-
                 "Axis #0:" + nl +
                 "{[Time].[1997].[Q2]}" + nl +
                 "Axis #1:" + nl +
@@ -379,27 +376,28 @@ public class NamedSetTest extends FoodMartTestCase {
                 "Row #13: 35" + nl);
 
         // The bottom medium in 1997 is Radio, with $2454 in sales.
-        // The bottom medium in 1997.Q2 is In-Store Coupon, with $35 in sales.
+        // The bottom medium in 1997.Q2 is In-Store Coupon, with $35 in sales,
+        //  whereas Radio has $40 in sales in 1997.Q2.
 
         runQueryCheckResult(
                 "WITH" + nl +
-                "  SET [Bottom Media] AS 'BottomCount([Promotion Media].children, 1, [Measures].[Store Sales])' " + nl +
-                "  MEMBER [Measures].[Store Sales for Bottom Media] AS 'Sum([Bottom Media], [Measures].[Store Sales])'" + nl +
-                "SELECT {[Measures].[Store Sales for Bottom Media]} ON COLUMNS," + nl +
+                "  SET [Bottom Media] AS 'BottomCount([Promotion Media].children, 1, [Measures].[Unit Sales])' " + nl +
+                "  MEMBER [Measures].[Unit Sales for Bottom Media] AS 'Sum([Bottom Media], [Measures].[Unit Sales])'" + nl +
+                "SELECT {[Measures].[Unit Sales for Bottom Media]} ON COLUMNS," + nl +
                 " {[Time].[1997], [Time].[1997].[Q2]} ON ROWS" + nl +
                 "FROM [Sales]",
-                // MSAS gives different result for Q2 ($86.52) because it uses
-                // the bottom product for the year (Radio) rather than for Q2
-                // ([In-Store Coupon]). MSAS is probably the correct behavior.
+                // Note that Row #1 gives 40. 35 would be wrong.
+                // [In-Store Coupon], which was bottom for 1997.Q2 but not for
+                // 1997.
                 "Axis #0:" + nl +
                 "{}" + nl +
                 "Axis #1:" + nl +
-                "{[Measures].[Store Sales for Bottom Media]}" + nl +
+                "{[Measures].[Unit Sales for Bottom Media]}" + nl +
                 "Axis #2:" + nl +
                 "{[Time].[1997]}" + nl +
                 "{[Time].[1997].[Q2]}" + nl +
-                "Row #0: 5,213.61" + nl +
-                "Row #1: 83.96" + nl);
+                "Row #0: 2,454" + nl +
+                "Row #1: 40" + nl);
 
         runQueryCheckResult(
                 "WITH" + nl +
@@ -411,8 +409,7 @@ public class NamedSetTest extends FoodMartTestCase {
                 " {[Product], [Product].children} ON ROWS" + nl +
                 "FROM [Sales]" + nl +
                 "WHERE [Measures].[California sales for Top Media]",
-                // MSAS output differs, because it evaluates named sets with
-                // only the context in the slicer.
+
                 "Axis #0:" + nl +
                 "{[Measures].[California sales for Top Media]}" + nl +
                 "Axis #1:" + nl +
@@ -425,27 +422,27 @@ public class NamedSetTest extends FoodMartTestCase {
                 "{[Product].[All Products].[Drink]}" + nl +
                 "{[Product].[All Products].[Food]}" + nl +
                 "{[Product].[All Products].[Non-Consumable]}" + nl +
-                "Row #0: 111,874.50" + nl +
-                "Row #0: 111,876.59" + nl +
+                "Row #0: 108,249.52" + nl +
+                "Row #0: 107,649.93" + nl +
                 "Row #0: 29,482.53" + nl +
-                "Row #0: 33,976.80" + nl +
-                "Row #1: 9,182.00" + nl +
-                "Row #1: 10,018.55" + nl +
+                "Row #0: 28,953.02" + nl +
+                "Row #1: 8,930.95" + nl +
+                "Row #1: 9,551.93" + nl +
                 "Row #1: 2,721.23" + nl +
-                "Row #1: 2,924.44" + nl +
-                "Row #2: 81,218.33" + nl +
-                "Row #2: 80,273.35" + nl +
+                "Row #1: 2,444.78" + nl +
+                "Row #2: 78,375.66" + nl +
+                "Row #2: 77,219.13" + nl +
                 "Row #2: 21,165.50" + nl +
-                "Row #2: 24,642.38" + nl +
-                "Row #3: 21,822.34" + nl +
-                "Row #3: 21,584.69" + nl +
+                "Row #2: 20,924.43" + nl +
+                "Row #3: 20,942.91" + nl +
+                "Row #3: 20,878.87" + nl +
                 "Row #3: 5,595.80" + nl +
-                "Row #3: 6,409.98" + nl);
+                "Row #3: 5,583.81" + nl);
     }
 
     public void testOrderedNamedSet() {
         // From http://www.developersdex.com
-        if (false) runQueryCheckResult(
+        runQueryCheckResult(
                 "WITH SET [SET1] AS" + nl +
                 "'ORDER ({[Education Level].[Education Level].Members}, [Gender].[All Gender].[F], ASC)'" + nl +
                 "MEMBER [Gender].[RANK1] AS 'rank([Education Level].currentmember, [SET1])'" + nl +

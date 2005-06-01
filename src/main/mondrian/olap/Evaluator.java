@@ -122,6 +122,11 @@ public interface Evaluator {
      * exception.
      */
     RuntimeException newEvalException(Object context, String s);
+
+    /**
+     * Evaluates a named set.
+     */
+    Object evaluateNamedSet(String name, Exp exp);
 }
 
 // End Evaluator.java

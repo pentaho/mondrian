@@ -46,24 +46,25 @@ class RolapEvaluator implements Evaluator {
     private final Map expResultCache;
     private Member expandingMember;
     private boolean nonEmpty;
+    private final RolapResult result;
 
     private RolapEvaluator(
-            RolapCube cube,
-            RolapConnection connection,
+            RolapResult result,
             Evaluator parent,
             int depth,
             Map expResultCache,
             CellReader cellReader) {
-        this.cube = cube;
-        this.connection = connection;
+        this.result = result;
+        this.cube = (RolapCube) result.getQuery().getCube();
+        this.connection = (RolapConnection) result.getQuery().getConnection();
         this.parent = parent;
         this.depth = depth;
         this.expResultCache = expResultCache;
         this.cellReader = cellReader;
     }
 
-    RolapEvaluator(RolapCube cube, RolapConnection connection) {
-        this(cube, connection, null, 0, new HashMap(), null);
+    RolapEvaluator(RolapResult result) {
+        this(result, null, 0, new HashMap(), null);
         // we expect client to set CellReader
 
         SchemaReader scr = connection.getSchemaReader();
@@ -76,16 +77,11 @@ class RolapEvaluator implements Evaluator {
 
             Member member = scr.getHierarchyDefaultMember(hier);
 
-/*
-DOES NOT COMPILE
-newInvalidHierarchyCondition does not exist
-            // if there is no member, we cannot go on 
-            //  no way to produce a valid result
-            if (member == null)
+            // If there is no member, we cannot continue.
+            if (member == null) {
                 throw MondrianResource.instance().
-                newInvalidHierarchyCondition(hier.getUniqueName());
-*/
-
+                        newInvalidHierarchyCondition(hier.getUniqueName());
+            }
 
             HierarchyUsage[] hierarchyUsages = cube.getUsages(hier);
             if (hierarchyUsages.length != 0) {
@@ -97,12 +93,10 @@ newInvalidHierarchyCondition does not exist
     }
 
     private RolapEvaluator(
-            RolapCube cube,
-            RolapConnection connection,
+            RolapResult result,
             Member[] currentMembers,
             RolapEvaluator parent) {
-        this(cube,
-             connection,
+        this(result,
              parent,
              parent.getDepth() + 1,
              parent.expResultCache,
@@ -158,8 +152,7 @@ newInvalidHierarchyCondition does not exist
     private final RolapEvaluator _push() {
         Member[] cloneCurrentMembers = (Member[]) this.currentMembers.clone();
         return new RolapEvaluator(
-                (RolapCube) cube,
-                (RolapConnection) connection,
+                result,
                 cloneCurrentMembers,
                 this);
     }
@@ -481,6 +474,10 @@ newInvalidHierarchyCondition does not exist
 
     public RuntimeException newEvalException(Object context, String s) {
         return FunUtil.newEvalException((FunDef) context, s);
+    }
+
+    public Object evaluateNamedSet(String name, Exp exp) {
+        return result.evaluateNamedSet(name, exp);
     }
 }
 

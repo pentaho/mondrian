@@ -76,14 +76,14 @@ public class Aggregation {
 
     private final BitKey bitKey;
 
-    /** 
-     * List of soft references to segments. 
+    /**
+     * List of soft references to segments.
      * Access must be inside of synchronized methods.
      **/
     private final List segmentRefs;
     private final boolean oracle;
 
-    public Aggregation(RolapStar star, 
+    public Aggregation(RolapStar star,
                        RolapStar.Column[] columns,
                        BitKey bitKey) {
         this.star = star;
@@ -97,7 +97,7 @@ public class Aggregation {
             con = star.getJdbcConnection();
             DatabaseMetaData md = con.getMetaData();
             SqlQuery sqlQuery = new SqlQuery(md);
-            this.oracle = sqlQuery.isOracle();
+            this.oracle = sqlQuery.getDialect().isOracle();
         } catch (SQLException e) {
             throw Util.newInternal(e, "could not query Metadata");
         } finally {
@@ -122,7 +122,7 @@ public class Aggregation {
      *   gender = unconstrained
      */
     public synchronized void load(RolapStar.Measure[] measures,
-                                  ColumnConstraint[][] constraintses, 
+                                  ColumnConstraint[][] constraintses,
                                   Collection pinnedSegments) {
         BitKey bitKey = this.bitKey.copy();
         int axisCount = columns.length;
@@ -163,7 +163,7 @@ public class Aggregation {
             ColumnConstraint[][] constraintses) {
 
         Util.assertTrue(constraintses.length == columns.length);
-        ColumnConstraint[][] newConstraintses = 
+        ColumnConstraint[][] newConstraintses =
             (ColumnConstraint[][]) constraintses.clone();
         double[] bloats = new double[columns.length];
 
@@ -212,7 +212,7 @@ public class Aggregation {
                             if (level != null
                                     && !level.equals(m.getLevel())) {
                                 // should never occur, constraintses are of same level
-                                level = null; 
+                                level = null;
                             }
                         }
                     }
@@ -244,9 +244,9 @@ public class Aggregation {
                             bloats[i] = constraintLength / nChildren;
                             done = true;
                         }
-                    } 
+                    }
                 }
-                
+
                 if (!done && level != null) {
                     // if the level members are cached, we do not need "count *"
                     int nMembers = -1;
@@ -257,7 +257,7 @@ public class Aggregation {
                         done = true;
                     }
                 }
-                
+
                 if (!done) {
                     bloats[i] = constraintLength / columns[i].getCardinality();
                 }
@@ -325,7 +325,7 @@ public class Aggregation {
      *
      * Returns <code>null</code> if no segment contains the cell.
      **/
-    public synchronized Object get(RolapStar.Measure measure, 
+    public synchronized Object get(RolapStar.Measure measure,
                                    Object[] keys,
                                    Collection pinSet) {
 
@@ -373,13 +373,13 @@ public class Aggregation {
         private final RolapStar.Column column;
 
         // null if no constraint
-        private final ColumnConstraint[] constraints; 
+        private final ColumnConstraint[] constraints;
 
         // inversion of keys
-        private final Map mapKeyToOffset; 
+        private final Map mapKeyToOffset;
 
         // actual keys retrieved
-        private Object[] keys; 
+        private Object[] keys;
 
         Axis(RolapStar.Column column,
             ColumnConstraint[] constraints) {
@@ -405,7 +405,7 @@ public class Aggregation {
                 Object key = e.getKey();
                 Integer offsetInteger = (Integer) e.getValue();
                 int offset = offsetInteger.intValue();
-    
+
                 this.keys[offset] = key;
             }
             return size;

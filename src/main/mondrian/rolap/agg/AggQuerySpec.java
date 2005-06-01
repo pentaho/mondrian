@@ -18,32 +18,37 @@ import mondrian.rolap.sql.SqlQuery;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
-/** 
- * An AggStar's version of the QuerySpec. 
- * 
+/**
+ * An AggStar's version of the QuerySpec.
+ *
  * When/If the AggStar code is merged into RolapStar (or RolapStar is merged)
  * into AggStar, then this, indeed, can implement the QuerySpec interface.
- * 
+ *
  * @author <a>Richard M. Emberson</a>
- * @version 
+ * @version
  */
 class AggQuerySpec {
     private final AggStar aggStar;
-    private final DatabaseMetaData metaData;
     private final Segment[] segments;
+    /**
+     * Whether the query contains any distinct aggregates. If so, a direct hit
+     * is required; it cannot be rolled up.
+     */
     private final boolean isDistinct;
-    
-    AggQuerySpec(final AggStar aggStar, 
-                 final Segment[] segments, 
+    private final SqlQuery.Dialect dialect;
+
+    AggQuerySpec(final AggStar aggStar,
+                 final Segment[] segments,
                  final boolean isDistinct) {
-        this.aggStar = aggStar;              
-        this.segments = segments;              
+        this.aggStar = aggStar;
+        this.segments = segments;
         this.isDistinct = isDistinct;
 
-        java.sql.Connection jdbcConnection = 
+        java.sql.Connection jdbcConnection =
             aggStar.getStar().getJdbcConnection();
         try {
-            this.metaData = jdbcConnection.getMetaData();
+            DatabaseMetaData metaData = jdbcConnection.getMetaData();
+            dialect = SqlQuery.Dialect.create(metaData);
         } catch (SQLException e) {
             throw Util.getRes().newInternal("while loading segment", e);
         } finally {
@@ -54,11 +59,9 @@ class AggQuerySpec {
             }
         }
     }
-    protected DatabaseMetaData getDatabaseMetaData() {
-        return metaData;
-    }
+
     protected SqlQuery newSqlQuery() {
-        return new SqlQuery(getDatabaseMetaData());
+        return new SqlQuery(dialect);
     }
     public RolapStar getStar() {
         return aggStar.getStar();
@@ -96,7 +99,7 @@ if (column == null) {
     public String generateSqlQuery() {
         SqlQuery sqlQuery = newSqlQuery();
 
-        if ((! sqlQuery.allowsCountDistinct()) && hasDistinct()) {
+        if ((! sqlQuery.getDialect().allowsCountDistinct()) && hasDistinct()) {
             distinctGenerateSQL(sqlQuery);
         } else {
             nonDistinctGenerateSQL(sqlQuery);
@@ -109,16 +112,16 @@ if (column == null) {
     }
     protected void addMeasure(final int i, final SqlQuery sqlQuery) {
         AggStar.FactTable.Measure measure = getMeasure(i);
-            
+
         measure.getTable().addToFrom(sqlQuery, false, true);
-        
+
         String expr = measure.getExpression(sqlQuery);
         sqlQuery.addSelect(expr, getMeasureAlias(i));
-    }   
-            
+    }
+
     protected boolean isAggregate() {
         return true;
-    }       
+    }
 
     protected void distinctGenerateSQL(final SqlQuery outerSqlQuery) {
         // Generate something like
@@ -140,7 +143,7 @@ if (column == null) {
             String expr = column.getExpression(innerSqlQuery);
             ColumnConstraint[] constraints = getConstraints(i);
             if (constraints != null) {
-                innerSqlQuery.addWhere(RolapStar.Column.createInExpr(expr, 
+                innerSqlQuery.addWhere(RolapStar.Column.createInExpr(expr,
                                                     constraints,
                                                     column.isNumeric()));
             }
@@ -176,14 +179,14 @@ if (column == null) {
 
             ColumnConstraint[] constraints = getConstraints(i);
             if (constraints != null) {
-                sqlQuery.addWhere(RolapStar.Column.createInExpr(expr,   
-                                               constraints, 
+                sqlQuery.addWhere(RolapStar.Column.createInExpr(expr,
+                                               constraints,
                                                column.isNumeric()));
             }
 
             // some DB2 (AS400) versions throw an error, if a column alias is
             // there and *not* used in a subsequent order by/group by
-            if (sqlQuery.isAS400()) {
+            if (sqlQuery.getDialect().isAS400()) {
                 sqlQuery.addSelect(expr, null);
             } else {
                 sqlQuery.addSelect(expr, getColumnAlias(i));

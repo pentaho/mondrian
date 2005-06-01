@@ -11,24 +11,18 @@
 */
 package mondrian.rolap;
 
-import java.lang.reflect.Proxy;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.sql.DataSource;
-
 import junit.framework.TestCase;
 import mondrian.olap.Connection;
-import mondrian.olap.Cube;
-import mondrian.olap.Member;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
+import mondrian.rolap.sql.SqlQuery;
 import mondrian.test.TestContext;
 import mondrian.util.DelegatingInvocationHandler;
+
+import javax.sql.DataSource;
+import java.lang.reflect.Proxy;
+import java.sql.*;
 
 /**
  * Unit test for {@link AggregationManager}.
@@ -47,7 +41,7 @@ public class TestAggregationManager extends TestCase {
         final RolapAggregationManager aggMan = AggregationManager.instance();
         Object value = aggMan.getCellFromCache(request);
         assertNull(value); // before load, the cell is not found
-        FastBatchingCellReader fbcr = 
+        FastBatchingCellReader fbcr =
                 new FastBatchingCellReader(getCube("Sales"));
         fbcr.recordCellRequest(request);
         fbcr.loadAggregations();
@@ -62,11 +56,12 @@ public class TestAggregationManager extends TestCase {
      */
     public void testFemaleUnitSalesSql() {
         CellRequest request = createRequest("Sales", "[Measures].[Unit Sales]", "customer", "gender", "F");
-        final String pattern = "select `customer`.`gender` as `c0`," +
-                " sum(`sales_fact_1997`.`unit_sales`) as `m0` " +
+        final String pattern =
+                "select `customer`.`gender` as `c0`," +
+                " sum(`agg_l_03_sales_fact_1997`.`unit_sales`) as `m0` " +
                 "from `customer` as `customer`," +
-                " `sales_fact_1997` as `sales_fact_1997` " +
-                "where `sales_fact_1997`.`customer_id` = `customer`.`customer_id` " +
+                " `agg_l_03_sales_fact_1997` as `agg_l_03_sales_fact_1997` " +
+                "where `agg_l_03_sales_fact_1997`.`customer_id` = `customer`.`customer_id` " +
                 "and `customer`.`gender` = 'F' " +
                 "group by `customer`.`gender`";
         assertRequestSql(new CellRequest[] {request}, pattern, "select `customer`.`gender`");
@@ -94,14 +89,16 @@ public class TestAggregationManager extends TestCase {
                     new String[] {"customer", "store"},
                     new String[] {"gender", "store_state"},
                     new String[] {"F", "OR"})};
-        final String pattern = "select `customer`.`gender` as `c0`," +
+        final String pattern =
+                "select `customer`.`gender` as `c0`," +
                 " `store`.`store_state` as `c1`," +
-                " sum(`sales_fact_1997`.`unit_sales`) as `m0`," +
-                " sum(`sales_fact_1997`.`store_sales`) as `m1` " +
-                "from `customer` as `customer`, `sales_fact_1997` as `sales_fact_1997`," +
+                " sum(`agg_l_05_sales_fact_1997`.`unit_sales`) as `m0`," +
+                " sum(`agg_l_05_sales_fact_1997`.`store_sales`) as `m1` " +
+                "from `customer` as `customer`," +
+                " `agg_l_05_sales_fact_1997` as `agg_l_05_sales_fact_1997`," +
                 " `store` as `store` " +
-                "where `sales_fact_1997`.`customer_id` = `customer`.`customer_id`" +
-                " and `sales_fact_1997`.`store_id` = `store`.`store_id`" +
+                "where `agg_l_05_sales_fact_1997`.`customer_id` = `customer`.`customer_id`" +
+                " and `agg_l_05_sales_fact_1997`.`store_id` = `store`.`store_id`" +
                 " and `store`.`store_state` in ('CA', 'OR') " +
                 "group by `customer`.`gender`, `store`.`store_state`";
         assertRequestSql(requests, pattern, "select `customer`.`gender`");
@@ -138,10 +135,6 @@ public class TestAggregationManager extends TestCase {
     //  (Unit Sales, Gender={F}, MaritalStatus={S}) and make sure that the
     // table only appears once in the from clause.
 
-    private void assertMatches(String s, String pattern) {
-        assertTrue(s, s.indexOf(pattern) >= 0);
-    }
-
     /**
      * If a hierarchy lives in the fact table, we should not generate a join.
      */
@@ -162,15 +155,18 @@ public class TestAggregationManager extends TestCase {
         }
     }
 
-    private void assertRequestSql(CellRequest[] requests, final String pattern, final String trigger) {
-        final RolapAggregationManager aggMan = AggregationManager.instance();
+    private void assertRequestSql(
+            CellRequest[] requests,
+            final String pattern,
+            final String trigger) {
         RolapStar star = requests[0].getMeasure().getStar();
-        String database = null;
+        SqlQuery.Dialect dialect;
         try {
-            database = star.getJdbcConnection().getMetaData().getDatabaseProductName();
+            dialect = SqlQuery.Dialect.create(star.getJdbcConnection().getMetaData());
         } catch (SQLException e) {
+            throw Util.newInternal(e, "while getting dialect");
         }
-        if (!database.equals("ACCESS")) {
+        if (!dialect.isAccess()) {
             return;
         }
         // Create a dummy DataSource which will throw a 'bomb' if it is asked
@@ -184,7 +180,7 @@ public class TestAggregationManager extends TestCase {
         star.setDataSource(dataSource);
         Bomb bomb;
         try {
-            FastBatchingCellReader fbcr = 
+            FastBatchingCellReader fbcr =
                 new FastBatchingCellReader(getCube("Sales"));
             for (int i = 0; i < requests.length; i++)
                 fbcr.recordCellRequest(requests[i]);

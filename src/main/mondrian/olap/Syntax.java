@@ -137,11 +137,11 @@ public class Syntax extends EnumeratedValues.BasicValue {
         public void unparse(String fun, Exp[] args, PrintWriter pw) {
             pw.print("CASE");
             int j = 0;
-            if (fun.equals("CaseTest")) {
+            if (fun.equals("_CaseTest")) {
                 pw.print(" ");
                 args[j++].unparse(pw);
             } else {
-                Util.assertTrue(fun.equals("CaseMatch"));
+                Util.assertTrue(fun.equals("_CaseMatch"));
             }
             int clauseCount = (args.length - j) / 2;
             for (int i = 0; i < clauseCount; i++) {

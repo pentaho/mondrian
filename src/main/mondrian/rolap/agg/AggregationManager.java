@@ -12,23 +12,13 @@
 
 package mondrian.rolap.agg;
 
-import mondrian.olap.MondrianDef;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
-import mondrian.rolap.RolapAggregationManager;
+import mondrian.rolap.*;
 import mondrian.rolap.aggmatcher.AggStar;
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.BitKey;
-import mondrian.rolap.sql.SqlQuery;
 import org.apache.log4j.Logger;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Iterator;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+
+import java.util.*;
 
 /**
  * <code>RolapAggregationManager</code> manages all {@link Aggregation}s
@@ -39,7 +29,7 @@ import java.util.Set;
  * @version $Id$
  **/
 public class AggregationManager extends RolapAggregationManager {
-    private static final Logger LOGGER = 
+    private static final Logger LOGGER =
                     Logger.getLogger(AggregationManager.class);
 
     private static AggregationManager instance;
@@ -60,13 +50,13 @@ public class AggregationManager extends RolapAggregationManager {
         return LOGGER;
     }
 
-    public void loadAggregation(RolapStar.Measure[] measures, 
+    public void loadAggregation(RolapStar.Measure[] measures,
                                 RolapStar.Column[] columns,
                                 BitKey bitKey,
-                                ColumnConstraint[][] constraintses, 
+                                ColumnConstraint[][] constraintses,
                                 Collection pinnedSegments) {
         RolapStar star = measures[0].getStar();
-        Aggregation aggregation = 
+        Aggregation aggregation =
             star.lookupOrCreateAggregation(columns, bitKey);
         // try to eliminate unneccessary constraints
         // for Oracle: prevent an IN-clause with more than 1000 elements
@@ -102,7 +92,7 @@ public class AggregationManager extends RolapAggregationManager {
 
         return (aggregation == null)
             // cell is not in any aggregation
-            ? null 
+            ? null
             : aggregation.get(measure, request.getSingleValues(), pinSet);
     }
 
@@ -115,7 +105,7 @@ public class AggregationManager extends RolapAggregationManager {
     /**
      * Generates the query to retrieve the cells for a list of segments.
      */
-    public String generateSQL(final Segment[] segments, 
+    public String generateSQL(final Segment[] segments,
                               final BitKey bitKey,
                               final boolean isDistinct) {
 
@@ -124,8 +114,10 @@ public class AggregationManager extends RolapAggregationManager {
             RolapStar star = segments[0].aggregation.getStar();
 
 
-            // Does any aggregate table match the current query
-            AggStar aggStar = star.select(bitKey);
+            // Find an aggregate table which matches the current query. If the
+            // aggregation contains a distinct aggregate, the match must be
+            // exact, because roll-up is not possible.
+            AggStar aggStar = star.select(bitKey, isDistinct);
 
             if (aggStar != null) {
                 // Got a match, hot damn
@@ -133,28 +125,28 @@ public class AggregationManager extends RolapAggregationManager {
                 if (getLogger().isDebugEnabled()) {
                     StringBuffer buf = new StringBuffer(256);
                     buf.append("MATCH: ");
-                    buf.append('\n'); 
-                    buf.append("  bitKey="); 
-                    buf.append(bitKey); 
-                    buf.append('\n'); 
+                    buf.append('\n');
+                    buf.append("  bitKey=");
+                    buf.append(bitKey);
+                    buf.append('\n');
                     buf.append("  bitkey=");
                     buf.append(aggStar.getBitKey());
-                    buf.append('\n'); 
+                    buf.append('\n');
                     buf.append("AggStar=");
                     buf.append(aggStar.getFactTable().getName());
-                    buf.append('\n'); 
-                    for (Iterator it = aggStar.getFactTable().getColumns(); 
+                    buf.append('\n');
+                    for (Iterator it = aggStar.getFactTable().getColumns();
                             it.hasNext(); ) {
-                        AggStar.Table.Column column = 
+                        AggStar.Table.Column column =
                             (AggStar.Table.Column) it.next();
-                        buf.append("   "); 
+                        buf.append("   ");
                         buf.append(column);
-                        buf.append('\n'); 
+                        buf.append('\n');
                     }
                     getLogger().debug(buf.toString());
                 }
 
-                AggQuerySpec aggQuerySpec = 
+                AggQuerySpec aggQuerySpec =
                     new AggQuerySpec(aggStar, segments, isDistinct);
                 String sql = aggQuerySpec.generateSqlQuery();
                 return sql;
@@ -169,19 +161,19 @@ public class AggregationManager extends RolapAggregationManager {
 
             StringBuffer buf = new StringBuffer(256);
             buf.append("NO MATCH: ");
-            buf.append('\n'); 
-            buf.append("  bitKey="); 
-            buf.append(bitKey); 
-            buf.append('\n'); 
-            buf.append(star.getFactTable().getAlias()); 
-            buf.append('\n'); 
+            buf.append('\n');
+            buf.append("  bitKey=");
+            buf.append(bitKey);
+            buf.append('\n');
+            buf.append(star.getFactTable().getAlias());
+            buf.append('\n');
 
             getLogger().debug(buf.toString());
         }
 
 
         // Fact table query
-        SegmentArrayQuerySpec spec = 
+        SegmentArrayQuerySpec spec =
             new SegmentArrayQuerySpec(segments, isDistinct);
         String sql = spec.generateSqlQuery();
         return sql;

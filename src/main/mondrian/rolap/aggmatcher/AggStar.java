@@ -156,14 +156,17 @@ public class AggStar {
 
     /**
      * Returns true if every bit set to 1 in the bitKey parameter is also
-     * set to 1 in this AggStar's bitKey. Note that this AggStar's bitKey can
-     * have additional bits set to 1 and still return true.
+     * set to 1 in this AggStar's bitKey.
      *
      * @param bitKey
+     * @param exact If true, bits must match exactly; if false, AggStar's
+     *   bitKey can be a superset
      * @return
      */
-    public boolean matches(final BitKey bitKey) {
-        return getBitKey().isSuperSetOf(bitKey);
+    public boolean matches(final BitKey bitKey, boolean exact) {
+        return exact ?
+                getBitKey().equals(bitKey) :
+                getBitKey().isSuperSetOf(bitKey);
     }
 
     /**

@@ -97,7 +97,6 @@ public class SqlQuery
     }
 
     private boolean distinct;
-    private final DatabaseMetaData databaseMetaData;
 
     private final ClauseList select;
     private final ClauseList from;
@@ -115,7 +114,8 @@ public class SqlQuery
      */
     private final List fromAliases;
 
-    private final String quoteIdentifierString;
+    /** The SQL dialect this query is to be generated in. */
+    private final Dialect dialect;
 
     /** Scratch buffer. Clear it before use. */
     private final StringBuffer buf;
@@ -123,18 +123,8 @@ public class SqlQuery
     /**
      * Base constructor used by all other constructors to create an empty
      * instance.
-     *
-     * @param databaseMetaData
      */
-    private SqlQuery(final DatabaseMetaData databaseMetaData,
-                     final String quoteIdentifierString) {
-        // the databaseMetaData instance variable must be set before calling
-        // initializeQuoteIdentifierString method
-        this.databaseMetaData = databaseMetaData;
-
-        this.quoteIdentifierString = (quoteIdentifierString == null)
-                ? initializeQuoteIdentifierString()
-                : quoteIdentifierString;
+    public SqlQuery(Dialect dialect) {
 
         // both select and from allow duplications
         this.select = new ClauseList(true);
@@ -146,48 +136,31 @@ public class SqlQuery
         this.orderBy = new ClauseList(false);
         this.fromAliases = new ArrayList();
         this.buf = new StringBuffer(128);
+
+        this.dialect = dialect;
     }
+
     /**
      * Creates a <code>SqlQuery</code>
      *
      * @param databaseMetaData used to determine which dialect of
-     *     SQL to generate
+     *     SQL to generate. Must not be held beyond the constructor.
      */
     public SqlQuery(final DatabaseMetaData databaseMetaData) {
-        this(databaseMetaData, null);
+        this(Dialect.create(databaseMetaData));
     }
 
     /**
      * Creates an empty <code>SqlQuery</code> with the same environment as this
      * one. (As per the Gang of Four 'prototype' pattern.)
-     **/
+     */
     public SqlQuery cloneEmpty()
     {
-        return new SqlQuery(databaseMetaData, quoteIdentifierString);
+        return new SqlQuery(dialect);
     }
 
     public void setDistinct(final boolean distinct) {
         this.distinct = distinct;
-    }
-
-    private String initializeQuoteIdentifierString() {
-        String s = null;
-        try {
-            s = databaseMetaData.getIdentifierQuoteString();
-        } catch (SQLException e) {
-            throw Util.getRes().newInternal("while quoting identifier", e);
-        }
-
-        if ((s == null) || (s.trim().length() == 0)) {
-            if (isMySQL()) {
-                // mm.mysql.2.0.4 driver lies. We know better.
-                s = "`";
-            } else {
-                // Quoting not supported
-                s = null;
-            }
-        }
-        return s;
     }
 
     /**
@@ -199,321 +172,6 @@ public class SqlQuery
      * Two strings are quoted and the character '.' is placed between them.
      */
     private static final int DOUBLE_QUOTE_SIZE = 2 * SINGLE_QUOTE_SIZE + 1;
-
-    /**
-     * Encloses an identifier in quotation marks appropriate for the
-     * current SQL dialect. For example,
-     * <code>quoteIdentifier("emp")</code> yields a string containing
-     * <code>"emp"</code> in Oracle, and a string containing
-     * <code>[emp]</code> in Access.
-     **/
-    public String quoteIdentifier(final String val) {
-        int size = val.length() + SINGLE_QUOTE_SIZE;
-        StringBuffer buf = new StringBuffer(size);
-
-        quoteIdentifier(val, buf);
-
-        return buf.toString();
-    }
-
-    /**
-     * This is the implementation of the quoteIdentifier method which quotes the
-     * the val parameter (identifier) placing the result in the StringBuffer
-     * parameter.
-     *
-     * @param val identifier to quote (must not be null).
-     * @param buf
-     */
-    public void quoteIdentifier(final String val, final StringBuffer buf) {
-        String q = getQuoteIdentifierString();
-        if (q == null) {
-            // quoting is not supported
-            buf.append(val);
-            return;
-        }
-        // if the value is already quoted, do nothing
-        //  if not, then check for a dot qualified expression
-        //  like "owner.table".
-        //  In that case, prefix the single parts separately.
-        if (val.startsWith(q) && val.endsWith(q)) {
-            // already quoted - nothing to do
-            buf.append(val);
-            return;
-        }
-
-        int k = val.indexOf('.');
-        if (k > 0) {
-            // qualified
-            String val1 = Util.replace(val.substring(0,k), q, q + q);
-            String val2 = Util.replace(val.substring(k+1), q, q + q);
-            buf.append(q);
-            buf.append(val1);
-            buf.append(q);
-            buf.append(".");
-            buf.append(q);
-            buf.append(val2);
-            buf.append(q);
-
-        } else {
-            // not Qualified
-            String val2 = Util.replace(val, q, q + q);
-            buf.append(q);
-            buf.append(val2);
-            buf.append(q);
-        }
-    }
-
-    /**
-     * Encloses an identifier in quotation marks appropriate for the
-     * current SQL dialect. For example, in Oracle, where the identifiers
-     * are quoted using double-quotes,
-     * <code>quoteIdentifier("schema","table")</code> yields a string
-     * containing <code>"schema"."table"</code>.
-     *
-     * @param qual Qualifier. If it is not null,
-     *             <code>"<em>qual</em>".</code> is prepended.
-     * @param name Name to be quoted.
-     **/
-    public String quoteIdentifier(final String qual, final String name) {
-        // We know if the qalifier is null, then only the name is going
-        // to be quoted.
-        int size = name.length()
-            + ((qual == null)
-                ? SINGLE_QUOTE_SIZE
-                : (qual.length() + DOUBLE_QUOTE_SIZE));
-        StringBuffer buf = new StringBuffer(size);
-
-        quoteIdentifier(qual, name, buf);
-
-        return buf.toString();
-    }
-
-    /**
-     * This implements the quoting of a qualifier and name allowing one to
-     * pass in a StringBuffer thus saving the allocation and copying.
-     *
-     * @param qual optional qualifier to be quoted.
-     * @param name name to be quoted (must not be null).
-     * @param buf
-     */
-    public void quoteIdentifier(final String qual,
-                                final String name,
-                                final StringBuffer buf) {
-        if (qual == null) {
-            quoteIdentifier(name, buf);
-
-        } else {
-            Util.assertTrue(
-                (qual.length() != 0),
-                "qual should probably be null, not empty");
-
-            quoteIdentifier(qual, buf);
-            buf.append('.');
-            quoteIdentifier(name, buf);
-        }
-    }
-
-    public String getQuoteIdentifierString() {
-        return quoteIdentifierString;
-    }
-
-    // -- detect various databases --
-
-    private String getProduct() {
-        try {
-            String productName = databaseMetaData.getDatabaseProductName();
-            return productName;
-        } catch (SQLException e) {
-            throw Util.getRes().newInternal(
-                    "while detecting database product", e);
-        }
-    }
-
-
-    private String getProductVersion() {
-        try {
-            String version = databaseMetaData.getDatabaseProductVersion();
-            return version;
-        } catch (SQLException e) {
-            throw Util.getRes().newInternal(
-            "while detecting database product version", e);
-        }
-    }
-
-
-    public boolean isAccess() {
-        return getProduct().equals("ACCESS");
-    }
-
-    public boolean isDerby() {
-        return getProduct().trim().toUpperCase().equals("APACHE DERBY");
-    }
-
-    public boolean isCloudscape() {
-        return getProduct().trim().toUpperCase().equals("DBMS:CLOUDSCAPE");
-    }
-
-    public boolean isDB2() {
-        // DB2 on NT returns "DB2/NT"
-        return getProduct().startsWith("DB2");
-    }
-
-    public boolean isAS400() {
-        // DB2/AS400 Product String = "DB2 UDB for AS/400"
-        return getProduct().startsWith("DB2 UDB for AS/400");
-    }
-
-    public boolean isOldAS400() {
-        if (!isAS400()) {
-            return false;
-        }
-        // TB "04.03.0000 V4R3m0"
-        //  this version cannot handle subqueries and is considered "old"
-        // DEUKA "05.01.0000 V5R1m0" is ok
-        String version = getProductVersion();
-        String[] version_release = version.split("\\.", 3);
-        /*
-        if ( version_release.length > 2 &&
-            "04".compareTo(version_release[0]) > 0 ||
-            ("04".compareTo(version_release[0]) == 0
-            && "03".compareTo(version_release[1]) >= 0) )
-            return true;
-        */
-        // assume, that version <= 04 is "old"
-        return ("04".compareTo(version_release[0]) >= 0);
-    }
-
-    // Note: its not clear that caching the best name would actually save
-    // very much time, so we do not do so.
-    private String getBestName() {
-        String best;
-        if (isOracle()) {
-            best = "oracle";
-        } else if (isMSSQL()) {
-            best = "mssql";
-        } else if (isMySQL()) {
-            best = "mysql";
-        } else if (isAccess()) {
-            best = "access";
-        } else if (isPostgres()) {
-            best = "postgres";
-        } else if (isSybase()) {
-            best = "sybase";
-        } else if (isCloudscape() || isDerby()) {
-            best = "derby";
-        } else if (isDB2()) {
-            best = "db2";
-        } else if (isFirebird()) {
-            best = "firebird";
-        } else {
-            best = "generic";
-        }
-        return best;
-    }
-
-    /**
-     * Returns whether the underlying database is Firebird.
-     */
-    public boolean isFirebird() {
-        return getProduct().toUpperCase().indexOf("FIREBIRD") >= 0;
-    }
-
-    /**
-     * Returns whether the underlying database is Informix.
-     */
-    public boolean isInformix() {
-        return getProduct().startsWith("Informix");
-    }
-
-    /**
-     * Returns whether the underlying database is Microsoft SQL Server.
-     */
-    public boolean isMSSQL() {
-        return getProduct().toUpperCase().indexOf("SQL SERVER") >= 0;
-    }
-    /**
-     * Returns whether the underlying database is Oracle.
-     */
-    public boolean isOracle() {
-        return getProduct().equals("Oracle");
-    }
-    /**
-     * Returns whether the underlying database is Postgres.
-     */
-    public boolean isPostgres() {
-        return getProduct().toUpperCase().indexOf("POSTGRE") >= 0;
-    }
-    /**
-     * Returns whether the underlying database is MySQL.
-     */
-    public boolean isMySQL() {
-        return getProduct().toUpperCase().equals("MYSQL");
-    }
-    /**
-     * Returns whether the underlying database is Sybase.
-     */
-    public boolean isSybase() {
-        return getProduct().toUpperCase().indexOf("SYBASE") >= 0;
-    }
-
-    // -- behaviors --
-    protected boolean requiresAliasForFromItems() {
-        return isPostgres();
-    }
-
-    /**
-     * Returns whether the SQL dialect allows "AS" in the FROM clause.
-     * If so, "SELECT * FROM t AS alias" is a valid query.
-     */
-    protected boolean allowsAs() {
-        return !isOracle() && !isSybase() && !isFirebird();
-    }
-
-    /**
-     * Whether "select * from (select * from t)" is OK.
-     */
-    public boolean allowsFromQuery() {
-        // older versions of AS400 do not allow FROM subqueries
-        return !isMySQL() && !isOldAS400() && !isInformix() && !isSybase();
-    }
-
-    /**
-     * Whether "select count(distinct x, y) from t" is OK.
-     */
-    public boolean allowsCompoundCountDistinct() {
-        return isMySQL();
-    }
-
-    /**
-     * Whether "select count(distinct x) from t" is OK.
-     */
-    public boolean allowsCountDistinct() {
-        return !isAccess();
-    }
-
-    /**
-     * Chooses the variant within an array of {@link
-     * mondrian.olap.MondrianDef.SQL} which best matches the current SQL
-     * dialect.
-     */
-    public String chooseQuery(final MondrianDef.SQL[] sqls) {
-        String best = getBestName();
-
-        String generic = null;
-        for (int i = 0; i < sqls.length; i++) {
-            MondrianDef.SQL sql = sqls[i];
-            if (sql.dialect.equals(best)) {
-                return sql.cdata;
-            }
-            if (sql.dialect.equals("generic")) {
-                generic = sql.cdata;
-            }
-        }
-        if (generic == null) {
-            throw Util.newError("View has no 'generic' variant");
-        }
-        return generic;
-    }
 
     /**
      *
@@ -547,12 +205,12 @@ public class SqlQuery
         if (alias != null) {
             Util.assertTrue(alias.length() > 0);
 
-            if (allowsAs()) {
+            if (dialect.allowsAs()) {
                 buf.append(" as ");
             } else {
                 buf.append(' ');
             }
-            quoteIdentifier(alias, buf);
+            dialect.quoteIdentifier(alias, buf);
             fromAliases.add(alias);
         }
 
@@ -587,16 +245,16 @@ public class SqlQuery
         }
 
         buf.setLength(0);
-        quoteIdentifier(schema, table, buf);
+        dialect.quoteIdentifier(schema, table, buf);
         if (alias != null) {
             Util.assertTrue(alias.length() > 0);
 
-            if (allowsAs()) {
+            if (dialect.allowsAs()) {
                 buf.append(" as ");
             } else {
                 buf.append(' ');
             }
-            quoteIdentifier(alias, buf);
+            dialect.quoteIdentifier(alias, buf);
             fromAliases.add(alias);
         }
 
@@ -636,7 +294,7 @@ public class SqlQuery
             final String viewAlias = (alias == null)
                     ? view.getAlias()
                     : alias;
-            final String sqlString = chooseQuery(view.selects);
+            final String sqlString = dialect.chooseQuery(view.selects);
 
             return addFromQuery(sqlString, viewAlias, false);
 
@@ -660,9 +318,9 @@ public class SqlQuery
             if (added) {
                 buf.setLength(0);
 
-                quoteIdentifier(leftAlias, join.leftKey, buf);
+                dialect.quoteIdentifier(leftAlias, join.leftKey, buf);
                 buf.append(" = ");
-                quoteIdentifier(rightAlias, join.rightKey, buf);
+                dialect.quoteIdentifier(rightAlias, join.rightKey, buf);
 
                 addWhere(buf.toString());
             }
@@ -680,7 +338,7 @@ public class SqlQuery
     public void addSelect(final String expression) {
         // some DB2 versions (AS/400) throw an error, if a column alias is
         //  *not* used in a subsequent order by (Group by)
-        if (isAS400()) {
+        if (dialect.isAS400()) {
             addSelect(expression, null);
         } else {
             addSelect(expression, "c" + select.size());
@@ -694,7 +352,7 @@ public class SqlQuery
         buf.append(expression);
         if (alias != null) {
             buf.append(" as ");
-            quoteIdentifier(alias, buf);
+            dialect.quoteIdentifier(alias, buf);
         }
 
         select.add(buf.toString());
@@ -730,8 +388,8 @@ public class SqlQuery
 
     public void addOrderBy(final String expression)
     {
-    	if (isDerby() || isCloudscape()) {
-    		orderBy.add(quoteIdentifier("c" + (select.size() - 1)));
+    	if (dialect.isDerby() || dialect.isCloudscape()) {
+    		orderBy.add(dialect.quoteIdentifier("c" + (select.size() - 1)));
     	} else {
     		orderBy.add(expression);
     	}
@@ -773,6 +431,10 @@ public class SqlQuery
         groupBy.print(pw, prefix, "group by ", ", ");
         having.print(pw, prefix, "having ", " and ");
         orderBy.print(pw, prefix, "order by ", ", ");
+    }
+
+    public Dialect getDialect() {
+        return dialect;
     }
 
     private class ClauseList extends ArrayList {
@@ -837,6 +499,362 @@ public class SqlQuery
                 pw.println();
             }
         }
+    }
+
+    /**
+     * Description of a SQL dialect. It is immutable.
+     */
+    public static class Dialect {
+        private final String quoteIdentifierString;
+        private final String productName;
+        private final String productVersion;
+
+        Dialect(
+                String quoteIdentifierString,
+                String productName,
+                String productVersion) {
+            this.quoteIdentifierString = quoteIdentifierString;
+            this.productName = productName;
+            this.productVersion = productVersion;
+        }
+
+        /**
+         * Creates a {@link Dialect} from a {@link DatabaseMetaData}.
+         */
+        public static Dialect create(final DatabaseMetaData databaseMetaData) {
+            String productName;
+            try {
+                productName = databaseMetaData.getDatabaseProductName();
+            } catch (SQLException e1) {
+                throw Util.getRes().newInternal(
+                        "while detecting database product", e1);
+            }
+
+            String quoteIdentifierString;
+            try {
+                quoteIdentifierString =
+                        databaseMetaData.getIdentifierQuoteString();
+            } catch (SQLException e) {
+                throw Util.getRes().newInternal("while quoting identifier", e);
+            }
+
+            if ((quoteIdentifierString == null) ||
+                    (quoteIdentifierString.trim().length() == 0)) {
+                if (productName.toUpperCase().equals("MYSQL")) {
+                    // mm.mysql.2.0.4 driver lies. We know better.
+                    quoteIdentifierString = "`";
+                } else {
+                    // Quoting not supported
+                    quoteIdentifierString = null;
+                }
+            }
+
+            String productVersion;
+            try {
+                productVersion = databaseMetaData.getDatabaseProductVersion();
+            } catch (SQLException e11) {
+                throw Util.getRes().newInternal(
+                "while detecting database product version", e11);
+            }
+
+            return new Dialect(
+                    quoteIdentifierString,
+                    productName,
+                    productVersion);
+        }
+
+        // -- detect various databases --
+
+        public boolean isAccess() {
+            return productName.equals("ACCESS");
+        }
+
+        public boolean isDerby() {
+            return productName.trim().toUpperCase().equals("APACHE DERBY");
+        }
+
+        public boolean isCloudscape() {
+            return productName.trim().toUpperCase().equals("DBMS:CLOUDSCAPE");
+        }
+
+        public boolean isDB2() {
+            // DB2 on NT returns "DB2/NT"
+            return productName.startsWith("DB2");
+        }
+
+        public boolean isAS400() {
+            // DB2/AS400 Product String = "DB2 UDB for AS/400"
+            return productName.startsWith("DB2 UDB for AS/400");
+        }
+
+        public boolean isOldAS400() {
+            if (!isAS400()) {
+                return false;
+            }
+            // TB "04.03.0000 V4R3m0"
+            //  this version cannot handle subqueries and is considered "old"
+            // DEUKA "05.01.0000 V5R1m0" is ok
+            String[] version_release = productVersion.split("\\.", 3);
+            /*
+            if ( version_release.length > 2 &&
+                "04".compareTo(version_release[0]) > 0 ||
+                ("04".compareTo(version_release[0]) == 0
+                && "03".compareTo(version_release[1]) >= 0) )
+                return true;
+            */
+            // assume, that version <= 04 is "old"
+            return ("04".compareTo(version_release[0]) >= 0);
+        }
+
+        // Note: its not clear that caching the best name would actually save
+        // very much time, so we do not do so.
+        private String getBestName() {
+            String best;
+            if (isOracle()) {
+                best = "oracle";
+            } else if (isMSSQL()) {
+                best = "mssql";
+            } else if (isMySQL()) {
+                best = "mysql";
+            } else if (isAccess()) {
+                best = "access";
+            } else if (isPostgres()) {
+                best = "postgres";
+            } else if (isSybase()) {
+                best = "sybase";
+            } else if (isCloudscape() || isDerby()) {
+                best = "derby";
+            } else if (isDB2()) {
+                best = "db2";
+            } else if (isFirebird()) {
+                best = "firebird";
+            } else {
+                best = "generic";
+            }
+            return best;
+        }
+
+        /**
+         * Encloses an identifier in quotation marks appropriate for the
+         * current SQL dialect. For example,
+         * <code>quoteIdentifier("emp")</code> yields a string containing
+         * <code>"emp"</code> in Oracle, and a string containing
+         * <code>[emp]</code> in Access.
+         **/
+        public String quoteIdentifier(final String val) {
+            int size = val.length() + SINGLE_QUOTE_SIZE;
+            StringBuffer buf = new StringBuffer(size);
+
+            quoteIdentifier(val, buf);
+
+            return buf.toString();
+        }
+
+        /**
+         * This is the implementation of the quoteIdentifier method which quotes the
+         * the val parameter (identifier) placing the result in the StringBuffer
+         * parameter.
+         *
+         * @param val identifier to quote (must not be null).
+         * @param buf
+         */
+        public void quoteIdentifier(final String val, final StringBuffer buf) {
+            String q = getQuoteIdentifierString();
+            if (q == null) {
+                // quoting is not supported
+                buf.append(val);
+                return;
+            }
+            // if the value is already quoted, do nothing
+            //  if not, then check for a dot qualified expression
+            //  like "owner.table".
+            //  In that case, prefix the single parts separately.
+            if (val.startsWith(q) && val.endsWith(q)) {
+                // already quoted - nothing to do
+                buf.append(val);
+                return;
+            }
+
+            int k = val.indexOf('.');
+            if (k > 0) {
+                // qualified
+                String val1 = Util.replace(val.substring(0,k), q, q + q);
+                String val2 = Util.replace(val.substring(k+1), q, q + q);
+                buf.append(q);
+                buf.append(val1);
+                buf.append(q);
+                buf.append(".");
+                buf.append(q);
+                buf.append(val2);
+                buf.append(q);
+
+            } else {
+                // not Qualified
+                String val2 = Util.replace(val, q, q + q);
+                buf.append(q);
+                buf.append(val2);
+                buf.append(q);
+            }
+        }
+
+        /**
+         * Encloses an identifier in quotation marks appropriate for the
+         * current SQL dialect. For example, in Oracle, where the identifiers
+         * are quoted using double-quotes,
+         * <code>quoteIdentifier("schema","table")</code> yields a string
+         * containing <code>"schema"."table"</code>.
+         *
+         * @param qual Qualifier. If it is not null,
+         *             <code>"<em>qual</em>".</code> is prepended.
+         * @param name Name to be quoted.
+         **/
+        public String quoteIdentifier(final String qual, final String name) {
+            // We know if the qalifier is null, then only the name is going
+            // to be quoted.
+            int size = name.length()
+                + ((qual == null)
+                    ? SINGLE_QUOTE_SIZE
+                    : (qual.length() + DOUBLE_QUOTE_SIZE));
+            StringBuffer buf = new StringBuffer(size);
+
+            quoteIdentifier(qual, name, buf);
+
+            return buf.toString();
+        }
+
+        /**
+         * This implements the quoting of a qualifier and name allowing one to
+         * pass in a StringBuffer thus saving the allocation and copying.
+         *
+         * @param qual optional qualifier to be quoted.
+         * @param name name to be quoted (must not be null).
+         * @param buf
+         */
+        public void quoteIdentifier(final String qual,
+                                    final String name,
+                                    final StringBuffer buf) {
+            if (qual == null) {
+                quoteIdentifier(name, buf);
+
+            } else {
+                Util.assertTrue(
+                    (qual.length() != 0),
+                    "qual should probably be null, not empty");
+
+                quoteIdentifier(qual, buf);
+                buf.append('.');
+                quoteIdentifier(name, buf);
+            }
+        }
+
+        public String getQuoteIdentifierString() {
+            return quoteIdentifierString;
+        }
+
+        /**
+         * Returns whether the underlying database is Firebird.
+         */
+        public boolean isFirebird() {
+            return productName.toUpperCase().indexOf("FIREBIRD") >= 0;
+        }
+
+        /**
+         * Returns whether the underlying database is Informix.
+         */
+        public boolean isInformix() {
+            return productName.startsWith("Informix");
+        }
+
+        /**
+         * Returns whether the underlying database is Microsoft SQL Server.
+         */
+        public boolean isMSSQL() {
+            return productName.toUpperCase().indexOf("SQL SERVER") >= 0;
+        }
+        /**
+         * Returns whether the underlying database is Oracle.
+         */
+        public boolean isOracle() {
+            return productName.equals("Oracle");
+        }
+        /**
+         * Returns whether the underlying database is Postgres.
+         */
+        public boolean isPostgres() {
+            return productName.toUpperCase().indexOf("POSTGRE") >= 0;
+        }
+        /**
+         * Returns whether the underlying database is MySQL.
+         */
+        public boolean isMySQL() {
+            return productName.toUpperCase().equals("MYSQL");
+        }
+        /**
+         * Returns whether the underlying database is Sybase.
+         */
+        public boolean isSybase() {
+            return productName.toUpperCase().indexOf("SYBASE") >= 0;
+        }
+
+        // -- behaviors --
+        protected boolean requiresAliasForFromItems() {
+            return isPostgres();
+        }
+
+        /**
+         * Returns whether the SQL dialect allows "AS" in the FROM clause.
+         * If so, "SELECT * FROM t AS alias" is a valid query.
+         */
+        protected boolean allowsAs() {
+            return !isOracle() && !isSybase() && !isFirebird();
+        }
+
+        /**
+         * Whether "select * from (select * from t)" is OK.
+         */
+        public boolean allowsFromQuery() {
+            // older versions of AS400 do not allow FROM subqueries
+            return !isMySQL() && !isOldAS400() && !isInformix() && !isSybase();
+        }
+
+        /**
+         * Whether "select count(distinct x, y) from t" is OK.
+         */
+        public boolean allowsCompoundCountDistinct() {
+            return isMySQL();
+        }
+
+        /**
+         * Whether "select count(distinct x) from t" is OK.
+         */
+        public boolean allowsCountDistinct() {
+            return !isAccess();
+        }
+
+        /**
+         * Chooses the variant within an array of {@link
+         * mondrian.olap.MondrianDef.SQL} which best matches the current SQL
+         * dialect.
+         */
+        public String chooseQuery(final MondrianDef.SQL[] sqls) {
+            String best = getBestName();
+
+            String generic = null;
+            for (int i = 0; i < sqls.length; i++) {
+                MondrianDef.SQL sql = sqls[i];
+                if (sql.dialect.equals(best)) {
+                    return sql.cdata;
+                }
+                if (sql.dialect.equals("generic")) {
+                    generic = sql.cdata;
+                }
+            }
+            if (generic == null) {
+                throw Util.newError("View has no 'generic' variant");
+            }
+            return generic;
+        }
+
     }
 }
 

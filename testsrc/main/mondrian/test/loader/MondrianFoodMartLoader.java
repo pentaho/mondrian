@@ -255,14 +255,15 @@ public class MondrianFoodMartLoader {
 
         sqlQuery = new SqlQuery(metaData);
         booleanColumnType = "SMALLINT";
-        if (sqlQuery.isPostgres()) {
+        if (sqlQuery.getDialect().isPostgres()) {
             booleanColumnType = "BOOLEAN";
-        } else if (sqlQuery.isMySQL()) {
+        } else if (sqlQuery.getDialect().isMySQL()) {
             booleanColumnType = "TINYINT(1)";
         }
 
         bigIntColumnType = "BIGINT";
-        if (sqlQuery.isOracle() || sqlQuery.isFirebird()) {
+        if (sqlQuery.getDialect().isOracle() ||
+                sqlQuery.getDialect().isFirebird()) {
             bigIntColumnType = "DECIMAL(15,0)";
         }
 
@@ -382,7 +383,7 @@ public class MondrianFoodMartLoader {
                     prevTable = tableName;
                     quotedTableName = quoteId(tableName);
                     quotedColumnNames = columnNames.replaceAll(quoteChar,
-                    									sqlQuery.getQuoteIdentifierString());
+                            sqlQuery.getDialect().getQuoteIdentifierString());
                     String[] splitColumnNames = columnNames.replaceAll(quoteChar, "")
                     						.replaceAll(" ", "").split(",");
                     Column[] columns = (Column[]) tableMetadataToLoad.get(tableName);
@@ -557,7 +558,7 @@ public class MondrianFoodMartLoader {
 
             String fromQuoteChar = null;
             String toQuoteChar = null;
-        	if (sqlQuery.isMySQL()) {
+        	if (sqlQuery.getDialect().isMySQL()) {
         		toQuoteChar = "`";
         	} else {
         		toQuoteChar = "\"";
@@ -922,7 +923,7 @@ public class MondrianFoodMartLoader {
                 try {
                     buf.append("DROP INDEX ")
                         .append(quoteId(indexName));
-                    if (sqlQuery.isMySQL()) {
+                    if (sqlQuery.getDialect().isMySQL()) {
                         buf.append(" ON ")
                             .append(quoteId(tableName));
                     }
@@ -1461,7 +1462,7 @@ public class MondrianFoodMartLoader {
      * @return
      */
     private String quoteId(String name) {
-        return sqlQuery.quoteIdentifier(name);
+        return sqlQuery.getDialect().quoteIdentifier(name);
     }
 
     /**
@@ -1566,7 +1567,7 @@ public class MondrianFoodMartLoader {
          */
         } else if (columnType.startsWith("TIMESTAMP")) {
             Timestamp ts = (Timestamp) obj;
-            if (sqlQuery.isOracle()) {
+            if (sqlQuery.getDialect().isOracle()) {
                 return "TIMESTAMP '" + ts + "'";
             } else {
                 return "'" + ts + "'";
@@ -1578,7 +1579,7 @@ public class MondrianFoodMartLoader {
          */
         } else if (columnType.startsWith("DATE")) {
             Date dt = (Date) obj;
-            if (sqlQuery.isOracle()) {
+            if (sqlQuery.getDialect().isOracle()) {
                 return "DATE '" + dateFormatter.format(dt) + "'";
             } else {
                 return "'" + dateFormatter.format(dt) + "'";
@@ -1640,7 +1641,7 @@ public class MondrianFoodMartLoader {
          * Output for a TIMESTAMP
          */
         if (columnType.startsWith("TIMESTAMP")) {
-            if (sqlQuery.isOracle()) {
+            if (sqlQuery.getDialect().isOracle()) {
                 return "TIMESTAMP " + columnValue;
             }
 
@@ -1648,7 +1649,7 @@ public class MondrianFoodMartLoader {
          * Output for a DATE
          */
         } else if (columnType.startsWith("DATE")) {
-            if (sqlQuery.isOracle()) {
+            if (sqlQuery.getDialect().isOracle()) {
                 return "DATE " + columnValue;
             }
 
@@ -1661,9 +1662,9 @@ public class MondrianFoodMartLoader {
          */
         } else if (columnType.equals(booleanColumnType)) {
             String trimmedValue = columnValue.trim();
-            if (!sqlQuery.isMySQL() &&
-                    !sqlQuery.isOracle() &&
-                    !sqlQuery.isFirebird()) {
+            if (!sqlQuery.getDialect().isMySQL() &&
+                    !sqlQuery.getDialect().isOracle() &&
+                    !sqlQuery.getDialect().isFirebird()) {
                 if (trimmedValue.equals("1")) {
                     return "true";
                 } else if (trimmedValue.equals("0")) {

@@ -34,9 +34,8 @@ import java.util.*;
  */
 public class FastBatchingCellReader implements CellReader {
 
-    private static final Logger LOGGER = 
+    private static final Logger LOGGER =
         Logger.getLogger(FastBatchingCellReader.class);
-
 
     private final RolapCube cube;
     private final Set pinnedSegments;
@@ -44,6 +43,10 @@ public class FastBatchingCellReader implements CellReader {
     private int requestCount;
 
     RolapAggregationManager aggMgr = AggregationManager.instance();
+    /**
+     * Indicates that the reader given incorrect results.
+     */
+    private boolean dirty;
 
     public FastBatchingCellReader(RolapCube cube) {
         this.cube = cube;
@@ -83,24 +86,43 @@ public class FastBatchingCellReader implements CellReader {
         Batch batch = (Batch) batches.get(key);
         if (batch == null) {
             batch = new Batch(request);
-/*
-System.out.println("FastBatchingCellReader: bitkey=" +request.getBatchKey());
-RolapStar star = cube.getStar();
-RolapStar.Column[] columns = star.lookupColumns((BitKey) request.getBatchKey());
-for (int i = 0; i < columns.length; i++) {
-    System.out.println("  " +columns[i]);
-}
-*/
 
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("FastBatchingCellReader: bitkey=" +
+                        request.getBatchKey());
+                RolapStar star = cube.getStar();
+                if (star != null) {
+                    RolapStar.Column[] columns =
+                            star.lookupColumns((BitKey) request.getBatchKey());
+                    for (int i = 0; i < columns.length; i++) {
+                        LOGGER.debug("  " +columns[i]);
+                    }
+                }
+            }
             batches.put(key, batch);
         }
         batch.add(request);
     }
 
+    /**
+     * Returns whether this reader has told a lie. This is the case if there
+     * are pending batches to load or if {@link #setDirty(boolean)} has been
+     * called.
+     */
+    boolean isDirty() {
+        return dirty || !batches.isEmpty();
+    }
+
+    /**
+     * Loads pending aggregations, if any.
+     *
+     * @return Whether any aggregations were loaded.
+     */
     boolean loadAggregations() {
         long t1 = System.currentTimeMillis();
 
         requestCount = 0;
+        dirty = false;
         if (batches.isEmpty()) {
             return false;
         }
@@ -116,6 +138,13 @@ for (int i = 0; i < columns.length; i++) {
         }
 
         return true;
+    }
+
+    /**
+     * Sets the flag indicating that the reader has told a lie.
+     */
+    void setDirty(boolean dirty) {
+        this.dirty = dirty;
     }
 
     class Batch {
@@ -178,7 +207,7 @@ for (int i = 0; i < columns.length; i++) {
                 if (distinctMeasure == null) {
                     break;
                 }
-                final String expr = 
+                final String expr =
                     distinctMeasure.getExpression().getGenericExpression();
                 final List distinctMeasuresList = new ArrayList();
                 for (int i = 0; i < measuresList.size();) {

@@ -25,7 +25,7 @@ import java.sql.SQLException;
  */
 public abstract class AbstractQuerySpec implements QuerySpec {
     private final RolapStar star;
-    private final DatabaseMetaData metaData; 
+    private final DatabaseMetaData metaData;
 
     protected AbstractQuerySpec(final RolapStar star) {
         this.star = star;
@@ -36,12 +36,12 @@ public abstract class AbstractQuerySpec implements QuerySpec {
         } catch (SQLException e) {
             throw Util.getRes().newInternal("while loading segment", e);
         } finally {
-            try { 
+            try {
                 jdbcConnection.close();
             } catch (SQLException e) {
                 // ignore
-            }   
-        } 
+            }
+        }
     }
 
     protected SqlQuery newSqlQuery() {
@@ -84,14 +84,14 @@ public abstract class AbstractQuerySpec implements QuerySpec {
 
             ColumnConstraint[] constraints = getConstraints(i);
             if (constraints != null) {
-                sqlQuery.addWhere(RolapStar.Column.createInExpr(expr,   
-                                               constraints, 
+                sqlQuery.addWhere(RolapStar.Column.createInExpr(expr,
+                                               constraints,
                                                column.isNumeric()));
             }
 
             // some DB2 (AS400) versions throw an error, if a column alias is
             // there and *not* used in a subsequent order by/group by
-            if (sqlQuery.isAS400()) {
+            if (sqlQuery.getDialect().isAS400()) {
                 sqlQuery.addSelect(expr, null);
             } else {
                 sqlQuery.addSelect(expr, getColumnAlias(i));

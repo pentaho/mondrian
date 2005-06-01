@@ -84,12 +84,12 @@ public class RolapSchema implements Schema {
 
     private final byte[] md5Bytes;
 
-    /** 
+    /**
      * A schema's aggregation information
      */
     private AggTableManager aggTableManager;
-    
-    /** 
+
+    /**
      * This is basically a unique identifier for this RolapSchema instance
      * used it its equals and hashCode methods.
      */
@@ -345,23 +345,23 @@ public class RolapSchema implements Schema {
                 role.grant(cube, getAccess(cubeGrant.access, cubeAllowed));
                 final SchemaReader schemaReader = cube.getSchemaReader(null);
                 for (int k = 0; k < cubeGrant.dimensionGrants.length; k++) {
-                    MondrianDef.DimensionGrant dimensionGrant = 
+                    MondrianDef.DimensionGrant dimensionGrant =
                         cubeGrant.dimensionGrants[k];
                     Dimension dimension = (Dimension)
                         schemaReader.lookupCompound(
                             cube, Util.explode(dimensionGrant.dimension), true,
                             Category.Dimension);
-                    role.grant(dimension, 
+                    role.grant(dimension,
                         getAccess(dimensionGrant.access, dimensionAllowed));
                 }
                 for (int k = 0; k < cubeGrant.hierarchyGrants.length; k++) {
-                    MondrianDef.HierarchyGrant hierarchyGrant = 
+                    MondrianDef.HierarchyGrant hierarchyGrant =
                         cubeGrant.hierarchyGrants[k];
                     Hierarchy hierarchy = (Hierarchy)
                         schemaReader.lookupCompound(
                             cube, Util.explode(hierarchyGrant.hierarchy), true,
                             Category.Hierarchy);
-                    final int hierarchyAccess = 
+                    final int hierarchyAccess =
                         getAccess(hierarchyGrant.access, hierarchyAllowed);
                     Level topLevel = null;
                     if (hierarchyGrant.topLevel != null) {

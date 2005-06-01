@@ -66,7 +66,7 @@ class SqlMemberSource implements MemberReader {
         return count;
     }
 
-    public RolapMember lookupMember(String[] uniqueNameParts, 
+    public RolapMember lookupMember(String[] uniqueNameParts,
                                     boolean failIfNotFound) {
         throw new UnsupportedOperationException();
     }
@@ -126,10 +126,10 @@ class SqlMemberSource implements MemberReader {
             }
         } catch (SQLException e) {
             throw Util.getRes().newInternal(
-                    "while counting members of level '" 
-                    + level 
-                    + "'; sql=[" 
-                    + sql 
+                    "while counting members of level '"
+                    + level
+                    + "'; sql=["
+                    + sql
                     + "]",
                     e);
         } finally {
@@ -187,7 +187,7 @@ class SqlMemberSource implements MemberReader {
             hierarchy.addToFrom(sqlQuery, level.getKeyExp());
             return sqlQuery.toString();
         }
-        if (!sqlQuery.allowsFromQuery()) {
+        if (!sqlQuery.getDialect().allowsFromQuery()) {
             String columnList = "";
             int columnCount = 0;
             for (int i = levelDepth; i >= 0; i--) {
@@ -196,7 +196,7 @@ class SqlMemberSource implements MemberReader {
                      continue;
                 }
                 if (columnCount > 0) {
-                    if (sqlQuery.allowsCompoundCountDistinct()) {
+                    if (sqlQuery.getDialect().allowsCompoundCountDistinct()) {
                         columnList += ", ";
                     } else if (true) {
                         // for databases where both SELECT-in-FROM and
@@ -204,7 +204,7 @@ class SqlMemberSource implements MemberReader {
                         // generate any count and do the count
                         // distinct "manually".
                         mustCount[0] = true;
-                    } else if (sqlQuery.isSybase()) {
+                    } else if (sqlQuery.getDialect().isSybase()) {
                         // "select count(distinct convert(varchar, c1) +
                         // convert(varchar, c2)) from table"
                         if (columnCount == 1) {
@@ -230,8 +230,8 @@ class SqlMemberSource implements MemberReader {
 
                 String keyExp = level2.getKeyExp().getExpression(sqlQuery);
                 if (columnCount > 0 &&
-                    !sqlQuery.allowsCompoundCountDistinct() &&
-                    sqlQuery.isSybase()) {
+                    !sqlQuery.getDialect().allowsCompoundCountDistinct() &&
+                    sqlQuery.getDialect().isSybase()) {
 
                     keyExp = "convert(varchar, " + columnList + ")";
                 }
@@ -263,7 +263,7 @@ class SqlMemberSource implements MemberReader {
                     break; // no further qualification needed
                 }
             }
-            SqlQuery outerQuery = newQuery(jdbcConnection, 
+            SqlQuery outerQuery = newQuery(jdbcConnection,
                 "while generating query to count members in level " + level);
             outerQuery.addSelect("count(*)");
             // Note: the "init" is for Postgres, which requires
@@ -305,9 +305,9 @@ class SqlMemberSource implements MemberReader {
             Map map = new HashMap();
             RolapMember root = null;
             if (hierarchy.hasAll()) {
-                root = new RolapMember(null, 
+                root = new RolapMember(null,
                                        (RolapLevel) hierarchy.getLevels()[0],
-                                       null, 
+                                       null,
                                        hierarchy.getAllMemberName(),
                                        Member.ALL_MEMBER_TYPE);
                 // assign "all member" caption
@@ -366,7 +366,7 @@ RME is this right
                     Property[] properties = level.getProperties();
                     for (int j = 0; j < properties.length; j++) {
                         Property property = properties[j];
-                        member.setProperty(property.getName(), 
+                        member.setProperty(property.getName(),
                                         resultSet.getObject(column + 1));
                         column++;
                     }
@@ -486,8 +486,8 @@ RME is this right
     }
 
     // implement MemberReader
-    public List getMembersInLevel(RolapLevel level, 
-                                  int startOrdinal, 
+    public List getMembersInLevel(RolapLevel level,
+                                  int startOrdinal,
                                   int endOrdinal) {
         if (level.isAll()) {
             final String allMemberName = hierarchy.getAllMemberName();
@@ -528,14 +528,14 @@ RME is this right
         }
     }
 
-    private List getMembersInLevel(RolapLevel level, 
+    private List getMembersInLevel(RolapLevel level,
                                    Connection jdbcConnection,
                                    final RolapLevel[] levels) {
         String sql = makeLevelSql(level, jdbcConnection);
         ResultSet resultSet = null;
         try {
-            resultSet = RolapUtil.executeQuery(jdbcConnection, 
-                                          sql, 
+            resultSet = RolapUtil.executeQuery(jdbcConnection,
+                                          sql,
                                           "SqlMemberSource.getMembersInLevel");
             List list = new ArrayList();
             final int levelDepth = level.getDepth();
@@ -639,7 +639,7 @@ RME is this right
 
     // implement MemberSource
     public List getRootMembers() {
-        return getMembersInLevel((RolapLevel) hierarchy.getLevels()[0], 
+        return getMembersInLevel((RolapLevel) hierarchy.getLevels()[0],
                                  0,
                                  Integer.MAX_VALUE);
     }
@@ -658,7 +658,7 @@ RME is this right
      **/
     String makeChildMemberSql(RolapMember member, Connection jdbcConnection) {
         SqlQuery sqlQuery = newQuery(jdbcConnection,
-                "while generating query to retrieve children of member " 
+                "while generating query to retrieve children of member "
                 + member);
         for (RolapMember m = member; m != null; m = (RolapMember)
                  m.getParentMember()) {
@@ -724,7 +724,7 @@ RME is this right
         }
     }
 
-    private void getMemberChildren(RolapMember parentMember, 
+    private void getMemberChildren(RolapMember parentMember,
                                    List children,
                                    Connection jdbcConnection) {
         String sql;
@@ -799,12 +799,12 @@ RME is this right
     }
 
     private RolapMember makeMember(RolapMember parentMember,
-                                   RolapLevel childLevel, 
-                                   Object value, 
-                                   boolean parentChild, 
-                                   ResultSet resultSet, 
-                                   Object key, 
-                                   int columnOffset) 
+                                   RolapLevel childLevel,
+                                   Object value,
+                                   boolean parentChild,
+                                   ResultSet resultSet,
+                                   Object key,
+                                   int columnOffset)
                                    throws SQLException {
 
         RolapMember member = new RolapMember(parentMember, childLevel, value);
@@ -818,13 +818,13 @@ RME is this right
             // member; the data member does not have any children.
             final RolapParentChildMember parentChildMember =
                 (childLevel.hasClosedPeer())
-                    ? new RolapParentChildMember(parentMember, 
-                                                 childLevel, 
-                                                 value, 
+                    ? new RolapParentChildMember(parentMember,
+                                                 childLevel,
+                                                 value,
                                                  member)
-                    : new RolapParentChildMemberNoClosure(parentMember, 
-                                                          childLevel, 
-                                                          value, 
+                    : new RolapParentChildMemberNoClosure(parentMember,
+                                                          childLevel,
+                                                          value,
                                                           member);
 
             member = parentChildMember;
@@ -832,7 +832,7 @@ RME is this right
         Property[] properties = childLevel.getProperties();
         for (int j = 0; j < properties.length; j++) {
             Property property = properties[j];
-            member.setProperty(property.getName(), 
+            member.setProperty(property.getName(),
                                resultSet.getObject(columnOffset + j + 1));
         }
         cache.putMember(key, member);
@@ -855,14 +855,14 @@ RME is this right
      */
     private String makeChildMemberSql_PCRoot(RolapMember member,
                                              Connection jdbcConnection) {
-        SqlQuery sqlQuery = newQuery(jdbcConnection, 
+        SqlQuery sqlQuery = newQuery(jdbcConnection,
             "while generating query to retrieve children of parent/child hierarchy member " + member);
         Util.assertTrue(member.isAll(), "In the current implementation, parent/child hierarchies must have only one level (plus the 'All' level).");
 
         RolapLevel level = (RolapLevel) member.getLevel().getChildLevel();
 
         Util.assertTrue(!level.isAll(), "all level cannot be parent-child");
-        Util.assertTrue(level.isUnique(), "parent-child level '" 
+        Util.assertTrue(level.isUnique(), "parent-child level '"
             + level + "' must be unique");
 
         hierarchy.addToFrom(sqlQuery, level.getParentExp());
@@ -918,14 +918,14 @@ RME is this right
      * </blockquote> retrieves the children of the member
      * <code>[Employee].[5]</code>. See also {@link #makeLevelSql}.
      **/
-    private String makeChildMemberSqlPC(RolapMember member, 
+    private String makeChildMemberSqlPC(RolapMember member,
                                         Connection jdbcConnection) {
-        SqlQuery sqlQuery = newQuery(jdbcConnection, 
+        SqlQuery sqlQuery = newQuery(jdbcConnection,
             "while generating query to retrieve children of parent/child hierarchy member " + member);
         RolapLevel level = (RolapLevel) member.getLevel();
 
         Util.assertTrue(!level.isAll(), "all level cannot be parent-child");
-        Util.assertTrue(level.isUnique(), "parent-child level '" 
+        Util.assertTrue(level.isUnique(), "parent-child level '"
             + level + "' must be unique");
 
         hierarchy.addToFrom(sqlQuery, level.getParentExp());
@@ -960,24 +960,24 @@ RME is this right
         throw new UnsupportedOperationException();
     }
 
-    public void getMemberRange(RolapLevel level, 
-                               RolapMember startMember, 
-                               RolapMember endMember, 
+    public void getMemberRange(RolapLevel level,
+                               RolapMember startMember,
+                               RolapMember endMember,
                                List memberList) {
         throw new UnsupportedOperationException();
     }
 
-    public int compare(RolapMember m1, 
-                       RolapMember m2, 
+    public int compare(RolapMember m1,
+                       RolapMember m2,
                        boolean siblingsAreEqual) {
         throw new UnsupportedOperationException();
     }
 
-    public void getMemberDescendants(RolapMember member, 
+    public void getMemberDescendants(RolapMember member,
                                      List result,
-                                     RolapLevel level, 
-                                     boolean before, 
-                                     boolean self, 
+                                     RolapLevel level,
+                                     boolean before,
+                                     boolean self,
                                      boolean after) {
         throw new UnsupportedOperationException();
     }
@@ -993,8 +993,8 @@ RME is this right
         private final RolapMember dataMember;
         private int depth = 0;
         public RolapParentChildMember(RolapMember parentMember,
-                                      RolapLevel childLevel, 
-                                      Object value, 
+                                      RolapLevel childLevel,
+                                      Object value,
                                       RolapMember dataMember) {
             super(parentMember, childLevel, value);
             this.dataMember = dataMember;
@@ -1037,7 +1037,7 @@ RME is this right
      * aggregatable measures ("count distinct" is non-aggregatable).
      * Unfortunately it's the best we can do without a closure table.
      */
-    private static class RolapParentChildMemberNoClosure 
+    private static class RolapParentChildMemberNoClosure
         extends RolapParentChildMember {
 
         public RolapParentChildMemberNoClosure(RolapMember parentMember,

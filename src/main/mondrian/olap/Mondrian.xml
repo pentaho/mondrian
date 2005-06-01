@@ -1113,7 +1113,7 @@ Revision is $Id$
                 this.name = name;
             }
             public String getExpression(mondrian.rolap.sql.SqlQuery query) {
-                return query.quoteIdentifier(table, name);
+                return query.getDialect().quoteIdentifier(table, name);
             }
             public String getGenericExpression() {
                 if (table == null) {
@@ -1153,7 +1153,7 @@ Revision is $Id$
                 return expressions[0].cdata;
             }
             public String getExpression(mondrian.rolap.sql.SqlQuery query) {
-                return query.chooseQuery(expressions);
+                return query.getDialect().chooseQuery(expressions);
             }
             public String getGenericExpression() {
                 for (int i = 0; i < expressions.length; i++) {
