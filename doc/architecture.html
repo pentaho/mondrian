@@ -12,7 +12,7 @@
 
 <head>
 <meta http-equiv="Content-Language" content="en-us">
-<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="GENERATOR" content="Microsoft FrontPage 6.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
 <title>Mondrian architecture</title>
@@ -24,7 +24,8 @@
 <h2><a name="Layers_of_a_Mondrian_system">Layers of a Mondrian system</a></h2>
 <p>A Mondrian OLAP System consists of four layers; working from the eyes of the
 end-user to the bowels of the data center, these are as follows: the presentation layer, the
-calculation layer, the aggregation layer, and the storage layer.</p>
+dimensional layer, the star layer, and the storage layer. (See
+<a href="#Figure_1:_Mondrian_architecture">figure 1</a>.)</p>
 <p>The <dfn>presentation layer</dfn> determines what
 the end-user sees on his or her monitor, and how he or she can interact to ask
 new questions. There are many ways to present multidimensional datasets,
@@ -35,18 +36,19 @@ JPEG or GIF format, or transmitted to a remote application via XML. What all of
 these forms of presentation have in common is the multidimensional 'grammar' of
 dimensions, measures and cells in which the presentation layer asks the question
 is asked, and OLAP server returns the answer.</p>
-<p>The second layer is the <dfn>calculation layer</dfn>.
-The calculation layer parses, validates and executes MDX queries. A query is
+<p>The second layer is the <dfn>dimensional layer</dfn>.
+The dimensional layer parses, validates and executes MDX queries. A query is
 evaluted in multiple phases. The axes are computed first, then the values of the
-cells within the axes. For efficiency, the calculation layer sends cell-requests
+cells within the axes. For efficiency, the dimensional layer sends cell-requests
 to the aggregation layer in batches. A <dfn>
 query transformer</dfn> allows the application to
 manipulate existing queries, rather than building an MDX statement from scratch
 for each request. And <dfn>metadata</dfn> describes the the dimensional model,
 and how it maps onto the relational model.</p>
-<p>The third layer is the <dfn>aggregation layer</dfn>.
+<p>The third layer is the <dfn>star layer</dfn>, and is responsible for 
+maintaining an aggregate cache.
 An aggregation is a set of measure values ('cells') in memory, qualified by a
-set of dimension column values. The calculation layer sends requests for sets of
+set of dimension column values. The dimensional layer sends requests for sets of
 cells. If the requested cells are not in the cache, or derivable by rolling up
 an aggregation in the cache, the aggregation manager and sends a request to the
 storage layer.</p>
@@ -61,6 +63,20 @@ which comprise the Mondrian server, must be on the same machine. The storage
 layer could be on another machine, accessed via remote JDBC connection. In a
 multi-user system, the presentation layer would exist on each end-user's machine
 (except in the case of JSP pages generated on the server).</p>
+
+<blockquote>
+	<table border="1" style="border-collapse: collapse" cellspacing="0" bordercolor="#000000" cellpadding="3">
+		<tr>
+			<td bordercolor="#000000"><a href="architecture_full.png">
+			<img border="0" src="architecture.jpg" width="800" height="614"></a></td>
+		</tr>
+		<tr>
+			<td bordercolor="#000000">
+
+			<p align="center"><a name="Figure_1:_Mondrian_architecture">Figure 1: Mondrian architecture</a></td>
+		</tr>
+	</table>
+</blockquote>
 <h2><a name="Storage_and_aggregation_strategies">Storage and aggregation
 strategies</a></h2>
 <p>OLAP Servers are generally categorized according to how they store their
