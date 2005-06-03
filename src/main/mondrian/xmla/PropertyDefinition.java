@@ -26,7 +26,7 @@ class PropertyDefinition extends EnumeratedValues.BasicValue {
     final EnumeratedValues typeValues;
     final Enumeration.Access access;
     final Enumeration.Methods usage;
-    private static final String nl = System.getProperty("line.separator");
+    private static final String nl = Util.nl;
 
     /**
      * @pre (enumeration != null) == type.isEnum()

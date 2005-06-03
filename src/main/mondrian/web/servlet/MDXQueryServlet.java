@@ -76,8 +76,7 @@ public class MDXQueryServlet extends HttpServlet {
             Result result = mdxConnection.execute(q);
             Position slicers[] = result.getSlicerAxis().positions;
             html.append("<table class='resulttable' cellspacing=1 border=0>");
-            final String nl = System.getProperty("line.separator");
-            html.append(nl);
+            html.append(Util.nl);
 
             Position[] columns = result.getAxes()[0].positions;
             Position[] rows = null;
@@ -107,7 +106,7 @@ public class MDXQueryServlet extends HttpServlet {
                             html.append(member.getUniqueName());
                         }
                     }
-                    html.append("&nbsp;</td>" + nl);
+                    html.append("&nbsp;</td>" + Util.nl);
                 }
 
                 // Print the column headings.
@@ -122,7 +121,7 @@ public class MDXQueryServlet extends HttpServlet {
                     html.append("<td nowrap class='columnheading' colspan='" +
                             width + "'>" + member.getUniqueName() + "</td>");
                 }
-                html.append("</tr>" + nl);
+                html.append("</tr>" + Util.nl);
             }
             //if is two axes, show
             if (result.getAxes().length > 1) {

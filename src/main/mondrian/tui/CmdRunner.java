@@ -39,6 +39,8 @@ import java.util.Properties;
  */
 public class CmdRunner {
 
+    private static final String nl = Util.nl;
+
     private static boolean RELOAD_CONNECTION = true;
 
     /** List of all properties of interest to this utility. */
@@ -111,7 +113,7 @@ public class CmdRunner {
                 message = mex.toString();
             }
             if (mex.getCause() != null && mex.getCause() != mex) {
-                    message = message + "\n" + formatError(mex.getCause());
+                    message = message + nl + formatError(mex.getCause());
             }
             return message;
     }
@@ -121,7 +123,7 @@ public class CmdRunner {
         for (int i = 0; i < propertyNames.length; i++) {
             String propertyName = propertyNames[i];
             buf.append(propertyName);
-            buf.append('\n');
+            buf.append(nl);
         }
     }
 
@@ -133,7 +135,7 @@ public class CmdRunner {
             buf.append(propertyName);
             buf.append('=');
             buf.append(propertyValue);
-            buf.append('\n');
+            buf.append(nl);
         }
     }
 
@@ -338,7 +340,7 @@ public class CmdRunner {
             buf.append(e.getKey());
             buf.append('=');
             buf.append(e.getValue());
-            buf.append('\n');
+            buf.append(nl);
         }
     }
     public static void listParam(String name, StringBuffer buf) {
@@ -386,7 +388,7 @@ public class CmdRunner {
         for (int i = 0; i < cubes.length; i++) {
             Cube cube = cubes[i];
             buf.append(cube.getName());
-            buf.append('\n');
+            buf.append(nl);
         }
     }
     public void listCubeAttribues(String name, StringBuffer buf) {
@@ -399,10 +401,10 @@ public class CmdRunner {
             RolapCube rcube = (RolapCube) cube;
             buf.append("facttable=");
             buf.append(rcube.getStar().getFactTable().getAlias());
-            buf.append('\n');
+            buf.append(nl);
             buf.append("caching=");
             buf.append(rcube.isCache());
-            buf.append('\n');
+            buf.append(nl);
         }
     }
     public void executeCubeCommane(String cubename, 
@@ -758,7 +760,7 @@ public class CmdRunner {
                     inMDXCmd = false;
                 } else {
                     // add carriage return so that query keeps formatting
-                    buf.append('\n');
+                    buf.append(nl);
                 }
             }
         }
@@ -983,136 +985,136 @@ public class CmdRunner {
         if (cmd == UNKNOWN_CMD) {
             buf.append("Unknown help command: ");
             buf.append(mdxCmd);
-            buf.append('\n');
+            buf.append(nl);
             buf.append("Type \"help\" for list of commands");
         }
 
         if ((cmd & HELP_CMD) != 0) {
             // help
-            buf.append('\n');
+            buf.append(nl);
             appendIndent(buf, 1);
             buf.append("help");
-            buf.append('\n');
+            buf.append(nl);
             appendIndent(buf, 2);
             buf.append("Prints this text");
         }
 
         if ((cmd & SET_CMD) != 0) {
             // set
-            buf.append('\n');
+            buf.append(nl);
             appendSet(buf);
         }
 
         if ((cmd & LOG_CMD) != 0) {
             // set
-            buf.append('\n');
+            buf.append(nl);
             appendLog(buf);
         }
 
         if ((cmd & FILE_CMD) != 0) {
             // file
-            buf.append('\n');
+            buf.append(nl);
             appendFile(buf);
 
         }
         if ((cmd & LIST_CMD) != 0) {
             // list
-            buf.append('\n');
+            buf.append(nl);
             appendList(buf);
         }
 
         if ((cmd & MDX_CMD) != 0) {
-            buf.append('\n');
+            buf.append(nl);
             appendIndent(buf, 1);
             buf.append("<mdx query> <cr> ( '");
             buf.append(EXECUTE_CHAR);
             buf.append("' | '");
             buf.append(CANCEL_CHAR);
             buf.append("' ) <cr>");
-            buf.append('\n');
+            buf.append(nl);
             appendIndent(buf, 2);
             buf.append("Execute or cancel mdx query.");
-            buf.append('\n');
+            buf.append(nl);
             appendIndent(buf, 2);
             buf.append("An mdx query may span one or more lines.");
-            buf.append('\n');
+            buf.append(nl);
             appendIndent(buf, 2);
             buf.append("After the last line of the query has been entered,");
-            buf.append('\n');
+            buf.append(nl);
             appendIndent(buf, 3);
             buf.append("on the next line a single execute character, '");
             buf.append(EXECUTE_CHAR);
             buf.append("', may be entered");
-            buf.append('\n');
+            buf.append(nl);
             appendIndent(buf, 3);
             buf.append("followed by a carriage return.");
-            buf.append('\n');
+            buf.append(nl);
             appendIndent(buf, 3);
             buf.append("The lone '");
             buf.append(EXECUTE_CHAR);
             buf.append("' informs the interpreter that the query has");
-            buf.append('\n');
+            buf.append(nl);
             appendIndent(buf, 3);
             buf.append("has been entered and is ready to execute.");
-            buf.append('\n');
+            buf.append(nl);
             appendIndent(buf, 2);
             buf.append("At anytime during the entry of a query the cancel");
-            buf.append('\n');
+            buf.append(nl);
             appendIndent(buf, 3);
             buf.append("character, '");
             buf.append(CANCEL_CHAR);
             buf.append("', may be entered alone on a line.");
-            buf.append('\n');
+            buf.append(nl);
             appendIndent(buf, 3);
             buf.append("This removes all of the query text from the");
-            buf.append('\n');
+            buf.append(nl);
             appendIndent(buf, 3);
             buf.append("the command interpreter.");
-            buf.append('\n');
+            buf.append(nl);
             appendIndent(buf, 2);
             buf.append("Queries can also be ended by using a semicolon ';'");
-            buf.append('\n');
+            buf.append(nl);
             appendIndent(buf, 3);
             buf.append("at the end of a line.");
         }
         if ((cmd & FUNC_CMD) != 0) {
-            buf.append('\n');
+            buf.append(nl);
             appendFunc(buf);
         }
 
         if ((cmd & PARAM_CMD) != 0) {
-            buf.append('\n');
+            buf.append(nl);
             appendParam(buf);
         }
 
         if ((cmd & CUBE_CMD) != 0) {
-            buf.append('\n');
+            buf.append(nl);
             appendCube(buf);
         }
 
         if ((cmd & ERROR_CMD) != 0) {
-            buf.append('\n');
+            buf.append(nl);
             appendError(buf);
         }
 
         if ((cmd & ECHO_CMD) != 0) {
-            buf.append('\n');
+            buf.append(nl);
             appendEcho(buf);
         }
 
         if (cmd == ALL_CMD) {
             // reexecute
-            buf.append('\n');
+            buf.append(nl);
             appendIndent(buf, 1);
             buf.append("= <cr>");
-            buf.append('\n');
+            buf.append(nl);
             appendIndent(buf, 2);
             buf.append("Re-Execute mdx query.");
         }
 
         if ((cmd & EXIT_CMD) != 0) {
             // exit
-            buf.append('\n');
+            buf.append(nl);
             appendExit(buf);
         }
 
@@ -1132,13 +1134,13 @@ public class CmdRunner {
     protected static void appendSet(StringBuffer buf) {
         appendIndent(buf, 1);
         buf.append("set [ property[=value ] ] <cr>");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With no args, prints all mondrian properties and values.");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With \"property\" prints property's value.");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With \"property=value\" set property to that value.");
     }
@@ -1172,14 +1174,15 @@ public class CmdRunner {
                 } else {
                     buf.append("Bad property name:");
                     buf.append(name);
-                    buf.append('\n');
+                    buf.append(nl);
                 }
             }
 
         } else {
             buf.append("Bad command usage: \"");
             buf.append(mdxCmd);
-            buf.append("\"\n");
+            buf.append('"');
+            buf.append(nl);
             appendSet(buf);
         }
 
@@ -1192,13 +1195,13 @@ public class CmdRunner {
     protected static void appendLog(StringBuffer buf) {
         appendIndent(buf, 1);
         buf.append("log [ classname[=level ] ] <cr>");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With no args, prints the current log level of all classes.");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With \"classname\" prints the current log level of the class.");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With \"classname=level\" set log level to new value.");
     }
@@ -1215,7 +1218,7 @@ public class CmdRunner {
                 buf.append(logger.getName());
                 buf.append(':');
                 buf.append(logger.getLevel());
-                buf.append('\n');
+                buf.append(nl);
             }
 
         } else if (tokens.length == 2) {
@@ -1226,12 +1229,12 @@ public class CmdRunner {
                 if (logger == null) {
                     buf.append("Bad log name: ");
                     buf.append(arg);
-                    buf.append('\n');
+                    buf.append(nl);
                 } else {
                     buf.append(logger.getName());
                     buf.append(':');
                     buf.append(logger.getLevel());
-                    buf.append('\n');
+                    buf.append(nl);
                 }
             } else {
                 String[] nv = arg.split("=");
@@ -1243,13 +1246,13 @@ public class CmdRunner {
                 if (logger == null) {
                     buf.append("Bad log name: ");
                     buf.append(classname);
-                    buf.append('\n');
+                    buf.append(nl);
                 } else {
                     Level level = Level.toLevel(levelStr, null);
                     if (level == null) {
                         buf.append("Bad log level: ");
                         buf.append(levelStr);
-                        buf.append('\n');
+                        buf.append(nl);
                     } else {
                         logger.setLevel(level);
                     }
@@ -1259,7 +1262,8 @@ public class CmdRunner {
         } else {
             buf.append("Bad command usage: \"");
             buf.append(mdxCmd);
-            buf.append("\"\n");
+            buf.append('"');
+            buf.append(nl);
             appendSet(buf);
         }
 
@@ -1272,13 +1276,13 @@ public class CmdRunner {
     protected static void appendFile(StringBuffer buf) {
         appendIndent(buf, 1);
         buf.append("file [ filename | '=' ] <cr>");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With no args, prints the last filename executed.");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With \"filename\", read and execute filename .");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With \"=\" character, re-read and re-execute previous filename .");
     }
@@ -1301,7 +1305,7 @@ public class CmdRunner {
                     buf.append("Bad command usage: \"");
                     buf.append(mdxCmd);
                     buf.append("\", no file to re-execute");
-                    buf.append('\n');
+                    buf.append(nl);
                     appendFile(buf);
                 } else {
                     nameOfFile = this.filename;
@@ -1325,7 +1329,8 @@ public class CmdRunner {
         } else {
             buf.append("Bad command usage: \"");
             buf.append(mdxCmd);
-            buf.append("\"\n");
+            buf.append('"');
+            buf.append(nl);
             appendFile(buf);
         }
         return buf.toString();
@@ -1337,13 +1342,13 @@ public class CmdRunner {
     protected static void appendList(StringBuffer buf) {
         appendIndent(buf, 1);
         buf.append("list [ cmd | result ] <cr>");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With no arguments, list previous cmd and result");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With \"cmd\" argument, list the last mdx query cmd.");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With \"result\" argument, list the last mdx query result.");
     }
@@ -1357,7 +1362,7 @@ public class CmdRunner {
             if (this.mdxCmd != null) {
                 buf.append(this.mdxCmd);
                 if (mdxResult != null) {
-                    buf.append('\n');
+                    buf.append(nl);
                     buf.append(mdxResult);
                 }
             } else if (mdxResult != null) {
@@ -1377,13 +1382,14 @@ public class CmdRunner {
             } else {
                 buf.append("Bad sub command usage:");
                 buf.append(mdxCmd);
-                buf.append('\n');
+                buf.append(nl);
                 appendList(buf);
             }
         } else {
             buf.append("Bad command usage: \"");
             buf.append(mdxCmd);
-            buf.append("\"\n");
+            buf.append('"');
+            buf.append(nl);
             appendList(buf);
         }
 
@@ -1396,13 +1402,13 @@ public class CmdRunner {
     protected static void appendFunc(StringBuffer buf) {
         appendIndent(buf, 1);
         buf.append("func [ name ] <cr>");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With no arguments, list all defined function names");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With \"name\" argument, display the functions:");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 3);
         buf.append("name, description, and syntax");
     }
@@ -1422,7 +1428,7 @@ public class CmdRunner {
                 String name = fi.getName();
                 if (prevName == null || ! prevName.equals(name)) {
                     buf.append(name);
-                    buf.append('\n');
+                    buf.append(nl);
                     prevName = name;
                 }
             }
@@ -1444,7 +1450,7 @@ public class CmdRunner {
                 buf.append("Bad function name \"");
                 buf.append(funcname);
                 buf.append("\", usage:");
-                buf.append('\n');
+                buf.append(nl);
                 appendList(buf);
             } else {
                 it = matches.iterator();
@@ -1453,25 +1459,25 @@ public class CmdRunner {
                     FunInfo fi = (FunInfo) it.next();
                     if (doname) {
                         buf.append(fi.getName());
-                        buf.append('\n');
+                        buf.append(nl);
                         doname = false;
                     }
 
                     appendIndent(buf, 1);
                     buf.append(fi.getDescription());
-                    buf.append('\n');
+                    buf.append(nl);
 
                     String[] sigs = fi.getSignatures();
                     if (sigs == null) {
                         appendIndent(buf, 2);
                         buf.append("Signature: ");
                         buf.append("NONE");
-                        buf.append('\n');
+                        buf.append(nl);
                     } else {
                         for (int i = 0; i < sigs.length; i++) {
                             appendIndent(buf, 2);
                             buf.append(sigs[i]);
-                            buf.append('\n');
+                            buf.append(nl);
                         }
                     }
 /*
@@ -1483,13 +1489,13 @@ public class CmdRunner {
                     } else {
                         buf.append("NONE");
                     }
-                    buf.append('\n');
+                    buf.append(nl);
                     int[][] paramsArray = fi.getParameterTypes();
                     if (paramsArray == null) {
                         appendIndent(buf, 1);
                         buf.append("Paramter Types: ");
                         buf.append("NONE");
-                        buf.append('\n');
+                        buf.append(nl);
 
                     } else {
 
@@ -1502,7 +1508,7 @@ public class CmdRunner {
                                 buf.append(cat.getName(param));
                                 buf.append(' ');
                             }
-                            buf.append('\n');
+                            buf.append(nl);
                         }
                     }
 */
@@ -1511,7 +1517,8 @@ public class CmdRunner {
         } else {
             buf.append("Bad command usage: \"");
             buf.append(mdxCmd);
-            buf.append("\"\n");
+            buf.append('"');
+            buf.append(nl);
             appendList(buf);
         }
 
@@ -1523,19 +1530,19 @@ public class CmdRunner {
     protected static void appendParam(StringBuffer buf) {
         appendIndent(buf, 1);
         buf.append("param [ name[=value ] ] <cr>");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With no argumnts, all param name/value pairs are printed.");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With \"name\" argument, the value of the param is printed.");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With \"name=value\" sets the parameter with name to value.");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 3);
         buf.append(" If name is null, then unsets all parameters");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 3);
         buf.append(" If value is null, then unsets the parameter associated with value");
     }
@@ -1558,7 +1565,7 @@ public class CmdRunner {
                 } else {
                     buf.append("Bad parameter name:");
                     buf.append(name);
-                    buf.append('\n');
+                    buf.append(nl);
                 }
             } else {
                 String[] nv = arg.split("=");
@@ -1570,7 +1577,8 @@ public class CmdRunner {
         } else {
             buf.append("Bad command usage: \"");
             buf.append(mdxCmd);
-            buf.append("\"\n");
+            buf.append('"');
+            buf.append(nl);
             appendSet(buf);
         }
 
@@ -1582,28 +1590,28 @@ public class CmdRunner {
     protected static void appendCube(StringBuffer buf) {
         appendIndent(buf, 1);
         buf.append("cube [ cubename [ name [=value | command] ] ] <cr>");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With no argumnts, all cubes are listed by name.");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With \"cubename\" argument, cube attribute name/values for:");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 3);
         buf.append("fact table (readonly)");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 3);
         buf.append("aggregate caching (readwrite)");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("are printed");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With \"cubename name=value\" sets the readwrite attribute with name to value.");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With \"cubename command\" executes the commands:");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 3);
         buf.append("clearCache");
     }
@@ -1638,7 +1646,8 @@ public class CmdRunner {
         } else {
             buf.append("Bad command usage: \"");
             buf.append(mdxCmd);
-            buf.append("\"\n");
+            buf.append('"');
+            buf.append(nl);
             appendSet(buf);
         }
 
@@ -1650,13 +1659,13 @@ public class CmdRunner {
     protected static void appendError(StringBuffer buf) {
         appendIndent(buf, 1);
         buf.append("error [ msg | stack ] <cr>");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With no argumnts, both message and stack are printed.");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With \"msg\" argument, the Error message is printed.");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("With \"stack\" argument, the Error stack trace is printed.");
     }
@@ -1670,7 +1679,7 @@ public class CmdRunner {
             if (error != null) {
                 buf.append(error);
                 if (stack != null) {
-                    buf.append('\n');
+                    buf.append(nl);
                     buf.append(stack);
                 }
             } else if (stack != null) {
@@ -1690,13 +1699,14 @@ public class CmdRunner {
             } else {
                 buf.append("Bad sub command usage:");
                 buf.append(mdxCmd);
-                buf.append('\n');
+                buf.append(nl);
                 appendList(buf);
             }
         } else {
             buf.append("Bad command usage: \"");
             buf.append(mdxCmd);
-            buf.append("\"\n");
+            buf.append('"');
+            buf.append(nl);
             appendList(buf);
         }
 
@@ -1708,7 +1718,7 @@ public class CmdRunner {
     protected static void appendEcho(StringBuffer buf) {
         appendIndent(buf, 1);
         buf.append("echo text <cr>");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("echo text to standard out.");
     }
@@ -1732,7 +1742,7 @@ public class CmdRunner {
     protected static void appendExit(StringBuffer buf) {
         appendIndent(buf, 1);
         buf.append("exit <cr>");
-        buf.append('\n');
+        buf.append(nl);
         appendIndent(buf, 2);
         buf.append("Exit mdx command interpreter.");
     }
@@ -1779,34 +1789,34 @@ public class CmdRunner {
         StringBuffer buf = new StringBuffer(256);
         if (msg != null) {
             buf.append(msg);
-            buf.append('\n');
+            buf.append(nl);
         }
         buf.append("Usage: mondrian.tui.CmdRunner args");
-        buf.append('\n');
+        buf.append(nl);
         buf.append("  args:");
-        buf.append('\n');
+        buf.append(nl);
         buf.append("  -h               : print this usage text");
-        buf.append('\n');
+        buf.append(nl);
         buf.append("  -d               : enable local debugging");
-        buf.append('\n');
+        buf.append(nl);
         buf.append("  -t               : time each mdx query");
-        buf.append('\n');
+        buf.append(nl);
         buf.append("  -nocache         : turn off in-memory aggregate caching");
-        buf.append('\n');
+        buf.append(nl);
         buf.append("                     for all cubes regardless of setting");
-        buf.append('\n');
+        buf.append(nl);
         buf.append("                     in schema");
-        buf.append('\n');
+        buf.append(nl);
         buf.append("  -rc              : do NOT reload connections each query");
-        buf.append('\n');
+        buf.append(nl);
         buf.append("                     (default is to reload connections)");
-        buf.append('\n');
+        buf.append(nl);
         buf.append("  -p propertyfile  : load mondrian properties");
-        buf.append('\n');
+        buf.append(nl);
         buf.append("  -f filename+     : execute mdx in one or more files");
-        buf.append('\n');
+        buf.append(nl);
         buf.append("  mdx_cmd          : execute mdx_cmd");
-        buf.append('\n');
+        buf.append(nl);
 
         System.out.println(buf.toString());
         System.exit(0);

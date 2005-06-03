@@ -125,7 +125,7 @@ public class ExplicitRules {
             }
 
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("\n"+group);
+                LOGGER.debug(Util.nl+group);
             }
             return group;
         }

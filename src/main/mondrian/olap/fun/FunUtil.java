@@ -24,7 +24,6 @@ import java.util.Set;
  * <code>mondrian.olap.fun</code> package.
  **/
 public class FunUtil extends Util {
-    static final String nl = System.getProperty("line.separator");
     static final String[] emptyStringArray = new String[0];
 
     /**

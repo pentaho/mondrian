@@ -17,7 +17,7 @@ import java.util.*;
  */
 abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
     final Column[] columnDefinitions;
-    private static final String nl = System.getProperty("line.separator");
+    private static final String nl = Util.nl;
     /** Returns a list of XML for Analysis data sources
      * available on the server or Web Service. (For an
      * example of how these may be published, see

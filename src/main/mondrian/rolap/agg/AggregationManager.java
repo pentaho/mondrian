@@ -129,23 +129,23 @@ public class AggregationManager extends RolapAggregationManager {
                 if (getLogger().isDebugEnabled()) {
                     StringBuffer buf = new StringBuffer(256);
                     buf.append("MATCH: ");
-                    buf.append('\n');
+                    buf.append(Util.nl);
                     buf.append("  bitKey=");
                     buf.append(bitKey);
-                    buf.append('\n');
+                    buf.append(Util.nl);
                     buf.append("  bitkey=");
                     buf.append(aggStar.getBitKey());
-                    buf.append('\n');
+                    buf.append(Util.nl);
                     buf.append("AggStar=");
                     buf.append(aggStar.getFactTable().getName());
-                    buf.append('\n');
+                    buf.append(Util.nl);
                     for (Iterator it = aggStar.getFactTable().getColumns();
                             it.hasNext(); ) {
                         AggStar.Table.Column column =
                             (AggStar.Table.Column) it.next();
                         buf.append("   ");
                         buf.append(column);
-                        buf.append('\n');
+                        buf.append(Util.nl);
                     }
                     getLogger().debug(buf.toString());
                 }
@@ -165,12 +165,12 @@ public class AggregationManager extends RolapAggregationManager {
 
             StringBuffer buf = new StringBuffer(256);
             buf.append("NO MATCH: ");
-            buf.append('\n');
+            buf.append(Util.nl);
             buf.append("  bitKey=");
             buf.append(bitKey);
-            buf.append('\n');
+            buf.append(Util.nl);
             buf.append(star.getFactTable().getAlias());
-            buf.append('\n');
+            buf.append(Util.nl);
 
             getLogger().debug(buf.toString());
         }

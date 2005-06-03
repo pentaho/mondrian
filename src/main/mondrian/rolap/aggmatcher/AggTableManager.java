@@ -188,7 +188,6 @@ public class AggTableManager {
             }
         }
 
-//System.out.println("AggTableManager.loadRolapStarAggregates: \n" +db);
         } catch (RecorderException ex) {
             throw new MondrianException(ex);
 

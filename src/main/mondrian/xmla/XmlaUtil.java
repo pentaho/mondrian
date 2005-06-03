@@ -28,7 +28,7 @@ import java.net.MalformedURLException;
  * @version $Id$
  **/
 public class XmlaUtil {
-    private static final String nl = System.getProperty("line.separator");
+    private static final String nl = Util.nl;
 
     public static Map getRequestMap() {
         String catalogName = MondrianProperties.instance().getCatalogURL();

@@ -21,9 +21,6 @@ import org.eigenbase.xom.Parser;
 import java.lang.reflect.Constructor;
 import java.util.*;
 
-/*
-waht sdfs www who goes there
-*/
 /**
  * <code>RolapCube</code> implements {@link Cube} for a ROLAP database.
  *
@@ -1036,7 +1033,7 @@ System.out.println("RolapCube.registerDimension: snip relationTmp2="
     //
     
     /** 
-     * This method formats a MondrianDef.Relation indenting joins for
+     * This method formats a {@link MondrianDef.Relation} indenting joins for
      * readability.
      * 
      * @param relation 
@@ -1060,7 +1057,7 @@ System.out.println("RolapCube.registerDimension: snip relationTmp2="
                 buf.append(table.alias);
                 buf.append(')');
             }
-            buf.append('\n');
+            buf.append(Util.nl);
         } else {
             MondrianDef.Join join = (MondrianDef.Join) relation;
             String subindent = indent + "  ";
@@ -1075,7 +1072,7 @@ System.out.println("RolapCube.registerDimension: snip relationTmp2="
             //buf.append(join.rightAlias);
             buf.append('.');
             buf.append(join.rightKey);
-            buf.append('\n');
+            buf.append(Util.nl);
             format(join.left, buf, subindent);
             format(join.right, buf, indent);
         }
@@ -1117,8 +1114,9 @@ System.out.println("RolapCube.registerDimension: snip relationTmp2="
     }
     
     /** 
-     * This attempts to transform a MondrianDef.Relation into the "canonical" 
-     * form. What is the canonical form you might ask, well it is only relevant
+     * This attempts to transform a {@link MondrianDef.Relation} 
+     * into the "canonical" form. 
+     * What is the canonical form you might ask, well it is only relevant
      * when the relation is a snowflake (nested joins), not simply a table.
      * The canonical form has lower levels to the left of higher levels (Day
      * before Month before Quarter before Year) and the nested joins are always

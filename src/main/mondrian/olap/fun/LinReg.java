@@ -188,6 +188,8 @@ debug("LinReg.Intercept.evaluator","TOP");
             if (value == null) {
                 return Util.nullValue;
             }
+// RME
+debug("LinReg.Intercept.evaluator","BOTTOM: " +value.getIntercept());
             return new Double(value.getIntercept());
         }
     }
@@ -269,6 +271,7 @@ debug("LinReg.Variance.evaluator","TOP");
 
     protected static void debug(String type, String msg) {
         // comment out for no output
+// RME
         //System.out.println(type + ": " +msg);
     }
 

@@ -13,6 +13,7 @@
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.MondrianDef;
+import mondrian.olap.Util;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.sql.SqlQuery;
 import org.apache.log4j.Logger;
@@ -139,9 +140,12 @@ public class AggGen {
         }
         if (getLogger().isDebugEnabled()) {
             StringBuffer buf = new StringBuffer(512);
-            buf.append("RolapStar:\n");
+            buf.append("RolapStar:");
+            buf.append(Util.nl);
             buf.append(getFactTable());
-            buf.append("\nFactTable:\n");
+            buf.append(Util.nl);
+            buf.append("FactTable:");
+            buf.append(Util.nl);
             buf.append(factTable);
             getLogger().debug(buf.toString());
         }

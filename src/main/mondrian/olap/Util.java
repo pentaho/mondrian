@@ -31,6 +31,8 @@ import java.util.*;
  **/
 public class Util extends XOMUtil {
 
+    public static final String nl = System.getProperty("line.separator");
+
     private static final Logger LOGGER = Logger.getLogger(Util.class);
     // properties
 

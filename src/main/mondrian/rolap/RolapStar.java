@@ -1148,8 +1148,11 @@ public class RolapStar {
                             + "' of cube '"
                             + this
                             + "' is invalid: table '" + tableName
-                            + "' is not found in current scope\n"
-                            + ", star:\n" + getStar());
+                            + "' is not found in current scope"
+                            + Util.nl
+                            + ", star:" 
+                            + Util.nl
+                            + getStar());
                 }
                 RolapStar.AliasReplacer aliasReplacer =
                         new RolapStar.AliasReplacer(tableName, table.getAlias());
