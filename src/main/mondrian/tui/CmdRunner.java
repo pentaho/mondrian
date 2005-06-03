@@ -42,28 +42,16 @@ public class CmdRunner {
     private static boolean RELOAD_CONNECTION = true;
 
     /** List of all properties of interest to this utility. */
-    private static final String[] propertyNames = {
-        MondrianProperties.QueryLimit,
-        MondrianProperties.TraceLevel,
-        MondrianProperties.DebugOutFile,
-        MondrianProperties.JdbcDrivers,
-        MondrianProperties.ResultLimit,
-        MondrianProperties.TestConnectString,
-        MondrianProperties.JdbcURL,
-        MondrianProperties.CatalogUrl,
-        MondrianProperties.LargeDimensionThreshold,
-        MondrianProperties.SparseSegmentCountThreshold,
-        MondrianProperties.SparseSegmentDensityThreshold,
-        MondrianProperties.UseAggregates,
-        MondrianProperties.ChooseAggregateByVolume,
-        MondrianProperties.AggregateRules,
-        MondrianProperties.AggregateRuleTag,
-        MondrianProperties.GenerateFormattedSql,
-        MondrianProperties.EnableTriggers,
-    };
+    static String[] getPropertyNames() {
+        return MondrianProperties.instance().getPropertyNamesReflect();
+    }
+
     private static final Map paraNameValues = new HashMap();
 
 
+    private boolean timeQueries;
+    private long queryTime;
+    private long totalQueryTime;
     private String filename;
     private String mdxCmd;
     private String mdxResult;
@@ -80,6 +68,27 @@ public class CmdRunner {
         this.mdxCmd = null;
         this.mdxResult = null;
         this.error = null;
+        this.queryTime = -1;
+    }
+    public void setTimeQueries(boolean timeQueries) {
+        this.timeQueries = timeQueries;
+    }
+    public boolean getTimeQueries() {
+        return timeQueries;
+    }
+    public long getQueryTime() {
+        return queryTime;
+    }
+    public long getTotalQueryTime() {
+        return totalQueryTime;
+    }
+    public void noCubeCaching() {
+        Cube[] cubes = getCubes();
+        for (int i = 0; i < cubes.length; i++) {
+            Cube cube = cubes[i];
+            RolapCube rcube = (RolapCube) cube;
+            rcube.setCache(false);
+        }
     }
 
     void setError(Throwable t) {
@@ -108,16 +117,18 @@ public class CmdRunner {
     }
 
     public static void listPropertyNames(StringBuffer buf) {
-        for (int i = 0; i < CmdRunner.propertyNames.length; i++) {
-            String propertyName = CmdRunner.propertyNames[i];
+        String[] propertyNames = getPropertyNames();
+        for (int i = 0; i < propertyNames.length; i++) {
+            String propertyName = propertyNames[i];
             buf.append(propertyName);
             buf.append('\n');
         }
     }
 
     public static void listPropertiesAll(StringBuffer buf) {
-        for (int i = 0; i < CmdRunner.propertyNames.length; i++) {
-            String propertyName = CmdRunner.propertyNames[i];
+        String[] propertyNames = getPropertyNames();
+        for (int i = 0; i < propertyNames.length; i++) {
+            String propertyName = propertyNames[i];
             String propertyValue = getPropertyValue(propertyName);
             buf.append(propertyName);
             buf.append('=');
@@ -153,8 +164,9 @@ public class CmdRunner {
     }
 
     public static boolean isProperty(String propertyName) {
-        for (int i = 0; i < CmdRunner.propertyNames.length; i++) {
-            if (CmdRunner.propertyNames[i].equals(propertyName)) {
+        String[] propertyNames = getPropertyNames();
+        for (int i = 0; i < propertyNames.length; i++) {
+            if (propertyNames[i].equals(propertyName)) {
                 return true;
             }
         }
@@ -459,6 +471,8 @@ public class CmdRunner {
      */
     public Result runQuery(String queryString, boolean loadParams) {
         CmdRunner.debug("CmdRunner.runQuery: TOP");
+        Result result = null;
+        long start = 0;
         try {
             this.connection = getConnection();
             CmdRunner.debug("CmdRunner.runQuery: AFTER getConnection");
@@ -467,10 +481,14 @@ public class CmdRunner {
             if (loadParams) {
                 loadParameters(query);
             }
-            return this.connection.execute(query);
+            start = System.currentTimeMillis();
+            result = this.connection.execute(query);
         } finally {
             CmdRunner.debug("CmdRunner.runQuery: BOTTOM");
         }
+        queryTime = (System.currentTimeMillis() - start);
+        totalQueryTime += queryTime;
+        return result;
     }
 
 
@@ -650,6 +668,8 @@ public class CmdRunner {
             if (resultString != null) {
                 printResults(resultString);
                 resultString = null;
+            } else if (interactive && (error != null)) {
+                printResults(error);
             }
             if (interactive) {
                 if (inMDXCmd)
@@ -661,7 +681,7 @@ public class CmdRunner {
                 buf.setLength(0);
                 //buf = new StringBuffer(2048);
             }
-            String line = readLine(br);
+            String line = readLine(br, inMDXCmd);
             if (line != null) {
                 line = line.trim();
             }
@@ -697,6 +717,8 @@ public class CmdRunner {
                     resultString = executeCube(cmd);
                 } else if (cmd.startsWith("error")) {
                     resultString = executeError(cmd);
+                } else if (cmd.startsWith("echo")) {
+                    resultString = executeEcho(cmd);
                 } else if (cmd.equals("=")) {
                     resultString = reexecuteMDXCmd();
                 } else if (cmd.startsWith("exit")) {
@@ -729,7 +751,7 @@ public class CmdRunner {
                 // OK, just add the line to the mdx query we are building.
                 inMDXCmd = true;
                 buf.append(line);
-                if (line.endsWith(";")) {
+                if (line.endsWith(SEMI_COLON_STRING)) {
                     String mdxCmd = buf.toString().trim();
                     debug("mdxCmd=\""+mdxCmd+"\"");
                     resultString = executeMDXCmd(mdxCmd);
@@ -742,11 +764,15 @@ public class CmdRunner {
         }
     }
 
-    protected static void printResults(String resultString) {
+    protected void printResults(String resultString) {
         if (resultString != null) {
             resultString = resultString.trim();
             if (resultString.length() > 0) {
                 System.out.println(resultString);
+            }
+            if (timeQueries && (queryTime != -1)) {
+                System.out.println("time[" +queryTime+ "ms]");
+                queryTime = -1;
             }
         }
     }
@@ -767,7 +793,8 @@ public class CmdRunner {
      * @return
      * @throws IOException
      */
-    protected static String readLine(Reader reader) throws IOException {
+    protected static String readLine(Reader reader, boolean inMDXCmd) 
+                    throws IOException {
         StringBuffer buf = null;
 
         int i = reader.read();
@@ -801,20 +828,22 @@ public class CmdRunner {
                 return buf.toString();
             }
             // comment handling
-            if (c == COMMENT_CHAR) {
-                // Not in string, read to EOL or EOF
-                i = reader.read();
-                for (;;) {
-                    if (i == -1) {
-                        return buf.toString();
-                    }
-                    c = (char) i;
-                    if ((c == '\n') || (c == '\r')) {
-                        return buf.toString();
-                    }
+            if (! inMDXCmd) {
+                if (c == COMMENT_CHAR) {
+                    // Not in string, read to EOL or EOF
                     i = reader.read();
+                    for (;;) {
+                        if (i == -1) {
+                            return buf.toString();
+                        }
+                        c = (char) i;
+                        if ((c == '\n') || (c == '\r')) {
+                            return buf.toString();
+                        }
+                        i = reader.read();
+                    }
+                    // In string, do nothing special with comment character
                 }
-                // In string, do nothing special with comment character
             }
 
             if ((c == STRING_CHAR_1) || (c == STRING_CHAR_2)) {
@@ -882,26 +911,30 @@ public class CmdRunner {
     private static final int PARAM_CMD          = 0x080;
     private static final int CUBE_CMD           = 0x100;
     private static final int ERROR_CMD          = 0x200;
-    private static final int EXIT_CMD           = 0x400;
+    private static final int ECHO_CMD           = 0x400;
+    private static final int EXIT_CMD           = 0x800;
 
-    private static final int ALL_CMD  = HELP_CMD |
-                                        SET_CMD |
-                                        LOG_CMD |
-                                        FILE_CMD |
-                                        LIST_CMD |
-                                        MDX_CMD |
-                                        FUNC_CMD |
+    private static final int ALL_CMD  = HELP_CMD  |
+                                        SET_CMD   |
+                                        LOG_CMD   |
+                                        FILE_CMD  |
+                                        LIST_CMD  |
+                                        MDX_CMD   |
+                                        FUNC_CMD  |
                                         PARAM_CMD |
-                                        CUBE_CMD |
+                                        CUBE_CMD  |
                                         ERROR_CMD |
+                                        ECHO_CMD  |
                                         EXIT_CMD;
 
-    private static final char ESCAPE_CHAR        = '\\';
+    private static final char ESCAPE_CHAR         = '\\';
     private static final char EXECUTE_CHAR        = '=';
     private static final char CANCEL_CHAR         = '~';
     private static final char COMMENT_CHAR        = '#';
     private static final char STRING_CHAR_1       = '"';
     private static final char STRING_CHAR_2       = '\'';
+
+    private static final String SEMI_COLON_STRING = ";";
 
     //////////////////////////////////////////////////////////////////////////
     // help
@@ -938,6 +971,8 @@ public class CmdRunner {
                 cmd = CUBE_CMD;
             } else if (cmdName.equals("error")) {
                 cmd = ERROR_CMD;
+            } else if (cmdName.equals("echo")) {
+                cmd = ECHO_CMD;
             } else if (cmdName.equals("exit")) {
                 cmd = EXIT_CMD;
             } else {
@@ -1056,9 +1091,13 @@ public class CmdRunner {
         }
 
         if ((cmd & ERROR_CMD) != 0) {
-            // list
             buf.append('\n');
             appendError(buf);
+        }
+
+        if ((cmd & ECHO_CMD) != 0) {
+            buf.append('\n');
+            appendEcho(buf);
         }
 
         if (cmd == ALL_CMD) {
@@ -1664,6 +1703,30 @@ public class CmdRunner {
         return buf.toString();
     }
     //////////////////////////////////////////////////////////////////////////
+    // echo
+    //////////////////////////////////////////////////////////////////////////
+    protected static void appendEcho(StringBuffer buf) {
+        appendIndent(buf, 1);
+        buf.append("echo text <cr>");
+        buf.append('\n');
+        appendIndent(buf, 2);
+        buf.append("echo text to standard out.");
+    }
+    protected String executeEcho(String mdxCmd) {
+
+        this.mdxCmd = mdxCmd;
+        try {
+            String resultString = (mdxCmd.length() == 4)
+                ? "" : mdxCmd.substring(4);
+            return resultString;
+
+        } catch (Exception ex) {
+            setError(ex);
+            //return error;
+            return null;
+        }
+    }
+    //////////////////////////////////////////////////////////////////////////
     // exit
     //////////////////////////////////////////////////////////////////////////
     protected static void appendExit(StringBuffer buf) {
@@ -1694,7 +1757,8 @@ public class CmdRunner {
 
         } catch (Exception ex) {
             setError(ex);
-            return error;
+            //return error;
+            return null;
         }
     }
 
@@ -1725,13 +1789,21 @@ public class CmdRunner {
         buf.append('\n');
         buf.append("  -d               : enable local debugging");
         buf.append('\n');
+        buf.append("  -t               : time each mdx query");
+        buf.append('\n');
+        buf.append("  -nocache         : turn off in-memory aggregate caching");
+        buf.append('\n');
+        buf.append("                     for all cubes regardless of setting");
+        buf.append('\n');
+        buf.append("                     in schema");
+        buf.append('\n');
         buf.append("  -rc              : do NOT reload connections each query");
         buf.append('\n');
         buf.append("                     (default is to reload connections)");
         buf.append('\n');
         buf.append("  -p propertyfile  : load mondrian properties");
         buf.append('\n');
-        buf.append("  -f filename      : execute mdx in filename");
+        buf.append("  -f filename+     : execute mdx in one or more files");
         buf.append('\n');
         buf.append("  mdx_cmd          : execute mdx_cmd");
         buf.append('\n');
@@ -1742,6 +1814,8 @@ public class CmdRunner {
     public static void main(String[] args) throws IOException {
         List filenames = null;
         String mdxCmd = null;
+        boolean timeQueries = false;
+        boolean noCache = false;
 
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
@@ -1751,6 +1825,12 @@ public class CmdRunner {
 
             } else if (arg.equals("-d")) {
                 CmdRunner.debug = true;
+
+            } else if (arg.equals("-t")) {
+                timeQueries = true;
+
+            } else if (arg.equals("-nocache")) {
+                noCache = true;
 
             } else if (arg.equals("-rc")) {
                 CmdRunner.RELOAD_CONNECTION = false;
@@ -1773,29 +1853,51 @@ public class CmdRunner {
                 String propFile = args[i];
                 loadPropertiesFromFile(propFile);
 
+            } else if (filenames != null) {
+                filenames.add(arg);
             } else {
                 mdxCmd = arg;
             }
         }
 
         CmdRunner cmdRunner = new CmdRunner();
+        cmdRunner.setTimeQueries(timeQueries);
+        if (noCache) {
+            cmdRunner.noCubeCaching();
+        }
+
         if (filenames != null) {
-            Iterator it = filenames.iterator();
-            while (it.hasNext()) {
+            for (Iterator it = filenames.iterator(); it.hasNext(); ) {
                 String filename = (String) it.next();
                 cmdRunner.filename = filename;
                 cmdRunner.commandLoop(new File(filename));
                 if (cmdRunner.error != null) {
+                    System.err.println(filename);
                     System.err.println(cmdRunner.error);
                     if (cmdRunner.stack != null) {
                         System.err.println(cmdRunner.stack);
                     }
+                    cmdRunner.clearError();
                 }
             }
         } else if (mdxCmd != null) {
             cmdRunner.commandLoop(mdxCmd, false);
+            if (cmdRunner.error != null) {
+                System.err.println(cmdRunner.error);
+                if (cmdRunner.stack != null) {
+                    System.err.println(cmdRunner.stack);
+                }
+            }
         } else {
             cmdRunner.commandLoop(true);
+        }
+        if (timeQueries) {
+            long total = cmdRunner.getTotalQueryTime();
+
+            // only print if different
+            if (total != cmdRunner.getQueryTime()) {
+                System.out.println("total[" +total+ "ms]");
+            }
         }
     }
 }

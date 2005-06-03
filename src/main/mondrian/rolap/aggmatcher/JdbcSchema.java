@@ -262,6 +262,10 @@ public class JdbcSchema {
                 // for subtables
                 public RolapStar.Table rTable;
                 public String rightJoinConditionColumnName;
+
+                // It is used to hold the (possible null) prefix to
+                // use during aggregate table generation (See AggGen).
+                public String usagePrefix;
                 //
                 ////////////////////////////////////////////////////
 
@@ -370,6 +374,20 @@ public class JdbcSchema {
             /** This is the size of the column in the database. */
             private int columnSize;
 
+            /** The number of fractional digits. */
+            private int decimalDigits;
+
+            /** Radix (typically either 10 or 2). */
+            private int numPrecRadix;
+
+            /** For char types the maximum number of bytes in the column. */
+            private int charOctetLength;
+
+            /** 
+             * False means the column definitely does not allow NULL values. 
+             */
+            private boolean isNullable;
+
             public final MondrianDef.Column column;
 
             private final List usages;
@@ -467,6 +485,78 @@ public class JdbcSchema {
              */
             public int getColumnSize() {
                 return columnSize;
+            }
+
+            /**
+             * Set number of fractional digits. 
+             * 
+             * @param decimalDigits 
+             */
+            private void setDecimalDigits(final int decimalDigits) {
+                this.decimalDigits = decimalDigits;
+            }
+            
+            /** 
+             * Get number of fractional digits. 
+             * 
+             * @return 
+             */
+            public int getDecimalDigits() {
+                return decimalDigits;
+            }
+
+            /**
+             * Set Radix (typically either 10 or 2). 
+             * 
+             * @param numPrecRadix  
+             */
+            private void setNumPrecRadix(final int numPrecRadix) {
+                this.numPrecRadix = numPrecRadix;
+            }
+            
+            /** 
+             * Get Radix (typically either 10 or 2). 
+             * 
+             * @return 
+             */
+            public int getNumPrecRadix() {
+                return numPrecRadix;
+            }
+
+            /**
+             * For char types the maximum number of bytes in the column. 
+             * 
+             * @param charOctetLength  
+             */
+            private void setCharOctetLength(final int charOctetLength) {
+                this.charOctetLength = charOctetLength;
+            }
+            
+            /** 
+             * For char types the maximum number of bytes in the column. 
+             * 
+             * @return 
+             */
+            public int getCharOctetLength() {
+                return charOctetLength;
+            }
+
+            /** 
+             * False means the column definitely does not allow NULL values. 
+             *
+             * @param isNullable  
+             */
+            private void setIsNullable(final boolean isNullable) {
+                this.isNullable = isNullable;
+            }
+
+            /** 
+             * False means the column definitely does not allow NULL values. 
+             * 
+             * @return 
+             */
+            public boolean isNullable() {
+                return isNullable;
             }
 
             /**
@@ -580,6 +670,7 @@ public class JdbcSchema {
                 pw.flush();
                 return sw.toString();
             }
+
             public void print(final PrintWriter pw, final String prefix) {
                 pw.print(prefix);
                 pw.print("name=");
@@ -588,6 +679,41 @@ public class JdbcSchema {
                 pw.print(getTypeName());
                 pw.print(", size=");
                 pw.print(getColumnSize());
+
+                switch (getType()) {
+                case Types.TINYINT :
+                case Types.SMALLINT :
+                case Types.INTEGER :
+                case Types.BIGINT :
+                case Types.FLOAT :
+                case Types.REAL :
+                case Types.DOUBLE :
+                    break;
+                case Types.NUMERIC :
+                case Types.DECIMAL :
+                    pw.print(", decimalDigits=");
+                    pw.print(getDecimalDigits());
+                    pw.print(", numPrecRadix=");
+                    pw.print(getNumPrecRadix());
+                    break;
+                case Types.CHAR :
+                case Types.VARCHAR :
+                    pw.print(", charOctetLength=");
+                    pw.print(getCharOctetLength());
+                    break;
+                case Types.LONGVARCHAR :
+                case Types.DATE :
+                case Types.TIME :
+                case Types.TIMESTAMP :
+                case Types.BINARY :
+                case Types.VARBINARY :
+                case Types.LONGVARBINARY :
+                default:
+                    break;
+                }
+                pw.print(", isNullable=");
+                pw.print(isNullable());
+
                 pw.print(" Usages [");
                 for (Iterator it = getUsages(); it.hasNext(); ) {
                     Usage u = (Usage) it.next();
@@ -796,11 +922,19 @@ public class JdbcSchema {
                         int type = rs.getInt(5);
                         String typeName = rs.getString(6);
                         int columnSize = rs.getInt(7);
+                        int decimalDigits = rs.getInt(9);
+                        int numPrecRadix = rs.getInt(10);
+                        int charOctetLength = rs.getInt(16);
+                        String isNullable = rs.getString(18);
+
                         Column column = new Column(name);
                         column.setType(type);
                         column.setTypeName(typeName);
                         column.setColumnSize(columnSize);
-
+                        column.setDecimalDigits(decimalDigits);
+                        column.setNumPrecRadix(numPrecRadix);
+                        column.setCharOctetLength(charOctetLength);
+                        column.setIsNullable(! isNullable.equals("NO"));
 
                         columnMap.put(name, column);
                         totalColumnSize += column.getColumnSize();

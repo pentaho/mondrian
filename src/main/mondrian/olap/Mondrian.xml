@@ -234,6 +234,15 @@ Revision is $Id$
                 lowest level of the dimension.
             </Doc>
         </Attribute>
+        <Attribute name="usagePrefix" required="false">
+            <Doc>
+                If present, then this is prepended to the Dimension column
+                names during the building of collapse dimension aggregates
+                allowing 1) different dimension usages to be disambiguated
+                during aggregate table recognition and 2) multiple shared
+                dimensions that have common column names to be disambiguated.
+            </Doc>
+        </Attribute>
         <Code><![CDATA[
             // implement CubeDimension
             public Dimension getDimension(Schema schema) {
@@ -780,6 +789,16 @@ Revision is $Id$
         <Object name="left" type="Relation" required="true"/>
         <Object name="right" type="Relation" required="true"/>
         <Code>
+            /** Convenience contructor. **/
+            public Join(String leftAlias, String leftKey, Relation left, 
+                String rightAlias, String rightKey, Relation right) {
+                this.leftAlias = leftAlias;
+                this.leftKey = leftKey;
+                this.left = left;
+                this.rightAlias = rightAlias;
+                this.rightKey = rightKey;
+                this.right = right;
+            }
             /**
               * Returns the alias of the left join key, defaulting to left's
               * alias if left is a table.
@@ -852,6 +871,9 @@ Revision is $Id$
 
         <Code><![CDATA[
             /** Convenience contructor. **/
+            public Table(Table table) {
+                this(table.schema, table.name, table.alias);
+            }
             public Table(String schema, String name, String alias) {
                 this();
                 this.schema = schema;
@@ -868,7 +890,14 @@ Revision is $Id$
                     schema + "." + name;
             }
             public Relation find(String seekAlias) {
+                return (seekAlias.equals(name)) 
+                    ? this 
+                    : ((alias != null) && seekAlias.equals(alias))
+                        ? this : null;
+// RME
+/*
                 return (seekAlias.equals(name)) ? this : null;
+*/
             }
             public boolean equals(Object o) {
                 if (o instanceof Table) {

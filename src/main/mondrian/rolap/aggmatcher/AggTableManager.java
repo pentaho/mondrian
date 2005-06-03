@@ -188,6 +188,7 @@ public class AggTableManager {
             }
         }
 
+//System.out.println("AggTableManager.loadRolapStarAggregates: \n" +db);
         } catch (RecorderException ex) {
             throw new MondrianException(ex);
 
@@ -359,6 +360,8 @@ public class AggTableManager {
                     usage.setAggregator(rm.getAggregator());
                     usage.measure = rm;
 
+/*
+Turns out there are a lot of measures whose column is not numeric
                     // warn if not numeric (is boolean allowed??)
                     if (! factColumn.isNumeric()) {
                         String msg = mres.getNonNumericMeasure(
@@ -368,6 +371,7 @@ public class AggTableManager {
                             factColumn.getTypeName());
                         msgRecorder.reportWarning(msg);
                     }
+*/
                 }
             }
 

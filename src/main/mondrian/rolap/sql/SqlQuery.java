@@ -312,9 +312,10 @@ public class SqlQuery
             final String leftAlias = join.getLeftAlias();
             final String rightAlias = join.getRightAlias();
 
-            boolean added = addFrom(join.left, leftAlias, failIfExists) ||
-                            addFrom(join.right, rightAlias, failIfExists);
+            boolean addLeft = addFrom(join.left, leftAlias, failIfExists);
+            boolean addRight = addFrom(join.right, rightAlias, failIfExists);
 
+            boolean added = addLeft || addRight;
             if (added) {
                 buf.setLength(0);
 

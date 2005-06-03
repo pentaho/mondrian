@@ -218,12 +218,13 @@ class DefaultRecognizer extends Recognizer {
         msgRecorder.pushContextName("DefaultRecognizer.matchLevel");
         try {
 
+            String usagePrefix = hierarchyUsage.getUsagePrefix();
             String hierName = hierarchy.getName();
             String levelName = level.getName();
             String levelColumnName = getColumnName(level.getKeyExp());
 
-            Recognizer.Matcher matcher =
-                getRules().getLevelMatcher(hierName, levelName, levelColumnName);
+            Recognizer.Matcher matcher = getRules().getLevelMatcher(
+                usagePrefix, hierName, levelName, levelColumnName);
 
             for (Iterator aggit = aggTable.getColumns(); aggit.hasNext(); ) {
                 JdbcSchema.Table.Column aggColumn =

@@ -268,12 +268,31 @@ Revision is $Id$
                 The regular expression to append to the table name.
             </Doc>
         </Attribute>
+        <Attribute name="basename" required="false">
+            <Doc>
+                The regular expression used to extract the fact table's 
+                base name from its full name. For instance, if the DBA
+                allways prepends "RF_" before each fact table name, i.e.,
+                "RF_SHIPPING", but you want only the base part ("SHIPPING")
+                to be used in recognizing aggregates, then one defines a 
+                regular expression with ONE and ONLY one group, in this
+                case "RF_(.*)" with which the base name can be extracted
+                from the full fact table name.
+                In Sun terms, the "()" are a capture group.
+            </Doc>
+        </Attribute>
         <Code><![CDATA[
+            java.util.regex.Pattern baseNamePattern = null;
             public void validate(final AggRules rules, 
                                  final mondrian.recorder.MessageRecorder msgRecorder) {
                 msgRecorder.pushContextName(getName());
                 try {
                     super.validate(rules, msgRecorder);
+
+                    if (basename != null) {
+                        baseNamePattern = 
+                            java.util.regex.Pattern.compile(basename);
+                    }
                 } finally {
                     msgRecorder.popContextName();
                 }
@@ -291,7 +310,15 @@ Revision is $Id$
                     buf.append(pretemplate);
                 }
                 if (name != null) {
-                    buf.append(name);
+                    String n = name;
+                    if (baseNamePattern != null) {
+                        java.util.regex.Matcher matcher = 
+                            baseNamePattern.matcher(name);
+                        if (matcher.matches() && matcher.groupCount() > 0) {
+                            n = matcher.group(1);
+                        }
+                    }
+                    buf.append(n);
                 }
                 if (posttemplate != null) {
                     buf.append(posttemplate);
@@ -425,8 +452,7 @@ Revision is $Id$
                     msgRecorder.popContextName();
                 }
             }
-            public Recognizer.Matcher getMatcher(
-                                        final String foreignKeyName) {
+            public Recognizer.Matcher getMatcher(final String foreignKeyName) {
                 return super.getMatcher(foreignKeyName);
             }
         ]]></Code>
@@ -459,8 +485,7 @@ Revision is $Id$
                     msgRecorder.popContextName();
                 }
             }
-            public Recognizer.Matcher getMatcher(
-                                                final String name) {
+            public Recognizer.Matcher getMatcher(final String name) {
                 return super.getMatcher(name);
             }
         ]]></Code>
@@ -660,8 +685,7 @@ Revision is $Id$
                 return regex;
             }
 
-            protected Recognizer.Matcher getMatcher(
-                                            final String[] names) {
+            protected Recognizer.Matcher getMatcher(final String[] names) {
 
                 final String charcase = getCharCase();
                 final String regex;
@@ -912,6 +936,11 @@ Revision is $Id$
                 buf.append(templateParts[0]);
                 for (int i = 0; i < templateNamePos.length; i++) {
                     String n = names[templateNamePos[i]];
+                    if (n == null) {
+                        // its ok for a name to be null, it just
+                        // eliminates the current regex from consideration
+                        return null;
+                    }
 
                     if (space != null) {
                         n = n.replaceAll(" ", space);
@@ -957,6 +986,9 @@ Revision is $Id$
                     // the case of name does not matter
                     // since the Pattern will be create to ignore case
                     final String regex = getRegex(names);
+                    if (regex == null) {
+                        return null;
+                    }
 
                     final java.util.regex.Pattern pattern = 
                         java.util.regex.Pattern.compile(regex, 
@@ -968,6 +1000,9 @@ Revision is $Id$
                     // the case of name is not changed
                     // since we are interested in exact case matching
                     final String regex = getRegex(names);
+                    if (regex == null) {
+                        return null;
+                    }
 
                     final java.util.regex.Pattern pattern = 
                         java.util.regex.Pattern.compile(regex);
@@ -978,10 +1013,15 @@ Revision is $Id$
                     // convert name to upper case
                     String[] ucNames = new String[names.length];
                     for (int i = 0; i < names.length; i++) {
-                        ucNames[i] = names[i].toUpperCase();
+                        String name = names[i];
+                        ucNames[i] = (name == null) 
+                            ? null: name.toUpperCase();
                     }
 
                     final String regex = getRegex(ucNames);
+                    if (regex == null) {
+                        return null;
+                    }
 
                     final java.util.regex.Pattern pattern = 
                         java.util.regex.Pattern.compile(regex);
@@ -993,10 +1033,15 @@ Revision is $Id$
                     // convert name to lower case
                     String[] lcNames = new String[names.length];
                     for (int i = 0; i < names.length; i++) {
-                        lcNames[i] = names[i].toLowerCase();
+                        String name = names[i];
+                        lcNames[i] = (name == null) 
+                            ? null: name.toLowerCase();
                     }
 
                     final String regex = getRegex(lcNames);
+                    if (regex == null) {
+                        return null;
+                    }
 
                     final java.util.regex.Pattern pattern = 
                         java.util.regex.Pattern.compile(regex);
@@ -1055,8 +1100,7 @@ Revision is $Id$
              */
             protected abstract String[] getTemplateNames();
 
-            protected Recognizer.Matcher getMatcher(
-                                            final String[] names) {
+            protected Recognizer.Matcher getMatcher(final String[] names) {
 
                 final java.util.regex.Pattern[] patterns = 
                     new java.util.regex.Pattern[regexs.length];
@@ -1069,10 +1113,12 @@ Revision is $Id$
                 return new Recognizer.Matcher() {
                     public boolean matches(String name) {
                         for (int i = 0; i < patterns.length; i++) {
-                            if (patterns[i].matcher(name).matches()) {
+                            java.util.regex.Pattern pattern = patterns[i];
+                            if ((pattern != null) && 
+                                    pattern.matcher(name).matches()) {
 
                                 if (AggRules.getLogger().isDebugEnabled()) {
-                                    debug(name, patterns[i]);
+                                    debug(name, pattern);
                                 }
 
                                 return true;
@@ -1224,12 +1270,14 @@ Revision is $Id$
     <Element type="LevelMap" class="RegexMapper" >
         <Doc>
             This is the template that maps from a combination of level
+                usage_prefix
                 hierarchy_name
                 level_name
                 level_column_name
         </Doc>
         <Code><![CDATA[
             private static final String[] TEMPLATE_NAMES = new String[] {
+                "usage_prefix", 
                 "hierarchy_name", 
                 "level_name", 
                 "level_column_name"
@@ -1239,10 +1287,12 @@ Revision is $Id$
             }
 
             protected Recognizer.Matcher getMatcher(
+                                            final String usagePrefix, 
                                             final String hierarchyName, 
                                             final String levelName,
                                             final String levelColumnName) {
                 return getMatcher(new String[] {
+                    usagePrefix, 
                     hierarchyName, 
                     levelName,
                     levelColumnName

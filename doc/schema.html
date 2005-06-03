@@ -1526,6 +1526,25 @@ This will match the following table names:
     AGG_drop_time_id_sales_fact_1997<br>
 </blockquote>
 <p>
+The aggregate table name recognition mechanism has one additional
+programatic feature, one can specify that only a portion of the
+base fact table name be used as the basis of template name.
+For instance, if the DBA demanded that all fact tables begin with the
+string "fact_", e.g., 
+"fact_sales_fact_1997",
+one would certainly not want that string to have to
+be part of each aggregate table's name. The aggregate table name
+recognition mechanism allows one to specify a regular expression with
+one and only one group clause (a group clause is a pattern bracketed 
+by '(' and ')'). Whatever is matched by the contents of the
+group clause is taken to be the part of the fact table name to be
+used in the matching template. This regular expression containing the
+group clause is specified as the "basename" attribute.
+The default Mondrian aggregate table recognizer does not use this feature.
+For more information see the associated 
+<a href="developer_notes.html">developer's note link.</a>
+</p>
+<p>
 After the default recognizer determines that a table's name matches
 the aggregate table template regular expression for a given
 fact table, it then attempts to match columns. The first column

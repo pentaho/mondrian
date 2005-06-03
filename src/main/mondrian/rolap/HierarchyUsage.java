@@ -102,6 +102,12 @@ public class HierarchyUsage {
      */
     private final String source;
 
+    /** 
+     * May be null, this is the field that is used to disambiguate column
+     * names in aggregate tables
+     */
+    private final String usagePrefix;
+
     // NOT USED
     private final String level;
     //final String type;
@@ -111,12 +117,12 @@ public class HierarchyUsage {
      * Dimension table which contains the primary key for the hierarchy.
      * (Usually the table of the lowest level of the hierarchy.)
      */
-    MondrianDef.Relation joinTable;
+    private MondrianDef.Relation joinTable;
     /**
      * The expression (usually a {@link MondrianDef.Column}) by which the
      * hierarchy which is joined to the fact table.
      */
-    MondrianDef.Expression joinExp;
+    private MondrianDef.Expression joinExp;
 
     private final int kind;
 
@@ -186,8 +192,8 @@ public class HierarchyUsage {
                 this.source = buf.toString();
             }
 
-            //this.source = du.source;
             this.level = du.level;
+            this.usagePrefix = du.usagePrefix;
 
             init(cube, hierarchy, du);
 
@@ -203,6 +209,7 @@ public class HierarchyUsage {
             this.fullName = this.name;
 
             this.source = null;
+            this.usagePrefix = null;
             this.level = null;
 
             init(cube, hierarchy, null);
@@ -218,6 +225,7 @@ public class HierarchyUsage {
             this.fullName = this.name;
 
             this.source = null;
+            this.usagePrefix = null;
             this.level = null;
 
             init(cube, hierarchy, null);
@@ -232,6 +240,7 @@ public class HierarchyUsage {
             this.fullName = this.name;
 
             this.source = null;
+            this.usagePrefix = null;
             this.level = null;
 
             init(cube, hierarchy, null);
@@ -262,6 +271,12 @@ public class HierarchyUsage {
     }
     public String getSource() {
         return this.source;
+    }
+    public String getLevelName() {
+        return this.level;
+    }
+    public String getUsagePrefix() {
+        return this.usagePrefix;
     }
 
     public MondrianDef.Relation getJoinTable() {

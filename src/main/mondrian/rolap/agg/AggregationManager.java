@@ -56,13 +56,17 @@ public class AggregationManager extends RolapAggregationManager {
                                 ColumnConstraint[][] constraintses,
                                 Collection pinnedSegments) {
         RolapStar star = measures[0].getStar();
-        Aggregation aggregation =
-            star.lookupOrCreateAggregation(columns, bitKey);
-        // try to eliminate unneccessary constraints
-        // for Oracle: prevent an IN-clause with more than 1000 elements
-        constraintses = aggregation.optimizeConstraints(constraintses);
+        Aggregation aggregation = star.lookupOrCreateAggregation(bitKey);
 
-        aggregation.load(measures, constraintses, pinnedSegments);
+        // synchronized access 
+        synchronized (aggregation) {
+            // try to eliminate unneccessary constraints
+            // for Oracle: prevent an IN-clause with more than 1000 elements
+            constraintses = 
+                aggregation.optimizeConstraints(columns, constraintses);
+
+            aggregation.load(columns, measures, constraintses, pinnedSegments);
+        }
     }
 
 

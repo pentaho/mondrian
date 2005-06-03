@@ -30,6 +30,7 @@
 <h2>Contents</h2>
 <ol>
   <li><a href="#Agg_default_rules">Default aggregate table recognition rules</a></li>
+  <li><a href="#Snowflakes">Snowflakes and the DimensionUsage level attribute</a></li>
 </ol>
 
 <h2><a name="Agg_default_rules">Default aggregate table recognition rules</a></h2>
@@ -130,6 +131,35 @@ so the regular expression becomes:
 <blockquote>
     agg_.+_${fact_table_name}
 </blockquote>
+<p>
+Also, the
+<code>
+NameMatcher
+</code>
+has an attribute called
+<code>
+basename
+</code>
+which is optional. If set, then its value must be a regular expression
+with a single capture group. A capture group is an regular expression
+component surrounded by "(" and ")". As an example, "(.*)" is
+a capture group and if this was the total regular expression, then
+it would match anything and the single capture would match the same.
+On the other hand if the total regular expression was "RF_(.*)_TBL", then
+a name such as "RF_SHIPPMENTS_TBL" would match the regular expression while
+the capture group would be "SHIPPMENTS". 
+Now, if the
+<code>
+basename
+</code>
+attribute is defined, then it is applied to each fact table name allowing
+one to strip away information and get to the "base" name. This might
+be needed because a DBA might prepend or append a tag to all of 
+your fact table names and the DBA might wish to have a different tag
+prepend or append to all of your aggregate table names (RF_SHIPPMENTS_TBL
+as the fact table and RA_SHIPPMENTS_AGG_14 as an example aggregate
+name (the DBA prepended the "RA_" and you appended the "_AGG_14")).
+</p>
 <p>
 Both the
 <code>
@@ -514,5 +544,187 @@ The intent of the above example default rule set is not
 that they are necessarily
 realistic or usable, rather, it just shows what is possible.
 </p>
+
+<h2><a name="Snowflakes">Snowflakes and the DimensionUsage level attribute</a></h2>
+<p>
+Mondrian supports dimensions with all of their levels lumped 
+into a single table (with all the duplication of data that that entails), 
+but also snowflakes. A snowflake dimension is one where the fact table
+joins to one table (generally the lowest) and that table then joins to
+a table representing the next highest level, and so on until the top
+level's table is reached.
+For each level there is a separate table.
+</p>
+<p>
+As an example snowflake, below is a set of Time levels and four
+possible join element blocks, relationships between the tables
+making up the Time dimension. 
+(In a schema file, the levels must
+appear after the joins.)
+</p>
+<blockquote>
+<pre>
+&lt;Level name="Calendar Year" table="TimeYear" column="YEAR_SID"
+  nameColumn="YEAR_NAME" levelType="TimeYears" uniqueMembers="true"/&gt;
+&lt;Level name="Quarter" table="TimeQtr" column="QTR_SID"
+  nameColumn="QTR_NAME" levelType="TimeQuarters" uniqueMembers="true"/&gt;
+&lt;Level name="Month" table="TimeMonth" column="MONTH_SID"
+  nameColumn="MONTH_ONLY_NAME" levelType="TimeMonths" uniqueMembers="false"/&gt;
+&lt;Level name="Day" table="TimeDay" column="DAY_SID" nameColumn="DAY_NAME"
+  levelType="TimeDays" uniqueMembers="true"/&gt;
+
+
+  &lt;Join leftAlias="TimeYear" leftKey="YEAR_SID" 
+        rightAlias="TimeQtr" rightKey="YEAR_SID" &gt;
+    &lt;Table name="RD_PERIOD_YEAR" alias="TimeYear" /&gt; 
+    &lt;Join leftAlias="TimeQtr" leftKey="QTR_SID" 
+        rightAlias="TimeMonth" rightKey="QTR_SID" &gt;
+        &lt;Table name="RD_PERIOD_QTR" alias="TimeQtr" /&gt;
+        &lt;Join leftAlias="TimeMonth" leftKey="MONTH_SID" 
+            rightAlias="TimeDay" rightKey="MONTH_SID" &gt;
+            &lt;Table name="RD_PERIOD_MONTH" alias="TimeMonth" /&gt;
+            &lt;Table name="RD_PERIOD_DAY" alias="TimeDay" /&gt;
+        &lt;/Join&gt;
+    &lt;/Join&gt;
+  &lt;/Join&gt;
+
+  &lt;Join leftAlias="TimeQtr" leftKey="YEAR_SID" 
+        rightAlias="TimeYear" rightKey="YEAR_SID" &gt;
+    &lt;Join leftAlias="TimeMonth" leftKey="QTR_SID" 
+        rightAlias="TimeQtr" rightKey="QTR_SID" &gt;
+        &lt;Join leftAlias="TimeDay" leftKey="MONTH_SID" 
+            rightAlias="TimeMonth" rightKey="MONTH_SID" &gt;
+            &lt;Table name="RD_PERIOD_DAY" alias="TimeDay" /&gt;
+            &lt;Table name="RD_PERIOD_MONTH" alias="TimeMonth" /&gt;
+        &lt;/Join&gt;
+        &lt;Table name="RD_PERIOD_QTR" alias="TimeQtr" /&gt;
+    &lt;/Join&gt;
+    &lt;Table name="RD_PERIOD_YEAR" alias="TimeYear" /&gt; 
+  &lt;/Join&gt;
+
+  &lt;Join leftAlias="TimeMonth" leftKey="MONTH_SID" 
+        rightAlias="TimeDay" rightKey="MONTH_SID" &gt;
+    &lt;Join leftAlias="TimeQtr" leftKey="QTR_SID"
+        rightAlias="TimeMonth" rightKey="QTR_SID" &gt;
+        &lt;Join leftAlias="TimeYear" leftKey="YEAR_SID" 
+            rightAlias="TimeQtr" rightKey="YEAR_SID" &gt;
+            &lt;Table name="RD_PERIOD_YEAR" alias="TimeYear" /&gt; 
+            &lt;Table name="RD_PERIOD_QTR" alias="TimeQtr" /&gt;
+        &lt;/Join&gt;
+        &lt;Table name="RD_PERIOD_MONTH" alias="TimeMonth" /&gt;
+    &lt;/Join&gt;
+    &lt;Table name="RD_PERIOD_DAY" alias="TimeDay" /&gt;
+  &lt;/Join&gt;
+
+  &lt;Join leftAlias="TimeDay" leftKey="MONTH_SID" 
+        rightAlias="TimeMonth" rightKey="MONTH_SID" &gt;
+    &lt;Table name="RD_PERIOD_DAY" alias="TimeDay" /&gt;
+    &lt;Join leftAlias="TimeMonth" leftKey="QTR_SID" 
+        rightAlias="TimeQtr" rightKey="QTR_SID" &gt;
+        &lt;Table name="RD_PERIOD_MONTH" alias="TimeMonth" /&gt;
+        &lt;Join leftAlias="TimeQtr" leftKey="YEAR_SID" 
+            rightAlias="TimeYear" rightKey="YEAR_SID" &gt;
+            &lt;Table name="RD_PERIOD_QTR" alias="TimeQtr" /&gt;
+            &lt;Table name="RD_PERIOD_YEAR" alias="TimeYear" /&gt;
+        &lt;/Join&gt;
+    &lt;/Join&gt;
+  &lt;/Join&gt;
+</pre>
+</blockquote>
+<p>
+Viewed as trees these can be represented as follows:
+</p>
+<blockquote>
+<pre>
+            |
+    ---------------
+    |             |
+   Year     --------------
+            |            |
+         Quarter     ---------
+                     |       |
+                   Month    Day
+
+                  |
+           ----------------
+           |              |
+        --------------   Year
+        |            |
+    ---------     Quarter
+    |       |
+   Day     Month
+
+                  |
+           ----------------
+           |              |
+        --------------   Day
+        |            |
+    ---------      Month
+    |       |
+   Year   Quarter
+
+            |
+    ---------------
+    |             |
+   Day      --------------
+            |            |
+          Month      ---------
+                     |       |
+                   Quarter  Year
+</pre>
+</blockquote>
+<p>
+It turns out that these join block are equivalent; what table joins
+to what other table using what keys. In addition, they are all
+(now) treated the same by Mondrian. The last join block is
+the canonical representation; left side components are levels of 
+greater depth than right side components, and components of greater
+depth are higher in the join tree than those of lower depth:
+</p>
+<blockquote>
+<pre>
+            |
+    ---------------
+    |             |
+   Day      --------------
+            |            |
+          Month      ---------
+                     |       |
+                   Quarter  Year
+</pre>
+</blockquote>
+<p>
+Mondrian reorders these join blocks into the canonical form and uses
+that to build subtables in the RolapStar.
+</p>
+<p>
+In addition, if a cube had a 
+<code>DimensionUsage</code>
+of this Time dimension with, for example, its
+<code>level</code>
+attribute set to Month, then the above tree is pruned
+</p>
+<blockquote>
+<pre>
+              |
+        --------------
+        |            |
+      Month      ---------
+                 |       |
+               Quarter  Year
+</pre>
+</blockquote>
+<p>
+and the pruned tree is what is used to create the subtables in the 
+RolapStar.
+Of course, the fact table must, in this case, have a MONTH_SID
+foreign key.
+</p>
+<p>
+Note that the 
+<code>Level</code>
+element's table attribute MUST use the table alias and NOT the table name. 
+</p>
+
 </body>
 </html>

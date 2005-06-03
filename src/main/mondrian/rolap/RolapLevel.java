@@ -30,6 +30,16 @@ public class RolapLevel extends LevelBase {
 
     private static final Logger LOGGER = Logger.getLogger(RolapEvaluator.class);
 
+    public static RolapLevel lookupLevel(RolapLevel[] levels, String levelName) {
+        for (int i = 0; i < levels.length; i++) {
+            RolapLevel level = levels[i];
+            if (level.getName().equals(levelName)) {
+                return level;
+            }
+        }
+        return null;
+    }
+
     static final int NUMERIC = 1;
     static final int ALL = 2;
     static final int UNIQUE = 4;
@@ -174,6 +184,17 @@ public class RolapLevel extends LevelBase {
 
     protected Logger getLogger() {
         return LOGGER;
+    }
+
+    String getTableName() {
+        String tableName = null;
+
+        MondrianDef.Expression expr = getKeyExp();
+        if (expr instanceof MondrianDef.Column) {
+            MondrianDef.Column mc = (MondrianDef.Column) expr;
+            tableName = mc.getTableAlias();
+        }
+        return tableName;
     }
 
     public MondrianDef.Expression getKeyExp() {

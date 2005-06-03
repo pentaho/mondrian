@@ -21,6 +21,9 @@ import org.eigenbase.xom.Parser;
 import java.lang.reflect.Constructor;
 import java.util.*;
 
+/*
+waht sdfs www who goes there
+*/
 /**
  * <code>RolapCube</code> implements {@link Cube} for a ROLAP database.
  *
@@ -77,8 +80,7 @@ public class RolapCube extends CubeBase {
         this.cellReader = AggregationManager.instance();
         this.calculatedMembers = new Formula[0];
 
-        final boolean isVirtual = (fact == null);
-        if (! isVirtual) {
+        if (! isVirtual()) {
             this.star = schema.getRolapStarRegistry().getOrCreateStar(fact);
             // only set if different from default (so that if two cubes share
             // the same fact table, either can turn off caching and both are
@@ -89,7 +91,7 @@ public class RolapCube extends CubeBase {
         }
 
         if (getLogger().isDebugEnabled()) {
-            if (isVirtual) {
+            if (isVirtual()) {
                 getLogger().debug("RolapCube<init>: virtual cube=" +this.name);
             } else {
                 getLogger().debug("RolapCube<init>: cube=" +this.name);
@@ -123,17 +125,8 @@ public class RolapCube extends CubeBase {
             }
             this.dimensions[i + 1] = dimension;
 
-            if (! isVirtual) {
-                RolapHierarchy[] hierarchies =
-                    (RolapHierarchy[]) dimension.getHierarchies();
-                for (int j = 0; j < hierarchies.length; j++) {
-                    RolapHierarchy hierarchy = hierarchies[j];
-                    if (getLogger().isDebugEnabled()) {
-                        getLogger().debug("RolapCube<init>: hierarchy="
-                            +hierarchy.getName());
-                    }
-                    createUsage(hierarchy, xmlCubeDimension);
-                }
+            if (! isVirtual()) {
+                createUsages(dimension, xmlCubeDimension);
             }
 
         }
@@ -563,11 +556,13 @@ assert is not true.
     }
 
     public boolean isCache() {
-        return star.isCacheAggregations();
+        return (isVirtual()) ? true : star.isCacheAggregations();
     }
     public void setCache(boolean cache) {
-        star.setCacheAggregations(cache);
-        star.clearCache();
+        if (! isVirtual()) {
+            star.setCacheAggregations(cache);
+            star.clearCache();
+        }
     }
 
 
@@ -584,6 +579,64 @@ assert is not true.
         }
     }
 
+    private void createUsages(RolapDimension dimension,
+            MondrianDef.CubeDimension xmlCubeDimension) {
+        // RME level may not be in all hierarchies
+        // If one uses the DimensionUsage attribute "level", which level 
+        // in a hierarchy to join on, and there is more than one hierarchy, 
+        // then a HierarchyUsage can not be created for the hierarchies
+        // that do not have the level defined.
+        RolapHierarchy[] hierarchies = 
+            (RolapHierarchy[]) dimension.getHierarchies();
+
+        if (hierarchies.length == 1) {
+            // Only one, so let lower level error checking handle problems
+            createUsage(hierarchies[0], xmlCubeDimension);
+
+        } else if ((xmlCubeDimension instanceof MondrianDef.DimensionUsage) &&
+            (((MondrianDef.DimensionUsage) xmlCubeDimension).level != null)) {
+            // More than one, make sure if we are joining by level, that
+            // at least one hierarchy can and those that can not are
+            // not registered
+            MondrianDef.DimensionUsage du = 
+                (MondrianDef.DimensionUsage) xmlCubeDimension;
+
+            int cnt = 0;
+
+            for (int j = 0; j < hierarchies.length; j++) {
+                RolapHierarchy hierarchy = hierarchies[j];
+                if (getLogger().isDebugEnabled()) {
+                    getLogger().debug("RolapCube<init>: hierarchy="
+                        +hierarchy.getName());
+                }
+                RolapLevel joinLevel = (RolapLevel)
+                                Util.lookupHierarchyLevel(hierarchy, du.level);
+                if (joinLevel == null) {
+                    continue;
+                }
+                createUsage(hierarchy, xmlCubeDimension);
+                cnt++;
+            }
+
+            if (cnt == 0) {
+                // None of the hierarchies had the level, let lower level
+                // detect and throw error
+                createUsage(hierarchies[0], xmlCubeDimension);
+            }
+
+        } else {
+
+            // just do it
+            for (int j = 0; j < hierarchies.length; j++) {
+                RolapHierarchy hierarchy = hierarchies[j];
+                if (getLogger().isDebugEnabled()) {
+                    getLogger().debug("RolapCube<init>: hierarchy="
+                        +hierarchy.getName());
+                }
+                createUsage(hierarchy, xmlCubeDimension);
+            }
+        }
+    }
     synchronized void createUsage(RolapHierarchy hierarchy,
                                   MondrianDef.CubeDimension cubeDim) {
         HierarchyUsage usage = new HierarchyUsage(this, hierarchy, cubeDim);
@@ -722,6 +775,11 @@ assert is not true.
     }
 
 
+    /** 
+     * Understand this and you are no longer a novice.
+     * 
+     * @param dimension 
+     */
     void registerDimension(Dimension dimension) {
         RolapStar star = getStar();
 
@@ -734,6 +792,7 @@ assert is not true.
             if (relation == null) {
                 continue; // e.g. [Measures] hierarchy
             }
+            RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
 
             HierarchyUsage[] hierarchyUsages = getUsages(hierarchy);
             if (hierarchyUsages.length == 0) {
@@ -752,7 +811,88 @@ assert is not true.
 
             for (int j = 0; j < hierarchyUsages.length; j++) {
                 HierarchyUsage hierarchyUsage = hierarchyUsages[j];
+                String usagePrefix = hierarchyUsage.getUsagePrefix();
                 RolapStar.Table table = star.getFactTable();
+
+                String levelName = hierarchyUsage.getLevelName();
+
+                // RME
+                // If a DimensionUsage has its level attribute set, then
+                // one wants joins to occur at that level and not below (not
+                // at a finer level), i.e., if you have levels: Year, Quarter,
+                // Month, and Day, and the level attribute is set to Month, the
+                // you do not want aggregate joins to include the Day level.
+                // By default, it is the lowest level that the fact table
+                // joins to, the Day level.
+                // To accomplish this, we reorganize the relation and then
+                // copy it (so that elsewhere the original relation can
+                // still be used), and finally, clip off those levels below
+                // the DimensionUsage level attribute.
+                // Note also, if the relation (MondrianDef.Relation) is not
+                // a MondrianDef.Join, i.e., the dimension is not a snowflake,
+                // there is a single dimension table, then this is currently
+                // an unsupported configuation and all bets are off.
+                if (relation instanceof MondrianDef.Join) {
+// RME
+// take out after things seem to be working
+MondrianDef.Relation relationTmp1 = relation;
+
+                    relation = reorder(relation, levels);
+
+if (relation == null) {
+System.out.println("RolapCube.registerDimension: after reorder relation==null");
+System.out.println("RolapCube.registerDimension: reorder relationTmp1="
++format(relationTmp1));
+}
+                }
+
+MondrianDef.Relation relationTmp2 = relation;
+
+                if (levelName != null) {
+//System.out.println("RolapCube.registerDimension: levelName=" +levelName);
+                    // When relation is a table, this does nothing. Otherwise
+                    // it tries to arrange the joins so that the fact table
+                    // in the RolapStar will be joining at the lowest level.
+                    //
+
+                    // Make sure the level exists
+                    RolapLevel level = 
+                        RolapLevel.lookupLevel(levels, levelName);
+                    if (level == null) {
+                        StringBuffer buf = new StringBuffer(64);
+                        buf.append("For cube \"");
+                        buf.append(getName());
+                        buf.append("\" and HierarchyUsage [");
+                        buf.append(hierarchyUsage);
+                        buf.append("], there is no level with given");
+                        buf.append(" level name \"");
+                        buf.append(levelName);
+                        buf.append("\"");
+                        throw Util.newInternal(buf.toString());
+                    }
+
+                    // If level has child, not the lowest level, then snip
+                    // relation between level and its child so that
+                    // joins do not include the lower levels.
+                    // If the child level is null, then the DimensionUsage
+                    // level attribute was simply set to the default, lowest
+                    // level and we do nothing.
+                    if (relation instanceof MondrianDef.Join) {
+                        RolapLevel childLevel = (RolapLevel) level.getChildLevel();
+                        if (childLevel != null) {
+                            String tableName = childLevel.getTableName();
+                            if (tableName != null) {
+                                relation = snip(relation, tableName);
+if (relation == null) {
+System.out.println("RolapCube.registerDimension: after snip relation==null");
+System.out.println("RolapCube.registerDimension: snip relationTmp2="
++format(relationTmp2));
+}
+                            }
+                        }
+                    }
+
+                }
 
                 // cube and dimension usage are in different tables
                 if (!relation.equals(table.getRelation())) {
@@ -782,21 +922,547 @@ assert is not true.
                     //   right column
                     RolapStar.Condition joinCondition = 
                         new RolapStar.Condition(column,
-                                                hierarchyUsage.joinExp);
+                                                hierarchyUsage.getJoinExp());
 
                     table = table.addJoin(relation, joinCondition);
                 }
 
-                RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
-                for (int l = 0; l < levels.length; l++) {
-                    RolapLevel level = levels[l];
-                    if (level.getKeyExp() != null) {
-                        table.makeColumns(this, level);
+
+                // The parent Column is used so that non-shared dimensions
+                // which use the fact table (not a separate dimension table)
+                // can keep a record of what other columns are in the
+                // same set of levels.
+                RolapStar.Column parentColumn = null;
+
+                //RME
+                // If the level name is not null, then we need only register
+                // those columns for that level and above.
+                if (levelName != null) {
+                    for (int l = 0; l < levels.length; l++) {
+                        RolapLevel level = levels[l];
+                        if (level.getKeyExp() != null) {
+                            parentColumn = makeColumns(table, 
+                                            level, parentColumn, usagePrefix);
+                        }
+                        if (levelName.equals(level.getName())) {
+                            break;
+                        }
+                    }
+                } else {
+                    // This is the normal case, no level attribute so register
+                    // all columns.
+                    for (int l = 0; l < levels.length; l++) {
+                        RolapLevel level = levels[l];
+                        if (level.getKeyExp() != null) {
+                            parentColumn = makeColumns(table, 
+                                            level, parentColumn, usagePrefix);
+                        }
                     }
                 }
             }
         }
     }
+
+    /** 
+     * This method adds a column to the appropriate table in the RolapStar. 
+     * Note that if the RolapLevel has a table attribute, then the associated
+     * column needs to be associated with that table.
+     * 
+     * @param table 
+     * @param level 
+     * @param parentColumn 
+     * @param usagePrefix 
+     * @return 
+     */
+    protected RolapStar.Column makeColumns(
+            RolapStar.Table table,
+            RolapLevel level,
+            RolapStar.Column parentColumn, 
+            String usagePrefix) {
+
+        // If there is a table name, then first see if the table name is the
+        // table parameter's name or alias and, if so, simply add the column
+        // to that table. On the other hand, find the ancestor of the table
+        // parameter and if found, then associate the new column with
+        // that table. 
+        // Lastly, if the ancestor can not be found, i.e., there is no table
+        // with the level's table name, what to do.  Here we simply punt and
+        // associated the new column with the table parameter which might
+        // be an error. We do issue a warning in any case.
+        String tableName = level.getTableName();
+        if (tableName != null) {
+            if (table.getAlias().equals(tableName)) {
+                parentColumn = table.makeColumns(this, level, 
+                                            parentColumn, usagePrefix);
+            } else if (table.equalsTableName(tableName)) {
+                parentColumn = table.makeColumns(this, level, 
+                                            parentColumn, usagePrefix);
+            } else {
+                RolapStar.Table t = table.findAncestor(tableName);
+                if (t != null) {
+                    parentColumn = t.makeColumns(this, level, 
+                                            parentColumn, usagePrefix);
+                } else {
+                    // Issue warning and keep going.
+                    StringBuffer buf = new StringBuffer(64);
+                    buf.append("RolapCube.makeColumns: for cube \"");
+                    buf.append(getName());
+                    buf.append("\" the Level \"");
+                    buf.append(level.getName());
+                    buf.append("\" has a table name attribute \"");
+                    buf.append(tableName);
+                    buf.append("\" but the associated RolapStar does not");
+                    buf.append(" have a table with that name.");
+                    getLogger().warn(buf.toString());
+
+                    parentColumn = table.makeColumns(this, level, 
+                                            parentColumn, usagePrefix);
+                }
+            }
+        } else {
+            // level's expr is not a MondrianDef.Column (this is used by tests)
+            // or there is no table name defined
+            parentColumn = table.makeColumns(this, level, 
+                                            parentColumn, usagePrefix);
+        } 
+
+        return parentColumn;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    //
+    // The following code deals with handling the DimensionUsage level attribute
+    // and snowflake dimensions only.
+    //
+    
+    /** 
+     * This method formats a MondrianDef.Relation indenting joins for
+     * readability.
+     * 
+     * @param relation 
+     * @return 
+     */
+    private static String format(MondrianDef.Relation relation) {
+        StringBuffer buf = new StringBuffer();
+        format(relation, buf, "");
+        return buf.toString();
+    }
+
+    private static void format(MondrianDef.Relation relation, 
+            StringBuffer buf, String indent) {
+        if (relation instanceof MondrianDef.Table) {
+            MondrianDef.Table table = (MondrianDef.Table) relation;
+
+            buf.append(indent);
+            buf.append(table.name);
+            if (table.alias != null) {
+                buf.append('(');
+                buf.append(table.alias);
+                buf.append(')');
+            }
+            buf.append('\n');
+        } else {
+            MondrianDef.Join join = (MondrianDef.Join) relation;
+            String subindent = indent + "  ";
+
+            buf.append(indent);
+            //buf.append(join.leftAlias);
+            buf.append(join.getLeftAlias());
+            buf.append('.');
+            buf.append(join.leftKey);
+            buf.append('=');
+            buf.append(join.getRightAlias());
+            //buf.append(join.rightAlias);
+            buf.append('.');
+            buf.append(join.rightKey);
+            buf.append('\n');
+            format(join.left, buf, subindent);
+            format(join.right, buf, indent);
+        }
+    }
+
+    /** 
+     * This class is used to associate a MondrianDef.Table with its associated
+     * level's depth. This is used to rank tables in a snowflake so that
+     * the table with the lowest rank, level depth, is furthest from
+     * the base fact table in the RolapStar.
+     * 
+     */
+    private static class RelNode {
+        
+        /** 
+         * Find a RelNode by table name or, if that fails, by table alias 
+         * from a map of RelNodes.
+         * 
+         * @param table 
+         * @param map 
+         * @return 
+         */
+        private static RelNode lookup(MondrianDef.Table table, Map map) {
+            RelNode relNode = (RelNode) map.get(table.name);
+            if ((relNode == null) && (table.alias != null)) {
+                relNode = (RelNode) map.get(table.alias);
+            }
+            return relNode;
+        }
+
+        private int depth;
+        private String alias;
+        private MondrianDef.Table table;
+        RelNode(String alias, int depth) {
+            this.alias = alias;
+            this.depth = depth;
+        }
+
+    }
+    
+    /** 
+     * This attempts to transform a MondrianDef.Relation into the "canonical" 
+     * form. What is the canonical form you might ask, well it is only relevant
+     * when the relation is a snowflake (nested joins), not simply a table.
+     * The canonical form has lower levels to the left of higher levels (Day
+     * before Month before Quarter before Year) and the nested joins are always
+     * on the right side of the parent join.
+     * The canonical form is (using a Time dimension example):
+     * <pre>
+     *            |
+     *    ----------------
+     *    |             |
+     *   Day      --------------
+     *            |            |
+     *          Month      ---------
+     *                     |       |
+     *                   Quarter  Year
+     * </pre>
+     * <p>
+     * When the relation looks like the above, then the fact table joins to the
+     * lowest level table (the Day table) which joins to the next level (the
+     * Month table) which joins to the next (the Quarter table) which joins to
+     * the top level table (the Year table).
+     * <p>
+     * This method supports the transformation of a subset of all possible
+     * join/table relation trees (and anyone who whats to generalize it is
+     * welcome to). It will take any of the following and convert them to 
+     * the canonical.
+     * <pre>
+     *            |
+     *    ----------------
+     *    |             |
+     *   Year     --------------
+     *            |            |
+     *         Quarter     ---------
+     *                     |       |
+     *                   Month    Day
+     *
+     *                  |
+     *           ----------------
+     *           |              |
+     *        --------------   Year
+     *        |            |
+     *    ---------     Quarter
+     *    |       |
+     *   Day     Month
+     *
+     *                  |
+     *           ----------------
+     *           |              |
+     *        --------------   Day
+     *        |            |
+     *    ---------      Month
+     *    |       |
+     *   Year   Quarter
+     *
+     *            |
+     *    ----------------
+     *    |             |
+     *   Day      --------------
+     *            |            |
+     *          Month      ---------
+     *                     |       |
+     *                   Quarter  Year
+     *
+     * </pre>
+     * <p>
+     * In addition, at any join node, it can exchange the left and right
+     * child relations so that the lower level depth is to the left.
+     * For example, it can also transform the following:
+     * <pre>
+     *                |
+     *         ----------------
+     *         |              |
+     *      --------------   Day
+     *      |            |
+     *    Month     ---------
+     *              |       |
+     *             Year   Quarter
+     * </pre>
+     * <p>
+     * What it can not handle are cases where on both the left and right side of
+     * a join there are child joins:
+     * <pre>
+     *                |
+     *         ----------------
+     *         |              |
+     *      ---------     ----------
+     *      |       |     |        |
+     *    Month    Day   Year    Quarter
+     *
+     *                |
+     *         ----------------
+     *         |              |
+     *      ---------     ----------
+     *      |       |     |        |
+     *    Year     Day   Month   Quarter
+     * </pre>
+     * <p>
+     * When does this method do nothing? 1) when there are less than 2 levels,
+     * 2) when any level does not have a table name, and 3) when for every table
+     * in the relation there is not a level. In these cases, this method simply
+     * return the original relation.
+     * 
+     * @param relation 
+     * @param levels 
+     * @return 
+     */
+    private static MondrianDef.Relation reorder(MondrianDef.Relation relation, 
+                RolapLevel[] levels) {
+        // Need at least two levels, with only one level theres nothing to do.
+        if (levels.length < 2) {
+            return relation;
+        }
+
+        Map nodeMap = new HashMap();
+
+        // Create RelNode in top down order (year -> day)
+        for (int i = 0; i < levels.length; i++) {
+            RolapLevel level = levels[i];
+
+            if (level.isAll()) {
+                continue;
+            }
+
+            // this is the table alias
+            String tableName = level.getTableName();
+            if (tableName == null) {
+                // punt, no table name
+                return relation;
+            }
+            RelNode rnode = new RelNode(tableName, i);
+            nodeMap.put(tableName, rnode);
+        }
+        if (! validateNodes(relation, nodeMap)) {
+            return relation;
+        }
+        relation = copy(relation);
+
+        // Put lower levels to the left of upper levels
+        leftToRight(relation, nodeMap);
+
+        // Move joins to the right side
+        topToBottom(relation);
+
+        return relation;
+    }
+    
+    /** 
+     * The map has to be validated against the relation because there are
+     * certain cases where we do not want to (read: can not) do reordering, for
+     * instance, when closures are involved.
+     * 
+     * @param relation 
+     * @param map 
+     * @return 
+     */
+    private static boolean validateNodes(MondrianDef.Relation relation, Map map) {
+        if (relation instanceof MondrianDef.Table) {
+            MondrianDef.Table table = (MondrianDef.Table) relation;
+
+            RelNode relNode = RelNode.lookup(table, map);
+            return (relNode != null);
+
+        } else if (relation instanceof MondrianDef.Join) {
+            MondrianDef.Join join = (MondrianDef.Join) relation;
+
+            return validateNodes(join.left, map) && 
+                validateNodes(join.right, map);
+
+        } else {
+            throw Util.newInternal("bad relation type " + relation);
+        }
+        
+    }
+    
+    /** 
+     * This method transforms the Relation moving the tables associated with
+     * lower levels (greater level depth, i.e., Day is lower than Month) to the 
+     * left of tables with high levels.
+     * 
+     * @param relation 
+     * @param map 
+     * @return 
+     */
+    private static int leftToRight(MondrianDef.Relation relation, Map map) {
+        if (relation instanceof MondrianDef.Table) {
+            MondrianDef.Table table = (MondrianDef.Table) relation;
+
+            RelNode relNode = RelNode.lookup(table, map);
+            // Associate the table with its RelNode!!!! This is where this
+            // happens.
+            relNode.table = table;
+
+            return relNode.depth;
+
+        } else if (relation instanceof MondrianDef.Join) {
+            MondrianDef.Join join = (MondrianDef.Join) relation;
+            int leftDepth = leftToRight(join.left, map);
+            int rightDepth = leftToRight(join.right, map);
+
+            // we want the right side to be less than the left
+            if (rightDepth > leftDepth) {
+                // switch 
+                String leftAlias = join.leftAlias;
+                String leftKey = join.leftKey;
+                MondrianDef.Relation left = join.left;
+                join.leftAlias = join.rightAlias;
+                join.leftKey = join.rightKey;
+                join.left = join.right;
+                join.rightAlias = leftAlias;
+                join.rightKey = leftKey;
+                join.right = left;
+            }
+            // Does not currently matter which is returned because currently we
+            // only support structures where the left and right depth values
+            // form an inclusive subset of depth values, that is, any
+            // node with a depth value between the left or right values is
+            // a child of this current join.
+            return leftDepth;
+
+        } else {
+            throw Util.newInternal("bad relation type " + relation);
+        }
+        
+    }
+    
+    /** 
+     * Transform so that all joins have a table as their left child and either a
+     * table of child join on the right.
+     * 
+     * @param relation 
+     */
+    private static void topToBottom(MondrianDef.Relation relation) {
+        if (relation instanceof MondrianDef.Table) {
+            MondrianDef.Table table = (MondrianDef.Table) relation;
+            // nothing
+
+        } else if (relation instanceof MondrianDef.Join) {
+            MondrianDef.Join join = (MondrianDef.Join) relation;
+
+            while (join.left instanceof MondrianDef.Join) {
+                MondrianDef.Join jleft = (MondrianDef.Join) join.left;
+
+                MondrianDef.Relation right = join.right;
+
+
+                join.right = new MondrianDef.Join(
+                                    join.leftAlias,
+                                    join.leftKey,
+                                    jleft.right,
+                                    join.rightAlias,
+                                    join.rightKey,
+                                    join.right);
+
+                join.left = jleft.left;
+
+                join.rightAlias = jleft.rightAlias;
+                join.rightKey = jleft.rightKey;
+                join.leftAlias = jleft.leftAlias;
+                join.leftKey = jleft.leftKey;
+            }
+        }
+        
+    }
+    
+    /** 
+     * Does what it says, it returns a copy of the relation parameter. 
+     * 
+     * @param relation 
+     * @return 
+     */
+    private static MondrianDef.Relation copy(MondrianDef.Relation relation) {
+        if (relation instanceof MondrianDef.Table) {
+            MondrianDef.Table table = (MondrianDef.Table) relation;
+            return new MondrianDef.Table(table);
+
+        } else if (relation instanceof MondrianDef.Join) {
+            MondrianDef.Join join = (MondrianDef.Join) relation;
+
+            MondrianDef.Relation left = copy(join.left);
+            MondrianDef.Relation right = copy(join.right);
+
+            return new MondrianDef.Join(join.leftAlias, join.leftKey, left,
+                        join.rightAlias, join.rightKey, right);
+
+        } else {
+            throw Util.newInternal("bad relation type " + relation);
+        }
+    }
+    
+    /** 
+     * This method takes a relation in canonical form and snips off the
+     * the tables with the given tableName (or table alias). The matching table
+     * only appears once in the relation.
+     * 
+     * @param relation 
+     * @param tableName 
+     * @return 
+     */
+    private static MondrianDef.Relation snip(MondrianDef.Relation relation, 
+                String tableName) {
+        if (relation instanceof MondrianDef.Table) {
+            MondrianDef.Table table = (MondrianDef.Table) relation;
+            // Return null if the table's name or alias matches tableName
+            return ((table.alias != null) && table.alias.equals(tableName))
+                ? null
+                : (table.name.equals(tableName) ? null : table);
+
+        } else if (relation instanceof MondrianDef.Join) {
+            MondrianDef.Join join = (MondrianDef.Join) relation;
+
+            // snip left
+            MondrianDef.Relation left = snip(join.left, tableName);
+            if (left == null) {
+                // left got snipped so return the right 
+                // (the join is no longer a join).
+                return join.right;
+
+            } else {
+                // whatever happened on the left, save it
+                join.left = left;
+
+                // snip right
+                MondrianDef.Relation right = snip(join.right, tableName);
+                if (right == null) {
+                    // right got snipped so return the left.
+                    return join.left;
+
+                } else {
+                    // save the right, join still has right and left children
+                    // so return it.
+                    join.right = right;
+                    return join;
+                }
+            }
+
+
+        } else {
+            throw Util.newInternal("bad relation type " + relation);
+        }
+
+    }
+    //
+    ///////////////////////////////////////////////////////////////////////////
+
+
 
     public Member[] getMembersForQuery(String query, List calcMembers) {
         throw new UnsupportedOperationException();
@@ -1022,8 +1688,154 @@ System.out.println("RolapCube.lookupChild OlapElement: DOES THIS EVER GET CALLED
             assert role != null : "precondition: role != null";
         }
 
+/*
+boolean isShipBudgetBM() {
+    return RolapCube.this.getName().equals("ShipBudgetBM");
+}
+
+// RME
+public Member[] getHierarchyRootMembers(Hierarchy hierarchy) {
+if (isShipBudgetBM()) {
+System.out.println("RolapCubeSchemaReader.getHierarchyRootMembers: hierarchy="
++hierarchy.getName()
+);
+}
+    Member[] members = super.getHierarchyRootMembers(hierarchy);
+if (isShipBudgetBM()) {
+for (int i = 0; i < members.length; i++) {
+    System.out.println("   " +members[i].getName());
+}
+}
+    return members;
+}
+public void getMemberRange(Level level, Member startMember, Member endMember, List list) {
+if (isShipBudgetBM()) {
+System.out.println("RolapCubeSchemaReader.getMemberRange: level="
++level.getName()
++ ", startMember="
++startMember.getName()
++ ", endMember="
++endMember.getName()
+);
+}
+    super.getMemberRange(level, startMember, endMember, list);
+}
+public Member[] getMemberChildren(Member member) {
+if (isShipBudgetBM()) {
+System.out.println("RolapCubeSchemaReader.getMemberChildren: member="
++member.getName()
+);
+}
+    return super.getMemberChildren(member);
+}
+public int getChildrenCountFromCache(Member member) {
+if (isShipBudgetBM()) {
+System.out.println("RolapCubeSchemaReader.getChildrenCountFromCache: member="
++member.getName()
+);
+}
+    return super.getChildrenCountFromCache(member);
+}
+public int getLevelCardinalityFromCache(Level level) {
+if (isShipBudgetBM()) {
+System.out.println("RolapCubeSchemaReader.getLevelCardinalityFromCache: level="
++level.getName()
+);
+}
+    return super.getLevelCardinalityFromCache(level);
+}
+public int getMemberDepth(Member member) {
+if (isShipBudgetBM()) {
+System.out.println("RolapCubeSchemaReader.getMemberDepth: member="
++member.getName()
+);
+}
+    return super.getMemberDepth(member);
+}
+public Member getMemberParent(Member member) {
+if (isShipBudgetBM()) {
+System.out.println("RolapCubeSchemaReader.getMemberParent: member="
++member.getName()
+);
+}
+    return super.getMemberParent(member);
+}
+public int compareMembersHierarchically(Member m1, Member m2) {
+if (isShipBudgetBM()) {
+System.out.println("RolapCubeSchemaReader.compareMembersHierarchically: m1="
++m1.getName()
++", m2="
++m2.getName()
+);
+}
+    return super.compareMembersHierarchically(m1, m2);
+}
+public OlapElement getElementChild(OlapElement parent, String name) {
+if (isShipBudgetBM()) {
+System.out.println("RolapCubeSchemaReader.getElementChild: parent="
++parent.getName()
++", name="
++name
+);
+}
+    return super.getElementChild(parent, name);
+}
+public void getMemberDescendants(Member member, List result, Level level,
+            boolean before, boolean self, boolean after) {
+if (isShipBudgetBM()) {
+System.out.println("RolapCubeSchemaReader.getMemberDescendants: member="
++member.getName()
++", level="
++level.getName()
+);
+}
+    super.getMemberDescendants(member, result, level, before, self, after);
+}
+public OlapElement lookupCompound(OlapElement parent, 
+                                  String[] names, 
+                                  boolean failIfNotFound, 
+                                  int category) {
+if (isShipBudgetBM()) {
+System.out.println("RolapCubeSchemaReader.lookupCompound: parent="
++parent.getName()
+);
+for (int i = 0; i < names.length; i++) {
+    System.out.println("   " +names[i]);
+}
+}
+    return super.lookupCompound(parent, names, failIfNotFound, category);
+}
+public Level[] getHierarchyLevels(Hierarchy hierarchy) {
+if (isShipBudgetBM()) {
+System.out.println("RolapCubeSchemaReader.getHierarchyLevels: hierarchy="
++hierarchy.getName());
+}
+    return super.getHierarchyLevels(hierarchy);
+}
+*/
+
+
         public Member[] getLevelMembers(Level level) {
+/*
+// RME
+if (isShipBudgetBM()) {
+System.out.println("RolapCubeSchemaReader.getLevelMembers: level="
++level.getName()
++", uniqueName="
++level.getUniqueName()
+);
+}
+*/
+
             Member[] members = super.getLevelMembers(level);
+/*
+// RME
+if (isShipBudgetBM()) {
+for (int i = 0; i < members.length; i++) {
+    System.out.println("   " +members[i].getName());
+}
+}
+*/
             List calcMembers = getCalculatedMembers(level.getHierarchy());
             for (int i = 0; i < calcMembers.size(); i++) {
                 Member member = (Member) calcMembers.get(i);
@@ -1033,6 +1845,7 @@ System.out.println("RolapCube.lookupChild OlapElement: DOES THIS EVER GET CALLED
             }
             return members;
         }
+
 
         public Member getCalculatedMember(String[] nameParts) {
             final String uniqueName = Util.implode(nameParts);

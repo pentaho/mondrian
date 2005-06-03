@@ -5,6 +5,14 @@
 -->
 
     <!--
+      This matches aggregate tables with names: "${fact_table_name}_agg_NNN"
+        <TableMatch id="ta" posttemplate="_agg_[0-9]+"/>
+
+      This matches aggregate tables with names: "${base_name}_agg_NNN"
+        where the fact_table_name == RF_base_name
+        <TableMatch id="ta" posttemplate="_agg_[0-9]+"
+            basename="RF_(.*)"/>
+
       This matches aggregate tables with names: "agg_.+_${fact_table_name}"
     -->
     <TableMatch id="ta" pretemplate="agg_.+_"/>
@@ -20,6 +28,9 @@
         </Regex>
         <Regex id="mixed" charcase="lower" >
             ${hierarchy_name}_${level_column_name}
+        </Regex>
+        <Regex id="usage" charcase="exact" >
+            ${usage_prefix}${level_column_name}
         </Regex>
         <Regex id="physical" charcase="exact" >
             ${level_column_name}

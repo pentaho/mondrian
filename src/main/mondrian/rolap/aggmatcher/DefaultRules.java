@@ -391,12 +391,14 @@ public class DefaultRules {
      * @param levelColumnName
      * @return
      */
-    public Recognizer.Matcher getLevelMatcher(final String hierarchyName,
+    public Recognizer.Matcher getLevelMatcher(final String usagePrefix,
+                                              final String hierarchyName,
                                               final String levelName,
                                               final String levelColumnName) {
         DefaultDef.AggRule rule = getAggRule();
         Recognizer.Matcher matcher =
-            rule.getLevelMap().getMatcher(hierarchyName,
+            rule.getLevelMap().getMatcher(usagePrefix,
+                                          hierarchyName,
                                           levelName,
                                           levelColumnName);
         return matcher;

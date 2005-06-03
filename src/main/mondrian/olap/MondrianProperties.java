@@ -16,6 +16,7 @@ import mondrian.util.PropertiesPlus;
 import org.apache.log4j.Logger;
 import javax.servlet.ServletContext;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Method;
 import java.lang.ref.WeakReference;
 import java.io.File;
@@ -268,6 +269,7 @@ public class MondrianProperties extends PropertiesPlus {
 
     private int populateCount;
     private Map triggers;
+    private String[] propertyNames;
 
     public MondrianProperties() {
         triggers = Collections.EMPTY_MAP;
@@ -412,6 +414,40 @@ public class MondrianProperties extends PropertiesPlus {
         return null;
     }
 
+    /** 
+     * Get the names of all of the mondrian properties. This uses reflection
+     * to get all static class variable of type <code>String</code> which
+     * do not end with "Default" - these are the variables holding names
+     * of the properties. This value is cached.
+     * 
+     * @return array of property names.
+     */
+    public String[] getPropertyNamesReflect() {
+        if (propertyNames == null) {
+            List list = new ArrayList();
+            try {
+                Field[] fields = MondrianProperties.class.getFields();
+                for (int i = 0; i < fields.length; i++) {
+                    Field field = fields[i];
+                    if (! Modifier.isStatic(field.getModifiers())) {
+                        continue;
+                    }
+                    if (field.getType() != String.class) {
+                        continue;
+                    }
+                    if (field.getName().endsWith("Default")) {
+                        continue;
+                    }
+                    String v = (String) field.get(MondrianProperties.class);
+                    list.add(v);
+                }
+            } catch (Exception ex) {
+                // ignore
+            }
+            propertyNames = (String[]) list.toArray(new String[list.size()]);
+        }
+        return propertyNames;
+    }
     /**
      * Loads this property set from: the file "mondrian.properties" (if it
      * exists); the "mondrian.properties" in the JAR (if we're in a servlet);
@@ -797,7 +833,7 @@ public class MondrianProperties extends PropertiesPlus {
      * DefaultRules.xml is in mondrian.rolap.aggmatcher
      * 
      */
-    public static final String AggregateRules_Default = "DefaultRules.xml";
+    public static final String AggregateRules_Default = "/DefaultRules.xml";
 
     /**
      * Get the value of the AggregateRules property which returns the
@@ -832,6 +868,24 @@ public class MondrianProperties extends PropertiesPlus {
      */
     public String getAggregateRuleTag() {
         return getProperty(AggregateRuleTag, AggregateRuleTag_Default);
+    }
+
+    /**
+     * If set, then as each aggregate request is processed, both the lost
+     * and collapsed dimension create and insert sql code is printed.
+     * This is for use in the CmdRunner allowing one to create aggregate table
+     * generation sql.
+     */
+    public static final String GenerateAggregateSql
+                    = "mondrian.rolap.aggregates.generateSql";
+
+    /**
+     * Should aggregate table sql be generated
+     *
+     * @return true then generate the sql
+     */
+    public boolean getGenerateAggregateSql() {
+        return getBooleanProperty(GenerateAggregateSql);
     }
     //
     //////////////////////////////////////////////////////////////////////////

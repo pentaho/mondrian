@@ -72,8 +72,6 @@ public class Aggregation {
 
     private final RolapStar star;
 
-    private final RolapStar.Column[] columns;
-
     private final BitKey bitKey;
 
     /**
@@ -83,11 +81,18 @@ public class Aggregation {
     private final List segmentRefs;
     private final boolean oracle;
 
+    /**
+     * This is set in the load method and is used during
+     * the processing of a particular aggregate load.
+     * The AggregateManager synchonizes access to each instance's methods
+     * so that an instance is processing a single set of columns, measures,
+     * contraints at any one time.
+     */
+    private RolapStar.Column[] columns;
+
     public Aggregation(RolapStar star,
-                       RolapStar.Column[] columns,
                        BitKey bitKey) {
         this.star = star;
-        this.columns = columns;
         this.bitKey = bitKey;
         this.segmentRefs = new ArrayList();
 
@@ -115,15 +120,21 @@ public class Aggregation {
      * Loads a set of segments into this aggregation, one per measure,
      * each constrained by the same set of column values, and each pinned
      * once.
+     * <p>
+     * A Column and its constraints are accessed at the same level in their
+     * respective arrays.
      *
      * For example,
      *   measures = {unit_sales, store_sales},
      *   state = {CA, OR},
      *   gender = unconstrained
      */
-    public synchronized void load(RolapStar.Measure[] measures,
+    public synchronized void load(RolapStar.Column[] columns,
+                                  RolapStar.Measure[] measures,
                                   ColumnConstraint[][] constraintses,
                                   Collection pinnedSegments) {
+        this.columns = columns;
+
         BitKey bitKey = this.bitKey.copy();
         int axisCount = columns.length;
         Util.assertTrue(constraintses.length == axisCount);
@@ -152,6 +163,7 @@ public class Aggregation {
             pinnedSegments.add(segment);
         }
         Segment.load(segments, bitKey, isDistinct, pinnedSegments, axes);
+
     }
 
 
@@ -160,6 +172,7 @@ public class Aggregation {
      * would be returned anyway.
      **/
     public synchronized ColumnConstraint[][] optimizeConstraints(
+                       RolapStar.Column[] columns,
             ColumnConstraint[][] constraintses) {
 
         Util.assertTrue(constraintses.length == columns.length);
@@ -359,11 +372,21 @@ public class Aggregation {
         return null;
     }
 
-    public RolapStar.Column[] getColumns() {
+    /** 
+     * This is called during Sql generation.
+     * 
+     * @return 
+     */
+    RolapStar.Column[] getColumns() {
         return columns;
     }
 
-    public RolapStar getStar() {
+    /** 
+     * This is called during Sql generation.
+     * 
+     * @return 
+     */
+    RolapStar getStar() {
         return star;
     }
 

@@ -176,6 +176,18 @@ options.</td>
         This does not change this log level.</td>
     </tr>
     <tr>
+      <td style="vertical-align: top;"><code>-t</code></td>
+      <td style="vertical-align: top;">Time each mdx query's execution.
+        </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><code>-nocache</code></td>
+      <td style="vertical-align: top;">Regardless of the settings in the
+        Schema file, set each Cube to no in-memory aggregate caching 
+        (caching is turned off so each query goes to the database).
+        </td>
+    </tr>
+    <tr>
       <td style="vertical-align: top;"><code>-rc</code></td>
       <td style="vertical-align: top;">Do not reload the connection
         after each query (the default is to reload the connection.
@@ -193,11 +205,12 @@ options.</td>
       </td>
     </tr>
     <tr>
-      <td style="vertical-align: top;"><code>-f filename</code></td>
-      <td style="vertical-align: top;">Specify the name of a file
-        that contains CmdRunner commands. If this argument is not
-        supplied, then the interpreter starting in the command entry
-        mode.
+      <td style="vertical-align: top;"><code>-f filename+</code></td>
+      <td style="vertical-align: top;">Specify the name of one or
+        more files that contains CmdRunner commands. If this argument 
+        is not supplied, then the interpreter starting in the command 
+        entry mode. After the <code>-f</code> is seen, all subsequent
+        arguments are interpreted as filenames.
       </td>
     </tr>
     <tr>
@@ -365,6 +378,16 @@ With "stack" argument, the Error stack trace is printed.
 </p>
 </blockquote>
 
+<h3>echo</h3>
+<blockquote>
+<code>
+  &gt; echo text &lt;cr&gt;
+</code>
+<p>
+Prints text to standard out.
+</p>
+</blockquote>
+
 <h3>=</h3>
 <blockquote>
 <code>
@@ -434,7 +457,7 @@ either in the property file read on starup or by explicitly using the
 <blockquote>
 <code>
   &gt; set mondrian.olap.triggers.enable=true &lt;cr&gt;
-</code,
+</code>
 </blockquote>
 <p>
 then one can force a re-scanning of the database for aggregate tables
@@ -444,7 +467,7 @@ by disabling and then re-enabling the use of aggregates:
 <code>
   &gt; set mondrian.olap.aggregates.Use=false &lt;cr&gt;<br>
   &gt; set mondrian.olap.aggregates.Use=true &lt;cr&gt;
-</code,
+</code>
 </blockquote>
 <p>
 In fact, as long as one does not use the 
@@ -477,6 +500,238 @@ and in separate window edit/save MDX in the file.
 <p>
 There is also no support for a command history (other than the '='
 command).
+</p>
+<h2>AggGen: Aggregate Sql Generator</h2>
+<p>
+Currently in Mondrian there is no way to generate candidate aggregate table
+creation and population Sql scripts from an MDX query without 
+the query executing against the database and returning a result.
+</p>
+<p>
+With that in mind, this is how you can use
+<code>AggGen</code>, Mondrian's aggregate table generator.
+In the property file provided to the 
+<code>CmdRunner</code>
+at startup add the line:
+<blockquote>
+<code>
+    mondrian.rolap.aggregates.generateSql=true
+</code>
+</blockquote>
+</p>
+<p>
+or from the 
+<code>CmdRunner</code>
+command line enter:
+<blockquote>
+<code>
+  &gt; set mondrian.rolap.aggregates.generateSql=true &lt;cr&gt;
+</code>
+</blockquote>
+</p>
+<p>
+This instructs Mondrian whenever an MDX query is executed
+(and the cube associated with the query is not virtual)
+to output to standard out the Sql associated with the creation
+and population of both the "lost" dimension aggregate table
+and the "collapsed" dimension aggregate table which would be
+best suited to optimize the given MDX query.
+This Sql has to be edited to change the "l_XXX" in the "lost" 
+dimension statements or "c_XXX" in the "collapsed" dimension
+statements to more appropriate table names (remembering to
+make sure that the new names can still be recognized by Mondrian
+as aggregates of the particular fact table).
+</p>
+<p>
+As an example, if the following MDX is run against a MySql system:
+<blockquote>
+<pre>
+<code>
+WITH MEMBER
+    [Store].[Nat'l Avg] AS
+   'AVG(  { [Store].[Store Country].Members}, [Measures].[Units Shipped])'
+SELECT
+    { [Store].[Store Country].Members, [Store].[Nat'l Avg] } ON COLUMNS,
+    { [Product].[Product Family].[Non-Consumable].Children } ON ROWS
+FROM
+   [Warehouse]
+WHERE 
+    [Measures].[Units Shipped];
+</code>
+</pre>
+</blockquote>
+</p>
+<p>
+Then the following is written to standard output:
+<blockquote>
+<pre>
+<code>
+WARN  [main] AggGen For RolapStar: "inventory_fact_1997" measure with
+name, "warehouse_sales"-"inventory_fact_1997"."warehouse_cost", is not a column
+name. The measure's column name may be an expression and currently AggGen does
+not handle expressions. You will have to add this measure to the aggregate table
+definition by hand.
+
+CREATE TABLE agg_l_XXX_inventory_fact_1997 (
+    time_id INT,
+    product_id INT NOT NULL,
+    store_id INT,
+    store_invoice DECIMAL(10,4),
+    supply_time SMALLINT,
+    warehouse_cost DECIMAL(10,4),
+    warehouse_sales DECIMAL(10,4),
+    units_shipped INT,
+    units_ordered INT,
+    fact_count INTEGER NOT NULL
+);
+
+INSERT INTO agg_l_XXX_inventory_fact_1997 (
+    time_id,
+    product_id,
+    store_id,
+    store_invoice,
+    supply_time,
+    warehouse_cost,
+    warehouse_sales,
+    units_shipped,
+    units_ordered,
+    fact_count)
+SELECT
+    `inventory_fact_1997`.`time_id` AS `time_id`,
+    `inventory_fact_1997`.`product_id` AS `product_id`,
+    `inventory_fact_1997`.`store_id` AS `store_id`,
+    SUM(`inventory_fact_1997`.`store_invoice`) AS `store_invoice`,
+    SUM(`inventory_fact_1997`.`supply_time`) AS `supply_time`,
+    SUM(`inventory_fact_1997`.`warehouse_cost`) AS `warehouse_cost`,
+    SUM(`inventory_fact_1997`.`warehouse_sales`) AS `warehouse_sales`,
+    SUM(`inventory_fact_1997`.`units_shipped`) AS `units_shipped`,
+    SUM(`inventory_fact_1997`.`units_ordered`) AS `units_ordered`,
+    COUNT(*) AS `fact_count`
+FROM 
+    `inventory_fact_1997` AS `inventory_fact_1997`
+GROUP BY 
+    `inventory_fact_1997`.`time_id`,
+    `inventory_fact_1997`.`product_id`,
+    `inventory_fact_1997`.`store_id`;
+
+CREATE TABLE agg_c_XXX_inventory_fact_1997 (
+    product_family VARCHAR(30),
+    product_department VARCHAR(30),
+    store_country VARCHAR(30),
+    the_year SMALLINT,
+    store_invoice DECIMAL(10,4),
+    supply_time SMALLINT,
+    warehouse_cost DECIMAL(10,4),
+    warehouse_sales DECIMAL(10,4),
+    units_shipped INT,
+    units_ordered INT,
+    fact_count INTEGER NOT NULL
+);
+
+INSERT INTO agg_c_XXX_inventory_fact_1997 (
+    product_family,
+    product_department,
+    store_country,
+    the_year,
+    store_invoice,
+    supply_time,
+    warehouse_cost,
+    warehouse_sales,
+    units_shipped,
+    units_ordered,
+    fact_count)
+SELECT
+    `product_class`.`product_family` AS `product_family`,
+    `product_class`.`product_department` AS `product_department`,
+    `store`.`store_country` AS `store_country`,
+    `time_by_day`.`the_year` AS `the_year`,
+    SUM(`inventory_fact_1997`.`store_invoice`) AS `store_invoice`,
+    SUM(`inventory_fact_1997`.`supply_time`) AS `supply_time`,
+    SUM(`inventory_fact_1997`.`warehouse_cost`) AS `warehouse_cost`,
+    SUM(`inventory_fact_1997`.`warehouse_sales`) AS `warehouse_sales`,
+    SUM(`inventory_fact_1997`.`units_shipped`) AS `units_shipped`,
+    SUM(`inventory_fact_1997`.`units_ordered`) AS `units_ordered`,
+    COUNT(*) AS `fact_count`
+FROM 
+    `inventory_fact_1997` AS `inventory_fact_1997`,
+    `product_class` AS `product_class`,
+    `product` AS `product`,
+    `store` AS `store`,
+    `time_by_day` AS `time_by_day`
+WHERE 
+    `product`.`product_class_id` = `product_class`.`product_class_id` and
+    `inventory_fact_1997`.`product_id` = `product`.`product_id` and
+    `inventory_fact_1997`.`store_id` = `store`.`store_id` and
+    `inventory_fact_1997`.`time_id` = `time_by_day`.`time_id`
+GROUP BY 
+    `product_class`.`product_family`,
+    `product_class`.`product_department`,
+    `store`.`store_country`,
+    `time_by_day`.`the_year`;
+</code>
+</pre>
+</blockquote>
+</p>
+<p>
+There are a couple of things to notice about the output.
+</p>
+<p>
+First, is the 
+<code>WARN</code>
+log message. This appears because the inventory_fact_1997 table has
+a measure with a column attribute
+<code>
+"warehouse_sales"-"inventory_fact_1997"."warehouse_cost"
+</code>
+that is not a column name, its an expression. The
+<code>AggGen</code>
+code does not currently know what to do with such an expression, so
+it issues a warning. A user would have to take the generated 
+aggregate table Sql scripts and alter them to accommodate this measure.
+</p>
+<p>
+There are two aggregate tables, 
+<code>agg_l_XXX_inventory_fact_1997</code>
+the "lost" dimension case and
+<code>agg_c_XXX_inventory_fact_1997</code>
+the "collapsed" dimension case.
+The "lost" dimension table, keeps the foreign keys for those 
+dimension used by the MDX query and discards the other
+foreign keys, while the
+"collapsed" dimension table also discards the foreign keys that are
+not needed but, in addition, rolls up or collapses the remaining
+dimensions to just those levels needed by the query.
+</p>
+<p>
+There are no indexes creation Sql statements for the aggregate
+tables. This is because not all databases require indexes to
+achive good performance against star schemas - your mileage may vary
+so do some testing. (With MySql indexes are a good idea).
+</p>
+<p>
+If one is creating a set of aggregate tables, there are cases where
+it is more efficient to create the set of aggregates that are just
+above the fact tables and then create each subsequent level of
+aggregates from one of the preceeding aggregate tables rather than
+always going back to the fact table.
+</p>
+<p>
+There are many possible aggregate tables for a given set of fact tables.
+<code>AggGen</code>
+just provides example Sql scripts based upon the MDX query run.
+Judgement has to be used when creating aggregate tables.
+There are tradeoffs such as which are the MDX queries that are
+run the most often? How much space does each aggregate table take?
+How long does it take to create the aggregate tables?
+How often does the set of MDX queries change?
+etc.
+</p>
+<p>
+During normal Mondrian operation, for instance, with 
+<code>JPivot</code>, it is recommended that the above 
+<code>AggGen</code>
+property not be set to true as it will slow down Mondrian and
+generate a lot of text in the log file.
 </p>
 </body>
 </html>

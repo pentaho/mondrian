@@ -12,6 +12,7 @@ package mondrian.rolap;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Member;
 import mondrian.olap.Util;
+import mondrian.olap.MondrianProperties;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.agg.ColumnConstraint;
@@ -36,6 +37,32 @@ public class FastBatchingCellReader implements CellReader {
 
     private static final Logger LOGGER =
         Logger.getLogger(FastBatchingCellReader.class);
+
+    /** 
+     * This static variable controls the generation of aggregate table sql.
+     */
+    private static boolean generateAggregateSql =
+             MondrianProperties.instance().getGenerateAggregateSql();
+    static {
+        // Trigger is used to lookup and change the value of the
+        // variable that controls generating aggregate table sql.
+        // Using a trigger means we don't have to look up the property eveytime.
+        new MondrianProperties.Trigger() {
+            public boolean isPersistent() {
+                return true;
+            }
+            public int phase() {
+                return MondrianProperties.Trigger.PRIMARY_PHASE;
+            }
+            public void executeTrigger(final String key,
+                                       final String value)
+                         throws MondrianProperties.Trigger.VetoRT {
+                generateAggregateSql = 
+                    MondrianProperties.instance().getGenerateAggregateSql();
+            }
+        };
+    }
+
 
     private final RolapCube cube;
     private final Set pinnedSegments;
@@ -179,6 +206,22 @@ public class FastBatchingCellReader implements CellReader {
         }
 
         void loadAggregation() {
+            if (generateAggregateSql &&
+                    ! FastBatchingCellReader.this.cube.isVirtual()) {
+
+                mondrian.rolap.aggmatcher.AggGen aggGen = 
+                    new mondrian.rolap.aggmatcher.AggGen(
+                        FastBatchingCellReader.this.cube.getStar(), columns);
+                if (aggGen.isReady()) {
+                    System.out.println(aggGen.createLost());
+                    System.out.println(aggGen.insertIntoLost());
+                    System.out.println(aggGen.createCollapsed());
+                    System.out.println(aggGen.insertIntoCollapsed());
+                } else {
+                    System.out.println("AggGen failed");
+                }
+            }
+
             long t1 = System.currentTimeMillis();
 
             AggregationManager aggmgr = AggregationManager.instance();

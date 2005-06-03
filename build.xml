@@ -151,6 +151,8 @@ demo/FoodMartCreateData.sql"/>
   <echo>catalina.home         = ${env.CATALINA_HOME}</echo>
   <echo>junit.home            = ${env.JUNIT_HOME}</echo>
   <echo>mondrian.foodmart.catalogURL = ${mondrian.foodmart.catalogURL}</echo>
+  <echo>mondrian.foodmart.jdbcURL    = ${mondrian.foodmart.jdbcURL}</echo>
+  <echo>mondrian.jdbcDrivers         = ${mondrian.jdbcDrivers}</echo>
   <echo>==============================================================</echo>
   </target>
 

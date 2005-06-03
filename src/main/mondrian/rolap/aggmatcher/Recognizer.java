@@ -676,16 +676,54 @@ abstract class Recognizer {
 
             String tableAlias = aggUsage.relation.getAlias();
 
-            RolapStar.Column rc = star.lookupColumn(tableAlias, factColumnName);
+            RolapStar.Table factTable = star.getFactTable();
+            RolapStar.Table descTable = factTable.findDescendant(tableAlias);
 
-            // TODO: if rc == null ???
-            // Can this ever happen??
+            if (descTable == null) {
+                // TODO: what to do here???
+                StringBuffer buf = new StringBuffer(256);
+                buf.append("descendant table is null for factTable=");
+                buf.append(factTable.getAlias());
+                buf.append(", tableAlias=");
+                buf.append(tableAlias);
+                msgRecorder.reportError(buf.toString());
+
+                returnValue = false;
+
+                msgRecorder.throwRTException();
+            }
+
+            RolapStar.Column rc = descTable.lookupColumn(factColumnName);
+
             if (rc == null) {
-                System.out.println("Recognizer.makeLevel: rc == null for " +
-                        "factColumnName=" +factColumnName +
-                        ", levelColumnName=" +levelColumnName +
-                        ", symbolicName=" +symbolicName
-                );
+                // This can happen if we are looking at a collapsed dimension
+                // table, and the collapsed dimension in question in the
+                // fact table is a snowflake (not just a star), so we
+                // must look deeper...
+                for (Iterator it = descTable.getChildren(); it.hasNext(); ) {
+                    RolapStar.Table child = (RolapStar.Table) it.next();
+                    rc = child.lookupColumn(factColumnName);
+                    if (rc != null) {
+                        break;
+                    }
+                }
+
+            }
+            if (rc == null) {
+                StringBuffer buf = new StringBuffer(256);
+                buf.append("Rolap.Column not found (null) for tableAlias=");
+                buf.append(tableAlias);
+                buf.append(", factColumnName=");
+                buf.append(factColumnName);
+                buf.append(", levelColumnName=");
+                buf.append(levelColumnName);
+                buf.append(", symbolicName=");
+                buf.append(symbolicName);
+                msgRecorder.reportError(buf.toString());
+
+                returnValue = false;
+
+                msgRecorder.throwRTException();
             }
             aggUsage.column = rc;
         }

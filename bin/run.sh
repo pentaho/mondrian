@@ -25,6 +25,7 @@ CLASSPATH="$CLASSPATH:$MONDRIAN_LIB/eigenbase-resgen.jar"
 CLASSPATH="$CLASSPATH:$MONDRIAN_LIB/eigenbase-xom.jar"
 CLASSPATH="$CLASSPATH:$MONDRIAN_LIB/javacup.jar"
 CLASSPATH="$CLASSPATH:$MONDRIAN_LIB/log4j-1.2.9.jar"
+CLASSPATH="$CLASSPATH:$MONDRIAN_LIB/servlet.jar"
 
 # now pick up jdbc jars
 for j in $MONDRIAN_TEST_LIB/*.jar

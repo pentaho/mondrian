@@ -83,11 +83,8 @@ public class CellRequest {
         }
     }
 
-    /** RME: NO, this is false, rewrite
-     *
-     * Returns a list which identifies which batch this request will
-     * belong to. The list contains the star as well as the
-     * columns. 
+    /** 
+     * Returns the BitKey for the list of columns.
      **/
     public BitKey getBatchKey() {
         return bitKey;

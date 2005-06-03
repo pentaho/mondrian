@@ -220,7 +220,10 @@ class RolapHierarchy extends HierarchyBase {
     private static boolean tableExists(String tableName,
                                        MondrianDef.Relation relation) {
         if (relation instanceof MondrianDef.Table) {
-            return ((MondrianDef.Table) relation).name.equals(tableName);
+            MondrianDef.Table table = (MondrianDef.Table) relation;
+            // Check by table name and alias
+            return table.name.equals(tableName) || 
+                ((table.alias != null) && table.alias.equals(tableName));
         }
         if (relation instanceof MondrianDef.Join) {
             MondrianDef.Join join = (MondrianDef.Join) relation;
@@ -310,6 +313,7 @@ class RolapHierarchy extends HierarchyBase {
                 // Search for the smallest subset of the relation which
                 // uses C.
                 subRelation = relationSubset(relation, expression.getTableAlias());
+
             }
         }
         query.addFrom(subRelation, null, failIfExists);
@@ -326,9 +330,10 @@ class RolapHierarchy extends HierarchyBase {
 
         if (relation instanceof MondrianDef.Table) {
             MondrianDef.Table table = (MondrianDef.Table) relation;
+            // lookup by both alias and table name
             return (table.getAlias().equals(alias))
                 ? relation
-                : null;
+                : (table.name.equals(alias) ? relation : null);
 
         } else if (relation instanceof MondrianDef.Join) {
             MondrianDef.Join join = (MondrianDef.Join) relation;

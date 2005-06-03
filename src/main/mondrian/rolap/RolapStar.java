@@ -309,16 +309,14 @@ public class RolapStar {
      * Looks up an aggregation or creates one if it does not exist in an
      * atomic (synchronized) operation
      *
-     * @param columns
      * @param bitKey
      * @return
      */
-    public Aggregation lookupOrCreateAggregation(final RolapStar.Column[] columns,
-                                                 final BitKey bitKey) {
+    public Aggregation lookupOrCreateAggregation(final BitKey bitKey) {
         synchronized(aggregations) {
             Aggregation aggregation = lookupAggregation(bitKey);
             if (aggregation == null) {
-                aggregation = new Aggregation(this, columns, bitKey);
+                aggregation = new Aggregation(this, bitKey);
                 this.aggregations.put(bitKey, aggregation);
             }
             return aggregation;
@@ -546,11 +544,25 @@ public class RolapStar {
         private final boolean isNumeric;
         private final String name;
         /**
+         * When a Column is a column, and not a Measure, the parent column
+         * is the coloumn associated with next highest Level.
+         */
+        private final Column parentColumn;
+
+        /**
+         * This is used during both aggregate table recognition and aggregate
+         * table generation. For multiple dimension usages or multiple shared
+         * dimension with the same column names, this is used to disambiguate
+         * aggregate column names.
+         */
+        private final String usagePrefix;
+        /**
          * This is only used in RolapAggregationManager and adds
          * non-constraining columns making the drill-through queries easier for
          * humans to understand.
          */
         private final Column nameColumn;
+        private boolean isNameColumn;
 
         /** this has a unique value per star */
         private final int bitPosition;
@@ -561,19 +573,27 @@ public class RolapStar {
                        Table table,
                        MondrianDef.Expression expression,
                        boolean isNumeric) {
-            this(name, table, expression, isNumeric, null);
+            this(name, table, expression, isNumeric, null, null, null);
         }
         private Column(String name,
                        Table table,
                        MondrianDef.Expression expression,
                        boolean isNumeric,
-                       Column nameColumn) {
+                       Column nameColumn,
+                       Column parentColumn,
+                       String usagePrefix
+                       ) {
             this.name = name;
             this.table = table;
             this.expression = expression;
             this.isNumeric = isNumeric;
             this.bitPosition = table.star.nextColumnCount();
             this.nameColumn = nameColumn;
+            this.parentColumn = parentColumn;
+            this.usagePrefix = usagePrefix;
+            if (nameColumn != null) {
+                nameColumn.isNameColumn = true;
+            }
         }
 
         public boolean equals(Object obj) {
@@ -610,6 +630,15 @@ public class RolapStar {
         }
         public RolapStar.Column getNameColumn() {
             return nameColumn;
+        }
+        public RolapStar.Column getParentColumn() {
+            return parentColumn;
+        }
+        public String getUsagePrefix() {
+            return usagePrefix;
+        }
+        public boolean isNameColumn() {
+            return isNameColumn;
         }
 
         public MondrianDef.Expression getExpression() {
@@ -903,6 +932,9 @@ public class RolapStar {
         public Condition getCondition() {
             return joinCondition;
         }
+        public Table getParentTable() {
+            return parent;
+        }
 
         private void addColumn(Column column) {
             columnList.add(column);
@@ -1046,9 +1078,12 @@ public class RolapStar {
          *
          * @param cube
          * @param level
+         * @param parentColumn 
          */
-        synchronized void makeColumns(RolapCube cube,
-                                     RolapLevel level) {
+        synchronized Column makeColumns(RolapCube cube,
+                                     RolapLevel level,
+                                     Column parentColumn,
+                                     String usagePrefix) {
 
             Column nameColumn = null;
             if (level.getNameExp() != null) {
@@ -1059,6 +1094,8 @@ public class RolapStar {
                     level.getName(),
                     level.getNameExp(),
                     false,
+                    null,
+                    null,
                     null
                 );
 
@@ -1077,7 +1114,9 @@ public class RolapStar {
                 name,
                 level.getKeyExp(),
                 (level.getFlags() & RolapLevel.NUMERIC) != 0,
-                nameColumn
+                nameColumn,
+                parentColumn,
+                usagePrefix
             );
 
             if (column != null) {
@@ -1085,13 +1124,17 @@ public class RolapStar {
                 map.put(level, column);
             }
 
+            return column;
+
         }
         private Column makeColumnForLevelExpr(RolapCube cube,
                                               RolapLevel level,
                                               String name,
                                               MondrianDef.Expression xmlExpr,
                                               boolean isNumeric,
-                                              Column nameColumn) {
+                                              Column nameColumn,
+                                              Column parentColumn,
+                                              String usagePrefix) {
             Table table = this;
             if (xmlExpr instanceof MondrianDef.Column) {
                 final MondrianDef.Column xmlColumn =
@@ -1105,7 +1148,8 @@ public class RolapStar {
                             + "' of cube '"
                             + this
                             + "' is invalid: table '" + tableName
-                            + "' is not found in current scope");
+                            + "' is not found in current scope\n"
+                            + ", star:\n" + getStar());
                 }
                 RolapStar.AliasReplacer aliasReplacer =
                         new RolapStar.AliasReplacer(tableName, table.getAlias());
@@ -1129,7 +1173,9 @@ public class RolapStar {
                                               table,
                                               xmlExpr,
                                               isNumeric,
-                                              nameColumn);
+                                              nameColumn,
+                                              parentColumn,
+                                              usagePrefix);
                 addColumn(column);
             }
             return column;
@@ -1245,6 +1291,15 @@ public class RolapStar {
             }
             return null;
         }
+        public boolean equalsTableName(String tableName) {
+            if (this.relation instanceof MondrianDef.Table) {
+                MondrianDef.Table mt = (MondrianDef.Table) this.relation;
+                if (mt.name.equals(tableName)) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         /**
          * Adds this table to the from clause of a query.
@@ -1349,6 +1404,17 @@ public class RolapStar {
         public boolean isFunky() {
             return (relation == null);
         }
+        public boolean equals(Object obj) {
+            if (!(obj instanceof Table)) {
+                return false;
+            }
+            Table other = (Table) obj;
+            return getAlias().equals(other.getAlias());
+        }
+        public int hashCode() {
+            return getAlias().hashCode();
+        }
+
         public String toString() {
             StringWriter sw = new StringWriter(256);
             PrintWriter pw = new PrintWriter(sw);
