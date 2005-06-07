@@ -214,6 +214,9 @@ text-align:right;
 <title>JSP Page</title>
 </head>
 <body>
+
+<a href="index.jsp">back to index</a><p/>
+
     <form action="adhoc.jsp" method="post">
     <table>
         <tr>
@@ -285,6 +288,8 @@ text-align:right;
 
     </table>
     </form>
+
+<a href="index.jsp">back to index</a><p/>
 
 </body>
 </html>

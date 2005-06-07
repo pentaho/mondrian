@@ -19,12 +19,16 @@ You must accept the terms of that agreement to use this software.
   <display-name>Mondrian</display-name>
   <description/>
 
-  <!-- optional
+  <!-- optional? now in JPivot by default  -->
   <context-param>
     <param-name>contextFactory</param-name>
     <param-value>com.tonbeller.wcf.controller.RequestContextFactoryImpl</param-value>
   </context-param>
-  -->
+
+  <context-param>
+    <param-name>connectString</param-name>
+    <param-value>@mondrian.webapp.connectString@</param-value>
+  </context-param>
 
   <!-- optional
   <context-param>
@@ -36,29 +40,51 @@ You must accept the terms of that agreement to use this software.
   <filter>
     <filter-name>JPivotController</filter-name>
     <filter-class>com.tonbeller.wcf.controller.RequestFilter</filter-class>
+    <init-param>
+      <param-name>indexJSP</param-name>
+      <param-value>/index.jsp</param-value>
+      <description>forward to this page if session is new</description>
+    </init-param>
+    <init-param>
+      <param-name>errorJSP</param-name>
+      <param-value>/error.jsp</param-value>
+      <description>URI of error page</description>
+    </init-param>
+    <init-param>
+      <param-name>busyJSP</param-name>
+      <param-value>/busy.jsp</param-value>
+      <description>This page is displayed if a the user clicks
+        on a query before the previous query has finished</description>
+    </init-param>
+    <!--
+    <init-param>
+      <param-name>forceExtension</param-name>
+      <param-value>.faces</param-value>
+      <description>replace .jsp with .faces</description>
+    </init-param>
+    -->
   </filter>
 
   <filter-mapping>
     <filter-name>JPivotController</filter-name>
-    <url-pattern>*.jsp</url-pattern>
+    <url-pattern>/testpage.jsp</url-pattern>
   </filter-mapping>
 
   <listener>
     <listener-class>mondrian.web.taglib.Listener</listener-class>
   </listener>
 
-<!-- jfreechart provided servlet -->
-  <servlet>
-    <servlet-name>DisplayChart</servlet-name>
-    <servlet-class>org.jfree.chart.servlet.DisplayChart</servlet-class>
-  </servlet>
+  <!-- resources initializer -->
+  <listener>
+    <listener-class>com.tonbeller.tbutils.res.ResourcesFactoryContextListener</listener-class>
+  </listener>
 
   <servlet>
     <servlet-name>MDXQueryServlet</servlet-name>
     <servlet-class>mondrian.web.servlet.MDXQueryServlet</servlet-class>
     <init-param>
       <param-name>connectString</param-name>
-      <param-value>@mondrian.test.connectString@</param-value>
+      <param-value>@mondrian.webapp.connectString@</param-value>
     </init-param>
   </servlet>
 
@@ -67,10 +93,48 @@ You must accept the terms of that agreement to use this software.
     <servlet-class>mondrian.xmla.XmlaServlet</servlet-class>
   </servlet>
 
-<!-- jfreechart provided servlet -->
+
+  <!-- jfreechart provided servlet -->
+  <servlet>
+    <servlet-name>DisplayChart</servlet-name>
+    <servlet-class>org.jfree.chart.servlet.DisplayChart</servlet-class>
+  </servlet>
+
+  <!-- jfreechart provided servlet -->
+  <servlet>
+    <servlet-name>XMLgen</servlet-name>
+    <display-name>XMLgen</display-name>
+    <description>Default configuration created for servlet.</description>
+    <servlet-class>com.clarmont.olap.servlet.XMLgen</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>GetChart</servlet-name>
+    <display-name>GetChart</display-name>
+    <description>Default configuration created for servlet.</description>
+    <servlet-class>com.clarmont.olap.servlet.GetChart</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>Print</servlet-name>
+    <display-name>Print</display-name>
+    <description>Default configuration created for servlet.</description>
+    <servlet-class>com.clarmont.olap.servlet.print</servlet-class>
+  </servlet>
+
   <servlet-mapping>
     <servlet-name>DisplayChart</servlet-name>
     <url-pattern>/DisplayChart</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>XMLgen</servlet-name>
+    <url-pattern>/XMLgen</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>Print</servlet-name>
+    <url-pattern>/Print</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>GetChart</servlet-name>
+    <url-pattern>/GetChart</url-pattern>
   </servlet-mapping>
 
   <servlet-mapping>

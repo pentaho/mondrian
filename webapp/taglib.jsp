@@ -17,6 +17,9 @@
 </head>
 <body>
 
+<a href="index.jsp">back to index</a><p/>
+
+
 <mdx:query name="query1" resultCache="true">
 select
   {[Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales]} on columns,
@@ -114,9 +117,12 @@ Here is the slicer: <strong>"<mdx:transform query="query5" xsltURI="/WEB-INF/mdx
 
 <h3>0-dim example</h3>
 0-dim "tables" may be useful, if you want to display calculated numbers in a form or
-text. For example, the Store Sales were
-<mdx:transform query="query6" xsltURI="/WEB-INF/mdxvalue.xsl" xsltCache="false"/>
+text. For example, the Store Sales were <b>
+<mdx:transform query="query6" xsltURI="/WEB-INF/mdxvalue.xsl" xsltCache="false"/></b>
 in 1997 for TV promoted products.
 <p>
+
+<a href="index.jsp">back to index</a><p/>
+
 </body>
 </head>

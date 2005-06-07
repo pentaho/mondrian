@@ -52,6 +52,8 @@
   <property name="jdk.home" value="${env.JAVA_HOME}"/>
   <property name="catalina.home" value="${env.CATALINA_HOME}"/>
   <property name="junit.home" value="${env.JUNIT_HOME}"/>
+  <property name="mondrian.webapp.deploy" value="${env.JBOSS_HOME}/server/default/deploy"/>
+
   <property name="generated.java.files" value="
 ${java.dir}/mondrian/olap/Parser.java,
 ${java.dir}/mondrian/olap/ParserSym.java,
@@ -364,6 +366,7 @@ unzip-FoodMartAccessDB"/>
 Runs all JUnit tests, using the given database connection
 in {mondrian.foodmart.jdbcURL}.">
     <echo>Connecting to ${mondrian.foodmart.jdbcURL}</echo>
+    <echo>Connect String: ${mondrian.test.connectString}</echo>
     <java classpathref="project.test.classpath" classname="mondrian.test.Main"
         fork="yes">
 
@@ -695,7 +698,7 @@ You should set scp.user, scp.password and scp.path in build.properties">
        </copy>
     </target>
 
-  <target name="war" depends="jar,copy-jars" description="
+  <target name="war" depends="copy-jars,jar" description="
 Creates mondrian.war based upon jpivot.war.
 Assumes that mondrian.jar exists (use 'jar' target)">
     <filter filtersfile="mondrian.properties"/>
@@ -716,24 +719,14 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <webinf dir="${demo.dir}" prefix="WEB-INF/queries" includes="FoodMart.xml"/>
       <fileset dir="${webapp.dir}" excludes="WEB-INF/**/*"/>
       <fileset dir="${lib.dir}" includes="index.jsp"/>
-      <!-- should already contain javacup.jar, xalan.jar, junit.jar -->
-      <lib dir="${lib.dir}" includes="
-${name}.jar,
-ant.jar,
-jmi.jar,
-mof.jar,
-optional.jar,
-commons-pool.jar,
-commons-dbcp.jar,
-" excludes="
-javacup.jar,
-xalan.jar,
-xercesImpl.jar,
-xml-apis.jar,
-"/>
+      <lib dir="${lib.dir}" includes="${name}.jar"/>
     </war>
   </target>
 
+  <target name="deploy-war" depends="war" description="Deploy WAR with JPivot to web server">
+    <copy file="${war.file}" todir="${mondrian.webapp.deploy}"/>
+  </target>
+  	
   <target name="war-no-jpivot" description="
 Creates mondrian.war.
 Assumes that mondrian.jar exists (use 'jar' target),
@@ -758,10 +751,11 @@ xalan.jar"/>
     </war>
   </target>
 
-  <target name="deploy-war" depends="war">
-    <delete dir="${catalina.home}/webapps/mondrian"/>
-    <copy file="${war.file}"
-        todir="${catalina.home}/webapps"/>
+  <target name="deploy-no-jpivot-war" depends="war-no-jpivot" description="Deploy standalone WAR to web server">
+    <delete>
+    	<fileset dir="${mondrian.webapp.deploy}" includes="${war.file}"/>
+    </delete>
+    <copy file="${war.file}" todir="${mondrian.webapp.deploy}"/>
   </target>
 
   <target name="workbench" depends="compile">

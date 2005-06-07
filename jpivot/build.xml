@@ -1,0 +1,633 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="JPivot" default="dist" basedir=".">
+
+<!-- ===================== Property Definitions =========================== -->
+
+  <property file="${user.home}/build.properties"/>
+  <property file="build.properties"/>
+
+  <property name="repository.home"      value="${basedir}/lib"/>
+  
+  <property name="build.home"           value="${basedir}/build"/>
+  <property name="dist.home"            value="${basedir}/dist"/>
+  <property name="src.home"             value="${basedir}/src"/>
+  <property name="lib.home"             value="${basedir}/lib"/>
+
+  <!-- override these in your build.properties -->
+  <property name="catalina.home"        value="${repository.home}/jakarta-tomcat-4.1.30"/>
+  <property name="xalan.home"           value="${repository.home}/xalan-j_2_6_0"/>
+  <property name="mysql.home"           value="${repository.home}/mysql-connector-java-3.1.6"/>
+
+  <!-- the following are included in lib/ directory (no need to override) -->
+  <property name="mondrian.version"     value="pilot"/>
+  <property name="mondrian.home"        value="${repository.home}/mondrian/${mondrian.version}"/>
+  <property name="jstl.home"            value="${repository.home}/jakarta-taglibs-standard-1.0.5"/>
+
+  <property name="digester.home"        value="${repository.home}/commons-digester-1.5"/>
+  <property name="collections.home"     value="${repository.home}/commons-collections-3.1"/>
+  <property name="beanutils.home"       value="${repository.home}/commons-beanutils-1.7.0"/>
+  <property name="logging.home"         value="${repository.home}/commons-logging-1.0.4"/>
+  <property name="pool.home"            value="${repository.home}/commons-pool-1.2"/>
+  <property name="dbcp.home"            value="${repository.home}/commons-dbcp-1.2.1"/>
+
+  <property name="regexp.home"          value="${repository.home}/jakarta-regexp-1.2"/>
+  <property name="junit.home"           value="${repository.home}/junit3.8.1"/>
+  <property name="log4j.home"           value="${repository.home}/jakarta-log4j-1.2.8"/>
+  <property name="jfreechart.home"      value="${repository.home}/jfreechart-0.9.21"/>
+  <property name="jsf.home"             value="${repository.home}/jsf-1_1"/>
+  <property name="fop.home"             value="${repository.home}/fop-0.20.5"/>
+  <property name="jai.home"             value="${repository.home}/jai-1_1_2"/>
+  <property name="jwsdp.home"           value="${repository.home}/jwsdp-1.1"/>
+  <property name="dom4j.home"           value="${repository.home}/dom4j-1.4"/>
+
+  <property name="resgen.home"           value="${repository.home}/resgen/lib"/>
+
+<!-- ==================== File and Directory Names ======================== -->
+
+  <property name="jpivot.version"       value="1.3.x"/>
+
+  <!-- Use MySQL for testing -->
+  <!--
+  <property name="jdbc.driver"          value="com.mysql.jdbc.Driver"/>
+  <property name="jdbc.url"             value="jdbc:mysql://localhost/foodmart"/>
+  <property name="jdbc.user"            value="root"/>
+  <property name="jdbc.password"        value=""/>
+  -->
+
+  <!-- use msaccess for testing -->
+  <property name="jdbc.driver"          value="sun.jdbc.odbc.JdbcOdbcDriver"/>
+  <property name="jdbc.url"             value="jdbc:odbc:MondrianFoodMart"/>
+  <property name="jdbc.user"            value=""/>
+  <property name="jdbc.password"        value=""/>
+
+  <!-- Test XMLA> -->
+  <property name="xmla.uri"      value="http://TBNTSRV3/XML4A/msxisapi.dll"/>
+  <property name="xmla.catalog"  value="Foodmart 2000"/>
+
+<!--  ==================== Compilation Control Options ==================== -->
+
+  <property name="compile.debug"       value="true"/>
+  <property name="compile.deprecation" value="false"/>
+  <property name="compile.optimize"    value="true"/>
+
+<!-- ==================== Classpath Settings =========================== -->
+
+  <path id="compile.classpath">
+    <!-- Include all JAR files that will be included in /WEB-INF/lib -->
+    <fileset dir="${build.home}/web/WEB-INF/lib">
+      <include name="*.jar"/>
+    </fileset>
+    
+    <!-- Servlet related JARs from JBoss 4.0.X
+    
+    <fileset dir="${jboss.config.catalina}">
+      <include name="*.jar"/>
+    </fileset>
+    <fileset dir="${jboss.config.lib}">
+      <include name="javax.serv*.jar"/>
+    </fileset>
+
+    -->
+    
+    <!-- Include all elements that Tomcat exposes to applications
+    
+    <pathelement location="${catalina.home}/common/classes"/>
+    <fileset dir="${catalina.home}/common/endorsed">
+      <include name="*.jar"/>
+    </fileset>
+    <fileset dir="${catalina.home}/common/lib">
+      <include name="*.jar"/>
+    </fileset>
+    -->
+    
+  </path>
+
+  <!-- classpath for junit tests -->
+  <path id="junit.classpath">
+    <path refid="compile.classpath"/>
+    <pathelement location="${build.home}/web/WEB-INF/classes"/>
+    <pathelement location="${build.home}/junit/classes"/>
+    <!-- use mysql for testing
+    <fileset dir="${mysql.home}">
+      <include name="mysql*.jar"/>
+    </fileset>
+     -->
+  </path>
+
+  <!-- ==================== Prepare Target ================================== -->
+
+  <target name="create.lib.home" unless="lib.home.present" description="Creates the lib directory unless its already present">
+
+    <mkdir  dir="${lib.home}"/>
+    <copy todir="${lib.home}" flatten="true">
+
+      <fileset dir="${beanutils.home}">
+        <include name="*.jar"/>
+      </fileset>
+
+      <fileset dir="${collections.home}">
+        <include name="*.jar"/>
+      </fileset>
+
+      <fileset dir="${dbcp.home}">
+        <include name="*.jar"/>
+      </fileset>
+
+      <fileset dir="${digester.home}">
+        <include name="*.jar"/>
+      </fileset>
+
+      <fileset dir="${logging.home}">
+        <include name="*.jar"/>
+      </fileset>
+
+      <fileset dir="${pool.home}">
+        <include name="*.jar"/>
+      </fileset>
+
+      <fileset dir="${mondrian.home}">
+        <include name="*.jar"/>
+        <include name="FoodMart.xml"/>
+      </fileset>
+
+      <fileset dir="${resgen.home}">
+        <include name="*.jar"/>
+      </fileset>
+
+      <fileset dir="${junit.home}">
+        <include name="junit.jar"/>
+      </fileset>
+
+      <fileset dir="${jfreechart.home}">
+        <include name="jfreechart-*.jar"/>
+        <include name="lib/jcommon-*.jar"/>
+        <exclude name="jfreechart*demo.jar"/>
+      </fileset>
+
+      <fileset dir="${jstl.home}">
+        <include name="lib/jstl.jar"/>
+        <include name="lib/standard.jar"/>
+        <include name="lib/jaxen-full.jar"/>
+        <include name="lib/saxpath.jar"/>
+      </fileset>
+
+      <fileset dir="${jsf.home}">
+        <include name="lib/jsf-api.jar"/>
+        <!-- include name="lib/jsf-impl.jar"/ -->
+      </fileset>
+
+      <fileset dir="${fop.home}">
+        <include name="build/fop.jar"/>
+        <include name="lib/avalon-framework-cvs-20020806.jar"/>
+        <include name="lib/batik.jar"/>
+      </fileset>
+      <fileset dir="${jai.home}">
+        <include name="lib/jai_core.jar"/>
+        <include name="lib/jai_codec.jar"/>
+      </fileset>
+
+
+      <fileset dir="${regexp.home}">
+        <include name="*.jar"/>
+      </fileset>
+
+      <fileset dir="${log4j.home}">
+        <include name="dist/lib/log4j-*.jar"/>
+      </fileset>
+
+      <fileset dir="${jwsdp.home}">
+        <include name="saaj-1.1.1/lib/saaj-ri.jar"/>
+        <include name="saaj-1.1.1/lib/saaj-api.jar"/>
+        <include name="jwsdp-shared/lib/mail.jar"/>
+        <include name="jwsdp-shared/lib/activation.jar"/>
+      </fileset>
+
+      <!-- saaj needs dom4j, but the dom4j in the saaj dir is too old and not compatible with jaxen -->
+      <fileset dir="${dom4j.home}">
+        <include name="dom4j.jar"/>
+      </fileset>
+
+      <fileset dir="${repository.home}">
+        <include name="commons-fileupload-1.0/*.jar"/>
+      </fileset>
+
+    </copy>
+  </target>
+
+
+  <target name="delete.lib.home" description="deletes the lib directory">
+    <delete dir="${lib.home}"/>
+  </target>
+
+
+  <target name="prepare">
+
+    <!-- build lib.home unless its present -->
+    <available property="lib.home.present" file="${lib.home}"/>
+    <antcall target="create.lib.home"/>
+
+    <!-- Create build directories as needed -->
+    <mkdir dir="${build.home}/web/WEB-INF/classes"/>
+    <mkdir dir="${build.home}/web/WEB-INF/lib"/>
+
+    <!-- copy binaries -->
+    <copy todir="${build.home}/web">
+      <fileset dir="${basedir}/src/webapp">
+        <exclude name="**/*.jsp"/>
+        <exclude name="**/*.xml"/>
+        <exclude name="**/*.properties"/>
+        <exclude name="**/*.mf"/>
+        <exclude name="**/*.txt"/>
+      </fileset>
+    </copy>
+
+    <!-- copy text files -->
+    <copy todir="${build.home}/web">
+      <fileset dir="${basedir}/src/webapp">
+        <include name="**/*.jsp"/>
+        <include name="**/*.xml"/>
+        <exclude name="**/*-tags.xml"/>
+        <include name="**/*.properties"/>
+        <include name="**/*.mf"/>
+        <include name="**/*.txt"/>
+      </fileset>
+      <filterset>
+        <filter token="VERSION" value="${jpivot.version}"/>
+      </filterset>
+    </copy>
+
+    <!-- Copy external dependencies -->
+    <mkdir  dir="${build.home}/web/WEB-INF/lib"/>
+    <copy todir="${build.home}/web/WEB-INF/lib" flatten="true">
+      <fileset dir="${lib.home}">
+        <include name="*.jar"/>
+        <exclude name="*-src.jar"/>
+      </fileset>
+    </copy>
+    <copy  todir="${build.home}/web/WEB-INF/queries" file="${lib.home}/FoodMart.xml"/>
+
+    <!-- taglibs -->
+    <antcall target="taglibs"/>
+
+  </target>
+
+<!-- ==================== All Target ====================================== -->
+
+  <target name="all" depends="clean,compile"
+     description="Clean build and dist directories, then compile"/>
+
+<!-- ==================== Clean Target ==================================== -->
+
+  <target name="clean"
+   description="Delete old build and dist directories">
+    <delete dir="${build.home}"/>
+    <delete dir="${dist.home}"/>
+    <delete dir="${basedir}/src/webapp/WEB-INF/classes"/>
+  </target>
+
+<!-- ==================== Compile Target ================================== -->
+
+  <target name="compile" depends="prepare" description="Compile Java sources">
+
+    <!-- Compile Java classes as necessary -->
+    <mkdir dir="${build.home}/web/WEB-INF/classes"/>
+    <mkdir dir="${build.home}/web/WEB-INF/lib"/>
+    <javac destdir="${build.home}/web/WEB-INF/classes"
+             debug="${compile.debug}"
+       deprecation="${compile.deprecation}"
+          optimize="${compile.optimize}">
+
+       <src path="${src.home}/java"/>
+       <classpath refid="compile.classpath"/>
+    </javac>
+
+    <!-- Copy application resources -->
+    <copy  todir="${build.home}/web/WEB-INF/classes">
+      <fileset dir="${src.home}/java">
+        <exclude name="**/*.java"/>
+        <exclude name="**/package.html"/>
+        <exclude name="**/doc-files/**"/>
+      </fileset>
+    </copy>
+  </target>
+
+<!-- ==================== Archives Target ===================================== -->
+
+  <target name="archives" description="create distribution">
+    <!-- create jpivot.jar -->
+    <jar jarfile="${build.home}/web/WEB-INF/lib/jpivot.jar">
+      <fileset dir="${build.home}/web/WEB-INF/classes"/>
+    </jar>
+
+    <!-- Create application WAR file -->
+    <mkdir dir="${dist.home}"/>
+    <jar jarfile="${build.home}/jpivot.war">
+      <fileset dir="${build.home}/web">
+        <exclude name="**/WEB-INF/classes/**"/>
+        <exclude name="**/WEB-INF/lib/log4j*.jar"/>
+      </fileset>
+    </jar>
+
+    <!-- Create distribution -->
+    <zip destfile="${dist.home}/jpivot-${jpivot.version}.zip" update="false" duplicate="fail">
+      <zipfileset dir="${build.home}" prefix="jpivot-${jpivot.version}" >
+        <include name="jpivot.war"/>
+        <include name="docs/**"/>
+      </zipfileset>
+      <zipfileset dir="${src.home}" defaultexcludes="false" prefix="jpivot-${jpivot.version}/src"/>
+      <zipfileset dir="${lib.home}" defaultexcludes="false" prefix="jpivot-${jpivot.version}/lib">
+        <include name="*-src.jar"/>
+      </zipfileset>
+      <zipfileset dir="${basedir}" prefix="jpivot-${jpivot.version}">
+        <include name="build.xml"/>
+        <include name=".project"/>
+        <include name=".classpath"/>
+      </zipfileset>
+    </zip>
+
+  </target>
+
+<!-- ==================== Dist Target ===================================== -->
+
+  <target name="dist" depends="compile,archives" description="Create binary distribution"/>
+
+<!-- ==================== Export product to repository  ================================== -->
+
+  <target name="export" depends="dist" description="exports to ${repository.home}/jpivot/${jpivot.version}">
+
+    <!-- Create build directories as needed -->
+    <property name="dest" value="${repository.home}/jpivot/${jpivot.version}"/>
+
+    <delete dir="${dest}"/>
+    <mkdir dir="${dest}"/>
+
+    <copy todir="${dest}">
+      <fileset dir="${dist.home}">
+        <include name="**"/>
+      </fileset>
+    </copy>
+  </target>
+
+<!-- ==================== ProjDocs Target ================================== -->
+
+  <target name="projdocs" description="Create project documentation and website">
+    <mkdir dir="${build.home}/docs"/>
+    <mkdir dir="${build.home}/docs/downloads"/>
+
+    <copy todir="${build.home}/docs">
+      <fileset dir="${src.home}/docs">
+        <include name="*.xml"/>
+        <include name="*.xsl"/>
+      </fileset>
+      <filterset>
+        <filter token="VERSION" value="${jpivot.version}" />
+      </filterset>
+    </copy>
+
+    <copy todir="${build.home}/docs">
+      <fileset dir="${src.home}/docs">
+        <exclude name="*.xml"/>
+        <exclude name="*.xsl"/>
+      </fileset>
+    </copy>
+
+    <java jar="${xalan.home}/bin/xalan.jar" fork="true">
+      <jvmarg value="-Duser.language=en"/>
+      <jvmarg value="-Duser.region=US"/>
+      <arg value="-in"/>
+      <arg value="${build.home}/docs/content.xml"/>
+      <arg value="-xsl"/>
+      <arg value="${build.home}/docs/layout.xsl"/>
+      <arg value="-out"/>
+      <arg value="${build.home}/docs/dummy.html"/>
+    </java>
+
+  </target>
+
+<!-- ==================== Javadoc Target ================================== -->
+
+  <target name="javadoc" depends="compile" description="Create Javadoc API documentation">
+
+    <mkdir dir="${build.home}/docs/api"/>
+    <javadoc destdir="${build.home}/docs/api" packagenames="com.tonbeller.*">
+      <classpath refid="compile.classpath"/>
+      <sourcepath path="${src.home}/java"/>
+    </javadoc>
+
+  </target>
+
+<!-- ==================== JUnit Tests =================================== -->
+
+
+  <target name="tests" description="JUnit Tests" depends="runtests,checktests"/>
+
+  <target name="runtests" description="JUnit Tests">
+    <mkdir dir="${build.home}/docs/junit"/>
+    <mkdir dir="${build.home}/junit/logs"/>
+    <mkdir dir="${build.home}/junit/classes"/>
+
+    <!-- compile test classes -->
+    <javac destdir="${build.home}/junit/classes">
+      <src path="${src.home}/test"/>
+      <classpath refid="junit.classpath"/>
+    </javac>
+    <copy  todir="${build.home}/junit/classes">
+      <fileset dir="${src.home}/test">
+        <exclude name="**/*.java"/>
+        <exclude name="**/package.html"/>
+        <exclude name="**/doc-files/**"/>
+      </fileset>
+    </copy>
+
+    <!-- run unit tests (Mondrian)-->
+    <junit printsummary="yes" fork="yes" failureProperty="junit.failed">
+      <jvmarg value="-Djdbc.driver=${jdbc.driver}"/>
+      <jvmarg value="-Djdbc.url=${jdbc.url}"/>
+      <jvmarg value="-Djdbc.user=${jdbc.user}"/>
+      <jvmarg value="-Djdbc.password=${jdbc.password}"/>
+      <jvmarg value="-Dtest.dir=${basedir}/tests"/>
+      <jvmarg value="-Dcatalog.uri=file:///${build.home}/web/WEB-INF/queries/FoodMart.xml"/>
+      <!-- must be set in TOMCAT too -->
+      <jvmarg value="-Dcom.tonbeller.environment=test"/>
+      <classpath refid="junit.classpath"/>
+      <formatter type="xml"/>
+      <batchtest todir="${build.home}/junit/logs">
+        <fileset dir="${src.home}/test">
+          <include name="**/*Test.java" />
+          <exclude name="com/tonbeller/jpivot/xmla/*"/>
+        </fileset>
+      </batchtest>
+    </junit>
+
+    <!-- run unit tests (XMLA)-->
+    <junit printsummary="yes" fork="yes" failureProperty="junit.failed">
+    <jvmarg value="-Dxmla.uri=${xmla.uri}"/>
+    <jvmarg value="-Dxmla.catalog=${xmla.catalog}"/>
+    <classpath refid="junit.classpath"/>
+    <formatter type="xml"/>
+      <batchtest todir="${build.home}/junit/logs">
+        <fileset dir="${src.home}/test">
+          <include name="com/tonbeller/jpivot/xmla/*Test.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
+
+    <!-- create reports -->
+    <junitreport todir="${build.home}/docs/junit">
+      <fileset dir="${build.home}/junit/logs">
+        <include name="TEST-*.xml"/>
+      </fileset>
+      <report format="frames" todir="${build.home}/docs/junit"/>
+    </junitreport>
+
+  </target>
+
+  <target name="checktests" description="Abort build if JUnit Test failed" if="junit.failed">
+    <fail message="JUnit Test(s) failed"/>
+  </target>
+
+  <!-- ==================== Taglibs =================================== -->
+
+  <target name="taglibs" description="Taglibs">
+    <mkdir dir="${build.home}/web"/>
+    <mkdir dir="${build.home}/docs/tags"/>
+    <!-- create tld files -->
+    <style basedir="${src.home}/webapp"
+           destdir="${build.home}/web"
+           style="${src.home}/tags/tags2tld.xsl"
+           extension=".tld">
+             <include name="**/*-tags.xml" />
+    </style>
+
+    <antcall target="taglibdoc">
+      <param name="taglib.dir" value="jpivot"/>
+    </antcall>
+    <antcall target="taglibdoc">
+      <param name="taglib.dir" value="wcf"/>
+    </antcall>
+  </target>
+
+  <target name="taglibdoc">
+    <style basedir="${src.home}/webapp/WEB-INF/${taglib.dir}"
+           destdir="${build.home}/docs/tags"
+           style="${src.home}/tags/tags2html.xsl"
+           extension="-en.html">
+             <include name="**/*-tags.xml" />
+             <param name="lang" expression="en"/>
+    </style>
+    <style basedir="${src.home}/webapp/WEB-INF/${taglib.dir}"
+           destdir="${build.home}/docs/tags"
+           style="${src.home}/tags/tags2html.xsl"
+           extension="-de.html">
+             <include name="**/*-tags.xml" />
+             <param name="lang" expression="de"/>
+    </style>
+  </target>
+
+
+<!-- ==================== Catalina Targets =================================== -->
+
+  <property name="test.server"        value="localhost:8080"/>
+  <property name="app.path"           value="/jpivot"/>
+  <property name="manager.url"        value="http://${test.server}/manager"/>
+  <property name="manager.username"   value="manager"/>
+  <property name="manager.password"   value="manager"/>
+
+  <target name="list"
+   description="List installed applications on servlet container">
+    <taskdef name="list" classname="org.apache.catalina.ant.ListTask">
+      <classpath>
+        <pathelement location="${catalina.home}/server/lib/catalina-ant.jar"/>
+      </classpath>
+    </taskdef>
+    <list    url="${manager.url}"
+        username="${manager.username}"
+        password="${manager.password}"/>
+  </target>
+
+  <target name="install" depends="compile"
+   description="Install application to servlet container">
+    <taskdef name="install" classname="org.apache.catalina.ant.InstallTask">
+      <classpath>
+        <pathelement location="${catalina.home}/server/lib/catalina-ant.jar"/>
+      </classpath>
+    </taskdef>
+    <install url="${manager.url}"
+        username="${manager.username}"
+        password="${manager.password}"
+            path="${app.path}"
+             war="file://${build.home}/web"/>
+  </target>
+
+  <target name="reload" depends="compile"
+   description="Reload application on servlet container">
+    <taskdef name="reload"  classname="org.apache.catalina.ant.ReloadTask">
+      <classpath>
+        <pathelement location="${catalina.home}/server/lib/catalina-ant.jar"/>
+      </classpath>
+    </taskdef>
+    <reload url="${manager.url}"
+       username="${manager.username}"
+       password="${manager.password}"
+           path="${app.path}"/>
+  </target>
+
+
+  <target name="remove"
+   description="Remove application on servlet container">
+    <taskdef name="remove"  classname="org.apache.catalina.ant.RemoveTask">
+      <classpath>
+        <pathelement location="${catalina.home}/server/lib/catalina-ant.jar"/>
+      </classpath>
+    </taskdef>
+    <remove url="${manager.url}"
+       username="${manager.username}"
+       password="${manager.password}"
+           path="${app.path}"/>
+  </target>
+
+  <!-- ==================== Sourceforge =================================== -->
+
+
+  <target name="sourceforge" description="copies a source snapshot to sourceforge.net" depends="prepare">
+    <mkdir dir="${build.home}/sf"/>
+
+    <!-- create source zip -->
+    <zip destfile="${build.home}/sf/jpivot-src.zip" update="false" duplicate="fail">
+      <zipfileset dir="${src.home}" defaultexcludes="false" prefix="jpivot/src"/>
+      <zipfileset dir="${basedir}" prefix="jpivot">
+        <include name="build.xml"/>
+        <include name=".project"/>
+        <include name=".classpath"/>
+      </zipfileset>
+    </zip>
+
+    <!-- add mondrian -->
+    <copy todir="${build.home}/sf" file="${lib.home}/mondrian-src.jar"/>
+    <copy todir="${build.home}/sf" file="${lib.home}/mondrian.jar"/>
+
+    <!-- create changelog -->
+    <cvschangelog dir="${src.home}" destfile="${build.home}/sf/changelog.xml" daysinpast="90" />
+    <style in="${build.home}/sf/changelog.xml"
+           out="${build.home}/sf/changelog.html"
+           style="${ant.home}/etc/changelog.xsl">
+      <param name="title" expression="JPivot ChangeLog"/>
+      <param name="module" expression="jpivot"/>
+    </style>
+
+    <!-- upload to sf -->
+    <scp
+      failonerror="false"
+      trust="true"
+      keyfile="${repository.home}/sourceforge/id_dsa"
+      passphrase=""
+      todir="avix@shell.sourceforge.net:/home/groups/j/jp/jpivot/htdocs/downloads">
+      <fileset dir="${build.home}/sf"/>
+    </scp>
+
+  </target>
+
+</project>
+
+

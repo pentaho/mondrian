@@ -22,7 +22,7 @@ You must accept the terms of that agreement to use this software.
 
   <context-param>
     <param-name>connectString</param-name>
-    <param-value>@mondrian.test.connectString@</param-value>
+    <param-value>@mondrian.webapp.connectString@</param-value>
   </context-param>
 
   <listener>
@@ -34,7 +34,7 @@ You must accept the terms of that agreement to use this software.
     <servlet-class>mondrian.web.servlet.MDXQueryServlet</servlet-class>
     <init-param>
     <param-name>connectString</param-name>
-    <param-value>@mondrian.test.connectString@</param-value>
+    <param-value>@mondrian.webapp.connectString@</param-value>
     </init-param>
   </servlet>
 
