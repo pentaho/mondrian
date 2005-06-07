@@ -167,6 +167,9 @@ public class FoodMartTestCase extends TestCase {
         Result result = runQuery(query);
         String resultString = toString(result);
         if (desiredResult != null) {
+System.out.println("FoodMartTestCase.runQueryCheckResult:");
+System.out.println("resultString=" +resultString);
+System.out.println("desiredResult=" +desiredResult);
             assertEqualsVerbose(desiredResult, resultString);
         }
     }

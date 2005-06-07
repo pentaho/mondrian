@@ -107,7 +107,7 @@ public class ListRecorder extends AbstractRecorder {
      * Entry is a Info, Warning or Error message. This is the object stored
      * in the Lists MessageRecorder's info, warning and error message lists.
      */
-    static class Entry {
+    public static class Entry {
         private final String context;
         private final String msg;
         private final int msgType;

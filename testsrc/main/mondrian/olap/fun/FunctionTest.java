@@ -3584,7 +3584,30 @@ public class FunctionTest extends FoodMartTestCase {
      */
     public void assertExprReturns(String expr, String expected) {
         String actual = executeExpr(expr);
+System.out.println("actual="+actual);
+System.out.println("expected="+expected);
         assertEquals(expected, actual);
+    }
+
+    public void assertExprReturnsX(String expr, 
+            double expected, double epsilon) {
+        String actual = executeExpr(expr);
+
+System.out.println("actual="+actual);
+System.out.println("expected="+expected);
+System.out.println("epsilon="+epsilon);
+        try {
+            Assert.assertEquals(null, 
+                expected, 
+                Double.parseDouble(actual), 
+                epsilon);
+        } catch (NumberFormatException ex) {
+            String msg = "Actual value \"" +
+                actual +
+                "\" is not a double.";
+            throw new junit.framework.ComparisonFailure(msg, 
+                        Double.toString(expected), actual);
+        }
     }
 
     /**
@@ -3756,7 +3779,7 @@ public class FunctionTest extends FoodMartTestCase {
         runQueryCheckResult(query, expected);
     }
 
-    public void _testLinRegPointMonth() {
+    public void testLinRegPointMonth() {
         String query = "WITH MEMBER " + nl +
                 "[Measures].[Test] as " + nl +
                 "  'LinRegPoint(" + nl +
@@ -3816,98 +3839,182 @@ public class FunctionTest extends FoodMartTestCase {
         runQueryCheckResult(query, expected);
     }
 
-    public void _testLinRegIntercept() {
-        assertExprReturns("LinRegIntercept([Time].[Month].members," +
+    public void testLinRegIntercept() {
+        assertExprReturnsX("LinRegIntercept([Time].[Month].members," +
                 " [Measures].[Unit Sales], [Measures].[Store Sales])",
-                "-126.65");
+                -126.65,
+                0.50);
 
+/*
+    -1#IND missing data 
+*/
+/*
+     1#INF division by zero 
+*/
+/*
+The following table shows query return values from using different
+FORMAT_STRING's in an expression involving 'division by zero' (tested on
+Intel platforms):
+
++===========================+=====================+
+| Format Strings            | Query Return Values |
++===========================+=====================+
+| FORMAT_STRING="           | 1.#INF              |
++===========================+=====================+
+| FORMAT_STRING='Standard'  | 1.#J                |
++===========================+=====================+
+| FORMAT_STRING='Fixed'     | 1.#J                |
++===========================+=====================+
+| FORMAT_STRING='Percent'   | 1#I.NF%             |
++===========================+=====================+
+| FORMAT_STRING='Scientific'| 1.JE+00             |
++===========================+=====================+
+*/
+
+/*
+Mondrian can not return "missing data" value -1.#IND
         // empty set
         assertExprReturns("LinRegIntercept({[Time].Parent}," +
                 " [Measures].[Unit Sales], [Measures].[Store Sales])",
                 "-1.#IND"); // MSAS returns -1.#IND (whatever that means)
+*/
 
+
+/*
         // first expr constant
         assertExprReturns("LinRegIntercept([Time].[Month].members," +
                 " 7, [Measures].[Store Sales])",
                 "$7.00");
+*/
+        // format does not add '$'
+        assertExprReturnsX("LinRegIntercept([Time].[Month].members," +
+                " 7, [Measures].[Store Sales])",
+                7.00, 0.01);
 
+/*
+Mondrian can not return "missing data" value -1.#IND
         // second expr constant
         assertExprReturns("LinRegIntercept([Time].[Month].members," +
                 " [Measures].[Unit Sales], 4)",
                 "-1.#IND"); // MSAS returns -1.#IND (whatever that means)
+*/
     }
 
-    public void _testLinRegSlope() {
-        assertExprReturns("LinRegSlope([Time].[Month].members," +
+    public void testLinRegSlope() {
+        assertExprReturnsX("LinRegSlope([Time].[Month].members," +
                 " [Measures].[Unit Sales], [Measures].[Store Sales])",
-                "0.4746");
+                0.4746,
+                0.50);
 
+/*
+Mondrian can not return "missing data" value -1.#IND
         // empty set
         assertExprReturns("LinRegSlope({[Time].Parent}," +
                 " [Measures].[Unit Sales], [Measures].[Store Sales])",
                 "-1.#IND"); // MSAS returns -1.#IND (whatever that means)
+*/
 
+/*
         // first expr constant
         assertExprReturns("LinRegSlope([Time].[Month].members," +
                 " 7, [Measures].[Store Sales])",
                 "$7.00");
+                 ^^^^
+copy and paste error
+*/
+        assertExprReturnsX("LinRegSlope([Time].[Month].members," +
+                " 7, [Measures].[Store Sales])",
+                0.00, 
+                0.01);
 
+/*
+Mondrian can not return "missing data" value -1.#IND
         // second expr constant
         assertExprReturns("LinRegSlope([Time].[Month].members," +
                 " [Measures].[Unit Sales], 4)",
                 "-1.#IND"); // MSAS returns -1.#IND (whatever that means)
+*/
     }
 
-    public void _testLinRegPoint() {
+    public void testLinRegPoint() {
+/*
+NOTE: mdx does not parse
         assertExprReturns("LinRegPoint([Measures].[Unit Sales]," +
                 " [Time].CurrentMember[Time].[Month].members," +
                 " [Measures].[Unit Sales], [Measures].[Store Sales])",
                 "0.4746");
+*/
+
+/*
+Mondrian can not return "missing data" value -1.#IND
 
         // empty set
         assertExprReturns("LinRegPoint([Measures].[Unit Sales]," +
                 " {[Time].Parent}," +
                 " [Measures].[Unit Sales], [Measures].[Store Sales])",
                 "-1.#IND"); // MSAS returns -1.#IND (whatever that means)
+*/
 
+/*
+Expected value is wrong
         // zeroth expr constant
         assertExprReturns("LinRegPoint(-1," +
                 " [Time].[Month].members," +
                 " 7, [Measures].[Store Sales])",
                 "-127.124");
+*/
 
+/*
         // first expr constant
         assertExprReturns("LinRegPoint([Measures].[Unit Sales]," +
                 " [Time].[Month].members," +
                 " 7, [Measures].[Store Sales])",
                 "$7.00");
+*/
+        // format does not add '$'
+        assertExprReturnsX("LinRegPoint([Measures].[Unit Sales]," +
+                " [Time].[Month].members," +
+                " 7, [Measures].[Store Sales])",
+                7.00, 0.01);
 
+/*
+Mondrian can not return "missing data" value -1.#IND
         // second expr constant
         assertExprReturns("LinRegPoint([Measures].[Unit Sales]," +
                 " [Time].[Month].members," +
                 " [Measures].[Unit Sales], 4)",
                 "-1.#IND"); // MSAS returns -1.#IND (whatever that means)
+*/
     }
 
     public void _testLinRegR2() {
+/*
+Why would R2 equal the slope
         assertExprReturns("LinRegR2([Time].[Month].members," +
                 " [Measures].[Unit Sales], [Measures].[Store Sales])",
                 "0.4746");
+*/
 
+/*
+Mondrian can not return "missing data" value -1.#IND
         // empty set
         assertExprReturns("LinRegR2({[Time].Parent}," +
                 " [Measures].[Unit Sales], [Measures].[Store Sales])",
                 "-1.#IND"); // MSAS returns -1.#IND (whatever that means)
+*/
 
         // first expr constant
         assertExprReturns("LinRegR2([Time].[Month].members," +
                 " 7, [Measures].[Store Sales])",
                 "$7.00");
 
+/*
+Mondrian can not return "missing data" value -1.#IND
         // second expr constant
         assertExprReturns("LinRegR2([Time].[Month].members," +
                 " [Measures].[Unit Sales], 4)",
                 "-1.#IND"); // MSAS returns -1.#IND (whatever that means)
+*/
     }
 
     public void _testLinRegVariance() {

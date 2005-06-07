@@ -279,6 +279,10 @@ Revision is $Id$
                 case "RF_(.*)" with which the base name can be extracted
                 from the full fact table name.
                 In Sun terms, the "()" are a capture group.
+                Note, if a Matcher is requested from a NameMatcher which has
+                the basename attribute set, and the name used in the request
+                does not match the basename pattern, then the Matcher
+                return NEVER MATCHES ANYTHING.
             </Doc>
         </Attribute>
         <Code><![CDATA[
@@ -316,6 +320,23 @@ Revision is $Id$
                             baseNamePattern.matcher(name);
                         if (matcher.matches() && matcher.groupCount() > 0) {
                             n = matcher.group(1);
+
+                        } else {
+                            if (AggRules.getLogger().isDebugEnabled()) {
+                                StringBuffer bf = new StringBuffer(64);
+                                bf.append(getName());
+                                bf.append(".getRegex: for name \"");
+                                bf.append(name);
+                                bf.append("\" regex is null because basename \"");
+                                bf.append(basename);
+                                bf.append("\" is not matched.");
+
+                                String msg = bf.toString();
+                                AggRules.getLogger().debug(msg);
+                            }
+                            // If the table name does not match the basename
+                            // pattern, then return null for regex.
+                            return null;
                         }
                     }
                     buf.append(n);
@@ -369,6 +390,15 @@ Revision is $Id$
                     regex = getRegex(name.toLowerCase());
 
                 }
+                // If regex is null, then return a matcher that matches nothing
+                if (regex == null) {
+                    return new Recognizer.Matcher() {
+                        public boolean matches(String name) {
+                            return false;
+                        }
+                    };
+                }
+
                 final java.util.regex.Pattern pattern = 
                         java.util.regex.Pattern.compile(regex, flag);
 
@@ -653,7 +683,7 @@ Revision is $Id$
                         n = n.replaceAll(" ", space);
                     }
                     if (dot != null) {
-                        n = n.replaceAll(" ", dot);
+                        n = n.replaceAll("\\.", dot);
                     }
 
                     buf.append(n);
@@ -946,7 +976,7 @@ Revision is $Id$
                         n = n.replaceAll(" ", space);
                     }
                     if (dot != null) {
-                        n = n.replaceAll(" ", dot);
+                        n = n.replaceAll("\\.", dot);
                     }
 
                     buf.append(n);
