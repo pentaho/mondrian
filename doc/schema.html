@@ -2046,13 +2046,32 @@ table sub-system.
       <td style="vertical-align: top;"><code>boolean</code></td>
       <td style="vertical-align: top;"><code>false</code></td>
       <td style="vertical-align: top;">
-        If set to true, then Mondrian reads the database schema and
-        recognizes aggregate tables. These tables are then candidates
+        If set to true, then Mondrian uses any aggregate tables that have
+        been read.
+        These tables are then candidates
         for use in fulfilling MDX queries.
         If set to false, then no aggregate table related activity 
         takes place in Mondrian.
       </td>
     </tr>
+
+    <tr>
+      <td style="vertical-align: top;"><code>mondrian.rolap.aggregates.Read</code></td>
+      <td style="vertical-align: top;"><code>boolean</code></td>
+      <td style="vertical-align: top;"><code>false</code></td>
+      <td style="vertical-align: top;">
+        If set to true, then Mondrian reads the database schema and
+        recognizes aggregate tables. These tables are then candidates
+        for use in fulfilling MDX queries.
+        If set to false, then aggregate table will not be read from 
+        the database. Of course, after aggregate tables have been read,
+        they are read, so setting this property false after starting
+        with the property being true, has no effect.
+        Mondrian will not actually use the aggregate tables unless the
+        mondrian.rolap.aggregates.Use property is set to true.
+      </td>
+    </tr>
+
     <tr>
       <td style="vertical-align: top;"><code>mondrian.rolap.aggregates.ChooseByVolume</code></td>
       <td style="vertical-align: top;"><code>boolean</code></td>

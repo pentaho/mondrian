@@ -48,6 +48,12 @@ public abstract class ConnectionBase implements Connection {
     }
 
     public Query parseQuery(String s) {
+        if (getLogger().isDebugEnabled()) {
+            StringBuffer buf = new StringBuffer(256);
+            buf.append(Util.nl);
+            buf.append(s);
+            getLogger().debug(buf.toString());
+        }
         try {
             boolean debug = false;
             Parser parser = new Parser();

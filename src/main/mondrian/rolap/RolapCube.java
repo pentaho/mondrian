@@ -558,6 +558,10 @@ assert is not true.
     public void setCache(boolean cache) {
         if (! isVirtual()) {
             star.setCacheAggregations(cache);
+        }
+    }
+    public void clearCache() {
+        if (! isVirtual()) {
             star.clearCache();
         }
     }
@@ -568,12 +572,6 @@ assert is not true.
      */
     public RolapStar getStar() {
         return star;
-    }
-
-    public void clearCache() {
-        if (star != null) {
-            star.clearCache();
-        }
     }
 
     private void createUsages(RolapDimension dimension,

@@ -77,9 +77,41 @@ public class AggTableManager {
     public void initialize() {
         reLoadRolapStarAggregates();
         registerTriggers();
+        printResults();
+    }
+    private void printResults() {
+        if (getLogger().isInfoEnabled()) {
+            // print just Star table alias and AggStar table names
+            StringBuffer buf = new StringBuffer(1024);
+            buf.append(Util.nl);
+            for (Iterator it = getStars(); it.hasNext(); ) {
+                RolapStar star = (RolapStar) it.next();
+                buf.append(star.getFactTable().getAlias());
+                buf.append(Util.nl);
+                for (Iterator ait = star.getAggStars(); ait.hasNext(); ) {
+                    AggStar aggStar = (AggStar) ait.next();
+                    buf.append("    ");
+                    buf.append(aggStar.getFactTable().getName());
+                    buf.append(Util.nl);
+                }   
+            }
+            getLogger().info(buf.toString());
+
+        } else if (getLogger().isDebugEnabled()) {
+            // print everything, Star, subTables, AggStar and subTables
+            // could be a lot
+            StringBuffer buf = new StringBuffer(4096);
+            buf.append(Util.nl);
+            for (Iterator it = getStars(); it.hasNext(); ) {
+                RolapStar star = (RolapStar) it.next();
+                buf.append(star.toString());
+                buf.append(Util.nl);
+            }
+            getLogger().debug(buf.toString());
+        }
     }
     private void reLoadRolapStarAggregates() {
-        if (MondrianProperties.instance().getUseAggregates()) {
+        if (MondrianProperties.instance().getReadAggregates()) {
             try {
                 // NOTE: At this point all RolapStars have been made for this
                 // schema (except for dynamically added cubes which I am going
@@ -207,7 +239,7 @@ public class AggTableManager {
      *      <li>{@link MondrianProperties#ChooseAggregateByVolume}
      *      <li>{@link MondrianProperties#AggregateRules}
      *      <li>{@link MondrianProperties#AggregateRuleTag}
-     *      <li>{@link MondrianProperties#UseAggregates}
+     *      <li>{@link MondrianProperties#ReadAggregates}
      * </ul>
      */
     private void registerTriggers() {
@@ -275,13 +307,16 @@ public class AggTableManager {
                 public void executeTrigger(final String key,
                                            final String value)
                              throws MondrianProperties.Trigger.VetoRT {
-                    if (! aggregatesLoaded) {
-                        reLoadRolapStarAggregates();
-                    }
+                    reLoadRolapStarAggregates();
+System.out.println("AggTableManager.Trigger.executeTrigger: key="
++key
++", key"
++value
+);
                 }
             };
         MondrianProperties.instance().addTrigger(trigger,
-            MondrianProperties.UseAggregates);
+            MondrianProperties.ReadAggregates);
         triggers[2] = trigger;
     }
     private Iterator getStars() {

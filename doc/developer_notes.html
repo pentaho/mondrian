@@ -29,10 +29,143 @@
 
 <h2>Contents</h2>
 <ol>
+  <li><a href="#Log_Levels">Logging Levels and Information</a></li>
   <li><a href="#Agg_default_rules">Default aggregate table recognition rules</a></li>
   <li><a href="#Snowflakes">Snowflakes and the DimensionUsage level attribute</a></li>
 </ol>
 
+<h2><a name="Log_Levels">Logging Levels and Information</a></h2>
+<p>
+Some of the Mondrian classes are instrumented with Apache Log4J Loggers.
+For some of these classes there are certain logging setting that provide
+information for not just the code developer but also for someone
+setting up a Mondrian installation. The following is a list of some
+of those log setting and the associated information.
+</p>
+<table style="text-align: left; "
+ border="1" cellpadding="2" cellspacing="0">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top; text-align: center;">
+        <span style="font-weight: bold;">Category</span><br>
+      </td>
+      <td style="vertical-align: top; text-align: center;">
+        <span style="font-weight: bold;">Level</span><br>
+      </td>
+      <td style="vertical-align: top; text-align: center;">
+        <span style="font-weight: bold;">Description</span><br>
+      </td>
+    </tr>
+    <tr>
+
+    <tr>
+      <td style="vertical-align: top;"><code>
+      mondrian.rolap.aggmatcher.AggTableManager
+      </code></td>
+      <td style="vertical-align: top;"><code>INFO</code></td>
+      <td style="vertical-align: top;">
+        A list of the RolapStar fact table names (aliases) and for each
+        fact table, a list of all of its associated aggregate tables.
+      </td>
+    </tr>
+
+    <tr>
+      <td style="vertical-align: top;"><code>
+      mondrian.rolap.aggmatcher.AggTableManager
+      </code></td>
+      <td style="vertical-align: top;"><code>DEBUG</code></td>
+      <td style="vertical-align: top;">
+        A verbose output of all RolapStar fact tables, their measures columns,
+        and dimension tables and columnns, along with all of each fact
+        table's aggregate tables, columns and dimension tables.
+      </td>
+    </tr>
+
+    <tr>
+      <td style="vertical-align: top;"><code>
+      mondrian.rolap.aggmatcher.DefaultDef
+      </code></td>
+      <td style="vertical-align: top;"><code>DEBUG</code></td>
+      <td style="vertical-align: top;">
+        For each candidate aggregate table, the Matcher regular expressions
+        for matching: table name and the fact count, foreign key,
+        level and measure columns.
+        Helpful in finding out why an aggregate table was not recognized.
+      </td>
+    </tr>
+
+    <tr>
+      <td style="vertical-align: top;"><code>
+      mondrian.rolap.agg.AggregationManager
+      </code></td>
+      <td style="vertical-align: top;"><code>DEBUG</code></td>
+      <td style="vertical-align: top;">
+        For each aggregate Sql query, if an aggregate table can be used
+        to fulfill the query, which aggregate it was along with bitKeys
+        and column names.
+      </td>
+    </tr>
+
+    <tr>
+      <td style="vertical-align: top;"><code>
+      mondrian.rolap.RolapUtil
+      </code></td>
+      <td style="vertical-align: top;"><code>DEBUG</code></td>
+      <td style="vertical-align: top;">
+        Prints out all Sql statements and their execution time.
+        If one set the Mondrian property, 
+        <code>mondrian.rolap.generate.formatted.sql</code>
+        to true, then the Sql is pretty printed (very nice).
+      </td>
+    </tr>
+
+    <tr>
+      <td style="vertical-align: top;"><code>
+      mondrian.rolap.RolapConnection
+      </code></td>
+      <td style="vertical-align: top;"><code>DEBUG</code></td>
+      <td style="vertical-align: top;">
+        Prints out each MDX query prior to its execution.
+        (No pretty printing, sigh.)
+      </td>
+    </tr>
+
+    <tr>
+      <td style="vertical-align: top;"><code>
+      mondrian.rolap.RolapSchema
+      </code></td>
+      <td style="vertical-align: top;"><code>DEBUG</code></td>
+      <td style="vertical-align: top;">
+        Prints out each Rolap Schema as it is being loaded.
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+<p>
+There are more classes with logging, but their logging is at a lower, more
+detailed level of more use to code developers.
+</p>
+<p>
+Log levels can be set in either a log4j.properties file or log4j.xml file.
+You have to make sure you tell Mondrian which one to use.
+For the log4j.properties, entries might look like:
+</p>
+<blockquote>
+    log4j.category.mondrian.rolap.RolapConnection=DEBUG<br>
+    log4j.category.mondrian.rolap.RolapUtil=DEBUG<br>
+</blockquote>
+<p>
+while for the log4.xml:
+</p>
+<blockquote>
+   &lt;category name="mondrian.rolap.RolapConnection"&gt;<br>
+   &nbsp;&nbsp; &lt;priority value="DEBUG"/&gt;<br>
+   &lt;/category&gt;<br>
+   &lt;category name="mondrian.rolap.RolapUtil"&gt;<br>
+   &nbsp;&nbsp; &lt;priority value="DEBUG"/&gt;<br>
+   &lt;/category&gt;<br>
+</blockquote>
 <h2><a name="Agg_default_rules">Default aggregate table recognition rules</a></h2>
 <p>
 The default Mondrian rules for recognizing aggregate tables

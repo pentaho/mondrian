@@ -13,6 +13,7 @@
 package mondrian.rolap;
 import mondrian.olap.Member;
 import mondrian.olap.MondrianDef;
+import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.olap.MondrianResource;
 import mondrian.rolap.agg.Aggregation;
@@ -49,6 +50,36 @@ import java.util.Collections;
  * @version $Id$
  **/
 public class RolapStar {
+
+    /** 
+      * This static variable controls the aggregate data cache for all
+      * RolapStars. An administrator or tester might selectively enable or
+      * disable in memory caching to allow direct measurement of database
+      * performance.
+      */
+    private static boolean disableCaching =
+             MondrianProperties.instance().getDisableCaching();
+
+    static {
+        // Trigger is used to lookup and change the value of the
+        // variable that controls aggregate data caching
+        // Using a trigger means we don't have to look up the property eveytime.
+        new MondrianProperties.Trigger() {
+            public boolean isPersistent() {
+                return true;
+            }
+            public int phase() {
+                return MondrianProperties.Trigger.PRIMARY_PHASE;
+            }
+            public void executeTrigger(final String key,
+                                       final String value)
+                         throws MondrianProperties.Trigger.VetoRT {
+                disableCaching =
+                    MondrianProperties.instance().getDisableCaching();
+            }
+        };
+    }
+
 
     private final RolapSchema schema;
 
@@ -284,6 +315,7 @@ public class RolapStar {
     void setCacheAggregations(boolean b) {
         // this can only change from true to false
         this.cacheAggregations = b;
+        clearCache();
     }
 
     /**
@@ -300,7 +332,7 @@ public class RolapStar {
      * caching set to off.
      */
     void clearCache() {
-        if (! this.cacheAggregations) {
+        if (! this.cacheAggregations || RolapStar.disableCaching) {
             aggregations.clear();
         }
     }

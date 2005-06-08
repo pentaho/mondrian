@@ -792,6 +792,9 @@ public class MondrianProperties extends PropertiesPlus {
      * should be used.  If true, then aggregates are used. This property is
      * queried prior to each aggregate query so that changing the value of this
      * property dynamically (not just at startup) is meaningful.
+     * Aggregates can be read from the database using the
+     * mondrian.rolap.aggregates.Read property but will not be used unless this
+     * property is set to true.
      */
     public static final String UseAggregates = "mondrian.rolap.aggregates.Use";
 
@@ -802,6 +805,23 @@ public class MondrianProperties extends PropertiesPlus {
      */
     public boolean getUseAggregates() {
         return getBooleanProperty(UseAggregates);
+    }
+
+    /**
+     * If set to true, then the database is scanned for aggregate tables.
+     * Unless mondrian.rolap.aggregates.Use is set to true, the aggregates
+     * found will not be used.
+     */
+    public static final String ReadAggregates 
+                    = "mondrian.rolap.aggregates.Read";
+
+    /**
+     * Should aggregates be read.
+     *
+     * @return true if aggregates are to be read.
+     */
+    public boolean getReadAggregates() {
+        return getBooleanProperty(ReadAggregates);
     }
 
 
@@ -889,6 +909,23 @@ public class MondrianProperties extends PropertiesPlus {
     }
     //
     //////////////////////////////////////////////////////////////////////////
+
+    /**
+     * This is the boolean property that controls whether or not a RolapStar's
+     * aggregate data cache is cleared after each query.
+     */
+    public static final String DisableCaching 
+                    = "mondrian.rolap.star.disableCaching";
+
+    /**
+     * Returns true means that no RolapStar will cache aggregate data from one
+     * query to the next (the cache is cleared after each query).
+     *
+     * @return
+     */
+    public boolean getDisableCaching() {
+        return getBooleanProperty(DisableCaching);
+    }
 
     /**
      * This is the boolean property that controls whether or not triggers are
