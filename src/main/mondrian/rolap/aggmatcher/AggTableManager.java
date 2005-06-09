@@ -232,6 +232,17 @@ public class AggTableManager {
             }
         }
     }
+    private boolean runTrigger() {
+        if (RolapSchema.cacheContains(schema)) {
+            return true;
+        } else {
+            // must remove triggers
+            deregisterTriggers();
+
+            return false;
+        }
+
+    }
 
     /**
      * Registers triggers for the following properties:
@@ -260,7 +271,9 @@ public class AggTableManager {
                 public void executeTrigger(final String key,
                                            final String value)
                              throws MondrianProperties.Trigger.VetoRT {
-                    reOrderAggStarList();
+                    if (AggTableManager.this.runTrigger()) {
+                        reOrderAggStarList();
+                    }
                 }
             };
         MondrianProperties.instance().addTrigger(trigger,
@@ -283,7 +296,9 @@ public class AggTableManager {
                 public void executeTrigger(final String key,
                                            final String value)
                              throws MondrianProperties.Trigger.VetoRT {
-                    reLoadRolapStarAggregates();
+                    if (AggTableManager.this.runTrigger()) {
+                        reLoadRolapStarAggregates();
+                    }
                 }
             };
         MondrianProperties.instance().addTrigger(trigger,
@@ -307,17 +322,26 @@ public class AggTableManager {
                 public void executeTrigger(final String key,
                                            final String value)
                              throws MondrianProperties.Trigger.VetoRT {
-                    reLoadRolapStarAggregates();
-System.out.println("AggTableManager.Trigger.executeTrigger: key="
-+key
-+", key"
-+value
-);
+                    if (AggTableManager.this.runTrigger()) {
+                        reLoadRolapStarAggregates();
+                    }
                 }
             };
         MondrianProperties.instance().addTrigger(trigger,
             MondrianProperties.ReadAggregates);
         triggers[2] = trigger;
+    }
+    private void deregisterTriggers() {
+        MondrianProperties.instance().removeTrigger(triggers[0],
+                MondrianProperties.ChooseAggregateByVolume);
+
+        MondrianProperties.instance().addTrigger(triggers[1],
+            MondrianProperties.AggregateRules);
+        MondrianProperties.instance().addTrigger(triggers[1],
+            MondrianProperties.AggregateRuleTag);
+
+        MondrianProperties.instance().addTrigger(triggers[2],
+            MondrianProperties.ReadAggregates);
     }
     private Iterator getStars() {
         return schema.getStars();

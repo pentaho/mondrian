@@ -709,6 +709,9 @@ public class RolapSchema implements Schema {
         synchronized void clear() {
             mapUrlToSchema.clear();
         }
+        synchronized boolean contains(RolapSchema rolapSchema) {
+            return mapUrlToSchema.containsKey(rolapSchema.key);
+        }
 
 
         /**
@@ -772,6 +775,9 @@ public class RolapSchema implements Schema {
 
     public static void clearCache() {
         Pool.instance().clear();
+    }
+    public static boolean cacheContains(RolapSchema rolapSchema) {
+        return Pool.instance().contains(rolapSchema);
     }
 
     public Cube lookupCube(final String cube, final boolean failIfNotFound) {
