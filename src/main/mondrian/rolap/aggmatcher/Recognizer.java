@@ -674,7 +674,15 @@ abstract class Recognizer {
 
             aggUsage.setSymbolicName(symbolicName);
 
-            String tableAlias = aggUsage.relation.getAlias();
+            String tableAlias = null;
+            if (aggUsage.joinExp instanceof MondrianDef.Column) {
+                MondrianDef.Column mcolumn = 
+                        (MondrianDef.Column) aggUsage.joinExp;
+                tableAlias = mcolumn.table;
+            } else {
+                tableAlias = aggUsage.relation.getAlias();
+            }
+
 
             RolapStar.Table factTable = star.getFactTable();
             RolapStar.Table descTable = factTable.findDescendant(tableAlias);
@@ -696,17 +704,7 @@ abstract class Recognizer {
             RolapStar.Column rc = descTable.lookupColumn(factColumnName);
 
             if (rc == null) {
-                // This can happen if we are looking at a collapsed dimension
-                // table, and the collapsed dimension in question in the
-                // fact table is a snowflake (not just a star), so we
-                // must look deeper...
-                for (Iterator it = descTable.getChildren(); it.hasNext(); ) {
-                    RolapStar.Table child = (RolapStar.Table) it.next();
-                    rc = child.lookupColumn(factColumnName);
-                    if (rc != null) {
-                        break;
-                    }
-                }
+                rc = lookupInChildren(descTable, factColumnName);
 
             }
             if (rc == null) {
@@ -730,6 +728,28 @@ abstract class Recognizer {
         } finally {
             msgRecorder.popContextName();
         }
+    }
+
+    protected RolapStar.Column lookupInChildren(final RolapStar.Table table,
+                                                final String factColumnName) {
+        RolapStar.Column rc = null;
+        // This can happen if we are looking at a collapsed dimension
+        // table, and the collapsed dimension in question in the
+        // fact table is a snowflake (not just a star), so we
+        // must look deeper...
+        for (Iterator it = table.getChildren(); it.hasNext(); ) {
+            RolapStar.Table child = (RolapStar.Table) it.next();
+            rc = child.lookupColumn(factColumnName);
+            if (rc != null) {
+                break;
+            } else {
+                rc = lookupInChildren(child, factColumnName);
+                if (rc != null) {
+                    break;
+                }
+            }
+        }
+        return rc;
     }
 
 
