@@ -1087,6 +1087,21 @@ public class RolapStar {
         public String getAlias() {
             return alias;
         }
+        
+        /** 
+         * Sometimes one need to get to the "real" name when the table has
+         * been given an alias.
+         * 
+         * @return 
+         */
+        public String getTableName() {
+            if (relation instanceof MondrianDef.Table) {
+                MondrianDef.Table t = (MondrianDef.Table) relation;
+                return t.name;
+            } else {
+                return null;
+            }
+        }
         synchronized void makeMeasure(RolapStoredMeasure storedMeasure) {
             RolapStar.Measure measure = new RolapStar.Measure(
                 storedMeasure.getName(),

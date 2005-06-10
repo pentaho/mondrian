@@ -206,19 +206,26 @@ public class FastBatchingCellReader implements CellReader {
         }
 
         void loadAggregation() {
-            if (generateAggregateSql &&
-                    ! FastBatchingCellReader.this.cube.isVirtual()) {
+            if (generateAggregateSql) {
+                if (FastBatchingCellReader.this.cube.isVirtual()) {
+                    StringBuffer buf = new StringBuffer(64);
+                    buf.append("AggGen: Sorry, can not create SQL for virtual Cube \"");
+                    buf.append(FastBatchingCellReader.this.cube.getName());
+                    buf.append("\", operation not currently supported");
+                    System.out.println(buf.toString());
 
-                mondrian.rolap.aggmatcher.AggGen aggGen = 
-                    new mondrian.rolap.aggmatcher.AggGen(
-                        FastBatchingCellReader.this.cube.getStar(), columns);
-                if (aggGen.isReady()) {
-                    System.out.println(aggGen.createLost());
-                    System.out.println(aggGen.insertIntoLost());
-                    System.out.println(aggGen.createCollapsed());
-                    System.out.println(aggGen.insertIntoCollapsed());
                 } else {
-                    System.out.println("AggGen failed");
+                    mondrian.rolap.aggmatcher.AggGen aggGen = 
+                        new mondrian.rolap.aggmatcher.AggGen(
+                            FastBatchingCellReader.this.cube.getStar(), columns);
+                    if (aggGen.isReady()) {
+                        System.out.println(aggGen.createLost());
+                        System.out.println(aggGen.insertIntoLost());
+                        System.out.println(aggGen.createCollapsed());
+                        System.out.println(aggGen.insertIntoCollapsed());
+                    } else {
+                        System.out.println("AggGen failed");
+                    }
                 }
             }
 
