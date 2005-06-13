@@ -42,6 +42,7 @@ class RolapHierarchy extends HierarchyBase {
     private String memberReaderClass;
     private MondrianDef.Relation relation;
     private Member defaultMember;
+    private String defaultMemberName;
     private RolapNullMember nullMember;
 
     /**
@@ -147,6 +148,7 @@ class RolapHierarchy extends HierarchyBase {
         if (!Util.isEmpty(xmlHierarchy.caption)) {
             setCaption(xmlHierarchy.caption);
         }
+        defaultMemberName = xmlHierarchy.defaultMember;
     }
 
     protected Logger getLogger() {
@@ -184,6 +186,28 @@ class RolapHierarchy extends HierarchyBase {
         if (this.memberReader == null) {
             this.memberReader = getRolapSchema().createMemberReader(
                 sharedHierarchy, this, memberReaderClass);
+        }
+        if (defaultMemberName != null) {
+            String[] uniqueNameParts = Util.explode(defaultMemberName);
+
+            // We strip off the parent dimension name if the defaultMemberName
+            // is the full unique name, [Time].[2004] rather than simply
+            // [2004].
+            Dimension dim = getDimension();
+            if (dim.getName().equals(uniqueNameParts[0])) {
+                String[] tmp = new String[uniqueNameParts.length-1];
+                System.arraycopy(uniqueNameParts, 1, tmp, 0, 
+                                uniqueNameParts.length-1);
+                uniqueNameParts = tmp;
+            }
+
+            // Now lookup the name from the hierarchy's members.
+            defaultMember = memberReader.lookupMember(uniqueNameParts, false);
+            if (defaultMember == null) {
+                throw Util.newInternal(
+                    "Can not find Default Member with name \""
+                        + defaultMemberName + "\"");
+            }
         }
     }
 
