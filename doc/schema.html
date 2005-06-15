@@ -239,7 +239,7 @@ Defining a specific caption does make sense if special letters (e.g. &#931; or &
 
 <p>Suppose you want to create a measure whose value comes not from a
 column of the fact table, but from an MDX formula. One way to do this is to use
-a WITH MEMBER clause, like this:</p>
+a <code>WITH MEMBER</code> clause, like this:</p>
 
 <blockquote>
 
@@ -320,7 +320,7 @@ is visible, and its factors &quot;Store Cost&quot;, &quot;Margin&quot; and &quot
 </blockquote>
 
 <h3><a name="Dimensions,_Hierarchies,_Levels">Dimensions, Hierarchies, Levels</a></h3>
-<p>The Gender dimension consists of a single hierarchy, which has just one
+<p>The <code>Gender</code> dimension consists of a single hierarchy, which has just one
 level.</p>
 <blockquote>
   <pre>&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Gender&quot; foreignKey=&quot;customer_id&quot;&gt;
@@ -337,13 +337,9 @@ made that purchase. This is expressed by joining from the fact table
 contains the members <code>[Gender].[F]</code> and <code>[Gender].[M]</code>. Because <code>hasAll=&quot;true&quot;</code>, the system generates a special level 
 called '<code>(All)</code>', containing a single member called <code>[Gender].[All Gender]</code>. 
 You can override these names using the <code>allLevelName</code> and <code>
-allMemberName</code> attributes of the <code>&lt;<a href="#XML_Hierarchy">Hierarchy</a>&gt; 
-element</code>.</p>
+allMemberName</code> attributes of the <code>&lt;<a href="#XML_Hierarchy">Hierarchy</a>&gt;</code> 
+element.</p>
 
-<p>By default, every hierarchy contains a top level called '(All)', which 
-contains a single member. If the <code>&lt;Hierarchy&gt;</code> element has <code>
-hasAll=&quot;false&quot;</code>, the 'all' level is suppressed; the allMemberName and 
-allLevelName attributes allow you to suppress the </p>
 <p>A dimension can contain more than one hierarchy:</p>
 <blockquote>
   <pre>&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Time&quot; foreignKey=&quot;time_id&quot;&gt;
@@ -377,6 +373,11 @@ makes no sense to have the &quot;Time&quot; hierarchy on one axis and the &quot;
 hierarchy on another axis. If two hierarchies are the same dimension, the MDX
 language enforces common sense, and does not allow you to use them both in the
 same query.</p>
+<p>A dimension is joined to a cube by means of a pair of columns. The 
+&lt;Dimension&gt; element has a primaryKey attribute, which is the name of a column in 
+the fact table; while the Hierarchy element has an element , one in the fact 
+table, the other in the dimension table. The </p>
+
 <p>A dimension can live in the fact table:</p>
 <blockquote>
   <pre>&lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot;&gt;
@@ -412,10 +413,14 @@ more than one. For example, you might wish to aggregate days from the Time
 dimension into months, quarters, and years; or into weeks and years. Both
 hierarchies start off with days and end with years, but aggregate using
 different paths.</p>
-<p>Most hierarchies have an <dfn>all-member</dfn>,
-which is parent of all other members of the hierarchy, and thus represents a
-grand total. It is typically named 'All <i>something</i>', for example, 'All
-stores'.</p>
+
+<p>By default, every hierarchy contains a top level called '<code>(All)</code>', which 
+contains a single member called '<code>(All {<i>hierarchyName</i>})</code>'. 
+This member is parent of all other members of the hierarchy, and thus represents 
+a grand total. If the <code>&lt;Hierarchy&gt;</code> element has <code>
+hasAll=&quot;false&quot;</code>, the 'all' level is suppressed; the <code>allMemberName</code> and 
+<code>allLevelName</code> attributes override the default names of the all level 
+its member.</p>
 <p><a href="#Member_properties">Member properties</a> can be assigned to a level's members. The property values are retrieved
  by <code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/Member.html#getPropertyValue(java.lang.String)">getPropertyValue()</a></code>
  or as String by <code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/Member.html#getPropertyFormattedValue(java.lang.String)">getPropertyFormattedValue()</a></code>.

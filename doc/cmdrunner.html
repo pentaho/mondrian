@@ -167,7 +167,7 @@ The CmdRunner has the following command line options:
     </tr>
     <tr>
       <td style="vertical-align: top;"><code>-h</code></td>
-      <td style="vertical-align: top;">print help, the list of command line
+      <td style="vertical-align: top;">Print help, the list of command line
 options.</td>
     </tr>
     <tr>
@@ -195,7 +195,7 @@ options.</td>
       </td>
     </tr>
     <tr>
-      <td style="vertical-align: top;"><code>-p property-file</code></td>
+      <td style="vertical-align: top;" nowrap><code>-p property-file</code></td>
       <td style="vertical-align: top;">Specify the Mondrian property
         file. This argument is basically required for any but the most 
         trivial command interpreter commands. To execute a MDX query or
@@ -217,7 +217,6 @@ options.</td>
       <td style="vertical-align: top;"><code>mdx_command</code></td>
       <td style="vertical-align: top;">A string representing 
         one or more CmdRunner commands.
-        mode.
       </td>
     </tr>
   </tbody>
@@ -284,10 +283,10 @@ With "classname=level" set log level to new value.
 With no args, prints the last filename executed.
 </p>
 <p>
-With "filename", read and execute filename .
+With "filename", read and execute filename.
 </p>
 <p>
-With "=" character, re-read and re-execute previous filename .
+With "=" character, re-read and re-execute previous filename.
 </p>
 </blockquote>
 
@@ -313,7 +312,7 @@ With "result" argument, list the last mdx query result.
   &gt; func [ name ] &lt;cr&gt;
 </code>
 <p>
-With no arguments, list all defined function names
+With no arguments, list all defined function names.
 </p>
 <p>
 With "name" argument, display the functions:
@@ -327,15 +326,15 @@ With "name" argument, display the functions:
   &gt; param [ name[=value ] ] &lt;cr&gt;
 </code>
 <p>
-With no argumnts, all param name/value pairs are printed.
+With no arguments, all param name/value pairs are printed.
 </p>
 <p>
 With "name" argument, the value of the param is printed.
 </p>
 <p>
 With "name=value" sets the parameter with name to value.
-    If name is null, then unsets all parameters
-    If value is null, then unsets the parameter associated with value
+    If name is null, then unsets all parameters.
+    If value is null, then unsets the parameter associated with value.
 </p>
 </blockquote>
 
@@ -345,7 +344,7 @@ With "name=value" sets the parameter with name to value.
   &gt; cube [ cubename [ name [=value | command] ] ] &lt;cr&gt;
 </code>
 <p>
-    With no argumnts, all cubes are listed by name.
+    With no arguments, all cubes are listed by name.
 </p>
 <p>
     With "cubename" argument, cube attribute name/values for:
@@ -368,7 +367,7 @@ With "name=value" sets the parameter with name to value.
   &gt; error [ msg | stack ] &lt;cr&gt;
 </code>
 <p>
-With no argumnts, both message and stack are printed.
+With no arguments, both message and stack are printed.
 </p>
 <p>
 With "msg" argument, the Error message is printed.
@@ -733,5 +732,23 @@ During normal Mondrian operation, for instance, with
 property not be set to true as it will slow down Mondrian and
 generate a lot of text in the log file.
 </p>
+
+<hr>
+
+<table border="0" class="clsStd" width="100%" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0">
+  <tr>
+    <td class="content">
+      <a target="_top" href="index.html">Home</a> |
+      <a target="_top" href="noframes.html">No frames</a> | This file is<i>
+      <a href="http://mondrian.sourceforge.net/cmdrunner.html">$Id$
+      </a></i> (<a href="http://perforce.eigenbase.org:8080/open/mondrian/doc/cmdrunner.html?ac=22">log</a>)</td>
+    <td align="right">
+      <a href="http://sourceforge.net">
+        <img src="http://sourceforge.net/sflogo.php?group_id=35302&type=1" width="88" height="31" border="0" alt="SourceForge.net Logo">
+      </a>
+    </td>
+  </tr>
+</table>
+
 </body>
 </html>

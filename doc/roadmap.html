@@ -2,7 +2,7 @@
 
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="GENERATOR" content="Microsoft FrontPage 6.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <title>Mondrian roadmap</title>
 <link rel="stylesheet" type="text/css" href="stylesheet.css" />
@@ -10,240 +10,366 @@
 
 <body bgcolor="#ffffff">
 
-<table border="1" class="clsStd" width="100%">
-  <tr>
-    <td colspan="2"><a href="index.html">Top</a> |
-    <a href="http://mondrian.sourceforge.net/roadmap.html">Web</a> |
-    <a href="http://sourceforge.net/projects/mondrian/">SourceForge home</a></td>
-    <td width="0" align="right" rowspan="2">
-    <a href="http://sourceforge.net"><img src="http://sourceforge.net/sflogo.php?group_id=35302&type=1" width="88" height="31" border="0" alt="SourceForge.net Logo"></a></td>
-  </tr>
-  <tr>
-    <td colspan="2"><em>$Id$</em></td>
-  </tr>
-  <tr>
-    <td colspan="3"><em>(C) Copyright 2002, Kana Software, Inc.</em></td>
-  </tr>
-  <tr>
-    <th align="right" width="30%">Author</th>
-    <td colspan="2">Julian Hyde (<a href="mailto:jhyde@users.sourceforge.net">jhyde@users.sourceforge.net</a>)</td>
-  </tr>
-</table>
-
 <h1><font size="6"> Mondrian roadmap</font></h1>
 
-<h2><a name="1_Contents">1. Contents</a></h2>
+<h2><a name="1_Contents">1 Contents</a></h2>
 <ol>
   <li><a href="#1_Contents">Contents</a>
-  <li><a href="#2_Modification_history">Modification history</a>
-  <li><a href="#3_Setup_build_environment">Introduction</a></li>
-  <li><a href="#4_Build">Components</a>
-  <li><a href="#5__Specifications">Specifications</a>
-    <ol>
-      <li><a href="#5_1_Server">Server</a></li>
-      <li><a href="#5_2__Html_pivot_table">Html pivot table</a>
-        <ol>
-          <li><a href="#5_2_1_Basic_drill_through">Basic drill through</a></li>
-          <li><a href="#5_2_2_Chart_button">Chart button</a></li>
-          <li><a href="#5_2_3__Actions">Actions</a></li>
-          <li><a href="#5_2_4__Drill_anywhere">Drill anywhere</a></li>
-        </ol>
-      </li>
-      <li><a href="#5_3_Html_servlet">Html servlet</a></li>
-      <li><a href="#5_4_Charts">Charts</a></li>
-      <li><a href="#5_5_Web_test_harness">Web test harness</a></li>
-    </ol>
-  </li>
-</ol>
+  <li><a href="#3_Setup_build_environment">Introduction</a><ol>
+  <li><a href="#2.1_Purpose_of_this_document">Purpose of this document</a></li>
+	<li><a href="#2.2_Mondrians_goals">Mondrian's goals</a></li>
+	<li><a href="#2.3_Scope">Scope</a></li>
+	<li><a href="#2.4_Sponsored_development_and_co-development">Sponsored 
+	development and co-development</a></li>
+  </ol>
 
-<h2><a name="2_Modification_history">2. Modification history</a></h2>
-<table border="1" class="clsStd" width="100%">
-  <tr>
-    <th>Date</th>
-    <th>Revision</th>
-    <th>Author</th>
-    <th>Comment</th>
-  </tr>
-  <tr>
-    <td><I>March 12<SUP>th</SUP>, 2002</I></td>
-    <td><em>1</em></td>
-    <td><i>Julian Hyde</i></td>
-    <td><em>Created</em></td>
-  </tr>
-  </table>
+	</li>
+  <li><a href="#4_Build">Feature list</a>
+  <ol>
+  <li><a href="#3.1_Internationalization_localization">
+	Internationalization/localization</a></li>
+	<li><a href="#3.2_Aggregate_navigation">Aggregate navigation</a></li>
+	<li><a href="#3.3_Improved_cache_control">Improved cache control</a></li>
+	<li><a href="#3.4_WITH_SET">WITH SET</a></li>
+	<li><a href="#3.5_Cache_set_expressions">Cache set expressions</a></li>
+	<li><a href="#3.6_User-defined_functions">User-defined functions</a></li>
+	<li><a href="#3.7_Improve_dimension_sharing">Improve dimension sharing</a></li>
+	<li><a href="#3.8_Virtual_cube_enhancements">Virtual cube enhancements</a></li>
+	<li><a href="#3.9_Calculated_members_in_virtual_cubes">Calculated members in 
+	virtual cubes</a></li>
+	<li><a href="#3.10_Time_function">Time function</a></li>
+	<li><a href="#3.11_Scalar_functions">Scalar functions</a></li>
+	<li><a href="#3.12_Cold_start">Cold start</a></li>
+	<li><a href="#3.13_Rollups">Rollups</a></li>
+	<li><a href="#3.14_Compound_slicer">Compound slicer</a></li>
+	<li><a href="#3.15_Enhancements_to_schema_cache">Enhancements to schema 
+	cache</a></li>
+	<li><a href="#3.16_JOLAP_support">JOLAP support</a></li>
+	<li><a href="#3.17_Schema_and_query_validation">Schema and query validation</a></li>
+	<li><a href="#3.18_Documentation">Documentation</a></li>
+	<li><a href="#3.19_Name-resolution">Name-resolution</a></li>
+  </ol>
 
-<h2><a name="3_Introduction">3. Introduction</a></h2>
+  </ol>
+
+<h2><a name="2_Introduction">2 Introduction</a></h2>
 
 <p>This is a list of features we propose to deliver in future releases of
 Mondrian. Each feature is linked to a high-level description. Complex features
 will have more detailed specifications in a separate document.</p>
 
-<p>Component designs
-are added to the <a href="overview.html">architectural overview</a> as
-necessary. Short term, you can put designs into an appendix.</p>
+<h3><a name="2.1_Purpose_of_this_document">2.1 Purpose of this document</a></h3>
 
-<p>It occurs to me that we haven't really defined who our customer is. Our main
-customer, I would contend, is someone using a web application (such as the
-sourceforge usage chart, <a href="http://sourceforge.net/project/stats/?group_id=35302">http://sourceforge.net/project/stats/?group_id=35302</a>).
-In some cases we will deliver apis and servlets to a second kind of customer, a
-developer. But almost every feature should have a deliverable -- perhaps just a
-sample application -- which can be used by the web-user.</p>
+<p>This document has several goals. First, it lets the Mondrian community know what 
+features we are thinking about implementing. There may be better ways of 
+delivering the same functionality that we haven't thought of.</p>
 
-<h2><a name="4_Components">4. Components</a></h2>
+<p>Second, since there is always more work than time, it allows us to 
+prioritize. If we hear that a particular feature is important to a lot of 
+people, we will try to get to it sooner.</p>
 
-<p>Components/features for release 1.0 ('must have' unless otherwise specified)</p>
+<p>Third, it allows us to attract resources.&nbsp; If there are features in this 
+roadmap which are important to your organization, consider sponsoring Mondrian's 
+development. The extra </p>
 
+<h3><a name="2.2_Mondrians_goals">2.2 Mondrian's goal</a></h3>
+
+<p>Mondrian's goal is to bring multidimensional analysis to the masses.</p>
+
+<p>To do this it needs to be:</p>
 <ul>
-  <li><a href="#5_1_Server">server</a>
-    <ul>
-      <li>implement full set of mdx builtin functions</li>
-      <li>support databases which do not have select-in-from-clause</li>
-      <li>tuning</li>
-      <li>unit tests</li>
-    </ul>
-  </li>
-  <li><a href="#5_2__Html_pivot_table">html pivot table</a>
-    <ul>
-      <li><a href="#5_2_1_Basic_drill_through">basic drill through</a></li>
-      <li><a href="#5_2_2_Chart_button">chart button</a></li>
-      <li>drill-anywhere (nice to have)</li>
-      <li>calculation builder</li>
-      <li>run arbitrary mdx</li>
-    </ul>
-  </li>
+	<li>free</li>
+	<li>portable</li>
+	<li>easy to install</li>
+	<li>easy to integrate, and above all</li>
+	<li>easy to understand</li>
 </ul>
 
+<p>As an open-source olap server written in pure Java, we feel that it meets 
+these goals. We can't anticipate all of our customers' requirements, but 
+open-source combined with Java keeps Mondrian flexible. It's easy to add 
+functionality or to integrate third-party tools, and Mondrian be integrated into 
+a variety of environments.</p>
+
+<h3><a name="2.3_Scope">2.3 Scope</a></h3>
+
+<p>Mondrian can't do everything. If it did everything, it would be a huge 
+download, difficult to install, and even more difficult to integrate with other 
+software; and we'd never finish writing it. But the good news is, this is open 
+source. If a feature is missing, it's often easy to add the feature to Mondrian 
+or to integrate with another open-source product that provides the feature.</p>
+
+<p><a href="http://jpivot.sourceforge.net">JPivot</a> is Mondrian's sister project. 
+It provides an excellent user-interface, and shows off what Mondrian 
+can do. But we have been careful to keep the two projects separate. (You can use 
+another user-interface to Mondrian, and you can also use JPivot with other 
+data-sources.) If you've run Mondrian's demo and you have suggestions on how to 
+improve the web interface, please
+<a href="http://sourceforge.net/forum/forum.php?forum_id=197389">make your 
+suggestion to the JPivot project directly</a>.</p>
+
+<h3><a name="2.4_Sponsored_development_and_co-development">2.4 Sponsored 
+development and co-development</a></h3>
+
+<p>Mondrian encourages companies to sponsor development of features which are 
+important to them. Sponsorship allows Mondrian developers to spend more time to 
+spend more time adding features to Mondrian, rather than having to find other 
+ways to pay the rent. The results are always contributed back to the project as 
+open-source.</p>
+
+<p>Another way companies can help Mondrian is to assign employees to co-develop 
+features. We can help specify and design these features, provided that the 
+resulting code is contributed to the project.</p>
+
+<p>If your organization would like to sponsor development of features, please 
+contact Julian Hyde.</p>
+
+<h2>3 Feature list</h2>
+
+<h3><a name="3.1_Internationalization_localization">3.1 Internationalization/localization</a></h3>
+
+<p><i>Effort: medium; importance: medium.</i></p>
+
+<p>Mondrian's has limited support for internationalization and localization 
+(I18N/L10N):</p>
 <ul>
-  <li><a href="#5_3_Html_servlet">html servlet</a>
-    <ul>
-      <li>xml/xsl generator (nice to have)</li>
-    </ul>
-  </li>
-  <li><a href="#5_4_Charts">charts</a>
-    <ul>
-      <li>chart wizard (nice to have)</li>
-    </ul>
-  </li>
-  <li><a href="#5_5_Web_test_harness">web test harness</a></li>
+	<li>Every connection has a locale</li>
+	<li>Messages are stored in localized resource files</li>
 </ul>
 
-<p>Components in a later release:</p>
+<p>This feature adds:</p>
 <ul>
-  <li>server
-    <ul>
-      <li>xml api (e.g. XML for Analysis)</li>
-      <li>jolap api</li>
-      <li>create and use aggregation tables</li>
-    </ul>
-  </li>
-  <li>html pivot table
-    <ul>
-      <li>actions</li>
-    </ul>
-  </li>
-  <li>charts
-    <ul>
-      <li>dynamic charts</li>
-    </ul>
-  </li>
-  <li>swing
-    <ul>
-      <li>swing pivot table</li>
-      <li>swing charts</li>
-    </ul>
-  </li>
-  <li>administration ui
-    <ul>
-      <li>catalog viewer/editor</li>
-      <li>performance monitor</li>
-      <li>validate catalog</li>
-    </ul>
-  </li>
+	<li>Localized cube, dimension, hierarchy, level and measure names.</li>
+	<li>Localized member names. For example, the member [Gender].[M] should have 
+	the caption &quot;Male&quot; in English, &quot;Masculin&quot; in French.</li>
+	<li>Localized format strings. Every locale has its own currency symbol, 
+	thousands separator and decimal separator. In the en-US locale, these are 
+	&quot;$&quot;, &quot;,&quot; and &quot;.&quot;.</li>
 </ul>
 
-<h2><a name="5__Specifications">5. Specifications</a></h2>
+<p>With this feature, we would also write a guide to I18N/L10N in Mondrian.</p>
 
-<h3><a name="5_1_Server">5.1. Server</a></h3>
+<p>See the
+<a href="http://sourceforge.net/mailarchive/forum.php?thread_id=6386685&forum_id=8760">
+email thread &quot;MLS cubes RFC&quot;</a>.</p>
 
-<p>See <a href="overview.html">architectural overview</a>.</p>
+<h3><a name="3.2_Aggregate_navigation">3.2 Aggregate navigation</a></h3>
 
-<h3><a name="5_2__Html_pivot_table">5.2. Html pivot table</a></h3>
+<p><i>Effort: high; importance: high.</i></p>
 
-<p><i>Sean, please complete this.</i></p>
+<p>Define aggregate tables in the schema.</p>
 
-<p><i>Does the pivot table support cell-selection in this release?</i></p>
+<p>Once the aggregate tables feature is stabilized, there are a number of extra
+features we can build around it:
 
-<h4><a name="5_2_1_Basic_drill_through">5.2.1. Basic drill through</a></h4>
+<p>1. Utility to populate (or generate INSERT statements to populate) the  agg
+tables. (For extra credit: populate the tables in topological order, so that
+higher level aggregations can be built from lower level aggregations.)
 
-<p>Use case: User runs a query in the pivot table. Presses 'show data' button.
-An HTML table is displayed, containing the rows of the fact</p>
+<p>2. Utility to generate a script containing CREATE TABLE and CREATE INDEX
+statements all possible aggregate tables (including indexes), XML for these
+tables, and comments indicating the estimated number of rows in these
+tables. Clearly this will be a huge script, and it would be ridiculous to
+create all of these tables. The person designing the schema could copy/paste
+from this file to create their own schema.
 
-<p>If the pivot table supports selection of cells, rows or columns, the rows
-shown should relate only to selected cells.</p>
+<p>3. Utility (maybe graphical, maybe text-based) to recommend a set of
+aggregate tables. This is essentially an optimization algorithm, and it is
+described in the academic literature. Constraints on the optimization
+process are the amount of storage required, the estimated time to populate
+the agg tables. The algorithm could also take into account usage
+information.
 
-<p><i>Julian: It's not hard to implement the server-side part of it (given a set of
-coordinates, e.g {([Time].[1997], [Store].[USA]), ([Time].[1998],
-[Store].[USA].[CA])}, return a select statement/parse tree of a select
-statement/jdbc result set for the fact table rows which went into those cells).
-The hard part is to incorporate it into the ui in a non-trivial way. (Which end
-user wants to see a table with columns headed REGION_ID, TIME_ID, UNIT_SALES,
-and a bunch of surrogate keys?)</i></p>
+<p>4. Allow agg tables to be taken offline/online while Mondrian is still
+running.
 
-<h4><a name="5_2_2_Chart_button">5.2.2. Chart button</a></h4>
+<p>I'm thinking of these being utilities, not part of the core runtime engine.
+There's plenty of room to wrap these utilities in nice graphical interfaces,
+make them smarter.
 
-<p>Use case: User runs a query in the pivot table. Presses 'pie chart' button.
-Data is rendered in pie chart.</p>
+<h3><a name="3.3_Improved_cache_control">3.3 Improved cache control</a></h3>
 
-<h4><a name="5_2_3__Actions">5.2.3. Actions</a></h4>
+<p><i>Effort: medium; importance: medium.</i></p>
 
-<p><i>Tony, please specify.</i></p>
+<p>(to be specified)</p>
 
-<p><i>Julian: These come under the aegis of the pivot table until we have an
-independent controller. It should be easy to shoehorn their
-metadata into the catalog (of which FoodMart.xml is an example, and Mondrian.xml
-is the specification).</i></p>
+<h3><a name="3.4_WITH_SET">3.4 WITH SET</a></h3>
 
-<h4><a name="5_2_4__Drill_anywhere">5.2.4. Drill anywhere</a></h4>
+<p><i>Effort: medium; importance: high; priority: high.</i></p>
 
-<p>Use case: User runs a query in the pivot table. They choose a column (for
-example, day of week) which is not a dimension, and drill on it. (Behind the
-scenes, the server is creating a dimension on the fly.)</p>
+<p>Support the MDX <code>WITH SET</code> syntax.</p>
 
-<h3><a name="5_3_Html_servlet">5.3. Html servlet</a></h3>
+<h3>3.4.1 Store set definitions against cube</h3>
 
-<p>Runs an mdx statement, renders the results as an html table.</p>
+<h3><a name="3.5_Cache_set_expressions">3.5 Cache set expressions</a></h3>
 
-<p><i>Sean, please complete this. Sketch out the major components (reference
-javadoc if these are classes), and describe the sample code we will deliver,
-list preferences.</i></p>
+<p><i>Effort: medium; importance: medium.</i></p>
 
-<h3><a name="5_4_Charts">5.4. Charts</a></h3>
+<p>The WITH SET feature and functions such as RANK cause the same expression to 
+be evaluated many times within the course of a single MDX statement. A 
+set-expression cache will provide an order of magnitude performance improvement 
+for such queries. </p>
 
-<p><i>Tony, please complete this.</i></p>
+<h3><a name="3.6_User-defined_functions">3.6 User-defined functions</a></h3>
 
-<p><i>Possible deliverables:</i></p>
+<p><i>Effort: low; importance: medium; priority: medium.</i></p>
+
+<p>A user-defined functions facility will allow an application developer to add 
+MDX functions without modifying Mondrian's source code. To write a function, the 
+developer will need to write a class which implements a given SPI 
+(service-provider interface), include the class on the class-path, and reference 
+the class from the schema file.</p>
+
+<h3><a name="3.7_Improve_dimension_sharing">3.7 Improve dimension sharing</a></h3>
+
+<p><i>Effort: high; importance: high; priority: medium.</i></p>
+
+<p>Use the same dimension twice in the same cube.</p>
+
+<h3><a name="3.8_Virtual_cube_enhancements">3.8 Virtual cube enhancements</a></h3>
+
+<p><i>Effort: medium; importance: medium; priority: medium.</i></p>
+
+<p>When a cube uses the same dimension twice is involved in a virtual cube, 
+disambiguate which usage of the dimension is involved. Allow the virtual cube to 
+use the same cube more than once.</p>
+
+<h3><a name="3.9_Calculated_members_in_virtual_cubes">3.9 Calculated members in virtual cubes</a></h3>
+
+<p><i>Effort: low; importance: medium; priority: medium.</i></p>
+
+<p>One could imagine two levels: 1) simply access calculated measures from base 
+cubes, 2) define new calculated measures spanning measures in the base cubes.</p>
+
+<h3><a name="3.10_Time_function">3.10 Time function</a></h3>
+
+<p><i>Effort: low; importance: medium; priority: medium.</i></p>
+
+<p>See
+<a href="https://sourceforge.net/forum/forum.php?thread_id=1222972&forum_id=111375">
+the Open Discussion thread &quot;Accessing the current date in MDX&quot;</a>.</p>
+
+<h3><a name="3.11_Scalar_functions">3.11 Scalar functions</a></h3>
+
+<p><i>Effort: medium; importance: high; priority: medium.</i></p>
+
+<p>Mondrian's set of functions for operating on numeric and string expressions 
+is limited. This feature would add string manipulation functions (substring, 
+trim, regular expressions) and arithmetic expressions (power, log, sqrt) and 
+conversion functions (string to numeric, numeric to string).</p>
+
+<h3><a name="3.12_Cold_start">3.12 Cold start</a></h3>
+
+<p><i>Effort: medium; importance: medium; priority: low.</i></p>
+
+<p>When Mondrian initializes and starts to process the first queries, it makes 
+sql calls to get member lists and determine cardinality, and then to load 
+segments into the cache. When Mondrian is closed and restarted, it has to do 
+that work again. This can be a significant chunk of time depending on the cube 
+size. For example in one test an 8GB cube (55M row fact table) took 15 minutes 
+(mostly doing a group by) before it returned results from its first query, and 
+absent any caching on the database server would take another 15 minutes if you 
+closed it and reopened the application. Now, this cube was just one month of 
+data; imagine the time if there was 5 years worth.<br>
+<br>
+What ideas and designs can you come up with to speed that up, in other words to 
+do anything time consuming only once and reuse it between instances?</p>
+
+<h3><a name="3.13_Rollups">3.13 Rollups</a></h3>
+
+<p><i>Effort: medium; importance: medium; priority: low.</i></p>
+
+<p>If the cache contains aggregates for all children of a member, then Mondrian 
+would be able to compute the aggregate for the parent member by rolling up.</p>
+
+<p>See the
+<a href="https://sourceforge.net/mailarchive/forum.php?thread_id=6496831&forum_id=8760">
+email thread &quot;grouper in Mondrian&quot;</a>.</p>
+
+<h3><a name="3.14_Compound_slicer">3.14 Compound slicer</a></h3>
+
+<p><i>Effort: medium; importance: low; priority: low.</i></p>
+
+<h3><a name="3.15_Enhancements_to_schema_cache">3.15 Enhancements to schema cache</a></h3>
+
+<p><i>Effort: low; importance: medium; priority: high.</i></p>
+
+<p>At present, the schema is read from a URL when the connection is established. 
+If the URL is of <code>http:</code> protocol, Mondrian assumes that the XML 
+content of the schema file never changes, and therefore caches the schema 
+definition in memory. But if the URL is of <code>file:</code> protocol, Mondrian 
+assumes that the XML schema definition is volatile, and therefore it re-creates 
+the schema every time a connection is established. This is expensive, and may 
+the system's reponsiveness.</p>
+
+<p>This feature adds a <code>cacheSchema</code> parameter to the connect string. 
+Values are:</p>
+<ul>
+	<li><code>true</code>: Assume that the schema definition never changes.</li>
+	<li><code>false</code>:&nbsp; Assume that the schema definition changes 
+	frequently, and therefore rebuild the schema every time a connection is 
+	established.</li>
+	<li><code>digest</code>:&nbsp; Every time a connection is established, 
+	re-read the schema, and compute a
+	<a href="http://www.irnis.net/gloss/md5-digest.shtml">digest</a>. If the 
+	digest is unchanged, assume that the schema is unchanged, and use the schema 
+	definition from the cache.</li>
+</ul>
+
+<h3><a name="3.16_JOLAP_support">3.16 JOLAP support</a></h3>
+
+<p><i>Effort: very high; importance: medium; priority: low.</i></p>
+
+<p>Mondrian's support for the JOLAP API is currently incomplete. This feature 
+would complete the implementation of the API.</p>
+
+<h3><a name="3.17_Schema_and_query_validation">3.17 Schema and query validation</a></h3>
+
+<p>Process to validate a schema.</p>
+
+<p>PRocess to validate a set of queries. Maybe an option to ignore errors due to 
+specific members not existing because the data hasn't been loaded yet.</p>
+
+<p>Expose validation via Eclipse plugin.</p>
+
+<h3><a name="3.18_Documentation">3.18 Documentation</a></h3>
 
 <ul>
-  <li><i>api &amp; example code render mdx results as chart</i></li>
-  <li><i>servlet</i></li>
-  <li><i>chart wizard</i></li>
+<li>Document 'ordinalColumn'</li>
 </ul>
-<p><i>What formats shall we support in 1.0? We must do either JPEG or GIF.</i></p>
 
-<h3><a name="5_5_Web_test_harness">5.5. Web test harness</a></h3>
+<h3><a name="3.19_Name-resolution">3.19 Name-resolution</a></h3>
 
-<p><i>Sean, please complete this.</i></p>
+<p>Mondrian's name resolution is not always compatible with other MDX 
+implementations such as MSAS and SAS.</p>
+<ol>
+	<li>Parameterize case-sensitivity: a connection parameter determines whether cube/dimension/hierarchy/level/member names are case-sensitive.</li>
+	<li>Support abbreviated member names. For example, e.g. <code>[Products].[Boston Lager]</code> seems to be valid in MSAS if product names are unique, whereas Mondrian 
+	currently requires <code>[Products].[Beverages].[Beer].[Samual Adams].[Boston Lager]</code>.</li>
+	<li>Support keys in members, e.g. <code>[Products].#[1234]</code>.</li>
+	<li>Alternative axis names. '<code>ON COLUMNS</code>' and '<code>ON AXES(0)</code>' 
+	are supported, but '<code>ON 0</code>' is not.</li>
+</ol>
+
 
 <p>&nbsp;</p>
 
-<b>
-  <table border="1" width="100%" class="clsStd">
-    <tr>
-      <td>End <i>$Id$</i></td>
-    </tr>
-  </table>
-  <p>&nbsp;&nbsp;&nbsp; </p>
-</b>
+<hr>
+
+<table border="0" class="clsStd" width="100%" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0" id="table1">
+  <tr>
+    <td class="content">
+      <a target="_top" href="index.html">Home</a> |
+      <a target="_top" href="#">No frames</a> | This file is<i>
+      <a href="http://mondrian.sourceforge.net/roadmap.html">$Id$
+		</a></i> (<a href="http://perforce.eigenbase.org:8080/open/mondrian/doc/roadmap.html?ac=22">log</a>)</td>
+    <td align="right">
+      <a href="http://sourceforge.net">
+        <img src="http://sourceforge.net/sflogo.php?group_id=35302&type=1" width="88" height="31" border="0" alt="SourceForge.net Logo">
+      </a>
+    </td>
+  </tr>
+</table>
 
 </body>
 
