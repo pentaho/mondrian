@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.*;
 
 /**
  * Command line utility which reads and executes MDX commands.
@@ -407,7 +408,7 @@ public class CmdRunner {
             buf.append(nl);
         }
     }
-    public void executeCubeCommane(String cubename, 
+    public void executeCubeCommand(String cubename, 
                                    String command, 
                                    StringBuffer buf) {
         Cube cube = getCube(cubename);
@@ -721,6 +722,8 @@ public class CmdRunner {
                     resultString = executeError(cmd);
                 } else if (cmd.startsWith("echo")) {
                     resultString = executeEcho(cmd);
+                } else if (cmd.startsWith("expr")) {
+                    resultString = executeExpr(cmd);
                 } else if (cmd.equals("=")) {
                     resultString = reexecuteMDXCmd();
                 } else if (cmd.startsWith("exit")) {
@@ -902,19 +905,20 @@ public class CmdRunner {
     /////////////////////////////////////////////////////////////////////////
     private static final String INDENT = "  ";
 
-    private static final int UNKNOWN_CMD        = 0x000;
-    private static final int HELP_CMD           = 0x001;
-    private static final int SET_CMD            = 0x002;
-    private static final int LOG_CMD            = 0x004;
-    private static final int FILE_CMD           = 0x008;
-    private static final int LIST_CMD           = 0x010;
-    private static final int MDX_CMD            = 0x020;
-    private static final int FUNC_CMD           = 0x040;
-    private static final int PARAM_CMD          = 0x080;
-    private static final int CUBE_CMD           = 0x100;
-    private static final int ERROR_CMD          = 0x200;
-    private static final int ECHO_CMD           = 0x400;
-    private static final int EXIT_CMD           = 0x800;
+    private static final int UNKNOWN_CMD        = 0x0000;
+    private static final int HELP_CMD           = 0x0001;
+    private static final int SET_CMD            = 0x0002;
+    private static final int LOG_CMD            = 0x0004;
+    private static final int FILE_CMD           = 0x0008;
+    private static final int LIST_CMD           = 0x0010;
+    private static final int MDX_CMD            = 0x0020;
+    private static final int FUNC_CMD           = 0x0040;
+    private static final int PARAM_CMD          = 0x0080;
+    private static final int CUBE_CMD           = 0x0100;
+    private static final int ERROR_CMD          = 0x0200;
+    private static final int ECHO_CMD           = 0x0400;
+    private static final int EXPR_CMD           = 0x0800;
+    private static final int EXIT_CMD           = 0x1000;
 
     private static final int ALL_CMD  = HELP_CMD  |
                                         SET_CMD   |
@@ -927,6 +931,7 @@ public class CmdRunner {
                                         CUBE_CMD  |
                                         ERROR_CMD |
                                         ECHO_CMD  |
+                                        EXPR_CMD  |
                                         EXIT_CMD;
 
     private static final char ESCAPE_CHAR         = '\\';
@@ -1100,6 +1105,11 @@ public class CmdRunner {
         if ((cmd & ECHO_CMD) != 0) {
             buf.append(nl);
             appendEcho(buf);
+        }
+
+        if ((cmd & EXPR_CMD) != 0) {
+            buf.append(nl);
+            appendExpr(buf);
         }
 
         if (cmd == ALL_CMD) {
@@ -1635,7 +1645,7 @@ public class CmdRunner {
             if (index == -1) {
                 // its a commnd
                 String command = arg;
-                executeCubeCommane(cubename, command, buf);
+                executeCubeCommand(cubename, command, buf);
             } else {
                 String[] nv = arg.split("=");
                 String name = (nv.length == 0) ? null : nv[0];
@@ -1724,7 +1734,6 @@ public class CmdRunner {
     }
     protected String executeEcho(String mdxCmd) {
 
-        this.mdxCmd = mdxCmd;
         try {
             String resultString = (mdxCmd.length() == 4)
                 ? "" : mdxCmd.substring(4);
@@ -1735,6 +1744,105 @@ public class CmdRunner {
             //return error;
             return null;
         }
+    }
+    //////////////////////////////////////////////////////////////////////////
+    // expr
+    //////////////////////////////////////////////////////////////////////////
+    protected static void appendExpr(StringBuffer buf) {
+        appendIndent(buf, 1);
+        buf.append("expr cubename expression<cr>");
+        buf.append(nl);
+        appendIndent(buf, 2);
+        buf.append("evaluate an expression against a cube.");
+        buf.append(nl);
+        appendIndent(buf, 2);
+        buf.append("where: ");
+        buf.append(nl);
+        appendIndent(buf, 3);
+        buf.append("cubename is single word or string using [], '' or \"\"");
+        buf.append(nl);
+        appendIndent(buf, 3);
+        buf.append("expression is string using '' or \"\"");
+    }
+    protected String executeExpr(String mdxCmd) {
+        StringBuffer buf = new StringBuffer(256);
+
+        mdxCmd = (mdxCmd.length() == 5)
+                ? "" : mdxCmd.substring(5);
+
+        String regex = "(\"[^\"]+\"|'[^\']+'|\\[[^\\]]+\\]|[^\\s]+)\\s+.*";
+        Pattern p = Pattern.compile(regex);
+        Matcher m = p.matcher(mdxCmd);
+        boolean b = m.matches();
+
+        if (! b) {
+            buf.append("Could not parse into \"cubename expression\" command:");
+            buf.append(nl);
+            buf.append(mdxCmd);
+        } else {
+
+            String cubeName = m.group(1);
+            String expression = mdxCmd.substring(cubeName.length()+1);
+
+            if (cubeName.charAt(0) == '"') {
+                cubeName = cubeName.substring(1, cubeName.length()-1);
+            } else if (cubeName.charAt(0) == '\'') {
+                cubeName = cubeName.substring(1, cubeName.length()-1);
+            } else if (cubeName.charAt(0) == '[') {
+                cubeName = cubeName.substring(1, cubeName.length()-1);
+            }
+
+            int len = expression.length();
+            if (expression.charAt(0) == '"') {
+                if (expression.charAt(len-1) != '"') {
+                    buf.append("Missing end '\"' in expression:");
+                    buf.append(nl);
+                    buf.append(expression);
+                    return buf.toString();
+                }
+                expression = expression.substring(1, len-1);
+            } else if (expression.charAt(0) == '\'') {
+                if (expression.charAt(len-1) != '\'') {
+                    buf.append("Missing end \"'\" in expression:");
+                    buf.append(nl);
+                    buf.append(expression);
+                    return buf.toString();
+                }
+                expression = expression.substring(1, len-1);
+            }
+
+            Cube cube = getCube(cubeName);
+            if (cube == null) {
+                buf.append("No cube found with name \"");
+                buf.append(cubeName);
+                buf.append("\"");
+
+            } else {
+                try {
+                    if (cubeName.indexOf(' ') >= 0) {
+                        if (cubeName.charAt(0) != '[') {
+                            cubeName = Util.quoteMdxIdentifier(cubeName);
+                        }
+                    }
+                    // taken from FoodMartTest code
+                    String queryString = 
+                        "with member [Measures].[Foo] as '" +
+                        expression +
+                        "' select {[Measures].[Foo]} on columns from " + 
+                        cubeName;
+                    Result result = runQuery(queryString, true);
+                    String rString = 
+                        result.getCell(new int[]{0}).getFormattedValue();
+
+                    buf.append(rString);
+
+                } catch (Exception ex) {
+                    setError(ex);
+                    return null;
+                }
+            } 
+        }
+        return buf.toString();
     }
     //////////////////////////////////////////////////////////////////////////
     // exit
