@@ -94,6 +94,9 @@ public class CmdRunner {
         }
     }
 
+    void setError(String s) {
+        this.error = s;
+    }
     void setError(Throwable t) {
         this.error = formatError(t);
         StringWriter sw = new StringWriter();
@@ -1762,7 +1765,7 @@ public class CmdRunner {
         buf.append("cubename is single word or string using [], '' or \"\"");
         buf.append(nl);
         appendIndent(buf, 3);
-        buf.append("expression is string using '' or \"\"");
+        buf.append("expression is string using \"\"");
     }
     protected String executeExpr(String mdxCmd) {
         StringBuffer buf = new StringBuffer(256);
@@ -1779,6 +1782,9 @@ public class CmdRunner {
             buf.append("Could not parse into \"cubename expression\" command:");
             buf.append(nl);
             buf.append(mdxCmd);
+            String msg = buf.toString();
+            setError(msg);
+            return msg;
         } else {
 
             String cubeName = m.group(1);
@@ -1798,15 +1804,20 @@ public class CmdRunner {
                     buf.append("Missing end '\"' in expression:");
                     buf.append(nl);
                     buf.append(expression);
-                    return buf.toString();
+                    String msg = buf.toString();
+                    setError(msg);
+                    return msg;
                 }
                 expression = expression.substring(1, len-1);
+
             } else if (expression.charAt(0) == '\'') {
                 if (expression.charAt(len-1) != '\'') {
                     buf.append("Missing end \"'\" in expression:");
                     buf.append(nl);
                     buf.append(expression);
-                    return buf.toString();
+                    String msg = buf.toString();
+                    setError(msg);
+                    return msg;
                 }
                 expression = expression.substring(1, len-1);
             }
@@ -1816,6 +1827,9 @@ public class CmdRunner {
                 buf.append("No cube found with name \"");
                 buf.append(cubeName);
                 buf.append("\"");
+                String msg = buf.toString();
+                setError(msg);
+                return msg;
 
             } else {
                 try {
@@ -1824,21 +1838,57 @@ public class CmdRunner {
                             cubeName = Util.quoteMdxIdentifier(cubeName);
                         }
                     }
-                    // taken from FoodMartTest code
-                    String queryString = 
-                        "with member [Measures].[Foo] as '" +
-                        expression +
-                        "' select {[Measures].[Foo]} on columns from " + 
-                        cubeName;
-                    Result result = runQuery(queryString, true);
-                    String rString = 
-                        result.getCell(new int[]{0}).getFormattedValue();
+                    final char c = '\'';
+                    if (expression.indexOf('\'') != -1) {
+                        // make sure all "'" are escaped
+                        int start = 0;
+                        int index = expression.indexOf('\'', start);
+                        if (index == 0) {
+                            // error: starts with "'"
+                            buf.append("Double \"''\" starting expression:");
+                            buf.append(nl);
+                            buf.append(expression);
+                            String msg = buf.toString();
+                            setError(msg);
+                            return msg;
+                        }
+                        while (index != -1) {
+                            if (expression.charAt(index-1) != '\\') {
+                                // error
+                                buf.append("Non-escaped \"'\" in expression:");
+                                buf.append(nl);
+                                buf.append(expression);
+                                String msg = buf.toString();
+                                setError(msg);
+                                return msg;
+                            }
+                            start = index+1;
+                            index = expression.indexOf('\'', start);
+                        }
+                    }
 
-                    buf.append(rString);
+                    // taken from FoodMartTest code
+                    StringBuffer queryStringBuf = new StringBuffer(64);
+                    queryStringBuf.append("with member [Measures].[Foo] as ");
+                    queryStringBuf.append(c);
+                    queryStringBuf.append(expression);
+                    queryStringBuf.append(c);
+                    queryStringBuf.append(" select {[Measures].[Foo]} on columns from ");
+                    queryStringBuf.append(cubeName);
+
+                    String queryString = queryStringBuf.toString();
+
+                    Result result = runQuery(queryString, true);
+                    String resultString = 
+                        result.getCell(new int[]{0}).getFormattedValue();
+                    mdxResult = resultString;
+                    clearError();
+
+                    buf.append(resultString);
 
                 } catch (Exception ex) {
                     setError(ex);
-                    return null;
+                    buf.append("Error: " +ex);
                 }
             } 
         }
