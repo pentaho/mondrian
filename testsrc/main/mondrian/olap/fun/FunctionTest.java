@@ -1836,8 +1836,6 @@ public class FunctionTest extends FoodMartTestCase {
                 + "from " + nl
                 + "    [Sales]");
 
-        Cell cell;
-
         checkDataResults(
                 new Double[][] {
                     {null, null},
@@ -2720,11 +2718,12 @@ public class FunctionTest extends FoodMartTestCase {
     /**
      * Tests that the Hierarchize function works correctly when applied to
      * a level whose ordering is determined by an 'ordinal' property.
+     * TODO: fix this test (bug 1220787)
      */
-    public void testHierarchizeOrdinal() {
+    public void _testHierarchizeOrdinal() {
         final Connection connection =
                 TestContext.instance().getFoodMartConnection(false);
-        final Cube cube = connection.getSchema().createCube(
+        connection.getSchema().createCube(
                 "<Cube name=\"Sales_Hierarchize\">" + nl +
                 "  <Table name=\"sales_fact_1997\"/>" + nl +
                 "  <Dimension name=\"Time_Alphabetical\" type=\"TimeDimension\" foreignKey=\"time_id\">" + nl +
@@ -3584,8 +3583,6 @@ public class FunctionTest extends FoodMartTestCase {
      */
     public void assertExprReturns(String expr, String expected) {
         String actual = executeExpr(expr);
-System.out.println("actual="+actual);
-System.out.println("expected="+expected);
         assertEquals(expected, actual);
     }
 
@@ -3593,9 +3590,6 @@ System.out.println("expected="+expected);
             double expected, double epsilon) {
         String actual = executeExpr(expr);
 
-System.out.println("actual="+actual);
-System.out.println("expected="+expected);
-System.out.println("epsilon="+epsilon);
         try {
             Assert.assertEquals(null, 
                 expected, 
