@@ -15,6 +15,8 @@ import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
 import mondrian.olap.Query;
 import mondrian.olap.Result;
+
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 
 import javax.servlet.ServletContext;
@@ -28,6 +30,7 @@ import javax.xml.parsers.ParserConfigurationException;
  */
 
 public class ResultCache implements HttpSessionBindingListener {
+    private static final Logger LOGGER = Logger.getLogger(ResultCache.class);
     private final static String ATTR_NAME = "mondrian.web.taglib.ResultCache.";
     private Query query = null;
     private Result result = null;
@@ -68,7 +71,7 @@ public class ResultCache implements HttpSessionBindingListener {
             long t1 = System.currentTimeMillis();
             result = connection.execute(query);
             long t2 = System.currentTimeMillis();
-            System.out.println(
+            LOGGER.debug(
                 "Execute query took " + (t2 - t1) + " millisec");
         }
         return result;

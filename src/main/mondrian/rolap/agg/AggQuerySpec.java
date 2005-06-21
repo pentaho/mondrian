@@ -18,6 +18,8 @@ import mondrian.rolap.sql.SqlQuery;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
+import org.apache.log4j.Logger;
+
 /**
  * An AggStar's version of the QuerySpec.
  *
@@ -28,6 +30,7 @@ import java.sql.SQLException;
  * @version
  */
 class AggQuerySpec {
+    private final Logger LOGGER = Logger.getLogger(AggQuerySpec.class);
     private final AggStar aggStar;
     private final Segment[] segments;
     /**
@@ -84,10 +87,10 @@ class AggQuerySpec {
         int bitPos = columns[i].getBitPosition();
         AggStar.Table.Column column = aggStar.lookupColumn(bitPos);
 
-// this should never happen
-if (column == null) {
-    System.out.println("column null for bitPos="+bitPos);
-}
+        // this should never happen
+        if (column == null) {
+            LOGGER.error("column null for bitPos="+bitPos);
+        }
         return column;
     }
     public String getColumnAlias(final int i) {

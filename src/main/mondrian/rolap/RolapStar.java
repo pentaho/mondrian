@@ -23,6 +23,9 @@ import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
 
 import javax.sql.DataSource;
+
+import org.apache.log4j.Logger;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Connection;
@@ -1528,6 +1531,8 @@ public class RolapStar {
     }
 
     public static class Condition {
+    	private static final Logger LOGGER = Logger.getLogger(Condition.class);
+    	
         private final MondrianDef.Expression left;
         private final MondrianDef.Expression right;
         // set in Table constructor
@@ -1541,7 +1546,7 @@ public class RolapStar {
             if (!(left instanceof MondrianDef.Column)) {
                 // TODO: Will this ever print?? if not then left should be
                 // of type MondrianDef.Column.
-                System.out.println("Condition.left NOT Column: "
+                LOGGER.debug("Condition.left NOT Column: "
                     +left.getClass().getName());
             }
             this.left = left;

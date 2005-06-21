@@ -828,23 +828,24 @@ assert is not true.
                 // there is a single dimension table, then this is currently
                 // an unsupported configuation and all bets are off.
                 if (relation instanceof MondrianDef.Join) {
-// RME
-// take out after things seem to be working
-MondrianDef.Relation relationTmp1 = relation;
+                	
+                    // RME
+                    // take out after things seem to be working
+                    MondrianDef.Relation relationTmp1 = relation;
 
                     relation = reorder(relation, levels);
-
-if (relation == null) {
-System.out.println("RolapCube.registerDimension: after reorder relation==null");
-System.out.println("RolapCube.registerDimension: reorder relationTmp1="
-+format(relationTmp1));
-}
+					
+                    if (relation == null && getLogger().isDebugEnabled()) {
+                    	getLogger().debug("RolapCube.registerDimension: after reorder relation==null");
+                    	getLogger().debug("RolapCube.registerDimension: reorder relationTmp1="
+                    						+format(relationTmp1));
+                    }
                 }
 
-MondrianDef.Relation relationTmp2 = relation;
+                MondrianDef.Relation relationTmp2 = relation;
 
                 if (levelName != null) {
-//System.out.println("RolapCube.registerDimension: levelName=" +levelName);
+                    //System.out.println("RolapCube.registerDimension: levelName=" +levelName);
                     // When relation is a table, this does nothing. Otherwise
                     // it tries to arrange the joins so that the fact table
                     // in the RolapStar will be joining at the lowest level.
@@ -878,11 +879,12 @@ MondrianDef.Relation relationTmp2 = relation;
                             String tableName = childLevel.getTableName();
                             if (tableName != null) {
                                 relation = snip(relation, tableName);
-if (relation == null) {
-System.out.println("RolapCube.registerDimension: after snip relation==null");
-System.out.println("RolapCube.registerDimension: snip relationTmp2="
-+format(relationTmp2));
-}
+                                
+                                if (relation == null && getLogger().isDebugEnabled()) {
+                                    getLogger().debug("RolapCube.registerDimension: after snip relation==null");
+                                    getLogger().debug("RolapCube.registerDimension: snip relationTmp2="
+                                            +format(relationTmp2));
+                                }
                             }
                         }
                     }
@@ -1642,7 +1644,7 @@ System.out.println("RolapCube.registerDimension: snip relationTmp2="
     // implement NameResolver
     public OlapElement lookupChild(OlapElement parent, String s) {
         // use OlapElement's virtual lookup
-System.out.println("RolapCube.lookupChild OlapElement: DOES THIS EVER GET CALLED s="+s);
+    	getLogger().error("RolapCube.lookupChild OlapElement: DOES THIS EVER GET CALLED s="+s);
         return parent.lookupChild(getSchemaReader(), s);
     }
 

@@ -12,6 +12,8 @@
 package mondrian.web.taglib;
 
 import mondrian.olap.*;
+
+import org.apache.log4j.Logger;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -24,13 +26,17 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.io.StringReader;
 
 /**
  * transforms a mondrian result into a DOM
  */
 public class DOMBuilder {
-
+    private static final Logger LOGGER = Logger.getLogger(DOMBuilder.class);
+	
     Document factory;
     Result result;
     int dimCount;
@@ -331,7 +337,9 @@ public class DOMBuilder {
             StringReader input = new StringReader(PRETTY_PRINTER);
             //File input = new File(System.getProperty("test.dir") + "/" + "pretty.xsl");
             Templates templates = tf.newTemplates(new StreamSource(input));
-            templates.newTransformer().transform(new DOMSource(doc), new StreamResult(System.out));
+            OutputStream result = new ByteArrayOutputStream();
+            templates.newTransformer().transform(new DOMSource(doc), new StreamResult(result));
+            LOGGER.debug(result.toString());
         }
         catch (Exception e) {
             e.printStackTrace();

@@ -175,7 +175,7 @@ public class FastBatchingCellReader implements CellReader {
     }
 
     class Batch {
-
+    	private final Logger LOGGER = Logger.getLogger(Batch.class);
         final RolapStar.Column[] columns;
         final BitKey bitKey;
         final List measuresList = new ArrayList();
@@ -212,19 +212,19 @@ public class FastBatchingCellReader implements CellReader {
                     buf.append("AggGen: Sorry, can not create SQL for virtual Cube \"");
                     buf.append(FastBatchingCellReader.this.cube.getName());
                     buf.append("\", operation not currently supported");
-                    System.out.println(buf.toString());
+                    LOGGER.error(buf.toString());
 
                 } else {
                     mondrian.rolap.aggmatcher.AggGen aggGen = 
                         new mondrian.rolap.aggmatcher.AggGen(
                             FastBatchingCellReader.this.cube.getStar(), columns);
                     if (aggGen.isReady()) {
-                        System.out.println(aggGen.createLost());
-                        System.out.println(aggGen.insertIntoLost());
-                        System.out.println(aggGen.createCollapsed());
-                        System.out.println(aggGen.insertIntoCollapsed());
+                    	LOGGER.debug("createLost=" + Util.nl + aggGen.createLost());
+                    	LOGGER.debug("insertIntoLost=" + Util.nl + aggGen.insertIntoLost());
+                    	LOGGER.debug("createCollapsed=" + Util.nl + aggGen.createCollapsed());
+                    	LOGGER.debug("insertIntoCollapsed=" + Util.nl + aggGen.insertIntoCollapsed());
                     } else {
-                        System.out.println("AggGen failed");
+                    	LOGGER.error("AggGen failed");
                     }
                 }
             }

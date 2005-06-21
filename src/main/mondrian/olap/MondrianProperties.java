@@ -527,7 +527,7 @@ public class MondrianProperties extends PropertiesPlus {
 
     /**
      * Tries to load properties from a URL. Does not fail, just prints success
-     * or failure to {@link System#out}.
+     * or failure to log.
      */
     private void load(final URL url) {
         try {

@@ -14,6 +14,8 @@ package mondrian.xmla;
 import mondrian.olap.EnumeratedValues;
 import mondrian.olap.Util;
 import mondrian.util.SAXHandler;
+
+import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import java.util.*;
@@ -29,6 +31,8 @@ import java.util.*;
  * @version $Id$
  **/
 abstract class Rowset {
+	private static final Logger LOGGER = Logger.getLogger(Rowset.class);
+	
     private final RowsetDefinition rowsetDefinition;
     protected final HashMap restrictions;
     protected final Properties properties;
@@ -116,7 +120,7 @@ abstract class Rowset {
         case PropertyDefinition.Catalog_ORDINAL:
             break;
         default:
-            System.out.println("Warning: Rowset '" + rowsetDefinition.name_ +
+            LOGGER.warn("Warning: Rowset '" + rowsetDefinition.name_ +
                     "' does not support property '" + propertyDef.name_ +
                     "' (value is '" + value + "')");
         }

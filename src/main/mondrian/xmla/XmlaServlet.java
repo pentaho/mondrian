@@ -15,6 +15,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
+
 import java.io.*;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -30,6 +33,8 @@ import java.util.Map;
  * @version $Id$
  */
 public class XmlaServlet extends HttpServlet {
+    private static final Logger LOGGER = Logger.getLogger(XmlaServlet.class);
+	
     private final XmlaMediator mediator = new XmlaMediator();
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -49,50 +54,56 @@ public class XmlaServlet extends HttpServlet {
                 return;
             }
         }
-        boolean debug = true;
-        if (debug) {
-            System.out.println("Pathinfo=" + request.getPathInfo());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Pathinfo=" + request.getPathInfo());
             final Map map = request.getParameterMap();
             for (Iterator iterator = map.keySet().iterator(); iterator.hasNext();) {
                 String att = (String) iterator.next();
-                System.out.println(att + "=" + map.get(att));
+                LOGGER.debug(att + "=" + map.get(att));
             }
             final Enumeration headerNames = request.getHeaderNames();
             while (headerNames.hasMoreElements()) {
                 String header = (String) headerNames.nextElement();
-                System.out.println("Header " + header + "=" + request.getHeader(header));
+                LOGGER.debug("Header " + header + "=" + request.getHeader(header));
             }
-            System.out.println("Request: " + soapRequest);
+            LOGGER.debug("Request: " + soapRequest);
         }
+        
         PrintWriter printWriter;
         try {
             printWriter = response.getWriter();
         } catch (IOException e) {
             return;
         }
-        if (debug) {
-            System.out.println("Response:");
+        
+        final StringBuffer sb = new StringBuffer();
+        if (LOGGER.isDebugEnabled()) {
             printWriter = new PrintWriter(
                     new FilterWriter(printWriter) {
+                    	
                         public void write(int c) throws IOException {
                             this.out.write(c);
-                            System.out.print((char) c);
+                            sb.append((char) c);
                         }
 
                         public void write(char cbuf[], int off, int len) throws IOException {
                             this.out.write(cbuf, off, len);
-                            System.out.print(new String(cbuf, off, len));
+                            sb.append(new String(cbuf, off, len));
                         }
 
                         public void write(String str, int off, int len) throws IOException {
                             super.write(str, off, len);
-                            System.out.print(str.substring(off, len));
+                            sb.append(str.substring(off, len));
                         }
                     }
             );
         }
         mediator.threadServletContext.set(getServletContext());
         mediator.process(soapRequest, printWriter);
+        if (LOGGER.isDebugEnabled()) {
+        	LOGGER.debug("Response:");
+        	LOGGER.debug(sb.toString());
+        }
     }
 
     private static String toString(InputStream is) throws IOException {

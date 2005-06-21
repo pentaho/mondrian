@@ -20,6 +20,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
+import org.apache.log4j.Logger;
+
 /**
  * <code>Model</code> attempts to deduce an object model consisting of
  * entities, attributes and relationships using Java reflection.
@@ -29,6 +31,8 @@ import java.util.*;
  * @version $Id$
  **/
 public class Model {
+    private static final Logger LOGGER = Logger.getLogger(Model.class);
+
     private static Model instance;
     private HashMap mapClassToEntity = new HashMap();
     private static final Entity noEntity = new Entity(null, Object.class);
@@ -387,7 +391,7 @@ public class Model {
             if (candidateCount == 1) {
                 return (Relationship) candidate;
             } else {
-                System.out.println("Found " + candidateCount + " candidates for inverse of " + this);
+            	LOGGER.debug("Found " + candidateCount + " candidates for inverse of " + this);
                 return null;
             }
         }
@@ -428,12 +432,12 @@ public class Model {
         final Attribute[] attributes = entity.getAttributes();
         for (int i = 0; i < attributes.length; i++) {
             Attribute attribute = attributes[i];
-            System.out.println("Attribute: " + attribute.getDescription());
-        }
+            LOGGER.debug("Attribute: " + attribute.getDescription());
+                    }
         final Relationship[] relationships = entity.getRelationships();
         for (int i = 0; i < relationships.length; i++) {
             Relationship relationship = relationships[i];
-            System.out.println("Relationship: " + relationship.getDescription());
+            LOGGER.debug("Relationship: " + relationship.getDescription());
         }
     }
 

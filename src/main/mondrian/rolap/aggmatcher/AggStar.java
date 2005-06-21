@@ -263,6 +263,7 @@ public class AggStar {
          * table that owns the join condition).
          */
         public class JoinCondition {
+        	private final Logger LOGGER = Logger.getLogger(JoinCondition.class);
             // I think this is always a MondrianDef.Column
             private final MondrianDef.Expression left;
             private final MondrianDef.Expression right;
@@ -270,7 +271,7 @@ public class AggStar {
             private JoinCondition(final MondrianDef.Expression left,
                                   final MondrianDef.Expression right) {
                 if (!(left instanceof MondrianDef.Column)) {
-                    System.out.println("JoinCondition.left NOT Column: "
+                    LOGGER.debug("JoinCondition.left NOT Column: "
                         +left.getClass().getName());
                 }
                 this.left = left;

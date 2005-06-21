@@ -80,7 +80,11 @@ public class AggTableManager {
         printResults();
     }
     private void printResults() {
-        if (getLogger().isInfoEnabled()) {
+/*
+ *   This was too much information at the INFO level, compared to the
+ *   rest of Mondrian
+ *   
+ *         if (getLogger().isInfoEnabled()) {
             // print just Star table alias and AggStar table names
             StringBuffer buf = new StringBuffer(1024);
             buf.append(Util.nl);
@@ -97,7 +101,9 @@ public class AggTableManager {
             }
             getLogger().info(buf.toString());
 
-        } else if (getLogger().isDebugEnabled()) {
+        } else
+*/      
+    	if (getLogger().isDebugEnabled()) {
             // print everything, Star, subTables, AggStar and subTables
             // could be a lot
             StringBuffer buf = new StringBuffer(4096);

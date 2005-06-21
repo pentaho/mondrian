@@ -19,6 +19,8 @@ import mondrian.rolap.sql.SqlQuery;
 
 import java.util.*;
 
+import org.apache.log4j.Logger;
+
 /**
  * Abstract Recognizer class used to determine if a candidate aggregate table
  * has the column categories: "fact_count" column, measure columns, foreign key
@@ -39,7 +41,7 @@ import java.util.*;
 abstract class Recognizer {
 
     private static final MondrianResource mres = MondrianResource.instance();
-
+    private static final Logger LOGGER = Logger.getLogger(Recognizer.class);
     /**
      * This is used to wrap column name matching rules.
      */
@@ -561,12 +563,12 @@ abstract class Recognizer {
      * @param notSeenForeignKeys
      */
     private void printNotSeenForeignKeys(List notSeenForeignKeys) {
-        System.out.println("Recognizer.printNotSeenForeignKeys: "
+        LOGGER.debug("Recognizer.printNotSeenForeignKeys: "
             + aggTable.getName());
         for (Iterator it = notSeenForeignKeys.iterator(); it.hasNext(); ) {
             JdbcSchema.Table.Column.Usage usage =
                 (JdbcSchema.Table.Column.Usage) it.next();
-            System.out.println("  " + usage.getColumn().getName());
+            LOGGER.debug("  " + usage.getColumn().getName());
         }
     }
 

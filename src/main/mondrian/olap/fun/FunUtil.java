@@ -19,11 +19,14 @@ import java.math.BigInteger;
 import java.util.*;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
+
 /**
  * <code>FunUtil</code> contains a set of methods useful within the
  * <code>mondrian.olap.fun</code> package.
  **/
 public class FunUtil extends Util {
+
     static final String[] emptyStringArray = new String[0];
 
     /**
@@ -1664,6 +1667,7 @@ public class FunUtil extends Util {
 }
 
 abstract class MemberComparator implements Comparator {
+    private static final Logger LOGGER = Logger.getLogger(MemberComparator.class);
     Map mapMemberToValue;
     private boolean desc;
 
@@ -1677,13 +1681,11 @@ abstract class MemberComparator implements Comparator {
         Member m1 = (Member) o1,
                 m2 = (Member) o2;
         int c = compareInternal(m1, m2);
-        if (false) {
-            System.out.println(
+        LOGGER.debug(
                     "compare " +
                     m1.getUniqueName() + "(" + mapMemberToValue.get(m1) + "), " +
                     m2.getUniqueName() + "(" + mapMemberToValue.get(m2) + ")" +
                     " yields " + c);
-        }
         return c;
     }
 
@@ -1759,6 +1761,7 @@ class BreakMemberComparator extends MemberComparator {
  * Compares tuples, which are represented as arrays of {@link Member}s.
  */
 abstract class ArrayComparator implements Comparator {
+    private static final Logger LOGGER = Logger.getLogger(ArrayComparator.class);
     int arity;
 
     ArrayComparator(int arity) {
@@ -1781,11 +1784,9 @@ abstract class ArrayComparator implements Comparator {
         final Member[] a1 = (Member[]) o1;
         final Member[] a2 = (Member[]) o2;
         final int c = compare(a1, a2);
-        if (false) {
-            System.out.println(
+        LOGGER.debug(
                     "compare {" + toString(a1)+ "}, {" + toString(a2) + "}" +
                     " yields " + c);
-        }
         return c;
     }
 
