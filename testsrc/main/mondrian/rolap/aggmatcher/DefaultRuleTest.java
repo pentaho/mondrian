@@ -10,6 +10,8 @@
 package mondrian.rolap.aggmatcher;
 
 import mondrian.recorder.*;
+
+import org.apache.log4j.Logger;
 import org.eigenbase.xom.XOMUtil;
 import org.eigenbase.xom.DOMWrapper;
 import org.eigenbase.xom.Parser;
@@ -26,6 +28,7 @@ import java.io.Reader;
  * @version 
  */
 public class DefaultRuleTest extends TestCase {
+    private static final Logger LOGGER = Logger.getLogger(DefaultRuleTest.class);
     private static final String DIRECTORY = 
                 "testsrc/main/mondrian/rolap/aggmatcher";
     private static final String TEST_RULE_XML = "TestRule.xml";
@@ -52,11 +55,11 @@ public class DefaultRuleTest extends TestCase {
        ListRecorder msgRecorder = new ListRecorder();
        rules.validate(msgRecorder);
        if (msgRecorder.hasErrors()) {
-            System.out.println("HAS ERRORS");
+    	   LOGGER.error("HAS ERRORS");
             for (Iterator it = msgRecorder.getErrorEntries(); it.hasNext(); ) {
                 ListRecorder.Entry e = (ListRecorder.Entry) it.next();
-                System.out.println("context=" +e.getContext());
-                System.out.println("message=" +e.getMessage());
+                LOGGER.error("context=" +e.getContext());
+                LOGGER.error("message=" +e.getMessage());
             }
        }
     }
@@ -65,17 +68,17 @@ public class DefaultRuleTest extends TestCase {
 
     private Recognizer.Matcher getTableMatcher(String tag, String tableName) {
         DefaultDef.AggRule rule = getAggRule(tag);
-if (rule == null) {
-System.out.println("rule == null for tag=" +tag);
-}
+        if (rule == null) {
+        	LOGGER.info("rule == null for tag=" +tag);
+        }
         DefaultDef.TableMatch tableMatch = rule.getTableMatch();
-if (tableMatch == null) {
-System.out.println("tableMatch == null for tag=" 
-+tag
-+ ", tableName="
-+ tableName
-);
-}
+        if (tableMatch == null) {
+            LOGGER.info("tableMatch == null for tag=" 
+            +tag
+            + ", tableName="
+            + tableName
+            );
+        }
         return tableMatch.getMatcher(tableName);
     }
     private Recognizer.Matcher getFactCountMatcher(String tag) {
