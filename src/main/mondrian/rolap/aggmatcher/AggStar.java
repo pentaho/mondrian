@@ -73,7 +73,7 @@ public class AggStar {
         //
         // load fact count
         for (Iterator it =
-            dbTable.getColumnUsages(JdbcSchema.FACT_COUNT_COLUMN_TYPE);
+            dbTable.getColumnUsages(JdbcSchema.FACT_COUNT_COLUMN_USAGE);
                     it.hasNext();) {
             JdbcSchema.Table.Column.Usage usage =
                 (JdbcSchema.Table.Column.Usage) it.next();
@@ -86,7 +86,7 @@ public class AggStar {
         //
         // load measures
         for (Iterator it =
-                dbTable.getColumnUsages(JdbcSchema.MEASURE_COLUMN_TYPE);
+                dbTable.getColumnUsages(JdbcSchema.MEASURE_COLUMN_USAGE);
                 it.hasNext();) {
             JdbcSchema.Table.Column.Usage usage =
                 (JdbcSchema.Table.Column.Usage) it.next();
@@ -99,7 +99,7 @@ public class AggStar {
         //
         // load foreign keys
         for (Iterator it =
-                dbTable.getColumnUsages(JdbcSchema.FOREIGN_KEY_COLUMN_TYPE);
+                dbTable.getColumnUsages(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE);
                 it.hasNext();) {
             JdbcSchema.Table.Column.Usage usage =
                 (JdbcSchema.Table.Column.Usage) it.next();
@@ -112,7 +112,7 @@ public class AggStar {
         //
         // load levels
         for (Iterator it =
-                dbTable.getColumnUsages(JdbcSchema.LEVEL_COLUMN_TYPE);
+                dbTable.getColumnUsages(JdbcSchema.LEVEL_COLUMN_USAGE);
                 it.hasNext();) {
             JdbcSchema.Table.Column.Usage usage =
                 (JdbcSchema.Table.Column.Usage) it.next();
@@ -733,15 +733,17 @@ public class AggStar {
         FactTable(final JdbcSchema.Table aggTable) {
             this(aggTable.getName(),
                  aggTable.table,
-                 aggTable.getTotalColumnSize());
+                 aggTable.getTotalColumnSize(),
+                 aggTable.getNumberOfRows());
         }
         FactTable(final String name,
                   final MondrianDef.Relation relation,
-                  final int totalColumnSize) {
+                  final int totalColumnSize,
+                  final int numberOfRows) {
             super(name, relation);
             this.totalColumnSize = totalColumnSize;
             this.measures = new ArrayList();
-            this.numberOfRows = -1;
+            this.numberOfRows = numberOfRows;
         }
         public Table getParent() {
             return null;
@@ -784,6 +786,15 @@ public class AggStar {
                 makeNumberOfRows();
             }
             return numberOfRows;
+        }
+
+        /** 
+         * This is for testing ONLY. 
+         * 
+         * @param numberOfRows 
+         */
+        void setNumberOfRows(int numberOfRows) {
+            this.numberOfRows = numberOfRows;
         }
 
         /**
@@ -837,8 +848,8 @@ public class AggStar {
             RolapAggregator aggregator = usage.getAggregator();
 
             MondrianDef.Expression expression = null;
-            if (usage.getColumn().hasUsage(JdbcSchema.FOREIGN_KEY_COLUMN_TYPE) &&
-                    ! aggregator.isDistinct()) {
+            if (usage.getColumn().hasUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE)
+                    && ! aggregator.isDistinct()) {
                 expression = factCountColumn.getExpression();
             } else {
                 expression = new MondrianDef.Column(getName(), name);

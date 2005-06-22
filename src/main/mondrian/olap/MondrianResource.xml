@@ -617,9 +617,33 @@
     </text>
 </message>
 
+<exception id="700411" name="AttemptToChangeTableUsage">
+    <text>
+        JdbcSchema.Table ''{0}'' already set to usage ''{1}'' and can not be reset to usage ''{2}''.
+    </text>
+</exception>
+
 <exception id="700411" name="AttemptToChangeTableType">
     <text>
         JdbcSchema.Table ''{0}'' already set to type ''{1}'' and can not be reset to type ''{2}''.
+    </text>
+</exception>
+
+<exception id="700411" name="BadJdbcFactoryClassName">
+    <text>
+        JdbcSchema Factory classname ''{0}'', class not found.
+    </text>
+</exception>
+
+<exception id="700411" name="BadJdbcFactoryInstantiation">
+    <text>
+        JdbcSchema Factory classname ''{0}'', can not instantiate.
+    </text>
+</exception>
+
+<exception id="700411" name="BadJdbcFactoryAccess">
+    <text>
+        JdbcSchema Factory classname ''{0}'', illegal access.
     </text>
 </exception>
 
@@ -638,6 +662,12 @@
 <message id="7000414" name="NoFactCountColumns">
     <text>
         Candidate aggregate table ''{0}'' for fact table ''{1}'' has no fact count columns.
+    </text>
+</message>
+
+<message id="7000414" name="NoMeasureColumns">
+    <text>
+        Candidate aggregate table ''{0}'' for fact table ''{1}'' has no measure columns.
     </text>
 </message>
 

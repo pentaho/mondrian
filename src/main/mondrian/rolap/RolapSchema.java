@@ -1112,6 +1112,9 @@ public class RolapSchema implements Schema {
             return Collections.unmodifiableList(this.funInfoList);
         }
     }
+    public RolapStar getStar(final String factTableName) {
+      return getRolapStarRegistry().getStar(factTableName);
+    }
     public Iterator getStars() {
       return getRolapStarRegistry().getStars();
     }

@@ -12,9 +12,17 @@
 
 package mondrian.rolap.aggmatcher;
 
-import mondrian.olap.*;
+import mondrian.olap.Hierarchy;
+import mondrian.olap.Dimension;
+import mondrian.olap.MondrianDef;
+import mondrian.olap.MondrianResource;
 import mondrian.recorder.MessageRecorder;
-import mondrian.rolap.*;
+import mondrian.rolap.RolapStar;
+import mondrian.rolap.RolapLevel;
+import mondrian.rolap.RolapSchema;
+import mondrian.rolap.RolapCube;
+import mondrian.rolap.RolapAggregator;
+import mondrian.rolap.HierarchyUsage;
 import mondrian.rolap.sql.SqlQuery;
 
 import java.util.*;
@@ -147,7 +155,7 @@ abstract class Recognizer {
      */
     protected void makeIgnore(final JdbcSchema.Table.Column aggColumn) {
         JdbcSchema.Table.Column.Usage usage =
-                aggColumn.newUsage(JdbcSchema.IGNORE_COLUMN_TYPE);
+                aggColumn.newUsage(JdbcSchema.IGNORE_COLUMN_USAGE);
         usage.setSymbolicName("Ignore");
     }
 
@@ -177,7 +185,7 @@ abstract class Recognizer {
                     (JdbcSchema.Table.Column) it.next();
 
                 // if marked as ignore, then do not consider
-                if (aggColumn.hasUsage(JdbcSchema.IGNORE_COLUMN_TYPE)) {
+                if (aggColumn.hasUsage(JdbcSchema.IGNORE_COLUMN_USAGE)) {
                     continue;
                 }
                 if (factCountMatcher.matches(aggColumn.getName())) {
@@ -197,7 +205,16 @@ abstract class Recognizer {
                 }
 
             }
-            if (nosOfFactCounts != 1) {
+            if (nosOfFactCounts == 0) {
+                String msg = mres.getNoFactCountColumns(
+                        aggTable.getName(),
+                        dbFactTable.getName()
+                    );
+                msgRecorder.reportError(msg);
+
+                returnValue = false;
+
+            } else if (nosOfFactCounts > 1) {
                 String msg = mres.getTooManyFactCountColumns(
                         aggTable.getName(),
                         dbFactTable.getName(),
@@ -228,7 +245,7 @@ abstract class Recognizer {
      */
     protected void makeFactCount(final JdbcSchema.Table.Column aggColumn) {
         JdbcSchema.Table.Column.Usage usage =
-                aggColumn.newUsage(JdbcSchema.FACT_COUNT_COLUMN_TYPE);
+                aggColumn.newUsage(JdbcSchema.FACT_COUNT_COLUMN_USAGE);
         usage.setSymbolicName("Fact Count");
     }
 
@@ -243,7 +260,7 @@ abstract class Recognizer {
 
         try {
             if (nosMeasures == 0) {
-                String msg = mres.getNoFactCountColumns(
+                String msg = mres.getNoMeasureColumns(
                         aggTable.getName(),
                         dbFactTable.getName()
                     );
@@ -280,7 +297,7 @@ abstract class Recognizer {
             JdbcSchema.Table.Column.Usage avgFactUsage = null;
 
             for (Iterator mit =
-                    factColumn.getUsages(JdbcSchema.MEASURE_COLUMN_TYPE);
+                    factColumn.getUsages(JdbcSchema.MEASURE_COLUMN_USAGE);
                     mit.hasNext(); ) {
                 JdbcSchema.Table.Column.Usage factUsage =
                     (JdbcSchema.Table.Column.Usage) mit.next();
@@ -297,7 +314,7 @@ abstract class Recognizer {
                 JdbcSchema.Table.Column.Usage avgAggUsage = null;
                 int nosSeen = 0;
                 for (Iterator mit =
-                    aggTable.getColumnUsages(JdbcSchema.MEASURE_COLUMN_TYPE);
+                    aggTable.getColumnUsages(JdbcSchema.MEASURE_COLUMN_USAGE);
                         mit.hasNext(); ) {
 
                     JdbcSchema.Table.Column.Usage aggUsage =
@@ -336,7 +353,7 @@ abstract class Recognizer {
         JdbcSchema.Table.Column aggColumn = aggSiblingUsage.getColumn();
 
         JdbcSchema.Table.Column.Usage aggUsage =
-            aggColumn.newUsage(JdbcSchema.MEASURE_COLUMN_TYPE);
+            aggColumn.newUsage(JdbcSchema.MEASURE_COLUMN_USAGE);
 
         aggUsage.setSymbolicName(factUsage.getSymbolicName());
         convertAggregator(aggUsage,
@@ -356,7 +373,7 @@ abstract class Recognizer {
     protected void makeMeasure(final JdbcSchema.Table.Column.Usage factUsage,
                                final JdbcSchema.Table.Column aggColumn) {
         JdbcSchema.Table.Column.Usage aggUsage =
-            aggColumn.newUsage(JdbcSchema.MEASURE_COLUMN_TYPE);
+            aggColumn.newUsage(JdbcSchema.MEASURE_COLUMN_USAGE);
 
         aggUsage.setSymbolicName(factUsage.getSymbolicName());
         convertAggregator(aggUsage, factUsage.getAggregator());
@@ -395,7 +412,7 @@ abstract class Recognizer {
             List notSeenForeignKeys = Collections.EMPTY_LIST;
 
             for (Iterator it =
-                dbFactTable.getColumnUsages(JdbcSchema.FOREIGN_KEY_COLUMN_TYPE);
+                dbFactTable.getColumnUsages(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE);
                     it.hasNext(); ) {
 
                 JdbcSchema.Table.Column.Usage factUsage =
@@ -585,7 +602,7 @@ abstract class Recognizer {
                                   final JdbcSchema.Table.Column aggColumn,
                                   final String rightJoinConditionColumnName) {
         JdbcSchema.Table.Column.Usage aggUsage =
-            aggColumn.newUsage(JdbcSchema.FOREIGN_KEY_COLUMN_TYPE);
+            aggColumn.newUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE);
         aggUsage.setSymbolicName("FOREIGN_KEY");
         // Extract from RolapStar enough stuff to build
         // AggStar subtable except the column name of the right join
@@ -634,11 +651,12 @@ abstract class Recognizer {
 
         try {
 
-        if (aggColumn.hasUsage(JdbcSchema.LEVEL_COLUMN_TYPE)) {
+        if (aggColumn.hasUsage(JdbcSchema.LEVEL_COLUMN_USAGE)) {
             // The column has at least one usage of level type
             // make sure we are looking at the
             // same table and column
-            for (Iterator uit = aggColumn.getUsages(JdbcSchema.LEVEL_COLUMN_TYPE);
+            for (Iterator uit =
+                aggColumn.getUsages(JdbcSchema.LEVEL_COLUMN_USAGE);
                     uit.hasNext(); ) {
                 JdbcSchema.Table.Column.Usage aggUsage =
                     (JdbcSchema.Table.Column.Usage) uit.next();
@@ -667,7 +685,7 @@ abstract class Recognizer {
             }
         } else {
             JdbcSchema.Table.Column.Usage aggUsage =
-                    aggColumn.newUsage(JdbcSchema.LEVEL_COLUMN_TYPE);
+                    aggColumn.newUsage(JdbcSchema.LEVEL_COLUMN_USAGE);
             // Cache table and column for the above
             // check
             aggUsage.relation = hierarchyUsage.getJoinTable();
@@ -893,7 +911,7 @@ abstract class Recognizer {
 
         // iterator over fact count usages - in the end there can be only one!!
         Iterator it =
-            aggTable.getColumnUsages(JdbcSchema.FACT_COUNT_COLUMN_TYPE);
+            aggTable.getColumnUsages(JdbcSchema.FACT_COUNT_COLUMN_USAGE);
         it.hasNext();
         JdbcSchema.Table.Column.Usage usage =
             (JdbcSchema.Table.Column.Usage) it.next();

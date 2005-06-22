@@ -13,7 +13,7 @@ package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.MondrianResource;
-import mondrian.rolap.*;
+import mondrian.rolap.RolapStar;
 import mondrian.recorder.*;
 import org.apache.log4j.Logger;
 import org.eigenbase.xom.*;

@@ -27,6 +27,15 @@ import java.util.*;
  * A database has tables. A table has columns. A column has one or more usages.
  * A usage might be a column being used as a foreign key or as part of a
  * measure.
+ * <p>
+ * Tables are created when calling code requests the set of available
+ * tables. This call <code>getTables()</code> causes all tables to be loaded.
+ * But a table's columns are not loaded until, on a table-by-table basis,
+ * a request is made to get the set of columns associated with the table.
+ * Since, the AggTableManager first attempts table name matches (recognition)
+ * most tables do not match, so why load their columns.
+ * Of course, as a result, there are a host of methods that can throw an
+ * SQLException, rats.
  *
  * @author <a>Richard M. Emberson</a>
  * @version $Id$
@@ -35,33 +44,80 @@ public class JdbcSchema {
 
     private static final MondrianResource mres = MondrianResource.instance();
 
-    public static JdbcSchema makeDB(DataSource dataSource) {
-        JdbcSchema db = (JdbcSchema) dbMap.get(dataSource);
-        if (db == null) {
-            db = new JdbcSchema(dataSource);
-            dbMap.put(dataSource, db);
-        }
-        return db;
+    public interface Factory {
+        JdbcSchema makeDB(DataSource dataSource);
+        void clearDB(DataSource dataSource);
     }
 
-    private static final WeakHashMap dbMap = new WeakHashMap();
+    public static class StdFactory implements Factory {
+        private final WeakHashMap dbMap = new WeakHashMap();
+        StdFactory() {
+        }
+        public JdbcSchema makeDB(DataSource dataSource) {
+            JdbcSchema db = (JdbcSchema) dbMap.get(dataSource);
+            if (db == null) {
+                db = new JdbcSchema(dataSource);
+                dbMap.put(dataSource, db);
+            }
+            return db;
+        }
+        public void clearDB(DataSource dataSource) {
+            JdbcSchema db = (JdbcSchema) dbMap.get(dataSource);
+            if (db != null) {
+                db.clear();
+            }
+        }
+    }
+
+    public static final String FACTORY_CLASS = 
+                        "mondrian.rolap.aggregates.jdbcFactoryClass";
+    private static Factory factory;
+
+    private static void makeFactory() {
+        if (factory == null) {
+            String classname = System.getProperty(FACTORY_CLASS);
+            if (classname == null) {
+                factory = new StdFactory();
+            } else { 
+                try {
+                    Class clz = Class.forName(classname);
+                    factory = (Factory) clz.newInstance();
+                } catch (ClassNotFoundException ex) {
+                    throw mres.newBadJdbcFactoryClassName(classname);
+                } catch (InstantiationException ex) {
+                    throw mres.newBadJdbcFactoryInstantiation(classname);
+                } catch (IllegalAccessException ex) {
+                    throw mres.newBadJdbcFactoryAccess(classname);
+                }
+            }
+        }
+    }
+    public static synchronized void clearDB(DataSource dataSource) {
+        makeFactory();
+        factory.clearDB(dataSource);
+    }
+
+    public static synchronized JdbcSchema makeDB(DataSource dataSource) {
+        makeFactory();
+        return factory.makeDB(dataSource);
+    }
 
     //
     // Types of column usages.
     //
-    public static final int UNKNOWN_COLUMN_TYPE         = 0x0001;
-    public static final int FOREIGN_KEY_COLUMN_TYPE     = 0x0002;
-    public static final int MEASURE_COLUMN_TYPE         = 0x0004;
-    public static final int LEVEL_COLUMN_TYPE           = 0x0008;
-    public static final int FACT_COUNT_COLUMN_TYPE      = 0x0010;
-    public static final int IGNORE_COLUMN_TYPE          = 0x0020;
+    public static final int UNKNOWN_COLUMN_USAGE         = 0x0001;
+    public static final int FOREIGN_KEY_COLUMN_USAGE     = 0x0002;
+    public static final int MEASURE_COLUMN_USAGE         = 0x0004;
+    public static final int LEVEL_COLUMN_USAGE           = 0x0008;
+    public static final int FACT_COUNT_COLUMN_USAGE      = 0x0010;
+    public static final int IGNORE_COLUMN_USAGE          = 0x0020;
 
-    public static final String UNKNOWN_COLUMN         = "UNKNOWN";
-    public static final String FOREIGN_KEY_COLUMN     = "FOREIGN_KEY";
-    public static final String MEASURE_COLUMN         = "MEASURE";
-    public static final String LEVEL_COLUMN           = "LEVEL";
-    public static final String FACT_COUNT_COLUMN      = "FACT_COUNT";
-    public static final String IGNORE_COLUMN          = "IGNORE";
+    public static final String UNKNOWN_COLUMN_NAME         = "UNKNOWN";
+    public static final String FOREIGN_KEY_COLUMN_NAME     = "FOREIGN_KEY";
+    public static final String MEASURE_COLUMN_NAME         = "MEASURE";
+    public static final String LEVEL_COLUMN_NAME           = "LEVEL";
+    public static final String FACT_COUNT_COLUMN_NAME      = "FACT_COUNT";
+    public static final String IGNORE_COLUMN_NAME          = "IGNORE";
 
     /**
      * Determine if the parameter represents a single column type, i.e., the
@@ -72,17 +128,17 @@ public class JdbcSchema {
      */
     public static boolean isUniqueColumnType(int columnType) {
         switch (columnType) {
-        case UNKNOWN_COLUMN_TYPE :
+        case UNKNOWN_COLUMN_USAGE :
             return true;
-        case FOREIGN_KEY_COLUMN_TYPE :
+        case FOREIGN_KEY_COLUMN_USAGE :
             return true;
-        case MEASURE_COLUMN_TYPE :
+        case MEASURE_COLUMN_USAGE :
             return true;
-        case LEVEL_COLUMN_TYPE :
+        case LEVEL_COLUMN_USAGE :
             return true;
-        case FACT_COUNT_COLUMN_TYPE :
+        case FACT_COUNT_COLUMN_USAGE :
             return true;
-        case IGNORE_COLUMN_TYPE :
+        case IGNORE_COLUMN_USAGE :
             return true;
         default :
             return false;
@@ -98,53 +154,53 @@ public class JdbcSchema {
      */
     public static String convertColumnTypeToName(int columnType) {
         switch (columnType) {
-        case UNKNOWN_COLUMN_TYPE :
-            return UNKNOWN_COLUMN;
-        case FOREIGN_KEY_COLUMN_TYPE :
-            return FOREIGN_KEY_COLUMN;
-        case MEASURE_COLUMN_TYPE :
-            return MEASURE_COLUMN;
-        case LEVEL_COLUMN_TYPE :
-            return LEVEL_COLUMN;
-        case FACT_COUNT_COLUMN_TYPE :
-            return FACT_COUNT_COLUMN;
-        case IGNORE_COLUMN_TYPE :
-            return IGNORE_COLUMN;
+        case UNKNOWN_COLUMN_USAGE :
+            return UNKNOWN_COLUMN_NAME;
+        case FOREIGN_KEY_COLUMN_USAGE :
+            return FOREIGN_KEY_COLUMN_NAME;
+        case MEASURE_COLUMN_USAGE :
+            return MEASURE_COLUMN_NAME;
+        case LEVEL_COLUMN_USAGE :
+            return LEVEL_COLUMN_NAME;
+        case FACT_COUNT_COLUMN_USAGE :
+            return FACT_COUNT_COLUMN_NAME;
+        case IGNORE_COLUMN_USAGE :
+            return IGNORE_COLUMN_NAME;
         default :
             // its a multi-purpose column
             StringBuffer buf = new StringBuffer();
-            if ((columnType & UNKNOWN_COLUMN_TYPE) != 0) {
-                buf.append(UNKNOWN_COLUMN);
+            if ((columnType & UNKNOWN_COLUMN_USAGE) != 0) {
+                buf.append(UNKNOWN_COLUMN_NAME);
             }
-            if ((columnType & FOREIGN_KEY_COLUMN_TYPE) != 0) {
+            if ((columnType & FOREIGN_KEY_COLUMN_USAGE) != 0) {
                 if (buf.length() != 0) {
                     buf.append('|');
                 }
-                buf.append(FOREIGN_KEY_COLUMN);
+                buf.append(FOREIGN_KEY_COLUMN_NAME);
             }
-            if ((columnType & MEASURE_COLUMN_TYPE) != 0) {
+            if ((columnType & MEASURE_COLUMN_USAGE) != 0) {
                 if (buf.length() != 0) {
                     buf.append('|');
                 }
-                buf.append(MEASURE_COLUMN);
+                buf.append(MEASURE_COLUMN_NAME);
             }
-            if ((columnType & LEVEL_COLUMN_TYPE) != 0) {
+            if ((columnType & LEVEL_COLUMN_USAGE) != 0) {
                 if (buf.length() != 0) {
                     buf.append('|');
                 }
-                buf.append(LEVEL_COLUMN);
+                buf.append(LEVEL_COLUMN_NAME);
             }
-            if ((columnType & FACT_COUNT_COLUMN_TYPE) != 0) {
+            if ((columnType & FACT_COUNT_COLUMN_USAGE) != 0) {
                 if (buf.length() != 0) {
                     buf.append('|');
                 }
-                buf.append(FACT_COUNT_COLUMN);
+                buf.append(FACT_COUNT_COLUMN_NAME);
             }
-            if ((columnType & IGNORE_COLUMN_TYPE) != 0) {
+            if ((columnType & IGNORE_COLUMN_USAGE) != 0) {
                 if (buf.length() != 0) {
                     buf.append('|');
                 }
-                buf.append(IGNORE_COLUMN);
+                buf.append(IGNORE_COLUMN_NAME);
             }
             return buf.toString();
         }
@@ -190,34 +246,46 @@ public class JdbcSchema {
     }
 
     //
-    // Types of tables.
+    // Usages of tables.
     //
-    public static final int UNKNOWN_TABLE_TYPE          = 10;
-    public static final int FACT_TABLE_TYPE             = 11;
-    public static final int AGG_TABLE_TYPE              = 12;
+    public static final int UNKNOWN_TABLE_USAGE         = 10;
+    public static final int FACT_TABLE_USAGE            = 11;
+    public static final int AGG_TABLE_USAGE             = 12;
 
-    public static final String UNKNOWN_TABLE            = "UNKNOWN";
-    public static final String FACT_TABLE               = "FACT";
-    public static final String AGG_TABLE                = "AGG";
+    public static final String UNKNOWN_TABLE_USAGE_NAME = "UNKNOWN";
+    public static final String FACT_TABLE_USAGE_NAME    = "FACT";
+    public static final String AGG_TABLE_USAGE_NAME     = "AGG";
 
     /**
-     * Convert from table type enum to table type name.
+     * Convert from table usage enum to table usage name.
      *
-     * @param tableType
+     * @param tableUsage
      * @return
      */
-    public static String convertTableTypeToName(int tableType) {
-        switch (tableType) {
-        case UNKNOWN_TABLE_TYPE :
-            return UNKNOWN_TABLE;
-        case FACT_TABLE_TYPE :
-            return FACT_TABLE;
-        case AGG_TABLE_TYPE :
-            return AGG_TABLE;
+    public static String convertTableUsageToName(int tableUsage) {
+        switch (tableUsage) {
+        case UNKNOWN_TABLE_USAGE :
+            return UNKNOWN_TABLE_USAGE_NAME;
+        case FACT_TABLE_USAGE :
+            return FACT_TABLE_USAGE_NAME;
+        case AGG_TABLE_USAGE :
+            return AGG_TABLE_USAGE_NAME;
         default :
-            return UNKNOWN_TABLE;
+            return UNKNOWN_TABLE_USAGE_NAME;
         }
     }
+
+    //
+    // Types of tables.
+    //
+    public static final String UNKNOWN_TABLE_TYPE       = "UNKNOWN";
+    public static final String TABLE_TABLE_TYPE         = "TABLE";
+    public static final String VIEW_TYPE                = "VIEW";
+    public static final String SYSTEM_TABLE_TABLE_TYPE  = "SYSTEM TABLE";
+    public static final String GLOBAL_TEMP_TABLE_TYPE   = "GLOBAL TEMPORARY";
+    public static final String LOCAL_TEMP_TABLE_TYPE    = "LOCAL TEMPORARY"; 
+    public static final String ALIAS_TABLE_TYPE         = "ALIAS"; 
+    public static final String SYNONYM_TABLE_TYPE       = "SYNONYM";
 
     /**
      * A table in a database.
@@ -404,6 +472,28 @@ public class JdbcSchema {
                                         name);
                 this.usages = new ArrayList();
             }
+            /** 
+             * For testing ONLY
+            JdbcSchema.Table.Column copy() {
+                Column column = new Column(name);
+                column.type = type;
+                column.typeName = typeName;
+                column.columnSize = columnSize;
+                column.decimalDigits = decimalDigits;
+                column.numPrecRadix = numPrecRadix;
+                column.charOctetLength = charOctetLength;
+                column.isNullable = isNullable;
+
+                return column;
+            }
+             */
+            /** 
+             * For testing ONLY
+            void clearUsages() {
+                // empty
+            }
+             */
+
 
             /**
              * This is the column's name in the database, not a symbolic name.
@@ -714,12 +804,14 @@ public class JdbcSchema {
                 pw.print(", isNullable=");
                 pw.print(isNullable());
 
-                pw.print(" Usages [");
-                for (Iterator it = getUsages(); it.hasNext(); ) {
-                    Usage u = (Usage) it.next();
-                    u.print(pw, prefix);
+                if (hasUsage()) {
+                    pw.print(" Usages [");
+                    for (Iterator it = getUsages(); it.hasNext(); ) {
+                        Usage u = (Usage) it.next();
+                        u.print(pw, prefix);
+                    }
+                    pw.println("]");
                 }
-                pw.println("]");
             }
         }
 
@@ -729,16 +821,60 @@ public class JdbcSchema {
         private Map columnMap;
         /** Sum of all of the table's column's column sizes. */
         private int totalColumnSize;
-        /** Is the table a fact, aggregate or other table type. */
-        private int tableType;
+        /** 
+         * Is the table a fact, aggregate or other table type. 
+         * Note: this assumes that a table has only ONE usage.
+         */
+        private int tableUsage;
+
+        /**
+         * Typical table types are: "TABLE", "VIEW", "SYSTEM TABLE", 
+         * "GLOBAL TEMPORARY", "LOCAL TEMPORARY", "ALIAS", "SYNONYM".
+         */
+        private String tableType;
 
         // mondriandef stuff
         public MondrianDef.Table table;
 
+        private boolean allColumnsLoaded;
+
         private Table(final String name) {
             this.name = name;
+            this.tableUsage = UNKNOWN_TABLE_USAGE;
             this.tableType = UNKNOWN_TABLE_TYPE;
         }
+
+        public void load() throws SQLException {
+            loadColumns();
+        }
+
+        /** 
+         * For testing ONLY
+        JdbcSchema.Table copy() {
+            Table table = new Table(name);
+            table.totalColumnSize = totalColumnSize;
+            table.tableUsage = tableUsage;
+            table.tableType = tableType;
+
+            Map m = table.getColumnMap();
+            for (Iterator it = getColumns(); it.hasNext(); ) {
+                Column column = (Column) it.next();
+                m.put(column.getName(), column.copy());
+            }
+
+            return table;
+        }
+         */
+        /** 
+         * For testing ONLY
+        void clearUsages() {
+            this.tableUsage = UNKNOWN_TABLE_USAGE;
+            for (Iterator it = getColumns(); it.hasNext(); ) {
+                Column column = (Column) it.next();
+                column.clearUsages();
+            }
+        }
+         */
 
         /**
          * Get the name of the table.
@@ -757,6 +893,15 @@ public class JdbcSchema {
         public int getTotalColumnSize() {
             return totalColumnSize;
         }
+        
+        /** 
+         * Get the number of rows in the table. 
+         * 
+         * @return 
+         */
+        public int getNumberOfRows() {
+            return -1;
+        }
 
         /**
          * Iterate of the table's columns.
@@ -774,6 +919,7 @@ public class JdbcSchema {
          * @return
          */
         public Iterator getColumnUsages(final int columnType) {
+
             class CTIterator implements Iterator {
                 private final Iterator columns;
                 private final int columnType;
@@ -833,30 +979,57 @@ public class JdbcSchema {
         }
 
         /**
-         * Set the tables type (fact, aggregate or other).
+         * Set the table usage (fact, aggregate or other).
+         *
+         * @param tableUsage
+         */
+        public void setTableUsage(final int tableUsage) {
+            // if it has already been set, then it can NOT be reset
+            if ((this.tableUsage != UNKNOWN_TABLE_USAGE) &&
+                    (this.tableUsage != tableUsage)) {
+
+                throw mres.newAttemptToChangeTableUsage(
+                    getName(),
+                    convertTableUsageToName(this.tableUsage),
+                    convertTableUsageToName(tableUsage)
+                );
+            }
+            this.tableUsage = tableUsage;
+        }
+
+        /**
+         * Get the table's usage.
+         *
+         * @return
+         */
+        public int getTableUsage() {
+            return tableUsage;
+        }
+
+        /**
+         * Set the table type
          *
          * @param tableType
          */
-        public void setTableType(final int tableType) {
+        public void setTableType(final String tableType) {
             // if it has already been set, then it can NOT be reset
             if ((this.tableType != UNKNOWN_TABLE_TYPE) &&
-                    (this.tableType != tableType)) {
+                    (! this.tableType.equals(tableType))) {
 
                 throw mres.newAttemptToChangeTableType(
                     getName(),
-                    convertTableTypeToName(this.tableType),
-                    convertTableTypeToName(tableType)
+                    this.tableType,
+                    tableType
                 );
             }
             this.tableType = tableType;
         }
-
         /**
          * Get the table's type.
          *
          * @return
          */
-        public int getTableType() {
+        public String getTableType() {
             return tableType;
         }
 
@@ -877,7 +1050,9 @@ public class JdbcSchema {
             pw.print("name=");
             pw.print(getName());
             pw.print(", type=");
-            pw.println(convertTableTypeToName(getTableType()));
+            pw.print(getTableType());
+            pw.print(", usage=");
+            pw.println(convertTableUsageToName(getTableUsage()));
 
             pw.print(subprefix);
             pw.print("totalColumnSize=");
@@ -885,10 +1060,11 @@ public class JdbcSchema {
 
             pw.print(subprefix);
             pw.println("Columns: [");
-            Iterator it = getColumns();
+            Iterator it = getColumnMap().values().iterator();
             while (it.hasNext()) {
                 Column column = (Column) it.next();
                 column.print(pw, subsubprefix);
+                pw.println();
             }
             pw.print(subprefix);
             pw.println("]");
@@ -901,80 +1077,143 @@ public class JdbcSchema {
          * @throws SQLException
          */
         private void loadColumns() throws SQLException {
-            Connection conn = JdbcSchema.this.getConnection();
-            try {
-                DatabaseMetaData dmd = conn.getMetaData();
-
-                String schema = JdbcSchema.this.getSchemaName();
-                String catalog = JdbcSchema.this.getCatalogName();
-                String tableName = getName();
-                String columnNamePattern = "%";
-
-                ResultSet rs = null;
+            if (! allColumnsLoaded) {
+System.out.println("JdbcSchema.loadColumns: TOP " +getName());
+                Connection conn = JdbcSchema.this.getConnection();
                 try {
-                    rs = dmd.getColumns(catalog,
-                                        schema,
-                                        tableName,
-                                        columnNamePattern);
-                    columnMap = new HashMap();
-                    while (rs.next()) {
-                        String name = rs.getString(4);
-                        int type = rs.getInt(5);
-                        String typeName = rs.getString(6);
-                        int columnSize = rs.getInt(7);
-                        int decimalDigits = rs.getInt(9);
-                        int numPrecRadix = rs.getInt(10);
-                        int charOctetLength = rs.getInt(16);
-                        String isNullable = rs.getString(18);
+                    DatabaseMetaData dmd = conn.getMetaData();
 
-                        Column column = new Column(name);
-                        column.setType(type);
-                        column.setTypeName(typeName);
-                        column.setColumnSize(columnSize);
-                        column.setDecimalDigits(decimalDigits);
-                        column.setNumPrecRadix(numPrecRadix);
-                        column.setCharOctetLength(charOctetLength);
-                        column.setIsNullable(! isNullable.equals("NO"));
+                    String schema = JdbcSchema.this.getSchemaName();
+                    String catalog = JdbcSchema.this.getCatalogName();
+                    String tableName = getName();
+                    String columnNamePattern = "%";
 
-                        columnMap.put(name, column);
-                        totalColumnSize += column.getColumnSize();
+                    ResultSet rs = null;
+                    try {
+                        Map map = getColumnMap();
+                        rs = dmd.getColumns(catalog,
+                                            schema,
+                                            tableName,
+                                            columnNamePattern);
+                        while (rs.next()) {
+                            String name = rs.getString(4);
+                            int type = rs.getInt(5);
+                            String typeName = rs.getString(6);
+                            int columnSize = rs.getInt(7);
+                            int decimalDigits = rs.getInt(9);
+                            int numPrecRadix = rs.getInt(10);
+                            int charOctetLength = rs.getInt(16);
+                            String isNullable = rs.getString(18);
+
+                            Column column = new Column(name);
+                            column.setType(type);
+                            column.setTypeName(typeName);
+                            column.setColumnSize(columnSize);
+                            column.setDecimalDigits(decimalDigits);
+                            column.setNumPrecRadix(numPrecRadix);
+                            column.setCharOctetLength(charOctetLength);
+                            column.setIsNullable(! isNullable.equals("NO"));
+
+                            map.put(name, column);
+                            totalColumnSize += column.getColumnSize();
+                        }
+                    } finally {
+                        if (rs != null) {
+                            rs.close();
+                        }
                     }
                 } finally {
-                    if (rs != null) {
-                        //rs.getStatement().close();
-                        rs.close();
+                    try {
+                        conn.close();
+                    } catch (SQLException e) {
+                        //ignore
                     }
                 }
-            } finally {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                    //ignore
-                }
+
+                allColumnsLoaded = true;
+System.out.println("JdbcSchema.loadColumns: BOTTOM");
             }
         }
         private Map getColumnMap() {
             if (columnMap == null) {
-                try {
-                    loadColumns();
-                } catch (SQLException ex) {
-                    // ignore
-                }
+                columnMap = new HashMap();
             }
             return columnMap;
         }
     }
 
-    private final DataSource dataSource;
+    private DataSource dataSource;
     private String schema;
     private String catalog;
     private boolean allTablesLoaded;
     private Map tables;
 
-    private JdbcSchema(final DataSource dataSource) {
+    JdbcSchema(final DataSource dataSource) {
         this.dataSource = dataSource;
+        this.tables = new HashMap();
+    }
+    
+    /** 
+     * This forces the tables to be loaded. 
+     * 
+     * @throws SQLException 
+     */
+    public void load() throws SQLException {
+        loadTables();
     }
 
+    /** 
+     * For testing ONLY
+     * 
+     * @return 
+    JdbcSchema copy() {
+        JdbcSchema jdbcSchema = new JdbcSchema(dataSource);
+        jdbcSchema.setSchemaName(getSchemaName());
+        jdbcSchema.setCatalogName(getCatalogName());
+
+        Map m = jdbcSchema.getTablesMap();
+        for (Iterator it = getTables(); it.hasNext(); ) {
+            Table table = (Table) it.next();
+            m.put(table.getName(), table.copy());
+        }
+
+        return jdbcSchema;
+    }
+     */
+
+    /** 
+     * For testing ONLY
+    void clearUsages() {
+        for (Iterator it = getTables(); it.hasNext(); ) {
+            Table table = (Table) it.next();
+            table.clearUsages();
+        }
+    }
+     */
+
+    protected void clear() {
+        // keep the DataSource, clear/reset everything else
+        allTablesLoaded = false;
+        schema = null;
+        catalog = null;
+        tables.clear();
+    }
+
+    /** 
+     * This is used for testing allowing one to load tables and their columns
+     * from more than one datasource 
+     */
+    void resetAllTablesLoaded() {
+        allTablesLoaded = false;
+    }
+
+    public DataSource getDataSource() {
+        return dataSource;
+    }
+
+    protected void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
     /**
      * Get the java.sql.Connection associated with this database.
      *
@@ -982,7 +1221,7 @@ public class JdbcSchema {
      * @throws SQLException
      */
     public Connection getConnection() throws SQLException {
-        return dataSource.getConnection();
+        return getDataSource().getConnection();
     }
 
     /**
@@ -1025,8 +1264,7 @@ public class JdbcSchema {
      * @return
      * @throws SQLException
      */
-    public synchronized Iterator getTables() throws SQLException {
-        loadTables();
+    public synchronized Iterator getTables() {
         return getTablesMap().values().iterator();
     }
 
@@ -1036,40 +1274,9 @@ public class JdbcSchema {
      * @param tableName
      * @return
      */
-    public synchronized Table getTable(final String tableName)
-            throws SQLException {
-        loadTables();
+    public synchronized Table getTable(final String tableName) {
         Map tables = getTablesMap();
         Table table = (Table) tables.get(tableName);
-        if (table == null) {
-            Connection conn = getConnection();
-            DatabaseMetaData dmd = conn.getMetaData();
-
-            String schema = getSchemaName();
-            String catalog = getCatalogName();
-            String[] tableTypes = { "TABLE", "VIEW" };
-
-            ResultSet rs = null;
-            try {
-                rs = dmd.getTables(catalog,
-                                          schema,
-                                          tableName,
-                                          tableTypes);
-                if ((rs != null) && rs.next()) {
-                    table = makeTable(rs);
-                    tables.put(table.getName(), table);
-                }
-            } finally {
-                if (rs != null) {
-                    rs.close();
-                }
-            }
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                //ignore
-            }
-        }
         return table;
     }
     public String toString() {
@@ -1104,6 +1311,7 @@ public class JdbcSchema {
      */
     private void loadTables() throws SQLException {
         if (! allTablesLoaded) {
+System.out.println("JdbcSchema.loadTables: TOP");
             Map tables = getTablesMap();
             Connection conn = getConnection();
             DatabaseMetaData dmd = conn.getMetaData();
@@ -1113,6 +1321,9 @@ public class JdbcSchema {
             String[] tableTypes = { "TABLE", "VIEW" };
             String tableName = "%";
 
+System.out.println("  schema="+schema);
+System.out.println("  catalog="+catalog);
+System.out.println("  tableName="+tableName);
             ResultSet rs = null;
             try {
                 rs = dmd.getTables(catalog,
@@ -1121,9 +1332,10 @@ public class JdbcSchema {
                                    tableTypes);
                 if (rs != null) {
                     while (rs.next()) {
-                        Table table = makeTable(rs);
-                        tables.put(table.getName(), table);
+                        addTable(rs);
                     }
+} else {
+System.out.println("ERROR: rs == null");
                 }
             } finally {
                 if (rs != null) {
@@ -1137,6 +1349,7 @@ public class JdbcSchema {
             }
 
             allTablesLoaded = true;
+System.out.println("JdbcSchema.loadTables: BOTTOM");
         }
     }
 
@@ -1145,18 +1358,18 @@ public class JdbcSchema {
      * entry.
      *
      * @param rs
-     * @return
      * @throws SQLException
      */
-    private Table makeTable(final ResultSet rs) throws SQLException {
+    protected void addTable(final ResultSet rs) throws SQLException {
         String name = rs.getString(3);
+        String tableType = rs.getString(4);
+System.out.println("   addTable: name="+name);
         Table table = new Table(name);
-        return table;
+        table.setTableType(tableType);
+
+        tables.put(table.getName(), table);
     }
     private Map getTablesMap() {
-        if (tables == null) {
-            tables = new HashMap();
-        }
         return tables;
     }
 }

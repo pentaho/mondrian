@@ -176,7 +176,6 @@ public class RolapConnection extends ConnectionBase {
 
         Properties jdbcProperties = getJDBCProperties(connectInfo);
         String propertyString = jdbcProperties.toString();
-
         if (jdbcConnectString != null) {
             // Get connection through own pooling datasource
             String jdbcDrivers =

@@ -46,11 +46,6 @@ public class AggTableManager {
     private static final MondrianResource mres = MondrianResource.instance();
 
     /**
-     * This is set to true if the aggregate tables have been loaded.
-     */
-    private boolean aggregatesLoaded;
-
-    /**
      * This is used to create forward references to triggers (so they do not
      * get reaped until the RolapSchema is reaped).
      */
@@ -75,7 +70,14 @@ public class AggTableManager {
      * This method should only be called once.
      */
     public void initialize() {
-        reLoadRolapStarAggregates();
+        if (MondrianProperties.instance().getReadAggregates()) {
+            try {
+                loadRolapStarAggregates();
+
+            } catch (SQLException ex) {
+                throw mres.newAggLoadingError(ex);
+            }
+        }
         registerTriggers();
         printResults();
     }
@@ -119,21 +121,39 @@ public class AggTableManager {
     private void reLoadRolapStarAggregates() {
         if (MondrianProperties.instance().getReadAggregates()) {
             try {
-                // NOTE: At this point all RolapStars have been made for this
-                // schema (except for dynamically added cubes which I am going
-                // to ignore for right now). So, All stars have their columns
-                // and their BitKeys can be generated.
+                clearJdbcSchema();
                 loadRolapStarAggregates();
 
             } catch (SQLException ex) {
                 throw mres.newAggLoadingError(ex);
             }
-            aggregatesLoaded = true;
         }
+    }
+
+    /** 
+     * Clear the possibly already loaded snapshot of what is in the database. 
+     */
+    private void clearJdbcSchema() {
+        DataSource dataSource = schema.getInternalConnection().getDataSource();
+        JdbcSchema.clearDB(dataSource);
+    }
+    private JdbcSchema getJdbcSchema() {
+        DataSource dataSource = schema.getInternalConnection().getDataSource();
+
+        // This actually just does a lookup or simple constructor invocation,
+        // its not expected to fail
+        JdbcSchema db = JdbcSchema.makeDB(dataSource);
+
+        return db;
     }
 
     /**
      * This method loads and/or reloads the aggregate tables.
+     * <p>
+     * NOTE: At this point all RolapStars have been made for this
+     * schema (except for dynamically added cubes which I am going
+     * to ignore for right now). So, All stars have their columns
+     * and their BitKeys can be generated.
      *
      * @throws SQLException
      */
@@ -142,11 +162,9 @@ public class AggTableManager {
         try {
 
         DefaultRules rules = DefaultRules.getInstance();
-
-        DataSource dataSource = schema.getInternalConnection().getDataSource();
-        // This actually just does a lookup or simple constructor invocation,
-        // its not expected to fail
-        JdbcSchema db = JdbcSchema.makeDB(dataSource);
+        JdbcSchema db = getJdbcSchema();
+        // loads tables, not their columns
+        db.load();
 
         loop:
         for (Iterator it = getStars(); it.hasNext(); ) {
@@ -200,15 +218,31 @@ public class AggTableManager {
                 ExplicitRules.TableDef tableDef =
                     ExplicitRules.getIncludeByTableDef(name, aggGroups);
 
-                boolean makeAggStar =
-                    ((tableDef != null) &&
-                    tableDef.columnsOK(star, dbFactTable, dbTable, msgRecorder))
-                    ||
-                    (rules.matchesTableName(factTableName, name) &&
-                     rules.columnsOK(star, dbFactTable, dbTable, msgRecorder));
+                boolean makeAggStar = false;
+                // Is it handled by the ExplicitRules
+                if (tableDef != null) {
+                    // load columns
+                    dbTable.load();
+                    makeAggStar = tableDef.columnsOK(star, 
+                                    dbFactTable, 
+                                    dbTable, 
+                                    msgRecorder);
+                }
+                if (! makeAggStar) {
+                    // Is it handled by the DefaultRules
+                    if (rules.matchesTableName(factTableName, name)) {
+                        // load columns
+                        dbTable.load();
+                        makeAggStar = rules.columnsOK(star, 
+                                            dbFactTable, 
+                                            dbTable, 
+                                            msgRecorder);
+                    }
+                }
+        
 
                 if (makeAggStar) {
-                    dbTable.setTableType(JdbcSchema.AGG_TABLE_TYPE);
+                    dbTable.setTableUsage(JdbcSchema.AGG_TABLE_USAGE);
                     String alias = null;
                     dbTable.table = new MondrianDef.Table(schema,
                                                           name,
@@ -393,8 +427,11 @@ public class AggTableManager {
      */
     void bindToStar(final JdbcSchema.Table dbFactTable,
                     final RolapStar star,
-                    final MessageRecorder msgRecorder) {
-        dbFactTable.setTableType(JdbcSchema.FACT_TABLE_TYPE);
+                    final MessageRecorder msgRecorder) throws SQLException {
+        // load columns
+        dbFactTable.load();
+
+        dbFactTable.setTableUsage(JdbcSchema.FACT_TABLE_USAGE);
 
         MondrianDef.Relation relation = star.getFactTable().getRelation();
         String schema = null;
@@ -418,7 +455,7 @@ public class AggTableManager {
                 if (rc instanceof RolapStar.Measure) {
                     RolapStar.Measure rm = (RolapStar.Measure) rc;
                     JdbcSchema.Table.Column.Usage usage =
-                            factColumn.newUsage(JdbcSchema.MEASURE_COLUMN_TYPE);
+                            factColumn.newUsage(JdbcSchema.MEASURE_COLUMN_USAGE);
                     usage.setSymbolicName(rm.getName());
 
                     usage.setAggregator(rm.getAggregator());
@@ -444,7 +481,7 @@ Turns out there are a lot of measures whose column is not numeric
                 star.getFactTable().findTableWithLeftJoinCondition(cname);
             if (rTable != null) {
                 JdbcSchema.Table.Column.Usage usage =
-                    factColumn.newUsage(JdbcSchema.FOREIGN_KEY_COLUMN_TYPE);
+                    factColumn.newUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE);
                 usage.setSymbolicName("FOREIGN_KEY");
                 usage.rTable = rTable;
             }

@@ -15,7 +15,9 @@ package mondrian.rolap.aggmatcher;
 import mondrian.olap.Hierarchy;
 import mondrian.olap.MondrianResource;
 import mondrian.recorder.MessageRecorder;
-import mondrian.rolap.*;
+import mondrian.rolap.RolapStar;
+import mondrian.rolap.RolapLevel;
+import mondrian.rolap.HierarchyUsage;
 
 import java.util.Iterator;
 
@@ -113,7 +115,7 @@ class DefaultRecognizer extends Recognizer {
             int nosOfMeasureColumns = 0;
 
             for (Iterator it =
-                    dbFactTable.getColumnUsages(JdbcSchema.MEASURE_COLUMN_TYPE);
+                    dbFactTable.getColumnUsages(JdbcSchema.MEASURE_COLUMN_USAGE);
                     it.hasNext(); ) {
                 JdbcSchema.Table.Column.Usage factUsage =
                     (JdbcSchema.Table.Column.Usage) it.next();
@@ -126,7 +128,7 @@ class DefaultRecognizer extends Recognizer {
                         (JdbcSchema.Table.Column) aggit.next();
 
                     // if marked as ignore, then do not consider
-                    if (aggColumn.hasUsage(JdbcSchema.IGNORE_COLUMN_TYPE)) {
+                    if (aggColumn.hasUsage(JdbcSchema.IGNORE_COLUMN_USAGE)) {
                         continue;
                     }
 
@@ -185,7 +187,7 @@ class DefaultRecognizer extends Recognizer {
                 (JdbcSchema.Table.Column) aggit.next();
 
             // if marked as ignore, then do not consider
-            if (aggColumn.hasUsage(JdbcSchema.IGNORE_COLUMN_TYPE)) {
+            if (aggColumn.hasUsage(JdbcSchema.IGNORE_COLUMN_USAGE)) {
                 continue;
             }
 

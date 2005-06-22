@@ -95,7 +95,7 @@ class ExplicitRecognizer extends Recognizer {
                 (JdbcSchema.Table.Column) it.next();
 
             // if marked as ignore, then do not consider
-            if (aggColumn.hasUsage(JdbcSchema.IGNORE_COLUMN_TYPE)) {
+            if (aggColumn.hasUsage(JdbcSchema.IGNORE_COLUMN_USAGE)) {
                 continue;
             }
 
@@ -118,13 +118,13 @@ class ExplicitRecognizer extends Recognizer {
         // generated for the aggregate table as long as it still has the foreign
         // key.
         for (Iterator it =
-                dbFactTable.getColumnUsages(JdbcSchema.MEASURE_COLUMN_TYPE);
+                dbFactTable.getColumnUsages(JdbcSchema.MEASURE_COLUMN_USAGE);
                 it.hasNext(); ) {
             JdbcSchema.Table.Column.Usage factUsage =
                 (JdbcSchema.Table.Column.Usage) it.next();
             JdbcSchema.Table.Column factColumn = factUsage.getColumn();
 
-            if (factColumn.hasUsage(JdbcSchema.FOREIGN_KEY_COLUMN_TYPE)) {
+            if (factColumn.hasUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE)) {
                 // What we've got here is a measure based upon a foreign key
                 String aggFK =
                     getTableDef().getAggregateFK(factColumn.getName());
@@ -167,7 +167,7 @@ class ExplicitRecognizer extends Recognizer {
         RolapStar.Measure rm = measure.getRolapStarMeasure();
 
         JdbcSchema.Table.Column.Usage aggUsage =
-            aggColumn.newUsage(JdbcSchema.MEASURE_COLUMN_TYPE);
+            aggColumn.newUsage(JdbcSchema.MEASURE_COLUMN_USAGE);
 
         aggUsage.setSymbolicName(measure.getSymbolicName());
         convertAggregator(aggUsage, rm.getAggregator());
@@ -203,7 +203,7 @@ class ExplicitRecognizer extends Recognizer {
                 (JdbcSchema.Table.Column) aggit.next();
 
             // if marked as ignore, then do not consider
-            if (aggColumn.hasUsage(JdbcSchema.IGNORE_COLUMN_TYPE)) {
+            if (aggColumn.hasUsage(JdbcSchema.IGNORE_COLUMN_USAGE)) {
                 continue;
             }
 

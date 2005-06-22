@@ -94,12 +94,11 @@ public class AggGen {
             : jt;
     }
     protected JdbcSchema.Table getTable(JdbcSchema db, String name) {
-        try {
-            return db.getTable(name);
-        } catch (SQLException ex) {
-            getLogger().error(ex);
-        }
-        return null;
+        return db.getTable(name);
+    }
+    protected JdbcSchema.Table.Column getColumn(JdbcSchema.Table table, 
+                        String name) {
+        return table.getColumn(name);
     }
     protected String getRolapStarColumnName(RolapStar.Column rColumn) {
         MondrianDef.Expression expr = rColumn.getExpression();
@@ -124,7 +123,7 @@ public class AggGen {
             }
         }
         notLostColumnUsages.add(
-            column.newUsage(JdbcSchema.FOREIGN_KEY_COLUMN_TYPE));
+            column.newUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE));
     }
     
     /** 
@@ -139,6 +138,12 @@ public class AggGen {
      */
     private void init() {
         JdbcSchema db = JdbcSchema.makeDB(star.getDataSource());
+        try {
+            db.load();
+        } catch (SQLException ex) {
+            getLogger().error(ex);
+            return;
+        }
 
         JdbcSchema.Table factTable = getTable(db, getFactTableName());
         if (factTable == null) {
@@ -192,7 +197,19 @@ public class AggGen {
                 if (expr instanceof MondrianDef.Column) {
                     MondrianDef.Column exprColumn = (MondrianDef.Column) expr;
                     String name = exprColumn.getColumnName();
-                    JdbcSchema.Table.Column c = factTable.getColumn(name);
+                    JdbcSchema.Table.Column c = getColumn(factTable, name);
+                    if (c == null) {
+                        StringBuffer buf = new StringBuffer(64);
+                        buf.append("Init: ");
+                        buf.append("FactTable:");
+                        buf.append(getFactTableName());
+                        buf.append(Util.nl);
+                        buf.append("No Column with name \"");
+                        buf.append(name);
+                        buf.append("\"");
+                        getLogger().warn(buf.toString());
+                        return;
+                    }
                     if (getLogger().isDebugEnabled()) {
                         getLogger().debug("  Jdbc Column: c="+c);
                     }
@@ -216,7 +233,19 @@ public class AggGen {
                 if (left instanceof MondrianDef.Column) {
                     MondrianDef.Column leftColumn = (MondrianDef.Column) left;
                     String name = leftColumn.getColumnName();
-                    JdbcSchema.Table.Column c = factTable.getColumn(name);
+                    JdbcSchema.Table.Column c = getColumn(factTable, name);
+                    if (c == null) {
+                        StringBuffer buf = new StringBuffer(64);
+                        buf.append("Init: ");
+                        buf.append("FactTable:");
+                        buf.append(getFactTableName());
+                        buf.append(Util.nl);
+                        buf.append("No Column with name \"");
+                        buf.append(name);
+                        buf.append("\"");
+                        getLogger().warn(buf.toString());
+                        return;
+                    }
                     if (getLogger().isDebugEnabled()) {
                         getLogger().debug("  Jdbc Column: c="+c);
                     }
@@ -245,7 +274,7 @@ public class AggGen {
                 getLogger().warn("not a measure: " +name);
                 continue;
             }
-            JdbcSchema.Table.Column c = factTable.getColumn(name);
+            JdbcSchema.Table.Column c = getColumn(factTable, name);
             if (c == null) {
                 StringBuffer buf = new StringBuffer(64);
                 buf.append("For RolapStar: \"");
@@ -263,7 +292,7 @@ public class AggGen {
             if (getLogger().isDebugEnabled()) {
                 getLogger().debug("  Jdbc Column m="+c);
             }
-            measures.add(c.newUsage(JdbcSchema.MEASURE_COLUMN_TYPE));
+            measures.add(c.newUsage(JdbcSchema.MEASURE_COLUMN_USAGE));
         }
 
         // If we got to here, then everything is ok.
@@ -305,7 +334,7 @@ public class AggGen {
             collapsedColumnUsages.put(rt, list);
         }
 
-        JdbcSchema.Table.Column c = jt.getColumn(rname);
+        JdbcSchema.Table.Column c = getColumn(jt, rname);
         if (c == null) {
             StringBuffer buf = new StringBuffer(64);
             buf.append("Adding Special Collapsed Column: ");
@@ -320,7 +349,7 @@ public class AggGen {
             getLogger().warn(buf.toString());
             return false;
         }
-        list.add(c.newUsage(JdbcSchema.FOREIGN_KEY_COLUMN_TYPE));
+        list.add(c.newUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE));
 
         RolapStar.Column prColumn = rColumn;
         while (prColumn.getParentColumn() != null) {
@@ -340,12 +369,12 @@ public class AggGen {
                 getLogger().warn(buf.toString());
                 return false;
             }
-            c = jt.getColumn(rname);
+            c = getColumn(jt, rname);
             if (c == null) {
                 getLogger().warn("Can not find column: " +rname);
                 break;
             }
-            list.add(c.newUsage(JdbcSchema.FOREIGN_KEY_COLUMN_TYPE));
+            list.add(c.newUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE));
         }
 
         return true;
@@ -406,14 +435,14 @@ public class AggGen {
                 getLogger().warn(buf.toString());
                 return false;
             }
-            JdbcSchema.Table.Column c = jt.getColumn(name);
+            JdbcSchema.Table.Column c = getColumn(jt, name);
             if (c == null) {
                 getLogger().warn("Can not find column: " +name);
                 break;
             }
 
             JdbcSchema.Table.Column.Usage usage = 
-                c.newUsage(JdbcSchema.FOREIGN_KEY_COLUMN_TYPE);
+                c.newUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE);
             usage.usagePrefix = rc.getUsagePrefix();
 
             list.add(usage);
