@@ -96,24 +96,7 @@ public class Aggregation {
         this.bitKey = bitKey;
         this.segmentRefs = new ArrayList();
 
-        // find out if this is an oracle DB
-        Connection con = null;
-        try {
-            con = star.getJdbcConnection();
-            DatabaseMetaData md = con.getMetaData();
-            SqlQuery sqlQuery = new SqlQuery(md);
-            this.oracle = sqlQuery.getDialect().isOracle();
-        } catch (SQLException e) {
-            throw Util.newInternal(e, "could not query Metadata");
-        } finally {
-            if (con != null) {
-                try {
-                    con.close();
-                } catch (SQLException e) {
-                    // ignore
-                }
-            }
-        }
+        this.oracle = star.getSqlQueryDialect().isOracle();
     }
 
     /**

@@ -38,7 +38,6 @@ class AggQuerySpec {
      * is required; it cannot be rolled up.
      */
     private final boolean isDistinct;
-    private final SqlQuery.Dialect dialect;
 
     AggQuerySpec(final AggStar aggStar,
                  final Segment[] segments,
@@ -46,25 +45,10 @@ class AggQuerySpec {
         this.aggStar = aggStar;
         this.segments = segments;
         this.isDistinct = isDistinct;
-
-        java.sql.Connection jdbcConnection =
-            aggStar.getStar().getJdbcConnection();
-        try {
-            DatabaseMetaData metaData = jdbcConnection.getMetaData();
-            dialect = SqlQuery.Dialect.create(metaData);
-        } catch (SQLException e) {
-            throw Util.getRes().newInternal("while loading segment", e);
-        } finally {
-            try {
-                jdbcConnection.close();
-            } catch (SQLException e) {
-                // ignore
-            }
-        }
     }
 
     protected SqlQuery newSqlQuery() {
-        return new SqlQuery(dialect);
+        return getStar().getSqlQuery();
     }
     public RolapStar getStar() {
         return aggStar.getStar();

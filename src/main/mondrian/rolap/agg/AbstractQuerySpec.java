@@ -25,32 +25,14 @@ import java.sql.SQLException;
  */
 public abstract class AbstractQuerySpec implements QuerySpec {
     private final RolapStar star;
-    private final DatabaseMetaData metaData;
 
     protected AbstractQuerySpec(final RolapStar star) {
         this.star = star;
-
-        java.sql.Connection jdbcConnection = star.getJdbcConnection();
-        try {
-            this.metaData = jdbcConnection.getMetaData();
-        } catch (SQLException e) {
-            throw Util.getRes().newInternal("while loading segment", e);
-        } finally {
-            try {
-                jdbcConnection.close();
-            } catch (SQLException e) {
-                // ignore
-            }
-        }
     }
 
     protected SqlQuery newSqlQuery() {
-        return new SqlQuery(getDatabaseMetaData());
+        return getStar().getSqlQuery();
     }
-    protected DatabaseMetaData getDatabaseMetaData() {
-        return metaData;
-    }
-
 
     public RolapStar getStar() {
         return star;

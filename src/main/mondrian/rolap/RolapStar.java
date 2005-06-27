@@ -104,7 +104,7 @@ public class RolapStar {
     /** how many columns (column and columnName) there are */
     private int columnCount;
 
-    private final SqlQuery sqlQuery;
+    private final SqlQuery.Dialect sqlQueryDialect;
 
     /**
      * If true, then database aggregation information is cached, otherwise
@@ -136,7 +136,7 @@ public class RolapStar {
 
         clearAggStarList();
 
-        sqlQuery = makeSqlQuery();
+        sqlQueryDialect = makeSqlQueryDialect();
     }
 
     /**
@@ -265,7 +265,16 @@ public class RolapStar {
      * @return
      */
     public SqlQuery getSqlQuery() {
-        return sqlQuery.cloneEmpty();
+        return new SqlQuery(getSqlQueryDialect());
+    }
+
+    /** 
+     * Get this RolapStar's RolapSchema's Sql Dialect. 
+     * 
+     * @return 
+     */
+    public SqlQuery.Dialect getSqlQueryDialect() {
+        return sqlQueryDialect;
     }
 
     /**
@@ -273,10 +282,10 @@ public class RolapStar {
      *
      * @return
      */
-    private SqlQuery makeSqlQuery() {
+    private SqlQuery.Dialect makeSqlQueryDialect() {
         Connection conn = getJdbcConnection();
         try {
-            return new SqlQuery(conn.getMetaData());
+            return SqlQuery.Dialect.create(conn.getMetaData());
         } catch (SQLException e) {
             throw Util.newInternal(
                 e, "Error while creating SqlQuery from connection");
