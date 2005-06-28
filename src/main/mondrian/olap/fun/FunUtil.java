@@ -12,14 +12,14 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
-import mondrian.olap.type.*;
+import mondrian.olap.type.Type;
+import mondrian.olap.type.TypeUtil;
+import org.apache.log4j.Logger;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.Set;
-
-import org.apache.log4j.Logger;
 
 /**
  * <code>FunUtil</code> contains a set of methods useful within the
@@ -613,6 +613,18 @@ public class FunUtil extends Util {
                 : 1;
     }
 
+    /**
+     * Compares two cell values.
+     *
+     * <p>Nulls compare last, exceptions (including the
+     * object which indicates the the cell is not in the cache yet) next,
+     * then numbers and strings are compared by value.
+     *
+     * @param value0 First cell value
+     * @param value1 Second cell value
+     * @return -1, 0, or 1, depending upon whether first cell value is less
+     *   than, equal to, or greater than the second
+     */
     static int compareValues(Object value0, Object value1) {
         if (value0 == value1) {
             return 0;
@@ -873,25 +885,11 @@ public class FunUtil extends Util {
         return parameterTypes;
     }
 
-    static class SetWrapper {
-        List v = new ArrayList();
-        public int errorCount = 0, nullCount = 0;
-
-        //private double avg = Double.NaN;
-        //todo: parameterize inclusion of nulls
-        //by making this a method of the SetWrapper, we can cache the result
-        //this allows its reuse in Correlation
-//      public double getAverage() {
-//          if (avg == Double.NaN) {
-//              double sum = 0.0;
-//              for (int i = 0; i < resolvers.size(); i++) {
-//                  sum += ((Double) resolvers.elementAt(i)).doubleValue();
-//              }
-//              //todo: should look at context and optionally include nulls
-//              avg = sum / (double) resolvers.size();
-//          }
-//          return avg;
-//      }
+    /**
+     * Sorts an array of values.
+     */
+    public static void sortValuesDesc(Object[] values) {
+        Arrays.sort(values, DescendingValueComparator.instance);
     }
 
     static Object median(Evaluator evaluator, List members, ExpBase exp) {
@@ -1664,329 +1662,386 @@ public class FunUtil extends Util {
 //      }
 //  }
 
-}
+    // Inner classes
 
-abstract class MemberComparator implements Comparator {
-    private static final Logger LOGGER = Logger.getLogger(MemberComparator.class);
-    Map mapMemberToValue;
-    private boolean desc;
 
-    MemberComparator(Map mapMemberToValue, boolean desc) {
-        this.mapMemberToValue = mapMemberToValue;
-        this.desc = desc;
-    }
+    private static abstract class MemberComparator implements Comparator {
+        private static final Logger LOGGER =
+                Logger.getLogger(MemberComparator.class);
+        Map mapMemberToValue;
+        private boolean desc;
 
-    // implement Comparator
-    public int compare(Object o1, Object o2) {
-        Member m1 = (Member) o1,
-                m2 = (Member) o2;
-        int c = compareInternal(m1, m2);
-        LOGGER.debug(
-                    "compare " +
-                    m1.getUniqueName() + "(" + mapMemberToValue.get(m1) + "), " +
-                    m2.getUniqueName() + "(" + mapMemberToValue.get(m2) + ")" +
-                    " yields " + c);
-        return c;
-    }
-
-    protected abstract int compareInternal(Member m1, Member m2);
-
-    protected int compareByValue(Member m1, Member m2) {
-        Object value1 = mapMemberToValue.get(m1),
-                value2 = mapMemberToValue.get(m2);
-        final int c = FunUtil.compareValues(value1, value2);
-        return desc ? -c : c;
-    }
-
-    protected int compareHierarchicallyButSiblingsByValue(Member m1, Member m2) {
-        if (FunUtil.equals(m1, m2)) {
-            return 0;
+        MemberComparator(Map mapMemberToValue, boolean desc) {
+            this.mapMemberToValue = mapMemberToValue;
+            this.desc = desc;
         }
-        while (true) {
-            int depth1 = m1.getDepth(),
-                depth2 = m2.getDepth();
-            if (depth1 < depth2) {
-                m2 = m2.getParentMember();
-                if (Util.equals(m1, m2)) {
-                    return -1;
-                }
-            } else if (depth1 > depth2) {
-                m1 = m1.getParentMember();
-                if (Util.equals(m1, m2)) {
-                    return 1;
-                }
-            } else {
-                Member prev1 = m1, prev2 = m2;
-                m1 = m1.getParentMember();
-                m2 = m2.getParentMember();
-                if (Util.equals(m1, m2)) {
-                    // including case where both parents are null
-                    int c = compareByValue(prev1, prev2);
-                    if (c != 0) {
+
+        // implement Comparator
+        public int compare(Object o1, Object o2) {
+            Member m1 = (Member) o1,
+                    m2 = (Member) o2;
+            int c = compareInternal(m1, m2);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(
+                        "compare " +
+                        m1.getUniqueName() +
+                        "(" + mapMemberToValue.get(m1) + "), " +
+                        m2.getUniqueName() +
+                        "(" + mapMemberToValue.get(m2) + ")" +
+                        " yields " + c);
+            }
+            return c;
+        }
+
+        protected abstract int compareInternal(Member m1, Member m2);
+
+        protected int compareByValue(Member m1, Member m2) {
+            Object value1 = mapMemberToValue.get(m1),
+                    value2 = mapMemberToValue.get(m2);
+            final int c = FunUtil.compareValues(value1, value2);
+            return desc ? -c : c;
+        }
+
+        protected int compareHierarchicallyButSiblingsByValue(Member m1, Member m2) {
+            if (FunUtil.equals(m1, m2)) {
+                return 0;
+            }
+            while (true) {
+                int depth1 = m1.getDepth(),
+                        depth2 = m2.getDepth();
+                if (depth1 < depth2) {
+                    m2 = m2.getParentMember();
+                    if (Util.equals(m1, m2)) {
+                        return -1;
+                    }
+                } else if (depth1 > depth2) {
+                    m1 = m1.getParentMember();
+                    if (Util.equals(m1, m2)) {
+                        return 1;
+                    }
+                } else {
+                    Member prev1 = m1, prev2 = m2;
+                    m1 = m1.getParentMember();
+                    m2 = m2.getParentMember();
+                    if (Util.equals(m1, m2)) {
+                        // including case where both parents are null
+                        int c = compareByValue(prev1, prev2);
+                        if (c != 0) {
+                            return c;
+                        }
+                        // prev1 and prev2 are siblings.
+                        // Order according to hierarchy, if the values do not differ.
+                        // Needed to have a consistent sort if members with equal (null!)
+                        //  values are compared.
+                        c = FunUtil.compareSiblingMembers(prev1, prev2);
                         return c;
                     }
-                    // prev1 and prev2 are siblings.
-                    // Order according to hierarchy, if the values do not differ.
-                    // Needed to have a consistent sort if members with equal (null!)
-                    //  values are compared.
-                    c = FunUtil.compareSiblingMembers(prev1, prev2);
+                }
+            }
+        }
+    }
+
+    private static class HierarchicalMemberComparator
+            extends MemberComparator {
+        HierarchicalMemberComparator(Map mapMemberToValue, boolean desc) {
+            super(mapMemberToValue, desc);
+        }
+
+        protected int compareInternal(Member m1, Member m2) {
+            return compareHierarchicallyButSiblingsByValue(m1, m2);
+        }
+    }
+
+    private static class BreakMemberComparator extends MemberComparator {
+        BreakMemberComparator(Map mapMemberToValue, boolean desc) {
+            super(mapMemberToValue, desc);
+        }
+
+        protected int compareInternal(Member m1, Member m2) {
+            return compareByValue(m1, m2);
+        }
+    }
+
+    /**
+     * Compares tuples, which are represented as arrays of {@link Member}s.
+     */
+    private static abstract class ArrayComparator implements Comparator {
+        private static final Logger LOGGER =
+                Logger.getLogger(ArrayComparator.class);
+        int arity;
+
+        ArrayComparator(int arity) {
+            this.arity = arity;
+        }
+
+        private static String toString(Member[] a) {
+            StringBuffer sb = new StringBuffer();
+            for (int i = 0; i < a.length; i++) {
+                Member member = a[i];
+                if (i > 0) {
+                    sb.append(",");
+                }
+                sb.append(member.getUniqueName());
+            }
+            return sb.toString();
+        }
+
+        public int compare(Object o1, Object o2) {
+            final Member[] a1 = (Member[]) o1;
+            final Member[] a2 = (Member[]) o2;
+            final int c = compare(a1, a2);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(
+                        "compare {" + toString(a1)+ "}, {" + toString(a2) +
+                        "} yields " + c);
+            }
+            return c;
+        }
+
+        protected abstract int compare(Member[] a1, Member[] a2);
+    }
+
+    /**
+     * Extension to {@link ArrayComparator} which compares tuples by evaluating
+     * an expression.
+     */
+    private static abstract class ArrayExpComparator
+            extends ArrayComparator {
+        Evaluator evaluator;
+        final Exp exp;
+
+        ArrayExpComparator(Evaluator evaluator, Exp exp, int arity) {
+            super(arity);
+            this.evaluator = evaluator;
+            this.exp = exp;
+        }
+
+    }
+
+    private static class HierarchicalArrayComparator
+            extends ArrayExpComparator {
+        private final boolean desc;
+
+        HierarchicalArrayComparator(
+                Evaluator evaluator, Exp exp, int arity, boolean desc) {
+            super(evaluator, exp, arity);
+            this.desc = desc;
+        }
+
+        protected int compare(Member[] a1, Member[] a2) {
+            int c = 0;
+            evaluator = evaluator.push();
+            for (int i = 0; i < arity; i++) {
+                Member m1 = a1[i],
+                        m2 = a2[i];
+                c = compareHierarchicallyButSiblingsByValue(m1, m2);
+                if (c != 0) {
+                    break;
+                }
+                // compareHierarchicallyButSiblingsByValue imposes a total order
+                //Util.assertTrue(m1 == m2);
+                Util.assertTrue(m1.equals(m2));
+                evaluator.setContext(m1);
+            }
+            evaluator = evaluator.pop();
+            return c;
+        }
+
+        protected int compareHierarchicallyButSiblingsByValue(
+                Member m1, Member m2) {
+            if (FunUtil.equals(m1, m2)) {
+                return 0;
+            }
+            while (true) {
+                int depth1 = m1.getDepth(),
+                        depth2 = m2.getDepth();
+                if (depth1 < depth2) {
+                    m2 = m2.getParentMember();
+                    if (FunUtil.equals(m1, m2)) {
+                        return -1;
+                    }
+                } else if (depth1 > depth2) {
+                    m1 = m1.getParentMember();
+                    if (FunUtil.equals(m1, m2)) {
+                        return 1;
+                    }
+                } else {
+                    Member prev1 = m1, prev2 = m2;
+                    m1 = m1.getParentMember();
+                    m2 = m2.getParentMember();
+                    if (FunUtil.equals(m1, m2)) {
+                        // including case where both parents are null
+                        int c = compareByValue(prev1, prev2);
+                        if (c == 0) {
+                            c = FunUtil.compareSiblingMembers(prev1, prev2);
+                        }
+                        return desc ? -c : c;
+                    }
+                }
+            }
+        }
+        private int compareByValue(Member m1, Member m2) {
+            int c;
+            Member old = evaluator.setContext(m1);
+            Object v1 = exp.evaluateScalar(evaluator);
+            evaluator.setContext(m2);
+            Object v2 = exp.evaluateScalar(evaluator);
+            // important to restore the evaluator state -- and this is faster
+            // than calling evaluator.push()
+            evaluator.setContext(old);
+            c = FunUtil.compareValues(v1, v2);
+            return c;
+        }
+    }
+
+    private static class BreakArrayComparator extends ArrayExpComparator {
+        BreakArrayComparator(Evaluator evaluator, Exp exp, int arity) {
+            super(evaluator, exp, arity);
+        }
+
+        protected int compare(Member[] a1, Member[] a2) {
+            evaluator.setContext(a1);
+            Object v1 = exp.evaluateScalar(evaluator);
+            evaluator.setContext(a2);
+            Object v2 = exp.evaluateScalar(evaluator);
+            return FunUtil.compareValues(v1, v2);
+        }
+    }
+
+    /**
+     * Compares arrays of {@link Member}s so as to convert them into hierarchical
+     * order. Applies lexicographic order to the array.
+     */
+    private static class HierarchizeArrayComparator extends ArrayComparator {
+        private final boolean post;
+
+        HierarchizeArrayComparator(int arity, boolean post) {
+            super(arity);
+            this.post = post;
+        }
+
+        protected int compare(Member[] a1, Member[] a2) {
+            for (int i = 0; i < arity; i++) {
+                Member m1 = a1[i],
+                        m2 = a2[i];
+                int c = FunUtil.compareHierarchically(m1, m2, post);
+                if (c != 0) {
                     return c;
                 }
+                // compareHierarchically imposes a total order
+                //Util.assertTrue(m1 == m2);
+                Util.assertTrue(m1.equals(m2));
             }
-        }
-    }
-}
-
-class HierarchicalMemberComparator extends MemberComparator {
-    HierarchicalMemberComparator(Map mapMemberToValue, boolean desc) {
-        super(mapMemberToValue, desc);
-    }
-
-    protected int compareInternal(Member m1, Member m2) {
-        return compareHierarchicallyButSiblingsByValue(m1, m2);
-    }
-}
-
-class BreakMemberComparator extends MemberComparator {
-    BreakMemberComparator(Map mapMemberToValue, boolean desc) {
-        super(mapMemberToValue, desc);
-    }
-
-    protected int compareInternal(Member m1, Member m2) {
-        return compareByValue(m1, m2);
-    }
-}
-
-/**
- * Compares tuples, which are represented as arrays of {@link Member}s.
- */
-abstract class ArrayComparator implements Comparator {
-    private static final Logger LOGGER = Logger.getLogger(ArrayComparator.class);
-    int arity;
-
-    ArrayComparator(int arity) {
-        this.arity = arity;
-    }
-
-    private static String toString(Member[] a) {
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < a.length; i++) {
-            Member member = a[i];
-            if (i > 0) {
-                sb.append(",");
-            }
-            sb.append(member.getUniqueName());
-        }
-        return sb.toString();
-    }
-
-    public int compare(Object o1, Object o2) {
-        final Member[] a1 = (Member[]) o1;
-        final Member[] a2 = (Member[]) o2;
-        final int c = compare(a1, a2);
-        LOGGER.debug(
-                    "compare {" + toString(a1)+ "}, {" + toString(a2) + "}" +
-                    " yields " + c);
-        return c;
-    }
-
-    protected abstract int compare(Member[] a1, Member[] a2);
-}
-
-/**
- * Extension to {@link ArrayComparator} which compares tuples by evaluating an
- * expression.
- */
-abstract class ArrayExpComparator extends ArrayComparator {
-    Evaluator evaluator;
-    Exp exp;
-
-    ArrayExpComparator(Evaluator evaluator, Exp exp, int arity) {
-        super(arity);
-        this.evaluator = evaluator;
-        this.exp = exp;
-    }
-
-}
-
-class HierarchicalArrayComparator extends ArrayExpComparator {
-    private boolean desc;
-
-    HierarchicalArrayComparator(Evaluator evaluator, Exp exp, int arity, boolean desc) {
-        super(evaluator, exp, arity);
-        this.desc = desc;
-    }
-    protected int compare(Member[] a1, Member[] a2) {
-        int c = 0;
-        evaluator = evaluator.push();
-        for (int i = 0; i < arity; i++) {
-            Member m1 = a1[i],
-                    m2 = a2[i];
-            c = compareHierarchicallyButSiblingsByValue(m1, m2);
-            if (c != 0) {
-                break;
-            }
-            // compareHierarchicallyButSiblingsByValue imposes a total order
-            //Util.assertTrue(m1 == m2);
-      Util.assertTrue(m1.equals(m2));
-            evaluator.setContext(m1);
-        }
-        evaluator = evaluator.pop();
-        return c;
-    }
-    protected int compareHierarchicallyButSiblingsByValue(Member m1, Member m2) {
-        if (FunUtil.equals(m1, m2)) {
             return 0;
         }
-        while (true) {
-            int depth1 = m1.getDepth(),
-                    depth2 = m2.getDepth();
-            if (depth1 < depth2) {
-                m2 = m2.getParentMember();
-                if (FunUtil.equals(m1, m2)) {
-                    return -1;
-                }
-            } else if (depth1 > depth2) {
-                m1 = m1.getParentMember();
-                if (FunUtil.equals(m1, m2)) {
-                    return 1;
-                }
-            } else {
-                Member prev1 = m1, prev2 = m2;
-                m1 = m1.getParentMember();
-                m2 = m2.getParentMember();
-                if (FunUtil.equals(m1, m2)) {
-                    // including case where both parents are null
-                    int c = compareByValue(prev1, prev2);
-                    if (c == 0) {
-                        c = FunUtil.compareSiblingMembers(prev1, prev2);
-                    }
-                    return desc ? -c : c;
-                }
+    }
+
+    /**
+     * Compares {@link Member}s so as to arrage them in prefix or postfix
+     * hierarchical order.
+     */
+    private static class HierarchizeComparator implements Comparator {
+        private final boolean post;
+
+        HierarchizeComparator(boolean post) {
+            this.post = post;
+        }
+        public int compare(Object o1, Object o2) {
+            return FunUtil.compareHierarchically((Member) o1, (Member) o2, post);
+        }
+    }
+
+    /**
+     * Reverses the order of a {@link Comparator}.
+     */
+    private static class ReverseComparator implements Comparator {
+        Comparator comparator;
+        ReverseComparator(Comparator comparator) {
+            this.comparator = comparator;
+        }
+
+        public int compare(Object o1, Object o2) {
+            int c = comparator.compare(o1, o2);
+            return -c;
+        }
+    }
+
+    /**
+     * Holds an array, so that {@link #equals} and {@link #hashCode} work.
+     */
+    protected static class ArrayHolder {
+        private Object[] a;
+
+        ArrayHolder(Object[] a) {
+            this.a = a;
+        }
+
+        public int hashCode() {
+            int h = 0;
+            for (int i = 0; i < a.length; i++) {
+                Object o = a[i];
+                int rotated = (h << 4) | ((h >> 28) & 0xf);
+                h = rotated ^ o.hashCode();
             }
+            return h;
         }
-    }
-    private int compareByValue(Member m1, Member m2) {
-        int c;
-        Member old = evaluator.setContext(m1);
-        Object v1 = exp.evaluateScalar(evaluator);
-        evaluator.setContext(m2);
-        Object v2 = exp.evaluateScalar(evaluator);
-        // important to restore the evaluator state -- and this is faster
-        // than calling evaluator.push()
-        evaluator.setContext(old);
-        c = FunUtil.compareValues(v1, v2);
-        return c;
-    }
-}
 
-class BreakArrayComparator extends ArrayExpComparator {
-    BreakArrayComparator(Evaluator evaluator, Exp exp, int arity) {
-        super(evaluator, exp, arity);
-    }
-
-    protected int compare(Member[] a1, Member[] a2) {
-        evaluator.setContext(a1);
-        Object v1 = exp.evaluateScalar(evaluator);
-        evaluator.setContext(a2);
-        Object v2 = exp.evaluateScalar(evaluator);
-        return FunUtil.compareValues(v1, v2);
-    }
-}
-
-/**
- * Compares arrays of {@link Member}s so as to convert them into hierarchical
- * order. Applies lexicographic order to the array.
- */
-class HierarchizeArrayComparator extends ArrayComparator {
-    private boolean post;
-
-    HierarchizeArrayComparator(int arity, boolean post) {
-        super(arity);
-        this.post = post;
-    }
-
-    protected int compare(Member[] a1, Member[] a2) {
-        for (int i = 0; i < arity; i++) {
-            Member m1 = a1[i],
-                    m2 = a2[i];
-            int c = FunUtil.compareHierarchically(m1, m2, post);
-            if (c != 0) {
-                return c;
-            }
-            // compareHierarchically imposes a total order
-            //Util.assertTrue(m1 == m2);
-            Util.assertTrue(m1.equals(m2));
+        public boolean equals(Object o) {
+            return o instanceof ArrayHolder &&
+                    equals(a, ((ArrayHolder) o).a);
         }
-        return 0;
-    }
-}
 
-/**
- * Compares {@link Member}s so as to arrage them in prefix or postfix
- * hierarchical order.
- */
-class HierarchizeComparator implements Comparator {
-    private boolean post;
-
-    HierarchizeComparator(boolean post) {
-        this.post = post;
-    }
-    public int compare(Object o1, Object o2) {
-        return FunUtil.compareHierarchically((Member) o1, (Member) o2, post);
-    }
-}
-
-/**
- * Reverses the order of a {@link Comparator}.
- */
-class ReverseComparator implements Comparator {
-    Comparator comparator;
-    ReverseComparator(Comparator comparator) {
-        this.comparator = comparator;
-    }
-
-    public int compare(Object o1, Object o2) {
-        int c = comparator.compare(o1, o2);
-        return -c;
-    }
-}
-
-/**
- * Holds an array, so that {@link #equals} and {@link #hashCode} work.
- */
-class ArrayHolder {
-    private Object[] a;
-
-    ArrayHolder(Object[] a) {
-        this.a = a;
-    }
-
-    public int hashCode() {
-        int h = 0;
-        for (int i = 0; i < a.length; i++) {
-            Object o = a[i];
-            int rotated = (h << 4) | ((h >> 28) & 0xf);
-            h = rotated ^ o.hashCode();
-        }
-        return h;
-    }
-
-    public boolean equals(Object o) {
-        return o instanceof ArrayHolder &&
-                equals(a, ((ArrayHolder) o).a);
-    }
-
-    private static boolean equals(Object[] a1, Object[] a2) {
-        if (a1.length != a2.length) {
-            return false;
-        }
-        for (int i = 0; i < a1.length; i++) {
-            if (!a1[i].equals(a2[i])) {
+        private static boolean equals(Object[] a1, Object[] a2) {
+            if (a1.length != a2.length) {
                 return false;
             }
+            for (int i = 0; i < a1.length; i++) {
+                if (!a1[i].equals(a2[i])) {
+                    return false;
+                }
+            }
+            return true;
         }
-        return true;
+    }
+
+    static class SetWrapper {
+        List v = new ArrayList();
+        public int errorCount = 0, nullCount = 0;
+
+        //private double avg = Double.NaN;
+        //todo: parameterize inclusion of nulls
+        //by making this a method of the SetWrapper, we can cache the result
+        //this allows its reuse in Correlation
+//      public double getAverage() {
+//          if (avg == Double.NaN) {
+//              double sum = 0.0;
+//              for (int i = 0; i < resolvers.size(); i++) {
+//                  sum += ((Double) resolvers.elementAt(i)).doubleValue();
+//              }
+//              //todo: should look at context and optionally include nulls
+//              avg = sum / (double) resolvers.size();
+//          }
+//          return avg;
+//      }
+    }
+
+    /**
+     * Compares cell values, so that larger values compare first.
+     *
+     * <p>Nulls compare last, exceptions (including the
+     * object which indicates the the cell is not in the cache yet) next,
+     * then numbers and strings are compared by value.
+     */
+    private static class DescendingValueComparator implements Comparator {
+        /**
+         * The singleton.
+         */
+        static final DescendingValueComparator instance =
+                new DescendingValueComparator();
+
+        public int compare(Object o1, Object o2) {
+            return - compareValues(o1, o2);
+        }
     }
 }
 

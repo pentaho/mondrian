@@ -107,7 +107,7 @@ public class Util extends XOMUtil {
     public static boolean equals(Object s, Object t) {
         return (s == null) ? (t == null) : s.equals(t);
     }
-    
+
     /**
      * Returns true if two strings are equal, or are both null.
      * Takes into account the case sensitive option.
@@ -520,9 +520,18 @@ public class Util extends XOMUtil {
      * A <code>NullCellValue</code> is a placeholder value used when cells have
      * a null value. It is a singleton.
      */
-    public static class NullCellValue {
+    public static class NullCellValue implements Comparable {
         public String toString() {
             return "#NULL";
+        }
+
+        public int compareTo(Object o) {
+            // Null is less than every other value.
+            if (o == this) {
+                return 0;
+            } else {
+                return -1;
+            }
         }
     };
 

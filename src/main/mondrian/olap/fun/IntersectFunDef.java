@@ -46,7 +46,7 @@ class IntersectFunDef extends FunDefBase
             Object resultObject = leftObject;
 
             if (leftObject instanceof Object[]) {
-                leftObject = new ArrayHolder((Object[])leftObject);
+                leftObject = new FunUtil.ArrayHolder((Object[])leftObject);
             }
 
             if (right.contains(leftObject)) {
@@ -65,7 +65,7 @@ class IntersectFunDef extends FunDefBase
             Object element = iter.next();
 
             if (element instanceof Object[]) {
-                element = new ArrayHolder((Object[])element);
+                element = new FunUtil.ArrayHolder((Object[])element);
             }
 
             result.add(element);

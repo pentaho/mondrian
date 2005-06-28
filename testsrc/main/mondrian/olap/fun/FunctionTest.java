@@ -3586,20 +3586,20 @@ public class FunctionTest extends FoodMartTestCase {
         assertEquals(expected, actual);
     }
 
-    public void assertExprReturnsX(String expr, 
+    public void assertExprReturnsX(String expr,
             double expected, double epsilon) {
         String actual = executeExpr(expr);
 
         try {
-            Assert.assertEquals(null, 
-                expected, 
-                Double.parseDouble(actual), 
+            Assert.assertEquals(null,
+                expected,
+                Double.parseDouble(actual),
                 epsilon);
         } catch (NumberFormatException ex) {
             String msg = "Actual value \"" +
                 actual +
                 "\" is not a double.";
-            throw new junit.framework.ComparisonFailure(msg, 
+            throw new junit.framework.ComparisonFailure(msg,
                         Double.toString(expected), actual);
         }
     }
@@ -3665,6 +3665,101 @@ public class FunctionTest extends FoodMartTestCase {
                 " ([Gender].[M], [Marital Status].[S])," + nl +
                 " ([Gender].[F], [Marital Status].[M])})",
                 "(null)");
+    }
+
+    public void testRankWithExpr() {
+        runQueryCheckResult(
+                "with member [Measures].[Sibling Rank] as ' Rank([Product].CurrentMember, [Product].CurrentMember.Siblings) '" + nl +
+                "  member [Measures].[Sales Rank] as ' Rank([Product].CurrentMember, Order([Product].Parent.Children, [Measures].[Unit Sales], DESC)) '" + nl +
+                "  member [Measures].[Sales Rank2] as ' Rank([Product].CurrentMember, [Product].Parent.Children, [Measures].[Unit Sales]) '" + nl +
+                "select {[Measures].[Unit Sales], [Measures].[Sales Rank], [Measures].[Sales Rank2]} on columns," + nl +
+                " {[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].children} on rows" + nl +
+                "from [Sales]" + nl +
+                "WHERE ( [Store].[All Stores].[USA].[OR].[Portland].[Store 11] , [Time].[1997].[Q2].[6])",
+                "Axis #0:" + nl +
+                "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11], [Time].[1997].[Q2].[6]}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Unit Sales]}" + nl +
+                "{[Measures].[Sales Rank]}" + nl +
+                "{[Measures].[Sales Rank2]}" + nl +
+                "Axis #2:" + nl +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}" + nl +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}" + nl +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}" + nl +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}" + nl +
+                "{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}" + nl +
+                "Row #0: 5" + nl +
+                "Row #0: 1" + nl +
+                "Row #0: 1" + nl +
+                "Row #1: (null)" + nl +
+                "Row #1: 5" + nl +
+                "Row #1: 5" + nl +
+                "Row #2: 3" + nl +
+                "Row #2: 3" + nl +
+                "Row #2: 3" + nl +
+                "Row #3: 5" + nl +
+                "Row #3: 2" + nl +
+                "Row #3: 1" + nl +
+                "Row #4: 3" + nl +
+                "Row #4: 4" + nl +
+                "Row #4: 3" + nl);
+    }
+
+    public void testRankWithExpr2() {
+        // Data: Unit Sales
+        // All gender 266,733
+        // F          131,558
+        // M          135,215
+        assertExprReturns(
+                "Rank([Gender].[All Gender]," +
+                " {[Gender].Members}," +
+                " [Measures].[Unit Sales])",
+                "1");
+        assertExprReturns(
+                "Rank([Gender].[F]," +
+                " {[Gender].Members}," +
+                " [Measures].[Unit Sales])",
+                "3");
+        assertExprReturns(
+                "Rank([Gender].[M]," +
+                " {[Gender].Members}," +
+                " [Measures].[Unit Sales])",
+                "2");
+        // Null member. Expression evaluates to null, therefore value does
+        // not appear in the list of values, therefore the rank is null.
+        assertExprReturns(
+                "Rank([Gender].[All Gender].Parent," +
+                " {[Gender].Members}," +
+                " [Measures].[Unit Sales])",
+                "(null)");
+        // Empty set. Value never appears in the set, therefore rank is null.
+        assertExprReturns(
+                "Rank([Gender].[M]," +
+                " {}," +
+                " [Measures].[Unit Sales])",
+                "(null)");
+        // Member is not in set
+        assertExprReturns(
+                "Rank([Gender].[M]," +
+                " {[Gender].[All Gender], [Gender].[F]})",
+                "0");
+        // Even though M is not in the set, its value lies between [All Gender]
+        // and [F].
+        assertExprReturns("Rank([Gender].[M]," +
+                " {[Gender].[All Gender], [Gender].[F]}," +
+                " [Measures].[Unit Sales])",
+                "2");
+        // Expr evaluates to null for some values of set.
+        assertExprReturns(
+                "Rank([Product].[Non-Consumable].[Household]," +
+                " {[Product].[Food], [Product].[All Products], [Product].[Drink].[Dairy]}," +
+                " [Product].CurrentMember.Parent)",
+                "2");
+        // Expr evaluates to null for all values in the set.
+        assertExprReturns("Rank([Gender].[M]," +
+                " {[Gender].[All Gender], [Gender].[F]}," +
+                " [Marital Status].[All Marital Status].Parent)",
+                "1");
     }
 
     public void testLinRegPointQuarter() {
@@ -3840,10 +3935,10 @@ public class FunctionTest extends FoodMartTestCase {
                 0.50);
 
 /*
-    -1#IND missing data 
+    -1#IND missing data
 */
 /*
-     1#INF division by zero 
+     1#INF division by zero
 */
 /*
 The following table shows query return values from using different
@@ -3918,7 +4013,7 @@ copy and paste error
 */
         assertExprReturnsX("LinRegSlope([Time].[Month].members," +
                 " 7, [Measures].[Store Sales])",
-                0.00, 
+                0.00,
                 0.01);
 
 /*
