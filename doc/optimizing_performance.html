@@ -1,0 +1,185 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Optimizing the performance of a Mondrian database</title>
+<link rel="stylesheet" href="stylesheet.css" type="text/css" />
+</head>
+
+<body>
+
+<h1>Optimizing Mondrian Performance</h1>
+
+<p>As with any data warehouse project, dealing with volumes is always
+the make or break issue. Mondrian has its own issues, based on its
+architecture and goals of being cross platform. Here are some
+experiences and comments.</p>
+
+<p>From the Mondrian developer's mailing list in February, 2005 - an
+example of unoptimized performance:</p>
+
+<blockquote>
+
+	<p><i>When Mondrian initializes and starts to process the
+	first queries, it makes SQL calls to get member lists and
+	determine cardinality, and then to load segments into the
+	cache. When Mondrian is closed and restarted, it has to do
+	that work again. This can be a significant chunk of time
+	depending on the cube size. For example in one test an 8GB
+	cube (55M row fact table) took 15 minutes (mostly doing a
+	group by) before it returned results from its first query, and
+	absent any caching on the database server would take another
+	15 minutes if you closed it and reopened the application. Now,
+	this cube was just one month of data; imagine the time if
+	there was 5 years worth.</i></p>
+
+</blockquote>
+
+<p>Since this time, Mondrian has been extended to use aggregate tables
+and materialized views, which have a lot of performance benefits that
+address the above issue.</p>
+
+<p>From Julian:</p>
+
+<blockquote>
+
+	<p><i>I'm surprised that people can run 10m+ row fact tables
+        on Mondrian at all, without using aggregate tables or materialized
+        views.</i></p> </blockquote>
+
+<p>From Sherman:</p>
+
+<blockquote>
+
+	<p><i>Our largest site has a cube with currently ~6M facts on
+        a single low end Linux box running our application with Mondrian and
+        Postgres (not an ideal configuration), without aggregate tables, and
+        gets sub second response times for the user interface (JPivot). This
+        was achieved by tuning the database to support the queries being
+        executed, modifying the OS configuration to best support Postgres
+        execution (thanks Josh!) and adding as much RAM as possible.</i></p>
+
+</blockquote>
+
+<h2>A generalized tuning process for Mondrian</h2>
+
+<p>The process for addressing performance of Mondrian is a combination
+of design, hardware, database and other configuration tuning. For
+really large cubes, the performance issues are driven more by the
+hardware, operating system and database tuning than anything Mondrian
+can do.</p>
+
+<ul>
+	<li>Have a reasonable physical design for requirements, such
+	as a data warehouse and specific data marts</li>
+
+	<li>Architect the application effectively<ul>
+
+		<li>Separate the environment where Mondrian is
+		executing from the DBMS</li>
+
+		<li>If possible: separate UI processing from the
+		environment where Mondrian is caching</li>
+
+	</ul>
+	</li>
+
+	<li>Have adequate hardware for the DBMS</li>
+
+	<li>Tune the operating system for the DBMS</li>
+
+	<li>Add materialized views or aggregate tables to support
+	specific MDX queries (see Aggregate Tables and AggGen
+	below)</li>
+
+	<li>Tune the DBMS for the specific SQL queries being executed:
+	that is, indexes on both the dimensions and fact table</li>
+
+	<li>Tune the Mondrian cache: the larger the better</li>
+
+</ul>
+
+<h2>Recommendations for database tuning</h2>
+
+<p>As part of database tuning process, enable SQL tracing and tail the
+log file. Run some representative MDX queries and watch which SQL
+statements take a long time. Tune the database to fix those statements
+and rerun.</p>
+
+<ul>
+	<li>Indexes on primary and foreign keys</li>
+
+	<li>Consider enabling foreign keys</li>
+
+	<li>Ensure that columns are marked NOT NULL where possible</li>
+
+	<li>If a table has a compound primary key, experiment with
+	indexing subsets of the columns with different leading edges.
+	For example, for columns (a, b, c) create a unique index on
+	(a, b, c) and non-unique indexes on (b, c) and (c, a). Oracle
+	can use such indexes to speed up counts.</li>
+
+	<li>On Oracle, consider using bitmap indexes for
+	low-cardinality columns.  (Julian implemented the Oracle's
+	bitmap index feature, and he's rather proud of them!)</li>
+
+	<li>On Oracle, Postgres and other DBMSs, analyze tables,
+        otherwise the cost-based optimizers will not be used</li> </ul>
+
+<p>Mondrian currently uses 'count(distinct ...)' queries to determine
+the cardinality of dimensions and levels as it starts, and for your
+measures that are counts, that is,
+<code>aggregator="count"</code>. Indexes might speed up those queries
+-- although performance is likely to vary between databases, because
+optimizing count-distinct queries is a tricky problem.</p>
+
+<h2>Aggregate Tables, Materialized Views and Mondrian</h2>
+
+<p>The best way to increase the performance of Mondrian is to build a
+set of aggregate (summary) tables that coexist with the base fact
+table. These aggregate tables contain pre-aggregated measures build
+from the fact table.</p>
+
+<p>Some databases, particularly Oracle, can automatically create these
+aggregations through materialized views, which are tables created and
+synchronized from views. Otherwise, you will have to maintain the
+aggregation tables through your data warehouse load processes, usually
+by clearing them and rerunning aggregating INSERTs.</p>
+
+<p>There is a discussion of aggregate tables, terminology and how they
+are used on the Mondrian web site. See Writing a Schema->Advanced
+Aggregate Tables.</p>
+
+<h2>AggGen</h2>
+
+<p><code>AggGen</code> is a tool that generates SQL to support the
+creation and maintenance of aggregate tables, and would give a
+template for the creation of materialized views for databases that
+support those. Given an MDX query, the generated create/insert SQL is
+optimal for the given query. The generated SQL covers both the "lost"
+and "collapsed" dimensions. For usage, see the Mondrian web site under
+<a href="cmdrunner.html">Command Runner->AggGen</a>.</p>
+
+<p>
+
+<hr>
+
+<table border="0" class="clsStd" width="100%" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0">
+  <tr>
+    <td class="content">
+      <a target="_top" href="index.html">Home</a> |
+      <a target="_top" href="noframes.html">No frames</a> | This file is<i>
+      <a href="http://mondrian.sourceforge.net/optimizing_performance.html">
+        $Id$
+      </a></i> (<a href="http://perforce.eigenbase.org:8080/open/mondrian/doc/optimizing_performance.html?ac=22">log</a>)</td>
+    <td align="right">
+      <a href="http://sourceforge.net">
+        <img src="http://sourceforge.net/sflogo.php?group_id=35302&type=1" width="88" height="31" border="0" alt="SourceForge.net Logo">
+      </a>
+    </td>
+  </tr>
+</table>
+
+</body>
+
+</html>
