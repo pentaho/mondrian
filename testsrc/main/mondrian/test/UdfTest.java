@@ -9,12 +9,14 @@
 */
 package mondrian.test;
 
+import mondrian.example.LastNonEmptyUdf;
 import mondrian.olap.*;
-import mondrian.olap.type.Type;
 import mondrian.olap.type.NumericType;
+import mondrian.olap.type.Type;
 import mondrian.rolap.DynamicSchemaProcessor;
 import mondrian.spi.UserDefinedFunction;
 
+import java.io.*;
 import java.net.URL;
 
 /**
@@ -83,38 +85,147 @@ public class UdfTest extends FoodMartTestCase {
                 "Row #5: 193,481" + nl);
     }
 
+    public void testLastNonEmpty() {
+        runQueryCheckResult(
+                "WITH MEMBER [Measures].[Last Unit Sales] AS " + nl +
+                " '([Measures].[Unit Sales], " + nl +
+                "   LastNonEmpty(Descendants([Time]), [Measures].[Unit Sales]))'" + nl +
+                "SELECT {[Measures].[Last Unit Sales]} ON COLUMNS," + nl +
+                " CrossJoin(" + nl +
+                "  {[Time].[1997], [Time].[1997].[Q1], [Time].[1997].[Q1].Children}," + nl +
+                "  {[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].children} ) ON ROWS" + nl +
+                "FROM [Sales]" + nl +
+                "WHERE ( [Store].[All Stores].[USA].[OR].[Portland].[Store 11] )",
+                "Axis #0:" + nl +
+                "{[Store].[All Stores].[USA].[OR].[Portland].[Store 11]}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Last Unit Sales]}" + nl +
+                "Axis #2:" + nl +
+                "{[Time].[1997], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}" + nl +
+                "{[Time].[1997], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}" + nl +
+                "{[Time].[1997], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}" + nl +
+                "{[Time].[1997], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}" + nl +
+                "{[Time].[1997], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}" + nl +
+                "{[Time].[1997].[Q1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}" + nl +
+                "{[Time].[1997].[Q1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}" + nl +
+                "{[Time].[1997].[Q1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}" + nl +
+                "{[Time].[1997].[Q1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}" + nl +
+                "{[Time].[1997].[Q1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}" + nl +
+                "{[Time].[1997].[Q1].[1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}" + nl +
+                "{[Time].[1997].[Q1].[1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}" + nl +
+                "{[Time].[1997].[Q1].[1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}" + nl +
+                "{[Time].[1997].[Q1].[1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}" + nl +
+                "{[Time].[1997].[Q1].[1], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}" + nl +
+                "{[Time].[1997].[Q1].[2], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}" + nl +
+                "{[Time].[1997].[Q1].[2], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}" + nl +
+                "{[Time].[1997].[Q1].[2], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}" + nl +
+                "{[Time].[1997].[Q1].[2], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}" + nl +
+                "{[Time].[1997].[Q1].[2], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}" + nl +
+                "{[Time].[1997].[Q1].[3], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}" + nl +
+                "{[Time].[1997].[Q1].[3], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}" + nl +
+                "{[Time].[1997].[Q1].[3], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}" + nl +
+                "{[Time].[1997].[Q1].[3], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}" + nl +
+                "{[Time].[1997].[Q1].[3], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}" + nl +
+                "Row #0: 2" + nl +
+                "Row #1: 7" + nl +
+                "Row #2: 6" + nl +
+                "Row #3: 7" + nl +
+                "Row #4: 4" + nl +
+                "Row #5: 3" + nl +
+                "Row #6: 4" + nl +
+                "Row #7: 3" + nl +
+                "Row #8: 4" + nl +
+                "Row #9: 2" + nl +
+                "Row #10: (null)" + nl +
+                "Row #11: 4" + nl +
+                "Row #12: (null)" + nl +
+                "Row #13: 2" + nl +
+                "Row #14: (null)" + nl +
+                "Row #15: (null)" + nl +
+                "Row #16: 2" + nl +
+                "Row #17: (null)" + nl +
+                "Row #18: 4" + nl +
+                "Row #19: (null)" + nl +
+                "Row #20: 3" + nl +
+                "Row #21: 4" + nl +
+                "Row #22: 3" + nl +
+                "Row #23: 4" + nl +
+                "Row #24: 2" + nl);
+    }
+
+    public void testBadFun() {
+        final TestContext tc = new TestContext() {
+                    public synchronized Connection getFoodMartConnection(boolean fresh) {
+                        return getFoodMartConnection(FoodmartWithBadUdf.class.getName());
+                    }
+            };
+        try {
+            tc.executeFoodMart("SELECT {} ON COLUMNS FROM [Sales]");
+            fail("Expected exception");
+        } catch (Exception e) {
+            final String s = e.getMessage();
+            assertEquals("Mondrian Error:Internal error: Invalid " +
+                    "user-defined function 'BadPlusOne': return type is null",
+                    s);
+        }
+
+    }
+
+    private static String contentsOfUrl(URL schemaUrl) throws IOException {
+        final InputStream is = schemaUrl.openStream();
+        byte[] buf = new byte[2048];
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        while (true) {
+            int byteCount = is.read(buf);
+            if (byteCount < 0) {
+                break;
+            }
+            baos.write(buf, 0, byteCount);
+        }
+        return new String(baos.toByteArray());
+    }
+
     /**
-     * Dynamic schema which contains a single cube and a single user-defined
-     * function.
+     * Dynamic schema which adds two user-defined functions to any given
+     * schema.
      */
     public static class FoodmartWithUdf implements DynamicSchemaProcessor {
-        private static final String schema =
-                "<?xml version=\"1.0\"?>" + nl +
-                "<Schema name=\"FoodMartWithUdfs\">" + nl +
-                "<Cube name=\"Store\">" + nl +
-                "  <Table name=\"store\"/>" + nl +
-                "  <Dimension name=\"Store Type\">" + nl +
-                "    <Hierarchy hasAll=\"true\">" + nl +
-                "      <Level name=\"Store Type\" column=\"store_type\" uniqueMembers=\"true\"/>" + nl +
-                "    </Hierarchy>" + nl +
-                "  </Dimension>" + nl +
-                "  <Measure name=\"Store Sqft\" column=\"store_sqft\" aggregator=\"sum\"" + nl +
-                "      formatString=\"#,###\"/>" + nl +
-                "  <Measure name=\"Grocery Sqft\" column=\"grocery_sqft\" aggregator=\"sum\"" + nl +
-                "      formatString=\"#,###\"/>" + nl +
-                "</Cube>" + nl +
-                "<UserDefinedFunction name=\"PlusOne\" className=\"" + PlusOneFunDef.class.getName() + "\"/>" + nl +
-                "</Schema>";
 
         public String processSchema(URL schemaUrl) throws Exception {
-            return schema;
+            String s = contentsOfUrl(schemaUrl);
+            String s2 = Util.replace(
+                    s,
+                    "</Schema>",
+                    "<UserDefinedFunction name=\"PlusOne\" className=\"" + PlusOneUdf.class.getName() + "\"/>" + nl +
+                    "<UserDefinedFunction name=\"LastNonEmpty\" className=\"" + LastNonEmptyUdf.class.getName() + "\"/>" + nl +
+                    "</Schema>");
+            return s2;
         }
+
+    }
+
+    /**
+     * Dynamic schema which adds two user-defined functions to any given
+     * schema.
+     */
+    public static class FoodmartWithBadUdf implements DynamicSchemaProcessor {
+
+        public String processSchema(URL schemaUrl) throws Exception {
+            String s = contentsOfUrl(schemaUrl);
+            String s2 = Util.replace(
+                    s,
+                    "</Schema>",
+                    "<UserDefinedFunction name=\"BadPlusOne\" className=\"" + BadPlusOneUdf.class.getName() + "\"/>" + nl +
+                    "</Schema>");
+            return s2;
+        }
+
     }
 
     /**
      * A simple user-defined function which adds one to its argument.
      */
-    public static class PlusOneFunDef implements UserDefinedFunction {
+    public static class PlusOneUdf implements UserDefinedFunction {
         public String getName() {
             return "PlusOne";
         }
@@ -127,7 +238,7 @@ public class UdfTest extends FoodMartTestCase {
             return Syntax.Function;
         }
 
-        public Type getReturnType() {
+        public Type getReturnType(Type[] parameterTypes) {
             return new NumericType();
         }
 
@@ -148,6 +259,26 @@ public class UdfTest extends FoodMartTestCase {
         }
 
         public String[] getReservedWords() {
+            return null;
+        }
+    }
+
+    /**
+     * A simple user-defined function which adds one to its argument.
+     */
+    public static class BadPlusOneUdf extends PlusOneUdf {
+        private final String name;
+
+        public BadPlusOneUdf(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Type getReturnType(Type[] parameterTypes) {
+            // Will cause error.
             return null;
         }
     }

@@ -12,6 +12,7 @@
 
 package mondrian.rolap;
 import mondrian.olap.*;
+import mondrian.olap.Member;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.Type;
 import mondrian.spi.UserDefinedFunction;
@@ -23,8 +24,7 @@ import org.eigenbase.xom.Parser;
 import javax.sql.DataSource;
 import java.io.*;
 import java.lang.ref.SoftReference;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
@@ -815,7 +815,7 @@ public class RolapSchema implements Schema {
     protected void addCube(final Cube cube) {
         this.mapNameToCube.put(
             MondrianProperties.instance().getCaseSensitive() ?
-                    cube.getName() : cube.getName().toUpperCase(), 
+                    cube.getName() : cube.getName().toUpperCase(),
             cube);
     }
 
@@ -867,10 +867,42 @@ public class RolapSchema implements Schema {
             throw MondrianResource.instance().newUdfClassNotFound(name,
                     className);
         }
+        // Find a constructor.
+        Constructor constructor;
+        Object[] args = {};
+        // 1. Look for a constructor "public Udf(String name)".
+        try {
+            constructor = klass.getConstructor(new Class[] {String.class});
+            if (Modifier.isPublic(constructor.getModifiers())) {
+                args = new Object[] {name};
+            } else {
+                constructor = null;
+            }
+        } catch (NoSuchMethodException e) {
+            constructor = null;
+        }
+        // 2. Otherwise, look for a constructor "public Udf()".
+        if (constructor == null) {
+            try {
+                constructor = klass.getConstructor(new Class[] {});
+                if (Modifier.isPublic(constructor.getModifiers())) {
+                    args = new Object[] {};
+                } else {
+                    constructor = null;
+                }
+            } catch (NoSuchMethodException e) {
+                constructor = null;
+            }
+        }
+        // 3. Else, no constructor suitable.
+        if (constructor == null) {
+            throw MondrianResource.instance().newUdfClassWrongIface(name,
+                    className, UserDefinedFunction.class.getName());
+        }
         // Instantiate class.
         final UserDefinedFunction udf;
         try {
-            udf = (UserDefinedFunction) klass.newInstance();
+            udf = (UserDefinedFunction) constructor.newInstance(args);
         } catch (InstantiationException e) {
             throw MondrianResource.instance().newUdfClassWrongIface(name,
                     className, UserDefinedFunction.class.getName());
@@ -878,6 +910,9 @@ public class RolapSchema implements Schema {
             throw MondrianResource.instance().newUdfClassWrongIface(name,
                     className, UserDefinedFunction.class.getName());
         } catch (ClassCastException e) {
+            throw MondrianResource.instance().newUdfClassWrongIface(name,
+                    className, UserDefinedFunction.class.getName());
+        } catch (InvocationTargetException e) {
             throw MondrianResource.instance().newUdfClassWrongIface(name,
                     className, UserDefinedFunction.class.getName());
         }
@@ -897,18 +932,40 @@ public class RolapSchema implements Schema {
      * API.
      */
     private void validateFunction(final UserDefinedFunction udf) {
+        // Check that the name is not null or empty.
         final String udfName = udf.getName();
+        if (udfName == null || udfName.equals("")) {
+            throw Util.newInternal("User-defined function defined by class '" +
+                    udf.getClass() + "' has empty name");
+        }
+        // It's OK for the description to be null.
         final String description = udf.getDescription();
-        final Type[] parameterTypes = udf.getParameterTypes();
-        final String[] reservedWords = udf.getReservedWords();
-        final Type returnType = udf.getReturnType();
-        final Syntax syntax = udf.getSyntax();
-        Util.discard(udfName);
         Util.discard(description);
-        Util.discard(parameterTypes);
+        final Type[] parameterTypes = udf.getParameterTypes();
+        for (int i = 0; i < parameterTypes.length; i++) {
+            Type parameterType = parameterTypes[i];
+            if (parameterType == null) {
+                throw Util.newInternal("Invalid user-defined function '" +
+                        udfName + "': parameter type #" + i +
+                        " is null");
+            }
+        }
+        // It's OK for the reserved words to be null or empty.
+        final String[] reservedWords = udf.getReservedWords();
         Util.discard(reservedWords);
-        Util.discard(returnType);
-        Util.discard(syntax);
+        // Test that the function returns a sensible type when given the FORMAL
+        // types. It may still fail when we give it the ACTUAL types, but it's
+        // impossible to check that now.
+        final Type returnType = udf.getReturnType(parameterTypes);
+        if (returnType == null) {
+            throw Util.newInternal("Invalid user-defined function '" +
+                    udfName + "': return type is null");
+        }
+        final Syntax syntax = udf.getSyntax();
+        if (syntax == null) {
+            throw Util.newInternal("Invalid user-defined function '" +
+                    udfName + "': syntax is null");
+        }
     }
 
     /**

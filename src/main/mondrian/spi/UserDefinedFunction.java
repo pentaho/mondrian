@@ -1,3 +1,12 @@
+/*
+// $Id$
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// (C) Copyright 2005-2005 Julian Hyde
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
 package mondrian.spi;
 
 import mondrian.olap.*;
@@ -14,6 +23,9 @@ import mondrian.olap.type.Type;
  * &nbsp;&nbsp;&nbsp;&nbsp;....
  * &nbsp;&nbsp;&nbsp;&nbsp;&lt;UserDefinedFunction name="MyFun" class="com.acme.MyFun"&gt;
  * &lt;/Schema&gt;
+ *
+ * @author jhyde
+ * @version $Id$
  */
 public interface UserDefinedFunction {
     /**
@@ -34,14 +46,15 @@ public interface UserDefinedFunction {
     public Syntax getSyntax();
 
     /**
-     * Returns the return-type of this function.
-     */
-    public Type getReturnType();
-
-    /**
      * Returns an array of the types of the parameters of this function.
      */
     public Type[] getParameterTypes();
+
+    /**
+     * Returns the return-type of this function.
+     * @param parameterTypes
+     */
+    public Type getReturnType(Type[] parameterTypes);
 
     /**
      * Applies this function to a set of arguments, and returns a result.

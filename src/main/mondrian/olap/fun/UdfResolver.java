@@ -43,10 +43,11 @@ public class UdfResolver implements Resolver {
             return null;
         }
         int[] parameterCategories = new int[parameterTypes.length];
+        Type[] argTypes = new Type[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
             Type parameterType = parameterTypes[i];
             final Exp arg = args[i];
-            final Type argType = arg.getTypeX();
+            final Type argType = argTypes[i] = arg.getTypeX();
             if (parameterType.equals(argType)) {
                 continue;
             }
@@ -57,7 +58,8 @@ public class UdfResolver implements Resolver {
             }
             parameterCategories[i] = parameterCategory;
         }
-        final int returnCategory = typeToCategory(udf.getReturnType());
+        final Type returnType = udf.getReturnType(argTypes);
+        final int returnCategory = typeToCategory(returnType);
         return new UdfFunDef(returnCategory, parameterCategories);
     }
 
@@ -90,7 +92,7 @@ public class UdfResolver implements Resolver {
     }
 
     public boolean requiresExpression(int k) {
-        throw new UnsupportedOperationException();
+        return false;
     }
 
     public String[] getReservedWords() {

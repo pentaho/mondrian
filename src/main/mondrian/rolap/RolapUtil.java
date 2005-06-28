@@ -39,9 +39,13 @@ public class RolapUtil {
     public static PrintWriter debugOut = null;
     public static Boolean produceDebugOut = null;
     private static Semaphore querySemaphore;
-    /** Special cell value indicates that the value is not in cache yet. **/
-    static RuntimeException valueNotReadyException = new RuntimeException(
-            "value not ready");
+
+    /**
+     * Special cell value indicates that the value is not in cache yet.
+     */
+    public static final RuntimeException valueNotReadyException =
+            new RuntimeException("value not ready");
+
     /**
      * Special value represents a null key.
      */
@@ -56,20 +60,24 @@ public class RolapUtil {
             return "null";
         }
     };
-    /** Names of classes of drivers we've loaded (or have tried to load).
-     * @synchronization Lock the {@link RolapConnection} class. */
+
+    /**
+     * Names of classes of drivers we've loaded (or have tried to load).
+     * @synchronization Lock the {@link RolapConnection} class.
+     */
     private static final HashSet loadedDrivers = new HashSet();
 
     /**
      * Encloses a value in single-quotes, to make a SQL string value. Examples:
      * <code>singleQuoteForSql(null)</code> yields <code>NULL</code>;
      * <code>singleQuoteForSql("don't")</code> yields <code>'don''t'</code>.
-     **/
+     */
     static String singleQuoteForSql(String val) {
         StringBuffer buf = new StringBuffer(64);
         singleQuoteForSql(val, buf);
         return buf.toString();
     }
+
     static void singleQuoteForSql(String val, StringBuffer buf) {
         if (val == null) {
             buf.append("NULL");
@@ -118,13 +126,13 @@ public class RolapUtil {
     }
 
     static final RolapMember[] toArray(List v) {
-        return v.isEmpty() 
-            ? emptyMemberArray 
+        return v.isEmpty()
+            ? emptyMemberArray
             : (RolapMember[]) v.toArray(new RolapMember[v.size()]);
     }
 
-    static RolapMember lookupMember(MemberReader reader, 
-                                    String[] uniqueNameParts, 
+    static RolapMember lookupMember(MemberReader reader,
+                                    String[] uniqueNameParts,
                                     boolean failIfNotFound) {
 
         RolapMember member = null;
@@ -168,7 +176,7 @@ public class RolapUtil {
     }
 
     /**
-     * Enables tracing if "mondrian.trace.level" &gt; 0 and a debug output file is 
+     * Enables tracing if "mondrian.trace.level" &gt; 0 and a debug output file is
      * configured.
      */
     public static void checkTracing() {
@@ -212,9 +220,9 @@ public class RolapUtil {
      * the result set. If it succeeds, the caller must close the returned
      * {@link ResultSet}.
      */
-    public static ResultSet executeQuery(Connection jdbcConnection, 
-                                         String sql, 
-                                         String component) 
+    public static ResultSet executeQuery(Connection jdbcConnection,
+                                         String sql,
+                                         String component)
                                          throws SQLException {
         checkTracing();
         getQuerySemaphore().enter();
@@ -268,10 +276,10 @@ public class RolapUtil {
             if (loadedDrivers.add(jdbcDriver)) {
                 try {
                     Class.forName(jdbcDriver);
-                    LOGGER.info("Mondrian: JDBC driver " 
+                    LOGGER.info("Mondrian: JDBC driver "
                         + jdbcDriver + " loaded successfully");
                 } catch (ClassNotFoundException e) {
-                    LOGGER.error("Mondrian: Warning: JDBC driver " 
+                    LOGGER.error("Mondrian: Warning: JDBC driver "
                         + jdbcDriver + " not found");
                 }
             }
@@ -368,12 +376,12 @@ public class RolapUtil {
         return querySemaphore;
     }
 
-    static void getMemberDescendants(MemberReader memberReader, 
-                                     RolapMember ancestor, 
-                                     RolapLevel level, 
-                                     List result, 
-                                     boolean before, 
-                                     boolean self, 
+    static void getMemberDescendants(MemberReader memberReader,
+                                     RolapMember ancestor,
+                                     RolapLevel level,
+                                     List result,
+                                     boolean before,
+                                     boolean self,
                                      boolean after) {
         // We find the descendants of a member by making breadth-first passes
         // down the hierarchy. Initially the list just contains the ancestor.
