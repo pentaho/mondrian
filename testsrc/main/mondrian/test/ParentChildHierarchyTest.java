@@ -338,7 +338,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             " {[Measures].[Unit Sales], [Measures].[Foo]} on Columns," + nl +
             " { [Time].[1997].[Q2]} on rows" + nl +
             "from [Sales]");
-        String resultString = toString(result);
+        String resultString = TestContext.toString(result);
 
         // The precise moment when the cycle is detected depends upon the state
         // of the cache, so this test can throw various errors. Here are come

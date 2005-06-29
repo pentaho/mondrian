@@ -61,26 +61,33 @@ public class DelegatingSchemaReader implements SchemaReader {
         return schemaReader.getMemberDepth(member);
     }
 
-    public Member getMemberByUniqueName(String[] uniqueNameParts,
-        boolean failIfNotFound) {
-        return schemaReader.getMemberByUniqueName(uniqueNameParts,
-            failIfNotFound);
+    public Member getMemberByUniqueName(
+            String[] uniqueNameParts,
+            boolean failIfNotFound) {
+        return schemaReader.getMemberByUniqueName(
+                uniqueNameParts, failIfNotFound);
     }
 
-    public OlapElement lookupCompound(OlapElement parent, String[] names,
-        boolean failIfNotFound, int category) {
-        return schemaReader.lookupCompound(parent, names, failIfNotFound,
-            category);
+    public OlapElement lookupCompound(
+            OlapElement parent, String[] names,
+            boolean failIfNotFound, int category) {
+        return schemaReader.lookupCompound(
+                parent, names, failIfNotFound, category);
     }
 
     public Member getCalculatedMember(String[] nameParts) {
         return schemaReader.getCalculatedMember(nameParts);
     }
 
-    public void getMemberRange(Level level, 
-                               Member startMember, 
-                               Member endMember, 
-                               List list) {
+    public NamedSet getNamedSet(String[] nameParts) {
+        return schemaReader.getNamedSet(nameParts);
+    }
+
+    public void getMemberRange(
+            Level level,
+            Member startMember,
+            Member endMember,
+            List list) {
         schemaReader.getMemberRange(level, startMember, endMember, list);
     }
 
@@ -127,7 +134,7 @@ public class DelegatingSchemaReader implements SchemaReader {
     public int getChildrenCountFromCache(Member member) {
         return schemaReader.getChildrenCountFromCache(member);
     }
-    
+
     public int getLevelCardinalityFromCache(Level level) {
         return schemaReader.getLevelCardinalityFromCache(level);
     }

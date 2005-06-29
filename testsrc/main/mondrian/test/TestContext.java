@@ -12,13 +12,15 @@
 */
 package mondrian.test;
 
+import junit.framework.ComparisonFailure;
+import junit.framework.Assert;
 import mondrian.olap.*;
 import mondrian.rolap.RolapConnectionProperties;
 
-import java.io.File;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.regex.Pattern;
 
 /**
  * <code>TestContext</code> is a singleton class which contains the information
@@ -39,6 +41,12 @@ public class TestContext {
     /** Connection to the FoodMart database. Set on the first call to
      * {@link #getFoodMartConnection}. **/
     private Connection foodMartConnection;
+
+    protected static final String nl = System.getProperty("line.separator");
+    private static final String lineBreak = "\" + nl + " + nl + "\"";
+    private static final Pattern LineBreakPattern =
+        Pattern.compile("\r\n|\r|\n");
+    private static final Pattern TabPattern = Pattern.compile("\t");
 
     /**
      * Retrieves the singleton (instantiating if necessary).
@@ -152,17 +160,24 @@ public class TestContext {
         return foodMartConnection;
     }
 
-    /** Returns a connection to the FoodMart database
+    /**
+     * Returns a connection to the FoodMart database
      * with a dynamic schema processor.
-     **/
+     */
     public synchronized Connection getFoodMartConnection(String dynProc) {
-        Util.PropertyList properties = Util.parseConnectString(foodMartConnectString);
-        properties.put(RolapConnectionProperties.DynamicSchemaProcessor, dynProc);
-        Connection newConnection = mondrian.olap.DriverManager.getConnection(properties, null, null, false);
+        Util.PropertyList properties =
+                Util.parseConnectString(foodMartConnectString);
+        properties.put(
+                RolapConnectionProperties.DynamicSchemaProcessor,
+                dynProc);
+        Connection newConnection = DriverManager.getConnection(
+                properties, null, null, false);
         return newConnection;
     }
 
-    /** Executes a query against the FoodMart database. **/
+    /**
+     * Executes a query against the FoodMart database.
+     */
     public Result executeFoodMart(String queryString) {
         Connection connection = getFoodMartConnection(false);
         Query query = connection.parseQuery(queryString);
@@ -170,21 +185,166 @@ public class TestContext {
         return result;
     }
 
-    /** Executes a query against the FoodMart database, and returns the
-     * exception, or <code>null</code> if there was no exception. **/
+    /**
+     * Executes a query against the FoodMart database, and returns the
+     * exception, or <code>null</code> if there was no exception.
+     */
     public Throwable executeFoodMartCatch(String queryString) {
         try {
             Result result = executeFoodMart(queryString);
             mondrian.olap.Util.discard(result);
+            return null;
         } catch (Throwable e) {
             return e;
         }
-        return null;
     }
+
+    /**
+     * Runs a query, and asserts that it throws an exception which contains
+     * the given pattern.
+     */
+    public void assertThrows(String queryString, String pattern) {
+        Throwable throwable = executeFoodMartCatch(queryString);
+        checkThrowable(throwable, pattern);
+    }
+
+    /**
+     * Runs an expression, and asserts that it gives an error which contains
+     * a particular pattern. The error might occur during parsing, or might
+     * be contained within the cell value.
+     */
+    public void assertExprThrows(String expression, String pattern) {
+        Throwable throwable = null;
+        try {
+            Result result = executeFoodMart(
+                    "with member [Measures].[Foo] as '" +
+                    expression +
+                    "' select {[Measures].[Foo]} on columns from Sales");
+            Cell cell = result.getCell(new int[]{0});
+            if (cell.isError()) {
+                throwable = (Throwable) cell.getValue();
+            }
+        } catch (Throwable e) {
+            throwable = e;
+        }
+        checkThrowable(throwable, pattern);
+    }
+
+    /**
+     * Runs a query with a given expression on an axis, and asserts that it
+     * throws an error which matches a particular pattern. The expression is evaulated
+     * against the named cube.
+     */
+    public void assertAxisThrows(
+            Connection connection,
+            String cubeName,
+            String expression,
+            String pattern) {
+        Throwable throwable = null;
+        try {
+            final String queryString =
+                    "select {" + expression + "} on columns from " + cubeName;
+            Query query = connection.parseQuery(queryString);
+            connection.execute(query);
+        } catch (Throwable e) {
+            throwable = e;
+        }
+        checkThrowable(throwable, pattern);
+    }
+
+    private static void checkThrowable(Throwable throwable, String pattern) {
+        if (throwable == null) {
+            Assert.fail("query did not yield an exception");
+        }
+        String stackTrace = getStackTrace(throwable);
+        if (stackTrace.indexOf(pattern) < 0) {
+            Assert.fail("query's error does not match pattern '" + pattern +
+                    "'; error is [" + stackTrace + "]");
+        }
+    }
+
 
     /** Returns the output writer. **/
     public PrintWriter getWriter() {
         return pw;
+    }
+
+    /**
+     * Executes an MDX query.
+     */
+    public Result runQuery(String queryString) {
+        Connection connection = getConnection();
+        Query query = connection.parseQuery(queryString);
+        return connection.execute(query);
+    }
+
+    private Connection getConnection() {
+        return getFoodMartConnection(false);
+    }
+
+    /**
+     * Runs a query and checks that the result is a given string.
+     */
+    public void runQueryCheckResult(String query, String desiredResult) {
+        Result result = runQuery(query);
+        String resultString = toString(result);
+        if (desiredResult != null) {
+            assertEqualsVerbose(desiredResult, resultString);
+        }
+    }
+
+    public static void assertEqualsVerbose(
+        String expected,
+        String actual)
+    {
+        if ((expected == null) && (actual == null)) {
+            return;
+        }
+        if ((expected != null) && expected.equals(actual)) {
+            return;
+        }
+        String s = actual;
+
+        // Convert [string with "quotes" split
+        // across lines]
+        // into ["string with \"quotes\" split" + nl +
+        // "across lines
+        //
+        s = Util.replace(s, "\"", "\\\"");
+        s = LineBreakPattern.matcher(s).replaceAll(lineBreak);
+        s = TabPattern.matcher(s).replaceAll("\\\\t");
+        s = "\"" + s + "\"";
+        final String spurious = " + " + FoodMartTestCase.nl + "\"\"";
+        if (s.endsWith(spurious)) {
+            s = s.substring(0, s.length() - spurious.length());
+        }
+        String message =
+                "Expected:" + FoodMartTestCase.nl + expected + FoodMartTestCase.nl +
+                "Actual: " + FoodMartTestCase.nl + actual + FoodMartTestCase.nl +
+                "Actual java: " + FoodMartTestCase.nl + s + FoodMartTestCase.nl;
+        throw new ComparisonFailure(message, expected, actual);
+    }
+
+    /**
+     * Converts a {@link Throwable} to a stack trace.
+     */
+    public static String getStackTrace(Throwable e) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        pw.flush();
+        return sw.toString();
+    }
+
+    /**
+     * Formats {@link mondrian.olap.Result}.
+     */
+    public static String toString(Result result) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        result.print(pw);
+        pw.flush();
+        return sw.toString();
     }
 }
 

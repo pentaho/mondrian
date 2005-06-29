@@ -26,8 +26,8 @@ parser code {:
     private FunTable funTable;
 
     /**
-      * Called only by {@link ConnectionBase#parseQuery} and
-      * {@link ConnectionBase#parseExpression}.
+      * Parses a string to create a {@link Query}.
+      * Called only by {@link ConnectionBase#parseQuery}.
       */
     Query parseInternal(
         Connection mdxConnection,
@@ -57,6 +57,75 @@ parser code {:
             this.funTable = null;
         }
     }
+
+    /**
+      * Parses a string to create an {@link Exp}.
+      * Called only by {@link ConnectionBase#parseExpression}.
+      */
+    Exp parseExpression(
+        Connection mdxConnection,
+        String queryString,
+        boolean debug,
+        FunTable funTable)
+    {
+        Symbol parse_tree = null;
+        this.scanner = new PrefixScanner(
+            debug,
+            new StringScanner(queryString, debug),
+            new int[] {ParserSym._VALUE_EXPRESSION});
+        this.mdxConnection = mdxConnection;
+        this.queryString = queryString;
+        this.funTable = funTable;
+        try {
+            if (debug) {
+                parse_tree = debug_parse();
+            } else {
+                parse_tree = parse();
+            }
+            return (Exp) parse_tree.value;
+        } catch (Exception e) {
+            // "Syntax error while parsing MDX expression '%1'"
+            throw Util.getRes().newWhileParsingMdxExpression(queryString, e);
+        } finally {
+            this.scanner = null;
+            this.mdxConnection = null;
+            this.queryString = null;
+            this.funTable = null;
+        }
+    }
+
+    /**
+      * Scanner which returns a list of pre-programmed tokens, then switches
+      * to a parent scanner.
+      */
+    private static class PrefixScanner extends Scanner {
+        private final Scanner parent;
+        private final int tokens[];
+        private int i;
+
+        PrefixScanner(boolean debug, Scanner parent, int[] tokens) {
+            super(debug);
+            this.parent = parent;
+            this.tokens = tokens;
+        }
+
+        public void init() throws java.io.IOException {
+            i = 0;
+            parent.init();
+        }
+
+        public Symbol next_token() throws java.io.IOException {
+            if (i < tokens.length) {
+                return new Symbol(tokens[i++], 0, 0, null);
+            } 
+            return parent.next_token();
+        }
+
+        void getLocation(Symbol symbol, int[] loc) {
+            parent.getLocation(symbol, loc);
+        }
+    }
+
     /** override this function to make your kind of query */
     protected Query makeQuery(
         Formula[] formulae, QueryAxis[] axes,
@@ -160,7 +229,8 @@ terminal
     WHEN,
     WHERE,
     XOR,
-    WITH;
+    WITH,
+    _VALUE_EXPRESSION;
 
 // b. Symbols
 terminal
@@ -210,7 +280,8 @@ non terminal Exp
     value_expression_primary,
     where_clause_opt;
 non terminal QueryPart
-    select_statement;
+    select_statement,
+    statement;
 non terminal Id
     compound_id,
     cube_name,
@@ -268,7 +339,7 @@ non terminal Double
     axis_number;
 
 // Start symbol
-start with select_statement;
+start with statement;
 
 // ----------------------------------------------------------------------------
 // Elements
@@ -1035,6 +1106,11 @@ exp_list ::=
 //                         WHERE [<slicer_specification>]
 //                         [<cell_props>]
 // jhyde: The above is wrong... you can omit 'WHERE'.
+statement ::=
+        select_statement
+    |   _VALUE_EXPRESSION value_expression:e {: RESULT = (QueryPart) e; :}
+    ;
+
 select_statement ::=
         with_formula_specification_opt:f
         SELECT axis_specification_list_opt:a

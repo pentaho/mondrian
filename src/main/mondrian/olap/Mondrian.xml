@@ -27,7 +27,10 @@ Revision is $Id$
     <!-- Schema ========================================================== -->
     <Element type="Schema">
         <Doc>
-            A schema is a collection of cubes and shared dimensions.
+            <p>A schema is a collection of cubes and virtual cubes.
+            It can also contain shared dimensions (for use by those
+            cubes), named sets, roles, and declarations of
+            user-defined functions.</p>
         </Doc>
         <Attribute name="name" required="true">
             <Doc>Name of this schema</Doc>
@@ -36,13 +39,38 @@ Revision is $Id$
             <Doc>Label for the measures dimension</Doc>
         </Attribute>
         <Attribute name="defaultRole" required="false">
-            <Doc>The name of the default schema for connections to this schema</Doc>
+            <Doc>The name of the default role for connections to this schema</Doc>
         </Attribute>
-        <Array name="dimensions" type="Dimension"/>
-        <Array name="cubes" type="Cube"/>
-        <Array name="virtualCubes" type="VirtualCube"/>
-        <Array name="roles" type="Role"/>
-        <Array name="userDefinedFunctions" type="UserDefinedFunction"/>
+        <Array name="dimensions" type="Dimension">
+            <Doc>
+                Shared dimensions in this schema.
+            </Doc>
+        </Array>
+        <Array name="cubes" type="Cube">
+            <Doc>
+                Cubes in this schema.
+            </Doc>
+        </Array>
+        <Array name="virtualCubes" type="VirtualCube">
+            <Doc>
+                Virtual cubes in this schema.
+            </Doc>
+        </Array>
+        <Array name="namedSets" type="NamedSet">
+            <Doc>
+                Named sets in this schema.
+            </Doc>
+        </Array>
+        <Array name="roles" type="Role">
+            <Doc>
+                Roles in this schema.
+            </Doc>
+        </Array>
+        <Array name="userDefinedFunctions" type="UserDefinedFunction">
+            <Doc>
+                Declarations of user-defined functions in this schema.
+            </Doc>
+        </Array>
         <Code><![CDATA[
             Cube getCube(String cubeName) {
                 for (int i = 0; i < cubes.length; i++) {
@@ -132,6 +160,11 @@ Revision is $Id$
         <Array name="calculatedMembers" type="CalculatedMember">
             <Doc>
                 Calculated members in this cube.
+            </Doc>
+        </Array>
+        <Array name="namedSets" type="NamedSet">
+            <Doc>
+                Named sets in this cube.
             </Doc>
         </Array>
         <Code><![CDATA[
@@ -652,9 +685,10 @@ Revision is $Id$
                 A string being displayed instead of the name.
             </Doc>
         </Attribute>
-        <Attribute name="formula" required="true">
+        <Attribute name="formula" required="false">
             <Doc>
                 MDX expression which gives the value of this member.
+                Equivalent to the Formula sub-element.
             </Doc>
         </Attribute>
         <Attribute name="dimension" required="true">
@@ -668,7 +702,26 @@ Revision is $Id$
                 Default true.
             </Doc>
         </Attribute>
+        <Object name="formulaElement" type="Formula" required="false">
+            <Doc>
+                MDX expression which gives the value of this member.
+            </Doc>
+        </Object>
         <Array name="memberProperties" type="CalculatedMemberProperty" min="0"/>
+        <Code>
+            /**
+              * Returns the formula, looking for a sub-element called
+              * "Formula" first, then looking for an attribute called
+              * "formula".
+              */
+            public String getFormula() {
+                if (formulaElement != null) {
+                    return formulaElement.cdata;
+                } else {
+                    return formula;
+                }
+            }
+        </Code>
     </Element>
 
     <Element type="CalculatedMemberProperty">
@@ -691,9 +744,65 @@ Revision is $Id$
         <Attribute name="value">
             <Doc>
                 Value of this property.
-                If the value is not constant, specify the 'expression' attribute instead.
+                If the value is not constant, specify the 'expression' attribute
+                instead.
             </Doc>
         </Attribute>
+    </Element>
+
+    <Element type="NamedSet">
+        <Doc><![CDATA[
+            <p>Defines a named set which can be used in queries in the
+            same way as a set defined using a WITH SET clause.</p>
+            
+            <p>A named set can be defined against a particular cube,
+            or can be global to a schema. If it is defined against a
+            cube, it is only available to queries which use that cube.</p>
+
+            <p>A named set defined against a cube is not inherited by
+            a virtual cubes defined against that cube. (But you can
+            define a named set against a virtual cube.)</p>
+
+            <p>A named set defined against a schema is available in
+            all cubes and virtual cubes in that schema. However, it is
+            only valid if the cube contains dimensions with the names
+            required to make the formula valid.</p>]]>
+
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of this named set.
+            </Doc>
+        </Attribute>
+        <Attribute name="formula" required="false">
+            <Doc>
+                MDX expression which gives the value of this set.
+                Equivalent to the Formula sub-element.
+            </Doc>
+        </Attribute>
+        <Object name="formulaElement" type="Formula" required="false">
+            <Doc>
+                MDX expression which gives the value of this set.
+            </Doc>
+        </Object>
+        <Code>
+            /**
+              * Returns the formula, looking for a sub-element called
+              * "Formula" first, then looking for an attribute called
+              * "formula".
+              */
+            public String getFormula() {
+                if (formulaElement != null) {
+                    return formulaElement.cdata;
+                } else {
+                    return formula;
+                }
+            }
+        </Code>
+    </Element>
+
+    <Element type="Formula">
+        <CData/>
     </Element>
 
     <Element type="Parameter">

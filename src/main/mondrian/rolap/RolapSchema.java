@@ -29,14 +29,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * A <code>RolapSchema</code> is a collection of {@link RolapCube}s and
@@ -98,6 +91,10 @@ public class RolapSchema implements Schema {
      * Maps {@link String names of roles} to {@link Role roles with those names}.
      */
     private final Map mapNameToRole;
+    /**
+     * Maps {@link String names of sets} to {@link NamedSet named sets}.
+     */
+    private final Map mapNameToSet = new HashMap();
     /**
      * Table containing all standard MDX functions, plus user-defined functions
      * for this schema.
@@ -232,11 +229,9 @@ public class RolapSchema implements Schema {
 
             final DOMWrapper def;
             if (catalogStr == null) {
-//System.out.println("catalogName=" +catalogName);
                 URL url = new URL(catalogName);
                 def = xmlParser.parse(url);
             } else {
-//System.out.println("catalogStr=" +catalogStr);
                 def = xmlParser.parse(catalogStr);
             }
 
@@ -316,7 +311,10 @@ public class RolapSchema implements Schema {
                 Util.discard(cube);
             }
         }
-
+        for (int i = 0; i < xmlSchema.namedSets.length; i++) {
+            MondrianDef.NamedSet xmlNamedSet = xmlSchema.namedSets[i];
+            mapNameToSet.put(xmlNamedSet.name, createNamedSet(xmlNamedSet));
+        }
         for (int i = 0; i < xmlSchema.roles.length; i++) {
             MondrianDef.Role xmlRole = xmlSchema.roles[i];
             Role role = createRole(xmlRole);
@@ -329,6 +327,21 @@ public class RolapSchema implements Schema {
             }
             defaultRole = role;
         }
+    }
+
+    private NamedSet createNamedSet(MondrianDef.NamedSet xmlNamedSet) {
+        final String formulaString = xmlNamedSet.getFormula();
+        final Exp exp;
+        try {
+            exp = getInternalConnection().parseExpression(formulaString);
+        } catch (Exception e) {
+            throw MondrianResource.instance().newNamedSetHasBadFormula(
+                    xmlNamedSet.name, e);
+        }
+        final Formula formula = new Formula(
+                new String[] {xmlNamedSet.name},
+                exp);
+        return formula.getNamedSet();
     }
 
     private Role createRole(MondrianDef.Role xmlRole) {
@@ -837,6 +850,10 @@ public class RolapSchema implements Schema {
         return (RolapHierarchy) mapSharedHierarchyNameToHierarchy.get(name);
     }
 
+    public NamedSet getNamedSet(String name) {
+        return (NamedSet) mapNameToSet.get(name);
+    }
+
     public Role lookupRole(final String role) {
         return (Role) mapNameToRole.get(role);
     }
@@ -1169,9 +1186,11 @@ public class RolapSchema implements Schema {
             return Collections.unmodifiableList(this.funInfoList);
         }
     }
+
     public RolapStar getStar(final String factTableName) {
       return getRolapStarRegistry().getStar(factTableName);
     }
+
     public Iterator getStars() {
       return getRolapStarRegistry().getStars();
     }

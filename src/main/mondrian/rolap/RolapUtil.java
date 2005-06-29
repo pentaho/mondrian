@@ -176,6 +176,18 @@ public class RolapUtil {
     }
 
     /**
+     * Adds an array to the end of an array.  The resulting array is of the
+     * same type (e.g. <code>String[]</code>) as the input array.
+     */
+    static Object[] addElements(Object[] a, Object[] b) {
+        Class clazz = a.getClass().getComponentType();
+        Object[] c = (Object[]) Array.newInstance(clazz, a.length + b.length);
+        System.arraycopy(a, 0, c, 0, a.length);
+        System.arraycopy(b, 0, c, a.length, b.length);
+        return c;
+    }
+    
+    /**
      * Enables tracing if "mondrian.trace.level" &gt; 0 and a debug output file is
      * configured.
      */

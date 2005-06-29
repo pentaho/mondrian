@@ -2551,7 +2551,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "select {[Measures].[Unit Sales]} on columns," + nl +
                 "{[Store Size in SQFT].members} on rows" + nl +
                 "from Sales");
-        String resultString = toString(result);
+        String resultString = TestContext.toString(result);
         resultString = Pattern.compile("\\.0\\]").matcher(resultString).replaceAll("]");
 
         // Try to detect whether nulls are sorted high, such as Postgres and Oracle.
@@ -4117,7 +4117,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     /**
      * the following query raised a classcast exception because
      * an empty property evaluated as "NullMember"
-     * note: Store "HQ" does not have a "Store Manager" 
+     * note: Store "HQ" does not have a "Store Manager"
      */
     public void testEmptyProperty() {
         String query = 	"select     {[Measures].[Unit Sales]} on columns, " +

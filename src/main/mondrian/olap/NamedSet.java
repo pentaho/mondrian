@@ -6,20 +6,24 @@
 // (C) Copyright 2000-2005 Kana Software, Inc. and others.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, 26 April, 2000
 */
 
 package mondrian.olap;
 
 /**
- * a <code>Set</code> represents an MDX set.  Unlike other MDX objects, this
- * is not persistent: it can only be defined using a 'with set' clause of an
- * MDX query.
+ * A named set of members or tuples.
+ *
+ * <p>A set can be defined in a query, using a <code>WITH SET</code> clause,
+ * or in a schema. Named sets in a schema can be defined against a particular
+ * cube or virtual cube, or shared between all cubes.</p>
+ *
+ * @author jhyde
+ * @since 6 August, 2001
+ * @version $Id$
  **/
-public interface Set extends OlapElement {
+public interface NamedSet extends OlapElement {
     void setName(String newName);
 }
 
 
-// End Set.java
+// End NamedSet.java

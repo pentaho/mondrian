@@ -13,11 +13,7 @@ import mondrian.example.LastNonEmptyUdf;
 import mondrian.olap.*;
 import mondrian.olap.type.NumericType;
 import mondrian.olap.type.Type;
-import mondrian.rolap.DynamicSchemaProcessor;
 import mondrian.spi.UserDefinedFunction;
-
-import java.io.*;
-import java.net.URL;
 
 /**
  * Unit-test for {@link UserDefinedFunction user-defined functions}.
@@ -171,55 +167,37 @@ public class UdfTest extends FoodMartTestCase {
 
     }
 
-    private static String contentsOfUrl(URL schemaUrl) throws IOException {
-        final InputStream is = schemaUrl.openStream();
-        byte[] buf = new byte[2048];
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        while (true) {
-            int byteCount = is.read(buf);
-            if (byteCount < 0) {
-                break;
-            }
-            baos.write(buf, 0, byteCount);
-        }
-        return new String(baos.toByteArray());
-    }
 
     /**
      * Dynamic schema which adds two user-defined functions to any given
      * schema.
      */
-    public static class FoodmartWithUdf implements DynamicSchemaProcessor {
-
-        public String processSchema(URL schemaUrl) throws Exception {
-            String s = contentsOfUrl(schemaUrl);
-            String s2 = Util.replace(
+    public static class FoodmartWithUdf extends DecoratingSchemaProcessor {
+        protected String filterSchema(String s) {
+            return Util.replace(
                     s,
                     "</Schema>",
-                    "<UserDefinedFunction name=\"PlusOne\" className=\"" + PlusOneUdf.class.getName() + "\"/>" + nl +
-                    "<UserDefinedFunction name=\"LastNonEmpty\" className=\"" + LastNonEmptyUdf.class.getName() + "\"/>" + nl +
+                    "<UserDefinedFunction name=\"PlusOne\" className=\"" +
+                    PlusOneUdf.class.getName() + "\"/>" + nl +
+                    "<UserDefinedFunction name=\"LastNonEmpty\" className=\"" +
+                    LastNonEmptyUdf.class.getName() + "\"/>" + nl +
                     "</Schema>");
-            return s2;
         }
-
     }
 
     /**
-     * Dynamic schema which adds two user-defined functions to any given
-     * schema.
+     * Dynamic schema which adds the {@link BadPlusOneUdf} user-defined
+     * function to any given schema.
      */
-    public static class FoodmartWithBadUdf implements DynamicSchemaProcessor {
-
-        public String processSchema(URL schemaUrl) throws Exception {
-            String s = contentsOfUrl(schemaUrl);
-            String s2 = Util.replace(
+    public static class FoodmartWithBadUdf extends DecoratingSchemaProcessor {
+        protected String filterSchema(String s) {
+            return Util.replace(
                     s,
                     "</Schema>",
-                    "<UserDefinedFunction name=\"BadPlusOne\" className=\"" + BadPlusOneUdf.class.getName() + "\"/>" + nl +
+                    "<UserDefinedFunction name=\"BadPlusOne\" className=\"" +
+                    BadPlusOneUdf.class.getName() + "\"/>" + nl +
                     "</Schema>");
-            return s2;
         }
-
     }
 
     /**

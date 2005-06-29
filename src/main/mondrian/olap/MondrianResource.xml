@@ -67,6 +67,10 @@
     <text>Error while parsing MDX statement ''{0}''</text>
 </exception>
 
+<exception id="350005" name="WhileParsingMdxExpression">
+    <text>Syntax error in MDX expression ''{0}''</text>
+</exception>
+
 <exception id="350010" name="MdxFatalError">
     <text>MDX parser cannot recover from previous error(s)</text>
 </exception>
@@ -391,6 +395,19 @@
 <exception id="40210" name="UdfDuplicateName">
     <text>Duplicate user-defined function ''{0}''</text>
 </exception>
+
+<exception id="40220" name="NamedSetNotUnique">
+    <text>Named set ''{0}'' already exists in cube ''{1}''</text>
+</exception>
+
+<exception id="40230" name="UnknownNamedSetHasBadFormula">
+    <text>Named set in cube ''{0}'' has bad formula</text>
+</exception>
+
+<exception id="40240" name="NamedSetHasBadFormula">
+    <text>Named set ''{0}'' has bad formula</text>
+</exception>
+
 
 <!-- ====================================================================== -->
 <!-- Loader -->

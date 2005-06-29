@@ -48,14 +48,15 @@ public abstract class ConnectionBase implements Connection {
     }
 
     public Query parseQuery(String s) {
+        boolean debug = false;
         if (getLogger().isDebugEnabled()) {
+            //debug = true;
             StringBuffer buf = new StringBuffer(256);
             buf.append(Util.nl);
             buf.append(s);
             getLogger().debug(buf.toString());
         }
         try {
-            boolean debug = false;
             Parser parser = new Parser();
             final FunTable funTable = getSchema().getFunTable();
             Query q = parser.parseInternal(this, s, debug, funTable);
@@ -66,12 +67,22 @@ public abstract class ConnectionBase implements Connection {
     }
 
     public Exp parseExpression(String s) {
-        Util.assertTrue(
-                s.startsWith("'") && s.endsWith("'"),
-                "only string literals are supported right now");
-
-        String s2 = s.substring(1, s.length() - 1);
-        return Literal.createString(s2);
+        boolean debug = false;
+        if (getLogger().isDebugEnabled()) {
+            //debug = true;
+            StringBuffer buf = new StringBuffer(256);
+            buf.append(Util.nl);
+            buf.append(s);
+            getLogger().debug(buf.toString());
+        }
+        try {
+            Parser parser = new Parser();
+            final FunTable funTable = getSchema().getFunTable();
+            Exp q = parser.parseExpression(this, s, debug, funTable);
+            return q;
+        } catch (Throwable e) {
+            throw MondrianResource.instance().newFailedToParseQuery(s, e);
+        }
     }
 }
 

@@ -416,7 +416,7 @@ public class Query extends QueryPart {
      * @pre axis &lt; axes.length
      */
     public void addLevelToAxis(int axis, Level level) {
-        Util.assertPrecondition(AxisOrdinal.enumeration.isValid(axis), 
+        Util.assertPrecondition(AxisOrdinal.enumeration.isValid(axis),
                 "AxisOrdinal.enumeration.isValid(axis)");
         Util.assertPrecondition(axis < axes.length, "axis < axes.length");
         axes[axis].addLevel(level);
@@ -573,13 +573,13 @@ public class Query extends QueryPart {
     /**
      * Looks up a named set.
      */
-    private Set lookupNamedSet(String name) {
+    private NamedSet lookupNamedSet(String name) {
         for (int i = 0; i < formulas.length; i++) {
             Formula formula = formulas[i];
             if (!formula.isMember() &&
                     formula.getElement() != null &&
                     formula.getName().equals(name)) {
-                return (Set) formula.getElement();
+                return (NamedSet) formula.getElement();
             }
         }
         return null;
@@ -1039,7 +1039,7 @@ public class Query extends QueryPart {
                     continue;       // have already done these
                 }
                 if (Util.equals(formula.getNames()[0], s)) {
-                    return formula.getMDXSet();
+                    return formula.getNamedSet();
                 }
             }
 
@@ -1066,17 +1066,15 @@ public class Query extends QueryPart {
             case Category.Unknown:
             case Category.Set:
                 if (parent == cube) {
-                    final Set namedSet = getNamedSet(names);
+                    final NamedSet namedSet = getNamedSet(names);
                     if (namedSet != null) {
                         return namedSet;
                     }
                 }
             }
             // Then delegate to the next reader.
-            OlapElement olapElement = super.lookupCompound(parent,
-                                                           names,
-                                                           failIfNotFound,
-                                                           category);
+            OlapElement olapElement = super.lookupCompound(
+                    parent, names, failIfNotFound, category);
             if (olapElement instanceof Member) {
                 Member member = (Member) olapElement;
                 final Formula formula = (Formula)
@@ -1094,14 +1092,11 @@ public class Query extends QueryPart {
             return olapElement;
         }
 
-        /**
-         * Retrieves a named set defined in this query.
-         */
-        private Set getNamedSet(String[] names) {
-            if (names.length == 1) {
-                return lookupNamedSet(names[0]);
+        public NamedSet getNamedSet(String[] nameParts) {
+            if (nameParts.length != 1) {
+                return null;
             }
-            return null;
+            return lookupNamedSet(nameParts[0]);
         }
     }
 

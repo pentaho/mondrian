@@ -13,12 +13,7 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Collections;
+import java.util.*;
 
 /**
  * A <code>RolapSchemaReader</code> allows you to read schema objects while
@@ -70,7 +65,7 @@ public abstract class RolapSchemaReader implements SchemaReader {
 
     public void getMemberRange(Level level, Member startMember, Member endMember, List list) {
         getMemberReader(level.getHierarchy()).getMemberRange(
-                (RolapLevel) level, (RolapMember) startMember, 
+                (RolapLevel) level, (RolapMember) startMember,
                 (RolapMember) endMember, list);
     }
 
@@ -202,17 +197,26 @@ public abstract class RolapSchemaReader implements SchemaReader {
         return null;
     }
 
-    public OlapElement lookupCompound(OlapElement parent, 
-                                      String[] names, 
-                                      boolean failIfNotFound, 
-                                      int category) {
-        return Util.lookupCompound(this, parent, names, failIfNotFound,
-            category);
+    public OlapElement lookupCompound(
+            OlapElement parent,
+            String[] names,
+            boolean failIfNotFound,
+            int category) {
+        return Util.lookupCompound(
+                this, parent, names, failIfNotFound, category);
     }
 
     public Member getCalculatedMember(String[] nameParts) {
         // There are no calculated members defined against a schema.
         return null;
+    }
+
+    public NamedSet getNamedSet(String[] nameParts) {
+        if (nameParts.length != 1) {
+            return null;
+        }
+        final String name = nameParts[0];
+        return schema.getNamedSet(name);
     }
 
     public Member getLeadMember(Member member, int n) {

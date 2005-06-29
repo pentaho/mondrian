@@ -92,13 +92,17 @@ public class Util extends XOMUtil {
      **/
     public static String quoteMdxIdentifier(String[] ids) {
         StringBuffer sb = new StringBuffer(64);
+        quoteMdxIdentifier(ids, sb);
+        return sb.toString();
+    }
+
+    public static void quoteMdxIdentifier(String[] ids, StringBuffer sb) {
         for (int i = 0; i < ids.length; i++) {
             if (i > 0) {
                 sb.append('.');
             }
             quoteMdxIdentifier(ids[i], sb);
         }
-        return sb.toString();
     }
 
     /**
@@ -256,7 +260,6 @@ public class Util extends XOMUtil {
             buf.append('.');
             Util.quoteMdxIdentifier(name, buf);
             return buf.toString();
-            //return parentUniqueName + "." + quoteMdxIdentifier(name);
         }
     }
 
@@ -295,14 +298,7 @@ public class Util extends XOMUtil {
             buf.append(", category=");
             buf.append(Category.instance.getName(category));
             buf.append(", names=");
-            for (int i = 0; i < names.length; i++) {
-                buf.append('[');
-                buf.append(names[i]);
-                buf.append(']');
-                if (i+1 < names.length) {
-                    buf.append('.');
-                }
-            }
+            quoteMdxIdentifier(names, buf);
             LOGGER.debug(buf.toString());
         }
 
@@ -316,6 +312,16 @@ public class Util extends XOMUtil {
                 return member;
             }
         }
+        // Likewise named set.
+        switch (category) {
+        case Category.Set:
+        case Category.Unknown:
+            NamedSet namedSet = schemaReader.getNamedSet(names);
+            if (namedSet != null) {
+                return namedSet;
+            }
+        }
+
         // Now resolve the name one part at a time.
         for (int i = 0; i < names.length; i++) {
             String name = names[i];
@@ -395,15 +401,15 @@ public class Util extends XOMUtil {
         }
     }
 
-    public static OlapElement lookup(Query q, String[] namesArray) {
+    public static OlapElement lookup(Query q, String[] nameParts) {
 
         // First, look for a calculated member defined in the query.
-        final String fullName = quoteMdxIdentifier(namesArray);
+        final String fullName = quoteMdxIdentifier(nameParts);
         // Look for any kind of object (member, level, hierarchy,
         // dimension) in the cube. Use a schema reader without restrictions.
         final SchemaReader schemaReader = q.getSchemaReader(false);
         OlapElement olapElement = schemaReader.lookupCompound(
-            q.getCube(), namesArray, false, Category.Unknown);
+            q.getCube(), nameParts, false, Category.Unknown);
         if (olapElement != null) {
             Role role = q.getConnection().getRole();
             if (!role.canAccess(olapElement)) {
@@ -411,8 +417,8 @@ public class Util extends XOMUtil {
             }
         }
         if (olapElement == null) {
-            throw Util.getRes().newMdxChildObjectNotFound(fullName,
-                q.getCube().getQualifiedName());
+            throw Util.getRes().newMdxChildObjectNotFound(
+                    fullName, q.getCube().getQualifiedName());
         }
         return olapElement;
     }

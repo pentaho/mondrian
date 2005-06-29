@@ -11,6 +11,8 @@
 */
 package mondrian.test;
 
+import mondrian.olap.Connection;
+
 /**
  * Unit-test for named sets, in all their various forms: <code>WITH SET</code>,
  * sets defined against cubes, virtual cubes, and at the schema level.
@@ -564,6 +566,187 @@ public class NamedSetTest extends FoodMartTestCase {
                 " {[Time].[1997].[Q1], [Time].[1997].[Q2]} on rows" + nl +
                 "from [Sales]",
                 "two rows q1, q2; q1q2 for each cell");
+    }
+
+    public void testNamedSetAgainstCube() {
+        final TestContext tc = new TestContext() {
+            public synchronized Connection getFoodMartConnection(boolean fresh) {
+                return getFoodMartConnection(NamedSetsInCubeProcessor.class.getName());
+            }
+        };
+        // Set defined against cube, using 'formula' attribute.
+        tc.runQueryCheckResult(
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
+                " {[CA Cities]} ON ROWS" + nl +
+                "FROM [Sales]",
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Unit Sales]}" + nl +
+                "Axis #2:" + nl +
+                "{[Store].[All Stores].[USA].[CA].[Alameda]}" + nl +
+                "{[Store].[All Stores].[USA].[CA].[Beverly Hills]}" + nl +
+                "{[Store].[All Stores].[USA].[CA].[Los Angeles]}" + nl +
+                "{[Store].[All Stores].[USA].[CA].[San Diego]}" + nl +
+                "{[Store].[All Stores].[USA].[CA].[San Francisco]}" + nl +
+                "Row #0: (null)" + nl +
+                "Row #1: 21,333" + nl +
+                "Row #2: 25,663" + nl +
+                "Row #3: 25,635" + nl +
+                "Row #4: 2,117" + nl);
+        // Set defined against cube, in terms of another set, and using
+        // '<Formula>' element.
+        tc.runQueryCheckResult(
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
+                " {[Top CA Cities]} ON ROWS" + nl +
+                "FROM [Sales]",
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Unit Sales]}" + nl +
+                "Axis #2:" + nl +
+                "{[Store].[All Stores].[USA].[CA].[Los Angeles]}" + nl +
+                "{[Store].[All Stores].[USA].[CA].[San Diego]}" + nl +
+                "Row #0: 25,663" + nl +
+                "Row #1: 25,635" + nl);
+        // Override named set in query.
+        tc.runQueryCheckResult(
+                "WITH SET [CA Cities] AS '{[Store].[USA].[OR].[Portland]}' " +
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
+                " {[CA Cities]} ON ROWS" + nl +
+                "FROM [Sales]",
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Unit Sales]}" + nl +
+                "Axis #2:" + nl +
+                "{[Store].[All Stores].[USA].[OR].[Portland]}" + nl +
+                "Row #0: 26,079" + nl);
+        // When [CA Cities] is overridden, does the named set [Top CA Cities],
+        // which is derived from it, use the new definition? No. It stays
+        // bound to the original definition.
+        tc.runQueryCheckResult(
+                "WITH SET [CA Cities] AS '{[Store].[USA].[OR].[Portland]}' " +
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
+                " {[Top CA Cities]} ON ROWS" + nl +
+                "FROM [Sales]",
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Unit Sales]}" + nl +
+                "Axis #2:" + nl +
+                "{[Store].[All Stores].[USA].[CA].[Los Angeles]}" + nl +
+                "{[Store].[All Stores].[USA].[CA].[San Diego]}" + nl +
+                "Row #0: 25,663" + nl +
+                "Row #1: 25,635" + nl);
+    }
+
+    public void testNamedSetAgainstSchema() {
+        final TestContext tc = new TestContext() {
+            public synchronized Connection getFoodMartConnection(boolean fresh) {
+                return getFoodMartConnection(NamedSetsInCubeAndSchemaProcessor.class.getName());
+            }
+        };
+        tc.runQueryCheckResult(
+                "SELECT {[Measures].[Store Sales]} on columns," + nl +
+                " Intersect([Top CA Cities], [Top USA Stores]) on rows" + nl +
+                "FROM [Sales]",
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Store Sales]}" + nl +
+                "Axis #2:" + nl +
+                "{[Store].[All Stores].[USA].[CA].[Los Angeles]}" + nl +
+                "Row #0: 54,545.28" + nl);
+        // Use non-existent set.
+        tc.assertThrows(
+                "SELECT {[Measures].[Store Sales]} on columns," + nl +
+                " Intersect([Top CA Cities], [Top Ukrainian Cities]) on rows" + nl +
+                "FROM [Sales]",
+                "MDX object '[Top Ukrainian Cities]' not found in cube 'Sales'");
+    }
+
+    public void testBadNamedSet() {
+        final TestContext tc = new TestContext() {
+            public synchronized Connection getFoodMartConnection(boolean fresh) {
+                return getFoodMartConnection(BadNamedSetSchemaProcessor.class.getName());
+            }
+        };
+        tc.assertThrows(
+                "SELECT {[Measures].[Store Sales]} on columns," + nl +
+                " {[Bad]} on rows" + nl +
+                "FROM [Sales]",
+                "Named set 'Bad' has bad formula");
+    }
+
+    /**
+     * Dynamic schema processor which adds two named sets to a the first cube
+     * in a schema.
+     */
+    public static class NamedSetsInCubeProcessor
+            extends DecoratingSchemaProcessor {
+
+        protected String filterSchema(String s) {
+            int i = s.indexOf("</Cube>");
+            return s.substring(0, i) + nl +
+                    "<NamedSet name=\"CA Cities\" formula=\"{[Store].[USA].[CA].Children}\"/>" + nl +
+                    "<NamedSet name=\"Top CA Cities\">" + nl +
+                    "  <Formula>TopCount([CA Cities], 2, [Measures].[Unit Sales])</Formula>" + nl +
+                    "</NamedSet>" + nl +
+                    s.substring(i);
+        }
+    }
+
+    /**
+     * Dynamic schema processor which adds two named sets to a the first cube
+     * in a schema.
+     */
+    public static class NamedSetsInCubeAndSchemaProcessor
+            extends DecoratingSchemaProcessor {
+
+        protected String filterSchema(String s) {
+            int i = s.indexOf("</Cube>");
+            s = s.substring(0, i) + nl +
+                    "<NamedSet name=\"CA Cities\" formula=\"{[Store].[USA].[CA].Children}\"/>" + nl +
+                    "<NamedSet name=\"Top CA Cities\">" + nl +
+                    "  <Formula>TopCount([CA Cities], 2, [Measures].[Unit Sales])</Formula>" + nl +
+                    "</NamedSet>" + nl +
+                    s.substring(i);
+            // Schema-level named sets occur after <Cube> and <VirtualCube> and
+            // before <Role> elements.
+            i = s.indexOf("<Role");
+            if (i < 0) {
+                i = s.indexOf("</Schema>");
+            }
+            s = s.substring(0, i) + nl +
+                    "<NamedSet name=\"CA Cities\" formula=\"{[Store].[USA].[WA].Children}\"/>" + nl +
+                    "<NamedSet name=\"Top USA Stores\">" + nl +
+                    "  <Formula>TopCount(Descendants([Store].[USA]), 7)</Formula>" + nl +
+                    "</NamedSet>" + nl +
+                    s.substring(i);
+            return s;
+        }
+    }
+
+    /**
+     * Dynamic schema processor which adds a named set which has a syntax
+     * error.
+     */
+    public static class BadNamedSetSchemaProcessor
+            extends DecoratingSchemaProcessor {
+
+        protected String filterSchema(String s) {
+            // Schema-level named sets occur after <Cube> and <VirtualCube> and
+            // before <Role> elements.
+            int i = s.indexOf("<Role");
+            if (i < 0) {
+                i = s.indexOf("</Schema>");
+            }
+            s = s.substring(0, i) + nl +
+                    "<NamedSet name=\"Bad\" formula=\"{[Store].[USA].[WA].Children}}\"/>" + nl +
+                    s.substring(i);
+            return s;
+        }
     }
 }
 

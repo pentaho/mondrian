@@ -166,6 +166,7 @@ public class AccessControlTest extends FoodMartTestCase {
         Axis axis = executeAxis2(restrictedConnection, "[Customers].members");
         Assert.assertEquals(122, axis.positions.length); // 13 states, 109 cities
     }
+
     /** Test that we only aggregate over SF, LA, even when called from functions. */
     public void testGrantHierarchy9() {
         // Analysis services doesn't allow aggregation within calculated
@@ -177,14 +178,15 @@ public class AccessControlTest extends FoodMartTestCase {
         //    {[Gender].children} on rows
         //   from Sales
         //   where ([Marital Status].[S], [Store].[SF LA])
-        Result result = execute(getRestrictedConnection(false),
+        final TestContext tc = new RestrictedTestContext();
+        tc.runQueryCheckResult(
                 "with member [Measures].[California Unit Sales] as " +
                 " 'Aggregate({[Store].[USA].[CA].children}, [Measures].[Unit Sales])'" + nl +
                 "select {[Measures].[California Unit Sales]} on columns," + nl +
                 " {[Gender].children} on rows" + nl +
                 "from Sales" + nl +
-                "where ([Marital Status].[S])");
-        Assert.assertEquals("Axis #0:" + nl +
+                "where ([Marital Status].[S])",
+                "Axis #0:" + nl +
                 "{[Marital Status].[All Marital Status].[S]}" + nl +
                 "Axis #1:" + nl +
                 "{[Measures].[California Unit Sales]}" + nl +
@@ -192,16 +194,16 @@ public class AccessControlTest extends FoodMartTestCase {
                 "{[Gender].[All Gender].[F]}" + nl +
                 "{[Gender].[All Gender].[M]}" + nl +
                 "Row #0: 6,636" + nl +
-                "Row #1: 7,329" + nl,
-                toString(result));
+                "Row #1: 7,329" + nl);
     }
     public void testGrantHierarchyA() {
+        final TestContext tc = new RestrictedTestContext();
         // assert: totals for USA include missing cells
-        Result result = execute(getRestrictedConnection(false),
+        tc.runQueryCheckResult(
                 "select {[Unit Sales]} on columns," + nl +
                 "{[Store].[USA], [Store].[USA].children} on rows" + nl +
-                "from [Sales]");
-        Assert.assertEquals("Axis #0:" + nl +
+                "from [Sales]",
+                "Axis #0:" + nl +
                 "{}" + nl +
                 "Axis #1:" + nl +
                 "{[Measures].[Unit Sales]}" + nl +
@@ -209,8 +211,7 @@ public class AccessControlTest extends FoodMartTestCase {
                 "{[Store].[All Stores].[USA]}" + nl +
                 "{[Store].[All Stores].[USA].[CA]}" + nl +
                 "Row #0: 266,773" + nl +
-                "Row #1: 74,748" + nl,
-                toString(result));
+                "Row #1: 74,748" + nl);
     }
 
     private Connection getRestrictedConnection() {
@@ -254,6 +255,11 @@ public class AccessControlTest extends FoodMartTestCase {
 
     /* todo: test that access to restricted measure fails (will not work --
     have not fixed Cube.getMeasures) */
+    private class RestrictedTestContext extends TestContext {
+        public synchronized Connection getFoodMartConnection(boolean fresh) {
+            return getRestrictedConnection(false);
+        }
+    }
 }
 
 // End AccessControlTest.java

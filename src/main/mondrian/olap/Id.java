@@ -86,7 +86,11 @@ public class Id
                 return Literal.createSymbol(s.toUpperCase());
             }
         }
-        return Util.lookup(validator.getQuery(), names);
+        final OlapElement element = Util.lookup(validator.getQuery(), names);
+        if (element == null) {
+            return null;
+        }
+        return element.accept(validator);
     }
 
     public void unparse(PrintWriter pw) {

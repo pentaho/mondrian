@@ -34,22 +34,28 @@ public class Formula extends QueryPart {
     private final boolean isMember;
 
     private Member mdxMember;
-    private Set mdxSet;
+    private NamedSet mdxSet;
 
-    /** Construct formula specifying a set. */
-    Formula(String[] names, Exp exp) {
+    /**
+     * Constructs formula specifying a set.
+     */
+    public Formula(String[] names, Exp exp) {
         this(false, names, (ExpBase) exp, new MemberProperty[0]);
+        createElement(null);
     }
 
-    /** Construct a formula specifying a member. */
+    /**
+     * Constructs a formula specifying a member.
+     */
     public Formula(String[] names, Exp exp, MemberProperty[] memberProperties) {
         this(true, names, (ExpBase) exp, memberProperties);
     }
 
-    private Formula(boolean isMember,
-                    String[] names,
-                    ExpBase exp,
-                    MemberProperty[] memberProperties) {
+    private Formula(
+            boolean isMember,
+            String[] names,
+            ExpBase exp,
+            MemberProperty[] memberProperties) {
         this.isMember = isMember;
         this.names = names;
         this.exp = exp;
@@ -58,10 +64,11 @@ public class Formula extends QueryPart {
 
     public Object clone()
     {
-        return new Formula(isMember,
-                           names,
-                           (ExpBase) exp.clone(),
-                           MemberProperty.cloneArray(memberProperties));
+        return new Formula(
+                isMember,
+                names,
+                (ExpBase) exp.clone(),
+                MemberProperty.cloneArray(memberProperties));
     }
 
     static Formula[] cloneArray(Formula[] x) {
@@ -103,7 +110,7 @@ public class Formula extends QueryPart {
     }
 
     /**
-     * Creates the {@link Member} or {@link Set} object which this formula
+     * Creates the {@link Member} or {@link NamedSet} object which this formula
      * defines.
      */
     void createElement(Query q) {
@@ -142,7 +149,6 @@ public class Formula extends QueryPart {
             mdxSet = new SetBase(names[0], exp);
         }
     }
-
 
     public Object[] getChildren() {
         Object[] children = new Object[1 + memberProperties.length];
@@ -183,7 +189,7 @@ public class Formula extends QueryPart {
         return isMember;
     }
 
-    Set getMDXSet() {
+    public NamedSet getNamedSet() {
         return mdxSet;
     }
 

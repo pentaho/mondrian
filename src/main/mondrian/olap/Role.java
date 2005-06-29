@@ -441,7 +441,7 @@ public class Role {
      * @pre isMutable()
      * @post return == Access.NONE || return == Access.ALL
      */
-    public int getAccess(Set set) {
+    public int getAccess(NamedSet set) {
         Util.assertPrecondition(set != null, "set != null");
         return Access.ALL;
     }
@@ -462,8 +462,8 @@ public class Role {
             return getAccess((Level) olapElement) != Access.NONE;
         } else if (olapElement instanceof Member) {
             return getAccess((Member) olapElement) != Access.NONE;
-        } else if (olapElement instanceof Set) {
-            return getAccess((Set) olapElement) != Access.NONE;
+        } else if (olapElement instanceof NamedSet) {
+            return getAccess((NamedSet) olapElement) != Access.NONE;
         } else {
             return false;
         }

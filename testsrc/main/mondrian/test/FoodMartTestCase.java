@@ -11,13 +11,11 @@
 */
 package mondrian.test;
 
-import junit.framework.*;
+import junit.framework.Assert;
+import junit.framework.TestCase;
 import mondrian.olap.*;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.regex.Pattern;
 
 /**
  * <code>FoodMartTestCase</code> is a unit test which runs against the FoodMart
@@ -29,10 +27,6 @@ import java.util.regex.Pattern;
  **/
 public class FoodMartTestCase extends TestCase {
     protected static final String nl = System.getProperty("line.separator");
-    private static final String lineBreak = "\" + nl + " + nl + "\"";
-    private static final Pattern LineBreakPattern =
-        Pattern.compile("\r\n|\r|\n");
-    private static final Pattern TabPattern = Pattern.compile("\t");
 
     public FoodMartTestCase(String name) {
         super(name);
@@ -41,10 +35,11 @@ public class FoodMartTestCase extends TestCase {
     public FoodMartTestCase() {
     }
 
+    /**
+     * Executes an MDX query.
+     */
     public Result runQuery(String queryString) {
-        Connection connection = getConnection();
-        Query query = connection.parseQuery(queryString);
-        return connection.execute(query);
+        return getTestContext().runQuery(queryString);
     }
 
     protected Connection getConnection(boolean fresh) {
@@ -80,23 +75,12 @@ public class FoodMartTestCase extends TestCase {
      * the given pattern.
      */
     public void assertThrows(String queryString, String pattern) {
-        Throwable throwable = getTestContext().executeFoodMartCatch(
-                queryString);
-        checkThrowable(throwable, pattern);
+        getTestContext().assertThrows(queryString, pattern);
     }
 
-    private void checkThrowable(Throwable throwable, String pattern) {
-        if (throwable == null) {
-            Assert.fail("query did not yield an exception");
-        }
-        String stackTrace = getStackTrace(throwable);
-        if (stackTrace.indexOf(pattern) < 0) {
-            Assert.fail("query's error does not match pattern '" + pattern +
-                    "'; error is [" + stackTrace + "]");
-        }
-    }
-
-    /** Executes a query in a given connection. **/
+    /**
+     * Executes a query in a given connection.
+     */
     public Result execute(Connection connection, String queryString) {
         Query query = connection.parseQuery(queryString);
         return connection.execute(query);
@@ -164,43 +148,7 @@ public class FoodMartTestCase extends TestCase {
      * Runs a query and checks that the result is a given string.
      */
     public void runQueryCheckResult(String query, String desiredResult) {
-        Result result = runQuery(query);
-        String resultString = toString(result);
-        if (desiredResult != null) {
-            assertEqualsVerbose(desiredResult, resultString);
-        }
-    }
-
-    public static void assertEqualsVerbose(
-        String expected,
-        String actual)
-    {
-        if ((expected == null) && (actual == null)) {
-            return;
-        }
-        if ((expected != null) && expected.equals(actual)) {
-            return;
-        }
-        String s = actual;
-
-        // Convert [string with "quotes" split
-        // across lines]
-        // into ["string with \"quotes\" split" + nl +
-        // "across lines
-        //
-        s = Util.replace(s, "\"", "\\\"");
-        s = LineBreakPattern.matcher(s).replaceAll(lineBreak);
-        s = TabPattern.matcher(s).replaceAll("\\\\t");
-        s = "\"" + s + "\"";
-        final String spurious = " + " + nl + "\"\"";
-        if (s.endsWith(spurious)) {
-            s = s.substring(0, s.length() - spurious.length());
-        }
-        String message =
-                "Expected:" + nl + expected + nl +
-                "Actual: " + nl + actual + nl +
-                "Actual java: " + nl + s + nl;
-        throw new ComparisonFailure(message, expected, actual);
+        getTestContext().runQueryCheckResult(query, desiredResult);
     }
 
     /**
@@ -244,15 +192,13 @@ public class FoodMartTestCase extends TestCase {
      * throws an error which matches a particular pattern. The expression is evaulated
      * against the named cube.
      */
-    public void assertAxisThrows(Connection connection, String cubeName, String expression, String pattern) {
-        Throwable throwable = null;
-        try {
-            Util.discard(execute(connection,
-                    "select {" + expression + "} on columns from " + cubeName));
-        } catch (Throwable e) {
-            throwable = e;
-        }
-        checkThrowable(throwable, pattern);
+    public void assertAxisThrows(
+            Connection connection,
+            String cubeName,
+            String expression,
+            String pattern) {
+        getTestContext().assertAxisThrows(
+                connection, cubeName, expression, pattern);
     }
 
     /**
@@ -277,16 +223,6 @@ public class FoodMartTestCase extends TestCase {
     public void assertAxisReturns(Connection connection, String expression, String expected) {
         Axis axis = executeAxis2(connection, expression);
         Assert.assertEquals(expected, toString(axis.positions));
-    }
-    /**
-     * Converts a {@link Throwable} to a stack trace.
-     */
-    private static String getStackTrace(Throwable e) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        e.printStackTrace(pw);
-        pw.flush();
-        return sw.toString();
     }
 
     /** Executes an expression against the FoodMart database to form a single
@@ -329,20 +265,7 @@ public class FoodMartTestCase extends TestCase {
      * be contained within the cell value.
      */
     public void assertExprThrows(String expression, String pattern) {
-        Throwable throwable = null;
-        try {
-            Result result = getTestContext().executeFoodMart(
-                    "with member [Measures].[Foo] as '" +
-                    expression +
-                    "' select {[Measures].[Foo]} on columns from Sales");
-            Cell cell = result.getCell(new int[]{0});
-            if (cell.isError()) {
-                throwable = (Throwable) cell.getValue();
-            }
-        } catch (Throwable e) {
-            throwable = e;
-        }
-        checkThrowable(throwable, pattern);
+        getTestContext().assertExprThrows(expression, pattern);
     }
 
     /**
@@ -371,15 +294,6 @@ public class FoodMartTestCase extends TestCase {
             }
         }
         return sb.toString();
-    }
-
-    /** Formats {@link Result}. **/
-    public String toString(Result result) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        result.print(pw);
-        pw.flush();
-        return sw.toString();
     }
 
 

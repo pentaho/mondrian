@@ -18,13 +18,13 @@ import mondrian.olap.type.Type;
 import mondrian.olap.type.SetType;
 
 /**
- * Skeleton implementation of {@link Set} interface.
+ * Skeleton implementation of {@link NamedSet} interface.
  *
  * @author jhyde
  * @since 6 August, 2001
  * @version $Id$
  **/
-class SetBase extends OlapElementBase implements Set {
+class SetBase extends OlapElementBase implements NamedSet {
 
     private static final Logger LOGGER = Logger.getLogger(SetBase.class);
 
@@ -34,6 +34,10 @@ class SetBase extends OlapElementBase implements Set {
     SetBase(String name, Exp exp) {
         this.name = name;
         this.exp = exp;
+    }
+
+    public Object clone() {
+        return new SetBase(name, (Exp) exp.clone());
     }
 
     protected Logger getLogger() {
@@ -83,6 +87,18 @@ class SetBase extends OlapElementBase implements Set {
 
     public void accept(Visitor visitor) {
         visitor.visit(this);
+    }
+
+    public Exp accept(Validator validator) {
+        // A set is sometimes used in more than one cube. So, clone the
+        // expression and re-validate every time it is used.
+        //
+        // But keep the expression wrapped in a NamedSet, so that the
+        // expression is evaluated once per query. (We don't want the
+        // expression to be evaluated context-sensitive.)
+        final Exp clonedExp = (Exp) exp.clone();
+        final Exp exp3 = clonedExp.accept(validator);
+        return new SetBase(name, exp3);
     }
 
     public void childrenAccept(Visitor visitor) {

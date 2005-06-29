@@ -109,6 +109,7 @@ public interface SchemaReader {
      * </ol>
      */
     int getMemberDepth(Member member);
+
     /**
      * Finds a member based upon its unique name.
      *
@@ -148,6 +149,12 @@ public interface SchemaReader {
      * current scope, returns null.
      **/
     Member getCalculatedMember(String[] nameParts);
+
+    /**
+     * Looks up a set by name. If the name is not found in the current scope,
+     * returns null.
+     */
+    NamedSet getNamedSet(String[] nameParts);
 
     /**
      * Appends to <code>list</code> all members between <code>startMember</code>
