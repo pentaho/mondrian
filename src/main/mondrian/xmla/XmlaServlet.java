@@ -34,7 +34,7 @@ import java.util.Map;
  */
 public class XmlaServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(XmlaServlet.class);
-	
+
     private final XmlaMediator mediator = new XmlaMediator();
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -59,7 +59,11 @@ public class XmlaServlet extends HttpServlet {
             final Map map = request.getParameterMap();
             for (Iterator iterator = map.keySet().iterator(); iterator.hasNext();) {
                 String att = (String) iterator.next();
-                LOGGER.debug(att + "=" + map.get(att));
+                String[] vals = (String[]) map.get(att);
+                LOGGER.debug(
+                        att + "=" +
+                        (vals != null && vals.length > 0 ? vals[0] :
+                        "<null>"));
             }
             final Enumeration headerNames = request.getHeaderNames();
             while (headerNames.hasMoreElements()) {
@@ -80,7 +84,7 @@ public class XmlaServlet extends HttpServlet {
         if (LOGGER.isDebugEnabled()) {
             printWriter = new PrintWriter(
                     new FilterWriter(printWriter) {
-                    	
+
                         public void write(int c) throws IOException {
                             this.out.write(c);
                             sb.append((char) c);
@@ -99,10 +103,11 @@ public class XmlaServlet extends HttpServlet {
             );
         }
         mediator.threadServletContext.set(getServletContext());
+        response.setContentType("text/xml");
         mediator.process(soapRequest, printWriter);
         if (LOGGER.isDebugEnabled()) {
-        	LOGGER.debug("Response:");
-        	LOGGER.debug(sb.toString());
+            LOGGER.debug("Response:");
+            LOGGER.debug(sb.toString());
         }
     }
 

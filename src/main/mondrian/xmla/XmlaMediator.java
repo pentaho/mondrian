@@ -45,6 +45,7 @@ public class XmlaMediator {
      */
     public void process(String request, Writer response) {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
         DocumentBuilder documentBuilder = null;
         try {
             documentBuilder = factory.newDocumentBuilder();
@@ -82,22 +83,22 @@ public class XmlaMediator {
     }
 
     private void processEnvelope(Element element, SAXHandler saxHandler) throws SAXException {
-        String tagName = element.getTagName();
-        Util.assertTrue(tagName.equals("SOAP-ENV:Envelope"));
+        String tagName = element.getLocalName();
+        Util.assertTrue(tagName.equals("Envelope"));
         //final NodeList childNodes = element.getChildNodes();
         saxHandler.startElement("SOAP-ENV:Envelope", new String[] {
             "xmlns:SOAP-ENV", "http://schemas.xmlsoap.org/soap/envelope/",
              "SOAP-ENV:encodingStyle", "http://schemas.xmlsoap.org/soap/encoding/",
         });
         saxHandler.startElement("SOAP-ENV:Body");
-        processBody(firstElement(element, "SOAP-ENV:Body"), saxHandler);
+        processBody(firstElement(element, "Body"), saxHandler);
         saxHandler.endElement();
         saxHandler.endElement();
     }
 
     private void processBody(Element element, SAXHandler saxHandler) throws SAXException {
-        String tagName = element.getTagName();
-        Util.assertTrue(tagName.equals("SOAP-ENV:Body"));
+        String tagName = element.getLocalName();
+        Util.assertTrue(tagName.equals("Body"));
         final NodeList childNodes = element.getChildNodes();
         for (int i = 0; i < childNodes.getLength(); i++) {
             final Node node = childNodes.item(i);
@@ -458,7 +459,7 @@ public class XmlaMediator {
      * none.
      */
     private Element firstElement(Element element, String tagName) {
-        NodeList elements = element.getElementsByTagName(tagName);
+        NodeList elements = element.getElementsByTagNameNS("*", tagName);
         for (int i = 0; i < elements.getLength(); i++) {
             Node node = elements.item(i);
             if (node instanceof Element) {
@@ -469,8 +470,8 @@ public class XmlaMediator {
     }
 
     /**
-     * Returns the text content of the first child element with a given tag, or
-     * null if there is no such child.
+     * Returns the text content of the first child element with a
+     * given tag, or null if there is no such child.
      */
     private String firstElementCDATA(Element element, String tagName) {
         Element child = firstElement(element, tagName);
