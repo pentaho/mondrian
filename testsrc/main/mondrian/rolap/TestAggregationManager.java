@@ -58,6 +58,24 @@ public class TestAggregationManager extends TestCase {
         CellRequest request = createRequest("Sales", "[Measures].[Unit Sales]", "customer", "gender", "F");
         final String pattern =
                 "select `customer`.`gender` as `c0`," +
+                " sum(`sales_fact_1997`.`unit_sales`) as `m0` " +
+                "from `customer` as `customer`, `sales_fact_1997` as `sales_fact_1997` " +
+                "where `sales_fact_1997`.`customer_id` = `customer`.`customer_id` " +
+                "and `customer`.`gender` = 'F' " +
+                "group by `customer`.`gender`";
+        assertRequestSql(new CellRequest[] {request}, pattern, "select `customer`.`gender`");
+    }
+
+    /**
+     * As {@link #testFemaleUnitSalesSql()}, but with aggregate tables switched
+     * on.
+     *
+     * TODO: Enable this test.
+     */
+    private void _testFemaleUnitSalesSql_withAggs() {
+        CellRequest request = createRequest("Sales", "[Measures].[Unit Sales]", "customer", "gender", "F");
+        final String pattern =
+                "select `customer`.`gender` as `c0`," +
                 " sum(`agg_l_03_sales_fact_1997`.`unit_sales`) as `m0` " +
                 "from `customer` as `customer`," +
                 " `agg_l_03_sales_fact_1997` as `agg_l_03_sales_fact_1997` " +
@@ -67,8 +85,6 @@ public class TestAggregationManager extends TestCase {
         assertRequestSql(new CellRequest[] {request}, pattern, "select `customer`.`gender`");
     }
 
-    // todo: test multiple values, (UNit Sales, State={CA,OR})
-
     /**
      * Test a batch containing multiple measures:
      *   (store_state=CA, gender=F, measure=[UNit Sales])
@@ -76,6 +92,41 @@ public class TestAggregationManager extends TestCase {
      *   (store_state=OR, gender=M, measure=[Unit Sales])
      */
     public void testMultipleMeasures() {
+        CellRequest[] requests = new CellRequest[] {
+            createRequest("Sales", "[Measures].[Unit Sales]",
+                    new String[] {"customer", "store"},
+                    new String[] {"gender", "store_state"},
+                    new String[] {"F", "CA"}),
+            createRequest("Sales", "[Measures].[Store Sales]",
+                    new String[] {"customer", "store"},
+                    new String[] {"gender", "store_state"},
+                    new String[] {"M", "CA"}),
+            createRequest("Sales", "[Measures].[Unit Sales]",
+                    new String[] {"customer", "store"},
+                    new String[] {"gender", "store_state"},
+                    new String[] {"F", "OR"})};
+        final String pattern =
+                "select `customer`.`gender` as `c0`," +
+                " `store`.`store_state` as `c1`," +
+                " sum(`sales_fact_1997`.`unit_sales`) as `m0`," +
+                " sum(`sales_fact_1997`.`store_sales`) as `m1` " +
+                "from `customer` as `customer`," +
+                " `sales_fact_1997` as `sales_fact_1997`," +
+                " `store` as `store` " +
+                "where `sales_fact_1997`.`customer_id` = `customer`.`customer_id` " +
+                "and `sales_fact_1997`.`store_id` = `store`.`store_id` " +
+                "and `store`.`store_state` in ('CA', 'OR') " +
+                "group by `customer`.`gender`, `store`.`store_state`";
+        assertRequestSql(requests, pattern, "select `customer`.`gender`");
+    }
+
+    /**
+     * As {@link #testMultipleMeasures()}, but with aggregate tables switched
+     * on.
+     *
+     * TODO: Enable this test.
+     */
+    private void _testMultipleMeasures_withAgg() {
         CellRequest[] requests = new CellRequest[] {
             createRequest("Sales", "[Measures].[Unit Sales]",
                     new String[] {"customer", "store"},
@@ -112,12 +163,14 @@ public class TestAggregationManager extends TestCase {
         String table = "store";
         String column = "store_state";
         String value = "CA";
-        final Connection connection = TestContext.instance().getFoodMartConnection(false);
+        final Connection connection =
+                TestContext.instance().getFoodMartConnection(false);
         final boolean fail = true;
         Cube salesCube = connection.getSchema().lookupCube(cube, fail);
-        Member storeSqftMeasure = salesCube.getSchemaReader(null).getMemberByUniqueName(
-                Util.explode(measure), fail);
-        RolapStar.Measure starMeasure = RolapStar.getStarMeasure(storeSqftMeasure);
+        Member storeSqftMeasure = salesCube.getSchemaReader(null)
+                .getMemberByUniqueName(Util.explode(measure), fail);
+        RolapStar.Measure starMeasure =
+                RolapStar.getStarMeasure(storeSqftMeasure);
         CellRequest request = new CellRequest(starMeasure);
         final RolapStar star = starMeasure.getStar();
         final RolapStar.Column storeTypeColumn = star.lookupColumn(
