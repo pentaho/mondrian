@@ -487,6 +487,7 @@ ${webapp.dir}/WEB-INF/*.xsl,
 ${webapp.dir}/WEB-INF/*.tld,
 doc/**/*.css,
 doc/**/*.gif,
+doc/**/*.jpeg,
 doc/**/*.html,
 misc/**/*.mf,
 misc/Meta.xsl,
@@ -603,6 +604,7 @@ doc/api/**/*,
 doc/**/*.html,
 doc/**/*.gif,
 doc/**/*.jpg,
+doc/**/*.png,
 doc/**/*.css,
 doc/**/*.xml"
           excludes="
@@ -665,6 +667,7 @@ VERSION.txt"/>
       <link href="http://www.junit.org/junit/javadoc/3.8/"/>
       <link href="http://java.sun.com/products/servlet/2.2/javadoc/"/>
       <link href="http://eigenbase.sourceforge.net/resgen/api/"/>
+      <link href="http://farrago.sourceforge.net/api/"/>
     </javadoc>
     <copy file="${java.dir}/mondrian/olap/Mondrian.xml"
         todir="${javadoc.dir}/mondrian/olap"/>
