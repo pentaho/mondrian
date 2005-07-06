@@ -25,11 +25,10 @@ public class RolapSchemaReaderTest extends TestCase {
     }
 
     public void testGetCubes() throws Exception {
-        System.out.println(MondrianProperties.instance().getTestConnectString());
+        System.out.println(MondrianProperties.instance().TestConnectString.get());
         Util.PropertyList properties =
                 Util.parseConnectString(MondrianProperties
-                .instance()
-                .getTestConnectString());
+                        .instance().TestConnectString.get());
 
         properties.put(RolapConnectionProperties.Role, "No HR Cube");
 

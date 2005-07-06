@@ -114,7 +114,7 @@ class RolapResult extends ResultBase {
             }
             // Now that the axes are evaluated, make sure that the number of
             // cells does not exceed the result limit.
-            int limit = MondrianProperties.instance().getResultLimit();
+            int limit = MondrianProperties.instance().ResultLimit.get();
             if (limit > 0) {
                 // result limit exceeded, throw an exception
                 long n = 1;

@@ -806,8 +806,10 @@ public class RolapSchema implements Schema {
      * cube exists.
      */
     protected Cube lookupCube(final String cubeName) {
-        return (Cube) mapNameToCube.get(MondrianProperties.instance().getCaseSensitive() ? cubeName
-                : cubeName.toUpperCase());
+        return (Cube) mapNameToCube.get(
+                MondrianProperties.instance().CaseSensitive.get() ?
+                cubeName :
+                cubeName.toUpperCase());
     }
 
     public List getCubesWithStar(RolapStar star) {
@@ -827,9 +829,10 @@ public class RolapSchema implements Schema {
      */
     protected void addCube(final Cube cube) {
         this.mapNameToCube.put(
-            MondrianProperties.instance().getCaseSensitive() ?
-                    cube.getName() : cube.getName().toUpperCase(),
-            cube);
+                MondrianProperties.instance().CaseSensitive.get() ?
+                cube.getName() :
+                cube.getName().toUpperCase(),
+                cube);
     }
 
     public Cube[] getCubes() {
@@ -1078,7 +1081,7 @@ public class RolapSchema implements Schema {
                 memberCount = Integer.MAX_VALUE;
             }
             int largeDimensionThreshold =
-                MondrianProperties.instance().getLargeDimensionThreshold();
+                    MondrianProperties.instance().LargeDimensionThreshold.get();
 
             return (memberCount > largeDimensionThreshold)
                 ? new SmartMemberReader(source)

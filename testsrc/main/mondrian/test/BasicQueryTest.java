@@ -2672,10 +2672,10 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     public void testMembersOfLargeDimensionTheHardWay() {
         final MondrianProperties properties = MondrianProperties.instance();
-        int old = properties.getLargeDimensionThreshold();
+        int old = properties.LargeDimensionThreshold.get();
         try {
             // prevent a CacheMemberReader from kicking in
-            properties.setProperty(MondrianProperties.LargeDimensionThreshold, "1");
+            MondrianProperties.instance().LargeDimensionThreshold.set(1);
             final Connection connection =
                     TestContext.instance().getFoodMartConnection(true);
             String queryString = "select {[Measures].[Unit Sales]} on columns," + nl +
@@ -2685,7 +2685,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             Result result = connection.execute(query);
             assertEquals(10407, result.getAxes()[1].positions.length);
         } finally {
-            properties.setProperty(MondrianProperties.LargeDimensionThreshold, old + "");
+            MondrianProperties.instance().LargeDimensionThreshold.set(old);
         }
     }
 

@@ -83,7 +83,7 @@ class CrossJoinFunDef extends FunDefBase {
         }
 
         // throw an exeption, if the crossjoin gets too large
-        int limit = MondrianProperties.instance().getResultLimit();
+        int limit = MondrianProperties.instance().ResultLimit.get();
         if (limit > 0 && limit < size) {
             // result limit exceeded, throw an exception
             throw MondrianResource.instance().

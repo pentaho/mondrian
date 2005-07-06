@@ -141,17 +141,15 @@ public class AggStar {
     }
 
     /**
-     * This is a measure of the IO cost of querying this table. It can be
+     * Returns a measure of the IO cost of querying this table. It can be
      * either the row count or the row count times the size of a row.
-     * If the property MondrianProperties.ChooseAggregateByVolume
+     * If the property {@link MondrianProperties#ChooseAggregateByVolume}
      * is true, then volume is returned, otherwise row count.
-     *
-     * @return
      */
     public int getSize() {
-        return (MondrianProperties.instance().getChooseAggregateByVolume())
-            ? getFactTable().getVolume()
-            : getFactTable().getNumberOfRows();
+        return MondrianProperties.instance().ChooseAggregateByVolume.get() ?
+                getFactTable().getVolume() :
+                getFactTable().getNumberOfRows();
     }
 
     /**
@@ -788,10 +786,10 @@ public class AggStar {
             return numberOfRows;
         }
 
-        /** 
-         * This is for testing ONLY. 
-         * 
-         * @param numberOfRows 
+        /**
+         * This is for testing ONLY.
+         *
+         * @param numberOfRows
          */
         void setNumberOfRows(int numberOfRows) {
             this.numberOfRows = numberOfRows;

@@ -31,7 +31,7 @@ public class XmlaUtil {
     private static final String nl = Util.nl;
 
     public static Map getRequestMap() {
-        String catalogName = MondrianProperties.instance().getCatalogURL();
+        String catalogName = MondrianProperties.instance().CatalogURL.get();
         if (catalogName == null) {
             final File file = new File("demo/FoodMart.xml");
             if (!file.exists()) {
@@ -45,8 +45,8 @@ public class XmlaUtil {
             catalogName = url.toString();
         }
 
-        String driver = MondrianProperties.instance().getJdbcDrivers();
-        String url = MondrianProperties.instance().getFoodmartJdbcURL();
+        String driver = MondrianProperties.instance().JdbcDrivers.get();
+        String url = MondrianProperties.instance().FoodmartJdbcURL.get();
 
         // Deal with embedded & that can be in the JDBC URL
         String dataSource =

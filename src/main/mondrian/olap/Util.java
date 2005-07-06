@@ -114,12 +114,16 @@ public class Util extends XOMUtil {
 
     /**
      * Returns true if two strings are equal, or are both null.
-     * Takes into account the case sensitive option.
+     * Takes into account the {@link MondrianProperties#CaseSensitive case
+     * sensitive option}.
      */
     public static boolean equals(String s, String t) {
-        boolean caseSensitive = MondrianProperties.instance().getCaseSensitive();
-        return (s == null) ? (t == null) : (caseSensitive ? s.equals(t) : s.equalsIgnoreCase(t));
+        boolean caseSensitive = MondrianProperties.instance().CaseSensitive.get();
+        return (s == null) ?
+                (t == null) :
+                (caseSensitive ? s.equals(t) : s.equalsIgnoreCase(t));
     }
+
     /**
      * Returns a string with every occurrence of a seek string replaced with
      * another.

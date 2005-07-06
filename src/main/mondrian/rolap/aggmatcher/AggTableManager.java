@@ -14,6 +14,8 @@ import mondrian.olap.*;
 import mondrian.rolap.*;
 import mondrian.recorder.*;
 import org.apache.log4j.Logger;
+import org.eigenbase.util.property.*;
+import org.eigenbase.util.property.Property;
 
 import javax.sql.DataSource;
 import java.util.*;
@@ -27,7 +29,7 @@ import java.sql.SQLException;
  *     and stores it in a member variable to ensure that it is not
  *     garbage-collected.
  * <li>The {@link AggTableManager} creates and registers
- *     {@link MondrianProperties.Trigger} objects, so that it is notified
+ *     {@link org.eigenbase.util.property.Trigger} objects, so that it is notified
  *     when properties pertinent to aggregate tables change.
  * <li>The {@link mondrian.rolap.RolapSchema} calls {@link #initialize()},
  *     which scans the JDBC catalog and identifies aggregate tables.
@@ -49,7 +51,7 @@ public class AggTableManager {
      * This is used to create forward references to triggers (so they do not
      * get reaped until the RolapSchema is reaped).
      */
-    private MondrianProperties.Trigger[] triggers;
+    private Trigger[] triggers;
 
     public AggTableManager(final RolapSchema schema) {
         this.schema = schema;
@@ -70,7 +72,7 @@ public class AggTableManager {
      * This method should only be called once.
      */
     public void initialize() {
-        if (MondrianProperties.instance().getReadAggregates()) {
+        if (MondrianProperties.instance().ReadAggregates.get()) {
             try {
                 loadRolapStarAggregates();
 
@@ -85,7 +87,7 @@ public class AggTableManager {
 /*
  *   This was too much information at the INFO level, compared to the
  *   rest of Mondrian
- *   
+ *
  *         if (getLogger().isInfoEnabled()) {
             // print just Star table alias and AggStar table names
             StringBuffer buf = new StringBuffer(1024);
@@ -99,12 +101,12 @@ public class AggTableManager {
                     buf.append("    ");
                     buf.append(aggStar.getFactTable().getName());
                     buf.append(Util.nl);
-                }   
+                }
             }
             getLogger().info(buf.toString());
 
         } else
-*/      
+*/
     	if (getLogger().isDebugEnabled()) {
             // print everything, Star, subTables, AggStar and subTables
             // could be a lot
@@ -119,7 +121,7 @@ public class AggTableManager {
         }
     }
     private void reLoadRolapStarAggregates() {
-        if (MondrianProperties.instance().getReadAggregates()) {
+        if (MondrianProperties.instance().ReadAggregates.get()) {
             try {
                 clearJdbcSchema();
                 loadRolapStarAggregates();
@@ -130,8 +132,8 @@ public class AggTableManager {
         }
     }
 
-    /** 
-     * Clear the possibly already loaded snapshot of what is in the database. 
+    /**
+     * Clear the possibly already loaded snapshot of what is in the database.
      */
     private void clearJdbcSchema() {
         DataSource dataSource = schema.getInternalConnection().getDataSource();
@@ -223,9 +225,9 @@ public class AggTableManager {
                 if (tableDef != null) {
                     // load columns
                     dbTable.load();
-                    makeAggStar = tableDef.columnsOK(star, 
-                                    dbFactTable, 
-                                    dbTable, 
+                    makeAggStar = tableDef.columnsOK(star,
+                                    dbFactTable,
+                                    dbTable,
                                     msgRecorder);
                 }
                 if (! makeAggStar) {
@@ -233,13 +235,13 @@ public class AggTableManager {
                     if (rules.matchesTableName(factTableName, name)) {
                         // load columns
                         dbTable.load();
-                        makeAggStar = rules.columnsOK(star, 
-                                            dbFactTable, 
-                                            dbTable, 
+                        makeAggStar = rules.columnsOK(star,
+                                            dbFactTable,
+                                            dbTable,
                                             msgRecorder);
                     }
                 }
-        
+
 
                 if (makeAggStar) {
                     dbTable.setTableUsage(JdbcSchema.AGG_TABLE_USAGE);
@@ -277,7 +279,7 @@ public class AggTableManager {
             return true;
         } else {
             // must remove triggers
-            deregisterTriggers();
+            deregisterTriggers(MondrianProperties.instance());
 
             return false;
         }
@@ -294,98 +296,82 @@ public class AggTableManager {
      * </ul>
      */
     private void registerTriggers() {
-        triggers = new MondrianProperties.Trigger[3];
+        final MondrianProperties properties = MondrianProperties.instance();
+        triggers = new Trigger[] {
 
-        // When the ordering AggStars property is changed, we must
-        // reorder them, so we create a trigger.
-        // There is no need to provide equals/hashCode methods for this
-        // Trigger since it is never explicitly removed.
-        MondrianProperties.Trigger trigger =
-            new MondrianProperties.Trigger() {
+            // When the ordering AggStars property is changed, we must
+            // reorder them, so we create a trigger.
+            // There is no need to provide equals/hashCode methods for this
+            // Trigger since it is never explicitly removed.
+            new Trigger() {
                 public boolean isPersistent() {
                     return false;
                 }
                 public int phase() {
-                    return MondrianProperties.Trigger.SECONDARY_PHASE;
+                    return Trigger.SECONDARY_PHASE;
                 }
-                public void executeTrigger(final String key,
-                                           final String value)
-                             throws MondrianProperties.Trigger.VetoRT {
+                public void execute(Property property, String value) {
                     if (AggTableManager.this.runTrigger()) {
                         reOrderAggStarList();
                     }
                 }
-            };
-        MondrianProperties.instance().addTrigger(trigger,
-            MondrianProperties.ChooseAggregateByVolume);
-        triggers[0] = trigger;
+            },
 
-        // Register to know when the Default resource/url has changed
-        // so that the default aggregate table recognition rules can
-        // be re-loaded.
-        // There is no need to provide equals/hashCode methods for this
-        // Trigger since it is never explicitly removed.
-        trigger =
-            new MondrianProperties.Trigger() {
+            // Register to know when the Default resource/url has changed
+            // so that the default aggregate table recognition rules can
+            // be re-loaded.
+            // There is no need to provide equals/hashCode methods for this
+            // Trigger since it is never explicitly removed.
+            new Trigger() {
                 public boolean isPersistent() {
                     return false;
                 }
                 public int phase() {
-                    return MondrianProperties.Trigger.SECONDARY_PHASE;
+                    return Trigger.SECONDARY_PHASE;
                 }
-                public void executeTrigger(final String key,
-                                           final String value)
-                             throws MondrianProperties.Trigger.VetoRT {
+                public void execute(Property property, String value) {
                     if (AggTableManager.this.runTrigger()) {
                         reLoadRolapStarAggregates();
                     }
                 }
-            };
-        MondrianProperties.instance().addTrigger(trigger,
-            MondrianProperties.AggregateRules);
-        MondrianProperties.instance().addTrigger(trigger,
-            MondrianProperties.AggregateRuleTag);
-        triggers[1] = trigger;
+            },
 
-        // If the system started not using aggregates, i.e., the aggregate
-        // tables were not loaded, but then the property
-        // was changed to use aggregates, we must then load the aggregates
-        // if they were never loaded.
-        trigger =
-            new MondrianProperties.Trigger() {
+            // If the system started not using aggregates, i.e., the aggregate
+            // tables were not loaded, but then the property
+            // was changed to use aggregates, we must then load the aggregates
+            // if they were never loaded.
+            new Trigger() {
                 public boolean isPersistent() {
                     return false;
                 }
                 public int phase() {
-                    return MondrianProperties.Trigger.SECONDARY_PHASE;
+                    return Trigger.SECONDARY_PHASE;
                 }
-                public void executeTrigger(final String key,
-                                           final String value)
-                             throws MondrianProperties.Trigger.VetoRT {
+                public void execute(Property property, String value) {
                     if (AggTableManager.this.runTrigger()) {
                         reLoadRolapStarAggregates();
                     }
                 }
-            };
-        MondrianProperties.instance().addTrigger(trigger,
-            MondrianProperties.ReadAggregates);
-        triggers[2] = trigger;
-    }
-    private void deregisterTriggers() {
-        MondrianProperties.instance().removeTrigger(triggers[0],
-                MondrianProperties.ChooseAggregateByVolume);
+            }
+        };
 
-        MondrianProperties.instance().addTrigger(triggers[1],
-            MondrianProperties.AggregateRules);
-        MondrianProperties.instance().addTrigger(triggers[1],
-            MondrianProperties.AggregateRuleTag);
-
-        MondrianProperties.instance().addTrigger(triggers[2],
-            MondrianProperties.ReadAggregates);
+        properties.ChooseAggregateByVolume.addTrigger(triggers[0]);
+        properties.AggregateRules.addTrigger(triggers[1]);
+        properties.AggregateRuleTag.addTrigger(triggers[1]);
+        properties.ReadAggregates.addTrigger(triggers[2]);
     }
+
+    private void deregisterTriggers(final MondrianProperties properties) {
+        properties.ChooseAggregateByVolume.removeTrigger(triggers[0]);
+        properties.AggregateRules.addTrigger(triggers[1]);
+        properties.AggregateRuleTag.addTrigger(triggers[1]);
+        properties.ReadAggregates.addTrigger(triggers[2]);
+    }
+
     private Iterator getStars() {
         return schema.getStars();
     }
+
     private void reOrderAggStarList() {
         for (Iterator it = getStars(); it.hasNext(); ) {
             RolapStar star = (RolapStar) it.next();

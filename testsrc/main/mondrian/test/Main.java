@@ -59,7 +59,7 @@ public class Main extends TestSuite {
     void run(String[] args) throws Exception {
         final MondrianProperties properties = MondrianProperties.instance();
         Test test = suite();
-        if (properties.getWarmup()) {
+        if (properties.Warmup.get()) {
             System.out.println("Starting warmup run...");
             MondrianTestRunner runner = new MondrianTestRunner();
             TestResult tres = runner.doRun(test);
@@ -70,9 +70,9 @@ public class Main extends TestSuite {
             System.out.println("Warmup run complete. Starting regular run...");
         }
         MondrianTestRunner runner = new MondrianTestRunner();
-        runner.setIterations(properties.getIterations());
-        runner.setVUsers(properties.getVUsers());
-        runner.setTimeLimit(properties.getTimeLimit());
+        runner.setIterations(properties.Iterations.get());
+        runner.setVUsers(properties.VUsers.get());
+        runner.setTimeLimit(properties.TimeLimit.get());
         TestResult tres = runner.doRun(test);
         if (!tres.wasSuccessful())
             System.exit(1);
@@ -86,8 +86,8 @@ public class Main extends TestSuite {
     public static Test suite() throws Exception {
         RolapUtil.checkTracing();
         MondrianProperties properties = MondrianProperties.instance();
-        String testName = properties.getTestName();
-        String testClass = properties.getTestClass();
+        String testName = properties.TestName.get();
+        String testClass = properties.TestClass.get();
 
         System.out.println("testName: " + testName);
         System.out.println("testClass: " + testClass);
@@ -95,10 +95,10 @@ public class Main extends TestSuite {
         TestSuite suite = new TestSuite();
         if (testClass != null) {
             Class clazz = Class.forName(testClass);
-            
+
             // use addTestSuite only if the class has test methods
             // Allows you to run individual queries with ResultComparatorTest
-            
+
             boolean matchTestMethods = false;
             if (Test.class.isAssignableFrom(clazz)) {
             	Method[] methods = clazz.getMethods();
@@ -106,7 +106,7 @@ public class Main extends TestSuite {
             		matchTestMethods = methods[i].getName().startsWith("test");
             	}
             }
-            
+
             if (matchTestMethods) {
                 // e.g. testClass = "mondrian.test.FoodMartTestCase",
                 // the name of a class which extends TestCase. We will invoke
@@ -162,8 +162,9 @@ public class Main extends TestSuite {
      */
     private static boolean isRunOnce() {
         final MondrianProperties properties = MondrianProperties.instance();
-        return !properties.getWarmup() && properties.getVUsers() == 1
-                && properties.getIterations() == 1;
+        return !properties.Warmup.get() &&
+                properties.VUsers.get() == 1 &&
+                properties.Iterations.get() == 1;
     }
 
     /**

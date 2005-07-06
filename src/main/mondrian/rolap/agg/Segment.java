@@ -11,24 +11,12 @@
 */
 package mondrian.rolap.agg;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import mondrian.olap.*;
+import mondrian.rolap.*;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Iterator;
-
-import mondrian.olap.EnumeratedValues;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Util;
-import mondrian.rolap.CellKey;
-import mondrian.rolap.RolapMember;
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.RolapUtil;
-import mondrian.rolap.BitKey;
+import java.util.*;
 
 /**
  * A <code>Segment</code> is a collection of cell values parameterized by
@@ -56,9 +44,6 @@ import mondrian.rolap.BitKey;
  * the cell request to bring the required cell values into the cache, again,
  * pinned. Then it evalutes the query a second time, knowing that all cell values
  * are available. Finally, it releases the pins.</p>
- *
- * <p><b>Note to developers</b>: this class must obey the contract for
- * objects which implement {@link Cacheable}.
  *
  * @author jhyde
  * @since 21 March, 2002
@@ -102,7 +87,7 @@ class Segment {
      * @param constraintses For each column, either an array of values
      *    to fetch or null, indicating that the column is unconstrained
      **/
-    Segment(Aggregation aggregation, 
+    Segment(Aggregation aggregation,
             RolapStar.Measure measure,
             ColumnConstraint[][] constraintses,
             Aggregation.Axis[] axes) {
@@ -118,7 +103,7 @@ class Segment {
      * Sets the data, and notifies any threads which are blocked in
      * {@link #waitUntilLoaded}.
      */
-    synchronized void setData(SegmentDataset data, 
+    synchronized void setData(SegmentDataset data,
                               Collection pinnedSegments) {
         Util.assertTrue(this.data == null);
         Util.assertTrue(this.state == State.Loading);
@@ -155,7 +140,7 @@ class Segment {
         StringBuffer buf = new StringBuffer(64);
         buf.append("Segment #");
         buf.append(id);
-        buf.append(" {measure="); 
+        buf.append(" {measure=");
         buf.append(measure.getAggregator().getExpression(
                         measure.getExpression().getGenericExpression()));
 
@@ -255,13 +240,13 @@ class Segment {
      *
      * @pre segments[i].aggregation == aggregation
      **/
-    static void load(final Segment[] segments, 
+    static void load(final Segment[] segments,
                      final BitKey bitKey,
                      final boolean isDistinct,
-                     final Collection pinnedSegments, 
+                     final Collection pinnedSegments,
                      final Aggregation.Axis[] axes) {
-        String sql = AggregationManager.instance().generateSQL(segments, 
-                                                               bitKey, 
+        String sql = AggregationManager.instance().generateSQL(segments,
+                                                               bitKey,
                                                                isDistinct);
         Segment segment0 = segments[0];
         RolapStar star = segment0.aggregation.getStar();
@@ -321,8 +306,8 @@ class Segment {
             SegmentDataset[] datas = new SegmentDataset[segments.length];
             sparse = sparse || useSparse((double) n, (double) rows.size());
             for (int i = 0; i < segments.length; i++) {
-                datas[i] = sparse 
-                    ? (SegmentDataset) new SparseSegmentDataset(segments[i]) 
+                datas[i] = sparse
+                    ? (SegmentDataset) new SparseSegmentDataset(segments[i])
                     : new DenseSegmentDataset(segments[i], new Object[n]);
             }
             // now convert the rows into a sparse array
@@ -384,23 +369,24 @@ class Segment {
     /**
      * Decides whether to use a sparse representation for this segment, using
      * the formula described
-     * {@link MondrianProperties#getSparseSegmentCountThreshold here}.
+     * {@link MondrianProperties#SparseSegmentCountThreshold here}.
      *
      * @param possibleCount Number of values in the space.
      * @param actualCount Actual number of values.
      * @return Whether to use a sparse representation.
      */
-    private static boolean useSparse(final double possibleCount,
-                                     final double actualCount) {
+    private static boolean useSparse(
+            final double possibleCount,
+            final double actualCount) {
         final MondrianProperties properties = MondrianProperties.instance();
-        double densityThreshold = properties.getSparseSegmentDensityThreshold();
+        double densityThreshold = properties.SparseSegmentDensityThreshold.get();
         if (densityThreshold < 0) {
             densityThreshold = 0;
         }
         if (densityThreshold > 1) {
             densityThreshold = 1;
         }
-        int countThreshold = properties.getSparseSegmentCountThreshold();
+        int countThreshold = properties.SparseSegmentCountThreshold.get();
         if (countThreshold < 0) {
             countThreshold = 0;
         }
@@ -439,7 +425,7 @@ class Segment {
             case State.Ready:
                 return; // excellent!
             case State.Failed:
-                throw Util.newError("Pending segment failed to load: " 
+                throw Util.newError("Pending segment failed to load: "
                     + toString());
             default:
                 throw State.instance.badValue(state);

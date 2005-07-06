@@ -48,7 +48,7 @@ public class XmlaTest extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        catalogName = MondrianProperties.instance().getCatalogURL();
+        catalogName = MondrianProperties.instance().CatalogURL.get();
         if (catalogName == null) {
             final File file = new File("demo/FoodMart.xml");
             if (!file.exists()) {
@@ -58,8 +58,8 @@ public class XmlaTest extends TestCase {
             catalogName = url.toString();
         }
 
-        String driver = MondrianProperties.instance().getJdbcDrivers();
-        String url = MondrianProperties.instance().getFoodmartJdbcURL();
+        String driver = MondrianProperties.instance().JdbcDrivers.get();
+        String url = MondrianProperties.instance().FoodmartJdbcURL.get();
 
         // Deal with embedded & that can be in the JDBC URL
         dataSource =
@@ -1615,7 +1615,7 @@ public class XmlaTest extends TestCase {
      * dependent upon the test classes, the method
      * {@link XmlaUtil#getSampleRequests(String, String)} contains a redundant
      * copy of these requests. If these get out of sync, this test helpfully
-     * outputs the code for the redundant copy, and then fails. 
+     * outputs the code for the redundant copy, and then fails.
      */
     public void testThatRequestListMatches() {
         if (requestList != null) {

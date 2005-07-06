@@ -602,12 +602,12 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         }
 
         private Connection getConnection() {
-            String connectString = MondrianProperties.instance().getTestConnectString();
+            String connectString = MondrianProperties.instance().TestConnectString.get();
             if (connectString == null || connectString.equals("")) {
                 return null;
             }
             final Util.PropertyList connectProperties = Util.parseConnectString(connectString);
-            String jdbcURL = MondrianProperties.instance().getFoodmartJdbcURL();
+            String jdbcURL = MondrianProperties.instance().FoodmartJdbcURL.get();
             if (jdbcURL != null) {
                 connectProperties.put("Jdbc", jdbcURL);
             }

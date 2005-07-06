@@ -320,7 +320,7 @@ class SqlMemberSource implements MemberReader {
                 list.add(root);
             }
 
-            int limit = MondrianProperties.instance().getResultLimit();
+            int limit = MondrianProperties.instance().ResultLimit.get();
             int nFetch = 0;
 
             while (resultSet.next()) {
@@ -552,7 +552,7 @@ RME is this right
             RolapMember[] members = new RolapMember[levels.length];
             List[] siblings = new ArrayList[levels.length + 1];
 
-            int limit = MondrianProperties.instance().getResultLimit();
+            int limit = MondrianProperties.instance().ResultLimit.get();
             int nFetch = 0;
 
             while (resultSet.next()) {
@@ -756,7 +756,7 @@ RME is this right
             resultSet = RolapUtil.executeQuery(
                 jdbcConnection, sql, "SqlMemberSource.getMemberChildren");
 
-            int limit = MondrianProperties.instance().getResultLimit();
+            int limit = MondrianProperties.instance().ResultLimit.get();
             int nFetch = 0;
 
             while (resultSet.next()) {

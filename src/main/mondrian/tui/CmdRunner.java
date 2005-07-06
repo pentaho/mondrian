@@ -10,25 +10,24 @@
 
 package mondrian.tui;
 
+import mondrian.olap.Category;
 import mondrian.olap.*;
+import mondrian.olap.Hierarchy;
 import mondrian.olap.fun.FunInfo;
 import mondrian.rolap.RolapCube;
-
-import org.apache.log4j.Logger;
-import org.apache.log4j.LogManager;
 import org.apache.log4j.Level;
+import org.apache.log4j.*;
+import org.eigenbase.util.property.*;
+import org.eigenbase.util.property.Property;
 
+import java.io.*;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.io.*;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.regex.*;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
 /**
  * Command line utility which reads and executes MDX commands.
@@ -43,11 +42,6 @@ public class CmdRunner {
     private static final String nl = Util.nl;
 
     private static boolean RELOAD_CONNECTION = true;
-
-    /** List of all properties of interest to this utility. */
-    static String[] getPropertyNames() {
-        return MondrianProperties.instance().getPropertyNamesReflect();
-    }
 
     private static final Map paraNameValues = new HashMap();
 
@@ -73,6 +67,7 @@ public class CmdRunner {
         this.error = null;
         this.queryTime = -1;
     }
+
     public void setTimeQueries(boolean timeQueries) {
         this.timeQueries = timeQueries;
     }
@@ -123,19 +118,20 @@ public class CmdRunner {
     }
 
     public static void listPropertyNames(StringBuffer buf) {
-        String[] propertyNames = getPropertyNames();
-        for (int i = 0; i < propertyNames.length; i++) {
-            String propertyName = propertyNames[i];
-            buf.append(propertyName);
+        PropertyInfo propertyInfo =
+                new PropertyInfo(MondrianProperties.instance());
+        for (int i = 0; i < propertyInfo.size(); i++) {
+            buf.append(propertyInfo.getProperty(i).getPath());
             buf.append(nl);
         }
     }
 
     public static void listPropertiesAll(StringBuffer buf) {
-        String[] propertyNames = getPropertyNames();
-        for (int i = 0; i < propertyNames.length; i++) {
-            String propertyName = propertyNames[i];
-            String propertyValue = getPropertyValue(propertyName);
+        PropertyInfo propertyInfo =
+                new PropertyInfo(MondrianProperties.instance());
+        for (int i = 0; i < propertyInfo.size(); i++) {
+            String propertyName = propertyInfo.getPropertyName(i);
+            String propertyValue = propertyInfo.getProperty(i).getString();
             buf.append(propertyName);
             buf.append('=');
             buf.append(propertyValue);
@@ -143,46 +139,36 @@ public class CmdRunner {
         }
     }
 
-    /** 
-     * Just calling MondrianProperties' generic getPropery method does not
-     * do it!!! Why, because most of these properties have 1) default values and
-     * 2) their own getter methods that return the default values if they have
-     * not been explicitly set previously.
-     * So, what to do? By luck or good planning, most of the MondrianProperties
-     * instance variable whose values are the property names themselves
-     * have field names which when "get" is prepended to them are the special
-     * method names for those properties. So with a little reflection, so to
-     * speak, one can invoke a property's associate method and get its
-     * default value.
-     * 
-     * @param propertyName 
-     * @return 
+    /**
+     * Returns the value of a property, or null if it is not set.
      */
     private static String getPropertyValue(String propertyName) {
-        String v = MondrianProperties.instance().getPropertyValueReflect(propertyName);
-        return (v != null)
-            ? v
-            : MondrianProperties.instance().getProperty(propertyName);
+        final Property property = PropertyInfo.lookupProperty(
+                MondrianProperties.instance(),
+                propertyName);
+        return property.isSet() ?
+                property.getString() :
+                null;
     }
-    
+
     public static void listProperty(String propertyName, StringBuffer buf) {
         buf.append(getPropertyValue(propertyName));
     }
 
     public static boolean isProperty(String propertyName) {
-        String[] propertyNames = getPropertyNames();
-        for (int i = 0; i < propertyNames.length; i++) {
-            if (propertyNames[i].equals(propertyName)) {
-                return true;
-            }
-        }
-        return false;
+        final Property property = PropertyInfo.lookupProperty(
+                MondrianProperties.instance(),
+                propertyName);
+        return property != null;
     }
 
     public static boolean setProperty(String name, String value) {
-        String oldValue = getPropertyValue(name);
+        final Property property = PropertyInfo.lookupProperty(
+                MondrianProperties.instance(),
+                name);
+        String oldValue = property.getString();
         if (! Util.equals(oldValue, value)) {
-            MondrianProperties.instance().setProperty(name, value);
+            property.setString(value);
             return true;
         } else {
             return false;
@@ -197,6 +183,75 @@ public class CmdRunner {
         }
 
     }
+
+    /**
+     * Looks up the definition of a property with a given name.
+     */
+    private static class PropertyInfo {
+        private final List propertyList = new ArrayList();
+        private final List propertyNameList = new ArrayList();
+
+        PropertyInfo(MondrianProperties properties) {
+            final Class clazz = properties.getClass();
+            final Field[] fields = clazz.getFields();
+            for (int i = 0; i < fields.length; i++) {
+                Field field = fields[i];
+                if (!Modifier.isPublic(field.getModifiers()) ||
+                        Modifier.isStatic(field.getModifiers()) ||
+                        !Property.class.isAssignableFrom(
+                                field.getType())) {
+                    continue;
+                }
+                final Property property;
+                try {
+                    property = (Property) field.get(properties);
+                } catch (IllegalAccessException e) {
+                    continue;
+                }
+                propertyList.add(property);
+                propertyNameList.add(field.getName());
+            }
+        }
+
+        public int size() {
+            return propertyList.size();
+        }
+
+        public Property getProperty(int i) {
+            return (Property) propertyList.get(i);
+        }
+
+        public String getPropertyName(int i) {
+            return (String) propertyNameList.get(i);
+        }
+
+        /**
+         * Looks up the definition of a property with a given name.
+         */
+        public static Property lookupProperty(
+                MondrianProperties properties,
+                String propertyName)
+        {
+            final Class clazz = properties.getClass();
+            final Field field;
+            try {
+                field = clazz.getField(propertyName);
+            } catch (NoSuchFieldException e) {
+                return null;
+            }
+            if (!Modifier.isPublic(field.getModifiers()) ||
+                    Modifier.isStatic(field.getModifiers()) ||
+                    !Property.class.isAssignableFrom(field.getType())) {
+                return null;
+            }
+            try {
+                return (Property) field.get(properties);
+            } catch (IllegalAccessException e) {
+                return null;
+            }
+        }
+    }
+
     private static class Expr {
         static final int STRING_TYPE    = 1;
         static final int NUMERIC_TYPE   = 2;
@@ -240,7 +295,7 @@ public class CmdRunner {
                     String msg = "For parameter named \""
                         + name
                         + "\" of Catetory.Numeric, "
-                        + "the value was type \"" 
+                        + "the value was type \""
                         + Expr.typeName(type)
                         + "\"";
                     throw new IllegalArgumentException(msg);
@@ -257,7 +312,7 @@ public class CmdRunner {
                     String msg = "For parameter named \""
                         + name
                         + "\" of Catetory.String, "
-                        + "the value was type \"" 
+                        + "the value was type \""
                         + Expr.typeName(type)
                         + "\"";
                     throw new IllegalArgumentException(msg);
@@ -270,7 +325,7 @@ public class CmdRunner {
                     String msg = "For parameter named \""
                         + name
                         + "\" of Catetory.Member, "
-                        + "the value was type \"" 
+                        + "the value was type \""
                         + Expr.typeName(type)
                         + "\"";
                     throw new IllegalArgumentException(msg);
@@ -298,12 +353,12 @@ public class CmdRunner {
                             Expr.STRING_TYPE);
         }
 
-        // is it a Number ?   
+        // is it a Number ?
         Number number = null;
         try {
             number = nf.parse(trimmed);
         } catch (ParseException pex) {
-            // nothing to do, should be member 
+            // nothing to do, should be member
         }
         if (number != null) {
             CmdRunner.debug("parseParameter. NUMERIC_TYPE: " +number);
@@ -411,8 +466,8 @@ public class CmdRunner {
             buf.append(nl);
         }
     }
-    public void executeCubeCommand(String cubename, 
-                                   String command, 
+    public void executeCubeCommand(String cubename,
+                                   String command,
                                    StringBuffer buf) {
         Cube cube = getCube(cubename);
         if (cube == null) {
@@ -432,9 +487,9 @@ public class CmdRunner {
             }
         }
     }
-    public void setCubeAttribute(String cubename, 
-                                 String name, 
-                                 String value, 
+    public void setCubeAttribute(String cubename,
+                                 String name,
+                                 String value,
                                  StringBuffer buf) {
         Cube cube = getCube(cubename);
         if (cube == null) {
@@ -608,16 +663,16 @@ public class CmdRunner {
     // properties
     /////////////////////////////////////////////////////////////////////////
     protected static String getConnectStringProperty() {
-        return MondrianProperties.instance().getTestConnectString();
+        return MondrianProperties.instance().TestConnectString.get();
     }
     protected static String getJdbcURLProperty() {
-        return MondrianProperties.instance().getFoodmartJdbcURL();
+        return MondrianProperties.instance().FoodmartJdbcURL.get();
     }
     protected static String getCatalogURLProperty() {
-        return MondrianProperties.instance().getCatalogURL();
+        return MondrianProperties.instance().CatalogURL.get();
     }
     protected static String getJdbcDriversProperty() {
-        return MondrianProperties.instance().getJdbcDrivers();
+        return MondrianProperties.instance().JdbcDrivers.get();
     }
 
     /////////////////////////////////////////////////////////////////////////
@@ -801,7 +856,7 @@ public class CmdRunner {
      * @return
      * @throws IOException
      */
-    protected static String readLine(Reader reader, boolean inMDXCmd) 
+    protected static String readLine(Reader reader, boolean inMDXCmd)
                     throws IOException {
         StringBuffer buf = null;
 
@@ -1879,7 +1934,7 @@ public class CmdRunner {
                     String queryString = queryStringBuf.toString();
 
                     Result result = runQuery(queryString, true);
-                    String resultString = 
+                    String resultString =
                         result.getCell(new int[]{0}).getFormattedValue();
                     mdxResult = resultString;
                     clearError();
@@ -1890,7 +1945,7 @@ public class CmdRunner {
                     setError(ex);
                     buf.append("Error: " +ex);
                 }
-            } 
+            }
         }
         return buf.toString();
     }
@@ -2069,4 +2124,6 @@ public class CmdRunner {
         }
     }
 }
+
+// End CmdRunner.java
 

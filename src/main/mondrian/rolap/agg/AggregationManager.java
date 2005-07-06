@@ -58,11 +58,11 @@ public class AggregationManager extends RolapAggregationManager {
         RolapStar star = measures[0].getStar();
         Aggregation aggregation = star.lookupOrCreateAggregation(bitKey);
 
-        // synchronized access 
+        // synchronized access
         synchronized (aggregation) {
             // try to eliminate unneccessary constraints
             // for Oracle: prevent an IN-clause with more than 1000 elements
-            constraintses = 
+            constraintses =
                 aggregation.optimizeConstraints(columns, constraintses);
 
             aggregation.load(columns, measures, constraintses, pinnedSegments);
@@ -114,7 +114,7 @@ public class AggregationManager extends RolapAggregationManager {
                               final boolean isDistinct) {
 
         // Check if using aggregates is enabled.
-        if (MondrianProperties.instance().getUseAggregates()) {
+        if (MondrianProperties.instance().UseAggregates.get()) {
             RolapStar star = segments[0].aggregation.getStar();
 
 

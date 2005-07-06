@@ -135,15 +135,15 @@ public class RolapConnection extends ConnectionBase {
                 getJDBCProperties(connectInfo).toString();
 
                 schema = RolapSchema.Pool.instance().get(
-                            catalogName, 
-                            connectionKey, 
-                            jdbcUser, 
-                            strDataSource, 
+                            catalogName,
+                            connectionKey,
+                            jdbcUser,
+                            strDataSource,
                             connectInfo);
             } else {
                 schema = RolapSchema.Pool.instance().get(
-                            catalogName, 
-                            dataSource, 
+                            catalogName,
+                            dataSource,
                             connectInfo);
             }
             String roleName = connectInfo.get(RolapConnectionProperties.Role);
@@ -184,7 +184,7 @@ public class RolapConnection extends ConnectionBase {
                 RolapUtil.loadDrivers(jdbcDrivers);
             }
             final String jdbcDriversProp =
-                    MondrianProperties.instance().getJdbcDrivers();
+                    MondrianProperties.instance().JdbcDrivers.get();
             RolapUtil.loadDrivers(jdbcDriversProp);
 
             final boolean poolNeeded = (poolNeededString == null)
@@ -230,7 +230,7 @@ public class RolapConnection extends ConnectionBase {
 
         } else {
 
-            final String dataSourceName = 
+            final String dataSourceName =
                 connectInfo.get(RolapConnectionProperties.DataSource);
             if (dataSourceName == null) {
                 throw Util.newInternal(
@@ -248,10 +248,10 @@ public class RolapConnection extends ConnectionBase {
             // Get connection from datasource.
             final DataSource dataSource;
             try {
-                dataSource = 
+                dataSource =
                     (DataSource) new InitialContext().lookup(dataSourceName);
             } catch (NamingException e) {
-                throw Util.newInternal(e, 
+                throw Util.newInternal(e,
                     "Error while looking up data source (" +
                         dataSourceName + ")");
             }
@@ -381,7 +381,7 @@ public class RolapConnection extends ConnectionBase {
         private int loginTimeout;
         private Properties jdbcProperties;
 
-        public DriverManagerDataSource(String jdbcConnectString, 
+        public DriverManagerDataSource(String jdbcConnectString,
                                        Properties properties) {
             this.jdbcConnectString = jdbcConnectString;
             this.jdbcProperties = properties;

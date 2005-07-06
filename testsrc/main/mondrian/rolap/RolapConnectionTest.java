@@ -33,7 +33,7 @@ public class RolapConnectionTest extends TestCase {
 
     public void testPooledConnectionWithProperties() throws SQLException {
         final String connectString =
-            MondrianProperties.instance().getTestConnectString();
+                MondrianProperties.instance().TestConnectString.get();
         System.out.println(connectString);
         Util.PropertyList properties = Util.parseConnectString(connectString);
         //
@@ -67,7 +67,7 @@ public class RolapConnectionTest extends TestCase {
 
     public void testNonPooledConnectionWithProperties() {
         final String connectString =
-            MondrianProperties.instance().getTestConnectString();
+                MondrianProperties.instance().TestConnectString.get();
         Util.PropertyList properties = Util.parseConnectString(connectString);
         //
         // This test is just like the test testPooledConnectionWithProperties

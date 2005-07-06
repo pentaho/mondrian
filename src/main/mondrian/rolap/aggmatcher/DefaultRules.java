@@ -11,12 +11,14 @@
 package mondrian.rolap.aggmatcher;
 
 
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.MondrianResource;
+import mondrian.olap.*;
 import mondrian.rolap.RolapStar;
 import mondrian.recorder.*;
 import org.apache.log4j.Logger;
 import org.eigenbase.xom.*;
+import org.eigenbase.xom.Parser;
+import org.eigenbase.util.property.*;
+import org.eigenbase.util.property.Property;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -31,7 +33,8 @@ import java.util.Map;
  * a resource in the jar file (but can be a url).
  *
  * <p>It is a singleton since it is used to recognize tables independent of
- * database connection (each {@link RolapSchema} uses the same instance).
+ * database connection (each {@link mondrian.rolap.RolapSchema} uses the same
+ * instance).
  *
  * @author <a>Richard M. Emberson</a>
  * @version $Id$
@@ -71,7 +74,7 @@ public class DefaultRules {
 
 
             // make sure the tag name exists
-            String tag = MondrianProperties.instance().getAggregateRuleTag();
+            String tag = MondrianProperties.instance().AggregateRuleTag.get();
             DefaultDef.AggRule aggrule = defs.getAggRule(tag);
             if (aggrule == null) {
                 throw mres.newMissingDefaultAggRule(tag);
@@ -84,7 +87,7 @@ public class DefaultRules {
         return instance;
     }
     private static InputStream getAggRuleInputStream() {
-        String aggRules = MondrianProperties.instance().getAggregateRules();
+        String aggRules = MondrianProperties.instance().AggregateRules.get();
 
         InputStream inStream = DefaultRules.class.getResourceAsStream(aggRules);
         if (inStream == null) {
@@ -110,56 +113,49 @@ public class DefaultRules {
         // system to reload the DefaultRules.
         // There is no need to provide equals/hashCode methods for this
         // Trigger since it is a singleton and is never removed.
-        MondrianProperties.Trigger trigger = null;
-
-        trigger =
-            new MondrianProperties.Trigger() {
+        Trigger trigger =
+            new Trigger() {
                 public boolean isPersistent() {
                     return true;
                 }
                 public int phase() {
-                    return MondrianProperties.Trigger.PRIMARY_PHASE;
+                    return Trigger.PRIMARY_PHASE;
                 }
-                public void executeTrigger(final String key,
-                                           final String value)
-                             throws MondrianProperties.Trigger.VetoRT {
+                public void execute(Property property, String value) {
                     synchronized (DefaultRules.class) {
                         DefaultRules oldInstance = DefaultRules.instance;
                         DefaultRules.instance = null;
 
-                        DefaultRules newinstance = null;
+                        DefaultRules newInstance = null;
                         Exception ex = null;
                         try {
-                            newinstance = DefaultRules.getInstance();
+                            newInstance = DefaultRules.getInstance();
                         } catch (Exception e) {
                             ex = e;
                         }
                         if (ex != null) {
                             DefaultRules.instance = oldInstance;
 
-                            throw new MondrianProperties.Trigger.VetoRT(ex);
+                            throw new Trigger.VetoRT(ex);
 
-                        } else if (newinstance == null) {
+                        } else if (newInstance == null) {
                             DefaultRules.instance = oldInstance;
 
                             String msg =
                             mres.getFailedCreateNewDefaultAggregateRules(
-                                key, value);
-                            throw new MondrianProperties.Trigger.VetoRT(msg);
+                                property.getPath(), value);
+                            throw new Trigger.VetoRT(msg);
 
                         } else {
-                            instance = newinstance;
+                            instance = newInstance;
                         }
                     }
                 }
             };
 
-        MondrianProperties.instance().addTrigger(trigger,
-            MondrianProperties.AggregateRules);
-        MondrianProperties.instance().addTrigger(trigger,
-            MondrianProperties.AggregateRuleTag);
-
-
+        final MondrianProperties properties = MondrianProperties.instance();
+        properties.AggregateRules.addTrigger(trigger);
+        properties.AggregateRuleTag.addTrigger(trigger);
     }
 
     protected static DefaultDef.AggRules makeAggRules(final File file) {
@@ -247,7 +243,8 @@ public class DefaultRules {
         this.rules = rules;
         this.factToPattern = new HashMap();
         this.foreignKeyMatcherMap = new HashMap();
-        this.tag = MondrianProperties.AggregateRuleTag_Default;
+        this.tag = MondrianProperties.instance().AggregateRuleTag
+                .getDefaultValue();
     }
 
     public void validate(MessageRecorder msgRecorder) {

@@ -12,9 +12,7 @@
 
 package mondrian.rolap.sql;
 
-import mondrian.olap.MondrianDef;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -23,6 +21,9 @@ import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+
+import org.eigenbase.util.property.*;
+import org.eigenbase.util.property.Property;
 
 /**
  * <code>SqlQuery</code> allows us to build a <code>select</code>
@@ -74,26 +75,25 @@ public class SqlQuery
 {
     /** This static variable controls the formatting of the sql string. */
     private static boolean generateFormattedSql =
-             MondrianProperties.instance().getGenerateFormattedSql();
+             MondrianProperties.instance().GenerateFormattedSql.get();
 
     static {
         // Trigger is used to lookup and change the value of the
         // variable that controls formatting.
         // Using a trigger means we don't have to look up the property eveytime.
-        new MondrianProperties.Trigger() {
-            public boolean isPersistent() {
-                return true;
-            }
-            public int phase() {
-                return MondrianProperties.Trigger.PRIMARY_PHASE;
-            }
-            public void executeTrigger(final String key,
-                                       final String value)
-                         throws MondrianProperties.Trigger.VetoRT {
-                generateFormattedSql =
-                    MondrianProperties.instance().getGenerateFormattedSql();
-            }
-        };
+        MondrianProperties.instance().GenerateFormattedSql.addTrigger(
+                new Trigger() {
+                    public boolean isPersistent() {
+                        return true;
+                    }
+                    public int phase() {
+                        return Trigger.PRIMARY_PHASE;
+                    }
+                    public void execute(Property property, String value) {
+                        generateFormattedSql = property.booleanValue();
+                    }
+                }
+        );
     }
 
     private boolean distinct;

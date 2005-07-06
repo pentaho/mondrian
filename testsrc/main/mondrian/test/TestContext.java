@@ -85,7 +85,7 @@ public class TestContext {
      * </ul>
      */
     private static String getConnectString() {
-        String connectString = MondrianProperties.instance().getTestConnectString();
+        String connectString = MondrianProperties.instance().TestConnectString.get();
         final Util.PropertyList connectProperties;
         if (connectString == null || connectString.equals("")) {
             connectProperties = new Util.PropertyList();
@@ -93,7 +93,7 @@ public class TestContext {
         } else {
              connectProperties = Util.parseConnectString(connectString);
         }
-        String jdbcURL = MondrianProperties.instance().getFoodmartJdbcURL();
+        String jdbcURL = MondrianProperties.instance().FoodmartJdbcURL.get();
         if (jdbcURL != null) {
             connectProperties.put("Jdbc", jdbcURL);
         }

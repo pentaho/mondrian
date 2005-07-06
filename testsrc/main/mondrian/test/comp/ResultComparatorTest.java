@@ -130,8 +130,9 @@ public class ResultComparatorTest extends TestCase {
 
     public static TestSuite suite() {
         TestSuite suite = new TestSuite();
-        String filePattern = MondrianProperties.instance().getQueryFilePattern();
-        String fileDirectory = MondrianProperties.instance().getQueryFileDirectory();
+        MondrianProperties properties = MondrianProperties.instance();
+        String filePattern = properties.QueryFilePattern.get();
+        String fileDirectory = properties.QueryFileDirectory.get();
 
         final Pattern pattern = filePattern == null ? null : Pattern.compile(filePattern);
         final String directory = fileDirectory == null ? "testsrc" + File.separatorChar + "queryFiles" : fileDirectory;

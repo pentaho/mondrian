@@ -11,11 +11,7 @@
 */
 
 package mondrian.rolap;
-import mondrian.olap.Member;
-import mondrian.olap.MondrianDef;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Util;
-import mondrian.olap.MondrianResource;
+import mondrian.olap.*;
 import mondrian.rolap.agg.Aggregation;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.agg.ColumnConstraint;
@@ -25,6 +21,8 @@ import mondrian.rolap.sql.SqlQuery;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.eigenbase.util.property.*;
+import org.eigenbase.util.property.Property;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -54,33 +52,26 @@ import java.util.Collections;
  **/
 public class RolapStar {
 
-    /** 
+    /**
       * This static variable controls the aggregate data cache for all
       * RolapStars. An administrator or tester might selectively enable or
       * disable in memory caching to allow direct measurement of database
       * performance.
       */
     private static boolean disableCaching =
-             MondrianProperties.instance().getDisableCaching();
+             MondrianProperties.instance().DisableCaching.get();
 
     static {
         // Trigger is used to lookup and change the value of the
         // variable that controls aggregate data caching
         // Using a trigger means we don't have to look up the property eveytime.
-        new MondrianProperties.Trigger() {
-            public boolean isPersistent() {
-                return true;
-            }
-            public int phase() {
-                return MondrianProperties.Trigger.PRIMARY_PHASE;
-            }
-            public void executeTrigger(final String key,
-                                       final String value)
-                         throws MondrianProperties.Trigger.VetoRT {
-                disableCaching =
-                    MondrianProperties.instance().getDisableCaching();
-            }
-        };
+        MondrianProperties.instance().DisableCaching.addTrigger(
+                new TriggerBase(true) {
+                    public void execute(Property property, String value) {
+                        disableCaching = property.booleanValue();
+                    }
+                }
+        );
     }
 
 
@@ -268,10 +259,10 @@ public class RolapStar {
         return new SqlQuery(getSqlQueryDialect());
     }
 
-    /** 
-     * Get this RolapStar's RolapSchema's Sql Dialect. 
-     * 
-     * @return 
+    /**
+     * Get this RolapStar's RolapSchema's Sql Dialect.
+     *
+     * @return
      */
     public SqlQuery.Dialect getSqlQueryDialect() {
         return sqlQueryDialect;
@@ -1099,12 +1090,12 @@ public class RolapStar {
         public String getAlias() {
             return alias;
         }
-        
-        /** 
+
+        /**
          * Sometimes one need to get to the "real" name when the table has
          * been given an alias.
-         * 
-         * @return 
+         *
+         * @return
          */
         public String getTableName() {
             if (relation instanceof MondrianDef.Table) {
@@ -1137,7 +1128,7 @@ public class RolapStar {
          *
          * @param cube
          * @param level
-         * @param parentColumn 
+         * @param parentColumn
          */
         synchronized Column makeColumns(RolapCube cube,
                                      RolapLevel level,
@@ -1209,7 +1200,7 @@ public class RolapStar {
                             + "' is invalid: table '" + tableName
                             + "' is not found in current scope"
                             + Util.nl
-                            + ", star:" 
+                            + ", star:"
                             + Util.nl
                             + getStar());
                 }
@@ -1541,7 +1532,7 @@ public class RolapStar {
 
     public static class Condition {
     	private static final Logger LOGGER = Logger.getLogger(Condition.class);
-    	
+
         private final MondrianDef.Expression left;
         private final MondrianDef.Expression right;
         // set in Table constructor

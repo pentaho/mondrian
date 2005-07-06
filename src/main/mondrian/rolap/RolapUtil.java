@@ -186,18 +186,19 @@ public class RolapUtil {
         System.arraycopy(b, 0, c, a.length, b.length);
         return c;
     }
-    
+
     /**
-     * Enables tracing if "mondrian.trace.level" &gt; 0 and a debug output file is
-     * configured.
+     * Enables tracing if the {@link MondrianProperties#TraceLevel} property
+     * is greater than 0 and a debug output file
+     * ({@link MondrianProperties#DebugOutFile}) is configured.
      */
     public static void checkTracing() {
-        if ( produceDebugOut == null ) {
-            int trace = MondrianProperties.instance().getTraceLevel();
+        if (produceDebugOut == null) {
+            int trace = MondrianProperties.instance().TraceLevel.get();
             if (trace > 0) {
                 String debugOutFile =
-                  MondrianProperties.instance().getProperty(MondrianProperties.DebugOutFile);
-                if ( debugOutFile != null ) {
+                        MondrianProperties.instance().DebugOutFile.get();
+                if (debugOutFile != null) {
                     File f;
                     try {
                         f = new File(debugOutFile);
@@ -207,13 +208,10 @@ public class RolapUtil {
                     }
                     produceDebugOut = Boolean.TRUE;
                 } else {
-                	produceDebugOut = Boolean.FALSE;
+                    produceDebugOut = Boolean.FALSE;
                 }
-/*                if ( debugOut == null ) {
-                    setDebugOut(new PrintWriter(System.out, true));
-                }
-*/            } else {
-            	produceDebugOut = Boolean.FALSE;
+            } else {
+                produceDebugOut = Boolean.FALSE;
             }
         }
     }
@@ -382,7 +380,7 @@ public class RolapUtil {
      */
     static synchronized Semaphore getQuerySemaphore() {
         if (querySemaphore == null) {
-            int queryCount = MondrianProperties.instance().getQueryLimit();
+            int queryCount = MondrianProperties.instance().QueryLimit.get();
             querySemaphore = new Semaphore(queryCount);
         }
         return querySemaphore;
