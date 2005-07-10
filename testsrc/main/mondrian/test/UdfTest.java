@@ -9,6 +9,8 @@
 */
 package mondrian.test;
 
+
+import mondrian.example.InverseNormalFunDef;
 import mondrian.example.LastNonEmptyUdf;
 import mondrian.olap.*;
 import mondrian.olap.type.NumericType;
@@ -167,6 +169,57 @@ public class UdfTest extends FoodMartTestCase {
 
     }
 
+    public void testComplexFun() {
+        runQueryCheckResult(
+                "WITH MEMBER [Measures].[InverseNormal] AS 'InverseNormal([Measures].[Grocery Sqft] / [Measures].[Store Sqft])', FORMAT_STRING = \"0.000000\"" + nl +
+                "SELECT {[Measures].[InverseNormal]} ON COLUMNS, " + nl +
+                "  {[Store Type].children} ON ROWS " + nl +
+                "FROM [Store]",
+
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[InverseNormal]}" + nl +
+                "Axis #2:" + nl +
+                "{[Store Type].[All Store Types].[Deluxe Supermarket]}" + nl +
+                "{[Store Type].[All Store Types].[Gourmet Supermarket]}" + nl +
+                "{[Store Type].[All Store Types].[HeadQuarters]}" + nl +
+                "{[Store Type].[All Store Types].[Mid-Size Grocery]}" + nl +
+                "{[Store Type].[All Store Types].[Small Grocery]}" + nl +
+                "{[Store Type].[All Store Types].[Supermarket]}" + nl +
+                "Row #0: 0.467304" + nl +
+                "Row #1: 0.462815" + nl +
+                "Row #2: (null)" + nl +
+                "Row #3: 0.625130" + nl +
+                "Row #4: 0.520862" + nl +
+                "Row #5: 0.503598" + nl);
+    }
+
+    public void testException() {
+        runQueryCheckResult(
+                "WITH MEMBER [Measures].[InverseNormal] AS 'InverseNormal([Measures].[Store Sqft] / [Measures].[Grocery Sqft])', FORMAT_STRING = \"0.000000\"" + nl +
+                "SELECT {[Measures].[InverseNormal]} ON COLUMNS, " + nl +
+                "  {[Store Type].children} ON ROWS " + nl +
+                "FROM [Store]",
+
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[InverseNormal]}" + nl +
+                "Axis #2:" + nl +
+                "{[Store Type].[All Store Types].[Deluxe Supermarket]}" + nl +
+                "{[Store Type].[All Store Types].[Gourmet Supermarket]}" + nl +
+                "{[Store Type].[All Store Types].[HeadQuarters]}" + nl +
+                "{[Store Type].[All Store Types].[Mid-Size Grocery]}" + nl +
+                "{[Store Type].[All Store Types].[Small Grocery]}" + nl +
+                "{[Store Type].[All Store Types].[Supermarket]}" + nl +
+                "Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: Invalid value for inverse normal distribution: 1.4708933427334072" + nl +
+                "Row #1: #ERR: mondrian.olap.fun.MondrianEvaluationException: Invalid value for inverse normal distribution: 1.4743792921288958" + nl +
+                "Row #2: (null)" + nl +
+                "Row #3: #ERR: mondrian.olap.fun.MondrianEvaluationException: Invalid value for inverse normal distribution: 1.3622919366091897" + nl +
+                "Row #4: #ERR: mondrian.olap.fun.MondrianEvaluationException: Invalid value for inverse normal distribution: 1.4310888905786632" + nl +
+                "Row #5: #ERR: mondrian.olap.fun.MondrianEvaluationException: Invalid value for inverse normal distribution: 1.4435681830051705" + nl);
+    }
 
     /**
      * Dynamic schema which adds two user-defined functions to any given
@@ -181,6 +234,8 @@ public class UdfTest extends FoodMartTestCase {
                     PlusOneUdf.class.getName() + "\"/>" + nl +
                     "<UserDefinedFunction name=\"LastNonEmpty\" className=\"" +
                     LastNonEmptyUdf.class.getName() + "\"/>" + nl +
+                    "<UserDefinedFunction name=\"InverseNormal\" className=\"" + 
+                    InverseNormalFunDef.class.getName() + "\"/>" + nl +
                     "</Schema>");
         }
     }
