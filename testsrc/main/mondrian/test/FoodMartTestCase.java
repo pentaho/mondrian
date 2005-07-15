@@ -16,6 +16,7 @@ import junit.framework.TestCase;
 import mondrian.olap.*;
 
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 /**
  * <code>FoodMartTestCase</code> is a unit test which runs against the FoodMart
@@ -148,6 +149,13 @@ public class FoodMartTestCase extends TestCase {
      * Runs a query and checks that the result is a given string.
      */
     public void runQueryCheckResult(String query, String desiredResult) {
+        getTestContext().runQueryCheckResult(query, desiredResult);
+    }
+
+    /**
+     * Runs a query and checks that the result matches a given pattern.
+     */
+    public void runQueryCheckResult(String query, Pattern desiredResult) {
         getTestContext().runQueryCheckResult(query, desiredResult);
     }
 

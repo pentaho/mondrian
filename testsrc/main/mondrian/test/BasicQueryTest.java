@@ -644,7 +644,8 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "select" + nl +
                 " {[Measures].[Unit Sales], [Measures].[Ever]} on columns," + nl +
                 " [Gender].members on rows" + nl +
-                "from Sales", null);
+                "from Sales",
+                "xxx");
     }
 
     public void _testDairy() {
@@ -656,7 +657,8 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "select" + nl +
                 " {[Measures].[Unit Sales], [Measures].[Dairy ever]}  on columns," + nl +
                 "  [Customers who never bought dairy] on rows" + nl +
-                "from Sales\r\n", null);
+                "from Sales\r\n",
+                "xxx");
     }
 
     public void testSolveOrder() {
@@ -4383,7 +4385,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "Dimension '[Measures]' appears in more than one independent axis");
 
         // within aggregate is OK
-        runQueryCheckResult(
+        runQuery(
                 "with member [Measures].[West Coast Total] as " +
                 " ' Aggregate({[Store].[USA].[CA], [Store].[USA].[OR], [Store].[USA].[WA]}) ' " + nl +
                 "select " +
@@ -4392,8 +4394,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 " CrossJoin(" + nl +
                 "   {[Product].children}," + nl +
                 "   {[Store].children}) on Rows" + nl +
-                "from [Sales]",
-                null);
+                "from [Sales]");
     }
 
     public void _testSetArgToTupleFails() {

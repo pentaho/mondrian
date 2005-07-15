@@ -75,9 +75,9 @@ public class TestContext {
      * FoodMart database.
      *
      * The algorithm is as follows:<ul>
-     * <li>Starts with {@link MondrianProperties#getTestConnectString}, if it is
+     * <li>Starts with {@link MondrianProperties#TestConnectString}, if it is
      *     set.</li>
-     * <li>If {@link MondrianProperties#getFoodmartJdbcURL} is set, this
+     * <li>If {@link MondrianProperties#FoodmartJdbcURL} is set, this
      *     overrides the <code>Jdbc</code> property.</li>
      * <li>If the <code>catalog</code> URL is unset or invalid, it assumes that
      *     we are at the root of the source tree, and references
@@ -293,6 +293,21 @@ public class TestContext {
         }
     }
 
+    /**
+     * Runs a query and checks that the result matches a given pattern.
+     */
+    public void runQueryCheckResult(String query, Pattern desiredResult) {
+        Result result = runQuery(query);
+        String resultString = toString(result);
+        assertMatchesVerbose(desiredResult, resultString);
+    }
+
+    /**
+     * Checks that an actual string matches an expected string.
+     * If they do not, throws a {@link ComparisonFailure} and prints the
+     * difference, including the actual string as an easily pasted Java string
+     * literal.
+     */
     public static void assertEqualsVerbose(
         String expected,
         String actual)
@@ -326,6 +341,42 @@ public class TestContext {
     }
 
     /**
+     * Checks that an actual string matches an expected pattern.
+     * If they do not, throws a {@link ComparisonFailure} and prints the
+     * difference, including the actual string as an easily pasted Java string
+     * literal.
+     */
+    public void assertMatchesVerbose(
+        Pattern expected,
+        String actual)
+    {
+        Util.assertPrecondition(expected != null, "expected != null");
+        if (expected.matcher(actual).matches()) {
+            return;
+        }
+        String s = actual;
+
+        // Convert [string with "quotes" split
+        // across lines]
+        // into ["string with \"quotes\" split" + nl +
+        // "across lines
+        //
+        s = Util.replace(s, "\"", "\\\"");
+        s = LineBreakPattern.matcher(s).replaceAll(lineBreak);
+        s = TabPattern.matcher(s).replaceAll("\\\\t");
+        s = "\"" + s + "\"";
+        final String spurious = " + " + FoodMartTestCase.nl + "\"\"";
+        if (s.endsWith(spurious)) {
+            s = s.substring(0, s.length() - spurious.length());
+        }
+        String message =
+                "Expected pattern:" + FoodMartTestCase.nl + expected + FoodMartTestCase.nl +
+                "Actual: " + FoodMartTestCase.nl + actual + FoodMartTestCase.nl +
+                "Actual java: " + FoodMartTestCase.nl + s + FoodMartTestCase.nl;
+        throw new ComparisonFailure(message, expected.pattern(), actual);
+    }
+
+    /**
      * Converts a {@link Throwable} to a stack trace.
      */
     public static String getStackTrace(Throwable e) {
@@ -346,6 +397,7 @@ public class TestContext {
         pw.flush();
         return sw.toString();
     }
+
 }
 
 // End TestContext.java

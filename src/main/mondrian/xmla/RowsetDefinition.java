@@ -1204,7 +1204,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             row.set(MemberName.name, member.getName());
             row.set(MemberUniqueName.name, member.getUniqueName());
             row.set(MemberCaption.name, member.getCaption());
-            row.set(MemberType.name, member.getType());
+            row.set(MemberType.name, member.getCategory());
             emit(row, saxHandler);
         }
     }
