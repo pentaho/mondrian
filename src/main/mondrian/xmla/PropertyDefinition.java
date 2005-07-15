@@ -118,7 +118,7 @@ class PropertyDefinition extends EnumeratedValues.BasicValue {
     });
 
     public static PropertyDefinition getValue(final String propertyName) {
-        return (PropertyDefinition) enumeration.getValue(propertyName);
+        return (PropertyDefinition) enumeration.getValue(propertyName, true);
     }
 }
 

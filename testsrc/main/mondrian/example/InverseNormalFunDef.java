@@ -1,3 +1,12 @@
+/*
+// $Id$
+// This software is subject to the terms of the Common Public License
+// Agreement, available at the following URL:
+// http://www.opensource.org/licenses/cpl.html.
+// (C) Copyright 2005-2005 Julian Hyde
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+*/
 package mondrian.example;
 
 import org.apache.commons.math.MathException;
@@ -18,17 +27,27 @@ import mondrian.spi.UserDefinedFunction;
  * A user-defined function which returns the inverse normal distribution value
  * of its argument.
  *
- * This particular function is useful in Six Sigma calculations, ie.
- *   member [Measures].[Yield] as '([Measures].[Number of Failures] / [Measures].[Population])', FORMAT_STRING = "0.00%"
- *   member [Measures].[Sigma] as 'IIf([Measures].[Yield] <> 0, IIf([Measures].[Yield] > 0.5,  0, InverseNormal(1 - ([Measures].[Yield])) + 1.5), 6)', FORMAT_STRING = "0.0000"
+ * <p>This particular function is useful in Six Sigma calculations, for
+ * example,
  *
+ * <blockquote><code><pre>
+ * WITH MEMBER [Measures].[Yield]
+ *         AS '([Measures].[Number of Failures] / [Measures].[Population])',
+ *         FORMAT_STRING = "0.00%"
+ *     MEMBER [Measures].[Sigma]
+ *         AS 'IIf([Measures].[Yield] <&gt; 0,
+ *                 IIf([Measures].[Yield] &gt; 0.5,
+ *                     0,
+ *                     InverseNormal(1 - ([Measures].[Yield])) + 1.5), 6)',
+ *         FORMAT_STRING = "0.0000"
+ * </pre></code></blockquote>
  */
 public class InverseNormalFunDef implements UserDefinedFunction {
     private static final Logger LOGGER = Logger.getLogger(InverseNormalFunDef.class);
-    
-    private static DistributionFactory distributionFactory = DistributionFactory.newInstance(); 
+
+    private static DistributionFactory distributionFactory = DistributionFactory.newInstance();
     private static NormalDistribution nd = distributionFactory.createNormalDistribution();
-    
+
     public String getName() {
         return "InverseNormal";
     }
@@ -58,7 +77,7 @@ public class InverseNormalFunDef implements UserDefinedFunction {
             // function will be called again when the cache is loaded.
             return null;
         }
-        
+
         final Double d = new Double(((Number) argValue).doubleValue());
         LOGGER.debug("Inverse Normal argument as Double was : " + d);
 
@@ -66,10 +85,10 @@ public class InverseNormalFunDef implements UserDefinedFunction {
             return null;
         }
         /*
-           If probability is nonnumeric or 
+           If probability is nonnumeric or
                 probability < 0 or
-                probability > 1, 
-            returns an error. 
+                probability > 1,
+            returns an error.
          */
         double dbl = d.doubleValue();
         if (dbl < 0.0 || dbl > 1.0) {
@@ -91,3 +110,5 @@ public class InverseNormalFunDef implements UserDefinedFunction {
     }
 
 }
+
+// End InverseNormalFunDef.java

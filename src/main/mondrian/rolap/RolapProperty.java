@@ -37,12 +37,16 @@ class RolapProperty extends Property {
     private final MondrianDef.Expression exp;
 
 
-    RolapProperty(String name, 
-                  int type, 
-                  MondrianDef.Expression exp, 
-                  String formatterDef, 
-                  String caption) {
-        super(name, type);
+    /**
+     * Creates a RolapProperty.
+     */
+    RolapProperty(
+            String name,
+            int type,
+            MondrianDef.Expression exp,
+            String formatterDef,
+            String caption) {
+        super(name, type, -1, false, null);
         this.exp = exp;
         this.caption = caption;
         this.formatter = makePropertyFormatter(formatterDef);

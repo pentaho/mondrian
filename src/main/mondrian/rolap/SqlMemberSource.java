@@ -1008,7 +1008,7 @@ RME is this right
         }
 
         public Object getPropertyValue(String name) {
-            if (name.equals(Property.PROPERTY_CONTRIBUTING_CHILDREN)) {
+            if (name.equals(Property.CONTRIBUTING_CHILDREN.name)) {
                 List list = new ArrayList();
                 list.add(dataMember);
                 RolapHierarchy hierarchy = (RolapHierarchy) getHierarchy();

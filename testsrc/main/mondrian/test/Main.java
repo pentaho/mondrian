@@ -146,6 +146,7 @@ public class Main extends TestSuite {
             suite.addTestSuite(CaptionTest.class);
             suite.addTestSuite(UdfTest.class);
             suite.addTestSuite(NamedSetTest.class);
+            suite.addTestSuite(PropertiesTest.class);
         }
         if (testName != null) {
             // Filter the suite, so that only tests whose names match

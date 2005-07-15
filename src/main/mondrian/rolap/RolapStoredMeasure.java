@@ -33,30 +33,30 @@ class RolapStoredMeasure extends RolapMeasure {
 
     private CellFormatter formatter;
 
-    RolapStoredMeasure(RolapCube cube, 
-                       RolapMember parentMember, 
-                       RolapLevel level, 
-                       String name, 
-                       String formatString, 
-                       MondrianDef.Expression expression, 
+    RolapStoredMeasure(RolapCube cube,
+                       RolapMember parentMember,
+                       RolapLevel level,
+                       String name,
+                       String formatString,
+                       MondrianDef.Expression expression,
                        String aggregatorName) {
         super(parentMember, level, name, formatString);
         this.cube = cube;
         this.expression = expression;
         this.aggregator = (RolapAggregator)
-                RolapAggregator.enumeration.getValue(aggregatorName);
+                RolapAggregator.enumeration.getValue(aggregatorName, true);
         if (this.aggregator == null) {
             throw Util.newError("Unknown aggregator '" + aggregatorName + "'");
         }
-        setProperty(Property.PROPERTY_AGGREGATION_TYPE, aggregator);
+        setProperty(Property.AGGREGATION_TYPE.name, aggregator);
     }
 
-    RolapStoredMeasure(RolapCube cube, 
-                       RolapMember parentMember, 
-                       RolapLevel level, 
-                       String name, 
-                       String formatString, 
-                       String column, 
+    RolapStoredMeasure(RolapCube cube,
+                       RolapMember parentMember,
+                       RolapLevel level,
+                       String name,
+                       String formatString,
+                       String column,
                        String aggregator) {
         this(cube, parentMember, level, name, formatString,
                 new MondrianDef.Column(cube.fact.getAlias(), column),

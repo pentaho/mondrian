@@ -189,7 +189,9 @@ public class RolapCube extends CubeBase {
             // Set member's caption, if present.
             if (!Util.isEmpty(xmlMeasure.caption)) {
                 // there is a special caption string
-                measure.setProperty(Property.PROPERTY_CAPTION, xmlMeasure.caption);
+                measure.setProperty(
+                        Property.CAPTION.name,
+                        xmlMeasure.caption);
             }
 
             // Set member's visibility, default true.
@@ -197,7 +199,7 @@ public class RolapCube extends CubeBase {
             if (visible == null) {
                 visible = Boolean.TRUE;
             }
-            measure.setProperty(Property.PROPERTY_VISIBLE, visible);
+            measure.setProperty(Property.VISIBLE.name, visible);
 
             List propNames = new ArrayList();
             List propExprs = new ArrayList();
@@ -407,12 +409,14 @@ public class RolapCube extends CubeBase {
         if (visible == null) {
             visible = Boolean.TRUE;
         }
-        member.setProperty(Property.PROPERTY_VISIBLE, visible);
+        member.setProperty(Property.VISIBLE.name, visible);
 
         if ((xmlCalcMember.caption != null) &&
             xmlCalcMember.caption.length() > 0) {
 
-            member.setProperty(Property.PROPERTY_CAPTION, xmlCalcMember.caption);
+            member.setProperty(
+                    Property.CAPTION.name,
+                    xmlCalcMember.caption);
         }
 
         return formula.getMdxMember();

@@ -270,8 +270,10 @@ public class RolapLevel extends LevelBase {
         List list = new ArrayList();
         final MondrianDef.Expression nameExp = xmlLevel.getNameExp();
         if (nameExp != null) {
-            list.add(new RolapProperty(
-                    Property.PROPERTY_NAME, Property.TYPE_STRING, nameExp, null, null));
+            list.add(
+                    new RolapProperty(
+                            Property.NAME.name, Property.TYPE_STRING,
+                            nameExp, null, null));
         }
         for (int i = 0; i < xmlLevel.properties.length; i++) {
             MondrianDef.Property property = xmlLevel.properties[i];
@@ -369,7 +371,7 @@ public class RolapLevel extends LevelBase {
                         }
                 );
         public static HideMemberCondition lookup(String s) {
-            return (HideMemberCondition) enumeration.getValue(s);
+            return (HideMemberCondition) enumeration.getValue(s, true);
         }
     }
 

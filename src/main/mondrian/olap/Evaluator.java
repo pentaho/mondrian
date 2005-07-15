@@ -79,8 +79,10 @@ public interface Evaluator {
      * Retrieves the value of property <code>name</code>. If more than one
      * member in the current context defines that property, the one with the
      * highest solve order has precedence.
+     *
+     * <p>If the property is not defined, default value is returned.
      */
-    Object getProperty(String name);
+    Object getProperty(String name, Object defaultValue);
 
     /**
      * Returns a {@link SchemaReader} appropriate for the current access-control

@@ -31,13 +31,13 @@ public abstract class RolapAggregator
 
     private static int index = 0;
 
-    public static final RolapAggregator Sum = 
+    public static final RolapAggregator Sum =
     new RolapAggregator("sum", index++, false) {
         public Object aggregate(Evaluator evaluator, List members, Exp exp) {
             return FunUtil.sum(evaluator, members, exp);
         }
     };
-    public static final RolapAggregator Count = 
+    public static final RolapAggregator Count =
     new RolapAggregator("count", index++, false) {
         public Aggregator getRollup() {
             return Sum;
@@ -46,19 +46,19 @@ public abstract class RolapAggregator
             return FunUtil.count(evaluator, members, false);
         }
     };
-    public static final RolapAggregator Min = 
+    public static final RolapAggregator Min =
     new RolapAggregator("min", index++, false) {
         public Object aggregate(Evaluator evaluator, List members, Exp exp) {
             return FunUtil.min(evaluator, members, exp);
         }
     };
-    public static final RolapAggregator Max = 
+    public static final RolapAggregator Max =
     new RolapAggregator("max", index++, false) {
         public Object aggregate(Evaluator evaluator, List members, Exp exp) {
             return FunUtil.max(evaluator, members, exp);
         }
     };
-    public static final RolapAggregator Avg = 
+    public static final RolapAggregator Avg =
     new RolapAggregator("avg", index++, false) {
         public Aggregator getRollup() {
             return null;
@@ -67,7 +67,7 @@ public abstract class RolapAggregator
             return FunUtil.avg(evaluator, members, exp);
         }
     };
-    public static final RolapAggregator DistinctCount = 
+    public static final RolapAggregator DistinctCount =
     new RolapAggregator("distinct count", index++, true) {
         public RolapAggregator getNonDistinctAggregator() {
             return Count;
@@ -88,7 +88,7 @@ public abstract class RolapAggregator
             new RolapAggregator[] {Sum, Count, Min, Max, Avg, DistinctCount}
     );
 
-    /** 
+    /**
      * This is the base class for implementing aggregators over sum and
      * average columns in an aggregate table. These differ from the above
      * aggregators in that these require not oly the operand to create
@@ -108,7 +108,7 @@ public abstract class RolapAggregator
             throw new UnsupportedOperationException();
         }
     }
-    /** 
+    /**
      * This is an aggregator used for aggregate tables implementing the
      * average aggregator. It uses the aggregate table fact_count column
      * and a sum measure to create the query used to generate an average:
@@ -133,7 +133,7 @@ public abstract class RolapAggregator
             return buf.toString();
         }
     }
-    /** 
+    /**
      * This is an aggregator used for aggregate tables implementing the
      * average aggregator. It uses the aggregate table fact_count column
      * and an average measure to create the query used to generate an average:
@@ -160,7 +160,7 @@ public abstract class RolapAggregator
             return buf.toString();
         }
     }
-    /** 
+    /**
      * This is an aggregator used for aggregate tables implementing the
      * sum aggregator. It uses the aggregate table fact_count column
      * and an average measure to create the query used to generate a sum:
@@ -206,7 +206,7 @@ public abstract class RolapAggregator
      */
     public String getExpression(String operand) {
         StringBuffer buf = new StringBuffer(64);
-        buf.append(name_);
+        buf.append(name);
         buf.append('(');                                                                if (distinct) {
             buf.append("distinct ");
         }

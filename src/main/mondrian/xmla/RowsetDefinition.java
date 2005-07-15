@@ -77,7 +77,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
     }
 
     public static RowsetDefinition getValue(String name) {
-        return (RowsetDefinition) enumeration.getValue(name);
+        return (RowsetDefinition) enumeration.getValue(name, true);
     }
 
     public abstract Rowset getRowset(HashMap restrictions, Properties properties);
@@ -126,7 +126,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 });
 
         boolean isEnum() {
-            switch (ordinal_) {
+            switch (ordinal) {
             case Enumeration_ORDINAL:
             case EnumerationArray_ORDINAL:
             case EnumString_ORDINAL:
@@ -283,9 +283,9 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             for (int i = 0; i < rowsetDefinitions.length; i++) {
                 RowsetDefinition rowsetDefinition = rowsetDefinitions[i];
                 Row row = new Row();
-                row.set(SchemaName.name, rowsetDefinition.name_);
+                row.set(SchemaName.name, rowsetDefinition.name);
                 row.set(Restrictions.name, getRestrictions(rowsetDefinition));
-                row.set(Description.name, rowsetDefinition.description_);
+                row.set(Description.name, rowsetDefinition.description);
                 emit(row, saxHandler);
             }
         }
@@ -346,8 +346,8 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             for (int i = 0; i < propertyNames.length; i++) {
                 PropertyDefinition propertyDefinition = PropertyDefinition.getValue(propertyNames[i]);
                 Row row = new Row();
-                row.set(PropertyName.name, propertyDefinition.name_);
-                row.set(PropertyDescription.name, propertyDefinition.description_);
+                row.set(PropertyName.name, propertyDefinition.name);
+                row.set(PropertyDescription.name, propertyDefinition.description);
                 row.set(PropertyType.name, propertyDefinition.type);
                 row.set(PropertyAccessType.name, propertyDefinition.access);
                 //row.set(IsRequired.name, false);
@@ -398,14 +398,14 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 final String[] valueNames = enumerator.getNames();
                 for (int j = 0; j < valueNames.length; j++) {
                     String valueName = valueNames[j];
-                    final EnumeratedValues.Value value = enumerator.getValue(valueName);
+                    final EnumeratedValues.Value value = enumerator.getValue(valueName, true);
                     Row row = new Row();
                     row.set(EnumName.name, enumerator.name);
                     row.set(EnumDescription.name, enumerator.description);
                     row.set(EnumType.name, enumerator.type);
                     row.set(ElementName.name, value.getName());
                     row.set(ElementDescription.name, value.getDescription());
-                    switch (enumerator.type.ordinal_) {
+                    switch (enumerator.type.ordinal) {
                     case RowsetDefinition.Type.String_ORDINAL:
                     case RowsetDefinition.Type.StringArray_ORDINAL:
                         // these don't have ordinals
@@ -425,7 +425,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             for (int i = 0; i < rowsetNames.length; i++) {
                 String rowsetName = rowsetNames[i];
                 final RowsetDefinition rowsetDefinition = (RowsetDefinition)
-                        RowsetDefinition.enumeration.getValue(rowsetName);
+                        RowsetDefinition.enumeration.getValue(rowsetName, true);
                 for (int j = 0; j < rowsetDefinition.columnDefinitions.length; j++) {
                     Column column = rowsetDefinition.columnDefinitions[j];
                     if (column.enumeration != null) {
@@ -1053,7 +1053,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                             getMemberByUniqueName(nameParts, false);
                     if (member != null) {
                         String treeOp0 = (String) restrictions.get(TreeOp.name);
-                        int treeOp = Enumeration.TreeOp.Self.ordinal_;
+                        int treeOp = Enumeration.TreeOp.Self.ordinal;
                         if (treeOp0 != null) {
                             try {
                                 treeOp = Integer.parseInt(treeOp0);
@@ -1090,8 +1090,8 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                             // We supply our own treeOp expression here, for
                             // our own devious purposes.
                             unparseMember(connection, cube, member, saxHandler,
-                                    Enumeration.TreeOp.Self.ordinal_ |
-                                    Enumeration.TreeOp.Descendants.ordinal_);
+                                    Enumeration.TreeOp.Self.ordinal |
+                                    Enumeration.TreeOp.Descendants.ordinal);
                         }
                     }
                 }
@@ -1114,11 +1114,11 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 Member member, SAXHandler saxHandler,
                 int treeOp) throws SAXException {
             // Visit node itself.
-            if (mask(treeOp, Enumeration.TreeOp.Self.ordinal_)) {
+            if (mask(treeOp, Enumeration.TreeOp.Self.ordinal)) {
                 emitMember(member, connection, cube, saxHandler);
             }
             // Visit node's siblings (not including itself).
-            if (mask(treeOp, Enumeration.TreeOp.Siblings.ordinal_)) {
+            if (mask(treeOp, Enumeration.TreeOp.Siblings.ordinal)) {
                 final Member parent =
                         connection.getSchemaReader().getMemberParent(member);
                 final Member[] siblings;
@@ -1135,43 +1135,43 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                         continue;
                     }
                     unparseMember(connection, cube, sibling, saxHandler,
-                            Enumeration.TreeOp.Self.ordinal_);
+                            Enumeration.TreeOp.Self.ordinal);
                 }
             }
             // Visit node's descendants or its immediate children, but not both.
-            if (mask(treeOp, Enumeration.TreeOp.Descendants.ordinal_)) {
+            if (mask(treeOp, Enumeration.TreeOp.Descendants.ordinal)) {
                 final Member[] children =
                         connection.getSchemaReader().getMemberChildren(member);
                 for (int i = 0; i < children.length; i++) {
                     Member child = children[i];
                     unparseMember(connection, cube, child, saxHandler,
-                            Enumeration.TreeOp.Self.ordinal_ |
-                            Enumeration.TreeOp.Descendants.ordinal_);
+                            Enumeration.TreeOp.Self.ordinal |
+                            Enumeration.TreeOp.Descendants.ordinal);
                 }
-            } else if (mask(treeOp, Enumeration.TreeOp.Children.ordinal_)) {
+            } else if (mask(treeOp, Enumeration.TreeOp.Children.ordinal)) {
                 final Member[] children =
                         connection.getSchemaReader().getMemberChildren(member);
                 for (int i = 0; i < children.length; i++) {
                     Member child = children[i];
                     unparseMember(connection, cube, child, saxHandler,
-                            Enumeration.TreeOp.Self.ordinal_);
+                            Enumeration.TreeOp.Self.ordinal);
                 }
             }
             // Visit node's ancestors or its immediate parent, but not both.
-            if (mask(treeOp, Enumeration.TreeOp.Ancestors.ordinal_)) {
+            if (mask(treeOp, Enumeration.TreeOp.Ancestors.ordinal)) {
                 final Member parent =
                         connection.getSchemaReader().getMemberParent(member);
                 if (parent != null) {
                     unparseMember(connection, cube, parent, saxHandler,
-                            Enumeration.TreeOp.Self.ordinal_ |
-                            Enumeration.TreeOp.Ancestors.ordinal_);
+                            Enumeration.TreeOp.Self.ordinal |
+                            Enumeration.TreeOp.Ancestors.ordinal);
                 }
-            } else if (mask(treeOp, Enumeration.TreeOp.Parent.ordinal_)) {
+            } else if (mask(treeOp, Enumeration.TreeOp.Parent.ordinal)) {
                 final Member parent =
                         connection.getSchemaReader().getMemberParent(member);
                 if (parent != null) {
                     unparseMember(connection, cube, parent, saxHandler,
-                            Enumeration.TreeOp.Self.ordinal_);
+                            Enumeration.TreeOp.Self.ordinal);
                 }
             }
         }
@@ -1271,7 +1271,26 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         };
 
         public void unparse(SAXHandler saxHandler) throws SAXException {
-            throw new UnsupportedOperationException();
+            if (true) {
+                throw new UnsupportedOperationException();
+            }
+            // Emit a row for each intrinsic property.
+            List values = Property.enumeration.getValuesSortedByName();
+            for (int i = 0; i < values.size(); i++) {
+                Property property = (Property) values.get(i);
+                Row row = new Row();
+                row.set(CatalogName.name, null);
+                row.set(SchemaName.name, null);
+                row.set(CubeName.name, null);
+                row.set(DimensionUniqueName.name, null);
+                row.set(HierarchyUniqueName.name, null);
+                row.set(LevelUniqueName.name, null);
+                row.set(MemberUniqueName.name, null);
+                row.set(PropertyName.name, property.getName());
+                row.set(PropertyType.name, property.getType());
+                row.set(PropertyContentType.name, null);
+                emit(row, saxHandler);
+            }
         }
     }
 }

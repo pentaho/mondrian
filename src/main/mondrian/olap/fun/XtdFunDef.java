@@ -46,7 +46,7 @@ class XtdFunDef extends FunDefBase {
     }
 
     private Level getLevel(Evaluator evaluator) {
-        switch (levelType.ordinal_) {
+        switch (levelType.ordinal) {
         case LevelType.TimeYearsORDINAL:
             return evaluator.getCube().getYearLevel();
         case LevelType.TimeQuartersORDINAL:

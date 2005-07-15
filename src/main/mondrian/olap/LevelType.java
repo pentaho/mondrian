@@ -68,10 +68,10 @@ public class LevelType extends EnumeratedValues.BasicValue {
                     }
             );
     public static LevelType lookup(String s) {
-        return (LevelType) enumeration.getValue(s);
+        return (LevelType) enumeration.getValue(s, true);
     }
     public boolean isTime() {
-        return ordinal_ >= TimeYearsORDINAL && ordinal_ <= TimeDaysORDINAL;
+        return ordinal >= TimeYearsORDINAL && ordinal <= TimeDaysORDINAL;
     }
 }
 

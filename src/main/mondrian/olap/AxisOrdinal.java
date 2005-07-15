@@ -37,7 +37,7 @@ public class AxisOrdinal extends EnumeratedValues.BasicValue {
      * not found.
      */
     public static AxisOrdinal get(String name) {
-        return (AxisOrdinal) enumeration.getValue(name);
+        return (AxisOrdinal) enumeration.getValue(name, true);
     }
 
     public static final int NoneOrdinal = -2;

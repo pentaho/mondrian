@@ -396,7 +396,7 @@ public class StandAlone {
     private static void printDimension(Dimension dim) {
         DimensionType dimensionType = dim.getDimensionType();
         System.out.println("\tDimension " + dim.getName()
-            + " type: " + dimensionType.name_);
+            + " type: " + dimensionType.name);
 
         System.out.println("\t    Description: " + dim.getDescription());
         Hierarchy[] hierarchies = dim.getHierarchies();

@@ -77,7 +77,7 @@ class Enumeration extends EnumeratedValues {
         );
 
         public static Format getValue(String name) {
-            return (Format) enumeration.getValue(name);
+            return (Format) enumeration.getValue(name, true);
         }
     }
 
@@ -91,7 +91,7 @@ class Enumeration extends EnumeratedValues {
         public static final EnumeratedValues enumeration = new EnumeratedValues(
                 new AxisFormat[] {TupleFormat, ClusterFormat, CustomFormat});
         public static AxisFormat getValue(String name) {
-            return (AxisFormat) enumeration.getValue(name);
+            return (AxisFormat) enumeration.getValue(name, true);
         }
     }
 

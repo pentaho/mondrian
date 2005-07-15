@@ -490,9 +490,9 @@ public class XmlaTest extends TestCase {
     }
 
     public void testDiscoverMembersRestrictedByMemberAndTreeop() {
-        final int treeOp = (Enumeration.TreeOp.Siblings.ordinal_ |
-                        Enumeration.TreeOp.Ancestors.ordinal_ |
-                        Enumeration.TreeOp.Children.ordinal_);
+        final int treeOp = (Enumeration.TreeOp.Siblings.ordinal |
+                        Enumeration.TreeOp.Ancestors.ordinal |
+                        Enumeration.TreeOp.Children.ordinal);
         assertRequestYields(wrap(
                 "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
                 "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +

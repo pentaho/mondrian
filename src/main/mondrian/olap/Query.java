@@ -1078,7 +1078,7 @@ public class Query extends QueryPart {
             if (olapElement instanceof Member) {
                 Member member = (Member) olapElement;
                 final Formula formula = (Formula)
-                    member.getPropertyValue(Property.PROPERTY_FORMULA);
+                    member.getPropertyValue(Property.FORMULA.name);
                 if (formula != null) {
                     // This is a calculated member defined against the cube.
                     // Create a free-standing formula using the same

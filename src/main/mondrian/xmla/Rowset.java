@@ -32,7 +32,7 @@ import java.util.*;
  **/
 abstract class Rowset {
 	private static final Logger LOGGER = Logger.getLogger(Rowset.class);
-	
+
     private final RowsetDefinition rowsetDefinition;
     protected final HashMap restrictions;
     protected final Properties properties;
@@ -49,11 +49,11 @@ abstract class Rowset {
             final RowsetDefinition.Column column = definition.lookupColumn(
                     restrictedColumn);
             if (column == null) {
-                throw Util.newError("Rowset '" + definition.name_ +
+                throw Util.newError("Rowset '" + definition.name +
                         "' does not contain column '" + restrictedColumn + "'");
             }
             if (!column.restriction) {
-                throw Util.newError("Rowset '" + definition.name_ +
+                throw Util.newError("Rowset '" + definition.name +
                         "' column '" + restrictedColumn +
                         "' does not allow restrictions");
             }
@@ -63,13 +63,13 @@ abstract class Rowset {
                 // OK
             } else if (requiredValue instanceof String[]) {
                 final RowsetDefinition.Type type = column.type;
-                switch (type.ordinal_) {
+                switch (type.ordinal) {
                 case RowsetDefinition.Type.StringArray_ORDINAL:
                 case RowsetDefinition.Type.EnumerationArray_ORDINAL:
                 case RowsetDefinition.Type.StringSometimesArray_ORDINAL:
                     break; // OK
                 default:
-                    throw Util.newError("Rowset '" + definition.name_ +
+                    throw Util.newError("Rowset '" + definition.name +
                             "' column '" + restrictedColumn +
                             "' can only be restricted on one value at a time");
                 }
@@ -87,7 +87,7 @@ abstract class Rowset {
             String propertyName = (String) propertiesIter.next();
             final PropertyDefinition propertyDef = PropertyDefinition.getValue(propertyName);
             if (propertyDef == null) {
-                throw Util.newError("Rowset '" + definition.name_ +
+                throw Util.newError("Rowset '" + definition.name +
                         "' does not support property '" + propertyName + "'");
             }
             final String propertyValue = properties.getProperty(propertyName);
@@ -108,7 +108,7 @@ abstract class Rowset {
      * to the base class method, which will probably throw an error.
      */
     protected void setProperty(PropertyDefinition propertyDef, String value) {
-        switch (propertyDef.ordinal_) {
+        switch (propertyDef.ordinal) {
         case PropertyDefinition.Format_ORDINAL:
             final Enumeration.Format format = Enumeration.Format.getValue(value);
             if (format != Enumeration.Format.Tabular) {
@@ -120,8 +120,8 @@ abstract class Rowset {
         case PropertyDefinition.Catalog_ORDINAL:
             break;
         default:
-            LOGGER.warn("Warning: Rowset '" + rowsetDefinition.name_ +
-                    "' does not support property '" + propertyDef.name_ +
+            LOGGER.warn("Warning: Rowset '" + rowsetDefinition.name +
+                    "' does not support property '" + propertyDef.name +
                     "' (value is '" + value + "')");
         }
     }
@@ -185,7 +185,7 @@ abstract class Rowset {
             if (value == null) {
                 if (!column.nullable) {
                     throw Util.newInternal("Value required for column " +
-                            column.name + " of rowset " + rowsetDefinition.name_);
+                            column.name + " of rowset " + rowsetDefinition.name);
                 }
             } else if (value instanceof XmlElement[]) {
                 XmlElement[] elements = (XmlElement[]) value;

@@ -104,7 +104,7 @@ public class Formula extends QueryPart {
         if (isMember) {
             Exp formatExp = getFormatExp();
             if (formatExp != null) {
-                mdxMember.setProperty(Property.PROPERTY_FORMAT_EXP, formatExp);
+                mdxMember.setProperty(Property.FORMAT_EXP.name, formatExp);
             }
         }
     }
@@ -268,7 +268,7 @@ public class Formula extends QueryPart {
      * @post return != null
      */
     public int getSolveOrder() {
-        Exp exp = getMemberProperty(Property.PROPERTY_SOLVE_ORDER);
+        Exp exp = getMemberProperty(Property.SOLVE_ORDER.name);
         if (exp != null) {
             final Type type = exp.getTypeX();
             if (type instanceof NumericType) {
@@ -315,7 +315,7 @@ public class Formula extends QueryPart {
             final Object o = walker.nextElement();
             if (o instanceof Member) {
                 Exp formatExp = (Exp) ((Member) o).getPropertyValue(
-                    Property.PROPERTY_FORMAT_EXP);
+                    Property.FORMAT_EXP.name);
                 if (formatExp != null) {
                     return formatExp;
                 }

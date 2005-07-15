@@ -34,16 +34,17 @@ abstract class RolapMeasure extends RolapMember {
      */
     private Object starMeasure;
 
-    RolapMeasure(Member parentMember, 
-                 RolapLevel level, 
+    RolapMeasure(Member parentMember,
+                 RolapLevel level,
                  String name,
                 String formatString) {
         super(parentMember, level, name);
         if (formatString == null) {
             formatString = "";
         }
-        setProperty(Property.PROPERTY_FORMAT_EXP, 
-            Literal.createString(formatString));
+        setProperty(
+                Property.FORMAT_EXP.name,
+                Literal.createString(formatString));
     }
     Object getStarMeasure() {
         return starMeasure;

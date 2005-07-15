@@ -101,15 +101,29 @@ class RolapCell implements Cell {
     }
 
     public Object getPropertyValue(String propertyName) {
-        if (propertyName.equals(Property.PROPERTY_VALUE)) {
-            return getValue();
-        } else if (propertyName.equals(Property.PROPERTY_FORMAT_STRING)) {
-            return getEvaluator().getFormatString();
-        } else if (propertyName.equals(Property.PROPERTY_FORMATTED_VALUE)) {
-            return getFormattedValue();
-        } else {
-            return getEvaluator().getProperty(propertyName);
+        Property property = Property.lookup(propertyName);
+        Object defaultValue = null;
+        if (property != null) {
+            switch (property.ordinal) {
+            case Property.CELL_ORDINAL_ORDINAL:
+                return new Integer(ordinal);
+            case Property.VALUE_ORDINAL:
+                return getValue();
+            case Property.FORMAT_STRING_ORDINAL:
+                return getEvaluator().getFormatString();
+            case Property.FORMATTED_VALUE_ORDINAL:
+                return getFormattedValue();
+            case Property.FONT_FLAGS_ORDINAL:
+                defaultValue = new Integer(0);
+                break;
+            case Property.SOLVE_ORDER_ORDINAL:
+                defaultValue = new Integer(0);
+                break;
+            default:
+                // fall through
+            }
         }
+        return getEvaluator().getProperty(propertyName, defaultValue);
     }
 
     public Member getContextMember(Dimension dimension) {

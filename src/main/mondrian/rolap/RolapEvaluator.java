@@ -356,8 +356,8 @@ class RolapEvaluator implements Evaluator {
         return sb.toString();
     }
 
-    public Object getProperty(String name) {
-        Object o = null;
+    public Object getProperty(String name, Object defaultValue) {
+        Object o = defaultValue;
         int maxSolve = Integer.MIN_VALUE;
         for (int i = 0; i < currentMembers.length; i++) {
             Member member = currentMembers[i];
@@ -383,6 +383,7 @@ class RolapEvaluator implements Evaluator {
         }
         return o;
     }
+
     /**
      * Returns the format string for this cell. This is computed by evaluating
      * the format expression in the current context, and therefore different
@@ -391,13 +392,14 @@ class RolapEvaluator implements Evaluator {
      * @post return != null
      */
     String getFormatString() {
-        Exp formatExp = (Exp) getProperty(Property.PROPERTY_FORMAT_EXP);
+        Exp formatExp = (Exp) getProperty(Property.FORMAT_EXP.name, null);
         if (formatExp == null) {
             return "Standard";
         }
         Object o = formatExp.evaluate(this);
         return o.toString();
     }
+
     private Format getFormat() {
         String formatString = getFormatString();
         return Format.get(formatString, connection.getLocale());

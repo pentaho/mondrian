@@ -109,7 +109,7 @@ public class FunDefBase extends FunUtil implements FunDef {
         this.name = name;
         Util.discard(signature);
         this.description = description;
-        this.flags = syntax.ordinal_;
+        this.flags = syntax.ordinal;
         this.returnType = returnType;
         this.parameterTypes = parameterTypes;
     }

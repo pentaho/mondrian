@@ -162,9 +162,9 @@ public class XmlaMediator {
     }
 
     private MDDataSet executeQuery(String statement, Properties properties) {
-        final String formatName = properties.getProperty(PropertyDefinition.Format.name_);
+        final String formatName = properties.getProperty(PropertyDefinition.Format.name);
         Enumeration.Format format = Enumeration.Format.getValue(formatName);
-        final String axisFormatName = properties.getProperty(PropertyDefinition.AxisFormat.name_);
+        final String axisFormatName = properties.getProperty(PropertyDefinition.AxisFormat.name);
         Enumeration.AxisFormat axisFormat = Enumeration.AxisFormat.getValue(axisFormatName);
         final Connection connection = getConnection(properties);
         final Query query = connection.parseQuery(statement);
@@ -181,19 +181,19 @@ public class XmlaMediator {
             "FmtValue",
             "FormatString"};
         private static final String[] cellPropLongs = new String[] {
-            Property.PROPERTY_VALUE,
-            Property.PROPERTY_FORMATTED_VALUE,
-            Property.PROPERTY_FORMAT_STRING};
+            Property.VALUE.name,
+            Property.FORMATTED_VALUE.name,
+            Property.FORMAT_STRING.name};
         private static final String[] props = new String[] {
             "UName",
             "Caption",
             "LName",
             "LNum"};
         private static final String[] propLongs = new String[] {
-            Property.PROPERTY_MEMBER_UNIQUE_NAME,
-            Property.PROPERTY_MEMBER_CAPTION,
-            Property.PROPERTY_LEVEL_UNIQUE_NAME,
-            Property.PROPERTY_LEVEL_NUMBER};
+            Property.MEMBER_UNIQUE_NAME.name,
+            Property.MEMBER_CAPTION.name,
+            Property.LEVEL_UNIQUE_NAME.name,
+            Property.LEVEL_NUMBER.name};
 
         public MDDataSet(Result result, Enumeration.Format format, Enumeration.AxisFormat axisFormat) {
             this.result = result;
@@ -320,7 +320,7 @@ public class XmlaMediator {
                     final Cell cell = result.getCell(pos);
                     for (int j = 0; j < cellProps.length; j++) {
                         String cellPropLong = cellPropLongs[j];
-                        final Object value = 
+                        final Object value =
                             cell.getPropertyValue(cellPropLong);
                         if (value != null) {
                             saxHandler.startElement(cellProps[j]);
@@ -334,7 +334,7 @@ public class XmlaMediator {
                             // strip off trailing '0's. After stripping off
                             // the '0's, if there is nothing right of the
                             // decimal point, then strip off decimal point.
-                            if (cellPropLong == Property.PROPERTY_VALUE &&
+                            if (cellPropLong == Property.VALUE.name &&
                                    value instanceof Number) {
                                 int index = valueString.indexOf('.');
                                 if (index > 0) {
@@ -350,7 +350,7 @@ public class XmlaMediator {
                                         p--;
                                     }
                                     if (found) {
-                                        valueString = 
+                                        valueString =
                                             valueString.substring(0, p);
                                     }
                                 }
@@ -457,9 +457,9 @@ public class XmlaMediator {
      * @return
      */
     static Connection getConnection(Properties properties) {
-        final String dataSourceInfo = properties.getProperty(PropertyDefinition.DataSourceInfo.name_);
+        final String dataSourceInfo = properties.getProperty(PropertyDefinition.DataSourceInfo.name);
         Util.PropertyList connectProperties = Util.parseConnectString(dataSourceInfo);
-        final String catalog = properties.getProperty(PropertyDefinition.Catalog.name_);
+        final String catalog = properties.getProperty(PropertyDefinition.Catalog.name);
         if (catalog != null) {
             connectProperties.put("CatalogName", catalog);
         }

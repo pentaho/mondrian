@@ -223,17 +223,20 @@ public class EnumeratedValues implements Cloneable {
      * @throws Error if the name is not a member of the enumeration
      */
     public final int getOrdinal(String name) {
-        return getValue(name).getOrdinal();
+        return getValue(name, true).getOrdinal();
     }
 
     /**
      * Returns the value associated with a name.
      *
-     * @throws Error if the name is not a member of the enumeration
+     * @param name Name of enumerated value
+     * @param fail Whether to throw if not found
+     * @throws Error if the name is not a member of the enumeration and
+     *       <code>fail</code> is true
      */
-    public Value getValue(String name) {
+    public Value getValue(String name, final boolean fail) {
         final Value value = (Value) valuesByName.get(name);
-        if (value == null) {
+        if (value == null && fail) {
             throw new Error("Unknown enum name:  "+name);
         }
         return value;
@@ -255,7 +258,7 @@ public class EnumeratedValues implements Cloneable {
         Arrays.sort(names);
         for (int i = 0; i < names.length; i++) {
             String name = names[i];
-            list.add(getValue(name));
+            list.add(getValue(name, true));
         }
         return list;
     }
@@ -295,37 +298,37 @@ public class EnumeratedValues implements Cloneable {
      * <code>BasicValue</code> is an obvious implementation of {@link Value}.
      */
     public static class BasicValue implements Value {
-        public final String name_;
-        public final int ordinal_;
-        public final String description_;
+        public final String name;
+        public final int ordinal;
+        public final String description;
 
         /**
          * @pre name != null
          */
         public BasicValue(String name, int ordinal, String description) {
             Util.assertPrecondition(name != null, "name != null");
-            this.name_ = name;
-            this.ordinal_ = ordinal;
-            this.description_ = description;
+            this.name = name;
+            this.ordinal = ordinal;
+            this.description = description;
         }
 
         public String getName() {
-            return name_;
+            return name;
         }
 
         public int getOrdinal() {
-            return ordinal_;
+            return ordinal;
         }
 
         public String getDescription() {
-            return description_;
+            return description;
         }
 
         /**
          * Returns the value's name.
          */
         public String toString() {
-            return name_;
+            return name;
         }
 
         /**
@@ -355,7 +358,7 @@ public class EnumeratedValues implements Cloneable {
          * }</pre></blockquote>
          */
         public RuntimeException unexpected() {
-            return Util.newInternal("Value " + name_ + " of class " +
+            return Util.newInternal("Value " + name + " of class " +
                     getClass() + " unexpected here");
         }
     }

@@ -85,7 +85,7 @@ public class RolapMember extends MemberBase {
                 !(key != null && name.equals(key.toString()))) {
             // Save memory by only saving the name as a property if it's
             // different from the key.
-            setProperty(Property.PROPERTY_NAME, name);
+            setProperty(Property.NAME.name, name);
         } else {
             setUniqueName(key);
         }
@@ -134,7 +134,8 @@ public class RolapMember extends MemberBase {
     }
 
     public String getName() {
-        final String name = (String) getPropertyValue(Property.PROPERTY_NAME);
+        final String name =
+                (String) getPropertyValue(Property.NAME.name);
         return (name != null)
             ? name
             : keyToString(key);
@@ -149,7 +150,7 @@ public class RolapMember extends MemberBase {
      * side-effects.
      */
     public synchronized void setProperty(String name, Object value) {
-        if (name.equals(Property.PROPERTY_CAPTION)) {
+        if (name.equals(Property.CAPTION.name)) {
             setCaption((String)value);
             return;
         }
@@ -159,24 +160,102 @@ public class RolapMember extends MemberBase {
             mapPropertyNameToValue = new HashMap();
         }
         mapPropertyNameToValue.put(name, value);
-        if (name.equals(Property.PROPERTY_NAME)) {
+        if (name.equals(Property.NAME.name)) {
             setUniqueName(value);
         }
     }
 
     public Object getPropertyValue(String name) {
-        if (name.equals(Property.PROPERTY_CONTRIBUTING_CHILDREN)) {
-            List list = new ArrayList();
-            getRolapHierarchy().memberReader.getMemberChildren(this, list);
-            return list;
-        } else if (name.equals(Property.PROPERTY_MEMBER_UNIQUE_NAME)) {
-            return getUniqueName();
-        } else if (name.equals(Property.PROPERTY_MEMBER_CAPTION)) {
-            return getCaption();
-        } else if (name.equals(Property.PROPERTY_LEVEL_UNIQUE_NAME)) {
-            return getLevel().getUniqueName();
-        } else if (name.equals(Property.PROPERTY_LEVEL_NUMBER)) {
-            return new Integer(getLevel().getDepth());
+        Property property = Property.lookup(name);
+        if (property != null) {
+            Schema schema;
+            Member parentMember;
+            switch (property.ordinal) {
+            case Property.NAME_ORDINAL:
+                // Do NOT call getName() here. This property is internal,
+                // and must fall through to look in the property list.
+                break;
+
+            case Property.CAPTION_ORDINAL:
+                return getCaption();
+
+            case Property.CONTRIBUTING_CHILDREN_ORDINAL:
+                List list = new ArrayList();
+                getRolapHierarchy().memberReader.getMemberChildren(this, list);
+                return list;
+
+            case Property.CATALOG_NAME_ORDINAL:
+                // TODO: can't go from member to connection thence to
+                // Connection.getCatalogName()
+                break;
+
+            case Property.SCHEMA_NAME_ORDINAL:
+                schema = getHierarchy().getDimension().getSchema();
+                return schema.getName();
+
+            case Property.CUBE_NAME_ORDINAL:
+                // TODO: can't go from member to cube cube yet
+                break;
+
+            case Property.DIMENSION_UNIQUE_NAME_ORDINAL:
+                return getHierarchy().getDimension().getUniqueName();
+
+            case Property.HIERARCHY_UNIQUE_NAME_ORDINAL:
+                return getHierarchy().getUniqueName();
+
+            case Property.LEVEL_UNIQUE_NAME_ORDINAL:
+                return getLevel().getUniqueName();
+
+            case Property.LEVEL_NUMBER_ORDINAL:
+                return new Integer(getLevel().getDepth());
+
+            case Property.MEMBER_UNIQUE_NAME_ORDINAL:
+                return getUniqueName();
+
+            case Property.MEMBER_NAME_ORDINAL:
+                return getName();
+
+            case Property.MEMBER_TYPE_ORDINAL:
+                return new Integer(getMemberType());
+
+            case Property.MEMBER_GUID_ORDINAL:
+                return null;
+
+            case Property.MEMBER_CAPTION_ORDINAL:
+                return getCaption();
+
+            case Property.MEMBER_ORDINAL_ORDINAL:
+                return new Integer(getOrdinal());
+
+            case Property.CHILDREN_CARDINALITY_ORDINAL:
+                // TODO: can't go from member to cube yet
+                break;
+
+            case Property.PARENT_LEVEL_ORDINAL:
+                parentMember = getParentMember();
+                return new Integer(
+                        parentMember == null ? -1 :
+                        parentMember.getLevel().getDepth());
+
+            case Property.PARENT_UNIQUE_NAME_ORDINAL:
+                parentMember = getParentMember();
+                return parentMember == null ? null :
+                        parentMember.getUniqueName();
+
+            case Property.PARENT_COUNT_ORDINAL:
+                parentMember = getParentMember();
+                return new Integer(parentMember == null ? 0 : 1);
+
+            case Property.DESCRIPTION_ORDINAL:
+                return getDescription();
+
+            case Property.VISIBLE_ORDINAL:
+                break;
+
+            default:
+                break;
+                // fall through
+            }
         }
         synchronized (this) {
             return mapPropertyNameToValue.get(name);
@@ -279,7 +358,7 @@ public class RolapMember extends MemberBase {
 
     public boolean isHidden() {
         final RolapLevel rolapLevel = getRolapLevel();
-        switch (rolapLevel.getHideMemberCondition().ordinal_) {
+        switch (rolapLevel.getHideMemberCondition().ordinal) {
         case RolapLevel.HideMemberCondition.NeverORDINAL:
             return false;
         case RolapLevel.HideMemberCondition.IfBlankNameORDINAL: {

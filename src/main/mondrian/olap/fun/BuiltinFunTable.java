@@ -670,7 +670,9 @@ public class BuiltinFunTable extends FunTableImpl {
                         }
 
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
-                        Aggregator aggregator = (Aggregator) evaluator.getProperty(Property.PROPERTY_AGGREGATION_TYPE);
+                        Aggregator aggregator =
+                                (Aggregator) evaluator.getProperty(
+                                        Property.AGGREGATION_TYPE.name, null);
                         if (aggregator == null) {
                             throw newEvalException(null, "Could not find an aggregator in the current evaluation context");
                         }
@@ -695,8 +697,12 @@ public class BuiltinFunTable extends FunTableImpl {
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         Hierarchy hierarchy = getHierarchyArg(evaluator, args, 0, true);
                         Member member = evaluator.getParent().getContext(hierarchy.getDimension());
-                        List members = (List) member.getPropertyValue(Property.PROPERTY_CONTRIBUTING_CHILDREN);
-                        Aggregator aggregator = (Aggregator) evaluator.getProperty(Property.PROPERTY_AGGREGATION_TYPE);
+                        List members =
+                                (List) member.getPropertyValue(
+                                        Property.CONTRIBUTING_CHILDREN.name);
+                        Aggregator aggregator =
+                                (Aggregator) evaluator.getProperty(
+                                        Property.AGGREGATION_TYPE.name, null);
                         if (aggregator == null) {
                             throw newEvalException(null, "Could not find an aggregator in the current evaluation context");
                         }

@@ -172,10 +172,10 @@ public class Syntax extends EnumeratedValues.BasicValue {
     public static final Syntax Internal = new Syntax("Internal", 8);
     /** Expression invoked <code>object.&PROPERTY</code>
      * (a variant of {@link #Property}). */
-    public static final Syntax QuotedProperty = new Syntax("Quoted property", Property.ordinal_ | 0x100);
+    public static final Syntax QuotedProperty = new Syntax("Quoted property", Property.ordinal | 0x100);
     /** Expression invoked <code>object.[&PROPERTY]</code>
      * (a variant of {@link #Property}). */
-    public static final Syntax AmpersandQuotedProperty = new Syntax("Ampersand-quoted property", Property.ordinal_ | 0x200);
+    public static final Syntax AmpersandQuotedProperty = new Syntax("Ampersand-quoted property", Property.ordinal | 0x200);
 
     private static final int mask = 0xFF;
 
