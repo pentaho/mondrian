@@ -52,6 +52,22 @@ public class DimensionType extends EnumeratedValues.BasicValue {
                         StandardDimension, TimeDimension,
                     }
             );
+
+    /**
+     * Looks up a DimensionType with a given ordinal.
+     * Returns null if not found.
+     */
+    public static DimensionType lookup(int ordinal) {
+        return (DimensionType) enumeration.getValue(ordinal);
+    }
+
+    /**
+     * Looks up a DimensionType with a given name.
+     * Returns null if not found.
+     */ 
+    public static DimensionType lookup(String name) {
+        return (DimensionType) enumeration.getValue(name, false);
+    }
 }
 
 // End LevelType.java
