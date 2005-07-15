@@ -16,6 +16,9 @@ import mondrian.rolap.RolapAggregator;
 import mondrian.rolap.RolapStar;
 
 import javax.sql.DataSource;
+
+import org.apache.log4j.Logger;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.*;
@@ -41,8 +44,19 @@ import java.util.*;
  * @version $Id$
  */
 public class JdbcSchema {
+    private static final Logger LOGGER =
+        Logger.getLogger(JdbcSchema.class);
 
     private static final MondrianResource mres = MondrianResource.instance();
+
+    /**
+     * Get the Logger.
+     *
+     * @return
+     */
+    public Logger getLogger() {
+        return LOGGER;
+    }
 
     public interface Factory {
         JdbcSchema makeDB(DataSource dataSource);
@@ -1078,7 +1092,7 @@ public class JdbcSchema {
          */
         private void loadColumns() throws SQLException {
             if (! allColumnsLoaded) {
-System.out.println("JdbcSchema.loadColumns: TOP " +getName());
+                getLogger().debug("JdbcSchema.loadColumns: TOP " +getName());
                 Connection conn = JdbcSchema.this.getConnection();
                 try {
                     DatabaseMetaData dmd = conn.getMetaData();
@@ -1131,7 +1145,7 @@ System.out.println("JdbcSchema.loadColumns: TOP " +getName());
                 }
 
                 allColumnsLoaded = true;
-System.out.println("JdbcSchema.loadColumns: BOTTOM");
+                getLogger().debug("JdbcSchema.loadColumns: BOTTOM");
             }
         }
         private Map getColumnMap() {
@@ -1311,7 +1325,7 @@ System.out.println("JdbcSchema.loadColumns: BOTTOM");
      */
     private void loadTables() throws SQLException {
         if (! allTablesLoaded) {
-System.out.println("JdbcSchema.loadTables: TOP");
+            getLogger().debug("JdbcSchema.loadTables: TOP");
             Map tables = getTablesMap();
             Connection conn = getConnection();
             DatabaseMetaData dmd = conn.getMetaData();
@@ -1321,9 +1335,9 @@ System.out.println("JdbcSchema.loadTables: TOP");
             String[] tableTypes = { "TABLE", "VIEW" };
             String tableName = "%";
 
-System.out.println("  schema="+schema);
-System.out.println("  catalog="+catalog);
-System.out.println("  tableName="+tableName);
+            getLogger().debug("  schema="+schema);
+            getLogger().debug("  catalog="+catalog);
+            getLogger().debug("  tableName="+tableName);
             ResultSet rs = null;
             try {
                 rs = dmd.getTables(catalog,
@@ -1334,8 +1348,8 @@ System.out.println("  tableName="+tableName);
                     while (rs.next()) {
                         addTable(rs);
                     }
-} else {
-System.out.println("ERROR: rs == null");
+                } else {
+                    getLogger().debug("ERROR: rs == null");
                 }
             } finally {
                 if (rs != null) {
@@ -1349,7 +1363,7 @@ System.out.println("ERROR: rs == null");
             }
 
             allTablesLoaded = true;
-System.out.println("JdbcSchema.loadTables: BOTTOM");
+            getLogger().debug("JdbcSchema.loadTables: BOTTOM");
         }
     }
 
@@ -1363,7 +1377,7 @@ System.out.println("JdbcSchema.loadTables: BOTTOM");
     protected void addTable(final ResultSet rs) throws SQLException {
         String name = rs.getString(3);
         String tableType = rs.getString(4);
-System.out.println("   addTable: name="+name);
+        getLogger().debug("   addTable: name="+name);
         Table table = new Table(name);
         table.setTableType(tableType);
 

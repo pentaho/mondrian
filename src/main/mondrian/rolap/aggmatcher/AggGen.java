@@ -411,6 +411,14 @@ public class AggGen {
             return false;
         }
 
+        //CG guarantee the columns has been loaded before looking up them
+        try {
+            jt.load();
+        } catch (SQLException sqle) {
+            getLogger().error(sqle);
+            return false;
+        }
+
         // if this is a dimension table, then walk down the levels until
         // we hit the current column
         List list = new ArrayList();

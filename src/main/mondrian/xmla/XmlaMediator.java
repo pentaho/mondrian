@@ -136,17 +136,32 @@ public class XmlaMediator {
             throw Util.newError("<Statement> parameter is required");
         }
         final Properties properties = getProperties(execute);
-        MDDataSet cellSet = executeQuery(statement, properties);
-        try {
-            cellSet.unparse(saxHandler);
-        } catch (SAXException e) {
-            e.printStackTrace();
+
+        try { 
+            saxHandler.startElement("ExecuteResponse", new String[] { 
+                                        "xmlns", XMLA_NS}); 
+            saxHandler.startElement("return"); 
+            saxHandler.startElement("root", new String[] { 
+                                        "xmlns", XMLA_NS + ":mddataset"}); 
+            saxHandler.startElement("xsd:schema", new String[] { 
+                                        "xmlns:xsd", "http://www.w3.org/2001/XMLSchema"}); 
+            // todo: schema definition 
+            saxHandler.endElement(); 
+
+        try { 
+            MDDataSet cellSet = executeQuery(statement, properties); 
+            cellSet.unparse(saxHandler); 
+        } finally { 
+            saxHandler.endElement(); 
+            saxHandler.endElement(); 
+            saxHandler.endElement(); 
+        } 
+        } catch (SAXException e) { 
+            throw Util.newError(e, "Error while processing execute request"); 
         }
     }
 
     private MDDataSet executeQuery(String statement, Properties properties) {
-        final String dataSourceName = properties.getProperty(PropertyDefinition.DataSourceInfo.name_);
-        final String catalog = properties.getProperty(PropertyDefinition.Catalog.name_);
         final String formatName = properties.getProperty(PropertyDefinition.Format.name_);
         Enumeration.Format format = Enumeration.Format.getValue(formatName);
         final String axisFormatName = properties.getProperty(PropertyDefinition.AxisFormat.name_);
@@ -196,7 +211,7 @@ public class XmlaMediator {
         }
 
         private void olapInfo(SAXHandler saxHandler) throws SAXException {
-            saxHandler.startElement("OLAPInfo");
+            saxHandler.startElement("OlapInfo");
             saxHandler.startElement("CubeInfo");
             saxHandler.startElement("Cube");
             saxHandler.startElement("CubeName");
@@ -365,10 +380,10 @@ public class XmlaMediator {
         Rowset rowset = rowsetDefinition.getRowset(restrictionsProperties, propertyProperties);
         try {
             saxHandler.startElement("DiscoverResponse", new String[] {
-                "xmlns", "urn:schemas-microsoft-com:xml-analysis"});
+                "xmlns", XMLA_NS});
             saxHandler.startElement("return");
             saxHandler.startElement("root", new String[] {
-                "xmlns", "urn:schemas-microsoft-com:xml-analysis:rowset"});
+                "xmlns", XMLA_NS + ":rowset"});
             saxHandler.startElement("xsd:schema", new String[] {
                 "xmlns:xsd", "http://www.w3.org/2001/XMLSchema"});
             // todo: schema definition
@@ -399,7 +414,7 @@ public class XmlaMediator {
                 Node childNode = childNodes.item(i);
                 if (childNode instanceof Element) {
                     Element childElement = (Element) childNode;
-                    String childTag = childElement.getTagName();
+                    String childTag = childElement.getLocalName();
                     Object childValue = getCDATA2(childElement);
                     restrictionsMap.put(childTag, childValue);
                 }
@@ -425,7 +440,7 @@ public class XmlaMediator {
                 Node childNode = childNodes.item(i);
                 if (childNode instanceof Element) {
                     Element childElement = (Element) childNode;
-                    String childTag = childElement.getTagName();
+                    String childTag = childElement.getLocalName();
                     String childValue = getCDATA(childElement);
                     propertyProperties.setProperty(childTag, childValue);
                 }
@@ -507,7 +522,7 @@ public class XmlaMediator {
             for (int i = 0, n = childNodes.getLength(); i < n; i++) {
                 final Node node = childNodes.item(i);
                 if (node instanceof Element &&
-                        ((Element) node).getTagName().equals("Value")) {
+                        ((Element) node).getLocalName().equals("Value")) {
                     list.add(getCDATA((Element) node));
                 }
             }
@@ -521,7 +536,7 @@ public class XmlaMediator {
         for (int i = 0, n = childNodes.getLength(); i < n; i++) {
             final Node node = childNodes.item(i);
             if (node instanceof Element &&
-                    ((Element) node).getTagName().equals("Value")) {
+                    ((Element) node).getLocalName().equals("Value")) {
                 return true;
             }
         }
