@@ -10,6 +10,27 @@
 
 <h1>Optimizing Mondrian Performance</h1>
 
+<p>By Sherman Wood; last updated July, 2005.</p>
+
+<hr noshade color="#000000" size="1">
+
+<h2>Contents</h2>
+<ol>
+	<li><a href="#Introduction">Introduction</a></li>
+	<li><a href="#A_generalized_tuning_process_for_Mondrian">A generalized 
+	tuning process for Mondrian</a></li>
+	<li><a href="#Recommendations_for_database_tuning">Recommendations for 
+	database tuning</a></li>
+	<li><a href="#Aggregate_Tables_Materialized_Views_and_Mondrian">Aggregate 
+	Tables, Materialized Views and Mondrian</a><ol>
+		<li><a href="#Choosing_aggregate_tables">Choosing aggregate tables</a></li>
+	</ol>
+	</li>
+	<li><a href="#AggGen">AggGen</a></li>
+</ol>
+
+<h2><a name="Introduction">Introduction</a></h2>
+
 <p>As with any data warehouse project, dealing with volumes is always
 the make or break issue. Mondrian has its own issues, based on its
 architecture and goals of being cross platform. Here are some
@@ -61,7 +82,7 @@ address the above issue.</p>
 
 </blockquote>
 
-<h2>A generalized tuning process for Mondrian</h2>
+<h2><a name="A_generalized_tuning_process_for_Mondrian">A generalized tuning process for Mondrian</a></h2>
 
 <p>The process for addressing performance of Mondrian is a combination
 of design, hardware, database and other configuration tuning. For
@@ -99,7 +120,7 @@ can do.</p>
 
 </ul>
 
-<h2>Recommendations for database tuning</h2>
+<h2><a name="Recommendations_for_database_tuning">Recommendations for database tuning</a></h2>
 
 <p>As part of database tuning process, enable SQL tracing and tail the
 log file. Run some representative MDX queries and watch which SQL
@@ -133,7 +154,7 @@ measures that are counts, that is,
 -- although performance is likely to vary between databases, because
 optimizing count-distinct queries is a tricky problem.</p>
 
-<h2>Aggregate Tables, Materialized Views and Mondrian</h2>
+<h2><a name="Aggregate_Tables_Materialized_Views_and_Mondrian">Aggregate Tables, Materialized Views and Mondrian</a></h2>
 
 <p>The best way to increase the performance of Mondrian is to build a
 set of aggregate (summary) tables that coexist with the base fact
@@ -146,11 +167,44 @@ synchronized from views. Otherwise, you will have to maintain the
 aggregation tables through your data warehouse load processes, usually
 by clearing them and rerunning aggregating INSERTs.</p>
 
-<p>There is a discussion of aggregate tables, terminology and how they
-are used on the Mondrian web site. See Writing a Schema->Advanced
-Aggregate Tables.</p>
+<p>Aggregate tables are introduced in the <a href="schema.html#Aggregate_tables">
+Schema Guide</a>, and described in more detail in their own document,
+<a href="aggregate_tables.html">Aggregate Tables</a>.</p>
 
-<h2>AggGen</h2>
+<h3><a name="Choosing_aggregate_tables">Choosing aggregate tables</a></h3>
+
+<p>It isn't easy to choose the right aggregate tables. For one thing, there are 
+so many to choose from: even a modest cube with six dimensions each with three 
+levels has 6<sup><font face="Verdana">4</font></sup> = 1296 possible aggregate 
+tables! And aggregate tables interfere with each other. If you add a new 
+aggregate table, Mondrian may use an existing aggregate table less frequently.</p>
+
+<p>Missing aggregate tables may not even be the problem. Choosing aggregate 
+tables is part of a wider performance tuning process, where finding the problem 
+is more than half of the battle. The real cause may be a missing index on your 
+fact table, your cache isn't large enough, or (if you're running Oracle) the 
+fact that you forgot to compute statistics. (See
+<a href="#Recommendations_for_database_tuning">recommendations</a>, above.)</p>
+
+<p>Performance tuning is an iterative process. The steps are something like 
+this:</p>
+<ol>
+	<li>Choose a few queries which are typical for those the end-users will be 
+	executing.</li>
+	<li>Run your set of sample queries, and note how long they take. Now the 
+	cache has been primed, run the queries again: has performance improved?</li>
+	<li>Is the performance good enough? If it is, stop tuning now! If your data 
+	set isn't very large, you probably don't need any aggregate tables. </li>
+	<li>Decide which aggregate tables to create. If you turn on SQL tracing, 
+	looking at the GROUP BY clauses of the long-running SQL statements will be a 
+	big clue here.</li>
+	<li>Register the aggregate tables in your catalog, create the tables in the 
+	database, populate the tables, and add indexes.</li>
+	<li>Restart Mondrian, to flush the cache and re-read the schema, then go to 
+	step 2 to see if things have improved.</li>
+</ol>
+
+<h2><a name="AggGen">AggGen</a></h2>
 
 <p><code>AggGen</code> is a tool that generates SQL to support the
 creation and maintenance of aggregate tables, and would give a
