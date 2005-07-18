@@ -386,12 +386,13 @@ The
 <code>
 LevelMap
 </code>
-element has the three template parameter names (hardcoded):
+element has the four template parameter names (hardcoded):
 </p>
 <blockquote>
     hierarchy_name<br>
     level_name<br>
     level_column_name<br>
+    usage_prefix<br>
 </blockquote>
 <p>
 These are names that can be used in creating template regular 
@@ -411,6 +412,7 @@ These define the template regular expressions:
 <blockquote>
     ${hierarchy_name}_${level_name}<br>
     ${hierarchy_name}_${level_column_name}<br>
+    ${usage_prefix}${level_column_name}<br>
     ${level_column_name}<br>
 </blockquote>
 <p>
@@ -587,6 +589,9 @@ rules.
       &lt;Regex id="mixed" charcase="ignore" &gt;
           ${hierarchy_name}_${level_column_name}
       &lt;/Regex&gt;
+      &lt;Regex id="usage" charcase="exact" &gt;
+          ${usage_prefix}${level_column_name}
+      &lt;/Regex&gt;
       &lt;Regex id="physical" charcase="exact" &gt;
           ${level_column_name}_.+
       &lt;/Regex&gt;
@@ -644,6 +649,7 @@ If the hierarchy, level and level column names were:
     hierarchy_name="Sales Location"<br>
     level_name="State"<br>
     level_column_name="state_location"<br>
+    usage_prefix=null<br>
 </blockquote>
 <p>
 then the following aggregate table column names would be 
@@ -653,6 +659,24 @@ recognizing as level column names:
     SALES_LOCATION_STATE<br>
     Sales_Location_State_state_location<br>
     state_location_level.<br>
+</blockquote>
+<p>
+If in the schema file the DimensionUsage for the hierarchy had a
+usagePrefix attribute,
+</p>
+<blockquote>
+    usage_prefix="foo_"<br>
+</blockquote>
+<p>
+then with the above level and level column names and usage_prefix
+the following aggregate table column names would be 
+recognizing as level column names:
+</p>
+<blockquote>
+    SALES_LOCATION_STATE<br>
+    Sales_Location_State_state_location<br>
+    state_location_level.<br>
+    foo_state_location.<br>
 </blockquote>
 <p>
 In the case of matching measure columns, if the measure template parameters

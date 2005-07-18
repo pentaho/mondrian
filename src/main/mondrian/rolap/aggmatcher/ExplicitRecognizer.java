@@ -172,7 +172,7 @@ class ExplicitRecognizer extends Recognizer {
         aggUsage.setSymbolicName(measure.getSymbolicName());
         convertAggregator(aggUsage, rm.getAggregator());
 
-        aggUsage.measure = rm;
+        aggUsage.rMeasure = rm;
     }
 
     /**

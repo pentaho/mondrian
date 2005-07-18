@@ -56,6 +56,10 @@ class AggQuerySpec {
     public int getMeasureCount() {
         return segments.length;
     }
+    public AggStar.FactTable.Column getMeasureAsColumn(final int i) {
+        int bitPos = segments[i].measure.getBitPosition();
+        return aggStar.lookupColumn(bitPos);
+    }
     public AggStar.FactTable.Measure getMeasure(final int i) {
         int bitPos = segments[i].measure.getBitPosition();
         return aggStar.lookupMeasure(bitPos);
@@ -98,11 +102,11 @@ class AggQuerySpec {
         return isDistinct;
     }
     protected void addMeasure(final int i, final SqlQuery sqlQuery) {
-        AggStar.FactTable.Measure measure = getMeasure(i);
+        AggStar.FactTable.Column column = getMeasureAsColumn(i);
 
-        measure.getTable().addToFrom(sqlQuery, false, true);
+        column.getTable().addToFrom(sqlQuery, false, true);
 
-        String expr = measure.getExpression(sqlQuery);
+        String expr = column.getExpression(sqlQuery);
         sqlQuery.addSelect(expr, getMeasureAlias(i));
     }
 

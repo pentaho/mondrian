@@ -266,6 +266,7 @@ public class AggTableManager {
             throw new MondrianException(ex);
 
         } finally {
+            msgRecorder.logInfoMessage(getLogger());
             msgRecorder.logWarningMessage(getLogger());
             msgRecorder.logErrorMessage(getLogger());
             if (msgRecorder.hasErrors()) {
@@ -414,72 +415,76 @@ public class AggTableManager {
     void bindToStar(final JdbcSchema.Table dbFactTable,
                     final RolapStar star,
                     final MessageRecorder msgRecorder) throws SQLException {
-        // load columns
-        dbFactTable.load();
+        msgRecorder.pushContextName("AggTableManager.bindToStar");
+        try {
+            // load columns
+            dbFactTable.load();
 
-        dbFactTable.setTableUsage(JdbcSchema.FACT_TABLE_USAGE);
+            dbFactTable.setTableUsage(JdbcSchema.FACT_TABLE_USAGE);
 
-        MondrianDef.Relation relation = star.getFactTable().getRelation();
-        String schema = null;
-        if (relation instanceof MondrianDef.Table) {
-            schema = ((MondrianDef.Table) relation).schema;
-        }
-        String tableName = dbFactTable.getName();
-        String alias = null;
-        dbFactTable.table = new MondrianDef.Table(schema, tableName, alias);
+            MondrianDef.Relation relation = star.getFactTable().getRelation();
+            String schema = null;
+            if (relation instanceof MondrianDef.Table) {
+                schema = ((MondrianDef.Table) relation).schema;
+            }
+            String tableName = dbFactTable.getName();
+            String alias = null;
+            dbFactTable.table = new MondrianDef.Table(schema, tableName, alias);
 
-        for (Iterator it = dbFactTable.getColumns(); it.hasNext(); ) {
-            JdbcSchema.Table.Column factColumn =
-                (JdbcSchema.Table.Column) it.next();
-            String cname = factColumn.getName();
-            RolapStar.Column[] rcs =
-                star.getFactTable().lookupColumns(cname);
+            for (Iterator it = dbFactTable.getColumns(); it.hasNext(); ) {
+                JdbcSchema.Table.Column factColumn =
+                    (JdbcSchema.Table.Column) it.next();
+                String cname = factColumn.getName();
+                RolapStar.Column[] rcs =
+                    star.getFactTable().lookupColumns(cname);
 
-            for (int i = 0; i < rcs.length; i++) {
-                RolapStar.Column rc = rcs[i];
-                // its a measure
-                if (rc instanceof RolapStar.Measure) {
-                    RolapStar.Measure rm = (RolapStar.Measure) rc;
-                    JdbcSchema.Table.Column.Usage usage =
+                for (int i = 0; i < rcs.length; i++) {
+                    RolapStar.Column rc = rcs[i];
+                    // its a measure
+                    if (rc instanceof RolapStar.Measure) {
+                        RolapStar.Measure rm = (RolapStar.Measure) rc;
+                        JdbcSchema.Table.Column.Usage usage =
                             factColumn.newUsage(JdbcSchema.MEASURE_COLUMN_USAGE);
-                    usage.setSymbolicName(rm.getName());
+                        usage.setSymbolicName(rm.getName());
 
-                    usage.setAggregator(rm.getAggregator());
-                    usage.measure = rm;
-
-/*
-Turns out there are a lot of measures whose column is not numeric
-                    // warn if not numeric (is boolean allowed??)
-                    if (! factColumn.isNumeric()) {
-                        String msg = mres.getNonNumericMeasure(
-                            msgRecorder.getContext(),
-                            dbFactTable.getName(),
-                            factColumn.getName(),
-                            factColumn.getTypeName());
-                        msgRecorder.reportWarning(msg);
+                        usage.setAggregator(rm.getAggregator());
+                        usage.rMeasure = rm;
                     }
-*/
+                }
+
+                // it still might be a foreign key
+                RolapStar.Table rTable =
+                    star.getFactTable().findTableWithLeftJoinCondition(cname);
+                if (rTable != null) {
+                    JdbcSchema.Table.Column.Usage usage =
+                        factColumn.newUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE);
+                    usage.setSymbolicName("FOREIGN_KEY");
+                    usage.rTable = rTable;
+                } else {
+                    RolapStar.Column rColumn = 
+                            star.getFactTable().lookupColumn(cname);
+                    if ((rColumn != null) && 
+                            ! (rColumn instanceof RolapStar.Measure)) {
+                        // ok, maybe its used in a non-shared dimension
+                        JdbcSchema.Table.Column.Usage usage =
+                            factColumn.newUsage(
+                            JdbcSchema.FOREIGN_KEY_COLUMN_USAGE);
+                        usage.setSymbolicName("FOREIGN_KEY");
+                        usage.rColumn = rColumn;
+                    }
+                }
+
+                // warn if it has not been identified
+                if (! factColumn.hasUsage()) {
+                    String msg = mres.getUnknownFactTableColumn(
+                        msgRecorder.getContext(),
+                        dbFactTable.getName(),
+                        factColumn.getName());
+                    msgRecorder.reportInfo(msg);
                 }
             }
-
-            // it still might be a foreign key
-            RolapStar.Table rTable =
-                star.getFactTable().findTableWithLeftJoinCondition(cname);
-            if (rTable != null) {
-                JdbcSchema.Table.Column.Usage usage =
-                    factColumn.newUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE);
-                usage.setSymbolicName("FOREIGN_KEY");
-                usage.rTable = rTable;
-            }
-
-            // warn if it has not been identified
-            if (! factColumn.hasUsage()) {
-                String msg = mres.getUnknownFactTableColumn(
-                    msgRecorder.getContext(),
-                    dbFactTable.getName(),
-                    factColumn.getName());
-                msgRecorder.reportInfo(msg);
-            }
+        } finally {
+            msgRecorder.popContextName();
         }
     }
 }

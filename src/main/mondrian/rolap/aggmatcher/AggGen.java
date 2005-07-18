@@ -16,6 +16,7 @@ import mondrian.olap.MondrianDef;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.rolap.RolapAggregator;
 import org.apache.log4j.Logger;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -122,8 +123,16 @@ public class AggGen {
                 return;
             }
         }
-        notLostColumnUsages.add(
-            column.newUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE));
+        JdbcSchema.Table.Column.Usage usage = null;
+        if (column.hasUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE)) {
+            Iterator it = column.getUsages(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE);
+            it.hasNext();
+            usage = (JdbcSchema.Table.Column.Usage) it.next();
+        } else {
+            usage = column.newUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE);
+            usage.setSymbolicName(JdbcSchema.FOREIGN_KEY_COLUMN_NAME);
+        }
+        notLostColumnUsages.add(usage);
     }
     
     /** 
@@ -155,6 +164,13 @@ public class AggGen {
             getLogger().warn(buf.toString());
             return;
         }
+        try {
+            factTable.load();
+        } catch (SQLException ex) {
+            getLogger().error(ex);
+            return;
+        }
+
         if (getLogger().isDebugEnabled()) {
             StringBuffer buf = new StringBuffer(512);
             buf.append("Init: ");
@@ -268,11 +284,16 @@ public class AggGen {
                 getLogger().warn(buf.toString());
                 return;
             }
+            RolapAggregator aggregator = null;
+            String symbolicName = null;
             if (! (rColumn instanceof RolapStar.Measure)) {
                 // TODO: whats the solution to this?
                 // its a funky dimension column in the fact table!!!
                 getLogger().warn("not a measure: " +name);
                 continue;
+            } else {
+                RolapStar.Measure rMeasure = (RolapStar.Measure) rColumn;
+                aggregator = rMeasure.getAggregator();
             }
             JdbcSchema.Table.Column c = getColumn(factTable, name);
             if (c == null) {
@@ -292,7 +313,35 @@ public class AggGen {
             if (getLogger().isDebugEnabled()) {
                 getLogger().debug("  Jdbc Column m="+c);
             }
-            measures.add(c.newUsage(JdbcSchema.MEASURE_COLUMN_USAGE));
+/*
+            JdbcSchema.Table.Column.Usage usage = 
+                c.newUsage(JdbcSchema.MEASURE_COLUMN_USAGE);
+            usage.setAggregator(aggregator);
+            usage.setSymbolicName(rColumn.getName());
+            measures.add(usage);
+*/
+
+            JdbcSchema.Table.Column.Usage usage = null;
+            if (c.hasUsage(JdbcSchema.MEASURE_COLUMN_USAGE)) {
+                for (Iterator uit = 
+                    c.getUsages(JdbcSchema.MEASURE_COLUMN_USAGE);
+                    uit.hasNext(); ) {
+
+                    JdbcSchema.Table.Column.Usage tmpUsage = 
+                        (JdbcSchema.Table.Column.Usage) uit.next();
+                    if ((tmpUsage.getAggregator() == aggregator) && 
+                        tmpUsage.getSymbolicName().equals(rColumn.getName())) {
+                        usage = tmpUsage;
+                        break;
+                    }
+                }
+            } 
+            if (usage == null) {
+                usage = c.newUsage(JdbcSchema.MEASURE_COLUMN_USAGE);
+                usage.setAggregator(aggregator);
+                usage.setSymbolicName(rColumn.getName());
+            }
+            measures.add(usage);
         }
 
         // If we got to here, then everything is ok.
@@ -327,6 +376,12 @@ public class AggGen {
             getLogger().warn(buf.toString());
             return false;
         }
+        try {
+            jt.load();
+        } catch (SQLException ex) {
+            getLogger().error(ex);
+            return false;
+        }
 
         List list = (List) collapsedColumnUsages.get(rt);
         if (list == null) {
@@ -349,6 +404,9 @@ public class AggGen {
             getLogger().warn(buf.toString());
             return false;
         }
+        // NOTE: this creates a new usage for the fact table
+        // I do not know if this is a problem is AggGen is run before
+        // Mondrian uses aggregate tables.
         list.add(c.newUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE));
 
         RolapStar.Column prColumn = rColumn;
@@ -374,6 +432,9 @@ public class AggGen {
                 getLogger().warn("Can not find column: " +rname);
                 break;
             }
+            // NOTE: this creates a new usage for the fact table
+            // I do not know if this is a problem is AggGen is run before
+            // Mondrian uses aggregate tables.
             list.add(c.newUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE));
         }
 
@@ -410,6 +471,12 @@ public class AggGen {
             getLogger().warn(buf.toString());
             return false;
         }
+        try {
+            jt.load();
+        } catch (SQLException ex) {
+            getLogger().error(ex);
+            return false;
+        }
 
         //CG guarantee the columns has been loaded before looking up them
         try {
@@ -435,7 +502,7 @@ public class AggGen {
                 buf.append("For fact table \"");
                 buf.append(getFactTableName());
                 buf.append("\", could not get column name");
-                buf.append("for RolapStar.Column \"");
+                buf.append(" for RolapStar.Column \"");
                 buf.append(rc);
                 buf.append("\" for RolapStar.Table with alias \"");
                 buf.append(rt.getAlias());
@@ -511,6 +578,7 @@ public class AggGen {
             addColumnCreate(pw, prefix, usage);
         }
 
+        // do measures
         for (Iterator it = measures.iterator(); it.hasNext(); ) {
             JdbcSchema.Table.Column.Usage usage = 
                 (JdbcSchema.Table.Column.Usage) it.next();
@@ -558,7 +626,8 @@ public class AggGen {
             JdbcSchema.Table.Column c = usage.getColumn();
 
             pw.print(prefix);
-            pw.print(c.getName());
+            String name = getUsageName(usage);
+            pw.print(name);
             pw.println(',');
         }
         // do fact_count
@@ -582,11 +651,18 @@ public class AggGen {
             JdbcSchema.Table.Column.Usage usage = 
                 (JdbcSchema.Table.Column.Usage) it.next();
             JdbcSchema.Table.Column c = usage.getColumn();
+            RolapAggregator agg = usage.getAggregator();
 
             pw.print(prefix);
+            pw.print(
+                agg.getExpression(sqlQuery.getDialect().quoteIdentifier(
+                    factTableName, c.getName())).toUpperCase());
+/*
             pw.print("SUM(");
             pw.print(sqlQuery.getDialect().quoteIdentifier(factTableName, c.getName()));
             pw.print(") AS ");
+*/
+            pw.print(" AS ");
             pw.print(sqlQuery.getDialect().quoteIdentifier(c.getName()));
             pw.println(',');
         }
@@ -599,7 +675,7 @@ public class AggGen {
         pw.println("FROM ");
         pw.print(prefix);
         pw.print(sqlQuery.getDialect().quoteIdentifier(factTableName));
-        pw.print(" AS ");
+        pw.print(" ");
         pw.println(sqlQuery.getDialect().quoteIdentifier(factTableName));
 
         pw.println("GROUP BY ");
@@ -700,7 +776,9 @@ public class AggGen {
             JdbcSchema.Table.Column c = usage.getColumn();
 
             pw.print(prefix);
-            pw.print(c.getName());
+            String name = getUsageName(usage);
+            pw.print(name);
+            //pw.print(c.getName());
             pw.println(',');
         }
         // do fact_count
@@ -733,11 +811,18 @@ public class AggGen {
                 (JdbcSchema.Table.Column.Usage) it.next();
             JdbcSchema.Table.Column c = usage.getColumn();
             JdbcSchema.Table t = c.getTable();
+            RolapAggregator agg = usage.getAggregator();
 
             pw.print(prefix);
+            pw.print(
+                agg.getExpression(sqlQuery.getDialect().quoteIdentifier(
+                    t.getName(), c.getName())).toUpperCase());
+/*
             pw.print("SUM(");
             pw.print(sqlQuery.getDialect().quoteIdentifier(t.getName(), c.getName()));
             pw.print(") AS ");
+*/
+            pw.print(" AS ");
             pw.print(sqlQuery.getDialect().quoteIdentifier(c.getName()));
             pw.println(',');
         }
@@ -750,7 +835,7 @@ public class AggGen {
         pw.println("FROM ");
         pw.print(prefix);
         pw.print(sqlQuery.getDialect().quoteIdentifier(factTableName));
-        pw.print(" AS ");
+        pw.print(" ");
         pw.print(sqlQuery.getDialect().quoteIdentifier(factTableName));
         pw.println(',');
 
@@ -844,16 +929,31 @@ public class AggGen {
 
 
 
+    private String getUsageName(final JdbcSchema.Table.Column.Usage usage) {
+        JdbcSchema.Table.Column c = usage.getColumn();
+        String name = c.getName();
+        // if its a measure which is based upon a foreign key, then
+        // the foreign key column name is already used (for the foreign key
+        // column) so we must choose a different name.
+        if (usage.getColumnType() == JdbcSchema.MEASURE_COLUMN_USAGE) {
+            if (c.hasUsage(JdbcSchema.FOREIGN_KEY_COLUMN_USAGE)) {
+                name = usage.getSymbolicName().replace(' ', '_').toUpperCase();
+            }
+        }
+        return name;
+    }
 
     private void addColumnCreate(final PrintWriter pw, 
                                  final String prefix,
                                  final JdbcSchema.Table.Column.Usage usage) {
         JdbcSchema.Table.Column c = usage.getColumn();
+        String name = getUsageName(usage);
+
         pw.print(prefix);
         if (usage.usagePrefix != null) {
             pw.print(usage.usagePrefix);
         }
-        pw.print(c.getName());
+        pw.print(name);
         pw.print(' ');
         pw.print(c.getTypeName().toUpperCase());
         switch (c.getType()) {

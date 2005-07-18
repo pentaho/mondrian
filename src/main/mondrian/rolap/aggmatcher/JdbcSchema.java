@@ -331,7 +331,7 @@ public class JdbcSchema {
                 //
 
                 // measure stuff
-                public RolapStar.Measure measure;
+                public RolapStar.Measure rMeasure;
 
                 // hierarchy stuff
                 public MondrianDef.Relation relation;
@@ -339,7 +339,7 @@ public class JdbcSchema {
                 public String levelColumnName;
 
                 // level
-                public RolapStar.Column column;
+                public RolapStar.Column rColumn;
 
                 // for subtables
                 public RolapStar.Table rTable;
@@ -822,7 +822,9 @@ public class JdbcSchema {
                     pw.print(" Usages [");
                     for (Iterator it = getUsages(); it.hasNext(); ) {
                         Usage u = (Usage) it.next();
+                        pw.print('(');
                         u.print(pw, prefix);
+                        pw.print(')');
                     }
                     pw.println("]");
                 }
@@ -1092,7 +1094,6 @@ public class JdbcSchema {
          */
         private void loadColumns() throws SQLException {
             if (! allColumnsLoaded) {
-                getLogger().debug("JdbcSchema.loadColumns: TOP " +getName());
                 Connection conn = JdbcSchema.this.getConnection();
                 try {
                     DatabaseMetaData dmd = conn.getMetaData();
@@ -1145,7 +1146,6 @@ public class JdbcSchema {
                 }
 
                 allColumnsLoaded = true;
-                getLogger().debug("JdbcSchema.loadColumns: BOTTOM");
             }
         }
         private Map getColumnMap() {
@@ -1325,7 +1325,6 @@ public class JdbcSchema {
      */
     private void loadTables() throws SQLException {
         if (! allTablesLoaded) {
-            getLogger().debug("JdbcSchema.loadTables: TOP");
             Map tables = getTablesMap();
             Connection conn = getConnection();
             DatabaseMetaData dmd = conn.getMetaData();
@@ -1335,9 +1334,6 @@ public class JdbcSchema {
             String[] tableTypes = { "TABLE", "VIEW" };
             String tableName = "%";
 
-            getLogger().debug("  schema="+schema);
-            getLogger().debug("  catalog="+catalog);
-            getLogger().debug("  tableName="+tableName);
             ResultSet rs = null;
             try {
                 rs = dmd.getTables(catalog,
@@ -1363,7 +1359,6 @@ public class JdbcSchema {
             }
 
             allTablesLoaded = true;
-            getLogger().debug("JdbcSchema.loadTables: BOTTOM");
         }
     }
 
@@ -1377,7 +1372,6 @@ public class JdbcSchema {
     protected void addTable(final ResultSet rs) throws SQLException {
         String name = rs.getString(3);
         String tableType = rs.getString(4);
-        getLogger().debug("   addTable: name="+name);
         Table table = new Table(name);
         table.setTableType(tableType);
 

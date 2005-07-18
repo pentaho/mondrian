@@ -827,9 +827,38 @@ public class AggStar {
          * @param usage
          */
         private void loadForeignKey(final JdbcSchema.Table.Column.Usage usage) {
-            DimTable child = convertTable(usage.rTable,
+            if (usage.rTable != null) {
+                DimTable child = convertTable(usage.rTable,
                                           usage.rightJoinConditionColumnName);
-            addTable(child);
+                addTable(child);
+            } else {
+                // it a column thats not a measure or foreign key - it must be
+                // a non-shared dimension
+                // See: AggTableManager.java
+                JdbcSchema.Table.Column column = usage.getColumn();
+                String name = column.getName();
+                String symbolicName = usage.getSymbolicName();
+                if (symbolicName == null) {
+                    symbolicName = name;
+                }
+
+                MondrianDef.Expression expression =
+                    new MondrianDef.Column(getName(), name);
+                boolean isNumeric = column.isNumeric();
+                RolapStar.Column rColumn = usage.rColumn;
+                if (rColumn == null) {
+                    String msg = "loadForeignKey: for column " + 
+                        name +
+                        ", rColumn == null";
+                    getLogger().warn(msg);
+                } else {
+                    int bitPosition = rColumn.getBitPosition();
+                    Column c = new Column(symbolicName,
+                                          expression,
+                                          isNumeric,
+                                          bitPosition);
+                }
+            }
         }
         /**
          * Given a usage of type measure, create a Measure column.
@@ -853,7 +882,7 @@ public class AggStar {
                 expression = new MondrianDef.Column(getName(), name);
             }
 
-            int bitPosition = usage.measure.getBitPosition();
+            int bitPosition = usage.rMeasure.getBitPosition();
 
             Measure aggMeasure = new Measure(symbolicName,
                                              expression,
@@ -899,7 +928,7 @@ public class AggStar {
             MondrianDef.Expression expression =
                 new MondrianDef.Column(getName(), usage.levelColumnName);
             boolean isNumeric = usage.getColumn().isNumeric();
-            int bitPosition = usage.column.getBitPosition();
+            int bitPosition = usage.rColumn.getBitPosition();
 
             Level level = new Level(name,
                                     expression,

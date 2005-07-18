@@ -211,10 +211,15 @@ public class FastBatchingCellReader implements CellReader {
                         new mondrian.rolap.aggmatcher.AggGen(
                             FastBatchingCellReader.this.cube.getStar(), columns);
                     if (aggGen.isReady()) {
-                    	LOGGER.debug("createLost=" + Util.nl + aggGen.createLost());
-                    	LOGGER.debug("insertIntoLost=" + Util.nl + aggGen.insertIntoLost());
-                    	LOGGER.debug("createCollapsed=" + Util.nl + aggGen.createCollapsed());
-                    	LOGGER.debug("insertIntoCollapsed=" + Util.nl + aggGen.insertIntoCollapsed());
+                        // PRINT TO STDOUT - DO NOT USE LOGGER
+                    	System.out.println("createLost:" + 
+                            Util.nl + aggGen.createLost());
+                    	System.out.println("insertIntoLost:" + 
+                            Util.nl + aggGen.insertIntoLost());
+                    	System.out.println("createCollapsed:" + 
+                            Util.nl + aggGen.createCollapsed());
+                    	System.out.println("insertIntoCollapsed:" + 
+                        Util.nl + aggGen.insertIntoCollapsed());
                     } else {
                     	LOGGER.error("AggGen failed");
                     }

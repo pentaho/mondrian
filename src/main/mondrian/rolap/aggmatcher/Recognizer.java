@@ -320,10 +320,10 @@ abstract class Recognizer {
                     JdbcSchema.Table.Column.Usage aggUsage =
                         (JdbcSchema.Table.Column.Usage) mit.next();
 
-                    if (aggUsage.measure == avgFactUsage.measure) {
+                    if (aggUsage.rMeasure == avgFactUsage.rMeasure) {
                         avgAggUsage = aggUsage;
                         nosSeen++;
-                    } else if (aggUsage.measure == sumFactUsage.measure) {
+                    } else if (aggUsage.rMeasure == sumFactUsage.rMeasure) {
                         sumAggUsage = aggUsage;
                         nosSeen++;
                     }
@@ -360,7 +360,7 @@ abstract class Recognizer {
                           factUsage.getAggregator(),
                           aggSiblingUsage.getAggregator());
 
-        aggUsage.measure = factUsage.measure;
+        aggUsage.rMeasure = factUsage.rMeasure;
     }
 
     /**
@@ -378,7 +378,7 @@ abstract class Recognizer {
         aggUsage.setSymbolicName(factUsage.getSymbolicName());
         convertAggregator(aggUsage, factUsage.getAggregator());
 
-        aggUsage.measure = factUsage.measure;
+        aggUsage.rMeasure = factUsage.rMeasure;
     }
 
     /**
@@ -609,6 +609,8 @@ abstract class Recognizer {
         // condition might be different
         aggUsage.rTable = factUsage.rTable;
         aggUsage.rightJoinConditionColumnName = rightJoinConditionColumnName;
+
+        aggUsage.rColumn = factUsage.rColumn;
     }
 
     /**
@@ -742,8 +744,9 @@ abstract class Recognizer {
                 returnValue = false;
 
                 msgRecorder.throwRTException();
+            } else {
+                aggUsage.rColumn = rc;
             }
-            aggUsage.column = rc;
         }
         } finally {
             msgRecorder.popContextName();
