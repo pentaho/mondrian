@@ -894,14 +894,56 @@ one is a match.
 There are three sub rules for matching level columns. Each is a template
 which is parameterized with 1) the fact table's cube's dimension
 hierarchy's name, "hierarchy_name", 2) the fact table's cube's dimension
-hierarchy's level name, "level_name", and 3) the dimension table's level 
-column name, "level_column_name":
+hierarchy's level name, "level_name", 3) the dimension table's level 
+column name, "level_column_name",
+and 4) a usage prefix, "usage_prefix", which in most cases is null":
 </p>
 <ul>
 	<li><code>${hierarchy_name}_${level_name}</code></li>
 	<li><code>${hierarchy_name}_${level_column_name}</code></li>
+        <li><code>${usage_prefix}${level_column_name}</code></li>
 	<li><code>${level_column_name}</code><br></li>
 </ul>
+<p>
+The "usage_prefix" is the value of the 
+<code>DimensionUsage</code>'s
+optional
+<code>usagePrefix</code>
+attribute. It can be the case that a "level_column_name", the name
+of a dimension's level column,
+is the same for more than one dimension.
+During aggregate recognition for collapsed dimension aggregates 
+where the base fact table has two or more dimensions with common
+column names, the attempted recognition will fail unless in the
+schema catalog the 
+<code>usagePrefix</code>
+attribute is used to disambiguate those column names.
+Of course, one must also remember to prefix the the column in the aggregate
+table with the same prefix.
+</p>
+<p>
+As an example of 
+<code>usagePrefix</code>, consider a fact table named
+<code>ORDERS</code> which has two 
+<code>DimensionUsage</code>s, one for the
+<code>CUSTOMER</code> dimension
+and the other for the 
+<code>WHOLESALER</code> dimension where each dimension has a level
+column named
+<code>CUST_NM</code>. In this case, a collapsed aggregate table
+could not include a column named
+<code>CUST_NM</code> because there would be no way to tell which
+dimension to associate it with. But if in the
+<code>CUSTOMER</code>'
+<code>DimensionUsage</code> the
+<code>usagePrefix</code> had the value "CU_", while the
+<code>WHOLESALER</code>'s
+<code>usagePrefix</code> had the value "WS_", and the aggregate
+table column was named
+<code>WS_CUST_NM</code>, then the recognizer could associate the
+column with the 
+<code>WHOLESALER</code> dimension.
+</p>
 <p>
 If any of these parameters have space characters, ' ', these are
 mapped to underscore characters, '_', and, similarly, dot characters,
