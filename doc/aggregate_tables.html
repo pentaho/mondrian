@@ -12,28 +12,34 @@
 
 <p>By Richard Emberson; last updated by Julian Hyde, July, 2005.</p>
 
-<p>todo: distinct count</p>
-
 <hr noshade color="#000000" size="1">
 
 <h2>Contents</h2>
-  <ol>
-      <li><a href="#Introduction">Introduction</a></li>
-		<li><a href="#What_are_aggregates">What are aggregate tables?</a><ol>
-      <li><a href="#A_simple_aggregate_table">A simple aggregate table</a></li>
+  <ul>
+	<li><a href="#Introduction">Introduction</a></li>
+	<li><a href="#What_are_aggregates">What are aggregate tables?</a><ol>
+		<li><a href="#A_simple_aggregate_table">A simple aggregate table</a></li>
 		<li><a href="#Another_aggregate_table">Another aggregate table</a></li>
-		</ol>
-
-		</li>
-      <li><a href="#Building_aggregates">Building aggregate tables</a></li>
-      <li><a href="#Recognizing_aggregates">Recognizing aggregate tables</a>
-      <ol>
-        <li><a href="#Recognizing_default">Default</a></li>
-        <li><a href="#Recognizing_explicit">Explicit</a></li>
-      </ol>
-      </li>
-      <li><a href="#Tools_for_designing_and_maintaining_aggregate_tables">Tools 
-		for designing and maintaining aggregate tables</a><li><a href="#Aggregate_properties">Properties which affect aggregates</a></ol>
+	</ol></li>
+	<li><a href="#Defining_aggregate_tables">Defining aggregate tables</a></li>
+	<li><a href="#Building_aggregates">Building aggregate tables</a></li>
+	<li><a href="#How_Mondrian_recognizes_Aggregate_Tables">How Mondrian 
+	recognizes aggregate tables</a><ol>
+		<li><a href="#Recognizing_default">Rules</a></li>
+		<li><a href="#Recognizing_explicit">Explicit aggregates</a></li>
+	</ol></li>
+	<li><a href="#How_Mondrian_uses_aggregate_tables">How Mondrian uses 
+	aggregate tables</a></li>
+	<li><a href="#Tools_for_designing_and_maintaining_aggregate_tables">Tools 
+		for designing and maintaining aggregate tables</a><ul>
+		<li><a href="#AggGen_aggregate_generator">AggGen (aggregate generator)</a></li>
+		<li><a href="#Aggregate_table_populater">Aggregate table populater</a></li>
+		<li><a href="#Script_generator">Script generator</a></li>
+		<li><a href="#Recommender">Recommender</a></li>
+		<li><a href="#Online_offline_control">Online/offline control</a></li>
+	</ul>
+	<li><a href="#Aggregate_properties">Properties which affect aggregates</a><li>
+	<a href="#References">References</a></ul>
 
 <h2><a name="Introduction">Introduction</a></h2>
 <p>
@@ -134,38 +140,38 @@ payment</code> column in the fact table.</p>
 	&quot;count&quot; measure.</li>
 </ul>
 
-<p>Agg_1 would be declared like this:</p>
+<p><code>Agg_1</code> would be declared like this:</p>
 
 <blockquote>
 
-	<p><code>&lt;<a href="schema.html#XML_Cube">Cube</a> name=&quot;Sales&quot;&gt;<br>
-	&nbsp;&nbsp;&lt;<a href="schema.html#XML_Table">Table</a> name=&quot;sales&quot;&gt;<br>
-	&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_AggName">AggName</a> 
+	<p><code>&lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot;&gt;<br>
+	&nbsp;&nbsp;&lt;<a href="#XML_Table">Table</a> name=&quot;sales&quot;&gt;<br>
+	&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggName">AggName</a> 
 	name=&quot;agg_1&quot;&gt;<br>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_AggFactCount">AggFactCount</a> column=&quot;row count&quot;/&gt;<br>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_AggMeasure">AggMeasure</a> name=&quot;[Measures].[Unit 
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggFactCount">AggFactCount</a> column=&quot;row count&quot;/&gt;<br>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggMeasure">AggMeasure</a> name=&quot;[Measures].[Unit 
 	Sales]&quot; column=&quot;sum units&quot;/&gt;<br>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_AggMeasure">AggMeasure</a> 
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggMeasure">AggMeasure</a> 
 	name=&quot;[Measures].[Min Units]&quot; column=&quot;min units&quot;/&gt;<br>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_AggMeasure">AggMeasure</a> name=&quot;[Measures].[Max 
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggMeasure">AggMeasure</a> name=&quot;[Measures].[Max 
 	Units]&quot; column=&quot;max units&quot;/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_AggMeasure">AggMeasure</a> name=&quot;[Measures].[Dollar 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggMeasure">AggMeasure</a> name=&quot;[Measures].[Dollar 
 	Sales]&quot; column=&quot;sum dollars&quot;/&gt;<br>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_AggLevel">AggLevel</a> name=&quot;[Time].[Year]&quot; 
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Time].[Year]&quot; 
 	column=&quot;year&quot;/&gt;<br>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_AggLevel">AggLevel</a> name=&quot;[Time].[Quarter]&quot; 
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Time].[Quarter]&quot; 
 	column=&quot;quarter&quot;/&gt;<br>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_AggLevel">AggLevel</a> name=&quot;[Product].[Mfrid]&quot; 
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Product].[Mfrid]&quot; 
 	column=&quot;mfrid&quot;/&gt;<br>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_AggLevel">AggLevel</a> name=&quot;[Product].[Brand]&quot; 
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Product].[Brand]&quot; 
 	column=&quot;brand&quot;/&gt;<br>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_AggLevel">AggLevel</a> name=&quot;[Product].[Prodid]&quot; 
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Product].[Prodid]&quot; 
 	column=&quot;prodid&quot;/&gt;<br>
-	&nbsp;&nbsp;&nbsp; &lt;/<a href="schema.html#XML_AggName">AggName</a>&gt;<br>
-	&nbsp;&nbsp;&lt;/<a href="schema.html#XML_Table">Table</a>&gt;<br>
+	&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_AggName">AggName</a>&gt;<br>
+	&nbsp;&nbsp;&lt;/<a href="#XML_Table">Table</a>&gt;<br>
 	&nbsp;<br>
 	&nbsp;&nbsp;&lt;!-- Rest of the cube definition --&gt;<br>
-	&lt;/<a href="schema.html#XML_Cube">Cube</a>&gt;</code></p>
+	&lt;/<a href="#XML_Cube">Cube</a>&gt;</code></p>
 </blockquote>
 
 <h3><a name="Another_aggregate_table">Another aggregate table</a></h3>
@@ -177,57 +183,76 @@ payment</code> column in the fact table.</p>
 	<p><img border="0" src="aggregate_tables_3.png"></p>
 </blockquote>
 
-<p>Several dimensions have been collapsed: <code>[Time]</code> at the <code>
-[Quarter]</code> level; <code>[Customer]</code> at the <code>[State]</code> 
-level; and <code>[Payment Method]</code> at the <code>[Payment Method]</code> 
-level. But what has happened to the <code>[Product]</code> dimension? It has not 
-been lost, but the necessary level columns not been retained either.</p>
-
-<p>All that remains if The [Product] In this table, the Customer, Payment and 
-Time dimensions are collapsed into the aggregate table.</p>
-
-<p>Here's how the XML looks:</p>
+<p>and the corresponding XML:</p>
 
 <blockquote>
 
-	<p><code>&lt;<a href="schema.html#XML_Cube">Cube</a> name=&quot;Sales&quot;&gt;<br>
-	&nbsp;&nbsp;&lt;<a href="schema.html#XML_Table">Table</a> name=&quot;sales&quot;&gt;<br>
-	&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_AggName">AggName</a> 
+	<p><code>&lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot;&gt;<br>
+	&nbsp;&nbsp;&lt;<a href="#XML_Table">Table</a> name=&quot;sales&quot;&gt;<br>
+	&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggName">AggName</a> 
 	name=&quot;agg_1&quot; ... /&gt;<br>
-	&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_AggName">AggName</a> 
+	&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggName">AggName</a> 
 	name=&quot;agg_2&quot;&gt;<br>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_AggFactCount">AggFactCount</a> column=&quot;row count&quot;/&gt;<br>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_AggForeignKey">AggForeignKey</a> factColumn=&quot;prodid&quot; 
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggFactCount">AggFactCount</a> column=&quot;row count&quot;/&gt;<br>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggForeignKey">AggForeignKey</a> factColumn=&quot;prodid&quot; 
 	aggColumn=&quot;prodid&quot;/&gt;<br>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_AggMeasure">AggMeasure</a> name=&quot;[Measures].[Unit 
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggMeasure">AggMeasure</a> name=&quot;[Measures].[Unit 
 	Sales]&quot; column=&quot;sum units&quot;/&gt;<br>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_AggMeasure">AggMeasure</a> 
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggMeasure">AggMeasure</a> 
 	name=&quot;[Measures].[Min Units]&quot; column=&quot;min units&quot;/&gt;<br>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_AggMeasure">AggMeasure</a> name=&quot;[Measures].[Max 
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggMeasure">AggMeasure</a> name=&quot;[Measures].[Max 
 	Units]&quot; column=&quot;max units&quot;/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_AggMeasure">AggMeasure</a> name=&quot;[Measures].[Dollar 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggMeasure">AggMeasure</a> name=&quot;[Measures].[Dollar 
 	Sales]&quot; column=&quot;sum dollars&quot;/&gt;<br>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_AggLevel">AggLevel</a> name=&quot;[Time].[Year]&quot; 
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Time].[Year]&quot; 
 	column=&quot;year&quot;/&gt;<br>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_AggLevel">AggLevel</a> name=&quot;[Time].[Quarter]&quot; 
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Time].[Quarter]&quot; 
 	column=&quot;quarter&quot;/&gt;<br>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_AggLevel">AggLevel</a> name=&quot;[Time].[Month]&quot; 
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Time].[Month]&quot; 
 	column=&quot;month&quot;/&gt;<br>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_AggLevel">AggLevel</a> name=&quot;[Payment 
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Payment 
 	Method].[Payment Method]&quot; 
 	column=&quot;payment&quot;/&gt;<br>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_AggLevel">AggLevel</a> name=&quot;[Customer].[State]&quot; 
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Customer].[State]&quot; 
 	column=&quot;state&quot;/&gt;<br>
-	&nbsp;&nbsp;&nbsp; &lt;/<a href="schema.html#XML_AggName">AggName</a>&gt;<br>
-	&nbsp;&nbsp;&lt;/<a href="schema.html#XML_Table">Table</a>&gt;<br>
+	&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_AggName">AggName</a>&gt;<br>
+	&nbsp;&nbsp;&lt;/<a href="#XML_Table">Table</a>&gt;<br>
+	<br>
+&nbsp; &lt;<a href="schema.html#XML_Dimension">Dimension</a> name=&quot;Product&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; 
+	primaryKey=&quot;prodid&quot; primaryKeyTable=&quot;Product&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Join">Join</a> leftKey=&quot;mfrid&quot; 
+	rightKey=&quot;mfrid&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Table">Table</a> 
+	name=&quot;Product&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Table">Table</a> 
+	name=&quot;Mfr&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="schema.html#XML_Join">Join</a>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Level">Level</a> 
+	name=&quot;Manufacturer&quot; table=&quot;Mfr&quot; column=&quot;mfrid&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Level">Level</a> 
+	name=&quot;Brand&quot; table=&quot;Product&quot; column=&quot;brand&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Level">Level</a> 
+	name=&quot;Name&quot; table=&quot;Product&quot; column=&quot;prodid&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/<a href="schema.html#XML_Hierarchy">Hierarchy</a>&gt;<br>
+&nbsp; &lt;/<a href="schema.html#XML_Dimension">Dimension</a>&gt;<br>
 	<br>
 	&nbsp;&nbsp;&lt;!-- Rest of the cube definition --&gt;<br>
-	&lt;/<a href="schema.html#XML_Cube">Cube</a>&gt;</code></p>
+	&lt;/<a href="#XML_Cube">Cube</a>&gt;</code></p>
 </blockquote>
 
-<p>&nbsp;</p>
+<p>Several dimensions have been collapsed: <code>[Time]</code> at the <code>
+[Quarter]</code> level; <code>[Customer]</code> at the <code>[State]</code> 
+level; and <code>[Payment Method]</code> at the <code>[Payment Method]</code> 
+level. But the <code>[Product]</code> dimension has been retained in its 
+original snowflake form.</p>
 
-<h2>Defining aggregate tables</h2>
+<p>The <code>&lt;<a href="#XML_AggForeignKey">AggForeignKey</a>&gt;</code> element is 
+used to&nbsp; declare that the column <code>prodid</code> links to the dimension 
+table, but all other columns remain in the <code>Product</code> and <code>Mfr</code> 
+dimension tables.</p>
+
+<h2><a name="Defining_aggregate_tables">Defining aggregate tables</a></h2>
 <p>
 A fact table can have zero or more aggregate tables.
 Every aggregate table is associated with just one fact table.
@@ -352,7 +377,7 @@ collapsed dimension table
 In the literature, there are other ways of creating aggregate tables
 but they are not supported by Mondrian at this time.
 </p>
-<h3><a name="Building_aggregates">Building aggregate tables</a></h3>
+<h2><a name="Building_aggregates">Building aggregate tables</a></h2>
 <p>
 Aggregate tables must be built.
 Generally, they not real-time; they are rebuilt,
@@ -717,11 +742,12 @@ One last note, when creating aggregate tables from the base fact table
 pay attention to the size of the numeric columns - what might be big
 enough in the base fact table might not be big enough in an aggregate.
 </p>
-<h3><a name="Recognizing_aggregates">Recognizing aggregate tables</a></h3>
+<h2><a name="How_Mondrian_recognizes_Aggregate_Tables">How Mondrian recognizes Aggregate 
+Tables</a></h2>
 <p>
 Mondrian has to know about the aggregate tables in order to use them.
-There are two ways this is done: with the default recognizer and with
-a per-cube explicit definitions. 
+You can either define an aggregate explicitly, or set up rules to recognize 
+several aggregate tables at the same time. 
 </p>
 <p>
 How Mondrian recognizes aggregate table
@@ -729,10 +755,9 @@ names and columns pretty much dictates how one must name those
 table names and columns when creating them in the first place!
 </p>
 
-<h4><a name="Recognizing_default">Default</a></h4>
+<h3><a name="Recognizing_default">Rules</a></h3>
 <p>
-The default recognizer is baked into Mondrian and should cover most needs.
-The rules are templates, designed to work for all fact table names 
+Rules are templates, designed to work for all fact table names 
 and their column
 names. 
 These rules are templates of regular expressions 
@@ -769,8 +794,7 @@ the aggregate table name rule. Represented as a template regular
 expression the rule is:
 </p>
 <blockquote>
-    agg_.+_${fact_table_name}
-</blockquote>
+    <code>agg_.+_${fact_table_name}</code></blockquote>
 <p>
 which is parameterized with the fact table's name.
 (In addition, this rule is applied in "ignore case" mode.)
@@ -794,19 +818,18 @@ specific fact table name to the regular expression template
 creates the following regular expression:
 </p>
 <blockquote>
-    agg_.+_sales_fact_1997
-</blockquote>
+    <code>agg_.+_sales_fact_1997</code></blockquote>
 <p>
 This will match the following table names:
 </p>
-<blockquote>
-    agg_l_05_sales_fact_1997<br>
-    agg_c_14_sales_fact_1997<br>
-    agg_lc_100_sales_fact_1997<br>
-    agg_c_special_sales_fact_1997<br>
-    AGG_45_SALES_FACT_1997<br>
-    AGG_drop_time_id_sales_fact_1997<br>
-</blockquote>
+<ul>
+	<li><code>agg_l_05_sales_fact_1997</code></li>
+	<li><code>agg_c_14_sales_fact_1997</code></li>
+	<li><code>agg_lc_100_sales_fact_1997</code></li>
+	<li><code>agg_c_special_sales_fact_1997</code></li>
+	<li><code>AGG_45_SALES_FACT_1997</code></li>
+	<li><code>AGG_drop_time_id_sales_fact_1997</code><br></li>
+</ul>
 <p>
 The aggregate table name recognition mechanism has one additional
 programatic feature, one can specify that only a portion of the
@@ -836,9 +859,9 @@ case) and this column's type must be numeric.
 The following examples would match as "fact count" columns.
 </p>
 <blockquote>
-    fact_count<br>
+    <code>fact_count<br>
     FACT_COUNT<br>
-    fact_COUNT<br>
+    fact_COUNT</code><br>
 </blockquote>
 <p>
 Following matching the "fact count" column, the candidate aggregate
@@ -852,14 +875,14 @@ keys remaining.
 If the fact table had foreign key columns "store_id" and "time_id",
 then the following aggregate table columns (for example) would match:
 </p>
-<blockquote>
-    time_id<br>
-    store_id<br>
-    TIME_ID<BR>
-    STORE_ID<Br>
-    time_ID<BR>
-    STORE_id<Br>
-</blockquote>
+<ul>
+	<li><code>time_id</code></li>
+	<li><code>store_id</code></li>
+	<li><code>TIME_ID</code></li>
+	<li><code>STORE_ID</code></li>
+	<li><code>time_ID</code></li>
+	<li><code>STORE_id</code><Br></li>
+</ul>
 <p>
 At this point, matches are looked for the level and measure columns.
 Both of these matching rules are multi-part - has sub rules; 
@@ -874,11 +897,11 @@ hierarchy's name, "hierarchy_name", 2) the fact table's cube's dimension
 hierarchy's level name, "level_name", and 3) the dimension table's level 
 column name, "level_column_name":
 </p>
-<blockquote>
-    ${hierarchy_name}_${level_name}<br>
-    ${hierarchy_name}_${level_column_name}<br>
-    ${level_column_name}<br>
-</blockquote>
+<ul>
+	<li><code>${hierarchy_name}_${level_name}</code></li>
+	<li><code>${hierarchy_name}_${level_column_name}</code></li>
+	<li><code>${level_column_name}</code><br></li>
+</ul>
 <p>
 If any of these parameters have space characters, ' ', these are
 mapped to underscore characters, '_', and, similarly, dot characters,
@@ -887,11 +910,11 @@ So, if the hierarchy_name is "Time", level_name is "Month" and
 level_column_name is month_of_year, the possible aggregate table column 
 names are:
 </p>
-<blockquote>
-    time_month<br>
-    time_month_of_year<br>
-    month_of_year<br>
-</blockquote>
+<ul>
+	<li><code>time_month</code></li>
+	<li><code>time_month_of_year</code></li>
+	<li><code>month_of_year</code><br></li>
+</ul>
 <p>
 For this rule, the "hierarchy_name" and "level_name" are converted to
 lower case while the "level_column_name" must match exactly.
@@ -903,11 +926,11 @@ cube's measure name, "measure_name", 2) the fact table's cube's measure
 column name, "measure_column_name", and 3) the fact table's cube's measure's
 aggregator (sum, avg, max, etc.), "aggregate_name".
 </p>
-<blockquote>
-    ${measure_name}<br>
-    ${measure_column_name}<br>
-    ${measure_column_name}_${aggregate_name}<br>
-</blockquote>
+<ul>
+	<li><code>${measure_name}</code></li>
+	<li><code>${measure_column_name}</code></li>
+	<li><code>${measure_column_name}_${aggregate_name}</code><br></li>
+</ul>
 <p>
 where the measure name is converted to lower case and both the measure
 column name and aggregate name are matched as they appear.
@@ -918,11 +941,11 @@ is "unit_sales", and, lastly, the fact table's cube's measure's
 aggregate name is "avg", then possible aggregate table column names 
 that would match are:
 </p>
-<blockquote>
-    avg_unit_sales<br>
-    unit_sales<br>
-    unit_sales_avg<br>
-</blockquote>
+<ul>
+	<li><code>avg_unit_sales</code></li>
+	<li><code>unit_sales</code></li>
+	<li><code>unit_sales_avg</code><br></li>
+</ul>
 <!--
 <blockquote>
 <pre>
@@ -1026,7 +1049,7 @@ For Mondrian developers there are
 <a href="developer_notes.html">additional notes</a>
 describing the default rule recognition schema.
 </p>
-<h4><a name="Recognizing_explicit">Explicit</a></h4>
+<h3><a name="Recognizing_explicit">Explicit aggregates</a></h3>
 <p>
 On a per cube basis, in a schema file a user can both include and
 exclude aggregate tables. A table that would have been include as
@@ -1045,9 +1068,7 @@ Sales
 cube
 with fact table
 <code>
-sales_fact_1997
-</code>.
-There are child elements of the 
+sales_fact_1997</code>. There are child elements of the 
 <code>
 Table
 </code>
@@ -1216,7 +1237,7 @@ In a given
 <code> 
 Table
 </code>
-element all of the 
+element, all of the 
 <code>
 AggExclude
 </code>
@@ -1297,7 +1318,7 @@ it can not figure out.
 </p>
 
 <h2>
-How Mondrian uses aggregate tables</h2>
+<a name="How_Mondrian_uses_aggregate_tables">How Mondrian uses aggregate tables</a></h2>
 
 <p>
 In general Mondrian looks for the nearest hit. If there is no aggregate table at 
@@ -1359,12 +1380,25 @@ There's plenty of room to wrap these utilities in nice graphical interfaces,
 make them smarter.</p>
 
 <h3>
-Aggregate table populater</h3>
+<a name="AggGen_aggregate_generator">AggGen (aggregate generator)</a></h3>
+
+<p>
+<code>AggGen</code> is a tool that generates SQL to support the
+creation and maintenance of aggregate tables, and would give a
+template for the creation of materialized views for databases that
+support those. Given an MDX query, the generated create/insert SQL is
+optimal for the given query. The generated SQL covers both the "lost"
+and "collapsed" dimensions. For usage, see the documentation for
+<a href="cmdrunner.html#AggGen">CmdRunner</a>.</p>
+
+<h3>
+<a name="Aggregate_table_populater">Aggregate table populater</a></h3>
 
 <p>This utility populates (or generates INSERT statements to populate) the agg
 tables.<p>For extra credit: populate the tables in topological order, so that 
-higher level aggregations can be built from lower level aggregations.<h3>Script 
-generator</h3>
+higher level aggregations can be built from lower level aggregations.<h3>
+<a name="Script_generator">Script 
+generator</a></h3>
 
 <p>This utility generates a script containing CREATE TABLE and CREATE INDEX
 statements all possible aggregate tables (including indexes), XML for these
@@ -1373,25 +1407,20 @@ tables. Clearly this will be a huge script, and it would be ridiculous to
 create all of these tables. The person designing the schema could copy/paste
 from this file to create their own schema.
 
-<h3>Recommender</h3>
+<h3><a name="Recommender">Recommender</a></h3>
 
 <p>This utility (maybe graphical, maybe text-based) recommends a set of
 aggregate tables. This is essentially an optimization algorithm, and it is
-described in the academic literature. Constraints on the optimization
+described in the academic literature [<a href="#Ref_AAD96">AAD<sup>+</sup>96</a>]. Constraints on the optimization
 process are the amount of storage required, the estimated time to populate
 the agg tables.<p>The algorithm could also take into account usage
 information. A set of sample queries could be an input to the utility, or the 
 utility could run as a background task, consuming the query log and dynamically 
-making recommendations.<h3>Online/offline control</h3>
+making recommendations.<h3><a name="Online_offline_control">Online/offline control</a></h3>
 
 <p>This utility would allow agg tables to be taken offline/online while Mondrian is still
 running.
 
-<p>&nbsp;<p>
-&nbsp;</p>
-
-<p>
-&lt;to be continued&gt;</p>
 <h2><a name="Aggregate_properties">Properties which affect aggregates</a></h2>
 <p>
 Mondrian has properties that control the behavior of its aggregate
@@ -1401,8 +1430,7 @@ table sub-system.
 </p>
 
 <blockquote>
-<table style="text-align: left; "
- border="1" cellpadding="2" cellspacing="0" id="table1">
+<table border="1" style="border-width: 0">
   <tbody>
     <tr>
       <th>Property</th>
@@ -1412,7 +1440,8 @@ table sub-system.
     </tr>
 
     <tr>
-      <td><code>mondrian.rolap.aggregates.Use</code></td>
+      <td><code>
+		<a href="api/mondrian/olap/MondrianProperties.html#UseAggregates">mondrian.rolap.aggregates.Use</a></code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>
@@ -1426,7 +1455,8 @@ table sub-system.
     </tr>
 
     <tr>
-      <td><code>mondrian.rolap.aggregates.Read</code></td>
+      <td><code>
+		<a href="api/mondrian/olap/MondrianProperties.html#ReadAggregates">mondrian.rolap.aggregates.Read</a></code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>
@@ -1438,12 +1468,13 @@ table sub-system.
         they are read, so setting this property false after starting
         with the property being true, has no effect.
         Mondrian will not actually use the aggregate tables unless the
-        mondrian.rolap.aggregates.Use property is set to true.
+        <code>mondrian.rolap.aggregates.Use</code> property is set to true.
       </td>
     </tr>
 
     <tr>
-      <td><code>mondrian.rolap.aggregates.ChooseByVolume</code></td>
+      <td><code>
+		<a href="api/mondrian/olap/MondrianProperties.html#ChooseAggregateByVolume">mondrian.rolap.aggregates.ChooseByVolume</a></code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>
@@ -1455,19 +1486,21 @@ table sub-system.
       </td>
     </tr>
     <tr>
-      <td><code>mondrian.rolap.aggregates.rules</code></td>
+      <td><code>
+		<a href="api/mondrian/olap/MondrianProperties.html#AggregateRules">mondrian.rolap.aggregates.rules</a></code></td>
       <td><code>resource or url</code></td>
       <td><code>/DefaultRules.xml</code></td>
       <td>
         This is a developer property, not a user property.
-        Setting this to a url (e.g., file://c:/myrules.xml) allows one
+        Setting this to a url (e.g., <code>file://c:/myrules.xml</code>) allows one
         to use their own "default" Mondrian aggregate table recognition
         rules. 
         In general use this should never be changed from the default value.
       </td>
     </tr>
     <tr>
-      <td><code>mondrian.rolap.aggregates.rule.tag</code></td>
+      <td><code>
+		<a href="api/mondrian/olap/MondrianProperties.html#AggregateRuleTag">mondrian.rolap.aggregates.rule.tag</a></code></td>
       <td><code>string</code></td>
       <td><code>default</code></td>
       <td>
@@ -1481,7 +1514,34 @@ table sub-system.
 </blockquote>
 
 
-<p>&nbsp;</p>
+<h2><a name="References">References</a></h2>
+<table border="0" id="table1" cellpadding="4">
+	<tr>
+		<td>[GBLP96]</td>
+		<td>J. Gray, A. Bosworth, A. Layman, and H. Pirahesh. Data cube: A 
+		relational aggregation operator generalizing group-by, cross-tab, and 
+		sub-totals. In Proc. 12th ICDE, pages 152-159, New Orleans, March 1996. 
+		[<a target="_blank" href="ftp://ftp.research.microsoft.com/pub/tr/tr-97-32.pdf">pdf</a>]</td>
+	</tr>
+	<tr>
+		<td>[<a name="Ref_AAD96">AAD<sup>+</sup>96</a>]</td>
+		<td>S. Agarwal, R. Agrawal, P. M. Deshpande, A. Gupta, J. F. Naughton, 
+		R. Ramakrishnan, and S. Sarawagi. On the computation of multidimensional 
+		aggregates. In Proc. 22nd VLDB, pages 506-521, Mumbai, Sept. 1996. [<a href="http://www.almaden.ibm.com/software/quest/Publications/papers/vldb96_cube.pdf">pdf</a>]</td>
+	</tr>
+	<tr>
+		<td>[ABDGHLS99]</td>
+		<td>J. Albrecht, A. Bauer, O. Deyerling, H. Gunze, W. Hummer, W. Lehner, 
+		L. Schlesinger. Management of Multidimensional Aggregates for Efficient 
+		Online Analytical Processing, Proceedings of International Database 
+		Engineering and Applications Symposium, 1999, pp. 156– 164. [<a href="http://www6.informatik.uni-erlangen.de/research/projects/cubestar/english/Overview.html">pdf</a>]</td>
+	</tr>
+	<tr>
+		<td>[Rittman05]</td>
+		<td>M. Rittman. Compressed Composites (Oracle 10g Compression) 
+		Explained. Online article. [<a href="http://www.rittman.net/archives/001173.html">html</a>]</td>
+	</tr>
+</table>
 
 <hr>
 

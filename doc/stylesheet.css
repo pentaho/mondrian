@@ -135,6 +135,15 @@ dd {
   font-family: verdana, arial, helvetica, sans-serif;
 }
 
+table {
+  border-collapse: collapse;
+  border: solid #ffffff 1px;
+}
+
+td, th {
+  vertical-align:top;
+}
+
 td.content {
   color: #333333;
   text-decoration: none;
@@ -343,5 +352,4 @@ PRE.clsCode, CODE.clsText {
 
 PRE.clsSyntax { font-family:verdana,arial,helvetica,sans-serif; font-size:120%; }
 
-/* End style.css */
-/* End DesignDoc.css */
+/* End stylesheet.css */

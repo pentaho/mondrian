@@ -25,12 +25,41 @@
 <body>
 <h1>Mondrian CmdRunner</h1>
 
+<p>By Richard Emberson; last updated July, 2005.</p>
+
 <hr noshade color="#000000" size="1">
 
-<h2>What is the CmdRunner?</h2>
+<h2>Contents</h2>
+<ul>
+	<li><a href="#What_is_CmdRunner">What is CmdRunner?</a></li>
+	<li><a href="#Building">Building</a></li>
+	<li><a href="#Usage">Usage</a></li>
+	<li><a href="#Command_line_arguments">Command line arguments</a></li>
+	<li><a href="#CmdRunner_Commands">CmdRunner Commands</a><ul>
+		<li><a href="#help">help</a></li>
+		<li><a href="#set">set</a></li>
+		<li><a href="#log">log</a></li>
+		<li><a href="#file">file</a></li>
+		<li><a href="#list">list</a></li>
+		<li><a href="#func">func</a></li>
+		<li><a href="#param">param</a></li>
+		<li><a href="#cube">cube</a></li>
+		<li><a href="#error">error</a></li>
+		<li><a href="#echo">echo</a></li>
+		<li><a href="#expr">expr</a></li>
+		<li><a href="#equals">=</a></li>
+		<li><a href="#tilde">~</a></li>
+		<li><a href="#exit">exit</a></li>
+		<li><a href="#run_an_MDX_query">run an MDX query</a></li>
+	</ul>
+	</li>
+	<li><a href="#AggGen">AggGen: Aggregate SQL Generator</a></li>
+</ul>
+
+<h2><a name="What_is_CmdRunner">What is CmdRunner?</a></h2>
 
 <p>
-The CmdRunner is a command line interpreter for Mondrian.
+<code>CmdRunner</code> is a command line interpreter for Mondrian.
 From within the command interpreter or in a command file:
 properties can be set and values displayed, logging
 levels changed, built-in function usages displayed,
@@ -41,25 +70,23 @@ displayed
 and, of course, MDX queries evaluated.
 </p>
 <p>
-For Mondrian developers new features can be quickly
-tested with the CmdRunner. As an example, to test a new user-defined
-function all one need to is add it to the schema, add the location
-of the function's java class to the class path, point the
-CmdRunner at the schema 
+For Mondrian developers new features can be quickly tested with <code>CmdRunner</code>. 
+As an example, to test a new user-defined function all one need to is add it to 
+the schema, add the location of the function's java class to the class path, 
+point <code>CmdRunner</code> at the schema 
 and execute a MDX query that uses the new function.
 </p>
 <p>
-For MDX developers, the CmdRunner lets one test a new MDX query or
+For MDX developers, <code>CmdRunner</code> lets one test a new MDX query or
 Mondrian schema without having to run Mondrian in a Webserver
-using JPivot. Rather, one can have the new MDX query
-in a file and point the CmdRunner at it. Granted, the output
-is a list, possibly long, of row and column entries; but sometimes
-all one needs from the CmdRunner is to know that the query runs
+using JPivot. Rather, one can have the new MDX query in a file and point <code>CmdRunner</code> 
+at it. Granted, the output is a list, possibly long, of row and column entries; 
+but sometimes all one needs from <code>CmdRunner</code> is to know that the query runs
 and other times one can always post process the output into
 excel or gnuplot, etc.
 </p>
 
-<h2>Building</h2>
+<h2><a name="Building">Building</a></h2>
 <p>
 There are two ways to run the command interpreter. The first is to
 have a script create a class path with all of the needed mondrian
@@ -96,9 +123,9 @@ around since it bundles up everything that is needed
 (other than the properties and schema files).
 </p>
 
-<h2>Usage</h2>
+<h2><a name="Usage">Usage</a></h2>
 <p>
-There are two ways to invoke the CmdRunner: using the 
+There are two ways to invoke <code>CmdRunner</code>: using the 
 <code>cmdrunner.jar</code> 
 or using a script that builds a class path of the required jars
 and then executes java with that class path. The former is an easy
@@ -108,7 +135,7 @@ while the
 later is quicker if you are in a code, compile and test cycle.
 </p>
 <p>
-To run CmdRunner using the 
+To run <code>CmdRunner</code> using the 
 <code>cmdrunner.jar</code> 
 from the shell prompt execute:
 </p>
@@ -132,7 +159,7 @@ that can be used duplicating the above command:
 </code>
 </blockquote>
 <p>
-To run CmdRunner without first building the
+To run <code>CmdRunner</code> without first building the
 <code>cmdrunner.jar</code> 
 there is the
 <code>run.sh</code>
@@ -149,80 +176,79 @@ where the jdbc jars are located.
 </blockquote>
 </p>
 
-<h2>Command line arguments</h2>
+<h2><a name="Command_line_arguments">Command line arguments</a></h2>
 <p>
-The CmdRunner has the following command line options:
-</p>
-<table style="text-align: left; "
+<code>CmdRunner</code> has the following command line options:</p>
+
+<blockquote>
+	<table style="border-width:0; text-align: left"
  border="1" cellpadding="2" cellspacing="0">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top; text-align: center;">
-		<span
- style="font-weight: bold;">Option</span><br>
-      </td>
-      <td style="vertical-align: top; text-align: center;"><span
- style="font-weight: bold;">Description</span><br>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>-h</code></td>
-      <td style="vertical-align: top;">Print help, the list of command line
+		<tbody>
+			<tr>
+				<td style="vertical-align: top; text-align: center;">
+				<span
+ style="font-weight: bold;">Option</span><br></td>
+				<td style="vertical-align: top; text-align: center;">
+				<span
+ style="font-weight: bold;">Description</span><br></td>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;"><code>-h</code></td>
+				<td style="vertical-align: top;">Print help, the list of command line
 options.</td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>-d</code></td>
-      <td style="vertical-align: top;">Enable CmdRunner debugging. 
+			</tr>
+			<tr>
+				<td style="vertical-align: top;"><code>-d</code></td>
+				<td style="vertical-align: top;">Enable CmdRunner debugging. 
         This does not change this log level.</td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>-t</code></td>
-      <td style="vertical-align: top;">Time each mdx query's execution.
-        </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>-nocache</code></td>
-      <td style="vertical-align: top;">Regardless of the settings in the
+			</tr>
+			<tr>
+				<td style="vertical-align: top;"><code>-t</code></td>
+				<td style="vertical-align: top;">Time each mdx query's execution.
+				</td>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;"><code>-nocache</code></td>
+				<td style="vertical-align: top;">Regardless of the settings in the
         Schema file, set each Cube to no in-memory aggregate caching 
         (caching is turned off so each query goes to the database).
         </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>-rc</code></td>
-      <td style="vertical-align: top;">Do not reload the connection
+			</tr>
+			<tr>
+				<td style="vertical-align: top;"><code>-rc</code></td>
+				<td style="vertical-align: top;">Do not reload the connection
         after each query (the default is to reload the connection.
         Its safe to just ignore this.
       </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;" nowrap><code>-p property-file</code></td>
-      <td style="vertical-align: top;">Specify the Mondrian property
+			</tr>
+			<tr>
+				<td style="vertical-align: top;" nowrap><code>-p property-file</code></td>
+				<td style="vertical-align: top;">Specify the Mondrian property
         file. This argument is basically required for any but the most 
         trivial command interpreter commands. To execute a MDX query or
         request information about a function, the property file must be 
         supplied. On the other hand, to have the CmdRunner print out
-        its internal help, then the property file is not needed.
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>-f filename+</code></td>
-      <td style="vertical-align: top;">Specify the name of one or
+        its internal help, then the property file is not needed. </td>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;"><code>-f filename+</code></td>
+				<td style="vertical-align: top;">Specify the name of one or
         more files that contains CmdRunner commands. If this argument 
         is not supplied, then the interpreter starting in the command 
         entry mode. After the <code>-f</code> is seen, all subsequent
         arguments are interpreted as filenames.
       </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><code>mdx_command</code></td>
-      <td style="vertical-align: top;">A string representing 
-        one or more CmdRunner commands.
-      </td>
-    </tr>
-  </tbody>
-</table>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;"><code>mdx_command</code></td>
+				<td style="vertical-align: top;">A string representing 
+        one or more CmdRunner commands. </td>
+			</tr>
+		</tbody>
+	</table>
+</blockquote>
 
-<h2>CmdRunner Commands</h2>
+<h2><a name="CmdRunner_Commands">CmdRunner Commands</a></h2>
 <p>
 The command interpreter has a fixed set of built in commands.
 When a line is read, if the first word of the line matches one
@@ -232,7 +258,7 @@ a built in command, then all text until a ';' is seen or until
 a '=' is entered by itself on a command continuation line is seen
 will be passed to the Mondrian query engine.
 </p>
-<h3>help</h3>
+<h3><a name="help">help</a></h3>
 <blockquote>
 <code>
   &gt; help &lt;cr&gt;
@@ -242,7 +268,7 @@ Prints help for all commands.
 </p>
 </blockquote>
 
-<h3>set</h3>
+<h3><a name="set">set</a></h3>
 <blockquote>
 <code>
   &gt; set [ property[=value ] ] &lt;cr&gt;
@@ -258,7 +284,7 @@ With "property=value" set property to that value.
 </p>
 </blockquote>
 
-<h3>log</h3>
+<h3><a name="log">log</a></h3>
 <blockquote>
 <code>
   &gt; log [ classname[=level ] ] &lt;cr&gt;
@@ -274,7 +300,7 @@ With "classname=level" set log level to new value.
 </p>
 </blockquote>
 
-<h3>file</h3>
+<h3><a name="file">file</a></h3>
 <blockquote>
 <code>
   &gt; file [ filename | '=' ] &lt;cr&gt;
@@ -290,7 +316,7 @@ With "=" character, re-read and re-execute previous filename.
 </p>
 </blockquote>
 
-<h3>list</h3>
+<h3><a name="list">list</a></h3>
 <blockquote>
 <code>
   &gt; list [ cmd | result ] &lt;cr&gt;
@@ -306,7 +332,7 @@ With "result" argument, list the last mdx query result.
 </p>
 </blockquote>
 
-<h3>func</h3>
+<h3><a name="func">func</a></h3>
 <blockquote>
 <code>
   &gt; func [ name ] &lt;cr&gt;
@@ -316,11 +342,10 @@ With no arguments, list all defined function names.
 </p>
 <p>
 With "name" argument, display the functions:
-      name, description, and syntax
-</p>
+      name, description, and syntax.</p>
 </blockquote>
 
-<h3>param</h3>
+<h3><a name="param">param</a></h3>
 <blockquote>
 <code>
   &gt; param [ name[=value ] ] &lt;cr&gt;
@@ -338,7 +363,7 @@ With "name=value" sets the parameter with name to value.
 </p>
 </blockquote>
 
-<h3>cube</h3>
+<h3><a name="cube">cube</a></h3>
 <blockquote>
 <code>
   &gt; cube [ cubename [ name [=value | command] ] ] &lt;cr&gt;
@@ -350,18 +375,15 @@ With "name=value" sets the parameter with name to value.
     With "cubename" argument, cube attribute name/values for:
       fact table (readonly)
       aggregate caching (readwrite)
-    are printed
+    are printed.</p>
+<p>
+    With "cubename name=value", sets the readwrite attribute with name to value.
 </p>
 <p>
-    With "cubename name=value" sets the readwrite attribute with name to value.
-</p>
-<p>
-    With "cubename command" executes the commands:
-      clearCache
-</p>
+    With "cubename command", executes the commands: clearCache.</p>
 </blockquote>
 
-<h3>error</h3>
+<h3><a name="error">error</a></h3>
 <blockquote>
 <code>
   &gt; error [ msg | stack ] &lt;cr&gt;
@@ -377,7 +399,7 @@ With "stack" argument, the Error stack trace is printed.
 </p>
 </blockquote>
 
-<h3>echo</h3>
+<h3><a name="echo">echo</a></h3>
 <blockquote>
 <code>
   &gt; echo text &lt;cr&gt;
@@ -387,57 +409,57 @@ Prints text to standard out.
 </p>
 </blockquote>
 
-<h3>expr</h3>
+<h3><a name="expr">expr</a></h3>
 <blockquote>
 <code>
   &gt; expr cubename expression &lt;cr&gt;
 </code>
 <p>
-Evaluate an expression against a cube
+Evaluates an expression against a cube
 </p>
 </blockquote>
 
-<h3>=</h3>
+<h3><a name="equals">=</a></h3>
 <blockquote>
 <code>
   &gt; = &lt;cr&gt;
 </code>
 <p>
-Re-Execute previous mdx query.
+Re-executes previous MDX query.
 </p>
 </blockquote>
 
-<h3>~</h3>
+<h3><a name="tilde">~</a></h3>
 <blockquote>
 <code>
   &gt; ~ &lt;cr&gt;
 </code>
 <p>
-Clear any text entered so far for the current command.
+Clears any text entered so far for the current command.
 </p>
 </blockquote>
 
-<h3>exit</h3>
+<h3><a name="exit">exit</a></h3>
 <blockquote>
 <code>
   &gt; exit &lt;cr&gt;
 </code>
 <p>
-Exit mdx command interpreter.
+Exits the MDX command interpreter.
 </p>
 </blockquote>
 
-<h3>run an MDX query</h3>
+<h3><a name="run_an_MDX_query">run an MDX query</a></h3>
 <blockquote>
 <code>
   &gt; &lt;mdx query&gt; ( [ ';' ] &lt;cr&gt; | &lt;cr&gt; ( '=' | '~' ) &lt;cr&gt;
 )
 </code>
 <p>
-Execute or cancel mdx query.
+Executes or cancels an MDX query.
 </p>
 <p>
-An mdx query may span one or more lines. The continuation prompt is a '?'.
+An MDX query may span one or more lines. The continuation prompt is a '?'.
 </p>
 <p>
 After the last line of the query has been entered,
@@ -510,15 +532,18 @@ and in separate window edit/save MDX in the file.
 There is also no support for a command history (other than the '='
 command).
 </p>
-<h2>AggGen: Aggregate Sql Generator</h2>
+<h2><a name="AggGen">AggGen: Aggregate SQL Generator</a></h2>
 <p>
-Currently in Mondrian there is no way to generate candidate aggregate table
-creation and population Sql scripts from an MDX query without 
-the query executing against the database and returning a result.
+Mondrian release 1.2 introduces <a href="aggregate_tables.html">Aggregate Tables</a> 
+as a means of improving performance, but aggregate tables are difficult to use 
+without tools to support them.
 </p>
 <p>
-With that in mind, this is how you can use
-<code>AggGen</code>, Mondrian's aggregate table generator.
+<code>CmdRunner</code> includes a utility called <code>AggGen</code>, the Aggregate 
+Table Generator.
+With it, you can issue an MDX query, and generate a script to create and 
+populate the appropriate aggregate tables to support that MDX query. (The query 
+does not actually return a result.)<p>
 In the property file provided to the 
 <code>CmdRunner</code>
 at startup add the line:
@@ -555,8 +580,7 @@ as aggregates of the particular fact table).
 As an example, if the following MDX is run against a MySql system:
 <blockquote>
 <pre>
-<code>
-WITH MEMBER
+<code>WITH MEMBER
     [Store].[Nat'l Avg] AS
    'AVG(  { [Store].[Store Country].Members}, [Measures].[Units Shipped])'
 SELECT
@@ -565,17 +589,14 @@ SELECT
 FROM
    [Warehouse]
 WHERE 
-    [Measures].[Units Shipped];
-</code>
-</pre>
+    [Measures].[Units Shipped];</code></pre>
 </blockquote>
 </p>
 <p>
 Then the following is written to standard output:
 <blockquote>
 <pre>
-<code>
-WARN  [main] AggGen For RolapStar: "inventory_fact_1997" measure with
+<code>WARN  [main] AggGen For RolapStar: "inventory_fact_1997" measure with
 name, "warehouse_sales"-"inventory_fact_1997"."warehouse_cost", is not a column
 name. The measure's column name may be an expression and currently AggGen does
 not handle expressions. You will have to add this measure to the aggregate table
@@ -591,8 +612,7 @@ CREATE TABLE agg_l_XXX_inventory_fact_1997 (
     warehouse_sales DECIMAL(10,4),
     units_shipped INT,
     units_ordered INT,
-    fact_count INTEGER NOT NULL
-);
+    fact_count INTEGER NOT NULL);
 
 INSERT INTO agg_l_XXX_inventory_fact_1997 (
     time_id,
@@ -634,8 +654,7 @@ CREATE TABLE agg_c_XXX_inventory_fact_1997 (
     warehouse_sales DECIMAL(10,4),
     units_shipped INT,
     units_ordered INT,
-    fact_count INTEGER NOT NULL
-);
+    fact_count INTEGER NOT NULL);
 
 INSERT INTO agg_c_XXX_inventory_fact_1997 (
     product_family,
@@ -676,8 +695,7 @@ GROUP BY
     `product_class`.`product_family`,
     `product_class`.`product_department`,
     `store`.`store_country`,
-    `time_by_day`.`the_year`;
-</code>
+    `time_by_day`.`the_year`;</code>
 </pre>
 </blockquote>
 </p>
