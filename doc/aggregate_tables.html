@@ -1438,7 +1438,7 @@ and "collapsed" dimensions. For usage, see the documentation for
 
 <p>This utility populates (or generates INSERT statements to populate) the agg
 tables.<p>For extra credit: populate the tables in topological order, so that 
-higher level aggregations can be built from lower level aggregations.<h3>
+higher level aggregations can be built from lower level aggregations. (See [<a href="#Ref_AAD96">AAD<sup>+</sup>96</a>]).<h3>
 <a name="Script_generator">Script 
 generator</a></h3>
 
@@ -1472,7 +1472,7 @@ table sub-system.
 </p>
 
 <blockquote>
-<table border="1" style="border-width: 0">
+<table border="1" style="border-color:#000000; border-width:1px; " class="clsStd">
   <tbody>
     <tr>
       <th>Property</th>
@@ -1559,29 +1559,46 @@ table sub-system.
 <h2><a name="References">References</a></h2>
 <table border="0" id="table1" cellpadding="4">
 	<tr>
-		<td>[GBLP96]</td>
-		<td>J. Gray, A. Bosworth, A. Layman, and H. Pirahesh. Data cube: A 
-		relational aggregation operator generalizing group-by, cross-tab, and 
-		sub-totals. In Proc. 12th ICDE, pages 152-159, New Orleans, March 1996. 
-		[<a target="_blank" href="ftp://ftp.research.microsoft.com/pub/tr/tr-97-32.pdf">pdf</a>]</td>
-	</tr>
-	<tr>
 		<td>[<a name="Ref_AAD96">AAD<sup>+</sup>96</a>]</td>
 		<td>S. Agarwal, R. Agrawal, P. M. Deshpande, A. Gupta, J. F. Naughton, 
 		R. Ramakrishnan, and S. Sarawagi. On the computation of multidimensional 
 		aggregates. In Proc. 22nd VLDB, pages 506-521, Mumbai, Sept. 1996. [<a href="http://www.almaden.ibm.com/software/quest/Publications/papers/vldb96_cube.pdf">pdf</a>]</td>
 	</tr>
 	<tr>
-		<td>[ABDGHLS99]</td>
+		<td>[<a name="ABDGHLS99">ABDGHLS99</a>]</td>
 		<td>J. Albrecht, A. Bauer, O. Deyerling, H. Gunze, W. Hummer, W. Lehner, 
 		L. Schlesinger. Management of Multidimensional Aggregates for Efficient 
-		Online Analytical Processing, Proceedings of International Database 
-		Engineering and Applications Symposium, 1999, pp. 156– 164. [<a href="http://www6.informatik.uni-erlangen.de/research/projects/cubestar/english/Overview.html">pdf</a>]</td>
+		Online Analytical Processing. Proceedings of International Database 
+		Engineering and Applications Symposium, 1999, pp. 156–164. [<a href="http://www6.informatik.uni-erlangen.de/research/projects/cubestar/english/Overview.html">pdf</a>]</td>
 	</tr>
 	<tr>
-		<td>[Rittman05]</td>
+		<td>[<a name="GBLP96">GBLP96</a>]</td>
+		<td>J. Gray, A. Bosworth, A. Layman, and H. Pirahesh. Data cube: A 
+		relational aggregation operator generalizing group-by, cross-tab, and 
+		sub-totals. In Proc. 12th ICDE, pages 152-159, New Orleans, March 1996. 
+		[<a target="_blank" href="http://paul.rutgers.edu/~aminabdu/cs541/cube_op.pdf">pdf</a>]</td>
+	</tr>
+	<tr>
+		<td>[<a name="HNSS95">HNSS95</a>]</td>
+		<td>P.J. Haas, J.F. Naughton, S. Seshadri, and L. Stokes. Sampling-based 
+		estimation of the number of distinct values of an attribute. Proceedings 
+		of the Eighth International Conference on Very Large Databases (VLDB), 
+		pages 311–322, Zurich, Switzerland, September 1995. [<a href="http://www.vldb.org/conf/1995/P311.PDF">pdf</a>]</td>
+	</tr>
+	<tr>
+		<td>[<a name="Rittman05">Rittman05</a>]</td>
 		<td>M. Rittman. Compressed Composites (Oracle 10g Compression) 
 		Explained. Online article. [<a href="http://www.rittman.net/archives/001173.html">html</a>]</td>
+	</tr>
+	<tr>
+		<td>[<a name="SDNR96">SDNR96</a>]</td>
+		<td>Amit Shukla, Prasad Deshpande, Jeffrey F. Naughton, Karthikeyan 
+		Ramasamy. Storage Estimation for Multidimensional Aggregates in the 
+		Presence of Hierarchies. VLDB 1996, pp. 522–531. [<a href="http://www.acm.org/sigmod/vldb/conf/1996/P522.PDF">pdf</a>]</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
 	</tr>
 </table>
 

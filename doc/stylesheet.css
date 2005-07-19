@@ -135,7 +135,7 @@ dd {
   font-family: verdana, arial, helvetica, sans-serif;
 }
 
-table {
+table.clsStd {
   border-collapse: collapse;
   border: solid #ffffff 1px;
 }
