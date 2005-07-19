@@ -465,7 +465,10 @@ public class AggTableManager {
                             star.getFactTable().lookupColumn(cname);
                     if ((rColumn != null) && 
                             ! (rColumn instanceof RolapStar.Measure)) {
-                        // ok, maybe its used in a non-shared dimension
+                        // Ok, maybe its used in a non-shared dimension
+                        // This is a column in the fact table which is
+                        // (not necessarily) a measure but is also not
+                        // a foreign key to an external dimension table.
                         JdbcSchema.Table.Column.Usage usage =
                             factColumn.newUsage(
                             JdbcSchema.FOREIGN_KEY_COLUMN_USAGE);

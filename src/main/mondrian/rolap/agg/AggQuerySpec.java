@@ -60,10 +60,12 @@ class AggQuerySpec {
         int bitPos = segments[i].measure.getBitPosition();
         return aggStar.lookupColumn(bitPos);
     }
+/*
     public AggStar.FactTable.Measure getMeasure(final int i) {
         int bitPos = segments[i].measure.getBitPosition();
         return aggStar.lookupMeasure(bitPos);
     }
+*/
     public String getMeasureAlias(final int i) {
         return "m" + Integer.toString(i);
     }
@@ -105,9 +107,33 @@ class AggQuerySpec {
         AggStar.FactTable.Column column = getMeasureAsColumn(i);
 
         column.getTable().addToFrom(sqlQuery, false, true);
+        String alias = getMeasureAlias(i);
 
         String expr = column.getExpression(sqlQuery);
-        sqlQuery.addSelect(expr, getMeasureAlias(i));
+        sqlQuery.addSelect(expr, alias);
+    }
+    protected void addMeasure(final int i, 
+            final SqlQuery innerSqlQuery, 
+            final SqlQuery outerSqlQuery) {
+        AggStar.FactTable.Column column = getMeasureAsColumn(i);
+
+        column.getTable().addToFrom(innerSqlQuery, false, true);
+        String alias = getMeasureAlias(i);
+
+        String expr = column.getExpression(outerSqlQuery);
+        innerSqlQuery.addSelect(expr, alias);
+
+        if (column instanceof AggStar.FactTable.Measure) {
+            AggStar.FactTable.Measure measure = 
+                (AggStar.FactTable.Measure) column;
+            outerSqlQuery.addSelect(
+                measure.getAggregator().getNonDistinctAggregator().getExpression(
+                    alias));
+        } else {
+            // its a non-shared local dimension in a 
+            // collapsed dimension aggregate (please say 5 times fast).
+            outerSqlQuery.addSelect(expr, alias);
+        }
     }
 
     protected boolean isAggregate() {
@@ -143,18 +169,11 @@ class AggQuerySpec {
             outerSqlQuery.addSelect(alias);
             outerSqlQuery.addGroupBy(alias);
         }
+        // add measures
+        // this can also add non-shared local dimension columns, which are 
+        // not measures
         for (int i = 0, count = getMeasureCount(); i < count; i++) {
-            AggStar.FactTable.Measure measure = getMeasure(i);
-
-            measure.getTable().addToFrom(innerSqlQuery, false, true);
-
-            String alias = getMeasureAlias(i);
-            String expr = measure.getExpression(outerSqlQuery);
-            innerSqlQuery.addSelect(expr, alias);
-
-            outerSqlQuery.addSelect(
-                measure.getAggregator().getNonDistinctAggregator().getExpression(
-                        alias));
+            addMeasure(i, innerSqlQuery, outerSqlQuery);
         }
         outerSqlQuery.addFrom(innerSqlQuery, "dummyname", true);
     }
@@ -189,6 +208,8 @@ class AggQuerySpec {
         }
 
         // add measures
+        // this can also add non-shared local dimension columns, which are 
+        // not measures
         for (int i = 0, count = getMeasureCount(); i < count; i++) {
             addMeasure(i, sqlQuery);
         }

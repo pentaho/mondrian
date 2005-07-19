@@ -213,7 +213,10 @@ public class AggStar {
      * @return A Measure or null.
      */
     public AggStar.FactTable.Measure lookupMeasure(final int bitPos) {
-        return (AggStar.FactTable.Measure) columns[bitPos];
+        AggStar.Table.Column column = lookupColumn(bitPos);
+        return (column instanceof AggStar.FactTable.Measure)
+            ?  (AggStar.FactTable.Measure) column
+            : null;
     }
     /**
      * Get the Level at the given bit position or return null.
@@ -225,7 +228,10 @@ public class AggStar {
      * @return A Level or null.
      */
     public AggStar.Table.Level lookupLevel(final int bitPos) {
-        return (AggStar.Table.Level) columns[bitPos];
+        AggStar.Table.Column column = lookupColumn(bitPos);
+        return (column instanceof AggStar.FactTable.Level)
+            ?  (AggStar.FactTable.Level) column
+            : null;
     }
 
     /**
