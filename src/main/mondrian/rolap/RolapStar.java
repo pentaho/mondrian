@@ -69,6 +69,10 @@ public class RolapStar {
                 new TriggerBase(true) {
                     public void execute(Property property, String value) {
                         disableCaching = property.booleanValue();
+                        // must flush all caches
+                        if (disableCaching) {
+                            RolapSchema.flushRolapStarCaches();
+                        }
                     }
                 }
         );

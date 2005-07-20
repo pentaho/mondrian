@@ -722,6 +722,34 @@ public class RolapSchema implements Schema {
         synchronized void clear() {
             mapUrlToSchema.clear();
         }
+        
+        /** 
+         * This returns an iterator over a copy of the RolapSchema's container. 
+         * 
+         * @return Iterator over RolapSchemas.
+         */
+        synchronized Iterator getRolapSchemas() {
+            List list = new ArrayList();
+            for (Iterator it = mapUrlToSchema.values().iterator();
+                    it.hasNext(); ) {
+                SoftReference ref = (SoftReference) it.next();
+                RolapSchema schema = (RolapSchema) ref.get();
+                // Schema is null if already garbage collected
+                if (schema != null) {
+                    list.add(schema);
+                } else {
+                    // We will remove the stale reference
+                    try {
+                        it.remove();
+                    } catch (Exception ex) {
+                        // Should not happen, so
+                        // warn but otherwise ignore
+                        LOGGER.warn(ex);
+                    }
+                }
+            }
+            return list.iterator();
+        }
         synchronized boolean contains(RolapSchema rolapSchema) {
             return mapUrlToSchema.containsKey(rolapSchema.key);
         }
@@ -788,6 +816,9 @@ public class RolapSchema implements Schema {
 
     public static void clearCache() {
         Pool.instance().clear();
+    }
+    public static Iterator getRolapSchemas() {
+        return Pool.instance().getRolapSchemas();
     }
     public static boolean cacheContains(RolapSchema rolapSchema) {
         return Pool.instance().contains(rolapSchema);
@@ -1196,6 +1227,20 @@ public class RolapSchema implements Schema {
 
     public Iterator getStars() {
       return getRolapStarRegistry().getStars();
+    }
+    public static void flushRolapStarCaches() {
+        for (Iterator itSchemas = RolapSchema.getRolapSchemas(); 
+                itSchemas.hasNext(); ) {
+
+            RolapSchema schema = (RolapSchema) itSchemas.next();
+            for (Iterator itStars = schema.getStars(); itStars.hasNext(); ) {
+                RolapStar star = (RolapStar) itStars.next();
+                // this will only flush the star's aggregate cache if
+                // 1) DisableCaching is true or the star's cube has
+                // cacheAggregations set to false in the schema.
+                star.clearCache();
+            }
+        }
     }
 
 }
