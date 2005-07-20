@@ -243,15 +243,18 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         }
 
         public void unparse(SAXHandler saxHandler) throws SAXException {
-            Row row = new Row();
-            row.set(DataSourceName.name, "Local Mondrian server");
-            row.set(DataSourceDescription.name, "Mondrian server on local machine");
-            row.set(URL.name, "http://localhost/mondrian/xmla.jsp");
-            row.set(DataSourceInfo.name, "Provider=Mondrian");
-            row.set(ProviderName.name, "Mondrian XML for Analysis");
-            row.set(ProviderType.name, new String[] {"MDP"});
-            row.set(AuthenticationMode.name, "Unauthenticated");
-            emit(row, saxHandler);
+        	for (Iterator it = XmlaMediator.dataSourcesMap.values().iterator(); it.hasNext();) {
+        		DataSourcesConfig.DataSource ds = (DataSourcesConfig.DataSource)it.next();
+	            Row row = new Row();
+	            row.set(DataSourceName.name, ds.getDataSourceName());
+	            row.set(DataSourceDescription.name, ds.getDataSourceDescription());
+	            row.set(URL.name, ds.getURL());
+	            row.set(DataSourceInfo.name, ds.getDataSourceName());
+	            row.set(ProviderName.name, ds.getProviderName());
+	            row.set(ProviderType.name, ds.getProviderType());
+	            row.set(AuthenticationMode.name, ds.getAuthenticationMode());
+	            emit(row, saxHandler);
+        	}
         }
     }
 
@@ -549,14 +552,14 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 "Example: DBLITERAL_LIKE_PERCENT"),
                     new Column("LiteralValue", Type.String, null, false, true,
                             "Contains the actual literal value." + nl +
-                "Example, if LiteralName is DBLITERAL_LIKE_PERCENT and the percent character (%) is used to match zero or more characters in a LIKE clause, this column’s value would be \"%\"."),
+                "Example, if LiteralName is DBLITERAL_LIKE_PERCENT and the percent character (%) is used to match zero or more characters in a LIKE clause, this column's value would be \"%\"."),
                     new Column("LiteralInvalidChars", Type.String, null, false, true,
                             "The characters, in the literal, that are not valid." + nl +
                 "For example, if table names can contain anything other than a numeric character, this string would be \"0123456789\"."),
                     new Column("LiteralInvalidStartingChars", Type.String, null, false, true,
                             "The characters that are not valid as the first character of the literal. If the literal can start with any valid character, this is null."),
                     new Column("LiteralMaxLength", Type.Integer, null, false, true,
-                            "The maximum number of characters in the literal. If there is no maximum or the maximum is unknown, the value is –1."),
+                            "The maximum number of characters in the literal. If there is no maximum or the maximum is unknown, the value is ?1."),
                 }) {
             public Rowset getRowset(HashMap restrictions, Properties properties) {
                 return new DiscoverLiteralsRowset(restrictions, properties);
@@ -590,37 +593,14 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         };
 
         public void unparse(SAXHandler saxHandler) throws SAXException {
-            Connection connection = getConnection();
+            Connection connection = XmlaMediator.getConnection(properties);
             if (connection == null) {
                 return;
             }
             Row row = new Row();
-            // What Mondrian calls a "Schema", XMLA calls a "Catalog"
             final Schema schema = connection.getSchema();
             row.set(CatalogName.name, schema.getName());
             emit(row, saxHandler);
-        }
-
-        private Connection getConnection() {
-            String connectString = MondrianProperties.instance().TestConnectString.get();
-            if (connectString == null || connectString.equals("")) {
-                return null;
-            }
-            final Util.PropertyList connectProperties = Util.parseConnectString(connectString);
-            String jdbcURL = MondrianProperties.instance().FoodmartJdbcURL.get();
-            if (jdbcURL != null) {
-                connectProperties.put("Jdbc", jdbcURL);
-            }
-            final ServletContext servletContext = (ServletContext)
-                    XmlaMediator.threadServletContext.get();
-            if (servletContext == null) {
-                // We're not running in a web server, so use a relative pathname
-                // for the catalog.
-                connectProperties.put("Catalog", "file:demo/FoodMart.xml");
-            }
-            final Connection connection = DriverManager.getConnection(
-                    connectProperties.toString(), servletContext, false);
-            return connection;
         }
     }
 
@@ -785,7 +765,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             for (int i = 0; i < cubes.length; i++) {
                 Cube cube = cubes[i];
                 Row row = new Row();
-                row.set(CatalogName.name, connection.getCatalogName());
+                row.set(CatalogName.name, cube.getSchema().getName());
                 row.set(SchemaName.name, cube.getSchema().getName());
                 row.set(CubeName.name, cube.getName());
                 row.set(IsDrillthroughEnabled.name, true);
@@ -829,7 +809,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                 for (int j = 0; j < dimensions.length; j++) {
                     Dimension dimension = dimensions[j];
                     Row row = new Row();
-                    row.set(CatalogName.name, connection.getCatalogName());
+                    row.set(CatalogName.name, cube.getSchema().getName());
                     row.set(SchemaName.name, cube.getSchema().getName());
                     row.set(CubeName.name, cube.getName());
                     row.set(DimensionName.name, dimension.getName());
@@ -902,7 +882,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     for (int k = 0; k < hierarchies.length; k++) {
                         Hierarchy hierarchy = hierarchies[k];
                         Row row = new Row();
-                        row.set(CatalogName.name, connection.getCatalogName());
+                        row.set(CatalogName.name, cube.getSchema().getName());
                         row.set(SchemaName.name, cube.getSchema().getName());
                         row.set(CubeName.name, cube.getName());
                         row.set(DimensionUniqueName.name, dimension.getUniqueName());
@@ -957,7 +937,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                         for (int m = 0; m < levels.length; m++) {
                             Level level = levels[m];
                             Row row = new Row();
-                            row.set(CatalogName.name, connection.getCatalogName());
+                            row.set(CatalogName.name, cube.getSchema().getName());
                             row.set(SchemaName.name, cube.getSchema().getName());
                             row.set(CubeName.name, cube.getName());
                             row.set(DimensionUniqueName.name, dimension.getUniqueName());
@@ -1194,7 +1174,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
             final Hierarchy hierarchy = level.getHierarchy();
             final Dimension dimension = hierarchy.getDimension();
             Rowset.Row row = new Rowset.Row();
-            row.set(CatalogName.name, connection.getCatalogName());
+            row.set(CatalogName.name, cube.getSchema().getName());
             row.set(SchemaName.name, cube.getSchema().getName());
             row.set(CubeName.name, cube.getName());
             row.set(DimensionUniqueName.name, dimension.getUniqueName());
@@ -1295,4 +1275,4 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
     }
 }
 
-// End XmlaTest.java
+// End RowsetDefinition.java

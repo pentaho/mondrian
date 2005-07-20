@@ -1,0 +1,128 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="../../../../misc/Meta.xsl" ?>
+<!--
+  == $Id$
+  == This software is subject to the terms of the Common Public License
+  == Agreement, available at the following URL:
+  == http://www.opensource.org/licenses/cpl.html.
+  == You must accept the terms of that agreement to use this software.
+  ==
+  == This file defines an DataSourcesConfig schema for an XMLA Service Provider.
+  -->
+<Model
+ name="datasourcesconfig"
+ dtdName="datasourcesconfig.dtd"
+ className="DataSourcesConfig"
+ packageName="mondrian.xmla"
+ root="DataSources"
+ version="1.0">
+    <Doc>
+This is the XML model for XMLA DataSources Configuration.
+<p/>
+Revision is $Id$
+    </Doc>
+
+	
+    <!-- DataSources ====================================================== -->
+    <Element type="DataSources">
+        <Doc>
+            <p>The list of data sources supported by XMLA service.</p>
+        </Doc>
+        <Array name="dataSources" type="DataSource">
+            <Doc>
+                The list of data sources supported by XMLA service.
+            </Doc>
+        </Array>
+    </Element>
+
+    <!-- DataSource ============================================================ -->
+    <Element type="DataSource">
+        <Doc>
+            Definition of a data source.
+        </Doc>
+        <Object name="name" type="DataSourceName" required="true">
+            <Doc>
+				Name.
+            </Doc>
+        </Object>
+		<Object name="description" type="DataSourceDescription" required="true">
+            <Doc>
+				Description.
+            </Doc>
+        </Object>
+		<Object name="url" type="URL" required="true">
+            <Doc>
+				URL of Web Services invocation.
+            </Doc>
+        </Object>
+		<Object name="dataSourceInfo" type="DataSourceInfo" required="true">
+            <Doc>
+				ConnectString of Mondrian.
+            </Doc>
+        </Object>
+		<Object name="providerName" type="ProviderName" required="true">
+            <Doc>
+				Customized Service Provider Name.
+            </Doc>
+        </Object>
+		<Object name="providerType" type="ProviderType" required="true">
+            <Doc>
+				Ignored. Only return &quot;MDP&quot; for DISCOVER_DATASOURCES.
+            </Doc>
+        </Object>
+		<Object name="authenticationMode" type="AuthenticationMode" required="true">
+            <Doc>
+				Ignored. Only return &quot;Unauthenticated&quot; for DISCOVER_DATASOURCES.
+            </Doc>
+        </Object>
+		<Code><![CDATA[
+			private static final String PROVIDER_TYPE_TDP = "TDP";
+			private static final String PROVIDER_TYPE_MDP = "MDP";
+			private static final String PROVIDER_TYPE_DMP = "DMP";
+			private static final String AUTH_MODE_UNAUTHENTICATED = "Unauthenticated";
+			private static final String AUTH_MODE_AUTHENTICATED = "Authenticated";
+			private static final String AUTH_MODE_INTEGRATED = "Integrated";
+		
+			public String getDataSourceName() {
+				return name;
+			}
+		
+			public String getDataSourceDescription() {
+				return description;
+			}
+		
+			public String getURL() {
+				return url;
+			}
+		
+			public String getDataSourceInfo() {
+				return dataSourceInfo;
+			}
+		
+			public String getProviderName() {
+				return providerName;
+			}
+		
+			public String[] getProviderType() {
+				return new String[] {PROVIDER_TYPE_MDP};
+			}
+		
+			public String getAuthenticationMode() {
+				return AUTH_MODE_UNAUTHENTICATED;
+			}
+			]]>
+		</Code>
+    </Element>
+
+	<StringElement type="DataSourceName"/>
+	<StringElement type="DataSourceDescription"/>
+	<StringElement type="URL"/>
+	<StringElement type="DataSourceInfo"/>
+	<StringElement type="ProviderName"/>
+	<StringElement type="ProviderType"/>
+	<StringElement type="AuthenticationMode"/>
+
+</Model>
+
+<!-- End DataSourcesConfig.xml -->
+

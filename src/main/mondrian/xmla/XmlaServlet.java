@@ -11,17 +11,32 @@
 */
 package mondrian.xmla;
 
+import java.io.File;
+import java.io.FilterWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import mondrian.olap.Util;
 
-import java.io.*;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Map;
+import org.apache.log4j.Logger;
+import org.eigenbase.xom.DOMWrapper;
+import org.eigenbase.xom.Parser;
+import org.eigenbase.xom.XOMException;
+import org.eigenbase.xom.XOMUtil;
 
 /**
  * An <code>XmlaServlet</code> responds to XML for Analysis SOAP requests.
@@ -34,10 +49,35 @@ import java.util.Map;
  */
 public class XmlaServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(XmlaServlet.class);
+    
+    public static final String DATA_SOURCES_CONFIG = "DataSourceConfig";
 
     private final XmlaMediator mediator = new XmlaMediator();
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    public void init(ServletConfig config) throws ServletException {
+		super.init(config);
+		String paramValue = config.getInitParameter(DATA_SOURCES_CONFIG);
+		if (null == paramValue) {
+			Util.newError("No data source has been configured. Please set parameter '" + 
+					DATA_SOURCES_CONFIG + "' for this servlet.");
+		}
+		
+		ServletContext context = config.getServletContext();
+		String configFilePath = context.getRealPath("WEB-INF/" + paramValue);
+		
+		try {
+			final Parser xmlParser = XOMUtil.createDefaultParser();
+			final DOMWrapper def = xmlParser.parse(new File(configFilePath).toURL());
+			DataSourcesConfig.DataSources dataSources = new DataSourcesConfig.DataSources(def);
+			XmlaMediator.initDataSourcesMap(dataSources);
+		} catch (MalformedURLException e) {
+			throw Util.newError(e, "while parsing data sources config '" + paramValue + "'");
+		} catch (XOMException e) {
+			throw Util.newError(e, "while parsing data sources config '" + paramValue + "'");
+		}
+	}
+
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         process(request, response);
     }
 
@@ -102,7 +142,7 @@ public class XmlaServlet extends HttpServlet {
                     }
             );
         }
-        mediator.threadServletContext.set(getServletContext());
+        XmlaMediator.threadServletContext.set(getServletContext());
         response.setContentType("text/xml");
         mediator.process(soapRequest, printWriter);
         if (LOGGER.isDebugEnabled()) {

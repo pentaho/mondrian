@@ -9,23 +9,42 @@
 */
 package mondrian.xmla;
 
-import mondrian.olap.*;
-import mondrian.util.SAXHandler;
-import mondrian.util.SAXWriter;
-import org.w3c.dom.*;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 import javax.servlet.ServletContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Properties;
+
+import mondrian.olap.Axis;
+import mondrian.olap.Cell;
+import mondrian.olap.Connection;
+import mondrian.olap.DriverManager;
+import mondrian.olap.Hierarchy;
+import mondrian.olap.Member;
+import mondrian.olap.Position;
+import mondrian.olap.Property;
+import mondrian.olap.Query;
+import mondrian.olap.QueryAxis;
+import mondrian.olap.Result;
+import mondrian.olap.Util;
+import mondrian.util.SAXHandler;
+import mondrian.util.SAXWriter;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * An <code>XmlaMediator</code> responds to XML for Analysis requests.
@@ -36,7 +55,25 @@ import java.util.Properties;
  */
 public class XmlaMediator {
     private static final String XMLA_NS = "urn:schemas-microsoft-com:xml-analysis";
+    private static final String XMLA_MDDATASET_NS = "urn:schemas-microsoft-com:xml-analysis:mddataset";
     static ThreadLocal threadServletContext = new ThreadLocal();
+    static Map dataSourcesMap = new HashMap();
+    
+    /**
+     * Please call this method before any usage of XmlaMediator.
+     * @param dataSources
+     */
+    public static void initDataSourcesMap(DataSourcesConfig.DataSources dataSources) {
+    	Map map = new HashMap();
+    	for (int i = 0; i < dataSources.dataSources.length; i++) {
+			DataSourcesConfig.DataSource ds = dataSources.dataSources[i];
+			if (map.containsKey(ds.getDataSourceName())) {
+				throw Util.newError("duplicated data source name '" + ds.getDataSourceName() + "'");
+			}
+			map.put(ds.getDataSourceName(), ds);
+		}
+    	dataSourcesMap = Collections.unmodifiableMap(map);
+    }
 
     /**
      * Processes a request.
@@ -115,8 +152,7 @@ public class XmlaMediator {
     }
 
     private void processRequest(Element element, SAXHandler saxHandler) {
-        String tagName = element.getTagName();
-        //String tagNs = element.getNamespaceURI();
+        String tagName = element.getLocalName();
         if (tagName.equals("Discover")) {
             discover(element, saxHandler);
         } else if (tagName.equals("Execute")) {
@@ -136,28 +172,28 @@ public class XmlaMediator {
             throw Util.newError("<Statement> parameter is required");
         }
         final Properties properties = getProperties(execute);
-
-        try { 
-            saxHandler.startElement("ExecuteResponse", new String[] { 
-                                        "xmlns", XMLA_NS}); 
-            saxHandler.startElement("return"); 
-            saxHandler.startElement("root", new String[] { 
-                                        "xmlns", XMLA_NS + ":mddataset"}); 
-            saxHandler.startElement("xsd:schema", new String[] { 
-                                        "xmlns:xsd", "http://www.w3.org/2001/XMLSchema"}); 
-            // todo: schema definition 
-            saxHandler.endElement(); 
-
-        try { 
-            MDDataSet cellSet = executeQuery(statement, properties); 
-            cellSet.unparse(saxHandler); 
-        } finally { 
-            saxHandler.endElement(); 
-            saxHandler.endElement(); 
-            saxHandler.endElement(); 
-        } 
-        } catch (SAXException e) { 
-            throw Util.newError(e, "Error while processing execute request"); 
+        
+        //CG fix the wrong response format
+        try {
+         	saxHandler.startElement("ExecuteResponse", new String[] {
+         			"xmlns", XMLA_NS});
+         	saxHandler.startElement("return");
+         	saxHandler.startElement("root", new String[] {
+         			"xmlns", XMLA_MDDATASET_NS});
+         	saxHandler.startElement("xsd:schema", new String[] {
+         			"xmlns:xsd", "http://www.w3.org/2001/XMLSchema"});
+         		// todo: schema definition
+         	saxHandler.endElement();
+         	try {
+         		MDDataSet cellSet = executeQuery(statement, properties);
+         		cellSet.unparse(saxHandler);
+         	} finally {
+         		saxHandler.endElement();
+         		saxHandler.endElement();
+         		saxHandler.endElement();
+         	}
+        } catch (SAXException e) {
+        	throw Util.newError(e, "Error while processing execute request");
         }
     }
 
@@ -261,7 +297,7 @@ public class XmlaMediator {
                 "name", "FORMAT_STRING"});
             saxHandler.endElement(); // CellInfo
             // -----------
-            saxHandler.endElement(); // OLAPInfo
+            saxHandler.endElement(); // OlapInfo
         }
 
         private void axes(SAXHandler saxHandler) throws SAXException {
@@ -458,7 +494,12 @@ public class XmlaMediator {
      */
     static Connection getConnection(Properties properties) {
         final String dataSourceInfo = properties.getProperty(PropertyDefinition.DataSourceInfo.name);
-        Util.PropertyList connectProperties = Util.parseConnectString(dataSourceInfo);
+        if (!dataSourcesMap.containsKey(dataSourceInfo)) {
+        	throw Util.newError("no data source is configured with name '" + dataSourceInfo + "'");
+        }
+        
+        DataSourcesConfig.DataSource ds = (DataSourcesConfig.DataSource)dataSourcesMap.get(dataSourceInfo);
+        Util.PropertyList connectProperties = Util.parseConnectString(ds.getDataSourceInfo());
         final String catalog = properties.getProperty(PropertyDefinition.Catalog.name);
         if (catalog != null) {
             connectProperties.put("CatalogName", catalog);

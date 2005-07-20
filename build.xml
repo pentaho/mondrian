@@ -59,6 +59,7 @@ ${java.dir}/mondrian/olap/Parser.java,
 ${java.dir}/mondrian/olap/ParserSym.java,
 ${java.dir}/mondrian/olap/MondrianDef.java,
 ${java.dir}/mondrian/olap/MondrianResource*.java,
+${java.dir}/mondrian/xmla/DataSourcesConfig*.java,
 ${etc.dir}/mondrian/web/jsp/**/*.java"/>
   <property name="generated.lib.files" value="
 ${lib.dir}/mondrian.jar,
@@ -304,6 +305,14 @@ unzip-FoodMartAccessDB"/>
         classname="mondrian.rolap.aggmatcher.DefaultDef"
         dtdname="aggregates.dtd"/>
     <copy file="${java.dir}/mondrian/rolap/aggmatcher/aggregates.dtd"
+        todir="${lib.dir}"/>
+	  
+	<xomgen
+        model="${java.dir}/mondrian/xmla/DataSourcesConfig.xml"
+        destdir="${java.dir}"
+        classname="mondrian.xmla.DataSourcesConfig"
+        dtdname="datasourcesconfig.dtd"/>
+    <copy file="${java.dir}/mondrian/xmla/datasourcesconfig.dtd"
         todir="${lib.dir}"/>
   </target>
 

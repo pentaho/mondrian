@@ -11,16 +11,25 @@
 */
 package mondrian.xmla;
 
-import junit.framework.TestCase;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Util;
-
 import java.io.File;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Set;
 import java.util.regex.Pattern;
+
+import org.eigenbase.xom.DOMWrapper;
+import org.eigenbase.xom.Parser;
+import org.eigenbase.xom.XOMUtil;
+
+import junit.framework.TestCase;
+import mondrian.olap.DriverManager;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util;
 
 /**
  * Unit test for Mondrian's XML for Analysis API (package
@@ -48,25 +57,47 @@ public class XmlaTest extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        catalogName = MondrianProperties.instance().CatalogURL.get();
-        if (catalogName == null) {
+        String catalogURL = MondrianProperties.instance().CatalogURL.get();
+        if (catalogURL == null) {
             final File file = new File("demo/FoodMart.xml");
             if (!file.exists()) {
                 throw new RuntimeException("CatalogURL must be specified");
             }
             final URL url = Util.toURL(file);
-            catalogName = url.toString();
+            catalogURL = url.toString();
         }
 
         String driver = MondrianProperties.instance().JdbcDrivers.get();
         String url = MondrianProperties.instance().FoodmartJdbcURL.get();
 
         // Deal with embedded & that can be in the JDBC URL
-        dataSource =
+        String connectString =
                 "Provider=Mondrian;"
                 + "Jdbc=" + url.replaceAll("&", "&amp;") + ";"
-                + "Catalog=" + catalogName + ";"
+                + "Catalog=" + catalogURL + ";"
                 + "JdbcDrivers=" + driver +";";
+        
+        dataSource = "MondrianFoodMart";
+        catalogName = DriverManager.getConnection(connectString, null, false).getSchema().getName();
+        
+        StringReader dsConfigReader = new StringReader(
+        	"<?xml version=\"1.0\"?>" + nl +
+        	"<DataSources>" + 
+        	"	<DataSource>" + 
+        	"		<DataSourceName>MondrianFoodMart</DataSourceName>" + 
+        	"		<DataSourceDescription>MondrianFoodMart</DataSourceDescription>" + 
+        	"		<URL>http://localhost:8080/mondrian/xmla</URL>" + 
+        	"		<DataSourceInfo>" + connectString + "</DataSourceInfo>" + 
+        	"		<ProviderName>Mondrian</ProviderName>" + 
+        	"		<ProviderType>MDP</ProviderType>" + 
+        	"		<AuthenticationMode>Unauthenticated</AuthenticationMode>" +
+        	"	</DataSource>" +
+        	"</DataSources>");
+        final Parser xmlParser = XOMUtil.createDefaultParser();
+		final DOMWrapper def = xmlParser.parse(dsConfigReader);
+		DataSourcesConfig.DataSources dataSources = new DataSourcesConfig.DataSources(def);
+		XmlaMediator.initDataSourcesMap(dataSources);
+        
     }
 
     /**
@@ -174,11 +205,11 @@ public class XmlaTest extends TestCase {
                 "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
                 "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
                 "          <row>" + nl +
-                "            <DataSourceName>Local Mondrian server</DataSourceName>" + nl +
-                "            <DataSourceDescription>Mondrian server on local machine</DataSourceDescription>" + nl +
-                "            <URL>http://localhost/mondrian/xmla.jsp</URL>" + nl +
-                "            <DataSourceInfo>Provider=Mondrian</DataSourceInfo>" + nl +
-                "            <ProviderName>Mondrian XML for Analysis</ProviderName>" + nl +
+                "            <DataSourceName>MondrianFoodMart</DataSourceName>" + nl +
+                "            <DataSourceDescription>MondrianFoodMart</DataSourceDescription>" + nl +
+                "            <URL>http://localhost:8080/mondrian/xmla</URL>" + nl +
+                "            <DataSourceInfo>MondrianFoodMart</DataSourceInfo>" + nl +
+                "            <ProviderName>Mondrian</ProviderName>" + nl +
                 "            <ProviderType>" + nl +
                 "              <MDP/>" + nl +
                 "            </ProviderType>" + nl +

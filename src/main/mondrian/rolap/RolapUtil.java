@@ -204,12 +204,12 @@ public class RolapUtil {
                         f = new File(debugOutFile);
                         setDebugOut(new PrintWriter(new FileOutputStream(f), true));
                     } catch (Exception e) {
-                        // don't care, use System.out
+                        setDebugOut(new PrintWriter(System.out, true));
                     }
-                    produceDebugOut = Boolean.TRUE;
                 } else {
-                    produceDebugOut = Boolean.FALSE;
+                    setDebugOut(new PrintWriter(System.out, true));
                 }
+                produceDebugOut = Boolean.TRUE;
             } else {
                 produceDebugOut = Boolean.FALSE;
             }
