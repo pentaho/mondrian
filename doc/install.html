@@ -37,9 +37,11 @@
   </ol>
   <li><a href="#4_Configure_exec_environment">Configure execution environment</a></li>
   <li><a href="#5_Deploy_and_run_the_web_app">Run the web app</a></li>
-  <li><a href="#6_Miscellaneous">Miscellaneous</a></li>
+	<li><a href="#6_How_to_configure_Mondrian_as_an_XMLA_provider">How to 
+	configure Mondrian as an XML/A provider</a></li>
+  <li><a href="#7_Miscellaneous">Miscellaneous</a></li>
   <ol>
-    <li><a href="#6_1_Cache_setup">Cache setup</a></li>
+    <li><a href="#7_1_Cache_setup">Cache setup</a></li>
   </ol>
   <li><a href="#Appendix_A_Compatibility_issues">Appendix A. Compatibility issues</a></li>
   <ol>
@@ -317,8 +319,73 @@ your JDBC URL appropriately for your database.</p>
     <code>mondrian.foodmart.catalogURL</code></li><li>Check the JDBC connect URL in <code>mondrian.foodmart.jdbcURL</code></li><li>Check the connect string in <code>mondrian.test.connectString</code></li><li>Note that any ampersands must be url-quoted,  since this string is copied into <code>mondrian.war(war.xml)</code></li></ul></li>
 	<li>
 	Start up Tomcat.</li><li>Hit <a href="http://localhost:8080/mondrian" target="_new">http://localhost:8080/mondrian</a>.</li></ol><h2>
-<a name="6_Miscellaneous">6. Miscellaneous</a></h2><h3>
-<a name="6_1_Cache_setup">6.1. Cache setup</a></h3><p>You will need to specify the amount of memory available to the cache
+<a name="6_How_to_configure_Mondrian_as_an_XMLA_provider">6. How to configure 
+Mondrian as an XML/A provider</a></h2>
+
+<p>
+To will setup XMLA service, follow the following steps.</p>
+
+<h3>1. Describe the data which data sources exist</h3>
+
+<p>In WEB-INF directory of your webapp, create a file called <code>
+datasources.xml</code>, with content like this:</p>
+
+<blockquote>
+
+	<p><code>&lt;?xml version=&quot;1.0&quot;?&gt;<br>
+	&lt;DataSources&gt;<br>
+&nbsp; &lt;DataSource&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;DataSourceName&gt;MondrianFoodMart&lt;/DataSourceName&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;DataSourceDescription&gt;FoodMart 2000 Data Warehouse From MS 
+	Analysis Services&lt;/DataSourceDescription&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;URL&gt;http://localhost:8080/mondrian/xmla&lt;/URL&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;DataSourceInfo&gt;Provider=mondrian; Jdbc=jdbc:odbc:MondrianFoodMart; 
+	JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver; Catalog=jndi:/localhost/mondrian/WEB-INF/schema/FoodMart.xml&lt;/DataSourceInfo&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;ProviderName&gt;Mondrian Perforce HEAD&lt;/ProviderName&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;ProviderType&gt;MDP&lt;/ProviderType&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;AuthenticationMode&gt;Unauthenticated&lt;/AuthenticationMode&gt;<br>
+&nbsp; &lt;/DataSource&gt;<br>
+	<br>
+&nbsp; &lt;DataSource&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;DataSourceName&gt;PostgreSQLTest&lt;/DataSourceName&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;DataSourceDescription&gt;Test Data Warehouse On PostgreSQL&lt;/DataSourceDescription&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;URL&gt;http://localhost:8080/mondrian/xmla&lt;/URL&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;DataSourceInfo&gt;Provider=mondrian; Jdbc=jdbc:postgresql://localhost/olap; 
+	Catalog=jndi:/localhost/mondrian/WEB-INF/schema/TestPgsql.xml; JdbcDrivers=org.postgresql.Driver; 
+	JdbcUser=pgsql; JdbcPassword=pgsql&lt;/DataSourceInfo&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;ProviderName&gt;Mondrian Perforce HEAD&lt;/ProviderName&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;ProviderType&gt;MDP&lt;/ProviderType&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;AuthenticationMode&gt;Unauthenticated&lt;/AuthenticationMode&gt;<br>
+&nbsp; &lt;/DataSource&gt;<br>
+	&lt;/DataSources&gt;</code></p>
+</blockquote>
+
+<p>
+<code>&lt;ProviderType&gt;</code> and <code>&lt;AuthenticationMode&gt;</code> are ignored 
+because the XML/A implementation currently only supports 'MDP' and 
+'Unauthenticated'.</p>
+
+<h3>
+2. Configure XmlaServlet in your <code>web.xml</code></h3>
+
+<p>
+For example:</p>
+
+<blockquote>
+
+	<p><code>&lt;servlet&gt;<br>
+&nbsp; &lt;servlet-name&gt;MondrianXmlaServlet&lt;/servlet-name&gt;<br>
+&nbsp; &lt;servlet-class&gt;mondrian.xmla.XmlaServlet&lt;/servlet-class&gt;<br>
+&nbsp; &lt;init-param&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;param-name&gt;DataSourcesConfig&lt;/param-name&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;param-value&gt;datasources.xml&lt;/param-value&gt;<br>
+&nbsp; &lt;/init-param&gt;<br>
+	&lt;/servlet&gt;</code></p>
+</blockquote>
+
+<h2>
+<a name="7_Miscellaneous">7. Miscellaneous</a></h2><h3>
+<a name="7_1_Cache_setup">7.1. Cache setup</a></h3><p>You will need to specify the amount of memory available to the cache
 using the -Xms Java VM option, for example -Xms256m for 256 megs of ram
 for the Java VM.</p><h2><a name="Appendix_A_Compatibility_issues">Appendix A. Compatibility
 issues</a></h2><h3><a name="Appendix_A_1_Weblogic_6_1_and_Xerces">
