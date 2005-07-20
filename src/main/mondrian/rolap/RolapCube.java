@@ -655,7 +655,11 @@ assert is not true.
         }
     }
     public void clearCache() {
-        if (! isVirtual()) {
+        if (isVirtual()) {
+            // Currently a virtual cube does not keep a list of all of its
+            // base cubes, so we must just flush all of them.
+            schema.flushRolapStarCaches();
+        } else {
             star.clearCache();
         }
     }

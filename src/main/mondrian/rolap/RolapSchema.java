@@ -1228,18 +1228,21 @@ public class RolapSchema implements Schema {
     public Iterator getStars() {
       return getRolapStarRegistry().getStars();
     }
-    public static void flushRolapStarCaches() {
+    public void flushRolapStarCaches() {
+        for (Iterator itStars = getStars(); itStars.hasNext(); ) {
+            RolapStar star = (RolapStar) itStars.next();
+            // this will only flush the star's aggregate cache if
+            // 1) DisableCaching is true or the star's cube has
+            // cacheAggregations set to false in the schema.
+            star.clearCache();
+        }
+    }
+    public static void flushAllRolapStarCaches() {
         for (Iterator itSchemas = RolapSchema.getRolapSchemas(); 
                 itSchemas.hasNext(); ) {
 
             RolapSchema schema = (RolapSchema) itSchemas.next();
-            for (Iterator itStars = schema.getStars(); itStars.hasNext(); ) {
-                RolapStar star = (RolapStar) itStars.next();
-                // this will only flush the star's aggregate cache if
-                // 1) DisableCaching is true or the star's cube has
-                // cacheAggregations set to false in the schema.
-                star.clearCache();
-            }
+            schema.flushRolapStarCaches();
         }
     }
 

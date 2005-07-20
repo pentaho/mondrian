@@ -71,7 +71,7 @@ public class RolapStar {
                         disableCaching = property.booleanValue();
                         // must flush all caches
                         if (disableCaching) {
-                            RolapSchema.flushRolapStarCaches();
+                            RolapSchema.flushAllRolapStarCaches();
                         }
                     }
                 }
