@@ -50,7 +50,7 @@ import org.eigenbase.xom.XOMUtil;
 public class XmlaServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(XmlaServlet.class);
     
-    public static final String DATA_SOURCES_CONFIG = "DataSourceConfig";
+    public static final String DATA_SOURCES_CONFIG = "DataSourcesConfig";
 
     private final XmlaMediator mediator = new XmlaMediator();
 
