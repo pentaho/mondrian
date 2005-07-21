@@ -84,7 +84,7 @@ text-align:right;
     defaultRequest = (String) requestMap.get(requestKeys[whichRequest]);
     String postURL = request.getParameter("postURL");
     if (postURL == null) {
-        postURL = "xmla.jsp";
+        postURL = "xmla";
     }
 %>
 

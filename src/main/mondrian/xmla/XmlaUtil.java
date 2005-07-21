@@ -11,14 +11,10 @@
 */
 package mondrian.xmla;
 
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Util;
-
-import java.util.Map;
 import java.util.HashMap;
-import java.io.File;
-import java.net.URL;
-import java.net.MalformedURLException;
+import java.util.Map;
+
+import mondrian.olap.Util;
 
 /**
  * Utilities for Mondrian's XML for Analysis API (package
@@ -31,31 +27,8 @@ public class XmlaUtil {
     private static final String nl = Util.nl;
 
     public static Map getRequestMap() {
-        String catalogName = MondrianProperties.instance().CatalogURL.get();
-        if (catalogName == null) {
-            final File file = new File("demo/FoodMart.xml");
-            if (!file.exists()) {
-                throw new RuntimeException("CatalogURL must be specified");
-            }
-            URL url = null;
-            try {
-                url = Util.toURL(file);
-            } catch (MalformedURLException e) {
-            }
-            catalogName = url.toString();
-        }
-
-        String driver = MondrianProperties.instance().JdbcDrivers.get();
-        String url = MondrianProperties.instance().FoodmartJdbcURL.get();
-
-        // Deal with embedded & that can be in the JDBC URL
-        String dataSource =
-                "Provider=Mondrian;"
-                + "Jdbc=" + url.replaceAll("&", "&amp;") + ";"
-                + "Catalog=" + catalogName + ";"
-                + "JdbcDrivers=" + driver +";";
         final HashMap map = new HashMap();
-        String[] sampleRequests = getSampleRequests(catalogName, dataSource);
+        String[] sampleRequests = getSampleRequests("FoodMart", "MondrianFoodMart");
         for (int i = 0; i < sampleRequests.length; i += 2) {
             map.put(sampleRequests[i], sampleRequests[i + 1]);
         }
