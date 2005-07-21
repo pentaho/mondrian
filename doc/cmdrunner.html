@@ -34,6 +34,7 @@
 	<li><a href="#What_is_CmdRunner">What is CmdRunner?</a></li>
 	<li><a href="#Building">Building</a></li>
 	<li><a href="#Usage">Usage</a></li>
+	<li><a href="#Properties_file">Properties File</a></li>
 	<li><a href="#Command_line_arguments">Command line arguments</a></li>
 	<li><a href="#CmdRunner_Commands">CmdRunner Commands</a><ul>
 		<li><a href="#help">help</a></li>
@@ -175,6 +176,45 @@ where the jdbc jars are located.
 </code>
 </blockquote>
 </p>
+
+<h2><a name="Properties_file">Properties File</a></h2>
+<p>
+Below is an example properties file:
+</p>
+<blockquote>
+<code>
+##############################################################################<br>
+#<br>
+# Example properties file<br>
+#<br>
+# $Id$<br>
+##############################################################################<br>
+# Environment<br>
+mondrian.catalogURL=file:///home/madonna/mondrian/FoodMartSchema.xml<br>
+<br>
+# mysql<br>
+mondrian.foodmart.jdbcURL=jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart<br>
+mondrian.jdbcDrivers=com.mysql.jdbc.Driver<br>
+<br>
+# Use MD5 based caching for the RolapSchema instance<br>
+mondrian.catalog.content.cache.enabled=true<br>
+<br>
+# both read and use aggregate tables<br>
+mondrian.rolap.aggregates.Use=true<br>
+mondrian.rolap.aggregates.Read=true<br>
+<br>
+# generate aggregate sql (for every mdx query)<br>
+#mondrian.rolap.aggregates.generateSql=true<br>
+<br>
+# pretty print sql (if log level for mondrian.rolap.RolapUtil is DEBUG)<br>
+mondrian.rolap.generate.formatted.sql=true<br>
+<br>
+# by default the aggregate table with the smallest number of rows <br>
+# (rather than rows times size of each row) is used <br>
+#mondrian.rolap.aggregates.ChooseByVolume=true<br>
+<br>
+</code>
+</blockquote>
 
 <h2><a name="Command_line_arguments">Command line arguments</a></h2>
 <p>
