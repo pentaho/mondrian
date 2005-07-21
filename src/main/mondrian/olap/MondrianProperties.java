@@ -75,6 +75,13 @@ public class MondrianProperties extends TriggerableProperties {
     public void populate(ServletContext servletContext) {
         // Read properties file "mondrian.properties", if it exists.
         File file = new File(mondrianDotProperties);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("populate: file=" +
+                file.getAbsolutePath() +
+                " exists=" + 
+                file.exists()
+                );
+        }
         if (file.exists()) {
             try {
                 URL url = Util.toURL(file);
@@ -109,8 +116,7 @@ public class MondrianProperties extends TriggerableProperties {
                         "/WEB-INF/" + mondrianDotProperties);
                 if (resourceUrl != null) {
                     load(resourceUrl);
-                }
-                else if (populateCount == 0 && false) {
+                } else if (populateCount == 0 && false) {
                     LOGGER.warn("Mondrian: Warning: servlet resource '"
                         + mondrianDotProperties
                         + "' not found");
@@ -131,6 +137,9 @@ public class MondrianProperties extends TriggerableProperties {
             if (key.startsWith("mondrian.")) {
                 // NOTE: the super allows us to bybase calling triggers
                 // Is this the correct behavior?
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("populate: key=" + key + ", value=" + value);
+                }
                 super.setProperty(key, value);
                 count++;
             }

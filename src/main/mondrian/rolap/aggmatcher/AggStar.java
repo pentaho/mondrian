@@ -859,6 +859,7 @@ public class AggStar {
                     getLogger().warn(msg);
                 } else {
                     int bitPosition = rColumn.getBitPosition();
+// RME Note: this should be a Level Object, not a Column
                     Column c = new Column(symbolicName,
                                           expression,
                                           isNumeric,
