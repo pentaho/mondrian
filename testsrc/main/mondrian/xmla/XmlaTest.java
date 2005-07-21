@@ -73,13 +73,15 @@ public class XmlaTest extends TestCase {
         // Deal with embedded & that can be in the JDBC URL
         String connectString =
                 "Provider=Mondrian;"
-                + "Jdbc=" + url.replaceAll("&", "&amp;") + ";"
+                + "Jdbc=" + url + ";"
                 + "Catalog=" + catalogURL + ";"
                 + "JdbcDrivers=" + driver +";";
         
         dataSource = "MondrianFoodMart";
         catalogName = DriverManager.getConnection(connectString, null, false).getSchema().getName();
         
+        connectString = connectString.replaceAll("&", "&amp;");
+
         StringReader dsConfigReader = new StringReader(
         	"<?xml version=\"1.0\"?>" + nl +
         	"<DataSources>" + 
