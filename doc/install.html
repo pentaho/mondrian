@@ -340,7 +340,7 @@ datasources.xml</code>, with content like this:</p>
 	Analysis Services&lt;/DataSourceDescription&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;URL&gt;http://localhost:8080/mondrian/xmla&lt;/URL&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;DataSourceInfo&gt;Provider=mondrian; Jdbc=jdbc:odbc:MondrianFoodMart; 
-	JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver; Catalog=jndi:/localhost/mondrian/WEB-INF/schema/FoodMart.xml&lt;/DataSourceInfo&gt;<br>
+	JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver; Catalog=/WEB-INF/schema/FoodMart.xml&lt;/DataSourceInfo&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;ProviderName&gt;Mondrian Perforce HEAD&lt;/ProviderName&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;ProviderType&gt;MDP&lt;/ProviderType&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;AuthenticationMode&gt;Unauthenticated&lt;/AuthenticationMode&gt;<br>
@@ -351,7 +351,7 @@ datasources.xml</code>, with content like this:</p>
 &nbsp;&nbsp;&nbsp; &lt;DataSourceDescription&gt;Test Data Warehouse On PostgreSQL&lt;/DataSourceDescription&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;URL&gt;http://localhost:8080/mondrian/xmla&lt;/URL&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;DataSourceInfo&gt;Provider=mondrian; Jdbc=jdbc:postgresql://localhost/olap; 
-	Catalog=jndi:/localhost/mondrian/WEB-INF/schema/TestPgsql.xml; JdbcDrivers=org.postgresql.Driver; 
+	Catalog=/WEB-INF/schema/TestPgsql.xml; JdbcDrivers=org.postgresql.Driver; 
 	JdbcUser=pgsql; JdbcPassword=pgsql&lt;/DataSourceInfo&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;ProviderName&gt;Mondrian Perforce HEAD&lt;/ProviderName&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;ProviderType&gt;MDP&lt;/ProviderType&gt;<br>
