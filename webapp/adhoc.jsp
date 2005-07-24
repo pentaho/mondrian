@@ -91,7 +91,7 @@
         "   '[Store].CurrentMember.Properties(\"Store Type\")'," + nl +
         "   SOLVE_ORDER = 2" + nl +
         "   MEMBER [Measures].[ProfitPct] AS " + nl +
-        "   'Val((Measures.[Store Sales] - Measures.[Store Cost]) / Measures.[Store Sales])'," + nl +
+        "   '(Measures.[Store Sales] - Measures.[Store Cost]) / Measures.[Store Sales]'," + nl +
         "   SOLVE_ORDER = 1, FORMAT_STRING = 'Percent'" + nl +
         "SELECT" + nl +
         "   { [Store].[Store Name].Members} ON COLUMNS," + nl +
@@ -111,7 +111,7 @@
         // #12
         "WITH" + nl +
         "   MEMBER [Measures].[ProfitPct] AS " + nl +
-        "   'Val((Measures.[Store Sales] - Measures.[Store Cost]) / Measures.[Store Sales])'," + nl +
+        "   '([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Sales]'," + nl +
         "   SOLVE_ORDER = 1, FORMAT_STRING = 'Percent'" + nl +
         "   MEMBER [Measures].[ProfitValue] AS " + nl +
         "   '[Measures].[Store Sales] * [Measures].[ProfitPct]'," + nl +

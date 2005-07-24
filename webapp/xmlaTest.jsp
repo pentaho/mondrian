@@ -70,6 +70,8 @@ text-align:right;
 </head>
 <body>
 
+<a href="index.jsp">back to index</a><p/>
+
 <%
     String[] requestKeys = (String[]) requestMap.keySet().toArray(new String[0]);
     Arrays.sort(requestKeys);
@@ -159,6 +161,8 @@ text-align:right;
     </tr>
   </table>
 </form>
+
+<a href="index.jsp">back to index</a><p/>
 
 </body>
 </html>
