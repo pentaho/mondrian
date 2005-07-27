@@ -18,6 +18,7 @@
 <p>Mondrian examples:</p>
 <ul>
 <li><a href="testpage.jsp?query=mondrian">JPivot pivot table</a></li>
+<li><a href="testpage.jsp?query=xmla">JPivot pivot table by XMLA</a></li>
 <li><a href="taglib.jsp">Various queries formatted using the tag-library</a></li>
 <li><a href="adhoc.jsp">Basic interface for ad hoc queries</a></li>
 <li><a href="xmlaTest.jsp">XML for Analysis tester</a></li>

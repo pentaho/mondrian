@@ -733,6 +733,9 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <fileset dir="${webapp.dir}" excludes="WEB-INF/**/*"/>
       <fileset dir="${lib.dir}" includes="index.jsp"/>
       <lib dir="${lib.dir}" includes="${name}.jar"/>
+      <!-- 2 jar files leaved by jpivot.war, anyone to fix this? -->
+      <lib dir="${lib.dir}" includes="eigenbase-properties.jar"/>
+      <lib dir="${lib.dir}" includes="log4j-1.2.9.jar"/>
     </war>
   </target>
 
