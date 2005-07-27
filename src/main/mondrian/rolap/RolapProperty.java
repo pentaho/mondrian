@@ -83,6 +83,8 @@ class RolapProperty extends Property {
      * @return Returns the caption.
      */
     public String getCaption() {
+        if (caption == null)
+            return getName();
         return caption;
     }
 }

@@ -180,7 +180,6 @@ abstract class Rowset {
         saxHandler.startElement("row");
         for (int i = 0; i < rowsetDefinition.columnDefinitions.length; i++) {
             RowsetDefinition.Column column = rowsetDefinition.columnDefinitions[i];
-            saxHandler.startElement(column.name);
             Object value = row.get(column.name);
             if (value == null) {
                 if (!column.nullable) {
@@ -190,19 +189,41 @@ abstract class Rowset {
             } else if (value instanceof XmlElement[]) {
                 XmlElement[] elements = (XmlElement[]) value;
                 for (int j = 0; j < elements.length; j++) {
-                    final XmlElement element = elements[j];
-                    saxHandler.element(element.tag, element.attributes);
+                    //saxHandler.startElement(column.name);
+                    emitXmlElement(saxHandler, elements[j]);
+                    //saxHandler.endElement();
                 }
             } else if (value instanceof Object[]) {
                 Object[] values = (Object[]) value;
                 for (int j = 0; j < values.length; j++) {
-                    saxHandler.element(values[j].toString(), new String[0]);
+                    saxHandler.startElement(column.name);
+                    saxHandler.characters(values[j].toString());
+                    saxHandler.endElement();
                 }
             } else {
+                saxHandler.startElement(column.name);
                 saxHandler.characters(value.toString());
+                saxHandler.endElement();
             }
-            saxHandler.endElement();
         }
+        saxHandler.endElement();
+    }
+    
+    private void emitXmlElement(SAXHandler saxHandler, XmlElement element) throws SAXException{
+        if (element.attributes == null) {
+            saxHandler.startElement(element.tag);
+        } else {
+            saxHandler.startElement(element.tag, element.attributes);
+        }
+        
+        if (element.text == null) {
+            for (int i = 0; i < element.children.length; i++) {
+                emitXmlElement(saxHandler, element.children[i]);
+            }
+        } else {
+            saxHandler.characters(element.text);
+        }
+        
         saxHandler.endElement();
     }
 
@@ -280,6 +301,7 @@ abstract class Rowset {
         }
         return requiredValue.equals(value);
     }
+    
 
     protected boolean isRestricted(RowsetDefinition.Column column) {
         return restrictions.get(column.name) != null;
@@ -325,10 +347,26 @@ abstract class Rowset {
     protected class XmlElement {
         private final String tag;
         private final String[] attributes;
+        private final String text;
+        private final XmlElement[] children;
 
         XmlElement(String tag, String[] attributes) {
+            this(tag, attributes, null, null);
+        }
+        
+        XmlElement(String tag, String[] attributes, String text) {
+            this(tag, attributes, text, null);
+        }
+        
+        XmlElement(String tag, String[] attributes, XmlElement[] children) {
+            this(tag, attributes, null, children);
+        }
+        
+        private XmlElement(String tag, String[] attributes, String text, XmlElement[] children) {
             this.tag = tag;
             this.attributes = attributes;
+            this.text = text;
+            this.children = children;
         }
     }
 }

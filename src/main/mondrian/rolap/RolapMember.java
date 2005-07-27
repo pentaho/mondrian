@@ -170,6 +170,7 @@ public class RolapMember extends MemberBase {
         if (property != null) {
             Schema schema;
             Member parentMember;
+            List list;
             switch (property.ordinal) {
             case Property.NAME_ORDINAL:
                 // Do NOT call getName() here. This property is internal,
@@ -180,7 +181,7 @@ public class RolapMember extends MemberBase {
                 return getCaption();
 
             case Property.CONTRIBUTING_CHILDREN_ORDINAL:
-                List list = new ArrayList();
+                list = new ArrayList();
                 getRolapHierarchy().memberReader.getMemberChildren(this, list);
                 return list;
 
@@ -228,8 +229,9 @@ public class RolapMember extends MemberBase {
                 return new Integer(getOrdinal());
 
             case Property.CHILDREN_CARDINALITY_ORDINAL:
-                // TODO: can't go from member to cube yet
-                break;
+                list = new ArrayList();
+                getRolapHierarchy().memberReader.getMemberChildren(this, list);
+                return new Integer(list.size());
 
             case Property.PARENT_LEVEL_ORDINAL:
                 parentMember = getParentMember();

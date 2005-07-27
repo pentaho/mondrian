@@ -23,18 +23,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import mondrian.olap.Axis;
-import mondrian.olap.Cell;
-import mondrian.olap.Connection;
-import mondrian.olap.DriverManager;
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Member;
-import mondrian.olap.Position;
-import mondrian.olap.Property;
-import mondrian.olap.Query;
-import mondrian.olap.QueryAxis;
-import mondrian.olap.Result;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.util.SAXHandler;
 import mondrian.util.SAXWriter;
 
@@ -91,7 +80,8 @@ public class XmlaMediator {
         }
         Document document = null;
         try {
-            document = documentBuilder.parse(new InputSource(new StringReader(request)));
+            //CG 
+            document = documentBuilder.parse(new InputSource(new StringReader(request.substring(request.indexOf("<")))));
         } catch (SAXException e) {
             throw Util.newError(e, "Error processing '" + request + "'");
         } catch (IOException e) {
@@ -224,12 +214,14 @@ public class XmlaMediator {
             "UName",
             "Caption",
             "LName",
-            "LNum"};
+            "LNum",
+            "DisplayInfo"};
         private static final String[] propLongs = new String[] {
             Property.MEMBER_UNIQUE_NAME.name,
             Property.MEMBER_CAPTION.name,
             Property.LEVEL_UNIQUE_NAME.name,
-            Property.LEVEL_NUMBER.name};
+            Property.LEVEL_NUMBER.name,
+            Property.CHILDREN_CARDINALITY.name};
 
         public MDDataSet(Result result, Enumeration.Format format, Enumeration.AxisFormat axisFormat) {
             this.result = result;
@@ -258,33 +250,9 @@ public class XmlaMediator {
             // -----------
             saxHandler.startElement("AxesInfo");
             final Axis[] axes = result.getAxes();
+            axisInfo(saxHandler, result.getSlicerAxis(), "SlicerAxis");
             for (int i = 0; i < axes.length; i++) {
-                Axis axis = axes[i];
-                saxHandler.startElement("AxisInfo", new String[] {
-                    "name", "Axis" + i});
-                Hierarchy[] hierarchies;
-                if (axis.positions.length > 0) {
-                    final Position position = axis.positions[0];
-                    hierarchies = new Hierarchy[position.members.length];
-                    for (int j = 0; j < position.members.length; j++) {
-                        Member member = position.members[j];
-                        hierarchies[j] = member.getHierarchy();
-                    }
-                } else {
-                    hierarchies = new Hierarchy[0];
-                    final QueryAxis queryAxis = this.result.getQuery().axes[i];
-                    // todo:
-                }
-                for (int j = 0; j < hierarchies.length; j++) {
-                    saxHandler.startElement("HierarchyInfo", new String[] {
-                        "name", hierarchies[j].getName()});
-                    for (int k = 0; k < props.length; k++) {
-                        saxHandler.element(props[k], new String[] {
-                            "name", hierarchies[j].getUniqueName() + ".[" + propLongs[k] + "]"});
-                    }
-                    saxHandler.endElement(); // HierarchyInfo
-                }
-                saxHandler.endElement(); // AxisInfo
+                axisInfo(saxHandler, axes[i], "Axis"+i);
             }
             saxHandler.endElement(); // AxesInfo
             // -----------
@@ -300,19 +268,54 @@ public class XmlaMediator {
             saxHandler.endElement(); // OlapInfo
         }
 
+        private void axisInfo(SAXHandler saxHandler, Axis axis, String axisName) throws SAXException {
+            saxHandler.startElement("AxisInfo", new String[] {
+                    "name", axisName});
+                Hierarchy[] hierarchies;
+                if (axis.positions.length > 0) {
+                    final Position position = axis.positions[0];
+                    hierarchies = new Hierarchy[position.members.length];
+                    for (int j = 0; j < position.members.length; j++) {
+                        Member member = position.members[j];
+                        hierarchies[j] = member.getHierarchy();
+                    }
+                } else {
+                    hierarchies = new Hierarchy[0];
+                    //final QueryAxis queryAxis = this.result.getQuery().axes[i];
+                    // todo:
+                }
+                for (int j = 0; j < hierarchies.length; j++) {
+                    saxHandler.startElement("HierarchyInfo", new String[] {
+                        "name", hierarchies[j].getName()});
+                    for (int k = 0; k < props.length; k++) {
+                        saxHandler.element(props[k], new String[] {
+                            "name", hierarchies[j].getUniqueName() + ".[" + propLongs[k] + "]"});
+                    }
+                    saxHandler.endElement(); // HierarchyInfo
+                }
+                saxHandler.endElement(); // AxisInfo
+        }
+        
         private void axes(SAXHandler saxHandler) throws SAXException {
             if (axisFormat != Enumeration.AxisFormat.TupleFormat) {
                 throw new UnsupportedOperationException("<AxisFormat>: only 'TupleFormat' currently supported");
             }
             saxHandler.startElement("Axes");
+            axis(saxHandler, result.getSlicerAxis(), "SlicerAxis");
             final Axis[] axes = result.getAxes();
             for (int i = 0; i < axes.length; i++) {
-                Axis axis = axes[i];
-                saxHandler.startElement("Axis", new String[] {
-                    "name", "Axis" + i});
+                axis(saxHandler, axes[i], "Axis" + i);
+            }
+            saxHandler.endElement(); // Axes
+        }
+        
+        private void axis(SAXHandler saxHandler, Axis axis, String axisName) throws SAXException {
+            saxHandler.startElement("Axis", new String[] {
+                    "name", axisName});
                 saxHandler.startElement("Tuples");
-                for (int j = 0; j < axis.positions.length; j++) {
-                    Position position = axis.positions[j];
+                Position[] positions = axis.positions;
+                for (int j = 0; j < positions.length; j++) {
+                    Position position = positions[j];
                     saxHandler.startElement("Tuple");
                     for (int k = 0; k < position.members.length; k++) {
                         Member member = position.members[k];
@@ -322,7 +325,14 @@ public class XmlaMediator {
                             final Object value = member.getPropertyValue(propLongs[m]);
                             if (value != null) {
                                 saxHandler.startElement(props[m]); // UName
-                                saxHandler.characters(value.toString());
+                                if (propLongs[m].equals(Property.CHILDREN_CARDINALITY.name)) { // DisplayInfo
+                                    int displayInfo = calculateDisplayInfo((j == 0 ? null : positions[j-1]),
+                                            (j+1 == positions.length ? null : positions[j+1]),
+                                            member, k, ((Integer)value).intValue());
+                                    saxHandler.characters(Integer.toString(displayInfo));                                    
+                                } else {
+                                    saxHandler.characters(value.toString());
+                                }
                                 saxHandler.endElement(); // UName
                             }
                         }
@@ -332,10 +342,25 @@ public class XmlaMediator {
                 }
                 saxHandler.endElement(); // Tuples
                 saxHandler.endElement(); // Axis
-            }
-            saxHandler.endElement(); // Axes
         }
 
+        private int calculateDisplayInfo(Position prevPosition, Position nextPosition, 
+                Member currentMember, int memberOrdinal, int childrenCount) {
+            int displayInfo = 0xffff & childrenCount;
+            
+            if (nextPosition != null) {
+                String currentUName = currentMember.getUniqueName();
+                String nextParentUName = nextPosition.members[memberOrdinal].getParentUniqueName();
+                displayInfo |= (currentUName.equals(nextParentUName) ? 0x10000 : 0);
+            }
+            if (prevPosition != null) {
+                String currentParentUName = currentMember.getParentUniqueName();
+                String prevParentUName = prevPosition.members[memberOrdinal].getParentUniqueName();
+                displayInfo |= (currentParentUName != null && currentParentUName.equals(prevParentUName) ? 0x20000 : 0);
+            }
+            return displayInfo;
+        }
+        
         private void cellData(SAXHandler saxHandler) throws SAXException {
             saxHandler.startElement("CellData");
             final int axisCount = result.getAxes().length;
@@ -421,8 +446,12 @@ public class XmlaMediator {
             saxHandler.startElement("root", new String[] {
                 "xmlns", XMLA_NS + ":rowset"});
             saxHandler.startElement("xsd:schema", new String[] {
-                "xmlns:xsd", "http://www.w3.org/2001/XMLSchema"});
-            // todo: schema definition
+                "xmlns:xsd", "http://www.w3.org/2001/XMLSchema",
+                "targetNamespace", "urn:schemas-microsoft-com:xml-analysis:rowset",
+                "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance",
+                "xmlns:sql", "urn:schemas-microsoft-com:xml-sql",
+                "elementFormDefault", "qualified"});
+            //TODO: add schema
             saxHandler.endElement();
             try {
                 rowset.unparse(saxHandler);
