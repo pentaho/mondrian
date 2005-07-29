@@ -12,9 +12,15 @@ package mondrian.xmla;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.Writer;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -24,6 +30,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import mondrian.olap.*;
+import mondrian.rolap.RolapConnection;
 import mondrian.util.SAXHandler;
 import mondrian.util.SAXWriter;
 
@@ -43,8 +50,13 @@ import org.xml.sax.SAXException;
  * @version $Id$
  */
 public class XmlaMediator {
+    private static final boolean DRILLTHROUGH_EXTENDS_CONTEXT = true;
+    
+    private static final String XSD_NS = "http://www.w3.org/2001/XMLSchema";
+    private static final String XSI_NS = "http://www.w3.org/2001/XMLSchema-instance";
     private static final String XMLA_NS = "urn:schemas-microsoft-com:xml-analysis";
     private static final String XMLA_MDDATASET_NS = "urn:schemas-microsoft-com:xml-analysis:mddataset";
+    private static final String XMLA_ROWSET_NS = "urn:schemas-microsoft-com:xml-analysis:rowset";
     static ThreadLocal threadServletContext = new ThreadLocal();
     static Map dataSourcesMap = new HashMap();
     
@@ -80,8 +92,7 @@ public class XmlaMediator {
         }
         Document document = null;
         try {
-            //CG 
-            document = documentBuilder.parse(new InputSource(new StringReader(request.substring(request.indexOf("<")))));
+            document = documentBuilder.parse(new InputSource(new StringReader(request)));
         } catch (SAXException e) {
             throw Util.newError(e, "Error processing '" + request + "'");
         } catch (IOException e) {
@@ -133,6 +144,7 @@ public class XmlaMediator {
                 try {
                     processRequest((Element) node, saxHandler);
                 } catch (Exception e) {
+                    e.printStackTrace();
                     saxHandler.startElement("Error");
                     saxHandler.characters(e.toString());
                     saxHandler.endElement();
@@ -163,20 +175,34 @@ public class XmlaMediator {
         }
         final Properties properties = getProperties(execute);
         
-        //CG fix the wrong response format
+        boolean isDrillThrough = false;
+        // No usage of Regex in 1.4
+        String upperStatement = statement.toUpperCase();
+        int dtOffset = upperStatement.indexOf("DRILLTHROUGH");
+        int slOffset = upperStatement.indexOf("SELECT");
+        if (dtOffset != -1 && dtOffset < slOffset) {
+            String format = properties.getProperty(PropertyDefinition.Format.name);
+            if ("Tabular".compareToIgnoreCase(format) == 0)
+                isDrillThrough = true;
+            else
+                throw Util.newError("Must set property 'Format' to 'Tabular' for DrillThrough");
+        }
+        
         try {
          	saxHandler.startElement("ExecuteResponse", new String[] {
          			"xmlns", XMLA_NS});
          	saxHandler.startElement("return");
          	saxHandler.startElement("root", new String[] {
-         			"xmlns", XMLA_MDDATASET_NS});
+         			"xmlns", isDrillThrough ? XMLA_ROWSET_NS : XMLA_MDDATASET_NS});
          	saxHandler.startElement("xsd:schema", new String[] {
          			"xmlns:xsd", "http://www.w3.org/2001/XMLSchema"});
          		// todo: schema definition
          	saxHandler.endElement();
          	try {
-         		MDDataSet cellSet = executeQuery(statement, properties);
-         		cellSet.unparse(saxHandler);
+                if (isDrillThrough)
+                    executeDrillThroughQuery(statement.substring(dtOffset + "DRILLTHROUGH".length()), properties).unparse(saxHandler);
+                else
+                    executeQuery(statement, properties).unparse(saxHandler);
          	} finally {
          		saxHandler.endElement();
          		saxHandler.endElement();
@@ -184,6 +210,97 @@ public class XmlaMediator {
          	}
         } catch (SAXException e) {
         	throw Util.newError(e, "Error while processing execute request");
+        }
+    }
+    
+    private TabularRowSet executeDrillThroughQuery(String statement, Properties properties) {
+        final Connection connection = getConnection(properties);
+        final Query query = connection.parseQuery(statement);
+        final Result result = connection.execute(query);
+        Cell dtCell = result.getCell(new int[] {0,0});
+        
+        if (!dtCell.canDrillThrough()) {
+            throw Util.newError("Cannot do DillThrough operation on the cell");
+        }
+        
+        String dtSql = dtCell.getDrillThroughSQL(DRILLTHROUGH_EXTENDS_CONTEXT);
+        TabularRowSet rowset = null;
+        java.sql.Connection conn = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            conn = ((RolapConnection)connection).getDataSource().getConnection();
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery(dtSql);
+            rowset = new TabularRowSet(rs);
+        } catch (SQLException sqle) {
+            Util.newError(sqle, "Error when executing DrillThrough sql '" + dtSql + "'");
+        } finally {
+            try {
+                if (rs != null) rs.close();
+            } catch (SQLException ignored){}
+            try {
+                if (stmt != null) stmt.close();
+            } catch (SQLException ignored){}
+            try {
+                if (conn != null && !conn.isClosed()) conn.close();
+            } catch (SQLException ignored){}
+        }
+        
+        return rowset;
+    }
+    
+    static class TabularRowSet {
+        private String[] header;
+        private List rows;
+        
+        public TabularRowSet(ResultSet rs) throws SQLException {
+            ResultSetMetaData md = rs.getMetaData();
+            int columnCount = md.getColumnCount();
+            
+            // populate header
+            header = new String[columnCount];
+            for (int i = 0; i < columnCount; i++) {
+                header[i] = md.getColumnName(i+1);
+            }
+            
+            // populate data
+            rows = new ArrayList();
+            while(rs.next()) {
+                Object[] row = new Object[columnCount];
+                for (int i = 0; i < columnCount; i++) {
+                    row[i] = rs.getObject(i+1);
+                }
+                rows.add(row);
+            }
+        }
+     
+        public void unparse(SAXHandler saxHandler) throws SAXException {
+            String[] encodedHeader = new String[header.length];
+            for (int i = 0; i < header.length; i++) {
+                // replace " " with "_" in column headers, 
+                // otherwise will generate a badly-formatted xml doc.
+                encodedHeader[i] = header[i].replace(' ', '_');
+            }            
+            
+            for (Iterator it = rows.iterator(); it.hasNext();) {
+                Object[] row = (Object[])it.next();
+                saxHandler.startElement("row");
+                for (int i = 0; i < row.length; i++) {
+                    saxHandler.startElement(encodedHeader[i]);
+                    Object value = row[i];
+                    if (value == null) {
+                        saxHandler.characters("<null>");
+                    } else {
+                        if (value instanceof Number)
+                            saxHandler.characters(normalizeNumricString(row[i].toString()));
+                        else 
+                            saxHandler.characters(row[i].toString());
+                    }
+                    saxHandler.endElement();
+                }
+                saxHandler.endElement(); // row
+            }
         }
     }
 
@@ -366,7 +483,13 @@ public class XmlaMediator {
             final int axisCount = result.getAxes().length;
             int[] pos = new int[axisCount];
             int[] cellOrdinal = new int[] {0};
-            recurse(saxHandler, pos, axisCount - 1, cellOrdinal);
+            
+            if (axisCount == 0) { // For MDX like: SELECT FROM Sales
+                emitCell(saxHandler, result.getCell(pos), cellOrdinal[0]);
+            } else {
+                recurse(saxHandler, pos, axisCount - 1, cellOrdinal);
+            }
+            
             saxHandler.endElement(); // CellData
         }
 
@@ -376,57 +499,36 @@ public class XmlaMediator {
             for (int i = 0; i < axisLength; i++) {
                 pos[axis] = i;
                 if (axis == 0) {
-                    saxHandler.startElement("Cell", new String[] {
-                        "CellOrdinal", Integer.toString(cellOrdinal[0]++)});
                     final Cell cell = result.getCell(pos);
-                    for (int j = 0; j < cellProps.length; j++) {
-                        String cellPropLong = cellPropLongs[j];
-                        final Object value =
-                            cell.getPropertyValue(cellPropLong);
-                        if (value != null) {
-                            saxHandler.startElement(cellProps[j]);
-                            String valueString = value.toString();
-
-                            // This is here because different JDBC drivers
-                            // use different Number classes to return
-                            // numeric values (Double vs BigDecimal) and
-                            // these have different toString() behavior.
-                            // If it contains a decimal point, then
-                            // strip off trailing '0's. After stripping off
-                            // the '0's, if there is nothing right of the
-                            // decimal point, then strip off decimal point.
-                            if (cellPropLong == Property.VALUE.name &&
-                                   value instanceof Number) {
-                                int index = valueString.indexOf('.');
-                                if (index > 0) {
-                                    boolean found = false;
-                                    int p = valueString.length();
-                                    char c = valueString.charAt(p-1);
-                                    while (c == '0') {
-                                        found = true;
-                                        p--;
-                                        c = valueString.charAt(p-1);
-                                    }
-                                    if (c == '.') {
-                                        p--;
-                                    }
-                                    if (found) {
-                                        valueString =
-                                            valueString.substring(0, p);
-                                    }
-                                }
-                            }
-
-                            saxHandler.characters(valueString);
-                            saxHandler.endElement();
-                        }
-                    }
-
-                    saxHandler.endElement(); // Cell
+                    emitCell(saxHandler, cell, cellOrdinal[0]++);
                 } else {
                     recurse(saxHandler, pos, axis - 1, cellOrdinal);
                 }
             }
+        }
+    
+    
+        private void emitCell(SAXHandler saxHandler, Cell cell, int ordinal) throws SAXException {
+            saxHandler.startElement("Cell", new String[] {
+                    "CellOrdinal", Integer.toString(ordinal)});
+            for (int i = 0; i < cellProps.length; i++) {
+                String cellPropLong = cellPropLongs[i];
+                final Object value =
+                    cell.getPropertyValue(cellPropLong);
+                if (value != null) {
+                    saxHandler.startElement(cellProps[i]);
+                    String valueString = value.toString();
+    
+                    if (cellPropLong == Property.VALUE.name &&
+                           value instanceof Number) {
+                        valueString = normalizeNumricString(valueString);
+                    }
+    
+                    saxHandler.characters(valueString);
+                    saxHandler.endElement();
+                }
+            }
+            saxHandler.endElement(); // Cell
         }
     }
 
@@ -444,11 +546,11 @@ public class XmlaMediator {
                 "xmlns", XMLA_NS});
             saxHandler.startElement("return");
             saxHandler.startElement("root", new String[] {
-                "xmlns", XMLA_NS + ":rowset"});
+                "xmlns", XMLA_ROWSET_NS});
             saxHandler.startElement("xsd:schema", new String[] {
-                "xmlns:xsd", "http://www.w3.org/2001/XMLSchema",
-                "targetNamespace", "urn:schemas-microsoft-com:xml-analysis:rowset",
-                "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance",
+                "xmlns:xsd", XSD_NS,
+                "targetNamespace", XMLA_ROWSET_NS,
+                "xmlns:xsi", XSI_NS,
                 "xmlns:sql", "urn:schemas-microsoft-com:xml-sql",
                 "elementFormDefault", "qualified"});
             //TODO: add schema
@@ -611,6 +713,34 @@ public class XmlaMediator {
             }
         }
         return false;
+    }
+    
+    private static String normalizeNumricString(String numericStr) {
+        // This is here because different JDBC drivers
+        // use different Number classes to return
+        // numeric values (Double vs BigDecimal) and
+        // these have different toString() behavior.
+        // If it contains a decimal point, then
+        // strip off trailing '0's. After stripping off
+        // the '0's, if there is nothing right of the
+        // decimal point, then strip off decimal point.
+        int index = numericStr.indexOf('.');
+        if (index > 0) {
+            boolean found = false;
+            int p = numericStr.length();
+            char c = numericStr.charAt(p-1);
+            while (c == '0') {
+                found = true;
+                p--;
+                c = numericStr.charAt(p-1);
+            }
+            if (c == '.') {
+                p--;
+            }
+            if (found)
+                return numericStr.substring(0, p);
+        }
+        return numericStr;
     }
 }
 
