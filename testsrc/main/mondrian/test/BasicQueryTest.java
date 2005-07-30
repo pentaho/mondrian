@@ -444,10 +444,44 @@ public class BasicQueryTest extends FoodMartTestCase {
         runQueryCheckResult(sampleQueries[7]);
     }
 
-    /** Requires the use of a sparse segment, because the product dimension
+    /**
+     * Tests that a query whose axes are empty works.
+     * (Bug 1220787.)
+     */
+    public void testBothAxesEmpty() {
+        runQueryCheckResult(
+                "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales]",
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "Axis #2:" + nl);
+
+        // expression which evaluates to empty set
+        runQueryCheckResult(
+                "SELECT Filter({[Gender].MEMBERS}, 1 = 0) ON COLUMNS, " + nl +
+                "{} ON ROWS" + nl +
+                "FROM [Sales]",
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "Axis #2:" + nl);
+
+        // with slicer
+        runQueryCheckResult(
+                "SELECT {} ON ROWS, {} ON COLUMNS " + nl +
+                "FROM [Sales] WHERE ([Gender].[F])",
+                "Axis #0:" + nl +
+                "{[Gender].[All Gender].[F]}" + nl +
+                "Axis #1:" + nl +
+                "Axis #2:" + nl);
+    }
+
+    /**
+     * Requires the use of a sparse segment, because the product dimension
      * has 6 atttributes, the product of whose cardinalities is ~8M. If we
      * use a dense segment, we run out of memory trying to allocate a huge
-     * array. */
+     * array.
+     */
     public void testBigQuery() {
         Result result = runQuery(
                 "SELECT {[Measures].[Unit Sales]} on columns," + nl +
