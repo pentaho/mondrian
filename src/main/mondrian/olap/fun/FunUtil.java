@@ -277,8 +277,9 @@ public class FunUtil extends Util {
 
     /**
      * Evaluates and returns the <code>index</code>th argument, which we
-     * expect to be either a member or a tuple, as a tuple. If the argument
-     * is a member, converts it into a tuple with one member.
+     * expect to be either a member or a tuple, as a tuple.
+     * If the argument is a member, converts it into a tuple with one member.
+     * If the argument is the null tuple, returns null.
      *
      * @see #getTupleArg
      *
@@ -286,7 +287,7 @@ public class FunUtil extends Util {
      * @param args The arguments to the function call
      * @param index Ordinal of the argument we are seeking
      * @return A tuple, represented as usual by an array of {@link Member}
-     *   objects.
+     *   objects, or null if the tuple is null
      *
      * @throws ArrayIndexOutOfBoundsException if <code>index</code> is out of
      *   range
@@ -297,7 +298,9 @@ public class FunUtil extends Util {
             int index) {
         Exp arg = args[index];
         Object o0 = arg.evaluate(evaluator);
-        if (o0 instanceof Member[]) {
+        if (o0 == null) {
+            return null;
+        } else if (o0 instanceof Member[]) {
             return (Member[]) o0;
         } else if (o0 instanceof Member) {
             return new Member[] { (Member)o0 };

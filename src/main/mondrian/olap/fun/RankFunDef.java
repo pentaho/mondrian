@@ -30,6 +30,10 @@ public class RankFunDef extends FunkBase {
     public Object evaluate(Evaluator evaluator, Exp[] args) {
         // get tuple
         Member[] tuple = getTupleOrMemberArg(evaluator, args, 0);
+        if (tuple == null) {
+            // Tuple is null.
+            return null;
+        }
         for (int i = 0; i < tuple.length; i++) {
             // Rank of a null member or partially null tuple returns null.
             Member member = tuple[i];
