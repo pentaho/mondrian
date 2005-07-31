@@ -2292,52 +2292,104 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Returns a tuple from a set.",
                 "mx*"));
 
-        define(new MultiResolver(
+        define(new FunDefBase(
                 "Item",
                 "<Set>.Item(<Index>)",
-                "Returns the <Index>th element in the set, or ",
-                new String[] {"mtxn", "mmtn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    public Object evaluate(Evaluator evaluator, Exp[] args) {
-                        Object arg0 = getArg(evaluator, args, 0);
-                        int index = getIntArg(evaluator, args, 1);
-                        int setSize;
+                "Returns a tuple from the set specified in «Set». The tuple to be returned is specified by the zero-based position of the tuple in the set in «Index».",
+                "mtxn") {
+            public Type getResultType(Validator validator, Exp[] args) {
+                SetType setType = (SetType) args[0].getTypeX();
+                return setType.getElementType();
+            }
 
-                        if (arg0 instanceof List) {
-                            List theSet = (List)arg0;
+            public Object evaluate(Evaluator evaluator, Exp[] args) {
+                Object arg0 = getArg(evaluator, args, 0);
+                int index = getIntArg(evaluator, args, 1);
 
-                            setSize = theSet.size();
-                            if (index < setSize && index >= 0) {
-                                return theSet.get(index);
-                            }
-                        } else {
-                            //
-                            // You'll get a member in the following case:
-                            // {[member]}.item(0).item(0), even though the first invocation of
-                            // item returned a tuple.
-                            //
-                            assert ((arg0 instanceof Member[]) || (arg0 instanceof Member));
+                if (arg0 == null) {
+                    // List is empty, therefore every index it out of
+                    // bounds.
+                    return null;
+                } else if (arg0 instanceof List) {
+                    List theSet = (List)arg0;
 
-                            if (arg0 instanceof Member) {
-                                if (index == 0) {
-                                    return arg0;
-                                }
-                                setSize = 0;
-                            } else {
-                                Member[] tuple = (Member[]) arg0;
+                    int setSize = theSet.size();
+                    if (index >= setSize || index < 0) {
+                        return null;
+                    } else {
+                        return theSet.get(index);
+                    }
+                } else {
+                    //
+                    // You'll get a member in the following case:
+                    // {[member]}.item(0).item(0), even though the first invocation of
+                    // item returned a tuple.
+                    //
+                    assert ((arg0 instanceof Member[]) || (arg0 instanceof Member));
 
-                                if (index < tuple.length && index >= 0) {
-                                    return tuple[index];
-                                }
+                    if (arg0 instanceof Member) {
+                        if (index == 0) {
+                            return arg0;
+                        }
+                        return null;
+                    } else {
+                        Member[] tuple = (Member[]) arg0;
 
-                                setSize = tuple.length;
-                            }
+                        if (index < tuple.length && index >= 0) {
+                            return tuple[index];
                         }
 
-                        throw MondrianResource.instance().newItemIndexOutOfBounds(Integer.toString(index), Integer.toString(setSize - 1));
+                        return null;
                     }
-                };
+                }
+
+            }
+        });
+
+        define(new FunDefBase(
+                "Item",
+                "<Tuple>.Item(<Index>)",
+                "Returns a member from the tuple specified in «Tuple». The member to be returned is specified by the zero-based position of the member in the set in «Index».",
+                "mmtn") {
+            public Type getResultType(Validator validator, Exp[] args) {
+                // Suppose we are called as follows:
+                //   ([Gender].CurrentMember, [Store].CurrentMember).Item(n)
+                //
+                // We know that our result is a member type, but we don't
+                // know which dimension.
+                return new MemberType(null, null, null);
+            }
+
+            public Object evaluate(Evaluator evaluator, Exp[] args) {
+                Object arg0 = getArg(evaluator, args, 0);
+                int index = getIntArg(evaluator, args, 1);
+
+                if (arg0 == null) {
+                    // List is empty, therefore every index it out of
+                    // bounds.
+                    return null;
+                } else {
+                    // {[member]}.item(0).item(0), even though the first invocation of
+                    // item returned a tuple.
+                    //
+                    assert ((arg0 instanceof Member[]) || (arg0 instanceof Member));
+
+                    if (arg0 instanceof Member) {
+                        if (index == 0) {
+                            return arg0;
+                        }
+                        return null;
+                    } else {
+                        Member[] tuple = (Member[]) arg0;
+
+                        if (index >= tuple.length || index < 0) {
+                            return null;
+                        }
+                        return tuple[index];
+
+                    }
+                }
+
             }
         });
 

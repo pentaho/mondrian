@@ -477,6 +477,134 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
+     * Tests that a slicer with multiple values gives an error.
+     * (Bug 828411.)
+     */
+    public void testCompoundSlicerFails()
+    {
+        // two tuples
+        assertThrows(
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
+                " {[Gender].MEMBERS} ON ROWS" + nl +
+                "FROM [Sales]" + nl +
+                "WHERE {([Marital Status].[S])," + nl +
+                "       ([Marital Status].[M])}",
+                "WHERE clause expression returned set with more than one element.");
+
+        // set with incompatible members
+        assertThrows(
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
+                " {[Gender].MEMBERS} ON ROWS" + nl +
+                "FROM [Sales]" + nl +
+                "WHERE {[Marital Status].[S]," + nl +
+                "       [Product]}",
+                "All arguments to function '{}' must have same hierarchy.");
+
+        // expression which evaluates to a set with zero members is not ok
+        assertThrows(
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
+                " {[Gender].MEMBERS} ON ROWS" + nl +
+                "FROM [Sales]" + nl +
+                "WHERE Filter({[Marital Status].MEMBERS}, 1 = 0)",
+                "WHERE clause expression returned NULL or empty set.");
+
+        // expression which evaluates to a not-null member is ok
+        runQueryCheckResult(
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
+                " {[Gender].MEMBERS} ON ROWS" + nl +
+                "FROM [Sales]" + nl +
+                "WHERE ( {Filter({[Marital Status].MEMBERS}, [Measures].[Unit Sales] = 266773)}.Item(0) )",
+                "Axis #0:" + nl +
+                "{[Marital Status].[All Marital Status]}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Unit Sales]}" + nl +
+                "Axis #2:" + nl +
+                "{[Gender].[All Gender]}" + nl +
+                "{[Gender].[All Gender].[F]}" + nl +
+                "{[Gender].[All Gender].[M]}" + nl +
+                "Row #0: 266,773" + nl +
+                "Row #1: 131,558" + nl +
+                "Row #2: 135,215" + nl);
+
+        // expression which evaluates to a null member is not ok
+        assertThrows(
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
+                " {[Gender].MEMBERS} ON ROWS" + nl +
+                "FROM [Sales]" + nl +
+                "WHERE [Marital Status].Parent",
+                "WHERE clause expression returned NULL or empty set.");
+
+        // expression which evaluates to a set with one member is ok
+        runQueryCheckResult(
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
+                " {[Gender].MEMBERS} ON ROWS" + nl +
+                "FROM [Sales]" + nl +
+                "WHERE Filter({[Marital Status].MEMBERS}, [Measures].[Unit Sales] = 266773)",
+                "Axis #0:" + nl +
+                "{[Marital Status].[All Marital Status]}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Unit Sales]}" + nl +
+                "Axis #2:" + nl +
+                "{[Gender].[All Gender]}" + nl +
+                "{[Gender].[All Gender].[F]}" + nl +
+                "{[Gender].[All Gender].[M]}" + nl +
+                "Row #0: 266,773" + nl +
+                "Row #1: 131,558" + nl +
+                "Row #2: 135,215" + nl);
+
+        // expression which evaluates to three tuples is not ok
+        assertThrows(
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
+                " {[Gender].MEMBERS} ON ROWS" + nl +
+                "FROM [Sales]" + nl +
+                "WHERE Filter({[Marital Status].MEMBERS}, [Measures].[Unit Sales] <= 266773)",
+                "WHERE clause expression returned set with more than one element.");
+
+        // set with incompatible members
+        assertThrows(
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
+                " {[Gender].MEMBERS} ON ROWS" + nl +
+                "FROM [Sales]" + nl +
+                "WHERE {[Marital Status].[S]," + nl +
+                "       [Product]}",
+                "All arguments to function '{}' must have same hierarchy.");
+
+        // two members of same dimension in columns and rows
+        assertThrows(
+                "SELECT CrossJoin(" + nl +
+                "  {[Measures].[Unit Sales]}," + nl +
+                "  {[Gender].[M]}) ON COLUMNS," + nl +
+                " {[Gender].MEMBERS} ON ROWS" + nl +
+                "FROM [Sales]",
+                "Dimension '[Gender]' appears in more than one independent axis.");
+
+        // two members of same dimension in rows and slicer
+        assertThrows(
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
+                " {[Gender].MEMBERS} ON ROWS" + nl +
+                "FROM [Sales]" +
+                "WHERE ([Marital Status].[S], [Gender].[F])",
+                "Dimension '[Gender]' appears in more than one independent axis.");
+
+        // two members of same dimension in slicer tuple
+        assertThrows(
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
+                " {[Gender].MEMBERS} ON ROWS" + nl +
+                "FROM [Sales]" +
+                "WHERE ([Marital Status].[S], [Marital Status].[M])",
+                "Tuple contains more than member of dimension '[Marital Status]'.");
+
+        // testcase for bug 996088
+        assertThrows(
+                "select" + nl +
+                "{[Measures].[Unit Sales]} on columns,\n" + nl +
+                "{([Product].[All Products], [Time].[1997])} ON rows" + nl +
+                "from Sales" + nl +
+                "where ([Time].[1997])",
+                "Dimension '[Time]' appears in more than one independent axis.");
+    }
+
+    /**
      * Requires the use of a sparse segment, because the product dimension
      * has 6 atttributes, the product of whose cardinalities is ~8M. If we
      * use a dense segment, we run out of memory trying to allocate a huge

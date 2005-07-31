@@ -1082,10 +1082,11 @@ public class FunctionTest extends FoodMartTestCase {
         Assert.assertEquals("142,277.07", result);
     }
 
-    public void testMinTupel() {
+    public void testMinTuple() {
         String result = executeExpr("Min([Customers].[All Customers].[USA].Children, ([Measures].[Unit Sales], [Gender].[All Gender].[F]))");
         Assert.assertEquals("33,036", result);
     }
+
     public void testStdev() {
         String result = executeExpr("STDEV({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
         Assert.assertEquals("65,825.45", result);
@@ -1110,7 +1111,6 @@ public class FunctionTest extends FoodMartTestCase {
         String result = executeExpr("VARP({[Store].[All Stores].[USA].children},[Measures].[Store Sales])");
         Assert.assertEquals("2,888,660,329.13", result);
     }
-
 
     public void testAscendants() {
         assertAxisReturns("Ascendants([Store].[USA].[CA])",
@@ -1930,44 +1930,84 @@ public class FunctionTest extends FoodMartTestCase {
                 + ".Item(100 / 50 - 1)",
                 "{[Time].[1997].[Q1].[2], [Customers].[All Customers].[USA].[WA]}");
 
-        assertAxisThrows("{[Customers].[All Customers].[USA],"
+        // given index out of bounds, item returns null
+        assertAxisReturns("{[Customers].[All Customers].[USA],"
                 + "[Customers].[All Customers].[USA].[WA],"
                 + "[Customers].[All Customers].[USA].[CA],"
                 + "[Customers].[All Customers].[USA].[OR].[Lebanon].[Mary Frances Christian]}.Item(-1)",
-                "Expected a number between 0 and 3, but was -1.");
+                "");
 
-        assertAxisThrows("{[Customers].[All Customers].[USA],"
+        // given index out of bounds, item returns null
+        assertAxisReturns("{[Customers].[All Customers].[USA],"
                 + "[Customers].[All Customers].[USA].[WA],"
                 + "[Customers].[All Customers].[USA].[CA],"
                 + "[Customers].[All Customers].[USA].[OR].[Lebanon].[Mary Frances Christian]}.Item(4)",
-                "Expected a number between 0 and 3, but was 4.");
+                "");
     }
 
     public void testTupleItem() throws Exception {
-        assertAxisReturns(""
-                + "([Time].[1997].[Q1].[1], [Customers].[All Customers].[USA].[OR], [Gender].[All Gender].[M]).item(2)",
+        assertAxisReturns(
+                "([Time].[1997].[Q1].[1], [Customers].[All Customers].[USA].[OR], [Gender].[All Gender].[M]).item(2)",
                 "[Gender].[All Gender].[M]");
 
-        assertAxisReturns(""
-                + "([Time].[1997].[Q1].[1], [Customers].[All Customers].[USA].[OR], [Gender].[All Gender].[M]).item(1)",
+        assertAxisReturns(
+                "([Time].[1997].[Q1].[1], [Customers].[All Customers].[USA].[OR], [Gender].[All Gender].[M]).item(1)",
                 "[Customers].[All Customers].[USA].[OR]");
 
-        assertAxisReturns(""
-                + "{[Time].[1997].[Q1].[1]}.item(0)",
+        assertAxisReturns(
+                "{[Time].[1997].[Q1].[1]}.item(0)",
                 "[Time].[1997].[Q1].[1]");
 
-        assertAxisReturns(""
-                + "{[Time].[1997].[Q1].[1]}.Item(0).Item(0)",
+        assertAxisReturns(
+                "{[Time].[1997].[Q1].[1]}.Item(0).Item(0)",
                 "[Time].[1997].[Q1].[1]");
 
-        assertAxisThrows(""
-                + "([Time].[1997].[Q1].[1], [Customers].[All Customers].[USA].[OR], [Gender].[All Gender].[M]).item(-1)",
-                "Expected a number between 0 and 2, but was -1.");
+        // given out of bounds index, item returns null
+        assertAxisReturns(
+                "([Time].[1997].[Q1].[1], [Customers].[All Customers].[USA].[OR], [Gender].[All Gender].[M]).item(-1)",
+                "");
 
-        assertAxisThrows(""
-                + "([Time].[1997].[Q1].[1], [Customers].[All Customers].[USA].[OR], [Gender].[All Gender].[M]).item(500)",
-                "Expected a number between 0 and 2, but was 500.");
+        // given out of bounds index, item returns null
+        assertAxisReturns(
+                "([Time].[1997].[Q1].[1], [Customers].[All Customers].[USA].[OR], [Gender].[All Gender].[M]).item(500)",
+                "");
 
+        // empty set
+        assertExprReturns(
+                "Filter([Gender].members, 1 = 0).Item(0)",
+                "(null)");
+
+        // empty set of unknown type
+        assertExprReturns(
+                "{}.Item(3)",
+                "(null)");
+
+        // past end of set
+        assertExprReturns(
+                "{[Gender].members}.Item(4)",
+                "(null)");
+
+        // negative index
+        assertExprReturns(
+                "{[Gender].members}.Item(-50)",
+                "(null)");
+    }
+
+    public void testTupleNull() {
+        // if a tuple contains any null members, it evaluates to null
+        runQueryCheckResult(
+                "select {[Measures].[Unit Sales]} on columns," + nl +
+                " { ([Gender].[M], [Store])," + nl +
+                "   ([Gender].[F], [Store].parent)," + nl +
+                "   ([Gender].parent, [Store])} on rows" + nl +
+                "from [Sales]",
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Unit Sales]}" + nl +
+                "Axis #2:" + nl +
+                "{[Gender].[All Gender].[M], [Store].[All Stores]}" + nl +
+                "Row #0: 135,215" + nl);
     }
 
     private void checkDataResults(Double[][] expected, Result result, final double tolerance) {
@@ -3606,8 +3646,6 @@ public class FunctionTest extends FoodMartTestCase {
 
     /**
      * Tests the <code>Rank(member, set)</code> MDX function.
-     *
-     * <p>todo: Implement and test Rank(member, set, expr)</p>
      */
     public void testRank() {
         // Member within set

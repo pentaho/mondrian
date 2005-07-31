@@ -11,8 +11,7 @@
 */
 package mondrian.olap.fun;
 import mondrian.olap.*;
-import mondrian.olap.type.Type;
-import mondrian.olap.type.TupleType;
+import mondrian.olap.type.*;
 
 import java.io.PrintWriter;
 
@@ -55,12 +54,12 @@ class TupleFunDef extends FunDefBase {
         // If there is only one member, it merely represents a parenthesized
         // expression, whose Hierarchy is that of the member.
         if (args.length == 1) {
-            return args[0].getTypeX();
+            return TypeUtil.toMemberType(args[0].getTypeX());
         } else {
             Type[] types = new Type[args.length];
             for (int i = 0; i < args.length; i++) {
                 Exp arg = args[i];
-                types[i] = arg.getTypeX();
+                types[i] = TypeUtil.toMemberType(arg.getTypeX());
             }
             return new TupleType(types);
         }
@@ -69,10 +68,30 @@ class TupleFunDef extends FunDefBase {
     public Object evaluate(Evaluator evaluator, Exp[] args) {
         Member[] members = new Member[args.length];
         for (int i = 0; i < args.length; i++) {
-            members[i] = getMemberArg(evaluator, args, i, true);
+            Member member = getMemberArg(evaluator, args, i, true);
+            if (member == null ||
+                    member.isNull()) {
+                return null;
+            }
+            members[i] = member;
         }
+        checkDimensions(members);
         return members;
     }
+
+    private void checkDimensions(Member[] members) {
+        for (int i = 0; i < members.length; i++) {
+            Member member = members[i];
+            for (int j = 0; j < i; j++) {
+                Member member1 = members[j];
+                if (member.getDimension() == member1.getDimension()) {
+                    throw MondrianResource.instance().newDupDimensionsInTuple(
+                            member.getDimension().getUniqueName());
+                }
+            }
+        }
+    }
+
     public boolean dependsOn(Exp[] args, Dimension dimension) {
         return dependsOnIntersection(args, dimension);
     }

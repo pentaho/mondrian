@@ -11,7 +11,7 @@
 */
 
 package mondrian.olap;
-import mondrian.olap.type.Type;
+import mondrian.olap.type.*;
 
 import java.io.PrintWriter;
 
@@ -37,8 +37,13 @@ public abstract class ExpBase
     public abstract Object clone();
 
     public final boolean isSet() {
-        int cat = getCategory();
-        return (cat == Category.Set) || (cat == Category.Tuple);
+        if (false) {
+            int cat = getCategory();
+            return (cat == Category.Set) || (cat == Category.Tuple);
+        } else {
+            Type typeX = getTypeX();
+            return typeX instanceof SetType || typeX instanceof TupleType;
+        }
     }
 
     public final boolean isMember() {

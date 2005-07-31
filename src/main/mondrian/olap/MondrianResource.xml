@@ -279,8 +279,12 @@
     <text>''RECURSIVE'' is not supported in ToggleDrillState.</text>
 </exception>
 
-<exception id="350470" name="ItemIndexOutOfBounds">
-    <text>Item index out of bounds. Expected a number between 0 and {1}, but was {0}.</text>
+<exception id="350470" name="CompoundSlicer">
+    <text>WHERE clause expression returned set with more than one element.</text>
+</exception>
+
+<exception id="350475" name="EmptySlicer">
+    <text>WHERE clause expression returned NULL or empty set.</text>
 </exception>
 
 <exception id="350480" name="LeavesNotSupported">
@@ -309,6 +313,10 @@
 
 <exception id="350540" name="InvalidAxis">
     <text>Invalid axis specification. The axis number must be an integer between 0 and {0,number}, but it was {1,number}.</text>
+</exception>
+
+<exception id="350550" name="DupDimensionsInTuple">
+    <text>Tuple contains more than member of dimension ''{0}''.</text>
 </exception>
 
 <!-- ====================================================================== -->

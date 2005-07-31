@@ -62,13 +62,22 @@ class RolapResult extends ResultBase {
                 QueryAxis axis;
                 if (i == -1) {
                     if (query.slicer != null) {
+                        FunCall call = new FunCall(
+                                "{}",
+                                Syntax.Braces,
+                                new Exp[] {
+                                    new FunCall(
+                                            "()",
+                                            Syntax.Parentheses,
+                                            new Exp[] {
+                                                query.slicer}
+                                    )});
+                        Exp call2 = call.accept(query.createValidator());
                         axis = new QueryAxis(
-                            false,
-                            new FunCall(
-                                "{}", Syntax.Braces, new Exp[] {query.slicer}
-                            ).accept(query.createValidator()),
-                            AxisOrdinal.Slicer,
-                            QueryAxis.SubtotalVisibility.Undefined);
+                                false,
+                                call2,
+                                AxisOrdinal.Slicer,
+                                QueryAxis.SubtotalVisibility.Undefined);
                     } else {
                         axis = null;
                     }
@@ -103,9 +112,21 @@ class RolapResult extends ResultBase {
                     // Sales] > 100) on columns from Sales where
                     // ([Time].[1998])" should show customers whose 1998 (not
                     // total) purchases exceeded 100.
+                    switch (this.slicerAxis.positions.length) {
+                    case 0:
+                        throw MondrianResource.instance().newEmptySlicer();
+                    case 1:
+                        break;
+                    default:
+                        throw MondrianResource.instance().newCompoundSlicer();
+                    }
                     Position position = this.slicerAxis.positions[0];
                     for (int j = 0; j < position.members.length; j++) {
-                        evaluator.setContext(position.members[j]);
+                        Member member = position.members[j];
+                        if (member == null) {
+                            throw MondrianResource.instance().newEmptySlicer();
+                        }
+                        evaluator.setContext(member);
                     }
                     slicerEvaluator = (RolapEvaluator) evaluator.push();
                 } else {
@@ -119,7 +140,7 @@ class RolapResult extends ResultBase {
                 // result limit exceeded, throw an exception
                 long n = 1;
                 for (int i = 0; i < axes.length; i++) {
-                    n = n*axes[i].positions.length;
+                    n = n * axes[i].positions.length;
                 }
                 if ( n > limit) {
                     throw MondrianResource.instance().
@@ -312,12 +333,12 @@ class RolapResult extends ResultBase {
         }
     };
 
-    private void executeStripe(int axis, RolapEvaluator evaluator) {
-        if (axis < 0) {
-            RolapAxis _axis = (RolapAxis) slicerAxis;
-            int count = _axis.positions.length;
+    private void executeStripe(int axisOrdinal, RolapEvaluator evaluator) {
+        if (axisOrdinal < 0) {
+            RolapAxis axis = (RolapAxis) slicerAxis;
+            int count = axis.positions.length;
             for (int i = 0; i < count; i++) {
-                RolapPosition position = (RolapPosition) _axis.positions[i];
+                RolapPosition position = (RolapPosition) axis.positions[i];
                 for (int j = 0; j < position.members.length; j++) {
                     evaluator.setContext(position.members[j]);
                 }
@@ -343,15 +364,15 @@ class RolapResult extends ResultBase {
                 }
             }
         } else {
-            RolapAxis _axis = (RolapAxis) axes[axis];
-            int count = _axis.positions.length;
+            RolapAxis axis = (RolapAxis) axes[axisOrdinal];
+            int count = axis.positions.length;
             for (int i = 0; i < count; i++) {
-                point.ordinals[axis] = i;
-                RolapPosition position = (RolapPosition) _axis.positions[i];
+                point.ordinals[axisOrdinal] = i;
+                RolapPosition position = (RolapPosition) axis.positions[i];
                 for (int j = 0; j < position.members.length; j++) {
                     evaluator.setContext(position.members[j]);
                 }
-                executeStripe(axis - 1, evaluator);
+                executeStripe(axisOrdinal - 1, evaluator);
             }
         }
     }

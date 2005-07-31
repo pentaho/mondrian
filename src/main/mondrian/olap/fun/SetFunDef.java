@@ -79,6 +79,12 @@ class SetFunDef extends FunDefBase {
                     o = arg.evaluate(evaluator);
                 }
             }
+            if (o == null) {
+                // This is a null tuple, so skip it.
+                // (We have a repesentation for null members, but null tuples
+                // are represented by the Java null value.)
+                continue;
+            }
             if (o instanceof List) {
                 List list2 = (List) o;
                 if (list == null) {
