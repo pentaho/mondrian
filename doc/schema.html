@@ -34,7 +34,6 @@
   <li><a href="#Cubes_and_dimensions">Logical model</a><ol>
   <li><a href="#Cube">Cube</a></li>
     <li><a href="#Measures">Measures</a></li>
-    <li><a href="#Calculated_members">Calculated members</a></li>
     <li><a href="#Dimensions,_Hierarchies,_Levels">Dimensions, Hierarchies,
     Levels</a></li>
 </ol>
@@ -50,6 +49,8 @@
       <li><a href="#Shared_dimensions">Shared dimensions</a></li>
       <li><a href="#Parent_child_hierarchies">Parent-child hierarchies</a></li>
       <li><a href="#Member_properties">Member properties</a></li>
+    <li><a href="#Calculated_members">Calculated members</a></li>
+    	<li><a href="#Named_sets">Named sets</a></li>
   </ol></li>
   <li><a href="#Advanced_physical_constructs">Advanced physical constructs</a>
   <ol>
@@ -220,8 +221,10 @@ be printed. Here, we have chosen to output unit sales with no decimal places
 currency value). The ',' and '.' symbols are locale-sensitive, so if you were
 running in Italian, store sales might appear as &quot;48.123,45&quot;. You can achieve
 even more wild effects using <a href="#Format_strings">advanced format strings</a>.</p>
-<p>A measure can have a caption attribute to be returned by getCaption() instead of the name.
-Defining a specific caption does make sense if special letters (e.g. &#931; or &#928;) are to be displayed.</p>
+<p>A measure can have a caption attribute to be returned by the <code>
+<a href="api/mondrian/olap/Member.html#getCaption()">Member.getCaption()</a></code> 
+method instead of the name. Defining a specific caption does make sense if 
+special letters (e.g. &#931; or &#928;) are to be displayed:</p>
 <blockquote>
   <pre>&lt;<a href="#XML_Measure">Measure</a> name=&quot;Sum X&quot; column=&quot;sum_x&quot; aggregator=&quot;sum&quot; caption=&quot;&amp;#931; X&quot;/&gt;
 </blockquote>
@@ -229,90 +232,6 @@ Defining a specific caption does make sense if special letters (e.g. &#931; or &
 <a href="#Cell_readers">cell reader</a>.</p>
 <p>In order to provide a specific formatting of the cell values, a measure can use a
 <a href="#Cell_formatter">cell formatter</a>.</p>
-
-<h3><a name="Calculated_members">Calculated members</a></h3>
-
-<p>Suppose you want to create a measure whose value comes not from a
-column of the fact table, but from an MDX formula. One way to do this is to use
-a <code>WITH MEMBER</code> clause, like this:</p>
-
-<blockquote>
-
-    <p><code>WITH MEMBER [Measures].[Profit] AS '[Measures].[Store
-    Sales]-[Measures].[Store Cost]',<br>
-&nbsp;&nbsp; FORMAT_STRING = '$#,###'<br>
-    SELECT {[Measures].[Store Sales], [Measures].[Profit]} ON COLUMNS,<br>
-&nbsp; {[Product].Children} ON ROWS<br>
-    FROM [Sales]<br>
-    WHERE [Time].[1997]</code></p>
-</blockquote>
-<p>But rather than including this clause in every MDX query of your application,
-you can define the member in your schema, as part of your cube definition:</p>
-
-<blockquote>
-
-    <p><code>&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name=&quot;Profit&quot; dimension=&quot;Measures&quot;<br>
-&nbsp;&nbsp;&nbsp; formula=&quot;[Measures].[Store Sales]-[Measures].[Store Cost]&quot;&gt;<br>
-&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name=&quot;FORMAT_STRING&quot; value=&quot;$#,##0.00&quot;/&gt;<br>
-    &lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code></p>
-</blockquote>
-
-<p>Note that the <code>&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>&gt;</code>
-(not <code>&lt;<a href="#XML_Property">Property</a>&gt;</code>) element corresponds
-to the <code>FORMAT_STRING = '$#,###'</code> fragment of the MDX statement. You
-can define other properties here too, but <code>FORMAT_STRING</code> is by far
-the most useful in practice.</p>
-
-<p>The FORMAT_STRING property value can also be evaluated using an expression. When
-formatting a particular cell, first the expression is evaluated to yield a
-format string, then the format string is applied to the cell value. Here is the
-same property with a conditional format string:</p>
-
-<blockquote>
-
-    <p><code>&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>
-    name=&quot;FORMAT_STRING&quot; expression=&quot;Iif(Value &lt; 0, '|($#,##0.00)|style=red',
-    '|$#,##0.00|style=green')&quot;/&gt;</code></p>
-</blockquote>
-
-<p>For more details about format strings, see the
-<a href="mdx.html#Format_strings">MDX specification</a>.</p>
-
-<p>You can make a calculated member or a measure invisible. If you specify <code>
-visible=&quot;false&quot;</code> (the default is &quot;true&quot;) in the <code>&lt;<a href="#XML_Measure">Measure</a>&gt;
-or &lt;<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code> element,
-user-interfaces such as JPivot will notice this property and hide the member.
-This is useful if you want to perform calculations in a number of steps, and
-hide intermediate steps from end-users. For example, here only &quot;Margin per Sqft&quot;
-is visible, and its factors &quot;Store Cost&quot;, &quot;Margin&quot; and &quot;Store Sqft&quot; are hidden:</p>
-
-<blockquote>
-
-    <p><code>&lt;<a href="#XML_Measure">Measure</a><br>
-&nbsp;&nbsp;&nbsp; name=&quot;Store Cost&quot;<br>
-&nbsp;&nbsp;&nbsp; column=&quot;store_cost&quot;<br>
-&nbsp;&nbsp;&nbsp; aggregator=&quot;sum&quot;<br>
-&nbsp;&nbsp;&nbsp; formatString=&quot;#,###.00&quot;<br>
-&nbsp;&nbsp;&nbsp; visible=&quot;false&quot;/&gt;<br>
-    &lt;<a href="#XML_CalculatedMember">CalculatedMember</a><br>
-&nbsp;&nbsp;&nbsp; name=&quot;Margin&quot; <br>
-&nbsp;&nbsp;&nbsp; dimension=&quot;Measures&quot; <br>
-&nbsp;&nbsp;&nbsp; visible=&quot;false&quot;<br>
-&nbsp;&nbsp;&nbsp; formula=&quot;([Measures].[Store Sales] - [Measures].[Store Cost])
-    / [Measures].[Store Cost]&quot;/&gt;<br>
-    &lt;<a href="#XML_CalculatedMember">CalculatedMember</a><br>
-&nbsp;&nbsp;&nbsp; name=&quot;Store Sqft&quot; <br>
-&nbsp;&nbsp;&nbsp; dimension=&quot;Measures&quot;<br>
-&nbsp;&nbsp;&nbsp; visible=&quot;false&quot;<br>
-&nbsp;&nbsp;&nbsp; formula='[Store].Properties(&quot;Sqft&quot;)'/&gt;<br>
-    &lt;<a href="#XML_CalculatedMember">CalculatedMember</a><br>
-&nbsp;&nbsp;&nbsp; name=&quot;Margin per Sqft&quot;<br>
-&nbsp;&nbsp;&nbsp; dimension=&quot;Measures&quot;<br>
-&nbsp;&nbsp;&nbsp; visible=&quot;true&quot;<br>
-&nbsp;&nbsp;&nbsp; formula=&quot;[Measures].[Margin] / [Measures].[Store Cost]&quot;&gt;<br>
-&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name=&quot;FORMAT_STRING&quot; value=&quot;$#,##0.00&quot;/&gt;<br>
-    &lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code></p>
-</blockquote>
 
 <h3><a name="Dimensions,_Hierarchies,_Levels">Dimensions, Hierarchies, Levels</a></h3>
 <p>The <code>Gender</code> dimension consists of a single hierarchy, which has just one
@@ -821,6 +740,200 @@ property name is a constant string, the type is based upon the type attribute
 name is an expression (for example <code>CurrentMember.Properties(&quot;Store &quot; +
 &quot;Type&quot;)</code>), Mondrian will return an untyped value.</p>
 
+<h3><a name="Calculated_members">Calculated members</a></h3>
+
+<p>Suppose you want to create a measure whose value comes not from a
+column of the fact table, but from an MDX formula. One way to do this is to use
+a <code>WITH MEMBER</code> clause, like this:</p>
+
+<blockquote>
+
+    <p><code>WITH MEMBER [Measures].[Profit] AS '[Measures].[Store
+    Sales]-[Measures].[Store Cost]',<br>
+&nbsp;&nbsp; FORMAT_STRING = '$#,###'<br>
+    SELECT {[Measures].[Store Sales], [Measures].[Profit]} ON COLUMNS,<br>
+&nbsp; {[Product].Children} ON ROWS<br>
+    FROM [Sales]<br>
+    WHERE [Time].[1997]</code></p>
+</blockquote>
+<p>But rather than including this clause in every MDX query of your application,
+you can define the member in your schema, as part of your cube definition:</p>
+
+<blockquote>
+
+    <p><code>&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name=&quot;Profit&quot; dimension=&quot;Measures&quot;&gt;<br>
+&nbsp; &lt;<a href="#XML_Formula">Formula</a>&gt;[Measures].[Store Sales] - [Measures].[Store 
+	Cost]&lt;/<a href="#XML_Formula">Formula</a>&gt;<br>
+&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name=&quot;FORMAT_STRING&quot; value=&quot;$#,##0.00&quot;/&gt;<br>
+    &lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code></p>
+</blockquote>
+
+<p>You can also declare the formula as an XML attribute, if you prefer. The 
+effect is just the same.</p>
+
+<blockquote>
+
+    <p><code>&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name=&quot;Profit&quot; dimension=&quot;Measures&quot;<br>
+&nbsp;&nbsp;&nbsp; formula=&quot;[Measures].[Store Sales]-[Measures].[Store Cost]&quot;&gt;<br>
+&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name=&quot;FORMAT_STRING&quot; value=&quot;$#,##0.00&quot;/&gt;<br>
+    &lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code></p>
+</blockquote>
+
+<p>Note that the <code>&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>&gt;</code>
+(not <code>&lt;<a href="#XML_Property">Property</a>&gt;</code>) element corresponds
+to the <code>FORMAT_STRING = '$#,###'</code> fragment of the MDX statement. You
+can define other properties here too, but <code>FORMAT_STRING</code> is by far
+the most useful in practice.</p>
+
+<p>The <code>FORMAT_STRING</code> property value can also be evaluated using an expression. When
+formatting a particular cell, first the expression is evaluated to yield a
+format string, then the format string is applied to the cell value. Here is the
+same property with a conditional format string:</p>
+
+<blockquote>
+
+    <p><code>&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a>
+    name=&quot;FORMAT_STRING&quot; expression=&quot;Iif(Value &lt; 0, '|($#,##0.00)|style=red',
+    '|$#,##0.00|style=green')&quot;/&gt;</code></p>
+</blockquote>
+
+<p>For more details about format strings, see the
+<a href="mdx.html#Format_strings">MDX specification</a>.</p>
+
+<p>You can make a calculated member or a measure invisible. If you specify <code>
+visible=&quot;false&quot;</code> (the default is &quot;true&quot;) in the <code>&lt;<a href="#XML_Measure">Measure</a>&gt;
+or &lt;<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code> element,
+user-interfaces such as JPivot will notice this property and hide the member.
+This is useful if you want to perform calculations in a number of steps, and
+hide intermediate steps from end-users. For example, here only &quot;Margin per Sqft&quot;
+is visible, and its factors &quot;Store Cost&quot;, &quot;Margin&quot; and &quot;Store Sqft&quot; are hidden:</p>
+
+<blockquote>
+
+    <p><code>&lt;<a href="#XML_Measure">Measure</a><br>
+&nbsp;&nbsp;&nbsp; name=&quot;Store Cost&quot;<br>
+&nbsp;&nbsp;&nbsp; column=&quot;store_cost&quot;<br>
+&nbsp;&nbsp;&nbsp; aggregator=&quot;sum&quot;<br>
+&nbsp;&nbsp;&nbsp; formatString=&quot;#,###.00&quot;<br>
+&nbsp;&nbsp;&nbsp; visible=&quot;false&quot;/&gt;<br>
+    &lt;<a href="#XML_CalculatedMember">CalculatedMember</a><br>
+&nbsp;&nbsp;&nbsp; name=&quot;Margin&quot; <br>
+&nbsp;&nbsp;&nbsp; dimension=&quot;Measures&quot; <br>
+&nbsp;&nbsp;&nbsp; visible=&quot;false&quot;&gt;<br>
+&nbsp; &lt;<a href="#XML_Formula">Formula</a>&gt;([Measures].[Store Sales] - [Measures].[Store Cost])
+    / [Measures].[Store Cost]&lt;/<a href="#XML_Formula">Formula</a>&gt;<br>
+    &lt;<a href="#XML_CalculatedMember">CalculatedMember</a><br>
+&nbsp;&nbsp;&nbsp; name=&quot;Store Sqft&quot; <br>
+&nbsp;&nbsp;&nbsp; dimension=&quot;Measures&quot;<br>
+&nbsp;&nbsp;&nbsp; visible=&quot;false&quot;&gt;<br>
+&nbsp; &lt;<a href="#XML_Formula">Formula</a>&gt;[Store].Properties(&quot;Sqft&quot;)&lt;/<a href="#XML_Formula">Formula</a>&gt;<br>
+    &lt;<a href="#XML_CalculatedMember">CalculatedMember</a><br>
+&nbsp;&nbsp;&nbsp; name=&quot;Margin per Sqft&quot;<br>
+&nbsp;&nbsp;&nbsp; dimension=&quot;Measures&quot;<br>
+&nbsp;&nbsp;&nbsp; visible=&quot;true&quot;&gt;<br>
+&nbsp; &lt;<a href="#XML_Formula">Formula</a>&gt;[Measures].[Margin] / [Measures].[Store 
+	Cost]&lt;/<a href="#XML_Formula">Formula</a>&gt;<br>
+&nbsp; &lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name=&quot;FORMAT_STRING&quot; value=&quot;$#,##0.00&quot;/&gt;<br>
+    &lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code></p>
+</blockquote>
+
+<h3><a name="Named_sets">Named sets</a></h3>
+
+<p>The <code>WITH SET</code> clause of an MDX statement allows you to declare a 
+set expression which can be used throughout that query. For example,</p>
+
+<blockquote>
+
+	<p><code><font color="#FF0000"><b>WITH SET [Top Sellers] AS <br>
+&nbsp;&nbsp;&nbsp; 'TopCount([Warehouse].[Warehouse Name].MEMBERS, 5, 
+	[Measures].[Warehouse Sales])'</b></font><br>
+	SELECT <br>
+&nbsp;&nbsp;&nbsp; {[Measures].[Warehouse Sales]} ON COLUMNS,<br>
+&nbsp;&nbsp;&nbsp; {<font color="#FF0000">[Top Sellers]</font>} ON ROWS<br>
+	FROM [Warehouse]<br>
+	WHERE [Time].[Year].[1997]</code></p>
+</blockquote>
+
+<p>The <code>WITH SET</code> clause is very similar to the <code>WITH MEMBER</code> 
+clause, and as you might expect, it has a construct in schema analogous to
+<code>&lt;<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code>. The <code>&lt;<a href="#XML_NamedSet">NamedSet</a>&gt;</code> element allows 
+you to define a named set in your schema as part of a cube definition. It is 
+implicitly available for any query against that cube:</p>
+
+<blockquote>
+
+	<p><code>&lt;<a href="#XML_Cube">Cube</a> name=&quot;Warehouse&quot;&gt;<br>
+&nbsp;&nbsp;...<br>
+&nbsp;&nbsp;&lt;<a href="#XML_NamedSet">NamedSet</a> name=&quot;Top Sellers&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;<a href="#XML_Formula">Formula</a>&gt;TopCount([Warehouse].[Warehouse Name].MEMBERS, 
+	5, 
+	[Measures].[Warehouse Sales])&lt;/<a href="#XML_Formula">Formula</a>&gt;<br>
+&nbsp;&nbsp;&lt;/<a href="#XML_NamedSet">NamedSet</a>&gt;<br>
+	&lt;/<a href="#XML_Cube">Cube</a>&gt;</code></p>
+
+	<p><code>SELECT <br>
+&nbsp;&nbsp;&nbsp; {[Measures].[Warehouse Sales]} ON COLUMNS,<br>
+&nbsp;&nbsp;&nbsp; {<font color="#FF0000">[Top Sellers]</font>} ON ROWS<br>
+	FROM [Warehouse]<br>
+	WHERE [Time].[Year].[1997]</code></p>
+	<table class="clsStd" id="table4" border="1">
+		<tr>
+			<th>
+
+			<p align="left">Warehouse</th>
+			<th>Warehouse Sales</th>
+		</tr>
+		<tr>
+			<td>Treehouse Distribution</td>
+			<td align="right">31,116.37</td>
+		</tr>
+		<tr>
+			<td>Jorge Garcia, Inc.</td>
+			<td align="right">30,743.77</td>
+		</tr>
+		<tr>
+			<td>Artesia Warehousing, Inc.</td>
+			<td align="right">29,207.96</td>
+		</tr>
+		<tr>
+			<td>Jorgensen Service Storage</td>
+			<td align="right">22,869.79</td>
+		</tr>
+		<tr>
+			<td>Destination, Inc.</td>
+			<td align="right">22,187.42</td>
+		</tr>
+	</table>
+</blockquote>
+	<DOC>
+
+<p>A named set defined against a cube is not inherited by a virtual cubes 
+	defined against that cube. (But you can define a named set against a virtual 
+	cube.)</p>
+
+<p>You can also define a named set as global to a schema:</p>
+
+<blockquote>
+
+	<p><code>&lt;<a href="#XML_Cube">Schema</a>&gt;<br>
+&nbsp; &lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot; ... /&gt;<br>
+&nbsp; &lt;<a href="#XML_Cube">Cube</a> name=&quot;Warehouse&quot; ... /&gt;<br>
+&nbsp; &lt;<a href="#XML_VirtualCube">VirtualCube</a> name=&quot;Warehouse and Sales&quot; 
+	.../&gt;<br>
+&nbsp; &lt;<a href="#XML_NamedSet">NamedSet</a> name=&quot;CA Cities&quot; 
+	formula=&quot;{[Store].[USA].[CA].Children}&quot;/&gt;<br>
+&nbsp; &lt;<a href="#XML_NamedSet">NamedSet</a> name=&quot;Top CA Cities\&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Formula">Formula</a>&gt;TopCount([CA Cities], 2, 
+	[Measures].[Unit Sales])&lt;/<a href="#XML_Formula">Formula</a>&gt;<br>
+&nbsp; &lt;/<a href="#XML_NamedSet">NamedSet</a>&gt;<br>
+	&lt;/<a href="#XML_Cube">Schema</a>&gt;</code></p>
+</blockquote>
+
+	<p>A named set defined against a schema is available in all cubes and 
+	virtual cubes in that schema. However, it is only valid if the cube contains 
+	dimensions with the names required to make the formula valid.</p>
+</DOC>
+
 <h2><a name="Advanced_physical_constructs">Advanced physical constructs</a></h2>
 
 <h3><a name="Member_readers">Member readers</a></h3>
@@ -1093,75 +1206,155 @@ of doing this:</p><ol>
     <th>Element</th>
     <th>Description</th></tr><tr>
     <td>&nbsp;</td><td>&nbsp;</td></tr><tr>
-    <td><code>&lt;<a name="XML_Schema" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Schema">Schema</a>&gt;</code></td><td>Collection of Cubes, Virtual cubes,  Shared dimensions, and Roles.</td></tr><tr>
+    <td><code>&lt;<a name="XML_Schema" href="xml_schema.html#Schema">Schema</a>&gt;</code></td>
+    <td>Collection of Cubes, Virtual cubes,  Shared dimensions, and Roles.</td></tr>
+  <tr>
     <td colspan="2"><i><br>
-	Logical elements</i></td></tr><tr>
-    <td><code>&lt;<a name="XML_Cube" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Cube">Cube</a>&gt;</code></td><td>A collection of dimensions and measures, all centered on a fact table.</td></tr><tr>
-    <td><code>&lt;<a name="XML_VirtualCube" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#VirtualCube">VirtualCube</a>&gt;</code></td><td>A cube defined by combining the dimensions and measures of one or more
-    cubes.</td></tr><tr>
-    <td><code>&lt;<a name="XML_Dimension" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Dimension">Dimension</a>&gt;</code></td><td>&nbsp;</td>
+	Logical elements</i></td>
   </tr>
   <tr>
-    <td><code>&lt;<a name="XML_DimensionUsage" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#DimensionUsage">DimensionUsage</a>&gt;</code></td><td>Usage of a shared dimension by a cube.</td></tr><tr>
-    <td><code>&lt;<a name="XML_Hierarchy" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Hierarchy">Hierarchy</a>&gt;</code></td><td>
-	Hierarchy.</td>
+    <td><code>&lt;<a name="XML_Cube" href="xml_schema.html#Cube">Cube</a>&gt;</code></td>
+    <td>A collection of dimensions and measures, all centered on a fact table.</td>
+  </tr>
+  <tr>
+    <td><code>&lt;<a name="XML_VirtualCube" href="xml_schema.html#VirtualCube">VirtualCube</a>&gt;</code></td>
+    <td>A cube defined by combining the dimensions and measures of one or more
+    cubes.</td>
+  </tr>
+  <tr>
+    <td><code>&lt;<a name="XML_Dimension" href="xml_schema.html#Dimension">Dimension</a>&gt;</code></td><td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td><code>&lt;<a name="XML_DimensionUsage" href="xml_schema.html#DimensionUsage">DimensionUsage</a>&gt;</code></td>
+    <td>Usage of a shared dimension by a cube.</td></tr>
+  <tr>
+    <td><code>&lt;<a name="XML_Hierarchy" href="xml_schema.html#Hierarchy">Hierarchy</a>&gt;</code></td>
+    <td>Hierarchy.</td>
   </tr>
   <tr>
     <td colspan="2">&nbsp;</td>
   </tr>
   <tr>
-    <td><code>&lt;<a name="XML_Level" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Level">Level</a>&gt;</code></td><td>
-	Level of a hierarchy.</td>
+    <td><code>&lt;<a name="XML_Level" href="xml_schema.html#Level">Level</a>&gt;</code></td>
+    <td>Level of a hierarchy.</td>
   </tr>
   <tr>
-    <td><code>&lt;<a name="XML_Property" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Property">Property</a>&gt;</code></td><td>Member property. The definition is against 
+    <td><code>&lt;<a name="XML_Property" href="xml_schema.html#Property">Property</a>&gt;</code></td>
+    <td>Member property. The definition is against 
 	a hierarchy or level, but the
-    property will be available to all members.</td></tr><tr>
-    <td><code>&lt;<a name="XML_Measure" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Measure">Measure</a>&gt;</code></td><td>&nbsp;</td>
+    property will be available to all members.</td>
   </tr>
   <tr>
-    <td><code>&lt;<a href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#CalculatedMember" name="XML_CalculatedMember">CalculatedMember</a>&gt;</code></td><td>A member whose value is derived using a formula, defined as part of a
-    cube.</td></tr><tr>
+    <td><code>&lt;<a name="XML_Measure" href="xml_schema.html#Measure">Measure</a>&gt;</code></td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td><code>&lt;<a name="XML_CalculatedMember" href="xml_schema.html#CalculatedMember">CalculatedMember</a>&gt;</code></td>
+    <td>A member whose value is derived using a formula, defined as part of a
+    cube.</td>
+	</tr>
+  <tr>
+    <td><code>&lt;<a name="XML_NamedSet"  href="xml_schema.html#NamedSet">NamedSet</a>&gt;</code></td>
+    <td>A set whose value is derived using a formula, defined as part of a
+    cube.</td>
+  </tr>
+  <tr>
     <td colspan="2"><i><br>
-	Physical elements</i></td></tr><tr>
-    <td><code>&lt;<a name="XML_Table" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Table">Table</a>&gt;</code></td><td>Fact- or dimension table.</td></tr><tr>
-    <td><code>&lt;<a name="XML_View" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#View">View</a>&gt;</code></td><td>Defines a 'table' using a SQL query, which can have
-    different variants for different underlying databases.</td></tr><tr>
-    <td><code>&lt;<a name="XML_Join" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Join">Join</a>&gt;</code></td><td>Defines a 'table' by joining a set of queries.</td></tr><tr>
-    <td><code>&lt;<a name="XML_Closure" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Closure">Closure</a>&gt;</code></td>
-    <td>Maps a parent-child hierarchy onto a closure table.</td></tr><tr>
+	Physical elements</i></td>
+  </tr>
+  <tr>
+    <td><code>&lt;<a name="XML_Table" href="xml_schema.html#Table">Table</a>&gt;</code></td>
+    <td>Fact or dimension table.</td>
+  </tr>
+  <tr>
+    <td><code>&lt;<a name="XML_View" href="xml_schema.html#View">View</a>&gt;</code></td>
+    <td>Defines a 'table' using a SQL query, which can have
+    different variants for different underlying databases.</td></tr>
+  <tr>
+    <td><code>&lt;<a name="XML_Join" href="xml_schema.html#Join">Join</a>&gt;</code></td>
+    <td>Defines a 'table' by joining a set of queries.</td>
+  </tr>
+  <tr>
+    <td><code>&lt;<a name="XML_Closure" href="xml_schema.html#Closure">Closure</a>&gt;</code></td>
+    <td>Maps a parent-child hierarchy onto a closure table.</td>
+  </tr>
+  <tr>
     <td colspan="2"><i><br>
-	Aggregate Tables</i></td></tr><tr>
-    <td><code>&lt;<a name="XML_AggExclude" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#AggExclude">AggExclude</a>&gt;</code></td>
-    <td>Exclude a candidate aggregate table by name or pattern matching.</td></tr><tr>
-    <td><code>&lt;<a name="XML_AggName" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#AggName">AggName</a>&gt;</code></td>
-    <td>Declares an aggregate table to be matched by name.</td></tr><tr>
-    <td><code>&lt;<a name="XML_AggPattern" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#AggPattern">AggPattern</a>&gt;</code></td>
-    <td>Declares a set of aggregate tables by regular expression pattern.</td></tr><tr>
-    <td><code>&lt;<a name="XML_AggFactCount" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#AggFactCount">AggFactCount</a>&gt;</code></td>
+	Aggregate Tables</i></td>
+  </tr>
+  <tr>
+    <td><code>&lt;<a name="XML_AggExclude" href="xml_schema.html#AggExclude">AggExclude</a>&gt;</code></td>
+    <td>Exclude a candidate aggregate table by name or pattern matching.</td>
+  </tr>
+  <tr>
+    <td><code>&lt;<a name="XML_AggName" href="xml_schema.html#AggName">AggName</a>&gt;</code></td>
+    <td>Declares an aggregate table to be matched by name.</td>
+  </tr>
+  <tr>
+    <td><code>&lt;<a name="XML_AggPattern" href="xml_schema.html#AggPattern">AggPattern</a>&gt;</code></td>
+    <td>Declares a set of aggregate tables by regular expression pattern.</td>
+  </tr>
+  <tr>
+    <td><code>&lt;<a name="XML_AggFactCount" href="xml_schema.html#AggFactCount">AggFactCount</a>&gt;</code></td>
     <td>Specifies name of the column in the candidate aggregate table which 
-	contains the number of fact table rows.</td></tr><tr>
-    <td><code>&lt;<a name="XML_AggIgnoreColumn" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#AggIgnoreColumn">AggIgnoreColumn</a>&gt;</code></td>
-    <td>Tells Mondrian to ignore a column in an aggregate table.</td></tr><tr>
-    <td><code>&lt;<a name="XML_AggForeignKey" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#AggForeignKey">AggForeignKey</a>&gt;</code></td>
-    <td>Maps foreign key in the fact table to a foreign key column in the candidate aggregate table.</td></tr><tr>
-    <td><code>&lt;<a name="XML_AggMeasure" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#AggMeasure">AggMeasure</a>&gt;</code></td>
-    <td>Maps a measure to a column in the candidate aggregate table.</td></tr><tr>
-    <td><code>&lt;<a name="XML_AggLevel" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#AggLevel">AggLevel</a>&gt;</code></td>
-    <td>Maps a level to a column in the candidate aggregate table.</td></tr><tr>
-    <td colspan="2"><i><br>
-	Access control</i></td></tr><tr>
-    <td><code>&lt;<a href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Role" name="XML_Role">Role</a>&gt;</code></td><td>An access-control profile.</td></tr><tr>
-    <td><code>&lt;<a href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#SchemaGrant" name="XML_SchemaGrant">SchemaGrant</a>&gt;</code></td><td>A set of rights to a schema.</td></tr><tr>
-    <td><code>&lt;<a href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#CubeGrant" name="XML_CubeGrant">CubeGrant</a>&gt;</code></td><td>A set of rights to a cube.</td></tr><tr>
-    <td><code>&lt;<a href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#HierarchyGrant" name="XML_HierarchyGrant">HierarchyGrant</a>&gt;</code></td><td>A set of rights to a hierarchy and levels within that hierarchy.</td></tr><tr>
-    <td><code>&lt;<a href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#MemberGrant" name="XML_MemberGrant">MemberGrant</a>&gt;</code></td><td>A set of rights to a member and its children.</td></tr><tr>
-    <td colspan="2"><i><br>
-	Miscellaneous</i></td></tr><tr>
-    <td><code>&lt;<a href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#Parameter" name="XML_Parameter">Parameter</a>&gt;</code></td><td>&nbsp;</td>
+	contains the number of fact table rows.</td>
   </tr>
   <tr>
-    <td><code>&lt;<a name="XML_CalculatedMemberProperty" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/Mondrian.xml#MemberProperty">CalculatedMemberProperty</a>&gt;</code></td><td>Property of a calculated member.</td></tr></table>
+    <td><code>&lt;<a name="XML_AggIgnoreColumn" href="xml_schema.html#AggIgnoreColumn">AggIgnoreColumn</a>&gt;</code></td>
+    <td>Tells Mondrian to ignore a column in an aggregate table.</td>
+  </tr>
+  <tr>
+    <td><code>&lt;<a name="XML_AggForeignKey" href="xml_schema.html#AggForeignKey">AggForeignKey</a>&gt;</code></td>
+    <td>Maps foreign key in the fact table to a foreign key column in the candidate aggregate table.</td>
+  </tr>
+  <tr>
+    <td><code>&lt;<a name="XML_AggMeasure" href="xml_schema.html#AggMeasure">AggMeasure</a>&gt;</code></td>
+    <td>Maps a measure to a column in the candidate aggregate table.</td>
+  </tr>
+  <tr>
+    <td><code>&lt;<a name="XML_AggLevel" href="xml_schema.html#AggLevel">AggLevel</a>&gt;</code></td>
+    <td>Maps a level to a column in the candidate aggregate table.</td>
+  </tr>
+  <tr>
+    <td colspan="2"><i><br>
+	Access control</i></td>
+  </tr>
+  <tr>
+    <td><code>&lt;<a href="xml_schema.html#Role" name="XML_Role">Role</a>&gt;</code></td>
+    <td>An access-control profile.</td>
+  </tr>
+  <tr>
+    <td><code>&lt;<a href="xml_schema.html#SchemaGrant" name="XML_SchemaGrant">SchemaGrant</a>&gt;</code></td>
+    <td>A set of rights to a schema.</td>
+  </tr>
+  <tr>
+    <td><code>&lt;<a href="xml_schema.html#CubeGrant" name="XML_CubeGrant">CubeGrant</a>&gt;</code></td>
+    <td>A set of rights to a cube.</td>
+  </tr>
+  <tr>
+    <td><code>&lt;<a href="xml_schema.html#HierarchyGrant" name="XML_HierarchyGrant">HierarchyGrant</a>&gt;</code></td>
+    <td>A set of rights to a hierarchy and levels within that hierarchy.</td>
+  </tr>
+  <tr>
+    <td><code>&lt;<a href="xml_schema.html#MemberGrant" name="XML_MemberGrant">MemberGrant</a>&gt;</code></td>
+    <td>A set of rights to a member and its children.</td>
+  </tr>
+  <tr>
+    <td colspan="2"><i><br>
+	Miscellaneous</i></td>
+  </tr>
+  <tr>
+    <td><code>&lt;<a href="xml_schema.html#Parameter" name="XML_Parameter">Parameter</a>&gt;</code></td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td><code>&lt;<a name="XML_CalculatedMemberProperty" href="xml_schema.html#MemberProperty">CalculatedMemberProperty</a>&gt;</code></td>
+    <td>Property of a calculated member.</td></tr>
+  <tr>
+    <td><code>&lt;<a name="XML_Formula" href="xml_schema.html#Formula">Formula</a>&gt;</code></td>
+    <td>Holds the formula text within a NamedSet or CalculatedMember.</td>
+  </tr>
+</table>
 
 <hr>
 

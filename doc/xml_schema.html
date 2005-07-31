@@ -1,0 +1,3808 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Mining Meta Model Instance mondr</title>
+<style>
+<!--
+H1{
+  font-size:145%;
+  margin-top:1.25em; margin-bottom:0em;
+}
+
+H2 {
+  font-size:135%;
+  margin-top:1.25em; margin-bottom:.5em;
+}
+
+H3 {
+  font-size:128%;
+  margin-top:1em; margin-bottom:0em;
+}
+
+TABLE { font-size:100%; }
+
+TABLE.clsStd {
+    background-color:#444;
+    border:1px none;
+    cellspacing:0;
+    cellpadding:0
+}
+
+-->
+</style>
+</head>
+
+<body>
+
+<h1>Mining Meta Model Instance <u>mondrian</u></h1>
+
+<p><b>DTD Name:</b>
+<a style="color: #000066" href="http://perforce.eigenbase.org:8080/open/mondrian/src/main/mondrian/olap/mondrian.dtd">
+mondrian.dtd</a><br>
+<b>Class Name:</b>
+<a style="color: #000066" href="api/mondrian/olap/MondrianDef.html">
+MondrianDef</a> <br>
+<b>Root Element:</b> <a style="color: #000066" href="#Schema">Schema</a> <br>
+<b>Version:</b> 1.0 <br>
+&nbsp;</p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table1">
+	<tr>
+		<td bgColor="#3366cc" colSpan="2"><font color="white">
+
+		<h2>Overview</h2>
+		</font></td>
+	</tr>
+</table>
+
+<blockquote>
+	<DOC>This is the XML model for Mondrian schemas. 
+
+	<p>&nbsp;</p>
+	Revision is $Id$ 
+</DOC>
+</blockquote>
+
+<h2>Imports</h2>
+
+<h2>Element Summary</h2>
+<ul>
+	<li><a style="color: #000066" href="#AggExclude">AggExclude </a></li>
+	<li><a style="color: #000066" href="#AggFactCount">AggFactCount </a></li>
+	<li><a style="color: #000066" href="#AggForeignKey">AggForeignKey </a></li>
+	<li><a style="color: #000066" href="#AggIgnoreColumn">AggIgnoreColumn </a>
+	</li>
+	<li><a style="color: #000066" href="#AggLevel">AggLevel </a></li>
+	<li><a style="color: #000066" href="#AggMeasure">AggMeasure </a></li>
+	<li><a style="color: #000066" href="#AggName">AggName </a></li>
+	<li><a style="color: #000066" href="#AggPattern">AggPattern </a></li>
+	<li><a style="color: #000066" href="#CalculatedMember">CalculatedMember </a>
+	</li>
+	<li><a style="color: #000066" href="#CalculatedMemberProperty">
+	CalculatedMemberProperty </a></li>
+	<li><a style="color: #000066" href="#Closure">Closure </a></li>
+	<li><a style="color: #000066" href="#Column">Column </a></li>
+	<li><a style="color: #000066" href="#Cube">Cube </a></li>
+	<li><a style="color: #000066" href="#CubeGrant">CubeGrant </a></li>
+	<li><a style="color: #000066" href="#Dimension">Dimension </a></li>
+	<li><a style="color: #000066" href="#DimensionGrant">DimensionGrant </a>
+	</li>
+	<li><a style="color: #000066" href="#DimensionUsage">DimensionUsage </a>
+	</li>
+	<li><a style="color: #000066" href="#Formula">Formula </a></li>
+	<li><a style="color: #000066" href="#Hierarchy">Hierarchy </a></li>
+	<li><a style="color: #000066" href="#HierarchyGrant">HierarchyGrant </a>
+	</li>
+	<li><a style="color: #000066" href="#Join">Join </a></li>
+	<li><a style="color: #000066" href="#KeyExpression">KeyExpression </a></li>
+	<li><a style="color: #000066" href="#Level">Level </a></li>
+	<li><a style="color: #000066" href="#Measure">Measure </a></li>
+	<li><a style="color: #000066" href="#MemberGrant">MemberGrant </a></li>
+	<li><a style="color: #000066" href="#NamedSet">NamedSet </a></li>
+	<li><a style="color: #000066" href="#NameExpression">NameExpression </a>
+	</li>
+	<li><a style="color: #000066" href="#OrdinalExpression">OrdinalExpression
+	</a></li>
+	<li><a style="color: #000066" href="#Parameter">Parameter </a></li>
+	<li><a style="color: #000066" href="#ParentExpression">ParentExpression </a>
+	</li>
+	<li><a style="color: #000066" href="#Property">Property </a></li>
+	<li><a style="color: #000066" href="#Role">Role </a></li>
+	<li><a style="color: #000066" href="#Schema">Schema </a></li>
+	<li><a style="color: #000066" href="#SchemaGrant">SchemaGrant </a></li>
+	<li><a style="color: #000066" href="#SQL">SQL </a></li>
+	<li><a style="color: #000066" href="#Table">Table </a></li>
+	<li><a style="color: #000066" href="#UserDefinedFunction">
+	UserDefinedFunction </a></li>
+	<li><a style="color: #000066" href="#View">View </a></li>
+	<li><a style="color: #000066" href="#VirtualCube">VirtualCube </a></li>
+	<li><a style="color: #000066" href="#VirtualCubeDimension">
+	VirtualCubeDimension </a></li>
+	<li><a style="color: #000066" href="#VirtualCubeMeasure">VirtualCubeMeasure
+	</a></li>
+</ul>
+
+<h2>Classes</h2>
+<ul>
+	<li><a style="color: #000066" href="#AggColumnName">AggColumnName </a></li>
+	<li><a style="color: #000066" href="#AggTable">AggTable </a></li>
+	<li><a style="color: #000066" href="#CubeDimension">CubeDimension </a></li>
+	<li><a style="color: #000066" href="#Expression">Expression </a></li>
+	<li><a style="color: #000066" href="#ExpressionView">ExpressionView </a>
+	</li>
+	<li><a style="color: #000066" href="#Grant">Grant </a></li>
+	<li><a style="color: #000066" href="#Relation">Relation </a></li>
+</ul>
+
+<p><a name="Schema"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table2">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> Schema</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>
+
+	<p>A schema is a collection of cubes and virtual cubes. It can also contain 
+	shared dimensions (for use by those cubes), named sets, roles, and 
+	declarations of user-defined functions. </p>
+	</DOC>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table3">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>name</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Name of this schema </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			measuresCaption </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Label for the measures dimension </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			defaultRole </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The name of the default role for connections to this schema 
+</DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table4">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Element</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Java Name</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Constraints</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#Dimension">Dimension</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			dimensions</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Array</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Shared dimensions in this schema. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#Cube">Cube</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			cubes</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Optional</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Cubes in this schema. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#VirtualCube">VirtualCube</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			virtualCubes</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Optional</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Virtual cubes in this schema. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#NamedSet">NamedSet</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			namedSets</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Optional</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Named sets in this schema. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#Role">Role</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			roles</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Optional</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Roles in this schema. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#UserDefinedFunction">
+			UserDefinedFunction</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			userDefinedFunctions</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Optional</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Declarations of user-defined functions in this schema. 
+</DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<p><a name="Cube"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table5">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> Cube</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>Definition of a cube. </DOC>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table6">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>name</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Name of this cube. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			cache </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Boolean </i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			true </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Should the Fact table data for this Cube be cached by Mondrian or 
+			not. The default action is to cache the data. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			enabled </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Boolean </i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			true </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Whether element is enabled - if true, then the Cube is realized 
+			otherwise it is ignored. </DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table7">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Element</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Java Name</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Constraints</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#Relation">Relation</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			fact</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Required</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The fact table is the source of all measures in this cube. If this 
+			is a <code style="color: maroon; font-family: courier new">Table
+			</code>and the schema name is not present, table name is left 
+			unqualified. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#CubeDimension">CubeDimension</a> 
+			</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			dimensions</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Array</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC></DOC>
+			</td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#Measure">Measure</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			measures</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Optional</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC></DOC>
+			</td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#CalculatedMember">CalculatedMember</a> 
+			</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			calculatedMembers</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Optional</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Calculated members in this cube. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#NamedSet">NamedSet</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			namedSets</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Optional</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Named sets in this cube. </DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<p><a name="VirtualCube"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table8">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> VirtualCube</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>A <code style="color: maroon; font-family: courier new">VirtualCube
+	</code>is a set of dimensions and measures gleaned from other cubes. </DOC>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table9">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			enabled </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Boolean </i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			true </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Whether this element is enabled - if true, then the Virtual Cube is 
+			realized otherwise it is ignored. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			name </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC></DOC>
+			</td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table10">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Element</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Java Name</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Constraints</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#VirtualCubeDimension">
+			VirtualCubeDimension</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			dimensions</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Array</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC></DOC>
+			</td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#VirtualCubeMeasure">
+			VirtualCubeMeasure</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			measures</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Optional</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC></DOC>
+			</td>
+		</tr>
+	</table>
+</blockquote>
+
+<p><a name="VirtualCubeDimension"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table11">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> VirtualCubeDimension</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>A VirtualCubeDimension is a usage of a Dimension in a VirtualCube. </DOC>
+</blockquote>
+
+<h3>Class</h3>
+
+<blockquote>
+	<a style="color: #000066" href="#CubeDimension">CubeDimension </a>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table12">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			cubeName </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Name of the cube which the dimension belongs to, or unspecified if 
+			the dimension is shared. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			name </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Name of the dimension. </DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="VirtualCubeMeasure"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table13">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> VirtualCubeMeasure</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>A VirtualCubeMeasure is a usage of a Measure in a VirtualCube. 
+</DOC>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table14">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			cubeName </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Name of the cube which the measure belongs to. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			name </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Unique name of the measure within its cube. 
+</DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="DimensionUsage"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table15">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> DimensionUsage</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>A <code style="color: maroon; font-family: courier new">DimensionUsage
+	</code>is usage of a shared Dimension within the context of a cube. </DOC>
+</blockquote>
+
+<h3>Class</h3>
+
+<blockquote>
+	<a style="color: #000066" href="#CubeDimension">CubeDimension </a>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table16">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>source</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Name of the source dimension. Must be a dimension in this schema. 
+			Case-sensitive. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			level </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Name of the level to join to. If not specified, joins to the lowest 
+			level of the dimension. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			usagePrefix </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			If present, then this is prepended to the Dimension column names 
+			during the building of collapse dimension aggregates allowing 1) 
+			different dimension usages to be disambiguated during aggregate 
+			table recognition and 2) multiple shared dimensions that have common 
+			column names to be disambiguated. 
+</DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="Dimension"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table17">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> Dimension</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>A <code style="color: maroon; font-family: courier new">Dimension
+	</code>is a collection of hierarchies. There are two kinds: a
+	<dfn style="font-weight: bold; font-style: italic">public </dfn>dimension 
+	belongs to a <code style="color: maroon; font-family: courier new">Schema
+	</code>, and be used by several cubes; a
+	<dfn style="font-weight: bold; font-style: italic">private </dfn>dimension 
+	belongs to a <code style="color: maroon; font-family: courier new">Cube
+	</code>. The <code style="color: maroon; font-family: courier new">
+	foreignKey </code>field is only applicable to private dimensions. </DOC>
+</blockquote>
+
+<h3>Class</h3>
+
+<blockquote>
+	<a style="color: #000066" href="#CubeDimension">CubeDimension </a>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table18">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>name</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC></DOC>
+			</td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			type </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The dimension's type may be one of &quot;Standard&quot; or &quot;Time&quot;. A
+			<dfn style="font-weight: bold; font-style: italic">time </dfn>
+			dimension will allow the use of the MDX time functions (WTD, YTD, 
+			QTD, <i>etc. </i>). Use a
+			<dfn style="font-weight: bold; font-style: italic">standard </dfn>
+			dimension if the dimension is not a time-related dimension. The 
+			default value is
+			<code style="color: maroon; font-family: courier new">&quot;Standard&quot;
+			</code>. 
+</DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			caption </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			A string being displayed instead of the dimensions's name. 
+</DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table19">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Element</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Java Name</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Constraints</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#Hierarchy">Hierarchy</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			hierarchies</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Array</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC></DOC>
+			</td>
+		</tr>
+	</table>
+</blockquote>
+
+<p><a name="Hierarchy"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table20">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> Hierarchy</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>Defines a hierarchy. 
+
+	<p>&nbsp;</p>
+	You must specify at most one
+	<code style="color: maroon; font-family: courier new">&lt;Relation&gt; </code>or
+	<code style="color: maroon; font-family: courier new">memberReaderClass
+	</code>. If you specify none, the hierarchy is assumed to come from the same 
+	fact table of the current cube. </DOC>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table21">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			name </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Name of the hierarchy. If this is not specified, the hierarchy has 
+			the same name as its dimension. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>hasAll</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Boolean </i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Whether this hierarchy has an 'all' member. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			allMemberName </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Name of the 'all' member. If this attribute is not specified, the 
+			all member is named 'All <i>hierarchyName </i>', for example, 'All 
+			Store'. 
+</DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			allMemberCaption </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			A string being displayed instead as the all member's name. 
+</DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			allLevelName </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Name of the 'all' level. If this attribute is not specified, the all 
+			member is named '(All)'. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			primaryKey </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The name of the column which identifies members, and which is 
+			referenced by rows in the fact table. If not specified, the key of 
+			the lowest level is used. See also
+			<code style="color: maroon; font-family: courier new">
+			CubeDimension.foreignKey </code>. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			primaryKeyTable </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The name of the table which contains
+			<code style="color: maroon; font-family: courier new">primaryKey
+			</code>. If the hierarchy has only one table, defaults to that; it 
+			is required. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			defaultMember </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC></DOC>
+			</td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			memberReaderClass </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Name of the custom member reader class. Must implement the
+			<a style="color: #000066" href="http://mondrian.sourceforge.net/api/mondrian/rolap/MemberReader.html">
+			mondrian.rolap.MemberReader </a>interface. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			caption </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			A string to be displayed in the user interface. If not specified, 
+			the hierarchy's name is used. </DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table22">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Element</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Java Name</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Constraints</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#Relation">Relation</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			relation</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Optional</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The {@link MondrianDef.Table table}, {@link MondrianDef.Join set of 
+			tables}, or {@link MondrianDef.View SQL statement} which populates 
+			this hierarchy. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#Level">Level</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			levels</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Array</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC></DOC>
+			</td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#Parameter">Parameter</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			memberReaderParameters</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Optional</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+	</table>
+</blockquote>
+
+<p><a name="Level"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table23">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> Level</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table24">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			name </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC></DOC>
+			</td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			table </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The name of the table that the column comes from. If this hierarchy 
+			is based upon just one table, defaults to the name of that table; 
+			otherwise, it is required. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			column </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The name of the column which holds the unique identifier of this 
+			level. 
+</DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			nameColumn </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The name of the column which holds the user identifier of this 
+			level. 
+</DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			ordinalColumn </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The name of the column which holds member ordinals. Only applicable 
+			for the last level in a hierarchy. If this column is not specified, 
+			the hierarchy cannot be implemented in ROLAP mode. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			parentColumn </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The name of the column which references the parent member in a 
+			parent-child hierarchy. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			nullParentValue </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Value which identifies null parents in a parent-child hierarchy. 
+			Typical values are 'NULL' and '0'. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			type </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			String </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Indicates the type of this level's key column: String or Numeric. 
+			When generating SQL statements, Mondrian encloses values for String 
+			columns in quotation marks, but leaves values for Numeric columns 
+			un-quoted. 
+</DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			uniqueMembers </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Boolean </i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			false </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Whether members are unique across all parents. For example, zipcodes 
+			are unique across all states. The first level's members are always 
+			unique. 
+</DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			levelType </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			Regular </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Whether this is a regular or a time-related level. The value makes a 
+			difference to time-related functions such as YTD (year-to-date). 
+</DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			hideMemberIf </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			Never </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Condition which determines whether a member of this level is hidden. 
+			If a hierarchy has one or more levels with hidden members, then it 
+			is possible that not all leaf members are the same distance from the 
+			root, and it is termed a
+			<dfn style="font-weight: bold; font-style: italic">ragged hierarchy
+			</dfn>. 
+
+			<p>Allowable values are:
+			<code style="color: maroon; font-family: courier new">Never </code>
+			(a member always appears; the default);
+			<code style="color: maroon; font-family: courier new">IfBlankName
+			</code>(a member doesn't appear if its name is null or empty); and
+			<code style="color: maroon; font-family: courier new">IfParentsName
+			</code>(a member appears unless its name matches the parent's. </DOC>
+			</td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			formatter </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Name of a formatter class for the member labels being displayed. The 
+			class must implement the mondrian.olap.MemberFormatter interface. 
+</DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			caption </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			A string being displayed instead of the level's name. 
+</DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table25">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Element</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Java Name</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Constraints</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#KeyExpression">KeyExpression</a> 
+			</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			keyExp</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Optional</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The SQL expression used to populate this level's key. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#NameExpression">NameExpression</a> 
+			</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			nameExp</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Optional</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The SQL expression used to populate this level's name. If not 
+			specified, the level's key is used. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#OrdinalExpression">
+			OrdinalExpression</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			ordinalExp</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Optional</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The SQL expression used to populate this level's ordinal. 
+</DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#ParentExpression">ParentExpression</a> 
+			</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			parentExp</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Optional</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The SQL expression used to join to the parent member in a 
+			parent-child hierarchy. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#Closure">Closure</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			closure</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Optional</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#Property">Property</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			properties</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Array [0 .. ]</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+	</table>
+</blockquote>
+
+<p><a name="Closure"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table26">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> Closure</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>Specifies the transitive closure of a parent-child hierarchy. Optional, 
+	but recommended for better performance. The closure is provided as a set of 
+	(parent/child) pairs: since it is the transitive closure these are actually 
+	(ancestor/descendant) pairs. </DOC>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table27">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>parentColumn</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>childColumn</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table28">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Element</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Java Name</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Constraints</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#Table">Table</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			table</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Required</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+	</table>
+</blockquote>
+
+<p><a name="Property"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table29">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> Property</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>Member property. </DOC>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table30">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			name </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC></DOC>
+			</td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			column </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC></DOC>
+			</td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			type </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			String </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Data type of this property </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			formatter </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Name of a formatter class for the appropriate property value being 
+			displayed. The class must implement the 
+			mondrian.olap.PropertyFormatter interface. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			caption </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			A string being displayed instead of the name. 
+</DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="Measure"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table31">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> Measure</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table32">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>name</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Name of this measure. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>column</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Column which is source of this measure's valies. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			formatString </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Format string with which to format cells of this measure. For more 
+			details, see the
+			<a style="color: #000066" href="http://mondrian.sourceforge.net/api/mondrian/util/Format.html">
+			mondrian.util.Format </a>class. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>aggregator</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Aggregation function. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			formatter </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Name of a formatter class for the appropriate cell being displayed. 
+			The class must implement the mondrian.olap.CellFormatter interface. </DOC>
+			</td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			caption </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			A string being displayed instead of the name. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			visible </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Boolean </i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Whether this member is visible in the user-interface. Default true. 
+</DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table33">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Element</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Java Name</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Constraints</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#CalculatedMemberProperty">
+			CalculatedMemberProperty</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			memberProperties</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Array [0 .. ]</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+	</table>
+</blockquote>
+
+<p><a name="CalculatedMember"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table34">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> CalculatedMember</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table35">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>name</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Name of this calculated member. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			formatString </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Format string with which to format cells of this member. For more 
+			details, see {@link mondrian.util.Format}. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			caption </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			A string being displayed instead of the name. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			formula </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			MDX expression which gives the value of this member. Equivalent to 
+			the Formula sub-element. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>dimension</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Name of the dimension which this member belongs to. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			visible </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Boolean </i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Whether this member is visible in the user-interface. Default true. 
+</DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table36">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Element</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Java Name</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Constraints</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#Formula">Formula</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			formulaElement</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Optional</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			MDX expression which gives the value of this member. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#CalculatedMemberProperty">
+			CalculatedMemberProperty</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			memberProperties</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Array [0 .. ]</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+	</table>
+</blockquote>
+
+<p><a name="CalculatedMemberProperty"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table37">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> CalculatedMemberProperty</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>Property of a calculated member defined against a cube. It must have 
+	either an expression or a value. </DOC>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table38">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>name</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Name of this member property. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			expression </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			MDX expression which defines the value of this property. If the 
+			expression is a constant string, you could enclose it in quotes, or 
+			just specify the 'value' attribute instead. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			value </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Value of this property. If the value is not constant, specify the 
+			'expression' attribute instead. </DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="NamedSet"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table39">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> NamedSet</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>
+
+	<p>Defines a named set which can be used in queries in the same way as a set 
+	defined using a WITH SET clause. </p>
+
+	<p>A named set can be defined against a particular cube, or can be global to 
+	a schema. If it is defined against a cube, it is only available to queries 
+	which use that cube.</p>
+
+	<p>A named set defined against a cube is not inherited by a virtual cubes 
+	defined against that cube. (But you can define a named set against a virtual 
+	cube.)</p>
+
+	<p>A named set defined against a schema is available in all cubes and 
+	virtual cubes in that schema. However, it is only valid if the cube contains 
+	dimensions with the names required to make the formula valid.</p>
+	</DOC>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table40">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>name</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Name of this named set. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			formula </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			MDX expression which gives the value of this set. Equivalent to the 
+			Formula sub-element. </DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table41">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Element</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Java Name</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Constraints</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#Formula">Formula</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			formulaElement</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Optional</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			MDX expression which gives the value of this set. 
+</DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<p><a name="Formula"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table42">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> Formula</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<i>none</i></blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>Text</i></blockquote>
+
+<p><a name="Parameter"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table43">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> Parameter</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table44">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			name </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			value </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="View"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table45">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> View</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>A collection of SQL statements, one per dialect. 
+</DOC>
+</blockquote>
+
+<h3>Class</h3>
+
+<blockquote>
+	<a style="color: #000066" href="#Relation">Relation </a>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table46">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>alias</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table47">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Element</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Java Name</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Constraints</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#SQL">SQL</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			selects</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Array [1 .. ]</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+	</table>
+</blockquote>
+
+<p><a name="SQL"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table48">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> SQL</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table49">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			dialect </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			generic </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Dialect of SQL the view is intended for. 
+</DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>Text</i></blockquote>
+
+<p><a name="Join"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table50">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> Join</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<h3>Class</h3>
+
+<blockquote>
+	<a style="color: #000066" href="#Relation">Relation </a>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table51">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			leftAlias </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Defaults to left's alias if left is a table, otherwise required. 
+</DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>leftKey</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			rightAlias </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Defaults to right's alias if right is a table, otherwise required. 
+</DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>rightKey</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table52">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Element</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Java Name</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Constraints</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#Relation">Relation</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			left</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Required</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#Relation">Relation</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			right</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Required</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+	</table>
+</blockquote>
+
+<p><a name="Table"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table53">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> Table</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<h3>Class</h3>
+
+<blockquote>
+	<a style="color: #000066" href="#Relation">Relation </a>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table54">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>name</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			schema </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Optional qualifier for
+			<code style="color: maroon; font-family: courier new">table </code>. </DOC>
+			</td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			alias </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Alias to be used with this table when it is used to form queries. If 
+			not specified, defaults to the table name, but in any case, must be 
+			unique within the schema. (You can use the same table in different 
+			hierarchies, but it must have different aliases.) </DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table55">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Element</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Java Name</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Constraints</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#SQL">SQL</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			filter</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Optional</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The SQL WHERE clause expression to be appended to any select 
+			statement 
+</DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#AggExclude">AggExclude</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			aggExcludes</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Array</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#AggTable">AggTable</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			aggTables</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Optional</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+	</table>
+</blockquote>
+
+<p><a name="AggName"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table56">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> AggName</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<h3>Class</h3>
+
+<blockquote>
+	<a style="color: #000066" href="#AggTable">AggTable </a>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table57">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>name</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The Table name of a Specific aggregate table. 
+</DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="AggPattern"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table58">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> AggPattern</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<h3>Class</h3>
+
+<blockquote>
+	<a style="color: #000066" href="#AggTable">AggTable </a>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table59">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>pattern</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			A Table pattern used to define a set of aggregate tables. 
+</DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table60">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Element</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Java Name</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Constraints</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#AggExclude">AggExclude</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			excludes</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Array</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+	</table>
+</blockquote>
+
+<p><a name="AggExclude"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table61">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> AggExclude</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table62">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			pattern </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			A Table pattern not to be matched. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			name </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The Table name not to be matched. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			ignorecase </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Boolean </i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			true </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Whether or not the match should ignore case. 
+</DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="AggFactCount"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table63">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> AggFactCount</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<h3>Class</h3>
+
+<blockquote>
+	<a style="color: #000066" href="#AggColumnName">AggColumnName </a>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<i>none</i></blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="AggIgnoreColumn"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table64">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> AggIgnoreColumn</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<h3>Class</h3>
+
+<blockquote>
+	<a style="color: #000066" href="#AggColumnName">AggColumnName </a>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<i>none</i></blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="AggForeignKey"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table65">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> AggForeignKey</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>The name of the column mapping from base fact table foreign key to 
+	aggregate table foreign key. </DOC>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table66">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>factColumn</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The name of the base fact table foreign key. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>aggColumn</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The name of the aggregate table foreign key. 
+</DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="AggLevel"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table67">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> AggLevel</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table68">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>column</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The name of the column mapping to the level name. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>name</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The name of the Dimension Hierarchy level. 
+</DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="AggMeasure"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table69">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> AggMeasure</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table70">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>column</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The name of the column mapping to the measure name. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>name</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The name of the Cube measure. 
+</DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="Column"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table71">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> Column</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<h3>Class</h3>
+
+<blockquote>
+	<a style="color: #000066" href="#Expression">Expression </a>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table72">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			table </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Alias of the table which contains this column. Not required if the 
+			query only has one table. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>name</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Name of the column. </DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="KeyExpression"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table73">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> KeyExpression</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<h3>Class</h3>
+
+<blockquote>
+	<a style="color: #000066" href="#ExpressionView">ExpressionView </a>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<i>none</i></blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="ParentExpression"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table74">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> ParentExpression</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<h3>Class</h3>
+
+<blockquote>
+	<a style="color: #000066" href="#ExpressionView">ExpressionView </a>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<i>none</i></blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="OrdinalExpression"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table75">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> OrdinalExpression</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<h3>Class</h3>
+
+<blockquote>
+	<a style="color: #000066" href="#ExpressionView">ExpressionView </a>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<i>none</i></blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="NameExpression"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table76">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> NameExpression</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<h3>Class</h3>
+
+<blockquote>
+	<a style="color: #000066" href="#ExpressionView">ExpressionView </a>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<i>none</i></blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="Role"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table77">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> Role</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>A role defines an access-control profile. It has a series of grants (or 
+	denials) for schema elements. </DOC>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table78">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>name</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table79">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Element</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Java Name</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Constraints</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#SchemaGrant">SchemaGrant</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			schemaGrants</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Array</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+	</table>
+</blockquote>
+
+<p><a name="SchemaGrant"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table80">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> SchemaGrant</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>Grants (or denies) this role access to this schema.
+	<code style="color: maroon; font-family: courier new">access </code>may be 
+	&quot;all&quot;, &quot;all_dimensions&quot;, or &quot;none&quot;. If
+	<code style="color: maroon; font-family: courier new">access </code>is 
+	&quot;all_dimensions&quot;, the role has access to all dimensions but still needs 
+	explicit access to cubes. See
+	<a style="color: #000066" href="http://mondrian.sourceforge.net/api/mondrian/olap/Role.html#grant(mondrian.olap.Schema, int)">
+	mondrian.olap.Role#grant(mondrian.olap.Schema,int) </a>. </DOC>
+</blockquote>
+
+<h3>Class</h3>
+
+<blockquote>
+	<a style="color: #000066" href="#Grant">Grant </a>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<i>none</i></blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table81">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Element</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Java Name</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Constraints</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#CubeGrant">CubeGrant</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			cubeGrants</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Array</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+	</table>
+</blockquote>
+
+<p><a name="CubeGrant"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table82">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> CubeGrant</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>Grants (or denies) this role access to a cube.
+	<code style="color: maroon; font-family: courier new">access </code>may be 
+	&quot;all&quot; or &quot;none&quot;. See
+	<a style="color: #000066" href="http://mondrian.sourceforge.net/api/mondrian/olap/Role.html#grant(mondrian.olap.Cube, int)">
+	mondrian.olap.Role#grant(mondrian.olap.Cube,int) </a>. </DOC>
+</blockquote>
+
+<h3>Class</h3>
+
+<blockquote>
+	<a style="color: #000066" href="#Grant">Grant </a>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table83">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>cube</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The unique name of the cube 
+</DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table84">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Element</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Java Name</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Constraints</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#DimensionGrant">DimensionGrant</a> 
+			</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			dimensionGrants</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Array</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#HierarchyGrant">HierarchyGrant</a> 
+			</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			hierarchyGrants</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Optional</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+	</table>
+</blockquote>
+
+<p><a name="DimensionGrant"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table85">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> DimensionGrant</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>Grants (or denies) this role access to a dimension.
+	<code style="color: maroon; font-family: courier new">access </code>may be 
+	&quot;all&quot; or &quot;none&quot;. Note that a role is implicitly given access to a dimension 
+	when it is given acess to a cube. See also the &quot;all_dimensions&quot; option of 
+	the &quot;SchemaGrant&quot; element. See
+	<a style="color: #000066" href="http://mondrian.sourceforge.net/api/mondrian/olap/Role.html#grant(mondrian.olap.Dimension, int)">
+	mondrian.olap.Role#grant(mondrian.olap.Dimension,int) </a>. </DOC>
+</blockquote>
+
+<h3>Class</h3>
+
+<blockquote>
+	<a style="color: #000066" href="#Grant">Grant </a>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table86">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>dimension</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The unique name of the dimension 
+</DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="HierarchyGrant"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table87">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> HierarchyGrant</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>Grants (or denies) this role access to a hierarchy.
+	<code style="color: maroon; font-family: courier new">access </code>may be 
+	&quot;all&quot;, &quot;custom&quot; or &quot;none&quot;. If
+	<code style="color: maroon; font-family: courier new">access </code>is 
+	&quot;custom&quot;, you may also specify the attributes
+	<code style="color: maroon; font-family: courier new">topLevel </code>,
+	<code style="color: maroon; font-family: courier new">bottomLevel </code>, 
+	and the member grants. See
+	<a style="color: #000066" href="http://mondrian.sourceforge.net/api/mondrian/olap/Role.html#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level)">
+	mondrian.olap.Role#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level)
+	</a>. </DOC>
+</blockquote>
+
+<h3>Class</h3>
+
+<blockquote>
+	<a style="color: #000066" href="#Grant">Grant </a>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table88">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>hierarchy</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The unique name of the hierarchy </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			topLevel </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Unique name of the highest level of the hierarchy from which this 
+			role is allowed to see members. May only be specified if the
+			<code style="color: maroon; font-family: courier new">
+			HierarchyGrant.access </code>is &quot;custom&quot;. If not specified, role can 
+			see members up to the top level. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			bottomLevel </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Unique name of the lowest level of the hierarchy from which this 
+			role is allowed to see members. May only be specified if the
+			<code style="color: maroon; font-family: courier new">
+			HierarchyGrant.access </code>is &quot;custom&quot;. If not specified, role can 
+			see members down to the leaf level. </DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table89">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Element</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Java Name</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Constraints</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#MemberGrant">MemberGrant</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			memberGrants</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Array</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+	</table>
+</blockquote>
+
+<p><a name="MemberGrant"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table90">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> MemberGrant</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>Grants (or denies) this role access to a member. The children of this 
+	member inherit that access. You can implicitly see a member if you can see 
+	any of its children. See
+	<a style="color: #000066" href="http://mondrian.sourceforge.net/api/mondrian/olap/Role.html#grant(mondrian.olap.Member, int)">
+	mondrian.olap.Role#grant(mondrian.olap.Member,int) </a>. </DOC>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table91">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>member</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The unique name of the member </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>access</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="UserDefinedFunction"></p>
+<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table92">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> UserDefinedFunction</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>A <code style="color: maroon; font-family: courier new">
+	UserDefinedFunction </code>is a function which extends the MDX language. It 
+	must be implemented by a Java class which implements the interface
+	<a style="color: #000066" href="http://mondrian.sourceforge.net/api/mondrian/spi/UserDefinedFunction.html">
+	mondrian.spi.UserDefinedFunction </a>. </DOC>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table93">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>name</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Name with which the user-defined function will be referenced in MDX 
+			expressions. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>className</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Name of the class which implemenets this user-defined function. Must 
+			implement the <code style="color: maroon; font-family: courier new">
+			mondrian.spi.UserDefinedFunction </code>interface. 
+</DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="CubeDimension"></p>
+<table cellSpacing="0" width="100%" border="0" style="font-size: 100%" id="table94">
+	<tr>
+		<td bgColor="#3366cc">
+		<font face="arial,sans-serif" color="white" size="-1">
+
+		<h2><i>Class</i> CubeDimension</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>A CubeDimension is either a usage of a Dimension ('shared dimension', 
+	in MSOLAP parlance), or a 'private dimension'. </DOC>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table95">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>name</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			foreignKey </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The name of the column in the fact table which joins to the leaf 
+			level of this dimension. Required in a private Dimension or a 
+			DimensionUsage, but not in a public Dimension. </DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="Relation"></p>
+<table cellSpacing="0" width="100%" border="0" style="font-size: 100%" id="table96">
+	<tr>
+		<td bgColor="#3366cc">
+		<font face="arial,sans-serif" color="white" size="-1">
+
+		<h2><i>Class</i> Relation</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>A table or a join </DOC>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<i>none</i></blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="AggTable"></p>
+<table cellSpacing="0" width="100%" border="0" style="font-size: 100%" id="table97">
+	<tr>
+		<td bgColor="#3366cc">
+		<font face="arial,sans-serif" color="white" size="-1">
+
+		<h2><i>Class</i> AggTable</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>A definition of an aggregate table for a base fact table. This 
+	aggregate table must be in the same schema as the base fact table. 
+</DOC>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table98">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			ignorecase </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Boolean </i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			true </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Whether or not the match should ignore case. 
+</DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table99">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Element</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Java Name</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Constraints</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#AggFactCount">AggFactCount</a> 
+			</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			factcount</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Required</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			What does the fact_count column look like. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#AggIgnoreColumn">AggIgnoreColumn</a> 
+			</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			ignoreColumns</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Array</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#AggForeignKey">AggForeignKey</a> 
+			</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			foreignKeys</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Optional</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#AggMeasure">AggMeasure</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			measures</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Optional</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#AggLevel">AggLevel</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			levels</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Optional</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+	</table>
+</blockquote>
+
+<p><a name="AggColumnName"></p>
+<table cellSpacing="0" width="100%" border="0" style="font-size: 100%" id="table100">
+	<tr>
+		<td bgColor="#3366cc">
+		<font face="arial,sans-serif" color="white" size="-1">
+
+		<h2><i>Class</i> AggColumnName</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table101">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>column</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The name of the fact count column. 
+</DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="Expression"></p>
+<table cellSpacing="0" width="100%" border="0" style="font-size: 100%" id="table102">
+	<tr>
+		<td bgColor="#3366cc">
+		<font face="arial,sans-serif" color="white" size="-1">
+
+		<h2><i>Class</i> Expression</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<i>none</i></blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+<p><a name="ExpressionView"></p>
+<table cellSpacing="0" width="100%" border="0" style="font-size: 100%" id="table103">
+	<tr>
+		<td bgColor="#3366cc">
+		<font face="arial,sans-serif" color="white" size="-1">
+
+		<h2><i>Class</i> ExpressionView</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<blockquote>
+	<DOC>A collection of SQL expressions, one per dialect. 
+</DOC>
+</blockquote>
+
+<h3>Superclass</h3>
+
+<blockquote>
+	<a style="color: #000066" href="#Expression">Expression </a>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<i>none</i></blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table104">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Element</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Java Name</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Constraints</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<a style="color: #000066" href="#SQL">SQL</a> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			expressions</td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>Array [1 .. ]</i> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+		</tr>
+	</table>
+</blockquote>
+
+<p><a name="Grant"></p>
+<table cellSpacing="0" width="100%" border="0" style="font-size: 100%" id="table105">
+	<tr>
+		<td bgColor="#3366cc">
+		<font face="arial,sans-serif" color="white" size="-1">
+
+		<h2><i>Class</i> Grant</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<table class="clsStd" border="1" id="table106">
+		<tr>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Attribute</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Type</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Default</th>
+			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
+			Description</th>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<b>access</b> </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			Values correspond to
+			<code style="color: maroon; font-family: courier new">Access </code>
+			. 
+</DOC></td>
+		</tr>
+	</table>
+</blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
+</body>
+
+</html>

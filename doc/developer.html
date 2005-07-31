@@ -26,9 +26,15 @@
 <body>
 <h1>Guide for Mondrian developers</h1>
 
+<p>By Julian Hyde; last updated July, 2005.</p>
+
+<hr noshade color="#000000" size="1">
+
 <p>There are several ways to get Mondrian running. The easiest is to download a 
 binary release, as described in the <a href="install.html">installation guide</a>. 
-But you can also build Mondrian from its source code.</p>
+But you can also build Mondrian from its source code. This document describes 
+how to do that, how to learn about Mondrian's inner workings, and the guidelines 
+you'll need to follow if you want to contribute to the Mondrian project.</p>
 
 <h2>Getting the source code</h2>
 
@@ -53,8 +59,7 @@ you are not a developer, but are interested in getting the latest code, you can
 connect as the 'guest' user.</p>
 <ol>
   <li>Download the perforce client from
-  <a href="http://www.perforce.com/perforce/loadprog.html">
-  http://www.perforce.com/perforce/loadprog.html</a></li>
+  <a target="_parent" href="http://www.perforce.com/perforce/loadprog.html">http://www.perforce.com/perforce/loadprog.html</a></li>
   <li>If you have Windows, start the perforce UI (P4Win). (If you are not
   running windows, you will have to use the command-line interface to do the
   following; 'p4 help' should get you started.)</li>
@@ -93,7 +98,7 @@ and <a href="#JUnit">JUnit</a>, and set <code>JAVA_HOME</code>, <code>ANT_HOME</
 your environment.</p>
 
 <p>Download the latest <code>jpivot-<i>version</i>.war</code> from
-the <a href="http://sourceforge.net/projects/jpivot">JPivot project at SourceForge</a> and
+the <a target="_parent" href="http://sourceforge.net/projects/jpivot">JPivot project at SourceForge</a> and
 save it as <code><i>${project.location}</i>/lib/jpivot.war</code>.</p>
 
 <p>Now build the code, as follows:</p>
@@ -283,7 +288,6 @@ to the <i></i><code><i>TOMCAT_HOME</i>/webapps</code> directory.</p>
 
 <p>Now, start Tomcat and hit <a href="http://localhost:8080/mondrian">http://localhost:8080/mondrian</a>.</p>
 
-<p>Coding style</p>
 <h2><a name="7_2_Coding_guidelines">Coding guidelines</a></h2>
 <p>If you are contributing code, please follow the same guidelines used for the 
 rest of the code. (&quot;When in Rome, do as the Romans do.&quot;)</p>
@@ -324,6 +328,61 @@ rest of the code. (&quot;When in Rome, do as the Romans do.&quot;)</p>
 <p><img border="0" src="code_indentation.png" width="909" height="908"></p>
 
 <p><img border="0" src="code_spacing.png" width="776" height="903"></p>
+
+<h2><a name="Learning_more_about_Mondrian">Learning more about Mondrian</a></h2>
+
+<h3><a name="How_Mondrian_generates_SQL">How Mondrian generates SQL</a></h3>
+
+<p>If you're feeling mystified where the various SQL statements come
+from, here's a good way to learn more. Give it a try, and if you have
+more questions I'll be glad to answer them.</p>
+ 
+<p>In a debugger, put a break point in the <code>
+<a href="api/mondrian/rolap/RolapUtil.html#executeQuery(java.sql.Connection, java.lang.String, java.lang.String)">RolapUtil.executeQuery()</a></code> 
+method, and run a
+simple query. The easiest way to run a query is to run a junit testcase such as
+<a href="api/mondrian/test/BasicQueryTest.html#testSample0()">
+BasicQueryTest.testSample0()</a>. The debugger will stop every time a SQL 
+statement is executed, and you should be able to loop up the call stack to which component is executing the query.</p>
+ 
+<p>I expect that you will see the following phases in the execution:<ul>
+
+<li>One or two SQL queries will be executed as the <code>schema.xml</code> file is read 
+(validating calculated members and named sets, resolving default members of 
+hierarchies, and such)<li>A few SQL queries will be executed to resolve members as the query
+is parsed. (For example, if a query uses <code>[Store].[USA].[CA]</code>, it will
+look all members of the <code>[Store Nation]</code> level, then look up all children
+of the <code>[USA]</code> member.)
+
+<li>When the query is executed, the axes (slicer, columns, rows) are
+executed first. Expect to see more queries on dimension tables when
+expressions like <code>[Product].children</code> are evaluated.
+
+<li>Once the axes are populated, the cells are evaluated. Rather than
+executing a SQL query per cell, Mondrian makes a pass over all cells
+building a list of cells which are not in the cache. Then it builds
+and executes a SQL query to fetch all of those cells. If it didn't
+manage to fetch all cell values, it will repeat this step until it
+does.</li>
+
+</ul></p>
+
+<p>Remember that the purpose of these queries is to populate cache. There are two caches. The dimension cache which maps a member to its children, e.g.</p>
+
+<blockquote><code>[Store].[All Stores]</code>&nbsp;&rarr; <code>{ [Store].[USA], [Store].[Canada], [Store].[Mexico]}</code></blockquote>
+
+<p>The aggregation cache maps a tuple a measure value, e.g.</p>
+
+<blockquote><code>([Store].[USA], [Gender].[F], [Measures].[Unit Sales])</code> 
+	&rarr; <code>123,456</code></blockquote>
+
+<p>Once the cache has been populated, the query won't be executed
+again. That's why I recommend that you restart the process each time
+you run this in the debugger.</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
 
 <h2><a name="Appendix_A_Product_installation_instructions">Appendix A. Product
 installation instructions</a></h2>
