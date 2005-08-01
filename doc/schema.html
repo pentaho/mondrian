@@ -52,14 +52,17 @@
     <li><a href="#Calculated_members">Calculated members</a></li>
     	<li><a href="#Named_sets">Named sets</a></li>
   </ol></li>
-  <li><a href="#Advanced_physical_constructs">Advanced physical constructs</a>
+  <li><a href="#Plugins">Plugins</a>
   <ol>
-      <li><a href="#Member_readers">Member readers</a></li>
-      <li><a href="#Cell_readers">Cell readers</a></li>
+      <li><a href="#User-defined_function">User-defined function</a></li>
+		<li><a href="#Member_reader">Member reader</a></li>
+      <li><a href="#Cell_reader">Cell reader</a></li>
       <li><a href="#Cell_formatter">Cell formatter</a></li>
       <li><a href="#Member_formatter">Member formatter</a></li>
-      <li><a href="#I18n">Internationalization</a></li>
+		<li><a href="#Property_formatter">Property formatter</a></li>
+		<li><a href="#Schema_processor">Schema processor</a></li>
   </ol></li>
+  <li><a href="#I18n">Internationalization</a></li>
   <li><a href="#Aggregate_tables">Aggregate tables</a>
   </li>
 
@@ -68,6 +71,10 @@
     <li><a href="#Defining_roles">Defining a role</a></li>
     <li><a href="#Setting_a_connections_role">Setting a connection's role</a></li>
   </ol></li>
+  <li><ol>
+  <li><a href="#User-defined_function">User-defined functions</a></li>
+</ol>
+	</li>
   <li><a href="#Appendix_A_XML_elements">Appendix A: XML elements</a></li>
 </ol>
 <h2><a name="What_is_a_schema">What is a schema?</a></h2>
@@ -82,12 +89,12 @@ relational database; later, we shall see examples of other kinds of mappings.</p
 <h2><a name="Schema_files">Schema files</a></h2>
 <p>Mondrian schemas are represented in an XML file. An example schema,
 containing almost all of the constructs we discuss here, is supplied as <code>
-<a href="../demo/FoodMart.xml">demo/FoodMart.xml</a></code>. The dataset to 
+<a href="../demo/FoodMart.xml">demo/ dMart.xml</a></code>. The dataset to 
 populate this schema is available as part of the
 <a href="install.html#3_Set_up_test_data">mondrian distribution</a>.</p>
 <p>Currently, the only way to create a schema is to edit a schema XML file in a
 text editor. The XML syntax is not too complicated, so this is not as difficult
-as it sounds, particularly if you use the FoodMart schema as a guiding example.
+as it sounds, particularly if you use the&nbsp; dMart schema as a guiding example.
 We are also developing a graphical workbench (written in Swing) to create and modify
 schemas.</p>
 <h2><a name="Cubes_and_dimensions">Logical model</a></h2>
@@ -196,7 +203,7 @@ calculated, and contains references to the tables which hold the dimensions.</p>
 If the fact table is not in the default schema, you can provide an explicit
 schema using the &quot;schema&quot; attribute, for example</p>
 <blockquote>
-  <pre>&lt;<a href="#XML_Table">Table</a> schema=&quot;foodmart&quot; name=&quot;sales_fact_1997&quot;/&gt;</pre>
+  <pre>&lt;<a href="#XML_Table">Table</a> schema=&quot; dmart&quot; name=&quot;sales_fact_1997&quot;/&gt;</pre>
 </blockquote>
 <p>You can also use the <code><a href="#XML_View">&lt;View&gt;</a></code> and <code>
 <a href="#XML_Join">&lt;Join&gt;</a></code> constructs to build more complicated SQL
@@ -229,7 +236,7 @@ special letters (e.g. &#931; or &#928;) are to be displayed:</p>
   <pre>&lt;<a href="#XML_Measure">Measure</a> name=&quot;Sum X&quot; column=&quot;sum_x&quot; aggregator=&quot;sum&quot; caption=&quot;&amp;#931; X&quot;/&gt;
 </blockquote>
 <p>Rather than coming from a column, a measure can use a
-<a href="#Cell_readers">cell reader</a>.</p>
+<a href="#Cell_reader">cell reader</a>.</p>
 <p>In order to provide a specific formatting of the cell values, a measure can use a
 <a href="#Cell_formatter">cell formatter</a>.</p>
 
@@ -335,18 +342,23 @@ a grand total. If the <code>&lt;Hierarchy&gt;</code> element has <code>
 hasAll=&quot;false&quot;</code>, the 'all' level is suppressed; the <code>allMemberName</code> and 
 <code>allLevelName</code> attributes override the default names of the all level 
 its member.</p>
+
+<h3><a name="Member_property">Member property</a></h3>
 <p><a href="#Member_properties">Member properties</a> can be assigned to a level's members. The property values are retrieved
- by <code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/Member.html#getPropertyValue(java.lang.String)">getPropertyValue()</a></code>
- or as String by <code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/Member.html#getPropertyFormattedValue(java.lang.String)">getPropertyFormattedValue()</a></code>.
+ by two methods: <code><a href="api/mondrian/olap/Member.html#getPropertyValue(java.lang.String)">getPropertyValue()</a></code>
+ returns the raw value, and <code>
+<a href="api/mondrian/olap/Member.html#getPropertyFormattedValue(java.lang.String)">getPropertyFormattedValue()</a></code> 
+returns the formatted value. (See also <a href="#Property_formatter">property 
+formatter</a>.)
  A formatter class can be defined, which would be used by <code>getPropertyFormattedValue()</code>.</p>
 <blockquote>
   <pre>
 &lt;<a href="#XML_Level">Level</a> name=&quot;MyLevel&quot; column=&quot;LevelColumn&quot; uniqueMembers=&quot;true&quot;/&gt;
-  &lt;<a href="#XML_Property">Property</a> name=&quot;MyProp&quot; column=&quot;PropColumn&quot; formatter=&quot;com.foo.MyPropertyFormatter&quot;/&gt;
+  &lt;<a href="#XML_Property">Property</a> name=&quot;MyProp&quot; column=&quot;PropColumn&quot; formatter=&quot;com.acme.MyPropertyFormatter&quot;/&gt;
 &lt;<a href="#XML_Level">Level</a>/&gt;</pre>
 </blockquote>
-<p>The class &quot;com.foo.MyPropertyFormatter&quot; would have to implement <code>
-<a href="http://mondrian.sourceforge.net/api/mondrian/olap/PropertyFormatter.html">
+<p>The class &quot;com.acme.MyPropertyFormatter&quot; would have to implement <code>
+<a href="api/mondrian/olap/PropertyFormatter.html">
 interface mondrian.olap.PropertyFormatter</a></code>.</p>
 
 <p>A member's value to be displayed by getCaption() can be formatted by a
@@ -433,7 +445,7 @@ of optimizations when generating queries:</p>
 <ul>
   <li>If a dimension has a small number of members, Mondrian reads it into a
   cache on first use. See the
-  <a href="http://mondrian.sourceforge.net/api/mondrian/olap/MondrianProperties.html#getLargeDimensionThreshold()">
+  <a href="api/mondrian/olap/MondrianProperties.html#getLargeDimensionThreshold()">
   mondrian.rolap.LargeDimensionThreshold</a> property.</li>
   <li>If a dimension (or, more precisely, the level of the dimension being
   accessed) is in the fact table, Mondrian does not perform a join.</li>
@@ -932,11 +944,213 @@ implicitly available for any query against that cube:</p>
 	<p>A named set defined against a schema is available in all cubes and 
 	virtual cubes in that schema. However, it is only valid if the cube contains 
 	dimensions with the names required to make the formula valid.</p>
-</DOC>
 
-<h2><a name="Advanced_physical_constructs">Advanced physical constructs</a></h2>
+<h2><a name="Plugins">Plug-ins</a></h2>
 
-<h3><a name="Member_readers">Member readers</a></h3>
+<p>Sometimes Mondrian's schema language isn't flexible enough, or the MDX 
+language isn't powerful enough, to solve the problem at hand. What you want to 
+do is add a little of your own Java code into the Mondrian application, and a
+<dfn>plug-in</dfn> is a way to do this.</p>
+
+<p>Each of Mondrian's extensions is technically a Service Provider Interface (SPI); 
+in short, a Java interface which you write code to implement, and which Mondrian 
+will call at runtime. You also need to register an extension (usually somewhere 
+in your schema.xml file) and to ensure that it appears on the classpath.</p>
+
+<p>Plug-ins include <a href="#User-defined_function">user-defined functions</a>;
+<a href="#Cell_formatter">cell</a>, <a href="#Member_formatter">member</a> and
+<a href="#Property_formatter">property formatters</a>; and
+<a href="#Schema_processor">dynamic schema processors</a>. There is incomplete 
+support for <a href="#Member_reader">member readers</a> and
+<a href="#Cell_reader">cell readers</a>, and in future we may support pluggable
+<a href="api/mondrian/rolap/sql/SqlQuery.Dialect.html">SQL dialects</a>.</p>
+
+<h3><a name="User-defined_function">User-defined function</a></h3>
+
+<p>A user-defined function must have a public constructor and implement the
+<a href="api/mondrian/spi/UserDefinedFunction.html">
+mondrian.spi.UserDefinedFunction</a><b> </b>interface. For example,</p>
+
+<blockquote>
+
+	<p><code>package com.acme;<br>
+	<br>
+	import mondrian.olap.*;<br>
+	import mondrian.olap.type.*;<br>
+	import mondrian.spi.UserDefinedFunction;<br>
+	<br>
+	/**<br>
+&nbsp;* A simple user-defined function which adds one to its argument.<br>
+&nbsp;*/<br>
+	public class PlusOneUdf implements UserDefinedFunction {<br>
+&nbsp;&nbsp;&nbsp; // public constructor<br>
+&nbsp;&nbsp;&nbsp; public PlusOneUdf() {<br>
+&nbsp;&nbsp;&nbsp; }<br>
+	<br>
+&nbsp;&nbsp;&nbsp; public String getName() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return &quot;PlusOne&quot;;<br>
+&nbsp;&nbsp;&nbsp; }<br>
+	<br>
+&nbsp;&nbsp;&nbsp; public String getDescription() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return &quot;Returns its argument plus 
+	one&quot;;<br>
+&nbsp;&nbsp;&nbsp; }<br>
+	<br>
+&nbsp;&nbsp;&nbsp; public Syntax getSyntax() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return Syntax.Function;<br>
+&nbsp;&nbsp;&nbsp; }<br>
+	<br>
+&nbsp;&nbsp;&nbsp; public Type getReturnType(Type[] parameterTypes) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return new NumericType();<br>
+&nbsp;&nbsp;&nbsp; }<br>
+	<br>
+&nbsp;&nbsp;&nbsp; public Type[] getParameterTypes() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return new Type[] {new NumericType()};<br>
+&nbsp;&nbsp;&nbsp; }<br>
+	<br>
+&nbsp;&nbsp;&nbsp; public Object execute(Evaluator evaluator, Exp[] arguments) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; final Object argValue = arguments[0].evaluateScalar(evaluator);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (argValue instanceof Number) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return new 
+	Double(((Number) argValue).doubleValue() + 1);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } else {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Argument 
+	might be a RuntimeException indicating that<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // the cache 
+	does not yet have the required cell value. The<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // function 
+	will be called again when the cache is loaded.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return null;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; }<br>
+	<br>
+&nbsp;&nbsp;&nbsp; public String[] getReservedWords() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return null;<br>
+&nbsp;&nbsp;&nbsp; }<br>
+	}</code></p>
+</blockquote>
+
+<p>Declare it in your schema:</p>
+
+<blockquote>
+
+	<p><code>&lt;<a href="#XML_Schema">Schema</a>&gt;<br>
+&nbsp; ...<br>
+	&nbsp;&nbsp;&lt;<a href="#XML_UserDefinedFunction">UserDefinedFunction</a> name=&quot;PlusOne&quot; 
+	class=&quot;com.acme.PlusOneUdf&quot;&gt;<br>
+	&lt;/<a href="#XML_Schema">Schema</a>&gt;</code></p>
+</blockquote>
+
+<p>And use it in any MDX statement:</p>
+
+<blockquote>
+
+	<p><code>WITH MEMBER [Measures].[Unit Sales Plus One] <br>
+&nbsp;&nbsp;&nbsp; AS '<font color="#FF0000">PlusOne([Measures].[Unit Sales])</font>'<br>
+	SELECT<br>
+&nbsp;&nbsp;&nbsp; {[Measures].[Unit Sales]} ON COLUMNS,<br>
+&nbsp;&nbsp;&nbsp; {[Gender].MEMBERS} ON ROWS<br>
+	FROM [Sales]</code></p>
+</blockquote>
+
+<p>If a user-defined function has a public constructor with one string argument, 
+Mondrian will pass in the function's name. Why? This allows you to define two or 
+more user-defined functions using the same class:</p>
+
+<blockquote>
+
+	<p><code>package com.acme;<br>
+	<br>
+	import mondrian.olap.*;<br>
+	import mondrian.olap.type.*;<br>
+	import mondrian.spi.UserDefinedFunction;<br>
+	<br>
+	/**<br>
+&nbsp;* A user-defined function which either adds one to or <br>
+&nbsp;* subtracts one from its argument.<br>
+&nbsp;*/<br>
+	public class PlusOrMinusOneUdf implements UserDefinedFunction {<br>
+	<font color="#FF0000">&nbsp;&nbsp;&nbsp; private final name;<br>
+&nbsp;&nbsp;&nbsp; private final isPlus;<br>
+	<br>
+	</font>&nbsp;&nbsp;&nbsp; // public constructor with one argument<br>
+&nbsp;&nbsp;&nbsp; <font color="#FF0000">public PlusOneUdf(String name) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; this.name = name;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (name.equals(&quot;PlusOne&quot;)) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; isPlus = 
+	true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } else if (name.equals(&quot;MinusOne&quot;)) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; isPlus = 
+	false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } else {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; throw new 
+	IllegalArgumentException(&quot;Unexpected name &quot; + name);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; }</font><br>
+	<br>
+&nbsp;&nbsp;&nbsp; public String getName() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return name;<br>
+&nbsp;&nbsp;&nbsp; }<br>
+	<br>
+&nbsp;&nbsp;&nbsp; public String getDescription() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return &quot;Returns its argument plus or 
+	minus one&quot;;<br>
+&nbsp;&nbsp;&nbsp; }<br>
+	<br>
+&nbsp;&nbsp;&nbsp; public Syntax getSyntax() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return Syntax.Function;<br>
+&nbsp;&nbsp;&nbsp; }<br>
+	<br>
+&nbsp;&nbsp;&nbsp; public Type getReturnType(Type[] parameterTypes) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return new NumericType();<br>
+&nbsp;&nbsp;&nbsp; }<br>
+	<br>
+&nbsp;&nbsp;&nbsp; public Type[] getParameterTypes() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return new Type[] {new NumericType()};<br>
+&nbsp;&nbsp;&nbsp; }<br>
+	<br>
+&nbsp;&nbsp;&nbsp; public Object execute(Evaluator evaluator, Exp[] arguments) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; final Object argValue = arguments[0].evaluateScalar(evaluator);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (argValue instanceof Number) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<font color="#FF0000">if (isPlus) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+	return new Double(((Number) argValue).doubleValue() + 1);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } else {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+	return new Double(((Number) argValue).doubleValue() - 1);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; </font>&nbsp;&nbsp;&nbsp; } else {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Argument 
+	might be a RuntimeException indicating that<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // the cache 
+	does not yet have the required cell value. The<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // function 
+	will be called again when the cache is loaded.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return null;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; }<br>
+	<br>
+&nbsp;&nbsp;&nbsp; public String[] getReservedWords() {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return null;<br>
+&nbsp;&nbsp;&nbsp; }<br>
+	}</code></p>
+</blockquote>
+
+<p>and register two the functions in your schema:</p>
+
+<blockquote>
+
+	<p><code>&lt;<a href="#XML_Schema">Schema</a>&gt;<br>
+&nbsp; ...<br>
+	&nbsp;&nbsp;&lt;<a href="#XML_UserDefinedFunction">UserDefinedFunction</a> name=&quot;PlusOne&quot; 
+	class=&quot;com.acme.PlusOrMinusOneUdf&quot;&gt;<br>
+	&nbsp;&nbsp;&lt;<a href="#XML_UserDefinedFunction">UserDefinedFunction</a> name=&quot;MinusOne&quot; 
+	class=&quot;com.acme.PlusOrMinusOneUdf&quot;&gt;<br>
+	&lt;/<a href="#XML_Schema">Schema</a>&gt;</code></p>
+</blockquote>
+
+<h3><a name="Member_reader">Member reader</a></h3>
 
 <p>A <dfn>member reader</dfn> is a means of
 accessing members. Hierarchies are usually based upon a dimension table (an
@@ -959,15 +1173,16 @@ writing a Java class called a <dfn>custom member reader</dfn>.</p>
   based upon an expression.</li></ol>
 
 <p>A custom member reader must implement
-<a href="http://mondrian.sourceforge.net/api/mondrian/rolap/MemberSource.html">interface
-mondrian.rolap.MemberSource</a>. If you need to implement a larger set of member
+the <a href="api/mondrian/rolap/MemberSource.html">mondrian.rolap.MemberSource</a> 
+interface. If you need to implement a larger set of member
 operations for fine-grained control, implement the derived
-<a href="http://mondrian.sourceforge.net/api/mondrian/rolap/MemberReader.html">
-interface mondrian.rolap.MemberReader</a>; otherwise, Mondrian wrap your reader
+<a href="api/mondrian/rolap/MemberReader.html">
+mondrian.rolap.MemberReader</a> interface; otherwise, Mondrian wrap your reader
 in a
-<a href="http://mondrian.sourceforge.net/api/mondrian/rolap/MemberSource.html">mondrian.rolap.CacheMemberReader</a>.
+<a href="api/mondrian/rolap/MemberSource.html">mondrian.rolap.CacheMemberReader</a> 
+object.
 Your member reader must have a
-public constructor which takes <code>(<a href="http://mondrian.sourceforge.net/api/mondrian/rolap/RolapHierarchy.html">Hierarchy</a>,<a href="http://java.sun.com/j2se/1.4/docs/api/java/util/Properties.html">Properties</a>)</code>
+public constructor which takes <code>(<a href="api/mondrian/rolap/RolapHierarchy.html">RolapHierarchy</a>, <a href="http://java.sun.com/j2se/1.4/docs/api/java/util/Properties.html">Properties</a>)</code>
 parameters, and throws no checked exceptions.</p>
 
 <p>Member readers are declared using the <code><a href="#XML_Hierarchy">&lt;Hierarchy&gt;</a></code> element's
@@ -981,68 +1196,114 @@ elements are passed via the <code>properties</code> constructor parameter. Here 
 	&lt;/<a href="#XML_Dimension">Dimension</a>&gt;</code><br>
 </p></blockquote>
 
-<h3><a name="Cell_readers">Cell readers</a></h3>
+<h3><a name="Cell_reader">Cell reader</a></h3>
 
 <p>Not implemented yet. Syntax would be something like</p><blockquote>
-  <pre>&lt;<a href="#XML_Measure">Measure</a> name=&quot;name&quot; cellReaderClass=&quot;com.foo.MyCellReader&quot;&gt;</pre></blockquote>
+  <pre>&lt;<a href="#XML_Measure">Measure</a> name=&quot;name&quot; cellReaderClass=&quot;com.acme.MyCellReader&quot;/&gt;</pre></blockquote>
 
-<p>and the class &quot;com.foo.MyCellReader&quot; would have to implement <code>
-<a href="http://mondrian.sourceforge.net/api/mondrian/olap/CellReader.html">
-interface mondrian.olap.CellReader</a></code>.</p>
+<p>and the class &quot;com.acme.MyCellReader&quot; would have to implement the
+<code>
+<a href="api/mondrian/olap/CellReader.html">
+mondrian.olap.CellReader</a></code> interface.</p>
 
 <h3><a name="Cell_formatter">Cell formatter</a></h3>
 
-<p>A cell formatter attribute demotes a java class to format the cell value
-being displayed by
-<code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/Cell.html#getFormattedValue()">getFormattedValue()</a></code>.</p><blockquote>
-  <pre>&lt;<a href="#XML_Measure">Measure</a> name=&quot;name&quot; formatter=&quot;com.foo.MyCellFormatter&quot;/&gt;</pre></blockquote>
-
-<p>The class &quot;com.foo.MyCellFormatter&quot; would have to implement <code>
-<a href="http://mondrian.sourceforge.net/api/mondrian/olap/CellFormatter.html">
-interface mondrian.olap.CellFormatter</a></code>.</p>
+<p>A cell formatter modifies the behavior of
+<code>
+<a href="api/mondrian/olap/Cell.html#getFormattedValue()">
+Cell.getFormattedValue()</a></code>. The class must implement the
+<code>
+<a href="api/mondrian/olap/CellFormatter.html">
+mondrian.olap.CellFormatter</a></code> interface, and is specified like this:</p><blockquote>
+  <pre>&lt;<a href="#XML_Measure">Measure</a> name=&quot;name&quot; formatter=&quot;com.acme.MyCellFormatter&quot;/&gt;</pre></blockquote>
 
 <h3><a name="Member_formatter">Member formatter</a></h3>
 
-<p>A member formatter attribute demotes a java class to format a member's display value
-returned by <code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/Member.html#getCaption()">getCaption()</a></code>.</p><blockquote>
-  <pre>&lt;<a href="#XML_Level">Level</a> column=&quot;column&quot; name=&quot;name&quot; formatter=&quot;com.foo.MyMemberFormatter&quot;/&gt;</pre></blockquote>
+<p>A member formatter modifies the behavior of <code>
+<a href="api/mondrian/olap/Member.html#getCaption()">
+Member.getCaption()</a></code>. The class must implement the
+<code><a href="api/mondrian/olap/MemberFormatter.html">mondrian.olap.MemberFormatter</a></code> 
+interface, and is specified like this:</p><blockquote>
+  <pre>&lt;<a href="#XML_Level">Level</a> column=&quot;column&quot; name=&quot;name&quot; formatter=&quot;com.acme.MyMemberFormatter&quot;/&gt;</pre></blockquote>
 
-<p>The class &quot;com.foo.MyMemberFormatter&quot; would have to implement <code>
-<a href="http://mondrian.sourceforge.net/api/mondrian/olap/MemberFormatter.html">
-interface mondrian.olap.MemberFormatter</a></code>.</p>
+<h3><a name="Property_formatter">Property formatter</a></h3>
 
-<h3><a name="I18n">Internationalization</a></h3>
+<p>A property formatter modifies the behavior of <code>
+<a href="api/mondrian/olap/Member.html#getPropertyFormattedValue(java.lang.String)">
+Property.getPropertyFormattedValue()</a></code>. The class must implement the
+<code><a href="api/mondrian/olap/PropertyFormatter.html">
+mondrian.olap.PropertyFormatter</a></code> interface, and is specified like 
+this:</p>
+<blockquote>
+  <pre>
+&lt;<a href="#XML_Level">Level</a> name=&quot;MyLevel&quot; column=&quot;LevelColumn&quot; uniqueMembers=&quot;true&quot;/&gt;
+  &lt;<a href="#XML_Property">Property</a> name=&quot;MyProp&quot; column=&quot;PropColumn&quot; formatter=&quot;com.acme.MyPropertyFormatter&quot;/&gt;
+&lt;<a href="#XML_Level">Level</a>/&gt;</pre>
+</blockquote>
 
-<p>Internationalized applications based on Mondrian could use multiple, language-dependent schemas.
-If so, the MDX statements would be language dependent too. This might be more difficult to maintain.
-Instead of holding several copies of schema and MDX we provide a way to dynamically handle Mondrian schemas.
-Calling <code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/DriverManager.html#getConnection(mondrian.olap.Util.PropertyList, boolean)">DriverManager.getConnection()</a></code>
-we can provide a property "DynamicSchemaProcessor" denoting the name of a class to implement the
-<code><a href="http://mondrian.sourceforge.net/api/mondrian/olap/DynamicSchemaProcessor.html">DynamicSchemaProcessor</a></code> interface.
-So any transformation can be applied to a Mondrian schema at runtime. A "dynamic" schema will not be cached by Mondrian.
+<h3><a name="Schema_processor">Schema processor</a></h3>
+
+<p>A schema processor implements the 
+<code><a href="api/mondrian/olap/DynamicSchemaProcessor.html">mondrian.rolap.DynamicSchemaProcessor</a></code> interface. 
+It is specified as part of the connection string, like this:</p>
+
+<blockquote>
+
+	<p><code>Jdbc=jdbc:odbc:MondrianFoodMart; JdbcUser=ziggy; JdbcPassword=stardust; 
+	DynamicSchemaProcessor=com.acme.MySchemaProcessor</code></p>
+</blockquote>
+
+<p>The effect is that when reading the contents of the schema from a URL, 
+Mondrian turns to the schema processor rather than Java's default URL handler. 
+This gives the schema reader the opportunity to run a schema through a filter, 
+or even generate an entire schema on the fly.</p>
+
+<p>Dynamic schemas are a very powerful construct. As we shall see, an important 
+application for them is <a href="#I18n">internationalization</a>.</p>
+</DOC>
+
+<h2><a name="I18n">Internationalization</a></h2>
+
+<p>An internationalized Mondrian application would have a schema for each 
+language, where the caption of each object appears in the local language. For 
+example, the <code>[Product]</code> dimension would have the caption &quot;Product&quot; 
+in English and &quot;Produit&quot; in French.</p>
+
+<p>It is unwise to translate the actual names of the schema objects, because 
+then the MDX statements would need to be changed also. All that you need to 
+change is the caption. Every schema object (schema, cube, dimension, level, 
+measure) has a caption attribute, and user interfaces such as JPivot display the 
+caption rather than the real name. Additionally:
 </p>
-
-<p>To keep the MDX expressions free from language dependent names, it is a good idea to use the "caption" attribute,
-which is supported for any Olap element.
-Additionally:
 <ul><li>A hierarchy can have an <code>allMemberCaption</code> attribute as display value of the "All" member.
 </li><li>For the schema we can set a display value of the "measures" dimension by the <code>measuresCaption</code> attribute.
 </li></ul>
-</p>
 
-<h3>Examples</h3>
+<p>One way to create an internationalized application is to create a copy of the 
+schema file for each language, but these are difficult to maintain. A better way 
+is to perform dynamic substitution on a single schema file, using a
+<a href="#Schema_processor">dynamic schema processor</a>.</p>
 
-<p>
-Supposing that your DynamicSchemaProcessor supports JSTL-like resolving of variables,
-you might use <code>caption</code>, <code>allMemberCaption</code> and <code>measuresCaption</code> 
-attributes as follows:<blockquote>
+<p>First, write your schema using variables as values for <code>caption</code>, <code>allMemberCaption</code> and <code>measuresCaption</code> 
+attributes as follows:</p><blockquote>
   <p><code>&lt;<a href="#XML_Schema">Schema</a> measuresCaption=&quot;${MEASURESCAPTION}&quot;&gt;<br>
 	&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Gender&quot; foreignKey=&quot;customer_id&quot; caption=&quot;${GENDER}&quot;&gt;<br>
 	&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All Genders&quot; primaryKey=&quot;customer_id&quot; allMemberCaption=&quot;${ALLGENDER}&quot;&gt;<br>
 	&lt;<a href="#XML_Level">Level</a> name=&quot;Gender&quot; column=&quot;gender&quot; uniqueMembers=&quot;true&quot; caption=&quot;${GENDER}&quot;&gt;<br>
 	&lt;<a href="#XML_Measure">Measure</a> name=&quot;Unit Sales&quot; column=&quot;unit_sales&quot; caption=&quot;${UNITSALES}&quot;&gt;</code></p></blockquote>
 
-<p>A hierarchy with no <code>caption</code> defined would inherit the <code>caption</code> attribute from the dimension parent.</p>
+<p>(Note that because the <code>[Gender]</code> hierarchy has no <code>caption</code> defined, 
+it inherits the <code>caption</code> attribute from its parent, the <code>
+[Gender]</code> dimension.)</p>
+
+<p>Next, create a class which implements the
+<code><a href="api/mondrian/olap/DynamicSchemaProcessor.html">DynamicSchemaProcessor</a></code> 
+interface and whose <code>
+<a href="api/mondrian/rolap/DynamicSchemaProcessor.html#processSchema(java.net.URL)">
+processSchema(URL)</a></code> method performs JSTL-like variable substitution.</p>
+
+<p>Put this class on the classpath, and include the name of your schema 
+processor class in the connect string you use to connect to Mondrian.</p>
 
 <h2><a name="Aggregate_tables">Aggregate tables</a></h2>
 
@@ -1111,8 +1372,7 @@ conventions. The naming conventions are described in the
 <h2><a name="Access_control">Access-control</a></h2>
 
 <p>OK, so now you've got all this great data, but you don't everyone to be able to read all
-of it. To solve this, you can define an access-control profile, called a <dfn>
-<font face="Verdana">Role</font></dfn>, as part of the
+of it. To solve this, you can define an access-control profile, called a <dfn>Role</dfn>, as part of the
 schema, and set this role when establishing a connection.</p>
 
 <h3><a name="Defining_roles">Defining a role</a></h3>
@@ -1182,7 +1442,7 @@ its child, California, is visible), but no other nations, and not All Stores
 
 <p>A role only has effect when it is associated with a connection. By default,
 connections have a role which gives them access to every
-cube in that connection's schema. </p>
+cube in that connection's schema.</p>
 
 <p>Most databases associate roles (or 'groups') with users, and automatically
 assign them when users log in. However, Mondrian doesn't have the notion of
@@ -1190,15 +1450,15 @@ users, so you have to establish the role in a different way. There are two ways
 of doing this:</p><ol>
   <li><b>In the connect string</b>. If you specify the <code>Role</code> keyword
   in the connect string, the connection will adopt that role. See
-  <a href="http://mondrian.sourceforge.net/api/mondrian/olap/DriverManager.html">
+  <a href="api/mondrian/olap/DriverManager.html">
   class DriverManager</a> for examples of connect string syntax.</li><li><b>Programmatically</b>. Once your application has established a
   connection, call the method
-  <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Connection.html#setRole(mondrian.olap.Role)">
+  <a href="api/mondrian/olap/Connection.html#setRole(mondrian.olap.Role)">
   Connection.setRole(Role)</a>. You can create a Role programmatically (see
-  <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Role.html">class
+  <a href="api/mondrian/olap/Role.html">class
   Role</a> for more details), or look
   one up using the method
-  <a href="http://mondrian.sourceforge.net/api/mondrian/olap/Schema.html#lookupRole(java.lang.String)">
+  <a href="api/mondrian/olap/Schema.html#lookupRole(java.lang.String)">
   Schema.lookupRole(String)</a>.</li></ol>
 
 <h2><a name="Appendix_A_XML_elements">Appendix A: XML elements</a></h2><table border="2" cellpadding="2" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" id="AutoNumber2">
@@ -1341,11 +1601,20 @@ of doing this:</p><ol>
   </tr>
   <tr>
     <td colspan="2"><i><br>
+	Extensions</i></td>
+  </tr>
+	<tr>
+    <td><code>&lt;<a href="xml_schema.html#UserDefinedFunction" name="XML_UserDefinedFunction">UserDefinedFunction</a>&gt;</code></td>
+    <td>Imports a user-defined function.</td>
+  </tr>
+  <tr>
+    <td colspan="2"><i><br>
 	Miscellaneous</i></td>
   </tr>
   <tr>
     <td><code>&lt;<a href="xml_schema.html#Parameter" name="XML_Parameter">Parameter</a>&gt;</code></td>
-    <td>&nbsp;</td>
+    <td>Part of the definition of a Hierarchy; passed to a MemberReader, if 
+	present.</td>
   </tr>
   <tr>
     <td><code>&lt;<a name="XML_CalculatedMemberProperty" href="xml_schema.html#MemberProperty">CalculatedMemberProperty</a>&gt;</code></td>

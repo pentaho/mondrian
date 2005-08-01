@@ -19,16 +19,16 @@ import java.util.Map;
 import java.util.List;
 
 /**
- *
  * <code>CacheMemberReader</code> implements {@link MemberReader} by reading
  * from a pre-populated array of {@link mondrian.olap.Member}s.
+ *
+ * <p>Note: CacheMemberReader can not handle ragged hierarchies. (HR
+ * Tests fail if {@link SmartMemberReader} is replaced with
+ * CacheMemberReader).
  *
  * @author jhyde
  * @since 21 December, 2001
  * @version $Id$
- *
- * note: CacheMemberReader can not handle ragged hierarchies (HR Tests fail if SmartMemberReader
- * is replaced with CacheMemberReader).
  */
 class CacheMemberReader implements MemberReader, MemberCache {
     private final MemberSource source;
