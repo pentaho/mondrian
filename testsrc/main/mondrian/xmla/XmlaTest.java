@@ -83,22 +83,22 @@ public class XmlaTest extends TestCase {
         connectString = connectString.replaceAll("&", "&amp;");
 
         StringReader dsConfigReader = new StringReader(
-        	"<?xml version=\"1.0\"?>" + nl +
-        	"<DataSources>" + 
-        	"	<DataSource>" + 
-        	"		<DataSourceName>MondrianFoodMart</DataSourceName>" + 
-        	"		<DataSourceDescription>MondrianFoodMart</DataSourceDescription>" + 
-        	"		<URL>http://localhost:8080/mondrian/xmla</URL>" + 
-        	"		<DataSourceInfo>" + connectString + "</DataSourceInfo>" + 
-        	"		<ProviderName>Mondrian</ProviderName>" + 
-        	"		<ProviderType>MDP</ProviderType>" + 
-        	"		<AuthenticationMode>Unauthenticated</AuthenticationMode>" +
-        	"	</DataSource>" +
-        	"</DataSources>");
+            "<?xml version=\"1.0\"?>" + nl +
+            "<DataSources>" + 
+            "   <DataSource>" + 
+            "       <DataSourceName>MondrianFoodMart</DataSourceName>" + 
+            "       <DataSourceDescription>MondrianFoodMart</DataSourceDescription>" + 
+            "       <URL>http://localhost:8080/mondrian/xmla</URL>" + 
+            "       <DataSourceInfo>" + connectString + "</DataSourceInfo>" + 
+            "       <ProviderName>Mondrian</ProviderName>" + 
+            "       <ProviderType>MDP</ProviderType>" + 
+            "       <AuthenticationMode>Unauthenticated</AuthenticationMode>" +
+            "   </DataSource>" +
+            "</DataSources>");
         final Parser xmlParser = XOMUtil.createDefaultParser();
-		final DOMWrapper def = xmlParser.parse(dsConfigReader);
-		DataSourcesConfig.DataSources dataSources = new DataSourcesConfig.DataSources(def);
-		XmlaMediator.initDataSourcesMap(dataSources);
+        final DOMWrapper def = xmlParser.parse(dsConfigReader);
+        DataSourcesConfig.DataSources dataSources = new DataSourcesConfig.DataSources(def);
+        XmlaMediator.initDataSourcesMap(dataSources);
         
     }
 
@@ -205,16 +205,14 @@ public class XmlaTest extends TestCase {
                 "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
                 "      <return>" + nl +
                 "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
-                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
+                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>" + nl +
                 "          <row>" + nl +
                 "            <DataSourceName>MondrianFoodMart</DataSourceName>" + nl +
                 "            <DataSourceDescription>MondrianFoodMart</DataSourceDescription>" + nl +
                 "            <URL>http://localhost:8080/mondrian/xmla</URL>" + nl +
                 "            <DataSourceInfo>MondrianFoodMart</DataSourceInfo>" + nl +
                 "            <ProviderName>Mondrian</ProviderName>" + nl +
-                "            <ProviderType>" + nl +
-                "              <MDP/>" + nl +
-                "            </ProviderType>" + nl +
+                "            <ProviderType>MDP</ProviderType>" + nl +
                 "            <AuthenticationMode>Unauthenticated</AuthenticationMode>" + nl +
                 "          </row>" + nl +
                 "        </root>" + nl +
@@ -247,10 +245,9 @@ public class XmlaTest extends TestCase {
                 "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
                 "      <return>" + nl +
                 "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
-                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
+                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>" + nl +
                 "          <row>" + nl +
                 "            <CATALOG_NAME>FoodMart</CATALOG_NAME>" + nl +
-                "            <DESCRIPTION/>" + nl +
                 "          </row>" + nl +
                 "        </root>" + nl +
                 "      </return>" + nl +
@@ -283,6 +280,7 @@ public class XmlaTest extends TestCase {
                 "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
                 "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
                 "            <CUBE_NAME>Store</CUBE_NAME>" + nl +
+                "            <CUBE_TYPE>CUBE</CUBE_TYPE>" + nl +
                 "            <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>" + nl +
                 "            <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>" + nl +
                 "            <IS_LINKABLE>false</IS_LINKABLE>" + nl +
@@ -316,11 +314,12 @@ public class XmlaTest extends TestCase {
                 "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
                 "      <return>" + nl +
                 "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
-                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
+                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>" + nl +
                 "          <row>" + nl +
                 "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
                 "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
                 "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
+                "            <CUBE_TYPE>CUBE</CUBE_TYPE>" + nl +
                 "            <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>" + nl +
                 "            <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>" + nl +
                 "            <IS_LINKABLE>false</IS_LINKABLE>" + nl +
@@ -472,20 +471,22 @@ public class XmlaTest extends TestCase {
                 "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
                 "      <return>" + nl +
                 "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
-                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
+                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>" + nl +
                 "          <row>" + nl +
                 "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
                 "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
                 "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
                 "            <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>" + nl +
                 "            <HIERARCHY_UNIQUE_NAME>[Gender]</HIERARCHY_UNIQUE_NAME>" + nl +
-                "            <LEVEL_UNIQUE_NAME>(All)</LEVEL_UNIQUE_NAME>" + nl +
+                "            <LEVEL_UNIQUE_NAME>[Gender].[(All)]</LEVEL_UNIQUE_NAME>" + nl +
                 "            <LEVEL_NUMBER>0</LEVEL_NUMBER>" + nl +
                 "            <MEMBER_NAME>All Gender</MEMBER_NAME>" + nl +
+                "            <MEMBER_ORDINAL>0</MEMBER_ORDINAL>" + nl +
                 "            <MEMBER_UNIQUE_NAME>[Gender].[All Gender]</MEMBER_UNIQUE_NAME>" + nl +
+                "            <MEMBER_TYPE>2</MEMBER_TYPE>" + nl +
                 "            <MEMBER_CAPTION>All Gender</MEMBER_CAPTION>" + nl +
-                "            <MEMBER_TYPE>6</MEMBER_TYPE>" + nl +
-                "            <TREE_OP/>" + nl +
+                "            <CHILDREN_CARDINALITY>2</CHILDREN_CARDINALITY>" + nl +
+                "            <PARENT_LEVEL>0</PARENT_LEVEL>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
@@ -493,13 +494,16 @@ public class XmlaTest extends TestCase {
                 "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
                 "            <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>" + nl +
                 "            <HIERARCHY_UNIQUE_NAME>[Gender]</HIERARCHY_UNIQUE_NAME>" + nl +
-                "            <LEVEL_UNIQUE_NAME>Gender</LEVEL_UNIQUE_NAME>" + nl +
+                "            <LEVEL_UNIQUE_NAME>[Gender].[Gender]</LEVEL_UNIQUE_NAME>" + nl +
                 "            <LEVEL_NUMBER>1</LEVEL_NUMBER>" + nl +
                 "            <MEMBER_NAME>F</MEMBER_NAME>" + nl +
+                "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>" + nl +
                 "            <MEMBER_UNIQUE_NAME>[Gender].[All Gender].[F]</MEMBER_UNIQUE_NAME>" + nl +
+                "            <MEMBER_TYPE>1</MEMBER_TYPE>" + nl +
                 "            <MEMBER_CAPTION>F</MEMBER_CAPTION>" + nl +
-                "            <MEMBER_TYPE>6</MEMBER_TYPE>" + nl +
-                "            <TREE_OP/>" + nl +
+                "            <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>" + nl +
+                "            <PARENT_LEVEL>0</PARENT_LEVEL>" + nl +
+                "            <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
@@ -507,13 +511,16 @@ public class XmlaTest extends TestCase {
                 "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
                 "            <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>" + nl +
                 "            <HIERARCHY_UNIQUE_NAME>[Gender]</HIERARCHY_UNIQUE_NAME>" + nl +
-                "            <LEVEL_UNIQUE_NAME>Gender</LEVEL_UNIQUE_NAME>" + nl +
+                "            <LEVEL_UNIQUE_NAME>[Gender].[Gender]</LEVEL_UNIQUE_NAME>" + nl +
                 "            <LEVEL_NUMBER>1</LEVEL_NUMBER>" + nl +
                 "            <MEMBER_NAME>M</MEMBER_NAME>" + nl +
+                "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>" + nl +
                 "            <MEMBER_UNIQUE_NAME>[Gender].[All Gender].[M]</MEMBER_UNIQUE_NAME>" + nl +
+                "            <MEMBER_TYPE>1</MEMBER_TYPE>" + nl +
                 "            <MEMBER_CAPTION>M</MEMBER_CAPTION>" + nl +
-                "            <MEMBER_TYPE>6</MEMBER_TYPE>" + nl +
-                "            <TREE_OP/>" + nl +
+                "            <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>" + nl +
+                "            <PARENT_LEVEL>0</PARENT_LEVEL>" + nl +
+                "            <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>" + nl +
                 "          </row>" + nl +
                 "        </root>" + nl +
                 "      </return>" + nl +
@@ -553,20 +560,23 @@ public class XmlaTest extends TestCase {
                 "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
                 "      <return>" + nl +
                 "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
-                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
+                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>" + nl +
                 "          <row>" + nl +
                 "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
                 "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
                 "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
                 "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
                 "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>" + nl +
-                "            <LEVEL_UNIQUE_NAME>Quarter</LEVEL_UNIQUE_NAME>" + nl +
+                "            <LEVEL_UNIQUE_NAME>[Time].[Quarter]</LEVEL_UNIQUE_NAME>" + nl +
                 "            <LEVEL_NUMBER>1</LEVEL_NUMBER>" + nl +
                 "            <MEMBER_NAME>Q1</MEMBER_NAME>" + nl +
+                "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>" + nl +
                 "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q1]</MEMBER_UNIQUE_NAME>" + nl +
+                "            <MEMBER_TYPE>1</MEMBER_TYPE>" + nl +
                 "            <MEMBER_CAPTION>Q1</MEMBER_CAPTION>" + nl +
-                "            <MEMBER_TYPE>6</MEMBER_TYPE>" + nl +
-                "            <TREE_OP/>" + nl +
+                "            <CHILDREN_CARDINALITY>3</CHILDREN_CARDINALITY>" + nl +
+                "            <PARENT_LEVEL>0</PARENT_LEVEL>" + nl +
+                "            <PARENT_UNIQUE_NAME>[Time].[1997]</PARENT_UNIQUE_NAME>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
@@ -574,13 +584,16 @@ public class XmlaTest extends TestCase {
                 "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
                 "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
                 "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>" + nl +
-                "            <LEVEL_UNIQUE_NAME>Quarter</LEVEL_UNIQUE_NAME>" + nl +
+                "            <LEVEL_UNIQUE_NAME>[Time].[Quarter]</LEVEL_UNIQUE_NAME>" + nl +
                 "            <LEVEL_NUMBER>1</LEVEL_NUMBER>" + nl +
                 "            <MEMBER_NAME>Q2</MEMBER_NAME>" + nl +
+                "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>" + nl +
                 "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q2]</MEMBER_UNIQUE_NAME>" + nl +
+                "            <MEMBER_TYPE>1</MEMBER_TYPE>" + nl +
                 "            <MEMBER_CAPTION>Q2</MEMBER_CAPTION>" + nl +
-                "            <MEMBER_TYPE>6</MEMBER_TYPE>" + nl +
-                "            <TREE_OP/>" + nl +
+                "            <CHILDREN_CARDINALITY>3</CHILDREN_CARDINALITY>" + nl +
+                "            <PARENT_LEVEL>0</PARENT_LEVEL>" + nl +
+                "            <PARENT_UNIQUE_NAME>[Time].[1997]</PARENT_UNIQUE_NAME>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
@@ -588,13 +601,16 @@ public class XmlaTest extends TestCase {
                 "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
                 "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
                 "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>" + nl +
-                "            <LEVEL_UNIQUE_NAME>Quarter</LEVEL_UNIQUE_NAME>" + nl +
+                "            <LEVEL_UNIQUE_NAME>[Time].[Quarter]</LEVEL_UNIQUE_NAME>" + nl +
                 "            <LEVEL_NUMBER>1</LEVEL_NUMBER>" + nl +
                 "            <MEMBER_NAME>Q4</MEMBER_NAME>" + nl +
+                "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>" + nl +
                 "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q4]</MEMBER_UNIQUE_NAME>" + nl +
+                "            <MEMBER_TYPE>1</MEMBER_TYPE>" + nl +
                 "            <MEMBER_CAPTION>Q4</MEMBER_CAPTION>" + nl +
-                "            <MEMBER_TYPE>6</MEMBER_TYPE>" + nl +
-                "            <TREE_OP/>" + nl +
+                "            <CHILDREN_CARDINALITY>3</CHILDREN_CARDINALITY>" + nl +
+                "            <PARENT_LEVEL>0</PARENT_LEVEL>" + nl +
+                "            <PARENT_UNIQUE_NAME>[Time].[1997]</PARENT_UNIQUE_NAME>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
@@ -602,13 +618,16 @@ public class XmlaTest extends TestCase {
                 "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
                 "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
                 "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>" + nl +
-                "            <LEVEL_UNIQUE_NAME>Month</LEVEL_UNIQUE_NAME>" + nl +
+                "            <LEVEL_UNIQUE_NAME>[Time].[Month]</LEVEL_UNIQUE_NAME>" + nl +
                 "            <LEVEL_NUMBER>2</LEVEL_NUMBER>" + nl +
                 "            <MEMBER_NAME>7</MEMBER_NAME>" + nl +
+                "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>" + nl +
                 "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q3].[7]</MEMBER_UNIQUE_NAME>" + nl +
+                "            <MEMBER_TYPE>1</MEMBER_TYPE>" + nl +
                 "            <MEMBER_CAPTION>7</MEMBER_CAPTION>" + nl +
-                "            <MEMBER_TYPE>6</MEMBER_TYPE>" + nl +
-                "            <TREE_OP/>" + nl +
+                "            <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>" + nl +
+                "            <PARENT_LEVEL>1</PARENT_LEVEL>" + nl +
+                "            <PARENT_UNIQUE_NAME>[Time].[1997].[Q3]</PARENT_UNIQUE_NAME>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
@@ -616,13 +635,16 @@ public class XmlaTest extends TestCase {
                 "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
                 "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
                 "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>" + nl +
-                "            <LEVEL_UNIQUE_NAME>Month</LEVEL_UNIQUE_NAME>" + nl +
+                "            <LEVEL_UNIQUE_NAME>[Time].[Month]</LEVEL_UNIQUE_NAME>" + nl +
                 "            <LEVEL_NUMBER>2</LEVEL_NUMBER>" + nl +
                 "            <MEMBER_NAME>8</MEMBER_NAME>" + nl +
+                "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>" + nl +
                 "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q3].[8]</MEMBER_UNIQUE_NAME>" + nl +
+                "            <MEMBER_TYPE>1</MEMBER_TYPE>" + nl +
                 "            <MEMBER_CAPTION>8</MEMBER_CAPTION>" + nl +
-                "            <MEMBER_TYPE>6</MEMBER_TYPE>" + nl +
-                "            <TREE_OP/>" + nl +
+                "            <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>" + nl +
+                "            <PARENT_LEVEL>1</PARENT_LEVEL>" + nl +
+                "            <PARENT_UNIQUE_NAME>[Time].[1997].[Q3]</PARENT_UNIQUE_NAME>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
@@ -630,13 +652,16 @@ public class XmlaTest extends TestCase {
                 "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
                 "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
                 "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>" + nl +
-                "            <LEVEL_UNIQUE_NAME>Month</LEVEL_UNIQUE_NAME>" + nl +
+                "            <LEVEL_UNIQUE_NAME>[Time].[Month]</LEVEL_UNIQUE_NAME>" + nl +
                 "            <LEVEL_NUMBER>2</LEVEL_NUMBER>" + nl +
                 "            <MEMBER_NAME>9</MEMBER_NAME>" + nl +
+                "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>" + nl +
                 "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q3].[9]</MEMBER_UNIQUE_NAME>" + nl +
+                "            <MEMBER_TYPE>1</MEMBER_TYPE>" + nl +
                 "            <MEMBER_CAPTION>9</MEMBER_CAPTION>" + nl +
-                "            <MEMBER_TYPE>6</MEMBER_TYPE>" + nl +
-                "            <TREE_OP/>" + nl +
+                "            <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>" + nl +
+                "            <PARENT_LEVEL>1</PARENT_LEVEL>" + nl +
+                "            <PARENT_UNIQUE_NAME>[Time].[1997].[Q3]</PARENT_UNIQUE_NAME>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
@@ -644,13 +669,15 @@ public class XmlaTest extends TestCase {
                 "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
                 "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
                 "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>" + nl +
-                "            <LEVEL_UNIQUE_NAME>Year</LEVEL_UNIQUE_NAME>" + nl +
+                "            <LEVEL_UNIQUE_NAME>[Time].[Year]</LEVEL_UNIQUE_NAME>" + nl +
                 "            <LEVEL_NUMBER>0</LEVEL_NUMBER>" + nl +
                 "            <MEMBER_NAME>1997</MEMBER_NAME>" + nl +
+                "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>" + nl +
                 "            <MEMBER_UNIQUE_NAME>[Time].[1997]</MEMBER_UNIQUE_NAME>" + nl +
+                "            <MEMBER_TYPE>1</MEMBER_TYPE>" + nl +
                 "            <MEMBER_CAPTION>1997</MEMBER_CAPTION>" + nl +
-                "            <MEMBER_TYPE>6</MEMBER_TYPE>" + nl +
-                "            <TREE_OP/>" + nl +
+                "            <CHILDREN_CARDINALITY>4</CHILDREN_CARDINALITY>" + nl +
+                "            <PARENT_LEVEL>0</PARENT_LEVEL>" + nl +
                 "          </row>" + nl +
                 "        </root>" + nl +
                 "      </return>" + nl +
@@ -659,8 +686,8 @@ public class XmlaTest extends TestCase {
                 "</SOAP-ENV:Envelope>");
     }
 
-    public void _testDiscoverMeasures() {
-        assertRequestYields(wrap(
+    public void testDiscoverMeasures() {
+        assertRequestMatches(wrap(
                 "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
                 "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
                 "    <RequestType>MDSCHEMA_MEASURES</RequestType>" + nl +
@@ -678,18 +705,16 @@ public class XmlaTest extends TestCase {
                 "    </Properties>" + nl +
                 "</Discover>"),
 
-                "<?xml version=\"1.0\"?>" + nl +
-                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "  <SOAP-ENV:Body>" + nl +
-                "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
-                "      <return>" + nl +
-                "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
-                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>x" + nl +
-                "x        </root>" + nl +
-                "      </return>" + nl +
-                "    </DiscoverResponse>" + nl +
-                "  </SOAP-ENV:Body>" + nl +
-                "</SOAP-ENV:Envelope>");
+                "(?s).*" + nl +
+                "          <row>" + nl +
+                "            <CATALOG_NAME>FoodMart</CATALOG_NAME>" + nl +
+                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
+                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
+                "            <MEASURE_NAME>Unit Sales</MEASURE_NAME>" + nl +
+                "            <MEASURE_UNIQUE_NAME>\\[Measures\\]\\.\\[Unit Sales\\]</MEASURE_UNIQUE_NAME>" + nl +
+                "            <MEASURE_CAPTION>Unit Sales</MEASURE_CAPTION>" + nl +
+                "          </row>" + nl +
+                ".*");
     }
     /**
      * Tests the {@link RowsetDefinition#DISCOVER_ENUMERATORS} rowset.
@@ -745,7 +770,7 @@ public class XmlaTest extends TestCase {
                 "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
                 "      <return>" + nl +
                 "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
-                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
+                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>" + nl +
                 ".*" + nl +
                 "          <row>" + nl +
                 "            <Keyword>AddCalculatedMembers</Keyword>" + nl +
@@ -792,7 +817,7 @@ public class XmlaTest extends TestCase {
                 "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
                 "      <return>" + nl +
                 "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
-                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
+                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>" + nl +
                 "          <row>" + nl +
                 "            <LiteralName>DBLITERAL_QUOTE_PREFIX</LiteralName>" + nl +
                 "            <LiteralValue>[</LiteralValue>" + nl +
@@ -837,8 +862,6 @@ public class XmlaTest extends TestCase {
                 "            <PropertyDescription>Specifies the initial catalog or database on which to connect.</PropertyDescription>" + nl +
                 "            <PropertyType>string</PropertyType>" + nl +
                 "            <PropertyAccessType>Read/Write</PropertyAccessType>" + nl +
-                "            <IsRequired/>" + nl +
-                "            <Value/>" + nl +
                 "          </row>" + nl +
                 ".*");
     }
@@ -871,14 +894,12 @@ public class XmlaTest extends TestCase {
                 "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
                 "      <return>" + nl +
                 "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
-                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
+                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>" + nl +
                 "          <row>" + nl +
                 "            <PropertyName>EndRange</PropertyName>" + nl +
                 "            <PropertyDescription>An integer value corresponding to a CellOrdinal used to restrict an MDDataSet returned by a command to a specific range of cells. Used in conjunction with the BeginRange property. If unspecified, all cells are returned in the rowset. The value -1 means unspecified.</PropertyDescription>" + nl +
                 "            <PropertyType>Integer</PropertyType>" + nl +
                 "            <PropertyAccessType>Write</PropertyAccessType>" + nl +
-                "            <IsRequired/>" + nl +
-                "            <Value/>" + nl +
                 "          </row>" + nl +
                 "        </root>" + nl +
                 "      </return>" + nl +
@@ -913,217 +934,471 @@ public class XmlaTest extends TestCase {
                 "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
                 "      <return>" + nl +
                 "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
-                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
+                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>" + nl +
                 "          <row>" + nl +
                 "            <SchemaName>DBSCHEMA_CATALOGS</SchemaName>" + nl +
                 "            <Restrictions>" + nl +
-                "              <CATALOG_NAME type=\"string\"/>" + nl +
+                "              <Name>CATALOG_NAME</Name>" + nl + "              <Type>string</Type>" + nl +
                 "            </Restrictions>" + nl +
                 "            <Description>Returns information about literals supported by the provider.</Description>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <SchemaName>DBSCHEMA_COLUMNS</SchemaName>" + nl +
                 "            <Restrictions>" + nl +
-                "              <TABLE_CATALOG type=\"string\"/>" + nl +
-                "              <TABLE_SCHEMA type=\"string\"/>" + nl +
-                "              <TABLE_NAME type=\"string\"/>" + nl +
-                "              <COLUMN_NAME type=\"string\"/>" + nl +
+                "              <Name>TABLE_CATALOG</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
                 "            </Restrictions>" + nl +
-                "            <Description/>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>TABLE_SCHEMA</Name>" + nl +
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>TABLE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>COLUMN_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <SchemaName>DBSCHEMA_PROVIDER_TYPES</SchemaName>" + nl +
                 "            <Restrictions>" + nl +
-                "              <DATA_TYPE type=\"unsignedInteger\"/>" + nl +
-                "              <BEST_MATCH type=\"boolean\"/>" + nl +
+                "              <Name>DATA_TYPE</Name>" + nl + 
+                "              <Type>unsignedInteger</Type>" + nl +
                 "            </Restrictions>" + nl +
-                "            <Description/>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>BEST_MATCH</Name>" + nl + 
+                "              <Type>boolean</Type>" + nl +
+                "            </Restrictions>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <SchemaName>DBSCHEMA_TABLES</SchemaName>" + nl +
                 "            <Restrictions>" + nl +
-                "              <TABLE_CATALOG type=\"string\"/>" + nl +
-                "              <TABLE_SCHEMA type=\"string\"/>" + nl +
-                "              <TABLE_NAME type=\"string\"/>" + nl +
-                "              <TABLE_TYPE type=\"string\"/>" + nl +
+                "              <Name>TABLE_CATALOG</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
                 "            </Restrictions>" + nl +
-                "            <Description/>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>TABLE_SCHEMA</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>TABLE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>TABLE_TYPE</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <SchemaName>DBSCHEMA_TABLES_INFO</SchemaName>" + nl +
                 "            <Restrictions>" + nl +
-                "              <TABLE_CATALOG type=\"string\"/>" + nl +
-                "              <TABLE_SCHEMA type=\"string\"/>" + nl +
-                "              <TABLE_NAME type=\"string\"/>" + nl +
-                "              <TABLE_TYPE type=\"string\"/>" + nl +
+                "              <Name>TABLE_CATALOG</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
                 "            </Restrictions>" + nl +
-                "            <Description/>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>TABLE_SCHEMA</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>TABLE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>TABLE_TYPE</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <SchemaName>DISCOVER_DATASOURCES</SchemaName>" + nl +
                 "            <Restrictions>" + nl +
-                "              <DataSourceName type=\"string\"/>" + nl +
-                "              <URL type=\"string\"/>" + nl +
-                "              <ProviderName type=\"string\"/>" + nl +
-                "              <ProviderType type=\"string\"/>" + nl +
-                "              <AuthenticationMode type=\"string\"/>" + nl +
+                "              <Name>DataSourceName</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>URL</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>ProviderName</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>ProviderType</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>AuthenticationMode</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
                 "            </Restrictions>" + nl +
                 "            <Description>Returns a list of XML for Analysis data sources available on the server or Web Service.</Description>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <SchemaName>DISCOVER_ENUMERATORS</SchemaName>" + nl +
                 "            <Restrictions>" + nl +
-                "              <EnumName type=\"string\"/>" + nl +
+                "              <Name>EnumName</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
                 "            </Restrictions>" + nl +
                 "            <Description>Returns a list of names, data types, and enumeration values for enumerators supported by the provider of a specific data source.</Description>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <SchemaName>DISCOVER_KEYWORDS</SchemaName>" + nl +
                 "            <Restrictions>" + nl +
-                "              <Keyword type=\"string\"/>" + nl +
+                "              <Name>Keyword</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
                 "            </Restrictions>" + nl +
                 "            <Description>Returns an XML list of keywords reserved by the provider.</Description>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <SchemaName>DISCOVER_LITERALS</SchemaName>" + nl +
                 "            <Restrictions>" + nl +
-                "              <LiteralName type=\"string\"/>" + nl +
+                "              <Name>LiteralName</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
                 "            </Restrictions>" + nl +
                 "            <Description>Returns information about literals supported by the provider.</Description>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <SchemaName>DISCOVER_PROPERTIES</SchemaName>" + nl +
                 "            <Restrictions>" + nl +
-                "              <PropertyName type=\"string\"/>" + nl +
+                "              <Name>PropertyName</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
                 "            </Restrictions>" + nl +
                 "            <Description>Returns a list of information and values about the requested properties that are supported by the specified data source provider.</Description>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <SchemaName>DISCOVER_SCHEMA_ROWSETS</SchemaName>" + nl +
                 "            <Restrictions>" + nl +
-                "              <SchemaName type=\"string\"/>" + nl +
+                "              <Name>SchemaName</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
                 "            </Restrictions>" + nl +
                 "            <Description>Returns the names, values, and other information of all supported RequestType enumeration values.</Description>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <SchemaName>MDSCHEMA_ACTIONS</SchemaName>" + nl +
                 "            <Restrictions>" + nl +
-                "              <CUBE_NAME type=\"string\"/>" + nl +
-                "              <COORDINATE type=\"string\"/>" + nl +
-                "              <COORDINATE_TYPE type=\"string\"/>" + nl +
+                "              <Name>CUBE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
                 "            </Restrictions>" + nl +
-                "            <Description/>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>COORDINATE</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>COORDINATE_TYPE</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <SchemaName>MDSCHEMA_CUBES</SchemaName>" + nl +
                 "            <Restrictions>" + nl +
-                "              <CATALOG_NAME type=\"string\"/>" + nl +
-                "              <SCHEMA_NAME type=\"string\"/>" + nl +
-                "              <CUBE_NAME type=\"string\"/>" + nl +
+                "              <Name>CATALOG_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
                 "            </Restrictions>" + nl +
-                "            <Description/>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>SCHEMA_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>CUBE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>CUBE_TYPE</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <SchemaName>MDSCHEMA_DIMENSIONS</SchemaName>" + nl +
                 "            <Restrictions>" + nl +
-                "              <CATALOG_NAME type=\"string\"/>" + nl +
-                "              <SCHEMA_NAME type=\"string\"/>" + nl +
-                "              <CUBE_NAME type=\"string\"/>" + nl +
-                "              <DIMENSION_NAME type=\"string\"/>" + nl +
-                "              <DIMENSION_UNIQUE_NAME type=\"string\"/>" + nl +
+                "              <Name>CATALOG_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
                 "            </Restrictions>" + nl +
-                "            <Description/>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>SCHEMA_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>CUBE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>DIMENSION_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>DIMENSION_UNIQUE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>DIMENSION_CAPTION</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>DIMENSION_ORDINAL</Name>" + nl + 
+                "              <Type>integer</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>DIMENSION_TYPE</Name>" + nl + 
+                "              <Type>integer</Type>" + nl +
+                "            </Restrictions>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <SchemaName>MDSCHEMA_FUNCTIONS</SchemaName>" + nl +
                 "            <Restrictions>" + nl +
-                "              <LIBRARY_NAME type=\"string\"/>" + nl +
-                "              <INTERFACE_NAME type=\"string\"/>" + nl +
-                "              <FUNCTION_NAME type=\"string\"/>" + nl +
-                "              <ORIGIN type=\"integer\"/>" + nl +
+                "              <Name>LIBRARY_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
                 "            </Restrictions>" + nl +
-                "            <Description/>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>INTERFACE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>FUNCTION_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>ORIGIN</Name>" + nl + 
+                "              <Type>integer</Type>" + nl +
+                "            </Restrictions>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <SchemaName>MDSCHEMA_HIERARCHIES</SchemaName>" + nl +
                 "            <Restrictions>" + nl +
-                "              <CATALOG_NAME type=\"string\"/>" + nl +
-                "              <SCHEMA_NAME type=\"string\"/>" + nl +
-                "              <CUBE_NAME type=\"string\"/>" + nl +
-                "              <DIMENSION_UNIQUE_NAME type=\"string\"/>" + nl +
-                "              <HIERARCHY_NAME type=\"string\"/>" + nl +
-                "              <HIERARCHY_UNIQUE_NAME type=\"string\"/>" + nl +
+                "              <Name>CATALOG_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
                 "            </Restrictions>" + nl +
-                "            <Description/>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>SCHEMA_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>CUBE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>DIMENSION_UNIQUE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>HIERARCHY_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>HIERARCHY_UNIQUE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>HIERARCHY_CAPTION</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>DIMENSION_TYPE</Name>" + nl + 
+                "              <Type>integer</Type>" + nl +
+                "            </Restrictions>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <SchemaName>MDSCHEMA_LEVELS</SchemaName>" + nl +
                 "            <Restrictions>" + nl +
-                "              <CATALOG_NAME type=\"string\"/>" + nl +
-                "              <SCHEMA_NAME type=\"string\"/>" + nl +
-                "              <CUBE_NAME type=\"string\"/>" + nl +
-                "              <DIMENSION_UNIQUE_NAME type=\"string\"/>" + nl +
-                "              <HIERARCHY_UNIQUE_NAME type=\"string\"/>" + nl +
-                "              <LEVEL_NAME type=\"string\"/>" + nl +
-                "              <LEVEL_UNIQUE_NAME type=\"string\"/>" + nl +
+                "              <Name>CATALOG_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
                 "            </Restrictions>" + nl +
-                "            <Description/>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>SCHEMA_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>CUBE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>DIMENSION_UNIQUE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>HIERARCHY_UNIQUE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>LEVEL_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>LEVEL_UNIQUE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>LEVEL_CAPTION</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>LEVEL_NUMBER</Name>" + nl + 
+                "              <Type>integer</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>LEVEL_TYPE</Name>" + nl + 
+                "              <Type>integer</Type>" + nl +
+                "            </Restrictions>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <SchemaName>MDSCHEMA_MEASURES</SchemaName>" + nl +
                 "            <Restrictions>" + nl +
-                "              <CATALOG_NAME type=\"string\"/>" + nl +
-                "              <SCHEMA_NAME type=\"string\"/>" + nl +
-                "              <CUBE_NAME type=\"string\"/>" + nl +
-                "              <MEASURE_NAME type=\"string\"/>" + nl +
-                "              <MEASURE_UNIQUE_NAME type=\"string\"/>" + nl +
+                "              <Name>CATALOG_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
                 "            </Restrictions>" + nl +
-                "            <Description/>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>SCHEMA_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>CUBE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>MEASURE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>MEASURE_UNIQUE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>MEASURE_CAPTION</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <SchemaName>MDSCHEMA_MEMBERS</SchemaName>" + nl +
                 "            <Restrictions>" + nl +
-                "              <CATALOG_NAME type=\"string\"/>" + nl +
-                "              <SCHEMA_NAME type=\"string\"/>" + nl +
-                "              <CUBE_NAME type=\"string\"/>" + nl +
-                "              <DIMENSION_UNIQUE_NAME type=\"string\"/>" + nl +
-                "              <HIERARCHY_UNIQUE_NAME type=\"string\"/>" + nl +
-                "              <LEVEL_UNIQUE_NAME type=\"string\"/>" + nl +
-                "              <LEVEL_NUMBER type=\"unsignedInteger\"/>" + nl +
-                "              <MEMBER_NAME type=\"string\"/>" + nl +
-                "              <MEMBER_UNIQUE_NAME type=\"string\"/>" + nl +
-                "              <MEMBER_CAPTION type=\"string\"/>" + nl +
-                "              <MEMBER_TYPE type=\"integer\"/>" + nl +
-                "              <TREE_OP type=\"integer\"/>" + nl +
+                "              <Name>CATALOG_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
                 "            </Restrictions>" + nl +
-                "            <Description/>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>SCHEMA_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>CUBE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>DIMENSION_UNIQUE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>HIERARCHY_UNIQUE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>LEVEL_UNIQUE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>LEVEL_NUMBER</Name>" + nl + 
+                "              <Type>unsignedInteger</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>MEMBER_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>MEMBER_ORDINAL</Name>" + nl + 
+                "              <Type>integer</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>MEMBER_UNIQUE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>MEMBER_TYPE</Name>" + nl + 
+                "              <Type>integer</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>MEMBER_CAPTION</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>CHILDREN_CARDINALITY</Name>" + nl + 
+                "              <Type>integer</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>PARENT_UNIQUE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>TREE_OP</Name>" + nl + 
+                "              <Type>integer</Type>" + nl +
+                "            </Restrictions>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <SchemaName>MDSCHEMA_PROPERTIES</SchemaName>" + nl +
                 "            <Restrictions>" + nl +
-                "              <CATALOG_NAME type=\"string\"/>" + nl +
-                "              <SCHEMA_NAME type=\"string\"/>" + nl +
-                "              <CUBE_NAME type=\"string\"/>" + nl +
-                "              <DIMENSION_UNIQUE_NAME type=\"string\"/>" + nl +
-                "              <HIERARCHY_UNIQUE_NAME type=\"string\"/>" + nl +
-                "              <LEVEL_UNIQUE_NAME type=\"string\"/>" + nl +
-                "              <MEMBER_UNIQUE_NAME type=\"string\"/>" + nl +
-                "              <PROPERTY_NAME type=\"string\"/>" + nl +
-                "              <PROPERTY_TYPE type=\"integer\"/>" + nl +
-                "              <PROPERTY_CONTENT_TYPE type=\"integer\"/>" + nl +
+                "              <Name>CATALOG_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
                 "            </Restrictions>" + nl +
-                "            <Description/>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>SCHEMA_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>CUBE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>DIMENSION_UNIQUE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>HIERARCHY_UNIQUE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>LEVEL_UNIQUE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>MEMBER_UNIQUE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>PROPERTY_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>PROPERTY_TYPE</Name>" + nl + 
+                "              <Type>integer</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>PROPERTY_CONTENT_TYPE</Name>" + nl + 
+                "              <Type>integer</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>PROPERTY_CAPTION</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
                 "          </row>" + nl +
                 "          <row>" + nl +
                 "            <SchemaName>MDSCHEMA_SETS</SchemaName>" + nl +
                 "            <Restrictions>" + nl +
-                "              <CATALOG_NAME type=\"string\"/>" + nl +
-                "              <SCHEMA_NAME type=\"string\"/>" + nl +
-                "              <CUBE_NAME type=\"string\"/>" + nl +
-                "              <SET_NAME type=\"string\"/>" + nl +
-                "              <SCOPE type=\"integer\"/>" + nl +
+                "              <Name>CATALOG_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
                 "            </Restrictions>" + nl +
-                "            <Description/>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>SCHEMA_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>CUBE_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>SET_NAME</Name>" + nl + 
+                "              <Type>string</Type>" + nl +
+                "            </Restrictions>" + nl +
+                "            <Restrictions>" + nl +
+                "              <Name>SCOPE</Name>" + nl + 
+                "              <Type>integer</Type>" + nl +
+                "            </Restrictions>" + nl +
                 "          </row>" + nl +
                 "        </root>" + nl +
                 "      </return>" + nl +
@@ -1163,12 +1438,14 @@ public class XmlaTest extends TestCase {
                 "              </Cube>" + nl +
                 "            </CubeInfo>" + nl +
                 "            <AxesInfo>" + nl +
+                "              <AxisInfo name=\"SlicerAxis\"/>" + nl +
                 "              <AxisInfo name=\"Axis0\">" + nl +
                 "                <HierarchyInfo name=\"Measures\">" + nl +
                 "                  <UName name=\"[Measures].[MEMBER_UNIQUE_NAME]\"/>" + nl +
                 "                  <Caption name=\"[Measures].[MEMBER_CAPTION]\"/>" + nl +
                 "                  <LName name=\"[Measures].[LEVEL_UNIQUE_NAME]\"/>" + nl +
                 "                  <LNum name=\"[Measures].[LEVEL_NUMBER]\"/>" + nl +
+                "                  <DisplayInfo name=\"[Measures].[CHILDREN_CARDINALITY]\"/>" + nl +
                 "                </HierarchyInfo>" + nl +
                 "              </AxisInfo>" + nl +
                 "            </AxesInfo>" + nl +
@@ -1179,6 +1456,11 @@ public class XmlaTest extends TestCase {
                 "            </CellInfo>" + nl +
                 "          </OlapInfo>" + nl +
                 "          <Axes>" + nl +
+                "            <Axis name=\"SlicerAxis\">" + nl +
+                "              <Tuples>" + nl +
+                "                <Tuple/>" + nl +
+                "              </Tuples>" + nl +
+                "            </Axis>" + nl +
                 "            <Axis name=\"Axis0\">" + nl +
                 "              <Tuples>" + nl +
                 "                <Tuple>" + nl +
@@ -1187,6 +1469,7 @@ public class XmlaTest extends TestCase {
                 "                    <Caption>Unit Sales</Caption>" + nl +
                 "                    <LName>[Measures].[MeasuresLevel]</LName>" + nl +
                 "                    <LNum>0</LNum>" + nl +
+                "                    <DisplayInfo>0</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                </Tuple>" + nl +
                 "                <Tuple>" + nl +
@@ -1195,6 +1478,7 @@ public class XmlaTest extends TestCase {
                 "                    <Caption>Store Cost</Caption>" + nl +
                 "                    <LName>[Measures].[MeasuresLevel]</LName>" + nl +
                 "                    <LNum>0</LNum>" + nl +
+                "                    <DisplayInfo>0</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                </Tuple>" + nl +
                 "                <Tuple>" + nl +
@@ -1203,6 +1487,7 @@ public class XmlaTest extends TestCase {
                 "                    <Caption>Store Sales</Caption>" + nl +
                 "                    <LName>[Measures].[MeasuresLevel]</LName>" + nl +
                 "                    <LNum>0</LNum>" + nl +
+                "                    <DisplayInfo>0</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                </Tuple>" + nl +
                 "                <Tuple>" + nl +
@@ -1211,6 +1496,7 @@ public class XmlaTest extends TestCase {
                 "                    <Caption>Sales Count</Caption>" + nl +
                 "                    <LName>[Measures].[MeasuresLevel]</LName>" + nl +
                 "                    <LNum>0</LNum>" + nl +
+                "                    <DisplayInfo>0</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                </Tuple>" + nl +
                 "                <Tuple>" + nl +
@@ -1219,6 +1505,7 @@ public class XmlaTest extends TestCase {
                 "                    <Caption>Customer Count</Caption>" + nl +
                 "                    <LName>[Measures].[MeasuresLevel]</LName>" + nl +
                 "                    <LNum>0</LNum>" + nl +
+                "                    <DisplayInfo>0</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                </Tuple>" + nl +
                 "              </Tuples>" + nl +
@@ -1293,14 +1580,8 @@ public class XmlaTest extends TestCase {
                 "        </Cube>" + nl +
                 "      </CubeInfo>" + nl +
                 "      <AxesInfo>" + nl +
-                "        <AxisInfo name=\"Axis0\">" + nl +
-                "          <HierarchyInfo name=\"Measures\">" + nl +
-                "            <UName name=\"[Gender].[MEMBER_UNIQUE_NAME]\"/>" + nl +
-                "            <Caption name=\"[Gender].[MEMBER_CAPTION]\"/>" + nl +
-                "            <LName name=\"[Gender].[LEVEL_UNIQUE_NAME]\"/>" + nl +
-                "            <LNum name=\"[Gender].[LEVEL_NUMBER]\"/>" + nl +
-                "          </HierarchyInfo>" + nl +
-                "        </AxisInfo>" + nl +
+                "        <AxisInfo name=\"SlicerAxis\"/>" + nl +
+                "        <AxisInfo name=\"Axis0\"/>" + nl +
                 "      </AxesInfo>" + nl +
                 "      <CellInfo>" + nl +
                 "        <Value name=\"VALUE\"/>" + nl +
@@ -1309,6 +1590,11 @@ public class XmlaTest extends TestCase {
                 "      </CellInfo>" + nl +
                 "    </OLAPInfo>" + nl +
                 "    <Axes>" + nl +
+                "      <Axis name=\"SlicerAxis\">" + nl +
+                "        <Tuples>" + nl +
+                "          <Tuple/>" + nl +
+                "        </Tuples>" + nl +
+                "      </Axis>" + nl +
                 "      <Axis name=\"Axis0\">" + nl +
                 "        <Tuples/>" + nl +
                 "      </Axis>" + nl +
@@ -1351,12 +1637,14 @@ public class XmlaTest extends TestCase {
                 "              </Cube>" + nl +
                 "            </CubeInfo>" + nl +
                 "            <AxesInfo>" + nl +
+                "              <AxisInfo name=\"SlicerAxis\"/>" + nl +
                 "              <AxisInfo name=\"Axis0\">" + nl +
                 "                <HierarchyInfo name=\"Measures\">" + nl +
                 "                  <UName name=\"[Measures].[MEMBER_UNIQUE_NAME]\"/>" + nl +
                 "                  <Caption name=\"[Measures].[MEMBER_CAPTION]\"/>" + nl +
                 "                  <LName name=\"[Measures].[LEVEL_UNIQUE_NAME]\"/>" + nl +
                 "                  <LNum name=\"[Measures].[LEVEL_NUMBER]\"/>" + nl +
+                "                  <DisplayInfo name=\"[Measures].[CHILDREN_CARDINALITY]\"/>" + nl +
                 "                </HierarchyInfo>" + nl +
                 "              </AxisInfo>" + nl +
                 "              <AxisInfo name=\"Axis1\">" + nl +
@@ -1365,12 +1653,14 @@ public class XmlaTest extends TestCase {
                 "                  <Caption name=\"[Store].[MEMBER_CAPTION]\"/>" + nl +
                 "                  <LName name=\"[Store].[LEVEL_UNIQUE_NAME]\"/>" + nl +
                 "                  <LNum name=\"[Store].[LEVEL_NUMBER]\"/>" + nl +
+                "                  <DisplayInfo name=\"[Store].[CHILDREN_CARDINALITY]\"/>" + nl +
                 "                </HierarchyInfo>" + nl +
                 "                <HierarchyInfo name=\"Pay Type\">" + nl +
                 "                  <UName name=\"[Pay Type].[MEMBER_UNIQUE_NAME]\"/>" + nl +
                 "                  <Caption name=\"[Pay Type].[MEMBER_CAPTION]\"/>" + nl +
                 "                  <LName name=\"[Pay Type].[LEVEL_UNIQUE_NAME]\"/>" + nl +
                 "                  <LNum name=\"[Pay Type].[LEVEL_NUMBER]\"/>" + nl +
+                "                  <DisplayInfo name=\"[Pay Type].[CHILDREN_CARDINALITY]\"/>" + nl +
                 "                </HierarchyInfo>" + nl +
                 "              </AxisInfo>" + nl +
                 "            </AxesInfo>" + nl +
@@ -1381,6 +1671,11 @@ public class XmlaTest extends TestCase {
                 "            </CellInfo>" + nl +
                 "          </OlapInfo>" + nl +
                 "          <Axes>" + nl +
+                "            <Axis name=\"SlicerAxis\">" + nl +
+                "              <Tuples>" + nl +
+                "                <Tuple/>" + nl +
+                "              </Tuples>" + nl +
+                "            </Axis>" + nl +
                 "            <Axis name=\"Axis0\">" + nl +
                 "              <Tuples>" + nl +
                 "                <Tuple>" + nl +
@@ -1389,6 +1684,7 @@ public class XmlaTest extends TestCase {
                 "                    <Caption>Org Salary</Caption>" + nl +
                 "                    <LName>[Measures].[MeasuresLevel]</LName>" + nl +
                 "                    <LNum>0</LNum>" + nl +
+                "                    <DisplayInfo>0</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                </Tuple>" + nl +
                 "                <Tuple>" + nl +
@@ -1397,6 +1693,7 @@ public class XmlaTest extends TestCase {
                 "                    <Caption>Count</Caption>" + nl +
                 "                    <LName>[Measures].[MeasuresLevel]</LName>" + nl +
                 "                    <LNum>0</LNum>" + nl +
+                "                    <DisplayInfo>0</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                </Tuple>" + nl +
                 "              </Tuples>" + nl +
@@ -1409,12 +1706,14 @@ public class XmlaTest extends TestCase {
                 "                    <Caption>CA</Caption>" + nl +
                 "                    <LName>[Store].[Store State]</LName>" + nl +
                 "                    <LNum>2</LNum>" + nl +
+                "                    <DisplayInfo>5</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                  <Member Hierarchy=\"Pay Type\">" + nl +
                 "                    <UName>[Pay Type].[All Pay Types]</UName>" + nl +
                 "                    <Caption>All Pay Types</Caption>" + nl +
                 "                    <LName>[Pay Type].[(All)]</LName>" + nl +
                 "                    <LNum>0</LNum>" + nl +
+                "                    <DisplayInfo>65538</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                </Tuple>" + nl +
                 "                <Tuple>" + nl +
@@ -1423,12 +1722,14 @@ public class XmlaTest extends TestCase {
                 "                    <Caption>CA</Caption>" + nl +
                 "                    <LName>[Store].[Store State]</LName>" + nl +
                 "                    <LNum>2</LNum>" + nl +
+                "                    <DisplayInfo>131077</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                  <Member Hierarchy=\"Pay Type\">" + nl +
                 "                    <UName>[Pay Type].[All Pay Types].[Hourly]</UName>" + nl +
                 "                    <Caption>Hourly</Caption>" + nl +
                 "                    <LName>[Pay Type].[Pay Type]</LName>" + nl +
                 "                    <LNum>1</LNum>" + nl +
+                "                    <DisplayInfo>0</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                </Tuple>" + nl +
                 "                <Tuple>" + nl +
@@ -1437,12 +1738,14 @@ public class XmlaTest extends TestCase {
                 "                    <Caption>CA</Caption>" + nl +
                 "                    <LName>[Store].[Store State]</LName>" + nl +
                 "                    <LNum>2</LNum>" + nl +
+                "                    <DisplayInfo>131077</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                  <Member Hierarchy=\"Pay Type\">" + nl +
                 "                    <UName>[Pay Type].[All Pay Types].[Monthly]</UName>" + nl +
                 "                    <Caption>Monthly</Caption>" + nl +
                 "                    <LName>[Pay Type].[Pay Type]</LName>" + nl +
                 "                    <LNum>1</LNum>" + nl +
+                "                    <DisplayInfo>131072</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                </Tuple>" + nl +
                 "                <Tuple>" + nl +
@@ -1451,12 +1754,14 @@ public class XmlaTest extends TestCase {
                 "                    <Caption>OR</Caption>" + nl +
                 "                    <LName>[Store].[Store State]</LName>" + nl +
                 "                    <LNum>2</LNum>" + nl +
+                "                    <DisplayInfo>131074</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                  <Member Hierarchy=\"Pay Type\">" + nl +
                 "                    <UName>[Pay Type].[All Pay Types]</UName>" + nl +
                 "                    <Caption>All Pay Types</Caption>" + nl +
                 "                    <LName>[Pay Type].[(All)]</LName>" + nl +
                 "                    <LNum>0</LNum>" + nl +
+                "                    <DisplayInfo>65538</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                </Tuple>" + nl +
                 "                <Tuple>" + nl +
@@ -1465,12 +1770,14 @@ public class XmlaTest extends TestCase {
                 "                    <Caption>OR</Caption>" + nl +
                 "                    <LName>[Store].[Store State]</LName>" + nl +
                 "                    <LNum>2</LNum>" + nl +
+                "                    <DisplayInfo>131074</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                  <Member Hierarchy=\"Pay Type\">" + nl +
                 "                    <UName>[Pay Type].[All Pay Types].[Hourly]</UName>" + nl +
                 "                    <Caption>Hourly</Caption>" + nl +
                 "                    <LName>[Pay Type].[Pay Type]</LName>" + nl +
                 "                    <LNum>1</LNum>" + nl +
+                "                    <DisplayInfo>0</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                </Tuple>" + nl +
                 "                <Tuple>" + nl +
@@ -1479,12 +1786,14 @@ public class XmlaTest extends TestCase {
                 "                    <Caption>OR</Caption>" + nl +
                 "                    <LName>[Store].[Store State]</LName>" + nl +
                 "                    <LNum>2</LNum>" + nl +
+                "                    <DisplayInfo>131074</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                  <Member Hierarchy=\"Pay Type\">" + nl +
                 "                    <UName>[Pay Type].[All Pay Types].[Monthly]</UName>" + nl +
                 "                    <Caption>Monthly</Caption>" + nl +
                 "                    <LName>[Pay Type].[Pay Type]</LName>" + nl +
                 "                    <LNum>1</LNum>" + nl +
+                "                    <DisplayInfo>131072</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                </Tuple>" + nl +
                 "                <Tuple>" + nl +
@@ -1493,12 +1802,14 @@ public class XmlaTest extends TestCase {
                 "                    <Caption>WA</Caption>" + nl +
                 "                    <LName>[Store].[Store State]</LName>" + nl +
                 "                    <LNum>2</LNum>" + nl +
+                "                    <DisplayInfo>131079</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                  <Member Hierarchy=\"Pay Type\">" + nl +
                 "                    <UName>[Pay Type].[All Pay Types]</UName>" + nl +
                 "                    <Caption>All Pay Types</Caption>" + nl +
                 "                    <LName>[Pay Type].[(All)]</LName>" + nl +
                 "                    <LNum>0</LNum>" + nl +
+                "                    <DisplayInfo>65538</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                </Tuple>" + nl +
                 "                <Tuple>" + nl +
@@ -1507,12 +1818,14 @@ public class XmlaTest extends TestCase {
                 "                    <Caption>WA</Caption>" + nl +
                 "                    <LName>[Store].[Store State]</LName>" + nl +
                 "                    <LNum>2</LNum>" + nl +
+                "                    <DisplayInfo>131079</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                  <Member Hierarchy=\"Pay Type\">" + nl +
                 "                    <UName>[Pay Type].[All Pay Types].[Hourly]</UName>" + nl +
                 "                    <Caption>Hourly</Caption>" + nl +
                 "                    <LName>[Pay Type].[Pay Type]</LName>" + nl +
                 "                    <LNum>1</LNum>" + nl +
+                "                    <DisplayInfo>0</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                </Tuple>" + nl +
                 "                <Tuple>" + nl +
@@ -1521,12 +1834,14 @@ public class XmlaTest extends TestCase {
                 "                    <Caption>WA</Caption>" + nl +
                 "                    <LName>[Store].[Store State]</LName>" + nl +
                 "                    <LNum>2</LNum>" + nl +
+                "                    <DisplayInfo>131079</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                  <Member Hierarchy=\"Pay Type\">" + nl +
                 "                    <UName>[Pay Type].[All Pay Types].[Monthly]</UName>" + nl +
                 "                    <Caption>Monthly</Caption>" + nl +
                 "                    <LName>[Pay Type].[Pay Type]</LName>" + nl +
                 "                    <LNum>1</LNum>" + nl +
+                "                    <DisplayInfo>131072</DisplayInfo>" + nl +
                 "                  </Member>" + nl +
                 "                </Tuple>" + nl +
                 "              </Tuples>" + nl +

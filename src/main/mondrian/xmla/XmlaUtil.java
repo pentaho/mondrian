@@ -310,6 +310,29 @@ public class XmlaUtil {
                 "</Discover>" + nl +
                 "    </SOAP-ENV:Body>" + nl +
                 "</SOAP-ENV:Envelope>",
+           "testDiscoverMeasures",
+           "<SOAP-ENV:Envelope" + nl +
+                "    xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"" + nl +
+                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "    <SOAP-ENV:Body>" + nl +
+                "        <Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
+                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "    <RequestType>MDSCHEMA_MEASURES</RequestType>" + nl +
+                "    <Restrictions>" + nl +
+                "        <RestrictionList>" + nl +
+                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
+                "        </RestrictionList>" + nl +
+                "    </Restrictions>" + nl +
+                "    <Properties>" + nl +
+                "        <PropertyList>" + nl +
+                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "            <Catalog>FoodMart</Catalog>" + nl +
+                "            <Format>Tabular</Format>" + nl +
+                "        </PropertyList>" + nl +
+                "    </Properties>" + nl +
+                "</Discover>" + nl +
+                "    </SOAP-ENV:Body>" + nl +
+                "</SOAP-ENV:Envelope>",
             "testDiscoverMembersRestrictedByHierarchy",
             "<SOAP-ENV:Envelope" + nl +
                 "    xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"" + nl +
