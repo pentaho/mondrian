@@ -76,30 +76,30 @@ public class XmlaTest extends TestCase {
                 + "Jdbc=" + url + ";"
                 + "Catalog=" + catalogURL + ";"
                 + "JdbcDrivers=" + driver +";";
-        
+
         dataSource = "MondrianFoodMart";
         catalogName = DriverManager.getConnection(connectString, null, false).getSchema().getName();
-        
+
         connectString = connectString.replaceAll("&", "&amp;");
 
         StringReader dsConfigReader = new StringReader(
-            "<?xml version=\"1.0\"?>" + nl +
-            "<DataSources>" + 
-            "   <DataSource>" + 
-            "       <DataSourceName>MondrianFoodMart</DataSourceName>" + 
-            "       <DataSourceDescription>MondrianFoodMart</DataSourceDescription>" + 
-            "       <URL>http://localhost:8080/mondrian/xmla</URL>" + 
-            "       <DataSourceInfo>" + connectString + "</DataSourceInfo>" + 
-            "       <ProviderName>Mondrian</ProviderName>" + 
-            "       <ProviderType>MDP</ProviderType>" + 
-            "       <AuthenticationMode>Unauthenticated</AuthenticationMode>" +
-            "   </DataSource>" +
-            "</DataSources>");
+                "<?xml version=\"1.0\"?>" + nl +
+                "<DataSources>" +
+                "   <DataSource>" +
+                "       <DataSourceName>MondrianFoodMart</DataSourceName>" +
+                "       <DataSourceDescription>MondrianFoodMart</DataSourceDescription>" +
+                "       <URL>http://localhost:8080/mondrian/xmla</URL>" +
+                "       <DataSourceInfo>" + connectString + "</DataSourceInfo>" +
+                "       <ProviderName>Mondrian</ProviderName>" +
+                "       <ProviderType>MDP</ProviderType>" +
+                "       <AuthenticationMode>Unauthenticated</AuthenticationMode>" +
+                "   </DataSource>" +
+                "</DataSources>");
         final Parser xmlParser = XOMUtil.createDefaultParser();
         final DOMWrapper def = xmlParser.parse(dsConfigReader);
         DataSourcesConfig.DataSources dataSources = new DataSourcesConfig.DataSources(def);
         XmlaMediator.initDataSourcesMap(dataSources);
-        
+
     }
 
     /**
@@ -153,6 +153,17 @@ public class XmlaTest extends TestCase {
         assertEquals(expected, response);
     }
 
+    private String concat(String[] strings) {
+        StringBuffer buf = new StringBuffer();
+        for (int i = 0; i < strings.length; i++) {
+            if (i > 0) {
+                buf.append(nl);
+            }
+            buf.append(strings[i]);
+        }
+        return buf.toString();
+    }
+
     private String wrap(String request) {
         request = Pattern.compile("^").matcher(request).replaceAll("        ");
         return "<SOAP-ENV:Envelope" + nl +
@@ -187,603 +198,612 @@ public class XmlaTest extends TestCase {
     // tests follow
 
     public void testDiscoverDataSources() {
-        assertRequestYields(wrap(
-                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "    <RequestType>DISCOVER_DATASOURCES</RequestType>" + nl +
-                "    <Restrictions>" + nl +
-                "        <RestrictionList/>" + nl +
-                "    </Restrictions>" + nl +
-                "    <Properties>" + nl +
-                "        <PropertyList/>" + nl +
-                "    </Properties>" + nl +
-                "</Discover>"),
-
-                "<?xml version=\"1.0\"?>" + nl +
-                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "  <SOAP-ENV:Body>" + nl +
-                "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
-                "      <return>" + nl +
-                "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
-                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>" + nl +
-                "          <row>" + nl +
-                "            <DataSourceName>MondrianFoodMart</DataSourceName>" + nl +
-                "            <DataSourceDescription>MondrianFoodMart</DataSourceDescription>" + nl +
-                "            <URL>http://localhost:8080/mondrian/xmla</URL>" + nl +
-                "            <DataSourceInfo>MondrianFoodMart</DataSourceInfo>" + nl +
-                "            <ProviderName>Mondrian</ProviderName>" + nl +
-                "            <ProviderType>MDP</ProviderType>" + nl +
-                "            <AuthenticationMode>Unauthenticated</AuthenticationMode>" + nl +
-                "          </row>" + nl +
-                "        </root>" + nl +
-                "      </return>" + nl +
-                "    </DiscoverResponse>" + nl +
-                "  </SOAP-ENV:Body>" + nl +
-                "</SOAP-ENV:Envelope>");
+        String[] request = {
+            "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"",
+            "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "    <RequestType>DISCOVER_DATASOURCES</RequestType>",
+            "    <Restrictions>",
+            "        <RestrictionList/>",
+            "    </Restrictions>",
+            "    <Properties>",
+            "        <PropertyList/>",
+            "    </Properties>",
+            "</Discover>"};
+        String[] expected = {
+            "<?xml version=\"1.0\"?>",
+            "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "  <SOAP-ENV:Body>",
+            "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">",
+            "      <return>",
+            "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">",
+            "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>",
+            "          <row>",
+            "            <DataSourceName>MondrianFoodMart</DataSourceName>",
+            "            <DataSourceDescription>MondrianFoodMart</DataSourceDescription>",
+            "            <URL>http://localhost:8080/mondrian/xmla</URL>",
+            "            <DataSourceInfo>MondrianFoodMart</DataSourceInfo>",
+            "            <ProviderName>Mondrian</ProviderName>",
+            "            <ProviderType>MDP</ProviderType>",
+            "            <AuthenticationMode>Unauthenticated</AuthenticationMode>",
+            "          </row>",
+            "        </root>",
+            "      </return>",
+            "    </DiscoverResponse>",
+            "  </SOAP-ENV:Body>",
+            "</SOAP-ENV:Envelope>"};
+        assertRequestYields(wrap(concat(request)), concat(expected));
     }
 
     public void testDiscoverCatalogs() {
-        assertRequestYields(wrap(
-                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "    <RequestType>DBSCHEMA_CATALOGS</RequestType>" + nl +
-                "    <Restrictions>" + nl +
-                "        <RestrictionList/>" + nl +
-                "    </Restrictions>" + nl +
-                "    <Properties>" + nl +
-                "        <PropertyList>" + nl +
-                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "            <Catalog>FoodMart</Catalog>" + nl +
-                "            <Format>Tabular</Format>" + nl +
-                "        </PropertyList>" + nl +
-                "    </Properties>" + nl +
-                "</Discover>"),
-
-                "<?xml version=\"1.0\"?>" + nl +
-                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "  <SOAP-ENV:Body>" + nl +
-                "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
-                "      <return>" + nl +
-                "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
-                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>" + nl +
-                "          <row>" + nl +
-                "            <CATALOG_NAME>FoodMart</CATALOG_NAME>" + nl +
-                "          </row>" + nl +
-                "        </root>" + nl +
-                "      </return>" + nl +
-                "    </DiscoverResponse>" + nl +
-                "  </SOAP-ENV:Body>" + nl +
-                "</SOAP-ENV:Envelope>");
+        String[] request = {
+            "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"",
+            "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "    <RequestType>DBSCHEMA_CATALOGS</RequestType>",
+            "    <Restrictions>",
+            "        <RestrictionList/>",
+            "    </Restrictions>",
+            "    <Properties>",
+            "        <PropertyList>",
+            "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>",
+            "            <Catalog>FoodMart</Catalog>",
+            "            <Format>Tabular</Format>",
+            "        </PropertyList>",
+            "    </Properties>",
+            "</Discover>"};
+        String[] expected = {
+            "<?xml version=\"1.0\"?>",
+            "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "  <SOAP-ENV:Body>",
+            "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">",
+            "      <return>",
+            "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">",
+            "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>",
+            "          <row>",
+            "            <CATALOG_NAME>FoodMart</CATALOG_NAME>",
+            "          </row>",
+            "        </root>",
+            "      </return>",
+            "    </DiscoverResponse>",
+            "  </SOAP-ENV:Body>",
+            "</SOAP-ENV:Envelope>"};
+        assertRequestYields(wrap(concat(request)), concat(expected));
     }
 
     public void testDiscoverCubes() {
-        assertRequestMatches(wrap(
-                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "    <RequestType>MDSCHEMA_CUBES</RequestType>" + nl +
-                "    <Restrictions>" + nl +
-                "        <RestrictionList>" + nl +
-                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
-                "        </RestrictionList>" + nl +
-                "    </Restrictions>" + nl +
-                "    <Properties>" + nl +
-                "        <PropertyList>" + nl +
-                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "            <Catalog>FoodMart</Catalog>" + nl +
-                "            <Format>Tabular</Format>" + nl +
-                "        </PropertyList>" + nl +
-                "    </Properties>" + nl +
-                "</Discover>"),
-
-                "(?s).*" + nl +
-                "          <row>" + nl +
-                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
-                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
-                "            <CUBE_NAME>Store</CUBE_NAME>" + nl +
-                "            <CUBE_TYPE>CUBE</CUBE_TYPE>" + nl +
-                "            <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>" + nl +
-                "            <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>" + nl +
-                "            <IS_LINKABLE>false</IS_LINKABLE>" + nl +
-                "            <IS_SQL_ALLOWED>false</IS_SQL_ALLOWED>" + nl +
-                "          </row>" + nl +
-                ".*");
+        String[] request = {
+            "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"",
+            "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "    <RequestType>MDSCHEMA_CUBES</RequestType>",
+            "    <Restrictions>",
+            "        <RestrictionList>",
+            "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>",
+            "        </RestrictionList>",
+            "    </Restrictions>",
+            "    <Properties>",
+            "        <PropertyList>",
+            "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>",
+            "            <Catalog>FoodMart</Catalog>",
+            "            <Format>Tabular</Format>",
+            "        </PropertyList>",
+            "    </Properties>",
+            "</Discover>"};
+        String[] responsePattern = {
+            "(?s).*",
+            "          <row>",
+            "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>",
+            "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>",
+            "            <CUBE_NAME>Store</CUBE_NAME>",
+            "            <CUBE_TYPE>CUBE</CUBE_TYPE>",
+            "            <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>",
+            "            <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>",
+            "            <IS_LINKABLE>false</IS_LINKABLE>",
+            "            <IS_SQL_ALLOWED>false</IS_SQL_ALLOWED>",
+            "          </row>",
+            ".*"};
+        assertRequestMatches(wrap(concat(request)), concat(responsePattern));
     }
 
     public void testDiscoverCubesRestricted() {
-        assertRequestYields(wrap(
-                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "    <RequestType>MDSCHEMA_CUBES</RequestType>" + nl +
-                "    <Restrictions>" + nl +
-                "        <RestrictionList>" + nl +
-                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
-                "        </RestrictionList>" + nl +
-                "    </Restrictions>" + nl +
-                "    <Properties>" + nl +
-                "        <PropertyList>" + nl +
-                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "            <Catalog>FoodMart</Catalog>" + nl +
-                "            <Format>Tabular</Format>" + nl +
-                "        </PropertyList>" + nl +
-                "    </Properties>" + nl +
-                "</Discover>"),
-
-                "<?xml version=\"1.0\"?>" + nl +
-                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "  <SOAP-ENV:Body>" + nl +
-                "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
-                "      <return>" + nl +
-                "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
-                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>" + nl +
-                "          <row>" + nl +
-                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
-                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
-                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
-                "            <CUBE_TYPE>CUBE</CUBE_TYPE>" + nl +
-                "            <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>" + nl +
-                "            <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>" + nl +
-                "            <IS_LINKABLE>false</IS_LINKABLE>" + nl +
-                "            <IS_SQL_ALLOWED>false</IS_SQL_ALLOWED>" + nl +
-                "          </row>" + nl +
-                "        </root>" + nl +
-                "      </return>" + nl +
-                "    </DiscoverResponse>" + nl +
-                "  </SOAP-ENV:Body>" + nl +
-                "</SOAP-ENV:Envelope>");
+        String[] request = {
+            "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"",
+            "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "    <RequestType>MDSCHEMA_CUBES</RequestType>",
+            "    <Restrictions>",
+            "        <RestrictionList>",
+            "            <CUBE_NAME>Sales</CUBE_NAME>",
+            "        </RestrictionList>",
+            "    </Restrictions>",
+            "    <Properties>",
+            "        <PropertyList>",
+            "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>",
+            "            <Catalog>FoodMart</Catalog>",
+            "            <Format>Tabular</Format>",
+            "        </PropertyList>",
+            "    </Properties>",
+            "</Discover>"};
+        String[] expected = {
+            "<?xml version=\"1.0\"?>",
+            "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "  <SOAP-ENV:Body>",
+            "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">",
+            "      <return>",
+            "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">",
+            "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>",
+            "          <row>",
+            "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>",
+            "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>",
+            "            <CUBE_NAME>Sales</CUBE_NAME>",
+            "            <CUBE_TYPE>CUBE</CUBE_TYPE>",
+            "            <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>",
+            "            <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>",
+            "            <IS_LINKABLE>false</IS_LINKABLE>",
+            "            <IS_SQL_ALLOWED>false</IS_SQL_ALLOWED>",
+            "          </row>",
+            "        </root>",
+            "      </return>",
+            "    </DiscoverResponse>",
+            "  </SOAP-ENV:Body>",
+            "</SOAP-ENV:Envelope>"};
+        assertRequestYields(wrap(concat(request)), concat(expected));
     }
 
     public void testDiscoverCubesRestrictedOnUnrestrictableColumnFails() {
-        assertRequestMatches(wrap(
-                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "    <RequestType>MDSCHEMA_CUBES</RequestType>" + nl +
-                "    <Restrictions>" + nl +
-                "        <RestrictionList>" + nl +
-                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
-                "            <IS_WRITE_ENABLED>true</IS_WRITE_ENABLED>" + nl +
-                "        </RestrictionList>" + nl +
-                "    </Restrictions>" + nl +
-                "    <Properties>" + nl +
-                "        <PropertyList>" + nl +
-                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "            <Catalog>FoodMart</Catalog>" + nl +
-                "            <Format>Tabular</Format>" + nl +
-                "        </PropertyList>" + nl +
-                "    </Properties>" + nl +
-                "</Discover>"),
-
-                "(?s).*Rowset 'MDSCHEMA_CUBES' column 'IS_WRITE_ENABLED' does not allow restrictions.*");
+        String[] request = {
+            "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"",
+            "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "    <RequestType>MDSCHEMA_CUBES</RequestType>",
+            "    <Restrictions>",
+            "        <RestrictionList>",
+            "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>",
+            "            <IS_WRITE_ENABLED>true</IS_WRITE_ENABLED>",
+            "        </RestrictionList>",
+            "    </Restrictions>",
+            "    <Properties>",
+            "        <PropertyList>",
+            "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>",
+            "            <Catalog>FoodMart</Catalog>",
+            "            <Format>Tabular</Format>",
+            "        </PropertyList>",
+            "    </Properties>",
+            "</Discover>"};
+        String responsePattern = "(?s).*Rowset 'MDSCHEMA_CUBES' column 'IS_WRITE_ENABLED' does not allow restrictions.*";
+        assertRequestMatches(wrap(concat(request)), responsePattern);
     }
 
     public void testDiscoverCubesRestrictedOnBadColumn() {
-        assertRequestMatches(wrap(
-                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "    <RequestType>MDSCHEMA_CUBES</RequestType>" + nl +
-                "    <Restrictions>" + nl +
-                "        <RestrictionList>" + nl +
-                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
-                "            <NON_EXISTENT_COLUMN>FooBar</NON_EXISTENT_COLUMN>" + nl +
-                "        </RestrictionList>" + nl +
-                "    </Restrictions>" + nl +
-                "    <Properties>" + nl +
-                "        <PropertyList>" + nl +
-                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "            <Catalog>FoodMart</Catalog>" + nl +
-                "            <Format>Tabular</Format>" + nl +
-                "        </PropertyList>" + nl +
-                "    </Properties>" + nl +
-                "</Discover>"),
-
-                "(?s).*Rowset 'MDSCHEMA_CUBES' does not contain column 'NON_EXISTENT_COLUMN'.*");
+        String[] request = {
+            "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"",
+            "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "    <RequestType>MDSCHEMA_CUBES</RequestType>",
+            "    <Restrictions>",
+            "        <RestrictionList>",
+            "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>",
+            "            <NON_EXISTENT_COLUMN>FooBar</NON_EXISTENT_COLUMN>",
+            "        </RestrictionList>",
+            "    </Restrictions>",
+            "    <Properties>",
+            "        <PropertyList>",
+            "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>",
+            "            <Catalog>FoodMart</Catalog>",
+            "            <Format>Tabular</Format>",
+            "        </PropertyList>",
+            "    </Properties>",
+            "</Discover>"};
+        String responsePattern = "(?s).*Rowset 'MDSCHEMA_CUBES' does not contain column 'NON_EXISTENT_COLUMN'.*";
+        assertRequestMatches(wrap(concat(request)), responsePattern);
     }
 
     public void testDiscoverDimensions() {
-        assertRequestMatches(wrap(
-                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "    <RequestType>MDSCHEMA_DIMENSIONS</RequestType>" + nl +
-                "    <Restrictions>" + nl +
-                "        <RestrictionList>" + nl +
-                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
-                "        </RestrictionList>" + nl +
-                "    </Restrictions>" + nl +
-                "    <Properties>" + nl +
-                "        <PropertyList>" + nl +
-                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "            <Catalog>FoodMart</Catalog>" + nl +
-                "            <Format>Tabular</Format>" + nl +
-                "        </PropertyList>" + nl +
-                "    </Properties>" + nl +
-                "</Discover>"),
-
-                "(?s).*<DIMENSION_NAME>Store</DIMENSION_NAME>.*");
+        String[] request = {
+            "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"",
+            "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "    <RequestType>MDSCHEMA_DIMENSIONS</RequestType>",
+            "    <Restrictions>",
+            "        <RestrictionList>",
+            "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>",
+            "        </RestrictionList>",
+            "    </Restrictions>",
+            "    <Properties>",
+            "        <PropertyList>",
+            "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>",
+            "            <Catalog>FoodMart</Catalog>",
+            "            <Format>Tabular</Format>",
+            "        </PropertyList>",
+            "    </Properties>",
+            "</Discover>"};
+        String responsePattern = "(?s).*<DIMENSION_NAME>Store</DIMENSION_NAME>.*";
+        assertRequestMatches(wrap(concat(request)), responsePattern);
     }
 
     public void testDiscoverHierarchies() {
-        assertRequestMatches(wrap(
-                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "    <RequestType>MDSCHEMA_HIERARCHIES</RequestType>" + nl +
-                "    <Restrictions>" + nl +
-                "        <RestrictionList>" + nl +
-                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
-                "        </RestrictionList>" + nl +
-                "    </Restrictions>" + nl +
-                "    <Properties>" + nl +
-                "        <PropertyList>" + nl +
-                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "            <Catalog>FoodMart</Catalog>" + nl +
-                "            <Format>Tabular</Format>" + nl +
-                "        </PropertyList>" + nl +
-                "    </Properties>" + nl +
-                "</Discover>"),
-
-                "(?s).*<HIERARCHY_NAME>Store</HIERARCHY_NAME>.*");
+        String[] request = {
+            "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"",
+            "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "    <RequestType>MDSCHEMA_HIERARCHIES</RequestType>",
+            "    <Restrictions>",
+            "        <RestrictionList>",
+            "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>",
+            "        </RestrictionList>",
+            "    </Restrictions>",
+            "    <Properties>",
+            "        <PropertyList>",
+            "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>",
+            "            <Catalog>FoodMart</Catalog>",
+            "            <Format>Tabular</Format>",
+            "        </PropertyList>",
+            "    </Properties>",
+            "</Discover>"};
+        String responsePattern = "(?s).*<HIERARCHY_NAME>Store</HIERARCHY_NAME>.*";
+        assertRequestMatches(wrap(concat(request)), responsePattern);
     }
 
     public void testDiscoverLevels() {
-        assertRequestMatches(wrap(
-                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "    <RequestType>MDSCHEMA_LEVELS</RequestType>" + nl +
-                "    <Restrictions>" + nl +
-                "        <RestrictionList>" + nl +
-                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
-                "        </RestrictionList>" + nl +
-                "    </Restrictions>" + nl +
-                "    <Properties>" + nl +
-                "        <PropertyList>" + nl +
-                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "            <Catalog>FoodMart</Catalog>" + nl +
-                "            <Format>Tabular</Format>" + nl +
-                "        </PropertyList>" + nl +
-                "    </Properties>" + nl +
-                "</Discover>"),
-
-                "(?s).*<LEVEL_NAME>City</LEVEL_NAME>.*");
+        String[] request = {
+            "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"",
+            "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "    <RequestType>MDSCHEMA_LEVELS</RequestType>",
+            "    <Restrictions>",
+            "        <RestrictionList>",
+            "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>",
+            "        </RestrictionList>",
+            "    </Restrictions>",
+            "    <Properties>",
+            "        <PropertyList>",
+            "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>",
+            "            <Catalog>FoodMart</Catalog>",
+            "            <Format>Tabular</Format>",
+            "        </PropertyList>",
+            "    </Properties>",
+            "</Discover>"};
+        String responsePattern = "(?s).*<LEVEL_NAME>City</LEVEL_NAME>.*";
+        assertRequestMatches(wrap(concat(request)), responsePattern);
     }
 
     public void testDiscoverMembersRestrictedByHierarchy() {
-        assertRequestYields(wrap(
-                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "    <RequestType>MDSCHEMA_MEMBERS</RequestType>" + nl +
-                "    <Restrictions>" + nl +
-                "        <RestrictionList>" + nl +
-                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
-                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
-                "            <HIERARCHY_UNIQUE_NAME>[Gender]</HIERARCHY_UNIQUE_NAME>" + nl +
-                "        </RestrictionList>" + nl +
-                "    </Restrictions>" + nl +
-                "    <Properties>" + nl +
-                "        <PropertyList>" + nl +
-                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "            <Catalog>FoodMart</Catalog>" + nl +
-                "            <Format>Tabular</Format>" + nl +
-                "        </PropertyList>" + nl +
-                "    </Properties>" + nl +
-                "</Discover>"),
-
-                "<?xml version=\"1.0\"?>" + nl +
-                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "  <SOAP-ENV:Body>" + nl +
-                "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
-                "      <return>" + nl +
-                "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
-                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>" + nl +
-                "          <row>" + nl +
-                "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
-                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
-                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
-                "            <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>" + nl +
-                "            <HIERARCHY_UNIQUE_NAME>[Gender]</HIERARCHY_UNIQUE_NAME>" + nl +
-                "            <LEVEL_UNIQUE_NAME>[Gender].[(All)]</LEVEL_UNIQUE_NAME>" + nl +
-                "            <LEVEL_NUMBER>0</LEVEL_NUMBER>" + nl +
-                "            <MEMBER_NAME>All Gender</MEMBER_NAME>" + nl +
-                "            <MEMBER_ORDINAL>0</MEMBER_ORDINAL>" + nl +
-                "            <MEMBER_UNIQUE_NAME>[Gender].[All Gender]</MEMBER_UNIQUE_NAME>" + nl +
-                "            <MEMBER_TYPE>2</MEMBER_TYPE>" + nl +
-                "            <MEMBER_CAPTION>All Gender</MEMBER_CAPTION>" + nl +
-                "            <CHILDREN_CARDINALITY>2</CHILDREN_CARDINALITY>" + nl +
-                "            <PARENT_LEVEL>0</PARENT_LEVEL>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
-                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
-                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
-                "            <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>" + nl +
-                "            <HIERARCHY_UNIQUE_NAME>[Gender]</HIERARCHY_UNIQUE_NAME>" + nl +
-                "            <LEVEL_UNIQUE_NAME>[Gender].[Gender]</LEVEL_UNIQUE_NAME>" + nl +
-                "            <LEVEL_NUMBER>1</LEVEL_NUMBER>" + nl +
-                "            <MEMBER_NAME>F</MEMBER_NAME>" + nl +
-                "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>" + nl +
-                "            <MEMBER_UNIQUE_NAME>[Gender].[All Gender].[F]</MEMBER_UNIQUE_NAME>" + nl +
-                "            <MEMBER_TYPE>1</MEMBER_TYPE>" + nl +
-                "            <MEMBER_CAPTION>F</MEMBER_CAPTION>" + nl +
-                "            <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>" + nl +
-                "            <PARENT_LEVEL>0</PARENT_LEVEL>" + nl +
-                "            <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
-                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
-                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
-                "            <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>" + nl +
-                "            <HIERARCHY_UNIQUE_NAME>[Gender]</HIERARCHY_UNIQUE_NAME>" + nl +
-                "            <LEVEL_UNIQUE_NAME>[Gender].[Gender]</LEVEL_UNIQUE_NAME>" + nl +
-                "            <LEVEL_NUMBER>1</LEVEL_NUMBER>" + nl +
-                "            <MEMBER_NAME>M</MEMBER_NAME>" + nl +
-                "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>" + nl +
-                "            <MEMBER_UNIQUE_NAME>[Gender].[All Gender].[M]</MEMBER_UNIQUE_NAME>" + nl +
-                "            <MEMBER_TYPE>1</MEMBER_TYPE>" + nl +
-                "            <MEMBER_CAPTION>M</MEMBER_CAPTION>" + nl +
-                "            <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>" + nl +
-                "            <PARENT_LEVEL>0</PARENT_LEVEL>" + nl +
-                "            <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>" + nl +
-                "          </row>" + nl +
-                "        </root>" + nl +
-                "      </return>" + nl +
-                "    </DiscoverResponse>" + nl +
-                "  </SOAP-ENV:Body>" + nl +
-                "</SOAP-ENV:Envelope>");
+        String[] request = {
+            "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"",
+            "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "    <RequestType>MDSCHEMA_MEMBERS</RequestType>",
+            "    <Restrictions>",
+            "        <RestrictionList>",
+            "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>",
+            "            <CUBE_NAME>Sales</CUBE_NAME>",
+            "            <HIERARCHY_UNIQUE_NAME>[Gender]</HIERARCHY_UNIQUE_NAME>",
+            "        </RestrictionList>",
+            "    </Restrictions>",
+            "    <Properties>",
+            "        <PropertyList>",
+            "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>",
+            "            <Catalog>FoodMart</Catalog>",
+            "            <Format>Tabular</Format>",
+            "        </PropertyList>",
+            "    </Properties>",
+            "</Discover>"};
+        String[] expected = {
+            "<?xml version=\"1.0\"?>",
+            "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "  <SOAP-ENV:Body>",
+            "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">",
+            "      <return>",
+            "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">",
+            "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>",
+            "          <row>",
+            "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>",
+            "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>",
+            "            <CUBE_NAME>Sales</CUBE_NAME>",
+            "            <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>",
+            "            <HIERARCHY_UNIQUE_NAME>[Gender]</HIERARCHY_UNIQUE_NAME>",
+            "            <LEVEL_UNIQUE_NAME>[Gender].[(All)]</LEVEL_UNIQUE_NAME>",
+            "            <LEVEL_NUMBER>0</LEVEL_NUMBER>",
+            "            <MEMBER_NAME>All Gender</MEMBER_NAME>",
+            "            <MEMBER_ORDINAL>0</MEMBER_ORDINAL>",
+            "            <MEMBER_UNIQUE_NAME>[Gender].[All Gender]</MEMBER_UNIQUE_NAME>",
+            "            <MEMBER_TYPE>2</MEMBER_TYPE>",
+            "            <MEMBER_CAPTION>All Gender</MEMBER_CAPTION>",
+            "            <CHILDREN_CARDINALITY>2</CHILDREN_CARDINALITY>",
+            "            <PARENT_LEVEL>0</PARENT_LEVEL>",
+            "          </row>",
+            "          <row>",
+            "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>",
+            "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>",
+            "            <CUBE_NAME>Sales</CUBE_NAME>",
+            "            <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>",
+            "            <HIERARCHY_UNIQUE_NAME>[Gender]</HIERARCHY_UNIQUE_NAME>",
+            "            <LEVEL_UNIQUE_NAME>[Gender].[Gender]</LEVEL_UNIQUE_NAME>",
+            "            <LEVEL_NUMBER>1</LEVEL_NUMBER>",
+            "            <MEMBER_NAME>F</MEMBER_NAME>",
+            "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>",
+            "            <MEMBER_UNIQUE_NAME>[Gender].[All Gender].[F]</MEMBER_UNIQUE_NAME>",
+            "            <MEMBER_TYPE>1</MEMBER_TYPE>",
+            "            <MEMBER_CAPTION>F</MEMBER_CAPTION>",
+            "            <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>",
+            "            <PARENT_LEVEL>0</PARENT_LEVEL>",
+            "            <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>",
+            "          </row>",
+            "          <row>",
+            "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>",
+            "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>",
+            "            <CUBE_NAME>Sales</CUBE_NAME>",
+            "            <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>",
+            "            <HIERARCHY_UNIQUE_NAME>[Gender]</HIERARCHY_UNIQUE_NAME>",
+            "            <LEVEL_UNIQUE_NAME>[Gender].[Gender]</LEVEL_UNIQUE_NAME>",
+            "            <LEVEL_NUMBER>1</LEVEL_NUMBER>",
+            "            <MEMBER_NAME>M</MEMBER_NAME>",
+            "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>",
+            "            <MEMBER_UNIQUE_NAME>[Gender].[All Gender].[M]</MEMBER_UNIQUE_NAME>",
+            "            <MEMBER_TYPE>1</MEMBER_TYPE>",
+            "            <MEMBER_CAPTION>M</MEMBER_CAPTION>",
+            "            <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>",
+            "            <PARENT_LEVEL>0</PARENT_LEVEL>",
+            "            <PARENT_UNIQUE_NAME>[Gender].[All Gender]</PARENT_UNIQUE_NAME>",
+            "          </row>",
+            "        </root>",
+            "      </return>",
+            "    </DiscoverResponse>",
+            "  </SOAP-ENV:Body>",
+            "</SOAP-ENV:Envelope>"};
+        assertRequestYields(wrap(concat(request)), concat(expected));
     }
 
     public void testDiscoverMembersRestrictedByMemberAndTreeop() {
         final int treeOp = (Enumeration.TreeOp.Siblings.ordinal |
-                        Enumeration.TreeOp.Ancestors.ordinal |
-                        Enumeration.TreeOp.Children.ordinal);
-        assertRequestYields(wrap(
-                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "    <RequestType>MDSCHEMA_MEMBERS</RequestType>" + nl +
-                "    <Restrictions>" + nl +
-                "        <RestrictionList>" + nl +
-                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
-                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
-                "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q3]</MEMBER_UNIQUE_NAME>" + nl +
-                "            <TREE_OP>" + treeOp + "</TREE_OP>" + nl +
-                "        </RestrictionList>" + nl +
-                "    </Restrictions>" + nl +
-                "    <Properties>" + nl +
-                "        <PropertyList>" + nl +
-                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "            <Catalog>FoodMart</Catalog>" + nl +
-                "            <Format>Tabular</Format>" + nl +
-                "        </PropertyList>" + nl +
-                "    </Properties>" + nl +
-                "</Discover>"),
-
-                "<?xml version=\"1.0\"?>" + nl +
-                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "  <SOAP-ENV:Body>" + nl +
-                "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
-                "      <return>" + nl +
-                "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
-                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>" + nl +
-                "          <row>" + nl +
-                "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
-                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
-                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
-                "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
-                "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>" + nl +
-                "            <LEVEL_UNIQUE_NAME>[Time].[Quarter]</LEVEL_UNIQUE_NAME>" + nl +
-                "            <LEVEL_NUMBER>1</LEVEL_NUMBER>" + nl +
-                "            <MEMBER_NAME>Q1</MEMBER_NAME>" + nl +
-                "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>" + nl +
-                "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q1]</MEMBER_UNIQUE_NAME>" + nl +
-                "            <MEMBER_TYPE>1</MEMBER_TYPE>" + nl +
-                "            <MEMBER_CAPTION>Q1</MEMBER_CAPTION>" + nl +
-                "            <CHILDREN_CARDINALITY>3</CHILDREN_CARDINALITY>" + nl +
-                "            <PARENT_LEVEL>0</PARENT_LEVEL>" + nl +
-                "            <PARENT_UNIQUE_NAME>[Time].[1997]</PARENT_UNIQUE_NAME>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
-                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
-                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
-                "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
-                "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>" + nl +
-                "            <LEVEL_UNIQUE_NAME>[Time].[Quarter]</LEVEL_UNIQUE_NAME>" + nl +
-                "            <LEVEL_NUMBER>1</LEVEL_NUMBER>" + nl +
-                "            <MEMBER_NAME>Q2</MEMBER_NAME>" + nl +
-                "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>" + nl +
-                "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q2]</MEMBER_UNIQUE_NAME>" + nl +
-                "            <MEMBER_TYPE>1</MEMBER_TYPE>" + nl +
-                "            <MEMBER_CAPTION>Q2</MEMBER_CAPTION>" + nl +
-                "            <CHILDREN_CARDINALITY>3</CHILDREN_CARDINALITY>" + nl +
-                "            <PARENT_LEVEL>0</PARENT_LEVEL>" + nl +
-                "            <PARENT_UNIQUE_NAME>[Time].[1997]</PARENT_UNIQUE_NAME>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
-                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
-                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
-                "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
-                "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>" + nl +
-                "            <LEVEL_UNIQUE_NAME>[Time].[Quarter]</LEVEL_UNIQUE_NAME>" + nl +
-                "            <LEVEL_NUMBER>1</LEVEL_NUMBER>" + nl +
-                "            <MEMBER_NAME>Q4</MEMBER_NAME>" + nl +
-                "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>" + nl +
-                "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q4]</MEMBER_UNIQUE_NAME>" + nl +
-                "            <MEMBER_TYPE>1</MEMBER_TYPE>" + nl +
-                "            <MEMBER_CAPTION>Q4</MEMBER_CAPTION>" + nl +
-                "            <CHILDREN_CARDINALITY>3</CHILDREN_CARDINALITY>" + nl +
-                "            <PARENT_LEVEL>0</PARENT_LEVEL>" + nl +
-                "            <PARENT_UNIQUE_NAME>[Time].[1997]</PARENT_UNIQUE_NAME>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
-                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
-                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
-                "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
-                "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>" + nl +
-                "            <LEVEL_UNIQUE_NAME>[Time].[Month]</LEVEL_UNIQUE_NAME>" + nl +
-                "            <LEVEL_NUMBER>2</LEVEL_NUMBER>" + nl +
-                "            <MEMBER_NAME>7</MEMBER_NAME>" + nl +
-                "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>" + nl +
-                "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q3].[7]</MEMBER_UNIQUE_NAME>" + nl +
-                "            <MEMBER_TYPE>1</MEMBER_TYPE>" + nl +
-                "            <MEMBER_CAPTION>7</MEMBER_CAPTION>" + nl +
-                "            <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>" + nl +
-                "            <PARENT_LEVEL>1</PARENT_LEVEL>" + nl +
-                "            <PARENT_UNIQUE_NAME>[Time].[1997].[Q3]</PARENT_UNIQUE_NAME>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
-                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
-                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
-                "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
-                "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>" + nl +
-                "            <LEVEL_UNIQUE_NAME>[Time].[Month]</LEVEL_UNIQUE_NAME>" + nl +
-                "            <LEVEL_NUMBER>2</LEVEL_NUMBER>" + nl +
-                "            <MEMBER_NAME>8</MEMBER_NAME>" + nl +
-                "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>" + nl +
-                "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q3].[8]</MEMBER_UNIQUE_NAME>" + nl +
-                "            <MEMBER_TYPE>1</MEMBER_TYPE>" + nl +
-                "            <MEMBER_CAPTION>8</MEMBER_CAPTION>" + nl +
-                "            <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>" + nl +
-                "            <PARENT_LEVEL>1</PARENT_LEVEL>" + nl +
-                "            <PARENT_UNIQUE_NAME>[Time].[1997].[Q3]</PARENT_UNIQUE_NAME>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
-                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
-                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
-                "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
-                "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>" + nl +
-                "            <LEVEL_UNIQUE_NAME>[Time].[Month]</LEVEL_UNIQUE_NAME>" + nl +
-                "            <LEVEL_NUMBER>2</LEVEL_NUMBER>" + nl +
-                "            <MEMBER_NAME>9</MEMBER_NAME>" + nl +
-                "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>" + nl +
-                "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q3].[9]</MEMBER_UNIQUE_NAME>" + nl +
-                "            <MEMBER_TYPE>1</MEMBER_TYPE>" + nl +
-                "            <MEMBER_CAPTION>9</MEMBER_CAPTION>" + nl +
-                "            <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>" + nl +
-                "            <PARENT_LEVEL>1</PARENT_LEVEL>" + nl +
-                "            <PARENT_UNIQUE_NAME>[Time].[1997].[Q3]</PARENT_UNIQUE_NAME>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>" + nl +
-                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
-                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
-                "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>" + nl +
-                "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>" + nl +
-                "            <LEVEL_UNIQUE_NAME>[Time].[Year]</LEVEL_UNIQUE_NAME>" + nl +
-                "            <LEVEL_NUMBER>0</LEVEL_NUMBER>" + nl +
-                "            <MEMBER_NAME>1997</MEMBER_NAME>" + nl +
-                "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>" + nl +
-                "            <MEMBER_UNIQUE_NAME>[Time].[1997]</MEMBER_UNIQUE_NAME>" + nl +
-                "            <MEMBER_TYPE>1</MEMBER_TYPE>" + nl +
-                "            <MEMBER_CAPTION>1997</MEMBER_CAPTION>" + nl +
-                "            <CHILDREN_CARDINALITY>4</CHILDREN_CARDINALITY>" + nl +
-                "            <PARENT_LEVEL>0</PARENT_LEVEL>" + nl +
-                "          </row>" + nl +
-                "        </root>" + nl +
-                "      </return>" + nl +
-                "    </DiscoverResponse>" + nl +
-                "  </SOAP-ENV:Body>" + nl +
-                "</SOAP-ENV:Envelope>");
+                Enumeration.TreeOp.Ancestors.ordinal |
+                Enumeration.TreeOp.Children.ordinal);
+        String[] request = {
+            "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"",
+            "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "    <RequestType>MDSCHEMA_MEMBERS</RequestType>",
+            "    <Restrictions>",
+            "        <RestrictionList>",
+            "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>",
+            "            <CUBE_NAME>Sales</CUBE_NAME>",
+            "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q3]</MEMBER_UNIQUE_NAME>",
+            "            <TREE_OP>" + treeOp + "</TREE_OP>",
+            "        </RestrictionList>",
+            "    </Restrictions>",
+            "    <Properties>",
+            "        <PropertyList>",
+            "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>",
+            "            <Catalog>FoodMart</Catalog>",
+            "            <Format>Tabular</Format>",
+            "        </PropertyList>",
+            "    </Properties>",
+            "</Discover>"};
+        String[] expected = {
+            "<?xml version=\"1.0\"?>",
+            "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "  <SOAP-ENV:Body>",
+            "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">",
+            "      <return>",
+            "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">",
+            "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>",
+            "          <row>",
+            "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>",
+            "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>",
+            "            <CUBE_NAME>Sales</CUBE_NAME>",
+            "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>",
+            "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>",
+            "            <LEVEL_UNIQUE_NAME>[Time].[Quarter]</LEVEL_UNIQUE_NAME>",
+            "            <LEVEL_NUMBER>1</LEVEL_NUMBER>",
+            "            <MEMBER_NAME>Q1</MEMBER_NAME>",
+            "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>",
+            "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q1]</MEMBER_UNIQUE_NAME>",
+            "            <MEMBER_TYPE>1</MEMBER_TYPE>",
+            "            <MEMBER_CAPTION>Q1</MEMBER_CAPTION>",
+            "            <CHILDREN_CARDINALITY>3</CHILDREN_CARDINALITY>",
+            "            <PARENT_LEVEL>0</PARENT_LEVEL>",
+            "            <PARENT_UNIQUE_NAME>[Time].[1997]</PARENT_UNIQUE_NAME>",
+            "          </row>",
+            "          <row>",
+            "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>",
+            "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>",
+            "            <CUBE_NAME>Sales</CUBE_NAME>",
+            "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>",
+            "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>",
+            "            <LEVEL_UNIQUE_NAME>[Time].[Quarter]</LEVEL_UNIQUE_NAME>",
+            "            <LEVEL_NUMBER>1</LEVEL_NUMBER>",
+            "            <MEMBER_NAME>Q2</MEMBER_NAME>",
+            "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>",
+            "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q2]</MEMBER_UNIQUE_NAME>",
+            "            <MEMBER_TYPE>1</MEMBER_TYPE>",
+            "            <MEMBER_CAPTION>Q2</MEMBER_CAPTION>",
+            "            <CHILDREN_CARDINALITY>3</CHILDREN_CARDINALITY>",
+            "            <PARENT_LEVEL>0</PARENT_LEVEL>",
+            "            <PARENT_UNIQUE_NAME>[Time].[1997]</PARENT_UNIQUE_NAME>",
+            "          </row>",
+            "          <row>",
+            "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>",
+            "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>",
+            "            <CUBE_NAME>Sales</CUBE_NAME>",
+            "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>",
+            "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>",
+            "            <LEVEL_UNIQUE_NAME>[Time].[Quarter]</LEVEL_UNIQUE_NAME>",
+            "            <LEVEL_NUMBER>1</LEVEL_NUMBER>",
+            "            <MEMBER_NAME>Q4</MEMBER_NAME>",
+            "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>",
+            "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q4]</MEMBER_UNIQUE_NAME>",
+            "            <MEMBER_TYPE>1</MEMBER_TYPE>",
+            "            <MEMBER_CAPTION>Q4</MEMBER_CAPTION>",
+            "            <CHILDREN_CARDINALITY>3</CHILDREN_CARDINALITY>",
+            "            <PARENT_LEVEL>0</PARENT_LEVEL>",
+            "            <PARENT_UNIQUE_NAME>[Time].[1997]</PARENT_UNIQUE_NAME>",
+            "          </row>",
+            "          <row>",
+            "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>",
+            "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>",
+            "            <CUBE_NAME>Sales</CUBE_NAME>",
+            "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>",
+            "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>",
+            "            <LEVEL_UNIQUE_NAME>[Time].[Month]</LEVEL_UNIQUE_NAME>",
+            "            <LEVEL_NUMBER>2</LEVEL_NUMBER>",
+            "            <MEMBER_NAME>7</MEMBER_NAME>",
+            "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>",
+            "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q3].[7]</MEMBER_UNIQUE_NAME>",
+            "            <MEMBER_TYPE>1</MEMBER_TYPE>",
+            "            <MEMBER_CAPTION>7</MEMBER_CAPTION>",
+            "            <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>",
+            "            <PARENT_LEVEL>1</PARENT_LEVEL>",
+            "            <PARENT_UNIQUE_NAME>[Time].[1997].[Q3]</PARENT_UNIQUE_NAME>",
+            "          </row>",
+            "          <row>",
+            "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>",
+            "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>",
+            "            <CUBE_NAME>Sales</CUBE_NAME>",
+            "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>",
+            "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>",
+            "            <LEVEL_UNIQUE_NAME>[Time].[Month]</LEVEL_UNIQUE_NAME>",
+            "            <LEVEL_NUMBER>2</LEVEL_NUMBER>",
+            "            <MEMBER_NAME>8</MEMBER_NAME>",
+            "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>",
+            "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q3].[8]</MEMBER_UNIQUE_NAME>",
+            "            <MEMBER_TYPE>1</MEMBER_TYPE>",
+            "            <MEMBER_CAPTION>8</MEMBER_CAPTION>",
+            "            <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>",
+            "            <PARENT_LEVEL>1</PARENT_LEVEL>",
+            "            <PARENT_UNIQUE_NAME>[Time].[1997].[Q3]</PARENT_UNIQUE_NAME>",
+            "          </row>",
+            "          <row>",
+            "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>",
+            "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>",
+            "            <CUBE_NAME>Sales</CUBE_NAME>",
+            "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>",
+            "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>",
+            "            <LEVEL_UNIQUE_NAME>[Time].[Month]</LEVEL_UNIQUE_NAME>",
+            "            <LEVEL_NUMBER>2</LEVEL_NUMBER>",
+            "            <MEMBER_NAME>9</MEMBER_NAME>",
+            "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>",
+            "            <MEMBER_UNIQUE_NAME>[Time].[1997].[Q3].[9]</MEMBER_UNIQUE_NAME>",
+            "            <MEMBER_TYPE>1</MEMBER_TYPE>",
+            "            <MEMBER_CAPTION>9</MEMBER_CAPTION>",
+            "            <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>",
+            "            <PARENT_LEVEL>1</PARENT_LEVEL>",
+            "            <PARENT_UNIQUE_NAME>[Time].[1997].[Q3]</PARENT_UNIQUE_NAME>",
+            "          </row>",
+            "          <row>",
+            "            <CATALOG_NAME>"+catalogName+"</CATALOG_NAME>",
+            "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>",
+            "            <CUBE_NAME>Sales</CUBE_NAME>",
+            "            <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>",
+            "            <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>",
+            "            <LEVEL_UNIQUE_NAME>[Time].[Year]</LEVEL_UNIQUE_NAME>",
+            "            <LEVEL_NUMBER>0</LEVEL_NUMBER>",
+            "            <MEMBER_NAME>1997</MEMBER_NAME>",
+            "            <MEMBER_ORDINAL>-1</MEMBER_ORDINAL>",
+            "            <MEMBER_UNIQUE_NAME>[Time].[1997]</MEMBER_UNIQUE_NAME>",
+            "            <MEMBER_TYPE>1</MEMBER_TYPE>",
+            "            <MEMBER_CAPTION>1997</MEMBER_CAPTION>",
+            "            <CHILDREN_CARDINALITY>4</CHILDREN_CARDINALITY>",
+            "            <PARENT_LEVEL>0</PARENT_LEVEL>",
+            "          </row>",
+            "        </root>",
+            "      </return>",
+            "    </DiscoverResponse>",
+            "  </SOAP-ENV:Body>",
+            "</SOAP-ENV:Envelope>"};
+        assertRequestYields(wrap(concat(request)), concat(expected));
     }
 
     public void testDiscoverMeasures() {
-        assertRequestMatches(wrap(
-                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "    <RequestType>MDSCHEMA_MEASURES</RequestType>" + nl +
-                "    <Restrictions>" + nl +
-                "        <RestrictionList>" + nl +
-                "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>" + nl +
-                "        </RestrictionList>" + nl +
-                "    </Restrictions>" + nl +
-                "    <Properties>" + nl +
-                "        <PropertyList>" + nl +
-                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "            <Catalog>FoodMart</Catalog>" + nl +
-                "            <Format>Tabular</Format>" + nl +
-                "        </PropertyList>" + nl +
-                "    </Properties>" + nl +
-                "</Discover>"),
-
-                "(?s).*" + nl +
-                "          <row>" + nl +
-                "            <CATALOG_NAME>FoodMart</CATALOG_NAME>" + nl +
-                "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>" + nl +
-                "            <CUBE_NAME>Sales</CUBE_NAME>" + nl +
-                "            <MEASURE_NAME>Unit Sales</MEASURE_NAME>" + nl +
-                "            <MEASURE_UNIQUE_NAME>\\[Measures\\]\\.\\[Unit Sales\\]</MEASURE_UNIQUE_NAME>" + nl +
-                "            <MEASURE_CAPTION>Unit Sales</MEASURE_CAPTION>" + nl +
-                "          </row>" + nl +
-                ".*");
+        String[] responsePattern = {
+            "(?s).*",
+            "          <row>",
+            "            <CATALOG_NAME>FoodMart</CATALOG_NAME>",
+            "            <SCHEMA_NAME>FoodMart</SCHEMA_NAME>",
+            "            <CUBE_NAME>Sales</CUBE_NAME>",
+            "            <MEASURE_NAME>Unit Sales</MEASURE_NAME>",
+            "            <MEASURE_UNIQUE_NAME>\\[Measures\\]\\.\\[Unit Sales\\]</MEASURE_UNIQUE_NAME>",
+            "            <MEASURE_CAPTION>Unit Sales</MEASURE_CAPTION>",
+            "          </row>",
+            ".*"};
+        String[] request = {
+            "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"",
+            "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "    <RequestType>MDSCHEMA_MEASURES</RequestType>",
+            "    <Restrictions>",
+            "        <RestrictionList>",
+            "            <CATALOG_NAME>" + catalogName + "</CATALOG_NAME>",
+            "        </RestrictionList>",
+            "    </Restrictions>",
+            "    <Properties>",
+            "        <PropertyList>",
+            "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>",
+            "            <Catalog>FoodMart</Catalog>",
+            "            <Format>Tabular</Format>",
+            "        </PropertyList>",
+            "    </Properties>",
+            "</Discover>"};
+        assertRequestMatches(wrap(concat(request)), concat(responsePattern));
     }
     /**
      * Tests the {@link RowsetDefinition#DISCOVER_ENUMERATORS} rowset.
      */
     public void testDiscoverEnumerators() {
-        assertRequestMatches(wrap(
-                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "    <RequestType>DISCOVER_ENUMERATORS</RequestType>" + nl +
-                "    <Restrictions>" + nl +
-                "        <RestrictionList/>" + nl +
-                "    </Restrictions>" + nl +
-                "    <Properties>" + nl +
-                "        <PropertyList/>" + nl +
-                "    </Properties>" + nl +
-                "</Discover>"),
-
-                "(?s).*" + nl +
-                "          <row>" + nl +
-                "            <EnumName>AuthenticationMode</EnumName>" + nl +
-                "            <EnumDescription>Specification of what type of security mode the data source uses.</EnumDescription>" + nl +
-                "            <EnumType>EnumString</EnumType>" + nl +
-                "            <ElementName>Authenticated</ElementName>" + nl +
-                "            <ElementDescription>User ID and Password must be included in the information required for the connection.</ElementDescription>" + nl +
-                "            <ElementValue>1</ElementValue>" + nl +
-                "          </row>" + nl +
-                ".*");
+        String[] responsePattern = {
+            "(?s).*",
+            "          <row>",
+            "            <EnumName>AuthenticationMode</EnumName>",
+            "            <EnumDescription>Specification of what type of security mode the data source uses.</EnumDescription>",
+            "            <EnumType>EnumString</EnumType>",
+            "            <ElementName>Authenticated</ElementName>",
+            "            <ElementDescription>User ID and Password must be included in the information required for the connection.</ElementDescription>",
+            "            <ElementValue>1</ElementValue>",
+            "          </row>",
+            ".*"};
+        String[] request = {
+            "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"",
+            "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "    <RequestType>DISCOVER_ENUMERATORS</RequestType>",
+            "    <Restrictions>",
+            "        <RestrictionList/>",
+            "    </Restrictions>",
+            "    <Properties>",
+            "        <PropertyList/>",
+            "    </Properties>",
+            "</Discover>"};
+        assertRequestMatches(wrap(concat(request)), concat(responsePattern));
     }
 
     /**
      * Tests the {@link RowsetDefinition#DISCOVER_KEYWORDS} rowset.
      */
     public void testDiscoverKeywords() {
-        assertRequestMatches(wrap(
-                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "    <RequestType>DISCOVER_KEYWORDS</RequestType>" + nl +
-                "    <Restrictions>" + nl +
-                "        <RestrictionList/>" + nl +
-                "    </Restrictions>" + nl +
-                "    <Properties>" + nl +
-                "        <PropertyList>" + nl +
-                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "            <Format>Tabular</Format>" + nl +
-                "        </PropertyList>" + nl +
-                "    </Properties>" + nl +
-                "</Discover>"),
-
-                "(?s)" +
-                "<[?]xml version=\"1.0\"[?]>" + nl +
-                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "  <SOAP-ENV:Body>" + nl +
-                "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
-                "      <return>" + nl +
-                "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
-                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>" + nl +
-                ".*" + nl +
-                "          <row>" + nl +
-                "            <Keyword>AddCalculatedMembers</Keyword>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <Keyword>Action</Keyword>" + nl +
-                "          </row>" + nl +
-                ".*" + nl +
-                "        </root>" + nl +
-                "      </return>" + nl +
-                "    </DiscoverResponse>" + nl +
-                "  </SOAP-ENV:Body>" + nl +
-                "</SOAP-ENV:Envelope>");
+        String[] responsePattern = {
+            "(?s)" +
+                "<[?]xml version=\"1.0\"[?]>",
+            "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "  <SOAP-ENV:Body>",
+            "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">",
+            "      <return>",
+            "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">",
+            "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>",
+            ".*",
+            "          <row>",
+            "            <Keyword>AddCalculatedMembers</Keyword>",
+            "          </row>",
+            "          <row>",
+            "            <Keyword>Action</Keyword>",
+            "          </row>",
+            ".*",
+            "        </root>",
+            "      </return>",
+            "    </DiscoverResponse>",
+            "  </SOAP-ENV:Body>",
+            "</SOAP-ENV:Envelope>"};
+        String[] request = {
+            "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"",
+            "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "    <RequestType>DISCOVER_KEYWORDS</RequestType>",
+            "    <Restrictions>",
+            "        <RestrictionList/>",
+            "    </Restrictions>",
+            "    <Properties>",
+            "        <PropertyList>",
+            "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>",
+            "            <Format>Tabular</Format>",
+            "        </PropertyList>",
+            "    </Properties>",
+            "</Discover>"};
+        assertRequestMatches(wrap(concat(request)), concat(responsePattern));
     }
 
     /**
@@ -791,48 +811,49 @@ public class XmlaTest extends TestCase {
      * multiple restrictions.
      */
     public void testDiscoverLiterals() {
-        assertRequestYields(wrap(
-                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "    <RequestType>DISCOVER_LITERALS</RequestType>" + nl +
-                "    <Restrictions>" + nl +
-                "        <RestrictionList>" + nl +
-                "            <LiteralName>" + nl +
-                "                <Value>DBLITERAL_QUOTE_PREFIX</Value>" + nl +
-                "                <Value>DBLITERAL_QUOTE_SUFFIX</Value>" + nl +
-                "            </LiteralName>" + nl +
-                "        </RestrictionList>" + nl +
-                "    </Restrictions>" + nl +
-                "    <Properties>" + nl +
-                "        <PropertyList>" + nl +
-                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "            <Format>Tabular</Format>" + nl +
-                "        </PropertyList>" + nl +
-                "    </Properties>" + nl +
-                "</Discover>"),
-
-                "<?xml version=\"1.0\"?>" + nl +
-                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "  <SOAP-ENV:Body>" + nl +
-                "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
-                "      <return>" + nl +
-                "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
-                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>" + nl +
-                "          <row>" + nl +
-                "            <LiteralName>DBLITERAL_QUOTE_PREFIX</LiteralName>" + nl +
-                "            <LiteralValue>[</LiteralValue>" + nl +
-                "            <LiteralMaxLength>-1</LiteralMaxLength>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <LiteralName>DBLITERAL_QUOTE_SUFFIX</LiteralName>" + nl +
-                "            <LiteralValue>]</LiteralValue>" + nl +
-                "            <LiteralMaxLength>-1</LiteralMaxLength>" + nl +
-                "          </row>" + nl +
-                "        </root>" + nl +
-                "      </return>" + nl +
-                "    </DiscoverResponse>" + nl +
-                "  </SOAP-ENV:Body>" + nl +
-                "</SOAP-ENV:Envelope>");
+        String[] expected = {
+            "<?xml version=\"1.0\"?>",
+            "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "  <SOAP-ENV:Body>",
+            "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">",
+            "      <return>",
+            "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">",
+            "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>",
+            "          <row>",
+            "            <LiteralName>DBLITERAL_QUOTE_PREFIX</LiteralName>",
+            "            <LiteralValue>[</LiteralValue>",
+            "            <LiteralMaxLength>-1</LiteralMaxLength>",
+            "          </row>",
+            "          <row>",
+            "            <LiteralName>DBLITERAL_QUOTE_SUFFIX</LiteralName>",
+            "            <LiteralValue>]</LiteralValue>",
+            "            <LiteralMaxLength>-1</LiteralMaxLength>",
+            "          </row>",
+            "        </root>",
+            "      </return>",
+            "    </DiscoverResponse>",
+            "  </SOAP-ENV:Body>",
+            "</SOAP-ENV:Envelope>"};
+        String[] request = {
+            "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"",
+            "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "    <RequestType>DISCOVER_LITERALS</RequestType>",
+            "    <Restrictions>",
+            "        <RestrictionList>",
+            "            <LiteralName>",
+            "                <Value>DBLITERAL_QUOTE_PREFIX</Value>",
+            "                <Value>DBLITERAL_QUOTE_SUFFIX</Value>",
+            "            </LiteralName>",
+            "        </RestrictionList>",
+            "    </Restrictions>",
+            "    <Properties>",
+            "        <PropertyList>",
+            "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>",
+            "            <Format>Tabular</Format>",
+            "        </PropertyList>",
+            "    </Properties>",
+            "</Discover>"};
+        assertRequestYields(wrap(concat(request)), concat(expected));
     }
 
     /**
@@ -840,30 +861,31 @@ public class XmlaTest extends TestCase {
      * restrictions.
      */
     public void testDiscoverProperties() {
-        assertRequestMatches(wrap(
-                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "    <RequestType>DISCOVER_PROPERTIES</RequestType>" + nl +
-                "    <Restrictions>" + nl +
-                "        <RestrictionList>" + nl +
-                "        </RestrictionList>" + nl +
-                "    </Restrictions>" + nl +
-                "    <Properties>" + nl +
-                "        <PropertyList>" + nl +
-                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "            <Format>Tabular</Format>" + nl +
-                "        </PropertyList>" + nl +
-                "    </Properties>" + nl +
-                "</Discover>"),
-
-                "(?s).*" + nl +
-                "          <row>" + nl +
-                "            <PropertyName>Catalog</PropertyName>" + nl +
-                "            <PropertyDescription>Specifies the initial catalog or database on which to connect.</PropertyDescription>" + nl +
-                "            <PropertyType>string</PropertyType>" + nl +
-                "            <PropertyAccessType>Read/Write</PropertyAccessType>" + nl +
-                "          </row>" + nl +
-                ".*");
+        String[] responsePattern = {
+            "(?s).*",
+            "          <row>",
+            "            <PropertyName>Catalog</PropertyName>",
+            "            <PropertyDescription>Specifies the initial catalog or database on which to connect.</PropertyDescription>",
+            "            <PropertyType>string</PropertyType>",
+            "            <PropertyAccessType>Read/Write</PropertyAccessType>",
+            "          </row>",
+            ".*"};
+        String[] request = {
+            "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"",
+            "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "    <RequestType>DISCOVER_PROPERTIES</RequestType>",
+            "    <Restrictions>",
+            "        <RestrictionList>",
+            "        </RestrictionList>",
+            "    </Restrictions>",
+            "    <Properties>",
+            "        <PropertyList>",
+            "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>",
+            "            <Format>Tabular</Format>",
+            "        </PropertyList>",
+            "    </Properties>",
+            "</Discover>"};
+        assertRequestMatches(wrap(concat(request)), concat(responsePattern));
     }
 
     /**
@@ -871,41 +893,42 @@ public class XmlaTest extends TestCase {
      * restrictions.
      */
     public void testDiscoverPropertiesUnrestricted() {
-        assertRequestYields(wrap(
-                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "    <RequestType>DISCOVER_PROPERTIES</RequestType>" + nl +
-                "    <Restrictions>" + nl +
-                "        <RestrictionList>" + nl +
-                "            <PropertyName>EndRange</PropertyName>" + nl +
-                "        </RestrictionList>" + nl +
-                "    </Restrictions>" + nl +
-                "    <Properties>" + nl +
-                "        <PropertyList>" + nl +
-                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "            <Format>Tabular</Format>" + nl +
-                "        </PropertyList>" + nl +
-                "    </Properties>" + nl +
-                "</Discover>"),
-
-                "<?xml version=\"1.0\"?>" + nl +
-                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "  <SOAP-ENV:Body>" + nl +
-                "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
-                "      <return>" + nl +
-                "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
-                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>" + nl +
-                "          <row>" + nl +
-                "            <PropertyName>EndRange</PropertyName>" + nl +
-                "            <PropertyDescription>An integer value corresponding to a CellOrdinal used to restrict an MDDataSet returned by a command to a specific range of cells. Used in conjunction with the BeginRange property. If unspecified, all cells are returned in the rowset. The value -1 means unspecified.</PropertyDescription>" + nl +
-                "            <PropertyType>Integer</PropertyType>" + nl +
-                "            <PropertyAccessType>Write</PropertyAccessType>" + nl +
-                "          </row>" + nl +
-                "        </root>" + nl +
-                "      </return>" + nl +
-                "    </DiscoverResponse>" + nl +
-                "  </SOAP-ENV:Body>" + nl +
-                "</SOAP-ENV:Envelope>");
+        String[] expected = {
+            "<?xml version=\"1.0\"?>",
+            "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "  <SOAP-ENV:Body>",
+            "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">",
+            "      <return>",
+            "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">",
+            "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>",
+            "          <row>",
+            "            <PropertyName>EndRange</PropertyName>",
+            "            <PropertyDescription>An integer value corresponding to a CellOrdinal used to restrict an MDDataSet returned by a command to a specific range of cells. Used in conjunction with the BeginRange property. If unspecified, all cells are returned in the rowset. The value -1 means unspecified.</PropertyDescription>",
+            "            <PropertyType>Integer</PropertyType>",
+            "            <PropertyAccessType>Write</PropertyAccessType>",
+            "          </row>",
+            "        </root>",
+            "      </return>",
+            "    </DiscoverResponse>",
+            "  </SOAP-ENV:Body>",
+            "</SOAP-ENV:Envelope>"};
+        String[] request = {
+            "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"",
+            "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "    <RequestType>DISCOVER_PROPERTIES</RequestType>",
+            "    <Restrictions>",
+            "        <RestrictionList>",
+            "            <PropertyName>EndRange</PropertyName>",
+            "        </RestrictionList>",
+            "    </Restrictions>",
+            "    <Properties>",
+            "        <PropertyList>",
+            "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>",
+            "            <Format>Tabular</Format>",
+            "        </PropertyList>",
+            "    </Properties>",
+            "</Discover>"};
+        assertRequestYields(wrap(concat(request)), concat(expected));
     }
 
     /**
@@ -913,636 +936,638 @@ public class XmlaTest extends TestCase {
      * no restrictions.
      */
     public void testDiscoverSchemaRowsets() {
-        assertRequestYields(wrap(
-                "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"" + nl +
-                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "    <RequestType>DISCOVER_SCHEMA_ROWSETS</RequestType>" + nl +
-                "    <Restrictions>" + nl +
-                "        <RestrictionList/>" + nl +
-                "    </Restrictions>" + nl +
-                "    <Properties>" + nl +
-                "        <PropertyList>" + nl +
-                "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "            <Format>Tabular</Format>" + nl +
-                "        </PropertyList>" + nl +
-                "    </Properties>" + nl +
-                "</Discover>"),
-
-                "<?xml version=\"1.0\"?>" + nl +
-                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "  <SOAP-ENV:Body>" + nl +
-                "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
-                "      <return>" + nl +
-                "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">" + nl +
-                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>" + nl +
-                "          <row>" + nl +
-                "            <SchemaName>DBSCHEMA_CATALOGS</SchemaName>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>CATALOG_NAME</Name>" + nl + "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Description>Returns information about literals supported by the provider.</Description>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <SchemaName>DBSCHEMA_COLUMNS</SchemaName>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>TABLE_CATALOG</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>TABLE_SCHEMA</Name>" + nl +
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>TABLE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>COLUMN_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <SchemaName>DBSCHEMA_PROVIDER_TYPES</SchemaName>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>DATA_TYPE</Name>" + nl + 
-                "              <Type>unsignedInteger</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>BEST_MATCH</Name>" + nl + 
-                "              <Type>boolean</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <SchemaName>DBSCHEMA_TABLES</SchemaName>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>TABLE_CATALOG</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>TABLE_SCHEMA</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>TABLE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>TABLE_TYPE</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <SchemaName>DBSCHEMA_TABLES_INFO</SchemaName>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>TABLE_CATALOG</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>TABLE_SCHEMA</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>TABLE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>TABLE_TYPE</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <SchemaName>DISCOVER_DATASOURCES</SchemaName>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>DataSourceName</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>URL</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>ProviderName</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>ProviderType</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>AuthenticationMode</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Description>Returns a list of XML for Analysis data sources available on the server or Web Service.</Description>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <SchemaName>DISCOVER_ENUMERATORS</SchemaName>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>EnumName</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Description>Returns a list of names, data types, and enumeration values for enumerators supported by the provider of a specific data source.</Description>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <SchemaName>DISCOVER_KEYWORDS</SchemaName>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>Keyword</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Description>Returns an XML list of keywords reserved by the provider.</Description>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <SchemaName>DISCOVER_LITERALS</SchemaName>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>LiteralName</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Description>Returns information about literals supported by the provider.</Description>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <SchemaName>DISCOVER_PROPERTIES</SchemaName>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>PropertyName</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Description>Returns a list of information and values about the requested properties that are supported by the specified data source provider.</Description>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <SchemaName>DISCOVER_SCHEMA_ROWSETS</SchemaName>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>SchemaName</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Description>Returns the names, values, and other information of all supported RequestType enumeration values.</Description>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <SchemaName>MDSCHEMA_ACTIONS</SchemaName>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>CUBE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>COORDINATE</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>COORDINATE_TYPE</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <SchemaName>MDSCHEMA_CUBES</SchemaName>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>CATALOG_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>SCHEMA_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>CUBE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>CUBE_TYPE</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <SchemaName>MDSCHEMA_DIMENSIONS</SchemaName>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>CATALOG_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>SCHEMA_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>CUBE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>DIMENSION_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>DIMENSION_UNIQUE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>DIMENSION_CAPTION</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>DIMENSION_ORDINAL</Name>" + nl + 
-                "              <Type>integer</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>DIMENSION_TYPE</Name>" + nl + 
-                "              <Type>integer</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <SchemaName>MDSCHEMA_FUNCTIONS</SchemaName>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>LIBRARY_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>INTERFACE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>FUNCTION_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>ORIGIN</Name>" + nl + 
-                "              <Type>integer</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <SchemaName>MDSCHEMA_HIERARCHIES</SchemaName>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>CATALOG_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>SCHEMA_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>CUBE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>DIMENSION_UNIQUE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>HIERARCHY_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>HIERARCHY_UNIQUE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>HIERARCHY_CAPTION</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>DIMENSION_TYPE</Name>" + nl + 
-                "              <Type>integer</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <SchemaName>MDSCHEMA_LEVELS</SchemaName>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>CATALOG_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>SCHEMA_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>CUBE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>DIMENSION_UNIQUE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>HIERARCHY_UNIQUE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>LEVEL_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>LEVEL_UNIQUE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>LEVEL_CAPTION</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>LEVEL_NUMBER</Name>" + nl + 
-                "              <Type>integer</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>LEVEL_TYPE</Name>" + nl + 
-                "              <Type>integer</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <SchemaName>MDSCHEMA_MEASURES</SchemaName>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>CATALOG_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>SCHEMA_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>CUBE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>MEASURE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>MEASURE_UNIQUE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>MEASURE_CAPTION</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <SchemaName>MDSCHEMA_MEMBERS</SchemaName>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>CATALOG_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>SCHEMA_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>CUBE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>DIMENSION_UNIQUE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>HIERARCHY_UNIQUE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>LEVEL_UNIQUE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>LEVEL_NUMBER</Name>" + nl + 
-                "              <Type>unsignedInteger</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>MEMBER_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>MEMBER_ORDINAL</Name>" + nl + 
-                "              <Type>integer</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>MEMBER_UNIQUE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>MEMBER_TYPE</Name>" + nl + 
-                "              <Type>integer</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>MEMBER_CAPTION</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>CHILDREN_CARDINALITY</Name>" + nl + 
-                "              <Type>integer</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>PARENT_UNIQUE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>TREE_OP</Name>" + nl + 
-                "              <Type>integer</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <SchemaName>MDSCHEMA_PROPERTIES</SchemaName>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>CATALOG_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>SCHEMA_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>CUBE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>DIMENSION_UNIQUE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>HIERARCHY_UNIQUE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>LEVEL_UNIQUE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>MEMBER_UNIQUE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>PROPERTY_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>PROPERTY_TYPE</Name>" + nl + 
-                "              <Type>integer</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>PROPERTY_CONTENT_TYPE</Name>" + nl + 
-                "              <Type>integer</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>PROPERTY_CAPTION</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "          </row>" + nl +
-                "          <row>" + nl +
-                "            <SchemaName>MDSCHEMA_SETS</SchemaName>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>CATALOG_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>SCHEMA_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>CUBE_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>SET_NAME</Name>" + nl + 
-                "              <Type>string</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "            <Restrictions>" + nl +
-                "              <Name>SCOPE</Name>" + nl + 
-                "              <Type>integer</Type>" + nl +
-                "            </Restrictions>" + nl +
-                "          </row>" + nl +
-                "        </root>" + nl +
-                "      </return>" + nl +
-                "    </DiscoverResponse>" + nl +
-                "  </SOAP-ENV:Body>" + nl +
-                "</SOAP-ENV:Envelope>");
+        String[] expected = {
+            "<?xml version=\"1.0\"?>",
+            "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "  <SOAP-ENV:Body>",
+            "    <DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">",
+            "      <return>",
+            "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\">",
+            "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:sql=\"urn:schemas-microsoft-com:xml-sql\" elementFormDefault=\"qualified\"/>",
+            "          <row>",
+            "            <SchemaName>DBSCHEMA_CATALOGS</SchemaName>",
+            "            <Restrictions>",
+            "              <Name>CATALOG_NAME</Name>", "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Description>Returns information about literals supported by the provider.</Description>",
+            "          </row>",
+            "          <row>",
+            "            <SchemaName>DBSCHEMA_COLUMNS</SchemaName>",
+            "            <Restrictions>",
+            "              <Name>TABLE_CATALOG</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>TABLE_SCHEMA</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>TABLE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>COLUMN_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "          </row>",
+            "          <row>",
+            "            <SchemaName>DBSCHEMA_PROVIDER_TYPES</SchemaName>",
+            "            <Restrictions>",
+            "              <Name>DATA_TYPE</Name>",
+            "              <Type>unsignedInteger</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>BEST_MATCH</Name>",
+            "              <Type>boolean</Type>",
+            "            </Restrictions>",
+            "          </row>",
+            "          <row>",
+            "            <SchemaName>DBSCHEMA_TABLES</SchemaName>",
+            "            <Restrictions>",
+            "              <Name>TABLE_CATALOG</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>TABLE_SCHEMA</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>TABLE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>TABLE_TYPE</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "          </row>",
+            "          <row>",
+            "            <SchemaName>DBSCHEMA_TABLES_INFO</SchemaName>",
+            "            <Restrictions>",
+            "              <Name>TABLE_CATALOG</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>TABLE_SCHEMA</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>TABLE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>TABLE_TYPE</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "          </row>",
+            "          <row>",
+            "            <SchemaName>DISCOVER_DATASOURCES</SchemaName>",
+            "            <Restrictions>",
+            "              <Name>DataSourceName</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>URL</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>ProviderName</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>ProviderType</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>AuthenticationMode</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Description>Returns a list of XML for Analysis data sources available on the server or Web Service.</Description>",
+            "          </row>",
+            "          <row>",
+            "            <SchemaName>DISCOVER_ENUMERATORS</SchemaName>",
+            "            <Restrictions>",
+            "              <Name>EnumName</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Description>Returns a list of names, data types, and enumeration values for enumerators supported by the provider of a specific data source.</Description>",
+            "          </row>",
+            "          <row>",
+            "            <SchemaName>DISCOVER_KEYWORDS</SchemaName>",
+            "            <Restrictions>",
+            "              <Name>Keyword</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Description>Returns an XML list of keywords reserved by the provider.</Description>",
+            "          </row>",
+            "          <row>",
+            "            <SchemaName>DISCOVER_LITERALS</SchemaName>",
+            "            <Restrictions>",
+            "              <Name>LiteralName</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Description>Returns information about literals supported by the provider.</Description>",
+            "          </row>",
+            "          <row>",
+            "            <SchemaName>DISCOVER_PROPERTIES</SchemaName>",
+            "            <Restrictions>",
+            "              <Name>PropertyName</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Description>Returns a list of information and values about the requested properties that are supported by the specified data source provider.</Description>",
+            "          </row>",
+            "          <row>",
+            "            <SchemaName>DISCOVER_SCHEMA_ROWSETS</SchemaName>",
+            "            <Restrictions>",
+            "              <Name>SchemaName</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Description>Returns the names, values, and other information of all supported RequestType enumeration values.</Description>",
+            "          </row>",
+            "          <row>",
+            "            <SchemaName>MDSCHEMA_ACTIONS</SchemaName>",
+            "            <Restrictions>",
+            "              <Name>CUBE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>COORDINATE</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>COORDINATE_TYPE</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "          </row>",
+            "          <row>",
+            "            <SchemaName>MDSCHEMA_CUBES</SchemaName>",
+            "            <Restrictions>",
+            "              <Name>CATALOG_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>SCHEMA_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>CUBE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>CUBE_TYPE</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "          </row>",
+            "          <row>",
+            "            <SchemaName>MDSCHEMA_DIMENSIONS</SchemaName>",
+            "            <Restrictions>",
+            "              <Name>CATALOG_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>SCHEMA_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>CUBE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>DIMENSION_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>DIMENSION_UNIQUE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>DIMENSION_CAPTION</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>DIMENSION_ORDINAL</Name>",
+            "              <Type>integer</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>DIMENSION_TYPE</Name>",
+            "              <Type>integer</Type>",
+            "            </Restrictions>",
+            "          </row>",
+            "          <row>",
+            "            <SchemaName>MDSCHEMA_FUNCTIONS</SchemaName>",
+            "            <Restrictions>",
+            "              <Name>LIBRARY_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>INTERFACE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>FUNCTION_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>ORIGIN</Name>",
+            "              <Type>integer</Type>",
+            "            </Restrictions>",
+            "          </row>",
+            "          <row>",
+            "            <SchemaName>MDSCHEMA_HIERARCHIES</SchemaName>",
+            "            <Restrictions>",
+            "              <Name>CATALOG_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>SCHEMA_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>CUBE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>DIMENSION_UNIQUE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>HIERARCHY_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>HIERARCHY_UNIQUE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>HIERARCHY_CAPTION</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>DIMENSION_TYPE</Name>",
+            "              <Type>integer</Type>",
+            "            </Restrictions>",
+            "          </row>",
+            "          <row>",
+            "            <SchemaName>MDSCHEMA_LEVELS</SchemaName>",
+            "            <Restrictions>",
+            "              <Name>CATALOG_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>SCHEMA_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>CUBE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>DIMENSION_UNIQUE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>HIERARCHY_UNIQUE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>LEVEL_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>LEVEL_UNIQUE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>LEVEL_CAPTION</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>LEVEL_NUMBER</Name>",
+            "              <Type>integer</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>LEVEL_TYPE</Name>",
+            "              <Type>integer</Type>",
+            "            </Restrictions>",
+            "          </row>",
+            "          <row>",
+            "            <SchemaName>MDSCHEMA_MEASURES</SchemaName>",
+            "            <Restrictions>",
+            "              <Name>CATALOG_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>SCHEMA_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>CUBE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>MEASURE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>MEASURE_UNIQUE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>MEASURE_CAPTION</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "          </row>",
+            "          <row>",
+            "            <SchemaName>MDSCHEMA_MEMBERS</SchemaName>",
+            "            <Restrictions>",
+            "              <Name>CATALOG_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>SCHEMA_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>CUBE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>DIMENSION_UNIQUE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>HIERARCHY_UNIQUE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>LEVEL_UNIQUE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>LEVEL_NUMBER</Name>",
+            "              <Type>unsignedInteger</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>MEMBER_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>MEMBER_ORDINAL</Name>",
+            "              <Type>integer</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>MEMBER_UNIQUE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>MEMBER_TYPE</Name>",
+            "              <Type>integer</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>MEMBER_CAPTION</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>CHILDREN_CARDINALITY</Name>",
+            "              <Type>integer</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>PARENT_UNIQUE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>TREE_OP</Name>",
+            "              <Type>integer</Type>",
+            "            </Restrictions>",
+            "          </row>",
+            "          <row>",
+            "            <SchemaName>MDSCHEMA_PROPERTIES</SchemaName>",
+            "            <Restrictions>",
+            "              <Name>CATALOG_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>SCHEMA_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>CUBE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>DIMENSION_UNIQUE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>HIERARCHY_UNIQUE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>LEVEL_UNIQUE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>MEMBER_UNIQUE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>PROPERTY_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>PROPERTY_TYPE</Name>",
+            "              <Type>integer</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>PROPERTY_CONTENT_TYPE</Name>",
+            "              <Type>integer</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>PROPERTY_CAPTION</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "          </row>",
+            "          <row>",
+            "            <SchemaName>MDSCHEMA_SETS</SchemaName>",
+            "            <Restrictions>",
+            "              <Name>CATALOG_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>SCHEMA_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>CUBE_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>SET_NAME</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>SCOPE</Name>",
+            "              <Type>integer</Type>",
+            "            </Restrictions>",
+            "          </row>",
+            "        </root>",
+            "      </return>",
+            "    </DiscoverResponse>",
+            "  </SOAP-ENV:Body>",
+            "</SOAP-ENV:Envelope>"};
+        String[] request = {
+            "<Discover xmlns=\"urn:schemas-microsoft-com:xml-analysis\"",
+            "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "    <RequestType>DISCOVER_SCHEMA_ROWSETS</RequestType>",
+            "    <Restrictions>",
+            "        <RestrictionList/>",
+            "    </Restrictions>",
+            "    <Properties>",
+            "        <PropertyList>",
+            "            <DataSourceInfo>" + dataSource + "</DataSourceInfo>",
+            "            <Format>Tabular</Format>",
+            "        </PropertyList>",
+            "    </Properties>",
+            "</Discover>"};
+        assertRequestYields(wrap(concat(request)), concat(expected));
     }
 
     public void testSelect() {
-        assertRequestYields(wrap(
-                "<Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\" " + nl +
-                "  SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "  <Command>" + nl +
-                "    <Statement>select [Measures].members on Columns from Sales</Statement>" + nl +
-                "  </Command>" + nl +
-                "  <Properties>" + nl +
-                "    <PropertyList>" + nl +
-                "      <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "      <Catalog>FoodMart</Catalog>" + nl +
-                "      <Format>Multidimensional</Format>" + nl +
-                "      <AxisFormat>TupleFormat</AxisFormat>" + nl +
-                "    </PropertyList>" + nl +
-                "  </Properties>" + nl +
-                "</Execute>"),
-
-                "<?xml version=\"1.0\"?>" + nl +
-                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "  <SOAP-ENV:Body>" + nl +
-                "    <ExecuteResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
-                "      <return>" + nl +
-                "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:mddataset\">" + nl +
-                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
-                "          <OlapInfo>" + nl +
-                "            <CubeInfo>" + nl +
-                "              <Cube>" + nl +
-                "                <CubeName>Sales</CubeName>" + nl +
-                "              </Cube>" + nl +
-                "            </CubeInfo>" + nl +
-                "            <AxesInfo>" + nl +
-                "              <AxisInfo name=\"SlicerAxis\"/>" + nl +
-                "              <AxisInfo name=\"Axis0\">" + nl +
-                "                <HierarchyInfo name=\"Measures\">" + nl +
-                "                  <UName name=\"[Measures].[MEMBER_UNIQUE_NAME]\"/>" + nl +
-                "                  <Caption name=\"[Measures].[MEMBER_CAPTION]\"/>" + nl +
-                "                  <LName name=\"[Measures].[LEVEL_UNIQUE_NAME]\"/>" + nl +
-                "                  <LNum name=\"[Measures].[LEVEL_NUMBER]\"/>" + nl +
-                "                  <DisplayInfo name=\"[Measures].[CHILDREN_CARDINALITY]\"/>" + nl +
-                "                </HierarchyInfo>" + nl +
-                "              </AxisInfo>" + nl +
-                "            </AxesInfo>" + nl +
-                "            <CellInfo>" + nl +
-                "              <Value name=\"VALUE\"/>" + nl +
-                "              <FmtValue name=\"FORMATTED_VALUE\"/>" + nl +
-                "              <FormatString name=\"FORMAT_STRING\"/>" + nl +
-                "            </CellInfo>" + nl +
-                "          </OlapInfo>" + nl +
-                "          <Axes>" + nl +
-                "            <Axis name=\"SlicerAxis\">" + nl +
-                "              <Tuples>" + nl +
-                "                <Tuple/>" + nl +
-                "              </Tuples>" + nl +
-                "            </Axis>" + nl +
-                "            <Axis name=\"Axis0\">" + nl +
-                "              <Tuples>" + nl +
-                "                <Tuple>" + nl +
-                "                  <Member Hierarchy=\"Measures\">" + nl +
-                "                    <UName>[Measures].[Unit Sales]</UName>" + nl +
-                "                    <Caption>Unit Sales</Caption>" + nl +
-                "                    <LName>[Measures].[MeasuresLevel]</LName>" + nl +
-                "                    <LNum>0</LNum>" + nl +
-                "                    <DisplayInfo>0</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                </Tuple>" + nl +
-                "                <Tuple>" + nl +
-                "                  <Member Hierarchy=\"Measures\">" + nl +
-                "                    <UName>[Measures].[Store Cost]</UName>" + nl +
-                "                    <Caption>Store Cost</Caption>" + nl +
-                "                    <LName>[Measures].[MeasuresLevel]</LName>" + nl +
-                "                    <LNum>0</LNum>" + nl +
-                "                    <DisplayInfo>0</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                </Tuple>" + nl +
-                "                <Tuple>" + nl +
-                "                  <Member Hierarchy=\"Measures\">" + nl +
-                "                    <UName>[Measures].[Store Sales]</UName>" + nl +
-                "                    <Caption>Store Sales</Caption>" + nl +
-                "                    <LName>[Measures].[MeasuresLevel]</LName>" + nl +
-                "                    <LNum>0</LNum>" + nl +
-                "                    <DisplayInfo>0</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                </Tuple>" + nl +
-                "                <Tuple>" + nl +
-                "                  <Member Hierarchy=\"Measures\">" + nl +
-                "                    <UName>[Measures].[Sales Count]</UName>" + nl +
-                "                    <Caption>Sales Count</Caption>" + nl +
-                "                    <LName>[Measures].[MeasuresLevel]</LName>" + nl +
-                "                    <LNum>0</LNum>" + nl +
-                "                    <DisplayInfo>0</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                </Tuple>" + nl +
-                "                <Tuple>" + nl +
-                "                  <Member Hierarchy=\"Measures\">" + nl +
-                "                    <UName>[Measures].[Customer Count]</UName>" + nl +
-                "                    <Caption>Customer Count</Caption>" + nl +
-                "                    <LName>[Measures].[MeasuresLevel]</LName>" + nl +
-                "                    <LNum>0</LNum>" + nl +
-                "                    <DisplayInfo>0</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                </Tuple>" + nl +
-                "              </Tuples>" + nl +
-                "            </Axis>" + nl +
-                "          </Axes>" + nl +
-                "          <CellData>" + nl +
-                "            <Cell CellOrdinal=\"0\">" + nl +
-                "              <Value>266773</Value>" + nl +
-                "              <FmtValue>266,773</FmtValue>" + nl +
-                "              <FormatString>Standard</FormatString>" + nl +
-                "            </Cell>" + nl +
-                "            <Cell CellOrdinal=\"1\">" + nl +
-                "              <Value>225627.2336</Value>" + nl +
-                "              <FmtValue>225,627.23</FmtValue>" + nl +
-                "              <FormatString>#,###.00</FormatString>" + nl +
-                "            </Cell>" + nl +
-                "            <Cell CellOrdinal=\"2\">" + nl +
-                "              <Value>565238.13</Value>" + nl +
-                "              <FmtValue>565,238.13</FmtValue>" + nl +
-                "              <FormatString>#,###.00</FormatString>" + nl +
-                "            </Cell>" + nl +
-                "            <Cell CellOrdinal=\"3\">" + nl +
-                "              <Value>86837</Value>" + nl +
-                "              <FmtValue>86,837</FmtValue>" + nl +
-                "              <FormatString>#,###</FormatString>" + nl +
-                "            </Cell>" + nl +
-                "            <Cell CellOrdinal=\"4\">" + nl +
-                "              <Value>5581</Value>" + nl +
-                "              <FmtValue>5,581</FmtValue>" + nl +
-                "              <FormatString>#,###</FormatString>" + nl +
-                "            </Cell>" + nl +
-                "          </CellData>" + nl +
-                "        </root>" + nl +
-                "      </return>" + nl +
-                "    </ExecuteResponse>" + nl +
-                "  </SOAP-ENV:Body>" + nl +
-                "</SOAP-ENV:Envelope>");
+        String[] expected = {
+            "<?xml version=\"1.0\"?>",
+            "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "  <SOAP-ENV:Body>",
+            "    <ExecuteResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">",
+            "      <return>",
+            "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:mddataset\">",
+            "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>",
+            "          <OlapInfo>",
+            "            <CubeInfo>",
+            "              <Cube>",
+            "                <CubeName>Sales</CubeName>",
+            "              </Cube>",
+            "            </CubeInfo>",
+            "            <AxesInfo>",
+            "              <AxisInfo name=\"SlicerAxis\"/>",
+            "              <AxisInfo name=\"Axis0\">",
+            "                <HierarchyInfo name=\"Measures\">",
+            "                  <UName name=\"[Measures].[MEMBER_UNIQUE_NAME]\"/>",
+            "                  <Caption name=\"[Measures].[MEMBER_CAPTION]\"/>",
+            "                  <LName name=\"[Measures].[LEVEL_UNIQUE_NAME]\"/>",
+            "                  <LNum name=\"[Measures].[LEVEL_NUMBER]\"/>",
+            "                  <DisplayInfo name=\"[Measures].[CHILDREN_CARDINALITY]\"/>",
+            "                </HierarchyInfo>",
+            "              </AxisInfo>",
+            "            </AxesInfo>",
+            "            <CellInfo>",
+            "              <Value name=\"VALUE\"/>",
+            "              <FmtValue name=\"FORMATTED_VALUE\"/>",
+            "              <FormatString name=\"FORMAT_STRING\"/>",
+            "            </CellInfo>",
+            "          </OlapInfo>",
+            "          <Axes>",
+            "            <Axis name=\"SlicerAxis\">",
+            "              <Tuples>",
+            "                <Tuple/>",
+            "              </Tuples>",
+            "            </Axis>",
+            "            <Axis name=\"Axis0\">",
+            "              <Tuples>",
+            "                <Tuple>",
+            "                  <Member Hierarchy=\"Measures\">",
+            "                    <UName>[Measures].[Unit Sales]</UName>",
+            "                    <Caption>Unit Sales</Caption>",
+            "                    <LName>[Measures].[MeasuresLevel]</LName>",
+            "                    <LNum>0</LNum>",
+            "                    <DisplayInfo>0</DisplayInfo>",
+            "                  </Member>",
+            "                </Tuple>",
+            "                <Tuple>",
+            "                  <Member Hierarchy=\"Measures\">",
+            "                    <UName>[Measures].[Store Cost]</UName>",
+            "                    <Caption>Store Cost</Caption>",
+            "                    <LName>[Measures].[MeasuresLevel]</LName>",
+            "                    <LNum>0</LNum>",
+            "                    <DisplayInfo>0</DisplayInfo>",
+            "                  </Member>",
+            "                </Tuple>",
+            "                <Tuple>",
+            "                  <Member Hierarchy=\"Measures\">",
+            "                    <UName>[Measures].[Store Sales]</UName>",
+            "                    <Caption>Store Sales</Caption>",
+            "                    <LName>[Measures].[MeasuresLevel]</LName>",
+            "                    <LNum>0</LNum>",
+            "                    <DisplayInfo>0</DisplayInfo>",
+            "                  </Member>",
+            "                </Tuple>",
+            "                <Tuple>",
+            "                  <Member Hierarchy=\"Measures\">",
+            "                    <UName>[Measures].[Sales Count]</UName>",
+            "                    <Caption>Sales Count</Caption>",
+            "                    <LName>[Measures].[MeasuresLevel]</LName>",
+            "                    <LNum>0</LNum>",
+            "                    <DisplayInfo>0</DisplayInfo>",
+            "                  </Member>",
+            "                </Tuple>",
+            "                <Tuple>",
+            "                  <Member Hierarchy=\"Measures\">",
+            "                    <UName>[Measures].[Customer Count]</UName>",
+            "                    <Caption>Customer Count</Caption>",
+            "                    <LName>[Measures].[MeasuresLevel]</LName>",
+            "                    <LNum>0</LNum>",
+            "                    <DisplayInfo>0</DisplayInfo>",
+            "                  </Member>",
+            "                </Tuple>",
+            "              </Tuples>",
+            "            </Axis>",
+            "          </Axes>",
+            "          <CellData>",
+            "            <Cell CellOrdinal=\"0\">",
+            "              <Value>266773</Value>",
+            "              <FmtValue>266,773</FmtValue>",
+            "              <FormatString>Standard</FormatString>",
+            "            </Cell>",
+            "            <Cell CellOrdinal=\"1\">",
+            "              <Value>225627.2336</Value>",
+            "              <FmtValue>225,627.23</FmtValue>",
+            "              <FormatString>#,###.00</FormatString>",
+            "            </Cell>",
+            "            <Cell CellOrdinal=\"2\">",
+            "              <Value>565238.13</Value>",
+            "              <FmtValue>565,238.13</FmtValue>",
+            "              <FormatString>#,###.00</FormatString>",
+            "            </Cell>",
+            "            <Cell CellOrdinal=\"3\">",
+            "              <Value>86837</Value>",
+            "              <FmtValue>86,837</FmtValue>",
+            "              <FormatString>#,###</FormatString>",
+            "            </Cell>",
+            "            <Cell CellOrdinal=\"4\">",
+            "              <Value>5581</Value>",
+            "              <FmtValue>5,581</FmtValue>",
+            "              <FormatString>#,###</FormatString>",
+            "            </Cell>",
+            "          </CellData>",
+            "        </root>",
+            "      </return>",
+            "    </ExecuteResponse>",
+            "  </SOAP-ENV:Body>",
+            "</SOAP-ENV:Envelope>"};
+        String[] request = {
+            "<Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\" ",
+            "  SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "  <Command>",
+            "    <Statement>select [Measures].members on Columns from Sales</Statement>",
+            "  </Command>",
+            "  <Properties>",
+            "    <PropertyList>",
+            "      <DataSourceInfo>" + dataSource + "</DataSourceInfo>",
+            "      <Catalog>FoodMart</Catalog>",
+            "      <Format>Multidimensional</Format>",
+            "      <AxisFormat>TupleFormat</AxisFormat>",
+            "    </PropertyList>",
+            "  </Properties>",
+            "</Execute>"};
+        assertRequestYields(wrap(concat(request)), concat(expected));
     }
 
     /**
@@ -1554,396 +1579,398 @@ public class XmlaTest extends TestCase {
      * TODO: implement
      */
     public void _testSelectEmptyAxis() {
-        assertRequestYields(wrap(
-                "<Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\" " + nl +
-                "  SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "  <Command>" + nl +
-                "    <Statement>select {[Gender].[F].PrevMember} on Columns from Sales</Statement>" + nl +
-                "  </Command>" + nl +
-                "  <Properties>" + nl +
-                "    <PropertyList>" + nl +
-                "      <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "      <Catalog>FoodMart</Catalog>" + nl +
-                "      <Format>Multidimensional</Format>" + nl +
-                "      <AxisFormat>TupleFormat</AxisFormat>" + nl +
-                "    </PropertyList>" + nl +
-                "  </Properties>" + nl +
-                "</Execute>"),
-
-                "<?xml version=\"1.0\"?>" + nl +
-                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "  <SOAP-ENV:Body>" + nl +
-                "    <OLAPInfo>" + nl +
-                "      <CubeInfo>" + nl +
-                "        <Cube>" + nl +
-                "          <CubeName>Sales</CubeName>" + nl +
-                "        </Cube>" + nl +
-                "      </CubeInfo>" + nl +
-                "      <AxesInfo>" + nl +
-                "        <AxisInfo name=\"SlicerAxis\"/>" + nl +
-                "        <AxisInfo name=\"Axis0\"/>" + nl +
-                "      </AxesInfo>" + nl +
-                "      <CellInfo>" + nl +
-                "        <Value name=\"VALUE\"/>" + nl +
-                "        <FmtValue name=\"FORMATTED_VALUE\"/>" + nl +
-                "        <FormatString name=\"FORMAT_STRING\"/>" + nl +
-                "      </CellInfo>" + nl +
-                "    </OLAPInfo>" + nl +
-                "    <Axes>" + nl +
-                "      <Axis name=\"SlicerAxis\">" + nl +
-                "        <Tuples>" + nl +
-                "          <Tuple/>" + nl +
-                "        </Tuples>" + nl +
-                "      </Axis>" + nl +
-                "      <Axis name=\"Axis0\">" + nl +
-                "        <Tuples/>" + nl +
-                "      </Axis>" + nl +
-                "    </Axes>" + nl +
-                "    <CellData/>" + nl +
-                "  </SOAP-ENV:Body>" + nl +
-                "</SOAP-ENV:Envelope>");
+        String[] expected = {
+            "<?xml version=\"1.0\"?>",
+            "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "  <SOAP-ENV:Body>",
+            "    <OLAPInfo>",
+            "      <CubeInfo>",
+            "        <Cube>",
+            "          <CubeName>Sales</CubeName>",
+            "        </Cube>",
+            "      </CubeInfo>",
+            "      <AxesInfo>",
+            "        <AxisInfo name=\"SlicerAxis\"/>",
+            "        <AxisInfo name=\"Axis0\"/>",
+            "      </AxesInfo>",
+            "      <CellInfo>",
+            "        <Value name=\"VALUE\"/>",
+            "        <FmtValue name=\"FORMATTED_VALUE\"/>",
+            "        <FormatString name=\"FORMAT_STRING\"/>",
+            "      </CellInfo>",
+            "    </OLAPInfo>",
+            "    <Axes>",
+            "      <Axis name=\"SlicerAxis\">",
+            "        <Tuples>",
+            "          <Tuple/>",
+            "        </Tuples>",
+            "      </Axis>",
+            "      <Axis name=\"Axis0\">",
+            "        <Tuples/>",
+            "      </Axis>",
+            "    </Axes>",
+            "    <CellData/>",
+            "  </SOAP-ENV:Body>",
+            "</SOAP-ENV:Envelope>"};
+        String[] request = {
+            "<Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\" ",
+            "  SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "  <Command>",
+            "    <Statement>select {[Gender].[F].PrevMember} on Columns from Sales</Statement>",
+            "  </Command>",
+            "  <Properties>",
+            "    <PropertyList>",
+            "      <DataSourceInfo>" + dataSource + "</DataSourceInfo>",
+            "      <Catalog>FoodMart</Catalog>",
+            "      <Format>Multidimensional</Format>",
+            "      <AxisFormat>TupleFormat</AxisFormat>",
+            "    </PropertyList>",
+            "  </Properties>",
+            "</Execute>"};
+        assertRequestYields(wrap(concat(request)), concat(expected));
     }
 
     public void testSelect2() {
-        assertRequestYields(wrap(
-                "<Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\" " + nl +
-                "  SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "  <Command>" + nl +
-                "    <Statement>SELECT {[Measures].[Org Salary], [Measures].[Count]} ON COLUMNS," + nl +
-                "  {[Store].[USA].children * [Pay Type].Members} DIMENSION PROPERTIES [Store].[Store SQFT] ON ROWS" + nl +
-                "FROM [HR]</Statement>" + nl +
-                "  </Command>" + nl +
-                "  <Properties>" + nl +
-                "    <PropertyList>" + nl +
-                "      <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
-                "      <Catalog>FoodMart</Catalog>" + nl +
-                "      <Format>Multidimensional</Format>" + nl +
-                "      <AxisFormat>TupleFormat</AxisFormat>" + nl +
-                "    </PropertyList>" + nl +
-                "  </Properties>" + nl +
-                "</Execute>"),
-
-                "<?xml version=\"1.0\"?>" + nl +
-                "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
-                "  <SOAP-ENV:Body>" + nl +
-                "    <ExecuteResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">" + nl +
-                "      <return>" + nl +
-                "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:mddataset\">" + nl +
-                "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>" + nl +
-                "          <OlapInfo>" + nl +
-                "            <CubeInfo>" + nl +
-                "              <Cube>" + nl +
-                "                <CubeName>HR</CubeName>" + nl +
-                "              </Cube>" + nl +
-                "            </CubeInfo>" + nl +
-                "            <AxesInfo>" + nl +
-                "              <AxisInfo name=\"SlicerAxis\"/>" + nl +
-                "              <AxisInfo name=\"Axis0\">" + nl +
-                "                <HierarchyInfo name=\"Measures\">" + nl +
-                "                  <UName name=\"[Measures].[MEMBER_UNIQUE_NAME]\"/>" + nl +
-                "                  <Caption name=\"[Measures].[MEMBER_CAPTION]\"/>" + nl +
-                "                  <LName name=\"[Measures].[LEVEL_UNIQUE_NAME]\"/>" + nl +
-                "                  <LNum name=\"[Measures].[LEVEL_NUMBER]\"/>" + nl +
-                "                  <DisplayInfo name=\"[Measures].[CHILDREN_CARDINALITY]\"/>" + nl +
-                "                </HierarchyInfo>" + nl +
-                "              </AxisInfo>" + nl +
-                "              <AxisInfo name=\"Axis1\">" + nl +
-                "                <HierarchyInfo name=\"Store\">" + nl +
-                "                  <UName name=\"[Store].[MEMBER_UNIQUE_NAME]\"/>" + nl +
-                "                  <Caption name=\"[Store].[MEMBER_CAPTION]\"/>" + nl +
-                "                  <LName name=\"[Store].[LEVEL_UNIQUE_NAME]\"/>" + nl +
-                "                  <LNum name=\"[Store].[LEVEL_NUMBER]\"/>" + nl +
-                "                  <DisplayInfo name=\"[Store].[CHILDREN_CARDINALITY]\"/>" + nl +
-                "                </HierarchyInfo>" + nl +
-                "                <HierarchyInfo name=\"Pay Type\">" + nl +
-                "                  <UName name=\"[Pay Type].[MEMBER_UNIQUE_NAME]\"/>" + nl +
-                "                  <Caption name=\"[Pay Type].[MEMBER_CAPTION]\"/>" + nl +
-                "                  <LName name=\"[Pay Type].[LEVEL_UNIQUE_NAME]\"/>" + nl +
-                "                  <LNum name=\"[Pay Type].[LEVEL_NUMBER]\"/>" + nl +
-                "                  <DisplayInfo name=\"[Pay Type].[CHILDREN_CARDINALITY]\"/>" + nl +
-                "                </HierarchyInfo>" + nl +
-                "              </AxisInfo>" + nl +
-                "            </AxesInfo>" + nl +
-                "            <CellInfo>" + nl +
-                "              <Value name=\"VALUE\"/>" + nl +
-                "              <FmtValue name=\"FORMATTED_VALUE\"/>" + nl +
-                "              <FormatString name=\"FORMAT_STRING\"/>" + nl +
-                "            </CellInfo>" + nl +
-                "          </OlapInfo>" + nl +
-                "          <Axes>" + nl +
-                "            <Axis name=\"SlicerAxis\">" + nl +
-                "              <Tuples>" + nl +
-                "                <Tuple/>" + nl +
-                "              </Tuples>" + nl +
-                "            </Axis>" + nl +
-                "            <Axis name=\"Axis0\">" + nl +
-                "              <Tuples>" + nl +
-                "                <Tuple>" + nl +
-                "                  <Member Hierarchy=\"Measures\">" + nl +
-                "                    <UName>[Measures].[Org Salary]</UName>" + nl +
-                "                    <Caption>Org Salary</Caption>" + nl +
-                "                    <LName>[Measures].[MeasuresLevel]</LName>" + nl +
-                "                    <LNum>0</LNum>" + nl +
-                "                    <DisplayInfo>0</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                </Tuple>" + nl +
-                "                <Tuple>" + nl +
-                "                  <Member Hierarchy=\"Measures\">" + nl +
-                "                    <UName>[Measures].[Count]</UName>" + nl +
-                "                    <Caption>Count</Caption>" + nl +
-                "                    <LName>[Measures].[MeasuresLevel]</LName>" + nl +
-                "                    <LNum>0</LNum>" + nl +
-                "                    <DisplayInfo>0</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                </Tuple>" + nl +
-                "              </Tuples>" + nl +
-                "            </Axis>" + nl +
-                "            <Axis name=\"Axis1\">" + nl +
-                "              <Tuples>" + nl +
-                "                <Tuple>" + nl +
-                "                  <Member Hierarchy=\"Store\">" + nl +
-                "                    <UName>[Store].[All Stores].[USA].[CA]</UName>" + nl +
-                "                    <Caption>CA</Caption>" + nl +
-                "                    <LName>[Store].[Store State]</LName>" + nl +
-                "                    <LNum>2</LNum>" + nl +
-                "                    <DisplayInfo>5</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                  <Member Hierarchy=\"Pay Type\">" + nl +
-                "                    <UName>[Pay Type].[All Pay Types]</UName>" + nl +
-                "                    <Caption>All Pay Types</Caption>" + nl +
-                "                    <LName>[Pay Type].[(All)]</LName>" + nl +
-                "                    <LNum>0</LNum>" + nl +
-                "                    <DisplayInfo>65538</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                </Tuple>" + nl +
-                "                <Tuple>" + nl +
-                "                  <Member Hierarchy=\"Store\">" + nl +
-                "                    <UName>[Store].[All Stores].[USA].[CA]</UName>" + nl +
-                "                    <Caption>CA</Caption>" + nl +
-                "                    <LName>[Store].[Store State]</LName>" + nl +
-                "                    <LNum>2</LNum>" + nl +
-                "                    <DisplayInfo>131077</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                  <Member Hierarchy=\"Pay Type\">" + nl +
-                "                    <UName>[Pay Type].[All Pay Types].[Hourly]</UName>" + nl +
-                "                    <Caption>Hourly</Caption>" + nl +
-                "                    <LName>[Pay Type].[Pay Type]</LName>" + nl +
-                "                    <LNum>1</LNum>" + nl +
-                "                    <DisplayInfo>0</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                </Tuple>" + nl +
-                "                <Tuple>" + nl +
-                "                  <Member Hierarchy=\"Store\">" + nl +
-                "                    <UName>[Store].[All Stores].[USA].[CA]</UName>" + nl +
-                "                    <Caption>CA</Caption>" + nl +
-                "                    <LName>[Store].[Store State]</LName>" + nl +
-                "                    <LNum>2</LNum>" + nl +
-                "                    <DisplayInfo>131077</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                  <Member Hierarchy=\"Pay Type\">" + nl +
-                "                    <UName>[Pay Type].[All Pay Types].[Monthly]</UName>" + nl +
-                "                    <Caption>Monthly</Caption>" + nl +
-                "                    <LName>[Pay Type].[Pay Type]</LName>" + nl +
-                "                    <LNum>1</LNum>" + nl +
-                "                    <DisplayInfo>131072</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                </Tuple>" + nl +
-                "                <Tuple>" + nl +
-                "                  <Member Hierarchy=\"Store\">" + nl +
-                "                    <UName>[Store].[All Stores].[USA].[OR]</UName>" + nl +
-                "                    <Caption>OR</Caption>" + nl +
-                "                    <LName>[Store].[Store State]</LName>" + nl +
-                "                    <LNum>2</LNum>" + nl +
-                "                    <DisplayInfo>131074</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                  <Member Hierarchy=\"Pay Type\">" + nl +
-                "                    <UName>[Pay Type].[All Pay Types]</UName>" + nl +
-                "                    <Caption>All Pay Types</Caption>" + nl +
-                "                    <LName>[Pay Type].[(All)]</LName>" + nl +
-                "                    <LNum>0</LNum>" + nl +
-                "                    <DisplayInfo>65538</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                </Tuple>" + nl +
-                "                <Tuple>" + nl +
-                "                  <Member Hierarchy=\"Store\">" + nl +
-                "                    <UName>[Store].[All Stores].[USA].[OR]</UName>" + nl +
-                "                    <Caption>OR</Caption>" + nl +
-                "                    <LName>[Store].[Store State]</LName>" + nl +
-                "                    <LNum>2</LNum>" + nl +
-                "                    <DisplayInfo>131074</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                  <Member Hierarchy=\"Pay Type\">" + nl +
-                "                    <UName>[Pay Type].[All Pay Types].[Hourly]</UName>" + nl +
-                "                    <Caption>Hourly</Caption>" + nl +
-                "                    <LName>[Pay Type].[Pay Type]</LName>" + nl +
-                "                    <LNum>1</LNum>" + nl +
-                "                    <DisplayInfo>0</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                </Tuple>" + nl +
-                "                <Tuple>" + nl +
-                "                  <Member Hierarchy=\"Store\">" + nl +
-                "                    <UName>[Store].[All Stores].[USA].[OR]</UName>" + nl +
-                "                    <Caption>OR</Caption>" + nl +
-                "                    <LName>[Store].[Store State]</LName>" + nl +
-                "                    <LNum>2</LNum>" + nl +
-                "                    <DisplayInfo>131074</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                  <Member Hierarchy=\"Pay Type\">" + nl +
-                "                    <UName>[Pay Type].[All Pay Types].[Monthly]</UName>" + nl +
-                "                    <Caption>Monthly</Caption>" + nl +
-                "                    <LName>[Pay Type].[Pay Type]</LName>" + nl +
-                "                    <LNum>1</LNum>" + nl +
-                "                    <DisplayInfo>131072</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                </Tuple>" + nl +
-                "                <Tuple>" + nl +
-                "                  <Member Hierarchy=\"Store\">" + nl +
-                "                    <UName>[Store].[All Stores].[USA].[WA]</UName>" + nl +
-                "                    <Caption>WA</Caption>" + nl +
-                "                    <LName>[Store].[Store State]</LName>" + nl +
-                "                    <LNum>2</LNum>" + nl +
-                "                    <DisplayInfo>131079</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                  <Member Hierarchy=\"Pay Type\">" + nl +
-                "                    <UName>[Pay Type].[All Pay Types]</UName>" + nl +
-                "                    <Caption>All Pay Types</Caption>" + nl +
-                "                    <LName>[Pay Type].[(All)]</LName>" + nl +
-                "                    <LNum>0</LNum>" + nl +
-                "                    <DisplayInfo>65538</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                </Tuple>" + nl +
-                "                <Tuple>" + nl +
-                "                  <Member Hierarchy=\"Store\">" + nl +
-                "                    <UName>[Store].[All Stores].[USA].[WA]</UName>" + nl +
-                "                    <Caption>WA</Caption>" + nl +
-                "                    <LName>[Store].[Store State]</LName>" + nl +
-                "                    <LNum>2</LNum>" + nl +
-                "                    <DisplayInfo>131079</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                  <Member Hierarchy=\"Pay Type\">" + nl +
-                "                    <UName>[Pay Type].[All Pay Types].[Hourly]</UName>" + nl +
-                "                    <Caption>Hourly</Caption>" + nl +
-                "                    <LName>[Pay Type].[Pay Type]</LName>" + nl +
-                "                    <LNum>1</LNum>" + nl +
-                "                    <DisplayInfo>0</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                </Tuple>" + nl +
-                "                <Tuple>" + nl +
-                "                  <Member Hierarchy=\"Store\">" + nl +
-                "                    <UName>[Store].[All Stores].[USA].[WA]</UName>" + nl +
-                "                    <Caption>WA</Caption>" + nl +
-                "                    <LName>[Store].[Store State]</LName>" + nl +
-                "                    <LNum>2</LNum>" + nl +
-                "                    <DisplayInfo>131079</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                  <Member Hierarchy=\"Pay Type\">" + nl +
-                "                    <UName>[Pay Type].[All Pay Types].[Monthly]</UName>" + nl +
-                "                    <Caption>Monthly</Caption>" + nl +
-                "                    <LName>[Pay Type].[Pay Type]</LName>" + nl +
-                "                    <LNum>1</LNum>" + nl +
-                "                    <DisplayInfo>131072</DisplayInfo>" + nl +
-                "                  </Member>" + nl +
-                "                </Tuple>" + nl +
-                "              </Tuples>" + nl +
-                "            </Axis>" + nl +
-                "          </Axes>" + nl +
-                "          <CellData>" + nl +
-                "            <Cell CellOrdinal=\"0\">" + nl +
-                "              <Value>14861.5006</Value>" + nl +
-                "              <FmtValue>$14,861.50</FmtValue>" + nl +
-                "              <FormatString>Currency</FormatString>" + nl +
-                "            </Cell>" + nl +
-                "            <Cell CellOrdinal=\"1\">" + nl +
-                "              <Value>2316</Value>" + nl +
-                "              <FmtValue>2,316</FmtValue>" + nl +
-                "              <FormatString>#,#</FormatString>" + nl +
-                "            </Cell>" + nl +
-                "            <Cell CellOrdinal=\"2\">" + nl +
-                "              <Value>3261.2206</Value>" + nl +
-                "              <FmtValue>$3,261.22</FmtValue>" + nl +
-                "              <FormatString>Currency</FormatString>" + nl +
-                "            </Cell>" + nl +
-                "            <Cell CellOrdinal=\"3\">" + nl +
-                "              <Value>972</Value>" + nl +
-                "              <FmtValue>972</FmtValue>" + nl +
-                "              <FormatString>#,#</FormatString>" + nl +
-                "            </Cell>" + nl +
-                "            <Cell CellOrdinal=\"4\">" + nl +
-                "              <Value>11600.28</Value>" + nl +
-                "              <FmtValue>$11,600.28</FmtValue>" + nl +
-                "              <FormatString>Currency</FormatString>" + nl +
-                "            </Cell>" + nl +
-                "            <Cell CellOrdinal=\"5\">" + nl +
-                "              <Value>1344</Value>" + nl +
-                "              <FmtValue>1,344</FmtValue>" + nl +
-                "              <FormatString>#,#</FormatString>" + nl +
-                "            </Cell>" + nl +
-                "            <Cell CellOrdinal=\"6\">" + nl +
-                "              <Value>7848.9727</Value>" + nl +
-                "              <FmtValue>$7,848.97</FmtValue>" + nl +
-                "              <FormatString>Currency</FormatString>" + nl +
-                "            </Cell>" + nl +
-                "            <Cell CellOrdinal=\"7\">" + nl +
-                "              <Value>1632</Value>" + nl +
-                "              <FmtValue>1,632</FmtValue>" + nl +
-                "              <FormatString>#,#</FormatString>" + nl +
-                "            </Cell>" + nl +
-                "            <Cell CellOrdinal=\"8\">" + nl +
-                "              <Value>2663.8927</Value>" + nl +
-                "              <FmtValue>$2,663.89</FmtValue>" + nl +
-                "              <FormatString>Currency</FormatString>" + nl +
-                "            </Cell>" + nl +
-                "            <Cell CellOrdinal=\"9\">" + nl +
-                "              <Value>792</Value>" + nl +
-                "              <FmtValue>792</FmtValue>" + nl +
-                "              <FormatString>#,#</FormatString>" + nl +
-                "            </Cell>" + nl +
-                "            <Cell CellOrdinal=\"10\">" + nl +
-                "              <Value>5185.08</Value>" + nl +
-                "              <FmtValue>$5,185.08</FmtValue>" + nl +
-                "              <FormatString>Currency</FormatString>" + nl +
-                "            </Cell>" + nl +
-                "            <Cell CellOrdinal=\"11\">" + nl +
-                "              <Value>840</Value>" + nl +
-                "              <FmtValue>840</FmtValue>" + nl +
-                "              <FormatString>#,#</FormatString>" + nl +
-                "            </Cell>" + nl +
-                "            <Cell CellOrdinal=\"12\">" + nl +
-                "              <Value>16721.1979</Value>" + nl +
-                "              <FmtValue>$16,721.20</FmtValue>" + nl +
-                "              <FormatString>Currency</FormatString>" + nl +
-                "            </Cell>" + nl +
-                "            <Cell CellOrdinal=\"13\">" + nl +
-                "              <Value>3444</Value>" + nl +
-                "              <FmtValue>3,444</FmtValue>" + nl +
-                "              <FormatString>#,#</FormatString>" + nl +
-                "            </Cell>" + nl +
-                "            <Cell CellOrdinal=\"14\">" + nl +
-                "              <Value>5481.6379</Value>" + nl +
-                "              <FmtValue>$5,481.64</FmtValue>" + nl +
-                "              <FormatString>Currency</FormatString>" + nl +
-                "            </Cell>" + nl +
-                "            <Cell CellOrdinal=\"15\">" + nl +
-                "              <Value>1632</Value>" + nl +
-                "              <FmtValue>1,632</FmtValue>" + nl +
-                "              <FormatString>#,#</FormatString>" + nl +
-                "            </Cell>" + nl +
-                "            <Cell CellOrdinal=\"16\">" + nl +
-                "              <Value>11239.56</Value>" + nl +
-                "              <FmtValue>$11,239.56</FmtValue>" + nl +
-                "              <FormatString>Currency</FormatString>" + nl +
-                "            </Cell>" + nl +
-                "            <Cell CellOrdinal=\"17\">" + nl +
-                "              <Value>1812</Value>" + nl +
-                "              <FmtValue>1,812</FmtValue>" + nl +
-                "              <FormatString>#,#</FormatString>" + nl +
-                "            </Cell>" + nl +
-                "          </CellData>" + nl +
-                "        </root>" + nl +
-                "      </return>" + nl +
-                "    </ExecuteResponse>" + nl +
-                "  </SOAP-ENV:Body>" + nl +
-                "</SOAP-ENV:Envelope>");
+        String[] expected = {
+            "<?xml version=\"1.0\"?>",
+            "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "  <SOAP-ENV:Body>",
+            "    <ExecuteResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">",
+            "      <return>",
+            "        <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:mddataset\">",
+            "          <xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"/>",
+            "          <OlapInfo>",
+            "            <CubeInfo>",
+            "              <Cube>",
+            "                <CubeName>HR</CubeName>",
+            "              </Cube>",
+            "            </CubeInfo>",
+            "            <AxesInfo>",
+            "              <AxisInfo name=\"SlicerAxis\"/>",
+            "              <AxisInfo name=\"Axis0\">",
+            "                <HierarchyInfo name=\"Measures\">",
+            "                  <UName name=\"[Measures].[MEMBER_UNIQUE_NAME]\"/>",
+            "                  <Caption name=\"[Measures].[MEMBER_CAPTION]\"/>",
+            "                  <LName name=\"[Measures].[LEVEL_UNIQUE_NAME]\"/>",
+            "                  <LNum name=\"[Measures].[LEVEL_NUMBER]\"/>",
+            "                  <DisplayInfo name=\"[Measures].[CHILDREN_CARDINALITY]\"/>",
+            "                </HierarchyInfo>",
+            "              </AxisInfo>",
+            "              <AxisInfo name=\"Axis1\">",
+            "                <HierarchyInfo name=\"Store\">",
+            "                  <UName name=\"[Store].[MEMBER_UNIQUE_NAME]\"/>",
+            "                  <Caption name=\"[Store].[MEMBER_CAPTION]\"/>",
+            "                  <LName name=\"[Store].[LEVEL_UNIQUE_NAME]\"/>",
+            "                  <LNum name=\"[Store].[LEVEL_NUMBER]\"/>",
+            "                  <DisplayInfo name=\"[Store].[CHILDREN_CARDINALITY]\"/>",
+            "                </HierarchyInfo>",
+            "                <HierarchyInfo name=\"Pay Type\">",
+            "                  <UName name=\"[Pay Type].[MEMBER_UNIQUE_NAME]\"/>",
+            "                  <Caption name=\"[Pay Type].[MEMBER_CAPTION]\"/>",
+            "                  <LName name=\"[Pay Type].[LEVEL_UNIQUE_NAME]\"/>",
+            "                  <LNum name=\"[Pay Type].[LEVEL_NUMBER]\"/>",
+            "                  <DisplayInfo name=\"[Pay Type].[CHILDREN_CARDINALITY]\"/>",
+            "                </HierarchyInfo>",
+            "              </AxisInfo>",
+            "            </AxesInfo>",
+            "            <CellInfo>",
+            "              <Value name=\"VALUE\"/>",
+            "              <FmtValue name=\"FORMATTED_VALUE\"/>",
+            "              <FormatString name=\"FORMAT_STRING\"/>",
+            "            </CellInfo>",
+            "          </OlapInfo>",
+            "          <Axes>",
+            "            <Axis name=\"SlicerAxis\">",
+            "              <Tuples>",
+            "                <Tuple/>",
+            "              </Tuples>",
+            "            </Axis>",
+            "            <Axis name=\"Axis0\">",
+            "              <Tuples>",
+            "                <Tuple>",
+            "                  <Member Hierarchy=\"Measures\">",
+            "                    <UName>[Measures].[Org Salary]</UName>",
+            "                    <Caption>Org Salary</Caption>",
+            "                    <LName>[Measures].[MeasuresLevel]</LName>",
+            "                    <LNum>0</LNum>",
+            "                    <DisplayInfo>0</DisplayInfo>",
+            "                  </Member>",
+            "                </Tuple>",
+            "                <Tuple>",
+            "                  <Member Hierarchy=\"Measures\">",
+            "                    <UName>[Measures].[Count]</UName>",
+            "                    <Caption>Count</Caption>",
+            "                    <LName>[Measures].[MeasuresLevel]</LName>",
+            "                    <LNum>0</LNum>",
+            "                    <DisplayInfo>0</DisplayInfo>",
+            "                  </Member>",
+            "                </Tuple>",
+            "              </Tuples>",
+            "            </Axis>",
+            "            <Axis name=\"Axis1\">",
+            "              <Tuples>",
+            "                <Tuple>",
+            "                  <Member Hierarchy=\"Store\">",
+            "                    <UName>[Store].[All Stores].[USA].[CA]</UName>",
+            "                    <Caption>CA</Caption>",
+            "                    <LName>[Store].[Store State]</LName>",
+            "                    <LNum>2</LNum>",
+            "                    <DisplayInfo>5</DisplayInfo>",
+            "                  </Member>",
+            "                  <Member Hierarchy=\"Pay Type\">",
+            "                    <UName>[Pay Type].[All Pay Types]</UName>",
+            "                    <Caption>All Pay Types</Caption>",
+            "                    <LName>[Pay Type].[(All)]</LName>",
+            "                    <LNum>0</LNum>",
+            "                    <DisplayInfo>65538</DisplayInfo>",
+            "                  </Member>",
+            "                </Tuple>",
+            "                <Tuple>",
+            "                  <Member Hierarchy=\"Store\">",
+            "                    <UName>[Store].[All Stores].[USA].[CA]</UName>",
+            "                    <Caption>CA</Caption>",
+            "                    <LName>[Store].[Store State]</LName>",
+            "                    <LNum>2</LNum>",
+            "                    <DisplayInfo>131077</DisplayInfo>",
+            "                  </Member>",
+            "                  <Member Hierarchy=\"Pay Type\">",
+            "                    <UName>[Pay Type].[All Pay Types].[Hourly]</UName>",
+            "                    <Caption>Hourly</Caption>",
+            "                    <LName>[Pay Type].[Pay Type]</LName>",
+            "                    <LNum>1</LNum>",
+            "                    <DisplayInfo>0</DisplayInfo>",
+            "                  </Member>",
+            "                </Tuple>",
+            "                <Tuple>",
+            "                  <Member Hierarchy=\"Store\">",
+            "                    <UName>[Store].[All Stores].[USA].[CA]</UName>",
+            "                    <Caption>CA</Caption>",
+            "                    <LName>[Store].[Store State]</LName>",
+            "                    <LNum>2</LNum>",
+            "                    <DisplayInfo>131077</DisplayInfo>",
+            "                  </Member>",
+            "                  <Member Hierarchy=\"Pay Type\">",
+            "                    <UName>[Pay Type].[All Pay Types].[Monthly]</UName>",
+            "                    <Caption>Monthly</Caption>",
+            "                    <LName>[Pay Type].[Pay Type]</LName>",
+            "                    <LNum>1</LNum>",
+            "                    <DisplayInfo>131072</DisplayInfo>",
+            "                  </Member>",
+            "                </Tuple>",
+            "                <Tuple>",
+            "                  <Member Hierarchy=\"Store\">",
+            "                    <UName>[Store].[All Stores].[USA].[OR]</UName>",
+            "                    <Caption>OR</Caption>",
+            "                    <LName>[Store].[Store State]</LName>",
+            "                    <LNum>2</LNum>",
+            "                    <DisplayInfo>131074</DisplayInfo>",
+            "                  </Member>",
+            "                  <Member Hierarchy=\"Pay Type\">",
+            "                    <UName>[Pay Type].[All Pay Types]</UName>",
+            "                    <Caption>All Pay Types</Caption>",
+            "                    <LName>[Pay Type].[(All)]</LName>",
+            "                    <LNum>0</LNum>",
+            "                    <DisplayInfo>65538</DisplayInfo>",
+            "                  </Member>",
+            "                </Tuple>",
+            "                <Tuple>",
+            "                  <Member Hierarchy=\"Store\">",
+            "                    <UName>[Store].[All Stores].[USA].[OR]</UName>",
+            "                    <Caption>OR</Caption>",
+            "                    <LName>[Store].[Store State]</LName>",
+            "                    <LNum>2</LNum>",
+            "                    <DisplayInfo>131074</DisplayInfo>",
+            "                  </Member>",
+            "                  <Member Hierarchy=\"Pay Type\">",
+            "                    <UName>[Pay Type].[All Pay Types].[Hourly]</UName>",
+            "                    <Caption>Hourly</Caption>",
+            "                    <LName>[Pay Type].[Pay Type]</LName>",
+            "                    <LNum>1</LNum>",
+            "                    <DisplayInfo>0</DisplayInfo>",
+            "                  </Member>",
+            "                </Tuple>",
+            "                <Tuple>",
+            "                  <Member Hierarchy=\"Store\">",
+            "                    <UName>[Store].[All Stores].[USA].[OR]</UName>",
+            "                    <Caption>OR</Caption>",
+            "                    <LName>[Store].[Store State]</LName>",
+            "                    <LNum>2</LNum>",
+            "                    <DisplayInfo>131074</DisplayInfo>",
+            "                  </Member>",
+            "                  <Member Hierarchy=\"Pay Type\">",
+            "                    <UName>[Pay Type].[All Pay Types].[Monthly]</UName>",
+            "                    <Caption>Monthly</Caption>",
+            "                    <LName>[Pay Type].[Pay Type]</LName>",
+            "                    <LNum>1</LNum>",
+            "                    <DisplayInfo>131072</DisplayInfo>",
+            "                  </Member>",
+            "                </Tuple>",
+            "                <Tuple>",
+            "                  <Member Hierarchy=\"Store\">",
+            "                    <UName>[Store].[All Stores].[USA].[WA]</UName>",
+            "                    <Caption>WA</Caption>",
+            "                    <LName>[Store].[Store State]</LName>",
+            "                    <LNum>2</LNum>",
+            "                    <DisplayInfo>131079</DisplayInfo>",
+            "                  </Member>",
+            "                  <Member Hierarchy=\"Pay Type\">",
+            "                    <UName>[Pay Type].[All Pay Types]</UName>",
+            "                    <Caption>All Pay Types</Caption>",
+            "                    <LName>[Pay Type].[(All)]</LName>",
+            "                    <LNum>0</LNum>",
+            "                    <DisplayInfo>65538</DisplayInfo>",
+            "                  </Member>",
+            "                </Tuple>",
+            "                <Tuple>",
+            "                  <Member Hierarchy=\"Store\">",
+            "                    <UName>[Store].[All Stores].[USA].[WA]</UName>",
+            "                    <Caption>WA</Caption>",
+            "                    <LName>[Store].[Store State]</LName>",
+            "                    <LNum>2</LNum>",
+            "                    <DisplayInfo>131079</DisplayInfo>",
+            "                  </Member>",
+            "                  <Member Hierarchy=\"Pay Type\">",
+            "                    <UName>[Pay Type].[All Pay Types].[Hourly]</UName>",
+            "                    <Caption>Hourly</Caption>",
+            "                    <LName>[Pay Type].[Pay Type]</LName>",
+            "                    <LNum>1</LNum>",
+            "                    <DisplayInfo>0</DisplayInfo>",
+            "                  </Member>",
+            "                </Tuple>",
+            "                <Tuple>",
+            "                  <Member Hierarchy=\"Store\">",
+            "                    <UName>[Store].[All Stores].[USA].[WA]</UName>",
+            "                    <Caption>WA</Caption>",
+            "                    <LName>[Store].[Store State]</LName>",
+            "                    <LNum>2</LNum>",
+            "                    <DisplayInfo>131079</DisplayInfo>",
+            "                  </Member>",
+            "                  <Member Hierarchy=\"Pay Type\">",
+            "                    <UName>[Pay Type].[All Pay Types].[Monthly]</UName>",
+            "                    <Caption>Monthly</Caption>",
+            "                    <LName>[Pay Type].[Pay Type]</LName>",
+            "                    <LNum>1</LNum>",
+            "                    <DisplayInfo>131072</DisplayInfo>",
+            "                  </Member>",
+            "                </Tuple>",
+            "              </Tuples>",
+            "            </Axis>",
+            "          </Axes>",
+            "          <CellData>",
+            "            <Cell CellOrdinal=\"0\">",
+            "              <Value>14861.5006</Value>",
+            "              <FmtValue>$14,861.50</FmtValue>",
+            "              <FormatString>Currency</FormatString>",
+            "            </Cell>",
+            "            <Cell CellOrdinal=\"1\">",
+            "              <Value>2316</Value>",
+            "              <FmtValue>2,316</FmtValue>",
+            "              <FormatString>#,#</FormatString>",
+            "            </Cell>",
+            "            <Cell CellOrdinal=\"2\">",
+            "              <Value>3261.2206</Value>",
+            "              <FmtValue>$3,261.22</FmtValue>",
+            "              <FormatString>Currency</FormatString>",
+            "            </Cell>",
+            "            <Cell CellOrdinal=\"3\">",
+            "              <Value>972</Value>",
+            "              <FmtValue>972</FmtValue>",
+            "              <FormatString>#,#</FormatString>",
+            "            </Cell>",
+            "            <Cell CellOrdinal=\"4\">",
+            "              <Value>11600.28</Value>",
+            "              <FmtValue>$11,600.28</FmtValue>",
+            "              <FormatString>Currency</FormatString>",
+            "            </Cell>",
+            "            <Cell CellOrdinal=\"5\">",
+            "              <Value>1344</Value>",
+            "              <FmtValue>1,344</FmtValue>",
+            "              <FormatString>#,#</FormatString>",
+            "            </Cell>",
+            "            <Cell CellOrdinal=\"6\">",
+            "              <Value>7848.9727</Value>",
+            "              <FmtValue>$7,848.97</FmtValue>",
+            "              <FormatString>Currency</FormatString>",
+            "            </Cell>",
+            "            <Cell CellOrdinal=\"7\">",
+            "              <Value>1632</Value>",
+            "              <FmtValue>1,632</FmtValue>",
+            "              <FormatString>#,#</FormatString>",
+            "            </Cell>",
+            "            <Cell CellOrdinal=\"8\">",
+            "              <Value>2663.8927</Value>",
+            "              <FmtValue>$2,663.89</FmtValue>",
+            "              <FormatString>Currency</FormatString>",
+            "            </Cell>",
+            "            <Cell CellOrdinal=\"9\">",
+            "              <Value>792</Value>",
+            "              <FmtValue>792</FmtValue>",
+            "              <FormatString>#,#</FormatString>",
+            "            </Cell>",
+            "            <Cell CellOrdinal=\"10\">",
+            "              <Value>5185.08</Value>",
+            "              <FmtValue>$5,185.08</FmtValue>",
+            "              <FormatString>Currency</FormatString>",
+            "            </Cell>",
+            "            <Cell CellOrdinal=\"11\">",
+            "              <Value>840</Value>",
+            "              <FmtValue>840</FmtValue>",
+            "              <FormatString>#,#</FormatString>",
+            "            </Cell>",
+            "            <Cell CellOrdinal=\"12\">",
+            "              <Value>16721.1979</Value>",
+            "              <FmtValue>$16,721.20</FmtValue>",
+            "              <FormatString>Currency</FormatString>",
+            "            </Cell>",
+            "            <Cell CellOrdinal=\"13\">",
+            "              <Value>3444</Value>",
+            "              <FmtValue>3,444</FmtValue>",
+            "              <FormatString>#,#</FormatString>",
+            "            </Cell>",
+            "            <Cell CellOrdinal=\"14\">",
+            "              <Value>5481.6379</Value>",
+            "              <FmtValue>$5,481.64</FmtValue>",
+            "              <FormatString>Currency</FormatString>",
+            "            </Cell>",
+            "            <Cell CellOrdinal=\"15\">",
+            "              <Value>1632</Value>",
+            "              <FmtValue>1,632</FmtValue>",
+            "              <FormatString>#,#</FormatString>",
+            "            </Cell>",
+            "            <Cell CellOrdinal=\"16\">",
+            "              <Value>11239.56</Value>",
+            "              <FmtValue>$11,239.56</FmtValue>",
+            "              <FormatString>Currency</FormatString>",
+            "            </Cell>",
+            "            <Cell CellOrdinal=\"17\">",
+            "              <Value>1812</Value>",
+            "              <FmtValue>1,812</FmtValue>",
+            "              <FormatString>#,#</FormatString>",
+            "            </Cell>",
+            "          </CellData>",
+            "        </root>",
+            "      </return>",
+            "    </ExecuteResponse>",
+            "  </SOAP-ENV:Body>",
+            "</SOAP-ENV:Envelope>"};
+        String[] request = {
+            "<Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\" ",
+            "  SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
+            "  <Command>",
+            "    <Statement>SELECT {[Measures].[Org Salary], [Measures].[Count]} ON COLUMNS,",
+            "  {[Store].[USA].children * [Pay Type].Members} DIMENSION PROPERTIES [Store].[Store SQFT] ON ROWS",
+            "FROM [HR]</Statement>",
+            "  </Command>",
+            "  <Properties>",
+            "    <PropertyList>",
+            "      <DataSourceInfo>" + dataSource + "</DataSourceInfo>",
+            "      <Catalog>FoodMart</Catalog>",
+            "      <Format>Multidimensional</Format>",
+            "      <AxisFormat>TupleFormat</AxisFormat>",
+            "    </PropertyList>",
+            "  </Properties>",
+            "</Execute>"};
+        assertRequestYields(wrap(concat(request)), concat(expected));
     }
 
     public static void assertEquals(String[] expected, String[] actual) {
