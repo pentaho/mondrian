@@ -19,10 +19,10 @@ import mondrian.olap.type.Type;
  * Mondrian's runtime class-path, and be referenced from the schema file:
  *
  * <blockquote><code>
- * &lt;Schema&gt;
- * &nbsp;&nbsp;&nbsp;&nbsp;....
- * &nbsp;&nbsp;&nbsp;&nbsp;&lt;UserDefinedFunction name="MyFun" class="com.acme.MyFun"&gt;
- * &lt;/Schema&gt;
+ * &lt;Schema&gt;<br/>
+ * &nbsp;&nbsp;&nbsp;&nbsp;....<br/>
+ * &nbsp;&nbsp;&nbsp;&nbsp;&lt;UserDefinedFunction name="MyFun" class="com.acme.MyFun"&gt;<br/>
+ * &lt;/Schema&gt;</code></blockquote>
  *
  * @author jhyde
  * @version $Id$

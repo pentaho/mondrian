@@ -41,6 +41,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.apache.log4j.Logger;
 
 /**
  * An <code>XmlaMediator</code> responds to XML for Analysis requests.
@@ -51,7 +52,8 @@ import org.xml.sax.SAXException;
  */
 public class XmlaMediator {
     private static final boolean DRILLTHROUGH_EXTENDS_CONTEXT = true;
-    
+
+    private static final Logger LOGGER = Logger.getLogger(XmlaMediator.class);
     private static final String XSD_NS = "http://www.w3.org/2001/XMLSchema";
     private static final String XSI_NS = "http://www.w3.org/2001/XMLSchema-instance";
     private static final String XMLA_NS = "urn:schemas-microsoft-com:xml-analysis";
@@ -59,7 +61,7 @@ public class XmlaMediator {
     private static final String XMLA_ROWSET_NS = "urn:schemas-microsoft-com:xml-analysis:rowset";
     static ThreadLocal threadServletContext = new ThreadLocal();
     static Map dataSourcesMap = new HashMap();
-    
+
     /**
      * Please call this method before any usage of XmlaMediator.
      * @param dataSources
@@ -102,7 +104,9 @@ public class XmlaMediator {
         try {
             process(documentElement, new SAXHandler(new SAXWriter(response)));
         } catch (SAXException e) {
-            e.printStackTrace();
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Request " + request + " failed", e);
+            }
         }
     }
 
@@ -144,7 +148,9 @@ public class XmlaMediator {
                 try {
                     processRequest((Element) node, saxHandler);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("Request " + element + " failed", e);
+                    }
                     saxHandler.startElement("Error");
                     saxHandler.characters(e.toString());
                     saxHandler.endElement();
@@ -174,7 +180,7 @@ public class XmlaMediator {
             throw Util.newError("<Statement> parameter is required");
         }
         final Properties properties = getProperties(execute);
-        
+
         boolean isDrillThrough = false;
         // No usage of Regex in 1.4
         String upperStatement = statement.toUpperCase();
@@ -187,7 +193,7 @@ public class XmlaMediator {
             else
                 throw Util.newError("Must set property 'Format' to 'Tabular' for DrillThrough");
         }
-        
+
         try {
          	saxHandler.startElement("ExecuteResponse", new String[] {
          			"xmlns", XMLA_NS});
@@ -212,17 +218,17 @@ public class XmlaMediator {
         	throw Util.newError(e, "Error while processing execute request");
         }
     }
-    
+
     private TabularRowSet executeDrillThroughQuery(String statement, Properties properties) {
         final Connection connection = getConnection(properties);
         final Query query = connection.parseQuery(statement);
         final Result result = connection.execute(query);
         Cell dtCell = result.getCell(new int[] {0,0});
-        
+
         if (!dtCell.canDrillThrough()) {
             throw Util.newError("Cannot do DillThrough operation on the cell");
         }
-        
+
         String dtSql = dtCell.getDrillThroughSQL(DRILLTHROUGH_EXTENDS_CONTEXT);
         TabularRowSet rowset = null;
         java.sql.Connection conn = null;
@@ -246,24 +252,24 @@ public class XmlaMediator {
                 if (conn != null && !conn.isClosed()) conn.close();
             } catch (SQLException ignored){}
         }
-        
+
         return rowset;
     }
-    
+
     static class TabularRowSet {
         private String[] header;
         private List rows;
-        
+
         public TabularRowSet(ResultSet rs) throws SQLException {
             ResultSetMetaData md = rs.getMetaData();
             int columnCount = md.getColumnCount();
-            
+
             // populate header
             header = new String[columnCount];
             for (int i = 0; i < columnCount; i++) {
                 header[i] = md.getColumnName(i+1);
             }
-            
+
             // populate data
             rows = new ArrayList();
             while(rs.next()) {
@@ -274,15 +280,15 @@ public class XmlaMediator {
                 rows.add(row);
             }
         }
-     
+
         public void unparse(SAXHandler saxHandler) throws SAXException {
             String[] encodedHeader = new String[header.length];
             for (int i = 0; i < header.length; i++) {
-                // replace " " with "_" in column headers, 
+                // replace " " with "_" in column headers,
                 // otherwise will generate a badly-formatted xml doc.
                 encodedHeader[i] = header[i].replace(' ', '_');
-            }            
-            
+            }
+
             for (Iterator it = rows.iterator(); it.hasNext();) {
                 Object[] row = (Object[])it.next();
                 saxHandler.startElement("row");
@@ -294,7 +300,7 @@ public class XmlaMediator {
                     } else {
                         if (value instanceof Number)
                             saxHandler.characters(normalizeNumricString(row[i].toString()));
-                        else 
+                        else
                             saxHandler.characters(row[i].toString());
                     }
                     saxHandler.endElement();
@@ -412,7 +418,7 @@ public class XmlaMediator {
                 }
                 saxHandler.endElement(); // AxisInfo
         }
-        
+
         private void axes(SAXHandler saxHandler) throws SAXException {
             if (axisFormat != Enumeration.AxisFormat.TupleFormat) {
                 throw new UnsupportedOperationException("<AxisFormat>: only 'TupleFormat' currently supported");
@@ -425,7 +431,7 @@ public class XmlaMediator {
             }
             saxHandler.endElement(); // Axes
         }
-        
+
         private void axis(SAXHandler saxHandler, Axis axis, String axisName) throws SAXException {
             saxHandler.startElement("Axis", new String[] {
                     "name", axisName});
@@ -446,7 +452,7 @@ public class XmlaMediator {
                                     int displayInfo = calculateDisplayInfo((j == 0 ? null : positions[j-1]),
                                             (j+1 == positions.length ? null : positions[j+1]),
                                             member, k, ((Integer)value).intValue());
-                                    saxHandler.characters(Integer.toString(displayInfo));                                    
+                                    saxHandler.characters(Integer.toString(displayInfo));
                                 } else {
                                     saxHandler.characters(value.toString());
                                 }
@@ -461,10 +467,10 @@ public class XmlaMediator {
                 saxHandler.endElement(); // Axis
         }
 
-        private int calculateDisplayInfo(Position prevPosition, Position nextPosition, 
+        private int calculateDisplayInfo(Position prevPosition, Position nextPosition,
                 Member currentMember, int memberOrdinal, int childrenCount) {
             int displayInfo = 0xffff & childrenCount;
-            
+
             if (nextPosition != null) {
                 String currentUName = currentMember.getUniqueName();
                 String nextParentUName = nextPosition.members[memberOrdinal].getParentUniqueName();
@@ -477,19 +483,19 @@ public class XmlaMediator {
             }
             return displayInfo;
         }
-        
+
         private void cellData(SAXHandler saxHandler) throws SAXException {
             saxHandler.startElement("CellData");
             final int axisCount = result.getAxes().length;
             int[] pos = new int[axisCount];
             int[] cellOrdinal = new int[] {0};
-            
+
             if (axisCount == 0) { // For MDX like: SELECT FROM Sales
                 emitCell(saxHandler, result.getCell(pos), cellOrdinal[0]);
             } else {
                 recurse(saxHandler, pos, axisCount - 1, cellOrdinal);
             }
-            
+
             saxHandler.endElement(); // CellData
         }
 
@@ -506,8 +512,8 @@ public class XmlaMediator {
                 }
             }
         }
-    
-    
+
+
         private void emitCell(SAXHandler saxHandler, Cell cell, int ordinal) throws SAXException {
             saxHandler.startElement("Cell", new String[] {
                     "CellOrdinal", Integer.toString(ordinal)});
@@ -518,12 +524,12 @@ public class XmlaMediator {
                 if (value != null) {
                     saxHandler.startElement(cellProps[i]);
                     String valueString = value.toString();
-    
+
                     if (cellPropLong == Property.VALUE.name &&
                            value instanceof Number) {
                         valueString = normalizeNumricString(valueString);
                     }
-    
+
                     saxHandler.characters(valueString);
                     saxHandler.endElement();
                 }
@@ -628,7 +634,7 @@ public class XmlaMediator {
         if (!dataSourcesMap.containsKey(dataSourceInfo)) {
         	throw Util.newError("no data source is configured with name '" + dataSourceInfo + "'");
         }
-        
+
         DataSourcesConfig.DataSource ds = (DataSourcesConfig.DataSource)dataSourcesMap.get(dataSourceInfo);
         Util.PropertyList connectProperties = Util.parseConnectString(ds.getDataSourceInfo());
         final String catalog = properties.getProperty(PropertyDefinition.Catalog.name);
@@ -714,7 +720,7 @@ public class XmlaMediator {
         }
         return false;
     }
-    
+
     private static String normalizeNumricString(String numericStr) {
         // This is here because different JDBC drivers
         // use different Number classes to return

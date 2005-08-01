@@ -23,8 +23,6 @@
 <h1>How to Design a Mondrian Schema</h1>
 <p>By Julian Hyde; last updated July, 2005.</p>
 
-<p>todo: complete agg table section</p>
-
 <hr noshade color="#000000" size="1">
 
 <h2>Contents</h2>
@@ -39,43 +37,37 @@
 </ol>
     </li>
   <li><a href="#Star_schemas">Star and snowflake schemas</a>
-  <ol>
-      <li><a href="#Shared_dimensions">Shared dimensions</a></li>
-      <li><a href="#Join_optimization">Join optimization</a></li>
-  </ol></li>
-  <li><a href="#Advanced_logical_constructs">Advanced logical constructs</a>
-  <ol>
-      <li><a href="#Virtual_cubes">Virtual cubes</a></li>
-      <li><a href="#Shared_dimensions">Shared dimensions</a></li>
-      <li><a href="#Parent_child_hierarchies">Parent-child hierarchies</a></li>
-      <li><a href="#Member_properties">Member properties</a></li>
-    <li><a href="#Calculated_members">Calculated members</a></li>
-    	<li><a href="#Named_sets">Named sets</a></li>
-  </ol></li>
-  <li><a href="#Plugins">Plugins</a>
-  <ol>
-      <li><a href="#User-defined_function">User-defined function</a></li>
+	<ol>
+		<li><a href="#Shared_dimensions">Shared dimensions</a></li>
+		<li><a href="#Join_optimization">Join optimization</a></li>
+	</ol></li>
+	<li><a href="#Advanced_logical_constructs">Advanced logical constructs</a>
+	<ol>
+		<li><a href="#Virtual_cubes">Virtual cubes</a></li>
+		<li><a href="#Shared_dimensions">Shared dimensions</a></li>
+		<li><a href="#Parent_child_hierarchies">Parent-child hierarchies</a></li>
+		<li><a href="#Member_properties">Member properties</a></li>
+		<li><a href="#Calculated_members">Calculated members</a></li>
+		<li><a href="#Named_sets">Named sets</a></li>
+	</ol></li>
+	<li><a href="#Plugins">Plugins</a>
+	<ol>
+		<li><a href="#User-defined_function">User-defined function</a></li>
 		<li><a href="#Member_reader">Member reader</a></li>
-      <li><a href="#Cell_reader">Cell reader</a></li>
-      <li><a href="#Cell_formatter">Cell formatter</a></li>
-      <li><a href="#Member_formatter">Member formatter</a></li>
+		<li><a href="#Cell_reader">Cell reader</a></li>
+		<li><a href="#Cell_formatter">Cell formatter</a></li>
+		<li><a href="#Member_formatter">Member formatter</a></li>
 		<li><a href="#Property_formatter">Property formatter</a></li>
 		<li><a href="#Schema_processor">Schema processor</a></li>
-  </ol></li>
-  <li><a href="#I18n">Internationalization</a></li>
-  <li><a href="#Aggregate_tables">Aggregate tables</a>
-  </li>
-
-  <li><a href="#Access_control">Access-control</a>
-  <ol>
-    <li><a href="#Defining_roles">Defining a role</a></li>
-    <li><a href="#Setting_a_connections_role">Setting a connection's role</a></li>
-  </ol></li>
-  <li><ol>
-  <li><a href="#User-defined_function">User-defined functions</a></li>
-</ol>
-	</li>
-  <li><a href="#Appendix_A_XML_elements">Appendix A: XML elements</a></li>
+	</ol></li>
+	<li><a href="#I18n">Internationalization</a></li>
+	<li><a href="#Aggregate_tables">Aggregate tables</a> </li>
+	<li><a href="#Access_control">Access-control</a>
+	<ol>
+		<li><a href="#Defining_roles">Defining a role</a></li>
+		<li><a href="#Setting_a_connections_role">Setting a connection's role</a></li>
+	</ol></li>
+	<li><a href="#Appendix_A_XML_elements">Appendix A: XML elements</a></li>
 </ol>
 <h2><a name="What_is_a_schema">What is a schema?</a></h2>
 <p>A schema defines a multi-dimensional database. It contains a logical model,
@@ -343,25 +335,8 @@ hasAll=&quot;false&quot;</code>, the 'all' level is suppressed; the <code>allMem
 <code>allLevelName</code> attributes override the default names of the all level 
 its member.</p>
 
-<h3><a name="Member_property">Member property</a></h3>
-<p><a href="#Member_properties">Member properties</a> can be assigned to a level's members. The property values are retrieved
- by two methods: <code><a href="api/mondrian/olap/Member.html#getPropertyValue(java.lang.String)">getPropertyValue()</a></code>
- returns the raw value, and <code>
-<a href="api/mondrian/olap/Member.html#getPropertyFormattedValue(java.lang.String)">getPropertyFormattedValue()</a></code> 
-returns the formatted value. (See also <a href="#Property_formatter">property 
-formatter</a>.)
- A formatter class can be defined, which would be used by <code>getPropertyFormattedValue()</code>.</p>
-<blockquote>
-  <pre>
-&lt;<a href="#XML_Level">Level</a> name=&quot;MyLevel&quot; column=&quot;LevelColumn&quot; uniqueMembers=&quot;true&quot;/&gt;
-  &lt;<a href="#XML_Property">Property</a> name=&quot;MyProp&quot; column=&quot;PropColumn&quot; formatter=&quot;com.acme.MyPropertyFormatter&quot;/&gt;
-&lt;<a href="#XML_Level">Level</a>/&gt;</pre>
-</blockquote>
-<p>The class &quot;com.acme.MyPropertyFormatter&quot; would have to implement <code>
-<a href="api/mondrian/olap/PropertyFormatter.html">
-interface mondrian.olap.PropertyFormatter</a></code>.</p>
-
-<p>A member's value to be displayed by getCaption() can be formatted by a
+<p>As we shall see later, a level definition can also define
+<a href="#Member_properties">member properties</a> and a
 <a href="#Member_formatter">member formatter</a>.</p>
 
 <h2><a name="Star_schemas">Star and snowflake schemas</a></h2>
@@ -736,7 +711,21 @@ END</code><code><br>
 
 <h3><a name="Member_properties">Member properties</a></h3>
 
-<p>Member properties are defined by the <code><a href="#XML_Property">&lt;Property&gt;</a></code> element. You use them via the <code><i>member</i>.Properties(&quot;<i>propertyName</i>&quot;)</code>
+<p>Member properties are defined by the <code><a href="#XML_Property">&lt;Property&gt;</a></code> 
+element within a <code>&lt;<a href="#XML_Level">Level</a>&gt;</code>, like this:</p>
+
+<blockquote>
+  <pre>
+&lt;<a href="#XML_Level">Level</a> name=&quot;MyLevel&quot; column=&quot;LevelColumn&quot; uniqueMembers=&quot;true&quot;/&gt;
+  &lt;<a href="#XML_Property">Property</a> name=&quot;MyProp&quot; column=&quot;PropColumn&quot; formatter=&quot;com.acme.MyPropertyFormatter&quot;/&gt;
+&lt;<a href="#XML_Level">Level</a>/&gt;</pre>
+</blockquote>
+
+<p>The <code>formatter</code> attribute defines a <a href="#Property_formatter">property 
+formatter</a>, which is explained later.</p>
+
+<p>Once properties have been defined in the schema, you can use them in MDX 
+statements via the <code><i>member</i>.Properties(&quot;<i>propertyName</i>&quot;)</code>
 function, for example:</p><blockquote>
   <code>SELECT {[Store Sales]} ON COLUMNS,<br>
 &nbsp; TopCount(Filter([Store].[Store Name].Members,<br>
@@ -888,7 +877,7 @@ implicitly available for any query against that cube:</p>
 &nbsp;&nbsp;&nbsp; {<font color="#FF0000">[Top Sellers]</font>} ON ROWS<br>
 	FROM [Warehouse]<br>
 	WHERE [Time].[Year].[1997]</code></p>
-	<table class="clsStd" id="table4" border="1">
+	<table id="table4" border="1" cellspacing="0" cellpadding="2">
 		<tr>
 			<th>
 
@@ -934,7 +923,7 @@ implicitly available for any query against that cube:</p>
 	.../&gt;<br>
 &nbsp; &lt;<a href="#XML_NamedSet">NamedSet</a> name=&quot;CA Cities&quot; 
 	formula=&quot;{[Store].[USA].[CA].Children}&quot;/&gt;<br>
-&nbsp; &lt;<a href="#XML_NamedSet">NamedSet</a> name=&quot;Top CA Cities\&quot;&gt;<br>
+&nbsp; &lt;<a href="#XML_NamedSet">NamedSet</a> name=&quot;Top CA Cities&quot;&gt;<br>
 &nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Formula">Formula</a>&gt;TopCount([CA Cities], 2, 
 	[Measures].[Unit Sales])&lt;/<a href="#XML_Formula">Formula</a>&gt;<br>
 &nbsp; &lt;/<a href="#XML_NamedSet">NamedSet</a>&gt;<br>
@@ -943,7 +932,12 @@ implicitly available for any query against that cube:</p>
 
 	<p>A named set defined against a schema is available in all cubes and 
 	virtual cubes in that schema. However, it is only valid if the cube contains 
-	dimensions with the names required to make the formula valid.</p>
+	dimensions with the names required to make the formula valid. For example, 
+	it would be valid to use <code>[CA Cities]</code> in queries against the
+	<code>[Sales]</code> and <code>[Warehouse and Sales]</code> cubes, but if 
+	you used it in a query against the <code>[Warehouse]</code> cube you would 
+	get an error, because <code>[Warehouse]</code> does not have a <code>[Store]</code> 
+	dimension.</p>
 
 <h2><a name="Plugins">Plug-ins</a></h2>
 
