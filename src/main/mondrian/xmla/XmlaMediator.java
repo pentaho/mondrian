@@ -12,6 +12,7 @@ package mondrian.xmla;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -197,18 +198,24 @@ public class XmlaMediator {
         try {
          	saxHandler.startElement("ExecuteResponse", new String[] {
          			"xmlns", XMLA_NS});
-         	saxHandler.startElement("return");
+         	saxHandler.startElement("return", new String[] {
+                   "xmlns:xsi", XSI_NS,
+                   "xmlns:xsd", XSD_NS,});
          	saxHandler.startElement("root", new String[] {
          			"xmlns", isDrillThrough ? XMLA_ROWSET_NS : XMLA_MDDATASET_NS});
          	saxHandler.startElement("xsd:schema", new String[] {
-         			"xmlns:xsd", "http://www.w3.org/2001/XMLSchema"});
+         			"xmlns:xsd", XSD_NS});
          		// todo: schema definition
          	saxHandler.endElement();
          	try {
-                if (isDrillThrough)
-                    executeDrillThroughQuery(statement.substring(dtOffset + "DRILLTHROUGH".length()), properties).unparse(saxHandler);
-                else
+                if (isDrillThrough) {
+                    StringBuffer dtStatement = new StringBuffer();
+                    dtStatement.append(statement.substring(0, dtOffset)); // formulas
+                    dtStatement.append(statement.substring(dtOffset + "DRILLTHROUGH".length())); // select to end
+                    executeDrillThroughQuery(dtStatement.toString(), properties).unparse(saxHandler);
+                } else {
                     executeQuery(statement, properties).unparse(saxHandler);
+                }
          	} finally {
          		saxHandler.endElement();
          		saxHandler.endElement();
@@ -521,8 +528,25 @@ public class XmlaMediator {
                 String cellPropLong = cellPropLongs[i];
                 final Object value =
                     cell.getPropertyValue(cellPropLong);
+                
+                String valueType = null;
+                if (value instanceof Integer) {
+                    valueType = "xsd:int";
+                } else if (value instanceof Long) {
+                    valueType = "xsd:long";
+                } else if (value instanceof Double || value instanceof BigDecimal) {
+                    valueType = "xsd:double";
+                } else {
+                    valueType = "xsd:string";
+                }
+                
                 if (value != null) {
-                    saxHandler.startElement(cellProps[i]);
+                    if (cellPropLong == Property.VALUE.name) {
+                        saxHandler.startElement(cellProps[i], new String[]{"xsi:type", valueType});
+                    } else {
+                        saxHandler.startElement(cellProps[i]);
+                    }
+                    
                     String valueString = value.toString();
 
                     if (cellPropLong == Property.VALUE.name &&
