@@ -1,7 +1,14 @@
 package mondrian.xmla;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 import mondrian.olap.*;
 import mondrian.rolap.RolapCube;
@@ -902,6 +909,9 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         private static final Column HierarchyUniqueName = new Column("HIERARCHY_UNIQUE_NAME", Type.String, null, true, false, null);
         private static final Column HierarchyCaption = new Column("HIERARCHY_CAPTION", Type.String, null, true, false, null);
         private static final Column DimensionType = new Column("DIMENSION_TYPE", Type.Integer, null, true, false, null);
+        private static final Column DefaultMember = new Column("DEFAULT_MEMBER", Type.String, null, true, true, null);
+        private static final Column AllMember = new Column("ALL_MEMBER", Type.String, null, true, true, null);
+        
         public static final RowsetDefinition definition = new RowsetDefinition(
                 "MDSCHEMA_HIERARCHIES", MDSCHEMA_HIERARCHIES, null, new Column[] {
                     CatalogName,
@@ -912,6 +922,8 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     HierarchyUniqueName,
                     HierarchyCaption,
                     DimensionType,
+                    DefaultMember,
+                    AllMember,
                 }) {
             public Rowset getRowset(HashMap restrictions, Properties properties) {
                 return new MdschemaHierarchiesRowset(restrictions, properties);
@@ -928,7 +940,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                     Dimension dimension = dimensions[j];
                     final Hierarchy[] hierarchies = dimension.getHierarchies();
                     for (int k = 0; k < hierarchies.length; k++) {
-                        Hierarchy hierarchy = hierarchies[k];
+                        HierarchyBase hierarchy = (HierarchyBase)hierarchies[k];
                         Row row = new Row();
                         row.set(CatalogName.name, cube.getSchema().getName());
                         row.set(SchemaName.name, cube.getSchema().getName());
@@ -938,6 +950,12 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                         row.set(HierarchyUniqueName.name, hierarchy.getUniqueName());
                         row.set(HierarchyCaption.name, hierarchy.getCaption());
                         row.set(DimensionType.name, getDimensionType(dimension));
+                        row.set(DefaultMember.name, hierarchy.getDefaultMember());
+                        if (hierarchy.hasAll()) {
+                            row.set(AllMember.name, Util.implode(new String[] {
+                                    hierarchy.getName(),
+                                    hierarchy.getAllMemberName()}));
+                        }
                         emit(row, saxHandler);
                     }
                 }
