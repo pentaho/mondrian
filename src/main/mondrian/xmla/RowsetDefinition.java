@@ -1380,10 +1380,14 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
         }
     }
 
+    // REF http://msdn.microsoft.com/library/en-us/oledb/htm/olapproperties_rowset.asp
     static class MdschemaPropertiesRowset extends Rowset {
         MdschemaPropertiesRowset(HashMap restrictions, Properties properties) {
             super(definition, restrictions, properties);
         }
+
+        private static final int MDPROP_MEMBER = 0x01;
+        private static final int MDPROP_CELL = 0x02;
 
         private static final Column CatalogName = new Column("CATALOG_NAME", Type.String, null, true, false, null);
         private static final Column SchemaName = new Column("SCHEMA_NAME", Type.String, null, true, true, null);
@@ -1441,7 +1445,7 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                                 row.set(LevelUniqueName.name, level.getUniqueName()); 
                                 // row.set(MemberUniqueName.name, null);                                  
                                 row.set(PropertyName.name, property.getName()); 
-                                row.set(PropertyType.name, property.getType()); 
+                                row.set(PropertyType.name, MDPROP_MEMBER); // Only member properties now 
                                 row.set(PropertyContentType.name, 0);
                                 row.set(PropertyCaption.name, property.getCaption()); 
                                 emit(row, saxHandler); 
