@@ -952,9 +952,9 @@ abstract class RowsetDefinition extends EnumeratedValues.BasicValue {
                         row.set(DimensionType.name, getDimensionType(dimension));
                         row.set(DefaultMember.name, hierarchy.getDefaultMember());
                         if (hierarchy.hasAll()) {
-                            row.set(AllMember.name, Util.implode(new String[] {
-                                    hierarchy.getName(),
-                                    hierarchy.getAllMemberName()}));
+                            row.set(AllMember.name, Util.makeFqName(
+                                    hierarchy,
+                                    hierarchy.getAllMemberName()));
                         }
                         emit(row, saxHandler);
                     }

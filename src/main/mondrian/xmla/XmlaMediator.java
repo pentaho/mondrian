@@ -166,7 +166,9 @@ public class XmlaMediator {
             discover(element, saxHandler);
         } else if (tagName.equals("Execute")) {
             execute(element, saxHandler);
-        } else {
+        } else if (tagName.equals("Session")) {
+	    // Ignore this and don't throw
+	} else {
             throw Util.newError("Element <" + tagName + "> not supported");
         }
     }
@@ -346,6 +348,12 @@ public class XmlaMediator {
             "LName",
             "LNum",
             "DisplayInfo"};
+        private static final String[] dummyPropLongs = new String[] {
+            Property.MEMBER_UNIQUE_NAME.name,
+            Property.MEMBER_CAPTION.name,
+            Property.LEVEL_UNIQUE_NAME.name,
+            Property.LEVEL_NUMBER.name,
+            "DISPLAY_INFO"};
         private static final String[] propLongs = new String[] {
             Property.MEMBER_UNIQUE_NAME.name,
             Property.MEMBER_CAPTION.name,
@@ -419,7 +427,7 @@ public class XmlaMediator {
                         "name", hierarchies[j].getName()});
                     for (int k = 0; k < props.length; k++) {
                         saxHandler.element(props[k], new String[] {
-                            "name", hierarchies[j].getUniqueName() + ".[" + propLongs[k] + "]"});
+                            "name", hierarchies[j].getUniqueName() + ".[" + dummyPropLongs[k] + "]"});
                     }
                     saxHandler.endElement(); // HierarchyInfo
                 }
@@ -530,10 +538,8 @@ public class XmlaMediator {
                     cell.getPropertyValue(cellPropLong);
                 
                 String valueType = null;
-                if (value instanceof Integer) {
+                if (value instanceof Integer || value instanceof Long) {
                     valueType = "xsd:int";
-                } else if (value instanceof Long) {
-                    valueType = "xsd:long";
                 } else if (value instanceof Double || value instanceof BigDecimal) {
                     valueType = "xsd:double";
                 } else {

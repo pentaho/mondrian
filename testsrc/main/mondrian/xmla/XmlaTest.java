@@ -56,27 +56,8 @@ public class XmlaTest extends TestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-
-        String catalogURL = MondrianProperties.instance().CatalogURL.get();
-        if (catalogURL == null) {
-            final File file = new File("demo/FoodMart.xml");
-            if (!file.exists()) {
-                throw new RuntimeException("CatalogURL must be specified");
-            }
-            final URL url = Util.toURL(file);
-            catalogURL = url.toString();
-        }
-
-        String driver = MondrianProperties.instance().JdbcDrivers.get();
-        String url = MondrianProperties.instance().FoodmartJdbcURL.get();
-
         // Deal with embedded & that can be in the JDBC URL
-        String connectString =
-                "Provider=Mondrian;"
-                + "Jdbc=" + url + ";"
-                + "Catalog=" + catalogURL + ";"
-                + "JdbcDrivers=" + driver +";";
-
+        String connectString = MondrianProperties.instance().TestConnectString.get();
         dataSource = "MondrianFoodMart";
         catalogName = DriverManager.getConnection(connectString, null, false).getSchema().getName();
 
@@ -1205,6 +1186,14 @@ public class XmlaTest extends TestCase {
             "              <Name>DIMENSION_TYPE</Name>",
             "              <Type>integer</Type>",
             "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>DEFAULT_MEMBER</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
+            "            <Restrictions>",
+            "              <Name>ALL_MEMBER</Name>",
+            "              <Type>string</Type>",
+            "            </Restrictions>",
             "          </row>",
             "          <row>",
             "            <SchemaName>MDSCHEMA_LEVELS</SchemaName>",
@@ -1454,7 +1443,7 @@ public class XmlaTest extends TestCase {
             "                  <Caption name=\"[Measures].[MEMBER_CAPTION]\"/>",
             "                  <LName name=\"[Measures].[LEVEL_UNIQUE_NAME]\"/>",
             "                  <LNum name=\"[Measures].[LEVEL_NUMBER]\"/>",
-            "                  <DisplayInfo name=\"[Measures].[CHILDREN_CARDINALITY]\"/>",
+            "                  <DisplayInfo name=\"[Measures].[DISPLAY_INFO]\"/>",
             "                </HierarchyInfo>",
             "              </AxisInfo>",
             "            </AxesInfo>",
@@ -1653,7 +1642,7 @@ public class XmlaTest extends TestCase {
             "                  <Caption name=\"[Measures].[MEMBER_CAPTION]\"/>",
             "                  <LName name=\"[Measures].[LEVEL_UNIQUE_NAME]\"/>",
             "                  <LNum name=\"[Measures].[LEVEL_NUMBER]\"/>",
-            "                  <DisplayInfo name=\"[Measures].[CHILDREN_CARDINALITY]\"/>",
+            "                  <DisplayInfo name=\"[Measures].[DISPLAY_INFO]\"/>",
             "                </HierarchyInfo>",
             "              </AxisInfo>",
             "              <AxisInfo name=\"Axis1\">",
@@ -1662,14 +1651,14 @@ public class XmlaTest extends TestCase {
             "                  <Caption name=\"[Store].[MEMBER_CAPTION]\"/>",
             "                  <LName name=\"[Store].[LEVEL_UNIQUE_NAME]\"/>",
             "                  <LNum name=\"[Store].[LEVEL_NUMBER]\"/>",
-            "                  <DisplayInfo name=\"[Store].[CHILDREN_CARDINALITY]\"/>",
+            "                  <DisplayInfo name=\"[Store].[DISPLAY_INFO]\"/>",
             "                </HierarchyInfo>",
             "                <HierarchyInfo name=\"Pay Type\">",
             "                  <UName name=\"[Pay Type].[MEMBER_UNIQUE_NAME]\"/>",
             "                  <Caption name=\"[Pay Type].[MEMBER_CAPTION]\"/>",
             "                  <LName name=\"[Pay Type].[LEVEL_UNIQUE_NAME]\"/>",
             "                  <LNum name=\"[Pay Type].[LEVEL_NUMBER]\"/>",
-            "                  <DisplayInfo name=\"[Pay Type].[CHILDREN_CARDINALITY]\"/>",
+            "                  <DisplayInfo name=\"[Pay Type].[DISPLAY_INFO]\"/>",
             "                </HierarchyInfo>",
             "              </AxisInfo>",
             "            </AxesInfo>",
