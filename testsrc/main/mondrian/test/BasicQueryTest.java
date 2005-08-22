@@ -627,9 +627,6 @@ public class BasicQueryTest extends FoodMartTestCase {
                 " {[Product].Children} on rows" + nl +
                 "from Sales");
         String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL(false);
-        // the following replacement is for databases in ANSI mode
-        //  using '"' to quote identifiers
-        sql = sql.replace('"', '`');
 
         String tableQualifier = "as ";
         RolapConnection conn = (RolapConnection) getConnection();
@@ -638,18 +635,32 @@ public class BasicQueryTest extends FoodMartTestCase {
             // " + tableQualifier + "
             tableQualifier = "";
         }
-        assertEquals("select `time_by_day`.`the_year` as `Year`," +
-                " `product_class`.`product_family` as `Product Family`," +
-                " `sales_fact_1997`.`unit_sales` as `Unit Sales` " +
-                "from `time_by_day` " + tableQualifier + "`time_by_day`," +
-                " `sales_fact_1997` " + tableQualifier + "`sales_fact_1997`," +
-                " `product_class` " + tableQualifier + "`product_class`," +
-                " `product` " + tableQualifier + "`product` " +
-                "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`" +
-                " and `time_by_day`.`the_year` = 1997" +
-                " and `sales_fact_1997`.`product_id` = `product`.`product_id`" +
-                " and `product`.`product_class_id` = `product_class`.`product_class_id`" +
-                " and `product_class`.`product_family` = 'Drink'", sql);
+        
+        // the following replacement is for databases in ANSI mode
+        //  using '"' to quote identifiers
+        sql = sql.replace('"', '`');
+
+        String expectedSQL = "select `time_by_day`.`the_year` as `Year`," +
+        " `product_class`.`product_family` as `Product Family`," +
+        " `sales_fact_1997`.`unit_sales` as `Unit Sales` " +
+        "from `time_by_day` " + tableQualifier + "`time_by_day`," +
+        " `sales_fact_1997` " + tableQualifier + "`sales_fact_1997`," +
+        " `product_class` " + tableQualifier + "`product_class`," +
+        " `product` " + tableQualifier + "`product` " +
+        "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`" +
+        " and `time_by_day`.`the_year` = 1997" +
+        " and `sales_fact_1997`.`product_id` = `product`.`product_id`" +
+        " and `product`.`product_class_id` = `product_class`.`product_class_id`" +
+        " and `product_class`.`product_family` = 'Drink'";
+
+        /*
+         * DB2 does not have quotes on identifiers
+         */
+        if (jdbc_url.toLowerCase().indexOf(":db2:") >= 0) {
+            expectedSQL = expectedSQL.replaceAll("`", "");
+        }
+        
+        assertEquals(expectedSQL, sql);
         sql = result.getCell(new int[] {1, 1}).getDrillThroughSQL(false);
         assertNull(sql); // because it is a calculated member
     }
@@ -674,14 +685,17 @@ public class BasicQueryTest extends FoodMartTestCase {
         } else if (jdbc_url.toLowerCase().indexOf("derby") >= 0  ||
                 jdbc_url.toLowerCase().indexOf("cloudscape") >= 0) {
             fname_plus_lname = " `customer`.`fullname` as `Name`,";
+        } else if (jdbc_url.toLowerCase().indexOf(":db2:") >= 0) {
+            fname_plus_lname = " CONCAT(CONCAT(fname, ' '), lname) as Name,";
         } else {
             fname_plus_lname = " fname + ' ' + lname as `Name`,";
+        }
 /*
  * What about generic?
                         <SQL dialect="generic">
               fullname
                         </SQL>
-*/      }
+*/      
         // the following replacement is for databases in ANSI mode
         //  using '"' to quote identifiers
         sql = sql.replace('"', '`');
@@ -691,7 +705,8 @@ public class BasicQueryTest extends FoodMartTestCase {
             // " + tableQualifier + "
             tableQualifier = "";
         }
-        assertEquals("select `store`.`store_name` as `Store Name`," +
+        
+        String expectedSQL = "select `store`.`store_name` as `Store Name`," +
                 " `store`.`store_city` as `Store City`," +
                 " `store`.`store_state` as `Store State`," +
                 " `store`.`store_country` as `Store Country`," +
@@ -731,8 +746,16 @@ public class BasicQueryTest extends FoodMartTestCase {
                 " and `product`.`product_class_id` = `product_class`.`product_class_id`" +
                 " and `product_class`.`product_family` = 'Drink'" +
                 " and `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id`" +
-                " and `sales_fact_1997`.`customer_id` = `customer`.`customer_id`",
-                sql);
+                " and `sales_fact_1997`.`customer_id` = `customer`.`customer_id`";
+
+        /*
+         * DB2 does not have quotes on identifiers
+         */
+        if (jdbc_url.toLowerCase().indexOf(":db2:") >= 0) {
+            expectedSQL = expectedSQL.replaceAll("`", "");
+        }
+                
+        assertEquals(expectedSQL, sql);
         sql = result.getCell(new int[] {1, 1}).getDrillThroughSQL(true);
         assertNull(sql); // because it is a calculated member
     }
@@ -2617,6 +2640,12 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "<Dimension name=\"ProductView\" foreignKey=\"product_id\">" + nl +
                 "   <Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"productView\">" + nl +
                 "       <View alias=\"productView\">" + nl +
+                "           <SQL dialect=\"db2\"><![CDATA[" + nl +
+                "SELECT *" + nl +
+                "FROM product, product_class" + nl +
+                "WHERE product.product_class_id = product_class.product_class_id" + nl +
+                "]]>" + nl +
+                "           </SQL>" + nl +
                 "           <SQL dialect=\"generic\"><![CDATA[" + nl +
                 "SELECT *" + nl +
                 "FROM \"product\", \"product_class\"" + nl +

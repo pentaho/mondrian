@@ -193,7 +193,7 @@ public class UdfTest extends FoodMartTestCase {
                 "Row #1: 0.4628" + nl +
                 "Row #2: (null)" + nl +
                 "Row #3: 0.6251" + nl +
-                "Row #4: 0.5208" + nl +
+                "Row #4: 0.5209" + nl +
                 "Row #5: 0.5036" + nl);
     }
 

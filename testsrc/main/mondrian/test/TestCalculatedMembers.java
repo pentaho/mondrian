@@ -180,13 +180,18 @@ public class TestCalculatedMembers extends FoodMartTestCase {
     }
 
     public void _testWhole() {
+        
+        /*
+         * "allmembers" tests compatibility with MSAS
+         */
+
         execute(
                 "with" + nl +
                 "member [Measures].[Total Store Sales by Product Name] as" + nl +
                 "  'Sum([Product].[Product Name].members, [Measures].[Store Sales])'" + nl +
                 "" + nl +
                 "member [Measures].[Average Store Sales by Product Name] as" + nl +
-                "  'Avg([Product].[Product Name].members, [Measures].[Store Sales])'" + nl +
+                "  'Avg([Product].[Product Name].allmembers, [Measures].[Store Sales])'" + nl +
                 "" + nl +
                 "member [Measures].[Number of Product Name members] as" + nl +
                 "  'Count([Product].[Product Name].members)'" + nl +

@@ -1541,11 +1541,15 @@ public class XmlaTest extends TestCase {
             "    </ExecuteResponse>",
             "  </SOAP-ENV:Body>",
             "</SOAP-ENV:Envelope>"};
+        
+        /*
+         * Tests compatibility with MSAS
+         */
         String[] request = {
             "<Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\" ",
             "  SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
             "  <Command>",
-            "    <Statement>select [Measures].members on Columns from Sales</Statement>",
+            "    <Statement>select [Measures].allmembers on Columns from Sales</Statement>",
             "  </Command>",
             "  <Properties>",
             "    <PropertyList>",
@@ -2015,13 +2019,28 @@ public class XmlaTest extends TestCase {
                 requestList.toArray(new String[requestList.size()]);
         final String[] sampleRequests = XmlaUtil.getSampleRequests(catalogName, dataSource);
         if (!equals(requests, sampleRequests)) {
-            System.out.println("Java:");
-            System.out.println("{");
-            for (int i = 0; i < requests.length; i++) {
-                System.out.print(toJava(requests[i]));
-                System.out.println(",");
+            if (requests == null ||
+                    sampleRequests == null ||
+                    requests.length != sampleRequests.length) {
+                System.out.println("Unequal results length: " + requests.length + " vs sampleResults length" + sampleRequests.length);
+            } else {
+                System.out.println("Java: {");
+                for (int i = 0; i < requests.length; i++) {
+                    if (!Util.equals(requests[i], sampleRequests[i])) {
+                        System.out.println("Request " + i + " - " + requestKeys[i / 2]);
+                        System.out.println("-------------------");
+                        System.out.print(toJava(requests[i]));
+                        System.out.println();
+                        System.out.println("-------------------");
+                        System.out.println("Sample");
+                        System.out.println("-------------------");
+                        System.out.print(toJava(sampleRequests[i]));
+                        System.out.println();
+                        System.out.println("-------------------");
+                    }
+                }
+                System.out.println("}");
             }
-            System.out.println("}");
         }
         assertEquals(requests, sampleRequests);
     }

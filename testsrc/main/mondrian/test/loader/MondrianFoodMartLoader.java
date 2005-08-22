@@ -61,7 +61,7 @@ import org.apache.log4j.Logger;
  * <blockquote><code>
  * $ mysqladmin create foodmart<br/>
  * $ java -cp 'classes;testclasses' mondrian.test.loader.MondrianFoodMartLoader
- *     -verbose -tables -data -indexes -jdbcDrivers=com.mysql.jdbc.Driver
+ *     -tables -data -indexes -jdbcDrivers=com.mysql.jdbc.Driver
  *     -inputJdbcURL=jdbc:odbc:MondrianFoodMart -outputJdbcURL=jdbc:mysql://localhost/foodmart
  * </code></blockquote>
  *
@@ -74,7 +74,7 @@ import org.apache.log4j.Logger;
  * SQL&gt; QUIT;<br/>
  * $ java -cp "/mondrian/lib/mondrian.jar:/mondrian/lib/log4j-1.2.9.jar:/mondrian/lib/eigenbase-xom.jar:/mondrian/lib/eigenbase-resgen.jar:/jdbc/fb/firebirdsql-full.jar"
  *    mondrian.test.loader.MondrianFoodMartLoader
- *    -verbose -tables -data -indexes
+ *    -tables -data -indexes
  *    -jdbcDrivers="org.firebirdsql.jdbc.FBDriver"
  *    -inputFile="/mondrian/demo/FoodMartCreateData.sql"
  *    -outputJdbcURL="jdbc:firebirdsql:localhost/3050:/mondrian/foodmart.gdb"
@@ -207,7 +207,6 @@ public class MondrianFoodMartLoader {
         System.out.println("  <batch size>      	size of JDBC batch updates - default to 50 inserts");
         System.out.println("  <jdbcDrivers>     	Comma-separated list of JDBC drivers.");
         System.out.println("                    	They must be on the classpath.");
-        System.out.println("  -verbose          	Verbose mode.");
         System.out.println("  -tables           	If specified, drop and create the tables.");
         System.out.println("  -data             	If specified, load the data.");
         System.out.println("  -indexes          	If specified, drop and create the tables.");
@@ -560,7 +559,9 @@ public class MondrianFoodMartLoader {
             String toQuoteChar = null;
         	if (sqlQuery.getDialect().isMySQL()) {
         		toQuoteChar = "`";
-        	} else {
+        	} else if (sqlQuery.getDialect().isDB2()) {
+                toQuoteChar = "";
+            } else {
         		toQuoteChar = "\"";
         	}
 
@@ -620,6 +621,11 @@ public class MondrianFoodMartLoader {
      */
     private int loadTable(String name, Column[] columns) throws Exception {
         int rowsAdded = 0;
+        
+        final DatabaseMetaData metaData = inputConnection.getMetaData();
+
+        SqlQuery inputSqlQuery = new SqlQuery(metaData);
+
         StringBuffer buf = new StringBuffer();
 
         buf.append("select ");
@@ -628,10 +634,10 @@ public class MondrianFoodMartLoader {
             if (i > 0) {
                 buf.append(",");
             }
-            buf.append(quoteId(column.name));
+            buf.append(quoteId(inputSqlQuery, column.name));
         }
         buf.append(" from ")
-            .append(quoteId(name));
+            .append(quoteId(inputSqlQuery, name));
         String ddl = buf.toString();
         Statement statement = inputConnection.createStatement();
         LOGGER.debug("Input table SQL: " + ddl);
@@ -859,31 +865,31 @@ public class MondrianFoodMartLoader {
         createIndex(false, "time_by_day", "i_time_quarter", new String[] {"quarter"});
         createIndex(false, "time_by_day", "i_time_month", new String[] {"month_of_year"});
 
-        createIndex(false, "agg_pl_01_sales_fact_1997", "i_sls_97_pl_01_cust", new String[] {"customer_id"});
-        createIndex(false, "agg_pl_01_sales_fact_1997", "i_sls_97_pl_01_prod", new String[] {"product_id"});
-        createIndex(false, "agg_pl_01_sales_fact_1997", "i_sls_97_pl_01_time", new String[] {"time_id"});
+        createIndex(false, "agg_pl_01_sales_fact_1997", "i_sls97pl01cust", new String[] {"customer_id"});
+        createIndex(false, "agg_pl_01_sales_fact_1997", "i_sls97pl01prod", new String[] {"product_id"});
+        createIndex(false, "agg_pl_01_sales_fact_1997", "i_sls97pl01time", new String[] {"time_id"});
 
-        createIndex(false, "agg_ll_01_sales_fact_1997", "i_sls_97_ll_01_cust", new String[] {"customer_id"});
-        createIndex(false, "agg_ll_01_sales_fact_1997", "i_sls_97_ll_01_prod", new String[] {"product_id"});
-        createIndex(false, "agg_ll_01_sales_fact_1997", "i_sls_97_ll_01_time", new String[] {"time_id"});
+        createIndex(false, "agg_ll_01_sales_fact_1997", "i_sls97ll01cust", new String[] {"customer_id"});
+        createIndex(false, "agg_ll_01_sales_fact_1997", "i_sls97ll01prod", new String[] {"product_id"});
+        createIndex(false, "agg_ll_01_sales_fact_1997", "i_sls97ll01time", new String[] {"time_id"});
 
-        createIndex(false, "agg_l_05_sales_fact_1997", "i_sls_97_l_05_cust", new String[] {"customer_id"});
-        createIndex(false, "agg_l_05_sales_fact_1997", "i_sls_97_l_05_prod", new String[] {"product_id"});
-        createIndex(false, "agg_l_05_sales_fact_1997", "i_sls_97_l_05_promo", new String[] {"promotion_id"});
-        createIndex(false, "agg_l_05_sales_fact_1997", "i_sls_97_l_05_store", new String[] {"store_id"});
+        createIndex(false, "agg_l_05_sales_fact_1997", "i_sls97l05cust", new String[] {"customer_id"});
+        createIndex(false, "agg_l_05_sales_fact_1997", "i_sls97l05prod", new String[] {"product_id"});
+        createIndex(false, "agg_l_05_sales_fact_1997", "i_sls97l05promo", new String[] {"promotion_id"});
+        createIndex(false, "agg_l_05_sales_fact_1997", "i_sls97l05store", new String[] {"store_id"});
 
-        createIndex(false, "agg_c_14_sales_fact_1997", "i_sls_97_c_14_cust", new String[] {"customer_id"});
-        createIndex(false, "agg_c_14_sales_fact_1997", "i_sls_97_c_14_prod", new String[] {"product_id"});
-        createIndex(false, "agg_c_14_sales_fact_1997", "i_sls_97_c_14_promo", new String[] {"promotion_id"});
-        createIndex(false, "agg_c_14_sales_fact_1997", "i_sls_97_c_14_store", new String[] {"store_id"});
+        createIndex(false, "agg_c_14_sales_fact_1997", "i_sls97c14cust", new String[] {"customer_id"});
+        createIndex(false, "agg_c_14_sales_fact_1997", "i_sls97c14prod", new String[] {"product_id"});
+        createIndex(false, "agg_c_14_sales_fact_1997", "i_sls97c14promo", new String[] {"promotion_id"});
+        createIndex(false, "agg_c_14_sales_fact_1997", "i_sls97c14store", new String[] {"store_id"});
 
-        createIndex(false, "agg_lc_100_sales_fact_1997", "i_sls_97_lc_100_cust", new String[] {"customer_id"});
-        createIndex(false, "agg_lc_100_sales_fact_1997", "i_sls_97_lc_100_prod", new String[] {"product_id"});
+        createIndex(false, "agg_lc_100_sales_fact_1997", "i_sls97lc100cust", new String[] {"customer_id"});
+        createIndex(false, "agg_lc_100_sales_fact_1997", "i_sls97lc100prod", new String[] {"product_id"});
 
-        createIndex(false, "agg_c_special_sales_fact_1997", "i_sls_97_spec_cust", new String[] {"customer_id"});
-        createIndex(false, "agg_c_special_sales_fact_1997", "i_sls_97_spec_prod", new String[] {"product_id"});
-        createIndex(false, "agg_c_special_sales_fact_1997", "i_sls_97_spec_promo", new String[] {"promotion_id"});
-        createIndex(false, "agg_c_special_sales_fact_1997", "i_sls_97_spec_store", new String[] {"store_id"});
+        createIndex(false, "agg_c_special_sales_fact_1997", "i_sls97speccust", new String[] {"customer_id"});
+        createIndex(false, "agg_c_special_sales_fact_1997", "i_sls97specprod", new String[] {"product_id"});
+        createIndex(false, "agg_c_special_sales_fact_1997", "i_sls97specpromo", new String[] {"promotion_id"});
+        createIndex(false, "agg_c_special_sales_fact_1997", "i_sls97specstore", new String[] {"store_id"});
 
         if (outputDirectory != null) {
             fileOutput.close();
@@ -1458,11 +1464,24 @@ public class MondrianFoodMartLoader {
 
     /**
      * Quote the given SQL identifier suitable for the output DBMS.
+     * 
      * @param name
      * @return
      */
+    
     private String quoteId(String name) {
-        return sqlQuery.getDialect().quoteIdentifier(name);
+        return quoteId(sqlQuery, name);
+    }
+
+    /**
+     * Quote the given SQL identifier suitable for the given DBMS type.
+     * 
+     * @param givenQueryType
+     * @param name
+     * @return
+     */
+    private String quoteId(SqlQuery givenQueryType, String name) {
+        return givenQueryType.getDialect().quoteIdentifier(name);
     }
 
     /**

@@ -512,6 +512,14 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         assertEquals(expectedCell, cell.getFormattedValue());
         String sql = cell.getDrillThroughSQL(extendedContext);
         sql = sql.replace('"', '`');
+        /*
+         * DB2 does not have quotes on identifiers
+         */
+        RolapConnection conn = (RolapConnection) getConnection();
+        String jdbc_url = conn.getConnectInfo().get("Jdbc");
+        if (jdbc_url.toLowerCase().indexOf(":db2:") >= 0) {
+            expectedSql = expectedSql.replaceAll("`", "");
+        }
         assertEquals(expectedSql, sql);
     }
 }

@@ -13,34 +13,34 @@ INSERT INTO "agg_pl_01_sales_fact_1997" (
     "unit_sales_sum", 
     "fact_count"
 ) SELECT
-    "B"."product_id" AS "product_id",
-    "B"."time_id" AS "time_id",
-    "B"."customer_id" AS "customer_id",
-    SUM("B"."store_sales") AS "store_sales_sum",
-    SUM("B"."store_cost") AS "store_cost_sum",
-    SUM("B"."unit_sales") AS "unit_sales_sum",
+    "product_id" AS "product_id",
+    "time_id" AS "time_id",
+    "customer_id" AS "customer_id",
+    SUM("store_sales") AS "store_sales",
+    SUM("store_cost") AS "store_cost",
+    SUM("unit_sales") AS "unit_sales",
     COUNT(*) AS fact_count
-FROM "sales_fact_1997" "B"
-GROUP BY "B"."product_id", "B"."time_id", "B"."customer_id";
+FROM "sales_fact_1997"
+GROUP BY "product_id", "time_id", "customer_id";
 
 
 INSERT INTO "agg_ll_01_sales_fact_1997" (
     "product_id", 
     "time_id",
     "customer_id",
-    store_sales, 
-    store_cost, 
-    unit_sales, 
-    fact_count
+    "store_sales", 
+    "store_cost", 
+    "unit_sales", 
+    "fact_count"
 ) SELECT
-    "B"."product_id" AS "product_id",
-    "B"."time_id" AS "time_id",
-    "B"."customer_id" AS "customer_id",
-    SUM("B"."store_sales") AS store_sales,
-    SUM("B"."store_cost") AS store_cost,
-    SUM("B"."unit_sales") AS unit_sales,
-    COUNT(*) AS fact_count
-FROM sales_fact_1997 "B"
+    "product_id" AS "product_id",
+    "time_id" AS "time_id",
+    "customer_id" AS "customer_id",
+    SUM("store_sales") AS "store_sales",
+    SUM("store_cost") AS "store_cost",
+    SUM("unit_sales") AS "unit_sales",
+    COUNT(*) AS "fact_count"
+FROM "sales_fact_1997"
 GROUP BY "product_id", "time_id", "customer_id";
 
 ##################################################################
@@ -50,21 +50,21 @@ GROUP BY "product_id", "time_id", "customer_id";
 # lost "product_id" "promotion_id" "store_id"
 
 
-INSERT INTO agg_l_03_sales_fact_1997 (
+INSERT INTO "agg_l_03_sales_fact_1997" (
     "customer_id", 
     "time_id",
-    store_sales, 
-    store_cost, 
-    unit_sales, 
-    fact_count
+    "store_sales", 
+    "store_cost", 
+    "unit_sales", 
+    "fact_count"
 ) SELECT
     "customer_id",
     "time_id",
-    SUM(store_sales) AS store_sales,
-    SUM(store_cost) AS store_cost,
-    SUM(unit_sales) AS unit_sales,
-    COUNT(*) AS fact_count
-FROM sales_fact_1997
+    SUM("store_sales") AS "store_sales",
+    SUM("store_cost") AS "store_cost",
+    SUM("unit_sales") AS "unit_sales",
+    COUNT(*) AS "fact_count"
+FROM "sales_fact_1997"
 GROUP BY "customer_id", "time_id";
 
 
@@ -75,25 +75,25 @@ GROUP BY "customer_id", "time_id";
 # lost "time_id"
 
 
-INSERT INTO agg_l_05_sales_fact_1997 (
+INSERT INTO "agg_l_05_sales_fact_1997" (
     "product_id",
     "customer_id",
     "promotion_id",
     "store_id",
-    store_sales, 
-    store_cost, 
-    unit_sales, 
-    fact_count
+    "store_sales", 
+    "store_cost", 
+    "unit_sales", 
+    "fact_count"
 ) SELECT
     "product_id",
     "customer_id",
     "promotion_id",
     "store_id",
-    SUM("store_sales") AS store_sales,
-    SUM("store_cost") AS store_cost,
-    SUM("unit_sales") AS unit_sales,
+    SUM("store_sales") AS "store_sales",
+    SUM("store_cost") AS "store_cost",
+    SUM("unit_sales") AS "unit_sales",
     COUNT(*) AS fact_count
-FROM sales_fact_1997
+FROM "sales_fact_1997"
 GROUP BY "product_id", "customer_id", "promotion_id", "store_id";
 
 
@@ -104,7 +104,7 @@ GROUP BY "product_id", "customer_id", "promotion_id", "store_id";
 # collapse "time_id"
 
 
-INSERT INTO agg_c_14_sales_fact_1997 (
+INSERT INTO "agg_c_14_sales_fact_1997" (
     "product_id", 
     "customer_id",
     "promotion_id",
@@ -112,10 +112,10 @@ INSERT INTO agg_c_14_sales_fact_1997 (
     "month_of_year",
     "quarter",
     "the_year",
-    store_sales, 
-    store_cost, 
-    unit_sales, 
-    fact_count
+    "store_sales", 
+    "store_cost", 
+    "unit_sales", 
+    "fact_count"
 ) SELECT
     "B"."product_id",
     "B"."customer_id",
@@ -124,11 +124,11 @@ INSERT INTO agg_c_14_sales_fact_1997 (
     "D"."month_of_year",
     "D"."quarter",
     "D"."the_year",
-    SUM("B"."store_sales") AS store_sales,
-    SUM("B"."store_cost") AS store_cost,
-    SUM("B"."unit_sales") AS unit_sales,
+    SUM("B"."store_sales") AS "store_sales",
+    SUM("B"."store_cost") AS "store_cost",
+    SUM("B"."unit_sales") AS "unit_sales",
     COUNT(*) AS fact_count
-FROM sales_fact_1997 "B", time_by_day "D"
+FROM "sales_fact_1997" "B", "time_by_day" "D"
 WHERE 
     "B"."time_id" = "D"."time_id"
 GROUP BY "B"."product_id", 
@@ -148,25 +148,25 @@ GROUP BY "B"."product_id",
 # collapse "time_id"
 
 
-INSERT INTO agg_lc_100_sales_fact_1997 (
+INSERT INTO "agg_lc_100_sales_fact_1997" (
     "product_id", 
     "customer_id",
     "quarter",
     "the_year",
-    store_sales, 
-    store_cost, 
-    unit_sales, 
-    fact_count
+    "store_sales", 
+    "store_cost", 
+    "unit_sales", 
+    "fact_count"
 ) SELECT
     "B"."product_id",
     "B"."customer_id",
     "D"."quarter",
     "D"."the_year",
-    SUM("B"."store_sales") AS store_sales,
-    SUM("B"."store_cost") AS store_cost,
-    SUM("B"."unit_sales") AS unit_sales,
+    SUM("B"."store_sales") AS "store_sales",
+    SUM("B"."store_cost") AS "store_cost",
+    SUM("B"."unit_sales") AS "unit_sales",
     COUNT(*) AS fact_count
-FROM sales_fact_1997 "B", time_by_day "D"
+FROM "sales_fact_1997" "B", "time_by_day" "D"
 WHERE 
     "B"."time_id" = "D"."time_id"
 GROUP BY "B"."product_id", 
@@ -186,7 +186,7 @@ GROUP BY "B"."product_id",
 # collapse "time_id"
 
 
-INSERT INTO agg_c_special_sales_fact_1997 (
+INSERT INTO "agg_c_special_sales_fact_1997" (
     "product_id", 
     "customer_id",
     "promotion_id",
@@ -194,10 +194,10 @@ INSERT INTO agg_c_special_sales_fact_1997 (
     "time_month",
     "time_quarter",
     "time_year",
-    STORE_SALES_SUM, 
-    STORE_COST_SUM, 
-    UNIT_SALES_SUM, 
-    FACT_COUNT
+    "store_sales_sum", 
+    "store_cost_sum", 
+    "unit_sales_sum", 
+    "fact_count"
 ) SELECT
     "B"."product_id",
     "B"."customer_id",
@@ -206,11 +206,11 @@ INSERT INTO agg_c_special_sales_fact_1997 (
     "D"."month_of_year",
     "D"."quarter",
     "D"."the_year",
-    SUM("B"."store_sales") AS STORE_SALES_SUM,
-    SUM("B"."store_cost") AS STORE_COST_SUM,
-    SUM("B"."unit_sales") AS UNIT_SALES_SUM,
-    COUNT(*) AS FACT_COUNT
-FROM sales_fact_1997 "B", time_by_day "D"
+    SUM("B"."store_sales") AS "store_sales_sum",
+    SUM("B"."store_cost") AS "store_cost_sum",
+    SUM("B"."unit_sales") AS "unit_sales_sum",
+    COUNT(*) AS "fact_count"
+FROM "sales_fact_1997" "B", "time_by_day" "D"
 WHERE 
     "B"."time_id" = "D"."time_id"
 GROUP BY "B"."product_id", 

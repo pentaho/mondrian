@@ -1584,9 +1584,41 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
+        /*
+         * Clone of <Dimension>.Members for compatibility with MSAS
+         */
+
+        define(new FunDefBase(
+                "AllMembers",
+                "<Dimension>.AllMembers",
+                "Returns the set of all members in a dimension.",
+                "pxd") {
+            public Object evaluate(Evaluator evaluator, Exp[] args) {
+                Dimension dimension = (Dimension) getArg(evaluator, args, 0);
+                Hierarchy hierarchy = dimension.getHierarchy();
+                return addMembers(evaluator.getSchemaReader(), new ArrayList(), hierarchy);
+            }
+        });
+
         define(new FunDefBase(
                 "Members",
                 "<Hierarchy>.Members",
+                "Returns the set of all members in a hierarchy.",
+                "pxh") {
+            public Object evaluate(Evaluator evaluator, Exp[] args) {
+                Hierarchy hierarchy = (Hierarchy) getArg(evaluator, args, 0);
+                return addMembers(evaluator.getSchemaReader(),
+                    new ArrayList(), hierarchy);
+            }
+        });
+
+        /*
+         * Clone of <Hierarchy>.Members for compatibility with MSAS
+         */
+        
+        define(new FunDefBase(
+                "AllMembers",
+                "<Hierarchy>.AllMembers",
                 "Returns the set of all members in a hierarchy.",
                 "pxh") {
             public Object evaluate(Evaluator evaluator, Exp[] args) {
@@ -1606,6 +1638,22 @@ public class BuiltinFunTable extends FunTableImpl {
                 return Arrays.asList(evaluator.getSchemaReader().getLevelMembers(level));
             }
         });
+
+        /*
+         * Clone of <Level>.Members for compatibility with MSAS
+         */
+
+        define(new FunDefBase(
+                "AllMembers",
+                "<Level>.AllMembers",
+                "Returns the set of all members in a level.",
+                "pxl") {
+            public Object evaluate(Evaluator evaluator, Exp[] args) {
+                Level level = (Level) getArg(evaluator, args, 0);
+                return Arrays.asList(evaluator.getSchemaReader().getLevelMembers(level));
+            }
+        });
+
         define(new XtdFunDef.Resolver(
                 "Mtd",
                 "Mtd([<Member>])",

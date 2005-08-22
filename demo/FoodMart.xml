@@ -182,7 +182,7 @@ fname + ' ' + lname
 "customer"."fullname"
           </SQL>
           <SQL dialect="db2">
-CONCAT(CONCAT("fname", ' '), "lname")
+CONCAT(CONCAT(fname, ' '), lname)
           </SQL>
           <SQL dialect="generic">
 fullname
@@ -516,7 +516,7 @@ fname + ' ' + lname
 "customer"."fullname"
           </SQL>
           <SQL dialect="db2">
-CONCAT(CONCAT("fname", ' '), "lname")
+CONCAT(CONCAT(fname, ' '), lname)
           </SQL>
           <SQL dialect="generic">
 fullname
