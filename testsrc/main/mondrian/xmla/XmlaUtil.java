@@ -455,7 +455,7 @@ public class XmlaUtil {
                 "        <Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\" " + nl +
                 "  SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
                 "  <Command>" + nl +
-                "    <Statement>select [Measures].members on Columns from Sales</Statement>" + nl +
+                "    <Statement>select [Measures].allmembers on Columns from Sales</Statement>" + nl +
                 "  </Command>" + nl +
                 "  <Properties>" + nl +
                 "    <PropertyList>" + nl +
