@@ -78,6 +78,15 @@ public class AccessControlTest extends FoodMartTestCase {
                 "[Store].[All Stores].[USA]");
     }
 
+    public void testGrantHierarchy1aAllMembers() {
+        // assert: can access Mexico (explicitly granted)
+        // assert: can not access Canada (explicitly denied)
+        // assert: can access USA (rule 3 - parent of allowed member San Francisco)
+        assertAxisReturns(getRestrictedConnection(), "[Store].level.allmembers",
+                "[Store].[All Stores].[Mexico]" + nl +
+                "[Store].[All Stores].[USA]");
+    }
+
     public void testGrantHierarchy1b() {
         // can access Mexico (explicitly granted) which is the first accessible one
         assertAxisReturns(getRestrictedConnection(), "[Store].defaultMember",
@@ -164,6 +173,15 @@ public class AccessControlTest extends FoodMartTestCase {
         assertAxisThrows(restrictedConnection, "[Customers].[USA].[CA].[San Francisco].[Catherine Abel]", "not found");
         assertAxisReturns(restrictedConnection, "[Customers].[USA].[CA].[San Francisco].children", "");
         Axis axis = executeAxis2(restrictedConnection, "[Customers].members");
+        Assert.assertEquals(122, axis.positions.length); // 13 states, 109 cities
+    }
+
+    public void testGrantHierarchy8AllMembers() {
+        // assert: can not access Catherine Abel in San Francisco (below bottom level)
+        final Connection restrictedConnection = getRestrictedConnection();
+        assertAxisThrows(restrictedConnection, "[Customers].[USA].[CA].[San Francisco].[Catherine Abel]", "not found");
+        assertAxisReturns(restrictedConnection, "[Customers].[USA].[CA].[San Francisco].children", "");
+        Axis axis = executeAxis2(restrictedConnection, "[Customers].allmembers");
         Assert.assertEquals(122, axis.positions.length); // 13 states, 109 cities
     }
 

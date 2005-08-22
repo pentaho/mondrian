@@ -771,6 +771,11 @@ public class FunctionTest extends FoodMartTestCase {
         Assert.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("M"));
     }
 
+    public void testBasic2AllMembers() {
+        Result result = runQuery("select {[Gender].[F].NextMember} ON COLUMNS from Sales");
+        Assert.assertTrue(result.getAxes()[0].positions[0].members[0].getName().equals("M"));
+    }
+
     public void testFirstInLevel2() {
         Result result = runQuery("select {[Gender].[M].NextMember} ON COLUMNS from Sales");
         Assert.assertTrue(result.getAxes()[0].positions.length == 0);
@@ -898,6 +903,66 @@ public class FunctionTest extends FoodMartTestCase {
                 "Row #2: -1,609.27" + nl +
                 "Row #2: 12,234.22" + nl);
     }
+    
+    public void testAggregate2AllMembers() {
+        runQueryCheckResult("WITH" + nl +
+                "  MEMBER [Time].[1st Half Sales] AS 'Aggregate({Time.[1997].[Q1], Time.[1997].[Q2]})'" + nl +
+                "  MEMBER [Time].[2nd Half Sales] AS 'Aggregate({Time.[1997].[Q3], Time.[1997].[Q4]})'" + nl +
+                "  MEMBER [Time].[Difference] AS 'Time.[2nd Half Sales] - Time.[1st Half Sales]'" + nl +
+                "SELECT" + nl +
+                "   { [Store].[Store State].AllMembers} ON COLUMNS," + nl +
+                "   { Time.[1st Half Sales], Time.[2nd Half Sales], Time.[Difference]} ON ROWS" + nl +
+                "FROM Sales" + nl +
+                "WHERE [Measures].[Store Sales]",
+                "Axis #0:" + nl +
+                "{[Measures].[Store Sales]}" + nl +
+                "Axis #1:" + nl +
+                "{[Store].[All Stores].[Canada].[BC]}" + nl +
+                "{[Store].[All Stores].[Mexico].[DF]}" + nl +
+                "{[Store].[All Stores].[Mexico].[Guerrero]}" + nl +
+                "{[Store].[All Stores].[Mexico].[Jalisco]}" + nl +
+                "{[Store].[All Stores].[Mexico].[Veracruz]}" + nl +
+                "{[Store].[All Stores].[Mexico].[Yucatan]}" + nl +
+                "{[Store].[All Stores].[Mexico].[Zacatecas]}" + nl +
+                "{[Store].[All Stores].[USA].[CA]}" + nl +
+                "{[Store].[All Stores].[USA].[OR]}" + nl +
+                "{[Store].[All Stores].[USA].[WA]}" + nl +
+                "Axis #2:" + nl +
+                "{[Time].[1st Half Sales]}" + nl +
+                "{[Time].[2nd Half Sales]}" + nl +
+                "{[Time].[Difference]}" + nl +
+                "Row #0: (null)" + nl +
+                "Row #0: (null)" + nl +
+                "Row #0: (null)" + nl +
+                "Row #0: (null)" + nl +
+                "Row #0: (null)" + nl +
+                "Row #0: (null)" + nl +
+                "Row #0: (null)" + nl +
+                "Row #0: 74,571.95" + nl +
+                "Row #0: 71,943.17" + nl +
+                "Row #0: 125,779.50" + nl +
+                "Row #1: (null)" + nl +
+                "Row #1: (null)" + nl +
+                "Row #1: (null)" + nl +
+                "Row #1: (null)" + nl +
+                "Row #1: (null)" + nl +
+                "Row #1: (null)" + nl +
+                "Row #1: (null)" + nl +
+                "Row #1: 84,595.89" + nl +
+                "Row #1: 70,333.90" + nl +
+                "Row #1: 138,013.72" + nl +
+                "Row #2: (null)" + nl +
+                "Row #2: (null)" + nl +
+                "Row #2: (null)" + nl +
+                "Row #2: (null)" + nl +
+                "Row #2: (null)" + nl +
+                "Row #2: (null)" + nl +
+                "Row #2: (null)" + nl +
+                "Row #2: 10,023.94" + nl +
+                "Row #2: -1,609.27" + nl +
+                "Row #2: 12,234.22" + nl);
+    }
+    
 
     public void testAggregateToSimulateCompoundSlicer() {
         runQueryCheckResult("WITH MEMBER [Time].[1997 H1] as 'Aggregate({[Time].[1997].[Q1], [Time].[1997].[Q2]})'"
