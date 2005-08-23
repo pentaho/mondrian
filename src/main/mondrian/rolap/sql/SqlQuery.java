@@ -750,7 +750,7 @@ public class SqlQuery
 
         public String getQuoteIdentifierString() {
             if (isDB2()) {
-                return null;
+                return "";
             } else {
                 return quoteIdentifierString;
             }

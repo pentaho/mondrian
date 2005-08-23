@@ -1683,6 +1683,7 @@ public class MondrianFoodMartLoader {
             String trimmedValue = columnValue.trim();
             if (!sqlQuery.getDialect().isMySQL() &&
                     !sqlQuery.getDialect().isOracle() &&
+                    !sqlQuery.getDialect().isDB2() &&
                     !sqlQuery.getDialect().isFirebird()) {
                 if (trimmedValue.equals("1")) {
                     return "true";
