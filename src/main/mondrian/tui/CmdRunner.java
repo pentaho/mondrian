@@ -14,6 +14,7 @@ import mondrian.olap.Category;
 import mondrian.olap.*;
 import mondrian.olap.Hierarchy;
 import mondrian.olap.fun.FunInfo;
+import mondrian.rolap.RolapConnectionProperties;
 import mondrian.rolap.RolapCube;
 import org.apache.log4j.Level;
 import org.apache.log4j.*;
@@ -576,7 +577,7 @@ public class CmdRunner {
         if (connectString == null || connectString.equals("")) {
             // create new and add provider
             connectProperties = new Util.PropertyList();
-            connectProperties.put("Provider","mondrian");
+            connectProperties.put(RolapConnectionProperties.Provider,"mondrian");
         } else {
             // load with existing connect string
             connectProperties = Util.parseConnectString(connectString);
@@ -589,7 +590,7 @@ public class CmdRunner {
 
         if (jdbcURL != null) {
             // add jdbc url to connect string
-            connectProperties.put("Jdbc", jdbcURL);
+            connectProperties.put(RolapConnectionProperties.Jdbc, jdbcURL);
         }
 
         // override jdbc drivers
@@ -598,7 +599,7 @@ public class CmdRunner {
         CmdRunner.debug("CmdRunner.makeConnectString: jdbcDrivers="+jdbcDrivers);
         if (jdbcDrivers != null) {
             // add jdbc drivers to connect string
-            connectProperties.put("JdbcDrivers", jdbcDrivers);
+            connectProperties.put(RolapConnectionProperties.JdbcDrivers, jdbcDrivers);
         }
 
         // override catalog url
@@ -608,7 +609,27 @@ public class CmdRunner {
 
         if (catalogURL != null) {
             // add catalog url to connect string
-            connectProperties.put("catalog", catalogURL);
+            connectProperties.put(RolapConnectionProperties.Catalog, catalogURL);
+        }
+
+        // override JDBC user
+        String jdbcUser = CmdRunner.getJdbcUserProperty();
+
+        CmdRunner.debug("CmdRunner.makeConnectString: jdbcUser="+jdbcUser);
+
+        if (jdbcUser != null) {
+            // add user to connect string
+            connectProperties.put(RolapConnectionProperties.JdbcUser, jdbcUser);
+        }
+
+        // override JDBC password
+        String jdbcPassword = CmdRunner.getJdbcPasswordProperty();
+
+        CmdRunner.debug("CmdRunner.makeConnectString: jdbcPassword="+jdbcPassword);
+
+        if (jdbcPassword != null) {
+            // add password to connect string
+            connectProperties.put(RolapConnectionProperties.JdbcPassword, jdbcPassword);
         }
 
         CmdRunner.debug("CmdRunner.makeConnectString: connectProperties="+connectProperties);
@@ -666,7 +687,15 @@ public class CmdRunner {
         return MondrianProperties.instance().TestConnectString.get();
     }
     protected static String getJdbcURLProperty() {
-        return MondrianProperties.instance().FoodmartJdbcURL.get();
+        return MondrianProperties.instance().TestJdbcURL.get();
+    }
+    
+    protected static String getJdbcUserProperty() {
+        return MondrianProperties.instance().TestJdbcUser.get();
+    }
+    
+    protected static String getJdbcPasswordProperty() {
+        return MondrianProperties.instance().TestJdbcPassword.get();
     }
     protected static String getCatalogURLProperty() {
         return MondrianProperties.instance().CatalogURL.get();

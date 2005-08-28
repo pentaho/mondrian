@@ -1,0 +1,27 @@
+echo ----------------------------------------------------
+echo Cube list
+echo ----------------------------------------------------
+cube
+echo ----------------------------------------------------
+echo Log level of mondrian.rolap.RolapUtil
+echo ----------------------------------------------------
+
+log mondrian.rolap.RolapUtil
+
+echo ----------------------------------------------------
+echo Run a query
+echo ----------------------------------------------------
+
+with member [Measures].[Store Profit] as '[Measures].[Store Sales] - [Measures].[Store Cost]'
+select { [Time].[1997].children } on columns,
+hierarchize(
+	intersect(
+		crossjoin({ [Measures].members, [Measures].[Store Profit] }, [Store].members),
+		generate([Store].members, { ([Measures].[Store Profit], [Store].currentmember) } )
+	)
+) on rows from [Sales] where ( [Product].[Food] );
+echo ----------------------------------------------------
+echo Log level of mondrian.rolap.RolapUtil
+echo ----------------------------------------------------
+
+log mondrian.rolap.RolapUtil

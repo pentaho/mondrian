@@ -269,6 +269,27 @@ public class MondrianProperties extends TriggerableProperties {
      */
     public final StringProperty FoodmartJdbcURL = new StringProperty(
             this, "mondrian.foodmart.jdbcURL", "jdbc:odbc:MondrianFoodMart");
+    
+    /**
+     * Property containing the JDBC URL of a test database.
+     * It does not default.
+     */
+    public final StringProperty TestJdbcURL = new StringProperty(
+            this, "mondrian.test.jdbcURL", null);
+
+    /**
+     * Property containing the JDBC user of a test database.
+     * The default value is null, to cope with DBMSs that don't need this.
+     */
+    public final StringProperty TestJdbcUser = new StringProperty(
+            this, "mondrian.test.jdbcUser", null);
+    
+    /**
+     * Property containing the JDBC password of a test database.
+     * The default value is null, to cope with DBMSs that don't need this.
+     */
+    public final StringProperty TestJdbcPassword = new StringProperty(
+            this, "mondrian.test.jdbcPassword", null);
 
     /**
      * Property which determines when a dimension is considered "large".

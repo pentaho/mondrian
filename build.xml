@@ -184,6 +184,7 @@ demo/FoodMartCreateData.sql"/>
     <unjar src="${lib.dir}/commons-dbcp.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/commons-collections.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/commons-pool.jar" dest="${crtmp.dir}"/>
+    <unjar src="${lib.dir}/eigenbase-properties.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/eigenbase-resgen.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/eigenbase-xom.jar" dest="${crtmp.dir}"/>
     <unjar src="${lib.dir}/javacup.jar" dest="${crtmp.dir}"/>
@@ -733,8 +734,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
       <fileset dir="${webapp.dir}" excludes="WEB-INF/**/*"/>
       <fileset dir="${lib.dir}" includes="index.jsp"/>
       <lib dir="${lib.dir}" includes="${name}.jar"/>
-      <!-- 2 jar files leaved by jpivot.war, anyone to fix this? -->
-      <lib dir="${lib.dir}" includes="eigenbase-properties.jar"/>
+      <lib dir="${lib.dir}" includes="eigenbase-*.jar"/>
       <lib dir="${lib.dir}" includes="log4j-1.2.9.jar"/>
     </war>
   </target>
@@ -743,7 +743,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
     <copy file="${war.file}" todir="${mondrian.webapp.deploy}"/>
   </target>
   	
-  <target name="war-no-jpivot" description="
+  <target name="war-no-jpivot" depends="jar" description="
 Creates mondrian.war.
 Assumes that mondrian.jar exists (use 'jar' target),
 and lib contains ant.jar, junit.jar etc. (use 'copy-jars' target)">
