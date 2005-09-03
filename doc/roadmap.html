@@ -12,6 +12,10 @@
 
 <h1><font size="6"> Mondrian roadmap</font></h1>
 
+<p>By Julian Hyde; last updated September, 2005.</p>
+
+<hr noshade color="#000000" size="1">
+
 <h2><a name="1_Contents">1 Contents</a></h2>
 <ol>
   <li><a href="#1_Contents">Contents</a>
@@ -26,30 +30,38 @@
   </li>
   <li><a href="#4_Build">Feature list</a>
   <ol>
-        <li><a href="#3.1_Internationalization_localization">Internationalization/localization</a></li>
-	<li><a href="#3.2_Aggregate_navigation">Aggregate navigation</a></li>
-	<li><a href="#3.3_Improved_cache_control">Improved cache control</a></li>
-	<li><a href="#3.4_WITH_SET">WITH SET</a></li>
-	<li><a href="#3.5_Cache_set_expressions">Cache set expressions</a></li>
-	<li><a href="#3.6_User-defined_functions">User-defined functions</a></li>
-	<li><a href="#3.7_Improve_dimension_sharing">Improve dimension sharing</a></li>
-	<li><a href="#3.8_Virtual_cube_enhancements">Virtual cube enhancements</a></li>
-	<li><a href="#3.9_Calculated_members_in_virtual_cubes">Calculated members in 
+        <li><a href="#Feature_Internationalization_localization">Internationalization/localization</a></li>
+		<li><a href="#Feature_Improved_cache_control">Improved cache control</a></li>
+	<li><a href="#Feature_Improve_dimension_sharing">Improve dimension sharing</a></li>
+	<li><a href="#Feature_Virtual_cube_enhancements">Virtual cube enhancements</a></li>
+	<li><a href="#Feature_Calculated_members_in_virtual_cubes">Calculated members in 
 	virtual cubes</a></li>
-	<li><a href="#3.10_Time_function">Time function</a></li>
-	<li><a href="#3.11_Scalar_functions">Scalar functions</a></li>
-	<li><a href="#3.12_Cold_start">Cold start</a></li>
-	<li><a href="#3.13_Rollups">Rollups</a></li>
-	<li><a href="#3.14_Compound_slicer">Compound slicer</a></li>
-	<li><a href="#3.15_Enhancements_to_schema_cache">Enhancements to schema 
+	<li><a href="#Feature_Time_function">Time function</a></li>
+	<li><a href="#Feature_Scalar_functions">Scalar functions</a></li>
+	<li><a href="#Feature_Cold_start">Cold start</a></li>
+	<li><a href="#Feature_Rollups">Rollups</a></li>
+	<li><a href="#Feature_Compound_slicer">Compound slicer</a></li>
+	<li><a href="#Feature_Enhancements_to_schema_cache">Enhancements to schema 
 	cache</a></li>
-	<li><a href="#3.16_JOLAP_support">JOLAP support</a></li>
-	<li><a href="#3.17_Schema_and_query_validation">Schema and query validation</a></li>
-	<li><a href="#3.18_Documentation">Documentation</a></li>
-	<li><a href="#3.19_Name-resolution">Name-resolution</a></li>
-	<li><a href="#3.20_XMLA_interoperability">XML/A interoperability</a></li>
+	<li><a href="#Feature_JOLAP_support">JOLAP support</a></li>
+	<li><a href="#Feature_Schema_and_query_validation">Schema and query validation</a></li>
+	<li><a href="#Feature_Documentation">Documentation</a></li>
+	<li><a href="#Feature_Name-resolution">Name-resolution</a></li>
+	<li><a href="#Feature_XMLA_interoperability">XML/A interoperability</a></li>
+	<li><a href="#Feature_Standard_functions">Standard functions</a></li>
+		<li><a href="#Feature_Bridge_to_CWM">Bridge to CWM</a></li>
+		<li><a href="#Feature_Graphical_administrator">Graphical administrator</a></li>
+		<li><a href="#Feature_Mondrian_XMLA_server">Mondrian XML/A server</a></li>
 
   </ol>
+	<li><a href="#4._Features_implemented_in_1.5">Features implemented in 1.5</a><ol>
+  <li><a href="#Feature_Aggregate_navigation">Aggregate navigation</a></li>
+	<li><a href="#Feature_WITH_SET">WITH SET</a></li>
+	<li><a href="#Feature_Cache_set_expressions">Cache set expressions</a></li>
+	<li><a href="#Feature_User-defined_functions">User-defined functions</a></li>
+</ol>
+
+	</li>
 </ol>
 
 <h2><a name="2_Introduction">2 Introduction</a></h2>
@@ -126,7 +138,7 @@ contact Julian Hyde.</p>
 
 <h2>3 Feature list</h2>
 
-<h3><a name="3.1_Internationalization_localization">3.1 Internationalization/localization</a></h3>
+<h3><a name="Feature_Internationalization_localization">3.1 Internationalization/localization</a></h3>
 
 <p><i>Effort: medium; importance: medium.</i></p>
 
@@ -153,7 +165,332 @@ contact Julian Hyde.</p>
 <a href="http://sourceforge.net/mailarchive/forum.php?thread_id=6386685&forum_id=8760">
 email thread &quot;MLS cubes RFC&quot;</a>.</p>
 
-<h3><a name="3.2_Aggregate_navigation">3.2 Aggregate navigation</a></h3>
+<h3><a name="Feature_Improved_cache_control">3.2 Improved cache control</a></h3>
+
+<p><i>Effort: medium; importance: medium.</i></p>
+
+<p>In Mondrian release 1.2, there is an API call to flush the entire cache,
+<code>RolapSchema.clearCache()</code>. For applications where the contents of 
+the database are changing rapidly, this makes the cache not very useful.</p>
+
+<p>This feature would allow more fine-grained cache flushing. API:</p>
+
+<blockquote>
+
+	<p><code>class Schema {<br>
+&nbsp;&nbsp;&nbsp; // Clears cells from the cache which lie in a given range.<br>
+&nbsp;&nbsp;&nbsp; void clearCache(CacheRange range);<br>
+	<br>
+&nbsp;&nbsp;&nbsp; // Creates a CacheRange.<br>
+&nbsp;&nbsp;&nbsp; void createCacheRange();<br>
+	<br>
+&nbsp;&nbsp;&nbsp; interface CacheRange {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Adds a member to the range.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; void addMember(Member[] members);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Adds a range of members. Either 
+	bound may be null, which means unbounded.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; void addMemberRange(Member lowerBound, 
+	Member upperBound);<br>
+&nbsp;&nbsp;&nbsp; }<br>
+	}</code></p>
+</blockquote>
+
+<p>The following example shows how to flush all cache entries for Texas and 
+Oklahoma since 2005/9/2:</p>
+
+<blockquote>
+
+	<p><code>Schema schema;<br>
+	CacheRange range = schema.createCacheRangeRange();<br>
+	SchemaReader reader = schema.getSchemaReader();<br>
+	range.addMember(reader.lookupMember(&quot;[Store].[USA].[TX]&quot;));<br>
+	range.addMember(reader.lookupMember(&quot;[Store].[USA].[OK]&quot;));<br>
+	range.addMemberRange(reader.lookupMember(&quot;[Time].[2005].[9].[2]&quot;), null);<br>
+	schema.clearCache(range);</code></p>
+</blockquote>
+
+<p>See also <a href="#Feature_Partitioned_cubes">partitioned cubes</a>.</p>
+
+<h3><a name="Feature_Partitioned_cubes">3.3 Partitioned cubes</a></h3>
+
+<p><i>Effort: medium; importance: medium; priority: medium.</i></p>
+
+<p>Whereas a regular cube has a single fact table, a partitioned cube has 
+several fact tables, which are unioned together. The fact tables must have the 
+same column names.</p>
+
+<p>Each fact table can have a range (similar to 'cache ranges',
+<a href="#Feature_Improved_cache_control">above</a>) which describes what data 
+ranges are found in each. When looking for a particular cell, Mondrian scans the 
+tables' criteria to determine which table to look in. For example, T1 holds data 
+for Texas, 2005 onwards; T2 holds data for 2004 onwards; T3 holds all other 
+data.&nbsp; The cell (Oklahoma, January 2005) would be found in T2.</p>
+
+<p>Partitioned tables are useful for real-time analysis. For example, one 
+partition might contain today's data, while another might hold historical data. 
+The 'hot' partition with today's data would typically have fewer or no 
+aggregation tables and have caching disabled; its fact table might have 
+different physical options in the RDBMS, say fewer indexes to maximize insert 
+performance.</p>
+
+<p>Example schema:</p>
+
+<blockquote>
+
+	<p><code>&lt;Cube name=&quot;Sales&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;Partitions&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Partition name=&quot;partition1&quot; 
+	cache=&quot;false&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Table name=&quot;sales_fact_this_month&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Ranges&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+	&lt;Range dimension=&quot;[Time]&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+	&lt;RangeMember bound=&quot;lower&quot; member=&quot;[Time].[2005].[9]&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+	&lt;/Range&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+	&lt;Range dimension=&quot;[Store]&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+	&lt;RangeMember member=&quot;[Store].[USA].[CA]&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+	&lt;RangeMember member=&quot;[Store].[USA].[WA].[Seattle]&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+	&lt;/Range&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/Ranges&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/Partition&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Partition name=&quot;partition2&quot; 
+	cache=&quot;true&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Table name=&quot;sales_fact&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Ranges/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/Partition&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/Partitions&gt;<br>
+	&lt;/Cube&gt;</code></p>
+</blockquote>
+
+<h3><a name="Feature_Improve_dimension_sharing">3.4 Improve dimension sharing</a></h3>
+
+<p><i>Effort: high; importance: high; priority: medium.</i></p>
+
+<p>Use the same dimension twice in the same cube.</p>
+
+<h3><a name="Feature_Virtual_cube_enhancements">3.5 Virtual cube enhancements</a></h3>
+
+<p><i>Effort: medium; importance: medium; priority: medium.</i></p>
+
+<p>When a cube uses the same dimension twice is involved in a virtual cube, 
+disambiguate which usage of the dimension is involved. Allow the virtual cube to 
+use the same cube more than once.</p>
+
+<h3><a name="Feature_Calculated_members_in_virtual_cubes">3.6 Calculated members in virtual cubes</a></h3>
+
+<p><i>Effort: low; importance: medium; priority: medium.</i></p>
+
+<p>One could imagine two levels: 1) simply access calculated measures from base 
+cubes, 2) define new calculated measures spanning measures in the base cubes.</p>
+
+<h3><a name="Feature_Time_function">3.7 Time function</a></h3>
+
+<p><i>Effort: low; importance: medium; priority: medium.</i></p>
+
+<p>See
+<a href="https://sourceforge.net/forum/forum.php?thread_id=1222972&forum_id=111375">
+the Open Discussion thread &quot;Accessing the current date in MDX&quot;</a>.</p>
+
+<h3><a name="Feature_Scalar_functions">3.8 Scalar functions</a></h3>
+
+<p><i>Effort: medium; importance: high; priority: medium.</i></p>
+
+<p>Mondrian's set of functions for operating on numeric and string expressions 
+is limited. This feature would add string manipulation functions (substring, 
+trim, regular expressions) and arithmetic expressions (power, log, sqrt) and 
+conversion functions (string to numeric, numeric to string).</p>
+
+<h3><a name="Feature_Cold_start">3.9 Cold start</a></h3>
+
+<p><i>Effort: medium; importance: medium; priority: low.</i></p>
+
+<p>When Mondrian initializes and starts to process the first queries, it makes 
+sql calls to get member lists and determine cardinality, and then to load 
+segments into the cache. When Mondrian is closed and restarted, it has to do 
+that work again. This can be a significant chunk of time depending on the cube 
+size. For example in one test an 8GB cube (55M row fact table) took 15 minutes 
+(mostly doing a group by) before it returned results from its first query, and 
+absent any caching on the database server would take another 15 minutes if you 
+closed it and reopened the application. Now, this cube was just one month of 
+data; imagine the time if there was 5 years worth.<br>
+<br>
+What ideas and designs can you come up with to speed that up, in other words to 
+do anything time consuming only once and reuse it between instances?</p>
+
+<h3><a name="Feature_Rollups">3.10 Rollups</a></h3>
+
+<p><i>Effort: medium; importance: medium; priority: low.</i></p>
+
+<p>If the cache contains aggregates for all children of a member, then Mondrian 
+would be able to compute the aggregate for the parent member by rolling up.</p>
+
+<p>See the
+<a href="https://sourceforge.net/mailarchive/forum.php?thread_id=6496831&forum_id=8760">
+email thread &quot;grouper in Mondrian&quot;</a>.</p>
+
+<h3><a name="Feature_Compound_slicer">3.11 Compound slicer</a></h3>
+
+<p><i>Effort: medium; importance: low; priority: low.</i></p>
+
+<h3><a name="Feature_Enhancements_to_schema_cache">3.12 Enhancements to schema cache</a></h3>
+
+<p><i>Effort: low; importance: medium; priority: high.</i></p>
+
+<p>At present, the schema is read from a URL when the connection is established. 
+If the URL is of <code>http:</code> protocol, Mondrian assumes that the XML 
+content of the schema file never changes, and therefore caches the schema 
+definition in memory. But if the URL is of <code>file:</code> protocol, Mondrian 
+assumes that the XML schema definition is volatile, and therefore it re-creates 
+the schema every time a connection is established. This is expensive, and may 
+the system's reponsiveness.</p>
+
+<p>This feature adds a <code>cacheSchema</code> parameter to the connect string. 
+Values are:</p>
+<ul>
+	<li><code>true</code>: Assume that the schema definition never changes.</li>
+	<li><code>false</code>:&nbsp; Assume that the schema definition changes 
+	frequently, and therefore rebuild the schema every time a connection is 
+	established.</li>
+	<li><code>digest</code>:&nbsp; Every time a connection is established, 
+	re-read the schema, and compute a
+	<a href="http://www.irnis.net/gloss/md5-digest.shtml">digest</a>. If the 
+	digest is unchanged, assume that the schema is unchanged, and use the schema 
+	definition from the cache.</li>
+</ul>
+
+<h3><a name="Feature_JOLAP_support">3.13 JOLAP support</a></h3>
+
+<p><i>Effort: very high; importance: medium; priority: low.</i></p>
+
+<p>Mondrian's support for the JOLAP API is currently incomplete. This feature 
+would complete the implementation of the API.</p>
+
+<h3><a name="Feature_Schema_and_query_validation">3.14 Schema and query validation</a></h3>
+
+<p>Process to validate a schema.</p>
+
+<p>PRocess to validate a set of queries. Maybe an option to ignore errors due to 
+specific members not existing because the data hasn't been loaded yet.</p>
+
+<p>Expose validation via Eclipse plugin.</p>
+
+<h3><a name="Feature_Documentation">3.15 Documentation</a></h3>
+
+<ul>
+<li>Document 'ordinalColumn'</li>
+</ul>
+
+<h3><a name="Feature_Name-resolution">3.16 Name-resolution</a></h3>
+
+<p>Mondrian's name resolution is not always compatible with other MDX 
+implementations such as MSAS and SAS.</p>
+<ol>
+	<li>Parameterize case-sensitivity: a connection parameter determines whether cube/dimension/hierarchy/level/member names are case-sensitive.</li>
+	<li>Support abbreviated member names. For example, e.g. <code>[Products].[Boston Lager]</code> seems to be valid in MSAS if product names are unique, whereas Mondrian 
+	currently requires <code>[Products].[Beverages].[Beer].[Samual Adams].[Boston Lager]</code>.</li>
+	<li>Support keys in members, e.g. <code>[Products].#[1234]</code>.</li>
+	<li>Alternative axis names. '<code>ON COLUMNS</code>' and '<code>ON AXES(0)</code>' 
+	are supported, but '<code>ON 0</code>' is not.</li>
+</ol>
+
+<h3><a name="Feature_XMLA_interoperability">3.17 XML/A interoperability</a></h3>
+
+<p>Other improvements (Schema, Tabular Format, ...)</p>
+
+<p>Get Excel working against Mondrian's XML/A interface. See posting
+<a
+href="https://sourceforge.net/forum/forum.php?thread_id=1306599&forum_id=111376">Excel
+2003 and Mondrian</a>.
+
+<h3><a name="Feature_Standard_functions">3.18 Standard functions</a></h3>
+
+<p>Implement standard MDX functions:<ul>
+<li>LastPeriods(Index[, Member])</li>
+<li>VisualTotals(Set, Pattern)</li>
+<li>SetToArray(&lt;Set&gt;[, &lt;Set&gt;]...[, &lt;Numeric Expression&gt;])</li>
+<li>&lt;Tuple&gt;.Item(&lt;Numeric Expression&gt;)</li>
+<li>ValidMeasure(&lt;Tuple&gt;)</li>
+<li>AddCalculatedMembers(&lt;Set&gt;)</li>
+<li>DrilldownLevelBottom(&lt;Set&gt;, &lt;Count&gt;[, [&lt;Level&gt;][, &lt;Numeric Expression&gt;]])</li>
+<li>DrilldownLevelTop(&lt;Set&gt;, &lt;Count&gt;[, [&lt;Level&gt;][, &lt;Numeric Expression&gt;]])</li>
+<li>DrilldownMemberBottom(&lt;Set1&gt;, &lt;Set2&gt;, &lt;Count&gt;[, [&lt;Numeric Expression&gt;][, 
+RECURSIVE]])</li>
+<li>DrilldownMemberTop(&lt;Set1&gt;, &lt;Set2&gt;, &lt;Count&gt;[, [&lt;Numeric Expression&gt;][, 
+RECURSIVE]])</li>
+<li>DrillupLevel(&lt;Set&gt;[, &lt;Level&gt;])</li>
+<li>DrillupMember(&lt;Set1&gt;, &lt;Set2&gt;)</li>
+<li>Extract(&lt;Set&gt;, &lt;Dimension&gt;[, &lt;Dimension&gt;...])</li>
+<li>LastPeriods(&lt;Index&gt;[, &lt;Member&gt;])</li>
+<li>StripCalculatedMembers(&lt;Set&gt;)</li>
+<li>VisualTotals(&lt;Set&gt;, &lt;Pattern&gt;)</li>
+<li>&lt;Set&gt;.Item(&lt;String Expression&gt;[, &lt;String Expression&gt;...] | &lt;Index&gt;)</li>
+<li>Except(&lt;Set1&gt;, &lt;Set2&gt;[, ALL])</li>
+</ul>
+
+
+<p><code>Except</code> is implemented in Mondrian 1.2 except the <code>ALL</code> 
+keyword.</p>
+
+<h3><a name="Feature_Bridge_to_CWM">3.19 Bridge to CWM</a></h3>
+
+<p>CWM (Common Warehouse Model) is a standard model for defining data warehouse 
+and multidimensional schemas. It allows interoperability with tools such as UML 
+diagrams, relational report design tools, and ETL tools.</p>
+
+<p>This feature will add:</p>
+<ul>
+	<li>A gateway to make present a Mondrian schema via the CWM API. (This is 
+	already partially implemented as part of JOLAP support.)</li>
+	<li>A bridge to read a CWM schema and create a Mondrian schema from it.</li>
+</ul>
+
+<h3><a name="Feature_Graphical_administrator">3.20 Graphical administrator</a></h3>
+
+<p><i>Effort: high; importance: high; priority: high.</i></p>
+
+<p>Mondrian has a rich set of tools and components, but they are difficult to 
+install and configure. The administrator will bring many of the components 
+together in one application, which can easily be installed and launched.</p>
+
+<p>Basic features:</p>
+<ul>
+	<li>Connect to various Mondrian data sources (local, and via XML/A)</li>
+	<li>Browse cubes, and create reports from them.</li>
+	<li>Dynamically load JDBC drivers. (Don't require them to be on the 
+	classpath.)</li>
+	<li>Can save MDX queries as reports. (In various formats: OpenI, BIRT, 
+	JRubik all have their format.)</li>
+	<li>Graphical version of command-runner</li>
+	<li>Run data loader</li>
+	<li>Utilities for managing aggregate tables</li>
+</ul>
+
+<p>Advanced features:</p>
+<ul>
+	<li>Modify schema definitions</li>
+	<li>Wizard to create calculated members</li>
+	<li>Help system</li>
+</ul>
+
+<p>Will probably be built in Swing, based upon JRubik components.</p>
+
+<h3><a name="Feature_Mondrian_XMLA_server">3.21 Mondrian XML/A server</a></h3>
+
+<p>The standard installation will include a script to start and stop a Mondrian 
+instance running XML/A. This will invoke a lightweight servlet engine running 
+Mondrian's XML/A adapter. (You will still be able to include Mondrian's XML/A 
+servlet in your web server of choice.)</p>
+
+
+<h2><a name="4._Features_implemented_in_1.5">4. Features implemented in 1.5</a></h2>
+
+<h3><a name="Feature_Aggregate_navigation">4.1 Aggregate navigation</a></h3>
 
 <p><i>Effort: high; importance: high.</i></p>
 
@@ -187,21 +524,15 @@ running.
 There's plenty of room to wrap these utilities in nice graphical interfaces,
 make them smarter.
 
-<h3><a name="3.3_Improved_cache_control">3.3 Improved cache control</a></h3>
-
-<p><i>Effort: medium; importance: medium.</i></p>
-
-<p>(to be specified)</p>
-
-<h3><a name="3.4_WITH_SET">3.4 WITH SET</a></h3>
+<h3><a name="Feature_WITH_SET">4.2 WITH SET</a></h3>
 
 <p><i>Effort: medium; importance: high; priority: high.</i></p>
 
 <p>Support the MDX <code>WITH SET</code> syntax.</p>
 
-<h3>3.4.1 Store set definitions against cube</h3>
+<h3>4.2.1 Store set definitions against cube</h3>
 
-<h3><a name="3.5_Cache_set_expressions">3.5 Cache set expressions</a></h3>
+<h3><a name="Feature_Cache_set_expressions">4.3 Cache set expressions</a></h3>
 
 <p><i>Effort: medium; importance: medium.</i></p>
 
@@ -210,7 +541,7 @@ be evaluated many times within the course of a single MDX statement. A
 set-expression cache will provide an order of magnitude performance improvement 
 for such queries. </p>
 
-<h3><a name="3.6_User-defined_functions">3.6 User-defined functions</a></h3>
+<h3><a name="Feature_User-defined_functions">4.4 User-defined functions</a></h3>
 
 <p><i>Effort: low; importance: medium; priority: medium.</i></p>
 
@@ -219,146 +550,6 @@ MDX functions without modifying Mondrian's source code. To write a function, the
 developer will need to write a class which implements a given SPI 
 (service-provider interface), include the class on the class-path, and reference 
 the class from the schema file.</p>
-
-<h3><a name="3.7_Improve_dimension_sharing">3.7 Improve dimension sharing</a></h3>
-
-<p><i>Effort: high; importance: high; priority: medium.</i></p>
-
-<p>Use the same dimension twice in the same cube.</p>
-
-<h3><a name="3.8_Virtual_cube_enhancements">3.8 Virtual cube enhancements</a></h3>
-
-<p><i>Effort: medium; importance: medium; priority: medium.</i></p>
-
-<p>When a cube uses the same dimension twice is involved in a virtual cube, 
-disambiguate which usage of the dimension is involved. Allow the virtual cube to 
-use the same cube more than once.</p>
-
-<h3><a name="3.9_Calculated_members_in_virtual_cubes">3.9 Calculated members in virtual cubes</a></h3>
-
-<p><i>Effort: low; importance: medium; priority: medium.</i></p>
-
-<p>One could imagine two levels: 1) simply access calculated measures from base 
-cubes, 2) define new calculated measures spanning measures in the base cubes.</p>
-
-<h3><a name="3.10_Time_function">3.10 Time function</a></h3>
-
-<p><i>Effort: low; importance: medium; priority: medium.</i></p>
-
-<p>See
-<a href="https://sourceforge.net/forum/forum.php?thread_id=1222972&forum_id=111375">
-the Open Discussion thread &quot;Accessing the current date in MDX&quot;</a>.</p>
-
-<h3><a name="3.11_Scalar_functions">3.11 Scalar functions</a></h3>
-
-<p><i>Effort: medium; importance: high; priority: medium.</i></p>
-
-<p>Mondrian's set of functions for operating on numeric and string expressions 
-is limited. This feature would add string manipulation functions (substring, 
-trim, regular expressions) and arithmetic expressions (power, log, sqrt) and 
-conversion functions (string to numeric, numeric to string).</p>
-
-<h3><a name="3.12_Cold_start">3.12 Cold start</a></h3>
-
-<p><i>Effort: medium; importance: medium; priority: low.</i></p>
-
-<p>When Mondrian initializes and starts to process the first queries, it makes 
-sql calls to get member lists and determine cardinality, and then to load 
-segments into the cache. When Mondrian is closed and restarted, it has to do 
-that work again. This can be a significant chunk of time depending on the cube 
-size. For example in one test an 8GB cube (55M row fact table) took 15 minutes 
-(mostly doing a group by) before it returned results from its first query, and 
-absent any caching on the database server would take another 15 minutes if you 
-closed it and reopened the application. Now, this cube was just one month of 
-data; imagine the time if there was 5 years worth.<br>
-<br>
-What ideas and designs can you come up with to speed that up, in other words to 
-do anything time consuming only once and reuse it between instances?</p>
-
-<h3><a name="3.13_Rollups">3.13 Rollups</a></h3>
-
-<p><i>Effort: medium; importance: medium; priority: low.</i></p>
-
-<p>If the cache contains aggregates for all children of a member, then Mondrian 
-would be able to compute the aggregate for the parent member by rolling up.</p>
-
-<p>See the
-<a href="https://sourceforge.net/mailarchive/forum.php?thread_id=6496831&forum_id=8760">
-email thread &quot;grouper in Mondrian&quot;</a>.</p>
-
-<h3><a name="3.14_Compound_slicer">3.14 Compound slicer</a></h3>
-
-<p><i>Effort: medium; importance: low; priority: low.</i></p>
-
-<h3><a name="3.15_Enhancements_to_schema_cache">3.15 Enhancements to schema cache</a></h3>
-
-<p><i>Effort: low; importance: medium; priority: high.</i></p>
-
-<p>At present, the schema is read from a URL when the connection is established. 
-If the URL is of <code>http:</code> protocol, Mondrian assumes that the XML 
-content of the schema file never changes, and therefore caches the schema 
-definition in memory. But if the URL is of <code>file:</code> protocol, Mondrian 
-assumes that the XML schema definition is volatile, and therefore it re-creates 
-the schema every time a connection is established. This is expensive, and may 
-the system's reponsiveness.</p>
-
-<p>This feature adds a <code>cacheSchema</code> parameter to the connect string. 
-Values are:</p>
-<ul>
-	<li><code>true</code>: Assume that the schema definition never changes.</li>
-	<li><code>false</code>:&nbsp; Assume that the schema definition changes 
-	frequently, and therefore rebuild the schema every time a connection is 
-	established.</li>
-	<li><code>digest</code>:&nbsp; Every time a connection is established, 
-	re-read the schema, and compute a
-	<a href="http://www.irnis.net/gloss/md5-digest.shtml">digest</a>. If the 
-	digest is unchanged, assume that the schema is unchanged, and use the schema 
-	definition from the cache.</li>
-</ul>
-
-<h3><a name="3.16_JOLAP_support">3.16 JOLAP support</a></h3>
-
-<p><i>Effort: very high; importance: medium; priority: low.</i></p>
-
-<p>Mondrian's support for the JOLAP API is currently incomplete. This feature 
-would complete the implementation of the API.</p>
-
-<h3><a name="3.17_Schema_and_query_validation">3.17 Schema and query validation</a></h3>
-
-<p>Process to validate a schema.</p>
-
-<p>PRocess to validate a set of queries. Maybe an option to ignore errors due to 
-specific members not existing because the data hasn't been loaded yet.</p>
-
-<p>Expose validation via Eclipse plugin.</p>
-
-<h3><a name="3.18_Documentation">3.18 Documentation</a></h3>
-
-<ul>
-<li>Document 'ordinalColumn'</li>
-</ul>
-
-<h3><a name="3.19_Name-resolution">3.19 Name-resolution</a></h3>
-
-<p>Mondrian's name resolution is not always compatible with other MDX 
-implementations such as MSAS and SAS.</p>
-<ol>
-	<li>Parameterize case-sensitivity: a connection parameter determines whether cube/dimension/hierarchy/level/member names are case-sensitive.</li>
-	<li>Support abbreviated member names. For example, e.g. <code>[Products].[Boston Lager]</code> seems to be valid in MSAS if product names are unique, whereas Mondrian 
-	currently requires <code>[Products].[Beverages].[Beer].[Samual Adams].[Boston Lager]</code>.</li>
-	<li>Support keys in members, e.g. <code>[Products].#[1234]</code>.</li>
-	<li>Alternative axis names. '<code>ON COLUMNS</code>' and '<code>ON AXES(0)</code>' 
-	are supported, but '<code>ON 0</code>' is not.</li>
-</ol>
-
-<h3><a name="3.20_XMLA_interoperability">3.20 XML/A interoperability</a></h3>
-
-<p>Get Excel working against Mondrian's XML/A interface. See posting
-<a
-href="https://sourceforge.net/forum/forum.php?thread_id=1306599&forum_id=111376">Excel
-2003 and Mondrian</a>.
-
-<p>&nbsp;</p>
 
 <hr>
 
