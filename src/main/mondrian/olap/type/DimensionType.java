@@ -34,7 +34,8 @@ public class DimensionType implements Type {
     }
 
     public boolean usesDimension(Dimension dimension) {
-        return this.dimension == dimension;
+        return this.dimension == null ||
+                this.dimension == dimension;
     }
 
     public Hierarchy getHierarchy() {

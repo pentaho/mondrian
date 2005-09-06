@@ -61,7 +61,8 @@ abstract class MultiResolver extends FunUtil implements Resolver {
         return signatures;
     }
 
-    public FunDef resolve(Exp[] args, int[] conversionCount) {
+    public FunDef resolve(
+            Exp[] args, Validator validator, int[] conversionCount) {
 outer:
         for (int j = 0; j < signatures.length; j++) {
             int[] parameterTypes = decodeParameterTypes(signatures[j]);
@@ -69,7 +70,7 @@ outer:
                 continue;
             }
             for (int i = 0; i < args.length; i++) {
-                if (!FunTableImpl.canConvert(
+                if (!validator.canConvert(
                         args[i], parameterTypes[i], conversionCount)) {
                     continue outer;
                 }

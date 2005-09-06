@@ -880,7 +880,7 @@ RME is this right
                 condition.append(level.getNullParentValue());
             } catch (NumberFormatException e) {
                 condition.append(" = ");
-                RolapUtil.singleQuoteForSql(level.getNullParentValue(), condition);
+                Util.singleQuoteString(level.getNullParentValue(), condition);
             }
         }
         sqlQuery.addWhere(condition.toString());

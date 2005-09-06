@@ -36,23 +36,9 @@ public abstract class ExpBase
 
     public abstract Object clone();
 
-    public final boolean isSet() {
-        if (false) {
-            int cat = getCategory();
-            return (cat == Category.Set) || (cat == Category.Tuple);
-        } else {
-            Type typeX = getTypeX();
-            return typeX instanceof SetType || typeX instanceof TupleType;
-        }
-    }
-
-    public final boolean isMember() {
-        return getCategory() == Category.Member;
-    }
-
     public final boolean isElement() {
         int category = getCategory();
-        return isMember() ||
+        return (category == Category.Member) ||
             (category == Category.Hierarchy) ||
             (category == Category.Level) ||
             (category == Category.Dimension);

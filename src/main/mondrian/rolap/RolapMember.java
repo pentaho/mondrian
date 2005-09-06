@@ -277,7 +277,7 @@ public class RolapMember extends MemberBase {
     String quoteKeyForSql() {
         return ((getRolapLevel().getFlags() & RolapLevel.NUMERIC) != 0)
             ? key.toString()
-            : RolapUtil.singleQuoteForSql(key.toString());
+            : Util.singleQuoteString(key.toString());
     }
 
 

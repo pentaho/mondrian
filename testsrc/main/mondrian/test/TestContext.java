@@ -231,6 +231,34 @@ public class TestContext {
     }
 
     /**
+     * Executes the expression in the context of the cube indicated by
+     * <code>cubeName</code>, and returns the result.
+     *
+     * @param cubeName The name of the cube to use
+     * @param expression The expression to evaluate
+     * @return Returns a {@link Cell} which is the result of the expression.
+     */
+    public Cell executeExprRaw(String cubeName, String expression) {
+        if (cubeName.indexOf(' ') >= 0) {
+            cubeName = Util.quoteMdxIdentifier(cubeName);
+        }
+        final String queryString = "with member [Measures].[Foo] as " +
+            Util.singleQuoteString(expression) +
+            " select {[Measures].[Foo]} on columns from " + cubeName;
+        Result result = executeFoodMart(queryString);
+        return result.getCell(new int[]{0});
+    }
+
+    /**
+     * Runs an expression and asserts that it returns a given result.
+     */
+    public void assertExprReturns(String expression, String expected) {
+        final Cell cell = executeExprRaw("Sales", expression);
+        assertEqualsVerbose(expected, cell.getFormattedValue());
+    }
+
+
+    /**
      * Runs a query with a given expression on an axis, and asserts that it
      * throws an error which matches a particular pattern. The expression is evaulated
      * against the named cube.
@@ -269,15 +297,6 @@ public class TestContext {
         return pw;
     }
 
-    /**
-     * Executes an MDX query.
-     */
-    public Result runQuery(String queryString) {
-        Connection connection = getConnection();
-        Query query = connection.parseQuery(queryString);
-        return connection.execute(query);
-    }
-
     private Connection getConnection() {
         return getFoodMartConnection(false);
     }
@@ -285,21 +304,12 @@ public class TestContext {
     /**
      * Runs a query and checks that the result is a given string.
      */
-    public void runQueryCheckResult(String query, String desiredResult) {
-        Result result = runQuery(query);
+    public void assertQueryReturns(String query, String desiredResult) {
+        Result result = executeFoodMart(query);
         String resultString = toString(result);
         if (desiredResult != null) {
             assertEqualsVerbose(desiredResult, resultString);
         }
-    }
-
-    /**
-     * Runs a query and checks that the result matches a given pattern.
-     */
-    public void runQueryCheckResult(String query, Pattern desiredResult) {
-        Result result = runQuery(query);
-        String resultString = toString(result);
-        assertMatchesVerbose(desiredResult, resultString);
     }
 
     /**

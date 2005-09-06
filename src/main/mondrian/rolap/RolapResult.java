@@ -11,12 +11,14 @@
 */
 
 package mondrian.rolap;
+import junit.framework.ComparisonFailure;
 import mondrian.olap.*;
 import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.rolap.agg.AggregationManager;
-
 import org.apache.log4j.Logger;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.*;
 
 /**
@@ -42,6 +44,15 @@ class RolapResult extends ResultBase {
     private final FastBatchingCellReader batchingReader;
     AggregatingCellReader aggregatingReader = new AggregatingCellReader();
     private final int[] modulos;
+    private final Random random =
+            Util.createRandom(MondrianProperties.instance().TestSeed.get());
+
+    /**
+     * Maps expressions to the dimensions which they are independent of.
+     */
+    private final Map expIndDims = new HashMap();
+
+
     /**
      * Maps the names of sets to their values. Populated on demand.
      */
@@ -52,7 +63,14 @@ class RolapResult extends ResultBase {
 
 
         this.point = new CellKey(new int[query.axes.length]);
-        this.evaluator = new RolapEvaluator(this);
+        final int expDeps = MondrianProperties.instance().TestExpDependencies.get();
+        if (expDeps > 0) {
+            this.evaluator = new DependencyTestingEvaluator(this, expDeps);
+        } else {
+            final RolapEvaluator.RolapEvaluatorRoot root =
+                    new RolapEvaluator.RolapEvaluatorRoot(this);
+            this.evaluator = new RolapEvaluator(root);
+        }
         RolapCube rcube = (RolapCube) query.getCube();
         this.batchingReader = new FastBatchingCellReader(rcube);
         this.cellValues = new HashMap();
@@ -142,7 +160,7 @@ class RolapResult extends ResultBase {
                 for (int i = 0; i < axes.length; i++) {
                     n = n * axes[i].positions.length;
                 }
-                if ( n > limit) {
+                if (n > limit) {
                     throw MondrianResource.instance().
                         newLimitExceededDuringCrossjoin(
                                 new Long(n), new Long(limit));
@@ -255,8 +273,19 @@ class RolapResult extends ResultBase {
                     return;
                 }
                 if (count++ > MAX_AGGREGATION_PASS_COUNT) {
-                    throw Util.newInternal("Query required more than "
-                        + count + " iterations");
+                    if (evaluator instanceof DependencyTestingEvaluator) {
+                        // The dependency testing evaluator can trigger new
+                        // requests every cycle. So let is run as normal for
+                        // the first N times, then run it disabled.
+                        ((DependencyTestingEvalutorRoot) evaluator.root).disabled = true;
+                        if (count > MAX_AGGREGATION_PASS_COUNT * 2) {
+                            throw Util.newInternal("Query required more than "
+                                + count + " iterations");
+                        }
+                    } else {
+                        throw Util.newInternal("Query required more than "
+                            + count + " iterations");
+                    }
                 }
             }
         } finally {
@@ -331,7 +360,7 @@ class RolapResult extends ResultBase {
             final RolapEvaluator rolapEvaluator = (RolapEvaluator) evaluator;
             return aggMan.getCellFromCache(rolapEvaluator.getCurrentMembers());
         }
-    };
+    }
 
     private void executeStripe(int axisOrdinal, RolapEvaluator evaluator) {
         if (axisOrdinal < 0) {
@@ -434,6 +463,252 @@ class RolapResult extends ResultBase {
             }
         }
         return cellEvaluator;
+    }
+
+    /**
+     * Evaluator which checks dependencies of expressions.
+     *
+     * <p>For each expression evaluation, this valuator evaluates each
+     * expression more times, and makes sure that the results of the expression
+     * are independent of dimensions which the expression claims to be
+     * independent of.
+     *
+     * <p>Since it evaluates each expression twice, it also exposes function
+     * implementations which change the context of the evaluator.
+     */
+    private class DependencyTestingEvaluator extends RolapEvaluator {
+
+        /**
+         * Creates an evaluator.
+         */
+        DependencyTestingEvaluator(RolapResult result, int expDeps) {
+            super(new DependencyTestingEvalutorRoot(result, expDeps));
+        }
+
+        /**
+         * Creates a child evaluator.
+         */
+        private DependencyTestingEvaluator(
+                RolapEvaluatorRoot root,
+                DependencyTestingEvaluator evaluator,
+                CellReader cellReader,
+                Member[] cloneCurrentMembers) {
+            super(root, evaluator, cellReader, cloneCurrentMembers);
+        }
+
+        /**
+         * Returns the dimensions an expression depends on, caching the result.
+         */
+        private Dimension[] getIndependentDimensions(Exp exp) {
+            Dimension[] indDims = (Dimension[]) expIndDims.get(exp);
+            if (indDims == null) {
+                List indDimList = new ArrayList();
+                final Dimension[] dims = root.cube.getDimensions();
+                for (int i = 0; i < dims.length; i++) {
+                    Dimension dim = dims[i];
+                    if (!exp.dependsOn(dim)) {
+                        indDimList.add(dim);
+                    }
+                }
+                indDims = (Dimension[])
+                        indDimList.toArray(new Dimension[indDimList.size()]);
+                expIndDims.put(exp, indDims);
+            }
+            return indDims;
+        }
+
+        public RolapEvaluator _push() {
+            Member[] cloneCurrentMembers =
+                    (Member[]) this.getCurrentMembers().clone();
+            return new DependencyTestingEvaluator(
+                    root,
+                    this,
+                    cellReader,
+                    cloneCurrentMembers);
+        }
+
+        public Object visit(FunCall funCall) {
+            final DependencyTestingEvalutorRoot dteRoot =
+                    (DependencyTestingEvalutorRoot) root;
+            if (dteRoot.faking) {
+                ++dteRoot.fakeCallCount;
+            } else {
+                ++dteRoot.callCount;
+            }
+            // Evaluate the call for real.
+            final Object result = super.visit(funCall);
+            if (batchingReader.isDirty()) {
+                return result;
+            }
+
+            // Change one of the allegedly independent dimensions and evaluate
+            // again.
+            //
+            // Don't do it if the faking is disabled,
+            // or if we're already faking another dimension,
+            // or if we're filtering out nonempty cells (which makes us
+            // dependent on everything),
+            // or if the ratio of fake evals to real evals is too high (which
+            // would make us too slow).
+            if (dteRoot.disabled ||
+                    dteRoot.faking ||
+                    isNonEmpty() ||
+                    (double) dteRoot.fakeCallCount >
+                    (double) dteRoot.callCount * random.nextDouble() * 2 *
+                    dteRoot.expDeps) {
+                return result;
+            }
+            Dimension[] independentDimensions =
+                    getIndependentDimensions(funCall);
+            if (independentDimensions.length == 0) {
+                return result;
+            }
+            dteRoot.faking = true;
+            ++dteRoot.fakeCount;
+            ++dteRoot.fakeCallCount;
+            final int i = random.nextInt(independentDimensions.length);
+            final Member saveMember = getContext(independentDimensions[i]);
+            final Member otherMember =
+                    chooseOtherMember(saveMember, query.getSchemaReader(false));
+            setContext(otherMember);
+            final Object otherResult = super.visit(funCall);
+            if (!equals(otherResult, result)) {
+                final Member[] members = getCurrentMembers();
+                final StringBuffer buf = new StringBuffer();
+                for (int j = 0; j < members.length; j++) {
+                    if (j > 0) {
+                        buf.append(", ");
+                    }
+                    buf.append(members[j].getUniqueName());
+                }
+                throw new ComparisonFailure(
+                        "Expression '" + funCall.toMdx() +
+                        "' claims to be independent of dimension " +
+                        saveMember.getDimension() + " but is not; context is {" +
+                        buf.toString() + "};",
+                        toString(result),
+                        toString(otherResult));
+            }
+            // Restore context.
+            setContext(saveMember);
+            dteRoot.faking = false;
+            return result;
+        }
+
+        /**
+         * Chooses another member of the same hierarchy.
+         * The member will come from all levels with the same probability.
+         * For example, given [Gender].[M], the result has a
+         * @param save
+         * @param schemaReader
+         * @return
+         */
+        private Member chooseOtherMember(
+                final Member save, SchemaReader schemaReader) {
+            final Hierarchy hierarchy = save.getHierarchy();
+            while (true) {
+                // Choose a random level.
+                final Level[] levels = hierarchy.getLevels();
+                final int levelDepth = random.nextInt(levels.length) + 1;
+                Member member = null;
+                for (int i = 0; i < levelDepth; i++) {
+                    Member[] members;
+                    if (i == 0) {
+                        members = schemaReader.getLevelMembers(levels[i]);
+                    } else {
+                        members = schemaReader.getMemberChildren(member);
+                    }
+                    if (members.length == 0) {
+                        break;
+                    }
+                    member = members[random.nextInt(members.length)];
+                }
+                // If the member chosen happens to be the same as the original
+                // member, try again.
+                if (member != save) {
+                    return member;
+                }
+            }
+        }
+
+        private boolean equals(Object o1, Object o2) {
+            if (o1 == null) {
+                return o2 == null;
+            }
+            if (o2 == null) {
+                return false;
+            }
+            if (o1 instanceof Object[]) {
+                if (o2 instanceof Object[]) {
+                    Object[] a1 = (Object[]) o1;
+                    Object[] a2 = (Object[]) o2;
+                    if (a1.length == a2.length) {
+                        for (int i = 0; i < a1.length; i++) {
+                            if (!equals(a1[i], a2[i])) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                }
+                return false;
+            }
+            if (o1 instanceof List) {
+                if (o2 instanceof List) {
+                    return equals(
+                            ((List) o1).toArray(),
+                            ((List) o2).toArray());
+                }
+                return false;
+            }
+            return o1.equals(o2);
+        }
+
+        private String toString(Object o) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            toString(o, pw);
+            return sw.toString();
+        }
+
+        private void toString(Object o, PrintWriter pw) {
+            if (o instanceof Object[]) {
+                Object[] a = (Object[]) o;
+                pw.print("{");
+                for (int i = 0; i < a.length; i++) {
+                    Object o1 = a[i];
+                    if (i > 0) {
+                        pw.print(", ");
+                    }
+                    toString(o1, pw);
+                }
+                pw.print("}");
+            } else if (o instanceof List) {
+                List list = (List) o;
+                toString(list.toArray(), pw);
+            } else if (o instanceof Member) {
+                Member member = (Member) o;
+                pw.print(member.getUniqueName());
+            } else {
+                pw.print(o);
+            }
+        }
+    }
+
+    private static class DependencyTestingEvalutorRoot
+            extends RolapEvaluator.RolapEvaluatorRoot {
+        final int expDeps;
+        int callCount;
+        int fakeCallCount;
+        int fakeCount;
+        boolean faking;
+        boolean disabled;
+
+        DependencyTestingEvalutorRoot(RolapResult result, int expDeps) {
+            super(result);
+            this.expDeps = expDeps;
+        }
+
     }
 }
 

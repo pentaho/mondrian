@@ -191,7 +191,7 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
      */
     // disabled: (1) does not work with SmartMemberReader and (2) test returns [null] member
     public void dont_testMeasuresVatican() {
-        runQueryCheckResult(
+        assertQueryReturns(
                 "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
                 " {Descendants([Store].[Vatican])} ON ROWS" + nl +
                 "FROM [Sales Ragged]",
@@ -208,7 +208,7 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
     // Make sure that the numbers are right!
     /** disabled: (1) does not work with SmartMemberReader and (2) test returns [null] member ? */
     public void dont_testMeasures() {
-        runQueryCheckResult(
+        assertQueryReturns(
                 "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
                 " NON EMPTY {Descendants([Store])} ON ROWS" + nl +
                 "FROM [Sales Ragged]",

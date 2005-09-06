@@ -27,8 +27,12 @@ public interface Validator {
 
     /**
      * Validates an expression, and returns the expression it resolves to.
+     *
+     * @param exp Expression to validate
+     * @param scalar Whether the context requires that the expression is
+     *   evaluated to a value, as opposed to a tuple
      */
-    Exp validate(Exp exp);
+    Exp validate(Exp exp, boolean scalar);
 
     /**
      * Validates a parameter, and returns the new parameter it resolves to.
@@ -60,6 +64,25 @@ public interface Validator {
      * Returns whether the current context requires an expression.
      */
     boolean requiresExpression();
+
+    /**
+     * Returns whether we can convert an argument to a parameter type.
+     *
+     * @param fromExp argument type
+     * @param to   parameter type
+     * @param conversionCount in/out count of number of conversions performed;
+     *             is incremented if the conversion is non-trivial (for
+     *             example, converting a member to a level).
+     *
+     * @see #convert
+     */
+    boolean canConvert(Exp fromExp, int to, int[] conversionCount);
+
+    /**
+     * Adds a casting function, if necessary, to ensure that an expression is
+     * of a given type. Throws an error if conversion is not possible.
+     */
+    Exp convert(Exp fromExp, int to);
 
     /**
      * Returns the table of function and operator definitions.

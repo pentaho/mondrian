@@ -13,9 +13,7 @@ package mondrian.olap.fun;
 
 import java.util.List;
 
-import mondrian.olap.Evaluator;
-import mondrian.olap.Exp;
-import mondrian.olap.FunDef;
+import mondrian.olap.*;
 
 
 /**
@@ -27,12 +25,30 @@ public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
         super(dummyFunDef);
     }
 
+    public boolean callDependsOn(FunCall call, Dimension dimension) {
+        // First, evaluate the arguments, drawing from the context.
+        if (super.callDependsOn(call, dimension)) {
+            return true;
+        }
+        // The arguments, once evaluated, set the context, so if there is an
+        // arg of dimension D the function will not depend on D
+        for (int i = 0; i < call.getArgs().length; i++) {
+            Exp exp = call.getArgs()[i];
+            if (exp.getTypeX().usesDimension(dimension)) {
+                return false;
+            }
+        }
+        // We depend on every other dimension in the context, because we
+        // effectively evaluate the measure for every cell.
+        return true;
+    }
+
     public Object evaluate(Evaluator evaluator, Exp[] args) {
         // evaluate the arguments in non empty mode
         evaluator = evaluator.push();
         evaluator.setNonEmpty(true);
         List result = (List)super.evaluate(evaluator, args);
-        
+
         // remove any remaining empty crossings from the result
         result = nonEmptyList(evaluator, result);
         return result;

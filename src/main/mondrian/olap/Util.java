@@ -22,6 +22,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 
+import mondrian.olap.fun.FunUtil;
+
 /**
  * Utility functions used throughout mondrian. All methods are static.
  *
@@ -37,6 +39,18 @@ public class Util extends XOMUtil {
     // properties
 
     public static final Object nullValue = new NullCellValue();
+
+    /**
+     * Cumulative time spent accessing the database.
+     */
+    private static long databaseMillis = 0;
+
+    /**
+     * Random number generator to provide seed for other random number
+     * generators.
+     */
+    private static final Random metaRandom =
+            createRandom(MondrianProperties.instance().TestSeed.get());
 
     /** encodes string for MDX (escapes ] as ]] inside a name) */
     public static String mdxEncodeString(String st) {
@@ -55,7 +69,9 @@ public class Util extends XOMUtil {
     }
 
 
-    /** Return quoted */
+    /**
+     * Converts a string into a double-quoted string.
+     */
     public static String quoteForMdx(String val) {
         StringBuffer buf = new StringBuffer(val.length()+20);
         buf.append("\"");
@@ -168,7 +184,10 @@ public class Util extends XOMUtil {
      * @param replace String to replace it with
      * @return The string buffer
      */
-    public static StringBuffer replace(StringBuffer buf, int start, String find, String replace) {
+    public static StringBuffer replace(
+            StringBuffer buf,
+            int start,
+            String find, String replace) {
 
         // Search and replace from the end towards the start, to avoid O(n ^ 2)
         // copying if the string occurs very commonly.
@@ -525,6 +544,52 @@ public class Util extends XOMUtil {
         return (s == null) || (s.length() == 0);
     }
 
+    /**
+     * Encloses a value in single-quotes, to make a SQL string value. Examples:
+     * <code>singleQuoteForSql(null)</code> yields <code>NULL</code>;
+     * <code>singleQuoteForSql("don't")</code> yields <code>'don''t'</code>.
+     */
+    public static String singleQuoteString(String val) {
+        StringBuffer buf = new StringBuffer(64);
+        singleQuoteString(val, buf);
+        return buf.toString();
+    }
+
+    /**
+     * Encloses a value in single-quotes, to make a SQL string value. Examples:
+     * <code>singleQuoteForSql(null)</code> yields <code>NULL</code>;
+     * <code>singleQuoteForSql("don't")</code> yields <code>'don''t'</code>.
+     */
+    public static void singleQuoteString(String val, StringBuffer buf) {
+        buf.append('\'');
+
+        String s0 = replace(val, "'", "''");
+        buf.append(s0);
+
+        buf.append('\'');
+    }
+
+    /**
+     * Creates a random number generator.
+     *
+     * @param seed Seed for random number generator.
+     *   If 0, generate a seed from the system clock and print the value
+     *   chosen. (This is effectively non-deterministic.)
+     *   If -1, generate a seed from an internal random number generator.
+     *   (This is deterministic, but ensures that different tests have
+     *   different seeds.)
+     *
+     * @return A random number generator.
+     */
+    public static Random createRandom(long seed) {
+        if (seed == 0) {
+            seed = System.nanoTime();
+            System.out.println("random: seed=" + seed);
+        } else if (seed == -1 && metaRandom != null) {
+            seed = metaRandom.nextLong();
+        }
+        return new Random(seed);
+    }
 
     /**
      * A <code>NullCellValue</code> is a placeholder value used when cells have
@@ -696,6 +761,16 @@ public class Util extends XOMUtil {
                 : errMsg;
 
         }
+    }
+
+    /**
+     * Converts an expression to a string.
+     */
+    public static String unparse(Exp exp) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        exp.unparse(pw);
+        return sw.toString();
     }
 
     /**
@@ -994,6 +1069,34 @@ public class Util extends XOMUtil {
     }
 
     /**
+     * Returns the cumulative amount of time spent accessing the database.
+     */
+    public static long dbTimeMillis()
+    {
+        return databaseMillis;
+    }
+
+    /**
+     * Adds to the cumulative amount of time spent accessing the database.
+     */
+    public static void addDatabaseTime(long millis)
+    {
+        databaseMillis += millis;
+    }
+
+    /**
+     * Returns the system time less the time spent accessing the database.
+     * Use this method to figure out how long an operation took: call this
+     * method before an operation and after an operation, and the difference
+     * is the amount of non-database time spent.
+     */
+    public static long nonDbTimeMillis()
+    {
+        final long systemMillis = System.currentTimeMillis();
+        return systemMillis - databaseMillis;
+    }
+
+    /**
      * Creates a very simple implementation of {@link Validator}. (Only
      * useful for resolving trivial expressions.)
      */
@@ -1003,7 +1106,7 @@ public class Util extends XOMUtil {
                 throw new UnsupportedOperationException();
             }
 
-            public Exp validate(Exp exp) {
+            public Exp validate(Exp exp, boolean scalar) {
                 return exp;
             }
 
@@ -1018,6 +1121,14 @@ public class Util extends XOMUtil {
             }
 
             public void validate(Formula formula) {
+            }
+
+            public Exp convert(Exp fromExp, int to) {
+                return FunUtil.convert(fromExp, to, this);
+            }
+
+            public boolean canConvert(Exp fromExp, int to, int[] conversionCount) {
+                return true;
             }
 
             public boolean requiresExpression() {

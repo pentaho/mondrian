@@ -30,7 +30,7 @@ public class ParameterTest extends FoodMartTestCase {
     }
 
     public void testParameterOnAxis() {
-        runQueryCheckResult(
+        assertQueryReturns(
                 "select {[Measures].[Unit Sales]} on rows," + nl +
                 " {Parameter(\"GenderParam\",[Gender],[Gender].[M],\"Which gender?\")} on columns" + nl +
                 "from Sales",
@@ -68,7 +68,7 @@ public class ParameterTest extends FoodMartTestCase {
                 "Parameter may not be derived from another parameter");
     }
     public void testParameterInSlicer() {
-        runQueryCheckResult(
+        assertQueryReturns(
                 "select {[Measures].[Unit Sales]} on rows," + nl +
                 " {[Marital Status].children} on columns" + nl +
                 "from Sales where Parameter(\"GenderParam\",[Gender],[Gender].[M],\"Which gender?\")",

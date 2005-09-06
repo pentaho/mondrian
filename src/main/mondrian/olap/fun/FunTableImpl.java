@@ -10,8 +10,11 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
+import mondrian.olap.type.*;
+import mondrian.olap.type.DimensionType;
 
 import java.util.*;
+import java.io.PrintWriter;
 
 /**
  * Abstract implementation of {@link FunTable}.
@@ -70,312 +73,47 @@ public abstract class FunTableImpl implements FunTable {
         this.funInfoList.add(FunInfo.make(resolver));
     }
 
-    /**
-     * Converts an argument to a parameter type.
-     */
-    public Exp convert(Exp fromExp, int to, Validator resolver) {
-        Exp exp = convert_(fromExp, to);
-        if (exp == null) {
-            throw Util.newInternal("cannot convert " + fromExp + " to " + to);
+    public Exp createValueFunCall(Exp exp, Validator validator) {
+        final Type type = exp.getTypeX();
+        if (type instanceof ScalarType) {
+            return exp;
         }
-        return resolver.validate(exp);
-    }
-
-    private static Exp convert_(Exp fromExp, int to) {
-        int from = fromExp.getCategory();
-        if (from == to) {
-            return fromExp;
+        if (!TypeUtil.canEvaluate(type)) {
+            String exprString = Util.unparse(exp);
+            throw Util.getRes().newMdxMemberExpIsSet(exprString);
         }
-        switch (from) {
-        case Category.Array:
-            return null;
-        case Category.Dimension:
-            // Seems funny that you can 'downcast' from a dimension, doesn't
-            // it? But we add an implicit 'CurrentMember', for example,
-            // '[Time].PrevMember' actually means
-            // '[Time].CurrentMember.PrevMember'.
-            switch (to) {
-            case Category.Hierarchy:
-                // "<Dimension>.CurrentMember.Hierarchy"
-                return new FunCall(
-                        "Hierarchy", Syntax.Property, new Exp[]{
-                        new FunCall(
-                                "CurrentMember",
-                                Syntax.Property, new Exp[]{fromExp}
-                        )}
-                );
-            case Category.Level:
-                // "<Dimension>.CurrentMember.Level"
-                return new FunCall(
-                        "Level", Syntax.Property, new Exp[]{
-                        new FunCall(
-                                "CurrentMember",
-                                Syntax.Property, new Exp[]{fromExp}
-                        )}
-                );
-            case Category.Member:
-            case Category.Tuple:
-                // "<Dimension>.CurrentMember"
-                return new FunCall(
-                        "CurrentMember",
-                        Syntax.Property,
-                        new Exp[]{fromExp});
-            default:
-                return null;
+        if (type instanceof MemberType) {
+            return new MemberScalarExp(exp);
+        } else if (type instanceof DimensionType ||
+                type instanceof HierarchyType) {
+            exp = new FunCall(
+                    "CurrentMember",
+                    Syntax.Property,
+                    new Exp[]{exp});
+            exp = exp.accept(validator);
+            return new MemberScalarExp(exp);
+        } else if (type instanceof TupleType) {
+            if (exp instanceof FunCall) {
+                FunCall call = (FunCall) exp;
+                if (call.getFunDef() instanceof TupleFunDef) {
+                    return new MemberListScalarExp(call.getArgs());
+                }
             }
-        case Category.Hierarchy:
-            switch (to) {
-            case Category.Dimension:
-                // "<Hierarchy>.Dimension"
-                return new FunCall(
-                        "Dimension",
-                        Syntax.Property,
-                        new Exp[]{fromExp});
-            default:
-                return null;
-            }
-        case Category.Level:
-            switch (to) {
-            case Category.Dimension:
-                // "<Level>.Dimension"
-                return new FunCall(
-                        "Dimension",
-                        Syntax.Property,
-                        new Exp[] {fromExp});
-            case Category.Hierarchy:
-                // "<Level>.Hierarchy"
-                return new FunCall(
-                        "Hierarchy",
-                        Syntax.Property,
-                        new Exp[] {fromExp});
-            default:
-                return null;
-            }
-        case Category.Logical:
-            return null;
-        case Category.Member:
-            switch (to) {
-            case Category.Dimension:
-                // "<Member>.Dimension"
-                return new FunCall(
-                        "Dimension",
-                        Syntax.Property,
-                        new Exp[] {fromExp});
-            case Category.Hierarchy:
-                // "<Member>.Hierarchy"
-                return new FunCall(
-                        "Hierarchy",
-                        Syntax.Property,
-                        new Exp[]{fromExp});
-            case Category.Level:
-                // "<Member>.Level"
-                return new FunCall(
-                        "Level",
-                        Syntax.Property,
-                        new Exp[]{fromExp});
-            case Category.Tuple:
-                // Conversion to tuple is trivial: a member is a
-                // one-dimensional tuple already.
-                return fromExp;
-            case Category.Numeric | Category.Constant:
-            case Category.String | Category.Constant: //todo: assert is a string member
-                // "<Member>.Value"
-                return new FunCall(
-                        "Value",
-                        Syntax.Property,
-                        new Exp[]{fromExp});
-            case Category.Value:
-            case Category.Numeric:
-            case Category.String:
-                return fromExp;
-            default:
-                return null;
-            }
-        case Category.Numeric | Category.Constant:
-        case Category.Integer | Category.Constant:
-            switch (to) {
-            case Category.Value:
-            case Category.Integer:
-            case Category.Numeric:
-                return fromExp;
-            default:
-                return null;
-            }
-        case Category.Integer:
-            switch (to) {
-            case Category.Value:
-            case Category.Numeric:
-                return fromExp;
-            case Category.Numeric | Category.Constant:
-            case Category.Integer | Category.Constant:
-                return new FunCall(
-                        "_Value",
-                        Syntax.Function,
-                        new Exp[] {fromExp});
-            default:
-                return null;
-            }
-        case Category.Numeric:
-            switch (to) {
-            case Category.Value:
-            case Category.Integer:
-                return fromExp;
-            case Category.Numeric | Category.Constant:
-            case Category.Integer | Category.Constant:
-                return new FunCall(
-                        "_Value",
-                        Syntax.Function,
-                        new Exp[] {fromExp});
-            default:
-                return null;
-            }
-        case Category.Set:
-            return null;
-        case Category.String | Category.Constant:
-            switch (to) {
-            case Category.Value:
-            case Category.String:
-                return fromExp;
-            default:
-                return null;
-            }
-        case Category.String:
-            switch (to) {
-            case Category.Value:
-                return fromExp;
-            case Category.String | Category.Constant:
-                return new FunCall(
-                        "_Value",
-                        Syntax.Function,
-                        new Exp[] {fromExp});
-            default:
-                return null;
-            }
-        case Category.Tuple:
-            switch (to) {
-            case Category.Value:
-                return fromExp;
-            case Category.Numeric:
-            case Category.String:
-                return new FunCall(
-                        "_Value",
-                        Syntax.Function,
-                        new Exp[] {fromExp});
-            default:
-                return null;
-            }
-        case Category.Value:
-            return null;
-        case Category.Symbol:
-            return null;
-        default:
-            throw Util.newInternal("unknown category " + from);
+            return new TupleScalarExp(exp);
+        } else {
+            throw Util.newInternal("Unknown type " + type);
         }
     }
 
     /**
-     * Returns whether we can convert an argument to a parameter tyoe.
-     * @param fromExp argument type
-     * @param to   parameter type
-     * @param conversionCount in/out count of number of conversions performed;
-     *             is incremented if the conversion is non-trivial (for
-     *             example, converting a member to a level).
-     *
-     * @see mondrian.olap.FunTable#convert
+     * Creates an expression which will yield the current value of the current
+     * measure.
      */
-    static boolean canConvert(Exp fromExp, int to, int[] conversionCount) {
-        int from = fromExp.getCategory();
-        if (from == to) {
-            return true;
-        }
-        switch (from) {
-        case Category.Array:
-            return false;
-        case Category.Dimension:
-            // Seems funny that you can 'downcast' from a dimension, doesn't
-            // it? But we add an implicit 'CurrentMember', for example,
-            // '[Time].PrevMember' actually means
-            // '[Time].CurrentMember.PrevMember'.
-            if (to == Category.Hierarchy ||
-                    to == Category.Level ||
-                    to == Category.Member ||
-                    to == Category.Tuple) {
-                conversionCount[0]++;
-                return true;
-            } else {
-                return false;
-            }
-        case Category.Hierarchy:
-            if (to == Category.Dimension) {
-                conversionCount[0]++;
-                return true;
-            } else {
-                return false;
-            }
-        case Category.Level:
-            if (to == Category.Dimension ||
-                    to == Category.Hierarchy) {
-                conversionCount[0]++;
-                return true;
-            } else {
-                return false;
-            }
-        case Category.Logical:
-            return false;
-        case Category.Member:
-            if (to == Category.Dimension ||
-                    to == Category.Hierarchy ||
-                    to == Category.Level ||
-                    to == Category.Tuple) {
-                conversionCount[0]++;
-                return true;
-            } else if (to == (Category.Numeric | Category.Expression)) {
-                // We assume that members are numeric, so a cast to a numeric
-                // expression is less expensive than a conversion to a string
-                // expression.
-                conversionCount[0]++;
-                return true;
-            } else if (to == Category.Value ||
-                    to == (Category.String | Category.Expression)) {
-                conversionCount[0] += 2;
-                return true;
-            } else {
-                return false;
-            }
-        case Category.Numeric | Category.Constant:
-            return to == Category.Value ||
-                to == Category.Numeric;
-        case Category.Numeric:
-            return to == Category.Value ||
-                to == Category.Integer ||
-                to == (Category.Integer | Category.Constant) ||
-                to == (Category.Numeric | Category.Constant);
-        case Category.Integer:
-            return to == Category.Value ||
-                to == (Category.Integer | Category.Constant) ||
-                to == Category.Numeric ||
-                to == (Category.Numeric | Category.Constant);
-        case Category.Set:
-            return false;
-        case Category.String | Category.Constant:
-            return to == Category.Value ||
-                to == Category.String;
-        case Category.String:
-            return to == Category.Value ||
-                to == (Category.String | Category.Constant);
-        case Category.Tuple:
-            return to == Category.Value ||
-                to == Category.Numeric;
-        case Category.Value:
-            return false;
-        case Category.Symbol:
-            return false;
-        default:
-            throw Util.newInternal("unknown category " + from);
-        }
+    static Exp createValueFunCall() {
+        return new ScalarExp();
     }
 
-    public FunDef getDef(FunCall call, Validator resolver) {
+    public FunDef getDef(FunCall call, Validator validator) {
         String key = makeResolverKey(call.getFunName(), call.getSyntax());
 
         // Resolve function by its upper-case name first.  If there is only one
@@ -395,12 +133,9 @@ public abstract class FunTableImpl implements FunTable {
         FunDef matchDef = null;
         for (int i = 0; i < resolvers.length; i++) {
             conversionCount[0] = 0;
-            FunDef def = resolvers[i].resolve(call.getArgs(), conversionCount);
+            FunDef def = resolvers[i].resolve(
+                    call.getArgs(), validator, conversionCount);
             if (def != null) {
-                if (def.getReturnCategory() == Category.Set &&
-                        resolver.requiresExpression()) {
-                    continue;
-                }
                 int conversions = conversionCount[0];
                 if (conversions < minConversions) {
                     minConversions = conversions;
@@ -429,8 +164,10 @@ public abstract class FunTableImpl implements FunTable {
         }
     }
 
-    public boolean requiresExpression(FunCall call, int k,
-            Validator resolver) {
+    public boolean requiresExpression(
+            FunCall call,
+            int k,
+            Validator validator) {
         final FunDef funDef = call.getFunDef();
         if (funDef != null) {
             final int[] parameterTypes = funDef.getParameterTypes();
@@ -546,6 +283,250 @@ public abstract class FunTableImpl implements FunTable {
      * <p>Derived class can override this method to add more functions.
      **/
     protected abstract void defineFunctions();
+
+    /**
+     * Wrapper which evaluates an expression to a tuple, sets the current
+     * context from that tuple, and converts it to a scalar expression.
+     */
+    private static class TupleScalarExp extends ExpBase {
+        private final Exp exp;
+
+        TupleScalarExp(Exp exp) {
+            this.exp = exp;
+            assert exp.getTypeX() instanceof TupleType;
+        }
+
+        public Object[] getChildren() {
+            return new Object[] {exp};
+        }
+
+        public void unparse(PrintWriter pw) {
+            exp.unparse(pw);
+        }
+
+        public Object clone() {
+            return this;
+        }
+
+        public int getCategory() {
+            return exp.getCategory();
+        }
+
+        public Type getTypeX() {
+            return new ScalarType();
+        }
+
+        public Exp accept(Validator validator) {
+            final Exp exp2 = validator.validate(exp, false);
+            if (exp2 == exp) {
+                //return this;
+            }
+            final FunTable funTable = validator.getFunTable();
+            return funTable.createValueFunCall(exp2, validator);
+        }
+
+        public boolean dependsOn(Dimension dimension) {
+            // The value at the current context by definition depends upon
+            // all dimensions.
+            return true;
+        }
+
+        public Object evaluate(Evaluator evaluator) {
+            return exp.evaluateScalar(evaluator);
+        }
+    }
+
+    /**
+     * Wrapper which evaluates an expression to a dimensional context and
+     * converts it to a scalar expression.
+     */
+    private static class MemberScalarExp extends ExpBase {
+        private final Exp exp;
+
+        public MemberScalarExp(Exp exp) {
+            this.exp = exp;
+        }
+
+        public Object[] getChildren() {
+            return new Object[] {exp};
+        }
+
+        public void unparse(PrintWriter pw) {
+            exp.unparse(pw);
+        }
+
+        public Object clone() {
+            return this;
+        }
+
+        public int getCategory() {
+            return exp.getCategory();
+        }
+
+        public Type getTypeX() {
+            return new ScalarType();
+        }
+
+        public Exp accept(Validator validator) {
+            final Exp exp2 = validator.validate(exp, false);
+            if (exp2 == exp) {
+                return this;
+            }
+            final FunTable funTable = validator.getFunTable();
+            return funTable.createValueFunCall(exp2, validator);
+        }
+
+        public boolean dependsOn(Dimension dimension) {
+            // If the expression has type dimension
+            // but does not depend on dimension
+            // then this expression does not dimension on dimension.
+            // Otherwise it depends on everything.
+            final Type type = exp.getTypeX();
+            if (type.usesDimension(dimension)) {
+                return exp.dependsOn(dimension);
+            } else {
+                return true;
+            }
+        }
+
+        public Object evaluate(Evaluator evaluator) {
+            final Member member = (Member) exp.evaluate(evaluator);
+            if (member == null ||
+                    member.isNull()) {
+                return null;
+            }
+            Member old = evaluator.setContext(member);
+            Object value = evaluator.evaluateCurrent();
+            evaluator.setContext(old);
+            return value;
+        }
+    }
+
+    /**
+     * An expression which yields the current value of the current member.
+     */
+    private static class ScalarExp extends ExpBase {
+
+        ScalarExp() {
+        }
+
+        public void unparse(PrintWriter pw) {
+            pw.print("$Value()");
+        }
+
+        public Object clone() {
+            return this;
+        }
+
+        public int getCategory() {
+            return Category.Numeric;
+        }
+
+        public Type getTypeX() {
+            return new NumericType();
+        }
+
+        public Exp accept(Validator validator) {
+            return this;
+        }
+
+        public boolean dependsOn(Dimension dimension) {
+            // The value at the current context by definition depends upon
+            // all dimensions.
+            return true;
+        }
+
+        public Object evaluate(Evaluator evaluator) {
+            return evaluator.evaluateCurrent();
+        }
+    }
+
+    /**
+     * An expression which evaluates a list of members, sets the context to
+     * these members, then evaluates the current measure as a scalar
+     * expression.
+     *
+     * <p>A typical expression which would be evaluated in this way is:
+     * <blockquote><code>WITH MEMBER [Measures].[Female Sales] AS
+     * ' ( [Measures].[Unit Sales], [Gender].[F] ) '</code></blockquote>
+     *
+     * @see TupleScalarExp
+     */
+    private static class MemberListScalarExp extends ExpBase {
+        private final Exp[] exps;
+
+        MemberListScalarExp(Exp[] exps) {
+            this.exps = exps;
+            for (int i = 0; i < exps.length; i++) {
+                assert exps[i].getTypeX() instanceof MemberType;
+            }
+        }
+
+        public void unparse(PrintWriter pw) {
+            unparseList(pw, exps, "(", ", ", ")");
+        }
+
+        public Object[] getChildren() {
+            return exps;
+        }
+
+        public Object clone() {
+            return this;
+        }
+
+        public int getCategory() {
+            return Category.Numeric;
+        }
+
+        public Type getTypeX() {
+            return new NumericType();
+        }
+
+        public Exp accept(Validator validator) {
+            return this;
+        }
+
+        public boolean dependsOn(Dimension dimension) {
+            // This expression depends upon dimension
+            // if none of the sub-expressions returns a member of dimension
+            // or if one of the sub-expressions is dependent upon dimension.
+            //
+            // Examples:
+            //
+            //   ( [Gender].[M], [Marital Status].CurrentMember )
+            //
+            // does not depend upon [Gender], because one of the members is
+            // of the [Gender] dimension, yet none of the expressions depends
+            // upon [Gender].
+            //
+            //   ( [Store].[USA], [Marital Status].CurrentMember )
+            //
+            // depends upon [Gender], because none of the members is of
+            // the [Gender] dimension.
+            boolean uses = false;
+            for (int i = 0; i < exps.length; i++) {
+                Exp exp = exps[i];
+                if (exp.dependsOn(dimension)) {
+                    return true;
+                }
+                final Type type = exp.getTypeX();
+                if (type.usesDimension(dimension)) {
+                    uses = true;
+                }
+            }
+            return !uses;
+        }
+
+        public Object evaluate(Evaluator evaluator) {
+            Evaluator evaluator2 = evaluator.push();
+            for (int i = 0; i < exps.length; i++) {
+                Exp exp = exps[i];
+                final Member member = (Member) exp.evaluate(evaluator);
+                evaluator2.setContext(member);
+            }
+            return evaluator2.evaluateCurrent();
+        }
+    }
 }
 
 // End FunTableImpl.java

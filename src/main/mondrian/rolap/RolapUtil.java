@@ -67,58 +67,6 @@ public class RolapUtil {
      */
     private static final HashSet loadedDrivers = new HashSet();
 
-    /**
-     * Encloses a value in single-quotes, to make a SQL string value. Examples:
-     * <code>singleQuoteForSql(null)</code> yields <code>NULL</code>;
-     * <code>singleQuoteForSql("don't")</code> yields <code>'don''t'</code>.
-     */
-    static String singleQuoteForSql(String val) {
-        StringBuffer buf = new StringBuffer(64);
-        singleQuoteForSql(val, buf);
-        return buf.toString();
-    }
-
-    static void singleQuoteForSql(String val, StringBuffer buf) {
-        if (val == null) {
-            buf.append("NULL");
-        } else {
-            buf.append('\'');
-
-            String s0 = replace(val, "'", "''");
-            buf.append(s0);
-
-            buf.append('\'');
-        }
-    }
-
-    /**
-     * Returns <code>s</code> with <code>find</code> replaced everywhere with
-     * <code>replace</code>.
-     **/
-    static String replace(String s, String find, String replace) {
-        // let's be optimistic
-        int found = s.indexOf(find);
-        if (found == -1) {
-            return s;
-        }
-        StringBuffer sb = new StringBuffer(s.length() + 20);
-        char[] chars = s.toCharArray();
-        int start = 0;
-        for (;;) {
-            sb.append(chars, start, found-start);
-            if (found == s.length()) {
-                break;
-            }
-            sb.append(replace);
-            start += (find.length() + found);
-            found = s.indexOf(find,start);
-            if (found == -1) {
-                found = s.length();
-            }
-        }
-        return sb.toString();
-    }
-
     static final void add(List list, Object[] array) {
         for (int i = 0; i < array.length; i++) {
             list.add(array[i]);
@@ -131,10 +79,10 @@ public class RolapUtil {
             : (RolapMember[]) v.toArray(new RolapMember[v.size()]);
     }
 
-    static RolapMember lookupMember(MemberReader reader,
-                                    String[] uniqueNameParts,
-                                    boolean failIfNotFound) {
-
+    static RolapMember lookupMember(
+            MemberReader reader,
+            String[] uniqueNameParts,
+            boolean failIfNotFound) {
         RolapMember member = null;
         for (int i = 0; i < uniqueNameParts.length; i++) {
             String name = uniqueNameParts[i];
@@ -230,10 +178,11 @@ public class RolapUtil {
      * the result set. If it succeeds, the caller must close the returned
      * {@link ResultSet}.
      */
-    public static ResultSet executeQuery(Connection jdbcConnection,
-                                         String sql,
-                                         String component)
-                                         throws SQLException {
+    public static ResultSet executeQuery(
+            Connection jdbcConnection,
+            String sql,
+            String component)
+            throws SQLException {
         checkTracing();
         getQuerySemaphore().enter();
         Statement statement = null;
@@ -245,11 +194,13 @@ public class RolapUtil {
             RolapUtil.debugOut.flush();
         }
         try {
+            final long start = System.currentTimeMillis();
             statement = jdbcConnection.createStatement();
-            Date date = new Date();
             resultSet = statement.executeQuery(sql);
-            long time = (new Date().getTime() - date.getTime());
-            status = ", " + time + " ms";
+            final long end = System.currentTimeMillis();
+            final long elapsed = end - start;
+            Util.addDatabaseTime(elapsed);
+            status = ", " + elapsed + " ms";
             return resultSet;
         } catch (SQLException e) {
             status = ", failed (" + e + ")";

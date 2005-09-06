@@ -258,14 +258,6 @@ public class MemberHelperTest extends TestCase {
             return false;
         }
 
-        public boolean isMember() {
-            return false;
-        }
-
-        public boolean isSet() {
-            return false;
-        }
-
         public Exp accept(Validator validator) {
             return null;
         }

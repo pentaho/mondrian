@@ -11,9 +11,7 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.Exp;
-import mondrian.olap.FunDef;
-import mondrian.olap.Syntax;
+import mondrian.olap.*;
 
 /**
  * A <code>Resolver</code> converts a function name, invocation type, and set
@@ -50,6 +48,7 @@ public interface Resolver {
      *
      * @param args Expressions which this function call is applied to.
      *
+     * @param validator
      * @param conversionCount This argument must be an  <code>int</code> array
      *   with a single element; in effect, it is an in/out parameter. It
      *   The method increments the count every time it performs a conversion.
@@ -57,7 +56,7 @@ public interface Resolver {
      * @return The function definition which matches these arguments, or null
      *   if no function definition that this resolver knows about matches.
      */
-    FunDef resolve(Exp[] args, int[] conversionCount);
+    FunDef resolve(Exp[] args, Validator validator, int[] conversionCount);
 
     /**
      * Returns whether a particular argument must be a scalar expression.

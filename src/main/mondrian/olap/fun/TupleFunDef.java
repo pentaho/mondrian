@@ -91,10 +91,6 @@ class TupleFunDef extends FunDefBase {
             }
         }
     }
-
-    public boolean dependsOn(Exp[] args, Dimension dimension) {
-        return dependsOnIntersection(args, dimension);
-    }
 }
 
 // End TupleFunDef.java

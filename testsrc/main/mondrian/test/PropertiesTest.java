@@ -107,13 +107,12 @@ public class PropertiesTest extends FoodMartTestCase {
      * Test disabled.
      */
     public void _testPropertiesMDX() {
-        Result result = runQuery(
-                "SELECT {[Customers].[All Customers].[USA].[CA]} DIMENSION PROPERTIES "+nl+
-                " CATALOG_NAME, SCHEMA_NAME, CUBE_NAME, DIMENSION_UNIQUE_NAME, " + nl +
-                " HIERARCHY_UNIQUE_NAME, LEVEL_UNIQUE_NAME, LEVEL_NUMBER, MEMBER_UNIQUE_NAME, " + nl +
-                " MEMBER_NAME, MEMBER_TYPE, MEMBER_GUID, MEMBER_CAPTION, MEMBER_ORDINAL, CHILDREN_CARDINALITY," + nl +
-                " PARENT_LEVEL, PARENT_UNIQUE_NAME, PARENT_COUNT, DESCRIPTION ON COLUMNS" + nl +
-                "FROM [Sales]");
+        Result result = executeQuery("SELECT {[Customers].[All Customers].[USA].[CA]} DIMENSION PROPERTIES "+nl+
+                        " CATALOG_NAME, SCHEMA_NAME, CUBE_NAME, DIMENSION_UNIQUE_NAME, " + nl +
+                        " HIERARCHY_UNIQUE_NAME, LEVEL_UNIQUE_NAME, LEVEL_NUMBER, MEMBER_UNIQUE_NAME, " + nl +
+                        " MEMBER_NAME, MEMBER_TYPE, MEMBER_GUID, MEMBER_CAPTION, MEMBER_ORDINAL, CHILDREN_CARDINALITY," + nl +
+                        " PARENT_LEVEL, PARENT_UNIQUE_NAME, PARENT_COUNT, DESCRIPTION ON COLUMNS" + nl +
+                        "FROM [Sales]");
         Axis[] axes = result.getAxes();
         Object[] axesProperties = null;
         // Commented out because axis properties are not implemented as of 1.2.

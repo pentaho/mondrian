@@ -78,7 +78,7 @@ public class MondrianProperties extends TriggerableProperties {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("populate: file=" +
                 file.getAbsolutePath() +
-                " exists=" + 
+                " exists=" +
                 file.exists()
                 );
         }
@@ -269,7 +269,7 @@ public class MondrianProperties extends TriggerableProperties {
      */
     public final StringProperty FoodmartJdbcURL = new StringProperty(
             this, "mondrian.foodmart.jdbcURL", "jdbc:odbc:MondrianFoodMart");
-    
+
     /**
      * Property containing the JDBC URL of a test database.
      * It does not default.
@@ -283,7 +283,7 @@ public class MondrianProperties extends TriggerableProperties {
      */
     public final StringProperty TestJdbcUser = new StringProperty(
             this, "mondrian.test.jdbcUser", null);
-    
+
     /**
      * Property containing the JDBC password of a test database.
      * The default value is null, to cope with DBMSs that don't need this.
@@ -479,6 +479,42 @@ public class MondrianProperties extends TriggerableProperties {
     public final BooleanProperty CaseSensitive = new BooleanProperty(
             this, "mondrian.olap.case.sensitive", false);
 
+    /**
+     * Boolean property which controls whether to use a cache for frequently
+     * evaluated expressions. With the cache disabled, an expression like
+     * <code>Rank([Product].CurrentMember,
+     * Order([Product].MEMBERS, [Measures].[Unit Sales]))</code> would perform
+     * many redundant sorts. The default is true.
+     */
+    public final BooleanProperty EnableExpCache = new BooleanProperty(
+            this, "mondrian.expCache.enable", true);
+
+
+    /**
+     * Integer property which controls whether to test operators' dependencies,
+     * and how much time to spend doing it.
+     *
+     * <p>If this property is positive, Mondrian allocates an expression
+     * evaluator which evaluates each expression several times, and makes sure
+     * that the results of the expression are independent of dimensions which
+     * the expression claims to be independent of.
+     *
+     * <p>The default is 0.
+     */
+    public final IntegerProperty TestExpDependencies = new IntegerProperty(
+            this, "mondrian.test.ExpDependencies", 0);
+
+    /**
+     * Seed for random number generator used by some of the tests.
+     *
+     * <p>Setting the seed to a different value can increase coverage.
+     * In order the tests to be deterministic, you should leave this property
+     * unset, and the tests will use the default value, which is 1234.
+     *
+     * <p>If you set the value to 0,
+     */
+    public final IntegerProperty TestSeed = new IntegerProperty(
+            this, "mondrian.test.random.seed", 1234);
 }
 
 // End MondrianProperties.java

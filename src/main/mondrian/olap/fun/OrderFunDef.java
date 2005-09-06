@@ -26,10 +26,16 @@ class OrderFunDef extends FunDefBase {
         this.brk = brk;
     }
 
+    public boolean callDependsOn(FunCall call, Dimension dimension) {
+        // Order(<Set>, <Value Expression>) depends upon everything
+        // <Value Expression> depends upon, except the dimensions of <Set>.
+        return callDependsOnSet(call, dimension);
+    }
+
     public Object evaluate(Evaluator evaluator, Exp[] args) {
         List members = (List) getArg(evaluator, args, 0);
         ExpBase exp = (ExpBase) getArgNoEval(args, 1);
-        sort(evaluator, members, exp, desc, brk);
+        sort(evaluator.push(), members, exp, desc, brk);
         return members;
     }
 

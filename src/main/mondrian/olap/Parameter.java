@@ -248,7 +248,7 @@ public class Parameter extends ExpBase {
     }
 
     public Object evaluate(Evaluator evaluator) {
-        return evaluator.xx(this);
+        return evaluator.visit(this);
     }
 }
 

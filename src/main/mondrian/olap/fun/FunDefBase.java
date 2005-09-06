@@ -185,10 +185,8 @@ public class FunDefBase extends FunUtil implements FunDef {
         int[] types = getParameterTypes();
         final Exp[] args = call.getArgs();
         Util.assertTrue(types.length == args.length);
-        final FunTable funTable = validator.getFunTable();
         for (int i = 0; i < args.length; i++) {
-            Exp arg = args[i];
-            args[i] = funTable.convert(arg, types[i], validator);
+            args[i] = validateArg(validator, call, i, types[i]);
         }
         final Type type = getResultType(validator, args);
         if (type == null) {
@@ -196,6 +194,27 @@ public class FunDefBase extends FunUtil implements FunDef {
         }
         call.setType(type);
         return call;
+    }
+
+    /**
+     * Validates an argument to a call to this function.
+     *
+     * <p>The default implementation of this method adds an implicit
+     * conversion to the correct type. Derived classes may override.
+     *
+     * @param validator Validator
+     * @param call Call to this function
+     * @param i Ordinal of argument
+     * @param type Expected type of argument
+     * @return Validated argument
+     */
+    protected Exp validateArg(
+            Validator validator,
+            FunCall call,
+            int i,
+            int type) {
+        final Exp arg = call.getArgs()[i];
+        return validator.convert(arg, type);
     }
 
     /**
@@ -305,34 +324,19 @@ public class FunDefBase extends FunUtil implements FunDef {
 
     /**
      * Default implementation returns true if at least one
-     * of the arguments depends on <code>dimension</code>
+     * of the arguments depends on <code>dimension</code>.
+     *
+     * @see FunUtil#callDependsOnSet(mondrian.olap.FunCall, mondrian.olap.Dimension)
      */
-    public boolean dependsOn(Exp[] args, Dimension dimension) {
+    public boolean callDependsOn(FunCall call, Dimension dimension) {
+        final Exp[] args = call.getArgs();
         for (int i = 0; i < args.length; i++) {
-            Exp exp = args[i];
-            if ((exp != null) && args[i].dependsOn(dimension)) {
+            Exp arg = args[i];
+            if (arg != null && arg.dependsOn(dimension)) {
                 return true;
             }
         }
         return false;
-    }
-
-    /**
-     * Computes the dependsOn() for functions like Tupel and Filter.
-     * The result of these functions depend on <code>dimension</dimension>
-     * if all of their arguments depend on it.
-     *
-     * <p>Derived classes may overload dependsOn() and call this method
-     * instead of the default implementation.
-     */
-    protected boolean dependsOnIntersection(Exp[] args, Dimension dimension) {
-        for (int i = 0; i < args.length; i++) {
-            Exp exp = args[i];
-            if ((exp != null) && !exp.dependsOn(dimension)) {
-                return false;
-            }
-        }
-        return true;
     }
 }
 

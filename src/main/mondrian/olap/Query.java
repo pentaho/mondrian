@@ -11,7 +11,7 @@
 */
 
 package mondrian.olap;
-import mondrian.olap.fun.ParameterFunDef;
+import mondrian.olap.fun.*;
 import mondrian.olap.type.*;
 
 import java.io.*;
@@ -203,37 +203,36 @@ public class Query extends QueryPart {
     }
 
     /**
-     * Performs type-checking and validates internal consistency of a query,
-     * using a custom resolver.
+     * Performs type-checking and validates internal consistency of a query.
      *
-     * @param resolver Custom resolver
+     * @param validator Validator
      */
-    void resolve(Validator resolver) {
+    void resolve(Validator validator) {
         if (formulas != null) {
             //resolving of formulas should be done in two parts
             //because formulas might depend on each other, so all calculated
             //mdx elements have to be defined during resolve
             for (int i = 0; i < formulas.length; i++) {
-                formulas[i].createElement(resolver.getQuery());
+                formulas[i].createElement(validator.getQuery());
             }
             for (int i = 0; i < formulas.length; i++) {
-                resolver.validate(formulas[i]);
+                validator.validate(formulas[i]);
             }
         }
 
         if (axes != null) {
             for (int i = 0; i < axes.length; i++) {
-                resolver.validate(axes[i]);
+                validator.validate(axes[i]);
             }
         }
         if (slicer != null) {
-            setSlicer(resolver.validate(slicer));
+            setSlicer(validator.validate(slicer, false));
         }
 
         // Now that out Parameters have been created (from FunCall's to
         // Parameter() and ParamRef()), resolve them.
         for (int i = 0; i < parameters.length; i++) {
-            parameters[i] = resolver.validate(parameters[i]);
+            parameters[i] = validator.validate(parameters[i]);
         }
         resolveParameters();
 
@@ -778,18 +777,26 @@ public class Query extends QueryPart {
             return Query.this;
         }
 
-        public Exp validate(Exp exp) {
+        public Exp validate(Exp exp, boolean scalar) {
             if (!resolvedNodes.add(exp)) {
-                return exp; // already resolved
+                // Expression has already been resolved.
+                return scalar ? convertToScalar(exp) : exp;
             }
             stack.push(exp);
             try {
-                final Exp resolved = exp.accept(this);
+                Exp resolved = exp.accept(this);
+                if (scalar) {
+                    resolved = convertToScalar(resolved);
+                }
                 resolvedNodes.add(resolved);
                 return resolved;
             } finally {
                 stack.pop();
             }
+        }
+
+        private Exp convertToScalar(Exp exp) {
+            return funTable.createValueFunCall(exp, this);
         }
 
         public Parameter validate(Parameter parameter) {
@@ -842,6 +849,14 @@ public class Query extends QueryPart {
             }
         }
 
+        public boolean canConvert(Exp fromExp, int to, int[] conversionCount) {
+            return FunUtil.canConvert(fromExp, to, conversionCount);
+        }
+
+        public Exp convert(Exp fromExp, int to) {
+            return FunUtil.convert(fromExp, to, this);
+        }
+
         public boolean requiresExpression() {
             return requiresExpression(stack.size() - 1);
         }
@@ -859,7 +874,13 @@ public class Query extends QueryPart {
                     return requiresExpression(n - 1);
                 } else {
                     int k = whichArg(funCall, stack.get(n));
-                    Util.assertTrue(k >= 0);
+                    if (k < 0) {
+                        // Arguments of call have mutated since call was placed
+                        // on stack. Presumably the call has already been
+                        // resolved correctly, so the answer we give here is
+                        // irrelevant.
+                        return false;
+                    }
                     return funTable.requiresExpression(funCall, k, this);
                 }
             } else {
@@ -953,7 +974,7 @@ public class Query extends QueryPart {
                         // Because we're resolving out out of the proper order,
                         // the resolver doesn't hold the correct ancestral
                         // context, but it should be OK.
-                        final Parameter param = (Parameter) validate(call);
+                        final Parameter param = (Parameter) validate(call, false);
                         param.resetDefineCount();
                     }
                 }

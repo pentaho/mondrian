@@ -25,7 +25,7 @@ import mondrian.olap.Util;
  *   in its cache). This value should only be returned if the caller is
  *   expecting it.</li>
  * <li>{@link Util#nullValue} if the cell evaluates to null</li>
- * <li>{@link CubeBase#getErrCellValue} if the cell evaluates to an
+ * <li>{@link mondrian.olap.Util.ErrorCellValue} if the cell evaluates to an
  *   error</li>
  * <li>an Object representing a value (often a {@link Double} or a {@link
  *   java.math.BigDecimal}), otherwise</li>
@@ -36,7 +36,11 @@ import mondrian.olap.Util;
  * @version $Id$
  **/
 interface CellReader {
+    /**
+     * Returns the value of the cell which has the context described by the
+     * evaluator.
+     */
     Object get(Evaluator evaluator);
-};
+}
 
 // End CellReader.java

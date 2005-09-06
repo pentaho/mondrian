@@ -26,11 +26,6 @@ public abstract class OlapElementBase
         extends ExpBase
         implements OlapElement {
 
-    static {
-        Util.assertTrue(System.getProperty("java.version").compareTo("1.1") > 0,
-                "require at least JDK 1.2, because JDK 1.1 had a severe performance bug when hashing long, similar strings");
-    }
-
     private String caption = null;
 
     protected OlapElementBase() {
@@ -61,7 +56,7 @@ public abstract class OlapElementBase
     }
 
     public Object evaluate(Evaluator evaluator) {
-        return evaluator.xx(this);
+        return evaluator.visit(this);
     }
 
     public Exp accept(Validator validator) {
@@ -73,7 +68,10 @@ public abstract class OlapElementBase
         return this;
     }
 
-    // return name as default for caption
+    /**
+     * Returns the display name of this catalog element.
+     * If no caption is defined, the name is returned.
+     */
     public String getCaption() {
         if (caption != null) {
             return caption;
@@ -83,10 +81,18 @@ public abstract class OlapElementBase
     }
 
     /**
-     * @param caption The caption to set.
+     * Sets the display name of this catalog element.
      */
     public void setCaption(String caption) {
         this.caption = caption;
+    }
+
+    public boolean dependsOn(Dimension dimension) {
+        // A catalog element is constant, and therefore will evaluate to the
+        // same result regardless of the current evaluation context. For
+        // example, the member [Gender].[M] does not 'depend on' the [Gender]
+        // dimension.
+        return false;
     }
 }
 

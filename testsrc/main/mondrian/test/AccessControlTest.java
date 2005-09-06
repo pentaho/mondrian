@@ -197,7 +197,7 @@ public class AccessControlTest extends FoodMartTestCase {
         //   from Sales
         //   where ([Marital Status].[S], [Store].[SF LA])
         final TestContext tc = new RestrictedTestContext();
-        tc.runQueryCheckResult(
+        tc.assertQueryReturns(
                 "with member [Measures].[California Unit Sales] as " +
                 " 'Aggregate({[Store].[USA].[CA].children}, [Measures].[Unit Sales])'" + nl +
                 "select {[Measures].[California Unit Sales]} on columns," + nl +
@@ -217,7 +217,7 @@ public class AccessControlTest extends FoodMartTestCase {
     public void testGrantHierarchyA() {
         final TestContext tc = new RestrictedTestContext();
         // assert: totals for USA include missing cells
-        tc.runQueryCheckResult(
+        tc.assertQueryReturns(
                 "select {[Unit Sales]} on columns," + nl +
                 "{[Store].[USA], [Store].[USA].children} on rows" + nl +
                 "from [Sales]",

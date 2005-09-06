@@ -9,9 +9,7 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.Evaluator;
-import mondrian.olap.Exp;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 
 /**
  * The <code>CoalesceEmptyFunDef</code> class implements the CoalesceEmpty(...)

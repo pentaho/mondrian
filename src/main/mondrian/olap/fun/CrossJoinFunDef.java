@@ -150,7 +150,9 @@ class CrossJoinFunDef extends FunDefBase {
     private static List getArgAsList(Evaluator evaluator, Exp[] args,
             int index) {
         final Object arg = getArg(evaluator, args, index);
-        if (arg instanceof List) {
+        if (arg == null) {
+            return Collections.EMPTY_LIST;
+        } else if (arg instanceof List) {
             return (List) arg;
         } else {
             List list = new ArrayList();

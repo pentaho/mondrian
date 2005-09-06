@@ -323,7 +323,9 @@ public class RolapConnection extends ConnectionBase {
 
     public Result execute(Query query) {
         try {
-        	LOGGER.debug(query.getQueryString());
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(query.getQueryString());
+            }
             Result result = new RolapResult(query);
             for (int i = 0; i < query.axes.length; i++) {
                 QueryAxis axis = query.axes[i];

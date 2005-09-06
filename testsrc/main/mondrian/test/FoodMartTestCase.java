@@ -36,13 +36,6 @@ public class FoodMartTestCase extends TestCase {
     public FoodMartTestCase() {
     }
 
-    /**
-     * Executes an MDX query.
-     */
-    public Result runQuery(String queryString) {
-        return getTestContext().runQuery(queryString);
-    }
-
     protected Connection getConnection(boolean fresh) {
         return getTestContext().getFoodMartConnection(fresh);
     }
@@ -64,7 +57,7 @@ public class FoodMartTestCase extends TestCase {
      * and rows.
      */
     protected void assertSize(String queryString, int columnCount, int rowCount) {
-        Result result = runQuery(queryString);
+        Result result = executeQuery(queryString);
         Axis[] axes = result.getAxes();
         Assert.assertTrue(axes.length == 2);
         Assert.assertTrue(axes[0].positions.length == columnCount);
@@ -141,28 +134,21 @@ public class FoodMartTestCase extends TestCase {
     /**
      * Runs a query and checks that the result is a given string.
      */
-    public void runQueryCheckResult(QueryAndResult queryAndResult) {
-        runQueryCheckResult(queryAndResult.query, queryAndResult.result);
+    public void assertQueryReturns(QueryAndResult queryAndResult) {
+        assertQueryReturns(queryAndResult.query, queryAndResult.result);
     }
 
     /**
      * Runs a query and checks that the result is a given string.
      */
-    public void runQueryCheckResult(String query, String desiredResult) {
-        getTestContext().runQueryCheckResult(query, desiredResult);
-    }
-
-    /**
-     * Runs a query and checks that the result matches a given pattern.
-     */
-    public void runQueryCheckResult(String query, Pattern desiredResult) {
-        getTestContext().runQueryCheckResult(query, desiredResult);
+    public void assertQueryReturns(String query, String desiredResult) {
+        getTestContext().assertQueryReturns(query, desiredResult);
     }
 
     /**
      * Runs a query.
      */
-    public Result execute(String queryString) {
+    public Result executeQuery(String queryString) {
         return getTestContext().executeFoodMart(queryString);
     }
 
@@ -224,45 +210,31 @@ public class FoodMartTestCase extends TestCase {
         Axis axis = executeAxis2(cube, expression);
         Assert.assertEquals(expected, toString(axis.positions));
     }
+
     /**
      * Runs a query with a given expression on an axis, and asserts that it
      * returns the expected string.
      */
-    public void assertAxisReturns(Connection connection, String expression, String expected) {
+    public void assertAxisReturns(
+            Connection connection,
+            String expression,
+            String expected) {
         Axis axis = executeAxis2(connection, expression);
         Assert.assertEquals(expected, toString(axis.positions));
     }
 
-    /** Executes an expression against the FoodMart database to form a single
-     * cell result set, then returns that cell's formatted value. **/
-    public String executeExpr(String cubeName, String expression) {
-        return executeExprRaw(cubeName, expression).getFormattedValue();
-    }
-
+    /**
+     * Executes an expression against the Sales cube in the FoodMart database
+     * to form a single cell result set, then returns that cell's formatted
+     * value.
+     */
     public String executeExpr(String expression) {
-        return executeExpr("Sales", expression);
+        return getTestContext().executeExprRaw("Sales", expression).getFormattedValue();
     }
 
     /**
-     * Executes the expression in the context of the cube indicated by <code>cubeName</code>,
-     * and returns the result.
-     * @param cubeName The name of the cube to use
-     * @param expression The expression to evaluate
-     * @return Returns a {@link Cell} which is the result of the expression.
+     * Executes an expression which returns a boolean result.
      */
-    public Cell executeExprRaw(String cubeName, String expression) {
-        if (cubeName.indexOf(' ') >= 0) {
-            cubeName = Util.quoteMdxIdentifier(cubeName);
-        }
-        final String queryString = "with member [Measures].[Foo] as '" +
-            expression +
-            "' select {[Measures].[Foo]} on columns from " + cubeName;
-        Result result = getTestContext().executeFoodMart(queryString);
-
-        return result.getCell(new int[]{0});
-    }
-
-    /** Executes an expression which returns a boolean result. **/
     public String executeBooleanExpr(String expression) {
         return executeExpr("Iif(" + expression + ",\"true\",\"false\")");
     }
@@ -274,6 +246,13 @@ public class FoodMartTestCase extends TestCase {
      */
     public void assertExprThrows(String expression, String pattern) {
         getTestContext().assertExprThrows(expression, pattern);
+    }
+
+    /**
+     * Runs an expression and asserts that it returns a given result.
+     */
+    public void assertExprReturns(String expression, String expected) {
+        getTestContext().assertExprReturns(expression, expected);
     }
 
     /**

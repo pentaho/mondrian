@@ -46,8 +46,8 @@ public abstract class HierarchyBase
     protected String allMemberName;
     protected String allLevelName;
 
-    protected HierarchyBase(Dimension dimension, 
-                            String subName, 
+    protected HierarchyBase(Dimension dimension,
+                            String subName,
                             boolean hasAll) {
         this.dimension = dimension;
         this.hasAll = hasAll;
@@ -69,18 +69,18 @@ public abstract class HierarchyBase
     }
 
     // implement MdxElement
-    public String getUniqueName() { 
-        return uniqueName; 
+    public String getUniqueName() {
+        return uniqueName;
     }
-    public String getName() { 
-        return name; 
+    public String getName() {
+        return name;
     }
     public String getQualifiedName() {
         return Util.getRes().getMdxHierarchyName(getUniqueName());
     }
 
-    public String getDescription() { 
-        return description; 
+    public String getDescription() {
+        return description;
     }
 
     public Dimension getDimension() {
@@ -104,8 +104,8 @@ public abstract class HierarchyBase
     }
 
 
-    public boolean hasAll() { 
-        return hasAll; 
+    public boolean hasAll() {
+        return hasAll;
     }
 
     public boolean equals(OlapElement mdxElement) {
@@ -143,7 +143,7 @@ public abstract class HierarchyBase
 
     protected Object[] getAllowedChildren(CubeAccess cubeAccess) {
         // cubeAccess sets permissions on hierarchies and members only
-        return getChildren();
+        return getLevels();
     }
 
 //      /** find a named member in this hierarchy */

@@ -11,6 +11,9 @@
 */
 
 package mondrian.olap;
+import mondrian.olap.type.Type;
+import mondrian.olap.type.TypeUtil;
+
 import java.io.PrintWriter;
 
 /**
@@ -118,9 +121,10 @@ public class QueryAxis extends QueryPart {
         this.set = set;
     }
 
-    public void resolve(Validator resolver) {
-        set = resolver.validate(set);
-        if (!set.isSet()) {
+    public void resolve(Validator validator) {
+        set = validator.validate(set, false);
+        final Type type = set.getTypeX();
+        if (!TypeUtil.isSet(type)) {
             throw Util.getRes().newMdxAxisIsNotSet(axisOrdinal.getName());
         }
     }

@@ -102,18 +102,18 @@ public class ParserTest extends TestCase {
         assertEquals("Axis index name must be correct",
             AxisOrdinal.enumeration.getName(1), axes[1].getAxisName());
 
-        Object[] tuples = axes[0].getChildren();
-        assertEquals("Column tuples", 1, tuples.length);
+        Exp colsSetExpr = axes[0].getSet();
+        assertNotNull("Column tuples", colsSetExpr);
 
-        FunCall fun = (FunCall)tuples[0];
-        String id = ((Id)(fun.getChildren()[0])).getElement(0);
+        FunCall fun = (FunCall)colsSetExpr;
+        String id = ((Id)(fun.getArgs()[0])).getElement(0);
         assertEquals("Correct member on axis", "axis0mbr", id);
 
-        tuples = axes[1].getChildren();
-        assertEquals("Row tuples", 1, tuples.length);
+        Exp rowsSetExpr = axes[1].getSet();
+        assertNotNull("Row tuples", rowsSetExpr);
 
-        fun = (FunCall) tuples[0];
-        id = ((Id) (fun.getChildren()[0])).getElement(0);
+        fun = (FunCall) rowsSetExpr;
+        id = ((Id) (fun.getArgs()[0])).getElement(0);
         assertEquals("Correct member on axis", "axis1mbr", id);
     }
 

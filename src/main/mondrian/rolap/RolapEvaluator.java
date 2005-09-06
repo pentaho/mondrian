@@ -36,43 +36,54 @@ import java.util.*;
 class RolapEvaluator implements Evaluator {
     private static final Logger LOGGER = Logger.getLogger(RolapEvaluator.class);
 
-    private final RolapCube cube;
-    private final RolapConnection connection;
-    private Member[] currentMembers;
+    /**
+     * Dummy value to represent null results in the expression cache.
+     */
+    private static final Object nullResult = new Object();
+
+    private final Member[] currentMembers;
     private final Evaluator parent;
-    private CellReader cellReader;
+    protected CellReader cellReader;
     private final int depth;
 
-    private final Map expResultCache;
     private Member expandingMember;
     private boolean nonEmpty;
-    private final RolapResult result;
+    protected final RolapEvaluatorRoot root;
 
-    private RolapEvaluator(
-            RolapResult result,
-            Evaluator parent,
-            int depth,
-            Map expResultCache,
-            CellReader cellReader) {
-        this.result = result;
-        this.cube = (RolapCube) result.getQuery().getCube();
-        this.connection = (RolapConnection) result.getQuery().getConnection();
+    /**
+     * Creates an evaluator.
+     */
+    protected RolapEvaluator(
+            RolapEvaluatorRoot root,
+            RolapEvaluator parent,
+            CellReader cellReader,
+            Member[] currentMembers) {
+        this.root = root;
         this.parent = parent;
-        this.depth = depth;
-        this.expResultCache = expResultCache;
+        this.depth = parent == null ? 0 : parent.depth + 1;
         this.cellReader = cellReader;
+        if (currentMembers == null) {
+            this.currentMembers = new Member[root.cube.getDimensions().length];
+        } else {
+            this.currentMembers = currentMembers;
+        }
     }
 
-    RolapEvaluator(RolapResult result) {
-        this(result, null, 0, new HashMap(), null);
+    /**
+     * Creates an evaluator with no parent.
+     *
+     * @param root Shared context between this evaluator and its children
+     */
+    RolapEvaluator(RolapEvaluatorRoot root) {
+        this(root, null, null, null);
+
         // we expect client to set CellReader
 
-        SchemaReader scr = connection.getSchemaReader();
-        Dimension[] dimensions = cube.getDimensions();
-        currentMembers = new Member[dimensions.length];
+        SchemaReader scr = this.root.connection.getSchemaReader();
+        Dimension[] dimensions = this.root.cube.getDimensions();
         for (int i = 0; i < dimensions.length; i++) {
             final Dimension dimension = dimensions[i];
-            final int ordinal = dimension.getOrdinal(cube);
+            final int ordinal = dimension.getOrdinal(this.root.cube);
             final Hierarchy hier = dimension.getHierarchy();
 
             Member member = scr.getHierarchyDefaultMember(hier);
@@ -83,7 +94,7 @@ class RolapEvaluator implements Evaluator {
                         newInvalidHierarchyCondition(hier.getUniqueName());
             }
 
-            HierarchyUsage[] hierarchyUsages = cube.getUsages(hier);
+            HierarchyUsage[] hierarchyUsages = this.root.cube.getUsages(hier);
             if (hierarchyUsages.length != 0) {
                 ((RolapMember) member).makeUniqueName(hierarchyUsages[0]);
             }
@@ -92,17 +103,17 @@ class RolapEvaluator implements Evaluator {
         }
     }
 
-    private RolapEvaluator(
-            RolapResult result,
-            Member[] currentMembers,
-            RolapEvaluator parent) {
-        this(result,
-             parent,
-             parent.getDepth() + 1,
-             parent.expResultCache,
-             parent.cellReader);
+    protected static class RolapEvaluatorRoot {
+        final RolapResult result;
+        final Map expResultCache = new HashMap();
+        final RolapCube cube;
+        final RolapConnection connection;
 
-        this.currentMembers = currentMembers;
+        RolapEvaluatorRoot(RolapResult result) {
+            this.result = result;
+            this.cube = (RolapCube) result.getQuery().getCube();
+            this.connection = (RolapConnection) result.getQuery().getConnection();
+        }
     }
 
     protected Logger getLogger() {
@@ -118,7 +129,7 @@ class RolapEvaluator implements Evaluator {
     }
 
     public Cube getCube() {
-        return cube;
+        return root.cube;
     }
 
     public int getDepth() {
@@ -130,7 +141,7 @@ class RolapEvaluator implements Evaluator {
     }
 
     public SchemaReader getSchemaReader() {
-        return connection.getSchemaReader();
+        return root.connection.getSchemaReader();
     }
 
     public Evaluator push(Member[] members) {
@@ -149,42 +160,46 @@ class RolapEvaluator implements Evaluator {
         return _push();
     }
 
-    private final RolapEvaluator _push() {
+    /**
+     * Creates a clone of the current validator.
+     */
+    protected RolapEvaluator _push() {
         Member[] cloneCurrentMembers = (Member[]) this.currentMembers.clone();
         return new RolapEvaluator(
-                result,
-                cloneCurrentMembers,
-                this);
+                root,
+                this,
+                cellReader,
+                cloneCurrentMembers);
     }
 
     public Evaluator pop() {
         return parent;
     }
 
-    public Object xx(Literal literal) {
+    public Object visit(Literal literal) {
         return literal.getValue();
     }
 
-    public Object xx(Parameter parameter) {
+    public Object visit(Parameter parameter) {
         return parameter.getExp().evaluate(this);
     }
 
-    public Object xx(FunCall funCall) {
+    public Object visit(FunCall funCall) {
         FunDef funDef = funCall.getFunDef();
         return funDef.evaluate(this, funCall.getArgs());
     }
 
-    public Object xx(Id id) {
+    public Object visit(Id id) {
         throw new Error("unsupported");
     }
 
-    public Object xx(OlapElement mdxElement) {
+    public Object visit(OlapElement mdxElement) {
         return mdxElement;
     }
 
     public Member setContext(Member member) {
         RolapMember m = (RolapMember) member;
-        int ordinal = m.getDimension().getOrdinal(cube);
+        int ordinal = m.getDimension().getOrdinal(root.cube);
         Member previous = currentMembers[ordinal];
         currentMembers[ordinal] = m;
         return previous;
@@ -209,7 +224,7 @@ class RolapEvaluator implements Evaluator {
     }
 
     public Member getContext(Dimension dimension) {
-        return currentMembers[dimension.getOrdinal(cube)];
+        return currentMembers[dimension.getOrdinal(root.cube)];
     }
 
     public Object evaluateCurrent() {
@@ -402,7 +417,7 @@ class RolapEvaluator implements Evaluator {
 
     private Format getFormat() {
         String formatString = getFormatString();
-        return Format.get(formatString, connection.getLocale());
+        return Format.get(formatString, root.connection.getLocale());
     }
 
     /**
@@ -427,51 +442,56 @@ class RolapEvaluator implements Evaluator {
         }
     }
 
-    private Object getExpResultCacheKey(Exp exp) {
+    /**
+     * Creates a key which uniquely identifes an expression and its
+     * context. The context includes members of dimensions which the
+     * expression is dependent upon.
+     */
+    private Object getExpResultCacheKey(ExpCacheDescriptor descriptor) {
         List key = new ArrayList();
-        key.add(exp);
-        for (int i = 0; i < currentMembers.length; i++) {
-            Member member = currentMembers[i];
+        key.add(descriptor.getExp());
+        int[] dimensionOrdinals = descriptor.getDependentDimensionOrdinals();
+        for (int i = 0; i < dimensionOrdinals.length; i++) {
+            int dimensionOrdinal = dimensionOrdinals[i];
+            Member member = currentMembers[dimensionOrdinal];
 
             // more than one usage
             if (member == null) {
-                if (getLogger().isDebugEnabled()) {
-                    getLogger().debug(
-                        "RolapEvaluator.getExpResultCacheKey: member == null "
-                         + " , count=" + i);
-                }
+                getLogger().debug(
+                        "RolapEvaluator.getExpResultCacheKey: " +
+                        "member == null; dimensionOrdinal=" + i);
                 continue;
             }
 
-            Dimension dim = member.getDimension();
-
-            if (exp.dependsOn(dim)) {
-                key.add(currentMembers[i]);
-            }
+            key.add(member);
         }
         return key;
     }
 
-    public Object getCachedResult(Exp exp) {
-        Object key = getExpResultCacheKey(exp);
-        return expResultCache.get(key);
-    }
-
-    public void setCachedResult(Exp exp, Object result) {
-        Object key = getExpResultCacheKey(exp);
-        expResultCache.put(key, result);
+    public Object getCachedResult(ExpCacheDescriptor cacheDescriptor) {
+        // Look up a cached result, and if not present, compute one and add to
+        // cache. Use a dummy value to represent nulls.
+        Object key = getExpResultCacheKey(cacheDescriptor);
+        Object result = root.expResultCache.get(key);
+        if (result == null) {
+            result = cacheDescriptor.getExp().evaluate(this);
+            root.expResultCache.put(key, result == null ? nullResult : result);
+        } else if (result == nullResult) {
+            result = null;
+        }
+        return result;
     }
 
     public void clearExpResultCache() {
-        expResultCache.clear();
+        root.expResultCache.clear();
     }
 
     public boolean isNonEmpty() {
         return nonEmpty;
     }
 
-    public void setNonEmpty(boolean b) {
-        nonEmpty = b;
+    public void setNonEmpty(boolean nonEmpty) {
+        this.nonEmpty = nonEmpty;
     }
 
     public RuntimeException newEvalException(Object context, String s) {
@@ -479,7 +499,11 @@ class RolapEvaluator implements Evaluator {
     }
 
     public Object evaluateNamedSet(String name, Exp exp) {
-        return result.evaluateNamedSet(name, exp);
+        return root.result.evaluateNamedSet(name, exp);
+    }
+
+    public Member[] getMembers() {
+        return currentMembers;
     }
 }
 

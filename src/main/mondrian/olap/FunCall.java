@@ -168,7 +168,7 @@ public class FunCall extends ExpBase {
     public Exp accept(Validator validator) {
         final FunTable funTable = validator.getFunTable();
         for (int i = 0; i < args.length; i++) {
-            args[i] = validator.validate(args[i]);
+            args[i] = validator.validate(args[i], false);
         }
         funDef = funTable.getDef(this, validator);
         return funDef.validateCall(validator, this);
@@ -251,12 +251,12 @@ public class FunCall extends ExpBase {
     }
 
     public Object evaluate(Evaluator evaluator) {
-        return evaluator.xx(this);
+        return evaluator.visit(this);
     }
 
     public boolean dependsOn(Dimension dimension) {
         // delegate to FunDef
-        return funDef.dependsOn(args, dimension);
+        return funDef.callDependsOn(this, dimension);
     }
 
     /**

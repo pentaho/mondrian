@@ -45,6 +45,17 @@ class XtdFunDef extends FunDefBase {
         return super.getResultType(validator, args);
     }
 
+    public boolean callDependsOn(FunCall call, Dimension dimension) {
+        // The zero argument form (e.g. Ytd()) depends on the time dimension.
+        // The one argument form depends upon what its arg depends on.
+        if (call.getArgCount() == 0) {
+            final Type type = call.getTypeX();
+            return type.usesDimension(dimension);
+        } else {
+            return super.callDependsOn(call, dimension);
+        }
+    }
+
     private Level getLevel(Evaluator evaluator) {
         switch (levelType.ordinal) {
         case LevelType.TimeYearsORDINAL:

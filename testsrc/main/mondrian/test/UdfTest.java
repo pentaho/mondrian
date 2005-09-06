@@ -48,7 +48,7 @@ public class UdfTest extends FoodMartTestCase {
 
     public void testSanity() {
         // sanity check, make sure the schema is loading correctly
-        runQueryCheckResult(
+        assertQueryReturns(
                 "SELECT {[Measures].[Store Sqft]} ON COLUMNS, {[Store Type]} ON ROWS FROM [Store]",
                 "Axis #0:" + nl +
                 "{}" + nl +
@@ -60,7 +60,7 @@ public class UdfTest extends FoodMartTestCase {
     }
 
     public void testFun() {
-        runQueryCheckResult(
+        assertQueryReturns(
                 "WITH MEMBER [Measures].[Sqft Plus One] AS 'PlusOne([Measures].[Store Sqft])'" + nl +
                 "SELECT {[Measures].[Sqft Plus One]} ON COLUMNS, " + nl +
                 "  {[Store Type].children} ON ROWS " + nl +
@@ -86,7 +86,7 @@ public class UdfTest extends FoodMartTestCase {
     }
 
     public void testLastNonEmpty() {
-        runQueryCheckResult(
+        assertQueryReturns(
                 "WITH MEMBER [Measures].[Last Unit Sales] AS " + nl +
                 " '([Measures].[Unit Sales], " + nl +
                 "   LastNonEmpty(Descendants([Time]), [Measures].[Unit Sales]))'" + nl +
@@ -172,8 +172,8 @@ public class UdfTest extends FoodMartTestCase {
     }
 
     public void testComplexFun() {
-        runQueryCheckResult(
-                "WITH MEMBER [Measures].[InverseNormal] AS 'InverseNormal([Measures].[Grocery Sqft] / [Measures].[Store Sqft])', FORMAT_STRING = \"0.0000\"" + nl +
+        assertQueryReturns(
+                "WITH MEMBER [Measures].[InverseNormal] AS 'InverseNormal([Measures].[Grocery Sqft] / [Measures].[Store Sqft])', FORMAT_STRING = \"0.000\"" + nl +
                 "SELECT {[Measures].[InverseNormal]} ON COLUMNS, " + nl +
                 "  {[Store Type].children} ON ROWS " + nl +
                 "FROM [Store]",
@@ -189,22 +189,21 @@ public class UdfTest extends FoodMartTestCase {
                 "{[Store Type].[All Store Types].[Mid-Size Grocery]}" + nl +
                 "{[Store Type].[All Store Types].[Small Grocery]}" + nl +
                 "{[Store Type].[All Store Types].[Supermarket]}" + nl +
-                "Row #0: 0.4673" + nl +
-                "Row #1: 0.4628" + nl +
+                "Row #0: 0.467" + nl +
+                "Row #1: 0.463" + nl +
                 "Row #2: (null)" + nl +
-                "Row #3: 0.6251" + nl +
-                "Row #4: 0.5209" + nl +
-                "Row #5: 0.5036" + nl);
+                "Row #3: 0.625" + nl +
+                "Row #4: 0.521" + nl +
+                "Row #5: 0.504" + nl);
     }
 
     public void testException() {
-        Result result = runQuery(
-                "WITH MEMBER [Measures].[InverseNormal] " +
-                " AS 'InverseNormal([Measures].[Store Sqft] / [Measures].[Grocery Sqft])'," +
-                " FORMAT_STRING = \"0.000000\"" + nl +
-                "SELECT {[Measures].[InverseNormal]} ON COLUMNS, " + nl +
-                "  {[Store Type].children} ON ROWS " + nl +
-                "FROM [Store]");
+        Result result = executeQuery("WITH MEMBER [Measures].[InverseNormal] " +
+                        " AS 'InverseNormal([Measures].[Store Sqft] / [Measures].[Grocery Sqft])'," +
+                        " FORMAT_STRING = \"0.000000\"" + nl +
+                        "SELECT {[Measures].[InverseNormal]} ON COLUMNS, " + nl +
+                        "  {[Store Type].children} ON ROWS " + nl +
+                        "FROM [Store]");
         Axis rowAxis = result.getAxes()[0];
         assertTrue(rowAxis.positions.length == 1);
         Axis colAxis = result.getAxes()[1];

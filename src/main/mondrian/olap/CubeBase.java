@@ -152,7 +152,7 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 
     protected Object[] getAllowedChildren(CubeAccess cubeAccess) {
         // cubeAccess sets permissions on hierarchies and members only
-        return getChildren();
+        return dimensions;
     }
 
     // ------------------------------------------------------------------------

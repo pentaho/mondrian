@@ -688,14 +688,19 @@ public class RolapStar {
             return expression.getExpression(query);
         }
 
-        private static void quoteValue(Object o,
-                                       StringBuffer buf,
-                                       boolean isNumeric) {
+        private static void quoteValue(
+                Object o,
+                StringBuffer buf,
+                boolean isNumeric) {
             String s = o.toString();
             if (isNumeric) {
                 buf.append(s);
             } else {
-                RolapUtil.singleQuoteForSql(s, buf);
+                if (s == null) {
+                    buf.append("NULL");
+                } else {
+                    Util.singleQuoteString(s, buf);
+                }
             }
         }
 
@@ -788,9 +793,10 @@ public class RolapStar {
          *
          * <li>String values: <code>foo.bar in ('a', 'b', 'c')</code></li></ul>
          */
-        public static String createInExpr(String expr,
-                                   ColumnConstraint[] constraints,
-                                   boolean isNumeric) {
+        public static String createInExpr(
+                String expr,
+                ColumnConstraint[] constraints,
+                boolean isNumeric) {
             if (constraints.length == 1) {
                 final ColumnConstraint constraint = constraints[0];
                 Object key = constraint.getValue();
@@ -828,7 +834,7 @@ public class RolapStar {
                     return expr + " is null";
                 case 1:
                     // Special case -- one not-null value, and null, for
-                    // example "(x is null or x = 1)".
+                    // example "(x = 1 or x is null)".
                     buf = new StringBuffer(64);
                     buf.append('(');
                     buf.append(expr);
@@ -1134,10 +1140,11 @@ public class RolapStar {
          * @param level
          * @param parentColumn
          */
-        synchronized Column makeColumns(RolapCube cube,
-                                     RolapLevel level,
-                                     Column parentColumn,
-                                     String usagePrefix) {
+        synchronized Column makeColumns(
+                RolapCube cube,
+                RolapLevel level,
+                Column parentColumn,
+                String usagePrefix) {
 
             Column nameColumn = null;
             if (level.getNameExp() != null) {
@@ -1150,10 +1157,9 @@ public class RolapStar {
                     false,
                     null,
                     null,
-                    null
-                );
-
+                    null);
             }
+
             // select the column's name depending upon whether or not a
             // "named" column, above, has been created.
             String name = (level.getNameExp() == null)
@@ -1170,8 +1176,7 @@ public class RolapStar {
                 (level.getFlags() & RolapLevel.NUMERIC) != 0,
                 nameColumn,
                 parentColumn,
-                usagePrefix
-            );
+                usagePrefix);
 
             if (column != null) {
                 Map map = star.getMapLevelToColumn(cube);
@@ -1179,16 +1184,17 @@ public class RolapStar {
             }
 
             return column;
-
         }
-        private Column makeColumnForLevelExpr(RolapCube cube,
-                                              RolapLevel level,
-                                              String name,
-                                              MondrianDef.Expression xmlExpr,
-                                              boolean isNumeric,
-                                              Column nameColumn,
-                                              Column parentColumn,
-                                              String usagePrefix) {
+
+        private Column makeColumnForLevelExpr(
+                RolapCube cube,
+                RolapLevel level,
+                String name,
+                MondrianDef.Expression xmlExpr,
+                boolean isNumeric,
+                Column nameColumn,
+                Column parentColumn,
+                String usagePrefix) {
             Table table = this;
             if (xmlExpr instanceof MondrianDef.Column) {
                 final MondrianDef.Column xmlColumn =

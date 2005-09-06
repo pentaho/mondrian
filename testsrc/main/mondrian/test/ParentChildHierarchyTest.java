@@ -29,7 +29,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         super(name);
     }
     public void testAll() {
-        runQueryCheckResult(
+        assertQueryReturns(
                 "select {[Measures].[Org Salary], [Measures].[Count]} on columns," + nl +
                 " {[Employees]} on rows" + nl +
                 "from [HR]",
@@ -45,7 +45,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     }
 
     public void testChildrenOfAll() {
-        runQueryCheckResult(
+        assertQueryReturns(
                 "select {[Measures].[Org Salary], [Measures].[Count]} on columns," + nl +
                 " {[Employees].children} on rows" + nl +
                 "from [HR]",
@@ -64,7 +64,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     // unsupported when children expanded
      public void testDistinctAll() {
         // parent/child dimension not expanded, and the query works
-        runQueryCheckResult(
+        assertQueryReturns(
                 "select {[Measures].[Count], [Measures].[Org Salary], " + nl +
                 "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns," + nl +
                 "{[Employees]} on rows" + nl +
@@ -88,7 +88,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         // parent/child dimension expanded: fails with
         // java.lang.UnsupportedOperationException at
         // mondrian.rolap.RolapAggregator$6.aggregate(RolapAggregator.java:72)
-        runQueryCheckResult(
+        assertQueryReturns(
             "select {[Measures].[Count], [Measures].[Org Salary], " + nl +
             "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns," + nl +
             "{[Employees].children} on rows" + nl +
@@ -112,7 +112,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     // disable test til bug fixed
     public void testDistinctSubtree() {
         // also fails with UnsupportedOperationException
-        runQueryCheckResult(
+        assertQueryReturns(
                 "select {[Measures].[Count], [Measures].[Org Salary], " + nl +
                 "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns," + nl +
                 "{[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki]} on rows" + nl +
@@ -140,7 +140,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     // Disabled because I removed the [ExplicitClosure] hierarchy from the [HR]
     // cube. todo: Create a temporary cube and re-enable test.
     public void _testDistinctAllExplicitClosure() {
-        runQueryCheckResult(
+        assertQueryReturns(
                 "select {[Measures].[Count], [Measures].[Org Salary], " + nl +
                 "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns," + nl +
                 "{[EmployeesClosure]} on rows" + nl +
@@ -164,7 +164,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     // cube. todo: Create a temporary cube and re-enable test.
     public void _testDistinctChildrenOfAllExplicitClosure() {
         // the children of the closed relation are all the descendants, so limit results
-        runQueryCheckResult(
+        assertQueryReturns(
                 "select {[Measures].[Count], [Measures].[Org Salary], " + nl +
                 "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns," + nl +
                 "{[EmployeesClosure].FirstChild} on rows" + nl +
@@ -187,7 +187,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     // Disabled because I removed the [ExplicitClosure] hierarchy from the [HR]
     // cube. todo: Create a temporary cube and re-enable test.
     public void _testDistinctSubtreeExplicitClosure() {
-        runQueryCheckResult(
+        assertQueryReturns(
                 "select {[Measures].[Count], [Measures].[Org Salary], " + nl +
                 "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns," + nl +
                 "{[EmployeesClosure].[All Employees].[7]} on rows" + nl +
@@ -211,7 +211,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
 
     public void testLeaf() {
         // Juanita Sharp has no reports
-        runQueryCheckResult(
+        assertQueryReturns(
                 "select {[Measures].[Org Salary], [Measures].[Count]} on columns," + nl +
                 " {[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Juanita Sharp]} on rows" + nl +
                 "from [HR]",
@@ -227,7 +227,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     }
     public void testOneAboveLeaf() {
         // Rebecca Kanagaki has 2 direct reports, and they have no reports
-        runQueryCheckResult(
+        assertQueryReturns(
                 "select {[Measures].[Org Salary], [Measures].[Count]} on columns," + nl +
                 " {[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki]} on rows" + nl +
                 "from [HR]",
@@ -246,7 +246,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      * Members, from <a href="http://www.winscriptingsolutions.com/Files/09/27139/Listing_01.txt">here</a>.
      */
     public void _testFoo() {
-        runQueryCheckResult(
+        assertQueryReturns(
                 "WITH SET [NonEmptyEmployees] AS 'FILTER(DESCENDANTS([Employees].[All Employees], 10, LEAVES)," + nl +
                 "  NOT ISEMPTY( [Measures].[Employee Salary]) )'" + nl +
                 "SELECT { [Measures].[Employee Salary], [Measures].[Number of Employees] } ON COLUMNS," + nl +
@@ -259,7 +259,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      * Script from <a href="http://www.winscriptingsolutions.com/Files/09/27139/Listing_02.txt">here</a>.
      */
     public void _testBar() {
-        runQueryCheckResult(
+        assertQueryReturns(
                 "with set [Leaves] as 'Descendants([Employees].[All Employees], 15, LEAVES )'" + nl +
                 " set [Parents] as 'Generate( [Leaves], {[Employees].CurrentMember.Parent} )'" + nl +
                 " set [FirstParents] as 'Filter( [Parents], " + nl +
@@ -279,7 +279,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      */
     public void testHierarchyFalseCycle() {
         // On the regular HR cube, this has always worked.
-        runQueryCheckResult(
+        assertQueryReturns(
             "SELECT {[Employees].[All Employees].Children} on columns," + nl +
             " {[Measures].[Org Salary]} on rows" + nl +
             "FROM [HR]",
@@ -318,7 +318,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "    <Measure name='Count' column='employee_id' aggregator='count' formatString='#,#'/>" + nl +
             "</Cube>");
         // On a cube with fewer dimensions, this gave a false failure.
-        runQueryCheckResult(
+        assertQueryReturns(
             "SELECT {[Employees].[All Employees].Children} on columns," + nl +
             " {[Measures].[Org Salary]} on rows" + nl +
             "FROM [HR-fewer-dims]",
@@ -332,12 +332,12 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     }
 
     public void testGenuineCycle() {
-        Result result = runQuery("with member [Measures].[Foo] as " + nl +
-            "  '([Measures].[Foo], OpeningPeriod([Time].[Month]))'" + nl +
-            "select" + nl +
-            " {[Measures].[Unit Sales], [Measures].[Foo]} on Columns," + nl +
-            " { [Time].[1997].[Q2]} on rows" + nl +
-            "from [Sales]");
+        Result result = executeQuery("with member [Measures].[Foo] as " + nl +
+                    "  '([Measures].[Foo], OpeningPeriod([Time].[Month]))'" + nl +
+                    "select" + nl +
+                    " {[Measures].[Unit Sales], [Measures].[Foo]} on Columns," + nl +
+                    " { [Time].[1997].[Q2]} on rows" + nl +
+                    "from [Sales]");
         String resultString = TestContext.toString(result);
 
         // The precise moment when the cycle is detected depends upon the state
@@ -373,10 +373,9 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     }
 
     public void testParentChildDrillThrough() {
-        Result result = runQuery(
-            "select {[Measures].Members} ON columns," + nl +
-            "  {[Employees].Members} ON rows" + nl +
-            "from [HR]");
+        Result result = executeQuery("select {[Measures].Members} ON columns," + nl +
+                    "  {[Employees].Members} ON rows" + nl +
+                    "from [HR]");
 
         String tableQualifier = "as ";
         RolapConnection conn = (RolapConnection) getConnection();
@@ -446,10 +445,9 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     }
 
     public void testParentChildDrillThroughWithContext() {
-        Result result = runQuery(
-            "select {[Measures].Members} ON columns," + nl +
-            "  {[Employees].Members} ON rows" + nl +
-            "from [HR]");
+        Result result = executeQuery("select {[Measures].Members} ON columns," + nl +
+                    "  {[Employees].Members} ON rows" + nl +
+                    "from [HR]");
 
         String tableQualifier = "as ";
         RolapConnection conn = (RolapConnection) getConnection();

@@ -11,7 +11,7 @@
 */
 package mondrian.test;
 
-import mondrian.olap.Connection;
+import mondrian.olap.*;
 
 /**
  * Unit-test for named sets, in all their various forms: <code>WITH SET</code>,
@@ -27,7 +27,7 @@ public class NamedSetTest extends FoodMartTestCase {
      * Set defined in query according measures, hence context-dependent.
      */
     public void testNamedSet() {
-        runQueryCheckResult(
+        assertQueryReturns(
                 "WITH" + nl +
                 "    SET [Top Sellers]" + nl +
                 "AS " + nl +
@@ -71,7 +71,7 @@ public class NamedSetTest extends FoodMartTestCase {
      * Set defined on top of calc member.
      */
     public void testNamedSetOnMember() {
-        runQueryCheckResult(
+        assertQueryReturns(
                 "WITH" + nl +
                 "    MEMBER [Measures].[Profit]" + nl +
                 "AS '[Measures].[Warehouse Sales] - [Measures].[Warehouse Cost] '" + nl +
@@ -107,7 +107,7 @@ public class NamedSetTest extends FoodMartTestCase {
      * Set defined by explicit tlist in query.
      */
     public void testNamedSetAsList() {
-        runQueryCheckResult("WITH SET [ChardonnayChablis] AS" + nl +
+        assertQueryReturns("WITH SET [ChardonnayChablis] AS" + nl +
                 "   '{[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Good].[Good Chardonnay]," + nl +
                 "   [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Pearl].[Pearl Chardonnay]," + nl +
                 "   [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth].[Portsmouth Chardonnay]," + nl +
@@ -155,7 +155,7 @@ public class NamedSetTest extends FoodMartTestCase {
      * <p>Probably doesn't work because we don't support the InStr VB function.
      */
     public void _testIntrinsic() {
-        runQueryCheckResult("WITH SET [ChardonnayChablis] AS" + nl +
+        assertQueryReturns("WITH SET [ChardonnayChablis] AS" + nl +
                 "   'Filter([Product].Members, (InStr(1, [Product].CurrentMember.Name, \"chardonnay\") <> 0) OR (InStr(1, [Product].CurrentMember.Name, \"chablis\") <> 0))'" + nl +
                 "SELECT" + nl +
                 "   [ChardonnayChablis] ON COLUMNS," + nl +
@@ -168,7 +168,7 @@ public class NamedSetTest extends FoodMartTestCase {
      * Tests a named set defined in a query which consists of tuples.
      */
     public void testNamedSetCrossJoin() {
-        runQueryCheckResult("WITH" + nl +
+        assertQueryReturns("WITH" + nl +
                 "    SET [Store Types by Country]" + nl +
                 "AS" + nl +
                 "    'CROSSJOIN({[Store].[Store Country].MEMBERS}," + nl +
@@ -197,7 +197,7 @@ public class NamedSetTest extends FoodMartTestCase {
     // Also, don't know whether [oNormal] will correctly resolve to
     // [Store Type].[oNormal].
     public void _testXxx() {
-        runQueryCheckResult(
+        assertQueryReturns(
                 "WITH MEMBER [Store Type].[All Store Type].[oNormal] AS 'Aggregate(Filter( [Customers].[Name].Members, [Customers].CurrentMember.Properties(\"Member Card\") = \"Normal\") * {[Store Type].[All Store Type]} )'" + nl +
                 "MEMBER [Store Type].[All Store Type].[oBronze] AS 'Aggregate(Filter( [Customers].[Name].Members, [Customers].CurrentMember.Properties(\"Member Card\") = \"Bronze\") * {[Store Type].[All Store Type]} )'" + nl +
                 "MEMBER [Store Type].[All Store Type].[oGolden] AS 'Aggregate(Filter( [Customers].[Name].Members, [Customers].CurrentMember.Properties(\"Member Card\") = \"Golden\") * {[Store Type].[All Store Type]} )'" + nl +
@@ -212,7 +212,7 @@ public class NamedSetTest extends FoodMartTestCase {
      * Set used inside expression (Crossjoin).
      */
     public void testNamedSetUsedInCrossJoin() {
-        runQueryCheckResult(
+        assertQueryReturns(
                 "WITH" + nl +
                 "  SET [TopMedia] AS 'TopCount([Promotion Media].children, 5, [Measures].[Store Sales])' " + nl +
                 "SELECT {[Time].[1997].[Q1], [Time].[1997].[Q2]} ON COLUMNS," + nl +
@@ -272,7 +272,7 @@ public class NamedSetTest extends FoodMartTestCase {
     }
 
     public void testAggOnCalcMember() {
-        runQueryCheckResult(
+        assertQueryReturns(
                 "WITH" + nl +
                 "  SET [TopMedia] AS 'TopCount([Promotion Media].children, 5, [Measures].[Store Sales])' " + nl +
                 "  MEMBER [Measures].[California sales for Top Media] AS 'Sum([TopMedia], ([Store].[USA].[CA], [Measures].[Store Sales]))'" + nl +
@@ -299,7 +299,7 @@ public class NamedSetTest extends FoodMartTestCase {
 
     public void testContextSensitiveNamedSet() {
         // For reference.
-        runQueryCheckResult("SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
+        assertQueryReturns("SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
                 "Order([Promotion Media].Children, [Measures].[Unit Sales], DESC) ON ROWS" + nl +
                 "FROM [Sales]" + nl +
                 "WHERE [Time].[1997]",
@@ -338,7 +338,7 @@ public class NamedSetTest extends FoodMartTestCase {
                 "Row #12: 2,726" + nl +
                 "Row #13: 2,454" + nl);
         // For reference.
-        runQueryCheckResult("SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
+        assertQueryReturns("SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
                 "Order([Promotion Media].Children, [Measures].[Unit Sales], DESC) ON ROWS" + nl +
                 "FROM [Sales]" + nl +
                 "WHERE [Time].[1997].[Q2]",
@@ -381,7 +381,7 @@ public class NamedSetTest extends FoodMartTestCase {
         // The bottom medium in 1997.Q2 is In-Store Coupon, with $35 in sales,
         //  whereas Radio has $40 in sales in 1997.Q2.
 
-        runQueryCheckResult(
+        assertQueryReturns(
                 "WITH" + nl +
                 "  SET [Bottom Media] AS 'BottomCount([Promotion Media].children, 1, [Measures].[Unit Sales])' " + nl +
                 "  MEMBER [Measures].[Unit Sales for Bottom Media] AS 'Sum([Bottom Media], [Measures].[Unit Sales])'" + nl +
@@ -401,7 +401,7 @@ public class NamedSetTest extends FoodMartTestCase {
                 "Row #0: 2,454" + nl +
                 "Row #1: 40" + nl);
 
-        runQueryCheckResult(
+        assertQueryReturns(
                 "WITH" + nl +
                 "  SET [TopMedia] AS 'TopCount([Promotion Media].children, 3, [Measures].[Store Sales])' " + nl +
                 "  MEMBER [Measures].[California sales for Top Media] AS 'Sum([TopMedia], [Measures].[Store Sales])'" + nl +
@@ -444,7 +444,7 @@ public class NamedSetTest extends FoodMartTestCase {
 
     public void testOrderedNamedSet() {
         // From http://www.developersdex.com
-        runQueryCheckResult(
+        assertQueryReturns(
                 "WITH SET [SET1] AS" + nl +
                 "'ORDER ({[Education Level].[Education Level].Members}, [Gender].[All Gender].[F], ASC)'" + nl +
                 "MEMBER [Gender].[RANK1] AS 'rank([Education Level].currentmember, [SET1])'" + nl +
@@ -477,7 +477,7 @@ public class NamedSetTest extends FoodMartTestCase {
                 "Row #4: 82,177.11" + nl +
                 "Row #4: 5" + nl);
 
-        runQueryCheckResult(
+        assertQueryReturns(
                 "WITH SET [SET1] AS" + nl +
                 "'ORDER ({[Education Level].[Education Level].Members}, [Gender].[All Gender].[F], ASC)'" + nl +
                 "MEMBER [Gender].[RANK1] AS 'rank([Education Level].currentmember, [SET1])'" + nl +
@@ -511,7 +511,7 @@ public class NamedSetTest extends FoodMartTestCase {
                 "Row #4: $0.00" + nl);
 
         // Solve order fixes the problem.
-        runQueryCheckResult(
+        assertQueryReturns(
                 "WITH SET [SET1] AS" + nl +
                 "'ORDER ({[Education Level].[Education Level].Members}, [Gender].[All Gender].[F], ASC)'" + nl +
                 "MEMBER [Gender].[RANK1] AS 'rank([Education Level].currentmember, [SET1])', " + nl +
@@ -549,7 +549,7 @@ public class NamedSetTest extends FoodMartTestCase {
 
     // TODO: Implement Generate function.
     public void _testGenerate() {
-        runQueryCheckResult(
+        assertQueryReturns(
                 "with " + nl +
                 "  member [Measures].[DateName] as " + nl +
                 "    'Generate({[Time].[1997].[Q1], [Time].[1997].[Q2]}, [Time].CurrentMember.Name) '" + nl +
@@ -558,7 +558,7 @@ public class NamedSetTest extends FoodMartTestCase {
                 "from [Sales]",
                 "two rows q1, q2; q1q2 for each cell");
 
-        runQueryCheckResult(
+        assertQueryReturns(
                 "with " + nl +
                 "  member [Measures].[DateName] as " + nl +
                 "    'Generate({[Time].[1997].[Q1], [Time].[1997].[Q2]}, [Time].CurrentMember.Name, \" and \") '" + nl +
@@ -575,7 +575,7 @@ public class NamedSetTest extends FoodMartTestCase {
             }
         };
         // Set defined against cube, using 'formula' attribute.
-        tc.runQueryCheckResult(
+        tc.assertQueryReturns(
                 "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
                 " {[CA Cities]} ON ROWS" + nl +
                 "FROM [Sales]",
@@ -596,7 +596,7 @@ public class NamedSetTest extends FoodMartTestCase {
                 "Row #4: 2,117" + nl);
         // Set defined against cube, in terms of another set, and using
         // '<Formula>' element.
-        tc.runQueryCheckResult(
+        tc.assertQueryReturns(
                 "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
                 " {[Top CA Cities]} ON ROWS" + nl +
                 "FROM [Sales]",
@@ -610,7 +610,7 @@ public class NamedSetTest extends FoodMartTestCase {
                 "Row #0: 25,663" + nl +
                 "Row #1: 25,635" + nl);
         // Override named set in query.
-        tc.runQueryCheckResult(
+        tc.assertQueryReturns(
                 "WITH SET [CA Cities] AS '{[Store].[USA].[OR].[Portland]}' " +
                 "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
                 " {[CA Cities]} ON ROWS" + nl +
@@ -625,7 +625,7 @@ public class NamedSetTest extends FoodMartTestCase {
         // When [CA Cities] is overridden, does the named set [Top CA Cities],
         // which is derived from it, use the new definition? No. It stays
         // bound to the original definition.
-        tc.runQueryCheckResult(
+        tc.assertQueryReturns(
                 "WITH SET [CA Cities] AS '{[Store].[USA].[OR].[Portland]}' " +
                 "SELECT {[Measures].[Unit Sales]} ON COLUMNS," + nl +
                 " {[Top CA Cities]} ON ROWS" + nl +
@@ -647,7 +647,7 @@ public class NamedSetTest extends FoodMartTestCase {
                 return getFoodMartConnection(NamedSetsInCubeAndSchemaProcessor.class.getName());
             }
         };
-        tc.runQueryCheckResult(
+        tc.assertQueryReturns(
                 "SELECT {[Measures].[Store Sales]} on columns," + nl +
                 " Intersect([Top CA Cities], [Top USA Stores]) on rows" + nl +
                 "FROM [Sales]",
@@ -677,6 +677,68 @@ public class NamedSetTest extends FoodMartTestCase {
                 " {[Bad]} on rows" + nl +
                 "FROM [Sales]",
                 "Named set 'Bad' has bad formula");
+    }
+
+    public void testNamedSetMustBeSet() {
+        Result result;
+        String queryString;
+        String pattern;
+
+        // Formula for a named set must not be a member.
+        queryString = "with set [Foo] as ' [Store].CurrentMember  '" +
+                        "select {[Foo]} on columns from [Sales]";
+        pattern = "Set expression '[Foo]' must be a set";
+        assertThrows(queryString, pattern);
+
+        // Formula for a named set must not be a dimension.
+        queryString =
+                "with set [Foo] as ' [Store] '" +
+                "select {[Foo]} on columns from [Sales]";
+        assertThrows(queryString, pattern);
+
+        // Formula for a named set must not be a level.
+        queryString =
+                "with set [Foo] as ' [Store].[Store Country] '" +
+                "select {[Foo]} on columns from [Sales]";
+        assertThrows(queryString, pattern);
+
+        // Formula for a named set must not be a cube name.
+        queryString =
+                "with set [Foo] as ' [Sales] '" +
+                "select {[Foo]} on columns from [Sales]";
+        assertThrows(queryString,
+                "MDX object '[Sales]' not found in cube 'Sales'");
+
+        // Formula for a named set must not be a string.
+        queryString =
+                "with set [Foo] as ' \"foobar\" '" +
+                "select {[Foo]} on columns from [Sales]";
+        assertThrows(queryString, pattern);
+
+        // Formula for a named set must not be a number.
+        queryString =
+                "with set [Foo] as ' -1.45 '" +
+                "select {[Foo]} on columns from [Sales]";
+        assertThrows(queryString, pattern);
+
+        // Formula for a named set must not be a tuple.
+        queryString =
+                "with set [Foo] as ' ([Gender].[M], [Marital Status].[S]) '" +
+                "select {[Foo]} on columns from [Sales]";
+        assertThrows(queryString, pattern);
+
+        // Formula for a named set may be a set of tuples.
+        queryString =
+                "with set [Foo] as ' CrossJoin([Gender].members, [Marital Status].members) '" +
+                "select {[Foo]} on columns from [Sales]";
+        result = executeQuery(queryString);
+
+        // Formula for a named set may be a set of members.
+        queryString =
+                "with set [Foo] as ' [Gender].members '" +
+                "select {[Foo]} on columns from [Sales]";
+        result = executeQuery(queryString);
+        Util.discard(result);
     }
 
     /**

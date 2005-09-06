@@ -38,8 +38,8 @@ public class MemberProperty extends QueryPart {
         return x2;
     }
 
-    void resolve(Validator resolver) {
-        exp = resolver.validate(exp);
+    void resolve(Validator validator) {
+        exp = validator.validate(exp, false);
     }
 
     public Object[] getChildren() {

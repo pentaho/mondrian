@@ -196,7 +196,7 @@ class RolapHierarchy extends HierarchyBase {
             Dimension dim = getDimension();
             if (dim.getName().equals(uniqueNameParts[0])) {
                 String[] tmp = new String[uniqueNameParts.length-1];
-                System.arraycopy(uniqueNameParts, 1, tmp, 0, 
+                System.arraycopy(uniqueNameParts, 1, tmp, 0,
                                 uniqueNameParts.length-1);
                 uniqueNameParts = tmp;
             }
@@ -246,7 +246,7 @@ class RolapHierarchy extends HierarchyBase {
         if (relation instanceof MondrianDef.Table) {
             MondrianDef.Table table = (MondrianDef.Table) relation;
             // Check by table name and alias
-            return table.name.equals(tableName) || 
+            return table.name.equals(tableName) ||
                 ((table.alias != null) && table.alias.equals(tableName));
         }
         if (relation instanceof MondrianDef.Join) {
@@ -276,7 +276,7 @@ class RolapHierarchy extends HierarchyBase {
                 throw Util.newError(
                     "cannot get default member: hierarchy " + getUniqueName() +
                     " has no root members");
-*/                    
+*/
             }
             defaultMember = (RolapMember) rootMembers.get(0);
         }
@@ -425,9 +425,9 @@ class RolapHierarchy extends HierarchyBase {
                 "$AggregateChildren",
                 Syntax.Internal,
                 new Exp[] {this});
-            Validator resolver =
+            Validator validator =
                     Util.createSimpleValidator(BuiltinFunTable.instance());
-            aggregateChildrenExpression = fc.accept(resolver);
+            aggregateChildrenExpression = fc.accept(validator);
         }
         return aggregateChildrenExpression;
     }

@@ -18,6 +18,7 @@ import mondrian.olap.type.*;
 import mondrian.util.Format;
 
 import java.util.*;
+import java.io.PrintWriter;
 
 /**
  * <code>BuiltinFunTable</code> contains a list of all built-in MDX functions.
@@ -53,7 +54,7 @@ public class BuiltinFunTable extends FunTableImpl {
         if (false) define(new FunDefBase(
                 "SetToArray",
                 "SetToArray(<Set>[, <Set>]...[, <Numeric Expression>])",
-                "Converts one or more sets to an array for use in a user-if (false) defined function.",
+                "Converts one or more sets to an array for use in a user-defined function.",
                 "fa*"));
         //
         // DIMENSION FUNCTIONS
@@ -323,6 +324,13 @@ public class BuiltinFunTable extends FunTableImpl {
                 Dimension dimension = getDimensionArg(evaluator, args, 0, true);
                 return evaluator.getContext(dimension);
             }
+
+            public boolean callDependsOn(FunCall call, Dimension dimension) {
+                // Depends on only one dimension. For example
+                // [Gender].CurrentMember depends upon the [Gender] dimension
+                // only.
+                return call.getArg(0).getTypeX().usesDimension(dimension);
+            }
         });
 
         define(new FunDefBase(
@@ -476,58 +484,8 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        define(new MultiResolver(
-                "OpeningPeriod",
-                "OpeningPeriod([<Level>[, <Member>]])",
-                "Returns the first descendant of a member at a level.",
-                new String[] {"fm", "fml", "fmlm"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    public Type getResultType(Validator validator, Exp[] args) {
-                        if (args.length == 0) {
-                            // With no args, the default implementation cannot
-                            // guess the hierarchy, so we supply the Time
-                            // dimension.
-                            Hierarchy hierarchy = validator.getQuery()
-                                    .getCube().getTimeDimension()
-                                    .getHierarchy();
-                            return new MemberType(hierarchy, null, null);
-                        }
-                        return super.getResultType(validator, args);
-                    }
-                    public Object evaluate(Evaluator evaluator, Exp[] args) {
-                        return openingClosingPeriod(evaluator, args, true);
-                    }
-                };
-            }
-        });
-
-        define(new MultiResolver(
-                "ClosingPeriod",
-                "ClosingPeriod([<Level>[, <Member>]])",
-                "Returns the last descendant of a member at a level.",
-                new String[] {"fm", "fml", "fmlm", "fmm"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    public Type getResultType(Validator validator, Exp[] args) {
-                        if (args.length == 0) {
-                            // With no args, the default implementation cannot
-                            // guess the hierarchy, so we supply the Time
-                            // dimension.
-                            Hierarchy hierarchy = validator.getQuery()
-                                    .getCube().getTimeDimension()
-                                    .getHierarchy();
-                            return new MemberType(hierarchy, null, null);
-                        }
-                        return super.getResultType(validator, args);
-                    }
-
-                    public Object evaluate(Evaluator evaluator, Exp[] args) {
-                        return openingClosingPeriod(evaluator, args, false);
-                    }
-                };
-            }
-        });
+        define(OpeningClosingPeriodFunDef.createResolver(true));
+        define(OpeningClosingPeriodFunDef.createResolver(false));
 
         define(new MultiResolver(
                 "ParallelPeriod",
@@ -547,6 +505,28 @@ public class BuiltinFunTable extends FunTableImpl {
                             return new MemberType(hierarchy, null, null);
                         }
                         return super.getResultType(validator, args);
+                    }
+
+                    public boolean callDependsOn(FunCall call, Dimension dimension) {
+                        if (super.callDependsOn(call, dimension)) {
+                            return true;
+                        }
+                        final Exp[] args = call.getArgs();
+                        switch (args.length) {
+                        case 0:
+                            // ParallelPeriod() depends upon [Time] dimension.
+                            return dimension.getDimensionType() == DimensionType.TimeDimension;
+                        case 1:
+                        case 2:
+                            // ParallelPeriod(<Level>, <Numeric Expression>)
+                            // and ParallelPeriod(<Level>)
+                            // depend on <Level>'s dimension.
+                            return args[0].getTypeX().usesDimension(dimension);
+                        case 3:
+                            return false;
+                        default:
+                            throw Util.newInternal("bad arg count " + args.length);
+                        }
                     }
 
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
@@ -653,38 +633,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 "fm*"));
         //
         // NUMERIC FUNCTIONS
-        define(new MultiResolver(
-                "Aggregate",
-                "Aggregate(<Set>[, <Numeric Expression>])",
-                "Returns a calculated value using the appropriate aggregate function, based on the context of the query.",
-                new String[] {"fnx", "fnxn"}) {
-            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    final Exp valueFunCall = createValueFunCall();
-                    public Object evaluate(Evaluator evaluator, Exp[] args) {
-                        // compute members only if the context has changed
-                        List members = (List) evaluator.getCachedResult(args[0]);
-                        if (members == null) {
-                            members = (List) getArg(evaluator, args, 0);
-                            evaluator.setCachedResult(args[0], members);
-                        }
-
-                        ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
-                        Aggregator aggregator =
-                                (Aggregator) evaluator.getProperty(
-                                        Property.AGGREGATION_TYPE.name, null);
-                        if (aggregator == null) {
-                            throw newEvalException(null, "Could not find an aggregator in the current evaluation context");
-                        }
-                        Aggregator rollup = aggregator.getRollup();
-                        if (rollup == null) {
-                            throw newEvalException(null, "Don't know how to rollup aggregator '" + aggregator + "'");
-                        }
-                        return rollup.aggregate(evaluator.push(), members, exp);
-                    }
-                };
-            }
-        });
+        define(new AggregateFunDef.Resolver());
 
         define(new MultiResolver(
                 "$AggregateChildren",
@@ -694,6 +643,18 @@ public class BuiltinFunTable extends FunTableImpl {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 return new FunDefBase(dummyFunDef) {
                     final Exp valueFunCall = createValueFunCall();
+
+                    public void unparse(Exp[] args, PrintWriter pw) {
+                        pw.print(getName());
+                        pw.print("(");
+                        args[0].unparse(pw);
+                        pw.print(")");
+                    }
+
+                    public boolean callDependsOn(FunCall call, Dimension dimension) {
+                        return true;
+                    }
+
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         Hierarchy hierarchy = getHierarchyArg(evaluator, args, 0, true);
                         Member member = evaluator.getParent().getContext(hierarchy.getDimension());
@@ -722,8 +683,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Returns the average value of a numeric expression evaluated over a set.",
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    final Exp valueFunCall = createValueFunCall();
+                return new AbstractAggregateFunDef(dummyFunDef) {
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -739,8 +699,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Returns the correlation of two series evaluated over a set.",
                 new String[]{"fnxn","fnxnn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    final Exp valueFunCall = createValueFunCall();
+                return new AbstractAggregateFunDef(dummyFunDef) {
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp1 = (ExpBase) getArgNoEval(args, 1);
@@ -758,7 +717,29 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Returns the number of tuples in a set, empty cells included unless the optional EXCLUDEEMPTY flag is used.",
             new String[]{"fnx", "fnxy"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
+                return new AbstractAggregateFunDef(dummyFunDef) {
+                    public boolean callDependsOn(FunCall call, Dimension dimension) {
+                        // COUNT(<set>, INCLUDEEMPTY) is straightforward -- it
+                        // depends only on the dimensions that <Set> depends
+                        // on.
+                        if (super.callDependsOn(call, dimension)) {
+                            return true;
+                        }
+                        final Exp[] args = call.getArgs();
+                        String empties = getLiteralArg(args, 1, "INCLUDEEMPTY", resWords, null);
+                        final boolean includeEmpty = empties.equals("INCLUDEEMPTY");
+                        if (includeEmpty) {
+                            return false;
+                        }
+                        // COUNT(<set>, EXCLUDEEMPTY) depends only on the
+                        // dimensions that <Set> depends on, plus all
+                        // dimensions not masked by the set.
+                        if (args[0].getTypeX().usesDimension(dimension)) {
+                            return false;
+                        }
+                        return true;
+                    }
+
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         String empties = getLiteralArg(args, 1, "INCLUDEEMPTY", resWords, null);
@@ -806,8 +787,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Returns the covariance of two series evaluated over a set (unbiased).",
                 new String[]{"fnxn","fnxnn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    final Exp valueFunCall = createValueFunCall();
+                return new AbstractAggregateFunDef(dummyFunDef) {
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp1 = (ExpBase) getArgNoEval(args, 1);
@@ -883,8 +863,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Returns the maximum value of a numeric expression evaluated over a set.",
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    final Exp valueFunCall = createValueFunCall();
+                return new AbstractAggregateFunDef(dummyFunDef) {
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -900,8 +879,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Returns the median value of a numeric expression evaluated over a set.",
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    final Exp valueFunCall = createValueFunCall();
+                return new AbstractAggregateFunDef(dummyFunDef) {
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -918,8 +896,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Returns the minimum value of a numeric expression evaluated over a set.",
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    final Exp valueFunCall = createValueFunCall();
+                return new AbstractAggregateFunDef(dummyFunDef) {
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -941,12 +918,9 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        define(new FunkResolver(
-                "Rank",
-                "Rank(<Tuple>, <Set> [, <Calc Expression>])",
-                "Returns the one-based rank of a tuple in a set.",
-                new String[]{"fitx","fitxn", "fimx", "fimxn"},
-                new RankFunDef()));
+        define(RankFunDef.createResolver());
+
+        define(new CacheFunDef.CacheFunResolver());
 
         define(new MultiResolver(
                 "Stddev",
@@ -954,8 +928,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Alias for Stdev.",
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    final Exp valueFunCall = createValueFunCall();
+                return new AbstractAggregateFunDef(dummyFunDef) {
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -971,8 +944,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Returns the standard deviation of a numeric expression evaluated over a set (unbiased).",
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    final Exp valueFunCall = createValueFunCall();
+                return new AbstractAggregateFunDef(dummyFunDef) {
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -988,8 +960,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Alias for StdevP.",
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    final Exp valueFunCall = createValueFunCall();
+                return new AbstractAggregateFunDef(dummyFunDef) {
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -1005,8 +976,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Returns the standard deviation of a numeric expression evaluated over a set (biased).",
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    final Exp valueFunCall = createValueFunCall();
+                return new AbstractAggregateFunDef(dummyFunDef) {
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -1020,8 +990,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Sum", "Sum(<Set>[, <Numeric Expression>])", "Returns the sum of a numeric expression evaluated over a set.",
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    final Exp valueFunCall = createValueFunCall();
+                return new AbstractAggregateFunDef(dummyFunDef) {
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -1048,9 +1017,28 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Returns the value of the current measure within the context of a tuple.",
                 "fnt") {
             public Object evaluate(Evaluator evaluator, Exp[] args) {
+                if (true) {
+                    throw new UnsupportedOperationException(); // todo: obsolete
+                }
                 Member[] members = getTupleArg(evaluator, args, 0);
                 Evaluator evaluator2 = evaluator.push(members);
                 return evaluator2.evaluateCurrent();
+            }
+
+            public boolean callDependsOn(FunCall call, Dimension dimension) {
+                // A call to the _Value function depends upon every dimension
+                // which is not an explicit argument. For example,
+                //  _Value((Gender.M, Measures.[Unit Sales]))
+                // depends upon everything EXCEPT Gender and Measures.
+                final Exp[] args = call.getArgs();
+                for (int i = 0; i < args.length; i++) {
+                    Exp arg = args[i];
+                    final Type argType = arg.getTypeX();
+                    if (argType.usesDimension(dimension)) {
+                        return arg.dependsOn(dimension);
+                    }
+                }
+                return true;
             }
         });
 
@@ -1060,6 +1048,9 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Returns the value of the current measure.",
                 "fn") {
             public Object evaluate(Evaluator evaluator, Exp[] args) {
+                if (true) {
+                    throw new UnsupportedOperationException(); // todo: obsolete
+                }
                 return evaluator.evaluateCurrent();
             }
         });
@@ -1071,14 +1062,15 @@ public class BuiltinFunTable extends FunTableImpl {
                 null,
                 null,
                 Syntax.Parentheses) {
-            public FunDef resolve(Exp[] args, int[] conversionCount) {
+            public FunDef resolve(
+                    Exp[] args, Validator validator, int[] conversionCount) {
                 if (args.length == 1 &&
                         args[0].getCategory() == Category.Tuple) {
                     return new ValueFunDef(new int[] {Category.Tuple});
                 }
                 for (int i = 0; i < args.length; i++) {
                     Exp arg = args[i];
-                    if (!canConvert(arg, Category.Member,  conversionCount)) {
+                    if (!validator.canConvert(arg, Category.Member,  conversionCount)) {
                         return null;
                     }
                 }
@@ -1096,8 +1088,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Returns the variance of a numeric expression evaluated over a set (unbiased).",
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    final Exp valueFunCall = createValueFunCall();
+                return new AbstractAggregateFunDef(dummyFunDef) {
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -1112,8 +1103,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Alias for Var.",
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    final Exp valueFunCall = createValueFunCall();
+                return new AbstractAggregateFunDef(dummyFunDef) {
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -1129,8 +1119,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Alias for VarP.",
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    final Exp valueFunCall = createValueFunCall();
+                return new AbstractAggregateFunDef(dummyFunDef) {
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -1146,8 +1135,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Returns the variance of a numeric expression evaluated over a set (biased).",
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    final Exp valueFunCall = createValueFunCall();
+                return new AbstractAggregateFunDef(dummyFunDef) {
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArgNoEval(args, 1, valueFunCall);
@@ -1196,7 +1184,7 @@ public class BuiltinFunTable extends FunTableImpl {
                         ExpBase exp = (ExpBase) getArgNoEval(args, 2, null);
                         if (exp != null) {
                             boolean desc = false, brk = true;
-                            sort(evaluator, list, exp, desc, brk);
+                            sort(evaluator.push(), list, exp, desc, brk);
                         }
                         if (n < list.size()) {
                             list = list.subList(0, n);
@@ -1278,6 +1266,18 @@ public class BuiltinFunTable extends FunTableImpl {
                 "<Set1> * <Set2>",
                 "Returns the cross product of two sets.",
                 new String[]{"ixxx", "ixmx", "ixxm", "ixmm"}) {
+            public FunDef resolve(
+                    Exp[] args, Validator validator, int[] conversionCount) {
+                // This function only applies in contexts which require a set.
+                // Elsewhere, "*" is the multiplication operator.
+                // This means that [Measures].[Unit Sales] * [Gender].[M] is
+                // well-defined.
+                if (validator.requiresExpression()) {
+                    return null;
+                }
+                return super.resolve(args, validator, conversionCount);
+            }
+
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 return new CrossJoinFunDef(dummyFunDef);
             }
@@ -1468,10 +1468,9 @@ public class BuiltinFunTable extends FunTableImpl {
                 return result;
             }
 
-            public boolean dependsOn(Exp[] args, Dimension dimension) {
-                return dependsOnIntersection(args, dimension);
+            public boolean callDependsOn(FunCall call, Dimension dimension) {
+                return FunUtil.callDependsOnSet(call, dimension);
             }
-
         });
 
         define(new MultiResolver(
@@ -1482,18 +1481,23 @@ public class BuiltinFunTable extends FunTableImpl {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 final boolean all = getLiteralArg(args, 2, "", new String[] {"ALL"}, dummyFunDef).equalsIgnoreCase("ALL");
                 return new FunDefBase(dummyFunDef) {
+                    public boolean callDependsOn(FunCall call, Dimension dimension) {
+                        return FunUtil.callDependsOnSet(call, dimension);
+                    }
+
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
+                        final Evaluator evaluator2 = evaluator.push();
                         List result = new ArrayList();
                         HashSet emitted = all ? null : new HashSet();
                         for (int i = 0; i < members.size(); i++) {
                             Object o = members.get(i);
                             if (o instanceof Member) {
-                                evaluator.setContext((Member) o);
+                                evaluator2.setContext((Member) o);
                             } else {
-                                evaluator.setContext((Member[]) o);
+                                evaluator2.setContext((Member[]) o);
                             }
-                            final List result2 = (List) args[1].evaluate(evaluator);
+                            final List result2 = (List) args[1].evaluate(evaluator2);
                             if (all) {
                                 result.addAll(result2);
                             } else {
@@ -1615,7 +1619,7 @@ public class BuiltinFunTable extends FunTableImpl {
         /*
          * Clone of <Hierarchy>.Members for compatibility with MSAS
          */
-        
+
         define(new FunDefBase(
                 "AllMembers",
                 "<Hierarchy>.AllMembers",
@@ -1670,6 +1674,25 @@ public class BuiltinFunTable extends FunTableImpl {
                 new String[]{"fx", "fxl", "fxlm"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
                 return new FunDefBase(dummyFunDef) {
+                    public boolean callDependsOn(FunCall call, Dimension dimension) {
+                        if (super.callDependsOn(call, dimension)) {
+                            return true;
+                        }
+                        final Exp[] args = call.getArgs();
+                        switch (args.length) {
+                        case 0:
+                            return dimension.getDimensionType() ==
+                                    DimensionType.TimeDimension;
+                        case 1:
+                            return args[0].getTypeX().usesDimension(dimension);
+                        case 2:
+                            return false;
+                        default:
+                            throw Util.newInternal("bad arg count " +
+                                    args.length);
+                        }
+                    }
+
                     public Type getResultType(Validator validator, Exp[] args) {
                         if (args.length == 0) {
                             // With no args, the default implementation cannot
@@ -1689,6 +1712,7 @@ public class BuiltinFunTable extends FunTableImpl {
                         }
                         return super.getResultType(validator, args);
                     }
+
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         Level level;
                         Member member;
@@ -1950,7 +1974,7 @@ public class BuiltinFunTable extends FunTableImpl {
                         ExpBase exp = (ExpBase) getArgNoEval(args, 2, null);
                         if (exp != null) {
                             boolean desc = true, brk = true;
-                            sort(evaluator, list, exp, desc, brk);
+                            sort(evaluator.push(), list, exp, desc, brk);
                         }
                         if (n < list.size()) {
                             list = list.subList(0, n);
@@ -2076,20 +2100,21 @@ public class BuiltinFunTable extends FunTableImpl {
                 "{<Member> [, <Member>]...}",
                 "Brace operator constructs a set.",
                 Syntax.Braces) {
-            public FunDef resolve(Exp[] args, int[] conversionCount) {
+            public FunDef resolve(
+                    Exp[] args, Validator validator, int[] conversionCount) {
                 int[] parameterTypes = new int[args.length];
                 for (int i = 0; i < args.length; i++) {
-                    if (canConvert(
+                    if (validator.canConvert(
                             args[i], Category.Member, conversionCount)) {
                         parameterTypes[i] = Category.Member;
                         continue;
                     }
-                    if (canConvert(
+                    if (validator.canConvert(
                             args[i], Category.Set, conversionCount)) {
                         parameterTypes[i] = Category.Set;
                         continue;
                     }
-                    if (canConvert(
+                    if (validator.canConvert(
                             args[i], Category.Tuple, conversionCount)) {
                         parameterTypes[i] = Category.Tuple;
                         continue;
@@ -2344,7 +2369,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Item",
                 "<Set>.Item(<Index>)",
                 "Returns a tuple from the set specified in «Set». The tuple to be returned is specified by the zero-based position of the tuple in the set in «Index».",
-                "mtxn") {
+                "mmxn") {
             public Type getResultType(Validator validator, Exp[] args) {
                 SetType setType = (SetType) args[0].getTypeX();
                 return setType.getElementType();
@@ -2353,17 +2378,18 @@ public class BuiltinFunTable extends FunTableImpl {
             public Object evaluate(Evaluator evaluator, Exp[] args) {
                 Object arg0 = getArg(evaluator, args, 0);
                 int index = getIntArg(evaluator, args, 1);
+                final Type type = args[0].getTypeX();
 
                 if (arg0 == null) {
                     // List is empty, therefore every index it out of
                     // bounds.
-                    return null;
+                    return makeNullMember(evaluator, args);
                 } else if (arg0 instanceof List) {
                     List theSet = (List)arg0;
 
                     int setSize = theSet.size();
                     if (index >= setSize || index < 0) {
-                        return null;
+                        return makeNullMember(evaluator, args);
                     } else {
                         return theSet.get(index);
                     }
@@ -2379,7 +2405,7 @@ public class BuiltinFunTable extends FunTableImpl {
                         if (index == 0) {
                             return arg0;
                         }
-                        return null;
+                        return makeNullMember(evaluator, args);
                     } else {
                         Member[] tuple = (Member[]) arg0;
 
@@ -2387,10 +2413,35 @@ public class BuiltinFunTable extends FunTableImpl {
                             return tuple[index];
                         }
 
-                        return null;
+                        return makeNullMember(evaluator, args);
                     }
                 }
+            }
 
+            Object makeNullMember(Evaluator evaluator, Exp[] args) {
+                final Type elementType = ((SetType) args[0].getTypeX()).getElementType();
+                if (elementType instanceof MemberType) {
+                    MemberType memberType = (MemberType) elementType;
+                    Hierarchy hierarchy = memberType.getHierarchy();
+                    if (hierarchy == null) {
+                        hierarchy = evaluator.getMembers()[0].getHierarchy();
+                    }
+                    return hierarchy.getNullMember();
+                } else if (elementType instanceof TupleType) {
+                    TupleType tupleType = (TupleType) elementType;
+                    Member[] members = new Member[tupleType.elementTypes.length];
+                    for (int i = 0; i < tupleType.elementTypes.length; i++) {
+                        Type type = tupleType.elementTypes[i];
+                        Hierarchy hierarchy = type.getHierarchy();
+                        if (hierarchy == null) {
+                            hierarchy = evaluator.getMembers()[0].getHierarchy();
+                        }
+                        members[i] = hierarchy.getNullMember();
+                    }
+                    return members;
+                } else {
+                    throw Util.newInternal("bad type " + elementType);
+                }
             }
         });
 
@@ -2499,16 +2550,21 @@ public class BuiltinFunTable extends FunTableImpl {
             null,
             null,
             Syntax.Parentheses) {
-            public FunDef resolve(Exp[] args, int[] conversionCount) {
+            public FunDef resolve(
+                    Exp[] args, Validator validator, int[] conversionCount) {
                 // Compare with TupleFunDef.getReturnCategory().  For example,
                 //   ([Gender].members) is a set,
                 //   ([Gender].[M]) is a member,
                 //   (1 + 2) is a numeric,
                 // but
                 //   ([Gender].[M], [Marital Status].[S]) is a tuple.
-                return (args.length == 1)
-                    ? new ParenthesesFunDef(args[0].getCategory())
-                    : (FunDef) new TupleFunDef(ExpBase.getTypes(args));
+                if (args.length == 1) {
+                    return new ParenthesesFunDef(args[0].getCategory());
+                } else {
+                    final int[] argTypes = new int[args.length];
+                    Arrays.fill(argTypes, Category.Member);
+                    return (FunDef) new TupleFunDef(argTypes);
+                }
             }
         });
 
@@ -2519,22 +2575,25 @@ public class BuiltinFunTable extends FunTableImpl {
                 "CoalesceEmpty(<Value Expression>[, <Value Expression>]...)",
                 "Coalesces an empty cell value to a different value. All of the expressions must be of the same type (number or string).",
                 Syntax.Function) {
-            public FunDef resolve(Exp[] args, int[] conversionCount) {
+            public FunDef resolve(
+                    Exp[] args, Validator validator, int[] conversionCount) {
                 if (args.length < 1) {
                     return null;
                 }
                 final int[] types = {Category.Numeric, Category.String};
+                final int[] argTypes = new int[args.length];
                 for (int j = 0; j < types.length; j++) {
                     int type = types[j];
                     int matchingArgs = 0;
                     conversionCount[0] = 0;
                     for (int i = 0; i < args.length; i++) {
-                        if (canConvert(args[i], type, conversionCount)) {
+                        if (validator.canConvert(args[i], type, conversionCount)) {
                             matchingArgs++;
                         }
+                        argTypes[i] = type;
                     }
                     if (matchingArgs == args.length) {
-                        return new CoalesceEmptyFunDef(this, type, ExpBase.getTypes(args));
+                        return new CoalesceEmptyFunDef(this, type, argTypes);
                     }
                 }
                 return null;
@@ -2550,7 +2609,8 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Case When <Logical Expression> Then <Expression> [...] [Else <Expression>] End",
                 "Evaluates various conditions, and returns the corresponding expression for the first which evaluates to true.",
                 Syntax.Case) {
-            public FunDef resolve(Exp[] args, int[] conversionCount) {
+            public FunDef resolve(
+                    Exp[] args, Validator validator, int[] conversionCount) {
                 if (args.length < 1) {
                     return null;
                 }
@@ -2559,15 +2619,15 @@ public class BuiltinFunTable extends FunTableImpl {
                 int mismatchingArgs = 0;
                 int returnType = args[1].getCategory();
                 for (int i = 0; i < clauseCount; i++) {
-                    if (!canConvert(args[j++], Category.Logical, conversionCount)) {
+                    if (!validator.canConvert(args[j++], Category.Logical, conversionCount)) {
                         mismatchingArgs++;
                     }
-                    if (!canConvert(args[j++], returnType, conversionCount)) {
+                    if (!validator.canConvert(args[j++], returnType, conversionCount)) {
                         mismatchingArgs++;
                     }
                 }
                 if (j < args.length) {
-                    if (!canConvert(args[j++], returnType, conversionCount)) {
+                    if (!validator.canConvert(args[j++], returnType, conversionCount)) {
                         mismatchingArgs++;
                     }
                 }
@@ -2610,7 +2670,8 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Case <Expression> When <Expression> Then <Expression> [...] [Else <Expression>] End",
                 "Evaluates various expressions, and returns the corresponding expression for the first which matches a particular value.",
                 Syntax.Case) {
-            public FunDef resolve(Exp[] args, int[] conversionCount) {
+            public FunDef resolve(
+                    Exp[] args, Validator validator, int[] conversionCount) {
                 if (args.length < 3) {
                     return null;
                 }
@@ -2619,19 +2680,19 @@ public class BuiltinFunTable extends FunTableImpl {
                 int j = 0;
                 int clauseCount = (args.length - 1) / 2;
                 int mismatchingArgs = 0;
-                if (!canConvert(args[j++], valueType, conversionCount)) {
+                if (!validator.canConvert(args[j++], valueType, conversionCount)) {
                     mismatchingArgs++;
                 }
                 for (int i = 0; i < clauseCount; i++) {
-                    if (!canConvert(args[j++], valueType, conversionCount)) {
+                    if (!validator.canConvert(args[j++], valueType, conversionCount)) {
                         mismatchingArgs++;
                     }
-                    if (!canConvert(args[j++], returnType, conversionCount)) {
+                    if (!validator.canConvert(args[j++], returnType, conversionCount)) {
                         mismatchingArgs++;
                     }
                 }
                 if (j < args.length) {
-                    if (!canConvert(args[j++], returnType, conversionCount)) {
+                    if (!validator.canConvert(args[j++], returnType, conversionCount)) {
                         mismatchingArgs++;
                     }
                 }
@@ -2688,10 +2749,21 @@ public class BuiltinFunTable extends FunTableImpl {
             public Object evaluate(Evaluator evaluator, Exp[] args) {
                 Double o0 = getDoubleArg(evaluator, args, 0, null);
                 Double o1 = getDoubleArg(evaluator, args, 1, null);
-                if (o0 == null || o1 == null) {
-                    return null;
+                // Plus and minus return null if BOTH args are null. A single
+                // null arg acts like zero.
+                if (o0 == null) {
+                    if (o1 == null) {
+                        return null;
+                    } else {
+                        return o1;
+                    }
+                } else {
+                    if (o1 == null) {
+                        return o0;
+                    } else {
+                        return new Double(o0.doubleValue() + o1.doubleValue());
+                    }
                 }
-                return new Double(o0.doubleValue() + o1.doubleValue());
             }
         });
 
@@ -2703,10 +2775,21 @@ public class BuiltinFunTable extends FunTableImpl {
             public Object evaluate(Evaluator evaluator, Exp[] args) {
                 Double o0 = getDoubleArg(evaluator, args, 0, null);
                 Double o1 = getDoubleArg(evaluator, args, 1, null);
-                if (o0 == null || o1 == null) {
-                    return null;
+                // Plus and minus return null if BOTH args are null. A single
+                // null arg acts like zero.
+                if (o0 == null) {
+                    if (o1 == null) {
+                        return null;
+                    } else {
+                        return new Double(- o1.doubleValue());
+                    }
+                } else {
+                    if (o1 == null) {
+                        return o0;
+                    } else {
+                        return new Double(o0.doubleValue() - o1.doubleValue());
+                    }
                 }
-                return new Double(o0.doubleValue() - o1.doubleValue());
             }
         });
 
@@ -2718,10 +2801,12 @@ public class BuiltinFunTable extends FunTableImpl {
             public Object evaluate(Evaluator evaluator, Exp[] args) {
                 Double o0 = getDoubleArg(evaluator, args, 0, null);
                 Double o1 = getDoubleArg(evaluator, args, 1, null);
+                // Multiply and divide return null if EITHER arg is null.
                 if (o0 == null || o1 == null) {
                     return null;
+                } else {
+                    return new Double(o0.doubleValue() * o1.doubleValue());
                 }
-                return new Double(o0.doubleValue() * o1.doubleValue());
             }
         });
 
@@ -2733,10 +2818,12 @@ public class BuiltinFunTable extends FunTableImpl {
             public Object evaluate(Evaluator evaluator, Exp[] args) {
                 Double o0 = getDoubleArg(evaluator, args, 0, null);
                 Double o1 = getDoubleArg(evaluator, args, 1, null);
+                // Multiply and divide return null if EITHER arg is null.
                 if (o0 == null || o1 == null) {
                     return null;
+                } else {
+                    return new Double(o0.doubleValue() / o1.doubleValue());
                 }
-                return new Double(o0.doubleValue() / o1.doubleValue());
             }
             // todo: use this, via reflection
             public double evaluate(double d1, double d2) {
@@ -3036,8 +3123,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Returns the 1st quartile value of a numeric expression evaluated over a set.",
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    final Exp valueFunCall = createValueFunCall();
+                return new AbstractAggregateFunDef(dummyFunDef) {
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
@@ -3054,8 +3140,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 "Returns the 3rd quartile value of a numeric expression evaluated over a set.",
                 new String[]{"fnx", "fnxn"}) {
             protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-                return new FunDefBase(dummyFunDef) {
-                    final Exp valueFunCall = createValueFunCall();
+                return new AbstractAggregateFunDef(dummyFunDef) {
                     public Object evaluate(Evaluator evaluator, Exp[] args) {
                         List members = (List) getArg(evaluator, args, 0);
                         ExpBase exp = (ExpBase) getArg(evaluator, args, 1, valueFunCall);
@@ -3065,35 +3150,6 @@ public class BuiltinFunTable extends FunTableImpl {
                 };
             }
         });
-    }
-
-    /**
-     * Creates an expression which will yield the current value of the current
-     * member.
-     */
-    Exp createValueFunCall() {
-        return new ExpBase() {
-            public Object clone() {
-                return this;
-            }
-
-            public int getCategory() {
-                return Category.Numeric;
-            }
-
-            public Type getTypeX() {
-                return new NumericType();
-            }
-
-            public Exp accept(Validator validator) {
-                return this;
-            }
-
-            public Object evaluate(Evaluator evaluator) {
-                return evaluator.evaluateCurrent();
-            }
-        };
-        //return new ValueCall(valueFunDef).accept(dummyValidator);
     }
 
     private static void appendMemberOrTuple(
@@ -3133,11 +3189,6 @@ public class BuiltinFunTable extends FunTableImpl {
         return instance;
     }
 
-    private static class ValueCall extends FunCall {
-        public ValueCall(FunDef funDef) {
-            super("_Value", Syntax.Function, new Exp[0]);
-        }
-    }
 }
 
 // End BuiltinFunTable.java

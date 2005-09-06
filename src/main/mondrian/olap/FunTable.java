@@ -25,13 +25,7 @@ public interface FunTable {
      * overloaded, returns as precise a match to the argument types as
      * possible.
      **/
-    FunDef getDef(FunCall call, Validator resolver);
-
-    /**
-     * Adds a casting function, if necessary, to ensure that an expression is
-     * of a given type. Throws an error if conversion is not possible.
-     */
-    Exp convert(Exp fromExp, int to, Validator resolver);
+    FunDef getDef(FunCall call, Validator validator);
 
     /**
      * Returns whether a string is a reserved word.
@@ -52,7 +46,7 @@ public interface FunTable {
     boolean requiresExpression(
             FunCall funCall,
             int k,
-            Validator resolver);
+            Validator validator);
 
     /**
      * Returns a list of words ({@link String}) which may not be used as
@@ -69,6 +63,12 @@ public interface FunTable {
      * Returns a list of {@link mondrian.olap.fun.FunInfo} objects.
      */
     List getFunInfoList();
+
+    /**
+     * Creates an expression which will yield the scalar value of a given
+     * expression.
+     */
+    Exp createValueFunCall(Exp exp, Validator validator);
 }
 
 // End FunTable.java

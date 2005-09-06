@@ -37,7 +37,8 @@ public class UdfResolver implements Resolver {
         return udf.getSyntax();
     }
 
-    public FunDef resolve(Exp[] args, int[] conversionCount) {
+    public FunDef resolve(
+            Exp[] args, Validator validator, int[] conversionCount) {
         final Type[] parameterTypes = udf.getParameterTypes();
         if (args.length != parameterTypes.length) {
             return null;
@@ -52,7 +53,7 @@ public class UdfResolver implements Resolver {
                 continue;
             }
             final int parameterCategory = typeToCategory(parameterType);
-            if (!FunTableImpl.canConvert(
+            if (!validator.canConvert(
                     arg, parameterCategory, conversionCount)) {
                 return null;
             }
@@ -112,6 +113,12 @@ public class UdfResolver implements Resolver {
         // implement FunDef
         public Object evaluate(Evaluator evaluator, Exp[] args) {
             return udf.execute(evaluator, args);
+        }
+
+        // Be conservative. Assume that this function depends on everything.
+        // This will effectively disable caching.
+        public boolean callDependsOn(FunCall call, Dimension dimension) {
+            return true;
         }
     }
 }

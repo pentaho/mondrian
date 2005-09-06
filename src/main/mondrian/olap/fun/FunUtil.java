@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.Set;
+import java.io.PrintWriter;
 
 /**
  * <code>FunUtil</code> contains a set of methods useful within the
@@ -28,6 +29,7 @@ import java.util.Set;
 public class FunUtil extends Util {
 
     static final String[] emptyStringArray = new String[0];
+    private static final boolean debug = false;
 
     /**
      * Creates an exception which indicates that an error has occurred while
@@ -544,18 +546,26 @@ public class FunUtil extends Util {
         return mapMemberToValue;
     }
 
-    static void sort(Evaluator evaluator,
-                     List members,
-                     ExpBase exp,
-                     boolean desc, boolean brk) {
+    /**
+     * Helper function to sort a list of members according to an expression.
+     *
+     * <p>NOTE: This function does not preserve the contents of the validator.
+     */
+    static void sort(
+            Evaluator evaluator,
+            List members,
+            ExpBase exp,
+            boolean desc,
+            boolean brk) {
         if (members.isEmpty()) {
             return;
         }
         Object first = members.get(0);
         Comparator comparator;
+        Map mapMemberToValue = null;
         if (first instanceof Member) {
             final boolean parentsToo = !brk;
-            Map mapMemberToValue = evaluateMembers(evaluator, exp, members, parentsToo);
+            mapMemberToValue = evaluateMembers(evaluator, exp, members, parentsToo);
             if (brk) {
                 comparator = new BreakMemberComparator(mapMemberToValue, desc);
             } else {
@@ -574,6 +584,20 @@ public class FunUtil extends Util {
             }
         }
         Collections.sort(members, comparator);
+        if (debug) {
+            final PrintWriter pw = new PrintWriter(System.out);
+            for (int i = 0; i < members.size(); i++) {
+                Object o = members.get(i);
+                pw.print(i);
+                pw.print(": ");
+                if (mapMemberToValue != null) {
+                    pw.print(mapMemberToValue.get(o));
+                    pw.print(": ");
+                }
+                pw.println(o);
+            }
+            pw.flush();
+        }
     }
 
     static void hierarchize(List members, boolean post) {
@@ -895,6 +919,20 @@ public class FunUtil extends Util {
         Arrays.sort(values, DescendingValueComparator.instance);
     }
 
+    /**
+     * Binary searches an array of values.
+     */
+    public static int searchValuesDesc(Object[] values, Object value) {
+        return Arrays.binarySearch(
+                values, value, DescendingValueComparator.instance);
+    }
+
+    /**
+     * @param evaluator
+     * @param members
+     * @param exp
+     * @return
+     */
     static Object median(Evaluator evaluator, List members, ExpBase exp) {
         SetWrapper sw = evaluateSet(evaluator, members, exp);
         if (sw.errorCount > 0) {
@@ -1528,142 +1566,335 @@ public class FunUtil extends Util {
 */
     }
 
+
     /**
-     * Evaluates the OPENINGPERIOD (or, CLOSINGPERIOD, if
-     * <code>isOpeningPeriod</code> is false) function.
+     * Helper function for {@link mondrian.olap.FunDef#callDependsOn(mondrian.olap.FunCall,
+     * mondrian.olap.Dimension)} for calls which have a set as the first
+     * argument and an expression as the second. The call depends upon
+     * everything <Value Expression> depends upon, except the dimensions of
+     * <Set>.
+     *
+     * @param call Function call
+     * @param dimension Dimension
+     * @return Whether call is dependent upon dimension
      */
-    static Object openingClosingPeriod(
-            Evaluator evaluator,
-            Exp[] args,
-            boolean isOpeningPeriod)
-    {
-        Member member;
-        Level level;
-
-        //
-        // If the member argument is present, use it. Otherwise default
-        // to the time dimension's current member.
-        //
-        if (args.length == 2) {
-            member = getMemberArg(evaluator, args, 1, false);
-        } else {
-            member = evaluator.getContext(evaluator.getCube().getTimeDimension());
+    public static boolean callDependsOnSet(FunCall call, Dimension dimension) {
+        final Exp[] args = call.getArgs();
+        if (args[0].dependsOn(dimension)) {
+            return true;
         }
-
-        //
-        // If the level argument is present, use it. Otherwise use the level
-        // immediately after that of the member argument.
-        //
-        if (args.length >= 1) {
-            level = getLevelArg(evaluator,  args, 0, false);
-        } else {
-            int targetDepth = member.getLevel().getDepth() + 1;
-            Level[] levels = member.getHierarchy().getLevels();
-
-            if (levels.length <= targetDepth) {
-                return member.getHierarchy().getNullMember();
+        if (args[0].getTypeX().usesDimension(dimension)) {
+            return false;
+        }
+        // If there is no value expression, the value expression is implicit,
+        // and depends upon all dimensions.
+        if (args.length == 1) {
+            return true;
+        }
+        for (int i = 1; i < args.length; i++) {
+            Exp exp = args[i];
+            if (exp.dependsOn(dimension)) {
+                return true;
             }
-            level = levels[targetDepth];
         }
-
-        //
-        // Make sure the member and the level come from the same hierarchy.
-        //
-        if (!member.getHierarchy().equals(level.getHierarchy())) {
-            throw MondrianResource.instance().newFunctionMbrAndLevelHierarchyMismatch(
-                    isOpeningPeriod ? "OpeningPeriod" : "ClosingPeriod",
-                    level.getHierarchy().getUniqueName(),
-                    member.getHierarchy().getUniqueName());
-        }
-
-        //
-        // Shortcut if the level is above the member.
-        //
-        if (level.getDepth() < member.getLevel().getDepth()) {
-            return member.getHierarchy().getNullMember();
-        }
-
-        //
-        // Shortcut if the level is the same as the member
-        //
-        if (level == member.getLevel()) {
-            return member;
-        }
-
-        return getDescendant(evaluator.getSchemaReader(), member, level,
-            isOpeningPeriod);
+        return false;
     }
 
     /**
-     * Returns the first or last descendant of the member at the target level.
-     * This method is the implementation of both OpeningPeriod and ClosingPeriod.
-     * @param schemaReader The schema reader to use to evaluate the function.
-     * @param member The member from which the descendant is to be found.
-     * @param targetLevel The level to stop at.
-     * @param returnFirstDescendant Flag indicating whether to return the first
-     * or last descendant of the member.
-     * @return A member.
-     * @pre member.getLevel().getDepth() < level.getDepth();
+     * Converts an argument to a parameter type.
      */
-    private static Member getDescendant(SchemaReader schemaReader,
-            Member member, Level targetLevel, boolean returnFirstDescendant) {
-        Member[] children;
+    public static Exp convert(Exp fromExp, int to, Validator validator) {
+        Exp exp = convert_(fromExp, to, validator);
+        if (exp == null) {
+            throw newInternal("cannot convert " + fromExp + " to " + to);
+        }
+        return validator.validate(exp, false);
+    }
 
-        final int targetLevelDepth = targetLevel.getDepth();
-        assertPrecondition(member.getLevel().getDepth() < targetLevelDepth,
-                "member.getLevel().getDepth() < targetLevel.getDepth()");
-
-        for (;;) {
-            children = schemaReader.getMemberChildren(member);
-
-            if (children.length == 0) {
-                return targetLevel.getHierarchy().getNullMember();
+    private static Exp convert_(Exp fromExp, int to, Validator validator) {
+        int from = fromExp.getCategory();
+        if (from == to) {
+            return fromExp;
+        }
+        switch (from) {
+        case Category.Array:
+            return null;
+        case Category.Dimension:
+            // Seems funny that you can 'downcast' from a dimension, doesn't
+            // it? But we add an implicit 'CurrentMember', for example,
+            // '[Time].PrevMember' actually means
+            // '[Time].CurrentMember.PrevMember'.
+            switch (to) {
+            case Category.Hierarchy:
+                // "<Dimension>.CurrentMember.Hierarchy"
+                return new FunCall(
+                        "Hierarchy", Syntax.Property, new Exp[]{
+                        new FunCall(
+                                "CurrentMember",
+                                Syntax.Property, new Exp[]{fromExp}
+                        )}
+                );
+            case Category.Level:
+                // "<Dimension>.CurrentMember.Level"
+                return new FunCall(
+                        "Level", Syntax.Property, new Exp[]{
+                        new FunCall(
+                                "CurrentMember",
+                                Syntax.Property, new Exp[]{fromExp}
+                        )}
+                );
+            case Category.Member:
+            case Category.Tuple:
+                // "<Dimension>.CurrentMember"
+                return new FunCall(
+                        "CurrentMember",
+                        Syntax.Property,
+                        new Exp[]{fromExp});
+            default:
+                return null;
             }
-
-            member = children[returnFirstDescendant ? 0 : (children.length - 1)];
-
-            if (member.getLevel().getDepth() == targetLevelDepth) {
-                if (member.isHidden()) {
-                    return member.getHierarchy().getNullMember();
-                } else {
-                    return member;
-                }
+        case Category.Hierarchy:
+            switch (to) {
+            case Category.Dimension:
+                // "<Hierarchy>.Dimension"
+                return new FunCall(
+                        "Dimension",
+                        Syntax.Property,
+                        new Exp[]{fromExp});
+            default:
+                return null;
             }
+        case Category.Level:
+            switch (to) {
+            case Category.Dimension:
+                // "<Level>.Dimension"
+                return new FunCall(
+                        "Dimension",
+                        Syntax.Property,
+                        new Exp[] {fromExp});
+            case Category.Hierarchy:
+                // "<Level>.Hierarchy"
+                return new FunCall(
+                        "Hierarchy",
+                        Syntax.Property,
+                        new Exp[] {fromExp});
+            default:
+                return null;
+            }
+        case Category.Logical:
+            return null;
+        case Category.Member:
+            switch (to) {
+            case Category.Dimension:
+                // "<Member>.Dimension"
+                return new FunCall(
+                        "Dimension",
+                        Syntax.Property,
+                        new Exp[] {fromExp});
+            case Category.Hierarchy:
+                // "<Member>.Hierarchy"
+                return new FunCall(
+                        "Hierarchy",
+                        Syntax.Property,
+                        new Exp[]{fromExp});
+            case Category.Level:
+                // "<Member>.Level"
+                return new FunCall(
+                        "Level",
+                        Syntax.Property,
+                        new Exp[]{fromExp});
+            case Category.Tuple:
+                // Conversion to tuple is trivial: a member is a
+                // one-dimensional tuple already.
+                return fromExp;
+            case Category.Numeric | Category.Constant:
+            case Category.String | Category.Constant: //todo: assert is a string member
+                // "<Member>.Value"
+                return new FunCall(
+                        "Value",
+                        Syntax.Property,
+                        new Exp[]{fromExp});
+            case Category.Value:
+            case Category.Numeric:
+            case Category.String:
+                return validator.getFunTable().createValueFunCall(fromExp, validator);
+            default:
+                return null;
+            }
+        case Category.Numeric | Category.Constant:
+        case Category.Integer | Category.Constant:
+            switch (to) {
+            case Category.Value:
+            case Category.Integer:
+            case Category.Numeric:
+                return fromExp;
+            default:
+                return null;
+            }
+        case Category.Integer:
+            switch (to) {
+            case Category.Value:
+            case Category.Numeric:
+                return fromExp;
+            case Category.Numeric | Category.Constant:
+            case Category.Integer | Category.Constant:
+                return validator.getFunTable().createValueFunCall(fromExp, validator);
+            default:
+                return null;
+            }
+        case Category.Numeric:
+            switch (to) {
+            case Category.Value:
+            case Category.Integer:
+                return fromExp;
+            case Category.Numeric | Category.Constant:
+            case Category.Integer | Category.Constant:
+                return validator.getFunTable().createValueFunCall(fromExp, validator);
+            default:
+                return null;
+            }
+        case Category.Set:
+            return null;
+        case Category.String | Category.Constant:
+            switch (to) {
+            case Category.Value:
+            case Category.String:
+                return fromExp;
+            default:
+                return null;
+            }
+        case Category.String:
+            switch (to) {
+            case Category.Value:
+                return fromExp;
+            case Category.String | Category.Constant:
+                return validator.getFunTable().createValueFunCall(fromExp, validator);
+            default:
+                return null;
+            }
+        case Category.Tuple:
+            switch (to) {
+            case Category.Value:
+//                return fromExp;
+            case Category.Numeric:
+            case Category.String:
+                return validator.getFunTable().createValueFunCall(fromExp, validator);
+            default:
+                return null;
+            }
+        case Category.Value:
+            return null;
+        case Category.Symbol:
+            return null;
+        default:
+            throw newInternal("unknown category " + from);
         }
     }
-    /**
-     * Adds a test case for each method of this object whose signature looks
-     * like 'public void testXxx()'.
-     */
-//  public void addTests(TestSuite suite, Pattern pattern) {
-//      addTests(this, suite, pattern);
-//  }
 
-//  /**
-//   * Adds a test case for each method in an object whose signature looks
-//   * like 'public void testXxx({@link TestCase})'.
-//   */
-//  public static void addTests(Object o, TestSuite suite, Pattern pattern) {
-//      for (Class clazz = o.getClass(); clazz != null; clazz = clazz.getSuperclass()) {
-//          Method[] methods = clazz.getDeclaredMethods();
-//          for (int i = 0; i < methods.length; i++) {
-//              Method method = methods[i];
-//              String methodName = method.getName();
-//              if (methodName.startsWith("test") &&
-//                      Modifier.isPublic(method.getModifiers()) &&
-//                      method.getParameterTypes().length == 1 &&
-//                      TestCase.class.isAssignableFrom(
-//                              method.getParameterTypes()[0]) &&
-//                      method.getReturnCategory() == Void.TYPE) {
-//                    String fullMethodName = clazz.getName() + "." + method.getName();
-//                    if (pattern == null || pattern.matcher(fullMethodName).matches()) {
-//                        suite.addTest(new MethodCallTestCase(
-//                            fullMethodName, o, method));
-//                    }
-//              }
-//          }
-//      }
-//  }
+    /**
+     * Returns whether we can convert an argument to a parameter tyoe.
+     * @param fromExp argument type
+     * @param to   parameter type
+     * @param conversionCount in/out count of number of conversions performed;
+     *             is incremented if the conversion is non-trivial (for
+     *             example, converting a member to a level).
+     *
+     * @see #convert
+     */
+    public static boolean canConvert(
+            Exp fromExp,
+            int to,
+            int[] conversionCount) {
+        int from = fromExp.getCategory();
+        if (from == to) {
+            return true;
+        }
+        switch (from) {
+        case Category.Array:
+            return false;
+        case Category.Dimension:
+            // Seems funny that you can 'downcast' from a dimension, doesn't
+            // it? But we add an implicit 'CurrentMember', for example,
+            // '[Time].PrevMember' actually means
+            // '[Time].CurrentMember.PrevMember'.
+            if (to == Category.Hierarchy ||
+                    to == Category.Level ||
+                    to == Category.Member ||
+                    to == Category.Tuple) {
+                conversionCount[0]++;
+                return true;
+            } else {
+                return false;
+            }
+        case Category.Hierarchy:
+            if (to == Category.Dimension) {
+                conversionCount[0]++;
+                return true;
+            } else {
+                return false;
+            }
+        case Category.Level:
+            if (to == Category.Dimension ||
+                    to == Category.Hierarchy) {
+                conversionCount[0]++;
+                return true;
+            } else {
+                return false;
+            }
+        case Category.Logical:
+            return false;
+        case Category.Member:
+            if (to == Category.Dimension ||
+                    to == Category.Hierarchy ||
+                    to == Category.Level ||
+                    to == Category.Tuple) {
+                conversionCount[0]++;
+                return true;
+            } else if (to == (Category.Numeric | Category.Expression)) {
+                // We assume that members are numeric, so a cast to a numeric
+                // expression is less expensive than a conversion to a string
+                // expression.
+                conversionCount[0]++;
+                return true;
+            } else if (to == Category.Value ||
+                    to == (Category.String | Category.Expression)) {
+                conversionCount[0] += 2;
+                return true;
+            } else {
+                return false;
+            }
+        case Category.Numeric | Category.Constant:
+            return to == Category.Value ||
+                to == Category.Numeric;
+        case Category.Numeric:
+            return to == Category.Value ||
+                to == Category.Integer ||
+                to == (Category.Integer | Category.Constant) ||
+                to == (Category.Numeric | Category.Constant);
+        case Category.Integer:
+            return to == Category.Value ||
+                to == (Category.Integer | Category.Constant) ||
+                to == Category.Numeric ||
+                to == (Category.Numeric | Category.Constant);
+        case Category.Set:
+            return false;
+        case Category.String | Category.Constant:
+            return to == Category.Value ||
+                to == Category.String;
+        case Category.String:
+            return to == Category.Value ||
+                to == (Category.String | Category.Constant);
+        case Category.Tuple:
+            return to == Category.Value ||
+                to == Category.Numeric;
+        case Category.Value:
+            return false;
+        case Category.Symbol:
+            return false;
+        default:
+            throw newInternal("unknown category " + from);
+        }
+    }
 
     // Inner classes
 

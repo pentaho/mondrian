@@ -11,10 +11,7 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.Category;
-import mondrian.olap.Exp;
-import mondrian.olap.FunDef;
-import mondrian.olap.Syntax;
+import mondrian.olap.*;
 
 /**
  * A <code>SimpleResolver</code> resolves a single, non-overloaded function.
@@ -48,13 +45,15 @@ class SimpleResolver implements Resolver {
         return FunUtil.emptyStringArray;
     }
 
-    public FunDef resolve(Exp[] args, int[] conversionCount) {
+    public FunDef resolve(
+            Exp[] args, Validator validator, int[] conversionCount) {
         int[] parameterTypes = funDef.getParameterTypes();
         if (parameterTypes.length != args.length) {
             return null;
         }
         for (int i = 0; i < args.length; i++) {
-            if (!FunTableImpl.canConvert(args[i], parameterTypes[i], conversionCount)) {
+            if (!validator.canConvert(
+                    args[i], parameterTypes[i], conversionCount)) {
                 return null;
             }
         }

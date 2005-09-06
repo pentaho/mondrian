@@ -73,7 +73,8 @@ class PropertiesFunDef extends FunDefBase {
                   Syntax.Method);
         }
 
-        public FunDef resolve(Exp[] args, int[] conversionCount) {
+        public FunDef resolve(
+                Exp[] args, Validator validator, int[] conversionCount) {
             final int[] argTypes = new int[]{Category.Member, Category.String};
             if ((args.length != 2) ||
                     (args[0].getCategory() != Category.Member) ||

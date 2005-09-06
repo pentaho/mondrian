@@ -22,26 +22,43 @@ package mondrian.olap;
  **/
 public interface Evaluator {
 
-    /** Returns the current cube. */
+    /**
+     * Returns the current cube.
+     */
     Cube getCube();
 
-    /** Creates a new evaluator with the same state. */
+    /**
+     * Creates a new evaluator with each given member overriding the state of
+     * the current validator for its dimension. Other dimensions retain the
+     * same state as this validator.
+     */
     Evaluator push(Member[] members);
 
-    /** Creates a new evaluator with the same state.
-    * Equivalent to {@link #push(Member[]) push(new Member[0])}. **/
+    /**
+     * Creates a new evaluator with the same state.
+     * Equivalent to {@link #push(Member[]) push(new Member[0])}.
+     */
     Evaluator push();
 
-    /** Creates a new evaluator with the same state except for one member.
-     * Equivalent to {@link #push(Member[]) push(new Member[]
-     * &#124;member&#125;)}. **/
+    /**
+     * Creates a new evaluator with the same state except for one member.
+     * Equivalent to
+     * {@link #push(Member[]) push(new Member[] &#124;member&#125;)}.
+     */
     Evaluator push(Member member);
 
-    /** Restores previous evaluator. */
+    /**
+     * Restores previous evaluator.
+     */
     Evaluator pop();
 
-    /** Makes <code>member</code> the current member of its dimension. Returns
-     * the previous context. */
+    /**
+     * Makes <code>member</code> the current member of its dimension. Returns
+     * the previous context.
+     *
+     * @pre member != null
+     * @post return != null
+     */
     Member setContext(Member member);
 
     void setContext(Member[] members);
@@ -50,16 +67,36 @@ public interface Evaluator {
 
     Object evaluateCurrent();
 
-    Object xx(Literal literal);
+    /**
+     * Visits a literal and returns its value.
+     */
+    Object visit(Literal literal);
 
-    Object xx(FunCall funCall);
+    /**
+     * Visits a function call and returns its value.
+     */
+    Object visit(FunCall funCall);
 
-    Object xx(Id id);
+    /**
+     * Visits an identifier and returns its value.
+     */
+    Object visit(Id id);
 
-    Object xx(OlapElement mdxElement);
+    /**
+     * Visits a catalog element, such as a dimension or member, and returns its
+     * value.
+     */
+    Object visit(OlapElement mdxElement);
 
-    Object xx(Parameter parameter);
+    /**
+     * Visits a parameter and returns its value.
+     */
+    Object visit(Parameter parameter);
 
+    /**
+     * Formats a value as a string according to the current context's
+     * format.
+     */
     String format(Object o);
 
     /**
@@ -85,8 +122,8 @@ public interface Evaluator {
     Object getProperty(String name, Object defaultValue);
 
     /**
-     * Returns a {@link SchemaReader} appropriate for the current access-control
-     * context.
+     * Returns a {@link SchemaReader} appropriate for the current
+     * access-control context.
      */
     SchemaReader getSchemaReader();
 
@@ -95,26 +132,27 @@ public interface Evaluator {
      * key for the cache consists of all members of the current
      * context that <code>exp</code> depends on. Members of
      * independent dimensions are not part of the key.
+     *
      * @see Exp#dependsOn
      */
-    Object getCachedResult(Exp key);
+    Object getCachedResult(ExpCacheDescriptor key);
 
     /**
-     * @see #getCachedResult
-     */
-    void setCachedResult(Exp key, Object value);
-
-    /**
-     * set to true for an axis that is NON EMPTY. May be used by expression
-     * evaluators to optimize their result. For example a top-level crossjoin
-     * may be optimized by removing all non-empty set elements before performing
-     * the crossjoin.
-     * I.e. nonempty(crossjoin(a,b)) == nonempty(crossjoin(nonempty(a), nonempty(b));
+     * Returns true for an axis that is NON EMPTY.
+     *
+     * <p>May be used by expression
+     * evaluators to optimize their result. For example, a top-level crossjoin
+     * may be optimized by removing all non-empty set elements before
+     * performing the crossjoin. This is possible because of the identity
+     *
+     * <blockquote><code>nonempty(crossjoin(a, b)) ==
+     * nonempty(crossjoin(nonempty(a), nonempty(b));</code></blockquote>
      */
     boolean isNonEmpty();
 
     /**
-     * allows expressions to modify non empty flag to evaluate their children.
+     * Sets whether an expression evaluation should filter out empty cells.
+     * Allows expressions to modify non empty flag to evaluate their children.
      */
     void setNonEmpty(boolean nonEmpty);
 
@@ -129,6 +167,11 @@ public interface Evaluator {
      * Evaluates a named set.
      */
     Object evaluateNamedSet(String name, Exp exp);
+
+    /**
+     * Returns an array of the members which make up the current context.
+     */
+    Member[] getMembers();
 }
 
 // End Evaluator.java

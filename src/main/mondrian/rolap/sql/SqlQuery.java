@@ -13,17 +13,14 @@
 package mondrian.rolap.sql;
 
 import mondrian.olap.*;
+import org.eigenbase.util.property.Property;
+import org.eigenbase.util.property.Trigger;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ArrayList;
-
-import org.eigenbase.util.property.*;
-import org.eigenbase.util.property.Property;
+import java.util.*;
 
 /**
  * <code>SqlQuery</code> allows us to build a <code>select</code>
@@ -754,6 +751,15 @@ public class SqlQuery
             } else {
                 return quoteIdentifierString;
             }
+        }
+
+        /**
+         * Converts a string into a SQL single-quoted string.
+         * For example, <code>quoteString("Can't")</code> returns
+         * <code>'Can''t'</code>.
+         */
+        public String quoteString(String s) {
+            return Util.singleQuoteString(s);
         }
 
         /**

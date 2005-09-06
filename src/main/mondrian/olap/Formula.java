@@ -81,23 +81,26 @@ public class Formula extends QueryPart {
 
     /**
      * Resolves identifiers into objects.
-     * @param resolver The query which contains this formula.
+     *
+     * @param validator Validation context to resolve the identifiers in this
+     *   formula
      */
-    void accept(Validator resolver) {
-        exp = (ExpBase) resolver.validate(exp);
+    void accept(Validator validator) {
+        final boolean scalar = isMember;
+        exp = (ExpBase) validator.validate(exp, scalar);
         String id = Util.quoteMdxIdentifier(names);
+        final Type type = exp.getTypeX();
         if (isMember) {
-            if (!(!exp.isSet() ||
-                (exp instanceof FunCall && ((FunCall) exp).isCallToTuple()))) {
+            if (!TypeUtil.canEvaluate(type)) {
                 throw Util.getRes().newMdxMemberExpIsSet(id);
             }
         } else {
-            if (!exp.isSet()) {
+            if (!TypeUtil.isSet(type)) {
                 throw Util.getRes().newMdxSetExpNotSet(id);
             }
         }
         for (int i = 0; i < memberProperties.length; i++) {
-            resolver.validate(memberProperties[i]);
+            validator.validate(memberProperties[i]);
         }
         // Get the format expression from the property list, or derive it from
         // the formula.

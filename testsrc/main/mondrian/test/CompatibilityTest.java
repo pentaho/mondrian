@@ -35,10 +35,10 @@ public class CompatibilityTest extends FoodMartTestCase {
         String result = "Axis #0:" + nl + "{}" + nl + "Axis #1:" + nl + "{[Measures].[Unit Sales]}"
                 + nl + "Row #0: 266,773" + nl;
 
-        runQueryCheckResult(queryFrom + "[Sales]", result);
-        runQueryCheckResult(queryFrom + "[SALES]", result);
-        runQueryCheckResult(queryFrom + "[sAlEs]", result);
-        runQueryCheckResult(queryFrom + "[sales]", result);
+        assertQueryReturns(queryFrom + "[Sales]", result);
+        assertQueryReturns(queryFrom + "[SALES]", result);
+        assertQueryReturns(queryFrom + "[sAlEs]", result);
+        assertQueryReturns(queryFrom + "[sales]", result);
     }
 
     /**
@@ -49,10 +49,10 @@ public class CompatibilityTest extends FoodMartTestCase {
         String result = "Axis #0:" + nl + "{}" + nl + "Axis #1:" + nl + "{[Measures].[Unit Sales]}"
                 + nl + "Row #0: 266,773" + nl;
 
-        runQueryCheckResult(queryFrom + "Sales", result);
-        runQueryCheckResult(queryFrom + "SALES", result);
-        runQueryCheckResult(queryFrom + "sAlEs", result);
-        runQueryCheckResult(queryFrom + "sales", result);
+        assertQueryReturns(queryFrom + "Sales", result);
+        assertQueryReturns(queryFrom + "SALES", result);
+        assertQueryReturns(queryFrom + "sAlEs", result);
+        assertQueryReturns(queryFrom + "sales", result);
     }
 
     /**
@@ -61,7 +61,7 @@ public class CompatibilityTest extends FoodMartTestCase {
     public void testReservedWord() {
         assertAxisThrows("with member [Measures].ordinal as '1'" + nl
                     + " select {[Measures].ordinal} on columns from Sales", "Syntax error");
-        runQueryCheckResult("with member [Measures].[ordinal] as '1'" + nl
+        assertQueryReturns("with member [Measures].[ordinal] as '1'" + nl
                 + " select {[Measures].[ordinal]} on columns from Sales", "Axis #0:" + nl + "{}"
                 + nl + "Axis #1:" + nl + "{[Measures].[ordinal]}" + nl + "Row #0: 1" + nl);
     }
@@ -124,13 +124,13 @@ public class CompatibilityTest extends FoodMartTestCase {
      * Calculated member names are case insensitive.
      */
     public void testCalculatedMemberCase() {
-        runQueryCheckResult("with member [Measures].[CaLc] as '1'" + nl
+        assertQueryReturns("with member [Measures].[CaLc] as '1'" + nl
                 + " select {[Measures].[CaLc]} on columns from Sales", "Axis #0:" + nl + "{}" + nl
                 + "Axis #1:" + nl + "{[Measures].[CaLc]}" + nl + "Row #0: 1" + nl);
-        runQueryCheckResult("with member [Measures].[CaLc] as '1'" + nl
+        assertQueryReturns("with member [Measures].[CaLc] as '1'" + nl
                 + " select {[Measures].[cAlC]} on columns from Sales", "Axis #0:" + nl + "{}" + nl
                 + "Axis #1:" + nl + "{[Measures].[CaLc]}" + nl + "Row #0: 1" + nl);
-        runQueryCheckResult("with member [mEaSuReS].[CaLc] as '1'" + nl
+        assertQueryReturns("with member [mEaSuReS].[CaLc] as '1'" + nl
                 + " select {[MeAsUrEs].[cAlC]} on columns from Sales", "Axis #0:" + nl + "{}" + nl
                 + "Axis #1:" + nl + "{[Measures].[CaLc]}" + nl + "Row #0: 1" + nl);
     }
@@ -145,7 +145,7 @@ public class CompatibilityTest extends FoodMartTestCase {
     }
 
     private void checkSolveOrder(String keyword) {
-        runQueryCheckResult(
+        assertQueryReturns(
                 "WITH" + nl +
                 "   MEMBER [Store].[StoreCalc] as '0', " + keyword + "=0" + nl +
                 "   MEMBER [Product].[ProdCalc] as '1', " + keyword + "=1" + nl +
@@ -162,7 +162,7 @@ public class CompatibilityTest extends FoodMartTestCase {
                 "{[Store].[StoreCalc]}" + nl +
                 "Row #0: 1" + nl);
     }
-    
+
     /**
      * Brackets around member names are optional.
      */

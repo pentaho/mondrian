@@ -80,11 +80,11 @@ public interface FunDef {
      * depends on Products, the result will depend on both (union of
      * dependencies).
      * <p>
-     * For tupel, filter and some others this is not true. They must
-     * compute the intersection. TopCount has to omit its Count
-     * argument etc.
+     * For <code>Tuple</code>, <code>Filter</code> and some other functions
+     * this is not true. They must compute the intersection. TopCount has to
+     * omit its Count argument etc.
      */
-    boolean dependsOn(Exp[] args, Dimension dimension);
+    boolean callDependsOn(FunCall call, Dimension dimension);
 }
 
 // End FunDef.java

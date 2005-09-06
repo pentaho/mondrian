@@ -75,6 +75,7 @@
         " [Gender].members on rows" + nl +
         "from Sales",
 
+/*
         // #9
         "with" + nl +
         "  member [Product].[Non dairy] as '[Product].[All Products] - [Product].[Food].[Dairy]'" + nl +
@@ -84,6 +85,7 @@
         " {[Measures].[Unit Sales], [Measures].[Dairy ever]}  on columns," + nl +
         "  [Customers who never bought dairy] on rows" + nl +
         "from Sales\r\n",
+*/
 
         // #10
         "WITH" + nl +
@@ -122,6 +124,7 @@
         "   [Measures].[ProfitPct] } ON ROWS" + nl +
         "FROM Sales",
 
+/*
         // #13: cyclical calculated members
         "WITH" + nl +
         "   MEMBER [Product].[X] AS '[Product].[Y]'" + nl +
@@ -130,6 +133,7 @@
         "   {[Product].[X]} ON COLUMNS," + nl +
         "   {Store.[Store Name].Members} ON ROWS" + nl +
         "FROM Sales",
+*/
 
         // #14
         "WITH MEMBER MEASURES.ProfitPercent AS" + nl +

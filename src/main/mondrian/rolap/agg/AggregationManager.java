@@ -46,15 +46,16 @@ public class AggregationManager extends RolapAggregationManager {
         super();
     }
 
-    public  Logger getLogger() {
+    public Logger getLogger() {
         return LOGGER;
     }
 
-    public void loadAggregation(RolapStar.Measure[] measures,
-                                RolapStar.Column[] columns,
-                                BitKey bitKey,
-                                ColumnConstraint[][] constraintses,
-                                Collection pinnedSegments) {
+    public void loadAggregation(
+            RolapStar.Measure[] measures,
+            RolapStar.Column[] columns,
+            BitKey bitKey,
+            ColumnConstraint[][] constraintses,
+            Collection pinnedSegments) {
         RolapStar star = measures[0].getStar();
         Aggregation aggregation = star.lookupOrCreateAggregation(bitKey);
 
@@ -77,7 +78,8 @@ public class AggregationManager extends RolapAggregationManager {
             request.getBatchKey());
 
         if (aggregation == null) {
-            return null; // cell is not in any aggregation
+            // cell is not in any aggregation
+            return null;
         }
         Object o = aggregation.get(
                 measure, request.getSingleValues(), null);
@@ -94,10 +96,12 @@ public class AggregationManager extends RolapAggregationManager {
         Aggregation aggregation = measure.getStar().lookupAggregation(
             request.getBatchKey());
 
-        return (aggregation == null)
+        if (aggregation == null) {
             // cell is not in any aggregation
-            ? null
-            : aggregation.get(measure, request.getSingleValues(), pinSet);
+            return null;
+        } else {
+            return aggregation.get(measure, request.getSingleValues(), pinSet);
+        }
     }
 
     public String getDrillThroughSQL(final CellRequest request) {
