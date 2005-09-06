@@ -38,10 +38,6 @@ public interface Exp {
      */
     Type getTypeX();
 
-    boolean isSet();
-
-    boolean isMember();
-
     boolean isElement();
 
     boolean isEmptySet();

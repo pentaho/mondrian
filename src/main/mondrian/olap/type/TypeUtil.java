@@ -120,6 +120,41 @@ public class TypeUtil {
             return false;
         }
     }
+
+    /**
+     * Returns whether a value of a given type can be evaluated to a scalar
+     * value.
+     *
+     * <p>The rules are as follows:<ul>
+     * <li>Clearly boolean, numeric and string expressions can be evaluated.
+     * <li>Member and tuple expressions can be interpreted as a scalar value.
+     *     The expression is evaluated to establish the context where a measure
+     *     can be evaluated.
+     * <li>Hierarchy and dimension expressions are implicitly
+     *     converted into the current member, and evaluated as above.
+     * <li>Level expressions cannot be evaluated
+     * <li>Cube and Set (even sets with a single member) cannot be evaluated.
+     * </ul>
+     *
+     * @param type Type
+     * @return Whether an expression of this type can be evaluated to yield a
+     *   scalar value.
+     */
+    public static boolean canEvaluate(Type type) {
+        return ! (type instanceof SetType ||
+                type instanceof CubeType ||
+                type instanceof LevelType);
+    }
+
+    /**
+     * Returns whether a type is a set type.
+     *
+     * @param type Type
+     * @return Whether a value of this type can be evaluated to yield a set.
+     */
+    public static boolean isSet(Type type) {
+        return type instanceof SetType;
+    }
 }
 
 // End TypeUtil.java

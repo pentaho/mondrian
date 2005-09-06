@@ -13,11 +13,7 @@ package mondrian.test;
 
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
-import mondrian.olap.Axis;
-import mondrian.olap.Cube;
-import mondrian.olap.Member;
-import mondrian.olap.Position;
-import mondrian.olap.Result;
+import mondrian.olap.*;
 
 /**
  * Tests the expressions used for calculated members. Please keep in sync
@@ -73,8 +69,8 @@ public class TestCalculatedMembers extends FoodMartTestCase {
             "  dimension='Measures'" +
             "  formula='[Measures].[Store Sales]-[Measures].[Store Cost]'/>");
 
-        String s = executeExpr("Warehouse and Sales", "[Measures].[Profit With Spaces]");
-        Assert.assertEquals("339,610.90", s);
+        Cell s = getTestContext().executeExprRaw("Warehouse and Sales", "[Measures].[Profit With Spaces]");
+        Assert.assertEquals("339,610.90", s.getFormattedValue());
     }
 
     public void testCalculatedMemberInCubeWithProps() {
@@ -157,7 +153,7 @@ public class TestCalculatedMembers extends FoodMartTestCase {
     public void testCalculatedMemberInCubeAndQuery() {
         // Profit is defined in the cube.
         // Profit Change is defined in the query.
-        runQueryCheckResult("WITH MEMBER [Measures].[Profit Change]" + nl +
+        assertQueryReturns("WITH MEMBER [Measures].[Profit Change]" + nl +
             " AS '[Measures].[Profit] - ([Measures].[Profit], [Time].PrevMember)'" + nl +
             "SELECT {[Measures].[Profit], [Measures].[Profit Change]} ON COLUMNS," + nl +
             " {[Time].[1997].[Q2].children} ON ROWS" + nl +
@@ -180,12 +176,12 @@ public class TestCalculatedMembers extends FoodMartTestCase {
     }
 
     public void _testWhole() {
-        
+
         /*
          * "allmembers" tests compatibility with MSAS
          */
 
-        execute(
+        executeQuery(
                 "with" + nl +
                 "member [Measures].[Total Store Sales by Product Name] as" + nl +
                 "  'Sum([Product].[Product Name].members, [Measures].[Store Sales])'" + nl +
@@ -265,7 +261,7 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 " from Sales");
 
         // Repeat time-related measures with more time members.
-        execute(
+        executeQuery(
                 "with" + nl +
                 "member [Measures].[Total Store Sales, Quarter to date] as" + nl +
                 " 'sum(PeriodsToDate([Time].[Quarter]), [Measures].[Store Sales])'" + nl +
@@ -290,7 +286,7 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 " AddCalculatedMembers([Measures].members) on rows" + nl +
                 " from Sales");
     }
-    
+
     public void testCalculatedMemberCaption() {
         String mdx = "select {[Measures].[Profit Growth]} on columns from Sales";
         Result result = TestContext.instance().executeFoodMart(mdx);
@@ -299,7 +295,50 @@ public class TestCalculatedMembers extends FoodMartTestCase {
         Member profGrowth = pos0.members[0];
         String caption = profGrowth.getCaption();
         Assert.assertEquals(caption, "Gewinn-Wachstum");
-    }    
+    }
+
+    public void testCalcMemberIsSetFails() {
+        if (false) {
+        // A member which is a set, and more important, cannot be converted to
+        // a value, is an error.
+        String queryString =
+                "with member [Measures].[Foo] as ' Filter([Product].members, 1 <> 0) '" +
+                "select {[Measures].[Foo]} on columns from [Sales]";
+        String pattern = "Member expression 'Filter([Product].Members, (1.0 <> 0.0))' must not be a set";
+        assertThrows(queryString, pattern);
+
+        // A tuple is OK, because it can be converted to a scalar expression.
+        queryString =
+                "with member [Measures].[Foo] as ' ([Measures].[Unit Sales], [Gender].[F]) '" +
+                "select {[Measures].[Foo]} on columns from [Sales]";
+            final Result result = executeQuery(queryString);
+        Util.discard(result);
+
+        // Level cannot be converted.
+        assertExprThrows("[Customers].[Country]",
+                "Member expression '[Customers].[Country]' must not be a set");
+
+        // Dimension can be converted.
+        assertExprReturns("[Customers]", "266,773");
+
+        // Member can be converted.
+        assertExprReturns("[Customers].[USA]", "266,773");
+
+        // Tuple can be converted.
+        assertExprReturns("([Customers].[USA], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer])",
+                "1,683");
+        }
+        // Set of tuples cannot be converted.
+        assertExprThrows("{([Customers].[USA], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer])}",
+                "Member expression '{([Customers].[All Customers].[USA], [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer])}' must not be a set");
+        assertExprThrows("{([Customers].[USA], [Product].[Food])," +
+                "([Customers].[USA], [Product].[Drink])}",
+                "{([Customers].[All Customers].[USA], [Product].[All Products].[Food]), ([Customers].[All Customers].[USA], [Product].[All Products].[Drink])}' must not be a set");
+
+        // Sets cannot be converted.
+        assertExprThrows("{[Product].[Food]}",
+                "Member expression '{[Product].[All Products].[Food]}' must not be a set");
+    }
 
 }
 
