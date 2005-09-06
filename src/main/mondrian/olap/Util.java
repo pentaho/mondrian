@@ -583,7 +583,7 @@ public class Util extends XOMUtil {
      */
     public static Random createRandom(long seed) {
         if (seed == 0) {
-            seed = System.nanoTime();
+            seed = new Random().nextLong();
             System.out.println("random: seed=" + seed);
         } else if (seed == -1 && metaRandom != null) {
             seed = metaRandom.nextLong();
