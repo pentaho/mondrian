@@ -73,7 +73,7 @@ class PropertyDefinition extends EnumeratedValues.BasicValue {
     public static final int LocaleIdentifier_ORDINAL = 8;
     static final PropertyDefinition LocaleIdentifier = new PropertyDefinition("LocaleIdentifier", LocaleIdentifier_ORDINAL, RowsetDefinition.Type.UnsignedInteger, null, Enumeration.Access.readWrite, "None", Enumeration.Methods.discoverAndExecute,
                     "Use this to read or set the numeric locale identifier for this request. The default is provider-specific." + nl +
-                "For the complete hexadecimal list of language identifiers, search on \"Language Identifiers\" in the MSDN® Library at http://www.msdn.microsoft.com.");
+                "For the complete hexadecimal list of language identifiers, search on \"Language Identifiers\" in the MSDN Library at http://www.msdn.microsoft.com.");
     public static final int MDXSupport_ORDINAL = 9;
     static final PropertyDefinition MDXSupport = new PropertyDefinition("MDXSupport", MDXSupport_ORDINAL, RowsetDefinition.Type.EnumString, Enumeration.MDXSupport.enumeration, Enumeration.Access.read, "Core", Enumeration.Methods.discover,
                     "Enumeration that describes the degree of MDX support. At initial release Core is the only value in the enumeration. In future releases, other values will be defined for this enumeration.");
