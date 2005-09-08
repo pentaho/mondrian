@@ -46,7 +46,7 @@ class AbstractAggregateFunDef extends FunDefBase {
         return super.validateArg(validator, call, i, type);
     }
 
-    final Exp valueFunCall = BuiltinFunTable.createValueFunCall();
+    final Exp valueFunCall = BuiltinFunTable.instance().createValueFunCall();
 }
 
 // End AbstractAggregateFunDef.java
