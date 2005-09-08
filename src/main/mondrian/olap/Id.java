@@ -86,7 +86,7 @@ public class Id
                 return Literal.createSymbol(s.toUpperCase());
             }
         }
-        final OlapElement element = Util.lookup(validator.getQuery(), names);
+        final Exp element = Util.lookup(validator.getQuery(), names, true);
         if (element == null) {
             return null;
         }

@@ -160,7 +160,7 @@ public class Scanner {
 //      initResword(ParserSym.FONT_NAME           ,"FONT_NAME");
 //      initResword(ParserSym.FONT_SIZE           ,"FONT_SIZE");
 //      initResword(ParserSym.FORE_COLOR          ,"FORE_COLOR");
-        initResword(ParserSym.FORMATTED_VALUE     ,"FORMATTED_VALUE");
+//      initResword(ParserSym.FORMATTED_VALUE     ,"FORMATTED_VALUE");
 //      initResword(ParserSym.FORMAT_STRING       ,"FORMAT_STRING");
         initResword(ParserSym.FROM                ,"FROM");
 //      initResword(ParserSym.LAG                 ,"LAG");
@@ -185,7 +185,7 @@ public class Scanner {
         initResword(ParserSym.SET                 ,"SET");
 //      initResword(ParserSym.SOLVE_ORDER         ,"SOLVE_ORDER");
         initResword(ParserSym.THEN                ,"THEN");
-        initResword(ParserSym.VALUE               ,"VALUE");
+//      initResword(ParserSym.VALUE               ,"VALUE");
         initResword(ParserSym.WHEN                ,"WHEN");
         initResword(ParserSym.WHERE               ,"WHERE");
         initResword(ParserSym.WITH                ,"WITH");
@@ -223,14 +223,14 @@ public class Scanner {
             ParserSym.ID,
             s);
     }
-    private Symbol makeRes(int i) { 
-        return makeSymbol(i, m_aResWords[i]); 
+    private Symbol makeRes(int i) {
+        return makeSymbol(i, m_aResWords[i]);
     }
-    private Symbol makeToken(int i, String s) { 
-        return makeSymbol(i, s); 
+    private Symbol makeToken(int i, String s) {
+        return makeSymbol(i, s);
     }
-    private Symbol makeString( String s ) { 
-        return makeSymbol(ParserSym.STRING, s); 
+    private Symbol makeString( String s ) {
+        return makeSymbol(ParserSym.STRING, s);
     }
 
     /* recognize and return the next complete token */

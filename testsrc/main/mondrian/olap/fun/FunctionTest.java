@@ -1344,6 +1344,28 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprReturns("SUM({[Promotion Media].[Media Type].members})", "266,773");
     }
 
+    public void testValue() {
+        // VALUE is usually a cell property, not a member property.
+        // We allow it because MS documents it as a function, <Member>.VALUE.
+        assertExprReturns("[Measures].[Store Sales].VALUE", "565,238.13");
+
+        // Depends upon almost everything.
+        assertExprDependsOn("[Measures].[Store Sales].VALUE",
+                allDimsExcept(new String[] {"[Measures]"}));
+
+        // We do not allow FORMATTED_VALUE.
+        assertExprThrows("[Measures].[Store Sales].FORMATTED_VALUE",
+                "MDX object '[Measures].[Store Sales].[FORMATTED_VALUE]' not found in cube 'Sales'");
+        assertExprReturns("[Measures].[Store Sales].NAME", "Store Sales");
+        // MS says that ID and KEY are standard member properties for
+        // OLE DB for OLAP, but not for XML/A. We don't support them.
+        assertExprThrows("[Measures].[Store Sales].ID",
+                "MDX object '[Measures].[Store Sales].[ID]' not found in cube 'Sales'");
+        assertExprThrows("[Measures].[Store Sales].KEY",
+                "MDX object '[Measures].[Store Sales].[KEY]' not found in cube 'Sales'");
+        assertExprReturns("[Measures].[Store Sales].CAPTION", "Store Sales");
+    }
+
     public void testVar() {
         assertExprReturns("VAR({[Store].[All Stores].[USA].children},[Measures].[Store Sales])", "4,332,990,493.69");
     }

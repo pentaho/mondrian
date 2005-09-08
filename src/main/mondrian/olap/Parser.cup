@@ -117,7 +117,7 @@ parser code {:
         public Symbol next_token() throws java.io.IOException {
             if (i < tokens.length) {
                 return new Symbol(tokens[i++], 0, 0, null);
-            } 
+            }
             return parent.next_token();
         }
 
@@ -181,7 +181,7 @@ parser code {:
         String sFatalSyntaxError = Util.getRes().getMdxFatalSyntaxError();
         report_fatal_error(sFatalSyntaxError, cur_token);
     }
-    
+
     /**
      * Returns whether the given identifier can possibly the name of an operator
      * with property syntax.
@@ -208,12 +208,10 @@ terminal
     AXIS,
     CASE,
     CELL,
-    CELL_ORDINAL,
     DIMENSION,
     ELSE,
     EMPTY,
     END,
-    FORMATTED_VALUE,
     FROM,
     MEMBER,
     NON,
@@ -225,7 +223,6 @@ terminal
     SELECT,
     SET,
     THEN,
-    VALUE,
     WHEN,
     WHERE,
     XOR,
@@ -1289,7 +1286,7 @@ axis_specification ::=
             }
 
             AxisOrdinal axis = AxisOrdinal.get(index);
-            RESULT = new QueryAxis(b.booleanValue(), s, axis, 
+            RESULT = new QueryAxis(b.booleanValue(), s, axis,
                     QueryAxis.SubtotalVisibility.Undefined);
         :}
     ;
@@ -1364,8 +1361,6 @@ cell_property ::=
     ;
 //
 // <mandatory_cell_property> ::= CELL_ORDINAL | VALUE | FORMATTED_VALUE
-mandatory_cell_property ::=
-        CELL_ORDINAL | VALUE | FORMATTED_VALUE;
 //
 // <optional_cell_property> ::= FORMAT_STRING
 //                            | FORE_COLOR

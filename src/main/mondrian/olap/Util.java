@@ -425,6 +425,26 @@ public class Util extends XOMUtil {
     }
 
     public static OlapElement lookup(Query q, String[] nameParts) {
+        return (OlapElement) lookup(q, nameParts, false);
+    }
+
+    /**
+     * Converts an identifier into an expression by resolving its parts into
+     * an OLAP object (dimension, hierarchy, level or member) within the
+     * context of a query.
+     *
+     * <p>If <code>allowProp</code> is true, also allows property references
+     * from valid members, for example
+     * <code>[Measures].[Unit Sales].FORMATTED_VALUE</code>.
+     * In this case, the result will be a {@link FunCall}.
+     *
+     * @param q Query expression belongs to
+     * @param nameParts Parts of the identifier
+     * @param allowProp Whether to allow property references
+     * @return OLAP object or property reference
+     */
+    public static Exp lookup(
+            Query q, String[] nameParts, boolean allowProp) {
 
         // First, look for a calculated member defined in the query.
         final String fullName = quoteMdxIdentifier(nameParts);
@@ -440,6 +460,23 @@ public class Util extends XOMUtil {
             }
         }
         if (olapElement == null) {
+            if (allowProp &&
+                    nameParts.length > 1) {
+                String[] namePartsButOne = new String[nameParts.length - 1];
+                System.arraycopy(nameParts, 0,
+                        namePartsButOne, 0,
+                        nameParts.length - 1);
+                final String propertyName = nameParts[nameParts.length - 1];
+                olapElement = schemaReader.lookupCompound(
+                        q.getCube(), namePartsButOne, false, Category.Member);
+                if (olapElement != null &&
+                        isValidProperty((Member) olapElement, propertyName)) {
+                    return new FunCall(
+                            propertyName, Syntax.Property, new Exp[] {
+                                olapElement});
+                }
+            }
+
             throw Util.getRes().newMdxChildObjectNotFound(
                     fullName, q.getCube().getQualifiedName());
         }
@@ -589,6 +626,46 @@ public class Util extends XOMUtil {
             seed = metaRandom.nextLong();
         }
         return new Random(seed);
+    }
+
+    /**
+     * Returns whether a property is valid for a given member.
+     * It is valid if the property is defined at the member's level or at
+     * an ancestor level, or if the property is a standard property such as
+     * "FORMATTED_VALUE".
+     *
+     * @param member Member
+     * @param propertyName Property name
+     * @return Whether property is valid
+     */
+    public static boolean isValidProperty(
+            Member member, String propertyName) {
+        return lookupProperty(member.getLevel(), propertyName) != null;
+    }
+
+    /**
+     * Finds a member property called <code>propertyName</code> at, or above,
+     * <code>level</code>.
+     */
+    protected static Property lookupProperty(Level level, String propertyName) {
+        do {
+            Property[] properties = level.getProperties();
+            for (int i = 0; i < properties.length; i++) {
+                Property property = properties[i];
+                if (property.getName().equals(propertyName)) {
+                    return property;
+                }
+            }
+            level = level.getParentLevel();
+        } while (level != null);
+        // Now try a standard property.
+        final Property property = Property.lookup(propertyName);
+        if (property != null &&
+                property.isMemberProperty() &&
+                property.isStandard()) {
+            return property;
+        }
+        return null;
     }
 
     /**

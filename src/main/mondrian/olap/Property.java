@@ -63,7 +63,7 @@ public class Property extends EnumeratedValues.BasicValue {
      * holds the parsed format string (an object of type {@link Exp}).
      */
     public static final Property FORMAT_EXP =
-            new Property("$format_exp", TYPE_OTHER, FORMAT_EXP_ORDINAL, true, null);
+            new Property("$format_exp", TYPE_OTHER, FORMAT_EXP_ORDINAL, true, false, false, null);
 
     public static final int AGGREGATION_TYPE_ORDINAL = 1;
     /**
@@ -72,7 +72,7 @@ public class Property extends EnumeratedValues.BasicValue {
      * measures, based upon their SQL aggregation.
      */
     public static final Property AGGREGATION_TYPE =
-            new Property("$aggregation_type", TYPE_OTHER, AGGREGATION_TYPE_ORDINAL, true, null);
+            new Property("$aggregation_type", TYPE_OTHER, AGGREGATION_TYPE_ORDINAL, true, false, false, null);
 
     public static final int NAME_ORDINAL = 2;
 
@@ -81,7 +81,7 @@ public class Property extends EnumeratedValues.BasicValue {
      * holds a member's name.
      */
     public static final Property NAME =
-            new Property("$name", TYPE_STRING, NAME_ORDINAL, true, null);
+            new Property("$name", TYPE_STRING, NAME_ORDINAL, true, false, false, null);
 
     public static final int CAPTION_ORDINAL = 3;
     /**
@@ -89,7 +89,7 @@ public class Property extends EnumeratedValues.BasicValue {
      * holds a member's caption.
      */
     public static final Property CAPTION =
-            new Property("$caption", TYPE_STRING, CAPTION_ORDINAL, true, null);
+            new Property("$caption", TYPE_STRING, CAPTION_ORDINAL, true, false, false, null);
 
     public static final int CONTRIBUTING_CHILDREN_ORDINAL = 4;
     /**
@@ -99,7 +99,7 @@ public class Property extends EnumeratedValues.BasicValue {
      * member and all of its children (including non-visible children).
      */
     public static final Property CONTRIBUTING_CHILDREN =
-            new Property("$contributingChildren", TYPE_OTHER, CONTRIBUTING_CHILDREN_ORDINAL, true, null);
+            new Property("$contributingChildren", TYPE_OTHER, CONTRIBUTING_CHILDREN_ORDINAL, true, false, false, null);
 
     public static final int FORMULA_ORDINAL = 5;
     /**
@@ -107,7 +107,7 @@ public class Property extends EnumeratedValues.BasicValue {
      * returns a calculated member's {@link Formula} object.
      */
     public static final Property FORMULA =
-            new Property("$formula", TYPE_OTHER, FORMULA_ORDINAL, true, null);
+            new Property("$formula", TYPE_OTHER, FORMULA_ORDINAL, true, false, false, null);
 
     public static final int CATALOG_NAME_ORDINAL = 10;
     /**
@@ -115,7 +115,7 @@ public class Property extends EnumeratedValues.BasicValue {
      * holds the name of the current catalog.
      */
     public static final Property CATALOG_NAME =
-            new Property("CATALOG_NAME", TYPE_STRING, CATALOG_NAME_ORDINAL, false, "Optional. The name of the catalog to which this member belongs. NULL if the provider does not support catalogs.");
+            new Property("CATALOG_NAME", TYPE_STRING, CATALOG_NAME_ORDINAL, false, true, false, "Optional. The name of the catalog to which this member belongs. NULL if the provider does not support catalogs.");
 
     public static final int SCHEMA_NAME_ORDINAL = 11;
     /**
@@ -123,7 +123,7 @@ public class Property extends EnumeratedValues.BasicValue {
      * holds the name of the current schema.
      */
     public static final Property SCHEMA_NAME =
-            new Property("SCHEMA_NAME", TYPE_STRING, SCHEMA_NAME_ORDINAL, false, "Optional. The name of the schema to which this member belongs. NULL if the provider does not support schemas.");
+            new Property("SCHEMA_NAME", TYPE_STRING, SCHEMA_NAME_ORDINAL, false, true, false, "Optional. The name of the schema to which this member belongs. NULL if the provider does not support schemas.");
 
     public static final int CUBE_NAME_ORDINAL = 12;
     /**
@@ -131,7 +131,7 @@ public class Property extends EnumeratedValues.BasicValue {
      * holds the name of the current cube.
      */
     public static final Property CUBE_NAME =
-            new Property("CUBE_NAME", TYPE_STRING, CUBE_NAME_ORDINAL, false, "Required. Name of the cube to which this member belongs.");
+            new Property("CUBE_NAME", TYPE_STRING, CUBE_NAME_ORDINAL, false, true, false, "Required. Name of the cube to which this member belongs.");
 
     public static final int DIMENSION_UNIQUE_NAME_ORDINAL = 13;
     /**
@@ -139,7 +139,7 @@ public class Property extends EnumeratedValues.BasicValue {
      * holds the unique name of the current dimension.
      */
     public static final Property DIMENSION_UNIQUE_NAME =
-            new Property("DIMENSION_UNIQUE_NAME", TYPE_STRING, DIMENSION_UNIQUE_NAME_ORDINAL, false, "Required. Unique name of the dimension to which this member belongs. For providers that generate unique names by qualification, each component of this name is delimited.");
+            new Property("DIMENSION_UNIQUE_NAME", TYPE_STRING, DIMENSION_UNIQUE_NAME_ORDINAL, false, true, false, "Required. Unique name of the dimension to which this member belongs. For providers that generate unique names by qualification, each component of this name is delimited.");
 
     public static final int HIERARCHY_UNIQUE_NAME_ORDINAL = 14;
     /**
@@ -147,7 +147,7 @@ public class Property extends EnumeratedValues.BasicValue {
      * holds the unique name of the current hierarchy.
      */
     public static final Property HIERARCHY_UNIQUE_NAME =
-            new Property("HIERARCHY_UNIQUE_NAME", TYPE_STRING, HIERARCHY_UNIQUE_NAME_ORDINAL, false, "Required. Unique name of the hierarchy. If the member belongs to more than one hierarchy, there is one row for each hierarchy to which it belongs. For providers that generate unique names by qualification, each component of this name is delimited.");
+            new Property("HIERARCHY_UNIQUE_NAME", TYPE_STRING, HIERARCHY_UNIQUE_NAME_ORDINAL, false, true, false, "Required. Unique name of the hierarchy. If the member belongs to more than one hierarchy, there is one row for each hierarchy to which it belongs. For providers that generate unique names by qualification, each component of this name is delimited.");
 
     public static final int LEVEL_UNIQUE_NAME_ORDINAL = 15;
     /**
@@ -155,7 +155,7 @@ public class Property extends EnumeratedValues.BasicValue {
      * holds the unique name of the current level.
      */
     public static final Property LEVEL_UNIQUE_NAME =
-            new Property("LEVEL_UNIQUE_NAME", TYPE_STRING, LEVEL_UNIQUE_NAME_ORDINAL, false, "Required. Unique name of the level to which the member belongs. For providers that generate unique names by qualification, each component of this name is delimited.");
+            new Property("LEVEL_UNIQUE_NAME", TYPE_STRING, LEVEL_UNIQUE_NAME_ORDINAL, false, true, false, "Required. Unique name of the level to which the member belongs. For providers that generate unique names by qualification, each component of this name is delimited.");
 
     public static final int LEVEL_NUMBER_ORDINAL = 16;
     /**
@@ -163,22 +163,23 @@ public class Property extends EnumeratedValues.BasicValue {
      * holds the ordinal of the current level.
      */
     public static final Property LEVEL_NUMBER =
-            new Property("LEVEL_NUMBER", TYPE_STRING, LEVEL_NUMBER_ORDINAL, false, "Required. The distance of the member from the root of the hierarchy. The root level is zero.");
+            new Property("LEVEL_NUMBER", TYPE_STRING, LEVEL_NUMBER_ORDINAL, false, true, false, "Required. The distance of the member from the root of the hierarchy. The root level is zero.");
 
     public static final int MEMBER_ORDINAL_ORDINAL = 17;
     /**
-     * Definition of the property which holds the
-     * Name of the current catalog.
+     * Definition of the property which
+     * holds the ordinal of the current member.
      */
     public static final Property MEMBER_ORDINAL =
-            new Property("MEMBER_ORDINAL", TYPE_NUMERIC, MEMBER_ORDINAL_ORDINAL, false, "Required. Ordinal number of the member. Sort rank of the member when members of this dimension are sorted in their natural sort order. If providers do not have the concept of natural ordering, this should be the rank when sorted by MEMBER_NAME.");
+            new Property("MEMBER_ORDINAL", TYPE_NUMERIC, MEMBER_ORDINAL_ORDINAL, false, true, false, "Required. Ordinal number of the member. Sort rank of the member when members of this dimension are sorted in their natural sort order. If providers do not have the concept of natural ordering, this should be the rank when sorted by MEMBER_NAME.");
 
     public static final int MEMBER_NAME_ORDINAL = 18;
     /**
-     * Definition of the property which holds the name of the current catalog.
+     * Definition of the property which
+     * holds the name of the current member.
      */
     public static final Property MEMBER_NAME =
-            new Property("MEMBER_NAME", TYPE_STRING, MEMBER_NAME_ORDINAL, false, "Required. Name of the member.");
+            new Property("MEMBER_NAME", TYPE_STRING, MEMBER_NAME_ORDINAL, false, true, false, "Required. Name of the member.");
 
     public static final int MEMBER_UNIQUE_NAME_ORDINAL = 19;
     /**
@@ -186,7 +187,7 @@ public class Property extends EnumeratedValues.BasicValue {
      * holds the unique name of the current member.
      */
     public static final Property MEMBER_UNIQUE_NAME =
-            new Property("MEMBER_UNIQUE_NAME", TYPE_STRING, MEMBER_UNIQUE_NAME_ORDINAL, false, "Required. Unique name of the member. For providers that generate unique names by qualification, each component of this name is delimited.");
+            new Property("MEMBER_UNIQUE_NAME", TYPE_STRING, MEMBER_UNIQUE_NAME_ORDINAL, false, true, false, "Required. Unique name of the member. For providers that generate unique names by qualification, each component of this name is delimited.");
 
     public static final int MEMBER_TYPE_ORDINAL = 20;
     /**
@@ -194,7 +195,7 @@ public class Property extends EnumeratedValues.BasicValue {
      * holds the type of the member.
      */
     public static final Property MEMBER_TYPE =
-            new Property("MEMBER_TYPE", TYPE_STRING, MEMBER_TYPE_ORDINAL, false, "Required. Type of the member. Can be one of the following values: MDMEMBER_TYPE_REGULAR, MDMEMBER_TYPE_ALL, MDMEMBER_TYPE_FORMULA, MDMEMBER_TYPE_MEASURE, MDMEMBER_TYPE_UNKNOWN. MDMEMBER_TYPE_FORMULA takes precedence over MDMEMBER_TYPE_MEASURE. Therefore, if there is a formula (calculated) member on the Measures dimension, it is listed as MDMEMBER_TYPE_FORMULA.");
+            new Property("MEMBER_TYPE", TYPE_STRING, MEMBER_TYPE_ORDINAL, false, true, false, "Required. Type of the member. Can be one of the following values: MDMEMBER_TYPE_REGULAR, MDMEMBER_TYPE_ALL, MDMEMBER_TYPE_FORMULA, MDMEMBER_TYPE_MEASURE, MDMEMBER_TYPE_UNKNOWN. MDMEMBER_TYPE_FORMULA takes precedence over MDMEMBER_TYPE_MEASURE. Therefore, if there is a formula (calculated) member on the Measures dimension, it is listed as MDMEMBER_TYPE_FORMULA.");
 
     public static final int MEMBER_GUID_ORDINAL = 21;
     /**
@@ -202,7 +203,7 @@ public class Property extends EnumeratedValues.BasicValue {
      * holds the GUID of the member
      */
     public static final Property MEMBER_GUID =
-            new Property("MEMBER_GUID", TYPE_STRING, MEMBER_GUID_ORDINAL, false, "Optional. Member GUID. NULL if no GUID exists.");
+            new Property("MEMBER_GUID", TYPE_STRING, MEMBER_GUID_ORDINAL, false, true, false, "Optional. Member GUID. NULL if no GUID exists.");
 
     public static final int MEMBER_CAPTION_ORDINAL = 22;
     /**
@@ -211,7 +212,7 @@ public class Property extends EnumeratedValues.BasicValue {
      * member's name if no caption is defined.
      */
     public static final Property MEMBER_CAPTION =
-            new Property("MEMBER_CAPTION", TYPE_STRING, MEMBER_CAPTION_ORDINAL, false, "Required. A label or caption associated with the member. Used primarily for display purposes. If a caption does not exist, MEMBER_NAME is returned.");
+            new Property("MEMBER_CAPTION", TYPE_STRING, MEMBER_CAPTION_ORDINAL, false, true, false, "Required. A label or caption associated with the member. Used primarily for display purposes. If a caption does not exist, MEMBER_NAME is returned.");
 
     public static final int CHILDREN_CARDINALITY_ORDINAL = 23;
     /**
@@ -219,7 +220,7 @@ public class Property extends EnumeratedValues.BasicValue {
      * number of children this member has.
      */
     public static final Property CHILDREN_CARDINALITY =
-            new Property("CHILDREN_CARDINALITY", TYPE_NUMERIC, CHILDREN_CARDINALITY_ORDINAL, false, "Required. Number of children that the member has. This can be an estimate, so consumers should not rely on this to be the exact count. Providers should return the best estimate possible.");
+            new Property("CHILDREN_CARDINALITY", TYPE_NUMERIC, CHILDREN_CARDINALITY_ORDINAL, false, true, false, "Required. Number of children that the member has. This can be an estimate, so consumers should not rely on this to be the exact count. Providers should return the best estimate possible.");
 
     public static final int PARENT_LEVEL_ORDINAL = 24;
     /**
@@ -227,7 +228,7 @@ public class Property extends EnumeratedValues.BasicValue {
      * distance from the root of the hierarchy of this member's parent.
      */
     public static final Property PARENT_LEVEL =
-            new Property("PARENT_LEVEL", TYPE_NUMERIC, PARENT_LEVEL_ORDINAL, false, "Required. The distance of the member's parent from the root level of the hierarchy. The root level is zero.");
+            new Property("PARENT_LEVEL", TYPE_NUMERIC, PARENT_LEVEL_ORDINAL, false, true, false, "Required. The distance of the member's parent from the root level of the hierarchy. The root level is zero.");
 
     public static final int PARENT_UNIQUE_NAME_ORDINAL = 25;
     /**
@@ -235,7 +236,7 @@ public class Property extends EnumeratedValues.BasicValue {
      * Name of the current catalog.
      */
     public static final Property PARENT_UNIQUE_NAME =
-            new Property("PARENT_UNIQUE_NAME", TYPE_STRING, PARENT_UNIQUE_NAME_ORDINAL, false, "Required. Unique name of the member's parent. NULL is returned for any members at the root level. For providers that generate unique names by qualification, each component of this name is delimited.");
+            new Property("PARENT_UNIQUE_NAME", TYPE_STRING, PARENT_UNIQUE_NAME_ORDINAL, false, true, false, "Required. Unique name of the member's parent. NULL is returned for any members at the root level. For providers that generate unique names by qualification, each component of this name is delimited.");
 
     public static final int PARENT_COUNT_ORDINAL = 26;
     /**
@@ -243,7 +244,7 @@ public class Property extends EnumeratedValues.BasicValue {
      * number of parents that this member has. Generally 1, or 0 for root members.
      */
     public static final Property PARENT_COUNT =
-            new Property("PARENT_COUNT", TYPE_NUMERIC, PARENT_COUNT_ORDINAL, false, "Required. Number of parents that this member has.");
+            new Property("PARENT_COUNT", TYPE_NUMERIC, PARENT_COUNT_ORDINAL, false, true, false, "Required. Number of parents that this member has.");
 
     public static final int DESCRIPTION_ORDINAL = 27;
     /**
@@ -251,7 +252,7 @@ public class Property extends EnumeratedValues.BasicValue {
      * description of this member.
      */
     public static final Property DESCRIPTION =
-            new Property("DESCRIPTION", TYPE_STRING, DESCRIPTION_ORDINAL, false, "Optional. A human-readable description of the member.");
+            new Property("DESCRIPTION", TYPE_STRING, DESCRIPTION_ORDINAL, false, true, false, "Optional. A human-readable description of the member.");
 
     public static final int VISIBLE_ORDINAL = 28;
     /**
@@ -261,38 +262,38 @@ public class Property extends EnumeratedValues.BasicValue {
      * JPivot.
      */
     public static final Property VISIBLE =
-            new Property("$visible", TYPE_BOOLEAN, VISIBLE_ORDINAL, true, null);
+            new Property("$visible", TYPE_BOOLEAN, VISIBLE_ORDINAL, true, false, false, null);
 
     // Cell properties
 
 
     public static final int BACK_COLOR_ORDINAL = 30;
     public static final Property BACK_COLOR =
-            new Property("BACK_COLOR", TYPE_STRING, BACK_COLOR_ORDINAL, false, "The background color for displaying the VALUE or FORMATTED_VALUE property. For more information, see FORE_COLOR and BACK_COLOR Contents.");
+            new Property("BACK_COLOR", TYPE_STRING, BACK_COLOR_ORDINAL, false, false, true, "The background color for displaying the VALUE or FORMATTED_VALUE property. For more information, see FORE_COLOR and BACK_COLOR Contents.");
 
     public static final int CELL_EVALUATION_LIST_ORDINAL = 31;
     public static final Property CELL_EVALUATION_LIST =
-            new Property("CELL_EVALUATION_LIST", TYPE_STRING, CELL_EVALUATION_LIST_ORDINAL, false, "The semicolon-delimited list of evaluated formulas applicable to the cell, in order from lowest to highest solve order. For more information about solve order, see Understanding Pass Order and Solve Order");
+            new Property("CELL_EVALUATION_LIST", TYPE_STRING, CELL_EVALUATION_LIST_ORDINAL, false, false, true, "The semicolon-delimited list of evaluated formulas applicable to the cell, in order from lowest to highest solve order. For more information about solve order, see Understanding Pass Order and Solve Order");
 
     public static final int CELL_ORDINAL_ORDINAL = 32;
     public static final Property CELL_ORDINAL =
-            new Property("CELL_ORDINAL", TYPE_NUMERIC, CELL_ORDINAL_ORDINAL, false, "The ordinal number of the cell in the dataset.");
+            new Property("CELL_ORDINAL", TYPE_NUMERIC, CELL_ORDINAL_ORDINAL, false, false, true, "The ordinal number of the cell in the dataset.");
 
     public static final int FORE_COLOR_ORDINAL = 33;
     public static final Property FORE_COLOR =
-            new Property("FORE_COLOR", TYPE_STRING, FORE_COLOR_ORDINAL, false, "The foreground color for displaying the VALUE or FORMATTED_VALUE property. For more information, see FORE_COLOR and BACK_COLOR Contents.");
+            new Property("FORE_COLOR", TYPE_STRING, FORE_COLOR_ORDINAL, false, false, true, "The foreground color for displaying the VALUE or FORMATTED_VALUE property. For more information, see FORE_COLOR and BACK_COLOR Contents.");
 
     public static final int FONT_NAME_ORDINAL = 34;
     public static final Property FONT_NAME =
-            new Property("FONT_NAME", TYPE_STRING, FONT_NAME_ORDINAL, false, "The font to be used to display the VALUE or FORMATTED_VALUE property.");
+            new Property("FONT_NAME", TYPE_STRING, FONT_NAME_ORDINAL, false, false, true, "The font to be used to display the VALUE or FORMATTED_VALUE property.");
 
     public static final int FONT_SIZE_ORDINAL = 35;
     public static final Property FONT_SIZE =
-            new Property("FONT_SIZE", TYPE_STRING, FONT_SIZE_ORDINAL, false, "Font size to be used to display the VALUE or FORMATTED_VALUE property.");
+            new Property("FONT_SIZE", TYPE_STRING, FONT_SIZE_ORDINAL, false, false, true, "Font size to be used to display the VALUE or FORMATTED_VALUE property.");
 
     public static final int FONT_FLAGS_ORDINAL = 36;
     public static final Property FONT_FLAGS =
-            new Property("FONT_FLAGS", TYPE_NUMERIC, FONT_FLAGS_ORDINAL, false, "The bitmask detailing effects on the font. The value is the result of a bitwise OR operation of one or more of the following constants: MDFF_BOLD  = 1, MDFF_ITALIC = 2, MDFF_UNDERLINE = 4, MDFF_STRIKEOUT = 8. For example, the value 5 represents the combination of bold (MDFF_BOLD) and underline (MDFF_UNDERLINE) font effects.");
+            new Property("FONT_FLAGS", TYPE_NUMERIC, FONT_FLAGS_ORDINAL, false, false, true, "The bitmask detailing effects on the font. The value is the result of a bitwise OR operation of one or more of the following constants: MDFF_BOLD  = 1, MDFF_ITALIC = 2, MDFF_UNDERLINE = 4, MDFF_STRIKEOUT = 8. For example, the value 5 represents the combination of bold (MDFF_BOLD) and underline (MDFF_UNDERLINE) font effects.");
 
 
     public static final int FORMATTED_VALUE_ORDINAL = 37;
@@ -301,7 +302,7 @@ public class Property extends EnumeratedValues.BasicValue {
      * holds the formatted value of a cell.
      */
     public static final Property FORMATTED_VALUE =
-            new Property("FORMATTED_VALUE", TYPE_STRING, FORMATTED_VALUE_ORDINAL, false, "The character string that represents a formatted display of the VALUE property.");
+            new Property("FORMATTED_VALUE", TYPE_STRING, FORMATTED_VALUE_ORDINAL, false, false, true, "The character string that represents a formatted display of the VALUE property.");
 
     public static final int FORMAT_STRING_ORDINAL = 38;
     /**
@@ -309,11 +310,11 @@ public class Property extends EnumeratedValues.BasicValue {
      * holds the format string used to format cell values.
      */
     public static final Property FORMAT_STRING =
-            new Property("FORMAT_STRING", TYPE_STRING, FORMAT_STRING_ORDINAL, false, "The format string used to create the FORMATTED_VALUE property value. For more information, see FORMAT_STRING Contents.");
+            new Property("FORMAT_STRING", TYPE_STRING, FORMAT_STRING_ORDINAL, false, false, true, "The format string used to create the FORMATTED_VALUE property value. For more information, see FORMAT_STRING Contents.");
 
     public static final int NON_EMPTY_BEHAVIOR_ORDINAL = 39;
     public static final Property NON_EMPTY_BEHAVIOR =
-            new Property("NON_EMPTY_BEHAVIOR", TYPE_STRING, NON_EMPTY_BEHAVIOR_ORDINAL, false, "The measure used to determine the behavior of calculated members when resolving empty cells.");
+            new Property("NON_EMPTY_BEHAVIOR", TYPE_STRING, NON_EMPTY_BEHAVIOR_ORDINAL, false, false, true, "The measure used to determine the behavior of calculated members when resolving empty cells.");
 
     public static final int SOLVE_ORDER_ORDINAL = 40;
     /**
@@ -322,16 +323,19 @@ public class Property extends EnumeratedValues.BasicValue {
      * calculated members.
      */
     public static final Property SOLVE_ORDER =
-            new Property("SOLVE_ORDER", TYPE_NUMERIC, SOLVE_ORDER_ORDINAL, false, "The solve order of the cell.");
+            new Property("SOLVE_ORDER", TYPE_NUMERIC, SOLVE_ORDER_ORDINAL, false, false, true, "The solve order of the cell.");
 
     public static final int VALUE_ORDINAL = 41;
     /**
      * Definition of the property which
      * holds the value of a cell. Is usually numeric (since most measures are
      * numeric) but is occasionally another type.
+     *
+     * <p>It is also applicable to members.
      */
     public static final Property VALUE =
-            new Property("VALUE", TYPE_NUMERIC, VALUE_ORDINAL, false, "The unformatted value of the cell.");
+            new Property("VALUE", TYPE_NUMERIC, VALUE_ORDINAL, false, true, true, "The unformatted value of the cell.");
+
     /**
      * The various property names which define a format string.
      */
@@ -352,6 +356,8 @@ public class Property extends EnumeratedValues.BasicValue {
      * Whether the property is internal.
      */
     private final boolean internal;
+    private final boolean member;
+    private final boolean cell;
 
     private static int nextOrdinal = 100;
 
@@ -366,10 +372,14 @@ public class Property extends EnumeratedValues.BasicValue {
             int type,
             int ordinal,
             boolean internal,
+            boolean member,
+            boolean cell,
             String description) {
         super(name, ordinal < 0 ? nextOrdinal++ : ordinal, description);
         this.type = type;
         this.internal = internal;
+        this.member = member;
+        this.cell = cell;
     }
 
     /**
@@ -398,6 +408,28 @@ public class Property extends EnumeratedValues.BasicValue {
     public boolean isInternal() {
         return internal;
     }
+
+    /**
+     * Returns whether this property is a standard member property.
+     */
+    public boolean isMemberProperty() {
+        return member;
+    }
+
+    /**
+     * Returns whether this property is a standard member property.
+     */
+    public boolean isCellProperty() {
+        return cell && ordinal <= VALUE_ORDINAL;
+    }
+
+    /**
+     * Returns whether this property is standard.
+     */
+    public boolean isStandard() {
+        return ordinal <= VALUE_ORDINAL;
+    }
+
 
     public static final EnumeratedValues enumeration = new EnumeratedValues(
             new Property[] {

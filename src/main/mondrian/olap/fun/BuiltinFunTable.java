@@ -1005,6 +1005,16 @@ public class BuiltinFunTable extends FunTableImpl {
                 "<Measure>.Value",
                 "Returns the value of a measure.",
                 "pnm") {
+            public boolean callDependsOn(FunCall call, Dimension dimension) {
+                if (super.callDependsOn(call, dimension)) {
+                    return true;
+                }
+                if (call.getArg(0).getTypeX().usesDimension(dimension)) {
+                    return false;
+                }
+                return true;
+            }
+
             public Object evaluate(Evaluator evaluator, Exp[] args) {
                 Member member = getMemberArg(evaluator, args, 0, true);
                 return member.evaluateScalar(evaluator);
