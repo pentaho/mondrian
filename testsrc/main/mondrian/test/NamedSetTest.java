@@ -741,6 +741,69 @@ public class NamedSetTest extends FoodMartTestCase {
         Util.discard(result);
     }
 
+    public void testNamedSetsMixedWithCalcMembers()
+    {
+        final TestContext tc = new TestContext() {
+            public synchronized Connection getFoodMartConnection(boolean fresh) {
+                return getFoodMartConnection(MixedNamedSetSchemaProcessor.class.getName());
+            }
+        };
+        tc.assertQueryReturns(
+                fold(new String[] {
+                    "select {",
+                    "    [Measures].[Unit Sales],",
+                    "    [Measures].[CA City Sales]} on columns,",
+                    "  Crossjoin(",
+                    "    [Time].[1997].Children,",
+                    "    [Top Products In CA]) on rows",
+                    "from [Sales]",
+                    "where [Marital Status].[S]"}),
+                fold(new String[] {
+                    "Axis #0:",
+                    "{[Marital Status].[All Marital Status].[S]}",
+                    "Axis #1:",
+                    "{[Measures].[Unit Sales]}",
+                    "{[Measures].[CA City Sales]}",
+                    "Axis #2:",
+                    "{[Time].[1997].[Q1], [Product].[All Products].[Food].[Produce]}",
+                    "{[Time].[1997].[Q1], [Product].[All Products].[Food].[Snack Foods]}",
+                    "{[Time].[1997].[Q1], [Product].[All Products].[Non-Consumable].[Household]}",
+                    "{[Time].[1997].[Q2], [Product].[All Products].[Food].[Produce]}",
+                    "{[Time].[1997].[Q2], [Product].[All Products].[Food].[Snack Foods]}",
+                    "{[Time].[1997].[Q2], [Product].[All Products].[Non-Consumable].[Household]}",
+                    "{[Time].[1997].[Q3], [Product].[All Products].[Food].[Produce]}",
+                    "{[Time].[1997].[Q3], [Product].[All Products].[Food].[Snack Foods]}",
+                    "{[Time].[1997].[Q3], [Product].[All Products].[Non-Consumable].[Household]}",
+                    "{[Time].[1997].[Q4], [Product].[All Products].[Food].[Produce]}",
+                    "{[Time].[1997].[Q4], [Product].[All Products].[Food].[Snack Foods]}",
+                    "{[Time].[1997].[Q4], [Product].[All Products].[Non-Consumable].[Household]}",
+                    "Row #0: 4,872",
+                    "Row #0: $1,218.0",
+                    "Row #1: 3,746",
+                    "Row #1: $840.0",
+                    "Row #2: 3,425",
+                    "Row #2: $817.0",
+                    "Row #3: 4,633",
+                    "Row #3: $1,320.0",
+                    "Row #4: 3,588",
+                    "Row #4: $1,058.0",
+                    "Row #5: 3,149",
+                    "Row #5: $938.0",
+                    "Row #6: 4,651",
+                    "Row #6: $1,353.0",
+                    "Row #7: 3,895",
+                    "Row #7: $1,134.0",
+                    "Row #8: 3,395",
+                    "Row #8: $1,029.0",
+                    "Row #9: 5,160",
+                    "Row #9: $1,550.0",
+                    "Row #10: 4,160",
+                    "Row #10: $1,301.0",
+                    "Row #11: 3,808",
+                    "Row #11: $1,166.0",
+                    ""}));
+    }
+
     /**
      * Dynamic schema processor which adds two named sets to a the first cube
      * in a schema.
@@ -750,12 +813,13 @@ public class NamedSetTest extends FoodMartTestCase {
 
         protected String filterSchema(String s) {
             int i = s.indexOf("</Cube>");
-            return s.substring(0, i) + nl +
-                    "<NamedSet name=\"CA Cities\" formula=\"{[Store].[USA].[CA].Children}\"/>" + nl +
-                    "<NamedSet name=\"Top CA Cities\">" + nl +
-                    "  <Formula>TopCount([CA Cities], 2, [Measures].[Unit Sales])</Formula>" + nl +
-                    "</NamedSet>" + nl +
-                    s.substring(i);
+            return fold(new String[] {
+                s.substring(0, i),
+                "<NamedSet name=\"CA Cities\" formula=\"{[Store].[USA].[CA].Children}\"/>",
+                "<NamedSet name=\"Top CA Cities\">",
+                "  <Formula>TopCount([CA Cities], 2, [Measures].[Unit Sales])</Formula>",
+                "</NamedSet>",
+                s.substring(i)});
         }
     }
 
@@ -768,24 +832,26 @@ public class NamedSetTest extends FoodMartTestCase {
 
         protected String filterSchema(String s) {
             int i = s.indexOf("</Cube>");
-            s = s.substring(0, i) + nl +
-                    "<NamedSet name=\"CA Cities\" formula=\"{[Store].[USA].[CA].Children}\"/>" + nl +
-                    "<NamedSet name=\"Top CA Cities\">" + nl +
-                    "  <Formula>TopCount([CA Cities], 2, [Measures].[Unit Sales])</Formula>" + nl +
-                    "</NamedSet>" + nl +
-                    s.substring(i);
+            s = fold(new String[] {
+                s.substring(0, i),
+                "<NamedSet name=\"CA Cities\" formula=\"{[Store].[USA].[CA].Children}\"/>",
+                "<NamedSet name=\"Top CA Cities\">",
+                "  <Formula>TopCount([CA Cities], 2, [Measures].[Unit Sales])</Formula>",
+                "</NamedSet>",
+                s.substring(i)});
             // Schema-level named sets occur after <Cube> and <VirtualCube> and
             // before <Role> elements.
             i = s.indexOf("<Role");
             if (i < 0) {
                 i = s.indexOf("</Schema>");
             }
-            s = s.substring(0, i) + nl +
-                    "<NamedSet name=\"CA Cities\" formula=\"{[Store].[USA].[WA].Children}\"/>" + nl +
-                    "<NamedSet name=\"Top USA Stores\">" + nl +
-                    "  <Formula>TopCount(Descendants([Store].[USA]), 7)</Formula>" + nl +
-                    "</NamedSet>" + nl +
-                    s.substring(i);
+            s = fold(new String[] {
+                s.substring(0, i),
+                "<NamedSet name=\"CA Cities\" formula=\"{[Store].[USA].[WA].Children}\"/>",
+                "<NamedSet name=\"Top USA Stores\">",
+                "  <Formula>TopCount(Descendants([Store].[USA]), 7)</Formula>",
+                "</NamedSet>",
+                s.substring(i)});
             return s;
         }
     }
@@ -804,9 +870,43 @@ public class NamedSetTest extends FoodMartTestCase {
             if (i < 0) {
                 i = s.indexOf("</Schema>");
             }
-            s = s.substring(0, i) + nl +
-                    "<NamedSet name=\"Bad\" formula=\"{[Store].[USA].[WA].Children}}\"/>" + nl +
-                    s.substring(i);
+            s = fold(new String[] {
+                s.substring(0, i),
+                "<NamedSet name=\"Bad\" formula=\"{[Store].[USA].[WA].Children}}\"/>",
+                s.substring(i)});
+            return s;
+        }
+    }
+
+    /**
+     * Dynamic schema processor which adds a named set which has a syntax
+     * error.
+     */
+    public static class MixedNamedSetSchemaProcessor
+            extends DecoratingSchemaProcessor {
+
+        protected String filterSchema(String s) {
+            // Declare mutually dependent named sets and calculated members
+            // at the end of a cube:
+            //   m2 references s1
+            //   s1 references s0 and m1 and m0
+            int i = s.indexOf("</Cube>");
+            s = fold(new String[] {
+                s.substring(0, i),
+                // member [CA City Sales] references set [CA Cities]
+                "  <CalculatedMember",
+                "      name=\"CA City Sales\"",
+                "      dimension=\"Measures\"",
+                "      visible=\"false\"",
+                "      formula=\"Aggregate([CA Cities], [Measures].[Unit Sales])\">",
+                "    <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"$#,##0.0\"/>",
+                "  </CalculatedMember>",
+                // set [Top Products In CA] references member [CA City Sales]
+                "<NamedSet name=\"Top Products In CA\">",
+                "  <Formula>TopCount([Product].[Product Department].MEMBERS, 3, ([Time].[1997].[Q3], [Measures].[CA City Sales]))</Formula>",
+                "</NamedSet>",
+                "<NamedSet name=\"CA Cities\" formula=\"{[Store].[USA].[CA].Children}\"/>",
+                s.substring(i)});
             return s;
         }
     }

@@ -308,100 +308,127 @@ public class RolapCube extends CubeBase {
             xmlCubeDimension);
     }
 
-    private Formula parseFormula(String formulaString,
-                                 String memberUniqueName,
-                                 List propNames,
-                                 List propExprs) {
-        assert memberUniqueName.startsWith("[");
-
-        StringBuffer buf = new StringBuffer(256);
-        buf.append("WITH MEMBER ").append(memberUniqueName).append(" AS ")
-            .append(formulaString);
-
-        assert propNames.size() == propExprs.size();
-
-        for (int i = 0; i < propNames.size(); i++) {
-            String name = (String) propNames.get(i);
-            String expr = (String) propExprs.get(i);
-            buf.append(", ").append(name).append(" = ").append(expr);
-        }
-
-        buf.append(" SELECT FROM ")
-            .append(Util.quoteMdxIdentifier(getUniqueName()));
-        final String queryString = buf.toString();
-
-        final Query queryExp;
-        try {
-            RolapConnection conn = schema.getInternalConnection();
-            queryExp = conn.parseQuery(queryString);
-        } catch (Exception e) {
-            throw MondrianResource.instance().newCalcMemberHasBadFormula(
-                memberUniqueName, getUniqueName(), e);
-        }
-        queryExp.resolve();
-
-        Util.assertTrue(queryExp.formulas.length == 1);
-
-        final Formula formula = queryExp.formulas[0];
-        return formula;
-    }
-
     /**
      * Post-initialization, doing things which cannot be done in the
      * constructor.
      */
     private void init(MondrianDef.Cube xmlCube) {
-        // Load calculated members. (Cannot do this in the constructor, because
+        // Load calculated members and named sets.
+        // (We cannot do this in the constructor, because
         // cannot parse the generated query, because the schema has not been
         // set in the cube at this point.)
-        for (int i = 0; i < xmlCube.calculatedMembers.length; i++) {
-            MondrianDef.CalculatedMember xmlCalculatedMember =
-                xmlCube.calculatedMembers[i];
-            final Member member = createCalculatedMember(xmlCalculatedMember);
-            Util.discard(member);
-        }
-        // Load named sets.
-        final Formula[] formulas = createNamedSets(xmlCube.namedSets);
-        Util.discard(formulas);
+        List memberList = new ArrayList();
+        List formulaList = new ArrayList();
+        createCalcMembersAndNamedSets(
+                xmlCube.calculatedMembers, xmlCube.namedSets,
+                memberList, formulaList);
     }
 
-    private Member createCalculatedMember(
-        MondrianDef.CalculatedMember xmlCalcMember) {
-        // Lookup dimension
-        final Dimension dimension =
-            (Dimension) lookupDimension(xmlCalcMember.dimension);
-        if (dimension == null) {
-            throw MondrianResource.instance().newCalcMemberHasBadDimension(
-                xmlCalcMember.dimension, xmlCalcMember.name,
-                getUniqueName());
+    /**
+     * Adds a collection of calculated members and named sets to this cube.
+     * The members and sets can refer to each other.
+     *
+     * @param xmlCalcMembers XML objects representing members
+     * @param xmlNamedSets Array of XML definition of named set
+     * @param memberList Output list of {@link Member} objects
+     * @param formulaList Output list of {@link Formula} objects
+     */
+    private void createCalcMembersAndNamedSets(
+            MondrianDef.CalculatedMember[] xmlCalcMembers,
+            MondrianDef.NamedSet[] xmlNamedSets,
+            List memberList,
+            List formulaList) {
+        // If there are no objects to create, our generated SQL will so silly
+        // the parser will laugh.
+        if (xmlCalcMembers.length == 0 &&
+                xmlNamedSets.length == 0) {
+            return;
         }
-        // Check there isn't another calc member with the same name and
-        // dimension.
-        for (int i = 0; i < calculatedMembers.length; i++) {
-            Formula formula = calculatedMembers[i];
-            if (formula.getName().equals(xmlCalcMember.name) &&
-                formula.getMdxMember().getDimension().getName() ==
-                dimension.getName()) {
 
-                throw MondrianResource.instance().newCalcMemberNotUnique(
-                    Util.makeFqName(dimension, xmlCalcMember.name),
-                    getUniqueName());
-            }
+        StringBuffer buf = new StringBuffer(256);
+        buf.append("WITH").append(Util.nl);
+
+        // Check the members individually, and generate SQL.
+        for (int i = 0; i < xmlCalcMembers.length; i++) {
+            preCalcMember(xmlCalcMembers, i, buf);
         }
-        final String memberUniqueName = Util.makeFqName(
-            dimension.getUniqueName(), xmlCalcMember.name);
-        final MondrianDef.CalculatedMemberProperty[] xmlProperties =
-            xmlCalcMember.memberProperties;
-        List propNames = new ArrayList();
-        List propExprs = new ArrayList();
-        validateMemberProps(xmlProperties, propNames, propExprs,
-                xmlCalcMember.name);
 
-        final Formula formula = parseFormula(
-                xmlCalcMember.getFormula(),
-            memberUniqueName, propNames, propExprs);
+        // Check the named sets individually (for uniqueness) and generate SQL.
+        Set nameSet = new HashSet();
+        for (int i = 0; i < namedSets.length; i++) {
+            Formula namedSet = namedSets[i];
+            nameSet.add(namedSet.getName());
+        }
+        for (int i = 0; i < xmlNamedSets.length; i++) {
+            preNamedSet(xmlNamedSets[i], nameSet, buf);
+        }
+
+        buf.append("SELECT FROM ")
+            .append(Util.quoteMdxIdentifier(getUniqueName()));
+
+        // Parse and validate this huge MDX query we've created.
+        final String queryString = buf.toString();
+        final Query queryExp;
+        try {
+            RolapConnection conn = schema.getInternalConnection();
+            queryExp = conn.parseQuery(queryString);
+        } catch (Exception e) {
+            throw MondrianResource.instance().newUnknownNamedSetHasBadFormula(
+                getUniqueName(), e);
+        }
+        queryExp.resolve();
+
+        // Now pick through the formulas.
+        Util.assertTrue(queryExp.formulas.length ==
+                xmlCalcMembers.length + xmlNamedSets.length);
+        for (int i = 0; i < xmlCalcMembers.length; i++) {
+            postCalcMember(xmlCalcMembers, i, queryExp, memberList);
+        }
+        for (int i = 0; i < xmlNamedSets.length; i++) {
+            postNamedSet(xmlNamedSets, xmlCalcMembers.length, i, queryExp, formulaList);
+        }
+    }
+
+    private void postNamedSet(
+            MondrianDef.NamedSet[] xmlNamedSets,
+            final int offset, int i,
+            final Query queryExp,
+            List formulaList) {
+        MondrianDef.NamedSet xmlNamedSet = xmlNamedSets[i];
+        Util.discard(xmlNamedSet);
+        Formula formula = queryExp.formulas[offset + i];
+        namedSets = (Formula[]) RolapUtil.addElement(namedSets, formula);
+        formulaList.add(formula);
+    }
+
+    private void preNamedSet(
+            MondrianDef.NamedSet xmlNamedSet,
+            Set nameSet,
+            StringBuffer buf) {
+        if (!nameSet.add(xmlNamedSet.name)) {
+            throw MondrianResource.instance().newNamedSetNotUnique(
+                    xmlNamedSet.name, getUniqueName());
+        }
+
+        buf.append("SET ")
+                .append(Util.makeFqName(xmlNamedSet.name))
+                .append(Util.nl)
+                .append(" AS '")
+                .append(xmlNamedSet.getFormula())
+                .append("'")
+                .append(Util.nl);
+    }
+
+    private void postCalcMember(
+            MondrianDef.CalculatedMember[] xmlCalcMembers,
+            int i,
+            final Query queryExp,
+            List memberList) {
+        MondrianDef.CalculatedMember xmlCalcMember = xmlCalcMembers[i];
+        final Formula formula = queryExp.formulas[i];
+
         calculatedMembers = (Formula[])
-            RolapUtil.addElement(calculatedMembers, formula);
+                RolapUtil.addElement(calculatedMembers, formula);
 
         Member member = formula.getMdxMember();
 
@@ -412,91 +439,80 @@ public class RolapCube extends CubeBase {
         member.setProperty(Property.VISIBLE.name, visible);
 
         if ((xmlCalcMember.caption != null) &&
-            xmlCalcMember.caption.length() > 0) {
-
+                xmlCalcMember.caption.length() > 0) {
             member.setProperty(
                     Property.CAPTION.name,
                     xmlCalcMember.caption);
         }
 
-        return formula.getMdxMember();
+        memberList.add(formula.getMdxMember());
     }
 
-    /**
-     * Creates a named set.
-     *
-     * @param xmlNamedSets Array of XML definition of named set.
-     */
-    private Formula[] createNamedSets(
-        MondrianDef.NamedSet[] xmlNamedSets) {
-        if (xmlNamedSets.length == 0) {
-            return null;
+    private void preCalcMember(
+            MondrianDef.CalculatedMember[] xmlCalcMembers,
+            int j,
+            StringBuffer buf) {
+        MondrianDef.CalculatedMember xmlCalcMember = xmlCalcMembers[j];
+
+        // Lookup dimension
+        final Dimension dimension =
+                (Dimension) lookupDimension(xmlCalcMember.dimension);
+        if (dimension == null) {
+            throw MondrianResource.instance().newCalcMemberHasBadDimension(
+                    xmlCalcMember.dimension, xmlCalcMember.name,
+                    getUniqueName());
         }
-        // For each named set, check there isn't another named set with the
-        // same name.
-        Set nameSet = new HashSet();
-        for (int i = 0; i < namedSets.length; i++) {
-            Formula namedSet = namedSets[i];
-            nameSet.add(namedSet.getName());
-        }
-        for (int i = 0; i < xmlNamedSets.length; i++) {
-            final String name = xmlNamedSets[i].name;
-            if (!nameSet.add(name)) {
-                throw MondrianResource.instance().newNamedSetNotUnique(
-                    name, getUniqueName());
+
+        // Check there isn't another calc member with the same name and
+        // dimension.
+        for (int i = 0; i < calculatedMembers.length; i++) {
+            Formula formula = calculatedMembers[i];
+            if (formula.getName().equals(xmlCalcMember.name) &&
+                    formula.getMdxMember().getDimension().getName() ==
+                    dimension.getName()) {
+
+                throw MondrianResource.instance().newCalcMemberNotUnique(
+                        Util.makeFqName(dimension, xmlCalcMember.name),
+                        getUniqueName());
             }
         }
 
-        // Compile all named sets simultaneously (they might be
-        // self-referential).
-        List nameList = new ArrayList(),
-                formulaList = new ArrayList();
-        for (int i = 0; i < xmlNamedSets.length; i++) {
-            nameList.add(xmlNamedSets[i].name);
-            formulaList.add(xmlNamedSets[i].getFormula());
+        // Check this calc member doesn't clash with one earlier in this
+        // batch.
+        for (int k = 0; k < j; k++) {
+            MondrianDef.CalculatedMember xmlCalcMember2 = xmlCalcMembers[k];
+            if (xmlCalcMember2.name.equals(xmlCalcMember.name) &&
+                    xmlCalcMember2.dimension.equals(xmlCalcMember.dimension)) {
+                throw MondrianResource.instance().newCalcMemberNotUnique(
+                        Util.makeFqName(dimension, xmlCalcMember.name),
+                        getUniqueName());
+            }
         }
 
-        // Parse all named sets, and add them to the list.
-        final Formula formulas[] = parseNamedSets(
-                (String[]) nameList.toArray(new String[nameList.size()]),
-                (String[]) formulaList.toArray(new String[formulaList.size()]));
+        final String memberUniqueName = Util.makeFqName(
+                dimension.getUniqueName(), xmlCalcMember.name);
+        final MondrianDef.CalculatedMemberProperty[] xmlProperties =
+                xmlCalcMember.memberProperties;
+        List propNames = new ArrayList();
+        List propExprs = new ArrayList();
+        validateMemberProps(xmlProperties, propNames, propExprs,
+                xmlCalcMember.name);
 
-        namedSets = (Formula[]) RolapUtil.addElements(namedSets, formulas);
+        // Generate SQL.
+        assert memberUniqueName.startsWith("[");
+        buf.append("MEMBER ").append(memberUniqueName)
+                .append(Util.nl)
+                .append("  AS ").append(xmlCalcMember.getFormula());
 
-        return formulas;
-    }
+        assert propNames.size() == propExprs.size();
 
-    private Formula[] parseNamedSets(String[] names, String[] formulas) {
-        assert names.length == formulas.length;
-        StringBuffer buf = new StringBuffer();
-        buf.append("WITH");
-        for (int i = 0; i < names.length; i++) {
-            String name = names[i];
-            String formula = formulas[i];
-            buf.append(" SET ")
-                    .append(Util.makeFqName(name))
-                    .append(" AS '")
-                    .append(formula)
-                    .append("'");
+        for (int i = 0; i < propNames.size(); i++) {
+            String name = (String) propNames.get(i);
+            String expr = (String) propExprs.get(i);
+            buf.append(",").append(Util.nl)
+                    .append(name).append(" = ").append(expr);
         }
-        buf.append(" SELECT FROM ")
-                .append(Util.quoteMdxIdentifier(getUniqueName()));
-
-        final String queryString = buf.toString();
-        final Query queryExp;
-        try {
-            RolapConnection conn = schema.getInternalConnection();
-            queryExp = conn.parseQuery(queryString);
-            queryExp.resolve();
-        } catch (Exception e) {
-            // Unfortunately, we can't be specific about which named set caused
-            // the problem.
-            throw MondrianResource.instance().newUnknownNamedSetHasBadFormula(
-                    getUniqueName(), e);
-        }
-
-        Util.assertTrue(queryExp.formulas.length == names.length);
-        return queryExp.formulas;
+        buf.append(Util.nl);
     }
 
     /**
@@ -572,8 +588,9 @@ public class RolapCube extends CubeBase {
         return new RolapCubeSchemaReader(role);
     }
 
-    MondrianDef.CubeDimension lookup(MondrianDef.CubeDimension[] xmlDimensions,
-                                     String name) {
+    MondrianDef.CubeDimension lookup(
+            MondrianDef.CubeDimension[] xmlDimensions,
+            String name) {
         for (int i = 0; i < xmlDimensions.length; i++) {
             MondrianDef.CubeDimension cd = xmlDimensions[i];
             if (name.equals(cd.name)) {
@@ -649,11 +666,13 @@ assert is not true.
     public boolean isCache() {
         return (isVirtual()) ? true : star.isCacheAggregations();
     }
+
     public void setCache(boolean cache) {
         if (! isVirtual()) {
             star.setCacheAggregations(cache);
         }
     }
+
     public void clearCache() {
         if (isVirtual()) {
             // Currently a virtual cube does not keep a list of all of its
@@ -718,7 +737,6 @@ assert is not true.
             }
 
         } else {
-
             // just do it
             for (int j = 0; j < hierarchies.length; j++) {
                 RolapHierarchy hierarchy = hierarchies[j];
@@ -730,8 +748,10 @@ assert is not true.
             }
         }
     }
-    synchronized void createUsage(RolapHierarchy hierarchy,
-                                  MondrianDef.CubeDimension cubeDim) {
+
+    synchronized void createUsage(
+            RolapHierarchy hierarchy,
+            MondrianDef.CubeDimension cubeDim) {
         HierarchyUsage usage = new HierarchyUsage(this, hierarchy, cubeDim);
 
         for (Iterator it = hierarchyUsages.iterator(); it.hasNext(); ) {
@@ -746,6 +766,7 @@ assert is not true.
         }
         this.hierarchyUsages.add(usage);
     }
+
     private synchronized HierarchyUsage getUsageByName(String name) {
         for (Iterator it = hierarchyUsages.iterator(); it.hasNext(); ) {
             HierarchyUsage hierUsage = (HierarchyUsage) it.next();
@@ -755,6 +776,7 @@ assert is not true.
         }
         return null;
     }
+
     /**
      * A Hierarchy may have one or more HierarchyUsages. This method returns
      * an array holding the one or more usages associated with a Hierarchy.
@@ -811,8 +833,9 @@ assert is not true.
             return new HierarchyUsage[0];
         }
     }
+
     /**
-     * Lookup all of the HierarchyUsages with the same "source" returning
+     * Looks up all of the HierarchyUsages with the same "source" returning
      * an array of HierarchyUsage of length 0 or more.
      *
      * @param source
@@ -1059,7 +1082,7 @@ assert is not true.
     }
 
     /**
-     * This method adds a column to the appropriate table in the RolapStar.
+     * Adds a column to the appropriate table in the {@link RolapStar}.
      * Note that if the RolapLevel has a table attribute, then the associated
      * column needs to be associated with that table.
      *
@@ -1131,7 +1154,7 @@ assert is not true.
     //
 
     /**
-     * This method formats a {@link MondrianDef.Relation} indenting joins for
+     * Formats a {@link MondrianDef.Relation} indenting joins for
      * readability.
      *
      * @param relation
@@ -1143,7 +1166,8 @@ assert is not true.
         return buf.toString();
     }
 
-    private static void format(MondrianDef.Relation relation,
+    private static void format(
+            MondrianDef.Relation relation,
             StringBuffer buf, String indent) {
         if (relation instanceof MondrianDef.Table) {
             MondrianDef.Table table = (MondrianDef.Table) relation;
@@ -1212,14 +1236,16 @@ assert is not true.
     }
 
     /**
-     * This attempts to transform a {@link MondrianDef.Relation}
+     * Attempts to transform a {@link MondrianDef.Relation}
      * into the "canonical" form.
-     * What is the canonical form you might ask, well it is only relevant
+     *
+     * <p>What is the canonical form? It is only relevant
      * when the relation is a snowflake (nested joins), not simply a table.
      * The canonical form has lower levels to the left of higher levels (Day
      * before Month before Quarter before Year) and the nested joins are always
      * on the right side of the parent join.
-     * The canonical form is (using a Time dimension example):
+     *
+     * <p>The canonical form is (using a Time dimension example):
      * <pre>
      *            |
      *    ----------------
@@ -1320,8 +1346,9 @@ assert is not true.
      * @param levels
      * @return
      */
-    private static MondrianDef.Relation reorder(MondrianDef.Relation relation,
-                RolapLevel[] levels) {
+    private static MondrianDef.Relation reorder(
+            MondrianDef.Relation relation,
+            RolapLevel[] levels) {
         // Need at least two levels, with only one level theres nothing to do.
         if (levels.length < 2) {
             return relation;
@@ -1389,7 +1416,7 @@ assert is not true.
     }
 
     /**
-     * This method transforms the Relation moving the tables associated with
+     * Transforms the Relation moving the tables associated with
      * lower levels (greater level depth, i.e., Day is lower than Month) to the
      * left of tables with high levels.
      *
@@ -1440,8 +1467,8 @@ assert is not true.
     }
 
     /**
-     * Transform so that all joins have a table as their left child and either a
-     * table of child join on the right.
+     * Transforms so that all joins have a table as their left child and either
+     * a table of child join on the right.
      *
      * @param relation
      */
@@ -1455,17 +1482,15 @@ assert is not true.
 
             while (join.left instanceof MondrianDef.Join) {
                 MondrianDef.Join jleft = (MondrianDef.Join) join.left;
-
                 MondrianDef.Relation right = join.right;
 
-
                 join.right = new MondrianDef.Join(
-                                    join.leftAlias,
-                                    join.leftKey,
-                                    jleft.right,
-                                    join.rightAlias,
-                                    join.rightKey,
-                                    join.right);
+                        join.leftAlias,
+                        join.leftKey,
+                        jleft.right,
+                        join.rightAlias,
+                        join.rightKey,
+                        join.right);
 
                 join.left = jleft.left;
 
@@ -1479,7 +1504,7 @@ assert is not true.
     }
 
     /**
-     * Does what it says, it returns a copy of the relation parameter.
+     * Copies a {@link MondrianDef.Relation}.
      *
      * @param relation
      * @return
@@ -1504,7 +1529,7 @@ assert is not true.
     }
 
     /**
-     * This method takes a relation in canonical form and snips off the
+     * Takes a relation in canonical form and snips off the
      * the tables with the given tableName (or table alias). The matching table
      * only appears once in the relation.
      *
@@ -1739,13 +1764,6 @@ assert is not true.
         return oe;
     }
 
-    // implement NameResolver
-    public OlapElement lookupChild(OlapElement parent, String s) {
-        // use OlapElement's virtual lookup
-    	getLogger().error("RolapCube.lookupChild OlapElement: DOES THIS EVER GET CALLED s="+s);
-        return parent.lookupChild(getSchemaReader(), s);
-    }
-
     /**
      * Returns the the measures hierarchy.
      */
@@ -1770,7 +1788,15 @@ assert is not true.
                 "Error while creating calculated member from XML [" +
                 xml + "]");
         }
-        return createCalculatedMember(xmlCalcMember);
+
+        final ArrayList memberList = new ArrayList();
+        createCalcMembersAndNamedSets(
+                new MondrianDef.CalculatedMember[] {xmlCalcMember},
+                new MondrianDef.NamedSet[0],
+                memberList,
+                new ArrayList());
+        assert memberList.size() == 1;
+        return (Member) memberList.get(0);
     }
 
     /**
@@ -1834,12 +1860,11 @@ assert is not true.
             return list;
         }
 
-        public Member getMemberByUniqueName(String[] uniqueNameParts,
-                                            boolean failIfNotFound) {
-            return (Member) lookupCompound(RolapCube.this,
-                                           uniqueNameParts,
-                                           failIfNotFound,
-                                           Category.Member);
+        public Member getMemberByUniqueName(
+                String[] uniqueNameParts, boolean failIfNotFound) {
+            return (Member) lookupCompound(
+                    RolapCube.this, uniqueNameParts,
+                    failIfNotFound, Category.Member);
         }
 
         public Cube getCube() {

@@ -761,7 +761,8 @@ public class Query extends QueryPart {
         private final Stack stack = new Stack();
         private final FunTable funTable;
         private boolean haveCollectedParameters;
-        private java.util.Set resolvedNodes = new HashSet();
+        private final Map resolvedNodes = new HashMap();
+        private final Object placeHolder = "dummy";
 
         /**
          * Creates a StackValidator.
@@ -778,17 +779,21 @@ public class Query extends QueryPart {
         }
 
         public Exp validate(Exp exp, boolean scalar) {
-            if (!resolvedNodes.add(exp)) {
+            Exp resolved = (Exp) resolvedNodes.get(exp);
+            if (resolved != null) {
                 // Expression has already been resolved.
-                return scalar ? convertToScalar(exp) : exp;
+                return scalar ? convertToScalar(resolved) : resolved;
             }
             stack.push(exp);
             try {
-                Exp resolved = exp.accept(this);
+                // Put in a placeholder while we're resolving to prevent
+                // recursion.
+                resolvedNodes.put(exp, placeHolder);
+                resolved = exp.accept(this);
                 if (scalar) {
                     resolved = convertToScalar(resolved);
                 }
-                resolvedNodes.add(resolved);
+                resolvedNodes.put(exp, resolved);
                 return resolved;
             } finally {
                 stack.pop();
@@ -800,13 +805,15 @@ public class Query extends QueryPart {
         }
 
         public Parameter validate(Parameter parameter) {
-            if (!resolvedNodes.add(parameter)) {
+            Parameter resolved = (Parameter) resolvedNodes.get(parameter);
+            if (resolved != null) {
                 return parameter; // already resolved
             }
             stack.push(parameter);
             try {
-                final Parameter resolved = (Parameter) parameter.accept(this);
-                resolvedNodes.add(resolved);
+                resolvedNodes.put(parameter, placeHolder);
+                resolved = (Parameter) parameter.accept(this);
+                resolvedNodes.put(parameter, resolved);
                 return resolved;
             } finally {
                 stack.pop();
@@ -814,7 +821,7 @@ public class Query extends QueryPart {
         }
 
         public void validate(MemberProperty memberProperty) {
-            if (!resolvedNodes.add(memberProperty)) {
+            if (resolvedNodes.put(memberProperty, placeHolder) != null) {
                 return; // already resolved
             }
             stack.push(memberProperty);
@@ -826,7 +833,7 @@ public class Query extends QueryPart {
         }
 
         public void validate(QueryAxis axis) {
-            if (!resolvedNodes.add(axis)) {
+            if (resolvedNodes.put(axis, placeHolder) != null) {
                 return; // already resolved
             }
             stack.push(axis);
@@ -838,7 +845,7 @@ public class Query extends QueryPart {
         }
 
         public void validate(Formula formula) {
-            if (!resolvedNodes.add(formula)) {
+            if (resolvedNodes.put(formula, placeHolder) != null) {
                 return; // already resolved
             }
             stack.push(formula);

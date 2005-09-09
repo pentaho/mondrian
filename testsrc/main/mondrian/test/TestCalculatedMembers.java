@@ -133,7 +133,7 @@ public class TestCalculatedMembers extends FoodMartTestCase {
             throw new AssertionFailedError("expected error, got none");
         } catch (RuntimeException e) {
             final String msg = e.getMessage();
-            if (!msg.equals("Mondrian Error:Calculated member '[Measures].[Profit4]' in cube 'Sales' has bad formula")) {
+            if (!msg.equals("Mondrian Error:Named set in cube 'Sales' has bad formula")) {
                 throw e;
             }
         }
