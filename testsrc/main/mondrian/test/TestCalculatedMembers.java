@@ -385,26 +385,29 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 "  </CalculatedMember>",
                 "</Cube>"}));
 
-        getTestContext(cubeName).assertThrows(fold(new String[] {
-            "select {[Measures].[With a [bracket] in it]} on columns,",
-            " {[Gender].Members} on rows",
-            "from [" + cubeName + "]"}),
+        getTestContext(cubeName).assertThrows(
+                fold(new String[] {
+                    "select {[Measures].[With a [bracket] in it]} on columns,",
+                    " {[Gender].Members} on rows",
+                    "from [" + cubeName + "]"}),
                 "Syntax error at line 1, column 38, token 'in'");
 
-        getTestContext(cubeName).assertQueryReturns(fold(new String[] {
-            "select {[Measures].[With a [bracket]] in it]} on columns,",
-            " {[Gender].Members} on rows",
-            "from [" + cubeName + "]"}),
+        getTestContext(cubeName).assertQueryReturns(
                 fold(new String[] {
-                "Axis #0:",
-                "{}",
+                    "select {[Measures].[With a [bracket]] in it]} on columns,",
+                    " {[Gender].Members} on rows",
+                    "from [" + cubeName + "]"}),
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
                 "Axis #1:",
                 "{[Measures].[With a [bracket]] in it]}",
                 "Axis #2:",
                 "{[Gender].[F]}",
                 "{[Gender].[M]}",
                 "Row #0: $1,315,580.00",
-                "Row #1: $1,352,150.00"}));
+                "Row #1: $1,352,150.00",
+                ""}));
     }
 }
 
