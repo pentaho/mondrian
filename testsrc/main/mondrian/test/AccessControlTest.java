@@ -29,7 +29,8 @@ public class AccessControlTest extends FoodMartTestCase {
     }
 
     public void testGrantDimensionNone() {
-        Connection connection = getConnection(true);
+        final Connection connection = getConnection(true);
+        TestContext testContext = getTestContext(connection);
         Role role = connection.getRole().makeMutableClone();
         Schema schema = connection.getSchema();
         Cube salesCube = schema.lookupCube("Sales", true);
@@ -40,7 +41,7 @@ public class AccessControlTest extends FoodMartTestCase {
         role.grant(genderDimension, Access.NONE);
         role.makeImmutable();
         connection.setRole(role);
-        assertAxisThrows(connection, "[Gender].children", "MDX object '[Gender]' not found in cube 'Sales'");
+        testContext.assertAxisThrows("[Gender].children", "MDX object '[Gender]' not found in cube 'Sales'");
     }
 
     public void testRoleMemberAccess() {
@@ -73,7 +74,7 @@ public class AccessControlTest extends FoodMartTestCase {
         // assert: can access Mexico (explicitly granted)
         // assert: can not access Canada (explicitly denied)
         // assert: can access USA (rule 3 - parent of allowed member San Francisco)
-        assertAxisReturns(getRestrictedConnection(), "[Store].level.members",
+        getRestrictedTestContext().assertAxisReturns("[Store].level.members",
                 "[Store].[All Stores].[Mexico]" + nl +
                 "[Store].[All Stores].[USA]");
     }
@@ -82,42 +83,55 @@ public class AccessControlTest extends FoodMartTestCase {
         // assert: can access Mexico (explicitly granted)
         // assert: can not access Canada (explicitly denied)
         // assert: can access USA (rule 3 - parent of allowed member San Francisco)
-        assertAxisReturns(getRestrictedConnection(), "[Store].level.allmembers",
+        getRestrictedTestContext().assertAxisReturns("[Store].level.allmembers",
                 "[Store].[All Stores].[Mexico]" + nl +
                 "[Store].[All Stores].[USA]");
     }
 
     public void testGrantHierarchy1b() {
         // can access Mexico (explicitly granted) which is the first accessible one
-        assertAxisReturns(getRestrictedConnection(), "[Store].defaultMember",
+        getRestrictedTestContext().assertAxisReturns("[Store].defaultMember",
                 "[Store].[All Stores].[Mexico]");
     }
 
     public void testGrantHierarchy1c() {
         // can access Mexico (explicitly granted) which is the first accessible one
-        assertAxisReturns(getRestrictedConnection(), "[Customers].defaultMember",
+        getRestrictedTestContext().assertAxisReturns("[Customers].defaultMember",
                 "[Customers].[All Customers].[Canada].[BC]");
     }
     public void testGrantHierarchy2() {
         // assert: can access California (parent of allowed member)
-        final Connection restrictedConnection = getRestrictedConnection();
-        assertAxisReturns(restrictedConnection, "[Store].[USA].children", "[Store].[All Stores].[USA].[CA]");
-        assertAxisReturns(restrictedConnection, "[Store].[USA].[CA].children",
+        final TestContext testContext = getRestrictedTestContext();
+        testContext.assertAxisReturns("[Store].[USA].children", "[Store].[All Stores].[USA].[CA]");
+        testContext.assertAxisReturns("[Store].[USA].[CA].children",
                 "[Store].[All Stores].[USA].[CA].[Los Angeles]" + nl +
                 "[Store].[All Stores].[USA].[CA].[San Francisco]");
     }
     public void testGrantHierarchy3() {
         // assert: can not access Washington (child of denied member)
-        assertAxisThrows(getRestrictedConnection(), "[Store].[USA].[WA]", "not found");
+        final TestContext testContext = getRestrictedTestContext();
+        testContext.assertAxisThrows("[Store].[USA].[WA]", "not found");
     }
+
+    private TestContext getRestrictedTestContext() {
+        return new DelegatingTestContext(getTestContext()) {
+            public Connection getConnection() {
+                return getRestrictedConnection();
+            }
+        };
+    }
+
     public void testGrantHierarchy4() {
         // assert: can not access Oregon (rule 1 - order matters)
-        assertAxisThrows(getRestrictedConnection(), "[Store].[USA].[OR].children", "not found");
+        final TestContext testContext = getRestrictedTestContext();
+        testContext.assertAxisThrows("[Store].[USA].[OR].children", "not found");
     }
     public void testGrantHierarchy5() {
         // assert: can not access All (above top level)
-        assertAxisThrows(getRestrictedConnection(), "[Store].[All Stores]", "not found");
-        assertAxisReturns(getRestrictedConnection(), "[Store].members",
+        final TestContext testContext = getRestrictedTestContext();
+        testContext.assertAxisThrows("[Store].[All Stores]", "not found");
+        testContext.assertAxisReturns(
+                "[Store].members",
                 // note:
                 // no: [All Stores] -- above top level
                 // no: [Canada] -- not explicitly allowed
@@ -160,28 +174,30 @@ public class AccessControlTest extends FoodMartTestCase {
     }
     public void testGrantHierarchy6() {
         // assert: parent if at top level is null
-        assertAxisReturns(getRestrictedConnection(), "[Customers].[USA].[CA].parent", "");
+        getRestrictedTestContext().assertAxisReturns("[Customers].[USA].[CA].parent", "");
     }
     public void testGrantHierarchy7() {
         // assert: members above top level do not exist
-        assertAxisThrows(getRestrictedConnection(), "[Customers].[Canada].children",
+        final TestContext testContext = getRestrictedTestContext();
+        testContext.assertAxisThrows(
+                "[Customers].[Canada].children",
                 "MDX object '[Customers].[Canada]' not found in cube 'Sales'");
     }
     public void testGrantHierarchy8() {
         // assert: can not access Catherine Abel in San Francisco (below bottom level)
-        final Connection restrictedConnection = getRestrictedConnection();
-        assertAxisThrows(restrictedConnection, "[Customers].[USA].[CA].[San Francisco].[Catherine Abel]", "not found");
-        assertAxisReturns(restrictedConnection, "[Customers].[USA].[CA].[San Francisco].children", "");
-        Axis axis = executeAxis2(restrictedConnection, "[Customers].members");
+        final TestContext testContext = getRestrictedTestContext();
+        testContext.assertAxisThrows("[Customers].[USA].[CA].[San Francisco].[Catherine Abel]", "not found");
+        testContext.assertAxisReturns("[Customers].[USA].[CA].[San Francisco].children", "");
+        Axis axis = testContext.executeAxis("[Customers].members");
         Assert.assertEquals(122, axis.positions.length); // 13 states, 109 cities
     }
 
     public void testGrantHierarchy8AllMembers() {
         // assert: can not access Catherine Abel in San Francisco (below bottom level)
-        final Connection restrictedConnection = getRestrictedConnection();
-        assertAxisThrows(restrictedConnection, "[Customers].[USA].[CA].[San Francisco].[Catherine Abel]", "not found");
-        assertAxisReturns(restrictedConnection, "[Customers].[USA].[CA].[San Francisco].children", "");
-        Axis axis = executeAxis2(restrictedConnection, "[Customers].allmembers");
+        final TestContext testContext = getRestrictedTestContext();
+        testContext.assertAxisThrows("[Customers].[USA].[CA].[San Francisco].[Catherine Abel]", "not found");
+        testContext.assertAxisReturns("[Customers].[USA].[CA].[San Francisco].children", "");
+        Axis axis = testContext.executeAxis("[Customers].allmembers");
         Assert.assertEquals(122, axis.positions.length); // 13 states, 109 cities
     }
 

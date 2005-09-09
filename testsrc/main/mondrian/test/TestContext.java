@@ -27,10 +27,17 @@ import java.util.regex.Pattern;
  * necessary to run mondrian tests (otherwise we'd have to pass this
  * information into the constructor of TestCases).
  *
+ * <p>The singleton instance (retrieved via the {@link #instance()} method)
+ * contains a connection to the FoodMart database, and runs expressions in the
+ * context of the <code>Sales</code> cube.
+ *
+ * <p>Using the {@link DelegatingTestContext} subclass, you can create derived
+ * classes which use a different connection or a different cube.
+ *
  * @author jhyde
  * @since 29 March, 2002
  * @version $Id$
- **/
+ */
 public class TestContext {
     private static TestContext instance; // the singleton
     private PrintWriter pw;
@@ -148,7 +155,21 @@ public class TestContext {
         }
     }
 
-    /** Returns a connection to the FoodMart database. **/
+    /**
+     * Returns the connection to run queries.
+     *
+     * <p>By default, returns a connection to the FoodMart database.
+     */
+    public Connection getConnection() {
+        return getFoodMartConnection(false);
+    }
+
+    /**
+     * Returns a connection to the FoodMart database.
+     *
+     * @param fresh If true, returns a new connection, not one from the
+     *   connection pool
+     */
     public synchronized Connection getFoodMartConnection(boolean fresh) {
         if (fresh) {
             return DriverManager.getConnection(
@@ -176,50 +197,44 @@ public class TestContext {
     }
 
     /**
-     * Executes a query against the FoodMart database.
+     * Executes a query.
      */
-    public Result executeFoodMart(String queryString) {
-        Connection connection = getFoodMartConnection(false);
+    public Result executeQuery(String queryString) {
+        Connection connection = getConnection();
         Query query = connection.parseQuery(queryString);
         Result result = connection.execute(query);
         return result;
     }
 
     /**
-     * Executes a query against the FoodMart database, and returns the
-     * exception, or <code>null</code> if there was no exception.
-     */
-    public Throwable executeFoodMartCatch(String queryString) {
-        try {
-            Result result = executeFoodMart(queryString);
-            mondrian.olap.Util.discard(result);
-            return null;
-        } catch (Throwable e) {
-            return e;
-        }
-    }
-
-    /**
-     * Runs a query, and asserts that it throws an exception which contains
+     * Executes a query, and asserts that it throws an exception which contains
      * the given pattern.
      */
     public void assertThrows(String queryString, String pattern) {
-        Throwable throwable = executeFoodMartCatch(queryString);
+        Throwable throwable;
+        try {
+            Result result = executeQuery(queryString);
+            Util.discard(result);
+            throwable = null;
+        } catch (Throwable e) {
+            throwable = e;
+        }
         checkThrowable(throwable, pattern);
     }
 
     /**
-     * Runs an expression, and asserts that it gives an error which contains
+     * Executes an expression, and asserts that it gives an error which contains
      * a particular pattern. The error might occur during parsing, or might
      * be contained within the cell value.
      */
     public void assertExprThrows(String expression, String pattern) {
         Throwable throwable = null;
         try {
-            Result result = executeFoodMart(
+            Result result = executeQuery(
                     "with member [Measures].[Foo] as '" +
                     expression +
-                    "' select {[Measures].[Foo]} on columns from Sales");
+                    "' select {[Measures].[Foo]} on columns from " +
+                    getDefaultCubeName());
             Cell cell = result.getCell(new int[]{0});
             if (cell.isError()) {
                 throwable = (Throwable) cell.getValue();
@@ -230,46 +245,105 @@ public class TestContext {
         checkThrowable(throwable, pattern);
     }
 
+    public String getDefaultCubeName() {
+        return "Sales";
+    }
+
     /**
      * Executes the expression in the context of the cube indicated by
      * <code>cubeName</code>, and returns the result.
      *
-     * @param cubeName The name of the cube to use
      * @param expression The expression to evaluate
      * @return Returns a {@link Cell} which is the result of the expression.
      */
-    public Cell executeExprRaw(String cubeName, String expression) {
+    public Cell executeExprRaw(String expression) {
+        String cubeName = getDefaultCubeName();
         if (cubeName.indexOf(' ') >= 0) {
             cubeName = Util.quoteMdxIdentifier(cubeName);
         }
         final String queryString = "with member [Measures].[Foo] as " +
             Util.singleQuoteString(expression) +
             " select {[Measures].[Foo]} on columns from " + cubeName;
-        Result result = executeFoodMart(queryString);
+        Result result = executeQuery(queryString);
         return result.getCell(new int[]{0});
     }
 
     /**
-     * Runs an expression and asserts that it returns a given result.
+     * Executes an expression and asserts that it returns a given result.
      */
     public void assertExprReturns(String expression, String expected) {
-        final Cell cell = executeExprRaw("Sales", expression);
+        final Cell cell = executeExprRaw(expression);
         assertEqualsVerbose(expected, cell.getFormattedValue());
     }
 
+    /**
+     * Executes a query with a given expression on an axis, and asserts that it
+     * returns the expected string.
+     */
+    public void assertAxisReturns(
+            String expression,
+            String expected) {
+        Axis axis = executeAxis(expression);
+        Assert.assertEquals(expected, toString(axis.positions));
+    }
 
     /**
-     * Runs a query with a given expression on an axis, and asserts that it
-     * throws an error which matches a particular pattern. The expression is evaulated
-     * against the named cube.
+     * Executes a set expression which is expected to return 0 or 1 members.
+     * It is an error if the expression returns tuples (as opposed to members),
+     * or if it returns two or more members.
+     *
+     * @param expression
+     * @return Null if axis returns the empty set, member if axis returns one
+     *   member. Throws otherwise.
+     */
+    public Member executeSingletonAxis(String expression) {
+        final String cubeName = getDefaultCubeName();
+        Result result = executeQuery(
+                "select {" + expression + "} on columns from " + cubeName);
+        Axis axis = result.getAxes()[0];
+        switch (axis.positions.length) {
+        case 0:
+            // The mdx "{...}" operator eliminates null members (that is,
+            // members for which member.isNull() is true). So if "expression"
+            // yielded just the null member, the array will be empty.
+            return null;
+        case 1:
+            // Java nulls should never happen during expression evaluation.
+            Position position = axis.positions[0];
+            Util.assertTrue(position.members.length == 1);
+            Member member = position.members[0];
+            Util.assertTrue(member != null);
+            return member;
+        default:
+            throw Util.newInternal(
+                    "expression " + expression + " yielded " +
+                    axis.positions.length + " positions");
+        }
+    }
+
+    /**
+     * Executes a query with a given expression on an axis, and returns the
+     * whole axis.
+     */
+    public Axis executeAxis(String expression) {
+        Result result = executeQuery(
+                "select {" + expression + "} on columns from " +
+                getDefaultCubeName());
+        return result.getAxes()[0];
+    }
+
+    /**
+     * Executes a query with a given expression on an axis, and asserts that it
+     * throws an error which matches a particular pattern. The expression is
+     * evaulated against the default cube.
      */
     public void assertAxisThrows(
-            Connection connection,
-            String cubeName,
             String expression,
             String pattern) {
         Throwable throwable = null;
+        Connection connection = getConnection();
         try {
+            final String cubeName = getDefaultCubeName();
             final String queryString =
                     "select {" + expression + "} on columns from " + cubeName;
             Query query = connection.parseQuery(queryString);
@@ -291,21 +365,18 @@ public class TestContext {
         }
     }
 
-
-    /** Returns the output writer. **/
+    /**
+     * Returns the output writer.
+     */
     public PrintWriter getWriter() {
         return pw;
     }
 
-    private Connection getConnection() {
-        return getFoodMartConnection(false);
-    }
-
     /**
-     * Runs a query and checks that the result is a given string.
+     * Executes a query and checks that the result is a given string.
      */
     public void assertQueryReturns(String query, String desiredResult) {
-        Result result = executeFoodMart(query);
+        Result result = executeQuery(query);
         String resultString = toString(result);
         if (desiredResult != null) {
             assertEqualsVerbose(desiredResult, resultString);
@@ -339,14 +410,14 @@ public class TestContext {
         s = LineBreakPattern.matcher(s).replaceAll(lineBreak);
         s = TabPattern.matcher(s).replaceAll("\\\\t");
         s = "\"" + s + "\"";
-        final String spurious = " + " + FoodMartTestCase.nl + "\"\"";
+        final String spurious = " + " + nl + "\"\"";
         if (s.endsWith(spurious)) {
             s = s.substring(0, s.length() - spurious.length());
         }
         String message =
-                "Expected:" + FoodMartTestCase.nl + expected + FoodMartTestCase.nl +
-                "Actual: " + FoodMartTestCase.nl + actual + FoodMartTestCase.nl +
-                "Actual java: " + FoodMartTestCase.nl + s + FoodMartTestCase.nl;
+                "Expected:" + nl + expected + nl +
+                "Actual: " + nl + actual + nl +
+                "Actual java: " + nl + s + nl;
         throw new ComparisonFailure(message, expected, actual);
     }
 
@@ -375,14 +446,14 @@ public class TestContext {
         s = LineBreakPattern.matcher(s).replaceAll(lineBreak);
         s = TabPattern.matcher(s).replaceAll("\\\\t");
         s = "\"" + s + "\"";
-        final String spurious = " + " + FoodMartTestCase.nl + "\"\"";
+        final String spurious = " + " + nl + "\"\"";
         if (s.endsWith(spurious)) {
             s = s.substring(0, s.length() - spurious.length());
         }
         String message =
-                "Expected pattern:" + FoodMartTestCase.nl + expected + FoodMartTestCase.nl +
-                "Actual: " + FoodMartTestCase.nl + actual + FoodMartTestCase.nl +
-                "Actual java: " + FoodMartTestCase.nl + s + FoodMartTestCase.nl;
+                "Expected pattern:" + nl + expected + nl +
+                "Actual: " + nl + actual + nl +
+                "Actual java: " + nl + s + nl;
         throw new ComparisonFailure(message, expected.pattern(), actual);
     }
 
@@ -408,6 +479,54 @@ public class TestContext {
         return sw.toString();
     }
 
+    /**
+     * Converts a set of positions into a string. Useful if you want to check
+     * that an axis has the results you expected.
+     */
+    public static String toString(Position[] positions) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < positions.length; i++) {
+            Position position = positions[i];
+            if (i > 0) {
+                sb.append(nl);
+            }
+            if (position.members.length != 1) {
+                sb.append("{");
+            }
+            for (int j = 0; j < position.members.length; j++) {
+                Member member = position.members[j];
+                if (j > 0) {
+                    sb.append(", ");
+                }
+                sb.append(member.getUniqueName());
+            }
+            if (position.members.length != 1) {
+                sb.append("}");
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Converts an array of strings, each representing a line, into a single
+     * string with line separators. There is no line separator after the
+     * last string.
+     *
+     * <p>This function exists because line separators are platform dependent,
+     * and IDEs such as Intellij handle large string arrays much better than
+     * they handle concatenations of large numbers of string fragments.
+     */
+    public static String fold(String[] strings) {
+        StringBuffer buf = new StringBuffer();
+        for (int i = 0; i < strings.length; i++) {
+            if (i > 0) {
+                buf.append(nl);
+            }
+            String string = strings[i];
+            buf.append(string);
+        }
+        return buf.toString();
+    }
 }
 
 // End TestContext.java

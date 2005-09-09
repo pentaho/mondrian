@@ -18,12 +18,13 @@ import mondrian.rolap.cache.CachePool;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.regex.Pattern;
+import java.io.PrintWriter;
 
 import junit.framework.Assert;
 
 /**
- * <code>BasicQueryTest</code> is a test case which tests simple queries against
- * the FoodMart database.
+ * <code>BasicQueryTest</code> is a test case which tests simple queries
+ * against the FoodMart database.
  *
  * @author jhyde
  * @since Feb 14, 2003
@@ -413,35 +414,35 @@ public class BasicQueryTest extends FoodMartTestCase {
     };
 
     public void testSample0() {
-        assertQueryReturns(sampleQueries[0]);
+        assertQueryReturns(sampleQueries[0].query, sampleQueries[0].result);
     }
 
     public void testSample1() {
-        assertQueryReturns(sampleQueries[1]);
+        assertQueryReturns(sampleQueries[1].query, sampleQueries[1].result);
     }
 
     public void testSample2() {
-        assertQueryReturns(sampleQueries[2]);
+        assertQueryReturns(sampleQueries[2].query, sampleQueries[2].result);
     }
 
     public void testSample3() {
-        assertQueryReturns(sampleQueries[3]);
+        assertQueryReturns(sampleQueries[3].query, sampleQueries[3].result);
     }
 
     public void testSample4() {
-        assertQueryReturns(sampleQueries[4]);
+        assertQueryReturns(sampleQueries[4].query, sampleQueries[4].result);
     }
 
     public void testSample5() {
-        assertQueryReturns(sampleQueries[5]);
+        assertQueryReturns(sampleQueries[5].query, sampleQueries[5].result);
     }
 
     public void testSample6() {
-        assertQueryReturns(sampleQueries[6]);
+        assertQueryReturns(sampleQueries[6].query, sampleQueries[6].result);
     }
 
     public void testSample7() {
-        assertQueryReturns(sampleQueries[7]);
+        assertQueryReturns(sampleQueries[7].query, sampleQueries[7].result);
     }
 
     /**
@@ -1284,8 +1285,8 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void _testProduct2() {
-        final Axis axis = executeAxis2("Sales", "{[Product2].members}");
-        System.out.println(toString(axis.positions));
+        final Axis axis = getTestContext().executeAxis("{[Product2].members}");
+        System.out.println(TestContext.toString(axis.positions));
     }
 
     public static final QueryAndResult[] taglibQueries = {
@@ -2063,27 +2064,27 @@ public class BasicQueryTest extends FoodMartTestCase {
     };
 
     public void testTaglib0() {
-        assertQueryReturns(taglibQueries[0]);
+        assertQueryReturns(taglibQueries[0].query, taglibQueries[0].result);
     }
 
     public void testTaglib1() {
-        assertQueryReturns(taglibQueries[1]);
+        assertQueryReturns(taglibQueries[1].query, taglibQueries[1].result);
     }
 
     public void testTaglib2() {
-        assertQueryReturns(taglibQueries[2]);
+        assertQueryReturns(taglibQueries[2].query, taglibQueries[2].result);
     }
 
     public void testTaglib3() {
-        assertQueryReturns(taglibQueries[3]);
+        assertQueryReturns(taglibQueries[3].query, taglibQueries[3].result);
     }
 
     public void testTaglib4() {
-        assertQueryReturns(taglibQueries[4]);
+        assertQueryReturns(taglibQueries[4].query, taglibQueries[4].result);
     }
 
     public void testTaglib5() {
-        assertQueryReturns(taglibQueries[5]);
+        assertQueryReturns(taglibQueries[5].query, taglibQueries[5].result);
     }
 
     public void testCellValue() {
@@ -2636,11 +2637,11 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "    <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>" + nl +
                 "  </Hierarchy>" + nl +
                 "</Dimension>");
-        final Axis axis = executeAxis2("Sales", "[Gender2].members");
+        final Axis axis = getTestContext().executeAxis("[Gender2].members");
         assertEquals("[Gender2].[All Gender]" + nl +
                 "[Gender2].[All Gender].[F]" + nl +
                 "[Gender2].[All Gender].[M]",
-                toString(axis.positions));
+                TestContext.toString(axis.positions));
     }
 
     /**
@@ -4123,7 +4124,8 @@ public class BasicQueryTest extends FoodMartTestCase {
                         for (int j = 0; j < iterationCount; j++) {
                             int queryIndex = (i * 2 + j) % queries.length;
                             try {
-                                assertQueryReturns(queries[queryIndex]);
+                                QueryAndResult query = queries[queryIndex];
+                                assertQueryReturns(query.query, query.result);
                                 if (flush && i == 0) {
                                     CachePool.instance().flush();
                                 }
@@ -4352,10 +4354,10 @@ public class BasicQueryTest extends FoodMartTestCase {
         schema.createDimension(
                 salesCube,
                 "<DimensionUsage name=\"Other Store\" source=\"Store\" foreignKey=\"unit_sales\" />");
-        Axis axis = executeAxis2("Sales", "[Other Store].members");
+        Axis axis = getTestContext().executeAxis("[Other Store].members");
         assertEquals(63, axis.positions.length);
 
-        axis = executeAxis2("Sales", "[Store].members");
+        axis = getTestContext().executeAxis("[Store].members");
         assertEquals(63, axis.positions.length);
 
         final String q1 = "select {[Measures].[Unit Sales]} on columns," + nl +
@@ -4520,7 +4522,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "  </Hierarchy>" + nl +
                 "</Dimension>");
         String mdx = "select {[Gender3].[All Gender]} on columns from Sales";
-        Result result = TestContext.instance().executeFoodMart(mdx);
+        Result result = TestContext.instance().executeQuery(mdx);
         Axis axis0 = result.getAxes()[0];
         Position pos0 = axis0.positions[0];
         Member allGender = pos0.members[0];
@@ -4542,12 +4544,79 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "  </Hierarchy>" + nl +
                 "</Dimension>");
         String mdx = "select {[Gender4].[All Gender]} on columns from Sales";
-        Result result = TestContext.instance().executeFoodMart(mdx);
+        Result result = TestContext.instance().executeQuery(mdx);
         Axis axis0 = result.getAxes()[0];
         Position pos0 = axis0.positions[0];
         Member allGender = pos0.members[0];
         String caption = allGender.getLevel().getName();
         Assert.assertEquals(caption, "GenderLevel");
+    }
+
+    /**
+     * Bug 1250080 caused a dimension with no 'all' member to be constrained
+     * twice.
+     */
+    public void testDimWithoutAll() {
+        RolapConnection conn = (RolapConnection) getConnection();
+        Schema schema = getConnection().getSchema();
+        final Cube cube = schema.createCube(fold(new String[] {
+                "<Cube name=\"Sales_DimWithoutAll\">",
+                "  <Table name=\"sales_fact_1997\"/>",
+                "  <Dimension name=\"Product\" foreignKey=\"product_id\">",
+                "    <Hierarchy hasAll=\"false\" primaryKey=\"product_id\" primaryKeyTable=\"product\">",
+                "      <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">",
+                "        <Table name=\"product\"/>",
+                "        <Table name=\"product_class\"/>",
+                "      </Join>",
+                "      <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\"",
+                "          uniqueMembers=\"true\"/>",
+                "      <Level name=\"Product Department\" table=\"product_class\" column=\"product_department\"",
+                "          uniqueMembers=\"false\"/>",
+                "      <Level name=\"Product Category\" table=\"product_class\" column=\"product_category\"",
+                "          uniqueMembers=\"false\"/>",
+                "      <Level name=\"Product Subcategory\" table=\"product_class\" column=\"product_subcategory\"",
+                "          uniqueMembers=\"false\"/>",
+                "      <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>",
+                "      <Level name=\"Product Name\" table=\"product\" column=\"product_name\"",
+                "          uniqueMembers=\"true\"/>",
+                "    </Hierarchy>",
+                "  </Dimension>",
+                "  <Dimension name=\"Gender\" foreignKey=\"customer_id\">",
+                "    <Hierarchy hasAll=\"false\" primaryKey=\"customer_id\">",
+                "    <Table name=\"customer\"/>",
+                "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>",
+                "    </Hierarchy>",
+                "  </Dimension>" +
+                "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"",
+                "      formatString=\"Standard\" visible=\"false\"/>",
+                "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"",
+                "      formatString=\"#,###.00\"/>",
+                "</Cube>"}));
+        // Create a test context which evaluates expressions against the
+        // "Sales_DimWithoutAll" cube, not the "Sales" cube.
+        TestContext testContext = new DelegatingTestContext(getTestContext()) {
+            public String getDefaultCubeName() {
+                return "Sales_DimWithoutAll";
+            }
+        };
+        // the default member of the Gender dimension is the first member
+        testContext.assertExprReturns("[Gender].CurrentMember.Name", "F");
+        testContext.assertExprReturns("[Product].CurrentMember.Name", "Drink");
+        // There is no all member.
+        testContext.assertExprThrows("([Gender].[All Gender], [Measures].[Unit Sales])",
+                "MDX object '[Gender].[All Gender]' not found in cube 'Sales_DimWithoutAll'");
+        testContext.assertExprThrows("([Gender].[All Genders], [Measures].[Unit Sales])",
+                "MDX object '[Gender].[All Genders]' not found in cube 'Sales_DimWithoutAll'");
+        // evaluated in the default context: [Product].[Drink], [Gender].[F]
+        testContext.assertExprReturns("[Measures].[Unit Sales]", "12,202");
+        // evaluated in the same context: [Product].[Drink], [Gender].[F]
+        testContext.assertExprReturns("([Gender].[F], [Measures].[Unit Sales])", "12,202");
+        // evaluated at in the context: [Product].[Drink], [Gender].[M]
+        testContext.assertExprReturns("([Gender].[M], [Measures].[Unit Sales])", "12,395");
+        // evaluated at in the context: [Product].[Food].[Canned Foods], [Gender].[F]
+        testContext.assertExprReturns("([Product].[Food].[Canned Foods], [Measures].[Unit Sales])", "9,407");
+        testContext.assertExprReturns("([Product].[Food].[Dairy], [Measures].[Unit Sales])", "6,513");
+        testContext.assertExprReturns("([Product].[Drink].[Dairy], [Measures].[Unit Sales])", "1,987");
     }
 
     /**

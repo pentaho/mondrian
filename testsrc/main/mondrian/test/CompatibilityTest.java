@@ -190,7 +190,7 @@ public class CompatibilityTest extends FoodMartTestCase {
     }
 
     private void checkAxis(String result, String expression) {
-        Assert.assertEquals(result, executeAxis(expression).toString());
+        Assert.assertEquals(result, executeSingletonAxis(expression).toString());
     }
 
 }

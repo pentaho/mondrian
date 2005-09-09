@@ -16,7 +16,6 @@ import junit.framework.TestCase;
 import mondrian.olap.*;
 
 import java.util.ArrayList;
-import java.util.regex.Pattern;
 
 /**
  * <code>FoodMartTestCase</code> is a unit test which runs against the FoodMart
@@ -44,8 +43,35 @@ public class FoodMartTestCase extends TestCase {
      * Returns the test context. Override this method if you wish to use a
      * different source for your FoodMart connection.
      */
-    protected TestContext getTestContext() {
+    public TestContext getTestContext() {
         return TestContext.instance();
+    }
+
+    /**
+     * Returns a {@link TestContext} which uses a given cube for executing
+     * scalar and set expressions.
+     *
+     * @param cubeName Name of cube
+     */
+    protected TestContext getTestContext(final String cubeName) {
+        return new DelegatingTestContext(getTestContext()) {
+            public String getDefaultCubeName() {
+                return cubeName;
+            }
+        };
+    }
+
+    /**
+     * Returns a {@link TestContext} which uses a given connection.
+     *
+     * @param connection Connection
+     */
+    public TestContext getTestContext(final Connection connection) {
+        return new DelegatingTestContext(getTestContext()) {
+            public Connection getConnection() {
+                return connection;
+            }
+        };
     }
 
     protected Connection getConnection() {
@@ -81,61 +107,16 @@ public class FoodMartTestCase extends TestCase {
     }
 
     /**
-     * Runs a query with a given expression on an axis, and returns the whole
-     * axis.
+     * Executes a set expression which is expected to return 0 or 1 members.
+     * It is an error if the expression returns tuples (as opposed to members),
+     * or if it returns two or more members.
+     *
+     * @param expression Expression
+     * @return Null if axis returns the empty set, member if axis returns one
+     *   member. Throws otherwise.
      */
-    public Axis executeAxis2(String cube, String expression) {
-        Result result = execute(
-                getTestContext().getFoodMartConnection(false),
-                "select {" + expression + "} on columns from " + cube);
-        return result.getAxes()[0];
-    }
-
-    /**
-     * Runs a query with a given expression on an axis, on a given connection,
-     * and returns the whole axis.
-     */
-    Axis executeAxis2(Connection connection, String expression) {
-        Result result = execute(connection, "select {" + expression + "} on columns from Sales");
-        return result.getAxes()[0];
-    }
-    /**
-     * Runs a query with a given expression on an axis, and returns the single
-     * member.
-     */
-    public Member executeAxis(String expression) {
-        return executeAxis("Sales", expression);
-    }
-
-    public Member executeAxis(String cubeName, String expression) {
-        Result result = getTestContext().executeFoodMart(
-                "select {" + expression + "} on columns from " + cubeName);
-        Axis axis = result.getAxes()[0];
-        switch (axis.positions.length) {
-        case 0:
-            // The mdx "{...}" operator eliminates null members (that is,
-            // members for which member.isNull() is true). So if "expression"
-            // yielded just the null member, the array will be empty.
-            return null;
-        case 1:
-            // Java nulls should never happen during expression evaluation.
-            Position position = axis.positions[0];
-            Util.assertTrue(position.members.length == 1);
-            Member member = position.members[0];
-            Util.assertTrue(member != null);
-            return member;
-        default:
-            throw Util.newInternal(
-                    "expression " + expression + " yielded " +
-                    axis.positions.length + " positions");
-        }
-    }
-
-    /**
-     * Runs a query and checks that the result is a given string.
-     */
-    public void assertQueryReturns(QueryAndResult queryAndResult) {
-        assertQueryReturns(queryAndResult.query, queryAndResult.result);
+    public Member executeSingletonAxis(String expression) {
+        return getTestContext().executeSingletonAxis(expression);
     }
 
     /**
@@ -149,7 +130,7 @@ public class FoodMartTestCase extends TestCase {
      * Runs a query.
      */
     public Result executeQuery(String queryString) {
-        return getTestContext().executeFoodMart(queryString);
+        return getTestContext().executeQuery(queryString);
     }
 
     /**
@@ -158,41 +139,7 @@ public class FoodMartTestCase extends TestCase {
      * is evaulated against the Sales cube.
      */
     public void assertAxisThrows(String expression, String pattern) {
-        assertAxisThrows(getTestContext().getFoodMartConnection(false),
-                expression, pattern);
-    }
-
-    /**
-     * Runs a query with a given expression on an axis, and asserts that it
-     * throws an error which matches a particular pattern. The expression
-     * is evaulated against the named cube.
-     */
-    public void assertAxisThrows(String cubeName, String expression, String pattern) {
-        assertAxisThrows(getTestContext().getFoodMartConnection(false),
-                cubeName, expression, pattern);
-    }
-
-    /**
-     * Runs a query with a given expression on an axis, and asserts that it
-     * throws an error which matches a particular pattern. The expression is evaulated
-     * against the Sales cube.
-     */
-    public void assertAxisThrows(Connection connection, String expression, String pattern) {
-        assertAxisThrows(connection, "Sales", expression, pattern);
-    }
-
-    /**
-     * Runs a query with a given expression on an axis, and asserts that it
-     * throws an error which matches a particular pattern. The expression is evaulated
-     * against the named cube.
-     */
-    public void assertAxisThrows(
-            Connection connection,
-            String cubeName,
-            String expression,
-            String pattern) {
-        getTestContext().assertAxisThrows(
-                connection, cubeName, expression, pattern);
+        getTestContext().assertAxisThrows(expression, pattern);
     }
 
     /**
@@ -200,27 +147,7 @@ public class FoodMartTestCase extends TestCase {
      * asserts that it returns the expected string.
      */
     public void assertAxisReturns(String expression, String expected) {
-        assertAxisReturns("Sales", expression, expected);
-    }
-    /**
-     * Runs a query with a given expression on an axis, and asserts that it
-     * returns the expected string.
-     */
-    public void assertAxisReturns(String cube, String expression, String expected) {
-        Axis axis = executeAxis2(cube, expression);
-        Assert.assertEquals(expected, toString(axis.positions));
-    }
-
-    /**
-     * Runs a query with a given expression on an axis, and asserts that it
-     * returns the expected string.
-     */
-    public void assertAxisReturns(
-            Connection connection,
-            String expression,
-            String expected) {
-        Axis axis = executeAxis2(connection, expression);
-        Assert.assertEquals(expected, toString(axis.positions));
+        getTestContext().assertAxisReturns(expression, expected);
     }
 
     /**
@@ -229,7 +156,7 @@ public class FoodMartTestCase extends TestCase {
      * value.
      */
     public String executeExpr(String expression) {
-        return getTestContext().executeExprRaw("Sales", expression).getFormattedValue();
+        return getTestContext().executeExprRaw(expression).getFormattedValue();
     }
 
     /**
@@ -255,32 +182,8 @@ public class FoodMartTestCase extends TestCase {
         getTestContext().assertExprReturns(expression, expected);
     }
 
-    /**
-     * Converts a set of positions into a string. Useful if you want to check
-     * that an axis has the results you expected.
-     */
-    public String toString(Position[] positions) {
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < positions.length; i++) {
-            Position position = positions[i];
-            if (i > 0) {
-                sb.append(nl);
-            }
-            if (position.members.length != 1) {
-                sb.append("{");
-            }
-            for (int j = 0; j < position.members.length; j++) {
-                Member member = position.members[j];
-                if (j > 0) {
-                    sb.append(", ");
-                }
-                sb.append(member.getUniqueName());
-            }
-            if (position.members.length != 1) {
-                sb.append("}");
-            }
-        }
-        return sb.toString();
+    public static String fold(String[] strings) {
+        return TestContext.fold(strings);
     }
 
 

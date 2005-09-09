@@ -69,7 +69,7 @@ public class TestCalculatedMembers extends FoodMartTestCase {
             "  dimension='Measures'" +
             "  formula='[Measures].[Store Sales]-[Measures].[Store Cost]'/>");
 
-        Cell s = getTestContext().executeExprRaw("Warehouse and Sales", "[Measures].[Profit With Spaces]");
+        Cell s = getTestContext("Warehouse and Sales").executeExprRaw("[Measures].[Profit With Spaces]");
         Assert.assertEquals("339,610.90", s.getFormattedValue());
     }
 
@@ -85,7 +85,7 @@ public class TestCalculatedMembers extends FoodMartTestCase {
             "</CalculatedMember>");
 
         // note that result uses format string
-        Result result = TestContext.instance().executeFoodMart(
+        Result result = TestContext.instance().executeQuery(
             "select {[Measures].[Profit3]} on columns from Sales");
         String s = result.getCell(new int[]{0}).getFormattedValue();
         Assert.assertEquals("339611", s);
@@ -289,7 +289,7 @@ public class TestCalculatedMembers extends FoodMartTestCase {
 
     public void testCalculatedMemberCaption() {
         String mdx = "select {[Measures].[Profit Growth]} on columns from Sales";
-        Result result = TestContext.instance().executeFoodMart(mdx);
+        Result result = TestContext.instance().executeQuery(mdx);
         Axis axis0 = result.getAxes()[0];
         Position pos0 = axis0.positions[0];
         Member profGrowth = pos0.members[0];

@@ -42,7 +42,7 @@ public class UdfTest extends FoodMartTestCase {
         }
     };
 
-    protected TestContext getTestContext() {
+    public TestContext getTestContext() {
         return tc;
     }
 
@@ -160,7 +160,7 @@ public class UdfTest extends FoodMartTestCase {
                     }
             };
         try {
-            tc.executeFoodMart("SELECT {} ON COLUMNS FROM [Sales]");
+            tc.executeQuery("SELECT {} ON COLUMNS FROM [Sales]");
             fail("Expected exception");
         } catch (Exception e) {
             final String s = e.getMessage();
