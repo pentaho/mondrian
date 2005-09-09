@@ -145,8 +145,7 @@ public class RolapSchema implements Schema {
             final Constructor ctor = clazz.getConstructor(new Class[0]);
             final DynamicSchemaProcessor dynProc =
                     (DynamicSchemaProcessor) ctor.newInstance(new Object[0]);
-
-            catalogStr = dynProc.processSchema(url);
+            catalogStr = dynProc.processSchema(url, connectInfo);
 
         } catch (Exception e) {
             throw Util.newError(e, "loading DynamicSchemaProcessor "
@@ -685,7 +684,7 @@ public class RolapSchema implements Schema {
                         ex.printStackTrace();
                     }
                     if (md5Bytes != null) {
-                        SoftReference ref = 
+                        SoftReference ref =
                             (SoftReference) mapUrlToSchema.get(md5Bytes);
                         if (ref != null) {
                             schema = (RolapSchema) ref.get();
@@ -817,10 +816,10 @@ public class RolapSchema implements Schema {
 
             mapUrlToSchema.clear();
         }
-        
-        /** 
-         * This returns an iterator over a copy of the RolapSchema's container. 
-         * 
+
+        /**
+         * This returns an iterator over a copy of the RolapSchema's container.
+         *
          * @return Iterator over RolapSchemas.
          */
         synchronized Iterator getRolapSchemas() {
@@ -1333,7 +1332,7 @@ public class RolapSchema implements Schema {
         }
     }
     public static void flushAllRolapStarCaches() {
-        for (Iterator itSchemas = RolapSchema.getRolapSchemas(); 
+        for (Iterator itSchemas = RolapSchema.getRolapSchemas();
                 itSchemas.hasNext(); ) {
 
             RolapSchema schema = (RolapSchema) itSchemas.next();

@@ -241,10 +241,9 @@ public class MondrianProperties extends TriggerableProperties {
 
     /**
      * Property which determines which test class to run.
-     * This is the
-     * name of the class which either implements {@link junit.framework.Test},
-     * or has a method <code>public [static] {@link junit.framework.Test}
-     * suite()</code>.
+     * This is the name of the class which either implements
+     * <code>junit.framework.Test</code> or has a method
+     * <code>public [static] junit.framework.Test suite()</code>.
      *
      * @see #TestName
      */
@@ -507,14 +506,28 @@ public class MondrianProperties extends TriggerableProperties {
     /**
      * Seed for random number generator used by some of the tests.
      *
-     * <p>Setting the seed to a different value can increase coverage.
-     * In order the tests to be deterministic, you should leave this property
-     * unset, and the tests will use the default value, which is 1234.
+     * <p>
+     * Any value besides 0 or -1 gives deterministic behavior.
+     * The default value is 1234: most users should use this.
+     * Setting the seed to a different value can increase coverage, and
+     * therefore may uncover new bugs.
      *
-     * <p>If you set the value to 0,
+     * <p>If you set the value to 0, the system will generate its own
+     * pseudo-random seed.
+     *
+     * <p>If you set the value to -1, Mondrian uses the next seed from an
+     * internal random-number generator. This is a little more deterministic
+     * than setting the value to 0.
      */
     public final IntegerProperty TestSeed = new IntegerProperty(
             this, "mondrian.test.random.seed", 1234);
+
+    /**
+     * Name of locale property file.
+     * Default value is null.
+     */
+    public final StringProperty LocalePropFile = new StringProperty(
+            this, "mondrian.rolap.localePropFile", null);
 }
 
 // End MondrianProperties.java

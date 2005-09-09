@@ -21,7 +21,7 @@
 
 <body>
 <h1>How to Design a Mondrian Schema</h1>
-<p>By Julian Hyde; last updated July, 2005.</p>
+<p>By Julian Hyde; last updated September, 2005.</p>
 
 <hr noshade color="#000000" size="1">
 
@@ -1275,29 +1275,119 @@ caption rather than the real name. Additionally:
 
 <p>One way to create an internationalized application is to create a copy of the 
 schema file for each language, but these are difficult to maintain. A better way 
-is to perform dynamic substitution on a single schema file, using a
-<a href="#Schema_processor">dynamic schema processor</a>.</p>
+is to use the <a href="api/mondrian/i18n/LocalizingDynamicSchemaProcessor.html">
+LocalizingDynamicSchemaProcessor</a> class to perform dynamic substitution on a 
+single schema file.</p>
+
+<h3>Localizing schema processor</h3>
 
 <p>First, write your schema using variables as values for <code>caption</code>, <code>allMemberCaption</code> and <code>measuresCaption</code> 
 attributes as follows:</p><blockquote>
-  <p><code>&lt;<a href="#XML_Schema">Schema</a> measuresCaption=&quot;${MEASURESCAPTION}&quot;&gt;<br>
-	&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Gender&quot; foreignKey=&quot;customer_id&quot; caption=&quot;${GENDER}&quot;&gt;<br>
-	&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; allMemberName=&quot;All Genders&quot; primaryKey=&quot;customer_id&quot; allMemberCaption=&quot;${ALLGENDER}&quot;&gt;<br>
-	&lt;<a href="#XML_Level">Level</a> name=&quot;Gender&quot; column=&quot;gender&quot; uniqueMembers=&quot;true&quot; caption=&quot;${GENDER}&quot;&gt;<br>
-	&lt;<a href="#XML_Measure">Measure</a> name=&quot;Unit Sales&quot; column=&quot;unit_sales&quot; caption=&quot;${UNITSALES}&quot;&gt;</code></p></blockquote>
+  <p><code>&lt;<a href="#XML_Schema">Schema</a> measuresCaption=&quot;%{foodmart.measures.caption}&quot;&gt;<br>
+	<br>
+&nbsp; &lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Store&quot; caption=&quot;%{foodmart.dimension.store.caption}&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; 
+	allMemberName=&quot;All Stores&quot; allMemberCaption=&quot;%{foodmart.dimension.store.allmember.caption=All 
+	Stores}&quot; primaryKey=&quot;store_id&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Table">Table</a> name=&quot;store&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Store 
+	Country&quot; column=&quot;store_country&quot; uniqueMembers=&quot;true&quot; caption=&quot;%{foodmart.dimension.store.country.caption}&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Store 
+	State&quot; column=&quot;store_state&quot; uniqueMembers=&quot;true&quot; caption=&quot;%{foodmart.dimension.store.state.caption}&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Store City&quot; 
+	column=&quot;store_city&quot; uniqueMembers=&quot;false&quot; caption=&quot;%{foodmart.dimension.store.city.caption}&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Level">Level</a> name=&quot;Store Name&quot; 
+	column=&quot;store_name&quot; uniqueMembers=&quot;true&quot; caption=&quot;%{foodmart.dimension.store.name.caption}&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> 
+	name=&quot;Store Type&quot; column=&quot;store_type&quot; caption=&quot;%{foodmart.dimension.store.name.property_type.caption}&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> 
+	name=&quot;Store Manager&quot; column=&quot;store_manager&quot; caption=&quot;%{foodmart.dimension.store.name.property_manager.caption}&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> 
+	name=&quot;Store Sqft&quot; column=&quot;store_sqft&quot; type=&quot;Numeric&quot; caption=&quot;%{foodmart.dimension.store.name.property_storesqft.caption}&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> 
+	name=&quot;Grocery Sqft&quot; column=&quot;grocery_sqft&quot; type=&quot;Numeric&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> 
+	name=&quot;Frozen Sqft&quot; column=&quot;frozen_sqft&quot; type=&quot;Numeric&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> 
+	name=&quot;Meat Sqft&quot; column=&quot;meat_sqft&quot; type=&quot;Numeric&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> 
+	name=&quot;Has coffee bar&quot; column=&quot;coffee_bar&quot; type=&quot;Boolean&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_Property">Property</a> 
+	name=&quot;Street address&quot; column=&quot;store_street_address&quot; type=&quot;String&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Level">Level</a>&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;<br>
+&nbsp; &lt;/<a href="#XML_Dimension">Dimension</a>&gt;<br>
+	<br>
+&nbsp; &lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot; caption=&quot;%{foodmart.cube.sales.caption}&quot;&gt;<br>
+&nbsp;&nbsp;&nbsp; ...<br>
+&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_DimensionUsage">DimensionUsage</a> 
+	name=&quot;Store&quot; source=&quot;Store&quot; foreignKey=&quot;store_id&quot;/&gt;<br>
+&nbsp;&nbsp;&nbsp; ...<br>
+&nbsp;&nbsp;&nbsp;
+	&lt;<a href="#XML_Measure">Measure</a> name=&quot;Unit Sales&quot; column=&quot;unit_sales&quot; 
+	caption=&quot;%{foodmart.cube.sales.measure.unitsales}&quot;&gt;</code></p></blockquote>
 
-<p>(Note that because the <code>[Gender]</code> hierarchy has no <code>caption</code> defined, 
-it inherits the <code>caption</code> attribute from its parent, the <code>
-[Gender]</code> dimension.)</p>
+<p>As usual, the default caption for any cube, measure, dimension or level 
+without a <code>caption</code> attribute is the name of the element. A 
+hierarchy's default caption is the caption of its dimension; for example, the <code>[Store]</code> hierarchy has no <code>caption</code> defined, 
+so it inherits the <code>caption</code> attribute from its parent, the <code>
+[Store]</code> dimension.</p>
 
-<p>Next, create a class which implements the
-<code><a href="api/mondrian/olap/DynamicSchemaProcessor.html">DynamicSchemaProcessor</a></code> 
-interface and whose <code>
-<a href="api/mondrian/rolap/DynamicSchemaProcessor.html#processSchema(java.net.URL)">
-processSchema(URL)</a></code> method performs JSTL-like variable substitution.</p>
+<p>Next, add the dynamic schema processor and locale to your connect string. For 
+example,</p>
 
-<p>Put this class on the classpath, and include the name of your schema 
-processor class in the connect string you use to connect to Mondrian.</p>
+<blockquote>
+
+	<p><code>Provider=mondrian; <i><b>Locale=en_US; DynamicSchemaProcessor=mondrian.i18n.LocalizingDynamicSchemaProcessor;</b>
+	</i>Jdbc=jdbc:odbc:MondrianFoodMart; Catalog=/WEB-INF/FoodMart.xml </code>
+	</p>
+</blockquote>
+
+<p>Now, for each locale you wish to support, provide a resource file named <code>
+locale_<i>{locale}</i>.properties</code>. For example,</p>
+
+<blockquote>
+
+	<p><code># locale.properties: Default resources<br>
+	foodmart.measures.caption=Measures<br>
+	foodmart.dimension.store.country.caption=Store Country<br>
+	foodmart.dimension.store.name.property_type.column=store_type<br>
+	foodmart.dimension.store.country.member.caption=store_country<br>
+	foodmart.dimension.store.name.property_type.caption=Store Type<br>
+	foodmart.dimension.store.name.caption=Store Name<br>
+	foodmart.dimension.store.state.caption=Store State<br>
+	foodmart.dimension.store.name.property_manager.caption=Store Manager<br>
+	foodmart.dimension.store.name.property_storesqft.caption=Store Sq. Ft.<br>
+	foodmart.dimension.store.allmember.caption=All Stores<br>
+	foodmart.dimension.store.caption=Store<br>
+	foodmart.cube.sales.caption=Sales<br>
+	foodmart.dimension.store.city.caption=Store City<br>
+	foodmart.cube.sales.measure.unitsales=Unit Sales</code></p>
+</blockquote>
+
+<p>and</p>
+
+<blockquote>
+
+	<p><code># locale_hu.properties: Resources for the 'hu' locale.<br>
+	foodmart.measures.caption=Hungarian Measures<br>
+	foodmart.dimension.store.country.caption=Orsz\u00E1g<br>
+	foodmart.dimension.store.name.property_manager.caption=\u00C1ruh\u00E1z 
+	vezet\u0151<br>
+	foodmart.dimension.store.country.member.caption=store_country_caption_hu<br>
+	foodmart.dimension.store.name.property_type.caption=Tipusa<br>
+	foodmart.dimension.store.name.caption=Megnevez\u00E9s<br>
+	foodmart.dimension.store.state.caption=\u00C1llam/Megye<br>
+	foodmart.dimension.store.name.property_type.column=store_type_caption_hu<br>
+	foodmart.dimension.store.name.property_storesqft.caption=M\u00E9ret n.l\u00E1b<br>
+	foodmart.dimension.store.allmember.caption=Minden \u00C1ruh\u00E1z<br>
+	foodmart.dimension.store.caption=\u00C1ruh\u00E1z<br>
+	foodmart.cube.sales.caption=Forgalom<br>
+	foodmart.dimension.store.city.caption=V\u00E1ros<br>
+	foodmart.cube.sales.measure.unitsales=Eladott db</code></p>
+</blockquote>
+
+<p>&nbsp;</p>
 
 <h2><a name="Aggregate_tables">Aggregate tables</a></h2>
 

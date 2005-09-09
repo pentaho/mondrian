@@ -9,10 +9,11 @@
 */
 package mondrian.test;
 
+import mondrian.olap.Util;
 import mondrian.rolap.DynamicSchemaProcessor;
 
-import java.net.URL;
 import java.io.*;
+import java.net.URL;
 
 /**
  * Implementation of {@link DynamicSchemaProcessor} which reads the contents
@@ -45,7 +46,8 @@ public class DecoratingSchemaProcessor implements DynamicSchemaProcessor {
         return new String(baos.toByteArray());
     }
 
-    public String processSchema(URL schemaUrl) throws Exception {
+    public String processSchema(
+            URL schemaUrl, Util.PropertyList properties) throws Exception {
         String schema = contentsOfUrl(schemaUrl);
         String filteredSchema = filterSchema(schema);
         return filteredSchema;
