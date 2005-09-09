@@ -239,6 +239,25 @@ public class UtilTestCase extends TestCase {
         // Check the String version of replace.
         assertEquals(expected, Util.replace(original, seek, replace));
     }
+
+    public void testImplode() {
+        String[] fooBar = {"foo", "bar"};
+        assertEquals("[foo].[bar]", Util.implode(fooBar));
+
+        String[] empty = {};
+        assertEquals("", Util.implode(empty));
+
+        String[] nasty = {"string", "with", "a [bracket] in it"};
+        assertEquals("[string].[with].[a [bracket]] in it]",
+                Util.implode(nasty));
+    }
+
+    public void testExplode() {
+        String[] strings =
+                Util.explode("[string].[with].[a [bracket]] in it]");
+        assertEquals(3, strings.length);
+        assertEquals("a [bracket] in it", strings[2]);
+    }
 }
 
 // End UtilTestCase.java

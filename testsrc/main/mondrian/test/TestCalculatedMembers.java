@@ -340,6 +340,72 @@ public class TestCalculatedMembers extends FoodMartTestCase {
                 "Member expression '{[Product].[All Products].[Food]}' must not be a set");
     }
 
+    /**
+     * Tests that calculated members can have brackets in their names.
+     * (Bug 1251683.)
+     */
+    public void testBracketInCalcMemberName() {
+        assertQueryReturns(
+                fold(new String[] {
+                    "with member [Measures].[has a [bracket]] in it] as ",
+                    "' [Measures].CurrentMember.Name '",
+                    "select {[Measures].[has a [bracket]] in it]} on columns",
+                    "from [Sales]"}),
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[has a [bracket]] in it]}" + nl +
+                "Row #0: Unit Sales" + nl);
+    }
+
+    /**
+     * Tests that calculated members defined in the schema can have brackets in
+     * their names. (Bug 1251683.)
+     */
+    public void testBracketInCubeCalcMemberName() {
+        Schema schema = getConnection().getSchema();
+        final String cubeName = "Sales_BracketInCubeCalcMemberName";
+        schema.createCube(fold(new String[] {
+                "<Cube name=\"" + cubeName + "\">",
+                "  <Table name=\"sales_fact_1997\"/>",
+                "  <Dimension name=\"Gender\" foreignKey=\"customer_id\">",
+                "    <Hierarchy hasAll=\"false\" primaryKey=\"customer_id\">",
+                "    <Table name=\"customer\"/>",
+                "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>",
+                "    </Hierarchy>",
+                "  </Dimension>",
+                "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"",
+                "      formatString=\"Standard\" visible=\"false\"/>",
+                "  <CalculatedMember",
+                "      name=\"With a [bracket] in it\"",
+                "      dimension=\"Measures\"",
+                "      visible=\"false\"",
+                "      formula=\"[Measures].[Unit Sales] * 10\">",
+                "    <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"$#,##0.00\"/>",
+                "  </CalculatedMember>",
+                "</Cube>"}));
+
+        getTestContext(cubeName).assertThrows(fold(new String[] {
+            "select {[Measures].[With a [bracket] in it]} on columns,",
+            " {[Gender].Members} on rows",
+            "from [" + cubeName + "]"}),
+                "Syntax error at line 1, column 38, token 'in'");
+
+        getTestContext(cubeName).assertQueryReturns(fold(new String[] {
+            "select {[Measures].[With a [bracket]] in it]} on columns,",
+            " {[Gender].Members} on rows",
+            "from [" + cubeName + "]"}),
+                fold(new String[] {
+                "Axis #0:",
+                "{}",
+                "Axis #1:",
+                "{[Measures].[With a [bracket]] in it]}",
+                "Axis #2:",
+                "{[Gender].[F]}",
+                "{[Gender].[M]}",
+                "Row #0: $1,315,580.00",
+                "Row #1: $1,352,150.00"}));
+    }
 }
 
 // End CalculatedMembersTestCase.java

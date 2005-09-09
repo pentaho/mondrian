@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.io.IOException;
 
 /**
  * Lexical analyzer for MDX.
@@ -86,8 +87,10 @@ public class Scanner {
         advance();
     }
 
-    /** Deduce the line and column (0-based) of a symbol.  Called by {@link
-     * Parser#syntax_error}. */
+    /**
+     * Deduces the line and column (0-based) of a symbol.
+     * Called by {@link Parser#syntax_error}.
+     */
     void getLocation(Symbol symbol, int[] loc) {
         int iTarget = symbol.left;
         int iLine = -1;
@@ -216,6 +219,7 @@ public class Scanner {
         double d = mantissa * java.lang.Math.pow(10, exponent);
         return makeSymbol(ParserSym.NUMBER, new Double(d));
     }
+
     private Symbol makeId(String s, boolean quoted, boolean ampersand) {
         return makeSymbol(
             quoted && ampersand ? ParserSym.AMP_QUOTED_ID :
@@ -223,19 +227,23 @@ public class Scanner {
             ParserSym.ID,
             s);
     }
+
     private Symbol makeRes(int i) {
         return makeSymbol(i, m_aResWords[i]);
     }
+
     private Symbol makeToken(int i, String s) {
         return makeSymbol(i, s);
     }
+
     private Symbol makeString( String s ) {
         return makeSymbol(ParserSym.STRING, s);
     }
 
-    /* recognize and return the next complete token */
-    public Symbol next_token()
-        throws java.io.IOException {
+    /**
+     * Recognizes and returns the next complete token.
+     */
+    public Symbol next_token() throws IOException {
 
         StringBuffer id;
         boolean ampersandId = false;
@@ -350,12 +358,10 @@ public class Scanner {
             case 'Y': case 'Z':
                 /* parse an identifier */
                 id = new StringBuffer();
-                for (;;)
-                {
+                for (;;) {
                     id.append((char)nextChar);
                     advance();
-                    switch (nextChar)
-                    {
+                    switch (nextChar) {
                     case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
                     case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
                     case 'm': case 'n': case 'o': case 'p': case 'q': case 'r':
@@ -396,16 +402,13 @@ public class Scanner {
             case '[':
                 /* parse a delimited identifier */
                 id = new StringBuffer();
-                for (;;)
-                {
+                for (;;) {
                     advance();
-                    switch (nextChar)
-                    {
+                    switch (nextChar) {
                     case ']':
                         advance();
                         if (nextChar == ']') {
-                            // ] escaped with ] - leave them as
-                            id.append(']');
+                            // ] escaped with ] - just take one
                             id.append(']');
                             break;
                         } else {
@@ -463,14 +466,12 @@ public class Scanner {
             case '"':
                 /* parse a double-quoted string */
                 id = new StringBuffer();
-                for (;;)
-                {
+                for (;;) {
                     advance();
-                    switch (nextChar)
-                    {
+                    switch (nextChar) {
                     case '"':
                         advance();
-                        if( nextChar == '"' ){
+                        if (nextChar == '"') {
                             // " escaped with "
                             id.append('"');
                             break;
@@ -498,11 +499,9 @@ public class Scanner {
 
                 /* parse a single-quoted string */
                 id = new StringBuffer();
-                for (;;)
-                {
+                for (;;) {
                     advance();
-                    switch (nextChar)
-                    {
+                    switch (nextChar) {
                     case '\'':
                         advance();
                         if (nextChar == '\'') {

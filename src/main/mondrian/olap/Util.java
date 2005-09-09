@@ -221,8 +221,7 @@ public class Util extends XOMUtil {
                 throw getRes().newMdxInvalidMember(s);
             }
             // s may contain extra ']' characters, so look for a ']' followed
-            // by a '.' (still not perfect... really ought to scan, ignoring
-            // escaped ']]' sequences)
+            // by a '.'
             int j = s.indexOf("].", i);
             if (j == -1) {
                 j = s.lastIndexOf(']');
@@ -231,30 +230,31 @@ public class Util extends XOMUtil {
                 throw getRes().newMdxInvalidMember(s);
             }
             String sub = s.substring(i + 1, j);
+            sub = replace(sub, "]]", "]");
             list.add(sub);
-            if (j + 1 < s.length())
-                if (s.charAt(j+1) != '.') {
+            if (j + 1 < s.length()) {
+                if (s.charAt(j + 1) != '.') {
                     throw getRes().newMdxInvalidMember(s);
                 }
+            }
             i = j +  2;
         }
         String[] names = (String[]) list.toArray(new String[list.size()]);
         return names;
     }
 
+    /**
+     * Converts an array of name parts {"part1", "part2"} into a single string
+     * "[part1].[part2]". If the names contain "]" they are escaped as "]]".
+     */
     public static String implode(String[] names) {
-        if (names.length == 0) {
-            return "";
-        }
         StringBuffer sb = new StringBuffer(64);
-        sb.append('[');
         for (int i = 0; i < names.length; i++) {
             if (i > 0) {
-                sb.append("].[");
+                sb.append(".");
             }
-            sb.append(names[i]);
+            quoteMdxIdentifier(names[i], sb);
         }
-        sb.append(']');
         return sb.toString();
     }
 
