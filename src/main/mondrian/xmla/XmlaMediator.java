@@ -9,9 +9,7 @@
 */
 package mondrian.xmla;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.Writer;
+import java.io.*;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -87,13 +85,13 @@ public class XmlaMediator {
     public void process(String request, Writer response) {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
-        DocumentBuilder documentBuilder = null;
+        DocumentBuilder documentBuilder;
         try {
             documentBuilder = factory.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
             throw Util.newError(e, "Error processing '" + request + "'");
         }
-        Document document = null;
+        Document document;
         try {
             document = documentBuilder.parse(new InputSource(new StringReader(request)));
         } catch (SAXException e) {
@@ -139,23 +137,14 @@ public class XmlaMediator {
         saxHandler.endElement();
     }
 
-    private void processBody(Element element, SAXHandler saxHandler) throws SAXException {
+    private void processBody(Element element, SAXHandler saxHandler) {
         String tagName = element.getLocalName();
         Util.assertTrue(tagName.equals("Body"));
         final NodeList childNodes = element.getChildNodes();
         for (int i = 0; i < childNodes.getLength(); i++) {
             final Node node = childNodes.item(i);
             if (node instanceof Element) {
-                try {
-                    processRequest((Element) node, saxHandler);
-                } catch (Exception e) {
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("Request " + element + " failed", e);
-                    }
-                    saxHandler.startElement("Error");
-                    saxHandler.characters(e.toString());
-                    saxHandler.endElement();
-                }
+                processRequest((Element) node, saxHandler);
             }
         }
     }
@@ -166,9 +155,7 @@ public class XmlaMediator {
             discover(element, saxHandler);
         } else if (tagName.equals("Execute")) {
             execute(element, saxHandler);
-        } else if (tagName.equals("Session")) {
-	    // Ignore this and don't throw
-	} else {
+        } else {
             throw Util.newError("Element <" + tagName + "> not supported");
         }
     }
@@ -218,7 +205,10 @@ public class XmlaMediator {
                 } else {
                     executeQuery(statement, properties).unparse(saxHandler);
                 }
-         	} finally {
+         	} catch(RuntimeException re) { // MondrianException is subclass of RuntimeException
+         	    saxHandler.completeBeforeElement("root");
+                reportXmlaError(saxHandler, re);
+            } finally {
          		saxHandler.endElement();
          		saxHandler.endElement();
          		saxHandler.endElement();
@@ -249,7 +239,7 @@ public class XmlaMediator {
             rs = stmt.executeQuery(dtSql);
             rowset = new TabularRowSet(rs);
         } catch (SQLException sqle) {
-            Util.newError(sqle, "Error when executing DrillThrough sql '" + dtSql + "'");
+            Util.newError(sqle, "Error while executing DrillThrough sql '" + dtSql + "'");
         } finally {
             try {
                 if (rs != null) rs.close();
@@ -293,9 +283,9 @@ public class XmlaMediator {
         public void unparse(SAXHandler saxHandler) throws SAXException {
             String[] encodedHeader = new String[header.length];
             for (int i = 0; i < header.length; i++) {
-                // replace " " with "_" in column headers,
+                // replace " " with "_x0020_" in column headers,
                 // otherwise will generate a badly-formatted xml doc.
-                encodedHeader[i] = header[i].replace(' ', '_');
+                encodedHeader[i] = header[i].replaceAll(" ", "_x0020_");
             }
 
             for (Iterator it = rows.iterator(); it.hasNext();) {
@@ -348,13 +338,13 @@ public class XmlaMediator {
             "LName",
             "LNum",
             "DisplayInfo"};
-        private static final String[] dummyPropLongs = new String[] {
+        private static final String[] propLongs = new String[] {
             Property.MEMBER_UNIQUE_NAME.name,
             Property.MEMBER_CAPTION.name,
             Property.LEVEL_UNIQUE_NAME.name,
             Property.LEVEL_NUMBER.name,
             "DISPLAY_INFO"};
-        private static final String[] propLongs = new String[] {
+        private static final String[] realPropLongs = new String[] {
             Property.MEMBER_UNIQUE_NAME.name,
             Property.MEMBER_CAPTION.name,
             Property.LEVEL_UNIQUE_NAME.name,
@@ -427,7 +417,7 @@ public class XmlaMediator {
                         "name", hierarchies[j].getName()});
                     for (int k = 0; k < props.length; k++) {
                         saxHandler.element(props[k], new String[] {
-                            "name", hierarchies[j].getUniqueName() + ".[" + dummyPropLongs[k] + "]"});
+                            "name", hierarchies[j].getUniqueName() + ".[" + propLongs[k] + "]"});
                     }
                     saxHandler.endElement(); // HierarchyInfo
                 }
@@ -460,10 +450,10 @@ public class XmlaMediator {
                         saxHandler.startElement("Member", new String[] {
                             "Hierarchy", member.getHierarchy().getName()});
                         for (int m = 0; m < props.length; m++) {
-                            final Object value = member.getPropertyValue(propLongs[m]);
+                            final Object value = member.getPropertyValue(realPropLongs[m]);
                             if (value != null) {
                                 saxHandler.startElement(props[m]); // UName
-                                if (propLongs[m].equals(Property.CHILDREN_CARDINALITY.name)) { // DisplayInfo
+                                if (realPropLongs[m].equals(Property.CHILDREN_CARDINALITY.name)) { // DisplayInfo
                                     int displayInfo = calculateDisplayInfo((j == 0 ? null : positions[j-1]),
                                             (j+1 == positions.length ? null : positions[j+1]),
                                             member, k, ((Integer)value).intValue());
@@ -536,8 +526,8 @@ public class XmlaMediator {
                 String cellPropLong = cellPropLongs[i];
                 final Object value =
                     cell.getPropertyValue(cellPropLong);
-                
-                String valueType = null;
+
+                String valueType;
                 if (value instanceof Integer || value instanceof Long) {
                     valueType = "xsd:int";
                 } else if (value instanceof Double || value instanceof BigDecimal) {
@@ -545,17 +535,17 @@ public class XmlaMediator {
                 } else {
                     valueType = "xsd:string";
                 }
-                
+
                 if (value != null) {
-                    if (cellPropLong == Property.VALUE.name) {
+                    if (cellPropLong.equals(Property.VALUE.name)) {
                         saxHandler.startElement(cellProps[i], new String[]{"xsi:type", valueType});
                     } else {
                         saxHandler.startElement(cellProps[i]);
                     }
-                    
+
                     String valueString = value.toString();
 
-                    if (cellPropLong == Property.VALUE.name &&
+                    if (cellPropLong.equals(Property.VALUE.name) &&
                            value instanceof Number) {
                         valueString = normalizeNumricString(valueString);
                     }
@@ -573,10 +563,12 @@ public class XmlaMediator {
         if (requestType == null) {
             throw Util.newError("<RequestType> parameter is required");
         }
+
         HashMap restrictionsProperties = getRestrictions(discover);
         Properties propertyProperties = getProperties(discover);
         final RowsetDefinition rowsetDefinition = RowsetDefinition.getValue(requestType);
         Rowset rowset = rowsetDefinition.getRowset(restrictionsProperties, propertyProperties);
+
         try {
             saxHandler.startElement("DiscoverResponse", new String[] {
                 "xmlns", XMLA_NS});
@@ -593,6 +585,9 @@ public class XmlaMediator {
             saxHandler.endElement();
             try {
                 rowset.unparse(saxHandler);
+            } catch(RuntimeException re) { // MondrianException is subclass of RuntimeException
+                saxHandler.completeBeforeElement("root");
+                reportXmlaError(saxHandler, re);
             } finally {
                 // keep the tags balanced, even if there's an error
                 saxHandler.endElement();
@@ -603,6 +598,24 @@ public class XmlaMediator {
             throw Util.newError(e, "Error while processing '" + requestType + "' discovery request");
         }
     }
+
+    private void reportXmlaError(SAXHandler saxHandler, Exception exception) throws SAXException {
+        Throwable throwable = gotoRootThrowable(exception);
+        saxHandler.startElement("Messages");
+        saxHandler.startElement("Error", new String[] {
+                "ErrorCode", throwable.getClass().getName(),
+                "Description", throwable.getMessage(),
+                "Source", "Mondrian",
+                "Help", "",
+        });
+        // Don't dump stack trace to client
+//        StringWriter stackWriter = new StringWriter();
+//        throwable.printStackTrace(new PrintWriter(stackWriter));
+//        saxHandler.characters(stackWriter.getBuffer().toString());
+        saxHandler.endElement();
+        saxHandler.endElement();
+    }
+
 
     private HashMap getRestrictions(Element discover) {
         Element restrictions = firstElement(discover, "Restrictions");
@@ -678,6 +691,19 @@ public class XmlaMediator {
     }
 
     /**
+	 * Retrieving the root MondrianException in an exception chain if exists.
+	 * @param throwable the last one in exception chain.
+	 * @return the root MondrianException if exists, otherwise the input exception.
+	 */
+	static Throwable gotoRootThrowable(Throwable throwable) {
+		Throwable rootThrowable = throwable.getCause();
+		if (rootThrowable != null && rootThrowable instanceof MondrianException) {
+			return gotoRootThrowable(rootThrowable);
+		}
+		return throwable;
+    }
+
+    /**
      * Returns the first child element with a given tag, or null if there are
      * none.
      */
@@ -729,8 +755,7 @@ public class XmlaMediator {
             ArrayList list = new ArrayList();
             for (int i = 0, n = childNodes.getLength(); i < n; i++) {
                 final Node node = childNodes.item(i);
-                if (node instanceof Element &&
-                        ((Element) node).getLocalName().equals("Value")) {
+                if (node instanceof Element && node.getLocalName().equals("Value")) {
                     list.add(getCDATA((Element) node));
                 }
             }
@@ -743,8 +768,7 @@ public class XmlaMediator {
     private static boolean valuesExist(NodeList childNodes) {
         for (int i = 0, n = childNodes.getLength(); i < n; i++) {
             final Node node = childNodes.item(i);
-            if (node instanceof Element &&
-                    ((Element) node).getLocalName().equals("Value")) {
+            if (node instanceof Element && node.getLocalName().equals("Value")) {
                 return true;
             }
         }

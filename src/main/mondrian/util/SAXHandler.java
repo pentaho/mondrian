@@ -170,6 +170,19 @@ public class SAXHandler implements ContentHandler {
         String tagName = (String) stack.pop();
         contentHandler.endElement(null, null, tagName);
     }
+    
+    public void completeBeforeElement(String tagName) throws SAXException {
+        if (stack.indexOf(tagName) == -1) {
+            return;
+        }
+        
+        String currentTagName  = (String) stack.peek();
+        while (!tagName.equals(currentTagName)) {
+            contentHandler.endElement(null, null, currentTagName);
+            stack.pop();
+            currentTagName = (String) stack.peek();
+        }
+    }
 
     /**
      * List of SAX attributes based upon a string array.
