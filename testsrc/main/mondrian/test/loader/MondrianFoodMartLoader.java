@@ -72,7 +72,7 @@ import org.apache.log4j.Logger;
  * Use CONNECT or CREATE DATABASE to specify a database<br/>
  * SQL&gt; CREATE DATABASE '/mondrian/foodmart.gdb';<br/>
  * SQL&gt; QUIT;<br/>
- * $ java -cp "/mondrian/lib/mondrian.jar:/mondrian/lib/log4j-1.2.9.jar:/mondrian/lib/eigenbase-xom.jar:/mondrian/lib/eigenbase-resgen.jar:/jdbc/fb/firebirdsql-full.jar"
+ * $ java -cp "/mondrian/lib/mondrian.jar:/mondrian/lib/log4j-1.2.9.jar:/mondrian/lib/eigenbase-xom.jar:/mondrian/lib/eigenbase-resgen.jar:/mondrian/lib/eigenbase-properties.jar:/jdbc/fb/firebirdsql-full.jar"
  *    mondrian.test.loader.MondrianFoodMartLoader
  *    -tables -data -indexes
  *    -jdbcDrivers="org.firebirdsql.jdbc.FBDriver"

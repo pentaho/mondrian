@@ -238,7 +238,7 @@ scripts:</p>
 
 <blockquote>
   <p><code><i><b>$</b></i> mysqladmin create foodmart<b><i><br>
-	$</i></b> java -cp &quot;/mondrian/lib/mondrian.jar:/mondrian/lib/log4j-1.2.9.jar:/mondrian/lib/eigenbase-xom.jar:/mondrian/lib/eigenbase-resgen.jar:/usr/local/mysql/mysql-connector-java-3.0.16-ga-bin.jar&quot;<br>
+	$</i></b> java -cp &quot;/mondrian/lib/mondrian.jar:/mondrian/lib/log4j-1.2.9.jar:/mondrian/lib/eigenbase-xom.jar:/mondrian/lib/eigenbase-resgen.jar:/mondrian/lib/eigenbase-properties.jar:/usr/local/mysql/mysql-connector-java-3.0.16-ga-bin.jar&quot;<br>
 &nbsp;&nbsp;&nbsp;&nbsp; mondrian.test.loader.MondrianFoodMartLoader<br>&nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -jdbcDrivers=com.mysql.jdbc.Driver<br>&nbsp;&nbsp;&nbsp;&nbsp; -inputFile=/mondrian/demo/FoodMartCreateData.sql <br>&nbsp;&nbsp;&nbsp;&nbsp; -outputJdbcURL=&quot;jdbc:mysql://localhost/foodmart?user=root&amp;password=myAdmin&quot;</code><br>
 	</p>
@@ -248,7 +248,7 @@ scripts:</p>
 the Access database:</p>
 
 <blockquote>
-  <p><code><i><b>C:\mondrian&gt;</b></i> java -cp &quot;C:\mondrian\lib\mondrian.jar;C:\mondrian\lib\log4j-1.2.9.jar;C:\mondrian\lib\eigenbase-xom.jar;C:\mondrian\lib\eigenbase-resgen.jar;C:\mondrian\lib\postgres-jdbc.jar&quot;<br>
+  <p><code><i><b>C:\mondrian&gt;</b></i> java -cp &quot;C:\mondrian\lib\mondrian.jar;C:\mondrian\lib\log4j-1.2.9.jar;C:\mondrian\lib\eigenbase-xom.jar;C:\mondrian\lib\eigenbase-resgen.jar;C:\mondrian\lib\eigenbase-properties.jar;C:\mondrian\lib\postgres-jdbc.jar&quot;<br>
 &nbsp;&nbsp;&nbsp;&nbsp; mondrian.test.loader.MondrianFoodMartLoader<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -verbose -tables -data -indexes<br>
 &nbsp;&nbsp;&nbsp;&nbsp; -jdbcDrivers=&quot;org.postgresql.Driver,sun.jdbc.odbc.JdbcOdbcDriver&quot;<br>
