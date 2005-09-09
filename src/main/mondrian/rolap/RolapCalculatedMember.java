@@ -43,9 +43,15 @@ class RolapCalculatedMember extends RolapMember {
     }
 
     public Object getPropertyValue(String name) {
-        return (name.equals(Property.FORMULA.name))
-            ? formula
-            : super.getPropertyValue(name);
+        if (name.equals(Property.FORMULA.name)) {
+            return formula;
+        } else if (name.equals(Property.CHILDREN_CARDINALITY.name)) {
+            // Looking up children is unnecessary for calculated member.
+            // If do that, SQLException will be thrown.
+            return new Integer(0);
+        } else {
+            return super.getPropertyValue(name);
+        }
     }
 
     public boolean isCalculated() {
