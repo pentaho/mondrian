@@ -2641,6 +2641,31 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprReturns(NullNumericExpr + " - " + NullNumericExpr, "(null)");
     }
 
+    public void testMinus_bug1234759()
+    {
+        assertQueryReturns(
+                fold(new String[] {
+                    "WITH MEMBER [Customers].[USAMinusMexico]",
+                    "AS '([Customers].[All Customers].[USA] - [Customers].[All Customers].[Mexico])'",
+                    "SELECT {[Measures].[Unit Sales]} ON COLUMNS,",
+                    "{[Customers].[All Customers].[USA], [Customers].[All Customers].[Mexico],",
+                    "[Customers].[USAMinusMexico]} ON ROWS",
+                    "FROM [Sales]"}),
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Measures].[Unit Sales]}",
+                    "Axis #2:",
+                    "{[Customers].[All Customers].[USA]}",
+                    "{[Customers].[All Customers].[Mexico]}",
+                    "{[Customers].[USAMinusMexico]}",
+                    "Row #0: 266,773",
+                    "Row #1: (null)",
+                    "Row #2: 266,773", // with bug 1234759, this was null
+                    ""}));
+    }
+
     public void testMinusAssociativity() {
         // right-associative would give 11-(7-5) = 9, which is wrong
         assertExprReturns("11-7-5", "-1");
