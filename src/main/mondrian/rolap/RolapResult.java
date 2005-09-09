@@ -11,7 +11,6 @@
 */
 
 package mondrian.rolap;
-import junit.framework.ComparisonFailure;
 import mondrian.olap.*;
 import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.rolap.agg.AggregationManager;
@@ -581,12 +580,12 @@ class RolapResult extends ResultBase {
                     }
                     buf.append(members[j].getUniqueName());
                 }
-                throw new ComparisonFailure(
+                throw Util.newInternal(
                         "Expression '" + funCall.toMdx() +
                         "' claims to be independent of dimension " +
                         saveMember.getDimension() + " but is not; context is {" +
-                        buf.toString() + "};",
-                        toString(result),
+                        buf.toString() + "}; First result: " + 
+                        toString(result) + ", Second result: " +
                         toString(otherResult));
             }
             // Restore context.
