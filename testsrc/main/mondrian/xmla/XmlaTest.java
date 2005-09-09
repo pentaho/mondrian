@@ -28,6 +28,7 @@ import org.eigenbase.xom.XOMUtil;
 
 import junit.framework.TestCase;
 import mondrian.olap.DriverManager;
+import mondrian.olap.MondrianException;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 
@@ -174,6 +175,24 @@ public class XmlaTest extends TestCase {
     private void assertRequestMatches(String request, String responsePattern) {
         final String response = executeRequest(request);
         assertMatches("Request " + request, responsePattern, response);
+    }
+    
+    private void assertExceptionMatches(String request, String messagePattern) {
+        try {
+            executeRequest(request);
+        } catch (Throwable t) {
+            Throwable rootThrowable = t.getCause();
+		    while (rootThrowable != null && rootThrowable instanceof MondrianException) {
+                t = rootThrowable;
+			    rootThrowable = rootThrowable.getCause();
+    		}
+	    
+            if (Pattern.matches(messagePattern, t.getMessage()))
+                return;
+            else
+                fail("expected exception with message '" + messagePattern + "', but was '" + t.getMessage() + "'");
+        }
+        fail("expected exception with message '" + messagePattern + "', but there is no exception thrown");
     }
 
     // tests follow
@@ -348,7 +367,7 @@ public class XmlaTest extends TestCase {
             "    </Properties>",
             "</Discover>"};
         String responsePattern = "(?s).*Rowset 'MDSCHEMA_CUBES' column 'IS_WRITE_ENABLED' does not allow restrictions.*";
-        assertRequestMatches(wrap(concat(request)), responsePattern);
+        assertExceptionMatches(wrap(concat(request)), responsePattern);
     }
 
     public void testDiscoverCubesRestrictedOnBadColumn() {
@@ -371,7 +390,7 @@ public class XmlaTest extends TestCase {
             "    </Properties>",
             "</Discover>"};
         String responsePattern = "(?s).*Rowset 'MDSCHEMA_CUBES' does not contain column 'NON_EXISTENT_COLUMN'.*";
-        assertRequestMatches(wrap(concat(request)), responsePattern);
+        assertExceptionMatches(wrap(concat(request)), responsePattern);
     }
 
     public void testDiscoverDimensions() {

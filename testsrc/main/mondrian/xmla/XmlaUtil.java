@@ -491,6 +491,27 @@ public class XmlaUtil {
                 "</Execute>" + nl +
                 "    </SOAP-ENV:Body>" + nl +
                 "</SOAP-ENV:Envelope>",
+            "testXmlaError",
+            "<SOAP-ENV:Envelope" + nl +
+                "    xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"" + nl +
+                "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "    <SOAP-ENV:Body>" + nl +
+                "<Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\" " + nl +
+                "  SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
+                "  <Command>" + nl +
+                "    <Statement>SELECT {[Measures].Memebers} ON COLUMNS FROM [NonexistedCube]</Statement>" + nl +
+                "  </Command>" + nl +
+                "  <Properties>" + nl +
+                "    <PropertyList>" + nl +
+                "      <DataSourceInfo>" + dataSource + "</DataSourceInfo>" + nl +
+                "      <Catalog>FoodMart</Catalog>" + nl +
+                "      <Format>Multidimensional</Format>" + nl +
+                "      <AxisFormat>TupleFormat</AxisFormat>" + nl +
+                "    </PropertyList>" + nl +
+                "  </Properties>" + nl +
+                "</Execute>" + nl +
+                "    </SOAP-ENV:Body>" + nl +
+                "</SOAP-ENV:Envelope>",
         };
     }
 }
