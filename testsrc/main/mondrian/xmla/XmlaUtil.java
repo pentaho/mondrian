@@ -496,7 +496,7 @@ public class XmlaUtil {
                 "    xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"" + nl +
                 "    SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
                 "    <SOAP-ENV:Body>" + nl +
-                "<Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\" " + nl +
+                "        <Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\" " + nl +
                 "  SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + nl +
                 "  <Command>" + nl +
                 "    <Statement>SELECT {[Measures].Memebers} ON COLUMNS FROM [NonexistedCube]</Statement>" + nl +
