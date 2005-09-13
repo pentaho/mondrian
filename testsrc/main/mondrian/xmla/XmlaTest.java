@@ -11,26 +11,18 @@
 */
 package mondrian.xmla;
 
-import java.io.File;
+import mondrian.olap.*;
+import mondrian.test.TestContext;
+
+import junit.framework.TestCase;
+import org.eigenbase.xom.*;
+import org.eigenbase.xom.Parser;
+
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
-
-import org.eigenbase.xom.DOMWrapper;
-import org.eigenbase.xom.Parser;
-import org.eigenbase.xom.XOMUtil;
-
-import junit.framework.TestCase;
-import mondrian.olap.DriverManager;
-import mondrian.olap.MondrianException;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Util;
 
 /**
  * Unit test for Mondrian's XML for Analysis API (package
@@ -106,7 +98,7 @@ public class XmlaTest extends TestCase {
      * Returns a list of all requests in this test. (These requests are used
      * in the sample web page, <code>xmlaTest.jsp</code>.)
      */
-    public synchronized HashMap getRequests() {
+    public synchronized Map getRequests() {
         this.requestList = new ArrayList();
         HashMap mapNameToRequest = new HashMap();
         Method[] methods = getClass().getMethods();
@@ -135,15 +127,8 @@ public class XmlaTest extends TestCase {
         assertEquals(expected, response);
     }
 
-    private String concat(String[] strings) {
-        StringBuffer buf = new StringBuffer();
-        for (int i = 0; i < strings.length; i++) {
-            if (i > 0) {
-                buf.append(nl);
-            }
-            buf.append(strings[i]);
-        }
-        return buf.toString();
+    static String fold(String[] strings) {
+        return TestContext.fold(strings);
     }
 
     private String wrap(String request) {
@@ -176,7 +161,7 @@ public class XmlaTest extends TestCase {
         final String response = executeRequest(request);
         assertMatches("Request " + request, responsePattern, response);
     }
-    
+
     private void assertExceptionMatches(String request, String messagePattern) {
         try {
             executeRequest(request);
@@ -186,7 +171,7 @@ public class XmlaTest extends TestCase {
                 t = rootThrowable;
 			    rootThrowable = rootThrowable.getCause();
     		}
-	    
+
             if (Pattern.matches(messagePattern, t.getMessage()))
                 return;
             else
@@ -231,7 +216,7 @@ public class XmlaTest extends TestCase {
             "    </DiscoverResponse>",
             "  </SOAP-ENV:Body>",
             "</SOAP-ENV:Envelope>"};
-        assertRequestYields(wrap(concat(request)), concat(expected));
+        assertRequestYields(wrap(fold(request)), fold(expected));
     }
 
     public void testDiscoverCatalogs() {
@@ -266,7 +251,7 @@ public class XmlaTest extends TestCase {
             "    </DiscoverResponse>",
             "  </SOAP-ENV:Body>",
             "</SOAP-ENV:Envelope>"};
-        assertRequestYields(wrap(concat(request)), concat(expected));
+        assertRequestYields(wrap(fold(request)), fold(expected));
     }
 
     public void testDiscoverCubes() {
@@ -300,7 +285,7 @@ public class XmlaTest extends TestCase {
             "            <IS_SQL_ALLOWED>false</IS_SQL_ALLOWED>",
             "          </row>",
             ".*"};
-        assertRequestMatches(wrap(concat(request)), concat(responsePattern));
+        assertRequestMatches(wrap(fold(request)), fold(responsePattern));
     }
 
     public void testDiscoverCubesRestricted() {
@@ -344,7 +329,7 @@ public class XmlaTest extends TestCase {
             "    </DiscoverResponse>",
             "  </SOAP-ENV:Body>",
             "</SOAP-ENV:Envelope>"};
-        assertRequestYields(wrap(concat(request)), concat(expected));
+        assertRequestYields(wrap(fold(request)), fold(expected));
     }
 
     public void testDiscoverCubesRestrictedOnUnrestrictableColumnFails() {
@@ -367,7 +352,7 @@ public class XmlaTest extends TestCase {
             "    </Properties>",
             "</Discover>"};
         String responsePattern = "(?s).*Rowset 'MDSCHEMA_CUBES' column 'IS_WRITE_ENABLED' does not allow restrictions.*";
-        assertExceptionMatches(wrap(concat(request)), responsePattern);
+        assertExceptionMatches(wrap(fold(request)), responsePattern);
     }
 
     public void testDiscoverCubesRestrictedOnBadColumn() {
@@ -390,7 +375,7 @@ public class XmlaTest extends TestCase {
             "    </Properties>",
             "</Discover>"};
         String responsePattern = "(?s).*Rowset 'MDSCHEMA_CUBES' does not contain column 'NON_EXISTENT_COLUMN'.*";
-        assertExceptionMatches(wrap(concat(request)), responsePattern);
+        assertExceptionMatches(wrap(fold(request)), responsePattern);
     }
 
     public void testDiscoverDimensions() {
@@ -412,7 +397,7 @@ public class XmlaTest extends TestCase {
             "    </Properties>",
             "</Discover>"};
         String responsePattern = "(?s).*<DIMENSION_NAME>Store</DIMENSION_NAME>.*";
-        assertRequestMatches(wrap(concat(request)), responsePattern);
+        assertRequestMatches(wrap(fold(request)), responsePattern);
     }
 
     public void testDiscoverHierarchies() {
@@ -434,7 +419,7 @@ public class XmlaTest extends TestCase {
             "    </Properties>",
             "</Discover>"};
         String responsePattern = "(?s).*<HIERARCHY_NAME>Store</HIERARCHY_NAME>.*";
-        assertRequestMatches(wrap(concat(request)), responsePattern);
+        assertRequestMatches(wrap(fold(request)), responsePattern);
     }
 
     public void testDiscoverLevels() {
@@ -456,7 +441,7 @@ public class XmlaTest extends TestCase {
             "    </Properties>",
             "</Discover>"};
         String responsePattern = "(?s).*<LEVEL_NAME>City</LEVEL_NAME>.*";
-        assertRequestMatches(wrap(concat(request)), responsePattern);
+        assertRequestMatches(wrap(fold(request)), responsePattern);
     }
 
     public void testDiscoverMembersRestrictedByHierarchy() {
@@ -542,7 +527,7 @@ public class XmlaTest extends TestCase {
             "    </DiscoverResponse>",
             "  </SOAP-ENV:Body>",
             "</SOAP-ENV:Envelope>"};
-        assertRequestYields(wrap(concat(request)), concat(expected));
+        assertRequestYields(wrap(fold(request)), fold(expected));
     }
 
     public void testDiscoverMembersRestrictedByMemberAndTreeop() {
@@ -700,7 +685,7 @@ public class XmlaTest extends TestCase {
             "    </DiscoverResponse>",
             "  </SOAP-ENV:Body>",
             "</SOAP-ENV:Envelope>"};
-        assertRequestYields(wrap(concat(request)), concat(expected));
+        assertRequestYields(wrap(fold(request)), fold(expected));
     }
 
     public void testDiscoverMeasures() {
@@ -732,7 +717,7 @@ public class XmlaTest extends TestCase {
             "        </PropertyList>",
             "    </Properties>",
             "</Discover>"};
-        assertRequestMatches(wrap(concat(request)), concat(responsePattern));
+        assertRequestMatches(wrap(fold(request)), fold(responsePattern));
     }
     /**
      * Tests the {@link RowsetDefinition#DISCOVER_ENUMERATORS} rowset.
@@ -760,7 +745,7 @@ public class XmlaTest extends TestCase {
             "        <PropertyList/>",
             "    </Properties>",
             "</Discover>"};
-        assertRequestMatches(wrap(concat(request)), concat(responsePattern));
+        assertRequestMatches(wrap(fold(request)), fold(responsePattern));
     }
 
     /**
@@ -803,7 +788,7 @@ public class XmlaTest extends TestCase {
             "        </PropertyList>",
             "    </Properties>",
             "</Discover>"};
-        assertRequestMatches(wrap(concat(request)), concat(responsePattern));
+        assertRequestMatches(wrap(fold(request)), fold(responsePattern));
     }
 
     /**
@@ -853,7 +838,7 @@ public class XmlaTest extends TestCase {
             "        </PropertyList>",
             "    </Properties>",
             "</Discover>"};
-        assertRequestYields(wrap(concat(request)), concat(expected));
+        assertRequestYields(wrap(fold(request)), fold(expected));
     }
 
     /**
@@ -885,7 +870,7 @@ public class XmlaTest extends TestCase {
             "        </PropertyList>",
             "    </Properties>",
             "</Discover>"};
-        assertRequestMatches(wrap(concat(request)), concat(responsePattern));
+        assertRequestMatches(wrap(fold(request)), fold(responsePattern));
     }
 
     /**
@@ -928,7 +913,7 @@ public class XmlaTest extends TestCase {
             "        </PropertyList>",
             "    </Properties>",
             "</Discover>"};
-        assertRequestYields(wrap(concat(request)), concat(expected));
+        assertRequestYields(wrap(fold(request)), fold(expected));
     }
 
     /**
@@ -1436,7 +1421,7 @@ public class XmlaTest extends TestCase {
             "        </PropertyList>",
             "    </Properties>",
             "</Discover>"};
-        assertRequestYields(wrap(concat(request)), concat(expected));
+        assertRequestYields(wrap(fold(request)), fold(expected));
     }
 
     public void testSelect() {
@@ -1579,7 +1564,7 @@ public class XmlaTest extends TestCase {
             "    </PropertyList>",
             "  </Properties>",
             "</Execute>"};
-        assertRequestYields(wrap(concat(request)), concat(expected));
+        assertRequestYields(wrap(fold(request)), fold(expected));
     }
 
     /**
@@ -1639,7 +1624,7 @@ public class XmlaTest extends TestCase {
             "    </PropertyList>",
             "  </Properties>",
             "</Execute>"};
-        assertRequestYields(wrap(concat(request)), concat(expected));
+        assertRequestYields(wrap(fold(request)), fold(expected));
     }
 
     public void testSelect2() {
@@ -1982,7 +1967,7 @@ public class XmlaTest extends TestCase {
             "    </PropertyList>",
             "  </Properties>",
             "</Execute>"};
-        assertRequestYields(wrap(concat(request)), concat(expected));
+        assertRequestYields(wrap(fold(request)), fold(expected));
     }
 
 	public void testXmlaError() {
@@ -2006,7 +1991,7 @@ public class XmlaTest extends TestCase {
 			"<Execute xmlns=\"urn:schemas-microsoft-com:xml-analysis\" ",
 			"  SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">",
 			"  <Command>",
-			"    <Statement>SELECT {[Measures].Memebers} ON COLUMNS FROM [NonexistedCube]</Statement>",
+			"    <Statement>SELECT {[Measures].Members} ON COLUMNS FROM [NonexistedCube]</Statement>",
 			"  </Command>",
 			"  <Properties>",
 			"    <PropertyList>",
@@ -2017,27 +2002,14 @@ public class XmlaTest extends TestCase {
 			"    </PropertyList>",
 			"  </Properties>",
 			"</Execute>"};
-		assertRequestYields(wrap(concat(request)), concat(expected));
+		assertRequestYields(wrap(fold(request)), fold(expected));
     }
 
+    /**
+     * Asserts that two string arrays are equal.
+     */
     public static void assertEquals(String[] expected, String[] actual) {
-        if (!equals(expected, actual)) {
-            assertEquals((Object) expected, (Object) actual);
-        }
-    }
-
-    public static boolean equals(String[] expected, String[] actual) {
-        if (expected == null ||
-                actual == null ||
-                expected.length != actual.length) {
-            return false;
-        }
-        for (int i = 0; i < expected.length; i++) {
-            if (!Util.equals(expected[i], actual[i])) {
-                return false;
-            }
-        }
-        return true;
+        assertEquals(Arrays.asList(expected), Arrays.asList(actual));
     }
 
     /**
@@ -2057,38 +2029,43 @@ public class XmlaTest extends TestCase {
         if (requestList != null) {
             return;
         }
-        final HashMap requestMap = getRequests();
+        final Map requestMap = getRequests();
         final Set requestKeySet = requestMap.keySet();
         final String[] requestKeys = (String[])
                 requestKeySet.toArray(new String[requestKeySet.size()]);
         Arrays.sort(requestKeys);
-        ArrayList requestList = new ArrayList();
+        List requestList = new ArrayList();
         for (int i = 0; i < requestKeys.length; i++) {
             String requestKey = requestKeys[i];
             String request = (String) requestMap.get(requestKey);
-            requestList.add(requestKey);
-            requestList.add(request);
+            requestList.add(new XmlaUtil.XmlaRequest(requestKey, request));
         }
-        final String[] requests = (String[])
-                requestList.toArray(new String[requestList.size()]);
-        final String[] sampleRequests = XmlaUtil.getSampleRequests(catalogName, dataSource);
-        if (!equals(requests, sampleRequests)) {
+        final XmlaUtil.XmlaRequest[] requests = (XmlaUtil.XmlaRequest[])
+                requestList.toArray(
+                        new XmlaUtil.XmlaRequest[requestList.size()]);
+        final XmlaUtil.XmlaRequest[] sampleRequests =
+                XmlaUtil.getSampleRequests(catalogName, dataSource);
+        if (!Util.equals(
+                Arrays.asList(requests),
+                Arrays.asList(sampleRequests))) {
             if (requests == null ||
                     sampleRequests == null ||
                     requests.length != sampleRequests.length) {
-                System.out.println("Unequal results length: " + requests.length + " vs sampleResults length" + sampleRequests.length);
+                System.out.println(
+                        "Unequal results length: " + requests.length +
+                        " vs sampleRequests length: " + sampleRequests.length);
             } else {
                 System.out.println("Java: {");
                 for (int i = 0; i < requests.length; i++) {
                     if (!Util.equals(requests[i], sampleRequests[i])) {
-                        System.out.println("Request " + i + " - " + requestKeys[i / 2]);
+                        System.out.println("Request " + i + " - " + requests[i].name);
                         System.out.println("-------------------");
-                        System.out.print(toJava(requests[i]));
+                        System.out.print(toJava(requests[i].request));
                         System.out.println();
                         System.out.println("-------------------");
                         System.out.println("Sample");
                         System.out.println("-------------------");
-                        System.out.print(toJava(sampleRequests[i]));
+                        System.out.print(toJava(sampleRequests[i].request));
                         System.out.println();
                         System.out.println("-------------------");
                     }
@@ -2096,7 +2073,7 @@ public class XmlaTest extends TestCase {
                 System.out.println("}");
             }
         }
-        assertEquals(requests, sampleRequests);
+        assertEquals(Arrays.asList(requests), Arrays.asList(sampleRequests));
     }
 
     private static String toJava(String s) {

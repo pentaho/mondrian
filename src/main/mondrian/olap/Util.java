@@ -36,7 +36,6 @@ public class Util extends XOMUtil {
     public static final String nl = System.getProperty("line.separator");
 
     private static final Logger LOGGER = Logger.getLogger(Util.class);
-    // properties
 
     public static final Object nullValue = new NullCellValue();
 
@@ -666,6 +665,28 @@ public class Util extends XOMUtil {
             return property;
         }
         return null;
+    }
+
+    /**
+     * Returns whether two string arrays are equal.
+     * Either argument may be null.
+     *
+     * @param a1 First string array
+     * @param a2 Second string array
+     * @return Whether arrays are equal
+     */
+    public static boolean equals(String[] a1, String[] a2) {
+        if (a1 == null ||
+                a2 == null ||
+                a1.length != a2.length) {
+            return false;
+        }
+        for (int i = 0; i < a1.length; i++) {
+            if (!equals(a1[i], a2[i])) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
