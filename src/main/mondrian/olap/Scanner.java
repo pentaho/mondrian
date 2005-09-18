@@ -166,6 +166,7 @@ public class Scanner {
 //      initResword(ParserSym.FORMATTED_VALUE     ,"FORMATTED_VALUE");
 //      initResword(ParserSym.FORMAT_STRING       ,"FORMAT_STRING");
         initResword(ParserSym.FROM                ,"FROM");
+        initResword(ParserSym.IS                  ,"IS");
 //      initResword(ParserSym.LAG                 ,"LAG");
 //      initResword(ParserSym.LASTCHILD           ,"LASTCHILD");
 //      initResword(ParserSym.LASTSIBLING         ,"LASTSIBLING");
@@ -175,6 +176,7 @@ public class Scanner {
 //      initResword(ParserSym.NEXTMEMBER          ,"NEXTMEMBER");
         initResword(ParserSym.NON                 ,"NON");
         initResword(ParserSym.NOT                 ,"NOT");
+        initResword(ParserSym.NULL                ,"NULL");
         initResword(ParserSym.ON                  ,"ON");
         initResword(ParserSym.OR                  ,"OR");
 //      initResword(ParserSym.PAGES               ,"PAGES");

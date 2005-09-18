@@ -213,9 +213,11 @@ terminal
     EMPTY,
     END,
     FROM,
+    IS,
     MEMBER,
     NON,
     NOT,
+    NULL,
     ON,
     OR,
     PROPERTIES,
@@ -610,6 +612,9 @@ term4 ::=
 
 term3 ::=
         term2
+    |   term3:p IS NULL {:
+            RESULT = new FunCall("IS NULL", Syntax.Property, new Exp[] {p});
+        :}
     |   term3:x comp_op:op term2:y {: // e.g. 1 < 5
             RESULT = new FunCall(op, Syntax.Infix, new Exp[] {x, y});
         :}
@@ -903,6 +908,7 @@ comp_op ::=
     |   GT {: RESULT = ">"; :}
     |   LE {: RESULT = "<="; :}
     |   GE {: RESULT = ">="; :}
+    |   IS {: RESULT = "IS"; :}
     ;
 //
 // <equals_operator> ::= =

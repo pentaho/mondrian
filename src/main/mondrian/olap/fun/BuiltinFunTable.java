@@ -270,6 +270,34 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
+        define(new FunDefBase(
+                "IS NULL",
+                "<Member> IS NULL",
+                "Returns whether a member is null.",
+                "pbm") {
+            public Object evaluate(Evaluator evaluator, Exp[] args) {
+                Member member = getMemberArg(evaluator, args, 0, true);
+                return Boolean.valueOf(member.isNull());
+            }
+        });
+        
+        define(new MultiResolver(
+                "IS",
+                "<Expression> IS <Expression>",
+                "Returns whether two objects are the same (idempotent)",
+                new String[] {"ibmm", "ibll", "ibhh", "ibdd"}) {
+            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+                return new FunDefBase(dummyFunDef) {
+
+                    public Object evaluate(Evaluator evaluator, Exp[] args) {
+                        Object arg0 = getArg(evaluator, args, 0);
+                        Object arg1 = getArg(evaluator, args, 1);
+                        return Boolean.valueOf(arg0 == arg1);
+                    }
+                };
+            }
+        });
+
         //
         // MEMBER FUNCTIONS
         define(new MultiResolver(

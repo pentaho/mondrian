@@ -2869,6 +2869,53 @@ public class FunctionTest extends FoodMartTestCase {
         Assert.assertEquals("false", s);
     }
 
+    public void testIsNull() {
+        String s = executeBooleanExpr(" Store.[All Stores] IS NULL ");
+        Assert.assertEquals("false", s);
+        s = executeBooleanExpr(" Store.[All Stores].parent IS NULL ");
+        Assert.assertEquals("true", s);
+    }
+
+    public void testIsMember() {
+        String s = executeBooleanExpr(" Store.[USA].parent IS Store.[All Stores]");
+        Assert.assertEquals("true", s);
+        s = executeBooleanExpr(" [Store].[USA].[CA].parent IS [Store].[Mexico]");
+        Assert.assertEquals("false", s);
+    }
+
+    // TODO: uncomment when tuple compare implemented
+    public void _testIsTuple() {
+        String s = executeBooleanExpr(" (Store.[USA], Gender.[M]) IS (Store.[USA], Gender.[M])");
+        Assert.assertEquals("true", s);
+        s = executeBooleanExpr(" (Store.[USA], Gender.[M]) IS (Gender.[M], Store.[USA])");
+        Assert.assertEquals("true", s);
+        s = executeBooleanExpr(" (Store.[USA], Gender.[M]) IS (Store.[USA], Gender.[F])");
+        Assert.assertEquals("false", s);
+        s = executeBooleanExpr(" (Store.[USA], Gender.[M]) IS (Store.[USA])");
+        Assert.assertEquals("false", s);
+    }
+
+    public void testIsLevel() {
+        String s = executeBooleanExpr(" Store.[USA].level IS Store.[Store Country] ");
+        Assert.assertEquals("true", s);
+        s = executeBooleanExpr(" Store.[USA].[CA].level IS Store.[Store Country] ");
+        Assert.assertEquals("false", s);
+    }
+
+    public void testIsHierarchy() {
+        String s = executeBooleanExpr(" Store.[USA].hierarchy IS Store.[Mexico].hierarchy ");
+        Assert.assertEquals("true", s);
+        s = executeBooleanExpr(" Store.[USA].hierarchy IS Gender.[M].hierarchy ");
+        Assert.assertEquals("false", s);
+    }
+
+    public void testIsDimension() {
+        String s = executeBooleanExpr(" Store.[USA].dimension IS Store ");
+        Assert.assertEquals("true", s);
+        s = executeBooleanExpr(" Gender.[M].dimension IS Store ");
+        Assert.assertEquals("false", s);
+    }
+
     public void testStringEquals() {
         String s = executeBooleanExpr(" \"foo\" = \"bar\" ");
         Assert.assertEquals("false", s);
