@@ -33,7 +33,7 @@ import java.util.List;
  * @author jhyde
  * @since 21 December, 2001
  * @version $Id$
- **/
+ */
 class SqlMemberSource implements MemberReader {
     private final RolapHierarchy hierarchy;
     private final DataSource dataSource;
@@ -468,6 +468,15 @@ RME is this right
             sqlQuery.addSelect(keySql);
             sqlQuery.addGroupBy(keySql);
             hierarchy.addToFrom(sqlQuery, level2.getOrdinalExp());
+
+            if (level2.hasCaptionColumn()) {
+                MondrianDef.Expression captionExp = level2.getCaptionExp();
+                hierarchy.addToFrom(sqlQuery, captionExp);
+                String captionSql = captionExp.getExpression(sqlQuery);
+                sqlQuery.addSelect(captionSql);
+                sqlQuery.addGroupBy(captionSql);
+            }
+
             String ordinalSql = level2.getOrdinalExp().getExpression(sqlQuery);
             sqlQuery.addGroupBy(ordinalSql);
             sqlQuery.addOrderBy(ordinalSql);
@@ -572,12 +581,19 @@ RME is this right
                     if (value == null) {
                         value = RolapUtil.sqlNullValue;
                     }
+                    Object captionValue;
+                    if (childLevel.hasCaptionColumn()) {
+                        captionValue = resultSet.getObject(++column);
+                    } else {
+                        captionValue = null;
+                    }
                     RolapMember parentMember = member;
                     Object key = cache.makeKey(parentMember, value);
                     member = cache.getMember(key);
                     if (member == null) {
-                        member = makeMember(parentMember, childLevel, value,
-                            parentChild, resultSet, key, column);
+                        member = makeMember(
+                                parentMember, childLevel, value, captionValue,
+                                parentChild, resultSet, key, column);
                     }
                     column += childLevel.getProperties().length;
                     if (member != members[i]) {
@@ -678,6 +694,15 @@ RME is this right
         String q = level.getKeyExp().getExpression(sqlQuery);
         sqlQuery.addSelect(q);
         sqlQuery.addGroupBy(q);
+
+        if (level.hasCaptionColumn()){
+            MondrianDef.Expression captionExp = level.getCaptionExp();
+            hierarchy.addToFrom(sqlQuery, captionExp);
+            String captionSql = captionExp.getExpression(sqlQuery);
+            sqlQuery.addSelect(captionSql);
+            sqlQuery.addGroupBy(captionSql);
+        }
+
         hierarchy.addToFrom(sqlQuery, level.getOrdinalExp());
         String orderBy = level.getOrdinalExp().getExpression(sqlQuery);
         sqlQuery.addOrderBy(orderBy);
@@ -769,11 +794,18 @@ RME is this right
                 if (value == null) {
                     value = RolapUtil.sqlNullValue;
                 }
+                Object captionValue;
+                if (childLevel.hasCaptionColumn()){
+                    captionValue=resultSet.getObject(2);
+                } else {
+                    captionValue = null;
+                }
                 Object key = cache.makeKey(parentMember, value);
                 RolapMember member = cache.getMember(key);
                 if (member == null) {
-                    member = makeMember(parentMember, childLevel, value,
-                        parentChild, resultSet, key, 1);
+                    member = makeMember(
+                            parentMember, childLevel, value, captionValue,
+                            parentChild, resultSet, key, 1);
                 }
                 if (value == RolapUtil.sqlNullValue) {
                     addAsOldestSibling(children, member);
@@ -800,6 +832,7 @@ RME is this right
             RolapMember parentMember,
             RolapLevel childLevel,
             Object value,
+            Object captionValue,
             boolean parentChild,
             ResultSet resultSet,
             Object key,
@@ -810,29 +843,30 @@ RME is this right
         if (childLevel.getOrdinalExp() != childLevel.getKeyExp()) {
             member.setOrdinal(lastOrdinal++);
         }
+        if (captionValue != null) {
+            member.setCaption(captionValue.toString());
+        }
         if (parentChild) {
             // Create a 'public' and a 'data' member. The public member is
-            // calculated, and its value is the aggregation of the data member and all
-            // of the children. The children and the data member belong to the parent
-            // member; the data member does not have any children.
+            // calculated, and its value is the aggregation of the data member
+            // and all of the children. The children and the data member belong
+            // to the parent member; the data member does not have any
+            // children.
             final RolapParentChildMember parentChildMember =
-                (childLevel.hasClosedPeer())
-                    ? new RolapParentChildMember(parentMember,
-                                                 childLevel,
-                                                 value,
-                                                 member)
-                    : new RolapParentChildMemberNoClosure(parentMember,
-                                                          childLevel,
-                                                          value,
-                                                          member);
+                childLevel.hasClosedPeer() ?
+                    new RolapParentChildMember(
+                            parentMember, childLevel, value, member)
+                    : new RolapParentChildMemberNoClosure(
+                            parentMember, childLevel, value, member);
 
             member = parentChildMember;
         }
         Property[] properties = childLevel.getProperties();
         for (int j = 0; j < properties.length; j++) {
             Property property = properties[j];
-            member.setProperty(property.getName(),
-                               resultSet.getObject(columnOffset + j + 1));
+            member.setProperty(
+                    property.getName(),
+                    resultSet.getObject(columnOffset + j + 1));
         }
         cache.putMember(key, member);
         return member;

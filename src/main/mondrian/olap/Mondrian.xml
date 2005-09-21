@@ -36,7 +36,10 @@ Revision is $Id$
             <Doc>Name of this schema</Doc>
         </Attribute>
         <Attribute name="measuresCaption" required="false">
-            <Doc>Label for the measures dimension</Doc>
+            <Doc>
+                Label for the measures dimension.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
         </Attribute>
         <Attribute name="defaultRole" required="false">
             <Doc>The name of the default role for connections to this schema</Doc>
@@ -99,6 +102,12 @@ Revision is $Id$
             dimension', in MSOLAP parlance), or a 'private dimension'.
         </Doc>
         <Attribute name="name" required="true"/>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the Dimension's name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
         <Attribute name="foreignKey">
             <Doc>
                 The name of the column in the fact table which joins
@@ -132,6 +141,12 @@ Revision is $Id$
         <Attribute name="name" required="true">
             <Doc>
                 Name of this cube.
+            </Doc>
+        </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the cube's name.
+                Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
         <Attribute name="cache" type="Boolean" default="true">
@@ -198,6 +213,12 @@ Revision is $Id$
             </Doc>
         </Attribute>
         <Attribute name="name"><Doc></Doc></Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the cube's name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
         <Array name="dimensions" type="VirtualCubeDimension"><Doc></Doc></Array>
         <Array name="measures" type="VirtualCubeMeasure"><Doc></Doc></Array>
         <Code><![CDATA[
@@ -218,8 +239,11 @@ Revision is $Id$
                 unspecified if the dimension is shared.
             </Doc>
         </Attribute>
-        <Attribute name="name"><Doc>
-            Name of the dimension.</Doc></Attribute>
+        <Attribute name="name">
+            <Doc>
+                Name of the dimension.
+            </Doc>
+        </Attribute>
         <Code><![CDATA[
             // implement CubeDimension
             public Dimension getDimension(Schema schema) {
@@ -317,6 +341,7 @@ Revision is $Id$
         <Attribute name="caption" required="false">
             <Doc>
                 A string being displayed instead of the dimensions's name.
+                Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
 
@@ -369,12 +394,14 @@ Revision is $Id$
         <Attribute name="allMemberCaption" required="false">
             <Doc>
                 A string being displayed instead as the all member's name.
+                Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
         <Attribute name="allLevelName" required="false">
             <Doc>
                 Name of the 'all' level. If this attribute is not specified,
                 the all member is named '(All)'.
+                Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
         <Attribute name="primaryKey">
@@ -403,6 +430,7 @@ Revision is $Id$
             <Doc>
                 A string to be displayed in the user interface.
                 If not specified, the hierarchy's name is used.
+                Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
 
@@ -425,6 +453,7 @@ Revision is $Id$
                 The name of the table that the column comes from. If
                 this hierarchy is based upon just one table, defaults to
                 the name of that table; otherwise, it is required.
+                Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
         <Attribute name="column">
@@ -439,6 +468,7 @@ Revision is $Id$
                 this level.
             </Doc>
         </Attribute>
+        
         <Attribute name="ordinalColumn" required="false">
             <Doc>
                 The name of the column which holds member
@@ -517,9 +547,16 @@ Revision is $Id$
         <Attribute name="caption" required="false">
             <Doc>
                 A string being displayed instead of the level's name.
+                Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
-
+        
+        <Attribute name="captionColumn" required="false">
+            <Doc>
+                The name of the column which holds the caption for
+                members.
+            </Doc>
+        </Attribute>
         <Object name="keyExp" type="KeyExpression" required="false">
             <Doc>
                 The SQL expression used to populate this level's key.
@@ -559,6 +596,13 @@ Revision is $Id$
                     return nameExp;
                 } else if (nameColumn != null) {
                     return new Column(table, nameColumn);
+                } else {
+                    return null;
+                }
+            }
+            public Expression getCaptionExp() {
+                if (captionColumn != null) {
+                    return new Column(table, captionColumn);
                 } else {
                     return null;
                 }
@@ -622,6 +666,7 @@ Revision is $Id$
         <Attribute name="caption" required="false">
             <Doc>
                 A string being displayed instead of the name.
+                Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
     </Element>
@@ -631,7 +676,7 @@ Revision is $Id$
             <Doc>Name of this measure.</Doc>
         </Attribute>
         <Attribute name="column" required="true">
-            <Doc>Column which is source of this measure's valies.</Doc>
+            <Doc>Column which is source of this measure's values.</Doc>
         </Attribute>
         <Attribute name="formatString">
             <Doc>
@@ -657,6 +702,7 @@ Revision is $Id$
         <Attribute name="caption" required="false">
             <Doc>
                 A string being displayed instead of the name.
+                Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
         <Attribute name="visible" type="Boolean" required="false">
@@ -683,6 +729,7 @@ Revision is $Id$
         <Attribute name="caption" required="false">
             <Doc>
                 A string being displayed instead of the name.
+                Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
         <Attribute name="formula" required="false">
@@ -732,6 +779,12 @@ Revision is $Id$
         <Attribute name="name" required="true">
             <Doc>
                 Name of this member property.
+            </Doc>
+        </Attribute>
+         <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the Properties's name.
+                Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
         <Attribute name="expression">
@@ -1334,6 +1387,7 @@ Revision is $Id$
     <Element type="ParentExpression" class="ExpressionView"/>
     <Element type="OrdinalExpression" class="ExpressionView"/>
     <Element type="NameExpression" class="ExpressionView"/>
+    <Element type="CaptionExpression" class="ExpressionView"/>
 
     <!-- Access control =================================================== -->
     <Element type="Role">

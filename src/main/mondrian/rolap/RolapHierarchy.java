@@ -110,7 +110,7 @@ class RolapHierarchy extends HierarchyBase {
             }
             this.levels = new RolapLevel[xmlHierarchy.levels.length + 1];
             this.levels[0] = new RolapLevel(
-                    this, 0, this.allLevelName, null, null, null, null, null,
+                    this, 0, this.allLevelName, null, null, null, null, null, null,
                     null, RolapProperty.emptyArray,
                     RolapLevel.ALL | RolapLevel.UNIQUE,
                     RolapLevel.HideMemberCondition.Never,
@@ -212,7 +212,7 @@ class RolapHierarchy extends HierarchyBase {
 
     RolapLevel newLevel(String name, int flags) {
         RolapLevel level = new RolapLevel(
-                this, this.levels.length, name, null, null, null,
+                this, this.levels.length, name, null, null, null, null,
                 null, null, null, RolapProperty.emptyArray, flags,
                 RolapLevel.HideMemberCondition.Never, LevelType.Regular);
         this.levels = (RolapLevel[]) RolapUtil.addElement(this.levels, level);
@@ -526,9 +526,10 @@ class RolapHierarchy extends HierarchyBase {
         int flags = src.getFlags() &~ RolapLevel.UNIQUE;
         MondrianDef.Expression keyExp =
             new MondrianDef.Column(clos.table.name, clos.parentColumn);
+
         RolapLevel level = new RolapLevel(peerHier, index++,
             "Closure",
-            keyExp, null, null,
+            keyExp, null, null, null, 
             null, null,  // no longer a parent-child hierarchy
             null, RolapProperty.emptyArray, flags,
             src.getHideMemberCondition(), src.getLevelType());
@@ -547,6 +548,7 @@ class RolapHierarchy extends HierarchyBase {
             index++,
             "Item",
             keyExp,
+            null,
             null,
             null,
             null,

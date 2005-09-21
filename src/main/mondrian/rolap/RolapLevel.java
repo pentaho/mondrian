@@ -49,6 +49,8 @@ public class RolapLevel extends LevelBase {
     private final MondrianDef.Expression keyExp;
     /** The column or expression which yields the level's ordinal. */
     private final MondrianDef.Expression ordinalExp;
+    /** The column or expression which yields the level members' caption. */
+    private final MondrianDef.Expression captionExp;
     /** For SQL generator. Whether values of "column" are unique globally
      * unique (as opposed to unique only within the context of the parent
      * member). **/
@@ -88,6 +90,7 @@ public class RolapLevel extends LevelBase {
         String name,
         MondrianDef.Expression keyExp,
         MondrianDef.Expression nameExp,
+        MondrianDef.Expression captionExp,
         MondrianDef.Expression ordinalExp,
         MondrianDef.Expression parentExp,
         String nullParentValue,
@@ -108,6 +111,7 @@ public class RolapLevel extends LevelBase {
         if (keyExp instanceof MondrianDef.Column) {
             checkColumn((MondrianDef.Column) keyExp);
         }
+
         this.flags = flags;
         final boolean isAll = (flags & ALL) == ALL;
         this.unique = (flags & UNIQUE) == UNIQUE;
@@ -118,6 +122,12 @@ public class RolapLevel extends LevelBase {
             }
         }
         this.nameExp = nameExp;
+        if (captionExp != null) {
+            if (captionExp instanceof MondrianDef.Column) {
+                checkColumn((MondrianDef.Column) captionExp);
+            }
+        }
+        this.captionExp = captionExp;
         if (ordinalExp != null) {
             if (ordinalExp instanceof MondrianDef.Column) {
                 checkColumn((MondrianDef.Column) ordinalExp);
@@ -204,6 +214,12 @@ public class RolapLevel extends LevelBase {
     MondrianDef.Expression getOrdinalExp() {
         return ordinalExp;
     }
+    public MondrianDef.Expression getCaptionExp() {
+        return captionExp;
+    }
+    public boolean hasCaptionColumn(){
+        return captionExp != null;
+    }
     int getFlags() {
         return flags;
     }
@@ -241,7 +257,7 @@ public class RolapLevel extends LevelBase {
     RolapLevel(RolapHierarchy hierarchy, int depth, MondrianDef.Level xmlLevel) {
         this(
             hierarchy, depth, xmlLevel.name, xmlLevel.getKeyExp(),
-            xmlLevel.getNameExp(), xmlLevel.getOrdinalExp(),
+            xmlLevel.getNameExp(), xmlLevel.getCaptionExp(), xmlLevel.getOrdinalExp(),
             xmlLevel.getParentExp(), xmlLevel.nullParentValue,
             xmlLevel.closure, createProperties(xmlLevel),
             (xmlLevel.type.equals("Numeric") ? NUMERIC : 0) |
@@ -270,18 +286,19 @@ public class RolapLevel extends LevelBase {
             MondrianDef.Level xmlLevel) {
         List list = new ArrayList();
         final MondrianDef.Expression nameExp = xmlLevel.getNameExp();
+
         if (nameExp != null) {
-            list.add(
-                    new RolapProperty(
-                            Property.NAME.name, Property.TYPE_STRING,
-                            nameExp, null, null));
+            list.add(new RolapProperty(
+                    Property.NAME.name, Property.TYPE_STRING,
+                    nameExp, null, null));
         }
         for (int i = 0; i < xmlLevel.properties.length; i++) {
             MondrianDef.Property property = xmlLevel.properties[i];
             list.add(new RolapProperty(
                     property.name,
                     convertPropertyTypeNameToCode(property.type),
-                    xmlLevel.getPropertyExp(i), property.formatter, property.caption));
+                    xmlLevel.getPropertyExp(i),
+                    property.formatter, property.caption));
         }
         return (RolapProperty[]) list.toArray(RolapProperty.emptyArray);
     }
