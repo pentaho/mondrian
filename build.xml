@@ -58,7 +58,7 @@
 ${java.dir}/mondrian/olap/Parser.java,
 ${java.dir}/mondrian/olap/ParserSym.java,
 ${java.dir}/mondrian/olap/MondrianDef.java,
-${java.dir}/mondrian/olap/MondrianResource*.java,
+${java.dir}/mondrian/resource/MondrianResource*.java,
 ${java.dir}/mondrian/xmla/DataSourcesConfig*.java,
 ${etc.dir}/mondrian/web/jsp/**/*.java"/>
   <property name="generated.lib.files" value="
@@ -254,8 +254,12 @@ unzip-FoodMartAccessDB"/>
       <include name="mondrian/olap/InvalidHierarchy.java" />
     </javac>
 
-    <resgen srcdir="${java.dir}" resdir="${classes.dir}" locales="en_US,de_DE">
-      <include name="mondrian/olap/MondrianResource.xml"/>
+    <resgen
+        srcdir="${java.dir}"
+        resdir="${classes.dir}"
+        style="functor"
+        locales="en_US,de_DE">
+      <include name="mondrian/resource/MondrianResource.xml"/>
     </resgen>
 
   </target>
@@ -466,7 +470,7 @@ in {mondrian.foodmart.jdbcURL}.">
           prefix="${dist.name}"
           includes="
 ${java.dir}/**/*.properties,
-${java.dir}/mondrian/olap/MondrianResource.xml,
+${java.dir}/mondrian/resource/MondrianResource.xml,
 ${java.dir}/mondrian/olap/Mondrian.xml,
 ${java.dir}/javax/jmi/model/resources/mof.xml,
 ${java.dir}/**/*.java,

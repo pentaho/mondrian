@@ -13,7 +13,7 @@
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.Hierarchy;
-import mondrian.olap.MondrianResource;
+import mondrian.resource.MondrianResource;
 import mondrian.recorder.MessageRecorder;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.RolapLevel;
@@ -141,7 +141,7 @@ class DefaultRecognizer extends Recognizer {
                 }
                 if (nosMatched > 1) {
 
-                    String msg = mres.getAggMultipleMatchingMeasure(
+                    String msg = mres.AggMultipleMatchingMeasure.str(
                             msgRecorder.getContext(),
                             aggTable.getName(),
                             dbFactTable.getName(),

@@ -12,6 +12,8 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.resource.MondrianResource;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -76,15 +78,15 @@ public class HierarchyUsage {
     private final String hierarchyName;
 
     /**
-     * not NULL for DimensionUsage 
+     * not NULL for DimensionUsage
      * not NULL for Dimension
      */
     private final String name;
-    
-    /** 
+
+    /**
      * This is the name used to look up the hierachy usage. When the dimension
      * has only a single hierachy, then the fullName is simply the
-     * CubeDimension name; there is no need to use the default dimension name. 
+     * CubeDimension name; there is no need to use the default dimension name.
      * But, when the dimension has more than one hierachy, then the fullName
      * is the CubeDimension dotted with the dimension hierachy name.
      */
@@ -97,12 +99,12 @@ public class HierarchyUsage {
     private final String foreignKey;
 
     /**
-     * not NULL for DimensionUsage 
+     * not NULL for DimensionUsage
      * NULL for Dimension
      */
     private final String source;
 
-    /** 
+    /**
      * May be null, this is the field that is used to disambiguate column
      * names in aggregate tables
      */
@@ -126,12 +128,12 @@ public class HierarchyUsage {
 
     private final int kind;
 
-    /** 
-     *  
-     * 
-     * @param cube 
-     * @param hierarchy 
-     * @param cubeDim 
+    /**
+     *
+     *
+     * @param cube
+     * @param hierarchy
+     * @param cubeDim
      */
     HierarchyUsage(RolapCube cube,
                    RolapHierarchy hierarchy,
@@ -231,7 +233,7 @@ public class HierarchyUsage {
             init(cube, hierarchy, null);
 
         } else {
-            getLogger().warn("HierarchyUsage<init>: Unknown cubeDim=" 
+            getLogger().warn("HierarchyUsage<init>: Unknown cubeDim="
                 +cubeDim.getClass().getName());
 
             this.kind = HierarchyUsage.UNKNOWN_KIND;
@@ -246,8 +248,8 @@ public class HierarchyUsage {
             init(cube, hierarchy, null);
         }
         if (getLogger().isDebugEnabled()) {
-            getLogger().debug(toString() 
-                + ", cubeDim="  
+            getLogger().debug(toString()
+                + ", cubeDim="
                 + cubeDim.getClass().getName());
         }
 
@@ -343,7 +345,7 @@ public class HierarchyUsage {
         return buf.toString();
     }
 
-    void init(RolapCube cube, 
+    void init(RolapCube cube,
               RolapHierarchy hierarchy,
               MondrianDef.DimensionUsage cubeDim) {
 
@@ -355,7 +357,7 @@ public class HierarchyUsage {
                     Util.lookupHierarchyLevel(hierarchy, cubeDim.level);
             if (joinLevel == null) {
                 throw MondrianResource.instance()
-                        .newDimensionUsageHasUnknownLevel(
+                        .DimensionUsageHasUnknownLevel.ex(
                                 hierarchy.getUniqueName(),
                                 cube.getUniqueName(),
                                 cubeDim.level);
@@ -391,13 +393,13 @@ RME
         if (!inFactTable) {
             if (this.joinExp == null) {
                 throw MondrianResource.instance()
-                        .newMustSpecifyPrimaryKeyForHierarchy(
+                        .MustSpecifyPrimaryKeyForHierarchy.ex(
                                 hierarchy.getUniqueName(),
                                 cube.getUniqueName());
             }
             if (foreignKey == null) {
                 throw MondrianResource.instance()
-                        .newMustSpecifyForeignKeyForHierarchy(
+                        .MustSpecifyForeignKeyForHierarchy.ex(
                                 hierarchy.getUniqueName(),
                                 cube.getUniqueName());
             }
@@ -421,7 +423,7 @@ RME
             table = hierarchy.getUniqueTable();
             if (table == null) {
                 throw MondrianResource.instance()
-                    .newMustSpecifyPrimaryKeyTableForHierarchy(
+                    .MustSpecifyPrimaryKeyTableForHierarchy.ex(
                         hierarchy.getUniqueName());
             }
         } else {

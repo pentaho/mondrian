@@ -9,7 +9,7 @@
 */
 package mondrian.test.loader;
 
-import mondrian.olap.MondrianResource;
+import mondrian.resource.MondrianResource;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapUtil;
 import mondrian.rolap.sql.SqlQuery;
@@ -175,7 +175,7 @@ public class MondrianFoodMartLoader {
         }
         if (errorMessage.length() > 0) {
             usage();
-            throw MondrianResource.instance().newMissingArg(errorMessage.toString());
+            throw MondrianResource.instance().MissingArg.ex(errorMessage.toString());
         }
 
         if (LOGGER.isInfoEnabled()) {
@@ -363,7 +363,7 @@ public class MondrianFoodMartLoader {
                 //   values = "1, 'bar'"
                 final Matcher matcher = regex.matcher(line);
                 if (!matcher.matches()) {
-                    throw MondrianResource.instance().newInvalidInsertLine(
+                    throw MondrianResource.instance().InvalidInsertLine.ex(
                         new Integer(lineNumber), line);
                 }
                 String tableName = matcher.group(1); // e.g. "foo"
@@ -621,7 +621,7 @@ public class MondrianFoodMartLoader {
      */
     private int loadTable(String name, Column[] columns) throws Exception {
         int rowsAdded = 0;
-        
+
         final DatabaseMetaData metaData = inputConnection.getMetaData();
 
         SqlQuery inputSqlQuery = new SqlQuery(metaData);
@@ -955,8 +955,8 @@ public class MondrianFoodMartLoader {
             final String createDDL = buf.toString();
             executeDDL(createDDL);
         } catch (Exception e) {
-            throw MondrianResource.instance().newCreateIndexFailed(indexName,
-                tableName, e);
+            throw MondrianResource.instance().CreateIndexFailed.ex(
+                indexName, tableName, e);
         }
     }
 
@@ -1408,7 +1408,7 @@ public class MondrianFoodMartLoader {
                     try {
                         executeDDL("DELETE FROM " + quoteId(name));
                     } catch (SQLException e) {
-                        throw MondrianResource.instance().newCreateTableFailed(name, e);
+                        throw MondrianResource.instance().CreateTableFailed.ex(name, e);
                     }
                 }
                 return;
@@ -1445,7 +1445,7 @@ public class MondrianFoodMartLoader {
             final String ddl = buf.toString();
             executeDDL(ddl);
         } catch (Exception e) {
-            throw MondrianResource.instance().newCreateTableFailed(name, e);
+            throw MondrianResource.instance().CreateTableFailed.ex(name, e);
         }
     }
 
@@ -1464,18 +1464,18 @@ public class MondrianFoodMartLoader {
 
     /**
      * Quote the given SQL identifier suitable for the output DBMS.
-     * 
+     *
      * @param name
      * @return
      */
-    
+
     private String quoteId(String name) {
         return quoteId(sqlQuery, name);
     }
 
     /**
      * Quote the given SQL identifier suitable for the given DBMS type.
-     * 
+     *
      * @param givenQueryType
      * @param name
      * @return

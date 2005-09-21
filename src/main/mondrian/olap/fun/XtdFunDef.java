@@ -13,6 +13,7 @@ import mondrian.olap.*;
 import mondrian.olap.type.Type;
 import mondrian.olap.type.SetType;
 import mondrian.olap.type.MemberType;
+import mondrian.resource.MondrianResource;
 
 /**
  * Definition of Ytd, Qtd, Mtd, Wtd functions.
@@ -39,8 +40,7 @@ class XtdFunDef extends FunDefBase {
         if (type.getHierarchy().getDimension()
                 .getDimensionType() !=
                 DimensionType.TimeDimension) {
-            throw MondrianResource.instance()
-                    .newTimeArgNeeded(getName());
+            throw MondrianResource.instance().TimeArgNeeded.ex(getName());
         }
         return super.getResultType(validator, args);
     }

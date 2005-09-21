@@ -23,6 +23,7 @@ import java.net.URL;
 import java.util.*;
 
 import mondrian.olap.fun.FunUtil;
+import mondrian.resource.MondrianResource;
 
 /**
  * Utility functions used throughout mondrian. All methods are static.
@@ -217,7 +218,7 @@ public class Util extends XOMUtil {
         int i = 0;
         while (i < s.length()) {
             if (s.charAt(i) != '[') {
-                throw getRes().newMdxInvalidMember(s);
+                throw MondrianResource.instance().MdxInvalidMember.ex(s);
             }
             // s may contain extra ']' characters, so look for a ']' followed
             // by a '.'
@@ -226,14 +227,14 @@ public class Util extends XOMUtil {
                 j = s.lastIndexOf(']');
             }
             if (j <= i) {
-                throw getRes().newMdxInvalidMember(s);
+                throw MondrianResource.instance().MdxInvalidMember.ex(s);
             }
             String sub = s.substring(i + 1, j);
             sub = replace(sub, "]]", "]");
             list.add(sub);
             if (j + 1 < s.length()) {
                 if (s.charAt(j + 1) != '.') {
-                    throw getRes().newMdxInvalidMember(s);
+                    throw MondrianResource.instance().MdxInvalidMember.ex(s);
                 }
             }
             i = j +  2;
@@ -360,7 +361,7 @@ public class Util extends XOMUtil {
                 }
 
                 if (failIfNotFound) {
-                    throw getRes().newMdxChildObjectNotFound(
+                    throw MondrianResource.instance().MdxChildObjectNotFound.ex(
                         name, parent.getQualifiedName());
                 } else {
                     return null;
@@ -411,7 +412,7 @@ public class Util extends XOMUtil {
             if (parent instanceof Member) {
                 return parent;
             } else if (failIfNotFound) {
-                throw getRes().newMdxCantFindMember(implode(names));
+                throw MondrianResource.instance().MdxCantFindMember.ex(implode(names));
             } else {
                 return null;
             }
@@ -476,7 +477,7 @@ public class Util extends XOMUtil {
                 }
             }
 
-            throw Util.getRes().newMdxChildObjectNotFound(
+            throw MondrianResource.instance().MdxChildObjectNotFound.ex(
                     fullName, q.getCube().getQualifiedName());
         }
         return olapElement;
@@ -720,7 +721,7 @@ public class Util extends XOMUtil {
      */
     public static void assertTrue(boolean b) {
         if (!b) {
-            throw getRes().newInternal("assert failed");
+            throw newInternal("assert failed");
         }
     }
 
@@ -731,28 +732,38 @@ public class Util extends XOMUtil {
      */
     public static void assertTrue(boolean b, String message) {
         if (!b) {
-            throw getRes().newInternal("assert failed: " + message);
+            throw newInternal("assert failed: " + message);
         }
     }
 
+    /**
+     * Creates an internal error with a given message.
+     */
     public static RuntimeException newInternal(String message) {
-        return getRes().newInternal(message);
+        return MondrianResource.instance().Internal.ex(message);
     }
 
+    /**
+     * Creates an internal error with a given message and cause.
+     */
     public static RuntimeException newInternal(Throwable e, String message) {
-        return getRes().newInternal(message, e);
+        return MondrianResource.instance().Internal.ex(message, e);
     }
 
-    /** Creates a non-internal error. Currently implemented in terms of
-     * internal errors, but later we will create resourced messages. **/
+    /**
+     * Creates a non-internal error. Currently implemented in terms of
+     * internal errors, but later we will create resourced messages.
+     */
     public static RuntimeException newError(String message) {
-        return getRes().newInternal(message);
+        return newInternal(message);
     }
 
-    /** Creates a non-internal error. Currently implemented in terms of
-     * internal errors, but later we will create resourced messages. **/
+    /**
+     * Creates a non-internal error. Currently implemented in terms of
+     * internal errors, but later we will create resourced messages.
+     */
     public static RuntimeException newError(Throwable e, String message) {
-        return getRes().newInternal(message, e);
+        return newInternal(e, message);
     }
 
     /**
@@ -799,10 +810,6 @@ public class Util extends XOMUtil {
      */
     public static void assertPostcondition(boolean b, String condition) {
         assertTrue(b, condition);
-    }
-
-    public static MondrianResource getRes() {
-        return MondrianResource.instance();
     }
 
     /**

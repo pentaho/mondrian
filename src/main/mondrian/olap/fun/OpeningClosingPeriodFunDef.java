@@ -14,6 +14,7 @@ package mondrian.olap.fun;
 import mondrian.olap.*;
 import mondrian.olap.type.MemberType;
 import mondrian.olap.type.Type;
+import mondrian.resource.MondrianResource;
 
 /**
  * Definition of the <code>OpeningPeriod</code> and <code>ClosingPeriod</code>
@@ -101,7 +102,7 @@ class OpeningClosingPeriodFunDef extends FunDefBase {
         // Make sure the member and the level come from the same hierarchy.
         //
         if (!member.getHierarchy().equals(level.getHierarchy())) {
-            throw MondrianResource.instance().newFunctionMbrAndLevelHierarchyMismatch(
+            throw MondrianResource.instance().FunctionMbrAndLevelHierarchyMismatch.ex(
                     opening ? "OpeningPeriod" : "ClosingPeriod",
                     level.getHierarchy().getUniqueName(),
                     member.getHierarchy().getUniqueName());

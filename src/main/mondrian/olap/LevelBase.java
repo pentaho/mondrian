@@ -13,6 +13,7 @@
 package mondrian.olap;
 
 import mondrian.olap.type.Type;
+import mondrian.resource.MondrianResource;
 
 /**
  * Skeleton implementation of {@link Level}
@@ -46,7 +47,7 @@ public abstract class LevelBase
 
     // from Element
     public String getQualifiedName() {
-        return Util.getRes().getMdxLevelName(getUniqueName());
+        return MondrianResource.instance().MdxLevelName.str(getUniqueName());
     }
 
     public int getCategory() {

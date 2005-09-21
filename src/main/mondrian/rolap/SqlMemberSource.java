@@ -13,6 +13,7 @@
 package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.resource.MondrianResource;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -125,13 +126,9 @@ class SqlMemberSource implements MemberReader {
                 return count;
             }
         } catch (SQLException e) {
-            throw Util.getRes().newInternal(
-                    "while counting members of level '"
-                    + level
-                    + "'; sql=["
-                    + sql
-                    + "]",
-                    e);
+            throw Util.newInternal(e,
+                    "while counting members of level '" + level +
+                    "'; sql=[" + sql + "]");
         } finally {
             try {
                 if (resultSet != null) {
@@ -327,8 +324,8 @@ class SqlMemberSource implements MemberReader {
 
                 if (limit > 0 && limit < ++nFetch) {
                     // result limit exceeded, throw an exception
-                    throw MondrianResource.instance().
-                            newMemberFetchLimitExceeded(new Long(limit));
+                    throw MondrianResource.instance().MemberFetchLimitExceeded.ex(
+                            new Long(limit));
                 }
 
                 int column = 0;
@@ -375,8 +372,8 @@ RME is this right
 
             return RolapUtil.toArray(list);
         } catch (SQLException e) {
-            throw Util.getRes().newInternal(
-                    "while building member cache; sql=[" + sql + "]", e);
+            throw Util.newInternal(e,
+                    "while building member cache; sql=[" + sql + "]");
         } finally {
             try {
                 if (resultSet != null) {
@@ -560,7 +557,7 @@ RME is this right
                 if (limit > 0 && limit < ++nFetch) {
                     // result limit exceeded, throw an exception
                     throw MondrianResource.instance().
-                               newMemberFetchLimitExceeded(new Long(limit));
+                               MemberFetchLimitExceeded.ex(new Long(limit));
                 }
 
                 int column = 0;
@@ -622,9 +619,9 @@ RME is this right
             }
             return list;
         } catch (Throwable e) {
-            throw Util.getRes().newInternal(
+            throw Util.newInternal(e,
                     "while populating member cache with members for level '" +
-                    level.getUniqueName() + "'; sql=[" + sql + "]", e);
+                    level.getUniqueName() + "'; sql=[" + sql + "]");
         } finally {
             try {
                 if (resultSet != null) {
@@ -639,9 +636,10 @@ RME is this right
 
     // implement MemberSource
     public List getRootMembers() {
-        return getMembersInLevel((RolapLevel) hierarchy.getLevels()[0],
-                                 0,
-                                 Integer.MAX_VALUE);
+        return getMembersInLevel(
+                (RolapLevel) hierarchy.getLevels()[0],
+                0,
+                Integer.MAX_VALUE);
     }
 
     /**
@@ -764,7 +762,7 @@ RME is this right
                 if (limit > 0 && limit < ++nFetch) {
                     // result limit exceeded, throw an exception
                     throw MondrianResource.instance().
-                            newMemberFetchLimitExceeded(new Long(limit));
+                            MemberFetchLimitExceeded.ex(new Long(limit));
                 }
 
                 Object value = resultSet.getObject(1);
@@ -784,8 +782,8 @@ RME is this right
                 }
             }
         } catch (SQLException e) {
-            throw Util.getRes().newInternal(
-                    "while building member cache; sql=[" + sql + "]", e);
+            throw Util.newInternal(e,
+                    "while building member cache; sql=[" + sql + "]");
         } finally {
             try {
                 if (resultSet != null) {
@@ -798,14 +796,15 @@ RME is this right
         }
     }
 
-    private RolapMember makeMember(RolapMember parentMember,
-                                   RolapLevel childLevel,
-                                   Object value,
-                                   boolean parentChild,
-                                   ResultSet resultSet,
-                                   Object key,
-                                   int columnOffset)
-                                   throws SQLException {
+    private RolapMember makeMember(
+            RolapMember parentMember,
+            RolapLevel childLevel,
+            Object value,
+            boolean parentChild,
+            ResultSet resultSet,
+            Object key,
+            int columnOffset)
+            throws SQLException {
 
         RolapMember member = new RolapMember(parentMember, childLevel, value);
         if (childLevel.getOrdinalExp() != childLevel.getKeyExp()) {

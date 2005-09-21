@@ -14,6 +14,8 @@ package mondrian.rolap.aggmatcher;
 import mondrian.olap.*;
 import mondrian.rolap.RolapStar;
 import mondrian.recorder.*;
+import mondrian.resource.MondrianResource;
+
 import org.apache.log4j.Logger;
 import org.eigenbase.xom.*;
 import org.eigenbase.xom.Parser;
@@ -77,7 +79,7 @@ public class DefaultRules {
             String tag = MondrianProperties.instance().AggregateRuleTag.get();
             DefaultDef.AggRule aggrule = defs.getAggRule(tag);
             if (aggrule == null) {
-                throw mres.newMissingDefaultAggRule(tag);
+                throw mres.MissingDefaultAggRule.ex(tag);
             }
 
             DefaultRules rules = new DefaultRules(defs);
@@ -101,7 +103,7 @@ public class DefaultRules {
             }
         }
         if (inStream == null) {
-            String msg = mres.getCouldNotLoadDefaultAggregateRules(aggRules);
+            String msg = mres.CouldNotLoadDefaultAggregateRules.str(aggRules);
             LOGGER.warn(msg);
         }
         return inStream;
@@ -142,8 +144,8 @@ public class DefaultRules {
                             DefaultRules.instance = oldInstance;
 
                             String msg =
-                            mres.getFailedCreateNewDefaultAggregateRules(
-                                property.getPath(), value);
+                                mres.FailedCreateNewDefaultAggregateRules.str(
+                                        property.getPath(), value);
                             throw new Trigger.VetoRT(msg);
 
                         } else {
@@ -164,7 +166,7 @@ public class DefaultRules {
             DefaultDef.AggRules rules = new DefaultDef.AggRules(def);
             return rules;
         } catch (XOMException e) {
-            throw mres.newAggRuleParse(file.getName(),e);
+            throw mres.AggRuleParse.ex(file.getName(), e);
         }
     }
     protected static DefaultDef.AggRules makeAggRules(final URL url) {
@@ -173,7 +175,7 @@ public class DefaultRules {
             DefaultDef.AggRules rules = new DefaultDef.AggRules(def);
             return rules;
         } catch (XOMException e) {
-            throw mres.newAggRuleParse(url.toString(),e);
+            throw mres.AggRuleParse.ex(url.toString(),e);
         }
     }
     protected static DefaultDef.AggRules makeAggRules(
@@ -183,7 +185,7 @@ public class DefaultRules {
             DefaultDef.AggRules rules = new DefaultDef.AggRules(def);
             return rules;
         } catch (XOMException e) {
-            throw mres.newAggRuleParse("InputStream",e);
+            throw mres.AggRuleParse.ex("InputStream",e);
         }
     }
     protected static DefaultDef.AggRules makeAggRules(final String text,
@@ -193,14 +195,14 @@ public class DefaultRules {
             DefaultDef.AggRules rules = new DefaultDef.AggRules(def);
             return rules;
         } catch (XOMException e) {
-            throw mres.newAggRuleParse(name,e);
+            throw mres.AggRuleParse.ex(name,e);
         }
     }
     protected static DOMWrapper makeDOMWrapper(final File file) {
         try {
             return makeDOMWrapper(file.toURL());
         } catch (MalformedURLException e) {
-            throw mres.newAggRuleParse(file.getName(),e);
+            throw mres.AggRuleParse.ex(file.getName(),e);
         }
     }
     protected static DOMWrapper makeDOMWrapper(final URL url) {
@@ -209,7 +211,7 @@ public class DefaultRules {
             DOMWrapper def = xmlParser.parse(url);
             return def;
         } catch (XOMException e) {
-            throw mres.newAggRuleParse(url.toString(),e);
+            throw mres.AggRuleParse.ex(url.toString(),e);
         }
     }
     protected static DOMWrapper makeDOMWrapper(final InputStream inStream) {
@@ -218,7 +220,7 @@ public class DefaultRules {
             DOMWrapper def = xmlParser.parse(inStream);
             return def;
         } catch (XOMException e) {
-            throw mres.newAggRuleParse("InputStream",e);
+            throw mres.AggRuleParse.ex("InputStream",e);
         }
     }
     protected static DOMWrapper makeDOMWrapper(final String text,
@@ -228,7 +230,7 @@ public class DefaultRules {
             DOMWrapper def = xmlParser.parse(text);
             return def;
         } catch (XOMException e) {
-            throw mres.newAggRuleParse(name,e);
+            throw mres.AggRuleParse.ex(name,e);
         }
     }
 

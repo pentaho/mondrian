@@ -13,6 +13,7 @@
 package mondrian.olap;
 import mondrian.olap.type.Type;
 import mondrian.olap.type.MemberType;
+import mondrian.resource.MondrianResource;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -47,7 +48,7 @@ public abstract class MemberBase
 
     // implement Exp, OlapElement, Member
     public String getQualifiedName() {
-        return Util.getRes().getMdxMemberName(uniqueName);
+        return MondrianResource.instance().MdxMemberName.str(uniqueName);
     }
 
     public final int getCategory() {

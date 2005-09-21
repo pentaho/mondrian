@@ -12,6 +12,7 @@
 package mondrian.olap.fun;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
+import mondrian.resource.MondrianResource;
 
 import java.io.PrintWriter;
 
@@ -85,7 +86,7 @@ class TupleFunDef extends FunDefBase {
             for (int j = 0; j < i; j++) {
                 Member member1 = members[j];
                 if (member.getDimension() == member1.getDimension()) {
-                    throw MondrianResource.instance().newDupDimensionsInTuple(
+                    throw MondrianResource.instance().DupDimensionsInTuple.ex(
                             member.getDimension().getUniqueName());
                 }
             }

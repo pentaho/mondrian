@@ -13,6 +13,7 @@ import mondrian.olap.*;
 import mondrian.olap.type.Type;
 import mondrian.olap.type.TupleType;
 import mondrian.olap.type.SetType;
+import mondrian.resource.MondrianResource;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -86,8 +87,7 @@ class CrossJoinFunDef extends FunDefBase {
         int limit = MondrianProperties.instance().ResultLimit.get();
         if (limit > 0 && limit < size) {
             // result limit exceeded, throw an exception
-            throw MondrianResource.instance().
-                    newLimitExceededDuringCrossjoin(
+            throw MondrianResource.instance().LimitExceededDuringCrossjoin.ex(
                             new Long(size), new Long(limit));
         }
 

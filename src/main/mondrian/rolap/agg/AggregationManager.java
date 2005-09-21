@@ -16,6 +16,8 @@ import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.rolap.*;
 import mondrian.rolap.aggmatcher.AggStar;
+import mondrian.resource.MondrianResource;
+
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -86,7 +88,7 @@ public class AggregationManager extends RolapAggregationManager {
         if (o != null) {
             return o;
         }
-        throw Util.getRes().newInternal("not found");
+        throw Util.newInternal("not found");
     }
 
     public Object getCellFromCache(CellRequest request, Set pinSet) {

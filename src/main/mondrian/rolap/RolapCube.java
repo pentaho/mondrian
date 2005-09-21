@@ -14,6 +14,8 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.aggmatcher.ExplicitRules;
+import mondrian.resource.MondrianResource;
+
 import org.apache.log4j.Logger;
 import org.eigenbase.xom.*;
 import org.eigenbase.xom.Parser;
@@ -373,7 +375,7 @@ public class RolapCube extends CubeBase {
             RolapConnection conn = schema.getInternalConnection();
             queryExp = conn.parseQuery(queryString);
         } catch (Exception e) {
-            throw MondrianResource.instance().newUnknownNamedSetHasBadFormula(
+            throw MondrianResource.instance().UnknownNamedSetHasBadFormula.ex(
                 getUniqueName(), e);
         }
         queryExp.resolve();
@@ -406,7 +408,7 @@ public class RolapCube extends CubeBase {
             Set nameSet,
             StringBuffer buf) {
         if (!nameSet.add(xmlNamedSet.name)) {
-            throw MondrianResource.instance().newNamedSetNotUnique(
+            throw MondrianResource.instance().NamedSetNotUnique.ex(
                     xmlNamedSet.name, getUniqueName());
         }
 
@@ -458,7 +460,7 @@ public class RolapCube extends CubeBase {
         final Dimension dimension =
                 (Dimension) lookupDimension(xmlCalcMember.dimension);
         if (dimension == null) {
-            throw MondrianResource.instance().newCalcMemberHasBadDimension(
+            throw MondrianResource.instance().CalcMemberHasBadDimension.ex(
                     xmlCalcMember.dimension, xmlCalcMember.name,
                     getUniqueName());
         }
@@ -471,7 +473,7 @@ public class RolapCube extends CubeBase {
                     formula.getMdxMember().getDimension().getName() ==
                     dimension.getName()) {
 
-                throw MondrianResource.instance().newCalcMemberNotUnique(
+                throw MondrianResource.instance().CalcMemberNotUnique.ex(
                         Util.makeFqName(dimension, xmlCalcMember.name),
                         getUniqueName());
             }
@@ -483,7 +485,7 @@ public class RolapCube extends CubeBase {
             MondrianDef.CalculatedMember xmlCalcMember2 = xmlCalcMembers[k];
             if (xmlCalcMember2.name.equals(xmlCalcMember.name) &&
                     xmlCalcMember2.dimension.equals(xmlCalcMember.dimension)) {
-                throw MondrianResource.instance().newCalcMemberNotUnique(
+                throw MondrianResource.instance().CalcMemberNotUnique.ex(
                         Util.makeFqName(dimension, xmlCalcMember.name),
                         getUniqueName());
             }
@@ -538,7 +540,7 @@ public class RolapCube extends CubeBase {
                 xmlProperty.value == null) {
 
                 throw MondrianResource.instance()
-                    .newNeitherExprNorValueForCalcMemberProperty(
+                    .NeitherExprNorValueForCalcMemberProperty.ex(
                         xmlProperty.name,
                         memberName,
                         getUniqueName());
@@ -547,7 +549,7 @@ public class RolapCube extends CubeBase {
                 xmlProperty.value != null) {
 
                 throw MondrianResource.instance()
-                    .newExprAndValueForMemberProperty(
+                    .ExprAndValueForMemberProperty.ex(
                         xmlProperty.name,
                         memberName,
                         getUniqueName());
@@ -1017,14 +1019,14 @@ assert is not true.
                     // HierarchyUsage should have checked this.
                     if (hierarchyUsage.getForeignKey() == null) {
                         throw MondrianResource.instance()
-                                .newHierarchyMustHaveForeignKey(
+                                .HierarchyMustHaveForeignKey.ex(
                                         hierarchy.getName(), getName());
                     }
                     // jhyde: check is disabled until we handle <View> correctly
                     if (false &&
                         !star.getFactTable().containsColumn(hierarchyUsage.getForeignKey())) {
                         throw MondrianResource.instance()
-                                .newHierarchyInvalidForeignKey(
+                                .HierarchyInvalidForeignKey.ex(
                                         hierarchyUsage.getForeignKey(),
                                         hierarchy.getName(),
                                         getName());
@@ -1623,9 +1625,8 @@ assert is not true.
             final RolapHierarchy sharedHierarchy =
                 ((RolapSchema) schema).getSharedHierarchy(usage.source);
             if (sharedHierarchy == null) {
-                throw MondrianResource.instance().newInternal(
-                    "todo: Shared hierarchy '" + usage.source +
-                    "' not found");
+                throw Util.newInternal("todo: Shared hierarchy '" + usage.source +
+                                        "' not found");
             }
 
             final RolapDimension sharedDimension =

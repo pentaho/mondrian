@@ -10,7 +10,7 @@
 
 package mondrian.recorder;
 
-import mondrian.olap.Util;
+import mondrian.resource.MondrianResource;
 
 import java.util.*;
 
@@ -146,37 +146,37 @@ public abstract class AbstractRecorder implements MessageRecorder {
     public void throwRTException() throws RecorderException {
         if (hasErrors()) {
             final String errorMsg =
-                    Util.getRes().getForceMessageRecorderError(
-                                        getContext(),
-                                        new Integer(errorMsgCount));
+                    MondrianResource.instance().ForceMessageRecorderError.str(
+                            getContext(),
+                            new Integer(errorMsgCount));
             throw new RecorderException(errorMsg);
         }
     }
 
     public void reportError(final Exception ex)
-                    throws RecorderException {
+            throws RecorderException {
         reportError(ex, null);
     }
 
     public void reportError(final Exception ex, final Object info)
-                    throws RecorderException {
+            throws RecorderException {
         reportError(ex.toString(), info);
     }
 
     public void reportError(final String msg)
-                    throws RecorderException {
+            throws RecorderException {
         reportError(msg, null);
     }
     public void reportError(final String msg, final Object info)
-                    throws RecorderException {
+            throws RecorderException {
         errorMsgCount++;
         recordMessage(msg, info, ERROR_MSG_TYPE);
 
         if (errorMsgCount >= errorMsgLimit) {
             final String errorMsg =
-                    Util.getRes().getTooManyMessageRecorderErrors(
-                                        getContext(),
-                                        new Integer(errorMsgCount));
+                    MondrianResource.instance().TooManyMessageRecorderErrors.str(
+                            getContext(),
+                            new Integer(errorMsgCount));
             throw new RecorderException(errorMsg);
         }
     }

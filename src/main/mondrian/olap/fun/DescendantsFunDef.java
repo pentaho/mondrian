@@ -10,6 +10,7 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
+import mondrian.resource.MondrianResource;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -47,8 +48,8 @@ class DescendantsFunDef extends FunDefBase {
             descendantsByDepth(member, result, schemaReader,
                     depthLimit, before, self, after);
         } else {
-            final Level level = args.length > 1 
-                ?  getLevelArg(evaluator, args, 1, true) 
+            final Level level = args.length > 1
+                ?  getLevelArg(evaluator, args, 1, true)
                 : member.getLevel();
             schemaReader.getMemberDescendants(member, result,
                     level, before, self, after);
@@ -59,12 +60,12 @@ class DescendantsFunDef extends FunDefBase {
         return result;
     }
 
-    private static void descendantsByDepth(Member member, 
+    private static void descendantsByDepth(Member member,
                                            List result,
-                                           final SchemaReader schemaReader, 
+                                           final SchemaReader schemaReader,
                                            final int depthLimitFinal,
-                                           final boolean before, 
-                                           final boolean self, 
+                                           final boolean before,
+                                           final boolean self,
                                            final boolean after) {
         Member[] children = {member};
         for (int depth = 0;; ++depth) {
@@ -157,10 +158,10 @@ class DescendantsFunDef extends FunDefBase {
 
             if (FunUtil.checkFlag(flag, Flags.LEAVES, true)) {
                 // LEAVES isn't supported
-                throw MondrianResource.instance().newLeavesNotSupported();
+                throw MondrianResource.instance().LeavesNotSupported.ex();
             }
-            final int depthLimitFinal = depthLimit < 0 
-                ?  Integer.MAX_VALUE 
+            final int depthLimitFinal = depthLimit < 0
+                ?  Integer.MAX_VALUE
                 : depthLimit;
             final int flagFinal = flag;
             final boolean depthSpecifiedFinal = depthSpecified;

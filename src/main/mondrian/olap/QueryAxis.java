@@ -13,6 +13,7 @@
 package mondrian.olap;
 import mondrian.olap.type.Type;
 import mondrian.olap.type.TypeUtil;
+import mondrian.resource.MondrianResource;
 
 import java.io.PrintWriter;
 
@@ -125,7 +126,7 @@ public class QueryAxis extends QueryPart {
         set = validator.validate(set, false);
         final Type type = set.getTypeX();
         if (!TypeUtil.isSet(type)) {
-            throw Util.getRes().newMdxAxisIsNotSet(axisOrdinal.getName());
+            throw MondrianResource.instance().MdxAxisIsNotSet.ex(axisOrdinal.getName());
         }
     }
 

@@ -13,6 +13,8 @@ package mondrian.rolap.aggmatcher;
 import mondrian.olap.*;
 import mondrian.rolap.*;
 import mondrian.recorder.*;
+import mondrian.resource.MondrianResource;
+
 import org.apache.log4j.Logger;
 import org.eigenbase.util.property.*;
 import org.eigenbase.util.property.Property;
@@ -77,7 +79,7 @@ public class AggTableManager {
                 loadRolapStarAggregates();
 
             } catch (SQLException ex) {
-                throw mres.newAggLoadingError(ex);
+                throw mres.AggLoadingError.ex(ex);
             }
         }
         registerTriggers();
@@ -127,7 +129,7 @@ public class AggTableManager {
                 loadRolapStarAggregates();
 
             } catch (SQLException ex) {
-                throw mres.newAggLoadingError(ex);
+                throw mres.AggLoadingError.ex(ex);
             }
         }
     }
@@ -270,7 +272,7 @@ public class AggTableManager {
             msgRecorder.logWarningMessage(getLogger());
             msgRecorder.logErrorMessage(getLogger());
             if (msgRecorder.hasErrors()) {
-                throw mres.newAggLoadingExceededErrorCount(
+                throw mres.AggLoadingExceededErrorCount.ex(
                     new Integer(msgRecorder.getErrorCount()));
             }
         }
@@ -461,9 +463,9 @@ public class AggTableManager {
                     usage.setSymbolicName("FOREIGN_KEY");
                     usage.rTable = rTable;
                 } else {
-                    RolapStar.Column rColumn = 
+                    RolapStar.Column rColumn =
                             star.getFactTable().lookupColumn(cname);
-                    if ((rColumn != null) && 
+                    if ((rColumn != null) &&
                             ! (rColumn instanceof RolapStar.Measure)) {
                         // Ok, maybe its used in a non-shared dimension
                         // This is a column in the fact table which is
@@ -479,7 +481,7 @@ public class AggTableManager {
 
                 // warn if it has not been identified
                 if (! factColumn.hasUsage()) {
-                    String msg = mres.getUnknownFactTableColumn(
+                    String msg = mres.UnknownFactTableColumn.str(
                         msgRecorder.getContext(),
                         dbFactTable.getName(),
                         factColumn.getName());

@@ -13,6 +13,8 @@
 package mondrian.rolap.sql;
 
 import mondrian.olap.*;
+import mondrian.resource.MondrianResource;
+
 import org.eigenbase.util.property.Property;
 import org.eigenbase.util.property.Trigger;
 
@@ -524,8 +526,7 @@ public class SqlQuery
             try {
                 productName = databaseMetaData.getDatabaseProductName();
             } catch (SQLException e1) {
-                throw Util.getRes().newInternal(
-                        "while detecting database product", e1);
+                throw Util.newInternal(e1, "while detecting database product");
             }
 
             String quoteIdentifierString;
@@ -533,7 +534,7 @@ public class SqlQuery
                 quoteIdentifierString =
                         databaseMetaData.getIdentifierQuoteString();
             } catch (SQLException e) {
-                throw Util.getRes().newInternal("while quoting identifier", e);
+                throw Util.newInternal(e, "while quoting identifier");
             }
 
             if ((quoteIdentifierString == null) ||
@@ -551,8 +552,8 @@ public class SqlQuery
             try {
                 productVersion = databaseMetaData.getDatabaseProductVersion();
             } catch (SQLException e11) {
-                throw Util.getRes().newInternal(
-                "while detecting database product version", e11);
+                throw Util.newInternal(e11,
+                        "while detecting database product version");
             }
 
             return new Dialect(

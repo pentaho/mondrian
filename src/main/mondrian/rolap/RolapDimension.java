@@ -14,6 +14,7 @@ package mondrian.rolap;
 
 import org.apache.log4j.Logger;
 import mondrian.olap.*;
+import mondrian.resource.MondrianResource;
 
 /**
  * <code>RolapDimension</code> implements {@link Dimension}for a ROLAP
@@ -97,8 +98,8 @@ class RolapDimension extends DimensionBase {
                    RolapCube cube,
                    MondrianDef.Dimension xmlDimension,
                    MondrianDef.CubeDimension xmlCubeDimension) {
-        this(schema, 
-             xmlDimension.name, 
+        this(schema,
+             xmlDimension.name,
              chooseOrdinal(cube, xmlCubeDimension),
              xmlDimension.getDimensionType());
 
@@ -116,14 +117,14 @@ class RolapDimension extends DimensionBase {
             RolapHierarchy hierarchy = new RolapHierarchy(
                 cube, this, xmlDimension.hierarchies[i],
                 xmlCubeDimension);
-            hierarchies[i] = hierarchy; 
+            hierarchies[i] = hierarchy;
         }
 
         // if there was no dimension type assigned, determine now.
         if (dimensionType == null) {
             for (int i = 0; i < hierarchies.length; i++) {
                 Level[] levels = hierarchies[i].getLevels();
-                LevLoop: 
+                LevLoop:
                 for (int j = 0; j < levels.length; j++) {
                     Level lev = levels[j];
                     if (lev.isAll()) {
@@ -141,14 +142,12 @@ class RolapDimension extends DimensionBase {
                         if (dimensionType == DimensionType.TimeDimension &&
                             !lev.getLevelType().isTime() &&
                             !lev.isAll()) {
-                            throw MondrianResource.instance()
-                                .newNonTimeLevelInTimeHierarchy(
+                            throw MondrianResource.instance().NonTimeLevelInTimeHierarchy.ex(
                                     getUniqueName());
                         }
                         if (dimensionType != DimensionType.TimeDimension &&
                             lev.getLevelType().isTime()) {
-                            throw MondrianResource.instance()
-                                .newTimeLevelInNonTimeHierarchy(
+                            throw MondrianResource.instance().TimeLevelInNonTimeHierarchy.ex(
                                     getUniqueName());
                         }
                     }
@@ -200,7 +199,7 @@ class RolapDimension extends DimensionBase {
 
     RolapHierarchy newHierarchy(String subName, boolean hasAll) {
         RolapHierarchy hierarchy = new RolapHierarchy(this, subName, hasAll);
-        this.hierarchies = (RolapHierarchy[]) 
+        this.hierarchies = (RolapHierarchy[])
             RolapUtil.addElement(this.hierarchies, hierarchy);
         return hierarchy;
     }

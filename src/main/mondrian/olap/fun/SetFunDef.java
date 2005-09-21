@@ -16,6 +16,7 @@ import mondrian.olap.type.Type;
 import mondrian.olap.type.SetType;
 import mondrian.olap.type.MemberType;
 import mondrian.olap.type.TypeUtil;
+import mondrian.resource.MondrianResource;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -55,8 +56,7 @@ class SetFunDef extends FunDefBase {
                     type0 = type;
                 } else {
                     if (!TypeUtil.isUnionCompatible(type0, type)) {
-                        throw MondrianResource.instance()
-                                .newArgsMustHaveSameHierarchy(getName());
+                        throw MondrianResource.instance().ArgsMustHaveSameHierarchy.ex(getName());
                     }
                 }
             }

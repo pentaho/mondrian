@@ -11,9 +11,10 @@
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.MondrianDef;
-import mondrian.olap.MondrianResource;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapAggregator;
 import mondrian.rolap.RolapStar;
+import mondrian.resource.MondrianResource;
 
 import javax.sql.DataSource;
 
@@ -83,7 +84,7 @@ public class JdbcSchema {
         }
     }
 
-    public static final String FACTORY_CLASS = 
+    public static final String FACTORY_CLASS =
                         "mondrian.rolap.aggregates.jdbcFactoryClass";
     private static Factory factory;
 
@@ -92,16 +93,16 @@ public class JdbcSchema {
             String classname = System.getProperty(FACTORY_CLASS);
             if (classname == null) {
                 factory = new StdFactory();
-            } else { 
+            } else {
                 try {
                     Class clz = Class.forName(classname);
                     factory = (Factory) clz.newInstance();
                 } catch (ClassNotFoundException ex) {
-                    throw mres.newBadJdbcFactoryClassName(classname);
+                    throw mres.BadJdbcFactoryClassName.ex(classname);
                 } catch (InstantiationException ex) {
-                    throw mres.newBadJdbcFactoryInstantiation(classname);
+                    throw mres.BadJdbcFactoryInstantiation.ex(classname);
                 } catch (IllegalAccessException ex) {
-                    throw mres.newBadJdbcFactoryAccess(classname);
+                    throw mres.BadJdbcFactoryAccess.ex(classname);
                 }
             }
         }
@@ -297,8 +298,8 @@ public class JdbcSchema {
     public static final String VIEW_TYPE                = "VIEW";
     public static final String SYSTEM_TABLE_TABLE_TYPE  = "SYSTEM TABLE";
     public static final String GLOBAL_TEMP_TABLE_TYPE   = "GLOBAL TEMPORARY";
-    public static final String LOCAL_TEMP_TABLE_TYPE    = "LOCAL TEMPORARY"; 
-    public static final String ALIAS_TABLE_TYPE         = "ALIAS"; 
+    public static final String LOCAL_TEMP_TABLE_TYPE    = "LOCAL TEMPORARY";
+    public static final String ALIAS_TABLE_TYPE         = "ALIAS";
     public static final String SYNONYM_TABLE_TYPE       = "SYNONYM";
 
     /**
@@ -465,8 +466,8 @@ public class JdbcSchema {
             /** For char types the maximum number of bytes in the column. */
             private int charOctetLength;
 
-            /** 
-             * False means the column definitely does not allow NULL values. 
+            /**
+             * False means the column definitely does not allow NULL values.
              */
             private boolean isNullable;
 
@@ -486,7 +487,7 @@ public class JdbcSchema {
                                         name);
                 this.usages = new ArrayList();
             }
-            /** 
+            /**
              * For testing ONLY
             JdbcSchema.Table.Column copy() {
                 Column column = new Column(name);
@@ -501,7 +502,7 @@ public class JdbcSchema {
                 return column;
             }
              */
-            /** 
+            /**
              * For testing ONLY
             void clearUsages() {
                 // empty
@@ -592,72 +593,72 @@ public class JdbcSchema {
             }
 
             /**
-             * Set number of fractional digits. 
-             * 
-             * @param decimalDigits 
+             * Set number of fractional digits.
+             *
+             * @param decimalDigits
              */
             private void setDecimalDigits(final int decimalDigits) {
                 this.decimalDigits = decimalDigits;
             }
-            
-            /** 
-             * Get number of fractional digits. 
-             * 
-             * @return 
+
+            /**
+             * Get number of fractional digits.
+             *
+             * @return
              */
             public int getDecimalDigits() {
                 return decimalDigits;
             }
 
             /**
-             * Set Radix (typically either 10 or 2). 
-             * 
-             * @param numPrecRadix  
+             * Set Radix (typically either 10 or 2).
+             *
+             * @param numPrecRadix
              */
             private void setNumPrecRadix(final int numPrecRadix) {
                 this.numPrecRadix = numPrecRadix;
             }
-            
-            /** 
-             * Get Radix (typically either 10 or 2). 
-             * 
-             * @return 
+
+            /**
+             * Get Radix (typically either 10 or 2).
+             *
+             * @return
              */
             public int getNumPrecRadix() {
                 return numPrecRadix;
             }
 
             /**
-             * For char types the maximum number of bytes in the column. 
-             * 
-             * @param charOctetLength  
+             * For char types the maximum number of bytes in the column.
+             *
+             * @param charOctetLength
              */
             private void setCharOctetLength(final int charOctetLength) {
                 this.charOctetLength = charOctetLength;
             }
-            
-            /** 
-             * For char types the maximum number of bytes in the column. 
-             * 
-             * @return 
+
+            /**
+             * For char types the maximum number of bytes in the column.
+             *
+             * @return
              */
             public int getCharOctetLength() {
                 return charOctetLength;
             }
 
-            /** 
-             * False means the column definitely does not allow NULL values. 
+            /**
+             * False means the column definitely does not allow NULL values.
              *
-             * @param isNullable  
+             * @param isNullable
              */
             private void setIsNullable(final boolean isNullable) {
                 this.isNullable = isNullable;
             }
 
-            /** 
-             * False means the column definitely does not allow NULL values. 
-             * 
-             * @return 
+            /**
+             * False means the column definitely does not allow NULL values.
+             *
+             * @return
              */
             public boolean isNullable() {
                 return isNullable;
@@ -837,14 +838,14 @@ public class JdbcSchema {
         private Map columnMap;
         /** Sum of all of the table's column's column sizes. */
         private int totalColumnSize;
-        /** 
-         * Is the table a fact, aggregate or other table type. 
+        /**
+         * Is the table a fact, aggregate or other table type.
          * Note: this assumes that a table has only ONE usage.
          */
         private int tableUsage;
 
         /**
-         * Typical table types are: "TABLE", "VIEW", "SYSTEM TABLE", 
+         * Typical table types are: "TABLE", "VIEW", "SYSTEM TABLE",
          * "GLOBAL TEMPORARY", "LOCAL TEMPORARY", "ALIAS", "SYNONYM".
          */
         private String tableType;
@@ -864,7 +865,7 @@ public class JdbcSchema {
             loadColumns();
         }
 
-        /** 
+        /**
          * For testing ONLY
         JdbcSchema.Table copy() {
             Table table = new Table(name);
@@ -881,7 +882,7 @@ public class JdbcSchema {
             return table;
         }
          */
-        /** 
+        /**
          * For testing ONLY
         void clearUsages() {
             this.tableUsage = UNKNOWN_TABLE_USAGE;
@@ -909,11 +910,11 @@ public class JdbcSchema {
         public int getTotalColumnSize() {
             return totalColumnSize;
         }
-        
-        /** 
-         * Get the number of rows in the table. 
-         * 
-         * @return 
+
+        /**
+         * Get the number of rows in the table.
+         *
+         * @return
          */
         public int getNumberOfRows() {
             return -1;
@@ -1004,11 +1005,10 @@ public class JdbcSchema {
             if ((this.tableUsage != UNKNOWN_TABLE_USAGE) &&
                     (this.tableUsage != tableUsage)) {
 
-                throw mres.newAttemptToChangeTableUsage(
+                throw mres.AttemptToChangeTableUsage.ex(
                     getName(),
                     convertTableUsageToName(this.tableUsage),
-                    convertTableUsageToName(tableUsage)
-                );
+                    convertTableUsageToName(tableUsage));
             }
             this.tableUsage = tableUsage;
         }
@@ -1032,11 +1032,10 @@ public class JdbcSchema {
             if ((this.tableType != UNKNOWN_TABLE_TYPE) &&
                     (! this.tableType.equals(tableType))) {
 
-                throw mres.newAttemptToChangeTableType(
+                throw mres.AttemptToChangeTableType.ex(
                     getName(),
                     this.tableType,
-                    tableType
-                );
+                    tableType);
             }
             this.tableType = tableType;
         }
@@ -1166,20 +1165,20 @@ public class JdbcSchema {
         this.dataSource = dataSource;
         this.tables = new HashMap();
     }
-    
-    /** 
-     * This forces the tables to be loaded. 
-     * 
-     * @throws SQLException 
+
+    /**
+     * This forces the tables to be loaded.
+     *
+     * @throws SQLException
      */
     public void load() throws SQLException {
         loadTables();
     }
 
-    /** 
+    /**
      * For testing ONLY
-     * 
-     * @return 
+     *
+     * @return
     JdbcSchema copy() {
         JdbcSchema jdbcSchema = new JdbcSchema(dataSource);
         jdbcSchema.setSchemaName(getSchemaName());
@@ -1195,7 +1194,7 @@ public class JdbcSchema {
     }
      */
 
-    /** 
+    /**
      * For testing ONLY
     void clearUsages() {
         for (Iterator it = getTables(); it.hasNext(); ) {
@@ -1213,9 +1212,9 @@ public class JdbcSchema {
         tables.clear();
     }
 
-    /** 
+    /**
      * This is used for testing allowing one to load tables and their columns
-     * from more than one datasource 
+     * from more than one datasource
      */
     void resetAllTablesLoaded() {
         allTablesLoaded = false;

@@ -18,6 +18,7 @@ import mondrian.olap.Level;
 import mondrian.olap.Member;
 import mondrian.olap.Util;
 import mondrian.rolap.agg.CellRequest;
+import mondrian.resource.MondrianResource;
 
 import java.util.Map;
 import java.util.Set;
@@ -114,7 +115,7 @@ public abstract class RolapAggregationManager implements CellReader {
                     } else if (m.isAll()) {
                         continue;
                     } else {
-                        throw Util.getRes().newInternal("why is key null?");
+                        throw Util.newInternal("why is key null?");
                     }
                 }
                 RolapLevel level = (RolapLevel) m.getLevel();

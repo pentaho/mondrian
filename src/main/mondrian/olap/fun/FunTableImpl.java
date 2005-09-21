@@ -12,6 +12,7 @@ package mondrian.olap.fun;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.olap.type.DimensionType;
+import mondrian.resource.MondrianResource;
 
 import java.util.*;
 import java.io.PrintWriter;
@@ -80,7 +81,7 @@ public abstract class FunTableImpl implements FunTable {
         }
         if (!TypeUtil.canEvaluate(type)) {
             String exprString = Util.unparse(exp);
-            throw Util.getRes().newMdxMemberExpIsSet(exprString);
+            throw MondrianResource.instance().MdxMemberExpIsSet.ex(exprString);
         }
         if (type instanceof MemberType) {
             return new MemberScalarExp(exp);
@@ -151,7 +152,7 @@ public abstract class FunTableImpl implements FunTable {
         }
         switch (matchCount) {
         case 0:
-            throw MondrianResource.instance().newNoFunctionMatchesSignature(
+            throw MondrianResource.instance().NoFunctionMatchesSignature.ex(
                     signature);
         case 1:
             final String matchKey = makeResolverKey(matchDef.getName(),
@@ -159,8 +160,7 @@ public abstract class FunTableImpl implements FunTable {
             Util.assertTrue(matchKey.equals(key), matchKey);
             return matchDef;
         default:
-            throw MondrianResource.instance()
-                    .newMoreThanOneFunctionMatchesSignature(signature);
+            throw MondrianResource.instance().MoreThanOneFunctionMatchesSignature.ex(signature);
         }
     }
 

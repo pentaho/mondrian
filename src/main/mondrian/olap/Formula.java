@@ -12,6 +12,7 @@
 
 package mondrian.olap;
 import mondrian.olap.type.*;
+import mondrian.resource.MondrianResource;
 
 import java.io.PrintWriter;
 
@@ -92,11 +93,11 @@ public class Formula extends QueryPart {
         final Type type = exp.getTypeX();
         if (isMember) {
             if (!TypeUtil.canEvaluate(type)) {
-                throw Util.getRes().newMdxMemberExpIsSet(id);
+                throw MondrianResource.instance().MdxMemberExpIsSet.ex(id);
             }
         } else {
             if (!TypeUtil.isSet(type)) {
-                throw Util.getRes().newMdxSetExpNotSet(id);
+                throw MondrianResource.instance().MdxSetExpNotSet.ex(id);
             }
         }
         for (int i = 0; i < memberProperties.length; i++) {
@@ -134,7 +135,7 @@ public class Formula extends QueryPart {
                     } else {
                         Hierarchy hierarchy = parent.getHierarchy();
                         if (hierarchy == null) {
-                            throw Util.getRes().newMdxCalculatedHierarchyError(
+                            throw MondrianResource.instance().MdxCalculatedHierarchyError.ex(
                                 Util.quoteMdxIdentifier(names));
                         }
                         level = hierarchy.getLevels()[0];

@@ -16,6 +16,8 @@ import mondrian.olap.*;
 import mondrian.recorder.MessageRecorder;
 import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.resource.MondrianResource;
+
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
@@ -599,7 +601,7 @@ public class AggStar {
                 } else {
 
                     // RME TODO can we catch this during validation
-                    String msg = mres.getBadRolapStarLeftJoinCondition(
+                    String msg = mres.BadRolapStarLeftJoinCondition.str(
                         "AggStar.Table",
                         rleft.getClass().getName(), left.toString());
                     getLogger().warn(msg);
@@ -853,7 +855,7 @@ public class AggStar {
                 boolean isNumeric = column.isNumeric();
                 RolapStar.Column rColumn = usage.rColumn;
                 if (rColumn == null) {
-                    String msg = "loadForeignKey: for column " + 
+                    String msg = "loadForeignKey: for column " +
                         name +
                         ", rColumn == null";
                     getLogger().warn(msg);
@@ -1003,7 +1005,7 @@ public class AggStar {
                     if (rs.next()) {
                         numberOfRows = rs.getInt(1);
                     } else {
-                        String msg = mres.getSqlQueryFailed(
+                        String msg = mres.SqlQueryFailed.str(
                                 "AggStar.FactTable.makeNumberOfRows",
                                 query.toString());
                         getLogger().warn(msg);

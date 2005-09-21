@@ -12,6 +12,7 @@
 
 package mondrian.rolap;
 import mondrian.olap.*;
+import mondrian.resource.MondrianResource;
 
 import org.apache.log4j.Logger;
 import java.lang.reflect.Constructor;
@@ -167,7 +168,7 @@ public class RolapLevel extends LevelBase {
         if (dim.getDimensionType() == DimensionType.TimeDimension) {
             if (!levelType.isTime() && !isAll) {
                 throw MondrianResource.instance()
-                        .newNonTimeLevelInTimeHierarchy(getUniqueName());
+                        .NonTimeLevelInTimeHierarchy.ex(getUniqueName());
            }
         } else if (dim.getDimensionType() == null) {
             // there was no dimension type assigned to the dimension
@@ -175,7 +176,7 @@ public class RolapLevel extends LevelBase {
         } else {
             if (levelType.isTime()) {
                 throw MondrianResource.instance()
-                        .newTimeLevelInNonTimeHierarchy(getUniqueName());
+                        .TimeLevelInNonTimeHierarchy.ex(getUniqueName());
             }
         }
         this.hideMemberCondition = hideMemberCondition;
@@ -258,7 +259,7 @@ public class RolapLevel extends LevelBase {
                 Constructor ctor = clazz.getConstructor(new Class[0]);
                 memberFormatter = (MemberFormatter) ctor.newInstance(new Object[0]);
             } catch (Exception e) {
-                throw MondrianResource.instance().newMemberFormatterLoadFailed(
+                throw MondrianResource.instance().MemberFormatterLoadFailed.ex(
                     xmlLevel.formatter, getUniqueName(), e);
             }
         }

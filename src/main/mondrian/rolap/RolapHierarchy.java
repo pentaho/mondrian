@@ -17,6 +17,7 @@ import mondrian.olap.fun.BuiltinFunTable;
 import mondrian.olap.type.Type;
 import mondrian.olap.type.MemberType;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.resource.MondrianResource;
 
 import org.apache.log4j.Logger;
 import java.util.List;
@@ -118,8 +119,7 @@ class RolapHierarchy extends HierarchyBase {
                 final MondrianDef.Level xmlLevel = xmlHierarchy.levels[i];
                 if (xmlLevel.getKeyExp() == null &&
                         xmlHierarchy.memberReaderClass == null) {
-                    throw MondrianResource.instance()
-                            .newLevelMustHaveNameExpression(xmlLevel.name);
+                    throw MondrianResource.instance().LevelMustHaveNameExpression.ex(xmlLevel.name);
                 }
                 levels[i + 1] = new RolapLevel(this, i + 1, xmlLevel);
             }
@@ -141,8 +141,7 @@ class RolapHierarchy extends HierarchyBase {
         }
         if (xmlHierarchy.relation != null &&
                 xmlHierarchy.memberReaderClass != null) {
-            throw MondrianResource.instance()
-                    .newHierarchyMustNotHaveMoreThanOneSource(getUniqueName());
+            throw MondrianResource.instance().HierarchyMustNotHaveMoreThanOneSource.ex(getUniqueName());
         }
         this.primaryKey = xmlHierarchy.primaryKey;
         if (!Util.isEmpty(xmlHierarchy.caption)) {
@@ -270,8 +269,7 @@ class RolapHierarchy extends HierarchyBase {
         if (defaultMember == null) {
             List rootMembers = memberReader.getRootMembers();
             if (rootMembers.size() == 0) {
-                throw MondrianResource.instance().
-                newInvalidHierarchyCondition(this.getUniqueName());
+                throw MondrianResource.instance().InvalidHierarchyCondition.ex(this.getUniqueName());
 /*
                 throw Util.newError(
                     "cannot get default member: hierarchy " + getUniqueName() +

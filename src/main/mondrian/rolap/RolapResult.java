@@ -14,6 +14,8 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.rolap.agg.AggregationManager;
+import mondrian.resource.MondrianResource;
+
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
@@ -131,17 +133,17 @@ class RolapResult extends ResultBase {
                     // total) purchases exceeded 100.
                     switch (this.slicerAxis.positions.length) {
                     case 0:
-                        throw MondrianResource.instance().newEmptySlicer();
+                        throw MondrianResource.instance().EmptySlicer.ex();
                     case 1:
                         break;
                     default:
-                        throw MondrianResource.instance().newCompoundSlicer();
+                        throw MondrianResource.instance().CompoundSlicer.ex();
                     }
                     Position position = this.slicerAxis.positions[0];
                     for (int j = 0; j < position.members.length; j++) {
                         Member member = position.members[j];
                         if (member == null) {
-                            throw MondrianResource.instance().newEmptySlicer();
+                            throw MondrianResource.instance().EmptySlicer.ex();
                         }
                         evaluator.setContext(member);
                     }
@@ -161,7 +163,7 @@ class RolapResult extends ResultBase {
                 }
                 if (n > limit) {
                     throw MondrianResource.instance().
-                        newLimitExceededDuringCrossjoin(
+                        LimitExceededDuringCrossjoin.ex(
                                 new Long(n), new Long(limit));
                 }
             }
@@ -584,7 +586,7 @@ class RolapResult extends ResultBase {
                         "Expression '" + funCall.toMdx() +
                         "' claims to be independent of dimension " +
                         saveMember.getDimension() + " but is not; context is {" +
-                        buf.toString() + "}; First result: " + 
+                        buf.toString() + "}; First result: " +
                         toString(result) + ", Second result: " +
                         toString(otherResult));
             }

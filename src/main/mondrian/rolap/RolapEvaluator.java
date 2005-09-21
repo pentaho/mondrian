@@ -14,6 +14,7 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.util.Format;
+import mondrian.resource.MondrianResource;
 
 import org.apache.log4j.Logger;
 import java.util.*;
@@ -90,8 +91,7 @@ class RolapEvaluator implements Evaluator {
 
             // If there is no member, we cannot continue.
             if (member == null) {
-                throw MondrianResource.instance().
-                        newInvalidHierarchyCondition(hier.getUniqueName());
+                throw MondrianResource.instance().InvalidHierarchyCondition.ex(hier.getUniqueName());
             }
 
             HierarchyUsage[] hierarchyUsages = this.root.cube.getUsages(hier);

@@ -12,6 +12,7 @@
 
 package mondrian.olap;
 import mondrian.olap.type.Type;
+import mondrian.resource.MondrianResource;
 
 import java.io.PrintWriter;
 
@@ -184,15 +185,15 @@ public class Parameter extends ExpBase {
     public void validate(Query q) {
         switch (defineCount) {
         case 0:
-            throw MondrianResource.instance().newMdxParamNeverDef(name);
+            throw MondrianResource.instance().MdxParamNeverDef.ex(name);
         case 1:
             break;
         default:
-            throw MondrianResource.instance().newMdxParamMultipleDef(name,
+            throw MondrianResource.instance().MdxParamMultipleDef.ex(name,
                 new Integer(defineCount));
         }
         if (exp == null) {
-            throw Util.getRes().newMdxParamValueNotFound(name);
+            throw MondrianResource.instance().MdxParamValueNotFound.ex(name);
         }
     }
 

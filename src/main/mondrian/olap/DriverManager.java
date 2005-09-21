@@ -12,6 +12,7 @@
 
 package mondrian.olap;
 import mondrian.rolap.RolapConnection;
+import mondrian.resource.MondrianResource;
 
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
@@ -49,13 +50,13 @@ public class DriverManager {
      * @post return != null
      */
     public static Connection getConnection(String connectString,
-                                           ServletContext servletContext, 
+                                           ServletContext servletContext,
                                            boolean fresh) {
         Util.PropertyList properties = Util.parseConnectString(connectString);
         return getConnection(properties, servletContext, fresh);
     }
 
-    private static void fixup(Util.PropertyList connectionProperties, 
+    private static void fixup(Util.PropertyList connectionProperties,
                               ServletContext servletContext) {
         String catalog = connectionProperties.get("catalog");
         // If the catalog is an absolute path, it refers to a resource inside
@@ -80,7 +81,7 @@ public class DriverManager {
         }
     }
 
-    private static Connection getAdomdConnection(String connectString, 
+    private static Connection getAdomdConnection(String connectString,
                                                  boolean fresh) {
         try {
             Class clazz = Class.forName("Broadbase.mdx.adomd.AdomdConnection");
@@ -88,29 +89,29 @@ public class DriverManager {
                 String sCatalog = null;
                 Constructor constructor = clazz.getConstructor(
                     new Class[] {
-                        String.class, 
-                        String.class, 
+                        String.class,
+                        String.class,
                         Boolean.TYPE
                     }
                 );
                 return (Connection) constructor.newInstance(
-                    new Object[] { 
-                        connectString, 
-                        sCatalog, 
+                    new Object[] {
+                        connectString,
+                        sCatalog,
                         (fresh) ? Boolean.TRUE : Boolean.FALSE
                     }
                 );
             } catch (IllegalAccessException e) {
-                throw Util.getRes().newInternal("while creating " + clazz, e);
+                throw Util.newInternal(e, "while creating " + clazz);
             } catch (NoSuchMethodException e) {
-                throw Util.getRes().newInternal("while creating " + clazz, e);
+                throw Util.newInternal(e, "while creating " + clazz);
             } catch (InstantiationException e) {
-                throw Util.getRes().newInternal("while creating " + clazz, e);
+                throw Util.newInternal(e, "while creating " + clazz);
             } catch (InvocationTargetException e) {
-                throw Util.getRes().newInternal("while creating " + clazz, e);
+                throw Util.newInternal(e, "while creating " + clazz);
             }
         } catch (ClassNotFoundException e) {
-            throw Util.getRes().newInternal("while connecting to " + connectString, e);
+            throw Util.newInternal(e, "while connecting to " + connectString);
         }
     }
 
@@ -119,8 +120,9 @@ public class DriverManager {
      *
      * @deprecated Use {@link #getConnection(Util.PropertyList,ServletContext,boolean)}
      */
-    public static Connection getConnection(Util.PropertyList properties,
-                                           boolean fresh) {
+    public static Connection getConnection(
+            Util.PropertyList properties,
+            boolean fresh) {
         return getConnection(properties, null, fresh);
     }
 
@@ -138,7 +140,7 @@ public class DriverManager {
      * @post return != null
      */
     public static Connection getConnection(Util.PropertyList properties,
-                                           ServletContext servletContext, 
+                                           ServletContext servletContext,
                                            boolean fresh) {
     	return getConnection(properties, servletContext, null, fresh);
     }
@@ -158,8 +160,8 @@ public class DriverManager {
      * @post return != null
      */
     public static Connection getConnection(Util.PropertyList properties,
-                                           ServletContext servletContext, 
-                                           DataSource dataSource, 
+                                           ServletContext servletContext,
+                                           DataSource dataSource,
                                            boolean fresh) {
         String provider = properties.get("PROVIDER");
         if (!provider.equalsIgnoreCase("mondrian")) {

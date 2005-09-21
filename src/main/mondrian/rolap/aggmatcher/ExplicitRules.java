@@ -15,6 +15,8 @@ package mondrian.rolap.aggmatcher;
 import mondrian.olap.*;
 import mondrian.rolap.*;
 import mondrian.recorder.MessageRecorder;
+import mondrian.resource.MondrianResource;
+
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
@@ -117,10 +119,9 @@ public class ExplicitRules {
                     }
                 }
             } else {
-                String msg = mres.getCubeRelationNotTable(
+                String msg = mres.CubeRelationNotTable.str(
                         cube.getName(),
-                        relation.getClass().getName()
-                    );
+                        relation.getClass().getName());
                 LOGGER.warn(msg);
             }
 
@@ -738,7 +739,7 @@ RME TODO
                     // must be [hierarchy usage name].[level name]
                     if (names.length != 2) {
                         msgRecorder.reportError(
-                            mres.getBadLevelNameFormat(
+                            mres.BadLevelNameFormat.str(
                                 msgRecorder.getContext(),
                                 name));
                     } else {
@@ -760,12 +761,12 @@ RME TODO
                                     Category.Hierarchy);
                             if (hierarchy == null) {
                                 msgRecorder.reportError(
-                                    mres.getUnknownHierarchyName(
+                                    mres.UnknownHierarchyName.str(
                                         msgRecorder.getContext(),
                                         names[0]));
                             } else {
                                 msgRecorder.reportError(
-                                    mres.getUnknownLevelName(
+                                    mres.UnknownLevelName.str(
                                             msgRecorder.getContext(),
                                             names[0],
                                             names[1]));
@@ -869,7 +870,7 @@ RME TODO
                     String[] names = Util.explode(name);
                     if (names.length != 2) {
                         msgRecorder.reportError(
-                            mres.getBadMeasureNameFormat(
+                            mres.BadMeasureNameFormat.str(
                                    msgRecorder.getContext(),
                                    name));
                     } else {
@@ -883,12 +884,12 @@ RME TODO
                         if (member == null) {
                             if (! names[0].equals("Measures")) {
                                 msgRecorder.reportError(
-                                    mres.getBadMeasures(
+                                    mres.BadMeasures.str(
                                         msgRecorder.getContext(),
                                         names[0]));
                             } else {
                                 msgRecorder.reportError(
-                                    mres.getUnknownMeasureName(
+                                    mres.UnknownMeasureName.str(
                                             msgRecorder.getContext(),
                                             names[1]));
                             }
@@ -898,7 +899,7 @@ RME TODO
                             star.getFactTable().lookupMeasureByName(names[1]);
                         if (rolapMeasure == null) {
                             msgRecorder.reportError(
-                                    mres.getBadMeasureName(
+                                    mres.BadMeasureName.str(
                                        msgRecorder.getContext(),
                                        names[1],
                                        cube.getName()));
@@ -1063,7 +1064,7 @@ RME TODO
         protected Recognizer.Matcher getFactCountMatcher() {
             return new Recognizer.Matcher() {
                 public boolean matches(String name) {
-                	// Match is case insensitive 
+                	// Match is case insensitive
                     return ExplicitRules.TableDef.this.factCountName.equalsIgnoreCase(name);
                 }
             };
@@ -1201,7 +1202,7 @@ RME TODO
                     // Is the level name a duplicate
                     if (namesToObjects.containsKey(level.getName())) {
                         msgRecorder.reportError(
-                            mres.getDuplicateLevelNames(
+                            mres.DuplicateLevelNames.str(
                                     msgRecorder.getContext(),
                                     level.getName()));
                     } else {
@@ -1213,7 +1214,7 @@ RME TODO
                         Level l = (Level)
                             columnsToObjects.get(level.getColumnName());
                         msgRecorder.reportError(
-                            mres.getDuplicateLevelColumnNames(
+                            mres.DuplicateLevelColumnNames.str(
                                     msgRecorder.getContext(),
                                     level.getName(),
                                     l.getName(),
@@ -1232,7 +1233,7 @@ RME TODO
 
                     if (namesToObjects.containsKey(measure.getName())) {
                         msgRecorder.reportError(
-                            mres.getDuplicateMeasureNames(
+                            mres.DuplicateMeasureNames.str(
                                     msgRecorder.getContext(),
                                     measure.getName()));
                         continue;
@@ -1245,7 +1246,7 @@ RME TODO
                         if (o instanceof Measure) {
                             Measure m = (Measure) o;
                             msgRecorder.reportError(
-                                mres.getDuplicateMeasureColumnNames(
+                                mres.DuplicateMeasureColumnNames.str(
                                         msgRecorder.getContext(),
                                         measure.getName(),
                                         m.getName(),
@@ -1253,7 +1254,7 @@ RME TODO
                         } else {
                             Level l = (Level) o;
                             msgRecorder.reportError(
-                                mres.getDuplicateLevelMeasureColumnNames(
+                                mres.DuplicateLevelMeasureColumnNames.str(
                                         msgRecorder.getContext(),
                                         l.getName(),
                                         measure.getName(),
@@ -1281,7 +1282,7 @@ RME TODO
 
                     if (namesToObjects.containsKey(baseFKName)) {
                         msgRecorder.reportError(
-                                    mres.getDuplicateFactForeignKey(
+                                    mres.DuplicateFactForeignKey.str(
                                        msgRecorder.getContext(),
                                        baseFKName,
                                        aggFKName));
@@ -1290,7 +1291,7 @@ RME TODO
                     }
                     if (columnsToObjects.containsKey(aggFKName)) {
                         msgRecorder.reportError(
-                                    mres.getDuplicateFactForeignKey(
+                                    mres.DuplicateFactForeignKey.str(
                                        msgRecorder.getContext(),
                                        baseFKName,
                                        aggFKName));
@@ -1302,7 +1303,7 @@ RME TODO
                             new MondrianDef.Column(tableName, baseFKName);
                     if (factTable.findTableWithLeftCondition(c) == null) {
                         msgRecorder.reportError(
-                                    mres.getUnknownLeftJoinCondition(
+                                    mres.UnknownLeftJoinCondition.str(
                                        msgRecorder.getContext(),
                                        tableName,
                                        baseFKName));
@@ -1580,11 +1581,11 @@ RME TODO
                                              final String attrValue,
                                              final String attrName) {
         if (attrValue == null) {
-            msgRecorder.reportError(mres.getNullAttributeString(
+            msgRecorder.reportError(mres.NullAttributeString.str(
                     msgRecorder.getContext(),
                     attrName));
         } else if (attrValue.length() == 0) {
-            msgRecorder.reportError(mres.getEmptyAttributeString(
+            msgRecorder.reportError(mres.EmptyAttributeString.str(
                     msgRecorder.getContext(),
                     attrName));
         }

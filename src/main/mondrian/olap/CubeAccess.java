@@ -11,6 +11,8 @@
 */
 
 package mondrian.olap;
+import mondrian.resource.MondrianResource;
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -46,20 +48,20 @@ public class CubeAccess {
         memberList = new ArrayList();
     }
 
-    public boolean hasRestrictions() { 
-        return hasRestrictions; 
+    public boolean hasRestrictions() {
+        return hasRestrictions;
     }
     public Hierarchy[] getNoAccessHierarchies() {
         return noAccessHierarchies;
     }
     public Member[] getLimitedMembers() {
-        return limitedMembers; 
+        return limitedMembers;
     }
-    public List getNoAccessHierarchyList() { 
-        return hierarchyList; 
+    public List getNoAccessHierarchyList() {
+        return hierarchyList;
     }
-    public List getLimitedMemberList() { 
-        return memberList; 
+    public List getLimitedMemberList() {
+        return memberList;
     }
     public boolean isHierarchyAllowed(Hierarchy mdxHierarchy) {
         String hierName = mdxHierarchy.getUniqueName();
@@ -92,8 +94,8 @@ public class CubeAccess {
     /**
      * Adds  restricted hierarchy or limited member based on bMember
      */
-    public void addGrantCubeSlicer(String sHierarchy, 
-                                   String sMember, 
+    public void addGrantCubeSlicer(String sHierarchy,
+                                   String sMember,
                                    boolean bMember) {
         if (bMember) {
             boolean fail = false;
@@ -101,7 +103,7 @@ public class CubeAccess {
             SchemaReader schemaReader = mdxCube.getSchemaReader(null);
             Member member = schemaReader.getMemberByUniqueName(sMembers, fail);
             if (member == null) {
-                throw Util.getRes().newMdxCubeSlicerMemberError(
+                throw MondrianResource.instance().MdxCubeSlicerMemberError.ex(
                     sMember, sHierarchy, mdxCube.getUniqueName());
             }
             // there should be only slicer per hierarchy; ignore the rest
@@ -112,7 +114,7 @@ public class CubeAccess {
             boolean fail = false;
             Hierarchy hierarchy = mdxCube.lookupHierarchy(sHierarchy, fail);
             if (hierarchy == null) {
-                throw Util.getRes().newMdxCubeSlicerHierarchyError(
+                throw MondrianResource.instance().MdxCubeSlicerHierarchyError.ex(
                     sHierarchy, mdxCube.getUniqueName());
             }
             hierarchyList.add(hierarchy);

@@ -14,6 +14,7 @@ package mondrian.olap;
 
 import mondrian.olap.type.Type;
 import mondrian.olap.type.CubeType;
+import mondrian.resource.MondrianResource;
 
 /**
  * <code>CubeBase</code> is an abstract implementation of {@link Cube}.
@@ -64,7 +65,7 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
     }
 
     public String getQualifiedName() {
-        return Util.getRes().getMdxCubeName(getName());
+        return MondrianResource.instance().MdxCubeName.str(getName());
     }
 
     public Dimension getDimension() {

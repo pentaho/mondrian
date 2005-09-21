@@ -14,6 +14,8 @@ package mondrian.olap.fun;
 import mondrian.olap.*;
 import mondrian.olap.type.Type;
 import mondrian.olap.type.TypeUtil;
+import mondrian.resource.MondrianResource;
+
 import org.apache.log4j.Logger;
 
 import java.math.BigDecimal;
@@ -238,7 +240,7 @@ public class FunUtil extends Util {
             boolean fail) {
         if (index >= args.length) {
             if (fail) {
-                throw Util.getRes().newInternal("missing member argument");
+                throw newInternal("missing member argument");
             } else {
                 return null;
             }
@@ -252,7 +254,7 @@ public class FunUtil extends Util {
         } else if (o instanceof Dimension) {
             return evaluator.getContext((Dimension) o);
         } else {
-            throw Util.getRes().newInternal("expecting a member, got " + o);
+            throw newInternal("expecting a member, got " + o);
         }
     }
 
@@ -317,7 +319,7 @@ public class FunUtil extends Util {
                              boolean fail) {
         if (index >= args.length) {
             if (fail) {
-                throw Util.getRes().newInternal("missing level argument");
+                throw newInternal("missing level argument");
             } else {
                 return null;
             }
@@ -334,7 +336,7 @@ public class FunUtil extends Util {
             boolean fail) {
         if (index >= args.length) {
             if (fail) {
-                throw Util.getRes().newInternal("missing hierarchy argument");
+                throw newInternal("missing hierarchy argument");
             } else {
                 return null;
             }
@@ -353,7 +355,7 @@ public class FunUtil extends Util {
         } else if (o instanceof Dimension) {
             return ((Dimension) o).getHierarchies()[0];
         } else {
-            throw Util.getRes().newInternal("expecting a hierarchy, got " + o);
+            throw newInternal("expecting a hierarchy, got " + o);
         }
     }
 
@@ -364,7 +366,7 @@ public class FunUtil extends Util {
             boolean fail) {
         if (index >= args.length) {
             if (fail) {
-                throw Util.getRes().newInternal("missing dimension argument");
+                throw newInternal("missing dimension argument");
             } else {
                 return null;
             }
@@ -383,7 +385,7 @@ public class FunUtil extends Util {
         } else if (o instanceof Dimension) {
             return (Dimension) o;
         } else {
-            throw Util.getRes().newInternal("expecting a dimension, got " + o);
+            throw newInternal("expecting a dimension, got " + o);
         }
     }
 
@@ -1356,7 +1358,7 @@ public class FunUtil extends Util {
             return ancestorMember;
         }
         if (member.getHierarchy() != ancestorMember.getHierarchy()) {
-            throw MondrianResource.instance().newCousinHierarchyMismatch(
+            throw MondrianResource.instance().CousinHierarchyMismatch.ex(
                 member.getUniqueName(), ancestorMember.getUniqueName());
         }
         if (member.getLevel().getDepth() < ancestorMember.getLevel().getDepth()) {
@@ -1414,7 +1416,7 @@ public class FunUtil extends Util {
                            Level targetLevel) {
         if ((targetLevel != null) &&
             (member.getHierarchy() != targetLevel.getHierarchy())) {
-            throw MondrianResource.instance().newMemberNotInLevelHierarchy(
+            throw MondrianResource.instance().MemberNotInLevelHierarchy.ex(
                 member.getUniqueName(), targetLevel.getUniqueName());
         }
 

@@ -17,6 +17,8 @@ import mondrian.olap.fun.*;
 import mondrian.olap.type.Type;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.rolap.aggmatcher.AggTableManager;
+import mondrian.resource.MondrianResource;
+
 import org.apache.log4j.Logger;
 import org.eigenbase.xom.*;
 import org.eigenbase.xom.Parser;
@@ -292,7 +294,7 @@ public class RolapSchema implements Schema {
             MondrianDef.Dimension xmlDimension = xmlSchema.dimensions[i];
             if (xmlDimension.foreignKey != null) {
                 throw MondrianResource.instance()
-                        .newPublicDimensionMustNotHaveForeignKey(
+                        .PublicDimensionMustNotHaveForeignKey.ex(
                                 xmlDimension.name);
             }
         }
@@ -334,7 +336,7 @@ public class RolapSchema implements Schema {
         try {
             exp = getInternalConnection().parseExpression(formulaString);
         } catch (Exception e) {
-            throw MondrianResource.instance().newNamedSetHasBadFormula(
+            throw MondrianResource.instance().NamedSetHasBadFormula.ex(
                     xmlNamedSet.name, e);
         }
         final Formula formula = new Formula(
@@ -921,7 +923,7 @@ public class RolapSchema implements Schema {
     public Cube lookupCube(final String cube, final boolean failIfNotFound) {
         Cube mdxCube = lookupCube(cube);
         if (mdxCube == null && failIfNotFound) {
-            throw Util.getRes().newMdxCubeNotFound(cube);
+            throw MondrianResource.instance().MdxCubeNotFound.ex(cube);
         }
         return mdxCube;
     }
@@ -1009,7 +1011,7 @@ public class RolapSchema implements Schema {
         try {
             klass = Class.forName(className);
         } catch (ClassNotFoundException e) {
-            throw MondrianResource.instance().newUdfClassNotFound(name,
+            throw MondrianResource.instance().UdfClassNotFound.ex(name,
                     className);
         }
         // Find a constructor.
@@ -1041,7 +1043,7 @@ public class RolapSchema implements Schema {
         }
         // 3. Else, no constructor suitable.
         if (constructor == null) {
-            throw MondrianResource.instance().newUdfClassWrongIface(name,
+            throw MondrianResource.instance().UdfClassWrongIface.ex(name,
                     className, UserDefinedFunction.class.getName());
         }
         // Instantiate class.
@@ -1049,16 +1051,16 @@ public class RolapSchema implements Schema {
         try {
             udf = (UserDefinedFunction) constructor.newInstance(args);
         } catch (InstantiationException e) {
-            throw MondrianResource.instance().newUdfClassWrongIface(name,
+            throw MondrianResource.instance().UdfClassWrongIface.ex(name,
                     className, UserDefinedFunction.class.getName());
         } catch (IllegalAccessException e) {
-            throw MondrianResource.instance().newUdfClassWrongIface(name,
+            throw MondrianResource.instance().UdfClassWrongIface.ex(name,
                     className, UserDefinedFunction.class.getName());
         } catch (ClassCastException e) {
-            throw MondrianResource.instance().newUdfClassWrongIface(name,
+            throw MondrianResource.instance().UdfClassWrongIface.ex(name,
                     className, UserDefinedFunction.class.getName());
         } catch (InvocationTargetException e) {
-            throw MondrianResource.instance().newUdfClassWrongIface(name,
+            throw MondrianResource.instance().UdfClassWrongIface.ex(name,
                     className, UserDefinedFunction.class.getName());
         }
         // Validate function.
@@ -1067,7 +1069,7 @@ public class RolapSchema implements Schema {
         UserDefinedFunction existingUdf =
                 (UserDefinedFunction) mapNameToUdf.get(name);
         if (existingUdf != null) {
-            throw MondrianResource.instance().newUdfDuplicateName(name);
+            throw MondrianResource.instance().UdfDuplicateName.ex(name);
         }
         mapNameToUdf.put(name, udf);
     }
@@ -1171,9 +1173,8 @@ public class RolapSchema implements Schema {
                 } else if (o instanceof MemberSource) {
                     return new CacheMemberReader((MemberSource) o);
                 } else {
-                    throw Util.getRes().newInternal(
-                        "member reader class " + clazz +
-                        " does not implement " + MemberSource.class);
+                    throw Util.newInternal("member reader class " + clazz +
+                                                    " does not implement " + MemberSource.class);
                 }
             } catch (ClassNotFoundException e) {
                 e2 = e;
@@ -1186,9 +1187,8 @@ public class RolapSchema implements Schema {
             } catch (InvocationTargetException e) {
                 e2 = e;
             }
-            throw Util.getRes().newInternal(
-                    "while instantiating member reader '" +
-                    memberReaderClass, e2);
+            throw Util.newInternal(e2,
+                    "while instantiating member reader '" + memberReaderClass);
         } else {
             SqlMemberSource source = new SqlMemberSource(hierarchy);
 

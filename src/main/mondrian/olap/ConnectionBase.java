@@ -12,6 +12,8 @@
 
 package mondrian.olap;
 
+import mondrian.resource.MondrianResource;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -62,7 +64,7 @@ public abstract class ConnectionBase implements Connection {
             Query q = parser.parseInternal(this, s, debug, funTable);
             return q;
         } catch (Throwable e) {
-            throw MondrianResource.instance().newFailedToParseQuery(s, e);
+            throw MondrianResource.instance().FailedToParseQuery.ex(s, e);
         }
     }
 
@@ -81,7 +83,7 @@ public abstract class ConnectionBase implements Connection {
             Exp q = parser.parseExpression(this, s, debug, funTable);
             return q;
         } catch (Throwable e) {
-            throw MondrianResource.instance().newFailedToParseQuery(s, e);
+            throw MondrianResource.instance().FailedToParseQuery.ex(s, e);
         }
     }
 }

@@ -13,6 +13,7 @@
 package mondrian.olap;
 
 import mondrian.olap.type.Type;
+import mondrian.resource.MondrianResource;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -49,8 +50,8 @@ public abstract class DimensionBase
         this.dimensionType = dimensionType;
     }
 
-    public String getUniqueName() { 
-        return uniqueName; 
+    public String getUniqueName() {
+        return uniqueName;
     }
 
     public String getName() {
@@ -86,7 +87,7 @@ public abstract class DimensionBase
     }
 
     public String getQualifiedName() {
-        return Util.getRes().getMdxDimensionName(getUniqueName());
+        return MondrianResource.instance().MdxDimensionName.str(getUniqueName());
     }
 
     public boolean isMeasures() {

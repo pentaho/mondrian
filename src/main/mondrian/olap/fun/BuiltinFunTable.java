@@ -16,6 +16,7 @@ import mondrian.olap.DimensionType;
 import mondrian.olap.LevelType;
 import mondrian.olap.type.*;
 import mondrian.util.Format;
+import mondrian.resource.MondrianResource;
 
 import java.util.*;
 import java.io.PrintWriter;
@@ -280,7 +281,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 return Boolean.valueOf(member.isNull());
             }
         });
-        
+
         define(new MultiResolver(
                 "IS",
                 "<Expression> IS <Expression>",
@@ -593,7 +594,7 @@ public class BuiltinFunTable extends FunTableImpl {
                         // same hierarchy.
                         //
                         if (member.getHierarchy() != ancestorLevel.getHierarchy()) {
-                            MondrianResource.instance().newFunctionMbrAndLevelHierarchyMismatch(
+                            MondrianResource.instance().FunctionMbrAndLevelHierarchyMismatch.ex(
                                     "ParallelPeriod", ancestorLevel.getHierarchy().getUniqueName(),
                                     member.getHierarchy().getUniqueName()
                             );
@@ -1745,8 +1746,7 @@ public class BuiltinFunTable extends FunTableImpl {
                         if (type.getHierarchy().getDimension()
                                 .getDimensionType() !=
                                 DimensionType.TimeDimension) {
-                            throw MondrianResource.instance()
-                                    .newTimeArgNeeded(getName());
+                            throw MondrianResource.instance().TimeArgNeeded.ex(getName());
                         }
                         return super.getResultType(validator, args);
                     }
@@ -1808,7 +1808,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 final Exp[] args = call.getArgs();
                 final int argCount = args.length;
                 if (argCount <= 1) {
-                    throw Util.getRes().newMdxFuncArgumentsNum(getName());
+                    throw MondrianResource.instance().MdxFuncArgumentsNum.ex(getName());
                 }
                 for (int i = 1; i < argCount; i++) {
                     final Exp arg = args[i];
@@ -1819,7 +1819,7 @@ public class BuiltinFunTable extends FunTableImpl {
                     } else if (arg instanceof Hierarchy) {
                         // nothing
                     } else {
-                        throw Util.getRes().newMdxFuncNotHier(
+                        throw MondrianResource.instance().MdxFuncNotHier.ex(
                                 new Integer(i + 1), getName());
                     }
                 }
@@ -1914,7 +1914,7 @@ public class BuiltinFunTable extends FunTableImpl {
                         List v0 = (List) getArg(evaluator, args, 0),
                                 v1 = (List) getArg(evaluator, args, 1);
                         if (args.length > 2) {
-                            throw MondrianResource.instance().newToggleDrillStateRecursiveNotSupported();
+                            throw MondrianResource.instance().ToggleDrillStateRecursiveNotSupported.ex();
                         }
                         if (v1.isEmpty()) {
                             return v0;
@@ -2539,7 +2539,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 final Exp[] args = call.getArgs();
                 final int argCount = args.length;
                 if (argCount <= 1) {
-                    throw Util.getRes().newMdxFuncArgumentsNum(getName());
+                    throw MondrianResource.instance().MdxFuncArgumentsNum.ex(getName());
                 }
                 for (int i = 1; i < argCount; i++) {
                     final Exp arg = args[i];
@@ -2550,7 +2550,7 @@ public class BuiltinFunTable extends FunTableImpl {
                     } else if (arg instanceof Hierarchy) {
                         // nothing
                     } else {
-                        throw Util.getRes().newMdxFuncNotHier(
+                        throw MondrianResource.instance().MdxFuncNotHier.ex(
                                 new Integer(i + 1), getName());
                     }
                 }

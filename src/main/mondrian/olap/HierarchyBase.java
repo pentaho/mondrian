@@ -14,6 +14,7 @@ package mondrian.olap;
 
 import mondrian.olap.type.Type;
 import mondrian.olap.type.HierarchyType;
+import mondrian.resource.MondrianResource;
 
 /**
  * Skeleton implementation for {@link Hierarchy}.
@@ -75,8 +76,9 @@ public abstract class HierarchyBase
     public String getName() {
         return name;
     }
+
     public String getQualifiedName() {
-        return Util.getRes().getMdxHierarchyName(getUniqueName());
+        return MondrianResource.instance().MdxHierarchyName.str(getUniqueName());
     }
 
     public String getDescription() {

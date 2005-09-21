@@ -17,6 +17,7 @@ import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.agg.ColumnConstraint;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.resource.MondrianResource;
 
 import javax.sql.DataSource;
 
@@ -515,8 +516,8 @@ public class RolapStar {
             }
             return o;
         } catch (SQLException e) {
-            throw Util.getRes().newInternal(
-                    "while computing single cell; sql=[" + sql + "]", e);
+            throw Util.newInternal(e,
+                    "while computing single cell; sql=[" + sql + "]");
         } finally {
             try {
                 if (resultSet != null) {
@@ -538,9 +539,8 @@ public class RolapStar {
             final boolean hasNext = columns.next();
             return hasNext;
         } catch (SQLException e) {
-            throw MondrianResource.instance().newInternal(
-                "Error while retrieving metadata for table '" +
-                tableName + "', column '" + columnName + "'");
+            throw Util.newInternal("Error while retrieving metadata for table '" +
+                            tableName + "', column '" + columnName + "'");
         } finally {
             try {
                 jdbcConnection.close();
@@ -755,13 +755,10 @@ public class RolapStar {
                 Util.assertTrue(resultSet.next());
                 return resultSet.getInt(1);
             } catch (SQLException e) {
-                throw Util.getRes().newInternal(
-                        "while counting distinct values of column '"
-                        + expression.getGenericExpression()
-                        + "'; sql=["
-                        + sql
-                        + "]",
-                        e);
+                throw Util.newInternal(e,
+                        "while counting distinct values of column '" +
+                        expression.getGenericExpression() +
+                        "'; sql=[" + sql + "]");
             } finally {
                 try {
                     if (resultSet != null) {

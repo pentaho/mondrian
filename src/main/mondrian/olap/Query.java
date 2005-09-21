@@ -13,6 +13,7 @@
 package mondrian.olap;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.*;
+import mondrian.resource.MondrianResource;
 
 import java.io.*;
 import java.util.*;
@@ -75,7 +76,9 @@ public class Query extends QueryPart {
                 new Parameter[0]);
     }
 
-    /** Construct a Query; called from clone(). */
+    /**
+     * Creates a Query.
+     */
     public Query(
             Connection connection,
             Cube mdxCube,
@@ -154,7 +157,7 @@ public class Query extends QueryPart {
         try {
             return (Query) clone();
         } catch (CloneNotSupportedException e) {
-            throw Util.getRes().newInternal("Query.clone() failed", e);
+            throw Util.newInternal(e, "Query.clone() failed");
         }
     }
 
@@ -256,8 +259,7 @@ public class Query extends QueryPart {
                 }
             }
             if (useCount > 1) {
-                throw MondrianResource.instance()
-                        .newDimensionInIndependentAxes(
+                throw MondrianResource.instance().DimensionInIndependentAxes.ex(
                                 dimension.getUniqueName());
             }
         }
@@ -364,9 +366,9 @@ public class Query extends QueryPart {
             }
             return;
         }
-        throw Util.getRes().newInternal(
-            "Query child ordinal " + i0 + " out of range (there are " +
-            axes.length + " axes, " + formulas.length + " formula)");
+        throw Util.newInternal(
+                "Query child ordinal " + i0 + " out of range (there are " +
+                axes.length + " axes, " + formulas.length + " formula)");
     }
 
     /**
@@ -450,7 +452,7 @@ public class Query extends QueryPart {
     public void setParameter(String parameterName, String value) {
         Parameter param = lookupParam(parameterName);
         if (param == null) {
-            throw Util.getRes().newMdxParamNotFound(parameterName);
+            throw MondrianResource.instance().MdxParamNotFound.ex(parameterName);
         }
         final Exp exp = param.quickParse(value, this);
         param.setValue(exp);
@@ -511,7 +513,7 @@ public class Query extends QueryPart {
                     }
                 }
                 if (!found) {
-                    throw Util.getRes().newMdxParamNotFound(
+                    throw MondrianResource.instance().MdxParamNotFound.ex(
                         ((Parameter) queryElement).getName());
                 }
             }
@@ -618,8 +620,8 @@ public class Query extends QueryPart {
                 // mdxElement is used in the query. lets find on on which axis
                 // or formula
                 String formulaType = formula.isMember()
-                    ? Util.getRes().getCalculatedMember()
-                    : Util.getRes().getCalculatedSet();
+                    ? MondrianResource.instance().CalculatedMember.str()
+                    : MondrianResource.instance().CalculatedSet.str();
 
                 int i = 0;
                 Object parent = walker.getAncestor(i);
@@ -627,7 +629,7 @@ public class Query extends QueryPart {
                 while ((parent != null) && (grandParent != null)) {
                     if (grandParent instanceof Query) {
                         if (parent instanceof Axis) {
-                            throw Util.getRes().newMdxCalculatedFormulaUsedOnAxis(
+                            throw MondrianResource.instance().MdxCalculatedFormulaUsedOnAxis.ex(
                                 formulaType,
                                 uniqueName,
                                 ((QueryAxis) parent).getAxisName());
@@ -635,14 +637,14 @@ public class Query extends QueryPart {
                         } else if (parent instanceof Formula) {
                             String parentFormulaType =
                                 ((Formula) parent).isMember()
-                                    ? Util.getRes().getCalculatedMember()
-                                    : Util.getRes().getCalculatedSet();
-                            throw Util.getRes().newMdxCalculatedFormulaUsedInFormula(
+                                    ? MondrianResource.instance().CalculatedMember.str()
+                                    : MondrianResource.instance().CalculatedSet.str();
+                            throw MondrianResource.instance().MdxCalculatedFormulaUsedInFormula.ex(
                                 formulaType, uniqueName, parentFormulaType,
                                 ((Formula) parent).getUniqueName());
 
                         } else {
-                            throw Util.getRes().newMdxCalculatedFormulaUsedOnSlicer(
+                            throw MondrianResource.instance().MdxCalculatedFormulaUsedOnSlicer.ex(
                                 formulaType, uniqueName);
                         }
                     }
@@ -650,7 +652,7 @@ public class Query extends QueryPart {
                     parent = walker.getAncestor(i);
                     grandParent = walker.getAncestor(i+1);
                 }
-                throw Util.getRes().newMdxCalculatedFormulaUsedInQuery(
+                throw MondrianResource.instance().MdxCalculatedFormulaUsedInQuery.ex(
                     formulaType, uniqueName, this.toMdx());
             }
         }
@@ -704,7 +706,7 @@ public class Query extends QueryPart {
     public void renameFormula(String uniqueName, String newName) {
         Formula formula = findFormula(uniqueName);
         if (formula == null) {
-            throw Util.getRes().newMdxFormulaNotFound(
+            throw MondrianResource.instance().MdxFormulaNotFound.ex(
                 "formula", uniqueName, toMdx());
         }
         formula.rename(newName);
@@ -723,7 +725,7 @@ public class Query extends QueryPart {
     /** finds axis by index and sets flag to show empty cells on that axis*/
     public void setAxisShowEmptyCells(int axis, boolean showEmpty) {
         if (axis >= axes.length) {
-            throw Util.getRes().newMdxAxisShowSubtotalsNotSupported(
+            throw MondrianResource.instance().MdxAxisShowSubtotalsNotSupported.ex(
                     new Integer(axis));
         }
         axes[axis].nonEmpty = !showEmpty;
@@ -735,7 +737,7 @@ public class Query extends QueryPart {
      */
     public Hierarchy[] getMdxHierarchiesOnAxis(int axis) {
         if (axis >= axes.length) {
-            throw Util.getRes().newMdxAxisShowSubtotalsNotSupported(
+            throw MondrianResource.instance().MdxAxisShowSubtotalsNotSupported.ex(
                     new Integer(axis));
         }
         return collectHierarchies(

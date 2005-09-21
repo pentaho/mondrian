@@ -13,6 +13,8 @@ import junit.framework.Assert;
 import junit.framework.ComparisonFailure;
 import mondrian.olap.*;
 import mondrian.test.*;
+import mondrian.resource.MondrianResource;
+
 import org.eigenbase.xom.StringEscaper;
 
 import java.io.*;
@@ -581,7 +583,7 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testCousinWrongHierarchy() {
         assertAxisThrows("Cousin([Time].[1997], [Gender].[M])",
-                MondrianResource.instance().getCousinHierarchyMismatch("[Time].[1997]", "[Gender].[All Gender].[M]"));
+                MondrianResource.instance().CousinHierarchyMismatch.str("[Time].[1997]", "[Gender].[All Gender].[M]"));
     }
 
     public void testParent() {

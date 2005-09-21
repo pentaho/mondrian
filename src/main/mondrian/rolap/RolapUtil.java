@@ -13,6 +13,7 @@
 package mondrian.rolap;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
+import mondrian.resource.MondrianResource;
 
 import org.apache.log4j.Logger;
 import java.io.*;
@@ -106,7 +107,7 @@ public class RolapUtil {
             }
         }
         if (member == null && failIfNotFound) {
-            throw Util.getRes().newMdxCantFindMember(Util.implode(uniqueNameParts));
+            throw MondrianResource.instance().MdxCantFindMember.ex(Util.implode(uniqueNameParts));
         }
         return member;
     }

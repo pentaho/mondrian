@@ -13,9 +13,10 @@ package mondrian.olap;
 /**
  * Instances of this class are thrown for all exceptions that Mondrian
  * generates through as a result of known error conditions. It is used in the
- * resource classes generated from mondrian.olap.MondrianResource.xml.
- * 
+ * resource classes generated from mondrian.resource.MondrianResource.xml.
+ *
  * @author Galt Johnson (gjabx)
+ * @version $Id$
  * @see org.eigenbase.xom
  */
 public class MondrianException extends RuntimeException {
@@ -43,3 +44,5 @@ public class MondrianException extends RuntimeException {
         return "Mondrian Error:" + super.getMessage();
     }
 }
+
+// End MondrianException.java

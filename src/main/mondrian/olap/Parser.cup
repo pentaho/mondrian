@@ -15,6 +15,7 @@
 
 import java_cup.runtime.*;
 import java.util.ArrayList;
+import mondrian.resource.MondrianResource;
 
 // Preliminaries to set up and use the scanner.
 // action code {: ... :};
@@ -49,7 +50,7 @@ parser code {:
             return (Query) parse_tree.value;
         } catch (Exception e) {
             // "Error while parsing MDX statement '%1'"
-            throw Util.getRes().newWhileParsingMdx(queryString, e);
+            throw MondrianResource.instance().WhileParsingMdx.ex(queryString, e);
         } finally {
             this.scanner = null;
             this.mdxConnection = null;
@@ -85,7 +86,7 @@ parser code {:
             return (Exp) parse_tree.value;
         } catch (Exception e) {
             // "Syntax error while parsing MDX expression '%1'"
-            throw Util.getRes().newWhileParsingMdxExpression(queryString, e);
+            throw MondrianResource.instance().WhileParsingMdxExpression.ex(queryString, e);
         } finally {
             this.scanner = null;
             this.mdxConnection = null;
@@ -147,7 +148,7 @@ parser code {:
             report_error(message, info);
         } catch (Throwable e) {
             // "MDX parser cannot recover from previous error(s)"
-            throw Util.getRes().newMdxFatalError(e);
+            throw MondrianResource.instance().MdxFatalError.ex(e);
         }
     }
 
@@ -155,7 +156,7 @@ parser code {:
     public void report_error(String message, Object info)
     {
         // "Error: %1"
-        throw Util.getRes().newMdxError(message);
+        throw MondrianResource.instance().MdxError.ex(message);
     }
 
     // override lr_parser method
@@ -166,11 +167,11 @@ parser code {:
             int loc[] = new int[2];
             scanner.getLocation(cur_token, loc);
             // "Syntax error at line %2, column %3, token '%1'"
-            throw Util.getRes().newMdxSyntaxErrorAt(
+            throw MondrianResource.instance().MdxSyntaxErrorAt.ex(
                 s, Integer.toString(loc[0] + 1), Integer.toString(loc[1] + 1));
         } else {
             // "Syntax error at token '%1'"
-            throw Util.getRes().newMdxSyntaxError(s);
+            throw MondrianResource.instance().MdxSyntaxError.ex(s);
         }
     }
 
@@ -178,7 +179,7 @@ parser code {:
         throws java.lang.Exception
     {
         // "Couldn't repair and continue parse"
-        String sFatalSyntaxError = Util.getRes().getMdxFatalSyntaxError();
+        String sFatalSyntaxError = MondrianResource.instance().MdxFatalSyntaxError.str();
         report_fatal_error(sFatalSyntaxError, cur_token);
     }
 
@@ -1287,7 +1288,7 @@ axis_specification ::=
             // AxisOrdinal values go from -2 to 4. The negative values represent
             // special cases, so are ignored.
             if (index < 0 || index != d || index > AxisOrdinal.MaxOrdinal) {
-                throw MondrianResource.instance().newInvalidAxis(
+                throw MondrianResource.instance().InvalidAxis.ex(
                         new Integer(AxisOrdinal.MaxOrdinal), new Double(d));
             }
 

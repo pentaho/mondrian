@@ -15,7 +15,7 @@ package mondrian.rolap.aggmatcher;
 import mondrian.olap.Hierarchy;
 import mondrian.olap.Dimension;
 import mondrian.olap.MondrianDef;
-import mondrian.olap.MondrianResource;
+import mondrian.resource.MondrianResource;
 import mondrian.recorder.MessageRecorder;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.RolapLevel;
@@ -24,6 +24,7 @@ import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapAggregator;
 import mondrian.rolap.HierarchyUsage;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.resource.MondrianResource;
 
 import java.util.*;
 
@@ -190,7 +191,7 @@ abstract class Recognizer {
                 }
                 if (factCountMatcher.matches(aggColumn.getName())) {
                     if (! aggColumn.isNumeric()) {
-                        String msg = mres.getNonNumericFactCountColumn(
+                        String msg = mres.NonNumericFactCountColumn.str(
                                 aggTable.getName(),
                                 dbFactTable.getName(),
                                 aggColumn.getName(),
@@ -206,20 +207,18 @@ abstract class Recognizer {
 
             }
             if (nosOfFactCounts == 0) {
-                String msg = mres.getNoFactCountColumns(
+                String msg = mres.NoFactCountColumns.str(
                         aggTable.getName(),
-                        dbFactTable.getName()
-                    );
+                        dbFactTable.getName());
                 msgRecorder.reportError(msg);
 
                 returnValue = false;
 
             } else if (nosOfFactCounts > 1) {
-                String msg = mres.getTooManyFactCountColumns(
+                String msg = mres.TooManyFactCountColumns.str(
                         aggTable.getName(),
                         dbFactTable.getName(),
-                        new Integer(nosOfFactCounts)
-                    );
+                        new Integer(nosOfFactCounts));
                 msgRecorder.reportError(msg);
 
                 returnValue = false;
@@ -260,7 +259,7 @@ abstract class Recognizer {
 
         try {
             if (nosMeasures == 0) {
-                String msg = mres.getNoMeasureColumns(
+                String msg = mres.NoMeasureColumns.str(
                         aggTable.getName(),
                         dbFactTable.getName()
                     );
@@ -421,7 +420,7 @@ abstract class Recognizer {
                 int nosMatched = matchForeignKey(factUsage);
 
                 if (nosMatched > 1) {
-                    String msg = mres.getTooManyMatchingForeignKeyColumns(
+                    String msg = mres.TooManyMatchingForeignKeyColumns.str(
                             aggTable.getName(),
                             dbFactTable.getName(),
                             new Integer(nosMatched),
@@ -670,7 +669,7 @@ abstract class Recognizer {
                     ! aggColumn.column.name.equals(cName)) {
 
                     // this is an error so return
-                    String msg = mres.getDoubleMatchForLevel(
+                    String msg = mres.DoubleMatchForLevel.str(
                         aggTable.getName(),
                         dbFactTable.getName(),
                         aggColumn.getName(),
@@ -698,7 +697,7 @@ abstract class Recognizer {
 
             String tableAlias = null;
             if (aggUsage.joinExp instanceof MondrianDef.Column) {
-                MondrianDef.Column mcolumn = 
+                MondrianDef.Column mcolumn =
                         (MondrianDef.Column) aggUsage.joinExp;
                 tableAlias = mcolumn.table;
             } else {
@@ -792,7 +791,7 @@ abstract class Recognizer {
                 (JdbcSchema.Table.Column) it.next();
             if (! aggColumn.hasUsage()) {
 
-                String msg = mres.getAggUnknownColumn(
+                String msg = mres.AggUnknownColumn.str(
                     aggTable.getName(),
                     dbFactTable.getName(),
                     aggColumn.getName()
@@ -804,7 +803,7 @@ abstract class Recognizer {
                 } else {
                     msgRecorder.reportWarning(msg);
                 }
-                
+
                 Make this just a warning
 */
                 msgRecorder.reportWarning(msg);
@@ -890,7 +889,7 @@ abstract class Recognizer {
         }
 
         if (rollupAgg == null) {
-            String msg = mres.getNoAggregatorFound(
+            String msg = mres.NoAggregatorFound.str(
                 aggUsage.getSymbolicName(),
                 factAgg.getName(),
                 siblingAgg.getName());
@@ -977,7 +976,7 @@ abstract class Recognizer {
                 return key.toString();
             }
 
-            String msg = mres.getNoColumnNameFromExpression(
+            String msg = mres.NoColumnNameFromExpression.str(
                 expr.toString());
             msgRecorder.reportError(msg);
 
