@@ -258,7 +258,7 @@ unzip-FoodMartAccessDB"/>
         srcdir="${java.dir}"
         resdir="${classes.dir}"
         style="functor"
-        locales="en_US,de_DE">
+        locales="en_US,de_DE,es_ES">
       <include name="mondrian/resource/MondrianResource.xml"/>
     </resgen>
 

@@ -103,49 +103,10 @@ public class Format {
      * locales.
      */
     static final FormatLocale locale_US = createLocale(
-        '\0', '\0', null, null, null, null, null, null, null, null, Locale.US);
+        '\0', '\0', null, null, null, null, null, null, null, null,
+        Locale.US);
 
-    static final FormatLocale localeGer = createLocale(
-            '.', // thousandSeparator = ',' in en
-            ',', // decimalPlaceholder = '.' in en
-            ".", // dateSeparator = "/" in en
-            ":", // timeSeparator = ":" in en
-            "EUR", // currencySymbol = "$" in en
-            "#,##0.00\"EUR\"", // currencyFormat = "$#,##0.##" in en
-            new String[] {
-                "So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"},
-            new String[] {
-                "Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag",
-                "Samstag"},
-            new String[] {
-                "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep",
-                "Okt", "Nov", "Dez"},
-            new String[] {
-                "Januar", "Februar", "März", "April", "Mai", "Juni",
-                "Juli", "August", "September", "Oktober", "November",
-                "Dezember"},
-            Locale.GERMAN);
-
-    static final FormatLocale locale_ES = createLocale(
-            '.', // thousandSeparator = ',' in en
-            ',', // decimalPlaceholder = '.' in en
-            ".", // dateSeparator = "/" in en
-            ":", // timeSeparator = ":" in en
-            "EUR", // currencySymbol = "$" in en
-            "#.##0,00EUR", // currencyFormat = "$#,##0.##" in en
-            new String[] {
-                "D", "L", "M", "X", "J", "V", "S"},
-            new String[] {
-                "Domingo", "Lunes", "Martes", "Miercoles", "Jueves", "Viernes",
-                "Sabado"},
-            new String[] {
-                "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Aug", "Sep",
-                "Oct", "Nov", "Dic"},
-            new String[] {
-                "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre",
-                "Diciembre"},
-            new Locale("es"));
+    private static LocaleFormatFactory localeFormatFactory;
 
     public static void main(String[] args)
     {
@@ -1196,7 +1157,7 @@ public class Format {
                 daysOfWeekLong.length != 7 ||
                 monthsShort.length != 12 ||
                 monthsLong.length != 12) {
-                throw new Error(
+                throw new IllegalArgumentException(
                     "Format: day or month array has incorrect length");
             }
         }
@@ -1630,37 +1591,59 @@ public class Format {
     }
 
     /**
-     * Returns the best {@link FormatLocale} for a given {@link Locale}. Never
-     * returns null, even if <code>locale</code> is null.
-     **/
-    public static FormatLocale getBestFormatLocale(Locale locale)
+     * Returns the best {@link FormatLocale} for a given {@link Locale}.
+     * Never returns null, even if <code>locale</code> is null.
+     */
+    public static synchronized FormatLocale getBestFormatLocale(Locale locale)
     {
         FormatLocale formatLocale;
-        String key;
         if (locale == null) {
             return locale_US;
         }
-        key = locale.toString();
+        String key = locale.toString();
+        // Look in the cache first.
         formatLocale = (FormatLocale) mapLocaleToFormatLocale.get(key);
+        if (formatLocale == null) {
+            // Not in the cache, so ask the factory.
+            formatLocale = getFormatLocaleUsingFactory(locale);
+            if (formatLocale == null) {
+                formatLocale = locale_US;
+            }
+            // Add to cache.
+            mapLocaleToFormatLocale.put(key, formatLocale);
+        }
+        return formatLocale;
+    }
+
+    private static FormatLocale getFormatLocaleUsingFactory(Locale locale)
+    {
+        LocaleFormatFactory factory = getLocaleFormatFactory();
+        if (factory == null) {
+            return null;
+        }
+        FormatLocale formatLocale;
+        // Lookup full locale, e.g. "en-US-Boston"
+        if (!locale.getVariant().equals("")) {
+            formatLocale = factory.get(locale);
+            if (formatLocale != null) {
+                return formatLocale;
+            }
+            locale = new Locale(locale.getLanguage(), locale.getCountry());
+        }
+        // Lookup language and country, e.g. "en-US"
+        if (!locale.getCountry().equals("")) {
+            formatLocale = factory.get(locale);
+            if (formatLocale != null) {
+                return formatLocale;
+            }
+            locale = new Locale(locale.getLanguage());
+        }
+        // Lookup language, e.g. "en"
+        formatLocale = factory.get(locale);
         if (formatLocale != null) {
             return formatLocale;
         }
-        key = locale.getLanguage() + "_" + locale.getCountry();
-        formatLocale = (FormatLocale) mapLocaleToFormatLocale.get(key);
-        if (formatLocale != null) {
-            return formatLocale;
-        }
-        key = locale.getLanguage();
-        formatLocale = (FormatLocale) mapLocaleToFormatLocale.get(key);
-        if (formatLocale != null) {
-            return formatLocale;
-        }
-        key = ""; // special key for the 'default' locale
-        formatLocale = (FormatLocale) mapLocaleToFormatLocale.get(key);
-        if (formatLocale != null) {
-            return formatLocale;
-        }
-        return locale_US;
+        return null;
     }
 
     /**
@@ -2111,6 +2094,31 @@ loop:
     public String getFormatString()
     {
         return formatString;
+    }
+
+    /**
+     * Defines the factory used to create a {@link FormatLocale} for locales.
+     *
+     * <p>Also clears the cache, so that locales from the previous factory (if
+     * any) are no longer used.
+     */
+    public static void setLocaleFormatFactory(LocaleFormatFactory factory) {
+        localeFormatFactory = factory;
+        mapLocaleToFormatLocale.clear(); // clear cache
+    }
+
+    /**
+     * Returns the factory used to create a {@link FormatLocale} for locales.
+     */
+    public static LocaleFormatFactory getLocaleFormatFactory() {
+        return localeFormatFactory;
+    }
+
+    /**
+     * Locates a {@link FormatLocale} for a given locale.
+     */
+    public interface LocaleFormatFactory {
+        FormatLocale get(Locale locale);
     }
 
 /**

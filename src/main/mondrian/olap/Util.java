@@ -24,6 +24,7 @@ import java.util.*;
 
 import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
+import mondrian.util.Format;
 
 /**
  * Utility functions used throughout mondrian. All methods are static.
@@ -52,7 +53,95 @@ public class Util extends XOMUtil {
     private static final Random metaRandom =
             createRandom(MondrianProperties.instance().TestSeed.get());
 
-    /** encodes string for MDX (escapes ] as ]] inside a name) */
+    /**
+     * Store of format-locales culled from various locales' instances of
+     * {@link mondrian.resource.MondrianResource}.
+     *
+     * <p>Initializing it here should ensure that the callback is set before 
+     * {@link mondrian.util.Format} is first used for the first time.
+     */
+    private static final Format.LocaleFormatFactory localeFormatFactory =
+            createLocaleFormatFactory();
+
+    /**
+     * Creates a {@link Format.LocaleFormatFactory} which derives locale
+     * information from {@link MondrianResource}, and registers it as the
+     * default factory.
+     */
+    private static Format.LocaleFormatFactory createLocaleFormatFactory() {
+        Format.LocaleFormatFactory factory = new Format.LocaleFormatFactory() {
+            public Format.FormatLocale get(Locale locale) {
+                MondrianResource res = MondrianResource.instance(locale);
+                if (res == null ||
+                        !res.getLocale().equals(locale)) {
+                    return null;
+                }
+                char thousandSeparator = res.FormatThousandSeparator.str().charAt(0);
+                char decimalPlaceholder = res.FormatDecimalPlaceholder.str().charAt(0);
+                String dateSeparator = res.FormatDateSeparator.str();
+                String timeSeparator = res.FormatTimeSeparator.str();
+                String currencySymbol = res.FormatCurrencySymbol.str();
+                String currencyFormat = res.FormatCurrencyFormat.str();
+                String[] daysOfWeekShort = {
+                    res.FormatShortDaysSun.str(),
+                    res.FormatShortDaysMon.str(),
+                    res.FormatShortDaysTue.str(),
+                    res.FormatShortDaysWed.str(),
+                    res.FormatShortDaysThu.str(),
+                    res.FormatShortDaysFri.str(),
+                    res.FormatShortDaysSat.str(),
+                };
+                String[] daysOfWeekLong = {
+                    res.FormatLongDaysSunday.str(),
+                    res.FormatLongDaysMonday.str(),
+                    res.FormatLongDaysTuesday.str(),
+                    res.FormatLongDaysWednesday.str(),
+                    res.FormatLongDaysThursday.str(),
+                    res.FormatLongDaysFriday.str(),
+                    res.FormatLongDaysSaturday.str(),
+                };
+                String[] monthsShort = {
+                    res.FormatShortMonthsJan.str(),
+                    res.FormatShortMonthsFeb.str(),
+                    res.FormatShortMonthsMar.str(),
+                    res.FormatShortMonthsApr.str(),
+                    res.FormatShortMonthsMay.str(),
+                    res.FormatShortMonthsJun.str(),
+                    res.FormatShortMonthsJul.str(),
+                    res.FormatShortMonthsAug.str(),
+                    res.FormatShortMonthsSep.str(),
+                    res.FormatShortMonthsOct.str(),
+                    res.FormatShortMonthsNov.str(),
+                    res.FormatShortMonthsDec.str(),
+                };
+                String[] monthsLong = {
+                    res.FormatLongMonthsJanuary.str(),
+                    res.FormatLongMonthsFebruary.str(),
+                    res.FormatLongMonthsMarch.str(),
+                    res.FormatLongMonthsApril.str(),
+                    res.FormatLongMonthsMay.str(),
+                    res.FormatLongMonthsJune.str(),
+                    res.FormatLongMonthsJuly.str(),
+                    res.FormatLongMonthsAugust.str(),
+                    res.FormatLongMonthsSeptember.str(),
+                    res.FormatLongMonthsOctober.str(),
+                    res.FormatLongMonthsNovember.str(),
+                    res.FormatLongMonthsDecember.str(),
+                };
+                return Format.createLocale(
+                        thousandSeparator, decimalPlaceholder, dateSeparator,
+                        timeSeparator, currencySymbol, currencyFormat,
+                        daysOfWeekShort, daysOfWeekLong, monthsShort,
+                        monthsLong, locale);
+            }
+        };
+        Format.setLocaleFormatFactory(factory);
+        return factory;
+    }
+
+    /**
+     * Encodes string for MDX (escapes ] as ]] inside a name).
+     */
     public static String mdxEncodeString(String st) {
         StringBuffer retString = new StringBuffer(st.length() + 20);
         for (int i = 0; i < st.length(); i++) {
