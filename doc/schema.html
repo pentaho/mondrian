@@ -233,8 +233,29 @@ special letters (e.g. &#931; or &#928;) are to be displayed:</p>
 <a href="#Cell_formatter">cell formatter</a>.</p>
 
 <h3><a name="Dimensions,_Hierarchies,_Levels">Dimensions, Hierarchies, Levels</a></h3>
-<p>The <code>Gender</code> dimension consists of a single hierarchy, which has just one
-level.</p>
+
+<p>Some more definitions:</p>
+<ul>
+  <li>A <dfn>member</dfn> is a point within a dimension
+determined by a particular set of attribute values. The gender hierarchy has
+the two members 'M' and 'F'. 'San Francisco', 'California' and 'USA' are all
+members of the store hierarchy.</li>
+  <li>A <dfn>hierarchy</dfn> is a set of members organized into a structure for 
+	convenient analysis. For example, the store hierarchy consists of the store name,
+city, state, and nation. The hierarchy allows you form intermediate sub-totals:
+the sub-total for a state is the sum of the sub-totals of all of the cities in
+that state, each of which is the sum of the sub-totals of the stores in that
+city.</li>
+	<li>A <dfn><font face="Verdana">level</font></dfn> is a collection of 
+	members which have the same distance from the root of the hierarchy.</li>
+	<li>A <dfn><font face="Verdana">dimension</font></dfn> is a collection of 
+	hierarchies which discriminate on the same fact table attribute (say, the 
+	day that a sale occurred).</li>
+</ul>
+<p>For reasons of uniformity, measures are treated as members of a special
+dimension, called 'Measures'.</p>
+<h4>An example</h4>
+<p>Let's look at a simple dimension. </p>
 <blockquote>
   <pre>&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Gender&quot; foreignKey=&quot;customer_id&quot;&gt;
   &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; primaryKey=&quot;customer_id&quot;&gt;
@@ -243,15 +264,68 @@ level.</p>
   &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;
 &lt;/<a href="#XML_Dimension">Dimension</a>&gt;</pre>
 </blockquote>
+<p>This dimension consists of a single hierarchy, which consists of a single level, 
+and all called <code>Gender</code>. (As we shall see <a href="#The_all_member">
+later</a>, there is also a special level called <code>[(All)]</code> containing 
+a grand total.)</p>
+
+<p>The values for the dimension come fom the <code>gender</code> column in the
+<code>customer</code> table. The &quot;gender&quot; column contains two values, 'F' and 'M', so the Gender dimension
+contains the members <code>[Gender].[F]</code> and <code>[Gender].[M]</code>. </p>
+
 <p>For any given sale, the gender dimension is the gender of the customer who
 made that purchase. This is expressed by joining from the fact table
 &quot;sales_fact_1997.customer_id&quot; to the dimension table &quot;customer.customer_id&quot;.</p>
-<p>The &quot;gender&quot; column contains two values, 'F' and 'M', so the Gender dimension
-contains the members <code>[Gender].[F]</code> and <code>[Gender].[M]</code>. Because <code>hasAll=&quot;true&quot;</code>, the system generates a special level 
-called '<code>(All)</code>', containing a single member called <code>[Gender].[All Gender]</code>. 
-You can override these names using the <code>allLevelName</code> and <code>
-allMemberName</code> attributes of the <code>&lt;<a href="#XML_Hierarchy">Hierarchy</a>&gt;</code> 
-element.</p>
+
+<h4><a name="The_all_member">The 'all' member</a></h4>
+
+<p>By default, every hierarchy contains a top level called '<code>(All)</code>', which 
+contains a single member called '<code>(All {<i>hierarchyName</i>})</code>'. 
+This member is parent of all other members of the hierarchy, and thus represents 
+a grand total. It is also the default member of the hierarchy; that is, the 
+member which is used for calculating cell values when the hierarchy is not 
+included on an axis or in the slicer. The <code>allMemberName</code> and 
+<code>allLevelName</code> attributes override the default names of the all level 
+and all member.</p>
+
+<p>If the <code>&lt;Hierarchy&gt;</code> element has <code>
+hasAll=&quot;false&quot;</code>, the 'all' level is suppressed. The default 
+member of that dimension will now be the first member of the first level; for 
+example, in a Time hierarchy, it will be the first year in the hierarchy. 
+Changing the default member can be confusing, so you should generally use <code>
+hasAll=&quot;true&quot;</code>.</p>
+
+<h4>Mapping dimensions and hierarchies onto tables</h4>
+<p>A dimension is joined to a cube by means of a pair of columns, one in the 
+fact table, the other in the dimension table. The <code>&lt;Dimension&gt;</code> element has a
+<code>primaryKey</code> attribute, which is the name of a column in 
+the fact table; the <code>&lt;Hierarchy&gt;</code> element has <code>foreignKey</code> 
+attribute.</p>
+
+<p>If the hierarchy has more than one table, you can disambiguate using the
+<code>primaryKeyTable</code> attribute. </p>
+
+<p>A dimension can live in the fact table, like this: </p>
+<blockquote>
+  <pre>&lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot;&gt;
+  &lt;<a href="#XML_Table">Table</a> name=&quot;sales_fact_1997&quot;/&gt;
+  ...
+  &lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Payment method&quot;&gt;
+    &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot;&gt;
+      &lt;<a href="#XML_Level">Level</a> name=&quot;Payment method&quot; column=&quot;payment_method&quot; uniqueMembers=&quot;true&quot;/&gt;
+    &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;
+  &lt;/<a href="#XML_Dimension">Dimension</a>&gt;
+&lt;/<a href="#XML_Cube">Cube</a>&gt;</pre>
+</blockquote>
+
+<p>You would do this if the dimension has a very simple structure (usually just 
+one level) and all of the necessary columns are in the fact table. The level 
+columns (such as <code>payment_method</code> here) implicitly come from the 
+current row in the fact table. </p>
+<p>Note that the hierarchy has no <code>&lt;Table&gt;</code> child element, and that 
+there are no <code>primaryKey</code> or <code>foreignKey</code> attributes. </p>
+
+<h4>Multiple hierarchies</h4>
 
 <p>A dimension can contain more than one hierarchy:</p>
 <blockquote>
@@ -286,54 +360,8 @@ makes no sense to have the &quot;Time&quot; hierarchy on one axis and the &quot;
 hierarchy on another axis. If two hierarchies are the same dimension, the MDX
 language enforces common sense, and does not allow you to use them both in the
 same query.</p>
-<p>A dimension is joined to a cube by means of a pair of columns. The 
-&lt;Dimension&gt; element has a primaryKey attribute, which is the name of a column in 
-the fact table; while the Hierarchy element has an element , one in the fact 
-table, the other in the dimension table. The </p>
 
-<p>A dimension can live in the fact table:</p>
-<blockquote>
-  <pre>&lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot;&gt;
-  &lt;<a href="#XML_Table">Table</a> name=&quot;sales_fact_1997&quot;/&gt;
-  ...
-  &lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Payment method&quot;&gt;
-    &lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot;&gt;
-      &lt;<a href="#XML_Level">Level</a> name=&quot;Payment method&quot; column=&quot;payment_method&quot; uniqueMembers=&quot;true&quot;/&gt;
-    &lt;/<a href="#XML_Hierarchy">Hierarchy</a>&gt;
-  &lt;/<a href="#XML_Dimension">Dimension</a>&gt;
-&lt;/<a href="#XML_Cube">Cube</a>&gt;</pre>
-</blockquote>
-<p>Each dimension contains a single hierarchy, which is made up of a number levels.</p>
-
-<p>Some more definitions:</p>
-<ul>
-  <li>A <dfn>member</dfn> is a point within a dimension
-determined by a particular set of attribute values. The gender hierarchy has
-the two members 'M' and 'F'. 'San Francisco', 'California' and 'USA' are all
-members of the store hierarchy.</li>
-  <li>A <dfn>hierarchy</dfn> is a set of related
-attributes (or <dfn>levels</dfn>) which collectively
-form a dimension. For example, the store hierarchy consists of the store name,
-city, state, and nation. The hierarchy allows you form intermediate sub-totals:
-the sub-total for a state is the sum of the sub-totals of all of the cities in
-that state, each of which is the sum of the sub-totals of the stores in that
-city.</li>
-</ul>
-<p>For reasons of uniformity, measures are treated as members of a special
-dimension, called 'Measures'.</p>
-<p>Most dimensions have just one hierarchy, but occasionally a dimension has
-more than one. For example, you might wish to aggregate days from the Time
-dimension into months, quarters, and years; or into weeks and years. Both
-hierarchies start off with days and end with years, but aggregate using
-different paths.</p>
-
-<p>By default, every hierarchy contains a top level called '<code>(All)</code>', which 
-contains a single member called '<code>(All {<i>hierarchyName</i>})</code>'. 
-This member is parent of all other members of the hierarchy, and thus represents 
-a grand total. If the <code>&lt;Hierarchy&gt;</code> element has <code>
-hasAll=&quot;false&quot;</code>, the 'all' level is suppressed; the <code>allMemberName</code> and 
-<code>allLevelName</code> attributes override the default names of the all level 
-its member.</p>
+<h4>Member properties and formatters</h4>
 
 <p>As we shall see later, a level definition can also define
 <a href="#Member_properties">member properties</a> and a
