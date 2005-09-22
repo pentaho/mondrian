@@ -46,7 +46,7 @@ MondrianDef</a> <br>
 <b>Root Element:</b> <a style="color: #000066" href="#Schema">Schema</a> <br>
 <b>Version:</b> 1.0 <br>
 &nbsp;</p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table1">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc" colSpan="2"><font color="white">
 
@@ -80,6 +80,8 @@ MondrianDef</a> <br>
 	</li>
 	<li><a style="color: #000066" href="#CalculatedMemberProperty">
 	CalculatedMemberProperty </a></li>
+	<li><a style="color: #000066" href="#CaptionExpression">CaptionExpression
+	</a></li>
 	<li><a style="color: #000066" href="#Closure">Closure </a></li>
 	<li><a style="color: #000066" href="#Column">Column </a></li>
 	<li><a style="color: #000066" href="#Cube">Cube </a></li>
@@ -135,7 +137,7 @@ MondrianDef</a> <br>
 </ul>
 
 <p><a name="Schema"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table2">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -157,7 +159,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table3">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -186,7 +188,8 @@ MondrianDef</a> <br>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
 			<i>none</i></td>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
-			Label for the measures dimension </DOC></td>
+			Label for the measures dimension. Can be localized from Properties 
+			file using #{propertyname}. </DOC></td>
 		</tr>
 		<tr>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
@@ -205,7 +208,7 @@ MondrianDef</a> <br>
 <h3>Content</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table4">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Element</th>
@@ -282,7 +285,7 @@ MondrianDef</a> <br>
 </blockquote>
 
 <p><a name="Cube"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table5">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -319,6 +322,17 @@ MondrianDef</a> <br>
 			<i>none</i></td>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
 			Name of this cube. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			caption </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			A string being displayed instead of the cube's name. Can be 
+			localized from Properties file using #{propertyname}. </DOC></td>
 		</tr>
 		<tr>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
@@ -418,7 +432,7 @@ MondrianDef</a> <br>
 </blockquote>
 
 <p><a name="VirtualCube"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table8">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -436,7 +450,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table9">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -468,13 +482,25 @@ MondrianDef</a> <br>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC></DOC>
 			</td>
 		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			caption </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			A string being displayed instead of the cube's name. Can be 
+			localized from Properties file using #{propertyname}. 
+</DOC></td>
+		</tr>
 	</table>
 </blockquote>
 
 <h3>Content</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table10">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Element</th>
@@ -511,7 +537,7 @@ MondrianDef</a> <br>
 </blockquote>
 
 <p><a name="VirtualCubeDimension"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table11">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -534,7 +560,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table12">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -575,7 +601,7 @@ MondrianDef</a> <br>
 	<i>empty</i></blockquote>
 
 <p><a name="VirtualCubeMeasure"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table13">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -593,7 +619,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table14">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -634,7 +660,7 @@ MondrianDef</a> <br>
 	<i>empty</i></blockquote>
 
 <p><a name="DimensionUsage"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table15">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -658,7 +684,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table16">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -715,7 +741,7 @@ MondrianDef</a> <br>
 	<i>empty</i></blockquote>
 
 <p><a name="Dimension"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table17">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -746,7 +772,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table18">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -794,7 +820,8 @@ MondrianDef</a> <br>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
 			<i>none</i></td>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
-			A string being displayed instead of the dimensions's name. 
+			A string being displayed instead of the dimensions's name. Can be 
+			localized from Properties file using #{propertyname}. 
 </DOC></td>
 		</tr>
 	</table>
@@ -803,7 +830,7 @@ MondrianDef</a> <br>
 <h3>Content</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table19">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Element</th>
@@ -828,7 +855,7 @@ MondrianDef</a> <br>
 </blockquote>
 
 <p><a name="Hierarchy"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table20">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -852,7 +879,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table21">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -905,8 +932,8 @@ MondrianDef</a> <br>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
 			<i>none</i></td>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
-			A string being displayed instead as the all member's name. 
-</DOC></td>
+			A string being displayed instead as the all member's name. Can be 
+			localized from Properties file using #{propertyname}. </DOC></td>
 		</tr>
 		<tr>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
@@ -917,7 +944,8 @@ MondrianDef</a> <br>
 			<i>none</i></td>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
 			Name of the 'all' level. If this attribute is not specified, the all 
-			member is named '(All)'. </DOC></td>
+			member is named '(All)'. Can be localized from Properties file using 
+			#{propertyname}. </DOC></td>
 		</tr>
 		<tr>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
@@ -977,7 +1005,8 @@ MondrianDef</a> <br>
 			<i>none</i></td>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
 			A string to be displayed in the user interface. If not specified, 
-			the hierarchy's name is used. </DOC></td>
+			the hierarchy's name is used. Can be localized from Properties file 
+			using #{propertyname}. </DOC></td>
 		</tr>
 	</table>
 </blockquote>
@@ -985,7 +1014,7 @@ MondrianDef</a> <br>
 <h3>Content</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table22">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Element</th>
@@ -1032,7 +1061,7 @@ MondrianDef</a> <br>
 </blockquote>
 
 <p><a name="Level"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table23">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -1045,7 +1074,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table24">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -1076,7 +1105,9 @@ MondrianDef</a> <br>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
 			The name of the table that the column comes from. If this hierarchy 
 			is based upon just one table, defaults to the name of that table; 
-			otherwise, it is required. </DOC></td>
+			otherwise, it is required. Can be localized from Properties file 
+			using #{propertyname}. 
+</DOC></td>
 		</tr>
 		<tr>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
@@ -1219,7 +1250,18 @@ MondrianDef</a> <br>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
 			<i>none</i></td>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
-			A string being displayed instead of the level's name. 
+			A string being displayed instead of the level's name. Can be 
+			localized from Properties file using #{propertyname}. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			captionColumn </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			The name of the column which holds the caption for members. 
 </DOC></td>
 		</tr>
 	</table>
@@ -1228,7 +1270,7 @@ MondrianDef</a> <br>
 <h3>Content</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table25">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Element</th>
@@ -1310,7 +1352,7 @@ MondrianDef</a> <br>
 </blockquote>
 
 <p><a name="Closure"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table26">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -1330,7 +1372,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table27">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -1367,7 +1409,7 @@ MondrianDef</a> <br>
 <h3>Content</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table28">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Element</th>
@@ -1392,7 +1434,7 @@ MondrianDef</a> <br>
 </blockquote>
 
 <p><a name="Property"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table29">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -1409,7 +1451,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table30">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -1470,7 +1512,8 @@ MondrianDef</a> <br>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
 			<i>none</i></td>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
-			A string being displayed instead of the name. 
+			A string being displayed instead of the name. Can be localized from 
+			Properties file using #{propertyname}. 
 </DOC></td>
 		</tr>
 	</table>
@@ -1482,7 +1525,7 @@ MondrianDef</a> <br>
 	<i>empty</i></blockquote>
 
 <p><a name="Measure"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table31">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -1495,7 +1538,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table32">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -1524,7 +1567,7 @@ MondrianDef</a> <br>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
 			<i>none</i></td>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
-			Column which is source of this measure's valies. </DOC></td>
+			Column which is source of this measure's values. </DOC></td>
 		</tr>
 		<tr>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
@@ -1569,7 +1612,8 @@ MondrianDef</a> <br>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
 			<i>none</i></td>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
-			A string being displayed instead of the name. </DOC></td>
+			A string being displayed instead of the name. Can be localized from 
+			Properties file using #{propertyname}. </DOC></td>
 		</tr>
 		<tr>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
@@ -1588,7 +1632,7 @@ MondrianDef</a> <br>
 <h3>Content</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table33">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Element</th>
@@ -1614,7 +1658,7 @@ MondrianDef</a> <br>
 </blockquote>
 
 <p><a name="CalculatedMember"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table34">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -1627,7 +1671,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table35">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -1667,7 +1711,8 @@ MondrianDef</a> <br>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
 			<i>none</i></td>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
-			A string being displayed instead of the name. </DOC></td>
+			A string being displayed instead of the name. Can be localized from 
+			Properties file using #{propertyname}. </DOC></td>
 		</tr>
 		<tr>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
@@ -1707,7 +1752,7 @@ MondrianDef</a> <br>
 <h3>Content</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table36">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Element</th>
@@ -1743,7 +1788,7 @@ MondrianDef</a> <br>
 </blockquote>
 
 <p><a name="CalculatedMemberProperty"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table37">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -1761,7 +1806,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table38">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -1781,6 +1826,17 @@ MondrianDef</a> <br>
 			<i>none</i></td>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
 			Name of this member property. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			caption </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			A string being displayed instead of the Properties's name. Can be 
+			localized from Properties file using #{propertyname}. </DOC></td>
 		</tr>
 		<tr>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
@@ -1814,7 +1870,7 @@ MondrianDef</a> <br>
 	<i>empty</i></blockquote>
 
 <p><a name="NamedSet"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table39">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -1825,10 +1881,12 @@ MondrianDef</a> <br>
 </a>
 
 <blockquote>
-	<DOC>
-
+	<DOC>&lt;![CDATA[
+            
 	<p>Defines a named set which can be used in queries in the same way as a set 
 	defined using a WITH SET clause. </p>
+
+	<p>&nbsp;</p>
 
 	<p>A named set can be defined against a particular cube, or can be global to 
 	a schema. If it is defined against a cube, it is only available to queries 
@@ -1841,13 +1899,13 @@ MondrianDef</a> <br>
 	<p>A named set defined against a schema is available in all cubes and 
 	virtual cubes in that schema. However, it is only valid if the cube contains 
 	dimensions with the names required to make the formula valid.</p>
-	</DOC>
+	]]&gt; </DOC>
 </blockquote>
 
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table40">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -1885,7 +1943,7 @@ MondrianDef</a> <br>
 <h3>Content</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table41">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Element</th>
@@ -1911,7 +1969,7 @@ MondrianDef</a> <br>
 </blockquote>
 
 <p><a name="Formula"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table42">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -1932,7 +1990,7 @@ MondrianDef</a> <br>
 	<i>Text</i></blockquote>
 
 <p><a name="Parameter"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table43">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -1945,7 +2003,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table44">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -1985,7 +2043,7 @@ MondrianDef</a> <br>
 	<i>empty</i></blockquote>
 
 <p><a name="View"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table45">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -2009,7 +2067,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table46">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -2036,7 +2094,7 @@ MondrianDef</a> <br>
 <h3>Content</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table47">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Element</th>
@@ -2061,7 +2119,7 @@ MondrianDef</a> <br>
 </blockquote>
 
 <p><a name="SQL"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table48">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -2074,7 +2132,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table49">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -2105,7 +2163,7 @@ MondrianDef</a> <br>
 	<i>Text</i></blockquote>
 
 <p><a name="Join"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table50">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -2124,7 +2182,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table51">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -2183,7 +2241,7 @@ MondrianDef</a> <br>
 <h3>Content</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table52">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Element</th>
@@ -2218,7 +2276,7 @@ MondrianDef</a> <br>
 </blockquote>
 
 <p><a name="Table"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table53">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -2237,7 +2295,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table54">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -2289,7 +2347,7 @@ MondrianDef</a> <br>
 <h3>Content</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table55">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Element</th>
@@ -2336,7 +2394,7 @@ MondrianDef</a> <br>
 </blockquote>
 
 <p><a name="AggName"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table56">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -2355,7 +2413,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table57">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -2386,7 +2444,7 @@ MondrianDef</a> <br>
 	<i>empty</i></blockquote>
 
 <p><a name="AggPattern"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table58">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -2405,7 +2463,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table59">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -2433,7 +2491,7 @@ MondrianDef</a> <br>
 <h3>Content</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table60">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Element</th>
@@ -2458,7 +2516,7 @@ MondrianDef</a> <br>
 </blockquote>
 
 <p><a name="AggExclude"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table61">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -2471,7 +2529,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table62">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -2522,7 +2580,7 @@ MondrianDef</a> <br>
 	<i>empty</i></blockquote>
 
 <p><a name="AggFactCount"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table63">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -2549,7 +2607,7 @@ MondrianDef</a> <br>
 	<i>empty</i></blockquote>
 
 <p><a name="AggIgnoreColumn"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table64">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -2576,7 +2634,7 @@ MondrianDef</a> <br>
 	<i>empty</i></blockquote>
 
 <p><a name="AggForeignKey"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table65">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -2594,7 +2652,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table66">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -2635,7 +2693,7 @@ MondrianDef</a> <br>
 	<i>empty</i></blockquote>
 
 <p><a name="AggLevel"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table67">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -2648,7 +2706,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table68">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -2689,7 +2747,7 @@ MondrianDef</a> <br>
 	<i>empty</i></blockquote>
 
 <p><a name="AggMeasure"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table69">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -2702,7 +2760,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table70">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -2743,7 +2801,7 @@ MondrianDef</a> <br>
 	<i>empty</i></blockquote>
 
 <p><a name="Column"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table71">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -2762,7 +2820,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table72">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -2803,7 +2861,7 @@ MondrianDef</a> <br>
 	<i>empty</i></blockquote>
 
 <p><a name="KeyExpression"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table73">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -2830,7 +2888,7 @@ MondrianDef</a> <br>
 	<i>empty</i></blockquote>
 
 <p><a name="ParentExpression"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table74">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -2857,7 +2915,7 @@ MondrianDef</a> <br>
 	<i>empty</i></blockquote>
 
 <p><a name="OrdinalExpression"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table75">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -2884,7 +2942,7 @@ MondrianDef</a> <br>
 	<i>empty</i></blockquote>
 
 <p><a name="NameExpression"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table76">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -2910,8 +2968,35 @@ MondrianDef</a> <br>
 <blockquote>
 	<i>empty</i></blockquote>
 
+<p><a name="CaptionExpression"></p>
+<table cellSpacing="0" width="100%" border="1">
+	<tr>
+		<td bgColor="#3366cc"><font color="white">
+
+		<h2><i>Element</i> CaptionExpression</h2>
+		</font></td>
+	</tr>
+</table>
+</a>
+
+<h3>Class</h3>
+
+<blockquote>
+	<a style="color: #000066" href="#ExpressionView">ExpressionView </a>
+</blockquote>
+
+<h3>Attributes</h3>
+
+<blockquote>
+	<i>none</i></blockquote>
+
+<h3>Content</h3>
+
+<blockquote>
+	<i>empty</i></blockquote>
+
 <p><a name="Role"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table77">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -2929,7 +3014,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table78">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -2956,7 +3041,7 @@ MondrianDef</a> <br>
 <h3>Content</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table79">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Element</th>
@@ -2981,7 +3066,7 @@ MondrianDef</a> <br>
 </blockquote>
 
 <p><a name="SchemaGrant"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table80">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -3016,7 +3101,7 @@ MondrianDef</a> <br>
 <h3>Content</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table81">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Element</th>
@@ -3041,7 +3126,7 @@ MondrianDef</a> <br>
 </blockquote>
 
 <p><a name="CubeGrant"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table82">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -3068,7 +3153,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table83">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -3096,7 +3181,7 @@ MondrianDef</a> <br>
 <h3>Content</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table84">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Element</th>
@@ -3133,7 +3218,7 @@ MondrianDef</a> <br>
 </blockquote>
 
 <p><a name="DimensionGrant"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table85">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -3162,7 +3247,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table86">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -3193,7 +3278,7 @@ MondrianDef</a> <br>
 	<i>empty</i></blockquote>
 
 <p><a name="HierarchyGrant"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table87">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -3226,7 +3311,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table88">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -3281,7 +3366,7 @@ MondrianDef</a> <br>
 <h3>Content</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table89">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Element</th>
@@ -3306,7 +3391,7 @@ MondrianDef</a> <br>
 </blockquote>
 
 <p><a name="MemberGrant"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table90">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -3327,7 +3412,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table91">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -3367,7 +3452,7 @@ MondrianDef</a> <br>
 	<i>empty</i></blockquote>
 
 <p><a name="UserDefinedFunction"></p>
-<table cellSpacing="0" width="100%" border="1" style="font-size: 100%" id="table92">
+<table cellSpacing="0" width="100%" border="1">
 	<tr>
 		<td bgColor="#3366cc"><font color="white">
 
@@ -3388,7 +3473,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table93">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -3432,7 +3517,7 @@ MondrianDef</a> <br>
 	<i>empty</i></blockquote>
 
 <p><a name="CubeDimension"></p>
-<table cellSpacing="0" width="100%" border="0" style="font-size: 100%" id="table94">
+<table cellSpacing="0" width="100%" border="0">
 	<tr>
 		<td bgColor="#3366cc">
 		<font face="arial,sans-serif" color="white" size="-1">
@@ -3451,7 +3536,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table95">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -3474,6 +3559,17 @@ MondrianDef</a> <br>
 		</tr>
 		<tr>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			caption </td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>String</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
+			<i>none</i></td>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE"><DOC>
+			A string being displayed instead of the Dimension's name. Can be 
+			localized from Properties file using #{propertyname}. </DOC></td>
+		</tr>
+		<tr>
+			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
 			foreignKey </td>
 			<td style="font-size: 100%; vertical-align: top; padding: 2px; background-color: #EEE">
 			<i>String</i></td>
@@ -3493,7 +3589,7 @@ MondrianDef</a> <br>
 	<i>empty</i></blockquote>
 
 <p><a name="Relation"></p>
-<table cellSpacing="0" width="100%" border="0" style="font-size: 100%" id="table96">
+<table cellSpacing="0" width="100%" border="0">
 	<tr>
 		<td bgColor="#3366cc">
 		<font face="arial,sans-serif" color="white" size="-1">
@@ -3519,7 +3615,7 @@ MondrianDef</a> <br>
 	<i>empty</i></blockquote>
 
 <p><a name="AggTable"></p>
-<table cellSpacing="0" width="100%" border="0" style="font-size: 100%" id="table97">
+<table cellSpacing="0" width="100%" border="0">
 	<tr>
 		<td bgColor="#3366cc">
 		<font face="arial,sans-serif" color="white" size="-1">
@@ -3539,7 +3635,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table98">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -3567,7 +3663,7 @@ MondrianDef</a> <br>
 <h3>Content</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table99">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Element</th>
@@ -3635,7 +3731,7 @@ MondrianDef</a> <br>
 </blockquote>
 
 <p><a name="AggColumnName"></p>
-<table cellSpacing="0" width="100%" border="0" style="font-size: 100%" id="table100">
+<table cellSpacing="0" width="100%" border="0">
 	<tr>
 		<td bgColor="#3366cc">
 		<font face="arial,sans-serif" color="white" size="-1">
@@ -3649,7 +3745,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table101">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
@@ -3680,7 +3776,7 @@ MondrianDef</a> <br>
 	<i>empty</i></blockquote>
 
 <p><a name="Expression"></p>
-<table cellSpacing="0" width="100%" border="0" style="font-size: 100%" id="table102">
+<table cellSpacing="0" width="100%" border="0">
 	<tr>
 		<td bgColor="#3366cc">
 		<font face="arial,sans-serif" color="white" size="-1">
@@ -3702,7 +3798,7 @@ MondrianDef</a> <br>
 	<i>empty</i></blockquote>
 
 <p><a name="ExpressionView"></p>
-<table cellSpacing="0" width="100%" border="0" style="font-size: 100%" id="table103">
+<table cellSpacing="0" width="100%" border="0">
 	<tr>
 		<td bgColor="#3366cc">
 		<font face="arial,sans-serif" color="white" size="-1">
@@ -3732,7 +3828,7 @@ MondrianDef</a> <br>
 <h3>Content</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table104">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Element</th>
@@ -3757,7 +3853,7 @@ MondrianDef</a> <br>
 </blockquote>
 
 <p><a name="Grant"></p>
-<table cellSpacing="0" width="100%" border="0" style="font-size: 100%" id="table105">
+<table cellSpacing="0" width="100%" border="0">
 	<tr>
 		<td bgColor="#3366cc">
 		<font face="arial,sans-serif" color="white" size="-1">
@@ -3771,7 +3867,7 @@ MondrianDef</a> <br>
 <h3>Attributes</h3>
 
 <blockquote>
-	<table class="clsStd" border="1" id="table106">
+	<table class="clsStd" border="1">
 		<tr>
 			<th style="font-size: 100%; text-align: left; vertical-align: top; padding: 2px; background-color: #DDD">
 			Attribute</th>
