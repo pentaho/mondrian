@@ -60,8 +60,10 @@ public class Format {
     private String formatString;
     private BasicFormat format;
     private FormatLocale locale;
-    /** Maps (formatString, locale) pairs to Format objects. **/
-    private static HashMap cache = new HashMap();
+    /**
+     * Maps (formatString, locale) pairs to Format objects.
+     */
+    private static Map cache = new HashMap();
 
     static final char[] digits = {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
@@ -90,36 +92,60 @@ public class Format {
     };
     static final char intlCurrencySymbol = '\u08a4';
 
-    /** Maps strings representing locales (for example, "en_US_Boston",
-     * "en_US", "en", or "" for the default) to a {@link FormatLocale}. **/
-    static final Hashtable mapLocaleToFormatLocale = new Hashtable();
+    /**
+     * Maps strings representing locales (for example, "en_US_Boston",
+     * "en_US", "en", or "" for the default) to a {@link FormatLocale}.
+     */
+    static final Map mapLocaleToFormatLocale = new HashMap();
 
-    /** Locale for US English, also the default for English and for all
-     * locales. **/
+    /**
+     * Locale for US English, also the default for English and for all
+     * locales.
+     */
     static final FormatLocale locale_US = createLocale(
         '\0', '\0', null, null, null, null, null, null, null, null, Locale.US);
 
-  static final FormatLocale localeGer = createLocale(
-    '.', // thousandSeparator = ',' in en
-    ',', // decimalPlaceholder = '.' in en
-    ".", // dateSeparator = "/" in en
-    ":", // timeSeparator = ":" in en
-    "EUR", // currencySymbol = "$" in en
-    "#,##0.00\"EUR\"", // currencyFormat = "$#,##0.##" in en
-    new String[] {
-      "So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"},
-    new String[] {
-      "Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag",
-      "Samstag"},
-    new String[] {
-      "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep",
-      "Okt", "Nov", "Dez"},
-    new String[] {
-      "Januar", "Februar", "März", "April", "Mai", "Juni",
-      "Juli", "August", "September", "Oktober", "November",
-      "Dezember"},
-    Locale.GERMAN);
+    static final FormatLocale localeGer = createLocale(
+            '.', // thousandSeparator = ',' in en
+            ',', // decimalPlaceholder = '.' in en
+            ".", // dateSeparator = "/" in en
+            ":", // timeSeparator = ":" in en
+            "EUR", // currencySymbol = "$" in en
+            "#,##0.00\"EUR\"", // currencyFormat = "$#,##0.##" in en
+            new String[] {
+                "So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"},
+            new String[] {
+                "Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag",
+                "Samstag"},
+            new String[] {
+                "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep",
+                "Okt", "Nov", "Dez"},
+            new String[] {
+                "Januar", "Februar", "März", "April", "Mai", "Juni",
+                "Juli", "August", "September", "Oktober", "November",
+                "Dezember"},
+            Locale.GERMAN);
 
+    static final FormatLocale locale_ES = createLocale(
+            '.', // thousandSeparator = ',' in en
+            ',', // decimalPlaceholder = '.' in en
+            ".", // dateSeparator = "/" in en
+            ":", // timeSeparator = ":" in en
+            "EUR", // currencySymbol = "$" in en
+            "#.##0,00EUR", // currencyFormat = "$#,##0.##" in en
+            new String[] {
+                "D", "L", "M", "X", "J", "V", "S"},
+            new String[] {
+                "Domingo", "Lunes", "Martes", "Miercoles", "Jueves", "Viernes",
+                "Sabado"},
+            new String[] {
+                "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Aug", "Sep",
+                "Oct", "Nov", "Dic"},
+            new String[] {
+                "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre",
+                "Diciembre"},
+            new Locale("es"));
 
     public static void main(String[] args)
     {
