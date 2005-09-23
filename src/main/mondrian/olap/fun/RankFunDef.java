@@ -29,30 +29,6 @@ public abstract class RankFunDef extends FunDefBase {
         super(dummyFunDef);
     }
 
-    public Exp validateCall(Validator validator, FunCall call) {
-        // First, call the base method, to make sure that the call is valid.
-        final Exp exp = super.validateCall(validator, call);
-
-        // Now, rewrite "RANK(<<Tuple>>, <<Set>>, <<Expr>>)" to
-        // "RANK(<<Tuple>>, ORDER(<<Set>>, <<Expr>>))".
-        if (false && exp instanceof FunCall) {
-            FunCall call2 = (FunCall) exp;
-            final Exp[] args = call2.getArgs();
-            if (args.length == 3) {
-                final FunCall call3 =
-                        new FunCall("RANK", new Exp[] {
-                            args[0],
-                            new FunCall("ORDER", new Exp[] {
-                                args[1],
-                                args[2]
-                            })
-                        });
-                return call3.accept(validator);
-            }
-        }
-        return exp;
-    }
-
     protected Exp validateArg(
             Validator validator, FunCall call, int i, int type) {
         // If this is the two-argument form of the function,
@@ -60,15 +36,18 @@ public abstract class RankFunDef extends FunDefBase {
         // wrap second argument (the set)
         // in a function which will use the expression cache.
         if (call.getArgCount() == 2 && i == 1) {
+            Exp arg = call.getArgs()[1];
+            RankedListExp rankedListExp = new RankedListExp(arg);
             if (MondrianProperties.instance().EnableExpCache.get()) {
-                Exp arg = call.getArgs()[1];
                 final Exp cacheCall = new FunCall(
                         "$Cache",
                         Syntax.Internal,
                         new Exp[] {
-                            new RankedListExp(arg)
+                            rankedListExp
                         });
                 return validator.validate(cacheCall, false);
+            } else {
+                return validator.validate(rankedListExp, false);
             }
         }
         return super.validateArg(validator, call, i, type);

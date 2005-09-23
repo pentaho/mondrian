@@ -16,11 +16,13 @@ import junit.framework.ComparisonFailure;
 import junit.framework.Assert;
 import mondrian.olap.*;
 import mondrian.rolap.RolapConnectionProperties;
+import mondrian.resource.MondrianResource;
 
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Pattern;
+import java.util.Locale;
 
 /**
  * <code>TestContext</code> is a singleton class which contains the information
@@ -73,6 +75,10 @@ public class TestContext {
      * Creates a TestContext.
      */
     protected TestContext() {
+        // Run all tests in the US locale, not the system default locale,
+        // because the results all assume the US locale.
+        MondrianResource.setThreadLocale(Locale.US);
+
         this.pw = new PrintWriter(System.out, true);
         foodMartConnectString = getConnectString();
     }

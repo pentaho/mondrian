@@ -13,6 +13,7 @@ package mondrian.xmla;
 
 import mondrian.olap.*;
 import mondrian.test.TestContext;
+import mondrian.resource.MondrianResource;
 
 import junit.framework.TestCase;
 import org.eigenbase.xom.*;
@@ -84,6 +85,9 @@ public class XmlaTest extends TestCase {
      * and returns null.
      */
     private String executeRequest(String request) {
+        // Run all tests in the US locale, not the system default locale,
+        // because the results all assume the US locale.
+        MondrianResource.setThreadLocale(Locale.US);
         if (requestList != null) {
             requestList.add(request);
             return null;
@@ -124,7 +128,7 @@ public class XmlaTest extends TestCase {
 
     private void assertRequestYields(String request, String expected) {
         final String response = executeRequest(request);
-        assertEquals(expected, response);
+        TestContext.assertEqualsVerbose(expected, response);
     }
 
     static String fold(String[] strings) {
@@ -1510,6 +1514,33 @@ public class XmlaTest extends TestCase {
             "                    <DisplayInfo>0</DisplayInfo>",
             "                  </Member>",
             "                </Tuple>",
+            "                <Tuple>",
+            "                  <Member Hierarchy=\"Measures\">",
+            "                    <UName>[Measures].[Profit]</UName>",
+            "                    <Caption>Profit</Caption>",
+            "                    <LName>[Measures].[MeasuresLevel]</LName>",
+            "                    <LNum>0</LNum>",
+            "                    <DisplayInfo>0</DisplayInfo>",
+            "                  </Member>",
+            "                </Tuple>",
+            "                <Tuple>",
+            "                  <Member Hierarchy=\"Measures\">",
+            "                    <UName>[Measures].[Profit last Period]</UName>",
+            "                    <Caption>Profit last Period</Caption>",
+            "                    <LName>[Measures].[MeasuresLevel]</LName>",
+            "                    <LNum>0</LNum>",
+            "                    <DisplayInfo>0</DisplayInfo>",
+            "                  </Member>",
+            "                </Tuple>",
+            "                <Tuple>",
+            "                  <Member Hierarchy=\"Measures\">",
+            "                    <UName>[Measures].[Profit Growth]</UName>",
+            "                    <Caption>Gewinn-Wachstum</Caption>",
+            "                    <LName>[Measures].[MeasuresLevel]</LName>",
+            "                    <LNum>0</LNum>",
+            "                    <DisplayInfo>0</DisplayInfo>",
+            "                  </Member>",
+            "                </Tuple>",
             "              </Tuples>",
             "            </Axis>",
             "          </Axes>",
@@ -1538,6 +1569,21 @@ public class XmlaTest extends TestCase {
             "              <Value xsi:type=\"xsd:int\">5581</Value>",
             "              <FmtValue>5,581</FmtValue>",
             "              <FormatString>#,###</FormatString>",
+            "            </Cell>",
+            "            <Cell CellOrdinal=\"5\">",
+            "              <Value xsi:type=\"xsd:double\">339610.89639999997</Value>",
+            "              <FmtValue>$339,610.90</FmtValue>",
+            "              <FormatString>$#,##0.00</FormatString>",
+            "            </Cell>",
+            "            <Cell CellOrdinal=\"6\">",
+            "              <Value xsi:type=\"xsd:double\">339610.89639999997</Value>",
+            "              <FmtValue>$339,610.90</FmtValue>",
+            "              <FormatString>$#,##0.00</FormatString>",
+            "            </Cell>",
+            "            <Cell CellOrdinal=\"7\">",
+            "              <Value xsi:type=\"xsd:double\">0</Value>",
+            "              <FmtValue>0.0%</FmtValue>",
+            "              <FormatString>0.0%</FormatString>",
             "            </Cell>",
             "          </CellData>",
             "        </root>",
