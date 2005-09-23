@@ -284,7 +284,7 @@ public class TestContext {
             String expression,
             String expected) {
         Axis axis = executeAxis(expression);
-        Assert.assertEquals(expected, toString(axis.positions));
+        assertEqualsVerbose(expected, toString(axis.positions));
     }
 
     /**

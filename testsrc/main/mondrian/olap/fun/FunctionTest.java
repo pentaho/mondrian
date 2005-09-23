@@ -597,6 +597,145 @@ public class FunctionTest extends FoodMartTestCase {
         assertAxisReturns("{[Store].[All Stores].Parent.Parent}", "");
     }
 
+    public void testMembers() {
+        // <Level>.members
+        assertAxisReturns("{[Customers].[Country].Members}", fold(new String[] {
+            "[Customers].[All Customers].[Canada]",
+            "[Customers].[All Customers].[Mexico]",
+            "[Customers].[All Customers].[USA]"
+        }));
+
+        // <Level>.members applied to 'all' level
+        assertAxisReturns("{[Customers].[(All)].Members}",
+                "[Customers].[All Customers]");
+
+        // <Level>.members applied to measures dimension
+        // Note -- no cube-level calculated members are present
+        assertAxisReturns("{[Measures].[MeasuresLevel].Members}",
+                fold(new String[] {
+                    "[Measures].[Unit Sales]",
+                    "[Measures].[Store Cost]",
+                    "[Measures].[Store Sales]",
+                    "[Measures].[Sales Count]",
+                    "[Measures].[Customer Count]",
+                }));
+
+        // <Dimension>.members applied to Measures
+        assertAxisReturns("{[Measures].Members}",
+                fold(new String[] {
+                    "[Measures].[Unit Sales]",
+                    "[Measures].[Store Cost]",
+                    "[Measures].[Store Sales]",
+                    "[Measures].[Sales Count]",
+                    "[Measures].[Customer Count]",
+                }));
+
+        // <Dimension>.members applied to a query with calc measures
+        // Again, no calc measures are returned
+        assertQueryReturns("with member [Measures].[Xxx] AS ' [Measures].[Unit Sales] '" +
+                "select {[Measures].members} on columns from [Sales]",
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Measures].[Unit Sales]}",
+                    "{[Measures].[Store Cost]}",
+                    "{[Measures].[Store Sales]}",
+                    "{[Measures].[Sales Count]}",
+                    "{[Measures].[Customer Count]}",
+                    "Row #0: 266,773",
+                    "Row #0: 225,627.23",
+                    "Row #0: 565,238.13",
+                    "Row #0: 86,837",
+                    "Row #0: 5,581",
+                    ""}));
+    }
+
+    public void testAllMembers() {
+        // <Level>.allmembers
+        assertAxisReturns("{[Customers].[Country].allmembers}",
+                fold(new String[] {
+                    "[Customers].[All Customers].[Canada]",
+                    "[Customers].[All Customers].[Mexico]",
+                    "[Customers].[All Customers].[USA]"
+        }));
+
+        // <Level>.allmembers applied to 'all' level
+        assertAxisReturns("{[Customers].[(All)].allmembers}",
+                "[Customers].[All Customers]");
+
+        // <Level>.allmembers applied to measures dimension
+        // Note -- cube-level calculated members ARE present
+        assertAxisReturns("{[Measures].[MeasuresLevel].allmembers}",
+                fold(new String[] {
+                    "[Measures].[Unit Sales]",
+                    "[Measures].[Store Cost]",
+                    "[Measures].[Store Sales]",
+                    "[Measures].[Sales Count]",
+                    "[Measures].[Customer Count]",
+                    "[Measures].[Profit]",
+                    "[Measures].[Profit last Period]",
+                    "[Measures].[Profit Growth]",
+                }));
+
+        // <Dimension>.allmembers applied to Measures
+        assertAxisReturns("{[Measures].allmembers}",
+                fold(new String[] {
+                    "[Measures].[Unit Sales]",
+                    "[Measures].[Store Cost]",
+                    "[Measures].[Store Sales]",
+                    "[Measures].[Sales Count]",
+                    "[Measures].[Customer Count]",
+                    "[Measures].[Profit]",
+                    "[Measures].[Profit last Period]",
+                    "[Measures].[Profit Growth]",
+                }));
+
+        // <Dimension>.allmembers applied to a query with calc measures
+        // Again, no calc measures are returned
+        assertQueryReturns("with member [Measures].[Xxx] AS ' [Measures].[Unit Sales] '" +
+                "select {[Measures].allmembers} on columns from [Sales]",
+                fold(new String[] {
+                    "Axis #0:",
+                    "{}",
+                    "Axis #1:",
+                    "{[Measures].[Unit Sales]}",
+                    "{[Measures].[Store Cost]}",
+                    "{[Measures].[Store Sales]}",
+                    "{[Measures].[Sales Count]}",
+                    "{[Measures].[Customer Count]}",
+                    "{[Measures].[Profit]}",
+                    "{[Measures].[Profit last Period]}",
+                    "{[Measures].[Profit Growth]}",
+                    "Row #0: 266,773",
+                    "Row #0: 225,627.23",
+                    "Row #0: 565,238.13",
+                    "Row #0: 86,837",
+                    "Row #0: 5,581",
+                    "Row #0: $339,610.90",
+                    "Row #0: $339,610.90",
+                    "Row #0: 0.0%",
+                    ""}));
+    }
+
+    public void testStripCalculatedMembers() {
+        assertAxisReturns("StripCalculatedMembers({[Measures].AllMembers})",
+                fold(new String[] {
+                    "[Measures].[Unit Sales]",
+                    "[Measures].[Store Cost]",
+                    "[Measures].[Store Sales]",
+                    "[Measures].[Sales Count]",
+                    "[Measures].[Customer Count]",
+                }));
+
+        // applied to empty set
+        assertAxisReturns("StripCalculatedMembers({[Gender].Parent})", "");
+
+        assertSetExprDependsOn(
+                "StripCalculatedMembers([Customers].CurrentMember.Children)",
+                "{[Customers]}");
+    }
+
     public void testCurrentMemberDepends() {
         if (false) {
             assertMemberExprDependsOn("[Gender].CurrentMember", "{[Gender]}");
@@ -1169,6 +1308,9 @@ public class FunctionTest extends FoodMartTestCase {
                 allDimsExcept(new String[] {"[Store]"}));
 
         assertExprReturns("count({[Promotion Media].[Media Type].members})", "14");
+
+        // applied to an empty set
+        assertExprReturns("count({[Gender].Parent}, IncludeEmpty)", "0");
     }
 
     public void testCountExcludeEmpty() {
@@ -1205,7 +1347,11 @@ public class FunctionTest extends FoodMartTestCase {
                     "Row #3: 14",
                     "Row #4: 647",
                     "Row #4: 12" + nl}));
+
+        // applied to an empty set
+        assertExprReturns("count({[Gender].Parent}, ExcludeEmpty)", "0");
     }
+
     //todo: testCountNull, testCountNoExp
 
     public void testCovariance() {
@@ -3784,6 +3930,13 @@ public class FunctionTest extends FoodMartTestCase {
                     "[Store].[All Stores].[USA].[CA]",
                     "[Store].[All Stores].[USA].[OR]",
                     "[Store].[All Stores].[USA].[WA]"}));
+    }
+
+    public void testSiblingsD() {
+        // The null member has no siblings -- not even itself
+        assertAxisReturns("{[Gender].Parent.Siblings}", "");
+
+        assertExprReturns("count ( [Gender].parent.siblings, includeempty )", "0");
     }
 
     public void testSubset() {

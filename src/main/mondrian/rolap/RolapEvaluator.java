@@ -108,11 +108,13 @@ class RolapEvaluator implements Evaluator {
         final Map expResultCache = new HashMap();
         final RolapCube cube;
         final RolapConnection connection;
+        final SchemaReader schemaReader;
 
         RolapEvaluatorRoot(RolapResult result) {
             this.result = result;
             this.cube = (RolapCube) result.getQuery().getCube();
             this.connection = (RolapConnection) result.getQuery().getConnection();
+            this.schemaReader = cube.getSchemaReader(connection.role);
         }
     }
 
@@ -141,7 +143,7 @@ class RolapEvaluator implements Evaluator {
     }
 
     public SchemaReader getSchemaReader() {
-        return root.connection.getSchemaReader();
+        return root.schemaReader;
     }
 
     public Evaluator push(Member[] members) {

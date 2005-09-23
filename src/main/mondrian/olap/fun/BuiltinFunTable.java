@@ -1618,23 +1618,24 @@ public class BuiltinFunTable extends FunTableImpl {
         define(new FunDefBase(
                 "Members",
                 "<Dimension>.Members",
-                "Returns the set of all members in a dimension.",
+                "Returns the set of members in a dimension.",
                 "pxd") {
             public Object evaluate(Evaluator evaluator, Exp[] args) {
                 Dimension dimension = (Dimension) getArg(evaluator, args, 0);
                 Hierarchy hierarchy = dimension.getHierarchy();
-                return addMembers(evaluator.getSchemaReader(), new ArrayList(), hierarchy);
+                List memberList = addMembers(evaluator.getSchemaReader(),
+                        new ArrayList(), hierarchy);
+                if (memberList != null) {
+                    removeCalculatedMembers(memberList);
+                }
+                return memberList;
             }
         });
-
-        /*
-         * Clone of <Dimension>.Members for compatibility with MSAS
-         */
 
         define(new FunDefBase(
                 "AllMembers",
                 "<Dimension>.AllMembers",
-                "Returns the set of all members in a dimension.",
+                "Returns a set that contains all members, including calculated members, of the specified dimension.",
                 "pxd") {
             public Object evaluate(Evaluator evaluator, Exp[] args) {
                 Dimension dimension = (Dimension) getArg(evaluator, args, 0);
@@ -1646,23 +1647,23 @@ public class BuiltinFunTable extends FunTableImpl {
         define(new FunDefBase(
                 "Members",
                 "<Hierarchy>.Members",
-                "Returns the set of all members in a hierarchy.",
+                "Returns the set of members in a hierarchy.",
                 "pxh") {
             public Object evaluate(Evaluator evaluator, Exp[] args) {
                 Hierarchy hierarchy = (Hierarchy) getArg(evaluator, args, 0);
-                return addMembers(evaluator.getSchemaReader(),
-                    new ArrayList(), hierarchy);
+                List memberList = addMembers(evaluator.getSchemaReader(),
+                        new ArrayList(), hierarchy);
+                if (memberList != null) {
+                    removeCalculatedMembers(memberList);
+                }
+                return memberList;
             }
         });
-
-        /*
-         * Clone of <Hierarchy>.Members for compatibility with MSAS
-         */
 
         define(new FunDefBase(
                 "AllMembers",
                 "<Hierarchy>.AllMembers",
-                "Returns the set of all members in a hierarchy.",
+                "Returns a set that contains all members, including calculated members, of the specified hierarchy.",
                 "pxh") {
             public Object evaluate(Evaluator evaluator, Exp[] args) {
                 Hierarchy hierarchy = (Hierarchy) getArg(evaluator, args, 0);
@@ -1674,26 +1675,28 @@ public class BuiltinFunTable extends FunTableImpl {
         define(new FunDefBase(
                 "Members",
                 "<Level>.Members",
-                "Returns the set of all members in a level.",
+                "Returns the set of members in a level.",
                 "pxl") {
             public Object evaluate(Evaluator evaluator, Exp[] args) {
                 Level level = (Level) getArg(evaluator, args, 0);
-                return Arrays.asList(evaluator.getSchemaReader().getLevelMembers(level));
+                Member[] members = evaluator.getSchemaReader().getLevelMembers(level);
+                ArrayList memberList = new ArrayList(Arrays.asList(members));
+                if (memberList != null) {
+                    removeCalculatedMembers(memberList);
+                }
+                return memberList;
             }
         });
-
-        /*
-         * Clone of <Level>.Members for compatibility with MSAS
-         */
 
         define(new FunDefBase(
                 "AllMembers",
                 "<Level>.AllMembers",
-                "Returns the set of all members in a level.",
+                "Returns a set that contains all members, including calculated members, of the specified level.",
                 "pxl") {
             public Object evaluate(Evaluator evaluator, Exp[] args) {
                 Level level = (Level) getArg(evaluator, args, 0);
-                return Arrays.asList(evaluator.getSchemaReader().getLevelMembers(level));
+                Member[] members = evaluator.getSchemaReader().getLevelMembers(level);
+                return new ArrayList(Arrays.asList(members));
             }
         });
 
@@ -1775,20 +1778,32 @@ public class BuiltinFunTable extends FunTableImpl {
                 new String[]{"fx", "fxm"},
                 LevelType.TimeQuarters));
 
-        if (false) define(new FunDefBase(
+        define(new FunDefBase(
                 "StripCalculatedMembers",
                 "StripCalculatedMembers(<Set>)",
                 "Removes calculated members from a set.",
-                "fx*"));
+                "fxx") {
+            // implement FunDef
+            public Object evaluate(Evaluator evaluator, Exp[] args) {
+                List memberList = (List) getArg(evaluator, args, 0);
+                if (memberList != null) {
+                    removeCalculatedMembers(memberList);
+                }
+                return memberList;
+            }
+        });
 
-        // "Siblings" is not a standard MDX function.
         define(new FunDefBase(
                 "Siblings",
                 "<Member>.Siblings",
-                "Returns the set of siblings of the specified member.",
+                "Returns the siblings of a specified member, including the member itself.",
                 "pxm") {
             public Object evaluate(Evaluator evaluator, Exp[] args) {
                 Member member = getMemberArg(evaluator, args, 0, true);
+                if (member.isNull()) {
+                    // the null member has no siblings -- not even itself
+                    return null;
+                }
                 Member parent = member.getParentMember();
                 final SchemaReader schemaReader = evaluator.getSchemaReader();
                 Member[] siblings = (parent == null)

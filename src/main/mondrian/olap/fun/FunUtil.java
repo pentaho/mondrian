@@ -461,6 +461,21 @@ public class FunUtil extends Util {
     }
 
     /**
+     * Removes every member from a list which is calculated.
+     * The list must not be null, and must consist only of members.
+     */
+    static void removeCalculatedMembers(List memberList)
+    {
+        for (int i = 0; i < memberList.size(); i++) {
+            Member member = (Member) memberList.get(i);
+            if (member.isCalculated()) {
+                memberList.remove(i);
+                --i;
+            }
+        }
+    }
+
+    /**
      * Returns whether <code>m0</code> is an ancestor of <code>m1</code>.
      *
      * @param strict if true, a member is not an ancestor of itself
@@ -1173,6 +1188,9 @@ public class FunUtil extends Util {
     public static Object count(Evaluator evaluator,
                                List members,
                                boolean includeEmpty) {
+        if (members == null) {
+            return new Double(0);
+        }
         if (includeEmpty) {
             return new Double(members.size());
         } else {
