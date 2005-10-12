@@ -273,6 +273,9 @@ text-align:right;
             if (request.getParameter("whichquery") != null) {
                 out.println(queries[Integer.valueOf(request.getParameter("whichquery")).intValue()]);
             }
+            if (request.getParameter("queryString") != null) {
+                out.println(request.getParameter("queryString"));
+            }
         %></textarea>
             </td>
         </tr>
