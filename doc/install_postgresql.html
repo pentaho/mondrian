@@ -1,0 +1,564 @@
+<HTML>
+<!--
+  == $Id$
+  == This software is subject to the terms of the Common Public License
+  == Agreement, available at the following URL:
+  == http://www.opensource.org/licenses/cpl.html.
+  == (C) Copyright 2001-2005 Kana Software, Inc. and others.
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  ==
+  == Author: Suhas Mallya, suhasmallya[AT]users[DOT]sourceforge[DOT]net
+  == Created: 14 October 2005
+  -->
+<HEAD>
+
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Eclipse 3.1">
+
+<TITLE>
+Installing Mondrian 1.1.5 on Windows with PostgreSQL
+</TITLE>
+
+<STYLE>
+	.normal	{font-family: verdana, arial, helvetica, sans-serif; font-size:10pt; text-decoration:none}
+	.docTitle {font-family: verdana, arial, helvetica, sans-serif; font-size:12pt; font-weight:bold; font-weight: bold; color:#990000}
+	.sectionTitle {font-weight: bold; color:#990000}
+	.sectionTitleBand {font-weight: bold; color:#FFFFFF; background-color:#990000; text-decoration:underlined; valign:center; padding-left:1px; padding-right:1px; padding-top:2px; padding-bottom:2px}
+	.sectionTitleClearBG {font-weight: normal; color:#990000; background-color:#FFFFFF; valign:center; padding-left:1px; padding-right:1px; padding-top:2px; padding-bottom:2px}
+	.caution {font-family: verdana, arial, helvetica, sans-serif; font-size:9pt; font-weight:bold; background-color:yellow; text-decoration:none; color:red}
+	.notice  {font-family: verdana, arial, helvetica, sans-serif; font-size:9pt; font-weight:bold; background-color:yellow; text-decoration:none; color:blue}
+	.whiteText {color: white}
+	.blueText {color: blue; text-decoration:none}
+	.code	{font-family: "Courier New"}
+
+td.content {
+  color: #333333;
+  text-decoration: none;
+  font-size: 12px;
+  line-height: 14px;
+  font-family: verdana, arial, helvetica, sans-serif;
+}
+	
+</STYLE>
+</HEAD>
+
+<BODY>
+	
+	<!-- Table A: outer table containing two columns for numbering/margin and content -->
+	
+	<table width="90%" align="left" border=0 cellpadding=0 cellspacing=0>
+
+		<!-- Table of contents -->
+
+		<tr class="normal">
+			<td colspan="3" align="left" class="docTitle">Instructions for installing Mondrian 1.1.5 on Windows, with PostgreSQL (8.x)</td>
+				
+		<tr class="normal">
+			<td colspan="3" align="left"><br>
+			By Suhas Mallya; last updated: Oct. 14, 2005, 5:50PM IST.</td>
+				
+		<tr class="normal">
+			<td colspan="3" align="left"><A name="Contents"></A>&nbsp;</td>
+		
+		<tr class="normal">
+			<td colspan="3" align="left" class="sectionTitleBand">Contents</td>
+		
+		<tr><td colspan="3" class="normal">&nbsp;</td></tr>
+		
+		<tr class="normal">
+			<td width="5%" align="center" class="normal">&nbsp;</td>
+			<td width="95%" colspan="2" align="left" class="normal">
+				1.&nbsp;&nbsp;<A href="#01-AboutTheNotes">About these installation notes</A><BR>
+				2.&nbsp;&nbsp;<A href="#02-DownloadDistribution">Download and extract the distribution files</A><BR>
+				3.&nbsp;&nbsp;<A href="#03-SetUpEnvironment">Set up your environment</A><BR>
+				4.&nbsp;&nbsp;<A href="#04-LoadTestDB">Load the test database</A><BR>
+				5.&nbsp;&nbsp;<A href="#05-InstallationNotes">Install Mondrian (build the "mondrian.war" file)</A><BR>
+				6.&nbsp;&nbsp;<A href="#06-DeployMondrian">Deploy the application</A><BR>
+				7.&nbsp;&nbsp;<A href="#07-Disclaimer">Disclaimer</A><BR>
+			</td>
+
+		<tr><td colspan="3" class="normal">&nbsp;</td></tr>		
+		<tr><td colspan="3" class="normal"><A name="#02-SettingUpEnvironment"></A><A name="01-AboutTheNotes"></A>&nbsp;</td></tr>
+
+
+	
+		<!------------------------------------------------------------ 
+			Section 1: About these installation notes 
+			------------------------------------------------------------>
+	
+		<tr class="normal">
+			<td width="5%" align="center" class="sectionTitle">1.</td>
+			<td width="90%" align="left" class="sectionTitleBand">About these installation notes
+			</td>
+			<td width="5%" align="right" class="sectionTitleClearBG">[<A href="#Contents" class="blueText" title="Return to the table of contents">Top</A>]</td>
+				
+		<tr><td colspan="3" class="normal">&nbsp;</td></tr>
+
+		<tr class="normal">
+			<td width="5%" align="center" class="normal">&nbsp;</td>
+			<td width="95%" colspan="2" align="left" class="normal">
+				The binary distribution of Mondrian 1.1.5 works well with little or no tweaking, with the Access database 
+				(.mdb file) provided with the distribution. Getting it to work with PostgreSQL however, requires some tweaking,
+				and the most reliable way to get it up and running is to rebuild the "mondrian.war" from the source (available 
+				as part of the binary distribution).
+				<BR><BR>
+				
+				These installation notes will help you install Mondrian in the following environment: <BR>
+				
+				<UL>
+				<LI><STRONG>OS</STRONG>: Windows XP/2000 (for database and servlet container)</LI>
+				<LI><STRONG>JDK</STRONG>: JDK 1.5.0_01</LI>
+				<LI><STRONG>Database</STRONG>: PostgreSQL 8.0</LI>
+				<LI><STRONG>Servlet container</STRONG>: Tomcat 5.0.28</LI>
+				</UL>
+				 
+				You should still be able to use these installation instructions with variations in the above environment 
+				(e.g., a different version of Tomcat or a different version of PostgreSQL, etc.). However, it is more than 
+				likely that in case of version differences, some steps may either be redundant (e.g., if you are installing 
+				on a higher version of Tomcat) or some steps may be missing (e.g., if you are installing on a lower version 
+				of Tomcat). 
+				<BR><BR>
+				
+				These notes have been produced based on <strong>
+				<a href="install.html#Appendix_B_Patrick_Tallmans_installation_instructions">Patrick Tallman's instructions for installing on Windows</a></strong>. Those instructions appear to be based on Mondrian 1.0.1 and therefore
+				appeared out of sync with Mondrian 1.1.5. These notes retain significant portions of Patrick Tallman's instructions, but excludes portions that are
+				now redundant and addresses some issues not specifically addressed earlier. The instructions have also been reorganized.
+				<BR><BR>
+				 
+				Please note the use of the following symbols in this document:<BR><BR>
+				<span class="caution">[!]</span>: indicates an instruction/observation that requires special attention (either because
+				you must be careful with the version or because it can result in a common human error).<BR><BR>
+				<span class="notice">[#]</span>: indicates an explanation/special notice usually intended to explain a particular approach or remind
+				you of a previous situation.		
+			</td>
+		
+		<tr><td colspan="3" class="normal">&nbsp;</td></tr>		
+		<tr><td colspan="3" class="normal"><A name="#02-DownloadDistribution"></A>&nbsp;</td></tr>
+
+
+
+		<!------------------------------------------------------------ 
+			Section 2: Download and extract the distribution files 
+			------------------------------------------------------------>
+	
+		<tr class="normal">
+			<td width="5%" align="center" class="sectionTitle">2.</td>
+			<td width="90%" align="left" class="sectionTitleBand">Download and extract the distribution files</td>
+			<td width="5%" align="right" class="sectionTitleClearBG">[<A href="#Contents" class="blueText" title="Return to the table of contents">Top</A>]</td>
+				
+		<tr><td colspan="3" class="normal">&nbsp;</td></tr>
+
+		<tr class="normal">
+			<td width="5%" align="center" class="normal">&nbsp;</td>
+			<td width="95%" align="left" class="normal" colspan="2">
+				Along with the Mondrian distribution, you must also download the JPivot distribution because the build script uses a .war file from the JPivot
+				distribution. The distribution is available at the following URLs:
+				<BR><BR>
+				
+				<UL>
+					<LI><STRONG>Mondrian</STRONG>: <A href="http://sourceforge.net/projects/mondrian/" title="Click here to get the latest version of Mondrian">http://sourceforge.net/projects/mondrian/</A> - download Mondrian 1.1.5 from this URL</LI>
+					<LI><STRONG>JPivot</STRONG>: <A href="http://sourceforge.net/projects/mondrian/" title="Click here to get the latest version of Mondrian">http://sourceforge.net/projects/jpivot/</A> - download "JPivot Web Frontend" from this URL</LI>
+				</UL>	
+
+				<BR>
+				Once you have downloaded the distribution files, extract them as follows:
+				<OL>
+					<LI>Extract the contents of <strong>mondrian-1.1.5.zip</strong>. This will create a folder called "<span class="code">mondrian-1.1.5</span>". 
+						It is recommended that you rename this to "<span class="code">mondrian-1.1.5-bin</span>". <U>This is only for housekeeping purposes and has no
+						bearing whatsoever on the installation process</U>. This folder (either "<span class="code">mondrian-1.1.5</span>" or "<span class="code">mondrian-1.1.5-bin/</span>",
+						depending on whether you chose to rename the directory or not) will hereinafter be referred to as <span class="code"><strong>%BIN_LOCATION%</strong></span>.<BR>&nbsp;</LI>
+					<LI>Create a folder called "<span class="code">mondrian-1.1.5-src</span>" at the same level as "<span class="code">%BIN_LOCATION%</span>".<BR>&nbsp;</LI>			
+					<LI>Extract the contents of <strong>mondrian-1.1.5-src.zip</strong> (located in "<span class="code">%BIN_LOCATION%/dist/</span>") into the folder "<span class="code">mondrian-1.1.5-src</span>". All contents will automatically get created in the folder "<span class="code">mondrian-1.1.5-src/mondrian-1.1.5/</span>". 
+						If you wish, for disambiguity and ease of housekeeping, you may move all contents from "<span class="code">mondrian-1.1.5-src/mondrian-1.1.5/</span>" directly into "<span class="code">mondrian-1.1.5-src/</span>". 
+						This folder (either "<span class="code">mondrian-1.1.5-src/mondrian-1.1.5</span>" or "<span class="code">mondrian-1.1.5-src/</span>", depending on whether you chose to move the contents or not) will hereinafter be referred to as <span class="code"><strong>%DEV_LOCATION%</strong></span>.<BR>&nbsp;</LI>			
+					<LI>Extract the contents of <strong>jpivot-1.4.0.zip</strong>. This will contain a file called "<span class="code">jpivot.war</span>". Copy this file into "<span class="code">%DEV_LOCATION%/lib</span>".</LI>								
+				</OL>
+			</td>
+		
+
+		<tr><td colspan="3" class="normal">&nbsp;</td></tr>		
+		<tr><td colspan="3" class="normal"><A name="#03-SetUpEnvironment"></A>&nbsp;</td></tr>
+
+
+
+		<!------------------------------------------------------------ 
+			Section 3: Set up your environment 
+			------------------------------------------------------------>
+		
+	
+		<tr class="normal">
+			<td width="5%" align="center" class="sectionTitle">3.</td>
+			<td width="90%" align="left" class="sectionTitleBand">Set up your environment</td>
+			<td width="5%" align="right" class="sectionTitleClearBG">[<A href="#Contents" class="blueText" title="Return to the table of contents">Top</A>]</td>
+				
+		<tr><td colspan="3" class="normal">&nbsp;</td></tr>
+
+		<tr class="normal">
+			<td width="5%" align="center" class="normal">&nbsp;</td>
+			<td width="95%" align="left" class="normal" colspan="2">
+				This section walks you through the steps to set up your environment to build the Mondrian web archive. As part of setting up the environment, you 
+				need to ensure that you have the resources described in this section. If you do not have the latest/recommended versions, you may need to download
+				them from the URLs specified. Once you have downloaded these resources, you must set up certain environment variables. 
+				<BR><BR>
+				
+				<STRONG><U>Resources</U></STRONG>
+				<BR><BR>
+				
+				You will need (to download) the following in order to set up your environment:
+				<UL>
+					<LI><STRONG>JDK</STRONG>: <A href="http://java.sun.com/j2se/1.5.0/download.jsp" title="Click here to download JDK 1.5">JDK 1.5 or higher (http://java.sun.com/j2se/1.5.0/download.jsp)</A></LI>
+					<LI><STRONG>Servlet container</STRONG>: <A href="http://jakarta.apache.org/site/downloads/downloads_tomcat-5.cgi" title="Click here to download a version of Tomcat 5.0+">Tomcat 5.x</A></LI>
+					<LI><STRONG>Database</STRONG>: <A href="http://www.pervasivepostgres.com/downloads/" title="Click here to get the latest version of Postgres">PostgreSQL 8.0 or higher (http://www.pervasivepostgres.com/downloads/ or http://www.postgresql.org/download/)</A></LI>
+					<LI><STRONG>JDBC driver</STRONG>: <A href="http://jdbc.postgresql.org/" title="Click here to get the JDBC driver for Postgres">PostgreSQL JDBC driver (http://jdbc.postgresql.org/)</A></LI>
+				</UL>	
+			
+				Typically, the above will suffice if you need to merely deploy a binary distribution that you have downloaded. In order
+				to build the "<span class="code">mondrian.war</span>" from source, you will require the following additional resources.
+				<BR><BR>
+				
+				<span class="caution">[!]</span> While variations of the database (and therefore of the JDBC driver) or of the servlet container are possible, the following
+				cannot be changed in the deployment environment since there is a strong dependency on these packages/components.
+				<br>
+				 
+				<UL>
+					<LI><STRONG>Xalan</STRONG>: <A href="http://xml.apache.org/xalan-j/" title="Click here to get the latest version of Xalan">Xalan 2.7.0 or higher recommended (http://xml.apache.org/xalan-j/)</A> (Xalan is an XSLT processor that helps you convert XML documents into other formats; typically, HTML)</LI>
+					<LI><STRONG>Ant</STRONG>: <A href="http://archive.apache.org/dist/ant/binaries/" title="Click here to get Ant 1.5.x">Ant 1.5.x (http://archive.apache.org/dist/ant/binaries/)</A>.
+						<BR><span class="caution">[!]</span> The latest release is Ant 1.6.5, but a few problems have been reported with this version. It is therefore recommended
+						that you use 1.5.x</LI>
+					<LI><STRONG>JUnit</STRONG>: <A href="http://prdownloads.sourceforge.net/junit/junit3.8.1.zip?download" title="Click here to download JUnit 3.8.1">JUnit - 3.8.x recommended (http://www.junit.org/index.htm)</A></LI>
+				</UL>
+				<BR>
+				It is likely that one or more of these components or an older version of it, is already installed on your system. 
+				Please contact your System Administrator if you need help finding out if you have an older version, or with installation
+				of any of these softwares that you have to download. Installation instructions for each of the above are 
+				available on the respective websites from which you will download these resources.
+
+				<BR><BR>				
+				<STRONG><U>Environment variables</U></STRONG>
+				<BR><BR>
+
+				Once you have installed/ascertained that you have all the above components, you must set up some environment variables (these are used by the build script):
+
+				<UL>
+					<LI>ANT_HOME</LI>
+					<LI>CATALINA_HOME</LI>
+					<LI>JAVA_HOME</LI>
+					<LI>JUNIT_HOME</LI>					
+					<LI>XALAN_HOME</LI>					
+				</UL>	
+				
+				You may skip this step (setting up environment variables) if you wish, but you must then take care of it in the build script. It is strongly recommended that you
+				address this at this point by setting up environment variables, unless you have a strong reason not to do so.
+				<BR><BR>
+				
+				In addition to the above environment variables, you must also set up a DSN. You <strong>CANNOT skip</strong> this step. 
+
+				<UL>
+					<LI>Create a DSN for MS Access called "<span class="code">MondrianFoodMart</span>". <BR>This DSN must point to the file "<span class="code">%BIN_LOCATION%/demo/access/MondrianFoodMart.mdb</span>"</LI>
+				</UL>
+			</td>
+		
+
+		<tr><td colspan="3" class="normal">&nbsp;</td></tr>		
+		<tr><td colspan="3" class="normal"><A name="#04-LoadTestDB"></A>&nbsp;</td></tr>
+
+
+
+		<!------------------------------------------------------------ 
+			Section 4: Load the test database 
+			------------------------------------------------------------>
+	
+		<tr class="normal">
+			<td width="5%" align="center" class="sectionTitle">4.</td>
+			<td width="90%" align="left" class="sectionTitleBand">Load the test database</td>
+			<td width="5%" align="right" class="sectionTitleClearBG">[<A href="#Contents" class="blueText" title="Return to the table of contents">Top</A>]</td>
+				
+		<tr><td colspan="3" class="normal">&nbsp;</td></tr>
+
+		<tr class="normal">
+			<td width="5%" align="center" class="normal">&nbsp;</td>
+			<td width="95%" align="left" class="normal" colspan="2">
+				The Mondrian distribution is accompanied by a test database (the classic "Foodmart" database). This database must be loaded for you run
+				the examples available with the distribution. You will have to make use of the following resources from the distribution to load the database.<UL>
+					<LI><span class="code"><STRONG>mondrian.test.loader.MondrianFoodMartLoader</STRONG></span>: A data loading utility that takes an input JDBC URL or file reference (from which the schema and test data are to be taken), 
+						an output JDBC URL and connection parameters (for the target database in which the schema must be created and data loaded), and one or more flags to indicate the schema objects that must be created (tables, data, etc.). 
+						This utility is packaged in "<span class="code">%BIN_LOCATION%/lib/mondrian.jar</span>".</LI>
+					<LI><STRONG>%BIN_LOCATION%/demo/access/MondrianFoodmart.mdb</STRONG>: MS Access database containing the complete foodmart database. This will be accessed through the DSN created by you in Sec. 3.</LI>
+					<LI><STRONG>%BIN_LOCATION%/demo/access/FoodMartCreateData.sql</STRONG>: Text file containing "<span class="code">INSERT INTO</span>" SQL statements to load test data.</LI>
+				</UL>	
+			
+				Execute the following steps to load the test database:<OL>
+					<LI><STRONG>Create a database and database user:</STRONG> Create a database user called "<span class="code">foodmart</span>" (password: "<span class="code">foodmart</span>"). Then create a database called "<span class="code">foodmartdb</span>" owned by the user "<span class="code">foodmart</span>".<BR>&nbsp;</LI>
+					<LI><STRONG>Copy the JDBC driver:</STRONG> Copy the JDBC driver into "<span class="code">%BIN_LOCATION%/lib</span>".<BR>&nbsp;</LI>
+					<LI><STRONG>Create the schema</STRONG>: Open a command prompt window and change your current directory to "<span class="code">%BIN_LOCATION%</span>". At the command prompt, run the command <BR>
+					<span class="code">
+					java -cp "<span style="color:red">%BIN_LOCATION%</span>\lib\mondrian.jar;<span style="color:red">%BIN_LOCATION%</span>\lib\log4j-1.2.9.jar;<span style="color:red">%BIN_LOCATION%</span>\lib\eigenbase-xom.jar;<span style="color:red">%BIN_LOCATION%</span>\lib\eigenbase-resgen.jar;<span style="color:red">%BIN_LOCATION%</span>\lib\<span style="color:red">postgresql-8.0-312.jdbc3.jar</span>"  mondrian.test.loader.MondrianFoodMartLoader -verbose -tables -indexes -jdbcDrivers="org.postgresql.Driver,sun.jdbc.odbc.JdbcOdbcDriver" -inputJdbcURL="jdbc:odbc:MondrianFoodMart" -outputJdbcURL="jdbc:postgresql://localhost/<span style="color:red">foodmartdb</span>" -outputJdbcUser=<span style="color:red">foodmart</span> -outputJdbcPassword=<span style="color:red">foodmart</span>
+					</span>
+					<BR><BR>
+					<span class="caution">[!]</span>&nbsp;Please note the following:
+					<UL>
+						<LI>This command must be executed as a single command. When you copy+paste the above command into an editor, whitespaces/carriage returns will be introduced
+							that will cause syntax errors. Be sure to replace these spaces if you copy+paste this command.</LI>
+						<LI>All items in the above command marked in <span style="color:red">RED</span> will have to be replaced by the actual value (path, filename, database name, user name, etc.) applicable for your system.</LI>
+						<LI>The <span class="code">-data</span> flag has been omitted. This is because the MS Access data file contains a table called "<span class="code">days - check</span>", which gets created as "<span class="code">days</span>" (presumably because of the whitespace). 
+							Including the <span class="code">-data</span> flag fatally terminates the script with the error that no table called "<span class="code">days</span>" exists in the .mdb file. The script however (which we will use to load the data) refers to the table merely as "<span class="code">days</span>".
+					</UL><BR>&nbsp;
+					</LI>
+					<LI><STRONG>Edit the .sql script file</STRONG>: The "%BIN_LOCATION%/demo/access/FoodMartCreateData.sql" contains a "`" (smart quote) instead of the "'" (straight quote). In any case, these smart quotes appear around the names of tables and columns, thus creating a syntax error. All of these need to be removed.
+						To remove the smart quotes, open the file in a text editor and delete all smart quotes (use the Search/Replace feature and replace all smart quotes with a null).<BR><BR>
+						<span class="caution">[!]</span>&nbsp;Please replace smart quotes with care to make sure the straight quotes are also not replaced. Please also ensure that straight quotes around column VALUES are not deleted.<BR>&nbsp;</LI>
+						
+					<LI><STRONG>Load the data</STRONG>: Open a command prompt window and change your current directory to "<span class="code">%BIN_LOCATION%\demo</span>". At the command prompt, run the command <BR><BR>
+						<span class="code">
+							type FoodMartCreateData.sql | psql foodmartdb foodmart 
+						</span><BR><BR>
+
+						<span class="notice">[#]</span>&nbsp;We are not using the <span class="code">mondrian.test.loader.MondrianFoodMartLoader</span> utility here because if we use the .mdb file, we will
+						encounter the problem with the "<span class="code">days</span>" table not being found.<BR><BR>
+
+						<span class="caution">[!]</span>&nbsp;Since we are forced to use this script, you may run into a problem with the password not being specified, if in the <span class="code">pg_hba.conf</span> file, the default authentication 
+						mechanism is set to "<span class="code">md5</span>". This would have to be changed to "<span class="code">trust</span>". If you do not wish to change the authentication mechanism for all databases, you will have to make a separate
+						entry in this file. The database service will have to be restarted once the change is made.</LI>
+				</OL>
+			</td>
+		
+
+		<tr><td colspan="3" class="normal">&nbsp;</td></tr>		
+		<tr><td colspan="3" class="normal"><A name="#05-InstallationNotes"></A>&nbsp;</td></tr>
+
+
+
+		<!------------------------------------------------------------ 
+			Section 5: Install Mondrian (build the "mondrian.war" file) 
+			------------------------------------------------------------>
+
+		<tr class="normal">
+			<td width="5%" align="center" class="sectionTitle">5.</td>
+			<td width="90%" align="left" class="sectionTitleBand">Install Mondrian (build the "mondrian.war" file)</td>
+			<td width="5%" align="right" class="sectionTitleClearBG">[<A href="#Contents" class="blueText" title="Return to the table of contents">Top</A>]</td>
+				
+		<tr><td colspan="3" class="normal">&nbsp;</td></tr>
+
+		<tr class="normal">
+			<td width="5%" align="center" class="normal">&nbsp;</td>
+			<td width="95%" align="left" class="normal" colspan="2">
+				There are three sets of activities in creating the web archive: modifying some files, copying some files and running the ant script. Each of these is detailed out in this section.<BR><BR>
+				
+				<STRONG><U>Modify files</U>:</STRONG><BR><BR>
+				
+				The source code that we extracted from <strong>mondrian-1.1.5-src.zip</strong> contains among others, three files that require to be changed before <span class="code">mondrian.war</span> can be built. 
+				These are "<span class="code">mondrian.properties</span>", "<span class="code">build.bat</span>" and "<span class="code">build.xml</span>". Changes to each of these files is detailed below.
+				<BR><BR>
+				
+				<OL>
+					<LI><STRONG>Changes to <span class="code">mondrian.properties</span></STRONG>: The changes in this file are predominantly changes to connection strings; the path to the Tomcat home directory is also to be specified here.<BR><BR>
+						In particular, the following changes are to be made:<BR>
+						<UL>
+							<LI>Replace <span class="code" style="color:red">Jdbc=jdbc:odbc:MondrianFoodMart;\</span><BR> with 
+								<span class="code" style="color:blue">Jdbc=jdbc:postgresql://localhost/foodmartdb?user=foodmart&amp;#38;password=foodmart;\</span> 
+								<BR>
+								<span class="caution">[!]</span>&nbsp;Please note the use of "&amp;#38;". It is important NOT to directly use an ampersand here.
+								<BR>&nbsp;</LI>
+							<LI>Replace <span class="code" style="color:red">JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver;\</span><BR> with 
+								<span class="code" style="color:blue">JdbcDrivers=org.postgresql.Driver;\</span> 
+								<BR>&nbsp;</LI>
+							<LI>Replace <span class="code" style="color:red">mondrian.foodmart.jdbcURL=jdbc:odbc:MondrianFoodMart</span><BR> with 
+								<span class="code" style="color:blue">mondrian.foodmart.jdbcURL=jdbc:postgresql://localhost/foodmartdb?user=foodmart&amp;#38;password=foodmart</span> 
+								<BR>
+								<span class="caution">[!]</span>&nbsp;Please note the use of "&amp;#38;". It is important NOT to directly use an ampersand here.
+								<BR>&nbsp;</LI>
+
+							<LI>Uncomment the line "<span class="code">tomcat.home</span>" and set the correct path.<BR>&nbsp;</LI>
+							<LI>Modify the line "<span class="code">@set CLASSPATH</span>" - replace all "/" (forward-slash) with a "\" (backslash).<BR>&nbsp;</LI>
+						</UL>
+						</LI>
+
+					<LI><STRONG>Changes to <span class="code">build.bat</span></STRONG>: 
+						In this file, replace <span class="code" style="color:red">%ANT_HOME%\bin\ant %1 %2 %3 %4 %5 %6 %7 %8 %9</span>
+						<BR>with <span class="code" style="color:blue">"%ANT_HOME%\bin\ant" %1 %2 %3 %4 %5 %6 %7 %8 %9</span> (add quotation marks around the path).
+						<BR>This is to address problems that can potentially be caused by spaces in the names of folders (supported in the recent versions of Windows).
+						<BR>&nbsp;</LI>
+
+					<LI><STRONG>Changes to <span class="code">build.xml</span></STRONG>: In this file, references to the JDBC driver and to the XALAN path need to be changed.
+						Specifically, the changes to be made are:
+						<UL>
+							<LI>Replace <span class="code">&lt;property name="mondrian.jdbcDrivers" value="<span style="color:red">sun.jdbc.odbc.JdbcOdbcDriver</span>"/></span><BR> with 
+								<span class="code">&lt;property name="mondrian.jdbcDrivers" value="<span style="color:blue">org.postgresql.Driver</span>"/></span> 
+								<BR>&nbsp;</LI>
+							<LI>Replace <span class="code">&lt;property name="mondrian.foodmart.jdbcURL" value="<span style="color:red">${mondrian.foodmart.jdbcURL.access}</span>"/></span><BR> with 
+								<span class="code">&lt;property name="mondrian.jdbcDrivers" value="<span style="color:blue">jdbc:postgresql://localhost/foodmartdb?user=foodmart&amp;#38;password=foodmart</span>"/></span> 
+								<BR>
+								<span class="caution">[!]</span>&nbsp;Please note the use of "&amp;#38;". It is important NOT to directly use an ampersand here.
+								<BR>&nbsp;</LI>
+							<LI>Modify the target "jar". This task has a <span class="code">zipfileset</span> tag defined as follows:<BR><BR>
+								<span class="code">
+									&lt;zipfileset<BR>
+									&nbsp;&nbsp;&nbsp;dir="."<BR>
+        							&nbsp;&nbsp;&nbsp;includes="<BR>
+						            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LICENSE.html,<BR>
+						            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;README.txt,<BR>
+						            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VERSION.txt"/><BR><BR></span>
+						        This must be modified to include <span class="code">mondrian.properties</span> as follows:<BR><BR>
+								<span class="code">
+									&lt;zipfileset<BR>
+									&nbsp;&nbsp;&nbsp;dir="."<BR>
+        							&nbsp;&nbsp;&nbsp;includes="<BR>
+						            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:blue">mondrian.properties</span>,<BR>
+						            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LICENSE.html,<BR>
+						            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;README.txt,<BR>
+						            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VERSION.txt"/><BR><BR></span>
+								</LI>
+							<LI>Modify the target "copy-jars". The path to the Xalan JAR files (xalan.jar,xml-apis.jar,xercesImpl.jar) is 
+								specified as "<span class="code">{xalan.home}<span style="color:red">/bin</span></span>". This must be modified to
+								"<span class="code">{xalan.home}</span>" (remove the "/bin").<BR>&nbsp;
+						</UL>
+						</LI>
+				</OL>	
+			
+
+				
+				<STRONG><U>Copy files</U>:</STRONG><BR><BR>
+				<OL>
+					<LI>Copy the file <span class="code">%DEV_LOCATION%\mondrian.properties</span> to <span class="code">%CATALINA_HOME%\bin</span><BR>&nbsp;</LI>
+					<LI>Copy the files "<span class="code">xalan.jar</span>", "<span class="code">xercesImpl.jar</span>", "<span class="code">xml-apis.jar</span>" and "<span class="code">serializer.jar</span>" from "<span class="code">%XALAN_HOME%</span>" to <span class="code">%CATALINA_HOME%\common\endorsed</span>.<BR><BR>
+						<span class="notice">[#]</span>&nbsp;These files are not really required for the build per sé, but can create problems at run-time. It is just as well that these are copied at this time. Further, the files 
+						"<span class="code">xercesImpl.jar</span>" and "<span class="code">xml-apis.jar</span>" must be overwritten even though they exist since the files distributed with Tomcat appear to be an older version than the ones
+						distributed with the latest version of Xalan.<BR>&nbsp;
+						</LI>
+				</OL>
+				<BR>
+
+				<STRONG><U>Run the build script</U>:</STRONG><BR><BR>
+				
+				To create and deploy the <span class="code">mondrian.war</span> file, execute the build in serial order with flags as indicated below:
+				<OL>
+					<LI>build clean</LI>
+					<LI>build</LI>
+					<LI>build jar</LI>
+					<LI>build war</LI>
+					<LI>build deploy-war</LI>
+				</OL>
+				<BR>
+
+
+			</td>
+			
+		
+		<tr><td colspan="3" class="normal">&nbsp;</td></tr>		
+		<tr><td colspan="3" class="normal"><A name="#06-DeployMondrian"></A>&nbsp;</td></tr>
+
+
+
+		<!------------------------------------------------------------ 
+			Section 6: Deploy the application 
+			------------------------------------------------------------>
+
+		<tr class="normal">
+			<td width="5%" align="center" class="sectionTitle">6.</td>
+			<td width="90%" align="left" class="sectionTitleBand">Deploy the application</td>
+			<td width="5%" align="right" class="sectionTitleClearBG">[<A href="#Contents" class="blueText" title="Return to the table of contents">Top</A>]</td>
+				
+		<tr><td colspan="3" class="normal">&nbsp;</td></tr>
+
+		<tr class="normal">
+			<td width="5%" align="center" class="normal">&nbsp;</td>
+			<td width="95%" align="left" class="normal" colspan="2">
+				There is a final set of changes to be made in 4 JSP files before the application can be used successfully.<BR><BR>
+				<STRONG>First</STRONG>, start Tomcat and allow it to extract "<span class="code">mondrian.war</span>" and create the folder "<span class="code">mondrian</span>". 
+				Once it has extracted the archive, shut down Tomcat.
+
+				Use a HTML/JSP editor and modify the following files under "<span class="code">mondrian/WEB-INF/queries/</span>" as described:
+				
+				<OL>
+					<LI>colors.jsp</LI>
+					<LI>fourhier.jsp</LI>
+					<LI>mondrian.jsp</LI>
+					<LI>trendarrows.jsp</LI>
+				</OL>	
+			
+				<BR>
+				In each of the above files, replace 
+				<BR><BR>
+				<span class="code">&lt;jp:mondrianQuery id="query01" jdbcDriver="<span style=color:red>sun.jdbc.odbc.JdbcOdbcDriver</span>" jdbcUrl="<span style=color:red>jdbc:odbc:MondrianFoodMart</span>" catalogUri="/WEB-INF/queries/FoodMart.xml"></span> 
+				<BR><BR>with<BR><BR>
+				<span class="code">&lt;jp:mondrianQuery id="query01" jdbcDriver="<span style=color:blue>org.postgresql.Driver</span>" jdbcUrl="<span style=color:blue>jdbc:postgresql://localhost/foodmartdb?user=foodmart&amp;#38;password=foodmart</span>" catalogUri="/WEB-INF/queries/FoodMart.xml"></span> 
+				<BR><BR>
+				<span class="caution">[!]</span>&nbsp;Please note the use of "&amp;#38;". It is important NOT to directly use an ampersand here.
+				<BR><BR>
+
+				<STRONG>Next</STRONG>, check the "<span class="code">WEB-INF/web.xml</span>". 
+				Check the value of the "<span class="code">connectString</span>" parameter under <BR>"<span class="code">&lt;servlet-name>MDXQueryServlet&lt;/servlet-name></span>".<BR>
+				This must have the value "<span class="code">jdbc:postgresql://localhost/foodmartdb?user=foodmart&amp;#38;password=foodmart" catalogUri="/WEB-INF/queries/FoodMart.xml</span>". If it does
+				not have the value, please update this.
+				
+				<BR><BR>
+
+				<STRONG>After making these modifications</STRONG>, remove the "<span class="code">%CATALINA_HOME%/work/Catalina/localhost/mondrian</span>" folder and restart Tomcat.
+				
+			</td>
+		
+
+		<tr><td colspan="3" class="normal">&nbsp;</td></tr>		
+		<tr><td colspan="3" class="normal"><A name="#07-Disclaimer"></A>&nbsp;</td></tr>
+
+		
+		<!------------------------------------------------------------ 
+			Section 7: Disclaimer 
+			------------------------------------------------------------>
+
+		<tr class="normal">
+			<td width="5%" align="center" class="sectionTitle">7.</td>
+			<td width="90%" align="left" class="sectionTitleBand">Disclaimer</td>
+			<td width="5%" align="right" class="sectionTitleClearBG">[<A href="#Contents" class="blueText" title="Return to the table of contents">Top</A>]</td>
+				
+		<tr><td colspan="3" class="normal">&nbsp;</td></tr>
+
+		<tr class="normal">
+			<td width="5%" align="center" class="normal">&nbsp;</td>
+			<td width="95%" align="left" class="normal" colspan="2">
+				<span style="color:red">(To be appropriately modified at a later date)</span>.<BR><BR>
+				
+				These instructions are being circulated on a "AS-IS" basis. They are based on the Mondrian 1.1.5 distribution available at the time of
+				producing this document. 
+				
+				They have not been extensively reviewed, and the specific settings prescribed here,
+				including instructions to overwrite existing files, may or may not have an impact on existing applications. Even at the time of publishing these document, it is known that not all features of the application work as expected. 
+				
+				The contents of this document may also be rendered null and void by a subsequent release of Mondrian (which implicitly addresses some of the issues sought to be addressed here).
+				As such these instructions accept no responsibility or liability towards the accuracy of, or errors of commission or omission in the contents on this page.<BR><BR>
+
+				For feedback, suggestions, complaints on this document, please write to:<BR>
+				suhasmallya[AT]users[DOT]sourceforge[DOT]net
+			</td>
+		</tr>
+						
+		<tr><td colspan="3" class="normal">&nbsp;</td></tr>		
+		<tr><td colspan="3" class="normal">&nbsp;</td></tr>				
+		
+		<tr>
+			<td colspan="3" style="border-top: 1px solid black; font-size:8pt; font-family:verdana, arial, helvetica, sans-serif; font-weight:normal">
+				&nbsp;<hr>
+
+<table border="0" class="clsStd" width="100%" style="border-collapse: collapse" bordercolor="#111111" cellpadding="0" cellspacing="0" id="table1">
+  <tr>
+    <td class="content">
+      <a target="_top" href="index.html">Home</a> |
+      <a target="_top" href="#">No frames</a> | This file is<i>
+      <a href="http://mondrian.sourceforge.net/install.html">$Id$
+      </a></i> (<a href="http://perforce.eigenbase.org:8080/open/mondrian/doc/install.html?ac=22">log</a>)</td><td align="right">
+      <a href="http://sourceforge.net">
+        <img src="http://sourceforge.net/sflogo.php?group_id=35302&type=1" width="88" height="31" border="0" alt="SourceForge.net Logo">
+      </a>
+    </td>
+  </tr>
+</table>
+
+				<p>&nbsp;</td>
+		</tr>
+					
+
+	
+	</table> <!-- Table A -->
+</BODY>
+</HTML>
