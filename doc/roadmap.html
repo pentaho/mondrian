@@ -12,7 +12,7 @@
 
 <h1><font size="6"> Mondrian roadmap</font></h1>
 
-<p>By Julian Hyde; last updated September, 2005.</p>
+<p>By Julian Hyde; last updated October, 2005.</p>
 
 <hr noshade color="#000000" size="1">
 
@@ -32,29 +32,32 @@
   <ol>
         <li><a href="#Feature_Internationalization_localization">Internationalization/localization</a></li>
 		<li><a href="#Feature_Improved_cache_control">Improved cache control</a></li>
+		<li><a href="#Feature_Partitioned_cubes">Partitioned cubes</a></li>
 	<li><a href="#Feature_Improve_dimension_sharing">Improve dimension sharing</a></li>
-	<li><a href="#Feature_Virtual_cube_enhancements">Virtual cube enhancements</a></li>
-	<li><a href="#Feature_Calculated_members_in_virtual_cubes">Calculated members in 
+		<li><a href="#Feature_Virtual_cube_enhancements">Virtual cube enhancements</a></li>
+		<li><a href="#Feature_Calculated_members_in_virtual_cubes">Calculated members in 
 	virtual cubes</a></li>
-	<li><a href="#Feature_Time_function">Time function</a></li>
-	<li><a href="#Feature_Scalar_functions">Scalar functions</a></li>
-	<li><a href="#Feature_Cold_start">Cold start</a></li>
-	<li><a href="#Feature_Rollups">Rollups</a></li>
-	<li><a href="#Feature_Compound_slicer">Compound slicer</a></li>
-	<li><a href="#Feature_Enhancements_to_schema_cache">Enhancements to schema 
+		<li><a href="#Feature_Time_function">Time function</a></li>
+		<li><a href="#Feature_Scalar_functions">Scalar functions</a></li>
+		<li><a href="#Feature_Cold_start">Cold start</a></li>
+		<li><a href="#Feature_Rollups">Rollups</a></li>
+		<li><a href="#Feature_Compound_slicer">Compound slicer</a></li>
+		<li><a href="#Feature_Enhancements_to_schema_cache">Enhancements to schema 
 	cache</a></li>
-	<li><a href="#Feature_JOLAP_support">JOLAP support</a></li>
-	<li><a href="#Feature_Schema_and_query_validation">Schema and query validation</a></li>
-	<li><a href="#Feature_Documentation">Documentation</a></li>
-	<li><a href="#Feature_Name-resolution">Name-resolution</a></li>
-	<li><a href="#Feature_XMLA_interoperability">XML/A interoperability</a></li>
-	<li><a href="#Feature_Standard_functions">Standard functions</a></li>
+		<li><a href="#Feature_JOLAP_support">JOLAP support</a></li>
+		<li><a href="#Feature_Schema_and_query_validation">Schema and query validation</a></li>
+		<li><a href="#Feature_Documentation">Documentation</a></li>
+		<li><a href="#Feature_Name-resolution">Name-resolution</a></li>
+		<li><a href="#Feature_XMLA_interoperability">XML/A interoperability</a></li>
+		<li><a href="#Feature_Standard_functions">Standard functions</a></li>
 		<li><a href="#Feature_Bridge_to_CWM">Bridge to CWM</a></li>
 		<li><a href="#Feature_Graphical_administrator">Graphical administrator</a></li>
 		<li><a href="#Feature_Mondrian_XMLA_server">Mondrian XML/A server</a></li>
+		<li><a href="#Feature_User_defined_aggregate_functions">User-defined 
+		aggregate functions</a></li>
 
   </ol>
-	<li><a href="#4._Features_implemented_in_1.5">Features implemented in 1.5</a><ol>
+	<li><a href="#4._Features_implemented_in_1.2">Features implemented in 1.2</a><ol>
   <li><a href="#Feature_Aggregate_navigation">Aggregate navigation</a></li>
 	<li><a href="#Feature_WITH_SET">WITH SET</a></li>
 	<li><a href="#Feature_Cache_set_expressions">Cache set expressions</a></li>
@@ -487,8 +490,42 @@ instance running XML/A. This will invoke a lightweight servlet engine running
 Mondrian's XML/A adapter. (You will still be able to include Mondrian's XML/A 
 servlet in your web server of choice.)</p>
 
+<h3><a name="Feature_User_defined_aggregate_functions">3.22 User-defined 
+aggregate functions</a></h3>
 
-<h2><a name="4._Features_implemented_in_1.5">4. Features implemented in 1.5</a></h2>
+<p>The standard aggregate functions are sum, count, distinct-count, min, max and 
+avg. This feature will provide an SPI by which application developers can write 
+their own aggregate functions.</p>
+
+<p>The SPI will include:</p>
+<ul>
+	<li>the name of the aggregate function;</li>
+	<li>parameter types;</li>
+	<li>return types;</li>
+	<li>a means to generate SQL expression to compute the aggregate from 
+	unaggregated fact table data. (For the &quot;count&quot; function applied to the &quot;unit_sales&quot; 
+	column, this would generate &quot;count(unit_sales)&quot;.)</li>
+	<li>a means to generate SQL expression to compute the aggregate by rolling 
+	up partially aggregated data. (For the &quot;count&quot; function applied to the &quot;unit_sales&quot; 
+	column, this would generate &quot;sum(unit_sales)&quot;. Some aggregates, such as 
+	&quot;distinct-count&quot;, do not support rollup.)</li>
+	<li>a means to roll up values in memory. Some aggregates, such as 
+	&quot;distinct-count&quot;, do not support this.</li>
+</ul>
+
+<p>The SPI will support functions which map to a SQL expression rather than a 
+SQL aggregate function. The &quot;avg&quot; function is an example of this: it works by 
+expanding itself to sum / count.</p>
+
+<p>The SPI will support functions which can be computed from unaggregate fact 
+table data, but cannot be rolled up. The &quot;distinct-count&quot; function is an example 
+of this.</p>
+
+<p>You will be able to include user-defined aggregate functions in aggregate 
+tables.</p>
+
+
+<h2><a name="4._Features_implemented_in_1.2">4. Features implemented in 1.2</a></h2>
 
 <h3><a name="Feature_Aggregate_navigation">4.1 Aggregate navigation</a></h3>
 
