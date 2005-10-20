@@ -56,7 +56,7 @@ td.content {
 				
 		<tr class="normal">
 			<td colspan="3" align="left"><br>
-			By Suhas Mallya; last updated: Oct. 14, 2005, 5:50PM IST.</td>
+			By Suhas Mallya; last updated: Oct. 19, 2005, 4:05PM IST.</td>
 				
 		<tr class="normal">
 			<td colspan="3" align="left"><A name="Contents"></A>&nbsp;</td>
@@ -252,11 +252,6 @@ td.content {
 				address this at this point by setting up environment variables, unless you have a strong reason not to do so.
 				<BR><BR>
 				
-				In addition to the above environment variables, you must also set up a DSN. You <strong>CANNOT skip</strong> this step. 
-
-				<UL>
-					<LI>Create a DSN for MS Access called "<span class="code">MondrianFoodMart</span>". <BR>This DSN must point to the file "<span class="code">%BIN_LOCATION%/demo/access/MondrianFoodMart.mdb</span>"</LI>
-				</UL>
 			</td>
 		
 
@@ -290,10 +285,10 @@ td.content {
 			
 				Execute the following steps to load the test database:<OL>
 					<LI><STRONG>Create a database and database user:</STRONG> Create a database user called "<span class="code">foodmart</span>" (password: "<span class="code">foodmart</span>"). Then create a database called "<span class="code">foodmartdb</span>" owned by the user "<span class="code">foodmart</span>".<BR>&nbsp;</LI>
-					<LI><STRONG>Copy the JDBC driver:</STRONG> Copy the JDBC driver into "<span class="code">%BIN_LOCATION%/lib</span>".<BR>&nbsp;</LI>
-					<LI><STRONG>Create the schema</STRONG>: Open a command prompt window and change your current directory to "<span class="code">%BIN_LOCATION%</span>". At the command prompt, run the command <BR>
+					<LI><STRONG>Copy the JDBC driver:</STRONG> Copy the Postgres JDBC driver into "<span class="code">%BIN_LOCATION%/lib</span>".<BR>&nbsp;</LI>
+					<LI><STRONG>Load the database</STRONG>: Open a command prompt window and change your current directory to "<span class="code">%BIN_LOCATION%</span>". At the command prompt, run the command <BR>
 					<span class="code">
-					java -cp "<span style="color:red">%BIN_LOCATION%</span>\lib\mondrian.jar;<span style="color:red">%BIN_LOCATION%</span>\lib\log4j-1.2.9.jar;<span style="color:red">%BIN_LOCATION%</span>\lib\eigenbase-xom.jar;<span style="color:red">%BIN_LOCATION%</span>\lib\eigenbase-resgen.jar;<span style="color:red">%BIN_LOCATION%</span>\lib\<span style="color:red">postgresql-8.0-312.jdbc3.jar</span>"  mondrian.test.loader.MondrianFoodMartLoader -verbose -tables -indexes -jdbcDrivers="org.postgresql.Driver,sun.jdbc.odbc.JdbcOdbcDriver" -inputJdbcURL="jdbc:odbc:MondrianFoodMart" -outputJdbcURL="jdbc:postgresql://localhost/<span style="color:red">foodmartdb</span>" -outputJdbcUser=<span style="color:red">foodmart</span> -outputJdbcPassword=<span style="color:red">foodmart</span>
+					java -cp "<span style="color:red">%BIN_LOCATION%</span>\lib\mondrian.jar;<span style="color:red">%BIN_LOCATION%</span>\lib\log4j-1.2.9.jar;<span style="color:red">%BIN_LOCATION%</span>\lib\eigenbase-xom.jar;<span style="color:red">%BIN_LOCATION%</span>\lib\eigenbase-resgen.jar;<span style="color:red">%BIN_LOCATION%</span>\lib\<span style="color:red">postgresql-8.0-312.jdbc3.jar</span>"  mondrian.test.loader.MondrianFoodMartLoader -verbose -tables -data -indexes -jdbcDrivers="org.postgresql.Driver,sun.jdbc.odbc.JdbcOdbcDriver" -inputFile=<span style="color:red">%BIN_LOCATION%</span>\demo\FoodMartCreateData.sql" -outputJdbcURL="jdbc:postgresql://localhost/<span style="color:red">foodmartdb</span>" -outputJdbcUser=<span style="color:red">foodmart</span> -outputJdbcPassword=<span style="color:red">foodmart</span>
 					</span>
 					<BR><BR>
 					<span class="caution">[!]</span>&nbsp;Please note the following:
@@ -301,25 +296,8 @@ td.content {
 						<LI>This command must be executed as a single command. When you copy+paste the above command into an editor, whitespaces/carriage returns will be introduced
 							that will cause syntax errors. Be sure to replace these spaces if you copy+paste this command.</LI>
 						<LI>All items in the above command marked in <span style="color:red">RED</span> will have to be replaced by the actual value (path, filename, database name, user name, etc.) applicable for your system.</LI>
-						<LI>The <span class="code">-data</span> flag has been omitted. This is because the MS Access data file contains a table called "<span class="code">days - check</span>", which gets created as "<span class="code">days</span>" (presumably because of the whitespace). 
-							Including the <span class="code">-data</span> flag fatally terminates the script with the error that no table called "<span class="code">days</span>" exists in the .mdb file. The script however (which we will use to load the data) refers to the table merely as "<span class="code">days</span>".
-					</UL><BR>&nbsp;
+					</UL>
 					</LI>
-					<LI><STRONG>Edit the .sql script file</STRONG>: The "%BIN_LOCATION%/demo/access/FoodMartCreateData.sql" contains a "`" (smart quote) instead of the "'" (straight quote). In any case, these smart quotes appear around the names of tables and columns, thus creating a syntax error. All of these need to be removed.
-						To remove the smart quotes, open the file in a text editor and delete all smart quotes (use the Search/Replace feature and replace all smart quotes with a null).<BR><BR>
-						<span class="caution">[!]</span>&nbsp;Please replace smart quotes with care to make sure the straight quotes are also not replaced. Please also ensure that straight quotes around column VALUES are not deleted.<BR>&nbsp;</LI>
-						
-					<LI><STRONG>Load the data</STRONG>: Open a command prompt window and change your current directory to "<span class="code">%BIN_LOCATION%\demo</span>". At the command prompt, run the command <BR><BR>
-						<span class="code">
-							type FoodMartCreateData.sql | psql foodmartdb foodmart 
-						</span><BR><BR>
-
-						<span class="notice">[#]</span>&nbsp;We are not using the <span class="code">mondrian.test.loader.MondrianFoodMartLoader</span> utility here because if we use the .mdb file, we will
-						encounter the problem with the "<span class="code">days</span>" table not being found.<BR><BR>
-
-						<span class="caution">[!]</span>&nbsp;Since we are forced to use this script, you may run into a problem with the password not being specified, if in the <span class="code">pg_hba.conf</span> file, the default authentication 
-						mechanism is set to "<span class="code">md5</span>". This would have to be changed to "<span class="code">trust</span>". If you do not wish to change the authentication mechanism for all databases, you will have to make a separate
-						entry in this file. The database service will have to be restarted once the change is made.</LI>
 				</OL>
 			</td>
 		
@@ -439,9 +417,6 @@ td.content {
 					<LI>build war</LI>
 					<LI>build deploy-war</LI>
 				</OL>
-				<BR>
-
-
 			</td>
 			
 		
