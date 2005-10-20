@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module version="4" relativePaths="false" type="JAVA_MODULE">
+  <component name="ModuleRootManager" />
+  <component name="NewModuleRootManager">
+    <output url="file://D:/open1/mondrian/classes" />
+    <exclude-output />
+    <output-test url="file://D:/open1/mondrian/classes" />
+    <content url="file://D:/open1/mondrian/src">
+      <sourceFolder url="file://D:/open1/mondrian/src/main" isTestSource="false" />
+    </content>
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="library" name="all" level="project" />
+    <orderEntry type="library" name="eigenbase-properties" level="project" />
+    <orderEntryProperties />
+  </component>
+</module>
+
