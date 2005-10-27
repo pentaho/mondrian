@@ -142,34 +142,34 @@ public class AccessControlTest extends FoodMartTestCase {
                 // yes: [San Francisco] -- explicitly allowed
                 // no: [San Diego]
                 "[Store].[All Stores].[Mexico]" + nl +
-                "[Store].[All Stores].[USA]" + nl +
                 "[Store].[All Stores].[Mexico].[DF]" + nl +
-                "[Store].[All Stores].[Mexico].[Guerrero]" + nl +
-                "[Store].[All Stores].[Mexico].[Jalisco]" + nl +
-                "[Store].[All Stores].[Mexico].[Veracruz]" + nl +
-                "[Store].[All Stores].[Mexico].[Yucatan]" + nl +
-                "[Store].[All Stores].[Mexico].[Zacatecas]" + nl +
-                "[Store].[All Stores].[USA].[CA]" + nl +
                 "[Store].[All Stores].[Mexico].[DF].[Mexico City]" + nl +
-                "[Store].[All Stores].[Mexico].[DF].[San Andres]" + nl +
-                "[Store].[All Stores].[Mexico].[Guerrero].[Acapulco]" + nl +
-                "[Store].[All Stores].[Mexico].[Jalisco].[Guadalajara]" + nl +
-                "[Store].[All Stores].[Mexico].[Veracruz].[Orizaba]" + nl +
-                "[Store].[All Stores].[Mexico].[Yucatan].[Merida]" + nl +
-                "[Store].[All Stores].[Mexico].[Zacatecas].[Camacho]" + nl +
-                "[Store].[All Stores].[Mexico].[Zacatecas].[Hidalgo]" + nl +
-                "[Store].[All Stores].[USA].[CA].[Los Angeles]" + nl +
-                "[Store].[All Stores].[USA].[CA].[San Francisco]" + nl +
                 "[Store].[All Stores].[Mexico].[DF].[Mexico City].[Store 9]" + nl +
+                "[Store].[All Stores].[Mexico].[DF].[San Andres]" + nl +
                 "[Store].[All Stores].[Mexico].[DF].[San Andres].[Store 21]" + nl +
+                "[Store].[All Stores].[Mexico].[Guerrero]" + nl +
+                "[Store].[All Stores].[Mexico].[Guerrero].[Acapulco]" + nl +
                 "[Store].[All Stores].[Mexico].[Guerrero].[Acapulco].[Store 1]" + nl +
+                "[Store].[All Stores].[Mexico].[Jalisco]" + nl +
+                "[Store].[All Stores].[Mexico].[Jalisco].[Guadalajara]" + nl +
                 "[Store].[All Stores].[Mexico].[Jalisco].[Guadalajara].[Store 5]" + nl +
+                "[Store].[All Stores].[Mexico].[Veracruz]" + nl +
+                "[Store].[All Stores].[Mexico].[Veracruz].[Orizaba]" + nl +
                 "[Store].[All Stores].[Mexico].[Veracruz].[Orizaba].[Store 10]" + nl +
+                "[Store].[All Stores].[Mexico].[Yucatan]" + nl +
+                "[Store].[All Stores].[Mexico].[Yucatan].[Merida]" + nl +
                 "[Store].[All Stores].[Mexico].[Yucatan].[Merida].[Store 8]" + nl +
+                "[Store].[All Stores].[Mexico].[Zacatecas]" + nl +
+                "[Store].[All Stores].[Mexico].[Zacatecas].[Camacho]" + nl +
                 "[Store].[All Stores].[Mexico].[Zacatecas].[Camacho].[Store 4]" + nl +
+                "[Store].[All Stores].[Mexico].[Zacatecas].[Hidalgo]" + nl +
                 "[Store].[All Stores].[Mexico].[Zacatecas].[Hidalgo].[Store 12]" + nl +
                 "[Store].[All Stores].[Mexico].[Zacatecas].[Hidalgo].[Store 18]" + nl +
+                "[Store].[All Stores].[USA]" + nl +
+                "[Store].[All Stores].[USA].[CA]" + nl +
+                "[Store].[All Stores].[USA].[CA].[Los Angeles]" + nl +
                 "[Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7]" + nl +
+                "[Store].[All Stores].[USA].[CA].[San Francisco]" + nl +
                 "[Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]");
     }
     public void testGrantHierarchy6() {

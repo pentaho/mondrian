@@ -2767,16 +2767,21 @@ public class BasicQueryTest extends FoodMartTestCase {
         String resultString = TestContext.toString(result);
         resultString = Pattern.compile("\\.0\\]").matcher(resultString).replaceAll("]");
 
-        // Try to detect whether nulls are sorted high, such as Postgres and Oracle.
+        // There was a test in here to deal with the sorting of nulls by different
+        // DBMSs. With the work on the members function, with the hierarchized
+        // result, nulls always sort high now.
+        
+/*        // Try to detect whether nulls are sorted high, such as Postgres and Oracle.
         // In practice, the different JDBC drivers do not report correctly in all
         // instances.
 
-        RolapConnection conn = (RolapConnection) getConnection();
-        boolean nullsSortHigh = false;
+        // RolapConnection conn = (RolapConnection) getConnection();
+*/        boolean nullsSortHigh = true;
 
         // This did not seem to work consistently across drivers, so don't use it
         // boolean nullsSortedAtEnd = false;
 
+        /*
         try {
             DatabaseMetaData dbMetadata = conn.getDataSource().getConnection().getMetaData();
             nullsSortHigh = dbMetadata.nullsAreSortedHigh();
@@ -2794,7 +2799,8 @@ public class BasicQueryTest extends FoodMartTestCase {
         if (jdbc_url.toLowerCase().indexOf("oracle") >= 0 ) {
             nullsSortHigh = true;
         }
-
+        */
+        
         int row = 0;
 
         final String expected = "Axis #0:" + nl +

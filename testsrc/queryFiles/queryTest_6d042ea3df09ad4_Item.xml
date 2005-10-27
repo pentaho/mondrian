@@ -40,7 +40,7 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Measures].[Unit Sales]</member>
+                    <member>[Measures].[Sales Count]</member>
                 </tuple>
                 <tuple>
                     <member>[Measures].[Store Cost]</member>
@@ -49,7 +49,7 @@
                     <member>[Measures].[Store Sales]</member>
                 </tuple>
                 <tuple>
-                    <member>[Measures].[Sales Count]</member>
+                    <member>[Measures].[Unit Sales]</member>
                 </tuple>
                 <tuple>
                     <member>[Measures].[Customer Count]</member>
@@ -58,10 +58,10 @@
         </columns>
         <data>
             <drow>
-                <cell>49.0</cell>
+                <cell>16.0</cell>
                 <cell>39.8567</cell>
                 <cell>102.78</cell>
-                <cell>16.0</cell>
+                <cell>49.0</cell>
                 <cell>1.0</cell>
             </drow>
         </data>
