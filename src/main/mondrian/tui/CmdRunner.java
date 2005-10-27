@@ -2020,8 +2020,7 @@ public class CmdRunner {
     protected static void loadPropertiesFromFile(String propFile)
                 throws IOException {
 
-        Properties props = System.getProperties();
-        props.load(new FileInputStream(propFile));
+        MondrianProperties.instance().load(new FileInputStream(propFile));
     }
 
     /////////////////////////////////////////////////////////////////////////
