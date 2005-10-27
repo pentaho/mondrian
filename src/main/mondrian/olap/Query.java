@@ -715,7 +715,7 @@ public class Query extends QueryPart {
     List getDefinedMembers() {
         List definedMembers = new ArrayList();
         for (int i = 0; i < formulas.length; i++) {
-            if (formulas[i].isMember() && formulas[i].getElement() != null) {
+            if (formulas[i].isMember() && formulas[i].getElement() != null && getConnection().getRole().canAccess(formulas[i].getElement())) {
                 definedMembers.add(formulas[i].getElement());
             }
         }
@@ -1034,7 +1034,11 @@ public class Query extends QueryPart {
                 member = schemaReader.getMemberByUniqueName(uniqueNameParts,
                     failIfNotFound);
             }
-            return member;
+        	if (getRole().canAccess(member)) {
+        		return member;
+        	} else {
+        		return null;
+        	}
         }
 
         public Member getCalculatedMember(String[] nameParts) {
@@ -1054,6 +1058,22 @@ public class Query extends QueryPart {
             return result;
         }
 
+        public List getCalculatedMembers(Level level) {
+            List hierachyMembers = getCalculatedMembers(level.getHierarchy());
+            List result = new ArrayList();
+            for (int i = 0; i < hierachyMembers.size(); i++) {
+                Member member = (Member) hierachyMembers.get(i);
+                if (member.getLevel().equals(level)) {
+                    result.add(member);
+                }
+            }
+            return result;
+        }
+
+        public List getCalculatedMembers() {
+            return getDefinedMembers();
+        }
+        
         public OlapElement getElementChild(OlapElement parent, String s) {
             // first look in cube
             OlapElement mdxElement = schemaReader.getElementChild(parent, s);

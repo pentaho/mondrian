@@ -1830,7 +1830,7 @@ assert is not true.
                 Formula formula = calculatedMembers[i];
                 final String formulaUniqueName =
                     formula.getMdxMember().getUniqueName();
-                if (formulaUniqueName.equals(uniqueName)) {
+                if (formulaUniqueName.equals(uniqueName) && getRole().canAccess(formula.getMdxMember())) {
                     return formula.getMdxMember();
                 }
             }
@@ -1852,10 +1852,48 @@ assert is not true.
 
         public List getCalculatedMembers(Hierarchy hierarchy) {
             ArrayList list = new ArrayList();
+
+            if (getRole().getAccess(hierarchy) == Access.NONE) {
+                return list;
+            }
+
             for (int i = 0; i < calculatedMembers.length; i++) {
                 Formula formula = calculatedMembers[i];
-                if (formula.getMdxMember().getHierarchy().equals(hierarchy)) {
-                    list.add(formula.getMdxMember());
+                Member member = formula.getMdxMember(); 
+                if (member.getHierarchy().equals(hierarchy) && getRole().canAccess(member)) {
+                    list.add(member);
+                }
+            }
+            return list;
+        }
+
+        public List getCalculatedMembers(Level level) {
+            ArrayList list = new ArrayList();
+
+            if (getRole().getAccess(level) == Access.NONE) {
+                return list;
+            }
+
+            List hierarchyList = getCalculatedMembers(level.getHierarchy());
+            
+            Iterator it = hierarchyList.iterator();
+            
+            while (it.hasNext()) {
+                Member member = (Member) it.next(); 
+                if (member.getLevel().equals(level) && getRole().canAccess(member)) {
+                    list.add(member);
+                }
+            }
+            return list;
+        }
+
+        public List getCalculatedMembers() {
+            ArrayList list = new ArrayList();
+            for (int i = 0; i < calculatedMembers.length; i++) {
+                Formula formula = calculatedMembers[i];
+                Member member = formula.getMdxMember(); 
+                if (getRole().canAccess(member)) {
+                    list.add(member);
                 }
             }
             return list;
@@ -1863,9 +1901,14 @@ assert is not true.
 
         public Member getMemberByUniqueName(
                 String[] uniqueNameParts, boolean failIfNotFound) {
-            return (Member) lookupCompound(
-                    RolapCube.this, uniqueNameParts,
-                    failIfNotFound, Category.Member);
+        	Member member = (Member) lookupCompound(
+					                    RolapCube.this, uniqueNameParts,
+					                    failIfNotFound, Category.Member);
+        	if (getRole().canAccess(member)) {
+        		return member;
+        	} else {
+        		return null;
+        	}
         }
 
         public Cube getCube() {

@@ -134,6 +134,10 @@ class RolapEvaluator implements Evaluator {
         return root.cube;
     }
 
+    public Query getQuery() {
+        return root.result.getQuery();
+    }
+
     public int getDepth() {
         return depth;
     }

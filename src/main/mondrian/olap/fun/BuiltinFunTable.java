@@ -1186,11 +1186,67 @@ public class BuiltinFunTable extends FunTableImpl {
 
         //
         // SET FUNCTIONS
-        if (false) define(new FunDefBase(
+        
+        /*
+         * AddCalculatedMembers adds calculated members that are siblings
+         * of the members in the set. The set is limited to one dimension.
+         */
+        define(new FunDefBase(
                 "AddCalculatedMembers",
                 "AddCalculatedMembers(<Set>)",
                 "Adds calculated members to a set.",
-                "fx*"));
+                "fxx") {
+            public Object evaluate(Evaluator evaluator, Exp[] args) {
+                List memberList = (List) getArg(evaluator, args, 0);
+                if (memberList != null) {
+                    /*
+                     * Determine unique levels in the set
+                     */
+                	Map levelMap = new HashMap();
+                	
+                	Dimension dim = null;
+                	
+                	Iterator it = memberList.iterator();
+                	while (it.hasNext()) {
+                		Object obj = it.next();
+                		if (!(obj instanceof Member)) {
+                			throw newEvalException(this, "Only single dimension members allowed in set for AddCalculatedMembers");
+                		}
+                		Member member = (Member) obj;
+                		if (dim == null) {
+                			dim = member.getDimension();
+                		} else if (dim != member.getDimension()) {
+                			throw newEvalException(this, "Only members from the same dimension are allowed in the AddCalculatedMembers set: "  
+                					+ dim.toString() + " vs " + member.getDimension().toString());
+                		}
+                		if (!levelMap.containsKey(member.getLevel())) {
+                			levelMap.put(member.getLevel(), null); 
+                		}
+                	}
+                	/*
+                	 * For each level, add the calculated members from both
+                	 * the schema and the query
+                	 */
+                	List workingList = new ArrayList();
+                	workingList.addAll(memberList);
+                	it = levelMap.keySet().iterator();
+                	while (it.hasNext()) {
+                		Level level = (Level) it.next();
+                		List tmp = evaluator.getSchemaReader().getCalculatedMembers(level);
+                		if (tmp != null) {
+                			workingList.addAll(tmp);
+                		}
+                        tmp = evaluator.getQuery().getSchemaReader(true).getCalculatedMembers(level);
+                		if (tmp != null) {
+                			workingList.addAll(tmp);
+                		}
+                	}
+                	memberList = workingList;
+                	
+                }
+                return memberList;
+            }
+        });
 
         define(new FunDefBase(
                 "Ascendants",
@@ -1628,6 +1684,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 if (memberList != null) {
                     removeCalculatedMembers(memberList);
                 }
+                hierarchize(memberList, false);
                 return memberList;
             }
         });
@@ -1640,7 +1697,11 @@ public class BuiltinFunTable extends FunTableImpl {
             public Object evaluate(Evaluator evaluator, Exp[] args) {
                 Dimension dimension = (Dimension) getArg(evaluator, args, 0);
                 Hierarchy hierarchy = dimension.getHierarchy();
-                return addMembers(evaluator.getSchemaReader(), new ArrayList(), hierarchy);
+                List result = addMembers(evaluator.getSchemaReader(),
+                        new ArrayList(), hierarchy);
+                hierarchize(result, false);
+                result.addAll(evaluator.getQuery().getSchemaReader(true).getCalculatedMembers(hierarchy));
+                return result;
             }
         });
 
@@ -1656,6 +1717,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 if (memberList != null) {
                     removeCalculatedMembers(memberList);
                 }
+                hierarchize(memberList, false);
                 return memberList;
             }
         });
@@ -1667,8 +1729,11 @@ public class BuiltinFunTable extends FunTableImpl {
                 "pxh") {
             public Object evaluate(Evaluator evaluator, Exp[] args) {
                 Hierarchy hierarchy = (Hierarchy) getArg(evaluator, args, 0);
-                return addMembers(evaluator.getSchemaReader(),
+                List result = addMembers(evaluator.getSchemaReader(),
                     new ArrayList(), hierarchy);
+                hierarchize(result, false);
+                result.addAll(evaluator.getQuery().getSchemaReader(true).getCalculatedMembers(hierarchy));
+                return result;
             }
         });
 
@@ -1684,6 +1749,7 @@ public class BuiltinFunTable extends FunTableImpl {
                 if (memberList != null) {
                     removeCalculatedMembers(memberList);
                 }
+                hierarchize(memberList, false);
                 return memberList;
             }
         });
@@ -1696,7 +1762,10 @@ public class BuiltinFunTable extends FunTableImpl {
             public Object evaluate(Evaluator evaluator, Exp[] args) {
                 Level level = (Level) getArg(evaluator, args, 0);
                 Member[] members = evaluator.getSchemaReader().getLevelMembers(level);
-                return new ArrayList(Arrays.asList(members));
+                List memberList = new ArrayList(Arrays.asList(members));
+                hierarchize(memberList, false);
+                memberList.addAll(evaluator.getQuery().getSchemaReader(true).getCalculatedMembers(level));
+                return memberList;
             }
         });
 

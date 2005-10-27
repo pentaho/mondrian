@@ -28,6 +28,11 @@ public interface Evaluator {
     Cube getCube();
 
     /**
+     * Returns the current query.
+     */
+    Query getQuery();
+
+    /**
      * Creates a new evaluator with each given member overriding the state of
      * the current validator for its dimension. Other dimensions retain the
      * same state as this validator.

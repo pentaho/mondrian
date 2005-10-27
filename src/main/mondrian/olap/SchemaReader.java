@@ -229,6 +229,16 @@ public interface SchemaReader {
      * Returns a list of calculated members in a given hierarchy.
      */
     List getCalculatedMembers(Hierarchy hierarchy);
+
+    /**
+     * Returns a list of calculated members in a given level.
+     */
+    List getCalculatedMembers(Level level);
+
+    /**
+     * Returns the list of calculated members.
+     */
+    List getCalculatedMembers();
 }
 
 // End SchemaReader.java

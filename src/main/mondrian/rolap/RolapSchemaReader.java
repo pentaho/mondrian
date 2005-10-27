@@ -309,6 +309,14 @@ public abstract class RolapSchemaReader implements SchemaReader {
     public List getCalculatedMembers(Hierarchy hierarchy) {
         return Collections.EMPTY_LIST;
     }
+
+    public List getCalculatedMembers(Level level) {
+        return Collections.EMPTY_LIST;
+    }
+
+    public List getCalculatedMembers() {
+        return Collections.EMPTY_LIST;
+    }
 }
 
 // End RolapSchemaReader.java

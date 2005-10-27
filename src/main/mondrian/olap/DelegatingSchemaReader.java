@@ -131,6 +131,14 @@ public class DelegatingSchemaReader implements SchemaReader {
         return schemaReader.getCalculatedMembers(hierarchy);
     }
 
+    public List getCalculatedMembers(Level level) {
+        return schemaReader.getCalculatedMembers(level);
+    }
+
+    public List getCalculatedMembers() {
+        return schemaReader.getCalculatedMembers();
+    }
+
     public int getChildrenCountFromCache(Member member) {
         return schemaReader.getChildrenCountFromCache(member);
     }
