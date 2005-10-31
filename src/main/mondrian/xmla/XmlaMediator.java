@@ -66,15 +66,15 @@ public class XmlaMediator {
      * @param dataSources
      */
     public static void initDataSourcesMap(DataSourcesConfig.DataSources dataSources) {
-    	Map map = new HashMap();
-    	for (int i = 0; i < dataSources.dataSources.length; i++) {
-			DataSourcesConfig.DataSource ds = dataSources.dataSources[i];
-			if (map.containsKey(ds.getDataSourceName())) {
-				throw Util.newError("duplicated data source name '" + ds.getDataSourceName() + "'");
-			}
-			map.put(ds.getDataSourceName(), ds);
-		}
-    	dataSourcesMap = Collections.unmodifiableMap(map);
+        Map map = new HashMap();
+        for (int i = 0; i < dataSources.dataSources.length; i++) {
+                        DataSourcesConfig.DataSource ds = dataSources.dataSources[i];
+                        if (map.containsKey(ds.getDataSourceName())) {
+                                throw Util.newError("duplicated data source name '" + ds.getDataSourceName() + "'");
+                        }
+                        map.put(ds.getDataSourceName(), ds);
+                }
+        dataSourcesMap = Collections.unmodifiableMap(map);
     }
 
     /**
@@ -185,18 +185,18 @@ public class XmlaMediator {
         }
 
         try {
-         	saxHandler.startElement("ExecuteResponse", new String[] {
-         			"xmlns", XMLA_NS});
-         	saxHandler.startElement("return", new String[] {
+                saxHandler.startElement("ExecuteResponse", new String[] {
+                                "xmlns", XMLA_NS});
+                saxHandler.startElement("return", new String[] {
                    "xmlns:xsi", XSI_NS,
                    "xmlns:xsd", XSD_NS,});
-         	saxHandler.startElement("root", new String[] {
-         			"xmlns", isDrillThrough ? XMLA_ROWSET_NS : XMLA_MDDATASET_NS});
-         	saxHandler.startElement("xsd:schema", new String[] {
-         			"xmlns:xsd", XSD_NS});
-         		// todo: schema definition
-         	saxHandler.endElement();
-         	try {
+                saxHandler.startElement("root", new String[] {
+                                "xmlns", isDrillThrough ? XMLA_ROWSET_NS : XMLA_MDDATASET_NS});
+                saxHandler.startElement("xsd:schema", new String[] {
+                                "xmlns:xsd", XSD_NS});
+                        // todo: schema definition
+                saxHandler.endElement();
+                try {
                 if (isDrillThrough) {
                     StringBuffer dtStatement = new StringBuffer();
                     dtStatement.append(statement.substring(0, dtOffset)); // formulas
@@ -205,16 +205,16 @@ public class XmlaMediator {
                 } else {
                     executeQuery(statement, properties).unparse(saxHandler);
                 }
-         	} catch(RuntimeException re) { // MondrianException is subclass of RuntimeException
-         	    saxHandler.completeBeforeElement("root");
+                } catch(RuntimeException re) { // MondrianException is subclass of RuntimeException
+                    saxHandler.completeBeforeElement("root");
                 reportXmlaError(saxHandler, re);
             } finally {
-         		saxHandler.endElement();
-         		saxHandler.endElement();
-         		saxHandler.endElement();
-         	}
+                        saxHandler.endElement();
+                        saxHandler.endElement();
+                        saxHandler.endElement();
+                }
         } catch (SAXException e) {
-        	throw Util.newError(e, "Error while processing execute request");
+                throw Util.newError(e, "Error while processing execute request");
         }
     }
 
@@ -527,8 +527,27 @@ public class XmlaMediator {
                 final Object value =
                     cell.getPropertyValue(cellPropLong);
 
+
+                // Deduce the XML datatype from the declared datatype
+                // of the measure, if present. (It comes from the
+                // "datatype" attribute of the "Measure" element.) If
+                // not present, use the value type to guess.
+                //
+                // The value type depends upon the RDBMS and the JDBC
+                // driver, so it tends to produce inconsistent results
+                // between platforms.
                 String valueType;
-                if (value instanceof Integer || value instanceof Long) {
+                String datatype = (String)
+                    cell.getPropertyValue(Property.DATATYPE.getName());
+                if (datatype != null) {
+                    if (datatype.equals("Integer")) {
+                        valueType = "xsd:int";
+                    } else if (datatype.equals("Numeric")) {
+                        valueType = "xsd:double";
+                    } else {
+                        valueType = "xsd:string";
+                    }
+                } else if (value instanceof Integer || value instanceof Long) {
                     valueType = "xsd:int";
                 } else if (value instanceof Double || value instanceof BigDecimal) {
                     valueType = "xsd:double";
@@ -675,7 +694,7 @@ public class XmlaMediator {
     static Connection getConnection(Properties properties) {
         final String dataSourceInfo = properties.getProperty(PropertyDefinition.DataSourceInfo.name);
         if (!dataSourcesMap.containsKey(dataSourceInfo)) {
-        	throw Util.newError("no data source is configured with name '" + dataSourceInfo + "'");
+                throw Util.newError("no data source is configured with name '" + dataSourceInfo + "'");
         }
 
         DataSourcesConfig.DataSource ds = (DataSourcesConfig.DataSource)dataSourcesMap.get(dataSourceInfo);
@@ -691,16 +710,16 @@ public class XmlaMediator {
     }
 
     /**
-	 * Retrieving the root MondrianException in an exception chain if exists.
-	 * @param throwable the last one in exception chain.
-	 * @return the root MondrianException if exists, otherwise the input exception.
-	 */
-	static Throwable gotoRootThrowable(Throwable throwable) {
-		Throwable rootThrowable = throwable.getCause();
-		if (rootThrowable != null && rootThrowable instanceof MondrianException) {
-			return gotoRootThrowable(rootThrowable);
-		}
-		return throwable;
+         * Retrieving the root MondrianException in an exception chain if exists.
+         * @param throwable the last one in exception chain.
+         * @return the root MondrianException if exists, otherwise the input exception.
+         */
+        static Throwable gotoRootThrowable(Throwable throwable) {
+                Throwable rootThrowable = throwable.getCause();
+                if (rootThrowable != null && rootThrowable instanceof MondrianException) {
+                        return gotoRootThrowable(rootThrowable);
+                }
+                return throwable;
     }
 
     /**

@@ -336,6 +336,18 @@ public class Property extends EnumeratedValues.BasicValue {
     public static final Property VALUE =
             new Property("VALUE", TYPE_NUMERIC, VALUE_ORDINAL, false, true, true, "The unformatted value of the cell.");
 
+    public static final int DATATYPE_ORDINAL = 42;
+    /**
+     * Definition of the property which
+     * holds the datatype of a cell. Valid values are "String",
+     * "Numeric", "Integer". The property's value derives from the
+     * "datatype" attribute of the "Measure" element; if the datatype attribute
+     * is not specified, the datatype is "Numeric" by default, except measures
+     * whose aggregator is "Count", whose datatype is "Integer".
+     */
+    public static final Property DATATYPE =
+            new Property("DATATYPE", TYPE_STRING, DATATYPE_ORDINAL, false, false, true, "The datatype of the cell.");
+
     /**
      * The various property names which define a format string.
      */
@@ -470,6 +482,7 @@ public class Property extends EnumeratedValues.BasicValue {
                 NON_EMPTY_BEHAVIOR,
                 SOLVE_ORDER,
                 VALUE,
+                DATATYPE,
             });
 
     /**

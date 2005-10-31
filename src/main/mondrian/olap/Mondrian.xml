@@ -678,6 +678,18 @@ Revision is $Id$
         <Attribute name="column" required="true">
             <Doc>Column which is source of this measure's values.</Doc>
         </Attribute>
+        <Attribute name="datatype" required="false">
+            <Doc>
+                The datatype of this measure. 
+                Valid values are 'String', 'Numeric' and 'Integer'.
+                The default datatype of a measure is
+                'Integer' if the measure's aggregator is 'Count',
+                otherwise it is 'Numeric'.
+            </Doc>
+            <Value>Numeric</Value>
+            <Value>Integer</Value>
+            <Value>String</Value>
+        </Attribute>
         <Attribute name="formatString">
             <Doc>
                 Format string with which to format cells of this measure. For

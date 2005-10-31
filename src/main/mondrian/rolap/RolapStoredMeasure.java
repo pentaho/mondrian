@@ -16,6 +16,9 @@ import mondrian.olap.MondrianDef;
 import mondrian.olap.Property;
 import mondrian.olap.Util;
 
+import java.util.List;
+import java.util.Arrays;
+
 /**
  * todo:
  *
@@ -25,6 +28,9 @@ import mondrian.olap.Util;
  */
 class RolapStoredMeasure extends RolapMeasure {
 
+    private static final List datatypeList = Arrays.asList(
+            new String[] {"Integer", "Numeric", "String"});
+
     /** For SQL generator. Column which holds the value of the measure. */
     private final MondrianDef.Expression expression;
     /** For SQL generator. Has values "SUM", "COUNT", etc. */
@@ -33,13 +39,15 @@ class RolapStoredMeasure extends RolapMeasure {
 
     private CellFormatter formatter;
 
-    RolapStoredMeasure(RolapCube cube,
-                       RolapMember parentMember,
-                       RolapLevel level,
-                       String name,
-                       String formatString,
-                       MondrianDef.Expression expression,
-                       String aggregatorName) {
+    RolapStoredMeasure(
+            RolapCube cube,
+            RolapMember parentMember,
+            RolapLevel level,
+            String name,
+            String formatString,
+            MondrianDef.Expression expression,
+            String aggregatorName,
+            String datatype) {
         super(parentMember, level, name, formatString);
         this.cube = cube;
         this.expression = expression;
@@ -49,18 +57,18 @@ class RolapStoredMeasure extends RolapMeasure {
             throw Util.newError("Unknown aggregator '" + aggregatorName + "'");
         }
         setProperty(Property.AGGREGATION_TYPE.name, aggregator);
-    }
-
-    RolapStoredMeasure(RolapCube cube,
-                       RolapMember parentMember,
-                       RolapLevel level,
-                       String name,
-                       String formatString,
-                       String column,
-                       String aggregator) {
-        this(cube, parentMember, level, name, formatString,
-                new MondrianDef.Column(cube.fact.getAlias(), column),
-                aggregator);
+        if (datatype == null) {
+            if (aggregator == RolapAggregator.Count ||
+                    aggregator == RolapAggregator.DistinctCount) {
+                datatype = "Integer";
+            } else {
+                datatype = "Numeric";
+            }
+        }
+        // todo: End-user error.
+        Util.assertTrue(datatypeList.contains(datatype),
+                "invalid datatype " + datatype);
+        setProperty(Property.DATATYPE.name, datatype);
     }
 
     MondrianDef.Expression getMondrianDefExpression() {

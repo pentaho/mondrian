@@ -169,10 +169,12 @@ public class RolapCube extends CubeBase {
         for (int i = 0; i < xmlCube.measures.length; i++) {
             MondrianDef.Measure xmlMeasure = xmlCube.measures[i];
 
+            MondrianDef.Column column =
+                    new MondrianDef.Column(fact.getAlias(), xmlMeasure.column);
             final RolapStoredMeasure measure = new RolapStoredMeasure(
-                            this, null, measuresLevel, xmlMeasure.name,
-                            xmlMeasure.formatString, xmlMeasure.column,
-                            xmlMeasure.aggregator);
+                    this, null, measuresLevel, xmlMeasure.name,
+                    xmlMeasure.formatString, column,
+                    xmlMeasure.aggregator, xmlMeasure.datatype);
             measures[i] = measure;
 
             if (!Util.isEmpty(xmlMeasure.formatter)) {

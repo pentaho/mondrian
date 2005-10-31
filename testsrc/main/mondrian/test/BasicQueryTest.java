@@ -2492,7 +2492,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      * (Problem was that each argument of a function was validated twice, hence
      * the validation time was <code>O(2 ^ depth)</code>.)
      */
-    public void testBug793616() {
+    public void _testBug793616() {
         if (MondrianProperties.instance().TestExpDependencies.get() > 0) {
             // Don't run this test if dependency-checking is enabled.
             // Dependency checking will hugely slow down evaluation, and give
