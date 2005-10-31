@@ -21,7 +21,7 @@
 
 <body>
 <h1>How to Design a Mondrian Schema</h1>
-<p>By Julian Hyde; last updated September, 2005.</p>
+<p>By Julian Hyde; last updated October, 2005.</p>
 
 <hr noshade color="#000000" size="1">
 
@@ -204,15 +204,21 @@ statements.</p>
 <p>The Sales cube defines two measures, &quot;Unit Sales&quot; and &quot;Store Sales&quot;.</p>
 <blockquote>
   <pre>&lt;<a href="#XML_Measure">Measure</a> name=&quot;Unit Sales&quot; column=&quot;unit_sales&quot;
-    aggregator=&quot;sum&quot; formatString=&quot;#,###&quot;/&gt;
+    aggregator=&quot;sum&quot; datatype=&quot;Integer&quot; formatString=&quot;#,###&quot;/&gt;
 &lt;<a href="#XML_Measure">Measure</a> name=&quot;Store Sales&quot; column=&quot;store_sales&quot;
-    aggregator=&quot;sum&quot; formatString=&quot;#,###.00&quot;/&gt;</pre>
+    aggregator=&quot;sum&quot; datatype=&quot;Numeric&quot; formatString=&quot;#,###.00&quot;/&gt;</pre>
 </blockquote>
 <p>Each measure (see <a href="#XML_Measure">&lt;Measure&gt;</a>) has a name,
 a column in the fact table, and an <code>aggregator</code>. The aggregator is usually &quot;sum&quot;,
 but &quot;count&quot;, &quot;mix&quot;, &quot;max&quot;, &quot;avg&quot;, and &quot;distinct count&quot; are also allowed;
 &quot;distinct count&quot; has some limitations if your cube contains a
 <a href="#Parent_child_hierarchies">parent-child hierarchy</a>.</p>
+
+<p>The optional <code>datatype</code> attribute specifies how cell values are 
+represented in Mondrian's cache, and how they are returned via XML for Analysis. 
+The <code>datatype</code> attribute can have values &quot;<code>String</code>&quot;, &quot;<code>Integer</code>&quot; 
+and &quot;<code>Numeric</code>&quot;. The default is &quot;<code>Numeric</code>&quot;, except for &quot;<code>count</code>&quot; 
+and &quot;<code>distinct-count</code>&quot; measures, which are &quot;<code>Integer</code>&quot;.</p>
 
 <p>An optional <code>formatString</code> attribute specifies how the value is to
 be printed. Here, we have chosen to output unit sales with no decimal places
