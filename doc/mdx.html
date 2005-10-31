@@ -158,6 +158,10 @@ FROM [Sales]</code></blockquote>
   </td>
 </tr>
 <tr>
+  <td valign=top>$Cache</td>
+  <td>Evaluates and returns its sole argument, applying statement-level caching  </td>
+</tr>
+<tr>
   <td valign=top>()</td>
   <td>  </td>
 </tr>
@@ -285,10 +289,34 @@ FROM [Sales]</code></blockquote>
   </td>
 </tr>
 <tr>
+  <td valign=top>AddCalculatedMembers</td>
+  <td>Adds calculated members to a set.    <p><b>Syntax</b></p>
+    <code>&lt;Set&gt; AddCalculatedMembers(&lt;Set&gt;)</code><br/>
+  </td>
+</tr>
+<tr>
   <td valign=top>Aggregate</td>
   <td>Returns a calculated value using the appropriate aggregate function, based on the context of the query.    <p><b>Syntax</b></p>
     <code>&lt;Numeric Expression&gt; Aggregate(&lt;Set&gt;)</code><br/>
     <code>&lt;Numeric Expression&gt; Aggregate(&lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
+  </td>
+</tr>
+<tr>
+  <td valign=top>AllMembers</td>
+  <td>Returns a set that contains all members, including calculated members, of the specified dimension.    <p><b>Syntax</b></p>
+    <code>&lt;Dimension&gt;.AllMembers</code><br/>
+  </td>
+</tr>
+<tr>
+  <td valign=top>AllMembers</td>
+  <td>Returns a set that contains all members, including calculated members, of the specified hierarchy.    <p><b>Syntax</b></p>
+    <code>&lt;Hierarchy&gt;.AllMembers</code><br/>
+  </td>
+</tr>
+<tr>
+  <td valign=top>AllMembers</td>
+  <td>Returns a set that contains all members, including calculated members, of the specified level.    <p><b>Syntax</b></p>
+    <code>&lt;Level&gt;.AllMembers</code><br/>
   </td>
 </tr>
 <tr>
@@ -594,6 +622,21 @@ FROM [Sales]</code></blockquote>
   </td>
 </tr>
 <tr>
+  <td valign=top>IS</td>
+  <td>Returns whether two objects are the same (idempotent)    <p><b>Syntax</b></p>
+    <code>&lt;Member&gt; IS &lt;Member&gt;</code><br/>
+    <code>&lt;Level&gt; IS &lt;Level&gt;</code><br/>
+    <code>&lt;Hierarchy&gt; IS &lt;Hierarchy&gt;</code><br/>
+    <code>&lt;Dimension&gt; IS &lt;Dimension&gt;</code><br/>
+  </td>
+</tr>
+<tr>
+  <td valign=top>IS NULL</td>
+  <td>Returns whether a member is null.    <p><b>Syntax</b></p>
+    <code>&lt;Member&gt;.IS NULL</code><br/>
+  </td>
+</tr>
+<tr>
   <td valign=top>Intersect</td>
   <td>Returns the intersection of two input sets, optionally retaining duplicates.    <p><b>Syntax</b></p>
     <code>&lt;Set&gt; Intersect(&lt;Set&gt;, &lt;Set&gt;, &lt;Symbol&gt;)</code><br/>
@@ -609,8 +652,13 @@ FROM [Sales]</code></blockquote>
 </tr>
 <tr>
   <td valign=top>Item</td>
-  <td>Returns the &lt;Index&gt;th element in the set, or     <p><b>Syntax</b></p>
-    <code>&lt;Tuple&gt; &lt;Set&gt;.Item(&lt;Numeric Expression&gt;)</code><br/>
+  <td>Returns a tuple from the set specified in &#171;Set&#187;. The tuple to be returned is specified by the zero-based position of the tuple in the set in &#171;Index&#187;.    <p><b>Syntax</b></p>
+    <code>&lt;Member&gt; &lt;Set&gt;.Item(&lt;Numeric Expression&gt;)</code><br/>
+  </td>
+</tr>
+<tr>
+  <td valign=top>Item</td>
+  <td>Returns a member from the tuple specified in &#171;Tuple&#187;. The member to be returned is specified by the zero-based position of the member in the set in &#171;Index&#187;.    <p><b>Syntax</b></p>
     <code>&lt;Member&gt; &lt;Tuple&gt;.Item(&lt;Numeric Expression&gt;)</code><br/>
   </td>
 </tr>
@@ -713,19 +761,19 @@ FROM [Sales]</code></blockquote>
 </tr>
 <tr>
   <td valign=top>Members</td>
-  <td>Returns the set of all members in a dimension.    <p><b>Syntax</b></p>
+  <td>Returns the set of members in a dimension.    <p><b>Syntax</b></p>
     <code>&lt;Dimension&gt;.Members</code><br/>
   </td>
 </tr>
 <tr>
   <td valign=top>Members</td>
-  <td>Returns the set of all members in a hierarchy.    <p><b>Syntax</b></p>
+  <td>Returns the set of members in a hierarchy.    <p><b>Syntax</b></p>
     <code>&lt;Hierarchy&gt;.Members</code><br/>
   </td>
 </tr>
 <tr>
   <td valign=top>Members</td>
-  <td>Returns the set of all members in a level.    <p><b>Syntax</b></p>
+  <td>Returns the set of members in a level.    <p><b>Syntax</b></p>
     <code>&lt;Level&gt;.Members</code><br/>
   </td>
 </tr>
@@ -823,7 +871,7 @@ FROM [Sales]</code></blockquote>
 </tr>
 <tr>
   <td valign=top>ParamRef</td>
-  <td>Returns current value of parameter. If it&#39;s null, returns default.    <p><b>Syntax</b></p>
+  <td>Returns the current value of this parameter. If it is null, returns the default value.    <p><b>Syntax</b></p>
     <code>&lt;Value&gt; ParamRef(&lt;String&gt;)</code><br/>
   </td>
 </tr>
@@ -872,10 +920,10 @@ FROM [Sales]</code></blockquote>
 <tr>
   <td valign=top>Rank</td>
   <td>Returns the one-based rank of a tuple in a set.    <p><b>Syntax</b></p>
-    <code>&lt;Numeric Expression&gt; Rank(&lt;Tuple&gt;, &lt;Set&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; Rank(&lt;Tuple&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; Rank(&lt;Member&gt;, &lt;Set&gt;)</code><br/>
-    <code>&lt;Numeric Expression&gt; Rank(&lt;Member&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
+    <code>&lt;Integer&gt; Rank(&lt;Tuple&gt;, &lt;Set&gt;)</code><br/>
+    <code>&lt;Integer&gt; Rank(&lt;Tuple&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
+    <code>&lt;Integer&gt; Rank(&lt;Member&gt;, &lt;Set&gt;)</code><br/>
+    <code>&lt;Integer&gt; Rank(&lt;Member&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;)</code><br/>
   </td>
 </tr>
 <tr>
@@ -886,7 +934,7 @@ FROM [Sales]</code></blockquote>
 </tr>
 <tr>
   <td valign=top>Siblings</td>
-  <td>Returns the set of siblings of the specified member.    <p><b>Syntax</b></p>
+  <td>Returns the siblings of a specified member, including the member itself.    <p><b>Syntax</b></p>
     <code>&lt;Member&gt;.Siblings</code><br/>
   </td>
 </tr>
@@ -934,6 +982,12 @@ FROM [Sales]</code></blockquote>
   <td valign=top>StrToTuple</td>
   <td>Constructs a tuple from a string.    <p><b>Syntax</b></p>
     <code>&lt;Tuple&gt; StrToTuple(&lt;String&gt;)</code><br/>
+  </td>
+</tr>
+<tr>
+  <td valign=top>StripCalculatedMembers</td>
+  <td>Removes calculated members from a set.    <p><b>Syntax</b></p>
+    <code>&lt;Set&gt; StripCalculatedMembers(&lt;Set&gt;)</code><br/>
   </td>
 </tr>
 <tr>
