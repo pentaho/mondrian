@@ -580,7 +580,6 @@ doc/deployDoc.sh" />
           prefix="${dist.name}"
           includes="
 ${doc.dir}/**/*.jpg,
-${doc.dir}/**/*.png,
 ${doc.dir}/**/*.html,
 ${doc.dir}/**/*.css,
 ${doc.dir}/api/**/*.xml,
@@ -646,6 +645,10 @@ doc/**/*.xml"
           dir="${testclasses.dir}"
           includes="
 mondrian/test/loader/**/*.class"/>
+      <zipfileset
+          dir="${javatest.dir}"
+          includes="
+mondrian/test/loader/insert.sql"/>
       <zipfileset
           dir="."
           includes="
