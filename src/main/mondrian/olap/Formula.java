@@ -41,26 +41,33 @@ public class Formula extends QueryPart {
      * Constructs formula specifying a set.
      */
     public Formula(String[] names, Exp exp) {
-        this(false, names, (ExpBase) exp, new MemberProperty[0]);
+        this(false, names, (ExpBase) exp, new MemberProperty[0], null, null);
         createElement(null);
     }
 
     /**
      * Constructs a formula specifying a member.
      */
-    public Formula(String[] names, Exp exp, MemberProperty[] memberProperties) {
-        this(true, names, (ExpBase) exp, memberProperties);
+    public Formula(
+            String[] names, Exp exp, MemberProperty[] memberProperties) {
+        this(true, names, (ExpBase) exp, memberProperties, null, null);
     }
 
     private Formula(
             boolean isMember,
             String[] names,
             ExpBase exp,
-            MemberProperty[] memberProperties) {
+            MemberProperty[] memberProperties,
+            Member mdxMember,
+            NamedSet mdxSet) {
         this.isMember = isMember;
         this.names = names;
         this.exp = exp;
         this.memberProperties = memberProperties;
+        this.mdxMember = mdxMember;
+        this.mdxSet = mdxSet;
+        assert !(!isMember && mdxMember != null);
+        assert !(isMember && mdxSet != null);
     }
 
     public Object clone()
@@ -69,7 +76,9 @@ public class Formula extends QueryPart {
                 isMember,
                 names,
                 (ExpBase) exp.clone(),
-                MemberProperty.cloneArray(memberProperties));
+                MemberProperty.cloneArray(memberProperties),
+                mdxMember,
+                mdxSet);
     }
 
     static Formula[] cloneArray(Formula[] x) {
@@ -120,12 +129,19 @@ public class Formula extends QueryPart {
     void createElement(Query q) {
         // first resolve the name, bit by bit
         if (isMember) {
+            if (mdxMember != null) {
+                return;
+            }
             OlapElement mdxElement = q.getCube();
             final SchemaReader schemaReader = q.getSchemaReader(true);
             for (int i = 0; i < names.length; i++) {
                 OlapElement parent = mdxElement;
                 mdxElement = schemaReader.getElementChild(parent, names[i]);
-                if (mdxElement == null) {
+                // Don't try to look up the member which the formula is
+                // defining. We would only find one if the member is overriding
+                // a member at the cube or schema level, and we don't want to
+                // change that member's properties.
+                if (mdxElement == null || i == names.length - 1) {
                     // this part of the name was not found... define it
                     Level level;
                     Member parentMember = null;

@@ -175,6 +175,37 @@ public class TestCalculatedMembers extends FoodMartTestCase {
             "Row #2: $588.03" + nl);
     }
 
+    public void testQueryCalculatedMemberOverridesCube() {
+        // Profit is defined in the cube, and has a format string "$#,###".
+        // We define it in a query to make sure that the format string in the
+        // cube doesn't change.
+        assertQueryReturns("WITH MEMBER [Measures].[Profit]" + nl +
+            " AS '(Measures.[Store Sales] - Measures.[Store Cost])', FORMAT_STRING='#,###' " + nl +
+            "SELECT {[Measures].[Profit]} ON COLUMNS," + nl +
+            " {[Time].[1997].[Q2]} ON ROWS" + nl +
+            "FROM [Sales]",
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Profit]}" + nl +
+                "Axis #2:" + nl +
+                "{[Time].[1997].[Q2]}" + nl +
+                "Row #0: 79,702" + nl);
+
+        // Note that the Profit measure defined against the cube has
+        // a format string preceded by "$".
+        assertQueryReturns("SELECT {[Measures].[Profit]} ON COLUMNS," + nl +
+                " {[Time].[1997].[Q2]} ON ROWS" + nl +
+                "FROM [Sales]",
+                "Axis #0:" + nl +
+                "{}" + nl +
+                "Axis #1:" + nl +
+                "{[Measures].[Profit]}" + nl +
+                "Axis #2:" + nl +
+                "{[Time].[1997].[Q2]}" + nl +
+                "Row #0: $79,702.05" + nl);
+    }
+
     public void _testWhole() {
 
         /*
