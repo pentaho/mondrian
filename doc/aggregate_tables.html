@@ -1360,6 +1360,282 @@ it can not figure out.
 </p>
 
 <h2>
+<a name="Aggregate_tables_and_parent-child_hierarchies">Aggregate tables and 
+parent-child hierarchies</a></h2>
+
+<p>
+A <a href="schema.html#Parent_child_hierarchies">parent-child hierarchy</a> is a 
+special kind of hierarchy where members can have arbitrary depth. The classic 
+example of a parent-child hierarchy is an employee org-chart.</p>
+
+<p>
+When dealing with parent-child hierarchies, the challenge is to roll up measures 
+of child members into parent members. For example, when considering an employee 
+Bill who is head of a department, we want to report not Bill's salary, but 
+Bill's salary plus the sum of his direct and indirect reports (Eric, Mark and 
+Carla). It is difficult to generate efficient SQL to do this rollup, so Mondrian 
+provides a special structure called a <a href="schema.html#Closure_tables">
+closure table</a>, which contains the expanded contents of the hierarchy.</p>
+
+<p>
+A closure table serves a similar purpose to an aggregate table: it contains a 
+redundant copy of the data in the database, organized in such a way that 
+Mondrian can access the data efficiently. An aggregate table speeds up 
+aggregation, whereas a closure table makes it more efficient to compute 
+hierarchical rollups.</p>
+
+<p>
+Supposing that a schema contains a large fact table, and one of the hierarchies 
+is a parent-child hierarchy. Is is possible to make aggregate tables and closure 
+tables work together, to get better performance? Let's consider a concrete 
+example.</p>
+
+<blockquote>
+
+	<p><code>Cube:<br>
+&nbsp;&nbsp;&nbsp; [Salary]<br>
+	<br>
+	Dimensions:<br>
+&nbsp;&nbsp;&nbsp; [Employee], with level [Employee]<br>
+&nbsp;&nbsp;&nbsp; [Time], with levels [Year], [Quarter], [Month], [Day]<br>
+	<br>
+	Fact table:<br>
+&nbsp;&nbsp;&nbsp; salary (employee_id, time_id, dollars)<br>
+	<br>
+	Parent-child dimension table:<br>
+&nbsp;&nbsp;&nbsp; employee (employee_id, supervisor_id, name)</code></p>
+
+<blockquote>
+<table border="2" cellpadding="2" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" id="table6">
+    <tr>
+        <th colspan="3">employee</th>
+    </tr>
+    <tr>
+        <th>supervisor_id</th>
+        <th>employee_id</th>
+        <th>name</th>
+    </tr>
+    <tr>
+        <td>null</td>
+        <td>1</td>
+        <td>Frank</td>
+    </tr>
+    <tr>
+        <td>1</td>
+        <td>2</td>
+        <td>Bill</td>
+    </tr>
+    <tr>
+        <td>2</td>
+        <td>3</td>
+        <td>Eric</td>
+    </tr>
+    <tr>
+        <td>1</td>
+        <td>4</td>
+        <td>Jane</td>
+    </tr>
+    <tr>
+        <td>3</td>
+        <td>5</td>
+        <td>Mark</td>
+    </tr>
+    <tr>
+        <td>2</td>
+        <td>6</td>
+        <td>Carla</td>
+    </tr>
+</table>
+</blockquote>
+
+	<p><code>Closure table:<br>
+&nbsp;&nbsp;&nbsp; employee_closure (employee_id, supervisor_id, depth)</code></p>
+
+<blockquote>
+<table border="2" cellpadding="2" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" id="table7">
+    <tr>
+        <th colspan="3">employee_closure</th>
+    </tr>
+    <tr>
+        <th width="91">supervisor_id</th>
+        <th width="85">employee_id</th>
+        <th width="8">distance</th>
+    </tr>
+    <tr>
+        <td width="91">1</td>
+        <td width="85">1</td>
+        <td width="8">0</td>
+    </tr>
+    <tr>
+        <td width="91">1</td>
+        <td width="85">2</td>
+        <td width="8">1</td>
+    </tr>
+    <tr>
+        <td width="91">1</td>
+        <td width="85">3</td>
+        <td width="8">2</td>
+    </tr>
+    <tr>
+        <td width="91">1</td>
+        <td width="85">4</td>
+        <td width="8">1</td>
+    </tr>
+    <tr>
+        <td width="91">1</td>
+        <td width="85">5</td>
+        <td width="8">3</td>
+    </tr>
+    <tr>
+        <td width="91">1</td>
+        <td width="85">6</td>
+        <td width="8">2</td>
+    </tr>
+    <tr>
+        <td width="91">2</td>
+        <td width="85">2</td>
+        <td width="8">0</td>
+    </tr>
+    <tr>
+        <td width="91">2</td>
+        <td width="85">3</td>
+        <td width="8">1</td>
+    </tr>
+    <tr>
+        <td width="91">2</td>
+        <td width="85">5</td>
+        <td width="8">2</td>
+    </tr>
+    <tr>
+        <td width="91">2</td>
+        <td width="85">6</td>
+        <td width="8">1</td>
+    </tr>
+    <tr>
+        <td width="91">3</td>
+        <td width="85">3</td>
+        <td width="8">0</td>
+    </tr>
+    <tr>
+        <td width="91">3</td>
+        <td width="85">5</td>
+        <td width="8">1</td>
+    </tr>
+    <tr>
+        <td width="91">4</td>
+        <td width="85">4</td>
+        <td width="8">0</td>
+    </tr>
+    <tr>
+        <td width="91">5</td>
+        <td width="85">5</td>
+        <td width="8">0</td>
+    </tr>
+    <tr>
+        <td width="91">6</td>
+        <td width="85">6</td>
+        <td width="8">0</td>
+    </tr>
+    </table>
+</blockquote>
+
+	<p><code>Regular dimension table:<br>
+&nbsp;&nbsp;&nbsp; time (year, month, quarter, time_id)</code></p>
+</blockquote>
+
+<h3>
+Aggregate tables at the leaf level of a parent-child hierarchy</h3>
+
+<p>
+The simplest option is to create an aggregate table which joins at the leaf 
+level of the parent-child hierarchy. The following aggregate table is for leaf 
+members of the <code>[Employee]</code> hierarchy, and the <code>[Year]</code> 
+level of the <code>[Time]</code> hierarchy.</p>
+
+<blockquote>
+
+	<p><code>Aggregate table:<br>
+&nbsp;&nbsp;&nbsp; agg_salary_Employee_Time_Year (employee_id, time_year, 
+	sum_dollars)<br>
+	<br>
+	INSERT INTO agg_salary_Employee_Time_Year<br>
+	SELECT <br>
+&nbsp;&nbsp;&nbsp; salary.employee_id,<br>
+&nbsp;&nbsp;&nbsp; time.year AS time_year,<br>
+&nbsp;&nbsp;&nbsp; sum(salary.dollars) AS sum_dollars<br>
+	FROM salary,<br>
+&nbsp;&nbsp;&nbsp; time<br>
+	WHERE time.time_id = salary.time_id<br>
+	GROUP BY salary.employee_id, time.year</code></p>
+</blockquote>
+
+<p>
+Mondrian can use the aggregate table to retrieve salaries of leaf employees 
+(without rolling up salaries of child employees). But because the aggregate 
+table has the same foreign key as the <code>salary</code> fact table, Mondrian 
+is able to automatically join <code>salary.employee_id</code> to either <code>
+agg_salary_Employee_Time_Year.employee_id</code>&nbsp; or <code>
+agg_salary_Employee_Time_Year.supervisor_id</code>&nbsp; to rollup employees 
+efficiently.</p>
+
+<h3>
+Combined closure and aggregate tables</h3>
+
+<p>
+A more advanced option is to combine the closure table and aggregate table into 
+one:</p>
+
+<blockquote>
+
+	<p><code>Aggregate table:<br>
+&nbsp;&nbsp;&nbsp; agg_salary_Employee$Closure_Time_Year (supervisor_id, 
+	time_year, sum_dollars)<br>
+	<br>
+	INSERT INTO agg_salary_Employee$Closure_Time_Year<br>
+	SELECT <br>
+&nbsp;&nbsp;&nbsp; ec.supervisor_id,<br>
+&nbsp;&nbsp;&nbsp; time.year AS time_year,<br>
+&nbsp;&nbsp;&nbsp; sum(salary.dollars) AS sum_dollars<br>
+	FROM employee_closure AS ec,<br>
+&nbsp;&nbsp;&nbsp; salary,<br>
+&nbsp;&nbsp;&nbsp; time<br>
+	WHERE ec.supervisor_id = salary.employee_id<br>
+	AND time.time_id = salary.time_id<br>
+	GROUP BY ec.employee_id, ec.supervisor_id, time.year</code></p>
+</blockquote>
+
+<p>
+The <code>agg_salary_Employee$Closure_Time_Year</code> aggregate table contains 
+the salary of every employee, rolled up to include their direct and indirect 
+reports, aggregated to the <code>[Year]</code> level of the <code>[Time]</code> 
+dimension.</p>
+
+<h4>
+The trick: How combined closure and aggregate tables work</h4>
+
+<p>
+Incidentally, this works based upon a 'trick' in Mondrian's internals. Whenever 
+Mondrian sees a closure table, it creates a auxilliary dimension behind the 
+scenes. In the case of the <code>[Employee]</code> hierarchy and its <code>
+employee_closure</code> table, the auxilliary dimension is called <code>[Employee$Closure]</code>.</p>
+
+<blockquote>
+
+	<p><code>Dimension [Employee$Closure], levels [supervisor_id], [employee_id]&nbsp;
+	</code></p>
+</blockquote>
+
+<p>
+When an MDX query evaluates a cell which uses a rolled up salary measure, 
+Mondrian translates the coordinates of that cell in the <code>[Employee]</code> 
+dimension into a corresponding coordinate in the <code>[Employee$Closure]</code> 
+dimension. This translation happens <em><font face="Verdana">before</font></em> 
+Mondrian starts to search for a suitable aggregate table, so if your aggregate 
+table contains the name of the auxiliary hierarchy (as <code>
+agg_salary_Employee$Closure_Time_Year</code> contains the name of the [Employee$Closure] 
+hierarchy) it find and use the aggregate table in the ordinary way.</p>
+
+<h2>
 <a name="How_Mondrian_uses_aggregate_tables">How Mondrian uses aggregate tables</a></h2>
 
 <p>
