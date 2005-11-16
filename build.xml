@@ -16,7 +16,7 @@
   <property name="project.build.debug" value="on"/>
   <property name="Name" value="Mondrian"/>
   <property name="name" value="mondrian"/>
-  <property name="version" value="1.1.5"/>
+  <property name="version" value="2.0.0"/>
 
   <!--
     ===================================================================
@@ -472,6 +472,8 @@ in {mondrian.foodmart.jdbcURL}.">
 ${java.dir}/**/*.properties,
 ${java.dir}/mondrian/resource/MondrianResource.xml,
 ${java.dir}/mondrian/olap/Mondrian.xml,
+${java.dir}/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml,
+${java.dir}/mondrian/xmla/DataSourcesConfig.xml,
 ${java.dir}/javax/jmi/model/resources/mof.xml,
 ${java.dir}/**/*.java,
 ${java.dir}/**/*.cup,
@@ -480,8 +482,9 @@ ${java.dir}/**/*.html,
 ${lib.dir}/commons-collections.jar,
 ${lib.dir}/commons-dbcp.jar,
 ${lib.dir}/commons-pool.jar,
-${lib.dir}/eigenbase-xom.jar,
+${lib.dir}/eigenbase-properties.jar,
 ${lib.dir}/eigenbase-resgen.jar,
+${lib.dir}/eigenbase-xom.jar,
 ${lib.dir}/javacup.jar,
 ${lib.dir}/jmi.jar,
 ${lib.dir}/log4j-1.2.9.jar,
@@ -494,6 +497,7 @@ ${testsrc.dir}/queryFiles/**/*.xml,
 ${testsrc.dir}/**/*.java,
 ${testsrc.dir}/**/*.html,
 ${testsrc.dir}/**/*.txt,
+${testlib.dir}/commons-math-1.0.jar,
 ${testlib.dir}/junit.jar,
 ${webapp.dir}/WEB-INF/web*.xml,
 ${webapp.dir}/**/*.jsp,
@@ -571,7 +575,7 @@ doc/deployDoc.sh" />
   <target name="release" depends="binzip"/>
 
   <target name="binzip"
-      depends="version,war,javadoc,srczip,unzip-FoodMartCreateData,unzip-FoodMartAccessDB">
+      depends="version,war,srczip,javadoc,unzip-FoodMartCreateData,unzip-FoodMartAccessDB">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.bin.file}"/>
     <zip zipfile="${dist.bin.file}">
@@ -582,11 +586,11 @@ doc/deployDoc.sh" />
 ${doc.dir}/**/*.jpg,
 ${doc.dir}/**/*.html,
 ${doc.dir}/**/*.css,
+${doc.dir}/**/*.png,
 ${doc.dir}/api/**/*.xml,
-${dist.src.file},
 ${war.file},
 ${jar.file},
-lib/mondrian.dtd,
+lib/*.dtd,
 demo/FoodMart.xml,
 demo/FoodMartCreateData.sql,
 demo/access/MondrianFoodMart.mdb,
@@ -598,6 +602,10 @@ VERSION.txt"
 **/_vti*/*,
 **/*.psp,
 ${doc.dir}/api/src-html/**/*"/>
+      <zipfileset
+          dir="${dist.dir}"
+          prefix="${dist.name}"
+          includes="${dist.name}-src.zip"/>
     </zip>
   </target>
 
