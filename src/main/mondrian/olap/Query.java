@@ -792,10 +792,10 @@ public class Query extends QueryPart {
                 // recursion.
                 resolvedNodes.put(exp, placeHolder);
                 resolved = exp.accept(this);
+                resolvedNodes.put(exp, resolved);
                 if (scalar) {
                     resolved = convertToScalar(resolved);
                 }
-                resolvedNodes.put(exp, resolved);
                 return resolved;
             } finally {
                 stack.pop();
