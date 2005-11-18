@@ -288,10 +288,10 @@ public abstract class FunTableImpl implements FunTable {
      * Wrapper which evaluates an expression to a tuple, sets the current
      * context from that tuple, and converts it to a scalar expression.
      */
-    private static class TupleScalarExp extends ExpBase {
+    public static class TupleScalarExp extends ExpBase {
         private final Exp exp;
 
-        TupleScalarExp(Exp exp) {
+        public TupleScalarExp(Exp exp) {
             this.exp = exp;
             assert exp.getTypeX() instanceof TupleType;
         }
@@ -340,7 +340,7 @@ public abstract class FunTableImpl implements FunTable {
      * Wrapper which evaluates an expression to a dimensional context and
      * converts it to a scalar expression.
      */
-    private static class MemberScalarExp extends ExpBase {
+    public static class MemberScalarExp extends ExpBase {
         private final Exp exp;
 
         public MemberScalarExp(Exp exp) {
@@ -405,9 +405,9 @@ public abstract class FunTableImpl implements FunTable {
     /**
      * An expression which yields the current value of the current member.
      */
-    private static class ScalarExp extends ExpBase {
+    public static class ScalarExp extends ExpBase {
 
-        ScalarExp() {
+        public ScalarExp() {
         }
 
         public void unparse(PrintWriter pw) {
@@ -452,10 +452,10 @@ public abstract class FunTableImpl implements FunTable {
      *
      * @see TupleScalarExp
      */
-    private static class MemberListScalarExp extends ExpBase {
+    public static class MemberListScalarExp extends ExpBase {
         private final Exp[] exps;
 
-        MemberListScalarExp(Exp[] exps) {
+        public MemberListScalarExp(Exp[] exps) {
             this.exps = exps;
             for (int i = 0; i < exps.length; i++) {
                 assert exps[i].getTypeX() instanceof MemberType;
