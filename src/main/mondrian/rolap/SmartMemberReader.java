@@ -123,8 +123,8 @@ public class SmartMemberReader implements MemberReader, MemberCache {
     /**
      * @synchronization modifies mapLevelToMembers
      */
-    public synchronized List getMembersInLevel(RolapLevel level, 
-                                               int startOrdinal, 
+    public synchronized List getMembersInLevel(RolapLevel level,
+                                               int startOrdinal,
                                                int endOrdinal) {
         SoftReference ref = (SoftReference) mapLevelToMembers.get(level);
         if (ref != null) {
@@ -140,11 +140,11 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         return members;
     }
 
-    private void getMembersInLevel(List result, 
-                                   RolapLevel level, 
-                                   int startOrdinal, 
+    private void getMembersInLevel(List result,
+                                   RolapLevel level,
+                                   int startOrdinal,
                                    int endOrdinal) {
-        final List membersInLevel = 
+        final List membersInLevel =
             getMembersInLevel(level, startOrdinal, endOrdinal);
         result.addAll(membersInLevel);
     }
@@ -155,7 +155,7 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         getMemberChildren(parentMembers, children);
     }
 
-    public synchronized void getMemberChildren(List parentMembers, 
+    public synchronized void getMemberChildren(List parentMembers,
                                                List children) {
         List missed = new ArrayList();
         for (Iterator it = parentMembers.iterator(); it.hasNext();) {
@@ -179,7 +179,7 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         }
     }
 
-    public RolapMember lookupMember(String[] uniqueNameParts, 
+    public RolapMember lookupMember(String[] uniqueNameParts,
                                     boolean failIfNotFound) {
         return RolapUtil.lookupMember(this, uniqueNameParts, failIfNotFound);
     }
@@ -198,11 +198,11 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         }
 
         public String toString() {
-            return super.toString() 
-                + " {member=" 
-                + member 
-                + ", childCount=" 
-                + list.size() 
+            return super.toString()
+                + " {member="
+                + member
+                + ", childCount="
+                + list.size()
                 + "}";
         }
 
@@ -324,9 +324,9 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         }
     }
 
-    public void getMemberRange(RolapLevel level, 
-                               RolapMember startMember, 
-                               RolapMember endMember, 
+    public void getMemberRange(RolapLevel level,
+                               RolapMember startMember,
+                               RolapMember endMember,
                                List list) {
         Util.assertPrecondition(startMember != null, "startMember != null");
         Util.assertPrecondition(endMember != null, "endMember != null");
@@ -349,8 +349,8 @@ public class SmartMemberReader implements MemberReader, MemberCache {
             }
         }
         throw Util.newInternal("sibling iterator did not hit end point, start="
-                + startMember 
-                + ", end=" 
+                + startMember
+                + ", end="
                 + endMember);
     }
 
@@ -432,9 +432,9 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         return source.getMemberCount();
     }
 
-    public int compare(RolapMember m1, 
-                       RolapMember m2, 
-                       boolean siblingsAreEqual) { 
+    public int compare(RolapMember m1,
+                       RolapMember m2,
+                       boolean siblingsAreEqual) {
         if (m1 == m2) {
             return 0;
         }
@@ -480,14 +480,16 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         }
     }
 
-    public void getMemberDescendants(RolapMember member, 
-                                     List result, 
-                                     RolapLevel level, 
-                                     boolean before, 
-                                     boolean self, 
-                                     boolean after) {
-        RolapUtil.getMemberDescendants(this, member, level, result,
-                before, self, after);
+    public void getMemberDescendants(
+            RolapMember member,
+            List result,
+            RolapLevel level,
+            boolean before,
+            boolean self,
+            boolean after,
+            boolean leaves) {
+        RolapUtil.getMemberDescendants(
+                this, member, level, result, before, self, after, leaves);
     }
 
     /**

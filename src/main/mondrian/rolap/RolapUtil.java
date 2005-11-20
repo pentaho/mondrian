@@ -338,13 +338,28 @@ public class RolapUtil {
         return querySemaphore;
     }
 
-    static void getMemberDescendants(MemberReader memberReader,
-                                     RolapMember ancestor,
-                                     RolapLevel level,
-                                     List result,
-                                     boolean before,
-                                     boolean self,
-                                     boolean after) {
+    /**
+     * Finds all descendants of a member which are before/at/after a level,
+     * and/or are leaves (have no descendants) and adds them to a result list.
+     *
+     * @param memberReader Member reader
+     * @param ancestor Member to find descendants of
+     * @param level Level relative to which to filter, must not be null
+     * @param result Result list
+     * @param before Whether to output members above <code>level</code>
+     * @param self Whether to output members at <code>level</code>
+     * @param after Whether to output members below <code>level</code>
+     * @param leaves Whether to output members which are leaves
+     */
+    static void getMemberDescendants(
+            MemberReader memberReader,
+            RolapMember ancestor,
+            RolapLevel level,
+            List result,
+            boolean before,
+            boolean self,
+            boolean after,
+            boolean leaves) {
         // We find the descendants of a member by making breadth-first passes
         // down the hierarchy. Initially the list just contains the ancestor.
         // Then we find its children. We add those children to the result if
@@ -367,36 +382,66 @@ public class RolapUtil {
         // except that we omit members whose children we are not interested
         // in. We allocate it once, and clear it each pass, to save a little
         // memory allocation.
-        List fertileMembers = new ArrayList();
-        do {
-            fertileMembers.clear();
-            for (int i = 0; i < members.size(); i++) {
-                RolapMember member = (RolapMember) members.get(i);
-                final int currentDepth = member.getLevel().getDepth();
-                if (currentDepth == levelDepth) {
-                    if (self) {
-                        result.add(member);
-                    }
-                    if (after) {
-                        // we are interested in member's children
-                        fertileMembers.add(member);
-                    }
-                } else if (currentDepth < levelDepth) {
-                    if (before) {
-                        result.add(member);
-                    }
-                    fertileMembers.add(member);
-                } else {
-                    if (after) {
-                        result.add(member);
-                        fertileMembers.add(member);
+        if (leaves) {
+            assert !before && !self && !after;
+            List childMembers = new ArrayList();
+            do {
+                List nextMembers = new ArrayList();
+                for (int i = 0; i < members.size(); i++) {
+                    RolapMember member = (RolapMember) members.get(i);
+                    final int currentDepth = member.getLevel().getDepth();
+                    childMembers.clear();
+                    memberReader.getMemberChildren(member, childMembers);
+                    if (childMembers.isEmpty()) {
+                        // this member is a leaf -- add it
+                        if (currentDepth == levelDepth) {
+                            result.add(member);
+                        }
+                        continue;
+                    } else {
+                        // this member is not a leaf -- add its children
+                        // to the list to be considered next iteration
+                        if (currentDepth <= levelDepth) {
+                            nextMembers.addAll(childMembers);
+                        }
+                        childMembers.clear();
                     }
                 }
+                members = nextMembers;
             }
-            members.clear();
-            memberReader.getMemberChildren(fertileMembers, members);
+            while (members.size() > 0);
+        } else {
+            List fertileMembers = new ArrayList();
+            do {
+                fertileMembers.clear();
+                for (int i = 0; i < members.size(); i++) {
+                    RolapMember member = (RolapMember) members.get(i);
+                    final int currentDepth = member.getLevel().getDepth();
+                    if (currentDepth == levelDepth) {
+                        if (self) {
+                            result.add(member);
+                        }
+                        if (after) {
+                            // we are interested in member's children
+                            fertileMembers.add(member);
+                        }
+                    } else if (currentDepth < levelDepth) {
+                        if (before) {
+                            result.add(member);
+                        }
+                        fertileMembers.add(member);
+                    } else {
+                        if (after) {
+                            result.add(member);
+                            fertileMembers.add(member);
+                        }
+                    }
+                }
+                members.clear();
+                memberReader.getMemberChildren(fertileMembers, members);
+            }
+            while (members.size() > 0);
         }
-        while (members.size() > 0);
     }
 
     /**

@@ -10,7 +10,7 @@
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
-import mondrian.resource.MondrianResource;
+import mondrian.olap.type.NumericType;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -23,21 +23,19 @@ class DescendantsFunDef extends FunDefBase {
     private final boolean before;
     private final boolean after;
     private final boolean depthSpecified;
-    private final int depthLimit;
+    private final boolean leaves;
 
     public DescendantsFunDef(
             FunDef dummyFunDef,
             int flag,
-            boolean depthSpecified,
-            int depthLimit) {
+            boolean depthSpecified) {
         super(dummyFunDef);
 
         this.self = FunUtil.checkFlag(flag, Flags.SELF, true);
         this.after = FunUtil.checkFlag(flag, Flags.AFTER, true);
         this.before = FunUtil.checkFlag(flag, Flags.BEFORE, true);
-//      leaves = FunUtil.checkFlag(flag, Flags.LEAVES, true);
+        this.leaves = FunUtil.checkFlag(flag, Flags.LEAVES, true);
         this.depthSpecified = depthSpecified;
-        this.depthLimit = depthLimit;
     }
 
     public Object evaluate(Evaluator evaluator, Exp[] args) {
@@ -45,14 +43,24 @@ class DescendantsFunDef extends FunDefBase {
         List result = new ArrayList();
         final SchemaReader schemaReader = evaluator.getSchemaReader();
         if (depthSpecified) {
-            descendantsByDepth(member, result, schemaReader,
-                    depthLimit, before, self, after);
+            int depthLimit = getIntArg(evaluator, args, 1);
+            if (leaves) {
+                if (depthLimit < 0) {
+                    depthLimit = Integer.MAX_VALUE;
+                }
+                descendantsLeavesByDepth(
+                        member, result, schemaReader, depthLimit);
+            } else {
+                descendantsByDepth(
+                        member, result, schemaReader,
+                        depthLimit, before, self, after);
+            }
         } else {
             final Level level = args.length > 1
                 ?  getLevelArg(evaluator, args, 1, true)
                 : member.getLevel();
-            schemaReader.getMemberDescendants(member, result,
-                    level, before, self, after);
+            schemaReader.getMemberDescendants(
+                    member, result, level, before, self, after, leaves);
         }
 
         hierarchize(result, false);
@@ -60,13 +68,14 @@ class DescendantsFunDef extends FunDefBase {
         return result;
     }
 
-    private static void descendantsByDepth(Member member,
-                                           List result,
-                                           final SchemaReader schemaReader,
-                                           final int depthLimitFinal,
-                                           final boolean before,
-                                           final boolean self,
-                                           final boolean after) {
+    private static void descendantsByDepth(
+            Member member,
+            List result,
+            final SchemaReader schemaReader,
+            final int depthLimitFinal,
+            final boolean before,
+            final boolean self,
+            final boolean after) {
         Member[] children = {member};
         for (int depth = 0;; ++depth) {
             if (depth == depthLimitFinal) {
@@ -92,6 +101,40 @@ class DescendantsFunDef extends FunDefBase {
             if (children.length == 0) {
                 break;
             }
+        }
+    }
+
+    private static void descendantsLeavesByDepth(
+            Member member,
+            List result,
+            final SchemaReader schemaReader,
+            final int depthLimit) {
+        if (!schemaReader.isDrillable(member)) {
+            if (depthLimit >= 0) {
+                result.add(member);
+            }
+            return;
+        }
+        Member[] children = {member};
+        for (int depth = 0; depth <= depthLimit; ++depth) {
+            children = schemaReader.getMemberChildren(children);
+            if (children.length == 0) {
+                throw Util.newInternal("drillable member must have children");
+            }
+            List nextChildren = new ArrayList();
+            for (int i = 0; i < children.length; i++) {
+                Member child = children[i];
+                if (schemaReader.isDrillable(child)) {
+                    nextChildren.add(child);
+                } else {
+                    result.add(child);
+                }
+            }
+            if (nextChildren.isEmpty()) {
+                break;
+            }
+            children = (Member[])
+                    nextChildren.toArray(new Member[nextChildren.size()]);
         }
     }
 
@@ -134,39 +177,25 @@ class DescendantsFunDef extends FunDefBase {
         }
 
         protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-            int depthLimit = -1; // unlimited
-            boolean depthSpecified = false;
             int flag = Flags.SELF;
             if (args.length == 1) {
-                depthLimit = -1;
                 flag = Flags.SELF_BEFORE_AFTER;
             }
+            final boolean depthSpecified;
             if (args.length >= 2) {
-                if (args[1] instanceof Literal) {
-                    Literal literal = (Literal) args[1];
-                    if (literal.getValue() instanceof Number) {
-                        Number number = (Number) literal.getValue();
-                        depthLimit = number.intValue();
-                        depthSpecified = true;
-                    }
-                }
+                depthSpecified = args[1].getTypeX() instanceof NumericType;
+            } else {
+                depthSpecified = false;
             }
             if (args.length >= 3) {
                 flag = FunUtil.getLiteralArg(args, 2, Flags.SELF,
                     Flags.instance, dummyFunDef);
             }
 
-            if (FunUtil.checkFlag(flag, Flags.LEAVES, true)) {
-                // LEAVES isn't supported
-                throw MondrianResource.instance().LeavesNotSupported.ex();
-            }
-            final int depthLimitFinal = depthLimit < 0
-                ?  Integer.MAX_VALUE
-                : depthLimit;
-            final int flagFinal = flag;
-            final boolean depthSpecifiedFinal = depthSpecified;
-            return new DescendantsFunDef(dummyFunDef, flagFinal,
-                depthSpecifiedFinal, depthLimitFinal);
+            return new DescendantsFunDef(
+                    dummyFunDef,
+                    flag,
+                    depthSpecified);
         }
 
         public String[] getReservedWords() {
@@ -174,3 +203,5 @@ class DescendantsFunDef extends FunDefBase {
         }
     }
 }
+
+// End DescendantsFunDef.java

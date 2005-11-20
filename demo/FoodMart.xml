@@ -472,6 +472,18 @@ fullname
     </Hierarchy>
   </Dimension>
 
+  <Dimension name="Geography" foreignKey="store_id">
+    <Hierarchy hasAll="true" primaryKey="store_id">
+      <Table name="store_ragged"/>
+      <Level name="Country" column="store_country" uniqueMembers="true"
+          hideMemberIf="Never"/>
+      <Level name="State" column="store_state" uniqueMembers="true"
+          hideMemberIf="IfParentsName"/>
+      <Level name="City" column="store_city" uniqueMembers="false"
+          hideMemberIf="IfBlankName"/>
+    </Hierarchy>
+  </Dimension>
+
   <DimensionUsage name="Store Size in SQFT" source="Store Size in SQFT"
       foreignKey="store_id"/>
   <DimensionUsage name="Store Type" source="Store Type" foreignKey="store_id"/>

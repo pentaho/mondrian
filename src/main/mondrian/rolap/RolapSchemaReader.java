@@ -174,14 +174,16 @@ public abstract class RolapSchemaReader implements SchemaReader {
         }
     }
 
-    public void getMemberDescendants(Member member, List result, Level level,
-            boolean before, boolean self, boolean after) {
+    public void getMemberDescendants(
+            Member member, List result, Level level,
+            boolean before, boolean self, boolean after, boolean leaves) {
         Util.assertPrecondition(level != null, "level != null");
 
         final Hierarchy hierarchy = member.getHierarchy();
         final MemberReader memberReader = getMemberReader(hierarchy);
-        memberReader.getMemberDescendants((RolapMember) member, result,
-                (RolapLevel) level, before, self, after);
+        memberReader.getMemberDescendants(
+                (RolapMember) member, result,
+                (RolapLevel) level, before, self, after, leaves);
     }
 
     public abstract Cube getCube();
@@ -190,8 +192,8 @@ public abstract class RolapSchemaReader implements SchemaReader {
         return parent.lookupChild(this, name);
     }
 
-    public Member getMemberByUniqueName(String[] uniqueNameParts,
-                                        boolean failIfNotFound) {
+    public Member getMemberByUniqueName(
+            String[] uniqueNameParts, boolean failIfNotFound) {
         // In general, this schema reader doesn't have a cube, so we cannot
         // start looking up members.
         return null;

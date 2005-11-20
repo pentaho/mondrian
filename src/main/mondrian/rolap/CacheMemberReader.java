@@ -98,7 +98,7 @@ class CacheMemberReader implements MemberReader, MemberCache {
         return false;
     }
 
-    public RolapMember lookupMember(String[] uniqueNameParts, 
+    public RolapMember lookupMember(String[] uniqueNameParts,
                                     boolean failIfNotFound) {
         return RolapUtil.lookupMember(this, uniqueNameParts, failIfNotFound);
     }
@@ -113,8 +113,8 @@ class CacheMemberReader implements MemberReader, MemberCache {
         return list;
     }
 
-    public List getMembersInLevel(RolapLevel level, 
-                                  int startOrdinal, 
+    public List getMembersInLevel(RolapLevel level,
+                                  int startOrdinal,
                                   int endOrdinal) {
         List list = new ArrayList();
         int levelDepth = level.getDepth();
@@ -171,8 +171,8 @@ class CacheMemberReader implements MemberReader, MemberCache {
         }
     }
 
-    public void getMemberRange(RolapLevel level, 
-                               RolapMember startMember, 
+    public void getMemberRange(RolapLevel level,
+                               RolapMember startMember,
                                RolapMember endMember,
                                List list) {
         Util.assertPrecondition(startMember != null, "startMember != null");
@@ -195,7 +195,7 @@ class CacheMemberReader implements MemberReader, MemberCache {
         if (m1 == m2) {
             return 0;
         }
-        if (siblingsAreEqual && 
+        if (siblingsAreEqual &&
             (m1.getParentMember() == m2.getParentMember())) {
             return 0;
         }
@@ -205,14 +205,16 @@ class CacheMemberReader implements MemberReader, MemberCache {
         return (m1.getOrdinal() < m2.getOrdinal()) ? -1 : 1;
     }
 
-    public void getMemberDescendants(RolapMember member, 
-                                     List result,
-                                     RolapLevel level, 
-                                     boolean before, 
-                                     boolean self, 
-                                     boolean after) {
-        RolapUtil.getMemberDescendants(this, member, level, result, before,
-                self, after);
+    public void getMemberDescendants(
+            RolapMember member,
+            List result,
+            RolapLevel level,
+            boolean before,
+            boolean self,
+            boolean after,
+            boolean leaves) {
+        RolapUtil.getMemberDescendants(
+                this, member, level, result, before, self, after, leaves);
     }
 
 }

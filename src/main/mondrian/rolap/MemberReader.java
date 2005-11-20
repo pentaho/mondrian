@@ -75,9 +75,16 @@ interface MemberReader extends MemberSource {
      * @param before Whether to output members above <code>level</code>
      * @param self Whether to output members at <code>level</code>
      * @param after Whether to output members below <code>level</code>
+     * @param leaves Whether to output members which are leaves
      */
-    void getMemberDescendants(RolapMember member, List result,
-            RolapLevel level, boolean before, boolean self, boolean after);
+    void getMemberDescendants(
+            RolapMember member,
+            List result,
+            RolapLevel level,
+            boolean before,
+            boolean self,
+            boolean after,
+            boolean leaves);
 }
 
 // End MemberReader.java

@@ -32,15 +32,15 @@ class DelegatingMemberReader implements MemberReader {
         return memberReader.getLeadMember(member, n);
     }
 
-    public List getMembersInLevel(RolapLevel level, 
-                                  int startOrdinal, 
+    public List getMembersInLevel(RolapLevel level,
+                                  int startOrdinal,
                                   int endOrdinal) {
         return memberReader.getMembersInLevel(level, startOrdinal, endOrdinal);
     }
 
-    public void getMemberRange(RolapLevel level, 
+    public void getMemberRange(RolapLevel level,
                                RolapMember startMember,
-                               RolapMember endMember, 
+                               RolapMember endMember,
                                List list) {
         memberReader.getMemberRange(level, startMember, endMember, list);
     }
@@ -49,14 +49,16 @@ class DelegatingMemberReader implements MemberReader {
         return memberReader.compare(m1, m2, siblingsAreEqual);
     }
 
-    public void getMemberDescendants(RolapMember member, 
-                                     List result,
-                                     RolapLevel level, 
-                                     boolean before, 
-                                     boolean self, 
-                                     boolean after) {
-        memberReader.getMemberDescendants(member, result, level, before, self,
-                after);
+    public void getMemberDescendants(
+            RolapMember member,
+            List result,
+            RolapLevel level,
+            boolean before,
+            boolean self,
+            boolean after,
+            boolean leaves) {
+        memberReader.getMemberDescendants(
+                member, result, level, before, self, after, leaves);
     }
 
     public RolapHierarchy getHierarchy() {
@@ -87,7 +89,7 @@ class DelegatingMemberReader implements MemberReader {
         return memberReader.getMemberCount();
     }
 
-    public RolapMember lookupMember(String[] uniqueNameParts, 
+    public RolapMember lookupMember(String[] uniqueNameParts,
                                     boolean failIfNotFound) {
         return memberReader.lookupMember(uniqueNameParts, failIfNotFound);
     }

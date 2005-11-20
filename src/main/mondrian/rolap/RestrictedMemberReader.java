@@ -153,7 +153,7 @@ class RestrictedMemberReader extends DelegatingMemberReader {
         }
     }
 
-    public List getMembersInLevel(RolapLevel level, 
+    public List getMembersInLevel(RolapLevel level,
                                   int startOrdinal,
                                   int endOrdinal) {
         if (hierarchyAccess != null) {
@@ -174,16 +174,18 @@ class RestrictedMemberReader extends DelegatingMemberReader {
         return filteredMembers;
     }
 
-    public void getMemberDescendants(RolapMember member, 
-                                     List result,
-                                     RolapLevel level, 
-                                     boolean before, 
-                                     boolean self, 
-                                     boolean after) {
+    public void getMemberDescendants(
+            RolapMember member,
+            List result,
+            RolapLevel level,
+            boolean before,
+            boolean self,
+            boolean after,
+            boolean leaves) {
         // Utility method -- it calls our getMemberChildren(List,List), so
         // we get restriction.
-        RolapUtil.getMemberDescendants(this, member, level, result, before,
-                self, after);
+        RolapUtil.getMemberDescendants(
+                this, member, level, result, before, self, after, leaves);
     }
 }
 

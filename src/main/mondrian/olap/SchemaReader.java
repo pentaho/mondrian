@@ -85,9 +85,12 @@ public interface SchemaReader {
      * @param before Whether to output members above <code>level</code>
      * @param self Whether to output members at <code>level</code>
      * @param after Whether to output members below <code>level</code>
+     * @param leaves Whether to output members which are leaves
      */
-    void getMemberDescendants(Member member, List result, Level level,
-            boolean before, boolean self, boolean after);
+    void getMemberDescendants(
+            Member member, List result, Level level,
+            boolean before, boolean self, boolean after, boolean leaves);
+
     /**
      * Returns the depth of a member.
      *

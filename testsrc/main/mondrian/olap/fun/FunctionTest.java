@@ -959,7 +959,7 @@ public class FunctionTest extends FoodMartTestCase {
         //----------------------------------------------------
         //Should throw more than one dimension error
         //----------------------------------------------------
-        
+
         assertAxisThrows("AddCalculatedMembers({([Store].[USA].[CA], [Gender].[F])})",
         	"Only single dimension members allowed in set for AddCalculatedMembers");
     }
@@ -980,7 +980,7 @@ public class FunctionTest extends FoodMartTestCase {
         assertSetExprDependsOn(
                 "StripCalculatedMembers([Customers].CurrentMember.Children)",
                 "{[Customers]}");
-        
+
         //----------------------------------------------------
         //Calc members in dimension based on level stripped
         //Actual members in measures left alone
@@ -2223,15 +2223,73 @@ public class FunctionTest extends FoodMartTestCase {
                 quarters);
     }
 
-    public void _testDescendantsMLLeaves1() {
-        assertAxisReturns("Descendants([Time].[1997], [Time].[Quarter], leaves)",
-                quarters);
+    public void testDescendantsMLLeaves() {
+        assertAxisReturns("Descendants([Time].[1997], [Time].[Year], LEAVES)",
+                "");
+        assertAxisReturns("Descendants([Time].[1997], [Time].[Quarter], LEAVES)",
+                "");
+        assertAxisReturns("Descendants([Time].[1997], [Time].[Month], LEAVES)",
+                months);
 
-        getTestContext("[Sales Ragged]").assertAxisReturns(
+        assertAxisReturns("Descendants([Gender], [Gender].[Gender], leaves)",
+                "[Gender].[All Gender].[F]" + nl +
+                "[Gender].[All Gender].[M]");
+    }
+
+    public void testDescendantsMLLeavesRagged() {
+        // no cities are at leaf level
+        final TestContext raggedContext = getTestContext("[Sales Ragged]");
+        raggedContext.assertAxisReturns(
                 "Descendants([Store].[Israel], [Store].[Store City], leaves)",
+                "");
+
+        // all cities are leaves
+        raggedContext.assertAxisReturns(
+                "Descendants([Geography].[Israel], [Geography].[City], leaves)",
+                "[Geography].[All Geographys].[Israel].[Israel].[Haifa]" + nl +
+                "[Geography].[All Geographys].[Israel].[Israel].[Tel Aviv]");
+
+        // No state is a leaf (not even Israel, which is both a country and a
+        // a state, or Vatican, with is a country/state/city)
+        raggedContext.assertAxisReturns(
+                "Descendants([Geography], [Geography].[State], leaves)",
+                "");
+
+        // The Vatican is a nation with no children (they're all celibate,
+        // you know).
+        raggedContext.assertAxisReturns(
+                "Descendants([Geography], [Geography].[Country], leaves)",
+                "[Geography].[All Geographys].[Vatican]");
+    }
+
+    public void testDescendantsMNLeaves() {
+        // leaves at depth 0 returns the member itself
+        assertAxisReturns("Descendants([Time].[1997].[Q2].[4], 0, Leaves)",
+                "[Time].[1997].[Q2].[4]");
+
+        // leaves at depth > 0 returns the member itself
+        assertAxisReturns("Descendants([Time].[1997].[Q2].[4], 100, Leaves)",
+                "[Time].[1997].[Q2].[4]");
+
+        // leaves at depth < 0 returns all descendants
+        assertAxisReturns("Descendants([Time].[1997].[Q2], -1, Leaves)",
                 fold(new String[] {
-                    "[Store].[All Stores].[Israel].[Israel].[Haifa]",
-                    "[Store].[All Stores].[Israel].[Israel].[Tel Aviv]"}));
+                    "[Time].[1997].[Q2].[4]",
+                    "[Time].[1997].[Q2].[5]",
+                    "[Time].[1997].[Q2].[6]"}));
+
+        // leaves at depth 0 returns the member itself
+        assertAxisReturns("Descendants([Time].[1997].[Q2], 0, Leaves)",
+                fold(new String[] {
+                    "[Time].[1997].[Q2].[4]",
+                    "[Time].[1997].[Q2].[5]",
+                    "[Time].[1997].[Q2].[6]"}));
+
+        assertAxisReturns("Descendants([Time].[1997].[Q2], 3, Leaves)",
+                fold(new String[] {
+                    "[Time].[1997].[Q2].[4]",
+                    "[Time].[1997].[Q2].[5]",
+                    "[Time].[1997].[Q2].[6]"}));
     }
 
     public void testDescendantsMLSelfBefore() {
@@ -2279,20 +2337,14 @@ public class FunctionTest extends FoodMartTestCase {
                 months);
     }
 
-    public void _testDescendantsM2Leaves() {
+    public void testDescendantsM2Leaves() {
         assertAxisReturns("Descendants([Time].[1997], 2, Leaves)",
                 months);
     }
 
-    public void _testDescendantsMFarLeaves() {
+    public void testDescendantsMFarLeaves() {
         assertAxisReturns("Descendants([Time].[1997], 10000, Leaves)",
                 months);
-    }
-
-    public void testLeavesNotSupported() throws Exception {
-        assertThrows("select Descendants([Time].[1998], 1, Leaves) "
-                + "on columns from [Sales]",
-                "LEAVES option in Descendants function is not supported.");
     }
 
     public void testDescendantsMFarSelf() {
@@ -2324,6 +2376,167 @@ public class FunctionTest extends FoodMartTestCase {
                 fold(new String[] {
                     "[Employees].[All Employees]",
                     "[Employees].[All Employees].[Sheri Nowmer]"}));
+    }
+
+    public void testDescendantsParentChildLeaves() {
+        final TestContext testContext = getTestContext("HR");
+
+        // leaves, restricted by level
+        testContext.assertAxisReturns(
+                "Descendants([Employees].[All Employees].[Sheri Nowmer].[Michael Spence], [Employees].[Employee Id], LEAVES)",
+                fold(new String[] {
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[John Brooks]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Todd Logan]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Joshua Several]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[James Thomas]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Robert Vessa]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Bronson Jacobs]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Rebecca Barley]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Emilio Alvaro]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Becky Waters]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[A. Joyce Jarvis]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Ruby Sue Styles]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Lisa Roy]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Ingrid Burkhardt]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Todd Whitney]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Barbara Wisnewski]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Karren Burkhardt]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[John Long]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Edwin Olenzek]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Jessie Valerio]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Robert Ahlering]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Megan Burke]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Karel Bates]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[James Tran]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Shelley Crow]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Anne Sims]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Clarence Tatman]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Jan Nelsen]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Jeanie Glenn]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Peggy Smith]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Tish Duff]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Anita Lucero]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Stephen Burton]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Amy Consentino]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Stacie Mcanich]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Mary Browning]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Alexandra Wellington]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Cory Bacugalupi]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Stacy Rizzi]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Mike White]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Marty Simpson]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Robert Jones]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Raul Casts]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Bridget Browqett]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Kay Kartz]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Jeanette Cole]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Phyllis Huntsman]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Hannah Arakawa]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Wathalee Steuber]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Pamela Cox]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Helen Lutes]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Linda Ecoffey]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Katherine Swint]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Dianne Slattengren]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Ronald Heymsfield]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Steven Whitehead]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[William Sotelo]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Beth Stanley]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Jill Markwood]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Mildred Valentine]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Suzann Reams]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Audrey Wold]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Susan French]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Trish Pederson]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Eric Renn]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Elizabeth Catalano]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Eric Coleman]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Catherine Abel]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Emilo Miller]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Hazel Walker]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Linda Blasingame]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Jackie Blackwell]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[John Ortiz]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Stacey Tearpak]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Fannye Weber]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Diane Kabbes]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Brenda Heaney]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Judith Karavites]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Jauna Elson]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Nancy Hirota]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Marie Moya]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Nicky Chesnut]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Karen Hall]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Greg Narberes]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Anna Townsend]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Carol Ann Rockne]"}));
+
+        // leaves, restricted by depth
+        testContext.assertAxisReturns(
+                "Descendants([Employees], 1, LEAVES)", "");
+        testContext.assertAxisReturns(
+                "Descendants([Employees], 2, LEAVES)",
+                fold(new String[] {
+                    "[Employees].[All Employees].[Sheri Nowmer].[Roberta Damstra].[Jennifer Cooper]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Roberta Damstra].[Peggy Petty]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Roberta Damstra].[Jessica Olguin]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Roberta Damstra].[Phyllis Burchett]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Juanita Sharp]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Sandra Brunner]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz].[Ernest Staton]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz].[Rose Sims]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz].[Lauretta De Carlo]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz].[Mary Williams]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz].[Terri Burke]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz].[Audrey Osborn]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz].[Brian Binai]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz].[Concepcion Lozada]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold].[Howard Bechard]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold].[Doris Carter]"}));
+
+        testContext.assertAxisReturns(
+                "Descendants([Employees], 3, LEAVES)",
+                fold(new String[] {
+                    "[Employees].[All Employees].[Sheri Nowmer].[Roberta Damstra].[Jennifer Cooper]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Roberta Damstra].[Peggy Petty]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Roberta Damstra].[Jessica Olguin]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Roberta Damstra].[Phyllis Burchett]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Juanita Sharp]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Sandra Brunner]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz].[Ernest Staton]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz].[Rose Sims]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz].[Lauretta De Carlo]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz].[Mary Williams]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz].[Terri Burke]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz].[Audrey Osborn]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz].[Brian Binai]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz].[Concepcion Lozada]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold].[Howard Bechard]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold].[Doris Carter]"}));
+
+        // note that depth is RELATIVE to the starting member
+        testContext.assertAxisReturns(
+                "Descendants([Employees].[All Employees].[Sheri Nowmer].[Roberta Damstra], 1, LEAVES)",
+                fold(new String[] {
+                    "[Employees].[All Employees].[Sheri Nowmer].[Roberta Damstra].[Jennifer Cooper]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Roberta Damstra].[Peggy Petty]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Roberta Damstra].[Jessica Olguin]",
+                    "[Employees].[All Employees].[Sheri Nowmer].[Roberta Damstra].[Phyllis Burchett]"}));
+
+        // Howard Bechard is a leaf member -- appears even at depth 0
+        testContext.assertAxisReturns(
+                "Descendants([Employees].[All Employees].[Sheri Nowmer].[Donna Arnold].[Howard Bechard], 0, LEAVES)",
+                "[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold].[Howard Bechard]");
+        testContext.assertAxisReturns(
+                "Descendants([Employees].[All Employees].[Sheri Nowmer].[Donna Arnold].[Howard Bechard], 1, LEAVES)",
+                "[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold].[Howard Bechard]");
+
+        testContext.assertExprReturns("Count(Descendants([Employees], 2, LEAVES))", "16");
+        testContext.assertExprReturns("Count(Descendants([Employees], 3, LEAVES))", "16");
+        testContext.assertExprReturns("Count(Descendants([Employees], 4, LEAVES))", "63");
+        testContext.assertExprReturns("Count(Descendants([Employees], 999, LEAVES))", "1,044");
+        // negative depth acts like +infinity (per MSAS)
+        testContext.assertExprReturns("Count(Descendants([Employees], -1, LEAVES))", "1,044");
     }
 
     public void testDescendantsSBA() throws Exception {
