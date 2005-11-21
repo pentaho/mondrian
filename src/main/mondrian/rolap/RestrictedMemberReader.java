@@ -200,21 +200,6 @@ class RestrictedMemberReader extends DelegatingMemberReader {
         return filteredMembers;
     }
 
-    public void getMemberDescendants(
-            RolapMember member,
-            List result,
-            RolapLevel level,
-            boolean before,
-            boolean self,
-            boolean after,
-            boolean leaves,
-            Evaluator context) {
-        // Utility method -- it calls our getMemberChildren(List,List), so
-        // access-control happens automatically.
-        RolapUtil.getMemberDescendants(
-                this, member, level, result, before, self, after, leaves,
-                context);
-    }
 }
 
 // End RestrictedMemberReader.java

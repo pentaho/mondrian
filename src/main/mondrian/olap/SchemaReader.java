@@ -91,29 +91,6 @@ public interface SchemaReader {
      */
     Member getMemberParent(Member member);
 
-    /**
-     * Returns the direct and indirect children of a member.
-     *
-     * @param member Member whose children to find
-     * @param result List to which to append results
-     * @param level Level relative to which to write results; must belong to
-     *   the same hierarchy as <code>member</code>
-     * @param before Whether to output members above <code>level</code>
-     * @param self Whether to output members at <code>level</code>
-     * @param after Whether to output members below <code>level</code>
-     * @param leaves Whether to output members which are leaves
-     * @param context Evaluation context; determines criteria by which the
-     *    result set should be filtered
-     */
-    void getMemberDescendants(
-            Member member,
-            List result,
-            Level level,
-            boolean before,
-            boolean self,
-            boolean after,
-            boolean leaves,
-            Evaluator context);
 
     /**
      * Returns the depth of a member.

@@ -209,24 +209,6 @@ public abstract class RolapSchemaReader implements SchemaReader {
         }
     }
 
-    public void getMemberDescendants(
-            Member member,
-            List result,
-            Level level,
-            boolean before,
-            boolean self,
-            boolean after,
-            boolean leaves,
-            Evaluator context) {
-        Util.assertPrecondition(level != null, "level != null");
-
-        final Hierarchy hierarchy = member.getHierarchy();
-        final MemberReader memberReader = getMemberReader(hierarchy);
-        memberReader.getMemberDescendants(
-                (RolapMember) member, result,
-                (RolapLevel) level, before, self, after, leaves, null);
-    }
-
     public abstract Cube getCube();
 
     public OlapElement getElementChild(OlapElement parent, String name) {

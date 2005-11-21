@@ -221,20 +221,6 @@ class CacheMemberReader implements MemberReader, MemberCache {
         return (m1.getOrdinal() < m2.getOrdinal()) ? -1 : 1;
     }
 
-    public void getMemberDescendants(
-            RolapMember member,
-            List result,
-            RolapLevel level,
-            boolean before,
-            boolean self,
-            boolean after,
-            boolean leaves,
-            Evaluator context) {
-        RolapUtil.getMemberDescendants(
-                this, member, level, result, before, self, after, leaves,
-                context);
-    }
-
     public MemberBuilder getMemberBuilder() {
         return null;
     }

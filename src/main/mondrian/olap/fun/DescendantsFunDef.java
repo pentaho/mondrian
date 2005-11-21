@@ -10,9 +10,17 @@
 package mondrian.olap.fun;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import mondrian.olap.*;
+import mondrian.olap.EnumeratedValues;
+import mondrian.olap.Evaluator;
+import mondrian.olap.Exp;
+import mondrian.olap.FunDef;
+import mondrian.olap.Level;
+import mondrian.olap.Member;
+import mondrian.olap.SchemaReader;
+import mondrian.olap.Util;
 import mondrian.olap.type.NumericType;
 
 /**
@@ -60,8 +68,9 @@ class DescendantsFunDef extends FunDefBase {
             final Level level = args.length > 1
                 ?  getLevelArg(evaluator, args, 1, true)
                 : member.getLevel();
-            schemaReader.getMemberDescendants(
-                    member, result, level, before, self, after, leaves, context);
+                descendantsByLevel(
+                    schemaReader,
+                    member, level, result, before, self, after, leaves, context);
         }
 
         hierarchize(result, false);
@@ -140,28 +149,31 @@ class DescendantsFunDef extends FunDefBase {
         }
     }
 
-    // Code from RolapUtil, comment from MemberReader moved here
-
     /**
-     * Returns the direct and indirect children of a member.
+     * Finds all descendants of a member which are before/at/after a level,
+     * and/or are leaves (have no descendants) and adds them to a result list.
      *
-     * @param ancestor Member whose children to find
-     * @param result List to which to append results
-     * @param level Level relative to which to write results; must belong to
-     *   the same hierarchy as <code>member</code>
+     * @param schemaReader Member reader
+     * @param ancestor Member to find descendants of
+     * @param level Level relative to which to filter, must not be null
+     * @param result Result list
      * @param before Whether to output members above <code>level</code>
      * @param self Whether to output members at <code>level</code>
      * @param after Whether to output members below <code>level</code>
+     * @param leaves Whether to output members which are leaves
+     * @param context Evaluation context; determines criteria by which the
+     *    result set should be filtered
      */
-    private static void descendantsByLevel(
+    static void descendantsByLevel(
+            SchemaReader schemaReader,
             Member ancestor,
-                                     List result,
-                                     final SchemaReader schemaReader,
-                                     final Level level,
-                                     final boolean before,
-                                     final boolean self,
-                                     final boolean after,
-                                     final Evaluator context) {
+            Level level,
+            List result,
+            boolean before,
+            boolean self,
+            boolean after,
+            boolean leaves,
+            Evaluator context) {
         // We find the descendants of a member by making breadth-first passes
         // down the hierarchy. Initially the list just contains the ancestor.
         // Then we find its children. We add those children to the result if
@@ -183,39 +195,66 @@ class DescendantsFunDef extends FunDefBase {
         // except that we omit members whose children we are not interested
         // in. We allocate it once, and clear it each pass, to save a little
         // memory allocation.
-        List fertileMembers = new ArrayList();
-        do {
-            fertileMembers.clear();
-            for (int i = 0; i < members.length; i++) {
-                Member member = (Member) members[i];
-                final int currentDepth = member.getLevel().getDepth();
-                if (currentDepth == levelDepth) {
-                    if (self) {
-                        result.add(member);
-                    }
-                    if (after) {
-                        // we are interested in member's children
-                        fertileMembers.add(member);
-                    }
-                } else if (currentDepth < levelDepth) {
-                    if (before) {
-                        result.add(member);
-                    }
-                    fertileMembers.add(member);
-                } else {
-                    if (after) {
-                        result.add(member);
-                        fertileMembers.add(member);
+        if (leaves) {
+            assert !before && !self && !after;
+            do {
+                List nextMembers = new ArrayList();
+                for (int i = 0; i < members.length; i++) {
+                    Member member = members[i];
+                    final int currentDepth = member.getLevel().getDepth();
+                    Member[] childMembers = schemaReader.getMemberChildren(member, context);
+                    if (childMembers.length == 0) {
+                        // this member is a leaf -- add it
+                        if (currentDepth == levelDepth) {
+                            result.add(member);
+                        }
+                        continue;
+                    } else {
+                        // this member is not a leaf -- add its children
+                        // to the list to be considered next iteration
+                        if (currentDepth <= levelDepth) {
+                            nextMembers.addAll(Arrays.asList(childMembers));
+                        }
                     }
                 }
+                members = (Member[]) nextMembers.toArray(new Member[nextMembers.size()]);
             }
-            members = new Member[fertileMembers.size()];
-            members = (Member[])fertileMembers.toArray(members);
-            members = schemaReader.getMemberChildren(members, context);
+            while (members.length > 0);
+        } else {
+            List fertileMembers = new ArrayList();
+            do {
+                fertileMembers.clear();
+                for (int i = 0; i < members.length; i++) {
+                    Member member = members[i];
+                    final int currentDepth = member.getLevel().getDepth();
+                    if (currentDepth == levelDepth) {
+                        if (self) {
+                            result.add(member);
+                        }
+                        if (after) {
+                            // we are interested in member's children
+                            fertileMembers.add(member);
+                        }
+                    } else if (currentDepth < levelDepth) {
+                        if (before) {
+                            result.add(member);
+                        }
+                        fertileMembers.add(member);
+                    } else {
+                        if (after) {
+                            result.add(member);
+                            fertileMembers.add(member);
+                        }
+                    }
+                }
+                members = new Member[fertileMembers.size()];
+                members = (Member[])fertileMembers.toArray(members);
+                members = schemaReader.getMemberChildren(members, context);
+            }
+            while (members.length > 0);
         }
-        while (members.length > 0);
     }
-
+    
     /**
      * Enumeration of the flags allowed to the <code>DESCENDANTS</code>
      * function.

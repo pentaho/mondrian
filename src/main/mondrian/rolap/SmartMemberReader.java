@@ -418,20 +418,6 @@ public class SmartMemberReader implements MemberReader, MemberCache {
         }
     }
 
-    public void getMemberDescendants(
-            RolapMember member,
-            List result,
-            RolapLevel level,
-            boolean before,
-            boolean self,
-            boolean after,
-            boolean leaves,
-            Evaluator context) {
-        RolapUtil.getMemberDescendants(
-                this, member, level, result, before, self, after, leaves,
-                context);
-    }
-
     /**
      * <code>SiblingIterator</code> helps traverse a hierarchy of members, by
      * remembering the position at each level. Each SiblingIterator has a

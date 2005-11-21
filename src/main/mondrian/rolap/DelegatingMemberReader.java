@@ -54,19 +54,6 @@ class DelegatingMemberReader implements MemberReader {
         return memberReader.compare(m1, m2, siblingsAreEqual);
     }
 
-    public void getMemberDescendants(
-            RolapMember member,
-            List result,
-            RolapLevel level,
-            boolean before,
-            boolean self,
-            boolean after,
-            boolean leaves,
-            Evaluator context) {
-        memberReader.getMemberDescendants(
-                member, result, level, before, self, after, leaves, context);
-    }
-
     public RolapHierarchy getHierarchy() {
         return memberReader.getHierarchy();
     }

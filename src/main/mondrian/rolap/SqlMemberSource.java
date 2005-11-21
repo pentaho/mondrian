@@ -945,18 +945,6 @@ RME is this right
         throw new UnsupportedOperationException();
     }
 
-    public void getMemberDescendants(
-            RolapMember member,
-            List result,
-            RolapLevel level,
-            boolean before,
-            boolean self,
-            boolean after,
-            boolean leaves,
-            Evaluator context) {
-        throw new UnsupportedOperationException();
-    }
-
     /**
      * Member of a parent-child dimension which has a closure table.
      *
