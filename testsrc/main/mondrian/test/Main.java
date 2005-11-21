@@ -11,24 +11,27 @@
 */
 
 package mondrian.test;
-import junit.framework.*;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.ParserTest;
-import mondrian.olap.Util;
-import mondrian.olap.UtilTestCase;
-import mondrian.olap.fun.FunctionTest;
-import mondrian.rolap.RolapUtil;
-//import mondrian.rolap.RolapConnectionTest;
-import mondrian.rolap.TestAggregationManager;
-import mondrian.util.ScheduleTest;
-import mondrian.xmla.XmlaTest;
-import mondrian.test.comp.ResultComparatorTest;
-
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Enumeration;
 import java.util.regex.Pattern;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestResult;
+import junit.framework.TestSuite;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.ParserTest;
+import mondrian.olap.Util;
+import mondrian.olap.UtilTestCase;
+import mondrian.olap.fun.FunctionTest;
+import mondrian.rolap.NonEmptyTest;
+import mondrian.rolap.RolapUtil;
+import mondrian.rolap.TestAggregationManager;
+import mondrian.test.comp.ResultComparatorTest;
+import mondrian.util.ScheduleTest;
+import mondrian.xmla.XmlaTest;
 
 /**
  * <code>Main</code> is the main test suite for Mondrian.
@@ -148,6 +151,7 @@ public class Main extends TestSuite {
             suite.addTestSuite(NamedSetTest.class);
             suite.addTestSuite(PropertiesTest.class);
             suite.addTestSuite(I18nTest.class);
+            suite.addTestSuite(NonEmptyTest.class);
         }
         if (testName != null) {
             // Filter the suite, so that only tests whose names match
