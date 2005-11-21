@@ -19,6 +19,7 @@ import mondrian.olap.Hierarchy;
 import mondrian.olap.NativeEvaluator;
 import mondrian.olap.Util;
 import mondrian.rolap.TupleReader.MemberBuilder;
+import mondrian.rolap.cache.HardSmartCache;
 import mondrian.rolap.cache.SmartCache;
 import mondrian.rolap.cache.SoftSmartCache;
 import mondrian.rolap.sql.MemberChildrenConstraint;
@@ -99,16 +100,14 @@ public abstract class RolapNativeSet extends RolapNative {
         }
     }
 
-    protected static class SetEvaluator implements NativeEvaluator {
+    protected class SetEvaluator implements NativeEvaluator {
         private CrossJoinArg[] args;
         private RolapSchemaReader schemaReader;
         private TupleConstraint constraint;
-        private SmartCache cache;
         private int maxRows = 0;
 
-        public SetEvaluator(SmartCache cache, CrossJoinArg[] args,
-                RolapSchemaReader schemaReader, TupleConstraint constraint) {
-            this.cache = cache;
+        public SetEvaluator(CrossJoinArg[] args, RolapSchemaReader schemaReader,
+                TupleConstraint constraint) {
             this.args = args;
             this.schemaReader = schemaReader;
             this.constraint = constraint;
@@ -121,11 +120,22 @@ public abstract class RolapNativeSet extends RolapNative {
                 addLevel(tr, args[i]);
             }
 
+            // lookup the result in cache
             Object key = tr.getCacheKey();
             List result = (List) cache.get(key);
-            if (result != null)
+            if (result != null) {
+                if (listener != null) {
+                    TupleEvent e = new TupleEvent(this, tr);
+                    listener.foundInCache(e);
+                }
                 return result;
+            }
 
+            // execute sql and store the result
+            if (listener != null) {
+                TupleEvent e = new TupleEvent(this, tr);
+                listener.excutingSql(e);
+            }
             result = tr.readTuples(schemaReader.getDataSource());
             cache.put(key, result);
             return result;
@@ -273,7 +283,7 @@ public abstract class RolapNativeSet extends RolapNative {
         public int hashCode() {
             int c = 12;
             for (int i = 0; i < members.length; i++)
-                c = 31 * c + members.hashCode();
+                c = 31 * c + members[i].hashCode();
             if (strict)
                 c += 1;
             return c;
@@ -292,8 +302,7 @@ public abstract class RolapNativeSet extends RolapNative {
         }
 
         public void addConstraint(SqlQuery sqlQuery) {
-            SqlConstraintUtils.addMemberConstraint(sqlQuery, Arrays.asList(members),
-                    strict);
+            SqlConstraintUtils.addMemberConstraint(sqlQuery, Arrays.asList(members), strict);
         }
 
     }
@@ -428,9 +437,7 @@ public abstract class RolapNativeSet extends RolapNative {
         if (arg == null) {
             arg = checkEnumeration(fun, args);
         }
-        if (arg != null) {
-            return new CrossJoinArg[] { arg};
-        }
+        if (arg != null) { return new CrossJoinArg[] { arg}; }
         return checkCrossJoin(fun, args);
     }
 
@@ -473,6 +480,12 @@ public abstract class RolapNativeSet extends RolapNative {
         this.cache = cache;
     }
 
+    void useHardCache(boolean hard) {
+        if (hard)
+            cache = new HardSmartCache();
+        else
+            cache = new SoftSmartCache();
+    }
 }
 
 // End RolapNativeSet.java

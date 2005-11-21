@@ -528,6 +528,25 @@ public class MondrianProperties extends TriggerableProperties {
      */
     public final StringProperty LocalePropFile = new StringProperty(
             this, "mondrian.rolap.localePropFile", null);
+
+    /**
+     * if enabled some NON EMPTY CrossJoin will be computed in SQL
+     */
+    public final BooleanProperty EnableNativeCrossJoin = new BooleanProperty(
+        this, "mondrian.native.crossjoin.enable", true);
+
+    /**
+     * if enabled some TopCount will be computed in SQL
+     */
+    public final BooleanProperty EnableNativeTopCount = new BooleanProperty(
+        this, "mondrian.native.crossjoin.enable", false);
+    
+    /**
+     * some NON EMPTY set operations member.children, level.members and
+     * member descendants will be computed in SQL 
+     */
+    public final BooleanProperty EnableNativeNonEmpty = new BooleanProperty(
+        this, "mondrian.native.nonempty.enable", true);
 }
 
 // End MondrianProperties.java

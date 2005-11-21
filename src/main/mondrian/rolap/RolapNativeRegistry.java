@@ -12,49 +12,64 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import mondrian.olap.Evaluator;
 import mondrian.olap.Exp;
 import mondrian.olap.FunDef;
 import mondrian.olap.NativeEvaluator;
 
 /**
- * registry fro RoalpNativeEvaluator's. Uses chain of responsibility
- * to select the appropriate evaluator.
+ * Composite of RoalpNatives. Uses chain of responsibility
+ * to select the appropriate RolapNative evaluator.
  */
-public class RolapNativeRegistry {
+public class RolapNativeRegistry extends RolapNative {
 
-    private List evaluators = new ArrayList();
-    private boolean enabled = true;
-
+    private List natives = new ArrayList();
 
     public RolapNativeRegistry() {
         register(new RolapNativeCrossJoin());
-        //register(new RolapNativeTopCount());
+        register(new RolapNativeTopCount());
     }
 
-    public NativeEvaluator findEvaluator(FunDef fun, Evaluator evaluator, Exp[] args) {
-        if (!enabled)
+    /**
+     * returns the matching NativeEvaluator or null if <code>fun</code> can not
+     * be executed in SQL for the given context and arguments.
+     */
+    public NativeEvaluator createEvaluator(RolapEvaluator evaluator, FunDef fun, Exp[] args) {
+        if (!isEnabled())
             return null;
         RolapEvaluator revaluator = (RolapEvaluator) evaluator;
-        for (Iterator it = evaluators.iterator(); it.hasNext();) {
+        for (Iterator it = natives.iterator(); it.hasNext();) {
             RolapNative rn = (RolapNative) it.next();
             NativeEvaluator ne = rn.createEvaluator(revaluator, fun, args);
-            if (ne != null)
+            if (ne != null) {
+                if (listener != null) {
+                    NativeEvent e = new NativeEvent(this, ne);
+                    listener.foundEvaluator(e);
+                }
                 return ne;
+            }
         }
         return null;
     }
 
     public void register(RolapNative rn) {
-        evaluators.add(rn);
+        natives.add(rn);
     }
 
-    /** allows to disable native crossjoin evaluation for testing purposes */
-    boolean isEnabled() {
-        return enabled;
+    /** for testing */
+    void setListener(Listener listener) {
+        super.setListener(listener);
+        for (Iterator it = natives.iterator(); it.hasNext();) {
+            RolapNative rn = (RolapNative) it.next();
+            rn.setListener(listener);
+        }
     }
-
-    void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+    
+    /** for testing */
+    void useHardCache(boolean hard) {
+        for (Iterator it = natives.iterator(); it.hasNext();) {
+            RolapNative rn = (RolapNative) it.next();
+            rn.useHardCache(hard);
+        }
     }
+    
 }

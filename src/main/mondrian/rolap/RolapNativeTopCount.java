@@ -17,20 +17,30 @@ import javax.sql.DataSource;
 import mondrian.olap.Exp;
 import mondrian.olap.FunDef;
 import mondrian.olap.Literal;
+import mondrian.olap.MondrianProperties;
 import mondrian.olap.NativeEvaluator;
 import mondrian.olap.Util;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
 
+/**
+ * computes a TopCount in SQL
+ * 
+ * @author av
+ * @since Nov 21, 2005
+ */
 public class RolapNativeTopCount extends RolapNativeSet {
 
     boolean ascending;
 
+    public RolapNativeTopCount() {
+        super.setEnabled(MondrianProperties.instance().EnableNativeTopCount.get());
+    }
+
     class TopCountConstraint extends SetConstraint {
         String selectExpr;
 
-        public TopCountConstraint(CrossJoinArg[] args, RolapEvaluator evaluator,
-                String selectExpr) {
+        public TopCountConstraint(CrossJoinArg[] args, RolapEvaluator evaluator, String selectExpr) {
             super(args, evaluator, true);
             this.selectExpr = selectExpr;
         }
@@ -63,6 +73,8 @@ public class RolapNativeTopCount extends RolapNativeSet {
     }
 
     NativeEvaluator createEvaluator(RolapEvaluator evaluator, FunDef fun, Exp[] args) {
+        if (!isEnabled())
+            return null;
         // is this "TopCount(<set>, <count>, [<numeric expr>])"
         String funName = fun.getName();
         if ("TopCount".equalsIgnoreCase(funName))
@@ -91,18 +103,19 @@ public class RolapNativeTopCount extends RolapNativeSet {
         RolapSchemaReader schemaReader = (RolapSchemaReader) evaluator.getSchemaReader();
         DataSource ds = schemaReader.getDataSource();
         try {
-            RolapNativeSql sql = new RolapNativeSql(SqlTupleReader.newQuery(ds.getConnection(), "NativeTopCount"));
+            RolapNativeSql sql = new RolapNativeSql(SqlTupleReader.newQuery(ds.getConnection(),
+                    "NativeTopCount"));
             Exp exp;
             if (args.length == 3)
                 exp = args[2];
             else
                 exp = evaluator.getMembers()[0];
-            String orderByExpr = sql.generateAggregate(exp);
+            String orderByExpr = sql.generateTopCountOrderBy(exp);
 
             LOGGER.info("using native topcount");
 
             TupleConstraint constraint = new TopCountConstraint(cargs, evaluator, orderByExpr);
-            SetEvaluator sev = new SetEvaluator(getCache(), cargs, schemaReader, constraint);
+            SetEvaluator sev = new SetEvaluator(cargs, schemaReader, constraint);
             sev.setMaxRows(count);
             return sev;
         } catch (SQLException e) {

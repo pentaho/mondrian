@@ -23,6 +23,13 @@ import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.agg.ColumnConstraint;
 import mondrian.rolap.sql.SqlQuery;
 
+/**
+ * Utility class used by implementations of {@link mondrian.rolap.sql.SqlConstraint},
+ * used to generate constraints into {@link mondrian.rolap.sql.SqlQuery}.
+ *  
+ * @author av
+ * @since Nov 21, 2005
+ */
 public class SqlConstraintUtils {
 
     /** Utility class */

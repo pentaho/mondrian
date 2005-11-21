@@ -10,10 +10,38 @@ package mondrian.rolap;
 
 import mondrian.olap.Exp;
 import mondrian.olap.FunDef;
+import mondrian.olap.MondrianProperties;
 import mondrian.olap.NativeEvaluator;
 import mondrian.rolap.sql.TupleConstraint;
 
+/**
+ * creates a {@link mondrian.olap.NativeEvaluator} that evaluates NON EMPTY
+ * CrossJoin in SQL. The generated SQL will join the dimension tables with
+ * the fact table and return all combinations that have a 
+ * corresponding row in the fact table. The current context (slicer) is 
+ * used for filtering (WHERE clause in SQL). This very effective computes
+ * queris like
+ * <pre>
+ *   select ...
+ *   NON EMTPY crossjoin([product].[name].members, [customer].[name].members) on rows
+ *   froms [Sales]
+ *   where ([store].[store #14])
+ * </pre>
+ * where both, customer.name and product.name have many members, but the resulting
+ * crossjoin only has few. 
+ * <p>
+ * The implementation currently can not handle sets containting
+ * parent/child hierarchies, ragged hierarchies, calculated members and
+ * the ALL member. Otherwise all 
+ * 
+ * @author av
+ * @since Nov 21, 2005
+ */
 public class RolapNativeCrossJoin extends RolapNativeSet {
+
+    public RolapNativeCrossJoin() {
+        super.setEnabled(MondrianProperties.instance().EnableNativeCrossJoin.get());
+    }
 
     /**
      * restricts the result to the current context.
@@ -37,6 +65,8 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
     }
 
     NativeEvaluator createEvaluator(RolapEvaluator evaluator, FunDef fun, Exp[] args) {
+        if (!isEnabled())
+            return null;
 
         // join with fact table will always filter out those members
         // that dont have a row in the fact table
@@ -53,7 +83,7 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
 
         TupleConstraint constraint = new NonEmptyCrossJoinConstraint(cargs, evaluator);
         RolapSchemaReader schemaReader = (RolapSchemaReader) evaluator.getSchemaReader();
-        return new SetEvaluator(getCache(), cargs, schemaReader, constraint);
+        return new SetEvaluator(cargs, schemaReader, constraint);
     }
 
 }

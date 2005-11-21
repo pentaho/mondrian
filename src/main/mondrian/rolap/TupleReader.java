@@ -15,6 +15,13 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+/**
+ * describes the public methods of {@link mondrian.rolap.SqlTupleReader}.
+ * 
+ * @author av
+ * @since Nov 21, 2005
+ */
+
 public interface TupleReader {
     /**
      * provides the environment to create new members for a

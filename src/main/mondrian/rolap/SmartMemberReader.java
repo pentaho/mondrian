@@ -192,30 +192,6 @@ public class SmartMemberReader implements MemberReader, MemberCache {
     }
 
     /**
-     * A <code>ChildrenList</code> is held in the
-     * {@link SmartMemberReader#mapMemberToChildren} cache.
-     **/
-    private static class ChildrenList {
-        private final RolapMember member;
-        private final List list;
-
-        ChildrenList(RolapMember member, List list) {
-            this.member = member;
-            this.list = list;
-        }
-
-        public String toString() {
-            return super.toString()
-                + " {member="
-                + member
-                + ", childCount="
-                + list.size()
-                + "}";
-        }
-
-    };
-
-    /**
      * Reads the children of <code>member</code> into cache, and also into
      * <code>result</code>.
      *

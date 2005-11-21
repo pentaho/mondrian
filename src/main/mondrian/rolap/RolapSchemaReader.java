@@ -375,7 +375,8 @@ public abstract class RolapSchemaReader implements SchemaReader {
     }
 
     public NativeEvaluator getNativeSetEvaluator(FunDef fun, Evaluator evaluator, Exp[] args) {
-        return schema.getNativeRegistry().findEvaluator(fun, evaluator, args);
+        RolapEvaluator revaluator = (RolapEvaluator) evaluator;
+        return schema.getNativeRegistry().createEvaluator(revaluator, fun, args);
     }
 
     DataSource getDataSource() {

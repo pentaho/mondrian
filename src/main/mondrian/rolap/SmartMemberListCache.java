@@ -1,3 +1,11 @@
+/*
+//This software is subject to the terms of the Common Public License
+//Agreement, available at the following URL:
+//http://www.opensource.org/licenses/cpl.html.
+//Copyright (C) 2004-2005 TONBELLER AG
+//All Rights Reserved.
+//You must accept the terms of that agreement to use this software.
+*/
 package mondrian.rolap;
 
 import java.util.List;
@@ -6,6 +14,34 @@ import mondrian.rolap.cache.SmartCache;
 import mondrian.rolap.cache.SoftSmartCache;
 import mondrian.rolap.sql.SqlConstraint;
 
+/**
+ * uses a {@link mondrian.rolap.cache.SmartCache} to store lists of members, where the key
+ * depends on a {@link mondrian.rolap.sql.SqlConstraint}.
+ * <p>
+ * Example 1
+ * <pre>
+ *   select ...
+ *   [Customer].[Name].members on rows
+ *   ...
+ * </pre>
+ * Example 2
+ * <pre>
+ *   select ...
+ *   NON EMPTY [Customer].[Name].members on rows
+ *   ...
+ *   WHERE ([Store#14], [Product].[Product#1])
+ * </pre>
+ * 
+ * The first set, <em>all</em> customers are computed, in the second only those, who
+ * have bought Product#1 in Store#14. We want to put both results into the cache. Then the
+ * key for the cache entry is the Level that the members belong to <em>plus</em> the
+ * costraint that restricted the amount of members fetched. For Level.Members the key
+ * consists of the Level and the cacheKey of the {@link mondrian.rolap.sql.SqlConstraint}
+ * @see @link mondrian.rolap.sql.SqlConstraint#getCacheKey() 
+ * 
+ * @author av
+ * @since Nov 21, 2005
+ */
 public class SmartMemberListCache {
     SmartCache cache;
 

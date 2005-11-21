@@ -28,7 +28,19 @@ import mondrian.rolap.sql.SqlQuery;
 /**
  * reads the members of a single level (level.members) or of multiple levels (crossjoin).
  * <p>
- * Allows the result to be restricted by a {@link mondrian.rolap.sql.TupleConstraint}:
+ * Allows the result to be restricted by a {@link mondrian.rolap.sql.TupleConstraint}. So 
+ * the SqlTupleReader can also read Member.Descendants (which is level.members restricted
+ * to a common parent) and member.children (which is a special case of member.descendants).
+ * Other constraints, especially for the current slicer or evaluation context, are possible.
+ * 
+ * <p>
+ * Caching:
+ * <p> 
+ * When this class reads level.members, it groups the result into parent/children pairs 
+ * and puts them into the cache. In order that these can be found later when the
+ * children of a parent are requested, a matching constraint must be provided for 
+ * every parent.
+ * 
  * <ul>
  * <li>When reading members from a single level, then the constraint is not required to
  * join the fact table in

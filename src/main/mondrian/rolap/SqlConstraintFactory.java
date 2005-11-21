@@ -14,6 +14,12 @@ import mondrian.olap.Evaluator;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 
+/**
+ * creates the right constraint for common tasks.
+ * 
+ * @author av
+ * @since Nov 21, 2005
+ */
 public class SqlConstraintFactory {
 
     private static final SqlConstraintFactory instance = new SqlConstraintFactory();

@@ -5,7 +5,7 @@
 //Copyright (C) 2004-2005 TONBELLER AG
 //All Rights Reserved.
 //You must accept the terms of that agreement to use this software.
- */
+*/
 package mondrian.rolap.cache;
 
 import java.lang.ref.ReferenceQueue;
