@@ -520,6 +520,8 @@ public class XmlaMediator {
 
 
         private void emitCell(SAXHandler saxHandler, Cell cell, int ordinal) throws SAXException {
+	    if (cell.isNull()) // Ignore null cells like MS AS
+	    	return;
             saxHandler.startElement("Cell", new String[] {
                     "CellOrdinal", Integer.toString(ordinal)});
             for (int i = 0; i < cellProps.length; i++) {
